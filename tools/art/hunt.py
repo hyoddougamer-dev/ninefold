@@ -138,6 +138,34 @@ th.n{text-align:right}
   text-transform:uppercase;color:var(--verm);margin-bottom:8px}
 .warn p{font-size:13px;line-height:1.75;color:var(--dim);margin:0 0 10px;max-width:64ch}
 .warn p:last-child{margin-bottom:0}
+
+/* ── 秘境 the dive ─────────────────────────────────────────────────────── */
+.dive{display:grid;grid-template-columns:340px 1fr;gap:28px;margin-top:26px;align-items:start}
+@media (max-width:820px){.dive{grid-template-columns:1fr;max-width:340px;margin-inline:auto}}
+.depthbar{height:6px;border-radius:3px;background:rgba(255,255,255,.07);position:relative;
+  overflow:hidden}
+.depthbar span{position:absolute;inset:0 auto 0 0;border-radius:3px;
+  background:linear-gradient(90deg,var(--verm),var(--gold))}
+.rowlab{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);margin:6px 0 0}
+.rowlab b{color:var(--gold);font-variant-numeric:tabular-nums;text-transform:none;
+  font-family:var(--serif);font-size:13px}
+.pot{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pt{background:var(--panel);border:1px solid var(--hair-soft);border-radius:4px;padding:9px 10px}
+.pt.risk{border-color:rgba(200,68,44,.32);background:rgba(200,68,44,.07)}
+.pt small{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint)}
+.pt b{display:block;font-family:var(--serif);font-size:19px;color:var(--jade);margin-top:3px}
+.pt.risk b{color:var(--verm)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ladder{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.lr{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--faint);
+  padding:4px 8px;border-radius:3px;background:var(--panel)}
+.lr i{font-style:normal;font-family:var(--serif);color:var(--gold);width:26px;flex:none;
+  font-variant-numeric:tabular-nums}
+.lr span{margin-left:auto;color:var(--jade);font-variant-numeric:tabular-nums}
+.lr.now{background:#0E2820;color:var(--text);border:1px solid rgba(78,207,163,.3)}
+.lr.gone{opacity:.42}
 </style>
 '''
 
@@ -269,7 +297,87 @@ faster. The active player does not merely hold more things than the idle one. Th
 <td class="n">10</td><td class="n">&times;2.16</td><td>past the sweet spot &mdash; see below</td></tr>
 </table>
 
-<div class="warn"><b>Two things I have to say straight</b>
+<h2><em>丁</em>秘境 &mdash; and the hole all of that leaves</h2>
+<p class="sub">Eight hunts a day is eight taps. That is <b>thirty seconds</b>. Everything
+above rewards <em>frequency</em> &mdash; checking in six times a day &mdash; and nothing
+rewards <em>duration</em>. There is no way to play for two hours because nothing lasts two
+hours. So: <b>秘境 The Deep</b>. One qi payment, then a long free descent. Floor by floor
+you read a beast and pick a stance; the rewards compound with depth and the stamina to
+keep going does not. Every floor you choose: <b>deeper</b>, or <b>withdraw and bank it</b>.
+Run out of stamina and the unbanked haul is gone &mdash; never the gear, never the realm.</p>
+
+<div class="dive">
+<div class="phone">
+<div class="bar"><span>秘境 &nbsp; 灰坡 Ash Slopes</span><b>第 34 層</b></div>
+<div class="rowlab"><span>氣 stamina</span><b>58 / 100</b></div>
+<div class="depthbar"><span style="width:58%"></span></div>
+<div class="beast">{{BEAST}}<div class="bname">棘伯勞 Thorn Shrike</div>
+<div class="bsub">floor 34 &middot; deeper floors cost more</div></div>
+<div class="tele">It drops from the branch, <b>already committed</b>.<br>
+A committed beast cannot turn. Press it.</div>
+<div class="stances">
+<div class="st on"><b>進</b><span>press</span></div>
+<div class="st"><b>守</b><span>guard</span></div>
+<div class="st"><b>遁</b><span>withdraw</span></div>
+</div>
+<div class="pot">
+<div class="pt"><small>banked</small><b>0</b></div>
+<div class="pt risk"><small>at risk</small><b>214 悟</b></div>
+</div>
+<div class="two">
+<div class="btn">深<small>descend</small></div>
+<div class="btn ghost">退<small>bank it</small></div>
+</div>
+</div>
+
+<div>
+<p class="sub" style="margin-top:0"><b>The run so far.</b> Nothing is banked until you
+withdraw, and every floor makes withdrawing harder to choose. That tension is the reason
+to still be playing at minute forty.</p>
+<div class="ladder">
+<div class="lr gone"><i>30</i>灰兔 &mdash; read 守, correct<span>+6.6</span></div>
+<div class="lr gone"><i>31</i>鐵甲蟲 &mdash; read 進, <b style="color:#C8442C">wrong</b><span>+6.7</span></div>
+<div class="lr gone"><i>32</i>棘伯勞 &mdash; read 遁, correct<span>+6.8</span></div>
+<div class="lr gone"><i>33</i>灰兔 &mdash; read 守, correct<span>+6.9</span></div>
+<div class="lr now"><i>34</i>棘伯勞 &mdash; reading&hellip;<span>+7.0</span></div>
+<div class="lr" style="opacity:.3"><i>35</i>&mdash;<span>+7.1</span></div>
+<div class="lr" style="opacity:.2"><i>36</i>&mdash;<span>+7.2</span></div>
+</div>
+<p class="note">A wrong read does not end the run &mdash; it costs stamina, which costs
+depth, which costs everything the deep floors would have paid. That is how skill turns
+into reward without anybody being blocked.</p>
+</div>
+</div>
+
+<h2><em>戊</em>What two hours actually buys</h2>
+<p class="sub">Measured. A dive costs <b>four hours of your own rate</b> &mdash; the same
+qi as eight hunts &mdash; so it has to beat eight hunts to be worth entering.</p>
+<table class="t">
+<tr><th>reads correctly</th><th class="n">reaches floor</th><th class="n">one dive takes</th>
+<th class="n">materials</th><th class="n">vs the same qi in hunts</th></tr>
+<tr><td class="b">40% &mdash; tapping</td><td class="n">38</td><td class="n">24 min</td><td class="n">20.6</td><td class="n">&times;1.34</td></tr>
+<tr><td class="b">70% &mdash; paying attention</td><td class="n">50</td><td class="n">32 min</td><td class="n">30.5</td><td class="n">&times;1.99</td></tr>
+<tr><td class="b">85% &mdash; knows the beasts</td><td class="n">58</td><td class="n">37 min</td><td class="n">37.7</td><td class="n">&times;2.47</td></tr>
+<tr><td class="b">100% &mdash; mastery</td><td class="n">69</td><td class="n">44 min</td><td class="n">48.5</td><td class="n">&times;3.17</td></tr>
+</table>
+<p class="note">A two-hour session is <b>three dives</b>, and three dives cost about half a
+day&rsquo;s qi. That is the §4 trade exactly: you are spending your realm to fill your bag,
+with your eyes open.</p>
+<table class="t">
+<tr><th>how you play</th><th class="n">materials a day</th><th class="n">full 鍊45 kit</th></tr>
+<tr><td class="b">8 hunts a day &mdash; about a minute</td><td class="n">15.3</td><td class="n">350 days</td></tr>
+<tr><td class="b">one dive a day &mdash; 32 min</td><td class="n">30.5</td><td class="n">176 days</td></tr>
+<tr><td class="b">two hours a day, 70% reads</td><td class="n">91.4</td><td class="n">59 days</td></tr>
+<tr><td class="b">two hours a day, 85% reads</td><td class="n">113.2</td><td class="n">47 days</td></tr>
+</table>
+
+<div class="warn"><b>Three things I have to say straight</b>
+<p><b>0. 經脈 channels fill in about two weeks and then stop mattering.</b> The simulator
+was blunt about this: with dives, <em>one dive a day is optimal</em> and more is worse,
+because all twelve channels are open by week two and the extra qi only delays realms. So
+the dive cannot be sold on insight. It is sold on <b>gear</b> &mdash; the forge is 5&#8202;358
+units deep and does not saturate for months. Early game a dive buys <em>rate</em>; from
+week three on it buys <em>equipment</em>, and that is the part that runs for a year.</p>
 <p><b>1. Hunting has a sweet spot, and it is around eight a day.</b> Look at the last row:
 sixteen hunts a day reaches realm 9 <em>later</em> than eight, despite opening one more
 channel, because the qi a hunt costs eventually outruns the insight it pays. That is §4
@@ -288,6 +396,6 @@ if __name__ == "__main__":
     import os
     open("hunt.html", "w").write(
         HEAD + '<div class="page">'
-        + BODY.replace("{{A}}", phone_a()).replace("{{B}}", phone_b()).replace("{{C}}", phone_c())
+        + BODY.replace("{{BEAST}}", BB.framed("shrike", "seal", 132)).replace("{{A}}", phone_a()).replace("{{B}}", phone_b()).replace("{{C}}", phone_c())
         + '</div>')
     print("%.0f KB" % (os.path.getsize("hunt.html") / 1024))
