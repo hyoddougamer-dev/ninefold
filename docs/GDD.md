@@ -80,11 +80,49 @@ Layers exist to answer Finding 2. A realm that takes six days gives a player one
 six days; the same realm with nine layers gives them nine. Nothing about the curve
 changes — only how often the game says *something happened*.
 
-### The ninth realm has no exit
+### The cost table
 
-Realm 9 is the ceiling in v1. Its cost is `INF`, its bar never completes, and the
-tribulation is a state rather than a gate. What comes after it is deliberately not
-designed yet — see §12.
+Measured, not chosen. `sim/` builds it and `python3 -m sim.report` reprints it; the test
+suite pins every figure below so the document and the model cannot drift apart.
+
+The curve has **two phases**, and the simulator is the reason. A single geometric curve
+cannot give both a fast opening and a balanced tail, because the cost grows by `growth`
+per realm while the gathering rate grows by only `1.02⁹ = 1.195`. The days in a gap
+therefore grow by `growth / 1.195` **every realm, compounding** — which is the mechanical
+cause of Finding 1, and it was never written down:
+
+| growth | days-per-gap ratio | the 8→9 gap vs the 1→2 gap | share of the run in the last gap |
+|---|---|---|---|
+| 1.195 | 1.000 | ×1 | 12% — a flat game |
+| 1.45 | 1.213 | ×4 | 22% |
+| 1.80 | 1.506 | ×18 | 35% |
+| **2.80** | **2.343** | **×388** | **57% — the old build** |
+
+So: `×3.0` through realms 1–3, where the player is learning the game and needs realms
+fast, then `×1.25` from realm 4 on, where they are in it and the gaps must stay level.
+
+| realm | cost, in days of base-rate gathering | |
+|---|---|---|
+| 1 → 2 | 0.78 |  |
+| 2 → 3 | 2.34 |  |
+| 3 → 4 | 7.02 |  |
+| 4 → 5 | 21.06 |  |
+| 5 → 6 | 26.32 |  |
+| 6 → 7 | 32.91 |  |
+| 7 → 8 | 41.13 |  |
+| 8 → 9 | 51.42 |  |
+| 9 → 9 | 64.27 | the ceiling — no realm 10 |
+
+### The ninth realm has no exit — but it does have a cost
+
+Realm 9 is the ceiling in v1: there is no realm 10 and the tribulation is a state rather
+than a gate. It is **not** free. The bible publishes `4.97×` for the layers, and that is
+`1.02⁸¹` — all nine realms times nine layers. Reaching realm 9 only opens 72 of them,
+which is `4.16×`. The published figure is only true if realm 9's own nine layers can be
+opened, and they can: a bar that never *completes* can still fill. So realm 9 carries a
+finite cost like any other realm; what it lacks is a far side. That also hands the
+end-game player the one thing the old build never had at the ceiling — something still
+moving.
 
 ---
 
@@ -428,8 +466,22 @@ is coming. Counting only things never seen before, the honest figure is **82**, 
 - **Can gear be sold or traded?** Recommendation: neither, in v1. The moment gear has a
   price the hunting curve becomes an income curve — and a piece you grew for seven
   months should not have a price.
-- **Three units of material per hunt** is an assumption, not a measurement. Every number
-  in the cost table rests on it, and it is the first thing a real simulator must check.
+- **Three units of material per hunt was wrong, and is now measured.** The simulator
+  checked it first, as this line used to demand. The real figure depends on how hard the
+  player plays, because `h(n)` decay is *inside* the average and the cost table forgot it:
+
+  | hunts/day | units per hunt | vs. the assumed 3.00 |
+  |---|---|---|
+  | 2 | 2.72 | 91% |
+  | 4 | 2.34 | 78% |
+  | 8 | **1.90** | **63%** |
+  | 16 | 1.41 | 47% |
+  | 30 | 1.01 | 34% |
+
+  So **every hunt figure in the table above is optimistic by about 59%** at eight hunts a
+  day. Three ways out, and this one is not mine to pick: raise the base yield so the
+  *average* lands on 3.00; cut the forge costs by a third; or accept a slower forge and
+  say so. Until it is chosen, read the 鍊45 column as roughly 470 hunts per slot, not 298.
 
 ---
 
@@ -561,18 +613,33 @@ Four rules, each of which the earlier build broke at least once:
 
 ## 13 · What is measured, and what is open
 
-**Measured and settled:** the haul decay curve and its advantage figures; the layer
-multiplier reaching 4.97×; offline progress paying identically in one step or many.
+**Measured and settled** — by `sim/`, and pinned by `sim/tests/test_rules.py`:
+
+- the haul decay curve and its advantage figures: ×1.00 / ×1.61 / ×2.67 / ×3.93
+- the layer multiplier reaching 4.97×, *once realm 9's own layers are openable* (§2)
+- offline progress paying identically in one step or many
+- **the realm cost table**, and the two-phase shape it needs
+- **realm 9's cost**, which was the first blocking item: an idle-only run now finishes in
+  **70 days with 20% in its worst gap**, against the old build's 56 days with 71%
+- **layers open by themselves** as qi crosses the threshold, online or closed. If a layer
+  needed a tap, the once-a-day player would bank qi unspent, lose the compounding, and
+  §3's promise would be false by construction.
+- **hunting never accelerates the climb.** Obvious, and the model got it backwards at
+  first — a time-accounting slip handed hunting players 78% of a bonus day, so the table
+  read as though hunting were free realms. It is a regression test now.
 
 **Open, and blocking:**
 
-- **Realm 9's cost.** With nine layers added, an idle-only run still puts 71% of its days
-  in the 8→9 gap. Subdividing a curve was never going to fix a curve whose *last step* is
-  the problem. This number needs to come down, and the content that fills the gap needs
-  to be in place before it does.
-- **`K = 5`** in the haul decay, against a real simulator rather than a model.
-- **The bow's curve.** If it cannot be made meaningfully different, the game ships with
-  two paths.
+- **`K = 5`** is now *testable* rather than untestable — `sim/report.py` prints the
+  advantage figures on every run, so a change to it is never silent. What it still lacks
+  is a criterion: nobody has said what advantage an active player *should* have.
+- **The bow's curve.** Still open, and now for a specific reason: the bow's difference is
+  ground *access*, not haul, and grounds have no value model yet. It cannot be simulated
+  until 鬥 below exists.
+- **鬥 How a hunt resolves.** The bible has never specified this. It says beasts are
+  killed, wardens are fightable from realm 6, and 覺 counts kills — but there is no combat
+  or resolution model anywhere in this document. It is the one genuine design hole left,
+  and it blocks the bow.
 
 **Open, not blocking:** how many channels; whether wardens respawn; the five gear
 questions at the end of section 7 — whether 鍊 can fail, whether 銘 marks are removable,
