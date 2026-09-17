@@ -50,59 +50,178 @@ def slots():
         for k, ch, en, _, _, _, _ in F.SLOTS)
 
 
-def slottable():
-    return "".join(
-        '<tr><td class="cjk">%s</td><td>%s</td><td class="cjk sm">%s</td>'
-        '<td class="num">%s</td><td class="why">%s</td></tr>'
-        % (ch, en, gch, val, why) for k, ch, en, gch, gen, val, why in F.SLOTS)
-
-
-def tierline(key):
-    """The same piece across the 五階 ladder — the tile carrying the rank, nothing else."""
-    return "".join('<figure>%s<b>%s</b></figure>' % (I.tile(key, 150, t), I.TIERS[t][0])
-                   for t in range(5))
-
-
-def costtable():
-    rows = ""
-    for t in range(5):
-        steps = [F.refine_cost(t, L) for L in range(1, 10)]
-        rows += ('<tr><td class="cjk">%s</td><td>%s</td><td class="num">%d</td>'
-                 '<td class="num">%d</td><td class="num">%d</td><td class="num">%d</td>'
-                 '<td class="num">%.0f</td></tr>'
-                 % (I.TIERS[t][0], I.TIERS[t][1], F.FORGE[t], steps[0], steps[-1],
-                    F.piece_total(t), F.piece_total(t) / 3))
-    return rows
-
-
-def haultable():
-    base = [F.haul_sum(n, 5) for n in (4, 8, 20, 50)]
-    rows = ""
-    for K, lbl, sub in ((5, "no vessel", "K = 5.0"), (6.2, "靈 Spirit vessel", "K = 6.2"),
-                        (8, "地 Earth vessel", "K = 8.0"), (11, "天 Heaven vessel 鍊9", "K = 11.0")):
-        cells = "".join('<td class="num">&times;%.2f</td>' % (F.haul_sum(n, K) / base[0])
-                        for n in (4, 8, 20, 50))
-        rows += '<tr><td>%s</td><td class="sm">%s</td>%s</tr>' % (lbl, sub, cells)
-    return rows
-
-
-def marks():
-    return "".join('<tr><td class="cjk">%s</td><td>%s</td><td class="why">%s</td></tr>' % m
-                   for m in F.MARKS)
-
-
-def origins():
-    rows = ""
-    for k, ch, en, gch, gen, val, why in F.SLOTS:
-        srcs = " &middot; ".join("%s <i>%s</i>" % (C.NAMES[b][1], g) for b, g in F.ORIGIN[k])
-        rows += '<tr><td class="cjk">%s</td><td>%s</td><td class="why">%s</td></tr>' % (ch, en, srcs)
-    return rows
-
-
 def ladder():
     return "".join(
         '<div class="tier"><i style="background:%s"></i><b>%s</b><span>%s</span></div>'
         % (light, ch, en) for ch, en, deep, light in I.TIERS)
+
+
+
+# ── 器 the piece card: one object, four axes, shown growing ──────────────────
+
+def card(key, beast, tier, r, marks, awaken, note=""):
+    slot = next(x for x in F.SLOTS if x[0] == key)
+    ch, en, unit, top = slot[1], slot[2], slot[5], slot[6]
+    bch, ground, phase = next(o for o in F.ORIGIN[key] if o[0] == beast)
+    pen, pcol = F.PHASE_NAME[phase]
+    tch, ten = I.TIERS[tier][0], I.TIERS[tier][1]
+    nslots = F.MARK_SLOTS[tier] + (1 if awaken >= 3 else 0)
+
+    pct = 100.0 * r / F.MAXR
+    ticks = "".join('<i style="left:%.2f%%"></i>' % (100.0 * F.CAP[t] / F.MAXR)
+                    for t in range(4))
+    val = ("+%.0f%% %s" % (F.slot_value(key, r), unit)) if top else \
+          next(v for c, v in reversed(F.BOOTS) if r >= c) if r >= 9 else "no bonus yet"
+    if key == "vessel":
+        val = "K = %.2f" % (5 + F.slot_value(key, r))
+
+    dots = "".join('<u class="%s"></u>' % ("on" if i < awaken else "") for i in range(3))
+    diam = "".join('<s class="%s"></s>' % ("on" if i < marks else "")
+                   for i in range(nslots)) or '<em class="none">no 紋 slot until 玄</em>'
+    trait = ""
+    if awaken:
+        t = F.TRAIT[beast]
+        trait = '<p class="trait"><b>%s %s</b>%s</p>' % (t[0], t[1], t[2])
+
+    return ('<div class="card">%s'
+            '<div class="cbody">'
+            '<h4>%s <span>%s</span></h4>'
+            '<p class="src">%s %s &middot; %s &middot; <i style="color:%s">%s %s</i></p>'
+            '<div class="bar"><span style="width:%.2f%%"></span>%s</div>'
+            '<p class="barlab"><b>鍊 %d / %d</b><em>%s %s &middot; &times;%.3f</em></p>'
+            '<p class="val">%s</p>'
+            '<p class="axes"><span>紋 %s</span><span>覺 %s</span></p>'
+            '%s%s</div></div>'
+            % (I.tile(key, 200, tier), ch, en,
+               C.NAMES[beast][0], C.NAMES[beast][1], ground, pcol, phase, pen,
+               pct, ticks, r, F.CAP[tier], tch, ten, F.mult(r), val,
+               diam, dots, trait,
+               ('<p class="cnote">%s</p>' % note) if note else ""))
+
+
+def lifecycle():
+    """The same vessel, four times, across six months. Nothing is replaced."""
+    return "".join(card(*a) for a in (
+        ("vessel", "beetle", 0, 0, 0, 0,
+         "Hour three. Forged from the first iron beetle you kill on the Ash Slopes. "
+         "It is already worth K&nbsp;7.5 &mdash; the first piece in a slot is always the "
+         "biggest single jump in the game."),
+        ("vessel", "beetle", 1, 18, 0, 1,
+         "Week two. 38 hunts of beetle carapace in, ascended once, and worn long enough "
+         "(100 kills) to wake 堅 Endure. Still the same object."),
+        ("vessel", "beetle", 3, 36, 2, 2,
+         "Month three. Earth tier, which needed 灰王 the Grey King&rsquo;s pattern. Two "
+         "銘 inscriptions slotted, and they can be pulled out and moved to another piece."),
+        ("vessel", "beetle", 4, 45, 3, 3,
+         "Month seven. 鍊45 is the end of the bar, and the third 紋 slot only exists "
+         "because 覺3 opened it at 2&thinsp;000 kills. Same beetle."),
+    ))
+
+
+def slottable():
+    def fresh(k, top, unit):
+        if k == "vessel": return "K = %.2f" % (5 + F.slot_value(k, 0))
+        if k == "boots":  return "&mdash;"
+        if k == "pendant": return "+%.1fpp step-up" % F.slot_value(k, 0)
+        return "+%.1f%% %s" % (F.slot_value(k, 0), unit)
+
+    def maxed(k, top, unit):
+        if k == "vessel": return "K = 11.00"
+        if k == "boots":  return F.BOOTS[-1][1]
+        if k == "pendant": return "+%.0fpp step-up" % top
+        return "+%.0f%% %s" % (top, unit)
+
+    return "".join(
+        '<tr><td class="cjk">%s</td><td>%s</td><td class="cjk sm">%s</td>'
+        '<td class="num">%s</td><td class="num">%s</td><td class="why">%s</td></tr>'
+        % (ch, en, gch, fresh(k, top, unit), maxed(k, top, unit), WHY[k])
+        for k, ch, en, gch, gen, unit, top in F.SLOTS)
+
+
+WHY = {
+    "crown": "feeds 經脈 channels and 術 arts — the idle player's slot",
+    "robe": "the ONLY slot that touches the 靜 Stillness road",
+    "pendant": "turns hunting time into material TIER instead of material count",
+    "boots": "discrete: +1 slot at 鍊9, +2 at 鍊27, a free reroll at 鍊45",
+    "ring": "the flat multiplier on everything a hunt returns",
+    "vessel": "raises K in the decay curve — worth nothing on hunt 1, everything on hunt 40",
+}
+
+
+def axes():
+    rows = (("鍊", "refine", "0 → 45", "+2% compounding, one continuous bar",
+             "材 raw materials"),
+            ("階", "ascend", "凡 → 天", "adds no power — it raises the 鍊 ceiling",
+             "精 refined + 圖 warden pattern"),
+            ("紋", "inscribe", "0 → 3", "removable 銘 marks, moveable between pieces",
+             "銘 inscriptions"),
+            ("覺", "awaken", "0 → 3", "the trait of the BEAST that furnished it",
+             "wearing it: 100 / 500 / 2 000 kills, or a 魂 soul"))
+    return "".join('<tr><td class="cjk">%s</td><td>%s</td><td class="num">%s</td>'
+                   '<td class="why">%s</td><td class="sm">%s</td></tr>' % r for r in rows)
+
+
+def refinetable():
+    rows = ""
+    for t in range(5):
+        c = F.CAP[t]
+        rows += ('<tr><td class="cjk">%s</td><td>%s</td><td class="num">%d</td>'
+                 '<td class="num">&times;%.3f</td><td class="num">%d</td>'
+                 '<td class="num">%d</td><td class="num">%.0f</td>'
+                 '<td class="num">%d</td></tr>'
+                 % (I.TIERS[t][0], I.TIERS[t][1], c, F.mult(c), F.refine_cost(c),
+                    F.refine_total(c), F.refine_total(c)/3,
+                    F.ASCEND.get(t, (0,))[0]))
+    return rows
+
+
+def traits():
+    out = ""
+    for key, ch, en, gch, gen, unit, top in F.SLOTS:
+        for b, g, ph in F.ORIGIN[key]:
+            tch, ten, txt = F.TRAIT[b]
+            out += ('<tr><td class="cjk sm">%s</td><td class="sm">%s</td>'
+                    '<td class="cjk">%s</td><td>%s</td>'
+                    '<td class="ph" style="color:%s">%s</td><td class="why">%s</td></tr>'
+                    % (ch, C.NAMES[b][1], tch, ten, F.PHASE_NAME[ph][1], ph, txt))
+    return out
+
+
+def groundsets():
+    return "".join('<tr><td class="cjk">%s</td><td>%s</td><td class="cjk">%s</td>'
+                   '<td>%s</td><td class="why">%s</td></tr>' % r for r in F.GROUND_SET)
+
+
+def phasesets():
+    return "".join('<tr><td class="cjk" style="color:%s !important">%s</td><td>%s</td>'
+                   '<td class="cjk">%s</td><td>%s</td><td class="why">%s</td>'
+                   '<td class="sm">%s</td></tr>'
+                   % (F.PHASE_NAME[ch][1], ch, en, gch, gen, eff, note)
+                   for ch, en, gch, gen, eff, note in F.PHASE_SET)
+
+
+def pathsets():
+    return "".join('<tr><td class="cjk">%s</td><td>%s</td><td class="cjk">%s</td>'
+                   '<td>%s</td><td class="why">%s</td></tr>' % r for r in F.PATH_SET)
+
+
+def newitems():
+    return "".join('<tr><td class="cjk">%s</td><td>%s</td><td class="sm">%s</td>'
+                   '<td class="why">%s</td></tr>' % r for r in F.NEW_ITEMS)
+
+
+def hault2():
+    b4 = F.haul_sum(4, 5)
+    rows = ""
+    for lbl, K in (("bare, no vessel", 5.0),
+                   ("凡 vessel, just forged 鍊0", 5 + F.slot_value("vessel", 0)),
+                   ("玄 vessel 鍊27", 5 + F.slot_value("vessel", 27)),
+                   ("天 vessel 鍊45", 5 + F.slot_value("vessel", 45)),
+                   ("天 鍊45 + 劍套 Sword set", (5 + F.slot_value("vessel", 45)) * 1.5)):
+        cells = "".join('<td class="num">&times;%.2f</td>' % (F.haul_sum(n, K)/b4)
+                        for n in (4, 8, 20, 50))
+        rows += ('<tr><td>%s</td><td class="sm">K = %.1f</td>%s</tr>' % (lbl, K, cells))
+    return rows
 
 
 HEAD = '''<title>Ninefold Art System</title>
@@ -236,6 +355,61 @@ td.why{font-size:12.5px;line-height:1.6;color:var(--faint)}
 .ask dt:first-child{margin-top:0}
 .ask dd{margin:5px 0 0;font-size:12.5px;line-height:1.7;color:var(--dim)}
 .ask dd em{font-style:normal;color:var(--gold)}
+
+/* ── 器 the piece card ──────────────────────────────────────────────────── */
+.cards{display:grid;gap:12px;grid-template-columns:repeat(4,1fr);margin-block:22px 0}
+@media (max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.cards{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,#08150F,#050D0B);border:1px solid var(--hair-soft);
+  border-radius:3px;overflow:hidden;display:flex;flex-direction:column}
+.card>svg{width:100%;height:auto;display:block}
+.cbody{padding:13px 13px 15px;display:flex;flex-direction:column;gap:0}
+.cbody h4{margin:0;font-family:var(--serif);font-size:17px;font-weight:500;
+  color:var(--text);letter-spacing:.05em}
+.cbody h4 span{font-family:var(--sans);font-size:9px;font-weight:400;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--faint);margin-left:6px}
+.src{margin:5px 0 0;font-size:11px;color:var(--faint);line-height:1.5}
+.src i{font-style:normal}
+
+.bar{position:relative;height:5px;border-radius:3px;background:rgba(255,255,255,.07);
+  margin-top:12px;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;border-radius:3px;
+  background:linear-gradient(90deg,var(--jade),var(--gold))}
+.bar i{position:absolute;top:0;bottom:0;width:1px;background:var(--ground);opacity:.85}
+.barlab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  margin:6px 0 0;font-size:10px}
+.barlab b{font-family:var(--serif);font-size:12px;font-weight:500;color:var(--gold);
+  font-variant-numeric:tabular-nums}
+.barlab em{font-style:normal;color:var(--faint);font-variant-numeric:tabular-nums}
+.val{margin:10px 0 0;font-size:13px;color:var(--jade);font-variant-numeric:tabular-nums}
+.axes{display:flex;gap:16px;margin:9px 0 0;font-size:10px;letter-spacing:.14em;
+  color:var(--faint);align-items:center}
+.axes span{display:flex;align-items:center;gap:5px;font-family:var(--serif);font-size:12px;
+  letter-spacing:.06em}
+.axes s{width:7px;height:7px;transform:rotate(45deg);text-decoration:none;
+  border:1px solid var(--faint)}
+.axes s.on{background:var(--gold);border-color:var(--gold)}
+.axes u{width:6px;height:6px;border-radius:50%;border:1px solid var(--faint);
+  text-decoration:none}
+.axes u.on{background:var(--jade);border-color:var(--jade)}
+.axes em.none{font-style:normal;font-size:10px;letter-spacing:0;color:var(--faint);
+  font-family:var(--sans)}
+.trait{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--hair-soft);
+  font-size:11.5px;line-height:1.55;color:var(--dim)}
+.trait b{display:block;font-family:var(--serif);font-size:13px;font-weight:500;
+  color:var(--verm);letter-spacing:.06em;margin-bottom:3px}
+.cnote{margin:11px 0 0;font-size:11px;line-height:1.6;color:var(--faint)}
+td.ph{font-family:var(--serif);font-size:15px;width:1%;text-align:center}
+h3.step{color:var(--text);font-family:var(--serif);font-size:16px;font-weight:500;
+  letter-spacing:.06em;margin-block:38px 12px}
+h3.step em{font-style:normal;color:var(--gold);margin-right:10px}
+.build{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  margin-block:18px 0}
+.bld{background:var(--panel);border:1px solid var(--hair-soft);border-radius:3px;
+  padding:14px 15px}
+.bld b{display:block;font-family:var(--serif);font-size:14px;font-weight:500;
+  color:var(--gold);margin-bottom:6px}
+.bld p{margin:0;font-size:12px;line-height:1.6;color:var(--dim)}
 </style>
 '''
 
@@ -289,122 +463,166 @@ a grid without reading a word.</p>
 </section>
 
 <section>
-<h2><em>五</em> &nbsp; 鍛 &nbsp; The forge &mdash; equipment progression</h2>
-<p class="sub">This is the proposal. A piece of gear is <b>three numbers and a name</b>:
-源 where it came from, 階 how good it can get, 鍊 how far up that ceiling it is. No affix
-soup, no rolled stat lines, no item level. A player reads a piece exactly the way they
-read a beast &mdash; a shape plus a rank.</p>
+<h2><em>五</em> &nbsp; 鍛 &nbsp; The forge &mdash; progression, per piece</h2>
+<p class="sub">The idea everything else hangs from: <b>a piece is a track, not a
+purchase.</b> You never throw one away. The vessel forged in hour three is the vessel worn
+in month seven &mdash; raised, refined, inscribed and awakened, still carrying the name of
+the beetle that furnished it. Replacing gear is the treadmill every idle game has. Growing
+one object for six months is the thing this genre almost never offers.</p>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:34px 0">六位 &nbsp; The six slots</h3>
+<h3 class="step"><em>一</em>The same vessel, four times, across seven months</h3>
+<p class="sub">Nothing below is replaced. It is one object, four times.</p>
+<div class="cards">{{LIFE}}</div>
+
+<h3 class="step"><em>二</em>Four axes, four currencies</h3>
+<p class="sub">Each axis is fed by a different thing in the bag, so every group in the
+satchel finally has a job and none of them is a dead stack.</p>
+<table class="t">
+<tr><th></th><th>axis</th><th class="num">range</th><th>what it does</th><th>fed by</th></tr>
+{{AXES}}</table>
+<p class="note"><b>Read the 階 row twice.</b> Tier adds no power at all &mdash; it raises
+the <em>ceiling</em>. That single change is what makes a piece a track: 鍊 is one
+continuous bar from 0 to 45, the tier is just how far along it you are allowed to push,
+and nothing ever resets. <em>New power is paid for in the cost table, never by taking the
+power back out</em> &mdash; and an upgrade that zeroed your refinement would be exactly
+that.</p>
+
+<h3 class="step"><em>三</em>六位 The six slots</h3>
 <p class="sub">Six copies of &ldquo;+x% power&rdquo; would be one stat wearing six hats.
-Each slot instead owns a different <b>verb</b>, so choosing between two pieces is a real
-question and the six together read as a kit rather than a score.</p>
+Each slot owns a different <b>verb</b>. A freshly forged piece already sits at 41% of its
+own ceiling, because the first piece in a slot should be the biggest single jump the
+player ever feels.</p>
 <div class="grid g6">{{SLOTS}}</div>
-<table class="t"><caption>what each slot does, at 天 Heaven 鍊9</caption>
-<tr><th></th><th>slot</th><th></th><th class="num">at the top</th><th>why it exists</th></tr>
+<table class="t">
+<tr><th></th><th>slot</th><th></th><th class="num">fresh, 鍊0</th>
+<th class="num">at 鍊45</th><th>why it exists</th></tr>
 {{SLOTTABLE}}</table>
-<p class="note"><b>Read the 袍 Robe row twice.</b> It is the only slot in the game that
-touches gathering, and it is deliberately the smallest number on this page. Full Heaven
-gear multiplies the 靜 Stillness road by <b>&times;1.14</b> &mdash; about seven 九層
-layers &mdash; and the 動 Motion road by roughly <b>&times;3.2</b>. That asymmetry is the
-whole design: gear is the sink the active road needed, and it cannot quietly become
-mandatory for the player who opens the app once a day.</p>
+<p class="note"><b>And read the 袍 Robe row twice.</b> It is the only slot in the game that
+touches gathering. A fully maxed kit multiplies the 靜 Stillness road by <b>&times;1.12</b>
+&mdash; under six 九層 layers &mdash; and the 動 Motion road by roughly <b>&times;2.6</b> at
+twenty hunts. Gear is the sink the active road needed and it cannot quietly become
+mandatory for the player who opens the app once a day. <em>The promise in section 3
+survives a fully geared rival.</em></p>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">源 &nbsp; Where a piece comes from</h3>
-<p class="sub">Three beasts furnish each slot, one per ground, and no ground furnishes the
-same slot twice. This is the third finding made mechanical: in the old build three wardens
-and four beasts were never reached by anyone. Here you cannot finish a kit without
-visiting every ground, and <b>the 地 Earth and 天 Heaven patterns drop only from that
-ground&rsquo;s warden</b>. The content that was unreachable is now the content the
-end-game is made of.</p>
-<table class="t">{{ORIGINS}}</table>
+<h3 class="step"><em>四</em>鍊 The bar, and what it costs</h3>
+<p class="sub">Forty-five steps, <b>+2% compounding each</b> &mdash; the same step as 九層
+nine layers, so it is one rate the player learns once and then recognises everywhere. The
+whole life of a piece is &times;2.438.</p>
+<table class="t"><caption>raw material for 鍊, refined material for 昇 ascension</caption>
+<tr><th></th><th>tier</th><th class="num">鍊 cap</th><th class="num">&times;</th>
+<th class="num">step cost</th><th class="num">cumulative</th><th class="num">hunts</th>
+<th class="num">昇 refined</th></tr>
+{{REFINE}}</table>
+<p class="note">At three units of that beast&rsquo;s material per hunt: <b>one slot to 鍊9
+is nine hunts</b> &mdash; the first piece has to land on day one. All six slots to 玄 is
+558 hunts, about ten weeks at eight a day. All six to 鍊45 is <b>1&#8202;786 hunts, roughly
+seven months</b>. That is deliberately longer than the old design&rsquo;s four, because
+now it is the <em>only</em> track: you are not also re-forging a piece per tier.</p>
+<p class="note">地 and 天 ascension additionally need that ground&rsquo;s warden 圖
+<b>pattern</b> &mdash; which is where the wardens nobody reached in the old build become
+mandatory.</p>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">階 &nbsp; The ladder, on one piece</h3>
-<p class="sub">The same vessel at all five tiers. Nothing about the object changes; the
-tile carries the whole statement. Tier is not luck &mdash; it is decided by the material
-you put in, so a dry streak can cost you <em>time</em> and never costs you a tier.</p>
-<div class="ladder">{{TIERLINE}}</div>
+<h3 class="step"><em>五</em>覺 Awakening &mdash; why two identical pieces are not identical</h3>
+<p class="sub">This is the real answer to progression per item. 覺 is unlocked by
+<b>wearing</b> the piece &mdash; 100 kills, then 500, then 2&#8202;000 &mdash; or bought
+early with a 魂 beast soul. What it grants belongs to the <b>beast</b>, not the slot. So
+two robes at the same tier and the same 鍊 do not play the same, because one is a hare and
+one is a fox. 覺2 repeats the trait at half strength; 覺3 opens a third 紋 slot.</p>
+<table class="t"><caption>eighteen traits, one per beast</caption>
+<tr><th></th><th>slot</th><th></th><th>trait</th><th>相</th><th>what it does</th></tr>
+{{TRAITS}}</table>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">鍊 &nbsp; Refinement, and what it costs</h3>
-<p class="sub">Nine steps per piece, <b>+2% compounding each</b> &mdash; the same step as
-九層 nine layers, so it is one number the player learns once and then recognises
-everywhere. 鍊9 is &times;1.195. Refinement never fails and never takes a piece back down:
-<em>new power is paid for in the cost table, never by taking the power back out.</em></p>
-<table class="t"><caption>units of that beast&rsquo;s material, at that tier</caption>
-<tr><th></th><th>tier</th><th class="num">forge</th><th class="num">鍊1</th>
-<th class="num">鍊9</th><th class="num">piece total</th><th class="num">hunts</th></tr>
-{{COSTTABLE}}</table>
-<p class="note">At roughly three units of a given beast&rsquo;s material per hunt: a full
-玄 Mystic kit is <b>368 hunts &mdash; about six weeks</b> at eight hunts a day. A full 天
-Heaven kit is <b>1&#8202;000 hunts, about four months</b>. That is the shape an end-game
-wants: reachable, and not this month.</p>
+<h3 class="step"><em>六</em>套 Three families of set, one kit</h3>
+<p class="sub">Six slots, three families of different <b>size</b>, so which sets you can
+run at once is a real build decision rather than a checklist. Note the 相 phase of a beast
+is <em>independent</em> of its ground &mdash; that is what makes 地套 and 相套 pull the
+same six slots in different directions.</p>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">韌 &nbsp; The one number worth arguing about</h3>
-<p class="sub">The 器 Vessel does not multiply the haul. It raises <b>K</b>, the constant
-in the hunting decay curve <code>h(n) = 1 / (1 + (n&#8722;1)/K)</code>. That makes it worth
-almost nothing on hunt one and a great deal on hunt forty &mdash; a marathon slot, which
-is exactly the reward the uncapped hunting design was missing.</p>
-<table class="t"><caption>haul vs. four bare hunts, the GDD&rsquo;s reference row</caption>
+<h4 class="sub" style="color:var(--gold);font-family:var(--serif);font-size:14px;
+margin-block:26px 0">地套 &nbsp; Ground sets &mdash; three pieces, six of them</h4>
+<table class="t">{{GSETS}}</table>
+
+<h4 class="sub" style="color:var(--gold);font-family:var(--serif);font-size:14px;
+margin-block:30px 0">相套 &nbsp; Phase sets &mdash; three pieces, five of them</h4>
+<table class="t">{{PSETS}}</table>
+<p class="note">木 Wood and 金 Metal are <b>exact</b>: only three beasts in the whole
+bestiary carry each phase, so there is exactly one legal combination and it spans three
+different grounds. 火, 土 and 水 each have four candidates, so you choose which three.
+The exact sets get the sharper bonuses &mdash; they are harder to assemble and they should
+pay for it.</p>
+
+<h4 class="sub" style="color:var(--gold);font-family:var(--serif);font-size:14px;
+margin-block:30px 0">道套 &nbsp; Path sets &mdash; all six, and they change a rule</h4>
+<table class="t">{{XSETS}}</table>
+<p class="note">A path set needs every piece stamped with the same 印 path seal, forged
+from the 印 seal fragments already in the bag. Any piece can take any seal, so the path set
+is reachable from any origin &mdash; it is simply expensive, late, and it eats your whole
+kit. That is the trade: two small sets, or one rule change.</p>
+
+<div class="build">
+<div class="bld"><b>3 + 3</b><p>Two ground sets, or a ground and a phase. The default, and
+the one a player finds by accident.</p></div>
+<div class="bld"><b>3 + 3, exact</b><p>木 and 金 together &mdash; six specific beasts
+across five grounds. The collector&rsquo;s build.</p></div>
+<div class="bld"><b>6</b><p>One path set. Biggest single effect in the game, and it costs
+you every other set.</p></div>
+<div class="bld"><b>3 + free</b><p>One set and three pieces chosen purely for their 覺
+traits. Often the strongest before month three.</p></div>
+</div>
+
+<h3 class="step"><em>七</em>韌 The one number worth arguing about</h3>
+<p class="sub">The 器 Vessel does not multiply the haul. It raises <b>K</b> in the decay
+curve <code>h(n) = 1 / (1 + (n&#8722;1)/K)</code>, so it is worth almost nothing on hunt one
+and a great deal on hunt forty &mdash; the marathon slot, which is exactly the reward
+uncapped hunting was missing. The 劍 Sword path set multiplies K again.</p>
+<table class="t"><caption>haul vs. four bare hunts &mdash; the same reference row as section 4</caption>
 <tr><th>vessel</th><th></th><th class="num">4 hunts</th><th class="num">8</th>
 <th class="num">20</th><th class="num">50</th></tr>
-{{HAULTABLE}}</table>
-<p class="note">Note what does <em>not</em> happen: the four-hunt player still gains
-(&times;1.12), so the vessel is never dead weight, and the fifty-hunt player goes from
-&times;3.93 to &times;6.07 &mdash; rewarded hard, while still spending more than a day of
-qi to get there. The brake stays a curve, not a rule.</p>
+{{HAUL}}</table>
+<p class="note">Note what does <em>not</em> happen: the four-hunt player still gains, so the
+vessel is never dead weight; and the fifty-hunt player reaches &times;7.4 while still
+spending more than a day of qi to get there. The brake stays a curve, not a rule.</p>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">紋 &nbsp; Eight marks, at 地 and 天 only</h3>
-<p class="sub">One rolled property, at the top two tiers only, from a fixed pool of eight.
-This is where variety is allowed in &mdash; late, small, and readable in a single line.
-Rerolling costs 幣 sect coin, which gives that currency the second use it currently
-lacks.</p>
-<table class="t">{{MARKS}}</table>
+<h3 class="step"><em>八</em>The four item kinds this needs</h3>
+<p class="sub">Three of the four are new; the fourth, 印, is already in the bag as seal
+fragments and finally has a use.</p>
+<table class="t">{{NEWITEMS}}</table>
 
-<h3 class="sub" style="color:var(--text);font-family:var(--serif);font-size:16px;
-letter-spacing:.06em;margin-block:38px 0">The fork &mdash; how a piece is acquired</h3>
-<p class="sub">This is the decision I am putting to you rather than taking. All three
-work; they fail in different places.</p>
-<div class="fork">
-<div class="opt"><h4>Option A</h4><b>Pure craft</b>
-<p>Beasts drop materials only. The forge turns N materials into a piece at the tier you
-paid for.</p>
-<p class="con">Perfectly predictable, zero bad luck &mdash; and zero surprise. Every
-player&rsquo;s bag is identical at the same point. The bag stops being a place you look.</p></div>
-<div class="opt"><h4>Option B</h4><b>Pure drop</b>
-<p>Beasts drop finished pieces with rolled tier and stats. Kill things, hope.</p>
-<p class="con">Highest moment-to-moment excitement, and the exact failure mode that killed
-the old build: a dry week is indistinguishable from no content.</p></div>
-<div class="opt pick"><h4>Option C &mdash; recommended</h4><b>圖 Drop the pattern, forge the piece</b>
-<p>A beast drops its <b>pattern</b> the first time, guaranteed by kill count rather than
-by chance &mdash; a permanent unlock, one per beast. Materials drop forever. The piece is
-then forged deterministically.</p>
-<p>Luck decides <em>when</em> you unlock, never <em>whether</em>. Eighteen guaranteed
-first-time moments, and the forge still answers to the cost table.</p></div>
-</div>
-<p class="note">Why C, in one line: the second finding was that novelty collapses from
-57.6 first-time events in the opening hour to about one a week. This system generates
-<b>116 distinct first-time events</b> &mdash; 18 patterns, 30 first forges, 54 refinement
-steps, 6 completed ground sets, 8 marks &mdash; spread across the months the 8&rarr;9 gap
-actually lasts.</p>
+<h3 class="step"><em>九</em>初 What this generates, counted honestly</h3>
+<p class="sub">Finding 2 was that novelty collapses from 57.6 first-time events in the
+opening hour to roughly one a week.</p>
+<table class="t">
+<tr><td>圖 patterns, one per beast</td><td class="num">18</td></tr>
+<tr><td>昇 ascensions, 6 slots &times; 4</td><td class="num">24</td></tr>
+<tr><td>覺 awakenings, one trait per beast</td><td class="num">18</td></tr>
+<tr><td>銘 inscriptions, first found</td><td class="num">8</td></tr>
+<tr><td>套 sets first completed &mdash; 6 ground, 5 phase, 3 path</td><td class="num">14</td></tr>
+<tr><td><b>total</b></td><td class="num"><b>82</b></td></tr>
+</table>
+<p class="note"><b>A correction to the last version.</b> I claimed 116 there by counting 54
+refinement steps as novelty. They are not &mdash; a refinement step is progress the player
+already knows is coming. Counting only things the player has never seen before, the honest
+figure is <b>82</b>, and the 270 refinement steps sit underneath them as the reason to keep
+hunting between the 82.</p>
 
-<div class="ask"><b>Three smaller calls, which are yours to make</b>
+<div class="ask"><b>Four calls, which are yours to make</b>
 <dl>
 <dt>Can 鍊 refinement fail?</dt>
 <dd><em>I say no.</em> The xianxia standard is that refining can shatter your sword, and
-our own stated rule forbids taking power back out. The middle option, if you want the
-tension: a failure wastes the materials and never touches the piece.</dd>
-<dt>Does 鍊 carry across tiers?</dt>
-<dd><em>I say yes.</em> 移 transfer half your refinement level when you forge the same slot
-one tier up, so an upgrade never arrives feeling like a demotion.</dd>
+our own stated rule forbids taking power back out &mdash; doubly so now that 鍊 is the
+piece&rsquo;s whole life. The middle option, if you want the tension: a failure wastes the
+materials and never touches the piece.</dd>
+<dt>Are 銘 inscriptions removable?</dt>
+<dd><em>I say yes, freely.</em> A mark you can pull out and move is a reason to keep
+hunting for a better one; a mark welded in place is a reason to fear equipping anything.</dd>
+<dt>Can 覺 be bought outright?</dt>
+<dd><em>I say only with 魂 beast souls, which only wardens drop.</em> If awakening is
+purely time-gated it punishes new players; if it is purely purchasable, wearing the piece
+stops meaning anything.</dd>
 <dt>Can gear be sold or traded?</dt>
 <dd><em>I say neither, in v1.</em> The moment gear has a price, the hunting curve becomes
-an income curve and every number on this page has to be re-derived against a market.</dd>
+an income curve and every number on this page has to be re-derived against a market
+&mdash; and a piece you grew for seven months should not have a price.</dd>
 </dl></div>
 </section>
 
@@ -437,13 +655,17 @@ a real simulator should check.</p>
                          ("HUMAN", creatures(BB.HUMANOID + ["tiger", "qilin"], "medal")),
                          ("LADDER", ladder()),
                          ("GROUPS", groups()),
+                         ("LIFE", lifecycle()),
+                         ("AXES", axes()),
                          ("SLOTS", slots()),
                          ("SLOTTABLE", slottable()),
-                         ("ORIGINS", origins()),
-                         ("TIERLINE", tierline("vessel")),
-                         ("COSTTABLE", costtable()),
-                         ("HAULTABLE", haultable()),
-                         ("MARKS", marks())):
+                         ("REFINE", refinetable()),
+                         ("TRAITS", traits()),
+                         ("GSETS", groundsets()),
+                         ("PSETS", phasesets()),
+                         ("XSETS", pathsets()),
+                         ("HAUL", hault2()),
+                         ("NEWITEMS", newitems())):
         body = body.replace("{{%s}}" % token, value)
     assert "{{" not in body, "unfilled token"
 
