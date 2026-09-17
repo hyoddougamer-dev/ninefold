@@ -234,6 +234,57 @@ is what the whole active/idle balance turns on, and it is why 經脈 channels ar
 that matters: a kill buys permanent gathering rate, so an active player does not merely
 hold more things than an idle one — *they gather faster, forever*.
 
+### 兆 The tells
+
+The obvious design is eighteen beasts each with one right answer, and it is wrong:
+eighteen things to memorise, correct forever after day one, and dead as a decision.
+
+So **the tell belongs to the vocabulary, not to the beast.** Nine tells, three per stance.
+A player learns nine things once and can then read a beast they have never met — which is
+the difference between a skill and a lookup table.
+
+| 兆 | | answer | what you see |
+|---|---|---|---|
+| **撲** | Lunge | 進 | it drops already committed; a committed beast cannot turn |
+| **露** | Open | 進 | its guard hangs wide for a beat |
+| **竭** | Spent | 進 | its flanks heave — it has nothing left this exchange |
+| **蓄** | Gather | 守 | it draws breath and winds back |
+| **盤** | Coil | 守 | it draws in and tightens, all tension |
+| **鳴** | Cry | 守 | the call that always comes just before the blow |
+| **怒** | Rage | 遁 | its eyes change; the next blow is not one you absorb |
+| **召** | Call | 遁 | it is bringing others, and others is not a fight |
+| **化** | Shift | 遁 | it becomes something else — whatever you prepared is wrong |
+
+Each beast draws from its own three, and the first is its **signature** — the one it shows
+most. That is what lets a player build a read on a specific beast without the read ever
+becoming automatic.
+
+| beast | signature | pool |
+|---|---|---|
+| shrike | **撲** | 撲 · 露 · 鳴 |
+| hare | **竭** | 竭 · 撲 · 召 |
+| beetle | **盤** | 盤 · 蓄 · 露 |
+| crane | **鳴** | 鳴 · 露 · 化 |
+| toad | **蓄** | 蓄 · 竭 · 召 |
+| serpent | **盤** | 盤 · 撲 · 怒 |
+| fox | **化** | 化 · 露 · 召 |
+| moth | **竭** | 竭 · 召 · 化 |
+| ape | **露** | 露 · 怒 · 蓄 |
+| lynx | **撲** | 撲 · 盤 · 竭 |
+| tiger | **怒** | 怒 · 撲 · 蓄 |
+| boar | **蓄** | 蓄 · 撲 · 竭 |
+| roc | **撲** | 撲 · 鳴 · 怒 |
+| drake | **化** | 化 · 盤 · 召 |
+| turtle | **盤** | 盤 · 蓄 · 竭 |
+| qilin | **怒** | 怒 · 化 · 鳴 |
+| wraith | **化** | 化 · 召 · 露 |
+| hydra | **召** | 召 · 怒 · 盤 |
+
+**Signatures are held at six per stance and no stance is the right answer more than 39% of
+the time.** They started at 3 / 7 / 8, and a player meeting mostly 遁-signature beasts
+would simply learn that Withdraw is usually right — the exact habit the vocabulary exists
+to prevent. `sim/tests` fails if that balance drifts.
+
 ### 秘境 The Deep
 
 Eight hunts a day is eight taps. That is thirty seconds. Everything above rewards
@@ -693,6 +744,63 @@ produce.
 
 ## 12 · Technical
 
+### 存 The save, and the only code allowed to read a clock
+
+**There is no "offline mode".** There is one operation — *advance the simulation by N
+seconds* — and closing the app for fourteen hours is the same call as leaving it open for
+fourteen hours. Online and offline cannot drift apart because they are not two code paths.
+
+That is tested, not asserted: advancing sixty days in one step and in two thousand steps
+agree to within 10⁻⁶ of a qi. §13 listed this as settled for a long time without anybody
+having run it.
+
+**The blob.** Short keys, written on every pause, signed so a hand edit does not verify:
+
+```
+{ "v":1, "t":<wall clock at save>, "e":<seconds ever credited, only grows>,
+  "r":<realm>, "l":<layer>, "q":<qi>,
+  "ch":{"o":<channels open>,"i":<insight>},
+  "d":{"n":<day>,"h":<hunts today>,"best":<deepest dive>},
+  "sig":"<blake2b>" }
+```
+
+**What the clock is allowed to conclude**, and each case is a choice rather than an
+accident:
+
+| the clock moved | the game | why |
+|---|---|---|
+| forwards, plausibly | credits it, **uncapped** | §3 promises gathering runs while the app is closed. A cap would punish exactly the player the game is balanced around. Come back after a month and a month is what you get. |
+| backwards | credits **nothing**, moves the reference forward | Never punish — a phone that crossed a timezone or fixed its NTP drift is not a cheat. Never pay for it either. |
+| forwards, absurdly (>90 days) | credits it, and **flags** it | Refusing locally breaks honest players with a wrong clock and does not stop a dishonest one. The flag is what a server checks later. |
+
+**This does not stop a determined cheat, and it is not pretending to.** Without a server
+there is no trustworthy clock, and security that looks like it works is the worst kind.
+What the format does is keep enough history that a server can validate it later, and stay
+shaped so that adding one needs no migration.
+
+### 初 The first five minutes
+
+The simulator found this one: realm 1 costs 0.78 days, so **one layer is 2.1 hours**. A
+brand new player waits two hours for the first thing that ever happens to them. That is an
+onboarding failure and it was invisible until the curve existed.
+
+Three fixes, together:
+
+1. **初賜 an opening gift** of five layers' worth of qi. It does not move the 70-day curve
+   at all — five layers of realm 1 against a 70-day run is nothing — and it means minute
+   one is not empty.
+2. **Layers open automatically but are *presented* one at a time.** They must open by
+   themselves or the once-a-day player loses the compounding (§13). Banking the openings
+   and playing them back on the next launch gives both: nothing is lost while away, and
+   returning is a sequence of things happening rather than one number being different.
+3. **The first three hunts cost no qi.** The first has its tell answered for you, the
+   second shows the tell and lets you choose, the third explains nothing.
+
+What a first session then delivers: five layer openings, three kills, the first materials,
+the first forge, the first piece of gear, and the first stance read — **nine first-times in
+five minutes**, against Finding 2's 57.6 in week one.
+
+
 **Godot 4.3**, Compatibility renderer, portrait 1080×1920, `canvas_items` stretch with
 `expand`. Android first; iOS is not a v1 target.
 
@@ -738,9 +846,7 @@ Four rules, each of which the earlier build broke at least once:
 - **The bow's curve.** Still open, and now for a specific reason: the bow's difference is
   ground *access*, not haul, and grounds have no value model yet. It cannot be simulated
   until 鬥 below exists.
-- **Beast tells.** 勢 Stance needs each of the eighteen beasts to telegraph one of three
-  stances, legibly, without a tutorial. The mechanic is settled (§4); the eighteen tells
-  are not written.
+- ~~Beast tells~~ — **done**, §4 兆. Nine tells, not eighteen; balanced 6/6/6 and pinned.
 - **What a 守關 gate floor actually is.** It costs nine stamina and pays five floors, and
   that is all the model knows. Whether it is a warden, a puzzle or a harder read is open.
 - **Whether a failed 瓶頸 costs anything.** Right now a bottleneck simply waits. If failing

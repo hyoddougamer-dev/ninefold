@@ -77,5 +77,36 @@ hunt8 = sum(3.0 * H.haul_factor(n) for n in range(1, 9))
 ratio = G.run_value_gated(G.reachable_depth_gated(0.70), D.floor_material) / hunt8
 check("a 70% reader's dive beats the same qi in hunts", 1.5 < ratio < 2.5, True)
 
+print("\n§1 存 the save, and the claim that offline pays the same")
+from sim import save as SV, tells as TL
+def _adv(steps, total):
+    cc = E.Cultivator(REP.costs()); a = {}
+    for i in range(steps): P._advance(cc, total/steps, i*total/steps, a)
+    return cc
+for total, lbl in ((86400.0, "one day"), (86400.0*60, "sixty days")):
+    one, many = _adv(1, total), _adv(2000, total)
+    check("%s: one step == many steps (qi)" % lbl, abs(one.qi-many.qi) < 1e-6, True)
+    check("%s: one step == many steps (realm.layer)" % lbl,
+          (one.realm, one.layer) == (many.realm, many.layer), True)
+c2 = E.Cultivator(REP.costs()); P._advance(c2, 86400.0*5, 0, {})
+blob = SV.encode(c2, now=1_700_000_000, elapsed=86400.0*5, day_no=5, hunts_today=3)
+check("a save verifies", SV.verify(blob), True)
+tampered = dict(blob); tampered["q"] = blob["q"] * 10
+check("an edited save does not verify", SV.verify(tampered), False)
+clk = SV.Clock(1000.0)
+check("a clock moving backwards credits nothing", clk.tick(500.0), 0.0, 0)
+check("...and is flagged", clk.flags[0][0], "backwards")
+check("a clock moving forwards credits the span", clk.tick(500.0 + 7200), 7200.0, 1e-9)
+
+print("\n§4 兆 the tells")
+check("nine tells", len(TL.TELLS), 9)
+check("three stances", len(TL.STANCES), 3)
+check("every beast has a pool", len(TL.BEAST_TELLS), 18)
+check("signatures are 6/6/6", sorted(TL.signature_spread().values()), [6, 6, 6])
+cov = TL.coverage()
+check("no stance is right more than 39% of the time", max(cov.values()) <= 0.39, True)
+check("every beast's signature is in its own pool",
+      all(sig in pool for sig, pool in TL.BEAST_TELLS.values()), True)
+
 print("\n%s" % ("all pinned numbers hold" if not FAIL else "%d FAILED: %s" % (len(FAIL), FAIL)))
 sys.exit(1 if FAIL else 0)
