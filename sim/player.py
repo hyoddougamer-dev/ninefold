@@ -10,11 +10,12 @@ rule seen from the other side.
 """
 from . import rules as R
 from .economy import Cultivator
+from . import hunting as H
 from .hunting import Day
 
 
 def run(costs, days=400, hunts_per_day=0, K=R.HUNT_K, unit_yield=R.ASSUMED_UNITS_PER_HUNT,
-        haul_mult=1.0, base_rate=1.0):
+        haul_mult=1.0, base_rate=1.0, insight_per_kill=0.0, insight_decays=True):
     """Simulate one player. Event-driven: time advances to the next thing that happens.
 
     `hunts_per_day = 0` is the 靜 Stillness road — the road the cost table is balanced
@@ -36,8 +37,15 @@ def run(costs, days=400, hunts_per_day=0, K=R.HUNT_K, unit_yield=R.ASSUMED_UNITS
         for i in range(slots):
             _advance(c, step, t0 + elapsed, arrivals)
             elapsed += step          # `_advance` returns the span it covered, not the
-            bag.take(c)              # running total — assigning here gave hunting players
-            hunts_taken += 1         # ~78% of a bonus day and made hunting ACCELERATE
+            got = bag.take(c)        # running total — assigning here gave hunting players
+            if got is not None:      # ~78% of a bonus day and made hunting ACCELERATE
+                hunts_taken += 1
+                # 悟 insight, the loop that makes an active player permanently faster.
+                # Whether it decays with the day's hunt count is the single biggest lever
+                # between the three hunt designs, so it is a parameter, not a constant.
+                c.channels.earn(insight_per_kill *
+                                (H.haul_factor(bag.n, K) if insight_decays else 1.0))
+                c.channels.spend()
         _advance(c, R.DAY - elapsed, t0 + elapsed, arrivals)
 
         day_units.append(bag.units)
@@ -53,6 +61,7 @@ def run(costs, days=400, hunts_per_day=0, K=R.HUNT_K, unit_yield=R.ASSUMED_UNITS
     return {"cultivator": c, "arrivals": arrivals, "units": total_units,
             "day_units": day_units, "hunts": hunts_taken,
             "days": (arrivals.get(9) or days), "reached9": c.reached9,
+            "channels": c.channels.opened, "insight": c.channels.insight,
             "capped_day": (int(c.log[-1][0] // R.DAY) + 1) if c.capped else None}
 
 

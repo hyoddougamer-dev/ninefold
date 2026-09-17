@@ -10,6 +10,7 @@ that table is the first job this simulator exists to do, so a curve is passed in
 measured rather than assumed.
 """
 from . import rules as R
+from .channels import Channels
 
 
 def layer_multiplier(realm, layer):
@@ -51,6 +52,7 @@ class Cultivator:
     def __init__(self, costs, base_rate=1.0):
         self.costs = costs
         self.base_rate = base_rate
+        self.channels = Channels()
         self.realm = 1
         self.layer = 0          # layers opened INSIDE the current realm, 0..9
         self.qi = 0.0
@@ -59,9 +61,12 @@ class Cultivator:
     # ── rates and thresholds ────────────────────────────────────────────────
     @property
     def rate(self):
-        """Qi per second, right now. §3: the Stillness road runs at x1.00 and the whole
-        cost table is balanced against this number, ungeared."""
-        return self.base_rate * layer_multiplier(self.realm, self.layer)
+        """Qi per second, right now. Layers compound, and so do 經脈 channels — which is
+        the only way an active player ends up gathering FASTER than an idle one rather
+        than merely richer. §3's promise is unharmed: the idle player still walks the base
+        curve to realm 9; the active player simply arrives sooner."""
+        return (self.base_rate * layer_multiplier(self.realm, self.layer)
+                * self.channels.multiplier)
 
     @property
     def layer_cost(self):
