@@ -184,51 +184,156 @@ def herb(dk, lt, ac):
     return o
 
 
-def sword(dk, lt, ac):
-    return (_pa("M 92 52 h 16 v 78 l -8 12 l -8 -12 Z", f=mix(dk, "#FFFFFF", .42))
-            + _r(98, 56, 4, 70, lt, 2, .7)
-            + _r(76, 130, 48, 9, ac, 3) + _r(94, 139, 12, 24, dk, 3)
-            + _e(100, 166, 8, 6, ac))
+def silk(dk, lt, ac):
+    o = _pa("M 66 96 q 34 -26 68 0 q -34 26 -68 0 Z", f=dk)
+    for k in range(3):
+        o += _pa("M %.1f %.1f q 26 %.1f 52 0" % (74, 110 + k * 13, 14 - k * 2),
+                 s=dk, sw=7, op=.85 - k * .15)
+    return o + _e(100, 96, 9, 6, lt, .5)
 
 
-def sabre(dk, lt, ac):
-    return (_pa("M 76 150 q 8 -70 58 -96 q 10 12 4 26 q -40 24 -46 74 Z",
-                f=mix(dk, "#FFFFFF", .42))
-            + _pa("M 82 146 q 8 -60 50 -84", s=lt, sw=3, op=.65)
-            + _r(66, 140, 34, 9, ac, 3, rot=-18) + _r(56, 146, 14, 24, dk, 3, rot=-18))
+def ingot(dk, lt, ac):
+    return (_pa("M 62 132 q 8 -34 38 -34 h 0 q 30 0 38 34 Z", f=dk)
+            + _pa("M 72 116 q 28 -18 56 0", s=lt, sw=4, op=.55)
+            + _r(58, 130, 84, 12, mix(dk, "#000000", .25), 3))
 
 
-def bow(dk, lt, ac):
-    return (_pa("M 122 52 q -46 52 0 104", s=dk, sw=10)
-            + _pa("M 122 52 q -8 52 0 104", s=lt, sw=2.6, op=.7)
-            + _r(112, 92, 12, 26, ac, 4)
-            + _e(122, 52, 6, 5, ac) + _e(122, 156, 6, 5, ac))
+def marrow(dk, lt, ac):
+    return (_e(100, 106, 30, 40, dk)
+            + _e(100, 106, 16, 24, ac, .9)
+            + _pa("M 100 68 q -18 38 0 76 q 18 -38 0 -76 Z", f=lt, op=.35)
+            + "".join(_e(100 + dx, 106 + dy, 3.2, 3.2, lt, .7)
+                      for dx, dy in ((-20, -18), (22, -10), (-18, 20), (18, 22))))
 
 
-ITEMS = [("pill", "丹", "Foundation Pill", pill, 3),
-         ("stone", "靈石", "Spirit Stone", stone, 1),
-         ("jade", "玉", "Jade Pendant", jade, 2),
-         ("talisman", "符", "Ward Talisman", talisman, 2),
+def crystal(dk, lt, ac):
+    return (_pg([(100, 54), (128, 84), (118, 148), (82, 148), (72, 84)], dk)
+            + _pg([(100, 54), (118, 148), (100, 148)], lt, .30)
+            + _pg([(100, 54), (128, 84), (100, 92)], ac, .45)
+            + _pg([(64, 112), (80, 128), (74, 152), (58, 152), (52, 122)], dk, .85))
+
+
+def dew(dk, lt, ac):
+    return (_pa("M 100 54 q 26 42 26 62 a 26 26 0 0 1 -52 0 q 0 -20 26 -62 Z", f=dk)
+            + _e(88, 112, 7, 11, lt, .45, -18)
+            + _pa("M 78 128 q 22 12 44 0", s=ac, sw=4, op=.8))
+
+
+def token(dk, lt, ac):
+    return (_e(100, 104, 38, 38, dk)
+            + '<circle cx="100" cy="104" r="38" fill="none" stroke="%s" '
+              'stroke-width="3" stroke-opacity=".75"/>' % lt
+            + _pg([(100, 80), (116, 104), (100, 128), (84, 104)], ac, .9)
+            + _r(94, 58, 12, 14, dk, 3) + _e(100, 58, 8, 5, lt, .7))
+
+
+def sealfrag(dk, lt, ac):
+    return (_pa("M 62 62 h 52 l 24 26 v 52 h -76 Z", f=dk)
+            + _pa("M 114 62 v 26 h 24", s=lt, sw=3, op=.6)
+            + _r(76, 92, 44, 5, ac, 2, .85) + _r(76, 106, 30, 5, ac, 2, .7)
+            + _r(76, 120, 38, 5, ac, 2, .55))
+
+
+def mapfrag(dk, lt, ac):
+    o = _pa("M 58 68 q 22 -8 42 0 q 20 8 42 0 v 74 q -22 8 -42 0 q -20 -8 -42 0 Z",
+            f=mix(dk, "#FFFFFF", .5))
+    o += _pa("M 100 68 v 74", s=dk, sw=2, op=.35)
+    o += _pa("M 66 96 q 20 10 34 -4 q 16 -12 32 2", s=dk, sw=2.6, op=.55)
+    o += _e(122, 118, 5, 5, ac) + _pa("M 118 114 l 8 8 M 126 114 l -8 8", s=ac, sw=2.4)
+    return o
+
+
+# ── 法器 the six gear slots ────────────────────────────────────────────────────
+
+def crown(dk, lt, ac):
+    return (_pa("M 62 130 l 8 -46 l 22 24 l 8 -40 l 8 40 l 22 -24 l 8 46 Z", f=dk)
+            + _r(58, 128, 84, 12, ac, 3)
+            + "".join(_e(x, 84 + abs(x - 100) * .22, 5, 5, lt)
+                      for x in (70, 100, 130)))
+
+
+def robe(dk, lt, ac):
+    return (_pa("M 70 62 q 30 -12 60 0 l -6 22 v 58 h -48 v -58 Z", f=dk)
+            + _pa("M 100 66 l -14 24 l 14 12 l 14 -12 Z", f=ac, op=.9)
+            + _r(74, 118, 52, 9, ac, 3, .85)
+            + _pa("M 76 84 q -12 24 -8 48 M 124 84 q 12 24 8 48", s=dk, sw=11))
+
+
+def pendant(dk, lt, ac):
+    return (_pa("M 76 58 q 24 16 48 0", s=dk, sw=4, op=.8)
+            + _e(100, 108, 26, 30, dk)
+            + _e(100, 108, 12, 15, ac, .95)
+            + _pg([(100, 140), (110, 156), (100, 168), (90, 156)], dk)
+            + _e(100, 74, 8, 6, lt, .6))
+
+
+def boots(dk, lt, ac):
+    return (_pa("M 78 62 h 28 v 56 q 22 4 26 22 v 10 h -54 Z", f=dk)
+            + _r(72, 144, 60, 12, ac, 3)
+            + _r(80, 84, 24, 6, lt, 2, .5) + _r(80, 100, 24, 6, lt, 2, .4))
+
+
+def ring(dk, lt, ac):
+    return ('<circle cx="100" cy="112" r="34" fill="none" stroke="%s" '
+            'stroke-width="14"/>' % dk
+            + '<circle cx="100" cy="112" r="34" fill="none" stroke="%s" '
+              'stroke-width="3" stroke-opacity=".5"/>' % lt
+            + _pg([(100, 56), (116, 76), (100, 92), (84, 76)], ac))
+
+
+def vessel(dk, lt, ac):
+    return (_pa("M 72 92 q 28 -12 56 0 q 6 40 -10 52 h -36 q -16 -12 -10 -52 Z", f=dk)
+            + _r(68, 84, 64, 10, ac, 3)
+            + _r(94, 62, 12, 22, dk, 3) + _e(100, 60, 10, 6, ac)
+            + _pa("M 86 112 q 14 8 28 0", s=lt, sw=3.4, op=.55))
+
+
+# 材 what a beast leaves behind
+MATERIALS = [("fang", "牙", "Fang", fang, 1), ("horn", "角", "Horn", horn, 1),
+             ("hide", "皮", "Hide", hide, 0), ("scale", "鱗", "Scale", scale, 3),
+             ("bone", "骨", "Bone", bone, 1), ("silk", "絲", "Spirit Silk", silk, 2),
+             ("feather", "羽", "Plume", feather, 2), ("core", "核", "Demon Core", core, 3)]
+
+# 精 what refining turns them into
+REFINED = [("ingot", "錠", "Spirit Ingot", ingot, 2),
+           ("crystal", "晶", "Qi Crystal", crystal, 3),
+           ("marrow", "髓", "Beast Marrow", marrow, 4),
+           ("stone", "靈石", "Spirit Stone", stone, 1)]
+
+# 用 what is consumed
+CONSUMABLE = [("pill", "丹", "Foundation Pill", pill, 3),
+              ("herb", "草", "Cloud Herb", herb, 0),
+              ("dew", "露", "Dawn Dew", dew, 2),
+              ("gourd", "葫", "Spirit Gourd", gourd, 2)]
+
+# 契 what a task is made of
+QUEST = [("token", "玉", "Jade Token", token, 2),
+         ("sealfrag", "印", "Seal Fragment", sealfrag, 4),
+         ("mapfrag", "圖", "Map Fragment", mapfrag, 3),
          ("scroll", "卷", "Art Scroll", scroll, 3),
-         ("cauldron", "鼎", "Alchemy Cauldron", cauldron, 4),
-         ("gourd", "葫", "Spirit Gourd", gourd, 2),
-         ("bell", "鐘", "Soul Bell", bell, 4),
-         ("coin", "幣", "Sect Coin", coin, 0),
-         ("core", "核", "Demon Core", core, 3),
-         ("feather", "羽", "Crane Feather", feather, 2),
-         ("horn", "角", "Beast Horn", horn, 1),
-         ("fang", "牙", "Tiger Fang", fang, 1),
-         ("scale", "鱗", "Drake Scale", scale, 3),
-         ("hide", "皮", "Boar Hide", hide, 0),
-         ("bone", "骨", "Spirit Bone", bone, 1),
-         ("herb", "草", "Cloud Herb", herb, 0),
-         ("sword", "劍", "Straight Sword", sword, 4),
-         ("sabre", "刀", "Curved Sabre", sabre, 4),
-         ("bow", "弓", "Spirit Bow", bow, 3)]
+         ("talisman", "符", "Ward Talisman", talisman, 2),
+         ("coin", "幣", "Sect Coin", coin, 0)]
+
+# 法器 the six slots
+GEAR = [("crown", "冠", "Crown", crown, 4), ("robe", "袍", "Robe", robe, 3),
+        ("pendant", "佩", "Pendant", pendant, 3), ("boots", "靴", "Boots", boots, 2),
+        ("ring", "環", "Ring", ring, 4), ("vessel", "器", "Vessel", vessel, 1)]
+
+GROUPS = [("材", "Materials", "what a beast leaves behind", MATERIALS),
+          ("精", "Refined", "what the cauldron turns them into", REFINED),
+          ("用", "Consumables", "what is spent", CONSUMABLE),
+          ("契", "Quest items", "what a task is made of", QUEST),
+          ("法器", "Gear", "the six slots", GEAR)]
+
+ITEMS = MATERIALS + REFINED + CONSUMABLE + QUEST + GEAR
 
 
-def tile(key, size=150):
-    name, ch, en, fn, tier = next(i for i in ITEMS if i[0] == key)
+def tile(key, size=150, tier=None):
+    """One item on one rarity tile. `tier` overrides the table, so the same mark can be
+    shown across the 五階 ladder — which is the whole point of carrying rank in the frame."""
+    name, ch, en, fn, t0 = next(i for i in ITEMS if i[0] == key)
+    tier = t0 if tier is None else tier
+    uid = "%s%d" % (key, tier)
     tch, ten, deep, light = TIERS[tier]
     dk = mix(light, "#0B1512", .35)
     lt = mix(light, "#FFFFFF", .35)
@@ -239,7 +344,7 @@ def tile(key, size=150):
             '<rect x="0" y="0" width="200" height="200" rx="4" fill="#0A1512"/>'
             '<rect x="0" y="0" width="200" height="200" rx="4" fill="url(#it%s)"/>'
             '<rect x="1.5" y="1.5" width="197" height="197" rx="4" fill="none" '
-            'stroke="%s" stroke-width="3"/>' % (key, light, light, key, deep))
+            'stroke="%s" stroke-width="3"/>' % (uid, light, light, uid, deep))
     for cx, cy in ((11, 11), (189, 11), (11, 189), (189, 189)):
         glow += _pg([(cx - 7, cy), (cx, cy - 7), (cx + 7, cy), (cx, cy + 7)], light)
     glow += ('<text x="182" y="192" text-anchor="end" font-family="Noto Serif SC,serif" '
