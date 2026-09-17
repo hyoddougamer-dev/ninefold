@@ -80,6 +80,33 @@ Layers exist to answer Finding 2. A realm that takes six days gives a player one
 six days; the same realm with nine layers gives them nine. Nothing about the curve
 changes — only how often the game says *something happened*.
 
+### 瓶頸 The three bottlenecks
+
+Everything in this document was frictionless by policy. §4 says it outright: *"neither
+ever says no"*, *"the wall is the curve, not a rule"*. **That policy is now changed on
+purpose.** Cultivation fiction is *about* bottlenecks — 瓶頸 is the word for it — and a
+xianxia story with no stuck realm is not a xianxia story.
+
+Three of the eight realm transitions stop being purchasable with time:
+
+| gate | at | requires |
+|---|---|---|
+| **結丹 Forming the Core** | 3 → 4 | kill 灰王 the Grey King, the first warden |
+| **化虛 Voiding** | 6 → 7 | dive depth 40, and one 地 Earth-tier piece |
+| **渡劫 Tribulation** | 8 → 9 | dive depth 65, six slots at 玄 Mystic or better, and beat 裂天 Skysplitter |
+
+They escalate deliberately: the first is one afternoon, the second is a forge run and a
+good dive, the third is months and should be. The other five transitions stay pure qi, so
+the game is not one long corridor of locked doors.
+
+> **The cost of this, stated once and plainly.** §3's promise was *"a player who only ever
+> opens the app once a day still reaches the ninth realm"*. A player who **never** hunts
+> and **never** dives can no longer reach realm 9 — they stall at realm 4 forever. The
+> promise survives only in its weaker form: *once a day is still enough*, because one dive
+> or one warden clears a gate. Pure absentee play is dead. That is a deliberate trade, made
+> knowingly, and it is the second thing in this document to erode that promise — the first
+> was letting an active player arrive 26% sooner.
+
 ### The cost table
 
 Measured, not chosen. `sim/` builds it and `python3 -m sim.report` reprints it; the test
@@ -132,7 +159,13 @@ The player is always on one of two roads and may change at any time, free.
 
 **靜 Stillness.** Gathering runs at ×1.00 and runs while the app is closed. This is the
 road the game is balanced around: *a player who only ever opens the app once a day still
-reaches the ninth realm.* That promise is load-bearing and no feature may break it.
+reaches the ninth realm.*
+
+That promise has been **narrowed twice, both times deliberately** — see §2's bottlenecks
+and §4's stance table. What it means now, exactly: *once a day is enough*, and such a
+player is never blocked for long. What it no longer means: that a player who never opens
+the app at all gets to the top. They stall at the 3→4 bottleneck. Read the promise as a
+floor on the **schedule** the game demands, not a floor on the **effort**.
 
 **動 Motion.** Hunting. Each hunt spends qi and returns materials. The haul decays within
 the day; the qi does not come back.
@@ -178,6 +211,75 @@ their realm away with their eyes open. The wall is the curve, not a rule.
 > `K = 5` comes from a model, not from play. It is the first number to re-tune against a
 > real simulator, and the test suite prints the advantage figures on every run so a
 > change to it is never silent.
+
+### 勢 How a hunt resolves
+
+The bible did not say this for a long time, and everything else was blocked on it.
+
+**The beast telegraphs, you pick a stance, then you strike.** Three stances: 進 press ·
+守 guard · 遁 withdraw. Each beast's tell points at one of them — a braced beetle punishes
+進, a committed shrike punishes 守. Read it right and the kill pays far more.
+
+| | insight per kill | active player at 8 hunts/day | vs. an idle-only run |
+|---|---|---|---|
+| **一擊 One Strike** — one roll, no screen | 1, decaying with the haul | day 71 | 1% *slower* |
+| **三合 Three Exchanges** — four seconds, watched | 4, partly decaying | day 60 | 14% faster |
+| **勢 Stance** ✅ | **8 read right, 3 read wrong, no decay** | **day 52** | **26% faster** |
+
+Measured by `sim/`, against an idle-only run of 70 days. One Strike is rejected on the
+evidence: it makes attention worth nothing, which is the opposite of the point.
+
+**Insight does not decay with the day's hunt count, and materials do.** That one asymmetry
+is what the whole active/idle balance turns on, and it is why 經脈 channels are the loop
+that matters: a kill buys permanent gathering rate, so an active player does not merely
+hold more things than an idle one — *they gather faster, forever*.
+
+### 秘境 The Deep
+
+Eight hunts a day is eight taps. That is thirty seconds. Everything above rewards
+**frequency** — checking in six times a day — and nothing rewards **duration**. A dive is
+the answer to *"what do I do for two hours?"*.
+
+One qi payment — **four hours of your own rate**, the same as eight hunts — and then a
+long free descent. Floor by floor you read a beast and pick a stance. Rewards compound
+with depth; the stamina to keep going does not.
+
+**守關 Gate floors, every tenth.** A warden-class encounter that costs nine stamina instead
+of the usual one and a half, and pays **five normal floors**. Clearing one **banks
+everything so far**. Between gates every point is at risk — so the question stops being
+*"should I withdraw?"*, which has a boring correct answer, and becomes *"can I reach floor
+40 on twelve stamina?"*
+
+> The first version made gates cost-only and the dive stopped being worth entering: a 70%
+> reader fell from floor 50 to 39, and from ×1.99 the materials of the same qi in hunts to
+> ×1.39. **A wall that is only a wall just makes people stop.** A gate is a wall *and* a
+> prize.
+
+**Stamina grows with the kit** — 100 bare, 160 fully forged. Depth is therefore its own
+progression track: the same run goes deeper next month because you built the gear.
+
+| kit | reads right | reaches floor | gates | session | materials vs. the same qi in hunts |
+|---|---|---|---|---|---|
+| bare | 55% | 34 | 3 | 22 min | ×1.59 |
+| bare | 70% | 39 | 3 | 25 min | ×1.84 |
+| bare | 85% | 43 | 4 | 27 min | ×2.25 |
+| half | 70% | 49 | 4 | 31 min | ×2.58 |
+| full | 70% | 59 | 5 | 37 min | ×3.40 |
+| full | 85% | **65** | **6** | 41 min | **×4.03** |
+
+**A two-hour session is three dives** and costs about half a day's qi — §4's trade exactly.
+
+| how you play | materials a day | a full 鍊45 kit |
+|---|---|---|
+| 8 hunts a day — about a minute | 15.3 | 350 days |
+| one dive a day — half an hour | 30.5 | 176 days |
+| two hours a day, 70% reads | 91.4 | **59 days** |
+
+> **What the dive is sold on, and it is not insight.** The simulator was blunt: with dives
+> in, *one dive a day is optimal for realms and more is worse*, because all twelve channels
+> are open by week two and further insight is worthless. The dive's long-run value is
+> **gear** — the forge is 5 358 units deep and does not saturate for months. Early game a
+> dive buys rate; from week three it buys equipment, and that part runs for a year.
 
 ### 蹤 The trail
 
@@ -636,10 +738,14 @@ Four rules, each of which the earlier build broke at least once:
 - **The bow's curve.** Still open, and now for a specific reason: the bow's difference is
   ground *access*, not haul, and grounds have no value model yet. It cannot be simulated
   until 鬥 below exists.
-- **鬥 How a hunt resolves.** The bible has never specified this. It says beasts are
-  killed, wardens are fightable from realm 6, and 覺 counts kills — but there is no combat
-  or resolution model anywhere in this document. It is the one genuine design hole left,
-  and it blocks the bow.
+- **Beast tells.** 勢 Stance needs each of the eighteen beasts to telegraph one of three
+  stances, legibly, without a tutorial. The mechanic is settled (§4); the eighteen tells
+  are not written.
+- **What a 守關 gate floor actually is.** It costs nine stamina and pays five floors, and
+  that is all the model knows. Whether it is a warden, a puzzle or a harder read is open.
+- **Whether a failed 瓶頸 costs anything.** Right now a bottleneck simply waits. If failing
+  the 渡劫 tribulation should cost something, it has not been designed, and the rule *new
+  power is paid for in the cost table* makes that a narrow needle to thread.
 
 **Open, not blocking:** how many channels; whether wardens respawn; the five gear
 questions at the end of section 7 — whether 鍊 can fail, whether 銘 marks are removable,

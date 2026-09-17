@@ -51,5 +51,31 @@ for h in (2, 8, 30):
     r = P.run(REP.costs(), days=900, hunts_per_day=h)
     check("%d hunts/day is slower than idle" % h, r["days"] >= idle["days"], True)
 
+print("\n§4 勢 stance, and the option that was rejected")
+import sim.economy as _E
+for lbl, ins, dec, want in (("一擊 One Strike  (insight 1, decaying)", 1.0, True, 71),
+                            ("三合 Three Exch. (insight 4, decaying)", 4.0, True, 60),
+                            ("勢    Stance      (insight 8, no decay)", 8.0, False, 52)):
+    r = P.run(REP.costs(), days=900, hunts_per_day=8, insight_per_kill=ins, insight_decays=dec)
+    check(lbl, r["days"], want)
+check("One Strike really does make attention worthless",
+      P.run(REP.costs(), days=900, hunts_per_day=8, insight_per_kill=1.0,
+            insight_decays=True)["days"] >= idle["days"], True)
+
+print("\n§4 秘境 the dive, and §2 瓶頸 the gates")
+from sim import dive as D, gates as G
+for acc, want in ((0.70, 50), (0.85, 58)):
+    check("ungated depth at %.0f%% reads" % (100*acc), D.reachable_depth(acc), want)
+for gear, acc, want in ((0.0, 0.70, 39), (1.0, 0.85, 65)):
+    check("gated depth, %s kit, %.0f%% reads" % ("bare" if not gear else "full", 100*acc),
+          G.reachable_depth_gated(acc, G.stamina_for(gear)), want)
+check("a gate floor pays five normal floors", G.GATE_REWARD, 5.0, 0)
+check("clearing a gate banks the run", G.GATE_BANKS, True)
+check("a dive costs the qi of eight hunts",
+      D.ENTRY_HOURS * 3600.0 / R.HUNT_COST_SECONDS, 8.0, 1e-9)
+hunt8 = sum(3.0 * H.haul_factor(n) for n in range(1, 9))
+ratio = G.run_value_gated(G.reachable_depth_gated(0.70), D.floor_material) / hunt8
+check("a 70% reader's dive beats the same qi in hunts", 1.5 < ratio < 2.5, True)
+
 print("\n%s" % ("all pinned numbers hold" if not FAIL else "%d FAILED: %s" % (len(FAIL), FAIL)))
 sys.exit(1 if FAIL else 0)
