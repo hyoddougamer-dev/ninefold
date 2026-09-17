@@ -494,9 +494,21 @@ weapons live on the cultivator and never in the inventory.
 ## 10 · Art
 
 The full system is `docs/ART.md`. In one paragraph: nothing is illustrated. A realm is a
-contour figure plus a halo count; a beast is a 饕餮 mask plus a frame; an item is a flat
-mark plus a rarity tile. Everything is generated from rules, in one palette, on one
-lacquer ground — so the library cannot drift, which is what destroyed the previous one.
+contour figure plus a halo count; a beast is a 饕餮 mask plus a frame; an item is a mark
+plus a rarity tile. Everything is generated from rules, in one palette, on one lacquer
+ground — so the library cannot drift, which is what destroyed the previous one.
+
+**Every piece of gear is its own icon — eighteen, not six.** A slot is a *mount*: a band,
+a collar, a cord, a cuff, a hoop, a lid, minimal and readable by silhouette alone. The
+beast's **motif** is the body of the thing. The eighteen materials use the same motifs with
+no mount, on a plinth. Four readings come off one tile without competing: **tier** from the
+frame, **相 phase** from the colour, **slot** from the mount, **源 origin** from the motif.
+
+**鍊 shows as an aura, in nine bands.** The bar runs 0→45 and the aura steps every five, so
+`band = ⌈鍊/5⌉`, 0 to 9 — the same nine as 九重 the realms and 九層 the layers, using the
+same escalating vocabulary as the cultivator's realm aura: glow, halo, motes, rays, turning
+ring, orbiting nodes, column, spokes, 九雷 nine bolts. Bands are cumulative. The **+N** plate
+is the number the player says out loud, so it is legible before it is pretty.
 
 **What the art must carry, in order of importance:** the realm you are in, the rank of
 what you are looking at, and whether something happened. Beauty is third. An idle game is

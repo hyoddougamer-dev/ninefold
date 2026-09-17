@@ -2,6 +2,7 @@
 import sys
 sys.path.insert(0, '.')
 import techniques as T, creatures as C, items as I, build_beasts as BB, forge as F
+import gearart as G, motifs as MO
 
 REALM = [None, ("練氣","Qi Refining"), ("築基","Foundation"), ("金丹","Golden Core"),
          ("元嬰","Nascent Soul"), ("化神","Spirit Severing"), ("煉虛","Void Refining"),
@@ -42,12 +43,18 @@ def groups():
 
 
 def slots():
-    """The six gear slots. Shown at mixed tiers on purpose: six Heaven tiles side by side
-    read as one red smear, and this row's job is to tell the six SLOTS apart."""
-    tiers = {"crown": 3, "robe": 2, "pendant": 4, "boots": 1, "ring": 3, "vessel": 0}
-    return "".join(
-        '<figure>%s<b>%s</b><span>%s</span></figure>' % (I.tile(k, 160, tiers[k]), ch, en)
-        for k, ch, en, _, _, _, _ in F.SLOTS)
+    """All eighteen. Grouped by slot so the mount reads as the constant and the motif as
+    the variable — which is the claim the whole scheme rests on."""
+    out = ""
+    for k, ch, en, gch, gen, unit, top in F.SLOTS:
+        out += ('<div class="grp"><h3><em>%s</em>%s<i>%s &middot; %s</i></h3>'
+                '<div class="grid g3">%s</div></div>'
+                % (ch, en, gch + " " + gen, WHY[k],
+                   "".join('<figure>%s<b>%s</b><span>%s &middot; %s</span></figure>'
+                           % (G.gear(k, b, 2, 0, 200), C.NAMES[b][1], g,
+                              G.PHASE_COL and p + " " + F.PHASE_NAME[p][0])
+                           for b, g, p in F.ORIGIN[k])))
+    return out
 
 
 def ladder():
@@ -56,8 +63,18 @@ def ladder():
         % (light, ch, en) for ch, en, deep, light in I.TIERS)
 
 
+def auraladder():
+    return "".join('<figure>%s<b>+%d</b><span>band %d</span></figure>'
+                   % (G.gear("vessel", "beetle", min(4, r // 10), r, 200), r, G.band(r))
+                   for r in (0, 5, 10, 15, 20, 25, 30, 35, 40, 45))
 
-# ── 器 the piece card: one object, four axes, shown growing ──────────────────
+
+def materials18():
+    return "".join('<figure>%s<b>%s</b><span>%s</span></figure>'
+                   % (G.material(b, t, 160), C.NAMES[b][1], g)
+                   for k, ch, en, gch, gen, unit, top in F.SLOTS
+                   for t, (b, g, p) in enumerate(F.ORIGIN[k]))
+
 
 def card(key, beast, tier, r, marks, awaken, note=""):
     slot = next(x for x in F.SLOTS if x[0] == key)
@@ -92,7 +109,7 @@ def card(key, beast, tier, r, marks, awaken, note=""):
             '<p class="val">%s</p>'
             '<p class="axes"><span>紋 %s</span><span>覺 %s</span></p>'
             '%s%s</div></div>'
-            % (I.tile(key, 200, tier), ch, en,
+            % (G.gear(key, beast, tier, r, 200), ch, en,
                C.NAMES[beast][0], C.NAMES[beast][1], ground, pcol, phase, pen,
                pct, ticks, r, F.CAP[tier], tch, ten, F.mult(r), val,
                diam, dots, trait,
@@ -265,9 +282,11 @@ section+section{padding-block:36px 0;border-top:1px solid var(--hair-soft)}
 .g6{grid-template-columns:repeat(6,1fr)}
 .g5{grid-template-columns:repeat(5,1fr)}
 .g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g10{grid-template-columns:repeat(5,1fr)}
 @media (max-width:820px){.g6{grid-template-columns:repeat(4,1fr)}
   .g5{grid-template-columns:repeat(3,1fr)}}
-@media (max-width:520px){.g9,.g4{grid-template-columns:repeat(2,1fr)}
+@media (max-width:520px){.g9,.g4,.g10{grid-template-columns:repeat(2,1fr)}
   .g6,.g5{grid-template-columns:repeat(3,1fr)}}
 
 figure{margin:0;text-align:center;background:linear-gradient(180deg,#08150F,#050D0B);
@@ -487,22 +506,48 @@ and nothing ever resets. <em>New power is paid for in the cost table, never by t
 power back out</em> &mdash; and an upgrade that zeroed your refinement would be exactly
 that.</p>
 
-<h3 class="step"><em>三</em>六位 The six slots</h3>
-<p class="sub">Six copies of &ldquo;+x% power&rdquo; would be one stat wearing six hats.
-Each slot owns a different <b>verb</b>. A freshly forged piece already sits at 41% of its
-own ceiling, because the first piece in a slot should be the biggest single jump the
-player ever feels.</p>
-<div class="grid g6">{{SLOTS}}</div>
+<h3 class="step"><em>三</em>六位 &mdash; eighteen icons, not six</h3>
+<p class="sub">Every piece is its own drawing. A slot is a <b>mount</b> &mdash; a band, a
+collar, a cord, a cuff, a hoop, a lid &mdash; minimal and readable by silhouette alone, and
+the <b>beast&rsquo;s motif is the body of the thing</b>. So the crane crown and the qilin
+crown are two drawings you can tell apart at a glance, and you still know instantly that
+both go on the head.</p>
+<p class="note"><b>The first attempt failed and it is worth saying why.</b> I hung the
+motif on a fully drawn slot object as a crest. At icon size the object filled the tile and
+the motif shrank to a scratch: three pendants came out as three identical pendants. The
+hierarchy had to invert. Four things now read off one tile without competing for the same
+pixels &mdash; <b>tier</b> from the frame, <b>phase</b> from the colour, <b>slot</b> from
+the mount, <b>origin</b> from the motif.</p>
+{{SLOTS}}
 <table class="t">
 <tr><th></th><th>slot</th><th></th><th class="num">fresh, 鍊0</th>
 <th class="num">at 鍊45</th><th>why it exists</th></tr>
 {{SLOTTABLE}}</table>
-<p class="note"><b>And read the 袍 Robe row twice.</b> It is the only slot in the game that
+<p class="note"><b>Read the 袍 Robe row twice.</b> It is the only slot in the game that
 touches gathering. A fully maxed kit multiplies the 靜 Stillness road by <b>&times;1.12</b>
 &mdash; under six 九層 layers &mdash; and the 動 Motion road by roughly <b>&times;2.6</b> at
 twenty hunts. Gear is the sink the active road needed and it cannot quietly become
 mandatory for the player who opens the app once a day. <em>The promise in section 3
 survives a fully geared rival.</em></p>
+
+<h3 class="step"><em>三之二</em>材 &mdash; and eighteen materials to match</h3>
+<p class="sub">A beast&rsquo;s material carries the same motif with no mount under it, on a
+low plinth so a bag of materials never reads as a bag of equipment. A tiger fang and a
+serpent fang are no longer the same grey tooth with a different label.</p>
+<div class="grid g6">{{MATS}}</div>
+
+<h3 class="step"><em>三之三</em>鍊 &mdash; the enchant aura, in nine bands</h3>
+<p class="sub">The bar runs 0&rarr;45 and the aura steps every five, so <b>band =
+&lceil;鍊/5&rceil;</b>, nought to nine. That is the same nine as 九重 the realms and 九層
+the layers, and it uses the same escalating vocabulary as the cultivator&rsquo;s realm aura
+&mdash; glow, halo, motes, rays, turning ring, orbiting nodes, column, spokes, and 九雷 the
+nine bolts. One visual grammar, learned once, read everywhere.</p>
+<div class="grid g10">{{AURA}}</div>
+<p class="note">Each band is cumulative &mdash; band 7 still carries band 3&rsquo;s halo, or
+the ladder would not read as a ladder. The <b>+N</b> plate is the number a player says out
+loud, so it is legible before it is pretty: heavy, top-left, on its own ground. The frame
+still carries 階 tier independently, which is why <b>+20 玄</b> and <b>+20 天</b> are two
+different objects at a glance.</p>
 
 <h3 class="step"><em>四</em>鍊 The bar, and what it costs</h3>
 <p class="sub">Forty-five steps, <b>+2% compounding each</b> &mdash; the same step as 九層
@@ -658,6 +703,8 @@ a real simulator should check.</p>
                          ("LIFE", lifecycle()),
                          ("AXES", axes()),
                          ("SLOTS", slots()),
+                         ("MATS", materials18()),
+                         ("AURA", auraladder()),
                          ("SLOTTABLE", slottable()),
                          ("REFINE", refinetable()),
                          ("TRAITS", traits()),
