@@ -2,8 +2,14 @@
 
 Godot 4.3, Compatibility renderer, portrait 1080×1920. Android first.
 
+**On Windows, double-click `play.bat` in the folder above this one.** It finds Godot by
+itself, remembers where, and says what to do if it cannot find it. `test.bat` runs the
+checks without opening a window. On Linux or macOS, `play.sh` does the same.
+
+Or by hand:
+
 ```
-godot --path godot                                        run it
+godot --path godot                                                 run it
 godot --headless --path godot --script res://tests/TestSim.gd      the numbers
 godot --headless --path godot --script res://tests/TestOffline.gd  closing the app
 ```
