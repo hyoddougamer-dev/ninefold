@@ -242,7 +242,7 @@ export function mountain(opts: MountainOptions): string {
   for (let n = 1; n <= N; n++) {
     const band = BANDS[n - 1];
     const sealed = n > frontier;
-    const y = crestY(n) + bh * 0.52;
+    const y = crestY(n) + 30;
     const col = sealed ? '#64756C' : PHASE_LIGHT[band.phase];
     [...band.han].forEach((ch, k) => {
       o += `<text x="15" y="${f(y + k * 20)}" font-size="17" fill="${col}" fill-opacity="${sealed ? 0.5 : 0.9}" font-family="Noto Serif SC, serif">${ch}</text>`;
