@@ -14,6 +14,15 @@ set "PROJECT=%ROOT%godot"
 set "CACHE=%ROOT%.godot-path.txt"
 set "GODOT="
 
+rem --- 0. dragged a Godot exe onto this file? then that is the answer ----------
+if not "%~1"=="" (
+    if exist "%~1" (
+        set "GODOT=%~1"
+        >"%CACHE%" echo %~1
+        echo   Using the Godot you dropped on this file, and remembering it.
+    )
+)
+
 echo.
 echo   Ninefold
 echo   ------------------------------------------------------------
@@ -47,10 +56,25 @@ if not defined GODOT call :scandeep "%ROOT%."
 if not defined GODOT call :scandeep "%LOCALAPPDATA%\Godot"
 if not defined GODOT call :scandeep "%LOCALAPPDATA%\Programs\Godot"
 if not defined GODOT call :scandeep "%ProgramFiles%\Godot"
+if not defined GODOT call :scandeep "%ProgramFiles(x86)%\Godot"
+if not defined GODOT call :scandeep "%ProgramFiles(x86)%\Steam\steamapps\common\Godot Engine"
+if not defined GODOT call :scanflat "%LOCALAPPDATA%\Microsoft\WindowsApps"
 if not defined GODOT call :scanflat "%USERPROFILE%\Downloads"
 if not defined GODOT call :scandeep "%USERPROFILE%\Downloads\Godot"
 if not defined GODOT call :scanflat "%USERPROFILE%\Desktop"
 if not defined GODOT call :scandeep "C:\Godot"
+
+rem --- 5. ask PowerShell, which can do what batch cannot --------------------------
+rem  Registry App Paths, the installed-programs list, Start Menu shortcuts, Steam's
+rem  library folders and the Store's app aliases. A shortcut in the Start menu is the
+rem  usual reason Windows search shows Godot as an Application while a folder scan
+rem  finds nothing at all.
+if not defined GODOT (
+    echo   Looking properly ^(registry, Start menu, Steam, Store^)...
+    for /f "usebackq delims=" %%P in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\find-godot.ps1" 2^>nul`) do (
+        if not defined GODOT if exist "%%P" set "GODOT=%%P"
+    )
+)
 
 if not defined GODOT goto :nogodot
 
@@ -123,21 +147,25 @@ exit /b 0
 
 rem ===========================================================================
 :nogodot
-echo   Godot was not found on this computer.
+echo   Godot was not found - and that may well be my fault rather than yours.
 echo.
-echo   The easiest fix:
+echo   If Godot DOES open from the Start menu on this computer, the quickest fix
+echo   needs no typing at all:
 echo.
-echo     1. Go to  godotengine.org/download/windows
-echo     2. Download Godot 4.3 ^(the normal one, not .NET^)
-echo     3. Unzip it
-echo     4. Put Godot_v4.3-stable_win64.exe in THIS folder, beside this file
-echo     5. Double-click this file again
+echo     * Find Godot in the Start menu, right-click it,
+echo       choose "Open file location", and in the folder that opens
+echo       DRAG the Godot .exe onto this play.bat file.
 echo.
-echo   Already have Godot somewhere else? Make a file next to this one called
-echo     .godot-path.txt
-echo   containing one line: the full path to the .exe. Nothing else.
+echo   It will start, and remember where it is from then on.
 echo.
-echo   It must be Godot 4.x. Godot 3 cannot open this project.
+echo   Don't have Godot yet?
+echo     1. godotengine.org/download/windows
+echo     2. Godot 4.3, the normal build ^(not .NET^)
+echo     3. Unzip, and put the .exe in THIS folder
+echo     4. Double-click this file again
+echo.
+echo   To see everywhere I looked, run this in the same folder:
+echo     powershell -NoProfile -ExecutionPolicy Bypass -File tools\find-godot.ps1 -Verbose
 echo.
 pause
 exit /b 1

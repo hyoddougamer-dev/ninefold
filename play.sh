@@ -27,6 +27,12 @@ scanflat() { [ -d "$1" ] || return 0
 	while IFS= read -r f; do take "$f"; done \
 		< <(find "$1" -maxdepth 1 -type f -name 'Godot*' -perm -u+x 2>/dev/null | sort); }
 
+# 0. dragged an executable onto the script (or passed as the first argument)
+if [ "${1:-}" != "" ] && [ -x "${1:-}" ]; then
+	GODOT="$1"; shift
+	printf '%s\n' "$GODOT" > "$CACHE"
+fi
+
 say ""
 say "  Ninefold"
 say "  ------------------------------------------------------------"
@@ -55,6 +61,8 @@ done
 [ -z "$GODOT" ] && scanflat "$HOME/Downloads"
 [ -z "$GODOT" ] && scandeep "$HOME/Downloads/Godot"
 [ -z "$GODOT" ] && scanflat "$HOME/Desktop"
+[ -z "$GODOT" ] && scandeep "$HOME/.steam/steam/steamapps/common/Godot Engine"
+[ -z "$GODOT" ] && scandeep "$HOME/.var/app/org.godotengine.Godot"
 
 if [ -z "$GODOT" ]; then
 	say "  Godot was not found on this computer."
