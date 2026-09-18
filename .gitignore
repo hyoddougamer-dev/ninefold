@@ -1,0 +1,7 @@
+node_modules/
+dist/
+android/
+preview.html
+*.local
+.DS_Store
+shot.mjs
