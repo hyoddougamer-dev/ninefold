@@ -1,0 +1,28 @@
+; Ninefold 九重 — see ../docs/GDD.md
+config_version=5
+
+[application]
+config/name="Ninefold"
+config/description="九重 — a free mobile idle cultivation game."
+run/main_scene="res://ui/Now.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+; Portrait, one hand. §10 of the bible.
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/size/window_width_override=432
+window/size/window_height_override=768
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+; Compatibility: this has to run on a cheap Android phone.
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+
+[physics]
+common/physics_ticks_per_second=30

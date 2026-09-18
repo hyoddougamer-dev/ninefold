@@ -1,0 +1,5 @@
+.godot/
+*.import
+shot*.png
+figure_crop.png
+export_presets.cfg

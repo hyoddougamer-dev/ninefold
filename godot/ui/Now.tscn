@@ -1,0 +1,260 @@
+[gd_scene load_steps=8 format=3 uid="uid://cn9fold0now01"]
+
+[ext_resource type="Script" path="res://ui/Now.gd" id="1_now"]
+[ext_resource type="Script" path="res://ui/QiRing.gd" id="2_ring"]
+[ext_resource type="Script" path="res://ui/Contour.gd" id="3_contour"]
+[ext_resource type="FontFile" path="res://fonts/NotoSerifSC-Light.otf" id="4_serif"]
+[ext_resource type="FontFile" path="res://fonts/NotoSansSC-Light.otf" id="5_sans"]
+
+[sub_resource type="StyleBoxFlat" id="sb_ground"]
+bg_color = Color(0.0196078, 0.0627451, 0.0509804, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_panel"]
+bg_color = Color(0.0392157, 0.101961, 0.0862745, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.831373, 0.658824, 0.262745, 0.22)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 28.0
+content_margin_top = 20.0
+content_margin_right = 28.0
+content_margin_bottom = 20.0
+
+[node name="Now" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_now")
+
+[node name="Ground" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_styles/panel = SubResource("sb_ground")
+
+[node name="Header" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_top = 96.0
+offset_right = 420.0
+offset_bottom = 320.0
+grow_horizontal = 2
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="Kanji" type="Label" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_serif")
+theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.301961, 0.415686, 0.384314, 1)
+text = "今"
+horizontal_alignment = 1
+
+[node name="RealmHan" type="Label" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_serif")
+theme_override_font_sizes/font_size = 108
+theme_override_colors/font_color = Color(0.560784, 0.85098, 0.627451, 1)
+text = "練氣"
+horizontal_alignment = 1
+
+[node name="RealmEn" type="Label" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
+theme_override_constants/line_spacing = 0
+text = "QI REFINING"
+horizontal_alignment = 1
+
+[node name="RingWrap" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -390.0
+offset_top = 400.0
+offset_right = 390.0
+offset_bottom = 1180.0
+grow_horizontal = 2
+
+[node name="QiRing" type="Control" parent="RingWrap"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("2_ring")
+
+[node name="Contour" type="Control" parent="RingWrap"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -230.0
+offset_right = 150.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_contour")
+
+[node name="Readout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -420.0
+offset_top = 1210.0
+offset_right = 420.0
+offset_bottom = 1400.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="LayerLabel" type="Label" parent="Readout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
+text = "第 0 層  ·  LAYER 0 OF 9"
+horizontal_alignment = 1
+
+[node name="QiLabel" type="Label" parent="Readout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.901961, 0.933333, 0.909804, 1)
+text = "0 / 0"
+horizontal_alignment = 1
+
+[node name="RateLabel" type="Label" parent="Readout"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(0.305882, 0.811765, 0.639216, 1)
+text = "1.000 氣/s"
+horizontal_alignment = 1
+
+[node name="Roads" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -460.0
+offset_top = 1450.0
+offset_right = 460.0
+offset_bottom = 1620.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+
+[node name="Still" type="PanelContainer" parent="Roads"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("sb_panel")
+
+[node name="V" type="VBoxContainer" parent="Roads/Still"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="H" type="Label" parent="Roads/Still/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_serif")
+theme_override_font_sizes/font_size = 46
+theme_override_colors/font_color = Color(0.305882, 0.811765, 0.639216, 1)
+text = "靜"
+horizontal_alignment = 1
+
+[node name="E" type="Label" parent="Roads/Still/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
+text = "STILLNESS
+gathering ×1.00"
+horizontal_alignment = 1
+
+[node name="Motion" type="PanelContainer" parent="Roads"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("sb_panel")
+
+[node name="V" type="VBoxContainer" parent="Roads/Motion"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="H" type="Label" parent="Roads/Motion/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_serif")
+theme_override_font_sizes/font_size = 46
+theme_override_colors/font_color = Color(0.784314, 0.266667, 0.172549, 1)
+text = "動"
+horizontal_alignment = 1
+
+[node name="E" type="Label" parent="Roads/Motion/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
+text = "MOTION
+hunt · costs 30 min"
+horizontal_alignment = 1
+
+[node name="ChannelLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 1660.0
+offset_right = 300.0
+offset_bottom = 1700.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.333333, 0.415686, 0.384314, 1)
+text = "經脈 0 / 12"
+horizontal_alignment = 1
+
+[node name="Welcome" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -380.0
+offset_top = 1740.0
+offset_right = 380.0
+offset_bottom = 1840.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("sb_panel")
+
+[node name="WelcomeLabel" type="Label" parent="Welcome"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sans")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.831373, 0.658824, 0.262745, 1)
+text = "welcome back"
+horizontal_alignment = 1
+vertical_alignment = 1
