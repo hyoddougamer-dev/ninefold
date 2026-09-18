@@ -9,7 +9,6 @@
 ## advance(). It never accumulates game state of its own.
 extends Control
 
-const SECONDS_PER_REAL_SECOND := 1.0
 
 @onready var ring: QiRing = %QiRing
 @onready var figure: Contour = %Contour
@@ -21,12 +20,28 @@ const SECONDS_PER_REAL_SECOND := 1.0
 @onready var welcome: PanelContainer = %Welcome
 @onready var welcome_lbl: Label = %WelcomeLabel
 @onready var chan_lbl: Label = %ChannelLabel
+@onready var still_btn: Button = %StillButton
+@onready var motion_btn: Button = %MotionButton
+@onready var log_lbl: Label = %LogLabel
+@onready var speed_row: HBoxContainer = %SpeedRow
 
 var cultivator: Cultivator
 var clock: Save.Clock
 var elapsed_total: float = 0.0
 var _events_to_show: Array[Dictionary] = []
 var _show_timer: float = 0.0
+
+## 動 the day's hunt count, which is what makes the haul decay (§4).
+var hunts_today: int = 0
+var materials: float = 0.0
+var day_no: int = 1
+
+## How many game seconds pass per real second. 1 is the real game. The rest exist so a
+## week of cultivation can be watched in a minute — without it the first thing that ever
+## happens to a new player is two hours away, which is unreviewable.
+var speed: float = 1.0
+const SPEEDS := [1.0, 60.0, 3600.0]
+const SPEED_NAMES := ["×1  real", "×60  a minute a second", "×3600  an hour a second"]
 
 
 func _ready() -> void:
@@ -50,8 +65,63 @@ func _ready() -> void:
 			cultivator.advance(away)          # the SAME call a frame makes
 			_queue_events(cultivator.pending, false, away)
 	elapsed_total = clock.elapsed
+	still_btn.pressed.connect(_on_still)
+	motion_btn.pressed.connect(_on_hunt)
+	_build_speed_buttons()
 	_apply_debug_overrides()
 	_refresh()
+
+
+func _build_speed_buttons() -> void:
+	for i in SPEEDS.size():
+		var b := Button.new()
+		b.text = SPEED_NAMES[i]
+		b.toggle_mode = true
+		b.button_pressed = (i == 0)
+		b.focus_mode = Control.FOCUS_NONE
+		b.add_theme_font_size_override("font_size", 20)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(_on_speed.bind(i))
+		speed_row.add_child(b)
+
+
+func _on_speed(i: int) -> void:
+	speed = SPEEDS[i]
+	for c in speed_row.get_children():
+		(c as Button).button_pressed = (c.get_index() == i)
+	_say("time ×%d" % int(speed))
+
+
+## 靜 Stillness is not a button that does something — it is the absence of spending. Saying
+## so out loud is better than a dead card the player keeps pressing.
+func _on_still() -> void:
+	_say("靜 you are already gathering. Stillness is what happens when you spend nothing.")
+
+
+## 動 one hunt. §4: it costs half an hour of your OWN rate, and the haul decays within the
+## day. Neither brake ever refuses — if the qi is not there, that is the qi, not a rule.
+func _on_hunt() -> void:
+	var cost := cultivator.hunt_cost()
+	if cultivator.qi < cost:
+		var short := (cost - cultivator.qi) / cultivator.rate()
+		_say("動 not enough qi yet — %s of gathering short" % _human(short))
+		return
+	cultivator.qi -= cost
+	hunts_today += 1
+	var h := Hunting.haul_factor(hunts_today)
+	var got := 3.0 * h
+	materials += got
+	cultivator.channels.earn(8.0)     # §4 勢: insight does NOT decay with the hunt count
+	var opened := cultivator.channels.spend()
+	var line := "狩 hunt %d · +%.1f materials (×%.2f) · +8 悟" % [hunts_today, got, h]
+	if opened > 0:
+		line += "  ·  經脈 CHANNEL OPENED"
+	_say(line)
+	_refresh()
+
+
+func _say(text: String) -> void:
+	log_lbl.text = text
 
 
 ## --realm=N --layer=N on the command line, for screenshots and for looking at a realm
@@ -101,11 +171,16 @@ static func _human(seconds: float) -> String:
 
 func _process(delta: float) -> void:
 	cultivator.pending.clear()
-	cultivator.advance(delta * SECONDS_PER_REAL_SECOND)
+	cultivator.advance(delta * speed)
 	elapsed_total += delta
 	if not cultivator.pending.is_empty():
 		_queue_events(cultivator.pending, false, 0.0)
 		welcome_lbl.text = "層 opened"
+	var d := int(elapsed_total / Rules.DAY) + 1
+	if d != day_no:
+		day_no = d
+		hunts_today = 0                 # §4: the hunt count resets with the day
+		_say("a new day — the haul is back to ×1.00")
 	if _show_timer > 0.0:
 		_show_timer -= delta
 		if _show_timer <= 0.0:
@@ -124,7 +199,12 @@ func _refresh() -> void:
 	layer_lbl.text = "第 %d 層  ·  LAYER %d OF 9" % [cultivator.layer, cultivator.layer]
 	rate_lbl.text = "%.3f 氣/s" % cultivator.rate()
 	qi_lbl.text = "%s / %s" % [_short(cultivator.qi), _short(cultivator.layer_cost())]
-	chan_lbl.text = "經脈 %d / 12" % cultivator.channels.opened
+	chan_lbl.text = "經脈 %d / 12   ·   材 %.0f   ·   悟 %.0f" % [
+		cultivator.channels.opened, materials, cultivator.channels.insight]
+	motion_btn.disabled = false
+	var cost := cultivator.hunt_cost()
+	motion_btn.text = "動\nMOTION\nhunt %d · costs %s" % [
+		hunts_today + 1, _short(cost)]
 	var col := Rules.realm_colour(r)
 	realm_han.add_theme_color_override("font_color", col)
 	rate_lbl.add_theme_color_override("font_color", col)

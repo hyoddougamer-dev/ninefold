@@ -160,63 +160,74 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -460.0
-offset_top = 1450.0
+offset_top = 1400.0
 offset_right = 460.0
-offset_bottom = 1620.0
+offset_bottom = 1580.0
 grow_horizontal = 2
 theme_override_constants/separation = 20
 
-[node name="Still" type="PanelContainer" parent="Roads"]
+[node name="StillButton" type="Button" parent="Roads"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("sb_panel")
-
-[node name="V" type="VBoxContainer" parent="Roads/Still"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="H" type="Label" parent="Roads/Still/V"]
-layout_mode = 2
+focus_mode = 0
 theme_override_fonts/font = ExtResource("4_serif")
-theme_override_font_sizes/font_size = 46
+theme_override_font_sizes/font_size = 30
 theme_override_colors/font_color = Color(0.305882, 0.811765, 0.639216, 1)
-text = "靜"
-horizontal_alignment = 1
-
-[node name="E" type="Label" parent="Roads/Still/V"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("5_sans")
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
-text = "STILLNESS
+theme_override_styles/normal = SubResource("sb_panel")
+theme_override_styles/hover = SubResource("sb_panel")
+theme_override_styles/pressed = SubResource("sb_panel")
+theme_override_styles/focus = SubResource("sb_panel")
+text = "靜
+STILLNESS
 gathering ×1.00"
-horizontal_alignment = 1
 
-[node name="Motion" type="PanelContainer" parent="Roads"]
+[node name="MotionButton" type="Button" parent="Roads"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("sb_panel")
-
-[node name="V" type="VBoxContainer" parent="Roads/Motion"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="H" type="Label" parent="Roads/Motion/V"]
-layout_mode = 2
+focus_mode = 0
 theme_override_fonts/font = ExtResource("4_serif")
-theme_override_font_sizes/font_size = 46
+theme_override_font_sizes/font_size = 30
 theme_override_colors/font_color = Color(0.784314, 0.266667, 0.172549, 1)
-text = "動"
-horizontal_alignment = 1
+theme_override_styles/normal = SubResource("sb_panel")
+theme_override_styles/hover = SubResource("sb_panel")
+theme_override_styles/pressed = SubResource("sb_panel")
+theme_override_styles/focus = SubResource("sb_panel")
+text = "動
+MOTION
+hunt"
 
-[node name="E" type="Label" parent="Roads/Motion/V"]
-layout_mode = 2
+[node name="LogLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -480.0
+offset_top = 1600.0
+offset_right = 480.0
+offset_bottom = 1660.0
+grow_horizontal = 2
 theme_override_fonts/font = ExtResource("5_sans")
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(0.486275, 0.576471, 0.537255, 1)
-text = "MOTION
-hunt · costs 30 min"
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.831373, 0.658824, 0.262745, 1)
+text = "tap 動 to hunt"
 horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SpeedRow" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -480.0
+offset_top = 1770.0
+offset_right = 480.0
+offset_bottom = 1850.0
+grow_horizontal = 2
+theme_override_constants/separation = 12
 
 [node name="ChannelLabel" type="Label" parent="."]
 unique_name_in_owner = true
@@ -224,10 +235,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -300.0
-offset_top = 1660.0
-offset_right = 300.0
-offset_bottom = 1700.0
+offset_left = -480.0
+offset_top = 1690.0
+offset_right = 480.0
+offset_bottom = 1730.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("5_sans")
 theme_override_font_sizes/font_size = 24
@@ -243,9 +254,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -380.0
-offset_top = 1740.0
+offset_top = 700.0
 offset_right = 380.0
-offset_bottom = 1840.0
+offset_bottom = 800.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("sb_panel")
 
