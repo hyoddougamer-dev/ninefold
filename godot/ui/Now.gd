@@ -28,7 +28,7 @@ const W := 1080.0
 const PAD := 56.0
 
 var SERIF: FontFile = load("res://fonts/NotoSerifSC-Light.otf")
-var SERIF_M: FontFile = load("res://fonts/NotoSerifSC-Medium.otf")
+var SERIF_M: FontFile = load("res://fonts/NotoSerifSC-Light.otf")  # Medium dropped: 12 MB for two headings
 var SANS: FontFile = load("res://fonts/NotoSansSC-Light.otf")
 
 const CN_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
