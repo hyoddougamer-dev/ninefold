@@ -31,7 +31,7 @@ func _drive() -> void:
 		% [scene.cultivator.realm, scene.cultivator.layer, scene.hunts_today,
 		   scene.materials, scene.cultivator.channels.insight,
 		   scene.cultivator.channels.opened])
-	print("log: %s" % scene.log_lbl.text)
+	print("log: %s" % scene.n_log.text)
 
 
 func _process(_d: float) -> bool:
