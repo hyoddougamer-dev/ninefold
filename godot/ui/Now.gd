@@ -33,6 +33,11 @@ var SANS: FontFile = load("res://fonts/NotoSansSC-Light.otf")
 
 const CN_NUM := ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
+## Stamped on screen, top-left, small and dim. Without it there is no way for either of
+## us to tell an old copy from a new one from a screenshot — which cost a whole round of
+## "nothing changed" when the build being run was three commits behind.
+const BUILD := "build 5 · trail + satchel + nav"
+
 var cultivator: Cultivator
 var clock: Save.Clock
 var elapsed_total := 0.0
@@ -120,6 +125,13 @@ func _build() -> void:
 	bg.color = GROUND
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
+
+	var stamp := _lbl(BUILD, SANS, 20, Color(FAINT.r, FAINT.g, FAINT.b, 0.75),
+		HORIZONTAL_ALIGNMENT_LEFT)
+	stamp.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	stamp.offset_left = 22
+	stamp.offset_top = 14
+	add_child(stamp)
 
 	var col := VBoxContainer.new()
 	col.set_anchors_preset(Control.PRESET_FULL_RECT)
