@@ -25,6 +25,8 @@ import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { RETURN } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { isMuted, setMuted, sfx } from './sound.ts';
+import { takeUpdate, watchForUpdates } from './updates.ts';
+import { UPDATE } from './copy.ts';
 
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate' },
@@ -60,6 +62,7 @@ export function App() {
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fresh, setFresh] = useState(false);
   const [muted, setMutedState] = useState(isMuted);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
@@ -264,6 +267,10 @@ export function App() {
     haptics.strike();
   }, []);
 
+  // A new version of the page is a new version of the game. Nobody installs anything
+  // again; they are told, and they choose when.
+  useEffect(() => { watchForUpdates(() => setFresh(true)); }, []);
+
   const onStance = useCallback((key: string | null) => {
     setState((s) => ({ ...s, stance: key }));
     sfx.tap();
@@ -337,6 +344,17 @@ export function App() {
             <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
             <p>{realmOf(bloom).gains}</p>
           </div>
+        </div>
+      )}
+
+      {fresh && (
+        <div className="newver">
+          <span>
+            <b className="cjk">新</b>
+            <i>{UPDATE.ready}</i>
+          </span>
+          <button onClick={takeUpdate}>{UPDATE.take}</button>
+          <button className="later" onClick={() => setFresh(false)} aria-label={UPDATE.later}>✕</button>
         </div>
       )}
 

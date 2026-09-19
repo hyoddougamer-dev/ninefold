@@ -1,0 +1,45 @@
+# Builds the Android APK. Run it by hand, from the Actions tab.
+#
+# It is deliberately *not* on every push. The APK is a shell around the hosted page and
+# has no game inside it, so it only needs rebuilding when the shell itself changes —
+# the icon, the name, the URL it points at. Everything else reaches the phone through
+# Pages, which is the point.
+name: apk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Add Capacitor and the Android project
+        run: |
+          npm i --no-save @capacitor/core @capacitor/cli @capacitor/android
+          npx cap add android
+          npx cap sync android
+
+      - name: Build the debug APK
+        run: ./gradlew assembleDebug --no-daemon
+        working-directory: android
+
+      # Debug-signed, so it installs from a file manager after allowing unknown sources.
+      # It never needs replacing unless the shell changes.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ninefold-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

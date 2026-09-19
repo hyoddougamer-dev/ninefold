@@ -1,0 +1,16 @@
+{
+  "name": "九境 Ninefold",
+  "short_name": "Ninefold",
+  "description": "An idle cultivation game. Qi gathers on its own, even with the phone closed.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080A18",
+  "theme_color": "#080A18",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

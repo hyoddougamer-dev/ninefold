@@ -186,18 +186,24 @@ const SYSTEMS: readonly System[] = [
     han: '錄', name: 'O Bestiário', where: 'aba 錄',
     does: 'O que já mataste, e quantas vezes.',
     counts: [['entradas', `${BEASTS.length}`], ['créditos de arte', '✓']],
-    body: '', gaps: ['É só uma lista. Não dá nada — nem um bónus por completar um reino.'],
+    body: '', gaps: ['É só uma lista. Não dá nada, nem um bónus por completar um reino.'],
   },
 ];
 
 const MISSING = [
-  { han: '包', title: 'O APK', hard: true,
-    text: `Ainda só existe como página web. O Capacitor está previsto e o build já usa
-      caminhos relativos para isso, mas nunca foi feito. <b>É o que falta para o jogares
-      a sério no telemóvel</b>, sem depender de um link.` },
-  { han: '存', title: 'O save só existe no teu telemóvel', hard: true,
-    text: `Está no <i>localStorage</i> do browser. Limpas os dados, perdes três meses.
-      Não há cópia nem conta. Para um jogo de 90 dias isto é o risco maior de todos.` },
+  { han: '算', title: 'A economia dispara no topo', hard: true,
+    text: `O maior de todos, e novo. No reino 9 já não há camadas a consumir qi, por isso
+      um cultivador compra melhorias de ritmo com o qi que essas melhorias produzem — e a
+      curva de custo é demasiado suave para o travar (o 功法 custa 1.19× por nível e dá
+      1.15×). <b>Simulado, o ritmo chega a 10^28 qi por dia em duas semanas e depois
+      estoura para Infinity.</b> A subida nunca mostrou isto porque as camadas comem o qi
+      todo o caminho. Corrigir significa afinar a curva das melhorias e depois voltar a
+      afinar o REALM_COST para manter os 90 dias — merece uma passagem só para ele.` },
+  { han: '包', title: 'O APK', hard: false,
+    text: `Está montado e por construir. O <i>capacitor.config.json</i> aponta para a
+      página do GitHub Pages e há uma acção no GitHub que constrói o APK à mão, uma vez.
+      Falta correr a acção e ligar o Pages — coisa de minutos, mas tem de ser feita na
+      conta, não daqui.` },
   { han: '久', title: 'Ninguém jogou 90 dias', hard: true,
     text: `A curva está testada em simulação — os testes imprimem a tabela a cada
       corrida — mas nunca foi jogada de verdade. O sítio onde costuma partir é entre o
@@ -205,12 +211,27 @@ const MISSING = [
   { han: '聲', title: 'Som e vibração', hard: false,
     text: `Existem, sintetizados, sem ficheiros. São quatro sons. Numa sessão longa
       cansam, e não há volume — só ligado ou desligado.` },
-  { han: '回', title: 'Nada para fazer no reino 9', hard: false,
-    text: `Chegas ao topo e o qi continua a subir para nada. Sem renascimento nem
-      prestígio, o jogo acaba ali — e acabar é o que um idle não pode fazer.` },
   { han: '導', title: 'Quem chega não é levado por nada', hard: false,
     text: `Há um ecrã de ajuda com quatro passos e depois nada. Ninguém te diz que
       existem posturas, nem quando vale a pena mudar de equipamento.` },
+  { han: '鏡', title: 'O bestiário não dá nada', hard: false,
+    text: `É só uma lista do que mataste. Nem um bónus por completar um reino, nem uma
+      razão para caçar uma besta em vez de outra.` },
+];
+
+const DONE = [
+  { han: '存', title: 'O save está seguro',
+    text: `O jogo guarda uma cópia sobresselente e recorre a ela se a principal
+      desaparecer <i>ou andar para trás</i>. E tu podes copiar o save para onde quiseres,
+      ou descarregá-lo como ficheiro, e colá-lo de volta. Botão 存, em cima.` },
+  { han: '劫', title: 'O reino 9 tem o 渡劫',
+    text: `O dragão volta sempre, ancorado ao <b>teu</b> poder da última vez. Cada
+      travessia dá um 雷印 — +10% de poder e +10% de qi, para sempre. A barra no topo lê
+      o teu poder contra o dele, porque lá em cima não é o qi que se espera.` },
+  { han: '新', title: 'Actualiza-se sozinho',
+    text: `Instalas uma vez. Depois disso uma versão nova chega porque a página foi
+      republicada — aparece um aviso 新 e tu escolhes quando. <b>Nunca mais descarregas
+      nada.</b> E funciona sem rede: testado, abre offline à primeira.` },
 ];
 
 const page = `<title>全 Todos os Sistemas</title>
@@ -334,6 +355,8 @@ const page = `<title>全 Todos os Sistemas</title>
   .m { background:var(--panel2); border:1px solid var(--line); border-radius:12px;
        padding:14px 16px; border-top:3px solid var(--cyan); }
   .m.hard { border-top-color:var(--magenta); }
+  .m.done { border-top-color:var(--gold); }
+  .m.done .h b { color:var(--gold); }
   .m .h { display:flex; gap:9px; align-items:baseline; }
   .m .h b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:24px; color:var(--cyan); }
   .m.hard .h b { color:var(--magenta); }
@@ -369,8 +392,19 @@ const page = `<title>全 Todos os Sistemas</title>
   </section>`).join('')}
 
   <section class="sys">
+    <p class="tag">O que já ficou resolvido</p>
+    <h2 style="margin-top:6px">Três riscos fechados</h2>
+    <div class="miss">
+      ${DONE.map((d) => `<div class="m done">
+        <span class="h"><b class="cjk">${d.han}</b><em>${d.title}</em></span>
+        <p>${d.text}</p>
+      </div>`).join('')}
+    </div>
+  </section>
+
+  <section class="sys">
     <p class="tag">O que falta acautelar</p>
-    <h2 style="margin-top:6px">Seis coisas, três delas a sério</h2>
+    <h2 style="margin-top:6px">Seis coisas, duas delas a sério</h2>
     <p class="says" style="margin-top:8px">As de cima são buracos dentro de sistemas que
       funcionam. Estas são coisas que ainda não existem — e as três a magenta são as que
       te podem estragar o jogo, não só deixá-lo mais pobre.</p>

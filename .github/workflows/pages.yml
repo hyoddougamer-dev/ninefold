@@ -1,0 +1,48 @@
+# Publishes the game to GitHub Pages on every push to the branch.
+#
+# This is the whole update story. The installed app is a shell around this page, so a
+# new version of the game arrives when this runs — nobody downloads an APK again.
+name: pages
+
+on:
+  push:
+    branches: [main, claude/idle-fantasy-mobile-game-nzn90r]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time, and a push that lands mid-deploy wins rather than queues.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The build is not published if the suite is red. A broken page is worse than an
+      # old one, because the old one is what everybody already has cached.
+      - run: npm test
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -83,6 +83,12 @@ export const DAO = {
   costs: (n: number) => `costs ${n} 道`,
 };
 
+export const UPDATE = {
+  ready: 'A new version is ready.',
+  take: 'Take it',
+  later: 'Not now',
+};
+
 export const SAVE = {
   title: 'Your save',
   played: 'played for',

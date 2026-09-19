@@ -9,6 +9,7 @@
     "preview": "vite preview --host",
     "test": "vitest run",
     "icons": "tsx tools/generate-icons.ts",
+    "icons-png": "tsx tools/icons-png.ts",
     "page": "npm run build && tsx tools/package-page.ts game",
     "lab": "npm run build && tsx tools/package-page.ts lab",
     "overview": "tsx tools/overview.ts",

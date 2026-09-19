@@ -1,0 +1,11 @@
+{
+  "appId": "dev.hyoddou.ninefold",
+  "appName": "Ninefold",
+  "webDir": "dist",
+  "android": { "backgroundColor": "#080A18" },
+  "server": {
+    "url": "https://hyoddougamer-dev.github.io/ninefold/",
+    "cleartext": false,
+    "androidScheme": "https"
+  }
+}

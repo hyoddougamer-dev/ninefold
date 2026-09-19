@@ -467,3 +467,18 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .bad { margin: 0; font-size: 13px; color: var(--magenta); line-height: 1.5; }
 .help .says { color: var(--faint); font-size: 13.5px; margin: 0; line-height: 1.55; }
 .help .says.small { font-size: 12px; }
+
+/* 新 A new version is ready. It never reloads on its own — that would throw away a fight. */
+.newver { position: absolute; left: 12px; right: 12px; z-index: 14;
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
+          display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+          background: var(--panel); border: 1px solid var(--cyan); border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,.6); animation: lift .3s ease-out both; }
+.newver span { flex: 1; display: flex; align-items: baseline; gap: 8px; }
+.newver b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 18px;
+            color: var(--cyan); }
+.newver i { font-style: normal; font-size: 13px; }
+.newver button { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+                 background: var(--cyan); color: #06121a; border: none;
+                 border-radius: 8px; padding: 7px 14px; }
+.newver button.later { background: transparent; color: var(--faint); padding: 7px 4px; }
