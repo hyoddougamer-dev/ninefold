@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-/** Arte gerada chega como marcação, então é injetada em vez de remontada como JSX. */
+/** Generated art arrives as markup, so it is injected rather than rebuilt as JSX. */
 export function Svg({ html, className, style }: {
   html: string;
   className?: string;

@@ -8,10 +8,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host",
     "test": "vitest run",
-    "art": "tsx tools/preview.ts",
-    "icones": "tsx tools/gerar-icones.ts",
-    "arte": "tsx tools/concept.ts",
-    "propostas": "tsx tools/proposals.ts"
+    "icons": "tsx tools/generate-icons.ts",
+    "page": "npm run build && tsx tools/package-page.ts",
+    "overview": "tsx tools/overview.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

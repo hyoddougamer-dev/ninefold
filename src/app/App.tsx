@@ -1,242 +1,238 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BESTAS, type Besta } from '../data/bestiario.ts';
-import { reino as reinoDe } from '../data/reinos.ts';
-import { espolio, guardiaAtual, lutar, poderBesta, type Resultado } from '../sim/combate.ts';
-import { novo, poder, type Estado } from '../sim/estado.ts';
-import { duracao, num } from '../sim/formato.ts';
-import { carregar, gravar } from '../sim/save.ts';
-import { avancar } from '../sim/tempo.ts';
-import { retrato, selo } from '../art/aura.ts';
-import { Bestiario } from './telas/Bestiario.tsx';
-import { Caca } from './telas/Caca.tsx';
-import { Cultivo } from './telas/Cultivo.tsx';
+import { BEASTS, type Beast } from '../data/bestiary.ts';
+import { realm as realmOf } from '../data/realms.ts';
+import { beastPower, currentWarden, fight, loot, type Outcome } from '../sim/combat.ts';
+import { newState, power, type State } from '../sim/state.ts';
+import { duration, num } from '../sim/format.ts';
+import { load, save } from '../sim/save.ts';
+import { advance } from '../sim/time.ts';
+import { portrait, seal } from '../art/aura.ts';
+import { Bestiary } from './screens/Bestiary.tsx';
+import { Hunt } from './screens/Hunt.tsx';
+import { Cultivate } from './screens/Cultivate.tsx';
 import { Svg } from './ui/Svg.tsx';
 
-const ABAS = [
-  { chave: 'cultivo', han: '修', rotulo: 'Cultivo' },
-  { chave: 'caca', han: '狩', rotulo: 'Caça' },
-  { chave: 'bestiario', han: '錄', rotulo: 'Bestiário' },
+const TABS = [
+  { key: 'cultivate', han: '修', label: 'Cultivate' },
+  { key: 'hunt', han: '狩', label: 'Hunt' },
+  { key: 'bestiary', han: '錄', label: 'Bestiary' },
 ] as const;
 
-type Aba = (typeof ABAS)[number]['chave'];
+type TabKey = (typeof TABS)[number]['key'];
 
-const agora = () => Date.now() / 1000;
+const now = () => Date.now() / 1000;
 
-interface Luta {
-  readonly besta: Besta;
-  readonly resultado: Resultado;
-  readonly rodada: number;
-  readonly acabou: boolean;
+interface Fight {
+  readonly beast: Beast;
+  readonly outcome: Outcome;
+  readonly round: number;
+  readonly over: boolean;
 }
 
-interface Retorno {
-  readonly segundos: number;
+interface Homecoming {
+  readonly seconds: number;
   readonly qi: number;
-  readonly camadas: number;
-  readonly reinos: number;
+  readonly layers: number;
+  readonly realms: number;
 }
 
 export function App() {
-  const [aba, setAba] = useState<Aba>('cultivo');
-  const [estado, setEstado] = useState<Estado>(() => novo(agora()));
-  const [luta, setLuta] = useState<Luta | null>(null);
-  const [retorno, setRetorno] = useState<Retorno | null>(null);
-  const [pulso, setPulso] = useState(0);
-  const [pronto, setPronto] = useState(false);
-  const carregado = useRef(false);
+  const [tab, setTab] = useState<TabKey>('cultivate');
+  const [state, setState] = useState<State>(() => newState(now()));
+  const [battle, setBattle] = useState<Fight | null>(null);
+  const [home, setHome] = useState<Homecoming | null>(null);
+  const [pulse, setPulse] = useState(0);
+  const [ready, setReady] = useState(false);
+  const loaded = useRef(false);
 
-  // 歸 A volta. Um idle é jogado fechado, então abrir o app é antes de tudo receber as
-  // horas que passaram — e o jogador quer ver quanto rendeu antes de qualquer outra coisa.
+  // 歸 The return. An idle game is played closed, so opening the app is first of all
+  // receiving the hours that passed — and the player wants to see that before anything.
   useEffect(() => {
-    if (carregado.current) return;
-    carregado.current = true;
-    const v = carregar(agora());
-    setEstado(v.estado);
-    setPronto(true);
-    if (v.segundosFora > 120) {
-      setRetorno({
-        segundos: v.segundosFora, qi: v.qiGanho,
-        camadas: v.camadasAbertas, reinos: v.reinosSubidos,
+    if (loaded.current) return;
+    loaded.current = true;
+    const r = load(now());
+    setState(r.state);
+    setReady(true);
+    if (r.secondsAway > 120) {
+      setHome({
+        seconds: r.secondsAway, qi: r.qiEarned,
+        layers: r.layersOpened, realms: r.realmsClimbed,
       });
     }
   }, []);
 
-  // O relógio. O tempo anda por carimbo, nunca por quadro: este intervalo só pergunta
-  // que horas são, e `avancar` faz o resto — então perder quadros não perde progresso.
+  // The clock. Time moves by timestamp, never by frame: this interval only asks what
+  // time it is, and `advance` does the rest — so dropped frames lose no progress.
   useEffect(() => {
-    if (!pronto) return;
+    if (!ready) return;
     const id = setInterval(() => {
-      setEstado((e) => avancar(e, agora()));
-      setPulso((p) => (p + 0.02) % 1);
+      setState((s) => advance(s, now()));
+      setPulse((p) => (p + 0.02) % 1);
     }, 200);
     return () => clearInterval(id);
-  }, [pronto]);
+  }, [ready]);
 
   /**
-   * Gravar, mas nunca antes de carregar.
+   * Save, but never before loading.
    *
-   * `pronto` não é zelo: sem ele este efeito roda uma vez com o estado inicial vazio e
-   * a limpeza dele grava esse vazio por cima do save carregado, apagando a partida de
-   * quem abriu o app. Aconteceu, e foi assim que apareceu.
+   * `ready` is not caution: without it this effect runs once with the empty initial
+   * state and its cleanup writes that emptiness over the loaded save, wiping the run of
+   * anyone who opens the app. It happened, and that is how it was found.
    */
   useEffect(() => {
-    if (!pronto) return;
-    const id = setInterval(() => gravar(estado), 4000);
-    const aoSair = () => gravar(estado);
-    document.addEventListener('visibilitychange', aoSair);
-    window.addEventListener('pagehide', aoSair);
+    if (!ready) return;
+    const id = setInterval(() => save(state), 4000);
+    const onLeave = () => save(state);
+    document.addEventListener('visibilitychange', onLeave);
+    window.addEventListener('pagehide', onLeave);
     return () => {
       clearInterval(id);
-      document.removeEventListener('visibilitychange', aoSair);
-      window.removeEventListener('pagehide', aoSair);
-      gravar(estado);
+      document.removeEventListener('visibilitychange', onLeave);
+      window.removeEventListener('pagehide', onLeave);
+      save(state);
     };
-  }, [estado, pronto]);
+  }, [state, ready]);
 
-  const iniciarLuta = useCallback((besta: Besta) => {
-    setLuta((atual) => {
-      if (atual) return atual;   // uma luta de cada vez
+  const startFight = useCallback((beast: Beast) => {
+    setBattle((current) => {
+      if (current) return current;   // one fight at a time
       return {
-        besta,
-        resultado: lutar(estado, besta, Math.floor(agora() * 1000) >>> 0),
-        rodada: 0,
-        acabou: false,
+        beast,
+        outcome: fight(state, beast, Math.floor(now() * 1000) >>> 0),
+        round: 0,
+        over: false,
       };
     });
-  }, [estado]);
+  }, [state]);
 
-  // As rodadas já estão todas calculadas; isto só as desenha, uma a uma.
+  // The rounds are already computed; this only draws them, one at a time.
   useEffect(() => {
-    if (!luta || luta.acabou) return;
+    if (!battle || battle.over) return;
     const id = setTimeout(() => {
-      setLuta((l) => {
-        if (!l) return l;
-        const proxima = l.rodada + 1;
-        return proxima >= l.resultado.rodadas.length
-          ? { ...l, rodada: l.resultado.rodadas.length - 1, acabou: true }
-          : { ...l, rodada: proxima };
+      setBattle((b) => {
+        if (!b) return b;
+        const next = b.round + 1;
+        return next >= b.outcome.rounds.length
+          ? { ...b, round: b.outcome.rounds.length - 1, over: true }
+          : { ...b, round: next };
       });
     }, 260);
     return () => clearTimeout(id);
-  }, [luta]);
+  }, [battle]);
 
-  const fecharLuta = useCallback(() => {
-    if (!luta) return;
-    const { besta, resultado } = luta;
-    if (resultado.venceu) {
-      setEstado((e) => ({
-        ...e,
-        guardiaCaiu: besta.guardia ? true : e.guardiaCaiu,
-        materiais: e.materiais + (besta.guardia ? espolio(besta) * 4 : espolio(besta)),
-        abatidas: { ...e.abatidas, [besta.chave]: (e.abatidas[besta.chave] ?? 0) + 1 },
+  const closeFight = useCallback(() => {
+    if (!battle) return;
+    const { beast, outcome } = battle;
+    if (outcome.won) {
+      setState((s) => ({
+        ...s,
+        wardenFell: beast.warden ? true : s.wardenFell,
+        materials: s.materials + (beast.warden ? loot(beast) * 4 : loot(beast)),
+        killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
       }));
     }
-    setLuta(null);
-  }, [luta]);
+    setBattle(null);
+  }, [battle]);
 
-  const r = reinoDe(estado.reino);
-  const rodada = luta?.resultado.rodadas[luta.rodada];
-  const porChave = useMemo(
-    () => Object.fromEntries(BESTAS.map((b) => [b.chave, b])) as Record<string, Besta>,
+  const r = realmOf(state.realm);
+  const round = battle?.outcome.rounds[battle.round];
+  const byKey = useMemo(
+    () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
     [],
   );
 
   return (
     <div className="app">
-      <div className="folha" key={aba}>
-        {aba === 'cultivo' && (
-          <Cultivo
-            estado={estado}
-            pulso={pulso}
-            defina={setEstado}
-            lutar={() => iniciarLuta(guardiaAtual(estado))}
+      <div className="sheet" key={tab}>
+        {tab === 'cultivate' && (
+          <Cultivate
+            state={state}
+            pulse={pulse}
+            set={setState}
+            onFight={() => startFight(currentWarden(state))}
           />
         )}
-        {aba === 'caca' && (
-          <Caca estado={estado} lutarCom={(chave) => iniciarLuta(porChave[chave])} />
-        )}
-        {aba === 'bestiario' && <Bestiario estado={estado} />}
+        {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
+        {tab === 'bestiary' && <Bestiary state={state} />}
       </div>
 
-      <nav className="abas">
-        {ABAS.map((a) => (
-          <button key={a.chave} data-on={aba === a.chave} onClick={() => setAba(a.chave)}>
-            <span className="g cjk">{a.han}</span>
-            <span className="l">{a.rotulo}</span>
+      <nav className="tabs">
+        {TABS.map((t) => (
+          <button key={t.key} data-on={tab === t.key} onClick={() => setTab(t.key)}>
+            <span className="g cjk">{t.han}</span>
+            <span className="l">{t.label}</span>
           </button>
         ))}
       </nav>
 
-      {luta && rodada && (
+      {battle && round && (
         <div className="arena">
-          <div className="lado">
-            <div className="figura">
-              <Svg html={retrato({ reino: estado.reino, pulso, foco: true })} />
+          <div className="side">
+            <div className="fig">
+              <Svg html={portrait({ realm: state.realm, pulse, focus: true })} />
             </div>
-            <div className="linha" style={{ fontSize: 12.5 }}>
-              <span className="cjk" style={{ color: r.cor }}>{r.han}</span>
-              <span className="mono fraco">力 {num(luta.resultado.poderJogador)}</span>
+            <div className="row" style={{ fontSize: 12.5 }}>
+              <span className="cjk" style={{ color: r.colour }}>{r.han}</span>
+              <span className="mono faint">力 {num(battle.outcome.playerPower)}</span>
             </div>
-            <div className="vida">
-              <i style={{ width: `${rodada.vidaJogador * 100}%`, background: 'var(--ciano)' }} />
-            </div>
-          </div>
-
-          <div className="versus">
-            {luta.acabou ? '' : `rodada ${luta.rodada + 1}`}
-          </div>
-
-          <div className="lado">
-            <div className="figura">
-              <span><Svg html={selo(luta.besta.icone, reinoDe(luta.besta.reino).cor, !!luta.besta.guardia)} /></span>
-            </div>
-            <div className="linha" style={{ fontSize: 12.5 }}>
-              <span className="cjk" style={{ color: reinoDe(luta.besta.reino).cor }}>{luta.besta.han}</span>
-              <span className="mono fraco">力 {num(poderBesta(luta.besta))}</span>
-            </div>
-            <div className="vida">
-              <i style={{ width: `${rodada.vidaBesta * 100}%`, background: 'var(--magenta)' }} />
+            <div className="hp">
+              <i style={{ width: `${round.playerHealth * 100}%`, background: 'var(--cyan)' }} />
             </div>
           </div>
 
-          {luta.acabou && (
-            <div className="desfecho">
-              <span className="han" style={{ color: luta.resultado.venceu ? 'var(--ciano)' : 'var(--magenta)' }}>
-                {luta.resultado.venceu ? '勝' : '敗'}
+          <div className="versus">{battle.over ? '' : `round ${battle.round + 1}`}</div>
+
+          <div className="side">
+            <div className="fig">
+              <span><Svg html={seal(battle.beast.icon, realmOf(battle.beast.realm).colour, !!battle.beast.warden)} /></span>
+            </div>
+            <div className="row" style={{ fontSize: 12.5 }}>
+              <span className="cjk" style={{ color: realmOf(battle.beast.realm).colour }}>{battle.beast.han}</span>
+              <span className="mono faint">力 {num(beastPower(battle.beast))}</span>
+            </div>
+            <div className="hp">
+              <i style={{ width: `${round.beastHealth * 100}%`, background: 'var(--magenta)' }} />
+            </div>
+          </div>
+
+          {battle.over && (
+            <div className="verdict">
+              <span className="han" style={{ color: battle.outcome.won ? 'var(--cyan)' : 'var(--magenta)' }}>
+                {battle.outcome.won ? '勝' : '敗'}
               </span>
               <p>
-                {luta.resultado.venceu
-                  ? luta.besta.guardia
-                    ? 'A guardiã caiu. O rompimento está aberto.'
-                    : `+${num(espolio(luta.besta))} de material.`
-                  : 'Nada se perdeu. Volte com mais poder.'}
+                {battle.outcome.won
+                  ? battle.beast.warden
+                    ? 'The warden has fallen. The breakthrough is open.'
+                    : `+${num(loot(battle.beast))} material.`
+                  : 'Nothing was lost. Come back with more power.'}
               </p>
-              <button className="acao" style={{ marginTop: 16 }} onClick={fecharLuta}>
-                {luta.resultado.venceu ? '收' : '退'}{' '}
-                <span>{luta.resultado.venceu ? 'Recolher' : 'Recuar'}</span>
+              <button className="act" style={{ marginTop: 16 }} onClick={closeFight}>
+                {battle.outcome.won ? '收' : '退'}{' '}
+                <span>{battle.outcome.won ? 'Collect' : 'Withdraw'}</span>
               </button>
             </div>
           )}
         </div>
       )}
 
-      {retorno && (
-        <div className="volta">
-          <Svg html={retrato({ reino: estado.reino, pulso })} style={{ display: 'block', width: 150, height: 150 }} />
-          <h2 style={{ color: r.cor }}>歸</h2>
-          <p className="fraco" style={{ margin: 0, fontSize: 14 }}>
-            Você esteve fora {duracao(retorno.segundos)}.
+      {home && (
+        <div className="back">
+          <Svg html={portrait({ realm: state.realm, pulse })} style={{ display: 'block', width: 150, height: 150 }} />
+          <h2 style={{ color: r.colour }}>歸</h2>
+          <p className="faint" style={{ margin: 0, fontSize: 14 }}>
+            You were away {duration(home.seconds)}.
           </p>
           <dl>
-            <dt>qi juntado</dt>
-            <dd style={{ color: r.cor }}>{num(retorno.qi)}</dd>
-            {retorno.camadas > 0 && (<><dt>camadas abertas</dt><dd>{retorno.camadas}</dd></>)}
-            {retorno.reinos > 0 && (<><dt>reinos subidos</dt><dd style={{ color: 'var(--magenta)' }}>{retorno.reinos}</dd></>)}
-            <dt>poder agora</dt>
-            <dd>{num(poder(estado))}</dd>
+            <dt>qi gathered</dt>
+            <dd style={{ color: r.colour }}>{num(home.qi)}</dd>
+            {home.layers > 0 && (<><dt>layers opened</dt><dd>{home.layers}</dd></>)}
+            {home.realms > 0 && (<><dt>realms climbed</dt><dd style={{ color: 'var(--magenta)' }}>{home.realms}</dd></>)}
+            <dt>power now</dt>
+            <dd>{num(power(state))}</dd>
           </dl>
-          <button className="acao" style={{ maxWidth: 240 }} onClick={() => setRetorno(null)}>
-            續 <span>Continuar</span>
+          <button className="act" style={{ maxWidth: 240 }} onClick={() => setHome(null)}>
+            續 <span>Continue</span>
           </button>
         </div>
       )}

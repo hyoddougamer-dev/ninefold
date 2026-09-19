@@ -1,0 +1,62 @@
+/**
+ * Pulls only the icons the game uses out of the game-icons.net library and writes a
+ * TypeScript module with them inside.
+ *
+ * That way the app depends on the cloned repository neither to run nor to build, and
+ * the APK ships without a single network request for art. Each icon arrives as a white
+ * silhouette on a black square; the square is stripped here, and colour is left to CSS.
+ */
+import { readFileSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { BEASTS } from '../src/data/bestiary.ts';
+import { REALMS } from '../src/data/realms.ts';
+
+const LIBRARY = '/home/user/game-icons/icons';
+
+const UI_ICONS = [
+  'meditation', 'katana', 'scroll-unfurled', 'fire-gem', 'tiger-head',
+  'round-potion', 'crystal-cluster', 'pagoda', 'yin-yang', 'dragon-orb',
+  'spiral-bloom', 'crystal-shrine', 'beams-aura', 'lightning-helix',
+];
+
+const NAMES = [...new Set([
+  ...UI_ICONS,
+  ...REALMS.flatMap((r) => r.aura),
+  ...BEASTS.map((x) => x.icon),
+])].sort();
+
+const entries = NAMES.map((name) => {
+  const path = execSync(`find ${LIBRARY} -name '${name}.svg' | head -1`).toString().trim();
+  if (!path) throw new Error(`icon missing from the library: ${name}`);
+  const author = path.replace(`${LIBRARY}/`, '').split('/')[0];
+  const body = readFileSync(path, 'utf8')
+    .replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '')
+    .replace(/<path d="M0 0h512v512H0z"\s*\/>/, '')
+    .replace(/fill="#fff"/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return { name, author, body };
+});
+
+const authors = [...new Set(entries.map((e) => e.author))].sort();
+
+const out = `/**
+ * GERADO por \`npm run icones\` — não editar à mão.
+ *
+ * ${entries.length} icons from game-icons.net, under the Creative Commons BY 3.0 licence.
+ * Commercial use is allowed; crediting the authors is required, and the list lives
+ * in AUTHORS, which the game\u0027s credits screen reads from here.
+ */
+
+export const AUTHORS: readonly string[] = ${JSON.stringify(authors)};
+
+export const ICONS: Readonly<Record<string, string>> = {
+${entries.map((e) => `  ${JSON.stringify(e.name)}: ${JSON.stringify(e.body)},`).join('\n')}
+};
+
+export type IconName = keyof typeof ICONS;
+`;
+
+writeFileSync('src/art/icons.generated.ts', out);
+console.log(`src/art/icons.generated.ts — ${entries.length} icons, ${authors.length} authors, ${(out.length / 1024).toFixed(0)} KB`);
+console.log(`authors: ${authors.join(', ')}`);

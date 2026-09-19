@@ -1,58 +1,58 @@
-import { novo, validar, type Estado } from './estado.ts';
-import { avancar } from './tempo.ts';
+import { newState, validate, type State } from './state.ts';
+import { advance } from './time.ts';
 
-const CHAVE = 'ninefold.save.v1';
+const KEY = 'ninefold.save.v1';
 
 /**
- * O save, e a volta do jogador.
+ * The save, and the player's return.
  *
- * Um idle é jogado fechado, então carregar não é só ler: é pagar as horas que passaram
- * enquanto o app não existia. `avancar` faz isso a partir do carimbo gravado, e o
- * relatório devolvido é o que a tela usa para dizer *quanto rendeu enquanto você não
- * estava* — que é a primeira coisa que o jogador quer saber ao abrir.
+ * An idle game is played closed, so loading is not only reading: it is paying the hours
+ * that passed while the app did not exist. `advance` does that from the stored stamp,
+ * and the report handed back is what the screen uses to say *how much you earned while
+ * you were away* — the first thing a player wants to know on opening.
  */
-export interface Volta {
-  readonly estado: Estado;
-  readonly segundosFora: number;
-  readonly qiGanho: number;
-  readonly camadasAbertas: number;
-  readonly reinosSubidos: number;
+export interface Return {
+  readonly state: State;
+  readonly secondsAway: number;
+  readonly qiEarned: number;
+  readonly layersOpened: number;
+  readonly realmsClimbed: number;
 }
 
-export function carregar(agora: number): Volta {
-  let bruto: unknown = null;
+export function load(now: number): Return {
+  let raw: unknown = null;
   try {
-    const cru = localStorage.getItem(CHAVE);
-    bruto = cru ? JSON.parse(cru) : null;
+    const stored = localStorage.getItem(KEY);
+    raw = stored ? JSON.parse(stored) : null;
   } catch {
-    bruto = null;   // armazenamento bloqueado, aba anônima, JSON corrompido — tudo igual
+    raw = null;   // storage blocked, private window, corrupt JSON — all the same here
   }
 
-  const antes = bruto ? validar(bruto, agora) : novo(agora);
-  const segundosFora = Math.max(0, agora - antes.em);
-  const depois = avancar(antes, agora);
+  const before = raw ? validate(raw, now) : newState(now);
+  const secondsAway = Math.max(0, now - before.at);
+  const after = advance(before, now);
 
-  const camadasDe = (e: Estado) => (e.reino - 1) * 9 + e.camada;
+  const layersOf = (s: State) => (s.realm - 1) * 9 + s.layer;
 
   return {
-    estado: depois,
-    segundosFora,
-    qiGanho: Math.max(0, depois.qi - antes.qi),
-    camadasAbertas: Math.max(0, camadasDe(depois) - camadasDe(antes)),
-    reinosSubidos: Math.max(0, depois.reino - antes.reino),
+    state: after,
+    secondsAway,
+    qiEarned: Math.max(0, after.qi - before.qi),
+    layersOpened: Math.max(0, layersOf(after) - layersOf(before)),
+    realmsClimbed: Math.max(0, after.realm - before.realm),
   };
 }
 
-export function gravar(e: Estado): void {
+export function save(s: State): void {
   try {
-    localStorage.setItem(CHAVE, JSON.stringify(e));
+    localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
-    // Sem armazenamento o jogo continua jogável nesta sessão. Não vale travar por isso.
+    // Without storage the game is still playable this session. Not worth failing over.
   }
 }
 
-export function apagar(): void {
+export function wipe(): void {
   try {
-    localStorage.removeItem(CHAVE);
-  } catch { /* idem */ }
+    localStorage.removeItem(KEY);
+  } catch { /* same */ }
 }
