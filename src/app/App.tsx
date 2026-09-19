@@ -13,7 +13,7 @@ import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipIte
 import { rollDrop } from '../sim/drops.ts';
 import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
 import { WARDENS } from '../data/bestiary.ts';
-import { AFFIX_INFO, RARITIES, gearTotals } from '../data/gear.ts';
+import { AFFIX_INFO, RARITIES, wornTotals } from '../data/gear.ts';
 import { Bestiary } from './screens/Bestiary.tsx';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
@@ -38,7 +38,7 @@ const now = () => Date.now() / 1000;
 
 /** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
 function limitOf(s: State): number {
-  const capacity = gearTotals(s.worn, (slot) => affinity(s.unlocked, slot)).capacity;
+  const capacity = wornTotals(s.worn, (slot) => affinity(s.unlocked, slot)).capacity;
   return chestLimit(s.unlocked, capacity);
 }
 

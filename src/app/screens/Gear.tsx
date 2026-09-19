@@ -1,6 +1,6 @@
 import {
-  AFFIXES, AFFIX_INFO, RARITY_INFO, SECONDARIES, SLOTS, SLOT_INFO, gearTotals,
-  primaryOf, templateOf, wornRarity, type Item, type Slot,
+  AFFIXES, AFFIX_INFO, RARITY_INFO, SECONDARIES, SET_STEPS, SLOTS, SLOT_INFO,
+  activeSets, primaryOf, templateOf, wornRarity, wornTotals, type Affix, type Item, type Slot,
 } from '../../data/gear.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { affinity } from '../../sim/dao.ts';
@@ -29,7 +29,8 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
   onFuse: (template: string, rarity: string) => void;
 }) {
   const r = realmOf(state.realm);
-  const totals = gearTotals(state.worn, (slot) => affinity(state.unlocked, slot));
+  const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
+  const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
   const groups = fusable(state.chest);
   const limit = chestLimit(state.unlocked, totals.capacity);
@@ -98,6 +99,51 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
           Your rarest piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
             {RARITY_INFO[best].han}</span> — it shows as the rim around you.
         </p>
+      )}
+
+      {/* 系 What lineage you are wearing. A set is the realm, so any shape of it counts. */}
+      {sets.length > 0 && (
+        <>
+          <h2 className="heading">系 Sets</h2>
+          <div className="stack">
+            {sets.map(({ set, worn, next }) => {
+              const hue = realmOf(set.realm).colour;
+              return (
+                <div key={set.realm} className="setrow" style={{ ['--hue' as string]: hue }}>
+                  <span className="pips" aria-label={`${worn} of ${SLOTS.length} worn`}>
+                    {SLOTS.map((_, i) => <i key={i} className={i < worn ? 'on' : ''} />)}
+                  </span>
+                  <span className="sname">
+                    <b className="cjk">{set.han}</b> <em>{set.name}</em>
+                    <i>{set.lore}</i>
+                  </span>
+                  <span className="steps mono">
+                    {SET_STEPS.map((n) => {
+                      const step = set.steps.find((x) => x.pieces === n)!;
+                      const live = worn >= n;
+                      return (
+                        <span key={n} className={live ? 'step on' : 'step'}>
+                          <b>{n}</b>
+                          {Object.entries(step.effects).map(([a, v]) => (
+                            <em key={a}>
+                              <span className="cjk">{AFFIX_INFO[a as Affix].han}</span>
+                              {AFFIX_INFO[a as Affix].unit === '%' ? `+${v}%` : `+${v}`}
+                            </em>
+                          ))}
+                        </span>
+                      );
+                    })}
+                  </span>
+                  {next && (
+                    <span className="need faint">
+                      {next.needs} more {next.needs === 1 ? 'piece' : 'pieces'} of this realm
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {groups.length > 0 && (

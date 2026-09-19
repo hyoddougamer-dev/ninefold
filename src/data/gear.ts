@@ -214,18 +214,88 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('starring', '星環', 'Ringed Star','ring','ringed-planet', 'rate'),
 ];
 
-/** 階 What a realm puts in front of an archetype's name. Nine steps, no rarity words. */
-export const REALM_WORD: readonly { han: string; name: string }[] = [
-  { han: '鐵', name: 'Iron' },
-  { han: '骨', name: 'Bone' },
-  { han: '銅', name: 'Bronze' },
-  { han: '銀', name: 'Silver' },
-  { han: '玉', name: 'Jade' },
-  { han: '星', name: 'Star' },
-  { han: '雷', name: 'Thunder' },
-  { han: '龍', name: 'Dragon' },
-  { han: '仙', name: 'Immortal' },
+/**
+ * 系 The nine sets — one family of equipment per realm.
+ *
+ * "Iron Sword" and "Heaven Scythe" named a material and a rank, which is a spreadsheet
+ * column, not a place in a world. A set instead is a *lineage*: 落星 Fallen Star is the
+ * metal of a star that came down, 龍骸 Dragonwake is cut from what a dragon left behind,
+ * 仙蛻 Ascendant Husk is the skin an immortal stepped out of. The name tells you where
+ * it came from, and every piece of that realm carries it.
+ *
+ * And a set is not only a name: wearing several pieces of the same lineage pays. That
+ * turns a chest of loose drops into a question — six matched pieces of the fifth realm,
+ * or six unmatched pieces of the seventh? — which is the whole reason sets exist.
+ */
+export interface SetStep {
+  /** How many pieces of the set must be worn for this step to count. */
+  readonly pieces: number;
+  readonly effects: Readonly<Partial<Record<Affix, number>>>;
+}
+
+export interface RealmSet {
+  readonly realm: number;
+  /** Two characters, and what a piece of this realm is called in Chinese. */
+  readonly han: string;
+  /** The set's own name, as the screen says it. */
+  readonly name: string;
+  /** What goes in front of an archetype in a piece's English name. */
+  readonly word: string;
+  /** One line: where the stuff comes from. */
+  readonly lore: string;
+  /** What the set is good at — its steps all pull these levers. */
+  readonly axes: readonly Affix[];
+  readonly steps: readonly SetStep[];
+}
+
+/** The three steps of every set, and how much harder each one hits. */
+export const SET_STEPS: readonly number[] = [2, 4, 6];
+const SET_WEIGHT: readonly number[] = [1, 2, 4];
+
+/**
+ * A set's step values are derived, not typed out, so no set can quietly outclass another:
+ * the realm sets the size, the axis's own scale converts it, and a set that spreads over
+ * two axes gets half of each rather than twice as much.
+ */
+function setSteps(realm: number, axes: readonly Affix[]): readonly SetStep[] {
+  return SET_STEPS.map((pieces, i) => ({
+    pieces,
+    effects: Object.fromEntries(axes.map((a) => [
+      a,
+      roundValue(a, (realm * SET_WEIGHT[i] * AFFIX_INFO[a].scale) / axes.length),
+    ])) as Partial<Record<Affix, number>>,
+  }));
+}
+
+const set = (
+  realm: number, han: string, name: string, word: string,
+  lore: string, axes: readonly Affix[],
+): RealmSet => ({ realm, han, name, word, lore, axes, steps: setSteps(realm, axes) });
+
+export const REALM_SETS: readonly RealmSet[] = [
+  set(1, '凡鐵', 'Mortal Iron', 'Mortal Iron',
+    'Village smithing. It holds an edge and nothing else.', ['power']),
+  set(2, '枯骨', 'Withered Bone', 'Withered Bone',
+    'Cut from what the beasts of the first realm left behind.', ['sunder']),
+  set(3, '古銅', 'Elder Bronze', 'Elder Bronze',
+    'Dug out of a sect that fell long before yours rose.', ['power', 'rate']),
+  set(4, '霜銀', 'Frostsilver', 'Frostsilver',
+    'Silver drawn from a river that never thaws.', ['rate']),
+  set(5, '碧玉', 'Jadewater', 'Jadewater',
+    'Jade soft enough to drink from, hard enough to turn a blade.', ['rate', 'refine']),
+  set(6, '落星', 'Fallen Star', 'Starfall',
+    'The metal of a star that came down and was still warm.', ['luck', 'find']),
+  set(7, '雷紋', 'Thunderscript', 'Thunderscript',
+    'Struck so often by lightning that the marks became writing.', ['power', 'sunder']),
+  set(8, '龍骸', 'Dragonwake', 'Dragonwake',
+    'Taken from a dragon that died of nothing but age.', ['power', 'find']),
+  set(9, '仙蛻', 'Ascendant Husk', 'Ascendant',
+    'The skin an immortal stepped out of on their way up.', ['power', 'rate', 'luck']),
 ];
+
+export function realmSet(realm: number): RealmSet {
+  return REALM_SETS[Math.max(0, Math.min(REALM_SETS.length - 1, realm - 1))];
+}
 
 /**
  * Every archetype at every realm: 54 shapes times nine realms, 486 pieces.
@@ -234,13 +304,13 @@ export const REALM_WORD: readonly { han: string; name: string }[] = [
  * nine pieces, and a tenth realm would add fifty-four, without a line of naming.
  */
 export const GEAR: readonly GearTemplate[] = ARCHETYPES.flatMap((arch) =>
-  REALM_WORD.map((word, i): GearTemplate => ({
-    key: `${arch.key}${i + 1}`,
-    han: `${word.han}${arch.han}`,
-    name: `${word.name} ${arch.name}`,
+  REALM_SETS.map((rs): GearTemplate => ({
+    key: `${arch.key}${rs.realm}`,
+    han: `${rs.han}${arch.han}`,
+    name: `${rs.word} ${arch.name}`,
     slot: arch.slot,
     icon: arch.icon,
-    realm: i + 1,
+    realm: rs.realm,
     affix: arch.affix,
     archetype: arch.key,
   })),
@@ -341,12 +411,80 @@ export function gearTotals(
   return totals;
 }
 
+/**
+ * 系 What lineage is on the body, and how many pieces of it.
+ *
+ * Keyed by realm, because the set *is* the realm: any 落星 piece counts toward 落星,
+ * whichever shape it happens to be. That is what makes a set reachable — six matched
+ * pieces means six drops from one realm, not six drops of one sword.
+ */
+export function setsWorn(worn: Worn): Map<number, number> {
+  const count = new Map<number, number>();
+  for (const slot of SLOTS) {
+    const it = worn[slot];
+    if (!it) continue;
+    const realm = templateOf(it).realm;
+    count.set(realm, (count.get(realm) ?? 0) + 1);
+  }
+  return count;
+}
+
+export interface ActiveSet {
+  readonly set: RealmSet;
+  readonly worn: number;
+  /** The steps this many pieces have reached. Steps stack: 4 pieces pays 2 and 4. */
+  readonly steps: readonly SetStep[];
+  /** The next step, and how many more pieces it wants. Absent once the set is full. */
+  readonly next?: { readonly step: SetStep; readonly needs: number };
+}
+
+/** Every lineage on the body with at least one piece, deepest set first. */
+export function activeSets(worn: Worn): readonly ActiveSet[] {
+  const out: ActiveSet[] = [];
+  for (const [realm, n] of setsWorn(worn)) {
+    const rs = realmSet(realm);
+    const steps = rs.steps.filter((x) => n >= x.pieces);
+    const next = rs.steps.find((x) => n < x.pieces);
+    out.push({ set: rs, worn: n, steps, ...(next ? { next: { step: next, needs: next.pieces - n } } : {}) });
+  }
+  return out.sort((a, b) => b.worn - a.worn || b.set.realm - a.set.realm);
+}
+
+/**
+ * What the lineages add, on top of the pieces' own lines.
+ *
+ * Rounded per axis at the end: three steps of 4.9% add up to 14.700000000000001 in
+ * binary floating point, and a number the player reads should never look like that.
+ */
+export function setTotals(worn: Worn): GearTotals {
+  const totals = Object.fromEntries(AFFIXES.map((a) => [a, 0])) as GearTotals;
+  for (const active of activeSets(worn)) {
+    for (const step of active.steps) {
+      for (const [affix, value] of Object.entries(step.effects)) {
+        totals[affix as Affix] += value ?? 0;
+      }
+    }
+  }
+  for (const a of AFFIXES) if (totals[a]) totals[a] = roundValue(a, totals[a]);
+  return totals;
+}
+
+/** The pieces' own lines plus whatever the lineages pay: what the player actually has. */
+export function wornTotals(
+  worn: Worn,
+  affinityOf: (slot: Slot) => number = () => 1,
+): GearTotals {
+  const gear = gearTotals(worn, affinityOf);
+  const sets = setTotals(worn);
+  return Object.fromEntries(AFFIXES.map((a) => [a, gear[a] + sets[a]])) as GearTotals;
+}
+
 /** The two multipliers the rest of the sim asks for most often. */
 export function setBonus(
   worn: Worn,
   affinityOf: (slot: Slot) => number = () => 1,
 ): { power: number; rate: number } {
-  const t = gearTotals(worn, affinityOf);
+  const t = wornTotals(worn, affinityOf);
   return { power: 1 + t.power / 100, rate: 1 + t.rate / 100 };
 }
 

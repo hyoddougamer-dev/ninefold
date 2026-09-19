@@ -281,3 +281,33 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 @media (prefers-reduced-motion: reduce) {
   .tnode[data-status='open'] circle:first-child { animation: none; }
 }
+
+/* What the body adds up to, axis by axis. Chips, so six of them still fit a phone. */
+.totals { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; }
+.tot { display: inline-flex; align-items: baseline; gap: 5px;
+       background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+       padding: 4px 9px; }
+.tot b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 15px;
+         color: var(--cyan); }
+.tot em { font-style: normal; font-size: 13px; color: var(--gold); font-weight: 600; }
+.tot i { font-style: normal; font-size: 10.5px; color: var(--faint); letter-spacing: .04em; }
+
+/* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */
+.setrow { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+          border-left: 2px solid var(--hue); padding: 9px 11px;
+          display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; align-items: center; }
+.pips { display: flex; gap: 3px; grid-row: span 2; align-self: start; margin-top: 3px; }
+.pips i { width: 5px; height: 13px; border-radius: 2px; background: var(--line); }
+.pips i.on { background: var(--hue); }
+.sname b { font-size: 16px; color: var(--hue); }
+.sname em { font-style: normal; font-size: 13px; }
+.sname i { font-style: normal; display: block; font-size: 11.5px; color: var(--faint);
+           line-height: 1.35; margin-top: 1px; }
+.steps { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 7px; margin-top: 4px; }
+.step { display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px;
+        color: var(--faint); opacity: .5; }
+.step.on { opacity: 1; color: var(--text); }
+.step b { color: var(--hue); font-size: 12px; }
+.step em { font-style: normal; }
+.step em .cjk { margin-right: 2px; opacity: .8; }
+.need { grid-column: 2; font-size: 11px; margin-top: 2px; }

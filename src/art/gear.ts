@@ -1,5 +1,8 @@
 import { ICONS } from './icons.generated.ts';
-import { RARITY_INFO, SLOT_INFO, templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
+import {
+  RARITY_INFO, SLOT_INFO, realmSet, templateOf, type Item, type Rarity, type Slot,
+} from '../data/gear.ts';
+import { realm as realmOf } from '../data/realms.ts';
 
 /**
  * 器 The gear tile.
@@ -103,9 +106,18 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
   const inner = S * (rar.glow >= 3 ? 0.46 : 0.52);
   const off = (S - inner) / 2;
 
-  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" aria-label="${tpl.name}, ${rar.name}">` +
+  // 系 The lineage mark, bottom left: one glyph in the realm's own colour, opposite the
+  // rank's glyph. Two different questions — *where is it from* and *how good is it* —
+  // so they get two different corners and never have to share a colour.
+  const rs = realmSet(tpl.realm);
+  const rc = realmOf(tpl.realm).colour;
+
+  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" ` +
+    `aria-label="${tpl.name}, ${rar.name}, ${rs.name} set">` +
     frame(S, rar.colour, rar.glow, spin, uid) +
     `<g transform="translate(${f(off)} ${f(off)}) scale(${(inner / 512).toFixed(4)})" fill="${rar.colour}">${body}</g>` +
+    `<text x="4" y="${S - 3.5}" font-size="${f(S * 0.18)}" ` +
+    `fill="${rc}" fill-opacity=".85" font-family="'Noto Serif SC',serif">${rs.han.slice(0, 1)}</text>` +
     `<text x="${S - 4}" y="${S - 3.5}" text-anchor="end" font-size="${f(S * 0.18)}" ` +
     `fill="${rar.colour}" fill-opacity=".9" font-family="'Noto Serif SC',serif">${rar.han}</text>` +
     `</svg>`;

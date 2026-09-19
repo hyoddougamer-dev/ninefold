@@ -10,8 +10,8 @@ import { writeFileSync } from 'node:fs';
 import { gearTile } from '../src/art/gear.ts';
 import { icon } from '../src/art/icon.ts';
 import {
-  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITY_INFO, REALM_WORD, SECONDARIES,
-  SLOTS, SLOT_INFO, archetypesOf, baseValue, ladderOf, type Rarity,
+  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITY_INFO, REALM_SETS, SECONDARIES,
+  SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, baseValue, ladderOf, type Affix, type Rarity,
 } from '../src/data/gear.ts';
 import {
   LINKS, PATHS, PATH_INFO, ROOT, TOTAL_COST, nodesOf, type Node, type Path,
@@ -37,8 +37,9 @@ const catalogue = SLOTS.map((slot) => {
       <span class="count">${shapes.length} × 9</span>
     </div>
     <div class="scrollx"><div class="ladders">
-      <div class="lhead"><span></span>${REALM_WORD.map((w, i) =>
-        `<span style="color:${realmOf(i + 1).colour}"><b class="cjk">${w.han}</b>${i + 1}</span>`).join('')}</div>
+      <div class="lhead"><span></span>${REALM_SETS.map((rs) =>
+        `<span style="color:${realmOf(rs.realm).colour}" title="${rs.name}">` +
+        `<b class="cjk">${rs.han}</b>${rs.realm}</span>`).join('')}</div>
       ${shapes.map((arch) => {
         const affix = AFFIX_INFO[arch.affix];
         return `<div class="ladder">
@@ -64,6 +65,32 @@ const catalogue = SLOTS.map((slot) => {
       }).join('')}
     </div></div>
   </section>`;
+}).join('');
+
+
+/* 系 The nine lineages: what a realm's gear is called, and what wearing it together pays. */
+const lineages = REALM_SETS.map((rs) => {
+  const hue = realmOf(rs.realm).colour;
+  const steps = SET_STEPS.map((n) => {
+    const step = rs.steps.find((x) => x.pieces === n)!;
+    const gains = Object.entries(step.effects).map(([a, v]) =>
+      `<span class="cjk">${AFFIX_INFO[a as Affix].han}</span> +${v}${
+        AFFIX_INFO[a as Affix].unit === '%' ? '%' : ''}`).join(' · ');
+    return `<li><b>${n}</b> <span>${gains}</span></li>`;
+  }).join('');
+
+  return `<div class="lin" style="--hue:${hue}">
+    <div class="linhead">
+      <b class="cjk">${rs.han}</b>
+      <span>
+        <em>${rs.name}</em>
+        <i>reino ${rs.realm} · ${rs.axes.map((a) =>
+          `<span class="cjk">${AFFIX_INFO[a].han}</span> ${AFFIX_INFO[a].label}`).join(' · ')}</i>
+      </span>
+    </div>
+    <p class="lore">${rs.lore}</p>
+    <ol class="steps">${steps}</ol>
+  </div>`;
 }).join('');
 
 /* 道 The tree, drawn on one canvas — the same layout the game's own 道 screen uses. */
@@ -219,6 +246,25 @@ const page = `<title>器道 Equipamento e Árvore</title>
                      color:var(--faint); }
   .slothead .axes { margin-left:10px; font-size:15px; color:var(--faint); letter-spacing:.14em; }
 
+  /* as nove linhagens */
+  .lins { display:grid; gap:12px; }
+  @media(min-width:640px){ .lins { grid-template-columns:repeat(3,1fr); } }
+  .lin { background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--hue);
+         border-radius:12px; padding:13px 15px; }
+  .linhead { display:flex; gap:10px; align-items:flex-start; }
+  .linhead b { font-size:26px; color:var(--hue); line-height:1.1; white-space:nowrap; }
+  .linhead em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+                font-size:18px; display:block; }
+  .linhead i { font-style:normal; font-size:11.5px; color:var(--faint); letter-spacing:.04em; }
+  .lore { font-size:13px; color:var(--text); opacity:.78; margin:8px 0 10px; line-height:1.45; }
+  .lin .steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column;
+                gap:4px; border-top:1px solid var(--line); padding-top:9px; }
+  .lin .steps li { display:flex; gap:9px; align-items:baseline; font-size:12.5px; }
+  .lin .steps b { font-family:Rajdhani,sans-serif; color:var(--hue); width:12px; }
+  .lin .steps span { color:var(--gold); font-family:Rajdhani,sans-serif; font-weight:600; }
+  .lin .steps .cjk { font-family:'Noto Serif SC',serif; font-weight:400; color:var(--faint);
+                     margin-right:1px; }
+
   /* uma escada por forma: a mesma peça, do reino 1 ao 9 */
   .ladders { display:flex; flex-direction:column; gap:4px; min-width:660px; }
   .lhead, .ladder { display:grid; grid-template-columns:154px repeat(9,1fr); gap:6px;
@@ -318,6 +364,22 @@ const page = `<title>器道 Equipamento e Árvore</title>
   </div>
 
   <div class="part">
+    <p class="tag">系 As linhagens</p>
+    <h2>Nove famílias, uma por reino</h2>
+    <p class="says">"Iron Sword" e "Heaven Scythe" diziam um material e um nível — é uma
+      coluna de folha de cálculo, não um sítio num mundo. Cada reino tem agora a sua
+      <b style="color:var(--text)">linhagem</b>: o 落星 é o metal de uma estrela que caiu,
+      o 龍骸 é talhado do que um dragão deixou, o 仙蛻 é a pele de que um imortal saiu.</p>
+    <p class="says">E uma linhagem não é só um nome. Vestir várias peças da mesma família
+      paga — por isso um baú de quedas soltas passa a ser uma pergunta:
+      <em>seis peças do quinto reino a condizer, ou seis do sétimo desirmanadas?</em></p>
+    <div class="lins">${lineages}</div>
+    <p class="note">O set é o <b>reino</b>, não a forma. Qualquer peça de 落星 conta para
+      o 落星, seja leque ou lamelar — é isso que torna um set alcançável: seis quedas de
+      um reino, e não seis quedas da mesma espada.</p>
+  </div>
+
+  <div class="part">
     <p class="tag">道 A árvore</p>
     <h2>Uma árvore só</h2>
     <p class="says">Não são três árvores lado a lado — é uma. Todos os ramos nascem da
@@ -365,9 +427,11 @@ const page = `<title>器道 Equipamento e Árvore</title>
       existe <em>nos nove reinos</em>. É a liberdade que pediste: quem quer andar de leque
       não é obrigado a trocar para espada no reino 4 porque o leque acabou. A forma é a
       escolha; o reino é só a altura a que se encontra.</p>
-    <p class="says">Cada linha é uma escada: a mesma forma, do reino 1 ao 9. A moldura
-      mostra a raridade típica desse reino, e o número dourado é a linha principal da peça
-      nesse nível.</p>
+    <p class="says">Cada linha é uma escada: a mesma forma, do reino 1 ao 9. Cada peça
+      traz dois sinais: em baixo à esquerda o glifo da <b style="color:var(--text)">linhagem</b>
+      (凡 枯 古 霜 碧 落 雷 龍 仙, na cor do reino), em baixo à direita o da
+      <b style="color:var(--text)">raridade</b>. São duas perguntas diferentes — de onde
+      vem, e quão boa é — por isso têm dois cantos e nunca partilham a cor.</p>
     <p class="says">Repara nos símbolos ao lado do nome de cada espaço: são os eixos que
       esse espaço oferece. Nenhum espaço serve um caminho só, e nenhuma forma partilha
       desenho com outra — há um teste a garanti-lo.</p>
