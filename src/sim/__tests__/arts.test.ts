@@ -3,7 +3,7 @@ import { ARTS, SEQUENCE_SLOTS, STANCES, WARDEN_ART } from '../../data/arts.ts';
 import { WARDENS, wardenOf } from '../../data/bestiary.ts';
 import { beastPower, odds } from '../combat.ts';
 import { artsHeld, sequenceOf, stanceOf, validateSequence, validateStance } from '../arts.ts';
-import { newState, power, validate, type State } from '../state.ts';
+import { UPGRADE_INFO, newState, power, validate, type State } from '../state.ts';
 
 const REALM = 6;
 const KILLED_ALL = Object.fromEntries(Object.keys(WARDEN_ART).map((k) => [k, 1]));
@@ -15,7 +15,10 @@ function at(pow: number, stance: string | null, sequence: string[]): State {
     ...newState(0),
     realm: REALM,
     layer: 8,
-    levels: { technique: Math.log(pow / ladder) / Math.log(1.18), method: 0, pills: 0, cores: 0 },
+    levels: {
+      technique: Math.log(pow / ladder) / Math.log(UPGRADE_INFO.technique.gain),
+      method: 0, pills: 0, cores: 0,
+    },
     killed: KILLED_ALL,
     stance,
     sequence,

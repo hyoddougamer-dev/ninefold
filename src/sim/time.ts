@@ -1,31 +1,35 @@
-import { BASE_RATE, LAYERS_PER_REALM, LAYER_BONUS, REALM_COST } from './balance.ts';
-import { rateBonus, type State } from './state.ts';
+import { LAYERS, LAYERS_PER_REALM, ladderAt } from './balance.ts';
+import { layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 
-/** How many layers have been opened in total, across every realm. 0..81. */
-export function layersOpened(s: State): number {
-  return (s.realm - 1) * LAYERS_PER_REALM + s.layer;
-}
-
-/** Qi per second, right now. The single source of the rate; nothing else computes it. */
-export function rate(s: State): number {
-  return BASE_RATE * LAYER_BONUS ** layersOpened(s) * rateBonus(s);
-}
-
-export function layerCost(realm: number, unlocked: readonly string[] = []): number {
-  return (REALM_COST[realm - 1] / LAYERS_PER_REALM) * layerCostFactor(unlocked);
-}
+// 氣 The rate and the layer count live in state.ts, because the tribulation's pool is
+// measured in days of gathering and so has to read the rate from inside the state.
+export { layersOpened, rate };
 
 /**
- * 0..1 along the current layer.
+ * What the layer under a cultivator's feet costs.
  *
- * Realm 9 has no layers, so this reads zero there. The ninth realm's own bar is not qi
- * at all — it is `tribulationReadiness`, your power against the Dragon's — because at
- * the top qi is not the thing you wait for.
+ * Every rung of the eighty-one has its own price, and each is dearer than the last. The
+ * eighty-second does not exist: the ladder ends at the top of the ninth realm, qi banks
+ * there for ever, and 渡劫 is what happens next.
  */
+export function layerCost(realm: number, layer: number, unlocked: readonly string[] = []): number {
+  const n = (realm - 1) * LAYERS_PER_REALM + layer;
+  // The summit. There is no rung above the ninth layer of the ninth realm, so its price
+  // is infinite and qi banks there for ever — which is where 渡劫 begins.
+  if (n >= LAYERS - 1) return Infinity;
+  return ladderAt(n) * layerCostFactor(unlocked);
+}
+
+/** 0..1 along the current layer. Once the ladder runs out it reads full and stays there. */
 export function progress(s: State): number {
-  const c = layerCost(s.realm, s.unlocked);
-  return Number.isFinite(c) ? Math.min(1, s.qi / c) : 0;
+  const c = layerCost(s.realm, s.layer, s.unlocked);
+  return Number.isFinite(c) ? Math.min(1, s.qi / c) : 1;
+}
+
+/** True once the last rung is open and there is nothing left to climb. */
+export function ladderDone(s: State): boolean {
+  return layersOpened(s) >= LAYERS - 1;
 }
 
 /**
@@ -52,9 +56,9 @@ export function advance(s: State, now: number, auto = false): State {
 
   let { realm, layer, qi, wardenFell } = s;
 
-  for (let guard = 0; guard <= LAYERS_PER_REALM * 9 + 1; guard++) {
+  for (let guard = 0; guard <= LAYERS + 1; guard++) {
     const r = rate({ ...s, realm, layer });
-    const cost = layerCost(realm, s.unlocked);
+    const cost = layerCost(realm, layer, s.unlocked);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
 
     // At the ceiling, qi banks and time ends here. Only 突破 leaves a realm.

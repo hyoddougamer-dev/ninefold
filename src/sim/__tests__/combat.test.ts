@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
-import { LAYERS_PER_REALM, REALM_COST } from '../balance.ts';
+import { LAYERS_PER_REALM, levelCap } from '../balance.ts';
 import { beastPower, fight, odds, referencePower } from '../combat.ts';
-import { buy, canBuy, newState, power, type State } from '../state.ts';
-import { advance } from '../time.ts';
+import { newState, power, type State } from '../state.ts';
 import { ARTS, STANCES } from '../../data/arts.ts';
 
 const T0 = 1_700_000_000;
@@ -12,19 +11,29 @@ const T0 = 1_700_000_000;
  * A cultivator at the *top* of the given realm — all nine layers open — having spent
  * nothing on upgrades. The top matters: it is what referencePower measures against, and
  * measuring a realm's floor against the reference for its ceiling loses half a ladder.
+ *
+ * It is built rather than simulated. Simulating it means simulating a cultivator who
+ * never spends, and one of those never reaches the fourth realm at all — which is the
+ * whole finding that rebuilt the curve.
  */
 function bare(realm: number): State {
-  let s = newState(T0);
-  let t = T0;
-  // The ninth realm has no exit: its layers never open, so arriving *is* its ceiling.
-  // Waiting for the ninth layer of the ninth realm is waiting forever.
-  const target = realm === 9 ? 0 : LAYERS_PER_REALM - 1;
-  for (let i = 0; i < 24 * 600; i++) {
-    if (s.realm === realm && s.layer >= target) return s;
-    t += 3600;
-    s = advance(s, t, true);
-  }
-  throw new Error(`never reached realm ${realm}`);
+  return { ...newState(T0), realm, layer: LAYERS_PER_REALM - 1 };
+}
+
+/**
+ * The player in the middle: at the realm's ceiling, two levels of 劍訣 short of the cap.
+ *
+ * Levels below the cap, not a share of qi earned. The cap is the honest yardstick now,
+ * because it is the ceiling on what a cultivator of that realm can possibly hold, and
+ * because every upgrade price rides the mountain rather than a ladder of its own.
+ */
+function invested(realm: number, below = 2): State {
+  return {
+    ...bare(realm),
+    levels: {
+      technique: Math.max(0, levelCap(realm) - below), method: 0, pills: 0, cores: 0,
+    },
+  };
 }
 
 /**
@@ -34,8 +43,8 @@ function bare(realm: number): State {
  * who bought 劍訣 and nothing else — no stance, no arts, no gear, no tree. Measuring the
  * warden against *that* is measuring it against a floor nobody stands on.
  */
-function built(realm: number, share = 0.35): State {
-  const s = invested(realm, share);
+function built(realm: number, below = 2): State {
+  const s = invested(realm, below);
   const stance = [...STANCES].reverse().find((x) => x.realm <= realm)!;
   const arts = ARTS.filter((a) => a.realm <= realm).slice(-3);
   return {
@@ -48,19 +57,6 @@ function built(realm: number, share = 0.35): State {
         6: 'golem', 7: 'direwolf', 8: 'jiao', 9: 'dragon' }[a.realm]!, 1,
     ])),
   };
-}
-
-/** The player in the middle: reached the realm and put a share of earned qi into power. */
-function invested(realm: number, share = 0.35): State {
-  let s = { ...bare(realm), qi: 0 };
-  let bank = 0;
-  for (let i = 0; i < realm; i++) {
-    const c = REALM_COST[i];
-    if (Number.isFinite(c)) bank += c;
-  }
-  s = { ...s, qi: bank * share };
-  while (canBuy(s, 'technique')) s = buy(s, 'technique');
-  return s;
 }
 
 describe('戰 the beasts', () => {
@@ -84,10 +80,10 @@ describe('戰 the beasts', () => {
     const rows = [2, 4, 6, 8, 9].map((r) => {
       const g = wardenOf(r);
       return `  realm ${r}  ${g.han.padEnd(2)} warden` +
-        `   nothing spent ${(100 * odds(bare(r), g)).toFixed(0).padStart(3)}%` +
-        `   35% spent ${(100 * odds(invested(r), g)).toFixed(0).padStart(3)}%` +
-        `   35% + build ${(100 * odds(built(r), g)).toFixed(0).padStart(3)}%` +
-        `   55% spent ${(100 * odds(invested(r, 0.55), g)).toFixed(0).padStart(3)}%`;
+        `   no 劍訣 ${(100 * odds(bare(r), g)).toFixed(0).padStart(3)}%` +
+        `   two short of the cap ${(100 * odds(invested(r), g)).toFixed(0).padStart(3)}%` +
+        `   the same, built ${(100 * odds(built(r), g)).toFixed(0).padStart(3)}%` +
+        `   at the cap ${(100 * odds(invested(r, 0), g)).toFixed(0).padStart(3)}%`;
     });
     console.log(`\n${rows.join('\n')}\n`);
 
@@ -101,7 +97,7 @@ describe('戰 the beasts', () => {
       // reason 勢 and 訣 exist: they are the difference between the wall and the door.
       expect(odds(built(r), g)).toBeGreaterThan(odds(invested(r), g) + 0.25);
       // And heavy spending still works on its own, for a player who would rather grind.
-      expect(odds(invested(r, 0.55), g)).toBeGreaterThan(0.55);
+      expect(odds(invested(r, 0), g)).toBeGreaterThan(0.35);
     }
   });
 

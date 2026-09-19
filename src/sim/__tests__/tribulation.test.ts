@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MAX_MARK_DAYS, REALM_COST, TRIBULATION_CHALLENGE, TRIBULATION_POWER,
+  LAYERS, LAYERS_PER_REALM, MAX_MARK_DAYS, TRIBULATION_CHALLENGE, TRIBULATION_POWER,
+  ladderAt,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { effectiveBeastPower, odds } from '../combat.ts';
 import {
   atTribulation, buy, canBuy, canCross, crossTribulation, markBonus, newState, power,
-  tribulationReadiness, tribulationScale, validate, type State,
+  tribulationPool, tribulationReadiness, tribulationScale, validate, type State,
 } from '../state.ts';
 import { rate } from '../time.ts';
+import { LINES } from '../../data/alchemy.ts';
+import { pillCost, pillsTaken } from '../furnace.ts';
+import { brew, canBrew, clearFloor, standingFloor } from '../trials.ts';
+import { floorBeast, floorPower, seals } from '../tower.ts';
 
 const T0 = 1_700_000_000;
 const DRAGON = wardenOf(9);
@@ -19,80 +24,118 @@ const ALL_WARDENS = {
 
 /** Everything the whole climb could have banked, spent the way a player would. */
 function arrived(): State {
-  let bank = 0;
-  for (let i = 0; i < 8; i++) bank += REALM_COST[i];
   let s: State = {
-    ...newState(T0), realm: 9, layer: 0, qi: bank * 0.5, killed: ALL_WARDENS,
+    ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1,
+    // A day's gathering in hand, not the whole mountain: this is somebody who has just
+    // opened the last layer, not somebody handed the run's entire earnings at once.
+    qi: ladderAt(LAYERS - 2) * 3, killed: ALL_WARDENS,
     stance: 'endure', sequence: ['crane', 'tiger', 'wolf'],
+    // Somebody who climbed the mountain, and brewed and climbed the tower on the way —
+    // which is what `curve.test.ts` measures a brewing cultivator arriving with. Starting
+    // the endgame from an empty furnace is the one thing that makes it read as free: the
+    // first pills would be the ones a first-realm cultivator buys, at first-realm prices.
+    tower: 81, brewed: { body: 81, bane: 81, fortune: 81 },
   };
   for (let i = 0; i < 600; i++) {
-    const u = i % 2 === 0 ? 'technique' : 'method';
-    if (!canBuy(s, u)) break;
+    const u = (['technique', 'method', 'pills'] as const)[i % 3];
+    if (!canBuy(s, u)) continue;
     s = buy(s, u);
   }
   return s;
 }
 
 /**
- * Plays the endgame loop: gather, spend on whatever is short, face the Dragon, cross.
- * Returns the days each mark took.
+ * Plays the endgame loop as a person plays it: gather qi, climb the tower for materials,
+ * brew what the furnace will sell, face the Dragon, cross.
  *
- * It exists because the first design of this ladder was guessed and was wrong in both
- * directions at once — a qi bar that a top-realm cultivator filled in twenty minutes in
- * front of a Dragon they could not beat at all.
+ * This is the only test that measures the endgame honestly, because the endgame is not
+ * one system. The Dragon grows 1.6x a crossing; a mark pays 1.5x; the furnace is the
+ * only thing at the top that qi still buys, and the tower is the only thing that feeds
+ * the furnace. Take any one of the four away and the ladder becomes a wall — which is
+ * exactly what it was before the tower and the furnace existed, measured here as a
+ * cultivator who could not cross a single mark inside four hundred days.
  */
-function play(marks: number): number[] {
+function play(marks: number) {
   let s = arrived();
   const days: number[] = [];
+  const floors: number[] = [];
 
   for (let m = 0; m < marks; m++) {
     let waited = 0;
-    // A day at a time, spending as it comes, until the Dragon is beatable.
     for (let day = 0; day < 400; day++) {
-      if (odds(s, DRAGON) > 0.55) break;
+      if (odds(s, DRAGON) > 0.55 && canCross({ ...s, wardenFell: true })) break;
       s = { ...s, qi: s.qi + rate(s) * 86_400 };
       waited += 1;
+
+      // The tower, while the next floor is worth trying. Losing costs nothing, so the
+      // only question is whether the build clears it.
+      for (let i = 0; i < 200; i++) {
+        const floor = standingFloor(s);
+        if (odds(s, floorBeast(floor), floorPower(floor)) < 0.6) break;
+        s = clearFloor(s, floor);
+      }
+
+      // Then the spending, in the order a person would: the capped upgrades first
+      // because they are finite, then 煉體 while the Dragon is still out of reach, and
+      // only what is left over the pool on the other two lines. Qi brewed is qi not
+      // pooled, so a cultivator who brews everything never crosses anything.
       for (let i = 0; i < 4000; i++) {
-        // Power first while the Dragon is out of reach, then the rate that pays for it.
-        const order = power(s) < effectiveBeastPower(s, DRAGON) * 1.3
-          ? (['technique', 'cores', 'method', 'pills'] as const)
-          : (['method', 'pills', 'technique', 'cores'] as const);
-        const u = order.find((x) => canBuy(s, x));
+        const u = (['technique', 'cores', 'method', 'pills'] as const).find((x) => canBuy(s, x));
         if (!u) break;
         s = buy(s, u);
       }
+      const short = odds(s, DRAGON) <= 0.55;
+      for (let i = 0; i < 4000; i++) {
+        if (short) {
+          if (!canBrew(s, 'body')) break;
+          s = brew(s, 'body');
+          continue;
+        }
+        const spare = s.qi - tribulationPool(s);
+        const line = (['bane', 'fortune'] as const)
+          .find((l) => canBrew(s, l) && pillCost(s.brewed, l).qi <= spare);
+        if (!line) break;
+        s = brew(s, line);
+      }
     }
     days.push(waited);
-    s = crossTribulation({ ...s, wardenFell: true });
+    floors.push(s.tower);
+    s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, DRAGON));
   }
-  return days;
+  return { days, floors, end: s };
 }
 
 describe('渡劫 the ladder above the ladder', () => {
   it('keeps the Dragon on its feet at the top, for ever', () => {
-    const top = { ...newState(T0), realm: 9, tribulation: 0 };
-    expect(atTribulation(top)).toBe(true);
-    // It used to be unreachable: wardens are not huntable and realm 9 is never "full",
+    const top: State = { ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, tribulation: 0 };
+    // An empty pool is no Dragon: the ninth realm is left the way every other realm is
+    // left, by filling a bar first.
+    expect(atTribulation(top)).toBe(false);
+    expect(atTribulation({ ...top, qi: tribulationPool(top) })).toBe(true);
+    // It used to be unreachable: wardens are not huntable and realm 9 was never "full",
     // so the ninth realm had no fight in it at all.
-    expect(atTribulation({ ...top, realm: 8 })).toBe(false);
+    expect(atTribulation({ ...top, qi: 1e30, realm: 8 })).toBe(false);
   });
 
   it('grants the mark and stands the Dragon back up, harder', () => {
-    const won: State = { ...newState(T0), realm: 9, tribulation: 2, wardenFell: true };
+    const base: State = { ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, tribulation: 2 };
+    const won: State = { ...base, qi: tribulationPool(base), wardenFell: true };
     expect(canCross(won)).toBe(true);
-    const after = crossTribulation(won);
+    const beaten = effectiveBeastPower(won, DRAGON);
+    const after = crossTribulation(won, beaten);
     expect(after.tribulation).toBe(3);
     expect(after.wardenFell).toBe(false);
 
     // Crossing without putting it down is refused rather than half-applied.
     const notYet = { ...won, wardenFell: false };
     expect(canCross(notYet)).toBe(false);
-    expect(crossTribulation(notYet)).toEqual(notYet);
+    expect(crossTribulation(notYet, beaten)).toEqual(notYet);
 
     expect(tribulationScale(0)).toBe(1);
     expect(tribulationScale(3)).toBeCloseTo(TRIBULATION_POWER ** 3, 6);
-    // Crossing notes where you stood, so the next Dragon can grow from it.
-    expect(after.tribulationAt).toBeCloseTo(power(won), 6);
+    // Crossing notes the Dragon that fell, so the next one can grow from it — not the
+    // cultivator, whose build would otherwise be forgiven every single crossing.
+    expect(after.tribulationAt).toBeCloseTo(beaten, 6);
   });
 
   it('anchors the Dragon to the power you had, so it can never fall behind', () => {
@@ -138,40 +181,32 @@ describe('渡劫 the ladder above the ladder', () => {
   });
 
   it('plays, and never lets one mark become a wall', () => {
-    const days = play(12);
+    const { days, floors, end } = play(40);
     let total = 0;
     const rows = days.map((d, i) => {
       total += d;
       return `  劫 ${String(i + 1).padStart(2)}   ${String(d).padStart(3)} days` +
-        `   ${String(total).padStart(4)} days in all`;
+        `   ${String(total).padStart(4)} days in all   tower floor ${String(floors[i]).padStart(3)}`;
     });
-    console.log(`\n  渡劫 the endgame, played out:\n${rows.join('\n')}\n` +
+    console.log(`\n  渡劫 the endgame, played out — gather, climb, brew, cross:\n${rows.join('\n')}\n` +
       `  ${days.length} marks in ${total} days, ` +
-      `longest ${Math.max(...days)}, shortest ${Math.min(...days)}\n`);
-
-    /**
-     * This is currently degenerate and it is not the endgame's fault. A cultivator at
-     * the top has nothing left to spend qi on, so they buy rate upgrades with the qi
-     * those upgrades produce — and the cost curve (method 1.19 against a gain of 1.15)
-     * is too shallow to stop it. The qi rate reaches 10^28 a day within a fortnight, so
-     * every mark is instant however the Dragon is scaled.
-     *
-     * The economy wants its own pass: the step of the rate upgrades has to clear their
-     * gain by enough to settle, and REALM_COST then has to be re-tuned to hold the
-     * ninety days. Nothing in *this* file changes when that happens, because the Dragon
-     * is anchored to the player rather than to a ladder — which is the whole reason it
-     * is anchored that way.
-     */
-    if (total < days.length * 2) {
-      console.log('  ⚠ the marks come far too fast. The economy runs away at the top,\n' +
-        '    and no endgame can pace itself until that is fixed. See the note above.\n');
-    }
+      `longest ${Math.max(...days)}, shortest ${Math.min(...days)}\n` +
+      `  ended on tower floor ${end.tower} (${seals(end.tower)} seals) ` +
+      `with ${pillsTaken(end.brewed)} pills brewed: ` +
+      `${LINES.map((l) => `${l} ${end.brewed[l]}`).join(' · ')}\n`);
 
     for (const d of days) {
       // A mark that takes a fortnight is a wall, and a wall is where a player stops.
       expect(d).toBeLessThanOrEqual(MAX_MARK_DAYS);
     }
+    // And a mark that takes no time at all is not a mark. The endgame has to be *paced*,
+    // which is the half the earlier version could not do: with nothing to spend qi on,
+    // every crossing was instant however the Dragon was scaled.
+    expect(days.slice(-10).reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(10);
     // It never runs out: whatever the economy does, there is always a next Dragon.
-    expect(days.length).toBe(12);
+    expect(days.length).toBe(40);
+    // And the loop actually turns — the tower is climbed and the furnace is used.
+    expect(end.tower).toBeGreaterThan(81);
+    expect(pillsTaken(end.brewed)).toBeGreaterThan(40);
   });
 });

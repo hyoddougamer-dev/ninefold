@@ -1,8 +1,9 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
-import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
+import { LAYERS_PER_REALM, LEVELS_PER_REALM } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
+import { pillBane } from './furnace.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -19,33 +20,43 @@ import { sequenceOf, stanceOf } from './arts.ts';
  * 基準 The reference power at the top of a realm.
  *
  * Beasts have no curve of their own: they are tuned against *this*. The reference is a
- * cultivator who reached the realm's ceiling and put a fixed share of all the qi they
- * ever earned into 劍訣 technique — not the player who spent nothing, not the one who
- * optimised everything, but the one in the middle.
+ * cultivator standing at the realm's ceiling with 劍訣 near the level the realm allows
+ * — not the one who spent nothing, not the one who optimised everything, but the one in
+ * the middle. Cores, gear, the tree and the tower are the margin on top, and they are
+ * what turns a coin-flip into a win.
  *
  * The first version gave beasts an exponent of their own (1.42 per layer) and they ran
  * away from any possible player: at realm 4 the warden was worth twenty well-invested
- * cultivators. Deriving from the curve instead of inventing a number means the balance
- * follows on its own when REALM_COST changes.
+ * cultivators. The second derived them from a share of all the qi ever earned, which
+ * stopped being meaningful the moment upgrade prices started riding the mountain.
+ * Deriving from the *cap* is the honest one: the cap is the ceiling on what a
+ * cultivator of that realm can possibly hold, so the beasts follow it on their own and
+ * nothing here needs touching when the curve moves.
+ *
+ * It sits a fixed *two levels* below the cap rather than a share of it. A share widens
+ * as the cap does — at the ninth realm fifteen per cent of the cap is eight levels of
+ * 劍訣, nearly five times the power — so the same warden would read as hopeless at 85%
+ * of the cap and trivial at 100%. Two levels is two levels at every realm, so the last
+ * stretch before a warden feels the same all the way up the mountain.
  */
-export const POWER_SHARE = 0.35;
+export const REFERENCE_BELOW = 2;
+
+/**
+ * The same reading, taken anywhere — between realms, and above the ninth.
+ *
+ * The mountain stops at nine realms; 無盡塔 the tower does not, so it needs the reference
+ * as a curve rather than as nine points. Feed it 4.5 and it gives what a cultivator
+ * halfway through the fourth realm would hold; feed it 30 and it gives what a
+ * twenty-first realm would hold, if there were one.
+ */
+export function referenceAt(realm: number): number {
+  const r = Math.max(1, realm);
+  const { gain } = UPGRADE_INFO.technique;
+  return r * LAYERS_PER_REALM * gain ** Math.max(0, r * LEVELS_PER_REALM - REFERENCE_BELOW);
+}
 
 export function referencePower(realm: number): number {
-  const r = Math.max(1, Math.min(9, realm));
-  let totalQi = 0;
-  for (let i = 0; i < r; i++) {
-    const c = REALM_COST[i];
-    if (Number.isFinite(c)) totalQi += c;
-  }
-  const { base, step, gain } = UPGRADE_INFO.technique;
-  const spent = totalQi * POWER_SHARE;
-  // Geometric sum, inverted: how many levels that spend buys.
-  const levels = Math.log1p((spent * (step - 1)) / base) / Math.log(step);
-  // The ninth realm is the ceiling and its layers never open, so the ladder stops at
-  // the 73rd — which is where the cultivator actually stands for good.
-  const top = 8 * LAYERS_PER_REALM + 1;
-  const ladder = Math.min((r - 1) * LAYERS_PER_REALM + LAYERS_PER_REALM, top);
-  return ladder * gain ** levels;
+  return referenceAt(Math.min(9, realm));
 }
 
 /**
@@ -56,10 +67,23 @@ export function referencePower(realm: number): number {
  */
 const STEPS = [0.45, 0.62, 0.84];
 
+/**
+ * 守 What a warden asks for, as a multiple of its realm's reference.
+ *
+ * It is not a number at all: a warden stands at exactly the power of a cultivator who
+ * has filled the realm's cap and brought nothing else. So the fight is a coin flip for
+ * a cultivator with the levels and nothing more, and the stance, the sequence, the gear,
+ * the cores and the tree are what turn the coin over.
+ *
+ * That is the whole argument for 勢 and 訣 existing, stated as a number: the last levels
+ * of 劍訣 get you to the door, and the build opens it.
+ */
+export const WARDEN_EDGE = UPGRADE_INFO.technique.gain ** REFERENCE_BELOW;
+
 /** A beast's power, always as a fraction of its realm's reference. */
 export function beastPower(b: Beast): number {
   const ref = referencePower(b.realm);
-  if (b.warden) return ref * 1.15;            // the warden asks for a little above the middle
+  if (b.warden) return ref * WARDEN_EDGE;
   const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
   return ref * STEPS[Math.max(0, i) % STEPS.length];
 }
@@ -122,11 +146,12 @@ export const FORM = 0.2;
  * beast's power *before* the beast answers, which is why taking it early is worth more
  * than taking it late.
  */
-export function fight(s: State, b: Beast, seed: number): Outcome {
+export function fight(s: State, b: Beast, seed: number, standing?: number): Outcome {
   const stance = stanceOf(s);
   const sequence = sequenceOf(s);
   const pp = power(s);
-  const bp0 = effectiveBeastPower(s, b);
+  // A tower floor brings its own power; everywhere else the beast brings its own.
+  const bp0 = standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing);
 
   let beastPower = bp0;      // 纏 and 鶴唳 shave this as the fight runs
   let ph = pp * 10;
@@ -211,7 +236,7 @@ export function fight(s: State, b: Beast, seed: number): Outcome {
   return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0 };
 }
 
-/** How much material a common beast drops. */
+/** How much material a common beast drops, before the tower's seals sweeten it. */
 export function loot(b: Beast): number {
   return Math.max(1, Math.round(b.realm * 1.6 + (b.realm - 1) ** 1.5));
 }
@@ -230,10 +255,10 @@ const SAMPLES = 41;
  * So it simply *fights* — twenty-five times, on spread seeds — and counts. Pure, cheap,
  * and it can never disagree with what the player is about to watch.
  */
-export function odds(s: State, b: Beast): number {
+export function odds(s: State, b: Beast, standing?: number): number {
   let won = 0;
   for (let i = 0; i < SAMPLES; i++) {
-    if (fight(s, b, (i * 2654435761) >>> 0).won) won++;
+    if (fight(s, b, (i * 2654435761) >>> 0, standing).won) won++;
   }
   return Math.max(0.02, Math.min(0.98, won / SAMPLES));
 }
@@ -246,10 +271,16 @@ export function odds(s: State, b: Beast): number {
  * game whose power depends on the cultivator facing it, and it is the reason the game
  * does not end at the top.
  */
-export function effectiveBeastPower(s: State, b: Beast): number {
-  const base = beastPower(b);
-  const raised = b.key === 'dragon' && s.realm === 9 ? tribulationPower(s, base) : base;
-  return raised * beastWeakness(s.unlocked);
+export function effectiveBeastPower(s: State, b: Beast, standing?: number): number {
+  const base = standing ?? beastPower(b);
+  const trial = standing === undefined && b.key === 'dragon' && s.realm === 9;
+  if (trial) {
+    // 劫 The tribulation is lightning, not a beast. 破甲 and 破煞 thin what has blood in
+    // it; neither has any hold on heaven, and if they did the endgame would be a pill
+    // you swallow once rather than a ladder you climb.
+    return tribulationPower(s, base);
+  }
+  return base * beastWeakness(s.unlocked) * pillBane(s.brewed);
 }
 
 export function currentWarden(s: State): Beast {

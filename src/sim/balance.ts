@@ -7,80 +7,165 @@
 /** Qi per second in the first realm, with no multipliers at all. */
 export const BASE_RATE = 1.0;
 
-/** Nine layers per realm. A layer is not a currency: it is a reading of the bar. */
+/** Nine layers per realm, nine realms: eighty-one rungs, and the ladder is continuous. */
 export const LAYERS_PER_REALM = 9;
+export const LAYERS = 81;
 
 /** Each opened layer multiplies the rate. 1.02^81 = 4.97x at the top of the ladder. */
 export const LAYER_BONUS = 1.02;
 
 /**
- * Qi to leave each realm. The ninth has no exit — it is the ceiling of v1.
+ * 階 The ladder.
  *
- * These numbers were not chosen by eye. They come from a target schedule whose realm-to
- * -realm ratio *shrinks* toward the top (1.9 down to 1.4). A constant ratio always
- * leaves ~41% of a playthrough in the last gap however large the curve is — and 41% of
- * three months is a whole month with nothing new in it, which is exactly how the
- * earlier version died.
+ * Every one of the eighty-one layers has its own price, and the price grows from rung
+ * to rung — fast at the bottom, more gently at the top. Three numbers describe the
+ * whole mountain.
  *
- * `curve.test.ts` prints the arrival days and fails if any gap exceeds MAX_GAP.
+ * The earlier version priced a realm as one lump and split it into nine equal layers.
+ * That was the fault under everything else: inside a realm the rate multiplied while
+ * the price stood still, so the first layer of a realm took hours and the ninth took
+ * minutes, and every upgrade the realm allowed was affordable within the first hour.
+ * The player bought everything at once and then waited days with nothing to press.
+ *
+ * A layer that costs more than the one below it is what spreads a realm out.
  */
-export const REALM_COST: readonly number[] = [
-  100_000,      // 1 -> 2
-  228_000,      // 2 -> 3
-  488_000,      // 3 -> 4
-  993_000,      // 4 -> 5
-  1_900_000,    // 5 -> 6
-  3_404_000,    // 6 -> 7
-  5_899_000,    // 7 -> 8
-  9_869_000,    // 8 -> 9
-  Infinity,     // 9, the ceiling
-];
+export const LADDER_FIRST = 900;
+/** How much dearer each layer is than the last, at the foot of the mountain… */
+export const LADDER_GROWTH_FIRST = 1.4614;
+/** …and at the summit. It never falls below the rate's own growth, so the climb never
+ *  speeds up: every realm is longer than the one before it, all nine of them. */
+export const LADDER_GROWTH_LAST = 1.20;
+
+const LADDER: number[] = (() => {
+  const out: number[] = [];
+  let c = LADDER_FIRST;
+  for (let n = 0; n < LAYERS + 1; n++) {
+    out.push(c);
+    c *= LADDER_GROWTH_FIRST * (LADDER_GROWTH_LAST / LADDER_GROWTH_FIRST) ** (n / (LAYERS - 1));
+  }
+  return out;
+})();
+
+/** What the nth layer costs, counting from zero across the whole climb. */
+export function ladderAt(n: number): number {
+  return LADDER[Math.max(0, Math.min(LAYERS, Math.round(n)))];
+}
+
+/**
+ * The ladder read between its rungs, which is what upgrade prices ride.
+ *
+ * It interpolates in the log, because the ladder is geometric: halfway between two
+ * rungs means the geometric mean, not the average.
+ */
+export function ladderBetween(x: number): number {
+  const i = Math.max(0, Math.min(LAYERS - 1, Math.floor(x)));
+  const f = Math.max(0, Math.min(1, x - i));
+  return LADDER[i] ** (1 - f) * LADDER[i + 1] ** f;
+}
+
+/**
+ * The ladder continued past its own top.
+ *
+ * The mountain ends at the eighty-first rung. The furnace does not, so its prices go on
+ * climbing at the rate the summit was climbing at — one rule, no second table, and a
+ * price that is never cheaper than the last layer of the game.
+ */
+export function ladderOpen(x: number): number {
+  if (x <= LAYERS - 1) return ladderBetween(x);
+  return LADDER[LAYERS] * LADDER_GROWTH_LAST ** (x - (LAYERS - 1));
+}
+
+/** What a whole realm costs, for anything that wants to speak in realms. */
+export function realmCost(realm: number): number {
+  const r = Math.max(1, Math.min(9, Math.round(realm)));
+  let sum = 0;
+  for (let i = 0; i < LAYERS_PER_REALM; i++) sum += ladderAt((r - 1) * LAYERS_PER_REALM + i);
+  return sum;
+}
+
+/**
+ * 修為上限 The cap: how many levels of one upgrade a realm allows.
+ *
+ * This is the wall the old economy had no version of. Without it a cultivator who
+ * spends reaches the ninth realm in *three days* — measured, not guessed — because the
+ * rate upgrades pay for the rate upgrades and nothing anywhere says stop. With it the
+ * climb takes between 86 and 114 days whether the app is opened once a day or two
+ * hundred times, which is what an idle game is supposed to promise.
+ *
+ * It also says something true: a body only holds so much. To hold more, raise the realm.
+ */
+export const LEVELS_PER_REALM = 6;
+
+export function levelCap(realm: number): number {
+  return Math.max(1, Math.min(9, Math.round(realm))) * LEVELS_PER_REALM;
+}
 
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;
 
-/** The agreed target: three months to the ninth realm, opening the app once a day. */
+/** The agreed target: three months to the ninth realm, for a cultivator who spends. */
 export const TARGET_DAYS = 90;
-export const TOLERANCE_DAYS = 8;
+export const TOLERANCE_DAYS = 10;
 
 /**
  * 渡劫 The tribulation, and what happens after the top.
  *
- * Realm 9 was a dead end: its layers never open, so the bar read zero for ever and the
- * qi piled up with nowhere to go. An idle game may not end, and that is what ending
+ * Realm 9 was a dead end: its layers never opened, so the bar read zero for ever and
+ * the qi piled up with nowhere to go. An idle game may not end, and that is what ending
  * looks like.
  *
  * So the ninth realm keeps its name. 渡劫 means *crossing the tribulation*, and that is
- * now what you do: face the 龍 Dragon again at a power that rises every time, and take a
- * 雷印 thunder mark for crossing.
+ * now what you do once the ladder runs out: face the 龍 Dragon again at a power that
+ * rises every time, and take a 雷印 thunder mark for crossing.
  *
- * **It is gated by power, not by qi.** The first design put a qi bar in front of it and
- * the bar was meaningless: measured, a cultivator at the top gathers some seven hundred
- * million qi a day against a whole climb that cost twenty-three million, and the rate
- * compounds with every upgrade bought while any fixed ladder of costs does not. Qi is
- * effectively unlimited up there. What is *not* unlimited is power, because each level
- * of 劍訣 costs 1.16x the last — so the real wait is the wait to afford the next few
- * levels, which is exactly the wait an idle game is made of.
+ * **It is gated by power, not by qi.** Qi is effectively unlimited up there. What is not
+ * unlimited is power, because every level of 劍訣 costs what a layer of the mountain
+ * costs — so the real wait is the wait to afford the next few levels, which is exactly
+ * the wait an idle game is made of.
  */
 
 /**
- * What the next crossing asks for, as a share of the power you had when you took the
- * last mark.
+ * What the next crossing asks for, as a share of the power you had at the last mark.
  *
- * It is anchored to *you*, not to a fixed ladder, and that is deliberate. A fixed ladder
- * cannot hold: measured, a cultivator standing at the top with nothing left to spend qi
- * on reaches a qi rate of 10^28 a day within a fortnight, because the rate upgrades feed
- * the qi that buys the rate upgrades and their cost curve is too shallow to stop it.
- * That is a real fault in the economy and it wants its own pass — see the note in
- * `tribulation.test.ts`. Anchoring the Dragon to the player's own power means the
- * endgame is correct either way: before the economy is fixed the marks come quickly,
- * and after it they pace themselves, with nothing here to change.
+ * It is solved against the furnace, not chosen — see TRIBULATION_GAIN below, which has
+ * the arithmetic. Three pills a crossing is what it comes to.
  */
-export const TRIBULATION_CHALLENGE = 1.6;
+export const TRIBULATION_CHALLENGE = 1.89;
 
 /** What the Dragon gains each time it comes back, before the anchor is taken into account. */
-export const TRIBULATION_POWER = 1.7;
-/** What one 雷印 mark is worth, to power and to qi alike. */
-export const TRIBULATION_GAIN = 0.1;
+export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
+
+/** How far over the last Dragon a crossing may leave you before the next one notices. */
+export const TRIBULATION_SLACK = 1.2;
+
+/**
+ * 雷池 How many days of gathering the thunder pool holds.
+ *
+ * The pool is the endgame's clock. See `tribulationPool` in state.ts for why an endgame
+ * gated only by power has no clock at all.
+ */
+export const MARK_DAYS = 2;
+/**
+ * What one 雷印 mark is worth, to power and to qi alike.
+ *
+ * It is not a flavour number. The endgame is a race between the Dragon, which comes back
+ * TRIBULATION_CHALLENGE times heavier every crossing, and the cultivator, who grows only
+ * by what the furnace sells them. For the marks to keep a steady pace instead of slowing
+ * into a wall, two things have to hold at once, where `s` is what a pill's price rises by
+ * and `g` is what a pill is worth:
+ *
+ *     mark      = s^k          (income keeps up with the price of the next k pills)
+ *     challenge = mark · (1+g)^k   (and those k pills close the gap the Dragon opened)
+ *
+ * With three pills a crossing, a price that rises 1.20x a pill and a pill worth 3%, that
+ * gives a mark of 1.728x and a Dragon of 1.89x. The thirtieth crossing then takes about
+ * as long as the third. Change any one of the four and this one has to be solved again —
+ * `tribulation.test.ts` plays it out and prints the days.
+ *
+ * It is also why the marks are not larger. A bigger mark paces the same but inflates
+ * faster, and an idle game that multiplies everything by five twice a day runs out of
+ * double-precision inside a season.
+ */
+export const TRIBULATION_GAIN = 0.728;
 /** No single mark may take longer than this, or the endgame is a wall, not a ladder. */
 export const MAX_MARK_DAYS = 14;
