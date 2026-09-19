@@ -167,7 +167,10 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 .side { position: relative; }
 .side[data-hit='true'] .fig { animation: shake .26s ease-out; }
-.side[data-hit='true'] .fig::after {
+/* The flash belongs to the figure, not to the side: anchored on .side it stretched into
+   an ellipse across the name and the health bar as well. */
+.side .fig > span { position: relative; }
+.side[data-hit='true'] .fig > span::after {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   background: var(--tone, var(--magenta)); opacity: 0; animation: flash .3s ease-out;
   pointer-events: none; mix-blend-mode: screen;
@@ -177,6 +180,59 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
   font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 21px;
   animation: rise .75s ease-out forwards; pointer-events: none; text-shadow: 0 2px 10px #000;
 }
+
+/* 擊 The lunge. Whoever is striking leans into the middle and comes back. The
+   cultivator sits above the beast, so they lean down and the beast leans up. */
+@keyframes lunge-down {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(15px) scale(1.06); }
+  100% { transform: translateY(0); }
+}
+@keyframes lunge-up {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-15px) scale(1.06); }
+  100% { transform: translateY(0); }
+}
+.side[data-who='player'][data-strike='true'] .fig { animation: lunge-down .17s ease-out; }
+.side[data-who='beast'][data-strike='true'] .fig { animation: lunge-up .17s ease-out; }
+
+/* 息 The beast breathes while it waits, so it is never a sticker on a wall. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+.beastfig > span { animation: breathe 2.6s ease-in-out infinite; }
+.side[data-strike='true'] .beastfig > span,
+.side[data-hit='true'] .beastfig > span { animation: none; }
+
+/* The mark thrown in the middle on every blow: a line drawn across, and the character
+   for the blow it is — 擊 a strike, 反 the answer. */
+@keyframes slash {
+  0% { transform: scaleX(0); opacity: 0; }
+  30% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes mark {
+  0% { transform: scale(.5); opacity: 0; }
+  30% { transform: scale(1); opacity: .95; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.clash { position: relative; display: block; height: 20px; }
+.clash i {
+  position: absolute; left: 12%; right: 12%; top: 50%; height: 1.5px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  animation: slash .3s ease-out forwards;
+}
+.clash b {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  font-family: 'Noto Serif SC', serif; font-size: 17px; font-weight: 400;
+  animation: mark .34s ease-out forwards; text-shadow: 0 0 14px currentColor;
+}
+.clash[data-by='player'] { color: var(--cyan); }
+.clash[data-by='beast'] { color: var(--magenta); }
+
+/* Once it is over the fight stops moving and the verdict has the screen to itself. */
+.arena[data-over='true'] .beastfig > span { animation: none; }
 
 .verdict { animation: lift .3s ease-out both; }
 

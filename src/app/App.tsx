@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
-import { beastPower, currentWarden, fight, loot, type Outcome } from '../sim/combat.ts';
+import { currentWarden, fight, loot } from '../sim/combat.ts';
 import { newState, power, type State } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { load, save } from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
-import { portrait, seal } from '../art/aura.ts';
-import { gearTile } from '../art/gear.ts';
-import { RARITY_INFO, templateOf, type Item, type Slot } from '../data/gear.ts';
+import { portrait } from '../art/aura.ts';
+import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
 import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
 import { WARDENS } from '../data/bestiary.ts';
-import { AFFIX_INFO, RARITIES, wornTotals } from '../data/gear.ts';
+import { RARITIES, wornTotals } from '../data/gear.ts';
 import { Bestiary } from './screens/Bestiary.tsx';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
@@ -21,6 +20,7 @@ import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Help } from './ui/Help.tsx';
 import { Svg } from './ui/Svg.tsx';
+import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { haptics } from './haptics.ts';
 import { isMuted, setMuted, sfx } from './sound.ts';
 
@@ -42,15 +42,6 @@ function limitOf(s: State): number {
   return chestLimit(s.unlocked, capacity);
 }
 
-interface Fight {
-  readonly beast: Beast;
-  readonly outcome: Outcome;
-  readonly round: number;
-  readonly over: boolean;
-  /** Rolled when the fight starts, so the screen can show it the moment it ends. */
-  readonly drop: Item | null;
-}
-
 interface Homecoming {
   readonly seconds: number;
   readonly qi: number;
@@ -61,7 +52,7 @@ interface Homecoming {
 export function App() {
   const [tab, setTab] = useState<TabKey>('cultivate');
   const [state, setState] = useState<State>(() => newState(now()));
-  const [battle, setBattle] = useState<Fight | null>(null);
+  const [battle, setBattle] = useState<Battle | null>(null);
   const [home, setHome] = useState<Homecoming | null>(null);
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
@@ -144,7 +135,7 @@ export function App() {
       return {
         beast,
         outcome: fight(state, beast, seed),
-        round: 0,
+        beat: 0,
         over: false,
         drop: rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
           chance: dropChanceBonus(state.unlocked),
@@ -155,8 +146,13 @@ export function App() {
     });
   }, [state]);
 
-  // The rounds are already computed; this only draws them, one at a time, and sounds
-  // each blow as it lands.
+  /**
+   * The whole fight is already settled; this walks it one beat at a time.
+   *
+   * A round is two beats — the cultivator strikes, then the beast answers — so a blow
+   * lands alone and you can see whose it was. The sound follows the same beat: the
+   * swing on the strike, the wound a breath later.
+   */
   useEffect(() => {
     if (!battle) return;
     if (battle.over) {
@@ -165,16 +161,16 @@ export function App() {
     }
     sfx.strike();
     haptics.strike();
-    const hurt = setTimeout(() => { sfx.wound(); haptics.wound(); }, 110);
+    const hurt = setTimeout(() => { sfx.wound(); haptics.wound(); }, 80);
     const id = setTimeout(() => {
       setBattle((b) => {
         if (!b) return b;
-        const next = b.round + 1;
-        return next >= b.outcome.rounds.length
-          ? { ...b, round: b.outcome.rounds.length - 1, over: true }
-          : { ...b, round: next };
+        const next = b.beat + 1;
+        return next >= beatsIn(b.outcome)
+          ? { ...b, beat: beatsIn(b.outcome) - 1, over: true }
+          : { ...b, beat: next };
       });
-    }, 300);
+    }, BEAT_MS);
     return () => { clearTimeout(id); clearTimeout(hurt); };
   }, [battle]);
 
@@ -263,7 +259,6 @@ export function App() {
   }, []);
 
   const r = realmOf(state.realm);
-  const round = battle?.outcome.rounds[battle.round];
   const byKey = useMemo(
     () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
     [],
@@ -304,83 +299,14 @@ export function App() {
         ))}
       </nav>
 
-      {battle && round && (
-        <div className="arena">
-          <div className="side" data-hit={round.beastDamage > 0} style={{ ['--tone' as string]: 'var(--magenta)' }}>
-            <div className="fig">
-              <Svg html={portrait({ realm: state.realm, pulse, focus: true })} />
-            </div>
-            <span className="dmg" key={`p${battle.round}`} style={{ color: 'var(--magenta)' }}>
-              −{num(round.beastDamage)}
-            </span>
-            <div className="row" style={{ fontSize: 12.5 }}>
-              <span className="cjk" style={{ color: r.colour }}>{r.han}</span>
-              <span className="mono faint">力 {num(battle.outcome.playerPower)}</span>
-            </div>
-            <div className="hp">
-              <i style={{ width: `${round.playerHealth * 100}%`, background: 'var(--cyan)' }} />
-            </div>
-          </div>
-
-          <div className="versus">{battle.over ? '' : `round ${battle.round + 1}`}</div>
-
-          <div className="side" data-hit={round.playerDamage > 0} style={{ ['--tone' as string]: 'var(--cyan)' }}>
-            <div className="fig">
-              <span><Svg html={seal(battle.beast.icon, realmOf(battle.beast.realm).colour, !!battle.beast.warden)} /></span>
-            </div>
-            <span className="dmg" key={`b${battle.round}`} style={{ color: 'var(--cyan)' }}>
-              −{num(round.playerDamage)}
-            </span>
-            <div className="row" style={{ fontSize: 12.5 }}>
-              <span className="cjk" style={{ color: realmOf(battle.beast.realm).colour }}>{battle.beast.han}</span>
-              <span className="mono faint">力 {num(beastPower(battle.beast))}</span>
-            </div>
-            <div className="hp">
-              <i style={{ width: `${round.beastHealth * 100}%`, background: 'var(--magenta)' }} />
-            </div>
-          </div>
-
-          {battle.over && (
-            <div className="verdict">
-              <span className="han" style={{ color: battle.outcome.won ? 'var(--cyan)' : 'var(--magenta)' }}>
-                {battle.outcome.won ? '勝' : '敗'}
-              </span>
-              <p>
-                {battle.outcome.won
-                  ? battle.beast.warden
-                    ? 'The warden has fallen. The breakthrough is open.'
-                    : `+${num(loot(battle.beast))} material.`
-                  : 'Nothing was lost. Come back with more power.'}
-              </p>
-              {battle.outcome.won && battle.drop && (
-                <div className="spoil">
-                  <Svg html={gearTile(battle.drop, { size: 62, spin: pulse })} />
-                  <span>
-                    <b className="cjk" style={{ color: RARITY_INFO[battle.drop.rarity].colour }}>
-                      {templateOf(battle.drop).han}
-                    </b>
-                    <i>
-                      {templateOf(battle.drop).name}
-                      {battle.drop.rolls.map((roll) => (
-                        <span key={roll.affix} style={{ marginLeft: 7 }}>
-                          <span className="cjk">{AFFIX_INFO[roll.affix].han}</span>
-                          +{Math.round(roll.value * 10) / 10}
-                        </span>
-                      ))}
-                    </i>
-                    {state.chest.length >= limitOf(state) && (
-                      <em className="full">Chest full — this one is lost</em>
-                    )}
-                  </span>
-                </div>
-              )}
-              <button className="act" style={{ marginTop: 16 }} onClick={closeFight}>
-                {battle.outcome.won ? '收' : '退'}{' '}
-                <span>{battle.outcome.won ? 'Collect' : 'Withdraw'}</span>
-              </button>
-            </div>
-          )}
-        </div>
+      {battle && (
+        <Arena
+          battle={battle}
+          realm={state.realm}
+          pulse={pulse}
+          chestFull={state.chest.length >= limitOf(state)}
+          onClose={closeFight}
+        />
       )}
 
       {bloom !== null && (
