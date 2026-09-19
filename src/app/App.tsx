@@ -7,7 +7,12 @@ import { duration, num } from '../sim/format.ts';
 import { load, save } from '../sim/save.ts';
 import { advance } from '../sim/time.ts';
 import { portrait, seal } from '../art/aura.ts';
+import { gearTile } from '../art/gear.ts';
+import { RARITY_INFO, templateOf, type Item, type Slot } from '../data/gear.ts';
+import { CHEST_LIMIT, addToChest, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
+import { rollDrop } from '../sim/drops.ts';
 import { Bestiary } from './screens/Bestiary.tsx';
+import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Help } from './ui/Help.tsx';
@@ -18,6 +23,7 @@ import { isMuted, setMuted, sfx } from './sound.ts';
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate' },
   { key: 'hunt', han: '狩', label: 'Hunt' },
+  { key: 'gear', han: '器', label: 'Gear' },
   { key: 'bestiary', han: '錄', label: 'Bestiary' },
 ] as const;
 
@@ -30,6 +36,8 @@ interface Fight {
   readonly outcome: Outcome;
   readonly round: number;
   readonly over: boolean;
+  /** Rolled when the fight starts, so the screen can show it the moment it ends. */
+  readonly drop: Item | null;
 }
 
 interface Homecoming {
@@ -119,11 +127,15 @@ export function App() {
     haptics.tap();
     setBattle((current) => {
       if (current) return current;   // one fight at a time
+      // One seed for the fight and its drop, so the same kill always gives the same
+      // item — closing the app and reopening it cannot re-roll a poor piece.
+      const seed = Math.floor(now() * 1000) >>> 0;
       return {
         beast,
-        outcome: fight(state, beast, Math.floor(now() * 1000) >>> 0),
+        outcome: fight(state, beast, seed),
         round: 0,
         over: false,
+        drop: rollDrop(beast, state.realm, seed ^ 0x9e3779b9),
       };
     });
   }, [state]);
@@ -153,18 +165,51 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome } = battle;
+    const { beast, outcome, drop } = battle;
     if (outcome.won) {
-      setState((s) => ({
-        ...s,
-        wardenFell: beast.warden ? true : s.wardenFell,
-        materials: s.materials + (beast.warden ? loot(beast) * 4 : loot(beast)),
-        killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
-      }));
+      setState((s) => {
+        const kept = drop ? addToChest(s.chest, drop) : null;
+        return {
+          ...s,
+          wardenFell: beast.warden ? true : s.wardenFell,
+          materials: s.materials + (beast.warden ? loot(beast) * 4 : loot(beast)),
+          killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
+          chest: kept ? [...kept] : s.chest,
+        };
+      });
     }
     setBattle(null);
     sfx.tap();
   }, [battle]);
+
+  const onEquip = useCallback((item: Item) => {
+    sfx.buy();
+    haptics.tap();
+    setState((s) => {
+      const next = equipItem(s.worn, s.chest, item, templateOf(item).slot);
+      return { ...s, worn: next.worn, chest: [...next.chest] };
+    });
+  }, []);
+
+  const onUnequip = useCallback((slot: Slot) => {
+    setState((s) => {
+      const next = unequipItem(s.worn, s.chest, slot);
+      if (next.refused) return s;   // a full chest has nowhere to put it
+      return { ...s, worn: next.worn, chest: [...next.chest] };
+    });
+    sfx.tap();
+    haptics.tap();
+  }, []);
+
+  const onFuse = useCallback((template: string, rarity: string) => {
+    setState((s) => {
+      const next = fuse(s.chest, template, rarity as Item['rarity']);
+      if (!next.made) return s;
+      return { ...s, chest: [...next.chest] };
+    });
+    sfx.breakthrough();
+    haptics.win();
+  }, []);
 
   /** Breaking through is the one moment the game stops for. */
   const climb = useCallback((next: State) => {
@@ -206,6 +251,9 @@ export function App() {
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
+        {tab === 'gear' && (
+          <Gear state={state} pulse={pulse} onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} />
+        )}
         {tab === 'bestiary' && <Bestiary state={state} />}
       </div>
 
@@ -273,6 +321,20 @@ export function App() {
                     : `+${num(loot(battle.beast))} material.`
                   : 'Nothing was lost. Come back with more power.'}
               </p>
+              {battle.outcome.won && battle.drop && (
+                <div className="spoil">
+                  <Svg html={gearTile(battle.drop, { size: 62, spin: pulse })} />
+                  <span>
+                    <b className="cjk" style={{ color: RARITY_INFO[battle.drop.rarity].colour }}>
+                      {templateOf(battle.drop).han}
+                    </b>
+                    <i>{templateOf(battle.drop).name} · +{battle.drop.percent}%</i>
+                    {state.chest.length >= CHEST_LIMIT && (
+                      <em className="full">Chest full — this one is lost</em>
+                    )}
+                  </span>
+                </div>
+              )}
               <button className="act" style={{ marginTop: 16 }} onClick={closeFight}>
                 {battle.outcome.won ? '收' : '退'}{' '}
                 <span>{battle.outcome.won ? 'Collect' : 'Withdraw'}</span>

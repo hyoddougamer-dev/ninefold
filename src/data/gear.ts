@@ -88,36 +88,81 @@ export interface GearTemplate {
 const t = (key: string, han: string, name: string, slot: Slot, icon: string, realm: number, affix: Affix): GearTemplate =>
   ({ key, han, name, slot, icon, realm, affix });
 
+/**
+ * Fifty-four pieces: nine per slot, one per realm. Every realm brings one new piece in
+ * every slot, so there is always something new to find and never a slot that goes
+ * unanswered for twenty days.
+ *
+ * Variety is the point. The first table had eighteen pieces and four of them were
+ * swords — a chest full of swords is a chest full of one idea. These are drawn from the
+ * whole library: fans and bells, greaves and tabi, laurels and dragon heads.
+ */
 export const GEAR: readonly GearTemplate[] = [
-  // 劍 weapons — always power
-  t('ironsword',  '鐵劍',   'Iron Sword',      'weapon', 'ancient-sword',   1, 'power'),
-  t('moonblade',  '月刃',   'Moon Blade',      'weapon', 'crescent-blade',  3, 'power'),
-  t('spiritspear','靈槍',   'Spirit Spear',    'weapon', 'barbed-spear',    5, 'power'),
-  t('voidstaff',  '虛杖',   'Void Staff',      'weapon', 'wizard-staff',    7, 'rate'),
+  // 劍 weapons — the hand. Mostly power, with two that channel instead.
+  t('ironsword',   '鐵劍', 'Iron Sword',      'weapon', 'ancient-sword',  1, 'power'),
+  t('woodsaber',   '木刀', 'Wooden Saber',    'weapon', 'katana',         2, 'power'),
+  t('moonblade',   '月刃', 'Moon Blade',      'weapon', 'crescent-blade', 3, 'power'),
+  t('twinhooks',   '雙鉤', 'Twin Hooks',      'weapon', 'hook-swords',    4, 'power'),
+  t('spiritspear', '靈槍', 'Spirit Spear',    'weapon', 'barbed-spear',   5, 'power'),
+  t('jadefan',     '玉扇', 'Jade Fan',        'weapon', 'handheld-fan',   6, 'rate'),
+  t('voidstaff',   '虛杖', 'Void Staff',      'weapon', 'wizard-staff',   7, 'rate'),
+  t('trident',     '叉戟', 'Spirit Trident',  'weapon', 'trident',        8, 'power'),
+  t('heavenscythe','天鐮', 'Heaven Scythe',   'weapon', 'scythe',         9, 'power'),
 
-  // 袍 robes — mixed
-  t('clothrobe',  '布袍',   'Cloth Robe',      'robe',   'robe',            1, 'rate'),
-  t('greycloak',  '灰氅',   'Grey Cloak',      'robe',   'cloak',           3, 'power'),
-  t('scalerobe',  '鱗甲',   'Scale Mail',      'robe',   'chest-armor',     5, 'power'),
-  t('starrobe',   '星袍',   'Star Robe',       'robe',   'wing-cloak',      8, 'rate'),
+  // 袍 robes — the body. Cloth gathers qi, plate holds blows.
+  t('clothrobe',   '布袍', 'Cloth Robe',      'robe', 'robe',           1, 'rate'),
+  t('leathervest', '皮甲', 'Leather Vest',    'robe', 'leather-vest',   2, 'power'),
+  t('daoistrobe',  '道衣', 'Daoist Kimono',   'robe', 'kimono',         3, 'rate'),
+  t('greycloak',   '灰氅', 'Grey Cloak',      'robe', 'cloak',          4, 'power'),
+  t('lamellar',    '鱗甲', 'Lamellar',        'robe', 'lamellar',       5, 'power'),
+  t('breastplate', '胸鎧', 'Breastplate',     'robe', 'chest-armor',    6, 'power'),
+  t('pauldrons',   '肩鎧', 'Pauldrons',       'robe', 'shoulder-armor', 7, 'power'),
+  t('starrobe',    '星袍', 'Star Robe',       'robe', 'wing-cloak',     8, 'rate'),
+  t('heavenmantle','天衣', 'Heaven Mantle',   'robe', 'cape',           9, 'rate'),
 
-  // 冠 crowns — mostly rate
-  t('jadepin',    '玉簪',   'Jade Pin',        'crown',  'jewel-crown',     2, 'rate'),
-  t('bonecrown',  '骨冠',   'Bone Crown',      'crown',  'crenel-crown',    6, 'power'),
-  t('heavencrown','天冠',   'Heaven Crown',    'crown',  'imperial-crown',  8, 'rate'),
+  // 冠 crowns — the head. Where the mind is sharpened, so mostly rate.
+  t('clothband',   '布巾', 'Cloth Band',      'crown', 'bandana',       1, 'rate'),
+  t('laurels',     '桂冠', 'Laurels',         'crown', 'laurels',       2, 'rate'),
+  t('jadepin',     '玉簪', 'Jade Pin',        'crown', 'jewel-crown',   3, 'rate'),
+  t('hornedhelm',  '角盔', 'Horned Helm',     'crown', 'horned-helm',   4, 'power'),
+  t('bonecrown',   '骨冠', 'Bone Crown',      'crown', 'crenel-crown',  5, 'power'),
+  t('visoredhelm', '面甲', 'Visored Helm',    'crown', 'visored-helm',  6, 'power'),
+  t('imperialcrown','帝冠','Imperial Crown',  'crown', 'imperial-crown',7, 'rate'),
+  t('ritualcrown', '法冠', 'Ritual Crown',    'crown', 'pope-crown',    8, 'rate'),
+  t('dragonhead',  '龍首', 'Dragon Head',     'crown', 'dragon-head',   9, 'power'),
 
-  // 靴 boots
-  t('strawboots', '草鞋',   'Straw Sandals',   'boots',  'boots',           1, 'rate'),
-  t('ironboots',  '鐵靴',   'Iron Boots',      'boots',  'steeltoe-boots',  4, 'power'),
+  // 靴 boots — the ground. Light feet gather, heavy feet hold.
+  t('barefoot',    '赤足', 'Barefoot',        'boots', 'barefoot',      1, 'rate'),
+  t('strawsandals','草鞋', 'Straw Sandals',   'boots', 'sandal',        2, 'rate'),
+  t('tabiboots',   '布靴', 'Tabi Boots',      'boots', 'tabi-boot',     3, 'rate'),
+  t('walkingboots','行靴', 'Walking Boots',   'boots', 'walking-boot',  4, 'power'),
+  t('leatherboots','皮靴', 'Leather Boots',   'boots', 'leather-boot',  5, 'power'),
+  t('greaves',     '脛甲', 'Greaves',         'boots', 'greaves',       6, 'power'),
+  t('ironboots',   '鐵靴', 'Iron Boots',      'boots', 'metal-boot',    7, 'power'),
+  t('furboots',    '裘靴', 'Fur Boots',       'boots', 'fur-boot',      8, 'rate'),
+  t('windfoot',    '風足', 'Wind Foot',       'boots', 'wingfoot',      9, 'rate'),
 
-  // 珮 talismans
-  t('woodcharm',  '木符',   'Wood Charm',      'talisman', 'wax-seal',      2, 'rate'),
-  t('prayerbeads','佛珠',   'Prayer Beads',    'talisman', 'prayer-beads',  4, 'rate'),
-  t('gempendant', '寶珮',   'Gem Pendant',     'talisman', 'gem-pendant',   6, 'power'),
+  // 珮 talismans — the pocket. Almost all of them feed the gathering.
+  t('woodcharm',   '木符', 'Wood Charm',      'talisman', 'wax-seal',       1, 'rate'),
+  t('bonependant', '骨佩', 'Bone Pendant',    'talisman', 'tribal-pendant', 2, 'power'),
+  t('prayerbeads', '佛珠', 'Prayer Beads',    'talisman', 'prayer-beads',   3, 'rate'),
+  t('boundscroll', '卷軸', 'Bound Scroll',    'talisman', 'tied-scroll',    4, 'rate'),
+  t('gempendant',  '寶珮', 'Gem Pendant',     'talisman', 'gem-pendant',    5, 'power'),
+  t('starmedal',   '星章', 'Star Medal',      'talisman', 'star-medal',     6, 'rate'),
+  t('censer',      '香爐', 'Censer',          'talisman', 'incense',        7, 'rate'),
+  t('crystalorb',  '水晶', 'Crystal Orb',     'talisman', 'crystal-ball',   8, 'rate'),
+  t('orbwand',     '珠杖', 'Orb Wand',        'talisman', 'orb-wand',       9, 'power'),
 
-  // 戒 rings
-  t('plainring',  '素戒',   'Plain Ring',      'ring',   'ring',            3, 'power'),
-  t('stormring',  '雷戒',   'Storm Ring',      'ring',   'ringed-planet',   7, 'rate'),
+  // 戒 rings — the smallest thing, and the one that gets the loudest names.
+  t('plainring',   '素戒', 'Plain Ring',      'ring', 'ring',          1, 'power'),
+  t('topazring',   '黃玉', 'Topaz Ring',      'ring', 'topaz',         2, 'rate'),
+  t('amethystring','紫晶', 'Amethyst Ring',   'ring', 'amethyst',      3, 'rate'),
+  t('emeraldring', '翠戒', 'Emerald Ring',    'ring', 'emerald',       4, 'rate'),
+  t('flamering',   '炎戒', 'Flame Ring',      'ring', 'fire-ring',     5, 'power'),
+  t('frostring',   '霜戒', 'Frost Ring',      'ring', 'frozen-ring',   6, 'power'),
+  t('powerring',   '力戒', 'Power Ring',      'ring', 'power-ring',    7, 'power'),
+  t('spiralring',  '渦戒', 'Spiral Ring',     'ring', 'swirl-ring',    8, 'rate'),
+  t('ringedstar',  '星環', 'Ringed Star',     'ring', 'ringed-planet', 9, 'power'),
 ];
 
 export interface Item {

@@ -1,5 +1,9 @@
 import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
+import {
+  RARITIES, SLOTS, TEMPLATE_BY_KEY, setBonus, type Item, type Rarity, type Worn,
+} from '../data/gear.ts';
+import { CHEST_LIMIT } from './chest.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -34,6 +38,10 @@ export interface State {
   wardenFell: boolean;
   levels: Record<Upgrade, number>;
   killed: Record<string, number>;
+  /** 器 What is on the body. */
+  worn: Worn;
+  /** 藏 What is in the chest, capped at CHEST_LIMIT. */
+  chest: Item[];
 }
 
 export function newState(now: number): State {
@@ -42,6 +50,8 @@ export function newState(now: number): State {
     realm: 1, layer: 0, qi: 0, materials: 0, wardenFell: false,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
+    worn: {},
+    chest: [],
   };
 }
 
@@ -68,17 +78,19 @@ export function buy(s: State, u: Upgrade): State {
   };
 }
 
-/** Qi rate multiplier coming from upgrades. */
+/** Qi rate multiplier coming from upgrades and from what is worn. */
 export function rateBonus(s: State): number {
   return UPGRADE_INFO.method.gain ** s.levels.method
-    * UPGRADE_INFO.pills.gain ** s.levels.pills;
+    * UPGRADE_INFO.pills.gain ** s.levels.pills
+    * setBonus(s.worn).rate;
 }
 
 /** 力 Combat power. It decides every beast, and only upgrades and the ladder move it. */
 export function power(s: State): number {
   const ladder = (s.realm - 1) * LAYERS_PER_REALM + s.layer + 1;
   return ladder * UPGRADE_INFO.technique.gain ** s.levels.technique
-    * UPGRADE_INFO.cores.gain ** s.levels.cores;
+    * UPGRADE_INFO.cores.gain ** s.levels.cores
+    * setBonus(s.worn).power;
 }
 
 /** The realm is full and only the warden is left? */
@@ -130,6 +142,33 @@ export function validate(raw: unknown, now: number): State {
     if (n > 0) killed[k] = n;
   }
 
+  const item = (raw: unknown, used: Set<string>): Item | null => {
+    const o = (raw ?? {}) as Record<string, unknown>;
+    const tpl = typeof o.template === 'string' ? TEMPLATE_BY_KEY[o.template] : undefined;
+    if (!tpl) return null;                                    // a piece that does not exist is not a piece
+    const rarity = RARITIES.includes(o.rarity as Rarity) ? (o.rarity as Rarity) : 'common';
+    const id = typeof o.id === 'string' && o.id.length <= 64 ? o.id : `${tpl.key}-${used.size}`;
+    if (used.has(id)) return null;                            // two things may not be one thing
+    used.add(id);
+    // A percentage is capped at what the top rank of the last realm could ever roll.
+    return { id, template: tpl.key, rarity, percent: clamp(num(o.percent, 0), 0, 100) };
+  };
+
+  const used = new Set<string>();
+  const rawWorn = (o.worn ?? {}) as Record<string, unknown>;
+  const worn: Worn = {};
+  for (const slot of SLOTS) {
+    const it = item(rawWorn[slot], used);
+    if (it && TEMPLATE_BY_KEY[it.template].slot === slot) worn[slot] = it;
+  }
+
+  const chest: Item[] = [];
+  for (const raw of Array.isArray(o.chest) ? o.chest : []) {
+    if (chest.length >= CHEST_LIMIT) break;
+    const it = item(raw, used);
+    if (it) chest.push(it);
+  }
+
   // The ceiling: the whole ladder, every plausible upgrade, times the elapsed time.
   const elapsed = Math.max(0, now - startedAt);
   const qiCeiling = 1.02 ** 81 * 1.15 ** 200 * 1.10 ** 200 * elapsed + 1e6;
@@ -145,5 +184,7 @@ export function validate(raw: unknown, now: number): State {
     wardenFell: o.wardenFell === true,
     levels,
     killed,
+    worn,
+    chest,
   };
 }

@@ -226,3 +226,34 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
   .dmg, .verdict, .bloom .ring, .bloom .han, .bloom p { animation: none; }
   .bloom .ring { opacity: .3; }
 }
+
+/* ── 器 gear: the ring, and the chest under it ──────────────────────────── */
+
+.wheel { position: relative; aspect-ratio: 1; width: 100%; max-width: 320px; margin: 6px auto 4px; }
+.wheel .wcore { position: absolute; inset: 22%; }
+.wheel .wcore svg { display: block; width: 100%; height: 100%; }
+.wheel .wring { position: absolute; inset: 12%; border-radius: 50%; border: 1px dashed var(--line); }
+.orb { position: absolute; transform: translate(-50%, -50%); background: none; border: 0;
+       padding: 0; cursor: pointer; line-height: 0; }
+.orb svg { display: block; }
+
+.chest { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.chestit { background: none; border: 0; padding: 0; cursor: pointer;
+           display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.chestit svg { display: block; width: 100%; height: auto; }
+.pct { font-size: 10.5px; font-family: Rajdhani, sans-serif; font-weight: 600; }
+.pct em { font-style: normal; color: var(--cyan); }
+
+.abas, .tabs { grid-template-columns: repeat(4, 1fr); }
+
+.spoil { display: flex; align-items: center; gap: 12px; justify-content: center;
+         margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.spoil svg { display: block; }
+.spoil span { text-align: left; }
+.spoil b { display: block; font-size: 17px; }
+.spoil i { font-style: normal; font-size: 12px; color: var(--faint); }
+.spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--magenta); margin-top: 3px; }
+
+/* The ? and sound switches float over the sheet, so every screen's header row has to
+   leave room for them — otherwise the numbers on the right slide underneath. */
+.sheet > .row:first-child { padding-right: 70px; }
