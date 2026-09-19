@@ -17,6 +17,7 @@
     "catalogue": "tsx tools/catalogue.ts",
     "arts": "tsx tools/arts.ts",
     "systems": "tsx tools/systems.ts",
+    "bible": "tsx tools/bible.ts",
     "prose": "npm run build && tsx tools/prose.ts"
   },
   "dependencies": {
