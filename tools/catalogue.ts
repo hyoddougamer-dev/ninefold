@@ -9,7 +9,10 @@
 import { writeFileSync } from 'node:fs';
 import { gearTile } from '../src/art/gear.ts';
 import { icon } from '../src/art/icon.ts';
-import { GEAR, RARITY_INFO, SLOTS, SLOT_INFO, type Rarity } from '../src/data/gear.ts';
+import {
+  AFFIXES, AFFIX_INFO, GEAR, RARITY_INFO, SECONDARIES, SLOTS, SLOT_INFO,
+  baseValue, type Rarity,
+} from '../src/data/gear.ts';
 import { PATHS, PATH_INFO, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
 import { affinity, daoEarned, extraChestSlots, powerMultiplier, rateMultiplier } from '../src/sim/dao.ts';
 import { realm as realmOf } from '../src/data/realms.ts';
@@ -27,17 +30,22 @@ const catalogue = SLOTS.map((slot) => {
     <div class="slothead">
       <span class="ic">${icon(info.empty, 28)}</span>
       <h3><span class="cjk">${info.han}</span> ${info.name}</h3>
+      <span class="axes">${[...new Set(pieces.map((x) => x.affix))]
+        .map((a) => `<span class="cjk">${AFFIX_INFO[a].han}</span>`).join('')}</span>
       <span class="count">${pieces.length}</span>
     </div>
     <div class="grid">
       ${pieces.map((g) => {
         const rarity = rarityForRealm(g.realm);
         const rar = RARITY_INFO[rarity];
+        const affix = AFFIX_INFO[g.affix];
+        const value = baseValue(g, rarity, g.affix);
         return `<figure class="piece">
           ${gearTile({ id: g.key, template: g.key, rarity, rolls: [] }, { size: 68, spin: 0.12 })}
           <figcaption>
             <b class="cjk" style="color:${rar.colour}">${g.han}</b>
             <i>${g.name}</i>
+            <span class="axis"><span class="cjk">${affix.han}</span> +${value}${affix.unit === '%' ? '%' : ''}</span>
             <span style="color:${realmOf(g.realm).colour}">reino ${g.realm}</span>
           </figcaption>
         </figure>`;
@@ -126,6 +134,10 @@ const page = `<title>器道 Equipamento e Árvore</title>
   .piece b { display:block; font-size:15px; }
   .piece i { font-style:normal; font-size:10.5px; color:var(--faint); display:block; }
   .piece span { font-size:9.5px; letter-spacing:.06em; }
+  .piece .axis { display:block; font-size:11px; color:var(--gold); font-family:Rajdhani,sans-serif;
+                 font-weight:700; margin-top:1px; }
+  .piece .axis .cjk { font-family:'Noto Serif SC',serif; font-weight:400; margin-right:2px; }
+  .slothead .axes { margin-left:10px; font-size:15px; color:var(--faint); letter-spacing:.14em; }
 
   /* árvore */
   .tree { display:grid; gap:20px; }
@@ -161,6 +173,11 @@ const page = `<title>器道 Equipamento e Árvore</title>
   td.n { text-align:right; font-family:Rajdhani,sans-serif; font-weight:600; }
 
   .note { border-left:2px solid var(--magenta); padding:6px 0 6px 16px; color:var(--faint); }
+  .axisgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:9px; }
+  .ax { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+        padding:10px 12px; }
+  .ax b { font-size:20px; color:var(--cyan); display:block; }
+  .ax i { font-style:normal; font-size:12px; color:var(--faint); }
   .note b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; font-size:21px; color:var(--gold); }
 </style>
@@ -207,11 +224,31 @@ const page = `<title>器道 Equipamento e Árvore</title>
   </div>
 
   <div class="part">
+    <p class="tag">Os sete eixos</p>
+    <h2>Em que é que uma peça pode rolar</h2>
+    <p class="says">São os mesmos eixos que a árvore mexe — é isso que faz uma build ser
+      uma build: um nó de 運 e uma linha de 運 num anel puxam a mesma alavanca.</p>
+    <div class="axisgrid">
+      ${AFFIXES.map((a) => `<div class="ax">
+        <b class="cjk">${AFFIX_INFO[a].han}</b>
+        <i>${AFFIX_INFO[a].label}</i>
+      </div>`).join('')}
+    </div>
+    <p class="says">Quantas linhas leva cada nível:
+      ${Object.entries(SECONDARIES).map(([r, n]) =>
+        `<span class="cjk" style="color:${RARITY_INFO[r as Rarity].colour}">${RARITY_INFO[r as Rarity].han}</span> ${n + 1}`).join(' · ')}.
+      A primeira é a da peça; as outras são sorteadas, e nunca há o mesmo eixo duas vezes.</p>
+  </div>
+
+  <div class="part">
     <p class="tag">器 O catálogo</p>
     <h2>As 54 peças</h2>
     <p class="says">Nove por espaço, uma por reino. Nenhuma partilha desenho com outra —
-      há um teste a garanti-lo. A moldura aqui mostra a raridade típica do reino de cada
-      peça, para se verem os cinco níveis.</p>
+      há um teste a garanti-lo. A moldura mostra a raridade típica do reino de cada peça,
+      para se verem os cinco níveis, e o número dourado é a linha principal dessa peça
+      nesse nível.</p>
+    <p class="says">Repara nos símbolos ao lado do nome de cada espaço: são os eixos que
+      esse espaço oferece ao longo dos nove reinos. Nenhum espaço serve um caminho só.</p>
     ${catalogue}
   </div>
 </div>`;
