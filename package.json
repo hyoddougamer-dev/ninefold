@@ -15,6 +15,7 @@
     "gear-system": "tsx tools/gear-system.ts",
     "catalogue": "tsx tools/catalogue.ts",
     "arts": "tsx tools/arts.ts",
+    "systems": "tsx tools/systems.ts",
     "prose": "npm run build && tsx tools/prose.ts"
   },
   "dependencies": {
