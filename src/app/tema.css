@@ -1,0 +1,141 @@
+/* 霓 A direção escolhida: índigo profundo, ciano e magenta. A página compromete-se com
+   um mundo só — é a arte do jogo, não uma folha de estilo que segue o tema do sistema. */
+
+:root {
+  --fundo: #080A18;
+  --painel: #111433;
+  --painel2: #0D1029;
+  --linha: #252A5C;
+  --ciano: #5FDCFF;
+  --magenta: #FF5FC8;
+  --texto: #E7EAFF;
+  --fraco: #7A80B8;
+  --travado: #2C3268;
+  --ouro: #FFCE6B;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 15px/1.55 Archivo, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cjk { font-family: 'Noto Serif SC', 'Songti SC', serif; }
+.mono { font-variant-numeric: tabular-nums; }
+.tec { font-family: Rajdhani, Archivo, sans-serif; letter-spacing: .02em; }
+
+/* ── moldura ────────────────────────────────────────────────────────────── */
+
+.app { display: flex; flex-direction: column; height: 100%; max-width: 480px; margin: 0 auto; position: relative; }
+.folha { flex: 1; overflow-y: auto; overscroll-behavior: contain;
+         padding: calc(env(safe-area-inset-top, 0px) + 12px) 15px 28px; }
+
+.abas { display: grid; grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--linha); background: var(--painel2);
+        padding-bottom: env(safe-area-inset-bottom, 0px); }
+.abas button { background: none; border: 0; color: var(--fraco); padding: 9px 0 11px; font: inherit;
+               display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.abas .g { font-size: 19px; line-height: 1.1; }
+.abas .l { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; }
+.abas button[data-on='true'] { color: var(--ciano); }
+
+/* ── comuns ─────────────────────────────────────────────────────────────── */
+
+.linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fraco { color: var(--fraco); }
+.titulo { font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+          color: var(--fraco); font-weight: 600; margin: 26px 0 10px; }
+
+.barra { height: 6px; border-radius: 99px; background: var(--travado); overflow: hidden; }
+.barra > i { display: block; height: 100%; border-radius: 99px; background: var(--ciano);
+             transition: width .25s linear; }
+
+.cartao { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px; padding: 13px 14px; }
+
+button.acao { font: inherit; font-size: 16px; padding: 13px; border-radius: 8px; cursor: pointer;
+              background: var(--ciano); color: var(--fundo); border: 0; width: 100%;
+              font-family: 'Noto Serif SC', serif; box-shadow: 0 0 22px rgba(95,220,255,.22); }
+button.acao span { font-family: Archivo, sans-serif; font-size: 12px; letter-spacing: .14em;
+                   text-transform: uppercase; opacity: .7; margin-left: 8px; }
+button.acao:disabled { background: var(--travado); color: var(--fraco); box-shadow: none; cursor: default; }
+button.acao[data-tom='magenta'] { background: var(--magenta); box-shadow: 0 0 22px rgba(255,95,200,.25); }
+
+/* ── cultivo ────────────────────────────────────────────────────────────── */
+
+.retrato { display: block; width: 100%; aspect-ratio: 1; max-width: 260px; margin: 0 auto; }
+.retrato svg { display: block; width: 100%; height: 100%; }
+
+.qi { text-align: center; margin-top: 2px; }
+.qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
+.qi .r { font-size: 13px; color: var(--ciano); }
+
+.melhorias { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.mel { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px;
+       padding: 11px 12px; display: flex; gap: 10px; align-items: center; text-align: left;
+       font: inherit; color: var(--texto); cursor: pointer; }
+.mel:disabled { opacity: .45; cursor: default; }
+.mel .ic { flex: none; color: var(--ciano); display: grid; place-items: center; }
+.mel .ic svg { display: block; }
+.mel b { display: block; font-size: 13.5px; font-weight: 500; font-family: 'Noto Serif SC', serif; }
+.mel i { display: block; font-style: normal; font-size: 10.5px; color: var(--fraco); }
+.mel .preco { margin-left: auto; text-align: right; font-size: 12px; }
+.mel .preco b { font-family: Rajdhani, sans-serif; font-size: 14px; color: var(--ouro); font-weight: 600; }
+
+/* ── bestas ─────────────────────────────────────────────────────────────── */
+
+.besta { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px;
+         padding: 10px 12px; display: flex; gap: 11px; align-items: center; width: 100%;
+         font: inherit; color: var(--texto); text-align: left; cursor: pointer; }
+.besta:disabled { opacity: .4; cursor: default; }
+.besta .selo { flex: none; width: 46px; height: 46px; }
+.besta .selo svg { display: block; }
+.besta .nome b { font-family: 'Noto Serif SC', serif; font-size: 16px; display: block; }
+.besta .nome i { font-style: normal; font-size: 11.5px; color: var(--fraco); }
+.besta .chance { margin-left: auto; text-align: right; font-family: Rajdhani, sans-serif;
+                 font-size: 16px; font-weight: 600; }
+.besta .chance em { display: block; font-style: normal; font-size: 9.5px; letter-spacing: .12em;
+                    text-transform: uppercase; color: var(--fraco); font-family: Archivo, sans-serif; }
+.pilha { display: flex; flex-direction: column; gap: 8px; }
+
+.grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.ficha { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px;
+         padding: 10px 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ficha .selo { width: 46px; height: 46px; }
+.ficha .selo svg { display: block; }
+.ficha b { font-family: 'Noto Serif SC', serif; font-size: 12.5px; font-weight: 400; }
+.ficha i { font-style: normal; font-size: 9.5px; color: var(--fraco); }
+.ficha[data-visto='false'] { opacity: .3; }
+.ficha[data-visto='false'] .selo { filter: grayscale(1); }
+
+/* ── combate ────────────────────────────────────────────────────────────── */
+
+.arena { position: absolute; inset: 0; background: rgba(8,10,24,.93); backdrop-filter: blur(3px);
+         display: flex; flex-direction: column; justify-content: center; gap: 22px;
+         padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 24px); z-index: 10; }
+.lado { display: flex; flex-direction: column; gap: 8px; }
+.lado .figura { height: 118px; display: grid; place-items: center; }
+.lado .figura > span { display: block; width: 118px; height: 118px; }
+.lado .figura svg { display: block; width: 100%; height: 100%; }
+.vida { height: 7px; border-radius: 99px; background: var(--travado); overflow: hidden; }
+.vida > i { display: block; height: 100%; border-radius: 99px; transition: width .18s linear; }
+.versus { text-align: center; font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--fraco); }
+.desfecho { text-align: center; }
+.desfecho .han { font-family: 'Noto Serif SC', serif; font-size: 34px; display: block; }
+.desfecho p { margin: 6px 0 0; font-size: 14px; color: var(--fraco); }
+
+/* ── volta ──────────────────────────────────────────────────────────────── */
+
+.volta { position: absolute; inset: 0; background: rgba(8,10,24,.95); z-index: 11;
+         display: flex; flex-direction: column; justify-content: center; align-items: center;
+         gap: 16px; padding: 30px 24px; text-align: center; }
+.volta h2 { font-family: 'Noto Serif SC', serif; font-size: 24px; margin: 0; font-weight: 400; }
+.volta dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 7px 22px; font-size: 15px; }
+.volta dt { color: var(--fraco); text-align: right; }
+.volta dd { margin: 0; text-align: left; font-family: Rajdhani, sans-serif; font-weight: 600; }

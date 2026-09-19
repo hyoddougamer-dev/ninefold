@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ALVO_DIAS, MAX_VAO, REALM_COST, TOLERANCIA_DIAS } from '../balance.ts';
-import { avancar, novo } from '../tempo.ts';
+import { avancar } from '../tempo.ts';
+import { novo } from '../estado.ts';
 
 /**
  * A curva é a decisão mais irreversível do jogo, e é onde a versão anterior quebrou:
@@ -20,7 +21,7 @@ describe('a subida, jogando uma vez por dia', () => {
     let t = T0;
     for (let i = 0; i < 24 * 500 && e.reino < 9; i++) {
       t += PASSO;
-      e = avancar(e, t);
+      e = avancar(e, t, true);   // curva teórica: a guardiã cai na hora
       while (chegada.length < e.reino) chegada.push((t - T0) / DIA);
     }
     return { chegada, estado: e };
@@ -55,16 +56,16 @@ describe('a subida, jogando uma vez por dia', () => {
   it('o nono reino não tem saída', () => {
     expect(REALM_COST[8]).toBe(Infinity);
     const { estado } = subir();
-    const depois = avancar(estado, estado.em + 365 * 86_400);
+    const depois = avancar(estado, estado.em + 365 * 86_400, true);
     expect(depois.reino).toBe(9);
     expect(depois.qi).toBeGreaterThan(estado.qi);
   });
 
   it('uma ausência longa paga exatamente o que muitas curtas pagam', () => {
     const vao = 30 * 86_400;
-    const umaVez = avancar(novo(T0), T0 + vao);
+    const umaVez = avancar(novo(T0), T0 + vao, true);
     let muitas = novo(T0);
-    for (let t = T0 + 60; t <= T0 + vao; t += 60) muitas = avancar(muitas, t);
+    for (let t = T0 + 60; t <= T0 + vao; t += 60) muitas = avancar(muitas, t, true);
     expect(muitas.reino).toBe(umaVez.reino);
     expect(muitas.camada).toBe(umaVez.camada);
     expect(muitas.qi).toBeCloseTo(umaVez.qi, 3);
