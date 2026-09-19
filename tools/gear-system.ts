@@ -42,7 +42,7 @@ const fullSet = (rarity: Rarity): Worn =>
 // ── 1 · the same object, five ranks ──────────────────────────────────────────
 
 const ladder = RARITIES.map((rarity) => {
-  const it = mk('moonblade', rarity);
+  const it = mk('sword9', rarity);
   const info = RARITY_INFO[rarity];
   return `<figure class="rank">
     <div class="tile">${gearTile(it, { size: 86, spin: 0.12 })}</div>
@@ -57,11 +57,11 @@ const ladder = RARITIES.map((rarity) => {
 // ── 2 · the ring, with a worn set ────────────────────────────────────────────
 
 const WORN: Worn = {
-  weapon: mk('spiritspear', 'heaven'),
-  robe: mk('scalerobe', 'earth'),
-  crown: mk('jadepin', 'mystic'),
-  talisman: mk('prayerbeads', 'spirit'),
-  boots: mk('ironboots', 'common'),
+  weapon: mk('spear9', 'heaven'),
+  robe: mk('lamellar7', 'earth'),
+  crown: mk('bonecrown5', 'mystic'),
+  talisman: mk('beads3', 'spirit'),
+  boots: mk('ironboots1', 'common'),
 };
 
 const ringSlots = SLOTS.map((s, i) => {

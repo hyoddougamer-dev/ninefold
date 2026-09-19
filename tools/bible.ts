@@ -1,42 +1,271 @@
 /**
- * 九境 The bible: the one page that explains the whole game.
+ * 九境 The Bible: the one page that explains the whole game, and the page we keep.
  *
- * It exists because there were seven pages and Bruno could not tell which was which.
- * This one is the door. Everything is in it, in plain European Portuguese, in the order
- * a person would ask about it, and the other pages are listed at the end as what they
- * are rather than as a pile of links.
+ * It is a **living document**. Every system in the game has a row in the status board at
+ * the top with one of three states, and closing a system means moving its row and
+ * writing its section — nothing else. That is the whole process.
  *
- * Every number and every drawing is read out of the game's own modules, so it cannot go
- * stale: if something here is wrong, the game is wrong.
+ * Every number, every name and every drawing below is read out of the game's own
+ * modules, so the page cannot go stale: if something here is wrong, the game is wrong.
+ * The only hand-written things are the prose and the status board, and the status board
+ * is hand-written on purpose — a machine cannot know whether a system is finished.
+ *
+ * Run with `npm run bible`.
  */
 import { writeFileSync } from 'node:fs';
-import { BEASTS, WARDENS } from '../src/data/bestiary.ts';
+import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
+import { LINES, PILL_GRADES, PILL_LINES } from '../src/data/alchemy.ts';
 import {
-  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITIES, RARITY_INFO, REALM_SETS, SLOTS,
+  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITIES, RARITY_INFO, REALM_SETS, SECONDARIES,
+  SET_STEPS, SLOTS, SLOT_INFO, archetypesOf,
 } from '../src/data/gear.ts';
-import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST } from '../src/data/techniques.ts';
-import { UPGRADES, UPGRADE_INFO } from '../src/sim/state.ts';
+import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
+import { UPGRADES, UPGRADE_INFO, newState, upgradeCost } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
-import { LAYERS_PER_REALM, TARGET_DAYS } from '../src/sim/balance.ts';
+import {
+  HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
+  LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TRIBULATION_CHALLENGE,
+  TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
+} from '../src/sim/balance.ts';
+import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
+import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
+import { PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost } from '../src/sim/furnace.ts';
 import { daoEarned } from '../src/sim/dao.ts';
+import { num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
-import { gearTile } from '../src/art/gear.ts';
 import { arenaScene } from '../src/art/scene.ts';
 
-const FULL_RUN = daoEarned(73, 9);
-
-const GAME = 'https://claude.ai/artifact/UL7UoBNgTRyWiL7BJogooq';
-const BENCH = 'https://claude.ai/artifact/KmzcpLzzLXS9TzSpF8bvfZ';
-const CATALOGUE = 'https://claude.ai/artifact/AcfrXb2csTSYpKxPr6P73Y';
 const PAGES = 'https://hyoddougamer-dev.github.io/ninefold/';
 const REPO = 'https://github.com/hyoddougamer-dev/ninefold';
+const ACTIONS = `${REPO}/actions/workflows/apk.yml`;
 
-const n = (x: number) => x.toLocaleString('pt-PT');
+const FULL_RUN = daoEarned(LAYERS - 1, WARDENS.length);
+const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
-const page = `<title>九境 A Bíblia</title>
+/**
+ * 狀 The status board, and the only hand-written table on the page.
+ *
+ * `done` means the system is closed: it is built, it is measured by a test, and it is
+ * written up below. `open` means it exists and is still moving. `planned` means it is
+ * agreed and not started. Nothing else is allowed — "mostly done" is `open`.
+ */
+type Status = 'done' | 'open' | 'planned';
+
+interface System {
+  readonly han: string;
+  readonly name: string;
+  readonly status: Status;
+  readonly line: string;
+  /** Where to read about it on this page. */
+  readonly at?: string;
+}
+
+const SYSTEMS: readonly System[] = [
+  { han: '階', name: 'The ladder', status: 'done', at: 'ladder',
+    line: `Eighty-one rungs, each dearer than the last. ${TARGET_DAYS} days to the top, measured against a cultivator who spends.` },
+  { han: '上限', name: 'The realm cap', status: 'done', at: 'cap',
+    line: `${LEVELS_PER_REALM} levels of each upgrade per realm. It is what stops the qi rate running away.` },
+  { han: '氣', name: 'Qi and the four upgrades', status: 'done', at: 'qi',
+    line: 'Gathering, and the four things it buys. Every price rides the ladder.' },
+  { han: '境', name: 'The nine realms', status: 'done', at: 'realms',
+    line: 'Nine names, nine colours, nine auras, and a breakthrough between each.' },
+  { han: '狩', name: 'Hunting and the bestiary', status: 'done', at: 'beasts',
+    line: '36 beasts, three commons and one warden to a realm. Free to fight, free to lose.' },
+  { han: '戰', name: 'Combat', status: 'done', at: 'combat',
+    line: 'Settled in one go, played back two beats to a round. The odds are simulated, not curved.' },
+  { han: '勢', name: 'Stances and arts', status: 'done', at: 'build',
+    line: `Nine stances, nine arts, ${SEQUENCE_SLOTS} slots in the sequence. The order matters.` },
+  { han: '器', name: 'Gear and the nine sets', status: 'done', at: 'gear',
+    line: `${GEAR.length} pieces, ${RARITIES.length} ranks, ${AFFIXES.length} axes, and a named lineage for every realm.` },
+  { han: '道', name: 'The technique tree', status: 'done', at: 'tree',
+    line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道 against about ${FULL_RUN} a run. Nobody finishes it.` },
+  { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
+    line: 'One floor, one beast, no top. The whole material economy comes out of it.' },
+  { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
+    line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
+  { han: '劫', name: 'The tribulation', status: 'done', at: 'top',
+    line: `A pool that refills in ${MARK_DAYS} days, a Dragon that grows ${TRIBULATION_CHALLENGE}x a crossing, and a mark worth ${(1 + TRIBULATION_GAIN).toFixed(2)}x.` },
+  { han: '存', name: 'The save', status: 'done', at: 'save',
+    line: 'One browser key, a spare copy, an export you can paste anywhere, and a validator that treats a save as input.' },
+  { han: '包', name: 'Page and APK', status: 'done', at: 'where',
+    line: 'One codebase, published to GitHub Pages, wrapped once in an APK that never needs installing again.' },
+
+  { han: '音', name: 'Sound', status: 'open',
+    line: 'Four synthesised sounds and a mute switch. No volume, no music, nothing for the tower or the furnace.' },
+  { han: '引', name: 'Teaching the game', status: 'open',
+    line: 'One help screen at the start. Nothing explains the cap, the tower or the furnace when they first matter.' },
+
+  { han: '錄', name: 'The bestiary paying something', status: 'planned',
+    line: 'Filling it in is its own reward right now. A kill count that bought anything would make hunting a goal.' },
+  { han: '煉器', name: 'Refining worn gear', status: 'planned',
+    line: 'Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.' },
+  { han: '轉世', name: 'Rebirth', status: 'planned',
+    line: 'Starting again from the ninth realm for something permanent. 渡劫 is the ladder above the ladder until then.' },
+];
+
+const STATE = {
+  done: { han: '成', word: 'closed', tone: 'var(--cyan)' },
+  open: { han: '行', word: 'open', tone: 'var(--gold)' },
+  planned: { han: '待', word: 'planned', tone: 'var(--faint)' },
+} as const;
+
+// ── the sections ─────────────────────────────────────────────────────────────
+
+const statusRows = SYSTEMS.map((s) => {
+  const st = STATE[s.status];
+  const label = s.at ? `<a href="#${s.at}">${s.name}</a>` : s.name;
+  return `<div class="srow" style="--hue:${st.tone}">
+    <span class="st"><b class="cjk">${st.han}</b><i>${st.word}</i></span>
+    <span class="body"><b class="cjk">${s.han}</b> <em>${label}</em><i>${s.line}</i></span>
+  </div>`;
+}).join('');
+
+const ladderRows = REALMS.map((r) => {
+  const first = ladderAt((r.n - 1) * LAYERS_PER_REALM);
+  const last = ladderAt((r.n - 1) * LAYERS_PER_REALM + LAYERS_PER_REALM - 1);
+  return `<tr style="--hue:${r.colour}">
+    <td><b class="cjk">${r.han}</b> <i>${r.name}</i></td>
+    <td class="n">${num(first)}</td><td class="n">${num(last)}</td>
+    <td class="n">${num(realmCost(r.n))}</td>
+    <td class="n">${levelCap(r.n)}</td>
+  </tr>`;
+}).join('');
+
+const realmRungs = REALMS.map((r) => `
+  <div class="rung" style="--hue:${r.colour}">
+    <span class="no">${r.n}</span>
+    <span class="fig">${portrait({ realm: r.n, pulse: 0.3 })}</span>
+    <b class="cjk">${r.han}</b><i>${r.name}</i>
+  </div>`).join('');
+
+const upgradeRows = UPGRADES.map((u) => {
+  const i = UPGRADE_INFO[u];
+  const fresh = newState(0);
+  const first = upgradeCost(fresh, u);
+  const top = upgradeCost({ ...fresh, realm: 9, levels: { ...fresh.levels, [u]: levelCap(9) - 1 } }, u);
+  return `<div class="row">
+    <span class="ic">${icon(i.icon, 22)}</span>
+    <span class="body">
+      <b class="cjk">${i.han}</b> <em>${i.name}</em>
+      <i>${i.effect} · paid in ${i.currency === 'qi' ? 'qi' : '材 material'} ·
+         first level ${num(first)}, last ${num(top)}</i>
+    </span>
+  </div>`;
+}).join('');
+
+const beastGrid = REALMS.map((r) => `
+  <div class="col" style="--hue:${r.colour}">
+    <span class="no">${r.n}</span>
+    ${[...commonsOf(r.n), wardenOf(r.n)].map((b) => `
+      <span class="bst${b.warden ? ' w' : ''}" title="${b.han} ${b.name}">${icon(b.icon, 24)}</span>
+      <i class="bn">${b.han}</i>`).join('')}
+  </div>`).join('');
+
+const beastNames = REALMS.map((r) => `
+  <div class="card" style="--hue:${r.colour}">
+    <b class="cjk">${r.han}</b> <i class="faint">${r.name}</i>
+    <div class="lin">${[...commonsOf(r.n), wardenOf(r.n)].map((b) =>
+      `<span><b style="color:${r.colour}">${b.han}</b> <i>${b.name}${b.warden ? ' · warden' : ''} · 力 ${num(beastPower(b))} · 材 ${num(loot(b))}</i></span>`).join('')}</div>
+  </div>`).join('');
+
+const stanceRows = STANCES.map((s) => `
+  <div class="row" style="--hue:${realmOf(s.realm).colour}">
+    <span class="body">
+      <b class="cjk">${s.han}</b> <em>${s.name}</em>
+      <i>realm ${s.realm} · ${s.text} <span style="color:var(--gold)">Wants ${s.wants}.</span></i>
+    </span>
+  </div>`).join('');
+
+const artRows = ARTS.map((a) => `
+  <div class="row" style="--hue:${realmOf(a.realm).colour}">
+    <span class="ic">${icon(a.icon, 22)}</span>
+    <span class="body">
+      <b class="cjk">${a.han}</b> <em>${a.name}</em>
+      <i>from ${wardenOf(a.realm).han} ${wardenOf(a.realm).name}, realm ${a.realm} · ${a.text}</i>
+    </span>
+  </div>`).join('');
+
+const setRows = REALM_SETS.map((s) => {
+  const r = realmOf(s.realm);
+  const steps = s.steps.map((st) =>
+    `<span class="pill"><b>${st.pieces}</b><i>${Object.entries(st.effects)
+      .map(([a, v]) => `${AFFIX_INFO[a as keyof typeof AFFIX_INFO].han} +${v}`).join(' ')}</i></span>`).join('');
+  return `<div class="card" style="--hue:${r.colour}">
+    <b class="cjk" style="color:${r.colour}">${s.han}</b> <em>${s.name}</em>
+    <i class="faint" style="display:block;margin:3px 0 7px">realm ${s.realm} · ${s.lore}</i>
+    <div class="pills">${steps}</div>
+  </div>`;
+}).join('');
+
+const archetypeRows = SLOTS.map((slot) => `
+  <div class="card">
+    <b class="cjk">${SLOT_INFO[slot].han}</b> <em>${SLOT_INFO[slot].name}</em>
+    <div class="lin" style="margin-top:6px">${archetypesOf(slot).map((a) =>
+      `<span><b>${a.han}</b> <i>${a.name} · ${AFFIX_INFO[a.affix].han}</i></span>`).join('')}</div>
+  </div>`).join('');
+
+const itemNames = REALM_SETS.map((s) => {
+  const r = realmOf(s.realm);
+  const pieces = GEAR.filter((g) => g.realm === s.realm);
+  return `<details class="items" style="--hue:${r.colour}">
+    <summary><b class="cjk" style="color:${r.colour}">${s.han}</b>
+      <em>${s.name}</em> <i>${pieces.length} pieces</i></summary>
+    <div class="lin">${pieces.map((g) =>
+      `<span><b style="color:${r.colour}">${g.han}</b> <i>${g.name}</i></span>`).join('')}</div>
+  </details>`;
+}).join('');
+
+const treeColumns = PATHS.map((p) => {
+  const info = PATH_INFO[p];
+  return `<div class="card" style="--hue:${info.colour}">
+    <b class="cjk" style="color:${info.colour}">${info.han}</b> <em>${info.name}</em>
+    <i class="faint" style="display:block;margin:3px 0 8px">${info.blurb}</i>
+    ${nodesOf(p).map((nd) => `<div class="node${nd.keystone ? ' key' : ''}">
+      <b class="cjk">${nd.han}</b> <em>${nd.name}</em>
+      <i>${nd.cost} 道 · ${nd.text}${nd.excludes ? ' · closes the other side of the fork' : ''}</i>
+    </div>`).join('')}
+  </div>`;
+}).join('');
+
+const towerRows = [1, 3, 5, 7, 9].map((r) => {
+  const floor = r * FLOORS_PER_REALM;
+  return `<tr style="--hue:${realmOf(r).colour}">
+    <td><b class="cjk">floor ${floor}</b></td>
+    <td class="n">${num(floorPower(floor))}</td>
+    <td><i>${wardenOf(r).han} ${wardenOf(r).name}</i></td>
+    <td class="n">${num(floorLoot(floor))}</td>
+  </tr>`;
+}).join('') + [100, 200, 400].map((floor) => `<tr style="--hue:var(--faint)">
+    <td><b class="cjk">floor ${floor}</b></td>
+    <td class="n">${num(floorPower(floor))}</td>
+    <td><i>past the mountain</i></td>
+    <td class="n">${num(floorLoot(floor))}</td>
+  </tr>`).join('');
+
+const none = { body: 0, bane: 0, fortune: 0 };
+const pillRows = LINES.map((line) => {
+  const info = PILL_LINES[line];
+  return `<div class="card">
+    <span class="ic" style="float:left;margin-right:10px;color:var(--gold)">${icon(info.icon, 22)}</span>
+    <b class="cjk">${info.han}</b> <em>${info.name}</em>
+    <i class="faint" style="display:block;margin:3px 0 7px">${info.effect}. ${info.lore}</i>
+    <div class="lin">${PILL_GRADES[line].map((g, i) =>
+      `<span><b style="color:${realmOf(i + 1).colour}">${g.han}</b> <i>${g.name} · realm ${i + 1}</i></span>`).join('')}</div>
+  </div>`;
+}).join('');
+
+const pillPrices = [0, 20, 40, 60, 80, 120].map((n) => {
+  const cost = pillCost({ ...none, body: n }, 'body');
+  return `<tr><td><b class="cjk">pill ${n + 1}</b></td>
+    <td class="n">${num(cost.qi)}</td><td class="n">${num(cost.materials)}</td></tr>`;
+}).join('');
+
+// ── the page ─────────────────────────────────────────────────────────────────
+
+const page = `<title>九境 Ninefold — the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
@@ -47,7 +276,7 @@ const page = `<title>九境 A Bíblia</title>
   * { box-sizing:border-box; }
   body { margin:0; background:var(--ground); color:var(--text);
          font:17px/1.65 Archivo, ui-sans-serif, system-ui, sans-serif; }
-  .sheet { max-width:760px; margin:0 auto; padding:34px 18px 90px; }
+  .sheet { max-width:820px; margin:0 auto; padding:34px 18px 90px; }
   .cjk { font-family:'Noto Serif SC',serif; }
   h1,h2,h3 { margin:0; font-weight:600; text-wrap:balance; }
   h1 { font-family:'Noto Serif SC',serif; font-size:clamp(40px,12vw,60px); font-weight:400;
@@ -57,18 +286,18 @@ const page = `<title>九境 A Bíblia</title>
   h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:30px;
           color:var(--cyan); }
   h3 { font-family:Rajdhani,sans-serif; font-size:14px; color:var(--faint);
-       letter-spacing:.1em; text-transform:uppercase; }
+       letter-spacing:.1em; text-transform:uppercase; margin-top:6px; }
   p { margin:0; }
   a { color:var(--cyan); }
   .lead { font-size:19px; margin-top:14px; }
   .sec { margin-top:40px; border-top:1px solid var(--line); padding-top:22px;
          display:flex; flex-direction:column; gap:13px; }
-  .t { color:var(--faint); max-width:58ch; }
+  .t { color:var(--faint); max-width:64ch; }
   .t b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
+  .faint { color:var(--faint); }
 
-  /* o índice */
-  .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:7px;
+  .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:7px;
          margin-top:22px; }
   .toc a { display:flex; align-items:baseline; gap:8px; text-decoration:none;
            background:var(--panel2); border:1px solid var(--line); border-radius:10px;
@@ -76,34 +305,45 @@ const page = `<title>九境 A Bíblia</title>
   .toc a b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:18px;
              color:var(--cyan); }
 
-  /* o aviso do APK */
-  .now { background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 12%,var(--panel2)),
-         var(--panel2)); border:1px solid var(--gold); border-radius:14px; padding:20px 22px;
-         margin-top:26px; }
-  .now h2 .h, .now h2 { color:var(--gold); }
-  .steps { list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column;
-           gap:12px; }
-  .steps li { display:flex; gap:12px; align-items:flex-start; }
-  .steps .no { flex:none; width:25px; height:25px; border-radius:8px; display:grid;
-               place-items:center; background:var(--gold); color:#0A0800;
-               font-family:Rajdhani,sans-serif; font-weight:700; font-size:14px; }
-  .steps b { display:block; font-size:15px; }
-  .steps i { font-style:normal; font-size:13.5px; color:var(--faint); line-height:1.5; }
+  .board { display:grid; gap:6px; }
+  .srow { display:flex; gap:12px; align-items:flex-start; background:var(--panel2);
+          border:1px solid var(--line); border-left:3px solid var(--hue);
+          border-radius:10px; padding:10px 13px; }
+  .srow .st { flex:none; width:56px; text-align:center; color:var(--hue); }
+  .srow .st b { display:block; font-size:19px; font-weight:400; }
+  .srow .st i { font-style:normal; font-size:9.5px; letter-spacing:.11em;
+                text-transform:uppercase; font-family:Archivo,sans-serif; }
+  .srow .body b { font-size:17px; color:var(--hue); }
+  .srow .body em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+                   font-size:17px; }
+  .srow .body em a { text-decoration:none; }
+  .srow .body i { font-style:normal; display:block; font-size:13.5px; color:var(--faint); }
 
-  /* blocos genéricos */
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
+       letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
+  td { border-top:1px solid var(--line); padding:7px 8px; }
+  td b { color:var(--hue,var(--cyan)); font-size:16px; font-weight:400; }
+  td i { font-style:normal; color:var(--faint); }
+  td.n { font-family:Rajdhani,sans-serif; font-weight:700; text-align:right;
+         color:var(--gold); }
+
   .cards { display:grid; gap:8px; }
-  @media(min-width:600px){ .cards.two { grid-template-columns:1fr 1fr; } }
+  @media(min-width:640px){ .cards.two { grid-template-columns:1fr 1fr; }
+                           .cards.three { grid-template-columns:repeat(3,1fr); } }
   .card { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
           padding:12px 14px; }
-  .card b { color:var(--cyan); }
+  .card > b { color:var(--hue,var(--cyan)); font-size:18px; font-weight:400; }
+  .card em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+             font-size:16px; }
   .pills { display:flex; flex-wrap:wrap; gap:6px; }
   .pill { display:inline-flex; flex-direction:column; align-items:center;
-          background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+          background:var(--panel); border:1px solid var(--line); border-radius:9px;
           padding:6px 12px; }
   .pill b { font-family:Rajdhani,sans-serif; font-weight:700; font-size:17px; color:var(--gold); }
   .pill i { font-style:normal; font-size:10.5px; color:var(--faint); }
 
-  .ladder { display:grid; grid-template-columns:repeat(auto-fit,minmax(74px,1fr)); gap:7px; }
+  .ladder { display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:7px; }
   .rung { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
           padding:7px 5px 8px; text-align:center; position:relative; }
   .rung .fig { display:block; width:100%; aspect-ratio:1; }
@@ -114,59 +354,68 @@ const page = `<title>九境 A Bíblia</title>
               font-weight:700; font-size:10px; color:var(--hue); }
 
   .rows { display:grid; gap:6px; }
-  .row { display:flex; gap:11px; align-items:center; background:var(--panel2);
+  .row { display:flex; gap:11px; align-items:flex-start; background:var(--panel2);
          border:1px solid var(--line); border-left:3px solid var(--hue,var(--line));
          border-radius:10px; padding:9px 12px; }
   .row .ic { flex:none; color:var(--hue,var(--cyan)); display:grid; place-items:center; }
   .row .ic svg { display:block; }
-  .row b { font-size:16px; color:var(--hue,var(--cyan)); }
-  .row em { font-style:normal; font-size:13.5px; }
-  .row i { font-style:normal; display:block; font-size:12.5px; color:var(--faint); }
+  .row b { font-size:17px; color:var(--hue,var(--cyan)); font-weight:400; }
+  .row em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
+  .row i { font-style:normal; display:block; font-size:13px; color:var(--faint); }
   .row .body { flex:1; }
+
+  .node { border-top:1px solid var(--line); padding:6px 0 5px; }
+  .node b { font-size:15px; color:var(--hue); }
+  .node em { font-size:14px; }
+  .node i { font-style:normal; display:block; font-size:12px; color:var(--faint); }
+  .node.key { border-left:2px solid var(--gold); padding-left:8px; }
+  .node.key b { color:var(--gold); }
 
   .beastgrid { display:grid; grid-template-columns:repeat(9,1fr); gap:4px; }
   .col { background:var(--panel2); border:1px solid var(--line); border-radius:8px;
          padding:15px 2px 6px; display:flex; flex-direction:column; align-items:center;
-         gap:4px; position:relative; }
+         gap:2px; position:relative; }
   .col .no { position:absolute; top:3px; left:0; right:0; text-align:center;
              font-family:Rajdhani,sans-serif; font-weight:700; font-size:9px; color:var(--hue); }
   .bst { color:var(--hue); opacity:.55; display:grid; place-items:center; }
   .bst svg { display:block; }
   .bst.w { opacity:1; filter:drop-shadow(0 0 6px var(--hue)); }
+  .bn { font-style:normal; font-family:'Noto Serif SC',serif; font-size:9px;
+        color:var(--faint); margin-bottom:3px; }
 
-  .stage { position:relative; height:170px; border:1px solid var(--line); border-radius:12px;
+  .stage { position:relative; height:180px; border:1px solid var(--line); border-radius:12px;
            overflow:hidden; }
   .stage .sc, .stage .sc svg { position:absolute; inset:0; width:100%; height:100%; }
   .duel { position:absolute; inset:0; display:grid; grid-template-columns:1fr 54px 1fr;
           align-items:end; padding:0 18px 22px; }
   .duel span { display:grid; place-items:center; }
-  .duel .you { width:78px; height:78px; justify-self:center; }
+  .duel .you { width:82px; height:82px; justify-self:center; }
   .duel .you svg { width:100%; height:100%; }
   .duel .foe { color:#CC79FF; justify-self:center; margin-bottom:12px; }
   .duel .mid { color:var(--cyan); font-size:19px; margin-bottom:30px;
                text-shadow:0 0 14px currentColor; }
 
-  .tiles { display:flex; gap:8px; flex-wrap:wrap; }
-  .tiles svg { display:block; }
-  .lin { display:flex; flex-wrap:wrap; gap:8px; }
+  .lin { display:flex; flex-wrap:wrap; gap:8px 12px; }
   .lin span { display:inline-flex; align-items:baseline; gap:5px; font-size:11.5px; }
   .lin b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:16px; }
   .lin i { font-style:normal; color:var(--faint); }
 
-  .chips { display:flex; flex-wrap:wrap; gap:5px; }
-  .chip { display:inline-flex; align-items:center; gap:5px; background:var(--panel2);
-          border:1px solid var(--hue); border-radius:9px; padding:5px 10px; color:var(--hue); }
-  .chip b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:15px; }
-  .chip i { font-style:normal; font-size:10px; color:var(--faint); }
-  .chip .ic { display:grid; place-items:center; }
-  .chip .ic svg { display:block; }
+  .items { background:var(--panel2); border:1px solid var(--line);
+           border-left:3px solid var(--hue); border-radius:10px; padding:10px 13px; }
+  .items summary { cursor:pointer; display:flex; gap:9px; align-items:baseline; }
+  .items summary b { font-size:18px; font-weight:400; }
+  .items summary em { font-style:normal; font-family:Rajdhani,sans-serif;
+                      font-weight:700; font-size:16px; }
+  .items summary i { font-style:normal; color:var(--faint); font-size:12.5px;
+                     margin-left:auto; }
+  .items .lin { margin-top:10px; }
 
+  .rule { border-left:3px solid var(--cyan); background:var(--panel2);
+          border-radius:0 10px 10px 0; padding:13px 16px; }
+  .rule b { color:var(--cyan); }
   .warn { border-left:3px solid var(--magenta); background:var(--panel2);
-          border-radius:0 10px 10px 0; padding:12px 15px; }
+          border-radius:0 10px 10px 0; padding:13px 16px; }
   .warn b { color:var(--magenta); }
-  .ok { border-left:3px solid var(--cyan); background:var(--panel2);
-        border-radius:0 10px 10px 0; padding:12px 15px; font-size:14.5px; }
-  .ok b { color:var(--cyan); }
 
   .where { display:grid; gap:7px; }
   .where a { display:flex; gap:11px; align-items:flex-start; text-decoration:none;
@@ -182,290 +431,387 @@ const page = `<title>九境 A Bíblia</title>
 <div class="sheet">
   <header>
     <h1>九境</h1>
-    <p class="lead">Um idle de cultivo. O qi sobe sozinho, mesmo com o telemóvel fechado.
-      Nove reinos, cerca de <b class="big">${TARGET_DAYS} dias</b> até ao topo abrindo o
-      jogo uma vez por dia.</p>
-    <p class="t" style="margin-top:10px">Esta é a única página que precisas de ler. Tudo
-      o que o jogo tem está aqui, e as outras páginas estão listadas no fim.</p>
+    <p class="lead"><b>Ninefold.</b> An idle cultivation game. Qi gathers on its own, with
+      the phone closed. Nine realms, about <b class="big">${TARGET_DAYS} days</b> to the
+      top, and no end after that.</p>
+    <p class="t" style="margin-top:10px">This is the one page to read. Everything the game
+      has is in it, in the order you would ask about it, and every number and name below
+      is read straight out of the game's own code. <b>It is a living document:</b> the
+      board underneath says what is finished and what is not, and closing a system means
+      moving its row and writing its section.</p>
     <div class="toc">
-      <a href="#apk"><b>包</b> Onde jogo?</a>
-      <a href="#loop"><b>環</b> Como se joga</a>
-      <a href="#reinos"><b>境</b> Os reinos</a>
-      <a href="#qi"><b>氣</b> O qi</a>
-      <a href="#bestas"><b>狩</b> As bestas</a>
-      <a href="#combate"><b>戰</b> O combate</a>
-      <a href="#equip"><b>器</b> Equipamento</a>
-      <a href="#arvore"><b>道</b> A árvore</a>
-      <a href="#build"><b>勢</b> A build</a>
-      <a href="#topo"><b>劫</b> O topo</a>
-      <a href="#save"><b>存</b> O save</a>
-      <a href="#falta"><b>缺</b> O que falta</a>
+      <a href="#board"><b>狀</b> Where we are</a>
+      <a href="#where"><b>包</b> Where to play</a>
+      <a href="#loop"><b>環</b> How it is played</a>
+      <a href="#ladder"><b>階</b> The ladder</a>
+      <a href="#cap"><b>上限</b> The cap</a>
+      <a href="#qi"><b>氣</b> Qi</a>
+      <a href="#realms"><b>境</b> The realms</a>
+      <a href="#beasts"><b>狩</b> The beasts</a>
+      <a href="#combat"><b>戰</b> Combat</a>
+      <a href="#build"><b>勢</b> The build</a>
+      <a href="#gear"><b>器</b> Gear</a>
+      <a href="#tree"><b>道</b> The tree</a>
+      <a href="#tower"><b>塔</b> The tower</a>
+      <a href="#furnace"><b>爐</b> The furnace</a>
+      <a href="#top"><b>劫</b> The top</a>
+      <a href="#save"><b>存</b> The save</a>
+      <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
 
-  <div class="now" id="apk">
-    <h2><span class="h">包</span> Não há APK nenhum ainda</h2>
-    <p class="t" style="margin-top:10px;color:var(--text)">Vou ser directo, porque isto
-      é o que te está a baralhar: <b>ainda não existe ficheiro APK</b>. Nunca foi
-      construído. O que existe é o jogo como página web, e a preparação para o APK.</p>
-    <p class="t" style="margin-top:10px">E o APK, quando existir, <b>não tem o jogo lá
-      dentro</b> — é uma casca à volta de um endereço. É por isso que só o instalas uma
-      vez e nunca mais descarregas nada: quando eu mudo o jogo, a página muda, e a casca
-      mostra o novo.</p>
-    <ol class="steps">
-      <li><span class="no">1</span><span>
-        <b>Hoje: joga pelo link</b>
-        <i>O <a href="${GAME}">九境 Ninefold</a> é o jogo a sério, actualizado. Funciona
-          no telemóvel. É o que tens usado.</i>
-      </span></li>
-      <li><span class="no">2</span><span>
-        <b>Um clique teu: liga o GitHub Pages</b>
-        <i>É a única coisa que eu não consigo fazer daqui — tentei, e o GitHub respondeu
-          que a acção não tem permissão para criar o site. Vai a
-          <a href="${REPO}/settings/pages">Settings → Pages</a> e em
-          <b>«Build and deployment» → Source</b> escolhe <b>GitHub Actions</b>. Só isso.
-          A partir daí o jogo publica-se sozinho a cada alteração minha, em
-          <a href="${PAGES}">${PAGES.replace('https://', '')}</a>.</i>
-      </span></li>
-      <li><span class="no">3</span><span>
-        <b>Depois: instala pelo Chrome</b>
-        <i>Abres esse endereço no telemóvel e fazes <b>«Adicionar ao ecrã principal»</b>.
-          Fica com ícone, ecrã cheio, funciona sem rede e actualiza-se sozinho.
-          <b>Para 90% das pessoas isto é o APK</b> — e não precisas de instalar nada
-          de fontes desconhecidas.</i>
-      </span></li>
-      <li><span class="no">4</span><span>
-        <b>Só se quiseres mesmo um ficheiro .apk</b>
-        <i>No <a href="${REPO}/actions">GitHub → Actions</a>, corres a acção <b>apk</b> à
-          mão, uma vez, e descarregas o ficheiro. Serve para instalar a partir dos
-          ficheiros, ou mais tarde para a Play Store. Não precisas dele para jogar.</i>
-      </span></li>
-    </ol>
-    <p class="ok" style="margin-top:14px"><b>Resumo:</b> hoje joga pelo link. Faz o clique
-      do passo 2 e passas a poder instalar pelo Chrome, com ícone e sem rede. O ficheiro
-      .apk é opcional.</p>
-  </div>
+  <section class="sec" id="board">
+    <h2><span class="h">狀</span> Where we are</h2>
+    <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--cyan)">成</b>
+      closed means built, measured by a test, and written up below.
+      <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
+      moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
+      open.</p>
+    <div class="board">${statusRows}</div>
+  </section>
 
-  <section class="sec" id="loop">
-    <h3>O jogo todo em quatro passos</h3>
-    <h2><span class="h">環</span> Como se joga</h2>
-    <div class="cards two">
-      <div class="card"><b>1 · O qi sobe sozinho</b>
-        <p class="t" style="margin-top:4px">Com o telemóvel fechado também. Voltas no dia
-          seguinte e está lá à tua espera.</p></div>
-      <div class="card"><b>2 · Gastas o qi em melhorias</b>
-        <p class="t" style="margin-top:4px">Quatro botões. Duas fazem o qi vir mais
-          depressa, duas fazem-te mais forte. Nunca perdes um nível.</p></div>
-      <div class="card"><b>3 · A barra enche, aparece a guardiã</b>
-        <p class="t" style="margin-top:4px">Uma besta guarda cada reino. Carregas em 戰 e
-          vês. Se perderes, não perdes nada.</p></div>
-      <div class="card"><b>4 · 突破 Rompes</b>
-        <p class="t" style="margin-top:4px">Sobes de reino e a luz à tua volta muda. E
-          começa outra vez, mais alto.</p></div>
+  <section class="sec" id="where">
+    <h2><span class="h">包</span> Where to play</h2>
+    <p class="t">One codebase, two ways in. The page is the game; the APK is a window onto
+      the same page, so it is installed once and never again. Every push updates both.</p>
+    <div class="where">
+      <a href="${PAGES}"><b>網</b><span><em>The page</em>
+        <i>${PAGES.replace('https://', '')} — open it on the phone and add it to the home
+        screen. It works with no signal once it has loaded once.</i></span></a>
+      <a href="${ACTIONS}"><b>包</b><span><em>The APK</em>
+        <i>Run the workflow, wait for the green tick, download the artifact, unzip it and
+        open the .apk. It points at the page above, so it never needs rebuilding for a
+        change to the game.</i></span></a>
+      <a href="${REPO}"><b>碼</b><span><em>The code</em>
+        <i>Everything, including this page's own source in tools/bible.ts.</i></span></a>
     </div>
   </section>
 
-  <section class="sec" id="reinos">
-    <h3>A escada</h3>
-    <h2><span class="h">境</span> Os nove reinos</h2>
-    <p class="t">Cada reino tem <b>${LAYERS_PER_REALM} camadas</b>. São
-      <b>73 camadas</b> ao todo, e o que muda a cada reino é a <b>aura</b> — dá para
-      saber onde alguém está só de olhar.</p>
-    <div class="ladder">
-      ${REALMS.map((r) => `<div class="rung" style="--hue:${r.colour}">
-        <span class="fig">${portrait({ realm: r.n })}</span>
-        <b class="cjk">${r.han}</b><i>${r.name}</i>
-        <span class="no">${r.n}</span>
-      </div>`).join('')}
+  <section class="sec" id="loop">
+    <h2><span class="h">環</span> How it is played</h2>
+    <p class="t">Open the app. Take the hours that passed. Spend what they gathered. Fight
+      something. Close it again.</p>
+    <div class="cards two">
+      <div class="card"><b class="cjk">修</b> <em>Cultivate</em>
+        <i class="faint" style="display:block;margin-top:5px">The bar, the four upgrades,
+          the warden at the ceiling and 突破 the breakthrough. This is the screen the game
+          is played on.</i></div>
+      <div class="card"><b class="cjk">狩</b> <em>Hunt</em>
+        <i class="faint" style="display:block;margin-top:5px">Every common beast you have
+          reached, fought as often as you like. Gear falls here, and 材 material. 錄 the
+          bestiary folds out at the bottom.</i></div>
+      <div class="card"><b class="cjk">塔</b> <em>Trials</em>
+        <i class="faint" style="display:block;margin-top:5px">無盡塔 the tower and 丹爐 the
+          furnace. One floor at a time, and everything the floors pay for.</i></div>
+      <div class="card"><b class="cjk">器</b> <em>Gear</em>
+        <i class="faint" style="display:block;margin-top:5px">Six slots, the chest, and
+          煉 fusing ${FUSE_COUNT} of a rank into one of the next.</i></div>
+      <div class="card"><b class="cjk">道</b> <em>Path</em>
+        <i class="faint" style="display:block;margin-top:5px">The technique tree, 勢 your
+          stance and 訣 your sequence of arts.</i></div>
+      <div class="card"><b class="cjk">存</b> <em>The save</em>
+        <i class="faint" style="display:block;margin-top:5px">Behind the 存 button in the
+          corner. Copy it somewhere, because it lives in this browser and nowhere
+          else.</i></div>
     </div>
+  </section>
+
+  <section class="sec" id="ladder">
+    <h2><span class="h">階</span> The ladder</h2>
+    <p class="t">The climb is <b>${LAYERS} rungs</b>, nine to a realm, and every rung costs
+      more than the one below it. Three numbers describe the whole mountain: the first rung
+      costs <b>${num(LADDER_FIRST)}</b> qi, each rung is <b>${LADDER_GROWTH_FIRST}x</b> the
+      last at the foot, and <b>${LADDER_GROWTH_LAST}x</b> at the summit. Nothing else is
+      typed; every other price in the game is a share of one of these.</p>
+    <p class="t">The growth never falls below what the qi rate itself grows by, so the
+      climb never speeds up: <b>every realm is longer than the one before it, all nine of
+      them.</b></p>
+    <table>
+      <tr><th>realm</th><th style="text-align:right">first layer</th>
+          <th style="text-align:right">ninth layer</th><th style="text-align:right">the realm</th>
+          <th style="text-align:right">level cap</th></tr>
+      ${ladderRows}
+    </table>
+    <div class="rule"><b>How the ${TARGET_DAYS} days is measured.</b> Against a cultivator
+      who <em>spends</em> — who opens the app, buys whatever they can afford, and closes it
+      again. The earlier curve was measured against one who never spent a single qi, and
+      against somebody playing the game as written that same curve took
+      <b>three days</b>, not ninety. The test prints the schedule on every run, and prints
+      it for one visit a day and for two hundred; they land between 86 and 114 days.</div>
+  </section>
+
+  <section class="sec" id="cap">
+    <h2><span class="h">上限</span> The cap</h2>
+    <p class="t">A realm holds <b>${LEVELS_PER_REALM} levels of each upgrade</b> and not one
+      more. The ninth holds ${levelCap(9)}. When they are full the box turns gold, says
+      <b class="cjk">滿</b>, and the only way to hold more is to climb.</p>
+    <p class="t">It is the wall the game had no version of. Without it the rate upgrades pay
+      for the rate upgrades and nothing anywhere says stop. It also says something true: a
+      body only holds so much. To hold more, raise the realm.</p>
+    <p class="t">The second half of the same idea is that <b>a level's price rides the
+      mountain</b>. The nth level costs a share of the rung it belongs to, so the last level
+      a realm allows only becomes affordable near the end of that realm. Measured, the
+      buying now spreads across 95% of every realm instead of its first hour.</p>
   </section>
 
   <section class="sec" id="qi">
-    <h3>A moeda</h3>
-    <h2><span class="h">氣</span> Onde o qi vai</h2>
-    <p class="t">Só há quatro sítios. Três compram-se com qi, um com 材 material que vem
-      das bestas.</p>
-    <div class="rows">
-      ${UPGRADES.map((u) => {
-        const i = UPGRADE_INFO[u];
-        return `<div class="row">
-          <span class="ic">${icon(i.icon, 24)}</span>
-          <span class="body"><b class="cjk">${i.han}</b> <em>${i.name}</em>
-            <i>${i.effect}</i></span>
-          <span style="color:var(--gold);font-family:Rajdhani;font-weight:700;font-size:12px">
-            ${i.currency === 'qi' ? 'qi' : '材'}</span>
-        </div>`;
-      }).join('')}
+    <h2><span class="h">氣</span> Qi, and the four things it buys</h2>
+    <p class="t">Qi gathers at a rate, the rate fills a layer, and a filled layer costs
+      nothing but time. Two upgrades make it come faster and two make you stronger. None of
+      them is ever lost, and all four are capped by the realm.</p>
+    <div class="rows">${upgradeRows}</div>
+    <p class="t">材 <b>Material</b> is the other currency and it cannot be waited for. It
+      comes from killing things: a tower floor pays it once, a beast pays
+      ${pc(HUNT_SHARE)} of that every time it dies.</p>
+  </section>
+
+  <section class="sec" id="realms">
+    <h2><span class="h">境</span> The nine realms</h2>
+    <p class="t">Nine names out of cultivation fiction, nine colours walking from cyan to
+      magenta, and a drawing that gains something at every one. The warden of a realm bars
+      the breakthrough; beating it opens 突破, and pressing 突破 is what takes it.</p>
+    <div class="ladder">${realmRungs}</div>
+    <div class="cards three">
+      ${REALMS.map((r) => `<div class="card" style="--hue:${r.colour}">
+        <b class="cjk">${r.han}</b> <em>${r.name}</em>
+        <i class="faint" style="display:block;margin-top:4px">${r.gains}</i></div>`).join('')}
     </div>
   </section>
 
-  <section class="sec" id="bestas">
-    <h3>Para caçar e para bater</h3>
-    <h2><span class="h">狩</span> As ${BEASTS.length} bestas</h2>
-    <p class="t">Três comuns por reino, que caças quando quiseres para 材 material e
-      equipamento. E <b>${WARDENS.length} guardiãs</b>, uma por reino, que barram a
-      passagem — são as que brilham em baixo.</p>
-    <div class="beastgrid">
-      ${REALMS.map((r) => `<div class="col" style="--hue:${r.colour}">
-        <span class="no">${r.n}</span>
-        ${BEASTS.filter((b) => b.realm === r.n).map((b) =>
-          `<span class="bst${b.warden ? ' w' : ''}" title="${b.han} ${b.name}">${icon(b.icon, 20)}</span>`).join('')}
-      </div>`).join('')}
-    </div>
+  <section class="sec" id="beasts">
+    <h2><span class="h">狩</span> The beasts</h2>
+    <p class="t">${BEASTS.length} of them: three commons and one warden to a realm, from
+      vermin in the first to a dragon in the ninth. Commons are free hunting and can be
+      fought as often as you like. Wardens die once.</p>
+    <div class="beastgrid">${beastGrid}</div>
+    <div class="cards">${beastNames}</div>
   </section>
 
-  <section class="sec" id="combate">
-    <h3>Vê-se, não se joga</h3>
-    <h2><span class="h">戰</span> O combate</h2>
-    <p class="t">Resolve-se sozinho e tu vês. Uma ronda são <b>duas batidas</b>: tu bates,
-      ela responde. Dura uns três segundos. <b>Perder não custa nada</b> — voltas quando
-      estiveres mais forte.</p>
+  <section class="sec" id="combat">
+    <h2><span class="h">戰</span> Combat</h2>
     <div class="stage">
-      <div class="sc">${arenaScene(6)}</div>
+      <span class="sc">${arenaScene(6)}</span>
       <div class="duel">
-        <span class="you">${portrait({ realm: 6, focus: true })}</span>
-        <span class="mid cjk">擊</span>
-        <span class="foe">${icon('centipede', 62)}</span>
+        <span class="you">${portrait({ realm: 6, pulse: 0.4 })}</span>
+        <span class="mid cjk">對</span>
+        <span class="foe">${icon(wardenOf(6).icon, 64)}</span>
       </div>
     </div>
-    <p class="t">O cenário é o reino <b>da besta</b> — lutas onde ela vive, por isso o céu
-      muda conforme sobes.</p>
-  </section>
-
-  <section class="sec" id="equip">
-    <h3>O que cai das bestas</h3>
-    <h2><span class="h">器</span> O equipamento</h2>
-    <div class="pills">
-      ${[['peças', n(GEAR.length)], ['formas', `${ARCHETYPES.length}`],
-         ['espaços', `${SLOTS.length}`], ['raridades', `${RARITIES.length}`],
-         ['baú', `${CHEST_LIMIT}`], ['fusão', `${FUSE_COUNT}→1`],
-         ['eixos', `${AFFIXES.length}`]].map(([l, v]) =>
-        `<span class="pill"><b>${v}</b><i>${l}</i></span>`).join('')}
-    </div>
-    <p class="t"><b>Cada forma existe nos nove reinos.</b> Se gostas de leque, há leque do
-      reino 1 ao 9 — nunca és obrigado a mudar de estilo.</p>
-    <div class="tiles">
-      ${RARITIES.map((rar, i) => gearTile(
-        { id: `b${i}`, template: ['sword2', 'crescent4', 'diadem6', 'orb8', 'scythe9'][i], rarity: rar, rolls: [] },
-        { size: 54, spin: 0.1 })).join('')}
-    </div>
-    <p class="t" style="font-size:13px">As cinco raridades: ${RARITIES.map((r) =>
-      `<span class="cjk" style="color:${RARITY_INFO[r].colour}">${RARITY_INFO[r].han}</span>`).join(' · ')}.
-      Quanto mais rara, mais linhas a peça leva.</p>
-    <p class="t" style="margin-top:6px"><b>Cada reino tem a sua linhagem.</b> Vestir peças
-      da mesma família paga extra — o set é o <em>reino</em>, não a forma, por isso
-      qualquer peça de 落星 conta para o 落星.</p>
-    <div class="lin">
-      ${REALM_SETS.map((s) => `<span style="color:${realmOf(s.realm).colour}">
-        <b class="cjk">${s.han}</b><i>${s.name}</i></span>`).join('')}
-    </div>
-    <p class="t" style="font-size:13px">Os eixos em que uma peça pode rolar:
-      ${AFFIXES.map((a) => `<span class="cjk">${AFFIX_INFO[a].han}</span> ${AFFIX_INFO[a].label}`).join(' · ')}.</p>
-  </section>
-
-  <section class="sec" id="arvore">
-    <h3>O que compras com o que sobes</h3>
-    <h2><span class="h">道</span> A árvore</h2>
-    <p class="t">Ganhas 道 a abrir camadas e a matar guardiãs. <b>Uma árvore só</b>: três
-      ramos da mesma raiz 起, com pontes douradas a atravessar entre eles. Nunca dá para
-      comprar tudo — a árvore custa <span class="big">${TOTAL_COST}</span> e uma corrida
-      inteira dá <span class="big">${FULL_RUN}</span>.</p>
-    <div class="rows">
-      ${PATHS.map((p) => `<div class="row" style="--hue:${PATH_INFO[p].colour}">
-        <span class="ic">${icon(PATH_INFO[p].icon, 24)}</span>
-        <span class="body"><b class="cjk">${PATH_INFO[p].han}</b> <em>${PATH_INFO[p].name}</em>
-          <i>${PATH_INFO[p].blurb}</i></span>
-      </div>`).join('')}
-    </div>
-    <p class="t" style="font-size:13px">${ALL_NODES.length} nós, e três <b>chaves</b> —
-      nós mais fortes do que o vizinho que abdicam de alguma coisa, e fecham o outro lado
-      para sempre.</p>
+    <p class="t">The whole fight is settled the moment you press the button, and the screen
+      plays it back. <b>A round is two beats</b>, not one: you strike, then the beast
+      answers, so a blow lands alone and you can see whose it was. That is also why losing
+      can cost nothing — there is nothing to lose that has not already happened.</p>
+    <p class="t"><b>氣運 Form.</b> Each side rolls once, before any blow, for
+      ±${pc(FORM)} of its power. Blow-by-blow noise averages away over ten rounds, so
+      whoever had more power won every single time; one roll per fight does not average
+      away, and it is what makes an underdog worth trying.</p>
+    <p class="t"><b>The odds on screen are counted, not curved.</b> The number is 41 whole
+      fights on spread seeds, won and counted. A sigmoid over the power ratio cannot see a
+      stance that halves what you take or an art that triples a strike, and the old one
+      cheerfully promised 34% on fights the build lost a hundred times out of a hundred.</p>
+    <div class="rule"><b>What a warden asks for.</b> Exactly the power of a cultivator who
+      has filled the realm's cap and brought nothing else — so the fight is a coin flip for
+      somebody with the levels and nothing more, and the stance, the sequence, the gear, the
+      cores and the tree are what turn the coin over. Commons stand at
+      ${[0.45, 0.62, 0.84].map((s) => pc(s)).join(', ')} of the realm's reference, which is
+      a cultivator ${REFERENCE_BELOW} levels short of the cap.</div>
   </section>
 
   <section class="sec" id="build">
-    <h3>A única decisão dentro do combate</h3>
-    <h2><span class="h">勢</span> Postura e sequência</h2>
-    <p class="t">Escolhes tudo <b>antes</b> da luta e depois vês. Duas metades:</p>
-    <div class="cards two">
-      <div class="card"><b>勢 Uma postura</b>
-        <p class="t" style="margin-top:4px">Sempre ligada. Reescreve todas as rondas.
-          Ganhas a de cada reino a que chegas.</p></div>
-      <div class="card"><b>訣 ${SEQUENCE_SLOTS} artes por ordem</b>
-        <p class="t" style="margin-top:4px">Uma dispara por ronda, e volta ao início.
-          Cada guardiã larga a sua. <b>A ordem conta.</b></p></div>
-    </div>
-    <div class="chips">
-      ${STANCES.map((s) => `<span class="chip" style="--hue:${realmOf(s.realm).colour}"
-        title="${s.text}"><b class="cjk">${s.han}</b><i>${s.name}</i></span>`).join('')}
-    </div>
-    <div class="chips">
-      ${ARTS.map((a) => `<span class="chip" style="--hue:${realmOf(a.realm).colour}"
-        title="${a.text}"><span class="ic">${icon(a.icon, 18)}</span>
-        <b class="cjk">${a.han}</b></span>`).join('')}
-    </div>
-    <p class="ok">São <b>4 536</b> combinações, e uma build inteira vale
-      <b>×1.82 de poder</b> — medido, não estimado. É a diferença entre a guardiã ser uma
-      parede e ser uma porta: com 35% do qi gasto e sem build tens 12% de hipóteses; com
-      a mesma coisa e uma build, 98%.</p>
+    <h2><span class="h">勢</span> The build: stances and arts</h2>
+    <p class="t">Both decisions are made <b>outside</b> the fight, because an idle game that
+      needs you present at the fight stops being one.</p>
+    <h3>勢 Stances — one, always on. You hold the stance of every realm you have reached.</h3>
+    <div class="rows">${stanceRows}</div>
+    <h3>訣 Arts — ${SEQUENCE_SLOTS} in an order, one firing each round, then looping.
+      A warden hands over its own art when it falls.</h3>
+    <div class="rows">${artRows}</div>
+    <p class="t">The order is the point. 鶴唳 takes power off the beast for the rest of the
+      fight, so it is worth more early; 狼噬 grows with every round already fought, so it is
+      worth more late. Two cultivators with the same three arts in a different order are not
+      playing the same build. An empty slot fires nothing, so a full sequence always beats a
+      short one.</p>
   </section>
 
-  <section class="sec" id="topo">
-    <h3>Depois do reino 9</h3>
-    <h2><span class="h">劫</span> 渡劫 A tribulação</h2>
-    <p class="t">O reino 9 não acaba o jogo. O <b class="cjk">龍</b> Dragão volta sempre,
-      ancorado ao <b>teu</b> poder da última vez. Cada travessia dá um
-      <b class="cjk">雷印</b> — <b>+10% de poder e +10% de qi, para sempre</b>. A barra lá
-      em cima lê o teu poder contra o dele.</p>
-    <p class="warn"><b>Aviso honesto:</b> neste momento as travessias vêm depressa demais.
-      Não é culpa do 渡劫 — é a economia que dispara no topo. Explico em baixo.</p>
+  <section class="sec" id="gear">
+    <h2><span class="h">器</span> Gear</h2>
+    <p class="t"><b>${GEAR.length} pieces:</b> ${ARCHETYPES.length} shapes at every one of
+      the nine realms. ${RARITIES.length} ranks, ${AFFIXES.length} axes, ${SLOTS.length}
+      slots, and a chest of ${CHEST_LIMIT} before anything widens it. Gear always grants a
+      <b>percentage</b>, never a flat amount, so a good weapon found at the third realm is
+      still a good weapon at the ninth.</p>
+    <h3>The five ranks</h3>
+    <div class="pills">${RARITIES.map((r) => `<span class="pill">
+      <b class="cjk" style="color:${RARITY_INFO[r].colour}">${RARITY_INFO[r].han}</b>
+      <i>${RARITY_INFO[r].name} · x${RARITY_INFO[r].mult} · ${SECONDARIES[r]} extra
+      ${SECONDARIES[r] === 1 ? 'line' : 'lines'}</i></span>`).join('')}</div>
+    <h3>The seven axes</h3>
+    <div class="pills">${AFFIXES.map((a) => `<span class="pill">
+      <b class="cjk">${AFFIX_INFO[a].han}</b><i>${AFFIX_INFO[a].label}</i></span>`).join('')}</div>
+    <h3>The nine lineages — wear ${SET_STEPS.join(', ')} pieces of one realm and it pays</h3>
+    <div class="cards two">${setRows}</div>
+    <h3>The ${ARCHETYPES.length} shapes, by slot</h3>
+    <div class="cards two">${archetypeRows}</div>
+    <h3>Every piece in the game, by realm</h3>
+    <p class="t">A piece's name is its lineage and its shape: 凡鐵劍 is a Mortal Iron Sword
+      and 仙蛻劍 is an Ascendant Sword. Nothing is typed out — a new shape adds nine pieces
+      and a tenth realm would add ${ARCHETYPES.length}, without a line of naming.</p>
+    <div class="cards">${itemNames}</div>
+  </section>
+
+  <section class="sec" id="tree">
+    <h2><span class="h">道</span> The technique tree</h2>
+    <p class="t"><b>One tree, ${ALL_NODES.length} nodes, three branches that all grow from
+      起.</b> Gold bridges cross between them, so you can climb one branch and step into the
+      next. Points come from the climb itself: one for every three layers, two for every
+      warden. A full run earns about <b>${FULL_RUN}</b> against a tree costing
+      <b>${TOTAL_COST}</b>, so nobody finishes it — and that gap is the feature. A tree you
+      can complete is a checklist, and a checklist is not a build.</p>
+    <p class="t">At the middle of each branch there are two nodes and room for one. Each
+      keystone is stronger than the node beside it and each one gives something up.</p>
+    <div class="cards three">${treeColumns}</div>
+  </section>
+
+  <section class="sec" id="tower">
+    <h2><span class="h">塔</span> The Endless Tower <i class="faint cjk" style="font-size:19px;font-weight:400">無盡塔</i></h2>
+    <p class="t">One floor, one beast, one fight. Win and the floor is yours for good; lose
+      and nothing happens. Only ever the next floor is open, and it never runs out.</p>
+    <p class="t">A floor's power is not a new curve. It reads <b>the same reference the
+      wardens read</b>, one realm every ${FLOORS_PER_REALM} floors — so floor
+      ${FLOORS_PER_REALM * 3} <em>is</em> the third realm's warden, floor ${LAYERS} is the
+      Dragon, and floor 200 is what a twenty-second realm's warden would be if the mountain
+      had one.</p>
+    <table>
+      <tr><th>floor</th><th style="text-align:right">power</th><th>stands where</th>
+          <th style="text-align:right">pays 材</th></tr>
+      ${towerRows}
+    </table>
+    <p class="t">Every ${FLOORS_PER_REALM} floors is a <b>塔印 seal</b>, worth
+      ${pc(SEAL_LOOT)} more material from everything. Seals pay in material rather than in
+      power on purpose: a ladder that pays for climbing itself is not a ladder.</p>
+    <p class="t">The tower is also where a build is actually tested. A warden is a gate you
+      pass once; the tower keeps rising, so the question it asks is always
+      <em>does the build work</em>.</p>
+  </section>
+
+  <section class="sec" id="furnace">
+    <h2><span class="h">爐</span> The Furnace <i class="faint cjk" style="font-size:19px;font-weight:400">丹爐</i></h2>
+    <p class="t">The one thing qi buys that no realm caps. It is paid for <b>twice</b> — in
+      qi, which comes from waiting, and in 材 material, which comes from killing things — so
+      waiting alone can never buy power and neither can fighting alone. The furnace is where
+      the two halves of the game meet.</p>
+    <div class="rule"><b>The rule the whole economy stands on.</b> Nothing uncapped may ever
+      raise the qi rate. The furnace raises power, makes beasts read weaker and sweetens
+      what drops; not one of those feeds the qi that pays for it, so there is no loop to
+      close and no runaway to find. Rate upgrades stay behind the realm cap where they
+      belong.</div>
+    <h3>Three lines, ${LINES.length * 9} named pills. The pill is named for the cultivator,
+      not the recipe.</h3>
+    <div class="cards">${pillRows}</div>
+    <h3>What a pill costs — ${PILL_SHARE} of the rung it rides, and past the summit it goes
+      on climbing</h3>
+    <table>
+      <tr><th>pill</th><th style="text-align:right">qi</th><th style="text-align:right">材</th></tr>
+      ${pillPrices}
+    </table>
+    <p class="t">One 煉體丹 is +${pc(PILL_POWER)} power for ever. One 破煞丹 takes
+      ${pc(1 - 0.985)} off every beast and never takes it below ${pc(PILL_BANE_FLOOR)} of
+      its power — a beast that can be reduced to nothing stops being a fight, and then the
+      tower has no top. One 聚寶丹 is +${pc(PILL_FORTUNE)} on the rare end of the drop
+      table.</p>
+    <p class="t">Brewing everything, all the way up, is a real choice and a real cost:
+      measured, it takes a cultivator from ${TARGET_DAYS} days to about 162, and leaves them
+      eleven times stronger at the top.</p>
+  </section>
+
+  <section class="sec" id="top">
+    <h2><span class="h">劫</span> The tribulation <i class="faint cjk" style="font-size:19px;font-weight:400">渡劫</i></h2>
+    <p class="t">The ninth realm used to be a dead end: its layers never opened, the bar read
+      zero for ever and the qi piled up with nowhere to go. An idle game may not end, and
+      that is what ending looks like.</p>
+    <p class="t">So the ninth realm keeps its name. Once the last rung is open the qi bar
+      becomes <b>雷池 the thunder pool</b>, which holds <b>${MARK_DAYS} days of your own
+      gathering</b>. Fill it and the 龍 Dragon comes. Beat it and you take a
+      <b>雷印 thunder mark</b>, worth <b>${(1 + TRIBULATION_GAIN).toFixed(2)}x</b> to your
+      power and your qi alike; crossing empties the pool, and the next Dragon stands
+      <b>${TRIBULATION_CHALLENGE}x</b> higher than the one that fell.</p>
+    <div class="rule"><b>Why the pool exists.</b> An endgame gated only by power has no
+      clock at all. The furnace sells power, so one day's qi bought a fortnight of
+      crossings — measured, ten marks a day, every number in the game multiplied by two
+      hundred daily until the arithmetic ran out of exponent. A pool that refills is what
+      makes 渡劫 a ladder rather than a lever you hold down. It also puts the furnace in
+      real tension with the Dragon: qi brewed is qi not pooled.</div>
+    <p class="t">The Dragon is anchored to <b>the Dragon that fell</b>, not to the
+      cultivator. Anchoring to the cultivator quietly forgives everything the build is
+      worth — a stance and a sequence are together worth nearly twice the number on the
+      screen — so somebody who beat one Dragon beat every one after it without ever brewing
+      a thing. Anchoring to the Dragon cancels the build out of both sides, and what is left
+      is the honest question: what have you added since last time?</p>
+    <p class="t">The numbers are solved, not chosen. Three pills a crossing, a price that
+      rises ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
+      ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.
+      Measured: forty marks in 95 days, two to three days each, the tower at floor 279 and
+      522 pills brewed.</p>
   </section>
 
   <section class="sec" id="save">
-    <h3>Não percas três meses</h3>
-    <h2><span class="h">存</span> O save</h2>
-    <p class="t">Botão <b>存</b> em cima, ao lado do <b>?</b>. Copias o save para onde
-      quiseres, ou descarregas um ficheiro, e colas de volta para recuperar.</p>
-    <p class="t">O jogo também guarda uma cópia sobresselente sozinho e recorre a ela se a
-      principal desaparecer <em>ou andar para trás</em>. Mas isso protege-te do jogo.
-      <b>Só a tua cópia te protege do telemóvel.</b></p>
+    <h2><span class="h">存</span> The save</h2>
+    <p class="t">It lives in this browser, on this phone. There is no account. Clear the
+      browser data and it is gone, so the 存 button hands you a copy to paste into a note.
+      The game also keeps a spare of its own and falls back to it if the main one is ever
+      lost — that protects you from the game; only your own copy protects you from the
+      phone.</p>
+    <div class="warn"><b>A save is input, and it is validated like any other input.</b>
+      Every number is capped, every item is checked against the table it claims to come
+      from, no axis may appear twice on one piece, and nothing may hold more qi than the
+      fastest conceivable cultivator could have gathered since the run began. Some things
+      are not stored at all but <em>derived</em>: stances follow from the realm reached and
+      arts from the wardens put down, so an edited save cannot put 龍威 in the first slot at
+      realm 1 and walk over every warden in the game. Levels are clamped to the realm's
+      cap, because the cap is what holds the curve up.</div>
   </section>
 
-  <section class="sec" id="falta">
-    <h3>Estado real</h3>
-    <h2><span class="h">缺</span> O que falta</h2>
-    <p class="warn"><b>1 · A economia dispara no topo.</b> É o maior. No reino 9 já não há
-      camadas a consumir qi, por isso compras melhorias de ritmo com o qi que essas
-      melhorias produzem. Simulado, o ritmo chega a 10²⁸ qi por dia em duas semanas.
-      Corrigir é afinar a curva das melhorias e voltar a afinar os custos dos reinos para
-      manter os 90 dias. <b>Sugiro que seja o próximo.</b></p>
-    <p class="warn" style="margin-top:8px"><b>2 · Ninguém jogou 90 dias.</b> A curva está
-      testada em simulação, nunca jogada. Costuma partir entre o reino 6 e o 7.</p>
-    <p class="t" style="margin-top:10px">E três coisas menores: o som são quatro sons sem
-      volume, o bestiário não dá nada por completar um reino, e depois do ecrã de ajuda
-      ninguém te ensina mais nada.</p>
-  </section>
-
-  <section class="sec">
-    <h3>As outras páginas</h3>
-    <h2><span class="h">卷</span> Onde está o resto</h2>
-    <div class="where">
-      <a href="${GAME}"><b>玩</b><span><em>九境 Ninefold</em>
-        <i>O jogo. É este que jogas.</i></span></a>
-      <a href="${BENCH}"><b>戰</b><span><em>Banco de ensaios</em>
-        <i>A arena com todos os botões: escolhe o reino, a besta, a postura, a sequência e
-          a velocidade. Para veres o combate sem jogar três meses.</i></span></a>
-      <a href="${CATALOGUE}"><b>器</b><span><em>器道 Catálogo</em>
-        <i>As ${n(GEAR.length)} peças desenhadas uma a uma, as nove linhagens e a árvore
-          toda.</i></span></a>
-      <a href="${REPO}"><b>碼</b><span><em>O código</em>
-        <i>Tudo o que existe. As acções que publicam o jogo e constroem o APK estão no
-          separador Actions.</i></span></a>
+  <section class="sec" id="rules">
+    <h2><span class="h">律</span> The rules the game is built on</h2>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">純</b> <em>The simulation is pure</em>
+        <i>Everything in src/sim is (state, instant) → new state. No clock is read, no dice
+        are unseeded. That is why the same fight always plays out the same way, and why the
+        balance can be measured by a test instead of argued about.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">時</b> <em>Time moves by timestamp</em>
+        <i>Never by frame. A twenty-hour absence is paid layer by layer, because the rate
+        changes every time a layer opens — applying one rate across the gap would underpay
+        it in silence.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">手</b> <em>Only the player climbs a realm</em>
+        <i>Time banks qi at a ceiling and stops there. Beating the warden opens 突破;
+        pressing it is what takes the realm. The one moment the game stops for is not
+        allowed to happen while nobody is looking.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">失</b> <em>Losing costs nothing</em>
+        <i>Every fight in the game, wardens and tower floors included. Come back stronger.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">數</b> <em>One table of numbers</em>
+        <i>Nothing that shapes the curve lives outside src/sim/balance.ts, and the test
+        suite prints all of it on every run — so changing one is never silent.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">氣</b> <em>Nothing uncapped raises the qi rate</em>
+        <i>The rule that keeps the economy safe for good. Everything that multiplies
+        gathering is behind the realm cap; everything uncapped buys power, fortune or
+        knowledge instead.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">文</b> <em>All the prose is in one file</em>
+        <i>src/app/copy.ts. Text scattered across six screens cannot be reviewed, and this
+        is the file a translation would replace.</i></span></div>
     </div>
-    <p class="t" style="margin-top:12px;font-size:13px">As propostas antigas (as quatro
-      janelas de combate, os quatro sistemas de artes) já foram decididas e não precisas
-      delas. Esta página substitui a dos sistemas.</p>
   </section>
-</div>`;
+
+  <footer class="sec" style="color:var(--faint);font-size:13.5px">
+    <p>Generated from the game's own code by <code>npm run bible</code>. Icons from
+      game-icons.net under CC BY 3.0. When a system closes, move its row on the board and
+      write its section — that is the whole process.</p>
+  </footer>
+</div>
+`;
 
 writeFileSync('bible.html', page);
-console.log(`bible.html — ${(page.length / 1024).toFixed(0)} KB`);
+const kb = Math.round(page.length / 1024);
+console.log(`bible.html — ${kb} KB · ${SYSTEMS.filter((s) => s.status === 'done').length} closed, ` +
+  `${SYSTEMS.filter((s) => s.status === 'open').length} open, ` +
+  `${SYSTEMS.filter((s) => s.status === 'planned').length} planned · ` +
+  `${GEAR.length} items, ${LINES.length * 9} pills, ${BEASTS.length} beasts named in full`);
