@@ -116,19 +116,107 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 /* ── combat ────────────────────────────────────────────────────────────── */
 
-.arena { position: absolute; inset: 0; background: rgba(8,10,24,.93); backdrop-filter: blur(3px);
-         display: flex; flex-direction: column; justify-content: center; gap: 22px;
-         padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 24px); z-index: 10; }
-.side { display: flex; flex-direction: column; gap: 8px; }
-.side .fig { height: 118px; display: grid; place-items: center; }
-.side .fig > span { display: block; width: 118px; height: 118px; }
-.side .fig svg { display: block; width: 100%; height: 100%; }
-.hp { height: 7px; border-radius: 99px; background: var(--locked); overflow: hidden; }
-.hp > i { display: block; height: 100%; border-radius: 99px; transition: width .18s linear; }
-.versus { text-align: center; font-family: 'Noto Serif SC', serif; font-size: 15px; color: var(--faint); }
-.verdict { text-align: center; }
-.verdict .han { font-family: 'Noto Serif SC', serif; font-size: 34px; display: block; }
-.verdict p { margin: 6px 0 0; font-size: 14px; color: var(--faint); }
+/* ── 對 the arena: a fight in a place ───────────────────────────────────── */
+
+.arena { position: absolute; inset: 0; background: #05060F; z-index: 10;
+         display: flex; flex-direction: column; justify-content: center;
+         padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
+
+/* The stage holds the realm behind the fight. It is opaque on purpose: the old window
+   let the hunt list show through, which read as a dialog over a list.
+   Its height is capped: given the whole screen the skyline stretches into spikes and
+   the fighters shrink to specks at the bottom of a wall. */
+.stage { position: relative; flex: none; height: min(52vh, 400px); overflow: hidden; }
+.scene { position: absolute; inset: 0; }
+.scene svg { display: block; width: 100%; height: 100%; }
+
+/* Both fighters stand on the floor line, which the scene puts 12.7% up from its foot.
+   They need different offsets because the drawings sit differently in their boxes: the
+   cultivator's crossed legs end a fifth of the way up theirs, the beast fills its own. */
+.duel { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 74px 1fr;
+        align-items: end; padding: 0 6px 12.7%; }
+.fighter { position: relative; display: grid; place-items: center; }
+/* The flash hangs off .art, so .art has to be the thing it measures itself against —
+   anchored on .fighter it covered the whole grid cell instead of the body. */
+.fighter .art { display: block; position: relative; }
+.fighter .art svg { display: block; width: 100%; height: 100%; }
+.you .art { width: 136px; height: 136px; }
+.foe .art { width: 94px; height: 94px; margin-bottom: 18px;
+            filter: drop-shadow(0 3px 10px rgba(0,0,0,.75)); }
+
+.fighter[data-hit='true'] .art { animation: shake .26s ease-out; }
+/* The flash is the colour of whoever *threw* the blow, not of whoever wears it. */
+.fighter[data-hit='true'] .art::after {
+  content: ''; position: absolute; inset: 12%; border-radius: 50%; mix-blend-mode: screen;
+  opacity: 0; animation: flash .3s ease-out; pointer-events: none;
+}
+.you[data-hit='true'] .art::after { background: var(--magenta); }
+.foe[data-hit='true'] .art::after { background: var(--cyan); }
+.you[data-strike='true'] .art { animation: lungeR .22s ease-out; }
+.foe[data-strike='true'] .art { animation: lungeL .22s ease-out; }
+@keyframes lungeR { 0%,100% { transform: translateX(0); } 35% { transform: translateX(18px) scale(1.05); } }
+@keyframes lungeL { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-18px) scale(1.05); } }
+
+/* 息 The beast breathes while it waits, so it is never a sticker on a wall. */
+.foe .art svg { animation: breathe 2.6s ease-in-out infinite; }
+.foe[data-strike='true'] .art svg, .foe[data-hit='true'] .art svg,
+.arena[data-over='true'] .foe .art svg { animation: none; }
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+/* A heavy blow moves the whole place, not just the body that took it. */
+.arena[data-heavy='true'] .stage { animation: shake .24s ease-out; }
+
+/* 擊 The mark thrown across the gap, in the colour of whoever threw it. */
+.gap { position: relative; height: 118px; margin-bottom: 18px; }
+.arena[data-by='player'] .gap { color: var(--cyan); }
+.arena[data-by='beast'] .gap { color: var(--magenta); }
+.clash i { position: absolute; left: -34px; right: -34px; top: 46%; height: 2px;
+           background: linear-gradient(90deg, transparent, currentColor, transparent);
+           animation: slash .3s ease-out forwards; }
+.clash b { position: absolute; left: 50%; top: 46%; translate: -50% -50%;
+           font-family: 'Noto Serif SC', serif; font-size: 22px; font-weight: 400;
+           text-shadow: 0 0 18px currentColor; animation: mark .34s ease-out forwards; }
+@keyframes slash { 0% { transform: scaleX(0); opacity: 0; } 30% { transform: scaleX(1); opacity: 1; } 100% { opacity: 0; } }
+@keyframes mark { 0% { transform: translate(-50%,-50%) scale(.5); opacity: 0; }
+                  30% { transform: translate(-50%,-50%) scale(1); opacity: .95; }
+                  100% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; } }
+
+/* The damage floats over whoever took it. */
+.dmg { position: absolute; left: 50%; top: -10px; translate: -50% 0;
+       font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 22px;
+       text-shadow: 0 2px 12px #000; pointer-events: none;
+       animation: rise .8s ease-out forwards; }
+.you .dmg { color: var(--magenta); }
+.foe .dmg { color: var(--cyan); }
+
+/* 命 The two lives, small and close to the feet — they are not the spectacle. */
+.feet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
+        padding: 14px 18px 0; }
+.who { display: flex; flex-direction: column; gap: 6px; }
+.who.r { text-align: right; }
+.who .nm { font-size: 12px; color: var(--faint); font-family: Rajdhani, sans-serif;
+           font-weight: 600; display: flex; gap: 7px; align-items: baseline; }
+.who.r .nm { flex-direction: row-reverse; }
+.who .nm b { font-size: 16px; font-weight: 400; }
+.who .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden;
+            display: flex; }
+.who.r .bar { justify-content: flex-end; }
+.who .bar i { display: block; height: 100%; border-radius: 99px; background: var(--cyan);
+              transition: width .2s linear; }
+.who.r .bar i { background: var(--magenta); }
+
+/* 話 One line on what just happened. A fight of pure numbers reads as arithmetic. */
+.saying { margin: 0; padding: 14px 18px 0; text-align: center;
+          animation: lift .26s ease-out both; }
+.saying b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 19px;
+            display: block; color: var(--text); }
+.saying i { font-style: normal; font-size: 12.5px; color: var(--faint); }
+
+.verdict { text-align: center; padding: 8px 20px 0; animation: lift .3s ease-out both; }
+.verdict .han { font-family: 'Noto Serif SC', serif; font-size: 40px; display: block;
+                text-shadow: 0 0 30px currentColor; }
+.verdict p { margin: 4px 0 0; font-size: 14px; color: var(--faint); }
+.verdict .act { margin-top: 14px; }
 
 /* ── return ──────────────────────────────────────────────────────────────── */
 
@@ -149,7 +237,7 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
   60% { transform: translateX(-3px); }
   80% { transform: translateX(2px); }
 }
-@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes flash { 0% { opacity: .5; } 100% { opacity: 0; } }
 @keyframes rise {
   0% { transform: translate(-50%, 0); opacity: 0; }
   18% { opacity: 1; }
@@ -164,77 +252,6 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
   0% { transform: translateY(14px); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
-
-.side { position: relative; }
-.side[data-hit='true'] .fig { animation: shake .26s ease-out; }
-/* The flash belongs to the figure, not to the side: anchored on .side it stretched into
-   an ellipse across the name and the health bar as well. */
-.side .fig > span { position: relative; }
-.side[data-hit='true'] .fig > span::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: var(--tone, var(--magenta)); opacity: 0; animation: flash .3s ease-out;
-  pointer-events: none; mix-blend-mode: screen;
-}
-.dmg {
-  position: absolute; left: 50%; top: 6px; transform: translate(-50%, 0);
-  font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 21px;
-  animation: rise .75s ease-out forwards; pointer-events: none; text-shadow: 0 2px 10px #000;
-}
-
-/* 擊 The lunge. Whoever is striking leans into the middle and comes back. The
-   cultivator sits above the beast, so they lean down and the beast leans up. */
-@keyframes lunge-down {
-  0% { transform: translateY(0); }
-  35% { transform: translateY(15px) scale(1.06); }
-  100% { transform: translateY(0); }
-}
-@keyframes lunge-up {
-  0% { transform: translateY(0); }
-  35% { transform: translateY(-15px) scale(1.06); }
-  100% { transform: translateY(0); }
-}
-.side[data-who='player'][data-strike='true'] .fig { animation: lunge-down .17s ease-out; }
-.side[data-who='beast'][data-strike='true'] .fig { animation: lunge-up .17s ease-out; }
-
-/* 息 The beast breathes while it waits, so it is never a sticker on a wall. */
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.035); }
-}
-.beastfig > span { animation: breathe 2.6s ease-in-out infinite; }
-.side[data-strike='true'] .beastfig > span,
-.side[data-hit='true'] .beastfig > span { animation: none; }
-
-/* The mark thrown in the middle on every blow: a line drawn across, and the character
-   for the blow it is — 擊 a strike, 反 the answer. */
-@keyframes slash {
-  0% { transform: scaleX(0); opacity: 0; }
-  30% { transform: scaleX(1); opacity: 1; }
-  100% { transform: scaleX(1); opacity: 0; }
-}
-@keyframes mark {
-  0% { transform: scale(.5); opacity: 0; }
-  30% { transform: scale(1); opacity: .95; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-.clash { position: relative; display: block; height: 20px; }
-.clash i {
-  position: absolute; left: 12%; right: 12%; top: 50%; height: 1.5px;
-  background: linear-gradient(90deg, transparent, currentColor, transparent);
-  animation: slash .3s ease-out forwards;
-}
-.clash b {
-  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
-  font-family: 'Noto Serif SC', serif; font-size: 17px; font-weight: 400;
-  animation: mark .34s ease-out forwards; text-shadow: 0 0 14px currentColor;
-}
-.clash[data-by='player'] { color: var(--cyan); }
-.clash[data-by='beast'] { color: var(--magenta); }
-
-/* Once it is over the fight stops moving and the verdict has the screen to itself. */
-.arena[data-over='true'] .beastfig > span { animation: none; }
-
-.verdict { animation: lift .3s ease-out both; }
 
 /* 突破 The moment. Everything else stops for three quarters of a second. */
 .bloom { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center;
