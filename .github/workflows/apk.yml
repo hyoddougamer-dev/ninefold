@@ -26,11 +26,26 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      # Pinned to a major, so a Capacitor release cannot break a build months from now.
       - name: Add Capacitor and the Android project
         run: |
-          npm i --no-save @capacitor/core @capacitor/cli @capacitor/android
+          npm i --no-save @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
           npx cap add android
           npx cap sync android
+
+      # The shell has no game inside it: it opens the URL in capacitor.config.json. If
+      # that page is not live the APK installs and shows nothing, which is a confusing
+      # way to find out. So the build says so here instead.
+      - name: Check the page the shell will open
+        run: |
+          URL=$(node -p "require('./capacitor.config.json').server.url")
+          echo "The APK will open: $URL"
+          if curl -fsSL --max-time 20 -o /dev/null "$URL"; then
+            echo "It is live."
+          else
+            echo "::warning::$URL is not answering yet. Turn GitHub Pages on \
+            (Settings -> Pages -> Source: GitHub Actions) or the installed app will be blank."
+          fi
 
       - name: Build the debug APK
         run: ./gradlew assembleDebug --no-daemon
