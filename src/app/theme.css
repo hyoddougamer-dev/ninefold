@@ -87,6 +87,37 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .upg i { display: block; font-style: normal; font-size: 10.5px; color: var(--faint); }
 .upg .price { margin-left: auto; text-align: right; font-size: 12px; }
 .upg .price b { font-family: Rajdhani, sans-serif; font-size: 14px; color: var(--gold); font-weight: 600; }
+/* 滿 Full for this realm. It is not "you cannot afford this", so it must not read
+   like it: the box keeps its colour and the price becomes the character. */
+.upg[data-full="true"] { opacity: 1; border-color: var(--gold); }
+.upg[data-full="true"] .ic { color: var(--gold); }
+.upg[data-full="true"] .price b { font-family: 'Noto Serif SC', serif; font-size: 17px; }
+
+/* ── 爐 the furnace, and 錄 the fold that holds the bestiary ─────────────── */
+
+.pill { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+        padding: 10px 12px; display: flex; gap: 11px; align-items: center; width: 100%;
+        font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+.pill:disabled { opacity: .45; cursor: default; }
+.pill .ic { flex: none; width: 24px; color: var(--gold); display: grid; place-items: center; }
+.pill .ic svg { display: block; }
+.pill .pname { min-width: 0; }
+.pill .pname b { display: block; font-size: 15.5px; font-weight: 500; }
+.pill .pname i { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
+.pill .pname em { display: block; font-style: normal; font-size: 10.5px; color: var(--cyan);
+                  margin-top: 2px; }
+.pill .price { margin-left: auto; text-align: right; flex: none; }
+.pill .price b { display: block; font-family: Rajdhani, sans-serif; font-size: 14px;
+                 font-weight: 600; color: var(--gold); }
+.tag { display: block; font-style: normal; font-size: 9.5px; letter-spacing: .12em;
+       text-transform: uppercase; font-family: Archivo, sans-serif; }
+
+.fold { margin-top: 16px; width: 100%; background: transparent; border: 1px solid var(--line);
+        border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+        font: inherit; color: var(--faint); cursor: pointer; }
+.fold .cjk { font-size: 15px; color: var(--text); }
+.fold .mono { margin-left: auto; font-size: 12px; }
+.fold[data-open="true"] { border-color: var(--cyan); color: var(--text); }
 
 /* ── beasts ─────────────────────────────────────────────────────────────── */
 
@@ -329,7 +360,9 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 /* The ? and sound switches float over the sheet, so every screen's header row has to
    leave room for them — otherwise the numbers on the right slide underneath. */
-.sheet > .row:first-child { padding-right: 70px; }
+/* The three switches float over the top-right corner, so the first row of every
+   screen keeps its reading clear of them. */
+.sheet > .row:first-child { padding-right: 116px; }
 
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
 

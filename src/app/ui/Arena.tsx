@@ -1,7 +1,7 @@
 import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
-import { beastPower, loot, type Outcome } from '../../sim/combat.ts';
+import { loot, type Outcome } from '../../sim/combat.ts';
 import { num } from '../../sim/format.ts';
 import { portrait } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -10,6 +10,7 @@ import { ICONS } from '../../art/icons.generated.ts';
 import { ART_BY_KEY } from '../../data/arts.ts';
 import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
+import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
 
 /**
@@ -40,6 +41,8 @@ export const BEAT_MS = 175;
 const HEAVY = 0.09;
 
 export interface Battle {
+  /** 塔 Which floor of the tower this is, if it is one at all. */
+  readonly floor?: number;
   readonly beast: Beast;
   readonly outcome: Outcome;
   /** Two beats to a round: even is the cultivator striking, odd is the beast. */
@@ -160,8 +163,13 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
         </div>
         <div className="who r">
           <span className="nm">
-            <b className="cjk" style={{ color: br.colour }}>{beast.han}</b>
-            <em className="mono">力 {num(beastPower(beast))}</em>
+            <b className="cjk" style={{ color: br.colour }}>
+              {battle.floor === undefined ? beast.han : `${battle.floor}層`}
+            </b>
+            {/* What it *brings*, not what the table says it is worth. A tower floor
+                carries its own power and the 渡劫 Dragon rises every crossing, so the
+                table's number would be a different beast's. */}
+            <em className="mono">力 {num(outcome.beastPower)}</em>
           </span>
           <span className="bar"><i style={{ width: `${f.beastHealth * 100}%` }} /></span>
         </div>
@@ -181,7 +189,8 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
           </span>
           <p>
             {say.text}
-            {outcome.won && !beast.warden && ` · +${num(loot(beast))} 材`}
+            {outcome.won && battle.floor !== undefined && ` · +${num(floorLoot(battle.floor) * lootBonus(battle.floor - 1))} 材`}
+            {outcome.won && battle.floor === undefined && ` · +${num(loot(beast))} 材`}
           </p>
           {outcome.won && battle.drop && (
             <div className="spoil">

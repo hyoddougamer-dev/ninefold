@@ -12,22 +12,14 @@ import { BESTIARY } from '../copy.ts';
  * Thirty-six cards that fill in. It is the collection screen and, into the bargain, the
  * cheapest answer there is to "what is new this week": a seal lighting up costs nothing
  * to produce.
+ *
+ * It folds out at the bottom of 狩 Hunt rather than holding a tab of its own. A record
+ * of what you have killed belongs next to the killing, and five tabs is already as many
+ * as a thumb can find.
  */
 export function Bestiary({ state }: { state: State }) {
-  const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
-
   return (
     <>
-      <div className="row">
-        <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-          錄 Bestiary
-        </span>
-        <span className="mono" style={{ fontSize: 13 }}>
-          <span style={{ color: 'var(--cyan)' }}>{seen}</span>
-          <span className="faint"> / {BEASTS.length}</span>
-        </span>
-      </div>
-
       {REALMS.map((r) => {
         const ofRealm = BEASTS.filter((b) => b.realm === r.n);
         const reached = state.realm >= r.n;

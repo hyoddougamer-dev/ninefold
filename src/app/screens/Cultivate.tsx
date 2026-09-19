@@ -1,11 +1,12 @@
-import { LAYERS_PER_REALM } from '../../sim/balance.ts';
+import { LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { currentWarden, effectiveBeastPower, odds } from '../../sim/combat.ts';
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, breakThrough, buy, canBreakThrough, canBuy,
-  canCross, crossTribulation, power, tribulationReadiness, upgradeCost, type State,
+  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
+  canBuy, canCross, capOf, crossTribulation, power, tribulationPool, upgradeCost,
+  type State,
 } from '../../sim/state.ts';
-import { num } from '../../sim/format.ts';
-import { progress, rate } from '../../sim/time.ts';
+import { duration, num } from '../../sim/format.ts';
+import { ladderDone, progress, rate } from '../../sim/time.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { portrait, seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
@@ -19,16 +20,19 @@ export function Cultivate({ state, pulse, set, onFight }: {
   onFight: () => void;
 }) {
   const r = realmOf(state.realm);
-  const top = state.realm === 9;
   const w = currentWarden(state);
-  // At the top the Dragon is always there. What the bar reads is not qi but how close
-  // your power is to its — because qi is not what you wait for up there.
   const dragon = effectiveBeastPower(state, w);
-  const full = top ? true : atCeiling(state);
+  // 雷池 Once the last rung is open there is no layer left to fill, so the bar becomes
+  // the thunder pool: two days of your own gathering, and the gate on the Dragon.
+  const top = ladderDone(state);
+  const pool = tribulationPool(state);
+  const full = top ? atTribulation(state) : atCeiling(state);
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
-  const filled = top ? tribulationReadiness(state, dragon) : progress(state);
+  const filled = top ? Math.min(1, state.qi / pool) : progress(state);
+  const left = top && !full ? (pool - state.qi) / rate(state) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
+  const cap = capOf(state);
 
   return (
     <>
@@ -63,7 +67,9 @@ export function Cultivate({ state, pulse, set, onFight }: {
       </div>
       <div className="row" style={{ fontSize: 12 }}>
         <span className="faint">
-          {top ? CULTIVATE.toward(num(dragon)) : r.gains}
+          {top
+            ? (full ? CULTIVATE.toward(num(dragon)) : CULTIVATE.poolFilling(duration(left)))
+            : r.gains}
         </span>
         <span className="mono" style={{ color: 'var(--gold)' }}>材 {num(state.materials)}</span>
       </div>
@@ -107,7 +113,7 @@ export function Cultivate({ state, pulse, set, onFight }: {
 
       {crossing && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" onClick={() => set(crossTribulation(state))}>
+          <button className="act" onClick={() => set(crossTribulation(state, dragon))}>
             渡劫 <span>Cross the tribulation</span>
           </button>
         </div>
@@ -117,28 +123,38 @@ export function Cultivate({ state, pulse, set, onFight }: {
         <div className="card" style={{ marginTop: 16, borderColor: r.colour }}>
           <b className="cjk" style={{ color: r.colour }}>雷印</b>
           <p className="faint" style={{ margin: '4px 0 0', fontSize: 13 }}>
-            {CULTIVATE.ceiling(state.tribulation)}
+            {CULTIVATE.ceiling(state.tribulation, `${(1 + TRIBULATION_GAIN).toFixed(2)}x`)}
           </p>
         </div>
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>
+      {UPGRADES.every((u) => state.levels[u] >= cap) && (
+        <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>{CULTIVATE.capped}</p>
+      )}
       <div className="upgrades">
         {UPGRADES.map((u) => {
           const i = UPGRADE_INFO[u];
           const cost = upgradeCost(state, u);
+          const held = state.levels[u];
+          const maxed = held >= cap;
           return (
-            <button key={u} className="upg" disabled={!canBuy(state, u)} onClick={() => set(buy(state, u))}>
+            <button key={u} className="upg" data-full={maxed}
+              disabled={!canBuy(state, u)} onClick={() => set(buy(state, u))}>
               <span className="ic"><Svg html={icon(i.icon, 22)} /></span>
               <span>
-                <b>{i.han} <span className="mono faint" style={{ fontSize: 11 }}>{state.levels[u]}</span></b>
+                <b>{i.han} <span className="mono faint" style={{ fontSize: 11 }}>{CULTIVATE.cap(held, cap)}</span></b>
                 <i>{i.effect}</i>
               </span>
               <span className="price">
-                <b>{num(cost)}</b>
-                <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
-                  {i.currency === 'qi' ? 'qi' : '材'}
-                </i>
+                {maxed
+                  ? <b className="cjk" style={{ color: 'var(--gold)' }}>滿</b>
+                  : <>
+                    <b>{num(cost)}</b>
+                    <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
+                      {i.currency === 'qi' ? 'qi' : '材'}
+                    </i>
+                  </>}
               </span>
             </button>
           );

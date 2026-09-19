@@ -100,6 +100,22 @@ export function levelCap(realm: number): number {
   return Math.max(1, Math.min(9, Math.round(realm))) * LEVELS_PER_REALM;
 }
 
+/**
+ * 材 What a fight pays.
+ *
+ * One curve for the whole material economy, so 無盡塔 the tower and 狩 free hunting can
+ * never drift apart. A tower floor pays this once; a common beast pays HUNT_SHARE of
+ * what the floor at its own depth would, and pays it every time it is killed.
+ *
+ * A twentieth is not an arbitrary fraction. Materials are the half of the furnace that
+ * cannot be waited for, and if hunting paid a floor's worth there would be no reason to
+ * climb; if it paid nothing, killing things would stop mattering the moment the tower
+ * opened. Twenty kills to a floor keeps both worth doing.
+ */
+export const FLOOR_LOOT = 12;
+export const FLOOR_LOOT_GROWTH = 1.2;
+export const HUNT_SHARE = 1 / 20;
+
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;
 

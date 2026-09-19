@@ -27,13 +27,16 @@ export const HELP = {
       'It keeps going with the phone closed. Come back tomorrow and it is waiting for you.'],
     ['Spend it on the four upgrades',
       'Two make qi come faster, two make you stronger. You never lose a level you bought.'],
+    ['A realm only holds six levels of each',
+      'When they are full, the only way to hold more is to climb. That is what a realm is for.'],
     ['Fill the bar, then fight the warden',
       'One beast guards each realm. Tap 戰 and watch. If you lose, you lose nothing.'],
     ['突破 Break through',
       'You move up a realm and the light around you changes.'],
   ] as const,
-  hunt: '狩 Hunt has beasts you can fight any time. They drop 材 material, and material buys 妖丹 cores.',
-  slow: 'The first hour is slow. Realm 1 gathers 1 qi a second. Buy 丹藥 pills and 功法 method as soon as you can afford them.',
+  hunt: '狩 Hunt has beasts you can fight any time. They drop 材 material.',
+  tower: '塔 The tower is one floor at a time, and it never ends. Floors pay the 材 material the furnace eats.',
+  slow: 'The first hour is slow. Realm 1 gathers 1 qi a second. Buy 吐納 breathwork and 功法 method as soon as you can afford them.',
   begin: 'Begin',
 };
 
@@ -47,9 +50,33 @@ export const CULTIVATE = {
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
-  ceiling: (n: number) =>
-    `Each 雷印 mark is +10% power and +10% qi, for good. You hold ${n}. `
+  ceiling: (n: number, gain: string) =>
+    `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}. `
     + 'There is no rebirth yet, so this is the ladder above the ladder.',
+
+  /** 雷池 The pool. It is the ninth realm's bar, and it refills. */
+  pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
+  poolFilling: (left: string) => `The pool fills in ${left}.`,
+  capped: 'Full for this realm. Climb to hold more.',
+  cap: (held: number, cap: number) => `${held} of ${cap}`,
+};
+
+export const TRIALS = {
+  towerHead: '塔 The Endless Tower',
+  tower: 'One floor, one beast. Win and the floor is yours for good. Lose and nothing happens.',
+  floor: (n: number) => `Floor ${n}`,
+  best: (n: number) => (n === 0 ? 'No floor taken yet' : `Best floor ${n}`),
+  seals: (n: number) => `${n} 塔印 ${n === 1 ? 'seal' : 'seals'}`,
+  sealWorth: (pct: string) => `Every nine floors is a seal. Seals give you ${pct} more material from everything.`,
+  climb: 'Climb',
+  pays: (mats: string) => `pays ${mats} 材`,
+
+  furnaceHead: '爐 The Furnace',
+  furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
+  brew: 'Brew',
+  held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
+  needMaterial: 'You need more 材 material. The tower pays it.',
+  rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell you, and it is why the climb still takes three months.',
 };
 
 export const HUNT = {

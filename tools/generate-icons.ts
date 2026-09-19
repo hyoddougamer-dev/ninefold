@@ -18,6 +18,8 @@ const UI_ICONS = [
   'meditation', 'katana', 'scroll-unfurled', 'fire-gem', 'tiger-head',
   'round-potion', 'crystal-cluster', 'pagoda', 'yin-yang', 'dragon-orb',
   'spiral-bloom', 'crystal-shrine', 'beams-aura', 'lightning-helix',
+  // 塔 the tower, 爐 the furnace, and the three pill lines.
+  'pagoda', 'cauldron', 'round-potion', 'cracked-shield', 'gold-nuggets', 'energy-breath',
 ];
 
 const NAMES = [...new Set([

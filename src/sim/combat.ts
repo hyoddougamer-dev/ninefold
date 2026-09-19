@@ -1,5 +1,7 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
-import { LAYERS_PER_REALM, LEVELS_PER_REALM } from './balance.ts';
+import {
+  FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
+} from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -236,9 +238,24 @@ export function fight(s: State, b: Beast, seed: number, standing?: number): Outc
   return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0 };
 }
 
-/** How much material a common beast drops, before the tower's seals sweeten it. */
+/**
+ * How much material a beast drops, before the tower's seals sweeten it.
+ *
+ * It rides the tower's own curve at the depth the beast stands at, so hunting and
+ * climbing stay in proportion for ever. The old reading was a small polynomial that had
+ * nothing to do with anything: by the fifth realm a beast paid sixteen material against
+ * a tower floor paying thirty-six thousand, so hunting for material was pointless the
+ * day the tower opened.
+ */
+export function beastDepth(b: Beast): number {
+  const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
+  return (b.realm - 1) * LAYERS_PER_REALM + 3 + 2 * Math.max(0, i);
+}
+
 export function loot(b: Beast): number {
-  return Math.max(1, Math.round(b.realm * 1.6 + (b.realm - 1) ** 1.5));
+  const depth = b.warden ? b.realm * LAYERS_PER_REALM : beastDepth(b);
+  const share = b.warden ? HUNT_SHARE * 4 : HUNT_SHARE;
+  return Math.max(1, Math.round(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (depth - 1) * share));
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */

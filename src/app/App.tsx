@@ -10,14 +10,18 @@ import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
+import { brew, clearFloor, lootTaken, standingFloor } from '../sim/trials.ts';
+import { floorBeast, floorPower } from '../sim/tower.ts';
+import { pillFortune } from '../sim/furnace.ts';
+import type { Line } from '../data/alchemy.ts';
 import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
 import { WARDENS } from '../data/bestiary.ts';
 import { RARITIES, wornTotals } from '../data/gear.ts';
-import { Bestiary } from './screens/Bestiary.tsx';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
+import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Svg } from './ui/Svg.tsx';
@@ -31,9 +35,9 @@ import { UPDATE } from './copy.ts';
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate' },
   { key: 'hunt', han: '狩', label: 'Hunt' },
+  { key: 'trials', han: '塔', label: 'Trials' },
   { key: 'gear', han: '器', label: 'Gear' },
   { key: 'dao', han: '道', label: 'Path' },
-  { key: 'bestiary', han: '錄', label: 'Bestiary' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -133,7 +137,7 @@ export function App() {
     };
   }, [state, ready]);
 
-  const startFight = useCallback((beast: Beast) => {
+  const startFight = useCallback((beast: Beast, floor?: number) => {
     sfx.tap();
     haptics.tap();
     setBattle((current) => {
@@ -141,19 +145,38 @@ export function App() {
       // One seed for the fight and its drop, so the same kill always gives the same
       // item — closing the app and reopening it cannot re-roll a poor piece.
       const seed = Math.floor(now() * 1000) >>> 0;
+      const standing = floor === undefined ? undefined : floorPower(floor);
       return {
         beast,
-        outcome: fight(state, beast, seed),
+        floor,
+        outcome: fight(state, beast, seed, standing),
         beat: 0,
         over: false,
-        drop: rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
+        // A tower floor pays in materials, not in gear. Gear comes from the world.
+        drop: floor !== undefined ? null : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
           chance: dropChanceBonus(state.unlocked),
-          luck: rarityLuck(state.unlocked),
+          luck: rarityLuck(state.unlocked) * pillFortune(state.brewed),
           always: alwaysDrops(state.unlocked),
         }),
       };
     });
   }, [state]);
+
+  /** 塔 The next floor of the tower, and only ever the next one. */
+  const climbTower = useCallback((floor: number) => {
+    if (floor !== standingFloor(state)) return;
+    startFight(floorBeast(floor), floor);
+  }, [state, startFight]);
+
+  const onBrew = useCallback((line: Line) => {
+    setState((s) => {
+      const next = brew(s, line);
+      if (next === s) return s;
+      sfx.breakthrough();
+      haptics.win();
+      return next;
+    });
+  }, []);
 
   /**
    * The whole fight is already settled; this walks it one beat at a time.
@@ -185,8 +208,11 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop } = battle;
-    if (outcome.won) {
+    const { beast, outcome, drop, floor } = battle;
+    if (outcome.won && floor !== undefined) {
+      // 塔 A floor counts once. It pays material and nothing else.
+      setState((s) => clearFloor(s, floor));
+    } else if (outcome.won) {
       setState((s) => {
         // 空囊 Empty Pouch lifts every drop a rank on its way into the chest.
         const lifted = drop && dropsRankUp(s.unlocked)
@@ -196,7 +222,7 @@ export function App() {
         return {
           ...s,
           wardenFell: beast.warden ? true : s.wardenFell,
-          materials: s.materials + (beast.warden ? loot(beast) * 4 : loot(beast)),
+          materials: s.materials + lootTaken(s, loot(beast)),
           killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
           chest: kept ? [...kept] : s.chest,
         };
@@ -301,13 +327,13 @@ export function App() {
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
+        {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'gear' && (
           <Gear state={state} pulse={pulse} onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} />
         )}
         {tab === 'dao' && (
           <Dao state={state} onUnlock={onUnlock} onStance={onStance} onSequence={onSequence} />
         )}
-        {tab === 'bestiary' && <Bestiary state={state} />}
       </div>
 
       <div className="switches">

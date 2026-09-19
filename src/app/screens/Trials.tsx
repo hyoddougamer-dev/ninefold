@@ -1,0 +1,124 @@
+import { LINES, PILL_LINES } from '../../data/alchemy.ts';
+import { realm as realmOf } from '../../data/realms.ts';
+import { effectiveBeastPower, odds } from '../../sim/combat.ts';
+import { power, type State } from '../../sim/state.ts';
+import { num } from '../../sim/format.ts';
+import { SEAL_LOOT, floorBeast, floorLoot, floorPower, lootBonus, seals } from '../../sim/tower.ts';
+import { furnaceMenu, standingFloor } from '../../sim/trials.ts';
+import { pillsTaken } from '../../sim/furnace.ts';
+import { seal } from '../../art/aura.ts';
+import { icon } from '../../art/icon.ts';
+import { Svg } from '../ui/Svg.tsx';
+import { TRIALS } from '../copy.ts';
+
+/**
+ * 塔 and 爐 — the two halves of what qi buys once a realm is full.
+ *
+ * They share a screen because they share a loop. The tower pays 材 material and nothing
+ * else; the furnace eats 材 material and qi together and pays power. Neither of them
+ * touches the qi rate, which is the rule the whole economy stands on, and the screen
+ * says so at the bottom rather than leaving the player to work it out.
+ */
+export function Trials({ state, onFloor, onBrew }: {
+  state: State;
+  onFloor: (floor: number) => void;
+  onBrew: (line: (typeof LINES)[number]) => void;
+}) {
+  const floor = standingFloor(state);
+  const beast = floorBeast(floor);
+  const standing = floorPower(floor);
+  // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
+  const brings = effectiveBeastPower(state, beast, standing);
+  const chance = odds(state, beast, standing);
+  const tone = chance > 0.66 ? 'var(--cyan)' : chance > 0.33 ? 'var(--gold)' : 'var(--magenta)';
+  const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
+  const menu = furnaceMenu(state);
+  const held = seals(state.tower);
+
+  return (
+    <>
+      <div className="row">
+        <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
+          塔 Trials
+        </span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+      </div>
+      <p className="faint" style={{ margin: '6px 0 0', fontSize: 13 }}>
+        力 {num(power(state))} power
+      </p>
+
+      <h2 className="heading">{TRIALS.towerHead}</h2>
+      <div className="card" style={{ borderColor: r.colour }}>
+        <div className="row">
+          <span className="seal" style={{ width: 52, height: 52, flex: 'none' }}>
+            <Svg html={seal(beast.icon, r.colour, floor % 9 === 0)} />
+          </span>
+          <span style={{ flex: 1 }}>
+            <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>
+              {TRIALS.floor(floor)}
+            </b>
+            <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>
+              {beast.han} {beast.name} · 力 {num(brings)}
+            </i>
+          </span>
+          <span className="tech mono" style={{ fontSize: 17, textAlign: 'right', color: tone }}>
+            {Math.round(chance * 100)}%
+            <em className="faint tag">odds</em>
+          </span>
+        </div>
+        <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>
+          <span className="faint">{TRIALS.best(state.tower)}</span>
+          <span className="mono" style={{ color: 'var(--gold)' }}>
+            {TRIALS.pays(num(Math.round(floorLoot(floor) * lootBonus(state.tower))))}
+          </span>
+        </div>
+        <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
+        <button className="act" data-tone="magenta" onClick={() => onFloor(floor)}>
+          登 <span>{TRIALS.climb}</span>
+        </button>
+      </div>
+
+      <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>
+        <span className="faint">{TRIALS.sealWorth(`${Math.round(SEAL_LOOT * 100)}%`)}</span>
+        <span className="mono" style={{ color: 'var(--gold)' }}>{TRIALS.seals(held)}</span>
+      </div>
+
+      <h2 className="heading">{TRIALS.furnaceHead}</h2>
+      <div className="row" style={{ marginBottom: 8 }}>
+        <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
+      </div>
+
+      <div className="stack">
+        {menu.map(({ line, pill, cost, held: taken, affordable }) => {
+          const info = PILL_LINES[line];
+          const short = state.materials < cost.materials;
+          return (
+            <button key={line} className="pill" disabled={!affordable} onClick={() => onBrew(line)}>
+              <span className="ic"><Svg html={icon(info.icon, 24)} /></span>
+              <span className="pname">
+                <b className="cjk">{pill.han}</b>
+                <i>{pill.name}</i>
+                <em>{info.effect} · {TRIALS.held(taken)}</em>
+              </span>
+              <span className="price">
+                <b>{num(cost.qi)}</b>
+                <i className="faint tag">qi</i>
+                <b style={{ color: short ? 'var(--magenta)' : 'var(--gold)' }}>{num(cost.materials)}</b>
+                <i className="faint tag">材</i>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {menu.some((m) => state.materials < m.cost.materials) && (
+        <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{TRIALS.needMaterial}</p>
+      )}
+
+      <p className="faint" style={{ margin: '14px 0 0', fontSize: 12 }}>
+        {pillsTaken(state.brewed) > 0 && <>{TRIALS.held(pillsTaken(state.brewed))} in all. </>}
+        {TRIALS.rule}
+      </p>
+    </>
+  );
+}

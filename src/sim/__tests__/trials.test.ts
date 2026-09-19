@@ -7,7 +7,7 @@ import {
   FLOORS_PER_REALM, floorBeast, floorLoot, floorPower, lootBonus, seals,
 } from '../tower.ts';
 import {
-  PILL_BANE_FLOOR, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
+  PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
 } from '../furnace.ts';
 import { brew, canBrew, clearFloor, furnaceMenu, standingFloor } from '../trials.ts';
 import { newState, power, validate, type State } from '../state.ts';
@@ -107,6 +107,9 @@ describe('爐 the Furnace', () => {
     }
     const names = LINES.flatMap((l) => PILL_GRADES[l].map((p) => p.name));
     expect(new Set(names).size).toBe(names.length);
+    // The screen reads the line's `effect` string, so it has to still be true after
+    // anybody edits the constant beside it.
+    expect(PILL_LINES.body.effect).toContain(`${Math.round(PILL_POWER * 100)}%`);
   });
 
   it('prices a pill off the mountain, and past the top goes on climbing', () => {

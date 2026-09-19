@@ -32,8 +32,8 @@ export interface PillLine {
 
 export const PILL_LINES: Record<Line, PillLine> = {
   body: {
-    key: 'body', han: '煉體', name: 'Body Tempering', icon: 'fire-gem',
-    effect: '+2.5% power, for ever',
+    key: 'body', han: '煉體', name: 'Body Tempering', icon: 'round-potion',
+    effect: '+3% power, for ever',
     lore: 'Cinnabar and beast marrow, drawn down to a bead. It burns going in and the ' +
       'body it leaves is not the body it found.',
   },

@@ -1,15 +1,27 @@
+/**
+ * The suffixes, in order of a thousand.
+ *
+ * It goes a long way past the ninth realm on purpose. 渡劫 has no top: every thunder
+ * mark multiplies the qi rate, so a cultivator who keeps crossing leaves the last
+ * suffix behind eventually. Before this list existed the screen printed
+ * "146419072126555360T", which is not a number anybody reads.
+ */
+const SUFFIX = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+  'UDc', 'DDc', 'TDc', 'QaDc', 'QiDc', 'SxDc', 'SpDc', 'ODc', 'NDc', 'Vg'];
+
 /** Numbers a player reads at a glance, not numbers an accountant prints. */
 export function num(n: number): string {
   if (!Number.isFinite(n)) return '∞';
   const abs = Math.abs(n);
-  const scaled = (v: number, suffix: string) =>
-    `${v >= 100 ? Math.round(v) : Number(v.toFixed(v >= 10 ? 1 : 2))}${suffix}`;
-  if (abs >= 1e12) return scaled(n / 1e12, 'T');
-  if (abs >= 1e9) return scaled(n / 1e9, 'B');
-  if (abs >= 1e6) return scaled(n / 1e6, 'M');
-  if (abs >= 1e4) return scaled(n / 1e3, 'k');
-  if (abs >= 100) return Math.round(n).toString();
-  return Number(n.toFixed(1)).toString();
+  if (abs < 100) return Number(n.toFixed(1)).toString();
+  if (abs < 1e4) return Math.round(n).toString();
+
+  const step = Math.min(SUFFIX.length - 1, Math.floor(Math.log10(abs) / 3));
+  const v = n / 1000 ** step;
+  // Past the last suffix there is nothing left to name it with, so it goes exponential
+  // rather than lying about the size.
+  if (abs >= 1000 ** SUFFIX.length) return n.toExponential(2).replace('e+', 'e');
+  return `${Math.abs(v) >= 100 ? Math.round(v) : Number(v.toFixed(Math.abs(v) >= 10 ? 1 : 2))}${SUFFIX[step]}`;
 }
 
 export function duration(seconds: number): string {

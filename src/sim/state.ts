@@ -48,7 +48,10 @@ export const UPGRADE_INFO: Record<Upgrade, {
     effect: '+22% power', share: 0.7, gain: 1.22, affects: 'power', currency: 'qi' },
   method: { han: '功法', name: 'Cultivation Method', icon: 'scroll-unfurled',
     effect: '+20% qi per second', share: 1.0, gain: 1.20, affects: 'rate', currency: 'qi' },
-  pills: { han: '丹藥', name: 'Pills', icon: 'fire-gem',
+  // Named 丹藥 Pills until 丹爐 the Furnace arrived and took the word. Two things called
+  // "pills" on two screens is exactly the confusion the copy rules forbid, so this one
+  // became what it always was: breathing.
+  pills: { han: '吐納', name: 'Breathwork', icon: 'energy-breath',
     effect: '+14% qi per second', share: 0.45, gain: 1.14, affects: 'rate', currency: 'qi' },
   cores: { han: '妖丹', name: 'Beast Cores', icon: 'crystal-cluster',
     effect: '+8% power', share: 3, gain: 1.08, affects: 'power', currency: 'material' },

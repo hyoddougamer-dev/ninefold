@@ -1,4 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
+import { FLOOR_LOOT, FLOOR_LOOT_GROWTH } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
 
 /**
@@ -42,9 +43,6 @@ export function floorBeast(floor: number): Beast {
 }
 
 /** How much material a floor pays, the first time it falls. */
-export const FLOOR_LOOT = 12;
-export const FLOOR_LOOT_GROWTH = 1.2;
-
 export function floorLoot(floor: number): number {
   return Math.round(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (floor - 1));
 }
