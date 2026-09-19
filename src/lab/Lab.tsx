@@ -6,6 +6,7 @@ import { newState, power, type State } from '../sim/state.ts';
 import { num } from '../sim/format.ts';
 import { rollDrop } from '../sim/drops.ts';
 import { Arena, BEAT_MS, beatsIn, type Battle } from '../app/ui/Arena.tsx';
+import { ARTS, STANCES, SEQUENCE_SLOTS, WARDEN_ART } from '../data/arts.ts';
 
 /**
  * 戰場 The arena bench.
@@ -34,14 +35,22 @@ const SPEEDS = [
   { label: '1×', mult: 1 },
 ] as const;
 
+/** Every warden down, so the bench can reach for any art without a climb first. */
+const ALL_WARDENS = Object.fromEntries(Object.keys(WARDEN_ART).map((k) => [k, 1]));
+
 /** A cultivator whose power lands where the dial asks, found rather than guessed. */
-function cultivatorFor(realm: number, beast: Beast, mult: number): State {
+function cultivatorFor(
+  realm: number, beast: Beast, mult: number, stance: string | null, sequence: string[],
+): State {
   const want = beastPower(beast) * mult;
   const at = (technique: number): State => ({
     ...newState(0),
     realm,
     layer: 8,
     levels: { technique, method: 0, pills: 0, cores: 0 },
+    killed: ALL_WARDENS,
+    stance,
+    sequence,
   });
   let best = at(0);
   for (let t = 0; t <= 200; t++) {
@@ -55,13 +64,18 @@ export function Lab() {
   const [beastKey, setBeastKey] = useState('centipede');
   const [match, setMatch] = useState<typeof MATCH[number]['k']>('even');
   const [speed, setSpeed] = useState(1);
+  const [stance, setStance] = useState<string | null>(null);
+  const [sequence, setSequence] = useState<string[]>([]);
   const [seed, setSeed] = useState(1);
   const [battle, setBattle] = useState<Battle | null>(null);
   const [pulse, setPulse] = useState(0);
 
   const beast = useMemo(() => BEASTS.find((b) => b.key === beastKey) ?? BEASTS[0], [beastKey]);
   const mult = MATCH.find((m) => m.k === match)!.mult;
-  const hero = useMemo(() => cultivatorFor(realm, beast, mult), [realm, beast, mult]);
+  const hero = useMemo(
+    () => cultivatorFor(realm, beast, mult, stance, sequence),
+    [realm, beast, mult, stance, sequence],
+  );
 
   const start = useCallback(() => {
     const s = (seed * 2654435761) >>> 0;
@@ -148,6 +162,49 @@ export function Lab() {
               <i>{m.label}</i>
             </button>
           ))}
+        </div>
+
+        <h2 className="heading">勢 Stance</h2>
+        <div className="chips">
+          {STANCES.map((x) => (
+            <button key={x.key} className="chip" data-on={stance === x.key}
+                    style={{ ['--hue' as string]: realmOf(x.realm).colour }}
+                    onClick={() => { setStance(stance === x.key ? null : x.key); setBattle(null); }}>
+              <b className="cjk">{x.han}</b>
+              <i>{x.name}</i>
+            </button>
+          ))}
+        </div>
+        {stance && (
+          <p className="faint" style={{ fontSize: 12.5, margin: '8px 0 0' }}>
+            {STANCES.find((x) => x.key === stance)?.text}
+          </p>
+        )}
+
+        <h2 className="heading">
+          訣 Sequence
+          <span className="mono faint" style={{ float: 'right', fontSize: 12 }}>
+            {sequence.length} / {SEQUENCE_SLOTS}
+          </span>
+        </h2>
+        <div className="chips">
+          {ARTS.map((a) => {
+            const at = sequence.indexOf(a.key);
+            return (
+              <button key={a.key} className="chip" data-on={at >= 0}
+                      style={{ ['--hue' as string]: realmOf(a.realm).colour }}
+                      title={a.text}
+                      onClick={() => {
+                        setSequence(at >= 0
+                          ? sequence.filter((k) => k !== a.key)
+                          : sequence.length < SEQUENCE_SLOTS ? [...sequence, a.key] : sequence);
+                        setBattle(null);
+                      }}>
+                <b className="cjk">{a.han}</b>
+                <i>{at >= 0 ? `slot ${at + 1}` : a.name}</i>
+              </button>
+            );
+          })}
         </div>
 
         <h2 className="heading">Speed</h2>

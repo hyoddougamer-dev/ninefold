@@ -6,6 +6,7 @@ import {
 } from '../data/gear.ts';
 import { CHEST_LIMIT } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
+import { validateSequence, validateStance } from './arts.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -46,6 +47,10 @@ export interface State {
   chest: Item[];
   /** 道 Technique nodes taken, in the order they were taken. */
   unlocked: string[];
+  /** 勢 The stance you fight in, or none yet. */
+  stance: string | null;
+  /** 訣 The arts in the order they fire, at most SEQUENCE_SLOTS of them. */
+  sequence: string[];
 }
 
 export function newState(now: number): State {
@@ -57,6 +62,8 @@ export function newState(now: number): State {
     worn: {},
     chest: [],
     unlocked: [],
+    stance: null,
+    sequence: [],
   };
 }
 
@@ -208,5 +215,10 @@ export function validate(raw: unknown, now: number): State {
     worn,
     chest,
     unlocked: validateUnlocked(o.unlocked),
+    // Neither of these is owned in the save: the stances follow from the realm reached
+    // and the arts from the wardens put down. So a hand-edited save cannot put 龍威 in
+    // the first slot at realm 1 and walk over every warden in the game.
+    stance: validateStance(o.stance, realm),
+    sequence: validateSequence(o.sequence, killed),
   };
 }

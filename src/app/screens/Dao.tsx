@@ -8,6 +8,7 @@ import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
 import { layersOpened } from '../../sim/time.ts';
 import type { State } from '../../sim/state.ts';
 import { DAO } from '../copy.ts';
+import { Loadout } from '../ui/Loadout.tsx';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -81,9 +82,11 @@ const EDGES: { a: Placed; b: Placed }[] = (() => {
   return out;
 })();
 
-export function Dao({ state, onUnlock }: {
+export function Dao({ state, onUnlock, onStance, onSequence }: {
   state: State;
   onUnlock: (key: string) => void;
+  onStance: (key: string | null) => void;
+  onSequence: (keys: string[]) => void;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
   const wardens = countWardens(state);
@@ -97,7 +100,9 @@ export function Dao({ state, onUnlock }: {
 
   return (
     <>
-      <div className="row">
+      <Loadout state={state} onStance={onStance} onSequence={onSequence} />
+
+      <div className="row" style={{ marginTop: 26 }}>
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           道 Techniques
         </span>

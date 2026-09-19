@@ -7,6 +7,7 @@ import { portrait } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
 import { gearTile } from '../../art/gear.ts';
 import { ICONS } from '../../art/icons.generated.ts';
+import { ART_BY_KEY } from '../../data/arts.ts';
 import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { ARENA } from '../copy.ts';
@@ -76,6 +77,10 @@ export function frameAt(o: Outcome, beat: number) {
     playerHealth: player ? before.playerHealth : here.playerHealth,
     beastHealth: here.beastHealth,
     damage: player ? here.playerDamage : here.beastDamage,
+    // An art belongs to the cultivator's beat. On the beast's beat there is nothing to
+    // announce, or the name of the art would hang over the blow that answered it.
+    arts: player ? here.arts : [],
+    missed: !player && here.missed,
     /** True when this blow took a real bite — the frame shakes only for those. */
     heavy: (player ? here.playerDamage / o.beastPower : here.beastDamage / o.playerPower) / 10 > HEAVY,
   };
@@ -94,17 +99,33 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
   const br = realmOf(beast.realm);
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const say = over ? verdictLine(outcome.won, !!beast.warden) : blowLine(f.striker, f.round);
+  const arts = f.arts.map((k) => ART_BY_KEY[k]).filter(Boolean);
 
   return (
     <div className="arena" data-over={over} data-by={f.striker} data-heavy={!over && f.heavy}>
       <div className="stage">
         <div className="scene"><Svg html={arenaScene(beast.realm)} /></div>
 
+        {/* 訣 The art firing. It is the payoff for the whole sequence screen, so it gets
+            the top of the stage to itself rather than a line among the numbers. */}
+        {arts.length > 0 && (
+          <div className="fired" key={`a${beat}`}>
+            {arts.map((a) => (
+              <span key={a.key} className="one">
+                <b className="cjk">{a.han}</b>
+                <i>{a.name}</i>
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="duel">
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
             <span className="art"><Svg html={portrait({ realm, pulse, focus: true })} /></span>
             {hit === 'player' && (
-              <span className="dmg" key={`p${beat}`}>−{num(f.damage)}</span>
+              f.missed
+                ? <span className="dmg miss" key={`p${beat}`}>turned aside</span>
+                : <span className="dmg" key={`p${beat}`}>−{num(f.damage)}</span>
             )}
           </div>
 

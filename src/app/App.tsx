@@ -259,6 +259,18 @@ export function App() {
     haptics.strike();
   }, []);
 
+  const onStance = useCallback((key: string | null) => {
+    setState((s) => ({ ...s, stance: key }));
+    sfx.tap();
+    haptics.tap();
+  }, []);
+
+  const onSequence = useCallback((keys: string[]) => {
+    setState((s) => ({ ...s, sequence: keys }));
+    sfx.tap();
+    haptics.tap();
+  }, []);
+
   const r = realmOf(state.realm);
   const byKey = useMemo(
     () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
@@ -280,7 +292,9 @@ export function App() {
         {tab === 'gear' && (
           <Gear state={state} pulse={pulse} onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} />
         )}
-        {tab === 'dao' && <Dao state={state} onUnlock={onUnlock} />}
+        {tab === 'dao' && (
+          <Dao state={state} onUnlock={onUnlock} onStance={onStance} onSequence={onSequence} />
+        )}
         {tab === 'bestiary' && <Bestiary state={state} />}
       </div>
 

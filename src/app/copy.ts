@@ -74,6 +74,14 @@ export const DAO = {
   costs: (n: number) => `costs ${n} 道`,
 };
 
+export const LOADOUT = {
+  noStance: 'You have no stance yet. Reach realm 1 and 疾 Swift is yours.',
+  pickStance: 'Pick one. It is always on, and it changes every round of every fight.',
+  noArts: 'You hold no arts yet. Each warden you put down hands over its own.',
+  emptySlot: 'empty — a wasted round',
+  rotation: 'One art fires each round, in this order, then it starts again. An empty slot fires nothing, so a full sequence is always worth more.',
+};
+
 export const BESTIARY = {
   credits: 'Art credits',
   icons: (authors: string) =>
