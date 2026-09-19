@@ -33,7 +33,11 @@ jobs:
       # old one, because the old one is what everybody already has cached.
       - run: npm test
       - run: npm run build
+      # enablement turns Pages on by itself the first time, so nobody has to go and
+      # find the setting. Without it the first run fails with "Get Pages site failed".
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
