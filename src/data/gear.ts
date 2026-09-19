@@ -26,12 +26,28 @@ export type Rarity = 'common' | 'spirit' | 'mystic' | 'earth' | 'heaven';
 
 export const RARITIES: readonly Rarity[] = ['common', 'spirit', 'mystic', 'earth', 'heaven'];
 
-export const RARITY_INFO: Record<Rarity, { han: string; name: string; colour: string; mult: number }> = {
-  common: { han: '凡', name: 'Common', colour: '#7A80B8', mult: 1 },
-  spirit: { han: '靈', name: 'Spirit', colour: '#5FDCFF', mult: 1.6 },
-  mystic: { han: '玄', name: 'Mystic', colour: '#9B9BFF', mult: 2.5 },
-  earth:  { han: '地', name: 'Earth',  colour: '#FFCE6B', mult: 4 },
-  heaven: { han: '天', name: 'Heaven', colour: '#FF5FC8', mult: 6.5 },
+export interface RarityInfo {
+  readonly han: string;
+  readonly name: string;
+  readonly colour: string;
+  /** Multiplies the item's percentage. */
+  readonly mult: number;
+  /**
+   * 光 How loud the item is on screen: 0 plain, 4 a corona.
+   *
+   * Rank is carried by the frame and its light, never by the object — the same sword
+   * at 凡 and at 天 is one drawing in two frames, which is what lets a chest be read at
+   * a glance without reading a word.
+   */
+  readonly glow: 0 | 1 | 2 | 3 | 4;
+}
+
+export const RARITY_INFO: Record<Rarity, RarityInfo> = {
+  common: { han: '凡', name: 'Common', colour: '#7A80B8', mult: 1,   glow: 0 },
+  spirit: { han: '靈', name: 'Spirit', colour: '#5FDCFF', mult: 1.6, glow: 1 },
+  mystic: { han: '玄', name: 'Mystic', colour: '#9B9BFF', mult: 2.5, glow: 2 },
+  earth:  { han: '地', name: 'Earth',  colour: '#FFCE6B', mult: 4,   glow: 3 },
+  heaven: { han: '天', name: 'Heaven', colour: '#FF5FC8', mult: 6.5, glow: 4 },
 };
 
 /** What a piece of gear does. Kept to two so a comparison fits on one line. */
@@ -41,6 +57,22 @@ export const AFFIX_INFO: Record<Affix, { han: string; label: string }> = {
   power: { han: '力', label: 'power' },
   rate:  { han: '氣', label: 'qi / s' },
 };
+
+/**
+ * Gear grants a **percentage**, never a flat amount.
+ *
+ * The first cut handed out flat numbers, and flat numbers die: by the fifth realm a
+ * cultivator's power is in the hundreds of thousands, so a sword worth +4,200 is worth
+ * nothing. A percentage composes with the ladder and with every upgrade, so a good
+ * weapon found at realm 3 is still a good weapon at realm 9.
+ */
+export const BASE_PERCENT = 4;
+export const PERCENT_PER_REALM = 1;
+
+/** The rolled percentage of an item, before variance. */
+export function basePercent(template: GearTemplate, rarity: Rarity): number {
+  return (BASE_PERCENT + PERCENT_PER_REALM * template.realm) * RARITY_INFO[rarity].mult;
+}
 
 export interface GearTemplate {
   readonly key: string;
@@ -93,8 +125,8 @@ export interface Item {
   readonly id: string;
   readonly template: string;
   readonly rarity: Rarity;
-  /** The affix's value, already rolled. */
-  readonly value: number;
+  /** The rolled percentage. 12 means +12%. */
+  readonly percent: number;
 }
 
 export const TEMPLATE_BY_KEY: Readonly<Record<string, GearTemplate>> =
@@ -107,4 +139,35 @@ export function templateOf(item: Item): GearTemplate {
 /** Gear that can drop in a realm: anything whose own realm has been reached. */
 export function droppableIn(realm: number): readonly GearTemplate[] {
   return GEAR.filter((g) => g.realm <= realm);
+}
+
+export type Worn = Partial<Record<Slot, Item>>;
+
+/** What a whole set is worth: one multiplier for power, one for the qi rate. */
+export function setBonus(worn: Worn): { power: number; rate: number } {
+  let power = 0;
+  let rate = 0;
+  for (const slot of SLOTS) {
+    const it = worn[slot];
+    if (!it) continue;
+    if (templateOf(it).affix === 'power') power += it.percent;
+    else rate += it.percent;
+  }
+  return { power: 1 + power / 100, rate: 1 + rate / 100 };
+}
+
+/**
+ * 相 The worn aura: the highest rank anywhere on the body.
+ *
+ * It is what makes gear worth wearing beyond the numbers — a 天 Heaven piece shows on
+ * the cultivator, so other people can see what you found without opening a menu.
+ */
+export function wornRarity(worn: Worn): Rarity | null {
+  let best: Rarity | null = null;
+  for (const slot of SLOTS) {
+    const it = worn[slot];
+    if (!it) continue;
+    if (!best || RARITY_INFO[it.rarity].glow > RARITY_INFO[best].glow) best = it.rarity;
+  }
+  return best;
 }

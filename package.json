@@ -11,7 +11,7 @@
     "icons": "tsx tools/generate-icons.ts",
     "page": "npm run build && tsx tools/package-page.ts",
     "overview": "tsx tools/overview.ts",
-    "gear": "tsx tools/gear-proposals.ts"
+    "gear-system": "tsx tools/gear-system.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
