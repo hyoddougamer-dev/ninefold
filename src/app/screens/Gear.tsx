@@ -5,11 +5,11 @@ import {
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { affinity } from '../../sim/dao.ts';
 import type { State } from '../../sim/state.ts';
-import { num } from '../../sim/format.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { portrait } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { GEAR } from '../copy.ts';
 
 /**
  * 器 The gear screen — the ring.
@@ -28,7 +28,6 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
   onUnequip: (slot: Slot) => void;
   onFuse: (template: string, rarity: string) => void;
 }) {
-  const r = realmOf(state.realm);
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
@@ -96,8 +95,8 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
-          Your rarest piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
-            {RARITY_INFO[best].han}</span> — it shows as the rim around you.
+          Your best piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
+            {RARITY_INFO[best].han}</span>. That is the rim you are wearing.
         </p>
       )}
 
@@ -105,6 +104,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
       {sets.length > 0 && (
         <>
           <h2 className="heading">系 Sets</h2>
+          <p className="faint" style={{ fontSize: 12.5, margin: '0 0 8px' }}>{GEAR.sets}</p>
           <div className="stack">
             {sets.map(({ set, worn, next }) => {
               const hue = realmOf(set.realm).colour;
@@ -136,7 +136,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
                   </span>
                   {next && (
                     <span className="need faint">
-                      {next.needs} more {next.needs === 1 ? 'piece' : 'pieces'} of this realm
+                      {GEAR.setNeed(next.needs)}
                     </span>
                   )}
                 </div>
@@ -148,7 +148,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
 
       {groups.length > 0 && (
         <>
-          <h2 className="heading">煉 Fuse · three become one</h2>
+          <h2 className="heading">{GEAR.fuse}</h2>
           <div className="stack">
             {groups.map((g) => {
               const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
@@ -183,9 +183,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
       </h2>
 
       {state.chest.length === 0 ? (
-        <p className="faint" style={{ fontSize: 13, margin: 0 }}>
-          Empty. Beasts drop gear — wardens always do.
-        </p>
+        <p className="faint" style={{ fontSize: 13, margin: 0 }}>{GEAR.empty}</p>
       ) : (
         <div className="chest">
           {state.chest.map((item) => {
@@ -207,7 +205,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
                     {Math.round(primary.value * 10) / 10}
                   </>}
                   {item.rolls.length > 1 && <span className="faint"> +{item.rolls.length - 1}</span>}
-                  {better && <em title="worth more than what you wear"> ▲</em>}
+                  {better && <em title={GEAR.better}> ▲</em>}
                 </span>
               </button>
             );
@@ -215,11 +213,10 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
         </div>
       )}
 
-      <p className="faint" style={{ fontSize: 12, marginTop: 12 }}>
-        Tap a piece to wear it · tap a ring slot to take it off · a 靈 piece carries
-        {' '}{SECONDARIES.spirit + 1} lines, a 天 piece {SECONDARIES.heaven + 1} ·
-        {' '}{r.name} drops up to realm {state.realm} gear ·
-        {' '}{num(state.materials)} 材 held
+      <p className="faint" style={{ fontSize: 12, marginTop: 12, lineHeight: 1.7 }}>
+        {GEAR.howTo}<br />
+        {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)}{' '}
+        {GEAR.drops(state.realm)}
       </p>
     </>
   );

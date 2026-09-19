@@ -10,6 +10,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { portrait, seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { CULTIVATE } from '../copy.ts';
 
 export function Cultivate({ state, pulse, set, onFight }: {
   state: State;
@@ -75,7 +76,7 @@ export function Cultivate({ state, pulse, set, onFight }: {
               </span>
             </div>
             <p className="faint" style={{ margin: '11px 0 12px', fontSize: 12.5 }}>
-              It bars the breakthrough. Losing costs nothing — come back with more power.
+              {CULTIVATE.warden}
             </p>
             <button className="act" data-tone="magenta" onClick={onFight}>
               戰 <span>Fight</span>
@@ -96,13 +97,12 @@ export function Cultivate({ state, pulse, set, onFight }: {
         <div className="card" style={{ marginTop: 16, borderColor: r.colour }}>
           <b className="cjk" style={{ color: r.colour }}>渡劫</b>
           <p className="faint" style={{ margin: '4px 0 0', fontSize: 13 }}>
-            The ninth realm is this version's ceiling. Qi keeps rising, and what comes
-            after it has not been designed yet.
+            {CULTIVATE.ceiling}
           </p>
         </div>
       )}
 
-      <h2 className="heading">Where the qi goes</h2>
+      <h2 className="heading">{CULTIVATE.spend}</h2>
       <div className="upgrades">
         {UPGRADES.map((u) => {
           const i = UPGRADE_INFO[u];

@@ -93,7 +93,7 @@ export const NODES: readonly Node[] = [
   n('heavyplate','重甲', 'Heavy Plate',    'sword', 5, 3, [{ kind: 'affinity', slots: ['robe', 'boots'], percent: 40 }], 'robes and boots count 40% more', { excludes: 'forsake' }),
   n('forsake',   '捨甲', 'Forsake Armour', 'sword', 5, 3,
     [{ kind: 'power', percent: 60 }, { kind: 'affinityOff', slots: ['robe', 'boots'] }],
-    '+60% power — but robes and boots give nothing at all', { excludes: 'heavyplate', keystone: true }),
+    '+60% power. Robes and boots give you nothing.', { excludes: 'heavyplate', keystone: true }),
   n('formless',  '無鋒', 'Formless Edge',  'sword', 6, 4, [{ kind: 'power', percent: 45 }], '+45% power'),
   n('tenthousand','萬劍','Ten Thousand Swords', 'sword', 7, 4, [{ kind: 'power', percent: 80 }], '+80% power'),
 
@@ -106,20 +106,20 @@ export const NODES: readonly Node[] = [
   n('travel',    '神遊', 'Spirit Travel',  'spirit', 5, 3, [{ kind: 'layerCost', percent: 6 }], 'layers cost 6% less qi', { excludes: 'forget' }),
   n('forget',    '忘機', 'Forget the Mechanism', 'spirit', 5, 3,
     [{ kind: 'layerCost', percent: 18 }, { kind: 'powerCut', percent: 45 }],
-    'layers cost 18% less — but you lose 45% of your power', { excludes: 'travel', keystone: true }),
+    'Layers cost 18% less qi. You lose 45% of your power.', { excludes: 'travel', keystone: true }),
   n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'rate', percent: 45 }], '+45% qi per second'),
   n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'rate', percent: 80 }], '+80% qi per second'),
 
   // 運 Fortune — what falls, and what you can keep.
-  n('gleaning',  '拾遺', 'Gleaning',       'fortune', 0, 1, [{ kind: 'dropChance', percent: 5 }], '+5 points of drop chance'),
-  n('keeneye',   '慧眼', 'Discerning Eye', 'fortune', 1, 1, [{ kind: 'rarityLuck', percent: 25 }], 'rarer drops, 25% more often'),
+  n('gleaning',  '拾遺', 'Gleaning',       'fortune', 0, 1, [{ kind: 'dropChance', percent: 5 }], '+5 to drop chance'),
+  n('keeneye',   '慧眼', 'Discerning Eye', 'fortune', 1, 1, [{ kind: 'rarityLuck', percent: 25 }], 'rare gear turns up 25% more often'),
   n('pouch',     '囊',   'Pouch',          'fortune', 2, 2, [{ kind: 'chestSlots', slots: 8 }], '+8 places in the chest'),
   n('defthands', '巧手', 'Deft Hands',     'fortune', 3, 2, [{ kind: 'fuseQuality', percent: 12 }], 'fusions come out 12% better'),
-  n('goodluck',  '福緣', 'Good Fortune',   'fortune', 4, 3, [{ kind: 'dropChance', percent: 10 }], '+10 points of drop chance'),
-  n('favour',    '天眷', "Heaven's Favour",'fortune', 5, 3, [{ kind: 'rarityLuck', percent: 60 }], 'rarer drops, 60% more often', { excludes: 'emptypouch' }),
+  n('goodluck',  '福緣', 'Good Fortune',   'fortune', 4, 3, [{ kind: 'dropChance', percent: 10 }], '+10 to drop chance'),
+  n('favour',    '天眷', "Heaven's Favour",'fortune', 5, 3, [{ kind: 'rarityLuck', percent: 60 }], 'rare gear turns up 60% more often', { excludes: 'emptypouch' }),
   n('emptypouch','空囊', 'Empty Pouch',    'fortune', 5, 3,
     [{ kind: 'rankUp' }, { kind: 'chestCap', slots: 12 }],
-    'every drop comes one rank higher — but the chest holds only 12', { excludes: 'favour', keystone: true }),
+    'Every drop comes one rank higher. Your chest holds only 12.', { excludes: 'favour', keystone: true }),
   n('treasury',  '寶庫', 'Treasury',       'fortune', 6, 4, [{ kind: 'chestSlots', slots: 12 }], '+12 places in the chest'),
   n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something'),
 ];
@@ -138,7 +138,7 @@ export const NODES: readonly Node[] = [
 export const ROOT: Node = {
   key: 'root', han: '起', name: 'The Beginning', path: 'spirit', tier: -1, cost: 1,
   effects: [{ kind: 'rate', percent: 10 }, { kind: 'power', percent: 10 }],
-  text: '+10% power and +10% qi — where every path starts',
+  text: '+10% power and +10% qi. Every path starts here.',
 };
 
 /** Which branches sit next to each other, and may be bridged. */

@@ -7,6 +7,7 @@ import {
 import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
 import { layersOpened } from '../../sim/time.ts';
 import type { State } from '../../sim/state.ts';
+import { DAO } from '../copy.ts';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -106,10 +107,9 @@ export function Dao({ state, onUnlock }: {
         </span>
       </div>
 
-      <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 0' }}>
-        One tree. Every branch grows from 起, and bridges cross between neighbours twice —
-        so you can climb one side, step across, and come back down another. {taken}/{ALL_NODES.length}
-        {' '}taken; the whole thing costs {TOTAL_COST} and a run earns about 42.
+      <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 0', lineHeight: 1.65 }}>
+        {DAO.tree}<br />
+        {DAO.short(TOTAL_COST, 42)} {DAO.taken(taken, ALL_NODES.length)}.
       </p>
 
       <div className="legend">
@@ -222,20 +222,16 @@ function Detail({ node, status, onLearn, onClose }: {
       </div>
       <p style={{ margin: '6px 0 0', fontSize: 14 }}>{node.text}</p>
       {node.keystone && (
-        <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
-          A keystone: stronger than the node beside it, and it gives something up.
-        </p>
+        <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>{DAO.keystone}</p>
       )}
       {twin && (
         <p className="faint" style={{ margin: '5px 0 0', fontSize: 12.5 }}>
-          {status === 'shut'
-            ? <>Closed — you took <span className="cjk">{twin.han}</span> instead.</>
-            : <>Taking this closes <span className="cjk">{twin.han}</span> {twin.name} for good.</>}
+          {status === 'shut' ? DAO.closed(twin.han) : DAO.closes(twin.han, twin.name)}
         </p>
       )}
       <div className="row" style={{ marginTop: 11 }}>
         <span className="mono faint" style={{ fontSize: 12.5 }}>
-          {status === 'have' ? 'learned' : `costs ${node.cost} 道`}
+          {status === 'have' ? DAO.learned : DAO.costs(node.cost)}
         </span>
         <button className="act" style={{ width: 'auto', padding: '9px 20px', fontSize: 15 }}
                 disabled={status !== 'open'} onClick={onLearn}>

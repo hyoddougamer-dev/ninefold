@@ -9,10 +9,12 @@
     "preview": "vite preview --host",
     "test": "vitest run",
     "icons": "tsx tools/generate-icons.ts",
-    "page": "npm run build && tsx tools/package-page.ts",
+    "page": "npm run build && tsx tools/package-page.ts game",
+    "lab": "npm run build && tsx tools/package-page.ts lab",
     "overview": "tsx tools/overview.ts",
     "gear-system": "tsx tools/gear-system.ts",
-    "catalogue": "tsx tools/catalogue.ts"
+    "catalogue": "tsx tools/catalogue.ts",
+    "prose": "npm run build && tsx tools/prose.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

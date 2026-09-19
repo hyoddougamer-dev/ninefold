@@ -44,8 +44,8 @@ export function blowLine(striker: 'player' | 'beast', round: number): Blow {
 
 /** The last word, once it is over. */
 export function verdictLine(won: boolean, warden: boolean): Blow {
-  if (!won) return { han: '再來', text: 'nothing was lost — come back with more power' };
+  if (!won) return { han: '再來', text: 'Nothing was lost. Come back stronger.' };
   return warden
-    ? { han: '境破', text: 'the warden has fallen; the breakthrough is open' }
-    : { han: '勝', text: 'it will not rise again' };
+    ? { han: '境破', text: 'The warden is down. The breakthrough is open.' }
+    : { han: '勝', text: 'It will not rise again.' };
 }

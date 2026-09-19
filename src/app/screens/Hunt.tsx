@@ -5,6 +5,7 @@ import { power, type State } from '../../sim/state.ts';
 import { num } from '../../sim/format.ts';
 import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { HUNT } from '../copy.ts';
 
 /**
  * 狩 Free hunting.
@@ -28,10 +29,10 @@ export function Hunt({ state, onFight }: {
         <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
       </div>
       <p className="faint" style={{ margin: '6px 0 4px', fontSize: 13 }}>
-        力 {num(power(state))} power. Losing costs nothing but the time of the fight.
+        力 {num(power(state))} power. {HUNT.free}
       </p>
 
-      <h2 className="heading">{list.length} beasts within reach</h2>
+      <h2 className="heading">{HUNT.reach(list.length)}</h2>
       <div className="stack">
         {list.map((b) => {
           const r = realmOf(b.realm);

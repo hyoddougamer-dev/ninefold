@@ -9,6 +9,7 @@ import { gearTile } from '../../art/gear.ts';
 import { ICONS } from '../../art/icons.generated.ts';
 import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
+import { ARENA } from '../copy.ts';
 
 /**
  * 對 The facing.
@@ -177,7 +178,7 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
                     </span>
                   ))}
                 </i>
-                {chestFull && <em className="full">Chest full — this one is lost</em>}
+                {chestFull && <em className="full">{ARENA.chestFull}</em>}
               </span>
             </div>
           )}

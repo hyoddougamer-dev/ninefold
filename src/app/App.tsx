@@ -21,6 +21,7 @@ import { Cultivate } from './screens/Cultivate.tsx';
 import { Help } from './ui/Help.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
+import { RETURN } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { isMuted, setMuted, sfx } from './sound.ts';
 
@@ -326,14 +327,14 @@ export function App() {
           <Svg html={portrait({ realm: state.realm, pulse })} style={{ display: 'block', width: 150, height: 150 }} />
           <h2 style={{ color: r.colour }}>歸</h2>
           <p className="faint" style={{ margin: 0, fontSize: 14 }}>
-            You were away {duration(home.seconds)}.
+            {RETURN.away(duration(home.seconds))}
           </p>
           <dl>
-            <dt>qi gathered</dt>
+            <dt>{RETURN.qi}</dt>
             <dd style={{ color: r.colour }}>{num(home.qi)}</dd>
-            {home.layers > 0 && (<><dt>layers opened</dt><dd>{home.layers}</dd></>)}
-            {home.realms > 0 && (<><dt>realms climbed</dt><dd style={{ color: 'var(--magenta)' }}>{home.realms}</dd></>)}
-            <dt>power now</dt>
+            {home.layers > 0 && (<><dt>{RETURN.layers}</dt><dd>{home.layers}</dd></>)}
+            {home.realms > 0 && (<><dt>{RETURN.realms}</dt><dd style={{ color: 'var(--magenta)' }}>{home.realms}</dd></>)}
+            <dt>{RETURN.power}</dt>
             <dd>{num(power(state))}</dd>
           </dl>
           <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>

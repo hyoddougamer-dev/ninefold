@@ -4,6 +4,7 @@ import type { State } from '../../sim/state.ts';
 import { seal } from '../../art/aura.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { BESTIARY } from '../copy.ts';
 
 /**
  * 錄 The bestiary.
@@ -52,9 +53,9 @@ export function Bestiary({ state }: { state: State }) {
         );
       })}
 
-      <h2 className="heading">Art credits</h2>
+      <h2 className="heading">{BESTIARY.credits}</h2>
       <p className="faint" style={{ fontSize: 12.5, margin: 0 }}>
-        Icons from game-icons.net, Creative Commons BY 3.0. Authors: {AUTHORS.join(', ')}.
+        {BESTIARY.icons(AUTHORS.join(', '))}
       </p>
     </>
   );

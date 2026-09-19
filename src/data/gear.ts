@@ -77,14 +77,19 @@ export interface AffixInfo {
   readonly weight: number;
 }
 
+/**
+ * 運 and 拾 both used to read as chance words — "rare drops" and "drop chance" — and
+ * nobody could tell which was which. They are two different questions: 拾 is whether
+ * anything falls at all, 運 is how good it is when it does.
+ */
 export const AFFIX_INFO: Record<Affix, AffixInfo> = {
-  power:    { han: '力', label: 'power',       unit: '%',    scale: 1,    weight: 26 },
-  rate:     { han: '氣', label: 'qi per sec',  unit: '%',    scale: 1,    weight: 26 },
-  luck:     { han: '運', label: 'rare drops',  unit: '%',    scale: 0.7,  weight: 14 },
-  find:     { han: '拾', label: 'drop chance', unit: '%',    scale: 0.22, weight: 12 },
-  capacity: { han: '藏', label: 'chest slots', unit: 'flat', scale: 0.08, weight: 8 },
-  sunder:   { han: '破', label: 'beasts weaker', unit: '%',  scale: 0.18, weight: 8 },
-  refine:   { han: '煉', label: 'fusion quality', unit: '%', scale: 0.3,  weight: 6 },
+  power:    { han: '力', label: 'power',        unit: '%',    scale: 1,    weight: 26 },
+  rate:     { han: '氣', label: 'qi per second', unit: '%',   scale: 1,    weight: 26 },
+  luck:     { han: '運', label: 'rarer gear',   unit: '%',    scale: 0.7,  weight: 14 },
+  find:     { han: '拾', label: 'drop chance',  unit: '%',    scale: 0.22, weight: 12 },
+  capacity: { han: '藏', label: 'chest slots',  unit: 'flat', scale: 0.08, weight: 8 },
+  sunder:   { han: '破', label: 'beasts weaker', unit: '%',   scale: 0.18, weight: 8 },
+  refine:   { han: '煉', label: 'fusion quality', unit: '%',  scale: 0.3,  weight: 6 },
 };
 
 /** How many rolls a rank carries: one primary, plus these many secondaries. */
