@@ -1,6 +1,6 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
-import { UPGRADE_INFO, power, type State } from './state.ts';
+import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
 
@@ -238,9 +238,18 @@ export function odds(s: State, b: Beast): number {
   return Math.max(0.02, Math.min(0.98, won / SAMPLES));
 }
 
-/** A beast's power as this cultivator meets it — 破甲 Sunder shaves it down. */
+/**
+ * A beast's power as this cultivator meets it.
+ *
+ * 破甲 Sunder shaves it down, and 渡劫 raises the Dragon: after the ninth realm the same
+ * beast comes back for every tribulation, harder each time. It is the only beast in the
+ * game whose power depends on the cultivator facing it, and it is the reason the game
+ * does not end at the top.
+ */
 export function effectiveBeastPower(s: State, b: Beast): number {
-  return beastPower(b) * beastWeakness(s.unlocked);
+  const base = beastPower(b);
+  const raised = b.key === 'dragon' && s.realm === 9 ? tribulationPower(s, base) : base;
+  return raised * beastWeakness(s.unlocked);
 }
 
 export function currentWarden(s: State): Beast {

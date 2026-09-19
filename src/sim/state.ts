@@ -1,4 +1,7 @@
-import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
+import {
+  LAYERS_PER_REALM, REALM_COST, TRIBULATION_CHALLENGE, TRIBULATION_GAIN,
+  TRIBULATION_POWER,
+} from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
   AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus,
@@ -51,6 +54,62 @@ export interface State {
   stance: string | null;
   /** 訣 The arts in the order they fire, at most SEQUENCE_SLOTS of them. */
   sequence: string[];
+  /** 雷印 Thunder marks: tribulations crossed after the ninth realm. */
+  tribulation: number;
+  /** 印 The power you had when the last mark was taken. The next Dragon grows from it. */
+  tribulationAt: number;
+}
+
+/** What the marks already taken are worth. They multiply, to power and to qi alike. */
+export function markBonus(marks: number): number {
+  return (1 + TRIBULATION_GAIN) ** marks;
+}
+
+/** How far up the Dragon stands for this many marks, before the anchor. */
+export function tribulationScale(marks: number): number {
+  return TRIBULATION_POWER ** marks;
+}
+
+/**
+ * 劫 What the next Dragon brings.
+ *
+ * The greater of two things: the ladder, and a fixed step beyond the power you had when
+ * you last crossed. The anchor is what makes the endgame hold — the Dragon can never
+ * fall behind the cultivator, whatever the economy does.
+ */
+export function tribulationPower(s: State, base: number): number {
+  return Math.max(base * tribulationScale(s.tribulation), s.tribulationAt * TRIBULATION_CHALLENGE);
+}
+
+/**
+ * 劫 How ready you are for the next crossing: your power against the Dragon's.
+ *
+ * This is what the bar reads at the top, and it is the honest thing to show. Qi is not
+ * the gate up there — the wait is the wait to afford the next levels of 劍訣, and this
+ * says how much of that wait is behind you.
+ */
+export function tribulationReadiness(s: State, dragonPower: number): number {
+  return dragonPower > 0 ? Math.min(1, power(s) / dragonPower) : 0;
+}
+
+/** The Dragon is always callable at the top. What decides it is whether you can win. */
+export function atTribulation(s: State): boolean {
+  return s.realm === 9;
+}
+
+export function canCross(s: State): boolean {
+  return s.realm === 9 && s.wardenFell;
+}
+
+/** Crossing grants the mark, notes where you stood, and puts the Dragon back up. */
+export function crossTribulation(s: State): State {
+  if (!canCross(s)) return s;
+  return {
+    ...s,
+    tribulation: s.tribulation + 1,
+    tribulationAt: power(s),
+    wardenFell: false,
+  };
 }
 
 export function newState(now: number): State {
@@ -64,6 +123,8 @@ export function newState(now: number): State {
     unlocked: [],
     stance: null,
     sequence: [],
+    tribulation: 0,
+    tribulationAt: 0,
   };
 }
 
@@ -95,7 +156,8 @@ export function rateBonus(s: State): number {
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
     * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).rate
-    * rateMultiplier(s.unlocked);
+    * rateMultiplier(s.unlocked)
+    * markBonus(s.tribulation);
 }
 
 /** 力 Combat power. It decides every beast, and only upgrades and the ladder move it. */
@@ -104,7 +166,8 @@ export function power(s: State): number {
   return ladder * UPGRADE_INFO.technique.gain ** s.levels.technique
     * UPGRADE_INFO.cores.gain ** s.levels.cores
     * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).power
-    * powerMultiplier(s.unlocked);
+    * powerMultiplier(s.unlocked)
+    * markBonus(s.tribulation);
 }
 
 /** The realm is full and only the warden is left? */
@@ -220,5 +283,8 @@ export function validate(raw: unknown, now: number): State {
     // the first slot at realm 1 and walk over every warden in the game.
     stance: validateStance(o.stance, realm),
     sequence: validateSequence(o.sequence, killed),
+    // Marks are only reachable at realm 9, and only one at a time.
+    tribulation: realm === 9 ? clamp(Math.floor(num(o.tribulation, 0)), 0, 999) : 0,
+    tribulationAt: realm === 9 ? Math.max(0, num(o.tribulationAt, 0)) : 0,
   };
 }

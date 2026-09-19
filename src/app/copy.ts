@@ -39,8 +39,17 @@ export const HELP = {
 
 export const CULTIVATE = {
   spend: 'Spend your qi',
+  wardenHead: "妖 The realm's warden",
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
-  ceiling: 'Realm 9 is as far as the climb goes for now. Your qi keeps gathering. Nothing above it has been built yet.',
+
+  /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
+  tribulationHead: '劫 The tribulation',
+  tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
+  marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
+  toward: (power: string) => `力 ${power} is what the Dragon brings`,
+  ceiling: (n: number) =>
+    `Each 雷印 mark is +10% power and +10% qi, for good. You hold ${n}. `
+    + 'There is no rebirth yet, so this is the ladder above the ladder.',
 };
 
 export const HUNT = {

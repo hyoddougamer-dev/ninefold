@@ -16,7 +16,13 @@ export function layerCost(realm: number, unlocked: readonly string[] = []): numb
   return (REALM_COST[realm - 1] / LAYERS_PER_REALM) * layerCostFactor(unlocked);
 }
 
-/** 0..1 along the current layer. */
+/**
+ * 0..1 along the current layer.
+ *
+ * Realm 9 has no layers, so this reads zero there. The ninth realm's own bar is not qi
+ * at all — it is `tribulationReadiness`, your power against the Dragon's — because at
+ * the top qi is not the thing you wait for.
+ */
 export function progress(s: State): number {
   const c = layerCost(s.realm, s.unlocked);
   return Number.isFinite(c) ? Math.min(1, s.qi / c) : 0;
