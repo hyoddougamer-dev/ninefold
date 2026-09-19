@@ -2,9 +2,10 @@ import { LINES, PILL_LINES } from '../../data/alchemy.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
-import { num } from '../../sim/format.ts';
+import { duration, num } from '../../sim/format.ts';
+import { TOWER_QI_HOURS } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorLoot, floorPower, lootBonus, seals } from '../../sim/tower.ts';
-import { furnaceMenu, standingFloor } from '../../sim/trials.ts';
+import { floorQi, furnaceMenu, standingFloor } from '../../sim/trials.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
 import { seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
@@ -69,9 +70,15 @@ export function Trials({ state, onFloor, onBrew }: {
         <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>
           <span className="faint">{TRIALS.best(state.tower)}</span>
           <span className="mono" style={{ color: 'var(--gold)' }}>
-            {TRIALS.pays(num(Math.round(floorLoot(floor) * lootBonus(state.tower))))}
+            {TRIALS.pays(
+              num(Math.round(floorLoot(floor) * lootBonus(state.tower))),
+              num(floorQi(state)),
+            )}
           </span>
         </div>
+        <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
+          {TRIALS.hours(duration(TOWER_QI_HOURS * 3600))}
+        </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
         <button className="act" data-tone="magenta" onClick={() => onFloor(floor)}>
           登 <span>{TRIALS.climb}</span>

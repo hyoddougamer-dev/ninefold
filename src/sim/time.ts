@@ -48,16 +48,17 @@ export function ladderDone(s: State): boolean {
  * moment the game stops for.
  *
  * `auto` ignores the gate entirely and exists only so the balance simulation can trace
- * the theoretical curve.
+ * the theoretical curve. `focus` is 入定 — what the app being open is worth — and it is
+ * never below 1, so no call of this function can ever pay less than the promised rate.
  */
-export function advance(s: State, now: number, auto = false): State {
+export function advance(s: State, now: number, auto = false, focus = 1): State {
   let dt = now - s.at;
   if (!Number.isFinite(now) || dt <= 0) return { ...s, at: Math.max(s.at, now) };
 
   let { realm, layer, qi, wardenFell } = s;
 
   for (let guard = 0; guard <= LAYERS + 1; guard++) {
-    const r = rate({ ...s, realm, layer });
+    const r = rate({ ...s, realm, layer }) * Math.max(1, focus);
     const cost = layerCost(realm, layer, s.unlocked);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
 

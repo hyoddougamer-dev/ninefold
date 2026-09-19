@@ -33,6 +33,9 @@ import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
 import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
 import { PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost } from '../src/sim/furnace.ts';
 import { daoEarned } from '../src/sim/dao.ts';
+import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
+import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
+import { playAll } from './habits.ts';
 import { num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
@@ -82,8 +85,10 @@ const SYSTEMS: readonly System[] = [
     line: `${GEAR.length} pieces, ${RARITIES.length} ranks, ${AFFIXES.length} axes, and a named lineage for every realm.` },
   { han: '道', name: 'The technique tree', status: 'done', at: 'tree',
     line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道 against about ${FULL_RUN} a run. Nobody finishes it.` },
+  { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
+    line: 'A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights stalls in the third realm.' },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
-    line: 'One floor, one beast, no top. The whole material economy comes out of it.' },
+    line: `One floor, one beast, no top. The material economy and ${TOWER_QI_HOURS} hours of gathering a floor.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
   { han: '劫', name: 'The tribulation', status: 'done', at: 'top',
@@ -121,6 +126,22 @@ const statusRows = SYSTEMS.map((s) => {
     <span class="st"><b class="cjk">${st.han}</b><i>${st.word}</i></span>
     <span class="body"><b class="cjk">${s.han}</b> <em>${label}</em><i>${s.line}</i></span>
   </div>`;
+}).join('');
+
+const RUNS = playAll();
+
+const habitRows = RUNS.map((r) => {
+  const at9 = r.arrival[8];
+  const hue = at9 === undefined ? 'var(--magenta)' : 'var(--cyan)';
+  return `<tr style="--hue:${hue}">
+    <td><b class="cjk">${r.habit.name}</b><i style="display:block">${r.habit.who}</i></td>
+    <td class="n">${r.habit.checks}x</td>
+    <td class="n">${r.habit.minutes} min</td>
+    <td class="n" style="color:${hue}">${at9 === undefined ? `never · stuck at ${r.reached}` : `day ${at9.toFixed(0)}`}</td>
+    <td class="n">${num(r.power)}</td>
+    <td class="n">${r.state.tower || '—'}</td>
+    <td class="n">${r.fights.toLocaleString('en-GB')}</td>
+  </tr>`;
 }).join('');
 
 const ladderRows = REALMS.map((r) => {
@@ -443,6 +464,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
+      <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
       <a href="#qi"><b>氣</b> Qi</a>
@@ -516,6 +538,51 @@ const page = `<title>九境 Ninefold — the Bible</title>
     </div>
   </section>
 
+  <section class="sec" id="habits">
+    <h2><span class="h">勤</span> Playing, and waiting</h2>
+    <p class="t">An idle game has to answer one question honestly: <b>what does being
+      there buy me?</b> For a while 九境 answered it badly — measured, somebody playing six
+      times a day reached the ninth realm <em>later</em> than somebody who opened the app
+      once, because the qi they spent on power was qi that did not open a layer.</p>
+    <p class="t">Three things carry the difference now, and every one of them only ever
+      <b>adds</b>:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">妖丹</b> <em>A warden asks for cores</em>
+        <i>Cores are not bought with qi. They are bought with 材 material, and material only
+        falls off things you kill. The first ${CORES_FREE_REALMS} realms ask for none, so a
+        new cultivator learns what a warden is before learning that a warden is not enough;
+        from the third it tightens a realm at a time.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">入定</b> <em>Sitting with it gathers deeper</em>
+        <i>With the app open the rate climbs to ${FOCUS_MAX}x over ${FOCUS_RAMP / 60} minutes,
+        holds, and ends after ${FOCUS_HOLD / 60}. It ends on purpose: a multiplier that
+        simply held would be farmed by leaving the phone on a charger. To sit again, leave
+        and come back.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
+        <i>${TOWER_QI_HOURS} hours of your own gathering, once, and never again — there is no
+        floor to farm. This is the one place in the game where fighting moves the bar
+        instead of only moving your power.</i></span></div>
+    </div>
+    <div class="rule"><b>And nothing anywhere pays less for being away.</b> The qi gathers
+      at full rate with the phone closed, every second of it, whatever else changes. 入定
+      is written as a multiplier that starts at 1 and climbs, so no call in the game can
+      pay below the promised rate. Being active is worth something because it adds, never
+      because being away subtracts.</div>
+    <h3>Five cultivators, one game — played out, not guessed</h3>
+    <table>
+      <tr><th>habit</th><th style="text-align:right">visits</th>
+          <th style="text-align:right">open</th><th style="text-align:right">realm 9</th>
+          <th style="text-align:right">力 at the end</th><th style="text-align:right">tower</th>
+          <th style="text-align:right">fights</th></tr>
+      ${habitRows}
+    </table>
+    <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
+      every upgrade qi can buy is at its cap and the bar fills as fast as anybody's. What
+      they are short of is not qi. It is a reason to have been there.</p>
+    <p class="t">And the bottom row is the other half: playing every waking hour is worth
+      about <b>twice</b> the speed of playing casually, not twenty times. The game is not
+      supposed to belong to whoever has the most free time.</p>
+  </section>
+
   <section class="sec" id="ladder">
     <h2><span class="h">階</span> The ladder</h2>
     <p class="t">The climb is <b>${LAYERS} rungs</b>, nine to a realm, and every rung costs
@@ -536,8 +603,8 @@ const page = `<title>九境 Ninefold — the Bible</title>
       who <em>spends</em> — who opens the app, buys whatever they can afford, and closes it
       again. The earlier curve was measured against one who never spent a single qi, and
       against somebody playing the game as written that same curve took
-      <b>three days</b>, not ninety. The test prints the schedule on every run, and prints
-      it for one visit a day and for two hundred; they land between 86 and 114 days.</div>
+      <b>three days</b>, not ninety. The ladder is the same for everybody; what moves is
+      how much of it a habit skips, and 勤 above has that table.</div>
   </section>
 
   <section class="sec" id="cap">

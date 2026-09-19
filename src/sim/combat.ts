@@ -22,10 +22,10 @@ import { pillBane } from './furnace.ts';
  * 基準 The reference power at the top of a realm.
  *
  * Beasts have no curve of their own: they are tuned against *this*. The reference is a
- * cultivator standing at the realm's ceiling with 劍訣 near the level the realm allows
- * — not the one who spent nothing, not the one who optimised everything, but the one in
- * the middle. Cores, gear, the tree and the tower are the margin on top, and they are
- * what turns a coin-flip into a win.
+ * cultivator standing at the realm's ceiling with 劍訣 *and* 妖丹 near the levels the
+ * realm allows — not the one who spent nothing, not the one who optimised everything,
+ * but the one in the middle. Gear, the tree, the arts and the furnace are the margin on
+ * top, and they are what turns a coin flip into a win.
  *
  * The first version gave beasts an exponent of their own (1.42 per layer) and they ran
  * away from any possible player: at realm 4 the warden was worth twenty well-invested
@@ -40,8 +40,26 @@ import { pillBane } from './furnace.ts';
  * 劍訣, nearly five times the power — so the same warden would read as hopeless at 85%
  * of the cap and trivial at 100%. Two levels is two levels at every realm, so the last
  * stretch before a warden feels the same all the way up the mountain.
+ *
+ * **It counts 妖丹 cores, and that is the wall between playing and waiting.** Cores are
+ * not bought with qi. They are bought with 材 material, and material only falls off
+ * things you kill. So a warden cannot be walked past by somebody who has never opened
+ * 狩 Hunt, however long they have been gathering.
+ *
+ * The wall arrives late on purpose. The first two realms ask for no cores at all, so a
+ * new cultivator meets the 妖狐 and the 石猿 with qi alone and learns what a warden is
+ * before learning that a warden is not enough. From the third realm the requirement
+ * grows a realm at a time — measured, somebody who never fights anything stalls in the
+ * fourth realm and stays there for ever.
+ *
+ * Nothing is taken from that cultivator for being away. The qi still gathers at full
+ * rate with the phone closed, every second of it, because that is the promise the game
+ * makes. What they are short of is not qi. It is a reason to have been there.
  */
 export const REFERENCE_BELOW = 2;
+
+/** How many realms are fought through before the wardens start asking for 妖丹 cores. */
+export const CORES_FREE_REALMS = 2;
 
 /**
  * The same reading, taken anywhere — between realms, and above the ninth.
@@ -53,8 +71,11 @@ export const REFERENCE_BELOW = 2;
  */
 export function referenceAt(realm: number): number {
   const r = Math.max(1, realm);
-  const { gain } = UPGRADE_INFO.technique;
-  return r * LAYERS_PER_REALM * gain ** Math.max(0, r * LEVELS_PER_REALM - REFERENCE_BELOW);
+  const levels = Math.max(0, r * LEVELS_PER_REALM - REFERENCE_BELOW);
+  const cores = Math.max(0, (r - CORES_FREE_REALMS) * LEVELS_PER_REALM - REFERENCE_BELOW);
+  return r * LAYERS_PER_REALM
+    * UPGRADE_INFO.technique.gain ** levels
+    * UPGRADE_INFO.cores.gain ** cores;
 }
 
 export function referencePower(realm: number): number {

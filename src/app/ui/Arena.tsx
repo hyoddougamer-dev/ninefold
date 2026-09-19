@@ -43,6 +43,8 @@ const HEAVY = 0.09;
 export interface Battle {
   /** 塔 Which floor of the tower this is, if it is one at all. */
   readonly floor?: number;
+  /** 吸 The qi the floor gives up when it falls. Tower fights only. */
+  readonly qi?: number;
   readonly beast: Beast;
   readonly outcome: Outcome;
   /** Two beats to a round: even is the cultivator striking, odd is the beast. */
@@ -189,7 +191,10 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
           </span>
           <p>
             {say.text}
-            {outcome.won && battle.floor !== undefined && ` · +${num(floorLoot(battle.floor) * lootBonus(battle.floor - 1))} 材`}
+            {outcome.won && battle.floor !== undefined && (
+              ` · +${num(floorLoot(battle.floor) * lootBonus(battle.floor - 1))} 材`
+              + (battle.qi ? ` · +${num(battle.qi)} qi` : '')
+            )}
             {outcome.won && battle.floor === undefined && ` · +${num(loot(beast))} 材`}
           </p>
           {outcome.won && battle.drop && (

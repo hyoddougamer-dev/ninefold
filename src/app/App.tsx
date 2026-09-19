@@ -6,11 +6,12 @@ import { newState, power, type State } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save } from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
+import { focusAt } from '../sim/balance.ts';
 import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
-import { brew, clearFloor, lootTaken, standingFloor } from '../sim/trials.ts';
+import { brew, clearFloor, floorQi, lootTaken, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillFortune } from '../sim/furnace.ts';
 import type { Line } from '../data/alchemy.ts';
@@ -72,6 +73,15 @@ export function App() {
   const [bloom, setBloom] = useState<number | null>(null);
   const loaded = useRef(false);
   const lastLayer = useRef(0);
+  /**
+   * 入定 When this visit started, or null while the app is in the background.
+   *
+   * It is deliberately *not* in the save. Being away must never cost anything — that is
+   * the promise — so this can only ever add, and a save that came back claiming a deep
+   * meditation would be claiming hours nobody sat through.
+   */
+  const since = useRef<number | null>(null);
+  const [focus, setFocus] = useState(1);
 
   // 歸 The return. An idle game is played closed, so opening the app is first of all
   // receiving the hours that passed — and the player wants to see that before anything.
@@ -97,13 +107,35 @@ export function App() {
     }
   }, []);
 
+  // 入定 The visit. It starts when the app comes to the front and ends when it leaves,
+  // and nothing about it is remembered between visits.
+  useEffect(() => {
+    if (!ready) return;
+    const enter = () => { since.current = now(); };
+    const leave = () => { since.current = null; setFocus(1); };
+    const onVisibility = () => (document.hidden ? leave() : enter());
+    enter();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', leave);
+    window.addEventListener('focus', enter);
+    window.addEventListener('blur', leave);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', leave);
+      window.removeEventListener('focus', enter);
+      window.removeEventListener('blur', leave);
+    };
+  }, [ready]);
+
   // The clock. Time moves by timestamp, never by frame: this interval only asks what
   // time it is, and `advance` does the rest — so dropped frames lose no progress.
   useEffect(() => {
     if (!ready) return;
     const id = setInterval(() => {
+      const deep = since.current === null ? 1 : focusAt(now() - since.current);
+      setFocus(deep);
       setState((s) => {
-        const next = advance(s, now());
+        const next = advance(s, now(), false, deep);
         const layers = (next.realm - 1) * 9 + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -149,6 +181,7 @@ export function App() {
       return {
         beast,
         floor,
+        qi: floor === undefined ? undefined : floorQi(state),
         outcome: fight(state, beast, seed, standing),
         beat: 0,
         over: false,
@@ -322,6 +355,7 @@ export function App() {
           <Cultivate
             state={state}
             pulse={pulse}
+            focus={focus}
             set={climb}
             onFight={() => startFight(currentWarden(state))}
           />

@@ -25,6 +25,8 @@ export const HELP = {
   steps: [
     ['Qi gathers on its own',
       'It keeps going with the phone closed. Come back tomorrow and it is waiting for you.'],
+    ['Sitting with it open gathers faster',
+      'Up to three times as fast after a few minutes. Closing the app never costs you anything.'],
     ['Spend it on the four upgrades',
       'Two make qi come faster, two make you stronger. You never lose a level you bought.'],
     ['A realm only holds six levels of each',
@@ -34,7 +36,7 @@ export const HELP = {
     ['突破 Break through',
       'You move up a realm and the light around you changes.'],
   ] as const,
-  hunt: '狩 Hunt has beasts you can fight any time. They drop 材 material.',
+  hunt: '狩 Hunt has beasts you can fight any time. They drop 材 material, and material buys 妖丹 cores. From the third realm a warden will not fall without them.',
   tower: '塔 The tower is one floor at a time, and it never ends. Floors pay the 材 material the furnace eats.',
   slow: 'The first hour is slow. Realm 1 gathers 1 qi a second. Buy 吐納 breathwork and 功法 method as soon as you can afford them.',
   begin: 'Begin',
@@ -54,6 +56,16 @@ export const CULTIVATE = {
     `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}. `
     + 'There is no rebirth yet, so this is the ladder above the ladder.',
 
+  /**
+   * 入定 Being there.
+   *
+   * The wording matters more than most lines in this file. It must read as something
+   * gained by staying, never as something lost by leaving, because leaving costs
+   * nothing and the game has to keep saying so.
+   */
+  deep: 'Sitting with it deepens your gathering. It keeps rising for a few minutes.',
+  deepFull: 'Fully settled. This is as deep as sitting with it goes.',
+
   /** 雷池 The pool. It is the ninth realm's bar, and it refills. */
   pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
@@ -69,7 +81,9 @@ export const TRIALS = {
   seals: (n: number) => `${n} 塔印 ${n === 1 ? 'seal' : 'seals'}`,
   sealWorth: (pct: string) => `Every nine floors is a seal. Seals give you ${pct} more material from everything.`,
   climb: 'Climb',
-  pays: (mats: string) => `pays ${mats} 材`,
+  pays: (mats: string, qi: string) => `pays ${mats} 材 · ${qi} qi`,
+  /** The qi a floor pays, said in the unit that means something: your own time. */
+  hours: (span: string) => `A floor pays ${span} of your own gathering, once. This is the one place where fighting moves the bar.`,
 
   furnaceHead: '爐 The Furnace',
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',

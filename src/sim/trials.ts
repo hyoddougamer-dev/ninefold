@@ -1,7 +1,8 @@
 import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
 import { floorLoot, lootBonus, nextFloor } from './tower.ts';
-import type { State } from './state.ts';
+import { TOWER_QI_HOURS } from './balance.ts';
+import { rate, type State } from './state.ts';
 
 /**
  * 塔 and 爐 — the two halves of the loop that has no ceiling.
@@ -16,12 +17,25 @@ export function standingFloor(s: State): number {
   return nextFloor(s.tower);
 }
 
-/** A floor only counts once, and only the next one is ever open. */
+/** 吸 What a floor gives up when it falls: material, and hours of gathering. */
+export function floorQi(s: State): number {
+  return rate(s) * 3600 * TOWER_QI_HOURS;
+}
+
+/**
+ * A floor only counts once, and only the next one is ever open.
+ *
+ * It pays in qi as well as in material, and that is the one place in the game where
+ * fighting turns into *progress* rather than only into power. It is safe to be generous
+ * because a floor falls once: there is nothing here to farm, and the next floor is
+ * always harder than the last.
+ */
 export function clearFloor(s: State, floor: number): State {
   if (floor !== standingFloor(s)) return s;
   return {
     ...s,
     tower: floor,
+    qi: s.qi + floorQi(s),
     materials: s.materials + Math.round(floorLoot(floor) * lootBonus(s.tower)),
   };
 }

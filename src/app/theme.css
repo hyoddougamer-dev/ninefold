@@ -75,6 +75,13 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi { text-align: center; margin-top: 2px; }
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
+/* 入定 Something gained by staying, so it arrives rather than being always there. */
+.deep { margin-left: 9px; font-size: 11px; letter-spacing: .04em; color: var(--gold);
+        border: 1px solid var(--gold); border-radius: 7px; padding: 1px 7px;
+        animation: settle .5s ease both; }
+.deep[data-full="true"] { background: color-mix(in srgb, var(--gold) 18%, transparent); }
+@keyframes settle { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .deep { animation: none; } }
 
 .upgrades { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
 .upg { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;

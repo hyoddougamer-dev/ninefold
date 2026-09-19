@@ -1,4 +1,4 @@
-import { LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { FOCUS_MAX, LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { currentWarden, effectiveBeastPower, odds } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
@@ -13,9 +13,11 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { CULTIVATE } from '../copy.ts';
 
-export function Cultivate({ state, pulse, set, onFight }: {
+export function Cultivate({ state, pulse, focus, set, onFight }: {
   state: State;
   pulse: number;
+  /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
+  focus: number;
   set: (s: State) => void;
   onFight: () => void;
 }) {
@@ -30,7 +32,7 @@ export function Cultivate({ state, pulse, set, onFight }: {
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
-  const left = top && !full ? (pool - state.qi) / rate(state) : 0;
+  const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
   const cap = capOf(state);
 
@@ -59,7 +61,14 @@ export function Cultivate({ state, pulse, set, onFight }: {
 
       <div className="qi">
         <div className="n mono" style={{ color: r.colour }}>{num(state.qi)}</div>
-        <div className="r mono">+{num(rate(state))} qi / s</div>
+        <div className="r mono">
+          +{num(rate(state) * focus)} qi / s
+          {focus > 1.15 && (
+            <span className="deep" data-full={focus >= FOCUS_MAX - 0.001}>
+              入定 ×{focus.toFixed(1)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="bar" style={{ margin: '14px 0 6px' }}>
@@ -126,6 +135,12 @@ export function Cultivate({ state, pulse, set, onFight }: {
             {CULTIVATE.ceiling(state.tribulation, `${(1 + TRIBULATION_GAIN).toFixed(2)}x`)}
           </p>
         </div>
+      )}
+
+      {focus > 1.15 && (
+        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
+          {focus >= FOCUS_MAX - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
+        </p>
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>

@@ -176,6 +176,7 @@
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
+      <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
       <a href="#qi"><b>氣</b> Qi</a>
@@ -229,7 +230,10 @@
     <span class="body"><b class="cjk">道</b> <em><a href="#tree">The technique tree</a></em><i>One merged tree of 28 nodes costing 70 道 against about 44 a run. Nobody finishes it.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The whole material economy comes out of it.</i></span>
+    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights stalls in the third realm.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">爐</b> <em><a href="#furnace">The Furnace</a></em><i>27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.</i></span>
@@ -306,6 +310,91 @@
     </div>
   </section>
 
+  <section class="sec" id="habits">
+    <h2><span class="h">勤</span> Playing, and waiting</h2>
+    <p class="t">An idle game has to answer one question honestly: <b>what does being
+      there buy me?</b> For a while 九境 answered it badly — measured, somebody playing six
+      times a day reached the ninth realm <em>later</em> than somebody who opened the app
+      once, because the qi they spent on power was qi that did not open a layer.</p>
+    <p class="t">Three things carry the difference now, and every one of them only ever
+      <b>adds</b>:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">妖丹</b> <em>A warden asks for cores</em>
+        <i>Cores are not bought with qi. They are bought with 材 material, and material only
+        falls off things you kill. The first 2 realms ask for none, so a
+        new cultivator learns what a warden is before learning that a warden is not enough;
+        from the third it tightens a realm at a time.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">入定</b> <em>Sitting with it gathers deeper</em>
+        <i>With the app open the rate climbs to 3x over 3 minutes,
+        holds, and ends after 15. It ends on purpose: a multiplier that
+        simply held would be farmed by leaving the phone on a charger. To sit again, leave
+        and come back.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
+        <i>6 hours of your own gathering, once, and never again — there is no
+        floor to farm. This is the one place in the game where fighting moves the bar
+        instead of only moving your power.</i></span></div>
+    </div>
+    <div class="rule"><b>And nothing anywhere pays less for being away.</b> The qi gathers
+      at full rate with the phone closed, every second of it, whatever else changes. 入定
+      is written as a multiplier that starts at 1 and climbs, so no call in the game can
+      pay below the promised rate. Being active is worth something because it adds, never
+      because being away subtracts.</div>
+    <h3>Five cultivators, one game — played out, not guessed</h3>
+    <table>
+      <tr><th>habit</th><th style="text-align:right">visits</th>
+          <th style="text-align:right">open</th><th style="text-align:right">realm 9</th>
+          <th style="text-align:right">力 at the end</th><th style="text-align:right">tower</th>
+          <th style="text-align:right">fights</th></tr>
+      <tr style="--hue:var(--magenta)">
+    <td><b class="cjk">never fights</b><i style="display:block">Opens it once a day, buys what the qi affords, and never taps a beast.</i></td>
+    <td class="n">1x</td>
+    <td class="n">0 min</td>
+    <td class="n" style="color:var(--magenta)">never · stuck at 3</td>
+    <td class="n">968</td>
+    <td class="n">—</td>
+    <td class="n">2</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
+    <td class="n">1x</td>
+    <td class="n">2 min</td>
+    <td class="n" style="color:var(--cyan)">day 94</td>
+    <td class="n">160M</td>
+    <td class="n">86</td>
+    <td class="n">550</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
+    <td class="n">3x</td>
+    <td class="n">5 min</td>
+    <td class="n" style="color:var(--cyan)">day 95</td>
+    <td class="n">195M</td>
+    <td class="n">—</td>
+    <td class="n">1,007</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
+    <td class="n">6x</td>
+    <td class="n">10 min</td>
+    <td class="n" style="color:var(--cyan)">day 69</td>
+    <td class="n">253M</td>
+    <td class="n">88</td>
+    <td class="n">3,078</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
+    <td class="n">24x</td>
+    <td class="n">15 min</td>
+    <td class="n" style="color:var(--cyan)">day 50</td>
+    <td class="n">253M</td>
+    <td class="n">88</td>
+    <td class="n">11,656</td>
+  </tr>
+    </table>
+    <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
+      every upgrade qi can buy is at its cap and the bar fills as fast as anybody's. What
+      they are short of is not qi. It is a reason to have been there.</p>
+    <p class="t">And the bottom row is the other half: playing every waking hour is worth
+      about <b>twice</b> the speed of playing casually, not twenty times. The game is not
+      supposed to belong to whoever has the most free time.</p>
+  </section>
+
   <section class="sec" id="ladder">
     <h2><span class="h">階</span> The ladder</h2>
     <p class="t">The climb is <b>81 rungs</b>, nine to a realm, and every rung costs
@@ -371,8 +460,8 @@
       who <em>spends</em> — who opens the app, buys whatever they can afford, and closes it
       again. The earlier curve was measured against one who never spent a single qi, and
       against somebody playing the game as written that same curve took
-      <b>three days</b>, not ninety. The test prints the schedule on every run, and prints
-      it for one visit a day and for two hundred; they land between 86 and 114 days.</div>
+      <b>three days</b>, not ninety. The ladder is the same for everybody; what moves is
+      how much of it a habit skips, and 勤 above has that table.</div>
   </section>
 
   <section class="sec" id="cap">
@@ -843,31 +932,31 @@
   </div>
   <div class="card" style="--hue:#77AEFF">
     <b class="cjk">金丹</b> <i class="faint">Golden Core</i>
-    <div class="lin"><span><b style="color:#77AEFF">鐵甲</b> <i>Iron Beetle · 力 293 · 材 23</i></span><span><b style="color:#77AEFF">夜梟</b> <i>Night Owl · 力 403 · 材 33</i></span><span><b style="color:#77AEFF">血鴉</b> <i>Blood Raven · 力 546 · 材 48</i></span><span><b style="color:#77AEFF">仙鶴</b> <i>Immortal Crane · warden · 力 968 · 材 275</i></span></div>
+    <div class="lin"><span><b style="color:#77AEFF">鐵甲</b> <i>Iron Beetle · 力 398 · 材 23</i></span><span><b style="color:#77AEFF">夜梟</b> <i>Night Owl · 力 549 · 材 33</i></span><span><b style="color:#77AEFF">血鴉</b> <i>Blood Raven · 力 743 · 材 48</i></span><span><b style="color:#77AEFF">仙鶴</b> <i>Immortal Crane · warden · 力 1317 · 材 275</i></span></div>
   </div>
   <div class="card" style="--hue:#9B9BFF">
     <b class="cjk">元嬰</b> <i class="faint">Nascent Soul</i>
-    <div class="lin"><span><b style="color:#9B9BFF">鐵根彘</b> <i>Ironroot Boar · 力 1287 · 材 119</i></span><span><b style="color:#9B9BFF">灰狼</b> <i>Grey Wolf · 力 1773 · 材 171</i></span><span><b style="color:#9B9BFF">山鷲</b> <i>Ridge Vulture · 力 2402 · 材 246</i></span><span><b style="color:#9B9BFF">雷虎</b> <i>Thunder Tiger · warden · 力 4255 · 材 1418</i></span></div>
+    <div class="lin"><span><b style="color:#9B9BFF">鐵根彘</b> <i>Ironroot Boar · 力 2778 · 材 119</i></span><span><b style="color:#9B9BFF">灰狼</b> <i>Grey Wolf · 力 3827 · 材 171</i></span><span><b style="color:#9B9BFF">山鷲</b> <i>Ridge Vulture · 力 5185 · 材 246</i></span><span><b style="color:#9B9BFF">雷虎</b> <i>Thunder Tiger · warden · 力 9187 · 材 1418</i></span></div>
   </div>
   <div class="card" style="--hue:#B587FF">
     <b class="cjk">化神</b> <i class="faint">Spirit Severing</i>
-    <div class="lin"><span><b style="color:#B587FF">巨蟹</b> <i>Giant Crab · 力 5303 · 材 612</i></span><span><b style="color:#B587FF">水母</b> <i>Jellyfish · 力 7306 · 材 882</i></span><span><b style="color:#B587FF">岩蜥</b> <i>Rock Lizard · 力 9898 · 材 1270</i></span><span><b style="color:#B587FF">玄武</b> <i>Black Turtle · warden · 力 17.5k · 材 7315</i></span></div>
+    <div class="lin"><span><b style="color:#B587FF">巨蟹</b> <i>Giant Crab · 力 18.2k · 材 612</i></span><span><b style="color:#B587FF">水母</b> <i>Jellyfish · 力 25k · 材 882</i></span><span><b style="color:#B587FF">岩蜥</b> <i>Rock Lizard · 力 33.9k · 材 1270</i></span><span><b style="color:#B587FF">玄武</b> <i>Black Turtle · warden · 力 60.1k · 材 7315</i></span></div>
   </div>
   <div class="card" style="--hue:#CC79FF">
     <b class="cjk">煉虛</b> <i class="faint">Void Refining</i>
-    <div class="lin"><span><b style="color:#CC79FF">蜈蚣</b> <i>Iron Centipede · 力 21k · 材 3160</i></span><span><b style="color:#CC79FF">毒蠍</b> <i>Venom Scorpion · 力 28.9k · 材 4550</i></span><span><b style="color:#CC79FF">屍蟲</b> <i>Corpse Worm · 力 39.2k · 材 6552</i></span><span><b style="color:#CC79FF">石傀</b> <i>Stone Puppet · warden · 力 69.4k · 材 37.7k</i></span></div>
+    <div class="lin"><span><b style="color:#CC79FF">蜈蚣</b> <i>Iron Centipede · 力 114k · 材 3160</i></span><span><b style="color:#CC79FF">毒蠍</b> <i>Venom Scorpion · 力 157k · 材 4550</i></span><span><b style="color:#CC79FF">屍蟲</b> <i>Corpse Worm · 力 213k · 材 6552</i></span><span><b style="color:#CC79FF">石傀</b> <i>Stone Puppet · warden · 力 377k · 材 37.7k</i></span></div>
   </div>
   <div class="card" style="--hue:#E571F0">
     <b class="cjk">合體</b> <i class="faint">Unity</i>
-    <div class="lin"><span><b style="color:#E571F0">魔猿</b> <i>Demon Ogre · 力 80.7k · 材 16.3k</i></span><span><b style="color:#E571F0">鬼面</b> <i>Ghost Face · 力 111k · 材 23.5k</i></span><span><b style="color:#E571F0">陰魂</b> <i>Yin Wraith · 力 151k · 材 33.8k</i></span><span><b style="color:#E571F0">魔狼</b> <i>Demon Wolf · warden · 力 267k · 材 195k</i></span></div>
+    <div class="lin"><span><b style="color:#E571F0">魔猿</b> <i>Demon Ogre · 力 696k · 材 16.3k</i></span><span><b style="color:#E571F0">鬼面</b> <i>Ghost Face · 力 959k · 材 23.5k</i></span><span><b style="color:#E571F0">陰魂</b> <i>Yin Wraith · 力 1.3M · 材 33.8k</i></span><span><b style="color:#E571F0">魔狼</b> <i>Demon Wolf · warden · 力 2.3M · 材 195k</i></span></div>
   </div>
   <div class="card" style="--hue:#FF63CE">
     <b class="cjk">大乘</b> <i class="faint">Great Vehicle</i>
-    <div class="lin"><span><b style="color:#FF63CE">骨將</b> <i>Bone General · 力 304k · 材 84.1k</i></span><span><b style="color:#FF63CE">石鬼</b> <i>Gargoyle · 力 419k · 材 121k</i></span><span><b style="color:#FF63CE">牛魔</b> <i>Bull Demon · 力 568k · 材 174k</i></span><span><b style="color:#FF63CE">蛟</b> <i>Serpent Dragon · warden · 力 1.01M · 材 1M</i></span></div>
+    <div class="lin"><span><b style="color:#FF63CE">骨將</b> <i>Bone General · 力 4.16M · 材 84.1k</i></span><span><b style="color:#FF63CE">石鬼</b> <i>Gargoyle · 力 5.74M · 材 121k</i></span><span><b style="color:#FF63CE">牛魔</b> <i>Bull Demon · 力 7.77M · 材 174k</i></span><span><b style="color:#FF63CE">蛟</b> <i>Serpent Dragon · warden · 力 13.8M · 材 1M</i></span></div>
   </div>
   <div class="card" style="--hue:#FF5AA6">
     <b class="cjk">渡劫</b> <i class="faint">Tribulation</i>
-    <div class="lin"><span><b style="color:#FF5AA6">羽妖</b> <i>Harpy · 力 1.13M · 材 434k</i></span><span><b style="color:#FF5AA6">獨角</b> <i>Unicorn · 力 1.55M · 材 625k</i></span><span><b style="color:#FF5AA6">巨章</b> <i>Colossal Squid · 力 2.11M · 材 900k</i></span><span><b style="color:#FF5AA6">龍</b> <i>Dragon · warden · 力 3.73M · 材 5.18M</i></span></div>
+    <div class="lin"><span><b style="color:#FF5AA6">羽妖</b> <i>Harpy · 力 24.5M · 材 434k</i></span><span><b style="color:#FF5AA6">獨角</b> <i>Unicorn · 力 33.8M · 材 625k</i></span><span><b style="color:#FF5AA6">巨章</b> <i>Colossal Squid · 力 45.8M · 材 900k</i></span><span><b style="color:#FF5AA6">龍</b> <i>Dragon · warden · 力 81.1M · 材 5.18M</i></span></div>
   </div></div>
   </section>
 
@@ -1347,37 +1436,37 @@
     <td class="n">52</td>
   </tr><tr style="--hue:#77AEFF">
     <td><b class="cjk">floor 27</b></td>
-    <td class="n">968</td>
+    <td class="n">1317</td>
     <td><i>仙鶴 Immortal Crane</i></td>
     <td class="n">1374</td>
   </tr><tr style="--hue:#B587FF">
     <td><b class="cjk">floor 45</b></td>
-    <td class="n">17.5k</td>
+    <td class="n">60.1k</td>
     <td><i>玄武 Black Turtle</i></td>
     <td class="n">36.6k</td>
   </tr><tr style="--hue:#E571F0">
     <td><b class="cjk">floor 63</b></td>
-    <td class="n">267k</td>
+    <td class="n">2.3M</td>
     <td><i>魔狼 Demon Wolf</i></td>
     <td class="n">974k</td>
   </tr><tr style="--hue:#FF5AA6">
     <td><b class="cjk">floor 81</b></td>
-    <td class="n">3.73M</td>
+    <td class="n">81.1M</td>
     <td><i>龍 Dragon</i></td>
     <td class="n">25.9M</td>
   </tr><tr style="--hue:var(--faint)">
     <td><b class="cjk">floor 100</b></td>
-    <td class="n">57.2M</td>
+    <td class="n">3.29B</td>
     <td><i>past the mountain</i></td>
     <td class="n">828M</td>
   </tr><tr style="--hue:var(--faint)">
     <td><b class="cjk">floor 200</b></td>
-    <td class="n">65.4T</td>
+    <td class="n">637Qa</td>
     <td><i>past the mountain</i></td>
     <td class="n">68.6Qa</td>
   </tr><tr style="--hue:var(--faint)">
     <td><b class="cjk">floor 400</b></td>
-    <td class="n">42.8Sp</td>
+    <td class="n">11.9Dc</td>
     <td><i>past the mountain</i></td>
     <td class="n">470No</td>
   </tr>

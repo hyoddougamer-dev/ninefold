@@ -21,17 +21,31 @@ function bare(realm: number): State {
 }
 
 /**
- * The player in the middle: at the realm's ceiling, two levels of 劍訣 short of the cap.
+ * The player in the middle: at the realm's ceiling, two levels short of the cap on both
+ * 劍訣 and 妖丹.
  *
  * Levels below the cap, not a share of qi earned. The cap is the honest yardstick now,
  * because it is the ceiling on what a cultivator of that realm can possibly hold, and
  * because every upgrade price rides the mountain rather than a ladder of its own.
+ *
+ * Cores are in here because a warden asks for them, and a warden asks for them because
+ * they are the one upgrade qi cannot buy — see `waiter` below, which is the same
+ * cultivator with everything except the fighting.
  */
 function invested(realm: number, below = 2): State {
+  const held = Math.max(0, levelCap(realm) - below);
+  return {
+    ...bare(realm),
+    levels: { technique: held, method: 0, pills: 0, cores: held },
+  };
+}
+
+/** The cultivator who only ever waited: every qi upgrade at the cap, and no cores. */
+function waiter(realm: number): State {
   return {
     ...bare(realm),
     levels: {
-      technique: Math.max(0, levelCap(realm) - below), method: 0, pills: 0, cores: 0,
+      technique: levelCap(realm), method: levelCap(realm), pills: levelCap(realm), cores: 0,
     },
   };
 }
@@ -76,29 +90,47 @@ describe('戰 the beasts', () => {
     }
   });
 
-  it('a warden is not beaten by qi alone — it is beaten by a build', () => {
+  it('a warden is not beaten by qi alone — it is beaten by 妖丹 and a build', () => {
     const rows = [2, 4, 6, 8, 9].map((r) => {
       const g = wardenOf(r);
       return `  realm ${r}  ${g.han.padEnd(2)} warden` +
-        `   no 劍訣 ${(100 * odds(bare(r), g)).toFixed(0).padStart(3)}%` +
-        `   two short of the cap ${(100 * odds(invested(r), g)).toFixed(0).padStart(3)}%` +
-        `   the same, built ${(100 * odds(built(r), g)).toFixed(0).padStart(3)}%` +
-        `   at the cap ${(100 * odds(invested(r, 0), g)).toFixed(0).padStart(3)}%`;
+        `   nothing bought ${(100 * odds(bare(r), g)).toFixed(0).padStart(3)}%` +
+        `   qi upgrades only ${(100 * odds(waiter(r), g)).toFixed(0).padStart(3)}%` +
+        `   two short of both caps ${(100 * odds(invested(r), g)).toFixed(0).padStart(3)}%` +
+        `   the same, built ${(100 * odds(built(r), g)).toFixed(0).padStart(3)}%`;
     });
     console.log(`\n${rows.join('\n')}\n`);
 
     for (const r of [2, 4, 6, 8]) {
       const g = wardenOf(r);
-      // Spending nothing is never enough.
+      // Buying nothing is never enough.
       expect(odds(bare(r), g)).toBeLessThan(0.15);
-      // The middling spender has a slim chance and usually has to come back.
-      expect(odds(invested(r), g)).toBeLessThan(0.4);
-      // The same cultivator with a stance and a sequence gets through. This is the whole
-      // reason 勢 and 訣 exist: they are the difference between the wall and the door.
-      expect(odds(built(r), g)).toBeGreaterThan(odds(invested(r), g) + 0.25);
-      // And heavy spending still works on its own, for a player who would rather grind.
-      expect(odds(invested(r, 0), g)).toBeGreaterThan(0.35);
+      // Having hunted is what opens it, and from there it is a fight you should win.
+      expect(odds(invested(r), g)).toBeGreaterThan(0.5);
+      // And the build is never a downgrade on top of it.
+      expect(odds(built(r), g)).toBeGreaterThanOrEqual(odds(invested(r), g) - 0.05);
     }
+  });
+
+  /**
+   * Where 勢 and 訣 are actually decided is the tower, not the wardens.
+   *
+   * A warden stands still: once the hunting is done it is a fight you should win, and
+   * that is the right shape for a gate on the main climb. 無盡塔 keeps rising, so the
+   * build is worth exactly as many more floors as it is worth, for ever.
+   */
+  it('is why the build exists: it is worth floors', async () => {
+    const { floorBeast, floorPower } = await import('../tower.ts');
+    const plain = invested(5);
+    const withBuild = built(5);
+    let a = 0;
+    let b = 0;
+    for (let f = 1; f <= 90; f++) {
+      if (odds(plain, floorBeast(f), floorPower(f)) > 0.6) a = f;
+      if (odds(withBuild, floorBeast(f), floorPower(f)) > 0.6) b = f;
+    }
+    console.log(`  a realm-5 cultivator reaches tower floor ${a}; with a stance and arts, floor ${b}\n`);
+    expect(b).toBeGreaterThan(a);
   });
 
   it('commons are hunting, not a wall — and three steps, not three identical buttons', () => {
@@ -116,6 +148,30 @@ describe('戰 the beasts', () => {
     console.log(`\n  realm 5, the three commons: ${commonsOf(5).map((c) =>
       `${c.han} ${(100 * odds(s, c)).toFixed(0)}% in ${fight(s, c, 7).rounds.length} rounds`)
       .join(' · ')}\n`);
+  });
+
+  /**
+   * The wall between playing and waiting, which is the whole reason a warden counts 妖丹.
+   *
+   * Nothing is taken from this cultivator for being away — their qi gathered at full rate
+   * every second of it, and every upgrade qi can buy is at its cap. What they are short
+   * of is not qi.
+   */
+  it('will not let a cultivator who never fights past the fourth realm', () => {
+    const rows = [1, 2, 3, 4, 5, 9].map((r) => {
+      const g = wardenOf(r);
+      return `  realm ${r}  ${g.han.padEnd(2)}   every qi upgrade at the cap, no 妖丹: ` +
+        `${(100 * odds(waiter(r), g)).toFixed(0).padStart(3)}%   with 妖丹 too: ` +
+        `${(100 * odds(invested(r, 0), g)).toFixed(0).padStart(3)}%`;
+    });
+    console.log(`\n  妖丹 the wall — cores come from killing things, never from waiting:\n${rows.join('\n')}\n`);
+
+    // The first two realms ask for nothing: a new cultivator meets a warden and learns
+    // what one is before learning that a warden is not enough.
+    for (const r of [1, 2]) expect(odds(waiter(r), wardenOf(r))).toBeGreaterThan(0.5);
+    // From the third it tightens, and by the fourth it is shut.
+    expect(odds(waiter(4), wardenOf(4))).toBeLessThan(0.2);
+    for (const r of [5, 6, 7, 8, 9]) expect(odds(waiter(r), wardenOf(r))).toBeLessThan(0.1);
   });
 
   it('the reference grows every realm, and the beasts with it', () => {

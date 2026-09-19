@@ -116,6 +116,46 @@ export const FLOOR_LOOT = 12;
 export const FLOOR_LOOT_GROWTH = 1.2;
 export const HUNT_SHARE = 1 / 20;
 
+/**
+ * 入定 Deep meditation: what being *there* is worth.
+ *
+ * Bruno asked for a difference between somebody who plays and somebody who only waits,
+ * and also asked that being away never cost anything. Those two are opposite ends of the
+ * same lever if you pull it the usual way — an idle game normally pays less while the
+ * app is shut. So this pulls it the other way: the rate with the phone closed is the
+ * rate the game promises, and sitting with it open **adds** on top.
+ *
+ * It ramps rather than switching, so it pays for staying rather than for opening the app
+ * and closing it again — and it **ends**, which is the part that matters. A multiplier
+ * that simply held would be farmed by leaving the phone face-up on a charger, and the
+ * game would be trivialised by its owner without a single decision being made. A sitting
+ * lasts FOCUS_HOLD and then it is over; to have another one, leave and come back.
+ *
+ * So a visit is worth about half an hour of extra gathering, however long the screen
+ * stays on, and six visits a day is worth a few hours. The tower is what carries the
+ * real difference between playing and waiting; this is what makes the minutes in front
+ * of it feel like they counted.
+ */
+export const FOCUS_MAX = 3;
+export const FOCUS_RAMP = 180;
+export const FOCUS_HOLD = 900;
+
+export function focusAt(secondsOpen: number): number {
+  if (!(secondsOpen > 0)) return 1;
+  if (secondsOpen >= FOCUS_HOLD) return 1;
+  const t = Math.min(1, secondsOpen / FOCUS_RAMP);
+  return 1 + (FOCUS_MAX - 1) * t;
+}
+
+/**
+ * 吸 What a tower floor is worth in qi, in hours of your own gathering.
+ *
+ * The tower is the one place where fighting turns into *progress* rather than only into
+ * power. A floor pays this once and never again — there is no floor to farm — so it can
+ * be generous without ever becoming a loop that feeds itself.
+ */
+export const TOWER_QI_HOURS = 6;
+
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;
 
