@@ -16,7 +16,7 @@ import { realm as realmOf } from '../data/realms.ts';
  *      — the figure must stay the clearest thing however loud the aura gets.
  */
 
-function mix(a: string, b: string, k: number): string {
+export function mix(a: string, b: string, k: number): string {
   const t = Math.max(0, Math.min(1, k));
   const v = (s: string, i: number) => parseInt(s.slice(1 + i, 3 + i), 16);
   const c = (i: number) => Math.round(v(a, i) * (1 - t) + v(b, i) * t);

@@ -1,0 +1,583 @@
+<title>戰 Quatro Janelas de Combate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
+<style>
+  :root { --ground:#080A18; --panel:#111433; --panel2:#0C0F26; --line:#252A5C;
+          --cyan:#5FDCFF; --magenta:#FF5FC8; --text:#E7EAFF; --faint:#8289C0;
+          --gold:#FFCE6B; --hue:#CC79FF; --foe:#CC79FF; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--text);
+         font:17px/1.6 Archivo, ui-sans-serif, system-ui, sans-serif; }
+  .sheet { max-width:760px; margin:0 auto; padding-block:40px 80px;
+           padding-left:18px; padding-right:18px; }
+  .cjk { font-family:'Noto Serif SC',serif; }
+  h1,h2 { margin:0; font-weight:600; text-wrap:balance; }
+  h1 { font-family:'Noto Serif SC',serif; font-size:clamp(38px,11vw,54px); font-weight:400;
+       color:var(--cyan); line-height:1.02; }
+  h2 { font-family:Rajdhani,sans-serif; font-size:27px; }
+  p { margin:0; }
+  .sub { color:var(--faint); font-size:17px; margin-top:8px; }
+  .says { color:var(--faint); max-width:52ch; font-size:15.5px; }
+  .says b { color:var(--text); font-weight:600; }
+  .tag { font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+         color:var(--cyan); font-weight:600; }
+
+  .prop { margin-top:46px; border-top:1px solid var(--line); padding-top:26px;
+          display:grid; gap:16px; }
+  @media(min-width:680px){ .prop { grid-template-columns:1fr 340px; align-items:start; } }
+  .prop > .said { display:flex; flex-direction:column; gap:11px; }
+  .title { display:flex; gap:12px; align-items:baseline; }
+  .title .han { font-family:'Noto Serif SC',serif; font-size:40px; color:var(--cyan);
+                line-height:1; }
+  .idea { font-size:15px; color:var(--text); }
+  .gives { font-size:13px; color:var(--gold); font-family:Rajdhani,sans-serif;
+           font-weight:600; border-left:2px solid var(--gold); padding-left:11px; }
+
+  /* the phone the window lives in */
+  .phone { width:100%; max-width:340px; margin:0 auto; border:1px solid var(--line);
+           border-radius:22px; overflow:hidden; background:#05060F;
+           box-shadow:0 20px 60px rgba(0,0,0,.6); }
+  .win { position:relative; height:480px; overflow:hidden; background:#05060F; }
+  .win .art svg { display:block; width:100%; height:100%; }
+  .dmg { position:absolute; font-family:Rajdhani,sans-serif; font-weight:700;
+         font-size:23px; text-shadow:0 2px 12px #000; pointer-events:none;
+         animation:rise .95s ease-out forwards; }
+  @keyframes rise {
+    0% { transform:translate(-50%,0); opacity:0; }
+    15% { opacity:1; }
+    100% { transform:translate(-50%,-52px); opacity:0; }
+  }
+
+  /* ── A 對 ── */
+  .a .scene { position:absolute; inset:0 0 92px; }
+  .a .sky { position:absolute; inset:0; width:100%; height:100%; }
+  /* Both fighters stand on the floor line, which sits 52px up from the scene's foot.
+     They need different offsets because the drawings sit differently in their boxes:
+     the cultivator's feet are well inside theirs, the centipede's reach the edge. */
+  .a .duel { position:absolute; inset:0; display:grid; grid-template-columns:1fr 76px 1fr;
+             align-items:end; padding:0 8px 14px; }
+  .a .fighter { display:grid; place-items:center; }
+  .a .hero .art { width:132px; height:132px; }
+  .a .foe .art { width:96px; height:96px; display:grid; place-items:center; margin-bottom:30px;
+                 filter:drop-shadow(0 0 16px color-mix(in srgb,var(--foe) 55%,transparent)); }
+  .a .gap { position:relative; height:120px; margin-bottom:24px; }
+  .a .streak { position:absolute; left:-30px; right:-30px; top:46%; height:2px; opacity:0;
+               background:linear-gradient(90deg,transparent,currentColor,transparent); }
+  .a .mark { position:absolute; left:50%; top:46%; translate:-50% -50%; opacity:0;
+             font-family:'Noto Serif SC',serif; font-size:22px; font-weight:400;
+             text-shadow:0 0 18px currentColor; }
+  .a[data-by='p'] .gap { color:var(--hue); }
+  .a[data-by='b'] .gap { color:var(--foe); }
+  .a .feet { position:absolute; left:0; right:0; bottom:0; height:92px; padding:14px 16px;
+             display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; align-content:center;
+             background:linear-gradient(180deg,transparent,#05060F 42%); }
+  .a .who { display:flex; flex-direction:column; gap:6px; }
+  .a .who.r { text-align:right; }
+  .a .nm { font-size:12px; color:var(--faint); font-family:Rajdhani,sans-serif; font-weight:600; }
+  .a .nm b { font-size:15px; margin-right:5px; font-weight:400; }
+  .a .bar { height:5px; border-radius:99px; background:var(--line); overflow:hidden; }
+  .a .who.r .bar { display:flex; justify-content:flex-end; }
+  .a .hp { display:block; height:100%; border-radius:99px; transition:width .3s ease-out; }
+  .a .hp.p { background:var(--cyan); width:100%; }
+  .a .hp.b { background:var(--magenta); width:100%; }
+  .a[data-shake='1'] .scene { animation:shake .22s ease-out; }
+  @keyframes shake {
+    0%,100% { transform:translate(0,0); }
+    25% { transform:translate(-4px,2px); }
+    60% { transform:translate(3px,-1px); }
+  }
+  .a[data-by='p'] .hero .art { animation:lungeR .3s ease-out; }
+  .a[data-by='b'] .foe .art { animation:lungeL .3s ease-out; }
+  @keyframes lungeR { 0%,100%{transform:translateX(0)} 35%{transform:translateX(16px) scale(1.05)} }
+  @keyframes lungeL { 0%,100%{transform:translateX(0)} 35%{transform:translateX(-16px) scale(1.05)} }
+
+  /* ── B 境 ── */
+  .b .land { position:absolute; inset:0; width:100%; height:100%; }
+  /* Haze over the near ground, brightest where the cultivator stands. It sits above the
+     dark band rather than on its edge — as a hard edge it read as a painted bar. */
+  /* The haze must run to the bottom of the window. Ending its box above the floor cut
+     the gradient off while it was still bright, which drew a hard bar across the screen. */
+  .b .mist { position:absolute; left:0; right:0; bottom:0; height:210px; pointer-events:none;
+             background:radial-gradient(48% 62% at 50% 74%, color-mix(in srgb,var(--hue) 20%,transparent), transparent 74%); }
+  .b .looming { position:absolute; left:50%; top:74px; translate:-50% 0;
+                filter:drop-shadow(0 0 34px color-mix(in srgb,var(--foe) 45%,transparent));
+                transition:opacity .4s ease-out, filter .4s ease-out; }
+  /* The seated figure's legs sit a fifth of the way up its own box, so it needs to be
+     lifted or the horizon runs through its waist. */
+  .b .small { position:absolute; left:50%; bottom:32px; translate:-50% 0;
+              width:96px; height:96px; transition:opacity .4s; }
+  .b .tell { position:absolute; left:0; right:0; top:16px; text-align:center; }
+  .b .tell span { font-size:26px; display:block; line-height:1.1; }
+  .b .tell em { font-style:normal; font-size:11px; letter-spacing:.2em; color:var(--faint);
+                text-transform:uppercase; }
+  .b[data-by='p'] .looming { animation:reel .34s ease-out; }
+  .b[data-by='b'] .small { animation:reelSmall .34s ease-out; }
+  @keyframes reel { 0%,100%{transform:translateY(0) rotate(0)} 30%{transform:translateY(10px) rotate(-3deg)} }
+  @keyframes reelSmall { 0%,100%{transform:scale(1)} 30%{transform:scale(.93)} }
+
+  /* ── C 卷 ── */
+  .c { display:flex; flex-direction:column; }
+  .c .heads { display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+              gap:10px; padding:16px 18px 12px; }
+  .c .head { display:flex; align-items:center; gap:9px; }
+  .c .head.r { flex-direction:row-reverse; }
+  .c .ring { position:relative; width:48px; height:48px; flex:none; display:grid;
+             place-items:center; }
+  .c .gauge { position:absolute; inset:0; width:48px; height:48px; }
+  .c .ring .art { width:26px; height:26px; display:grid; place-items:center; }
+  .c .ring .art svg { width:26px; height:26px; }
+  .c .arc { stroke-dasharray:131.9; stroke-dashoffset:0; transition:stroke-dashoffset .3s ease-out; }
+  .c .head b { font-size:19px; }
+  .c .vs { color:var(--faint); font-size:15px; }
+  .c .paper { flex:1; margin:0 14px 14px; border-radius:12px; overflow:hidden; position:relative;
+              background:linear-gradient(180deg,#0A0C1E,#0C0F26);
+              border:1px solid var(--line); }
+  .c .paper::before { content:''; position:absolute; inset:0; pointer-events:none;
+                      background:linear-gradient(180deg,#0A0C1E 0%,transparent 26%); z-index:2; }
+  .c .lines { position:absolute; left:0; right:0; bottom:0; padding:14px 16px 16px;
+              display:flex; flex-direction:column; gap:11px; }
+  .c .ln { display:flex; gap:10px; align-items:baseline; animation:write .4s ease-out both; }
+  .c .ln .say { flex:1; font-size:13.5px; line-height:1.45; }
+  .c .ln .say i { font-style:normal; display:block; font-size:11px; color:var(--faint); }
+  .c .ln .n { font-family:Rajdhani,sans-serif; font-weight:700; font-size:15px; }
+  @keyframes write { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:none; } }
+
+  /* ── D 陣 ── */
+  .d { display:grid; place-items:center; }
+  .d .circle { position:relative; width:300px; height:300px; }
+  .d .circle > svg { width:300px; height:300px; display:block; }
+  .d .arc { stroke-dasharray:402.1; stroke-dashoffset:0; transition:stroke-dashoffset .35s ease-out; }
+  .d .spin { animation:turn 26s linear infinite; }
+  @keyframes turn { to { transform:rotate(360deg); } }
+  .d .chord { opacity:0; }
+  .d[data-by='p'] .chord { animation:cut .34s ease-out; stroke:var(--hue); }
+  .d[data-by='b'] .chord { animation:cut .34s ease-out; stroke:var(--foe); }
+  @keyframes cut { 0%{opacity:0;transform:scaleX(.1)} 30%{opacity:1;transform:scaleX(1)} 100%{opacity:0} }
+  .d .inner { position:absolute; top:50%; translate:0 -50%; display:grid; place-items:center; }
+  .d .inner.hero { left:14px; width:96px; height:96px; }
+  .d .inner.foe { right:18px; width:76px; height:76px;
+                  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--foe) 50%,transparent)); }
+  .d .middle { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; }
+  .d .beatmark { font-family:'Noto Serif SC',serif; font-size:26px; opacity:0;
+                 text-shadow:0 0 20px currentColor; }
+  .d[data-by='p'] .beatmark { color:var(--hue); animation:pop .34s ease-out; }
+  .d[data-by='b'] .beatmark { color:var(--foe); animation:pop .34s ease-out; }
+  @keyframes pop { 0%{opacity:0;transform:scale(.5)} 30%{opacity:.95;transform:scale(1)} 100%{opacity:0;transform:scale(1.5)} }
+  .d .tags { position:absolute; left:0; right:0; bottom:22px; display:flex;
+             justify-content:space-between; padding:0 22px; font-size:12px;
+             color:var(--faint); font-family:Rajdhani,sans-serif; font-weight:600; }
+  .d .tags b { font-size:16px; margin-right:5px; font-weight:400; }
+  .d[data-by='p'] .inner.foe { animation:knock .3s ease-out; }
+  .d[data-by='b'] .inner.hero { animation:knock .3s ease-out; }
+  @keyframes knock { 0%,100%{transform:translateX(0)} 30%{transform:translateX(7px)} 60%{transform:translateX(-4px)} }
+
+  .end { margin-top:52px; border-top:1px solid var(--line); padding-top:26px; }
+</style>
+
+<div class="sheet">
+  <header>
+    <h1>戰</h1>
+    <p class="sub">Quatro janelas de combate. Todas a correr a mesma luta.</p>
+    <p class="says" style="margin-top:14px">A de agora são duas figuras empilhadas por
+      cima da lista de caça com transparência — lê-se como uma caixa de diálogo sobre uma
+      lista, não como uma luta. Estas quatro são respostas diferentes à mesma pergunta, e
+      cada uma abdica de coisa diferente. Diz-me qual (ou quais partes de quais).</p>
+  </header>
+
+  <section class="prop">
+    <div class="said">
+      <p class="tag">Proposta 1</p>
+      <div class="title">
+        <span class="han cjk">對</span>
+        <h2>O Frente a Frente</h2>
+      </div>
+      <p class="idea">Dois lutadores num sítio, virados um para o outro.</p>
+      <p class="says">O que falta à janela de agora é <b>espaço entre os dois</b>. Aqui há chão, há
+      horizonte, e há um vão no meio onde o golpe acontece — o ecrã inteiro abana quando
+      a pancada é pesada. As barras de vida descem para junto dos pés, pequenas, porque
+      não são elas o espectáculo.</p>
+      <p class="gives">Ganha confronto. Perde o espaço vertical grande para cada figura.</p>
+    </div>
+    <div class="phone"><div class="win a" data-demo="a">
+  <div class="scene">
+    <svg class="sky" viewBox="0 0 320 300" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="skya" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#05060F"/>
+          <stop offset=".62" stop-color="#412957"/>
+          <stop offset=".86" stop-color="#8852ad"/>
+        </linearGradient>
+        <linearGradient id="flra" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#CC79FF" stop-opacity="0"/>
+          <stop offset="1" stop-color="#CC79FF" stop-opacity=".26"/>
+        </linearGradient>
+        <linearGradient id="edga" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#CC79FF" stop-opacity="0"/>
+          <stop offset=".5" stop-color="#CC79FF" stop-opacity=".6"/>
+          <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="262" fill="url(#skya)"/>
+      <polygon points="0,150 0,45 46,79 91,51 137,1 183,37 229,53 274,15 320,10 320,150" fill="#311f44" transform="translate(0 56)"/>
+      <polygon points="0,122 0,17 53,34 107,77 160,87 213,51 267,6 320,24 320,122" fill="#1d142c" transform="translate(0 140)"/>
+      <!-- The floor: one lit edge, faded at both ends, and dark below it — so the
+           fighters have something to stand on instead of hanging in a gradient. -->
+      <rect y="262" width="320" height="38" fill="#05060F"/>
+      <rect y="234" width="320" height="28" fill="url(#flra)"/>
+      <rect y="260" width="320" height="2" fill="url(#edga)"/>
+    </svg>
+    <div class="duel">
+      <div class="fighter hero"><div class="art"><svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Void Refining, realm 6">
+    <defs>
+      <radialGradient id="gr6">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="mr6">
+        <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".62" stop-color="#fff" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="kr6"><rect width="200" height="200" fill="url(#mr6)"/></mask>
+      <filter id="br6" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="2.6" result="bl"/>
+        <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="100" cy="100" r="100" fill="url(#gr6)"/>
+    <circle cx="100" cy="84" r="34.0" fill="none" stroke="#CC79FF" stroke-width="1.5" stroke-opacity="0.75"/>
+    <!-- The aura is masked by a radial gradient: scaled to 2x it hits the edge of the
+         viewBox, and without the mask the icons show as hard cropped blocks instead of
+         as glow. -->
+    <g mask="url(#kr6)"><g transform="translate(-105.0 -105.0) scale(0.8008)" fill="#CC79FF" opacity="0.11"><path d="M263.594 20.625c-13.394 0-25.824 7.217-35.47 20.188-9.644 12.97-15.968 31.547-15.968 52.25 0 20.702 6.324 39.248 15.97 52.218 9.644 12.972 22.074 20.19 35.468 20.19 13.393 0 25.855-7.218 35.5-20.19 9.645-12.97 15.97-31.516 15.97-52.218-.002-20.702-6.325-39.28-15.97-52.25-9.645-12.97-22.107-20.187-35.5-20.187zM153.188 25l-16.563 8.625 60.5 116.063c2.778-1.51 5.673-2.87 8.72-4.032-7.715-13.314-12.578-29.542-13.845-46.187L153.187 25zM374 25l-39.313 75.438c-1.316 15.668-5.802 31.003-12.843 43.78 3.2 1.052 6.26 2.264 9.187 3.657l59.564-114.25L374 25zM102.687 64.844l-13.874 12.53 84.124 93.19c3.88-4.996 8.217-9.51 13.063-13.44l-83.313-92.28zm321.844 0l-81.467 90.22c4.357 3.202 8.283 6.853 11.78 10.874.59.677 1.185 1.366 1.75 2.062l81.813-90.625-13.875-12.53zM63.064 117.688L53 133.438l103.875 66.406c2.283-5.967 4.938-11.697 7.97-17.063L63.062 117.688zm401.093 0l-98.875 63.25c3.01 5.416 5.56 11.208 7.72 17.25l101.22-64.75-10.064-15.75zm-153.28 42.78c-12.165 14.36-28.78 23.688-47.282 23.688-18.056 0-34.3-8.885-46.375-22.656-25.124 6.894-38.6 27.533-46.94 57.344-8.19 29.287-9.914 66.253-10.155 101.562h26l-3.5-67.72 18.688-.936 4.125 80 11.218 163.78h38V362.97h18.688v132.56h40.812l9.97-164.467 4.093-79.313 18.655.938-3.5 67.718h23.813c-.02-35.714-.425-73.276-7.844-102.812-4.032-16.05-10.072-29.544-18.625-39.375-7.528-8.652-16.887-14.755-29.845-17.75zM36.968 180.032l-5.314 17.907 116.28 34.532c1.187-6.24 2.613-12.345 4.25-18.25L36.97 180.03zm453.28 0l-112.688 33.44c1.485 5.964 2.715 12.113 3.72 18.405l114.28-33.938-5.312-17.906zM26.22 247.688v18.688h117.218c.54-6.298 1.224-12.532 2.062-18.688H26.22zm357.124 0c.645 6.16 1.106 12.402 1.47 18.688h116.155v-18.688H383.343zm-241.03 35.594L31.654 316.126l5.313 17.938 104.593-31.032c.148-6.562.41-13.16.75-19.75zm243.217.19c.185 6.568.27 13.104.314 19.624l104.406 30.97 5.313-17.94L385.53 283.47zm-244.186 40.686L53 380.656l10.063 15.72 89.562-57.282h-11.313v-9.344c0-1.844.026-3.733.032-5.594zm244.562.03v14.908h-11.312l89.562 57.28 10.063-15.718-88.314-56.47zm-208.97 14.908L88.814 436.72l13.876 12.53 85.562-94.78-1.063-15.376h-10.25zm165.44 0l-1.095 17.937 83.25 92.22 13.876-12.53-88.125-97.626h-7.905zm-152.5 39.156l-53.25 102.188 16.56 8.656 39.158-75.125-2.47-35.72zm149.843 4.594l-2.19 36.25 36.47 70 16.594-8.656-50.875-97.594z"/></g><g transform="translate(-79.0 -79.0) scale(0.6992)" fill="#CC79FF" opacity="0.14"><path d="M256 23.545c-33.5 0-63.525 15.197-83.55 39.053L92.7 38.313l60.85 56.867c-2.134 5.82-3.785 11.872-4.905 18.105L18.498 132.592 148.635 151.9c1.118 6.238 2.768 12.293 4.902 18.118L92.7 226.873l78.898-24.025c1.62-2.674 3.35-5.246 5.203-7.702 2.154-2.85 4.502-5.53 7.02-8.027-11.435-15.14-18.21-34.01-18.21-54.503 0-50.03 40.357-90.39 90.39-90.39 50.03 0 90.39 40.36 90.39 90.39 0 20.494-6.774 39.36-18.208 54.5 2.518 2.497 4.868 5.177 7.02 8.03 1.855 2.455 3.585 5.028 5.204 7.703l78.895 24.023-60.837-56.857c2.133-5.824 3.784-11.88 4.902-18.116l130.137-19.308-130.147-19.307c-1.12-6.232-2.77-12.283-4.906-18.103l60.85-56.87-79.75 24.286C319.52 38.743 289.5 23.545 256 23.545zm.002 45.182c-23.1 0-42.257 23.548-45.89 54.412h36.544v18.686H209.85c1.698 19.243 9.403 35.878 20.408 46.133H219.94c-11.947 2.392-20.787 8.595-28.223 18.446-7.56 10.013-13.304 23.86-17.34 39.875-7.365 29.223-8.98 65.15-9.22 97.33h39.972l10.32 149.056h81.103l10.322-149.057h39.973c-.24-32.18-1.856-68.107-9.22-97.33-4.037-16.014-9.782-29.86-17.34-39.874-7.437-9.85-16.278-16.054-28.226-18.447h-10.316c11.005-10.256 18.71-26.89 20.408-46.134h-36.81V123.14h36.547c-3.633-30.865-22.79-54.413-45.888-54.413z"/></g><g transform="translate(-53.0 -53.0) scale(0.5977)" fill="#CC79FF" opacity="0.18"><path d="M237.4 20.73c-6.1 42.1-26.8 64.2-63.9 64 31.6 4.5 63.8 8 63.9 64.07-.6-46.1 24.5-63.07 64.1-64.07-38-1.5-64.9-16.3-64.1-64zm127.8 11.58c-9.1 14.25-20.8 21.29-38.9 10.28 14.9 11.79 18.6 24.76 10.2 38.97 8.9-11.18 17.5-22.73 39-10.27-17.8-10.06-18.8-23.57-10.3-38.98zM59.68 41.69c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM431 66.28c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM120.3 116.4c-15.8 53.7-47.76 48-79.35 43.4C76.6 170 90.3 197.1 84.28 239.2c12.66-46 42.62-52.6 79.42-43.4-37.6-12.1-56.9-35.4-43.4-79.4zm187 5c-8.8 61.6-39.3 94-93.6 93.7 46.2 6.5 93.6 11.7 93.6 93.7-.8-67.3 35.9-92.2 93.8-93.7-55.5-2.2-94.9-23.9-93.8-93.7zm136.8 38.3c-13.1 21.6-29.5 28.8-49.7 20.1 16.3 9.7 33 19.1 20.1 49.6 10.3-25.2 27.9-28.7 49.7-20-20.3-9.7-31.6-23.9-20.1-49.7zM50.7 243.2c9.16 16.7 7.63 30.1-5.61 40 12.46-6.9 24.85-14.3 39.91 5.6-12.57-16.2-8.2-29 5.61-40-13.92 9.7-27.47 11.6-39.91-5.6zm137.2.3c11.4 26.8-.5 41.3-21.7 50.9 22.7-8.5 40.8-4.5 50.9 21.7-12.7-31.8 4.8-41.2 21.7-50.9-21 8.5-37.8.9-50.9-21.7zm228 12.6c-26.6 64.7-68.7 91.7-127.8 76.4 48.6 19.8 98.8 38.5 76.4 127.9 17.5-73.7 64.4-90.7 127.9-76.5-59.9-17.5-96.9-52-76.5-127.8zM99.94 295.5c15.66 57.8.86 98.1-47.32 118.5 43.46-11.8 87.38-25.2 118.68 47.4-26.4-59.3-3.4-95.4 47.3-118.8-50 19.2-93.1 15-118.66-47.1zm169.36 61c-21.8 20.6-43 23.6-63.2 7.3 15.5 16.3 31.6 32.4 7.2 63.3 19.8-25.6 41.2-24.1 63.3-7.3-20.2-17.4-28.6-37.5-7.3-63.3zM443.2 404c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5zm-169.7 36c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5z"/></g></g>
+    <g filter="url(#br6)" transform="translate(54.0 62.0) scale(0.1797)" fill="#eccdff"><path d="M263.375 19.375c-11.768 0-22.676 6.137-31.156 17.22-7.267 9.494-12.397 22.54-13.72 37.25 11.14-4.926 22.473-7.91 33.813-9V83.25c-10.965 1.377-22.008 5.008-33.157 11.03 1.968 12.487 6.703 23.502 13.063 31.814 8.48 11.082 19.387 17.22 31.155 17.22s22.707-6.138 31.188-17.22c6.167-8.06 10.783-18.667 12.843-30.688-12.07-6.832-24.194-10.997-36.406-12.344V64.75c12.676 1.087 25.22 4.516 37.344 10.188-1.155-15.158-6.336-28.614-13.78-38.344-8.482-11.082-19.42-17.22-31.19-17.22zm-46.594 117.25c-10.442 4.8-18.39 11.182-22.593 18.47l-.375-.095-41.625 64.438-50.656-21.97c-29.375-16.118-61.574 24-30.624 41.688l94.47 44.063 38.03-50.064c18.7 33.703 16.77 67.43-10.97 101.156-8.344-.642-16.37-.958-23.967-.906-40.312.278-68.942 10.254-73.907 28.78l.03.002c-4.44 16.58 10.992 36.67 39.126 55.28 55.675 29.297 95.38 38.468 156.968 42.344h1.562l.438.125c.424.026.823.07 1.25.094l-.032.314 92.063 28.72-22.19-53.72L183.595 375.5l5.875-17.72 71.81 23.845 71.845-23.844L339 375.5l-48.094 15.97 94.438 31.374c33.494-20.046 52.528-42.468 47.656-60.656-5.95-22.21-45.925-32.107-99.25-27.782-26.392-33.215-26.196-66.41-9.53-99.625L361 283.22l94.47-44.064c30.95-17.687-1.25-57.806-30.626-41.687l-50.688 21.968L332.562 155h-.062c-4.217-7.246-12.135-13.596-22.53-18.375-.2.27-.392.547-.595.813-11.268 14.725-27.633 24.562-46 24.562s-34.732-9.837-46-24.563c-.203-.265-.394-.543-.594-.812zm-63.686 311l-16.72 40.5 69.876-21.78c-17.624-4.574-34.93-10.634-53.156-18.72z"/></g>
+  </svg></div></div>
+      <div class="gap"><i class="streak"></i><b class="mark"></b></div>
+      <div class="fighter foe"><div class="art"><svg viewBox="0 0 512 512" width="84" height="84" aria-hidden="true"><g fill="#CC79FF" opacity="1"><path d="M103.12 15.697l-30.364 10.07c2.132 3.412 3.902 7.116 5.223 11.098.693 2.094 1.228 4.2 1.643 6.31l29.38-9.74-5.884-17.738zm-80.975 3.25c-1.438.126-2.884.317-4.336.567v129.812c4.642 3.457 10.744 5.995 17.336 7.317 1.792-2.69 3.824-5.25 6.067-7.664 3.214 5.766 6.57 11.448 10.055 17.047-8.84 12.366-9.92 28.358-1.98 40.64 5.96 9.215 15.91 14.655 26.802 15.536 1.91-4.064 4.302-7.973 7.166-11.642 4.07 4.942 8.252 9.784 12.54 14.526-10.71 16.322-8.597 37.015 4.847 48.705 8.243 7.17 19.245 9.643 29.908 7.52.592-6.093 2.13-12.2 4.65-18.09 5.02 4.246 10.14 8.37 15.355 12.362-5.245 17.902 1.975 36.393 17.36 44.117 8.827 4.43 18.888 4.585 27.98 1.103-.452-4.9-.29-9.918.49-14.932 5.874 3.315 11.832 6.476 17.87 9.472-.06 15.63 8.735 29.594 22.772 34.785 9.716 3.593 20.26 2.36 29.19-2.684-.755-3.713-1.154-7.538-1.197-11.418 6.297 2.03 12.652 3.897 19.064 5.577 2.214 15.41 12.886 27.908 27.47 31.04 10.786 2.314 21.726-.918 30.067-8.074-1.587-4.19-2.685-8.627-3.227-13.252 6.336.617 12.71 1.045 19.115 1.305 3.928 18.824 21.574 32.055 42.64 30.36 4.906-.397 9.55-1.593 13.815-3.427 50.857 41.905 57.015 94.14-26.582 113.084 94.115 2.325 106.816-72.573 45.854-129.438 4.343-6.848 6.654-14.918 6.168-23.337-.187-3.25-.78-6.37-1.713-9.326 73.82-44.358 76.68-122.575-17.778-137.824 78.128 32.182 63.177 84.56 2.39 117.61-7.312-4.797-16.425-7.286-26.294-6.49-14.564 1.172-26.844 9.335-33.633 20.653-6.755-.22-13.48-.655-20.166-1.31 1.882-4.65 4.353-9.032 7.325-13.053-4.956-7.48-12.43-12.924-21.377-14.844-2.396-.515-4.8-.756-7.18-.74-12.55.08-24.468 7.27-31.345 18.964-6.12-1.66-12.19-3.492-18.203-5.496 2.96-5.945 6.824-11.273 11.367-15.8-3.922-7.43-10.26-13.31-18.326-16.294-4.022-1.488-8.19-2.147-12.324-2.053-.59.015-1.18.043-1.77.087-9.92.743-19.512 5.808-26.358 14.192-5.603-2.85-11.136-5.844-16.59-8.988 3.493-4.782 7.612-8.966 12.187-12.437-3.116-7.598-8.68-13.954-16.203-17.73-4.38-2.2-9.066-3.347-13.787-3.518-.443-.016-.885-.025-1.328-.024-7.363.017-14.74 2.405-21.13 6.832-5.063-3.875-10.032-7.883-14.903-12.015 3.476-2.892 7.23-5.365 11.185-7.365-1.5-7.214-5.16-13.83-10.887-18.81-5.55-4.826-12.35-7.527-19.456-8.13-.74-.063-1.482-.104-2.228-.12-4.187-.098-8.445.522-12.583 1.852-4.45-4.82-8.78-9.755-12.984-14.8 4.905-2.315 10.048-3.945 15.27-4.84 1.405-8.398-.12-17.03-4.85-24.344-6.653-10.292-18.283-15.88-30.647-15.662-3.625.065-7.313.632-10.957 1.722-3.356-5.388-6.58-10.86-9.665-16.41 6.697-2.53 13.666-3.813 20.55-3.895.234-.003.468.012.704.012 2.56-8.096 2.275-16.83-1.353-24.714-5.758-12.515-18.612-20.043-32.78-20.168-.946-.008-1.896.016-2.85.074-2.167.132-4.355.447-6.544.934-2.233-5.84-4.31-11.743-6.24-17.7 5.77-1.484 11.626-2.09 17.37-1.873 1.985.076 3.956.254 5.906.524 3.1-7.53 3.635-15.884 1.01-23.8-4.48-13.518-17.1-22.556-31.787-23.8h-6.308zm101.837 54.176L94.928 86.49c2.497 3.156 4.662 6.643 6.416 10.453.922 2.004 1.69 4.04 2.336 6.09L131.793 90.1l-7.81-16.977zm26.405 53.55l-26.87 17.372c2.95 2.786 5.613 5.958 7.91 9.512 1.18 1.822 2.213 3.696 3.134 5.6l25.973-16.792-10.146-15.693zm25.342 42.343l-20.97 24.113c3.544 1.84 6.923 4.12 10.064 6.852 1.688 1.468 3.242 3.03 4.692 4.66l20.314-23.363-14.1-12.264zm38.915 30.623l-14.313 28.51c3.895.907 7.74 2.263 11.465 4.133 1.996 1.002 3.886 2.13 5.69 3.346l13.86-27.607-16.702-8.384zm-186.46 6.048l-10.376 6.708v22.254l19.612-12.68c-1.36-1.623-2.646-3.334-3.824-5.157-2.3-3.555-4.085-7.29-5.414-11.125zM270 225.494l-11.102 30.02c4.038.46 8.078 1.403 12.053 2.873 2.03.75 3.976 1.627 5.85 2.597l10.727-29.007L270 225.494zm56.537 19.194l-6.695 31.195c.375-.01.75-.03 1.127-.03 3.665-.02 7.383.353 11.11 1.153 2.15.46 4.23 1.065 6.254 1.773l6.477-30.17-18.273-3.923zM80.203 278.865l-21.912 25.2 14.103 12.263 21.25-24.437c-1.813-1.21-3.577-2.53-5.264-3.997-3.144-2.734-5.86-5.772-8.177-9.028zm69.164 50.81L134.35 359.59l16.703 8.385 14.56-29.008c-2.053-.722-4.086-1.565-6.082-2.567-3.724-1.87-7.11-4.142-10.163-6.724zm70.158 32.305l-11.6 31.374 17.526 6.482 11.224-30.348c-2.053-.482-4.1-1.082-6.127-1.832-3.98-1.47-7.653-3.396-11.022-5.676zm76.487 24.928l-7.033 32.764 18.27 3.922 6.81-31.733c-2.134-.183-4.278-.487-6.427-.948-4.11-.882-7.99-2.25-11.62-4.004z"/></g></svg></div></div>
+    </div>
+  </div>
+  <div class="feet">
+    <div class="who">
+      <span class="nm"><b class="cjk" style="color:#CC79FF">煉虛</b> 力 411k</span>
+      <span class="bar"><i class="hp p"></i></span>
+    </div>
+    <div class="who r">
+      <span class="nm"><b class="cjk" style="color:#CC79FF">蜈蚣</b> 力 445k</span>
+      <span class="bar"><i class="hp b"></i></span>
+    </div>
+  </div>
+</div></div>
+  </section><section class="prop">
+    <div class="said">
+      <p class="tag">Proposta 2</p>
+      <div class="title">
+        <span class="han cjk">境</span>
+        <h2>Dentro do Reino</h2>
+      </div>
+      <p class="idea">O ecrã todo vira o sítio onde estás. A besta é maior do que tu.</p>
+      <p class="says">Sem lista por trás, sem caixa: montanhas, névoa e chão, na cor do reino. A
+      besta ocupa o cimo e tu estás pequeno em baixo — a escala diz sozinha o que uma
+      barra diria. <b>Não há barras nenhumas</b>: a besta desfaz-se à medida que perde,
+      e a tua aura apaga-se quando levas. Só o número do golpe aparece.</p>
+      <p class="gives">A mais imersiva, e a mais dramática. Perde a leitura exacta da vida.</p>
+    </div>
+    <div class="phone"><div class="win b" data-demo="b">
+  <svg class="land" viewBox="0 0 320 480" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="skyb" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#05060F"/>
+        <stop offset=".5" stop-color="#2d1d3f"/>
+        <stop offset=".78" stop-color="#8852ad"/>
+        <stop offset="1" stop-color="#51326a"/>
+      </linearGradient>
+      <radialGradient id="glowb" cx=".5" cy="1" r=".75">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="edgb" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity="0"/>
+        <stop offset=".5" stop-color="#CC79FF" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="480" fill="url(#skyb)"/>
+    <ellipse cx="160" cy="366" rx="190" ry="86" fill="url(#glowb)"/>
+    <polygon points="0,128 0,44 40,75 80,19 120,18 160,61 200,71 240,56 280,30 320,48 320,128" fill="#39244d" transform="translate(0 240)"/>
+    <polygon points="0,104 0,27 53,48 107,13 160,53 213,48 267,25 320,15 320,104" fill="#211631" transform="translate(0 292)"/>
+    <!-- The near ridge has to reach the floor exactly. Left eight pixels short, the lit
+         bottom of the sky gradient showed through as a bright bar across the window. -->
+    <polygon points="0,108 0,8 64,20 128,37 192,18 256,69 320,62 320,108" fill="#07091A" transform="translate(0 330)"/>
+    <rect y="438" width="320" height="42" fill="#05060F"/>
+  </svg>
+  <div class="mist"></div>
+  <div class="looming"><div class="art"><svg viewBox="0 0 512 512" width="178" height="178" aria-hidden="true"><g fill="#CC79FF" opacity="1"><path d="M103.12 15.697l-30.364 10.07c2.132 3.412 3.902 7.116 5.223 11.098.693 2.094 1.228 4.2 1.643 6.31l29.38-9.74-5.884-17.738zm-80.975 3.25c-1.438.126-2.884.317-4.336.567v129.812c4.642 3.457 10.744 5.995 17.336 7.317 1.792-2.69 3.824-5.25 6.067-7.664 3.214 5.766 6.57 11.448 10.055 17.047-8.84 12.366-9.92 28.358-1.98 40.64 5.96 9.215 15.91 14.655 26.802 15.536 1.91-4.064 4.302-7.973 7.166-11.642 4.07 4.942 8.252 9.784 12.54 14.526-10.71 16.322-8.597 37.015 4.847 48.705 8.243 7.17 19.245 9.643 29.908 7.52.592-6.093 2.13-12.2 4.65-18.09 5.02 4.246 10.14 8.37 15.355 12.362-5.245 17.902 1.975 36.393 17.36 44.117 8.827 4.43 18.888 4.585 27.98 1.103-.452-4.9-.29-9.918.49-14.932 5.874 3.315 11.832 6.476 17.87 9.472-.06 15.63 8.735 29.594 22.772 34.785 9.716 3.593 20.26 2.36 29.19-2.684-.755-3.713-1.154-7.538-1.197-11.418 6.297 2.03 12.652 3.897 19.064 5.577 2.214 15.41 12.886 27.908 27.47 31.04 10.786 2.314 21.726-.918 30.067-8.074-1.587-4.19-2.685-8.627-3.227-13.252 6.336.617 12.71 1.045 19.115 1.305 3.928 18.824 21.574 32.055 42.64 30.36 4.906-.397 9.55-1.593 13.815-3.427 50.857 41.905 57.015 94.14-26.582 113.084 94.115 2.325 106.816-72.573 45.854-129.438 4.343-6.848 6.654-14.918 6.168-23.337-.187-3.25-.78-6.37-1.713-9.326 73.82-44.358 76.68-122.575-17.778-137.824 78.128 32.182 63.177 84.56 2.39 117.61-7.312-4.797-16.425-7.286-26.294-6.49-14.564 1.172-26.844 9.335-33.633 20.653-6.755-.22-13.48-.655-20.166-1.31 1.882-4.65 4.353-9.032 7.325-13.053-4.956-7.48-12.43-12.924-21.377-14.844-2.396-.515-4.8-.756-7.18-.74-12.55.08-24.468 7.27-31.345 18.964-6.12-1.66-12.19-3.492-18.203-5.496 2.96-5.945 6.824-11.273 11.367-15.8-3.922-7.43-10.26-13.31-18.326-16.294-4.022-1.488-8.19-2.147-12.324-2.053-.59.015-1.18.043-1.77.087-9.92.743-19.512 5.808-26.358 14.192-5.603-2.85-11.136-5.844-16.59-8.988 3.493-4.782 7.612-8.966 12.187-12.437-3.116-7.598-8.68-13.954-16.203-17.73-4.38-2.2-9.066-3.347-13.787-3.518-.443-.016-.885-.025-1.328-.024-7.363.017-14.74 2.405-21.13 6.832-5.063-3.875-10.032-7.883-14.903-12.015 3.476-2.892 7.23-5.365 11.185-7.365-1.5-7.214-5.16-13.83-10.887-18.81-5.55-4.826-12.35-7.527-19.456-8.13-.74-.063-1.482-.104-2.228-.12-4.187-.098-8.445.522-12.583 1.852-4.45-4.82-8.78-9.755-12.984-14.8 4.905-2.315 10.048-3.945 15.27-4.84 1.405-8.398-.12-17.03-4.85-24.344-6.653-10.292-18.283-15.88-30.647-15.662-3.625.065-7.313.632-10.957 1.722-3.356-5.388-6.58-10.86-9.665-16.41 6.697-2.53 13.666-3.813 20.55-3.895.234-.003.468.012.704.012 2.56-8.096 2.275-16.83-1.353-24.714-5.758-12.515-18.612-20.043-32.78-20.168-.946-.008-1.896.016-2.85.074-2.167.132-4.355.447-6.544.934-2.233-5.84-4.31-11.743-6.24-17.7 5.77-1.484 11.626-2.09 17.37-1.873 1.985.076 3.956.254 5.906.524 3.1-7.53 3.635-15.884 1.01-23.8-4.48-13.518-17.1-22.556-31.787-23.8h-6.308zm101.837 54.176L94.928 86.49c2.497 3.156 4.662 6.643 6.416 10.453.922 2.004 1.69 4.04 2.336 6.09L131.793 90.1l-7.81-16.977zm26.405 53.55l-26.87 17.372c2.95 2.786 5.613 5.958 7.91 9.512 1.18 1.822 2.213 3.696 3.134 5.6l25.973-16.792-10.146-15.693zm25.342 42.343l-20.97 24.113c3.544 1.84 6.923 4.12 10.064 6.852 1.688 1.468 3.242 3.03 4.692 4.66l20.314-23.363-14.1-12.264zm38.915 30.623l-14.313 28.51c3.895.907 7.74 2.263 11.465 4.133 1.996 1.002 3.886 2.13 5.69 3.346l13.86-27.607-16.702-8.384zm-186.46 6.048l-10.376 6.708v22.254l19.612-12.68c-1.36-1.623-2.646-3.334-3.824-5.157-2.3-3.555-4.085-7.29-5.414-11.125zM270 225.494l-11.102 30.02c4.038.46 8.078 1.403 12.053 2.873 2.03.75 3.976 1.627 5.85 2.597l10.727-29.007L270 225.494zm56.537 19.194l-6.695 31.195c.375-.01.75-.03 1.127-.03 3.665-.02 7.383.353 11.11 1.153 2.15.46 4.23 1.065 6.254 1.773l6.477-30.17-18.273-3.923zM80.203 278.865l-21.912 25.2 14.103 12.263 21.25-24.437c-1.813-1.21-3.577-2.53-5.264-3.997-3.144-2.734-5.86-5.772-8.177-9.028zm69.164 50.81L134.35 359.59l16.703 8.385 14.56-29.008c-2.053-.722-4.086-1.565-6.082-2.567-3.724-1.87-7.11-4.142-10.163-6.724zm70.158 32.305l-11.6 31.374 17.526 6.482 11.224-30.348c-2.053-.482-4.1-1.082-6.127-1.832-3.98-1.47-7.653-3.396-11.022-5.676zm76.487 24.928l-7.033 32.764 18.27 3.922 6.81-31.733c-2.134-.183-4.278-.487-6.427-.948-4.11-.882-7.99-2.25-11.62-4.004z"/></g></svg></div></div>
+  <div class="small"><div class="art"><svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Void Refining, realm 6">
+    <defs>
+      <radialGradient id="gr6">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="mr6">
+        <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".62" stop-color="#fff" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="kr6"><rect width="200" height="200" fill="url(#mr6)"/></mask>
+      <filter id="br6" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="2.6" result="bl"/>
+        <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="100" cy="100" r="100" fill="url(#gr6)"/>
+    <circle cx="100" cy="84" r="34.0" fill="none" stroke="#CC79FF" stroke-width="1.5" stroke-opacity="0.75"/>
+    <!-- The aura is masked by a radial gradient: scaled to 2x it hits the edge of the
+         viewBox, and without the mask the icons show as hard cropped blocks instead of
+         as glow. -->
+    <g mask="url(#kr6)"><g transform="translate(-105.0 -105.0) scale(0.8008)" fill="#CC79FF" opacity="0.11"><path d="M263.594 20.625c-13.394 0-25.824 7.217-35.47 20.188-9.644 12.97-15.968 31.547-15.968 52.25 0 20.702 6.324 39.248 15.97 52.218 9.644 12.972 22.074 20.19 35.468 20.19 13.393 0 25.855-7.218 35.5-20.19 9.645-12.97 15.97-31.516 15.97-52.218-.002-20.702-6.325-39.28-15.97-52.25-9.645-12.97-22.107-20.187-35.5-20.187zM153.188 25l-16.563 8.625 60.5 116.063c2.778-1.51 5.673-2.87 8.72-4.032-7.715-13.314-12.578-29.542-13.845-46.187L153.187 25zM374 25l-39.313 75.438c-1.316 15.668-5.802 31.003-12.843 43.78 3.2 1.052 6.26 2.264 9.187 3.657l59.564-114.25L374 25zM102.687 64.844l-13.874 12.53 84.124 93.19c3.88-4.996 8.217-9.51 13.063-13.44l-83.313-92.28zm321.844 0l-81.467 90.22c4.357 3.202 8.283 6.853 11.78 10.874.59.677 1.185 1.366 1.75 2.062l81.813-90.625-13.875-12.53zM63.064 117.688L53 133.438l103.875 66.406c2.283-5.967 4.938-11.697 7.97-17.063L63.062 117.688zm401.093 0l-98.875 63.25c3.01 5.416 5.56 11.208 7.72 17.25l101.22-64.75-10.064-15.75zm-153.28 42.78c-12.165 14.36-28.78 23.688-47.282 23.688-18.056 0-34.3-8.885-46.375-22.656-25.124 6.894-38.6 27.533-46.94 57.344-8.19 29.287-9.914 66.253-10.155 101.562h26l-3.5-67.72 18.688-.936 4.125 80 11.218 163.78h38V362.97h18.688v132.56h40.812l9.97-164.467 4.093-79.313 18.655.938-3.5 67.718h23.813c-.02-35.714-.425-73.276-7.844-102.812-4.032-16.05-10.072-29.544-18.625-39.375-7.528-8.652-16.887-14.755-29.845-17.75zM36.968 180.032l-5.314 17.907 116.28 34.532c1.187-6.24 2.613-12.345 4.25-18.25L36.97 180.03zm453.28 0l-112.688 33.44c1.485 5.964 2.715 12.113 3.72 18.405l114.28-33.938-5.312-17.906zM26.22 247.688v18.688h117.218c.54-6.298 1.224-12.532 2.062-18.688H26.22zm357.124 0c.645 6.16 1.106 12.402 1.47 18.688h116.155v-18.688H383.343zm-241.03 35.594L31.654 316.126l5.313 17.938 104.593-31.032c.148-6.562.41-13.16.75-19.75zm243.217.19c.185 6.568.27 13.104.314 19.624l104.406 30.97 5.313-17.94L385.53 283.47zm-244.186 40.686L53 380.656l10.063 15.72 89.562-57.282h-11.313v-9.344c0-1.844.026-3.733.032-5.594zm244.562.03v14.908h-11.312l89.562 57.28 10.063-15.718-88.314-56.47zm-208.97 14.908L88.814 436.72l13.876 12.53 85.562-94.78-1.063-15.376h-10.25zm165.44 0l-1.095 17.937 83.25 92.22 13.876-12.53-88.125-97.626h-7.905zm-152.5 39.156l-53.25 102.188 16.56 8.656 39.158-75.125-2.47-35.72zm149.843 4.594l-2.19 36.25 36.47 70 16.594-8.656-50.875-97.594z"/></g><g transform="translate(-79.0 -79.0) scale(0.6992)" fill="#CC79FF" opacity="0.14"><path d="M256 23.545c-33.5 0-63.525 15.197-83.55 39.053L92.7 38.313l60.85 56.867c-2.134 5.82-3.785 11.872-4.905 18.105L18.498 132.592 148.635 151.9c1.118 6.238 2.768 12.293 4.902 18.118L92.7 226.873l78.898-24.025c1.62-2.674 3.35-5.246 5.203-7.702 2.154-2.85 4.502-5.53 7.02-8.027-11.435-15.14-18.21-34.01-18.21-54.503 0-50.03 40.357-90.39 90.39-90.39 50.03 0 90.39 40.36 90.39 90.39 0 20.494-6.774 39.36-18.208 54.5 2.518 2.497 4.868 5.177 7.02 8.03 1.855 2.455 3.585 5.028 5.204 7.703l78.895 24.023-60.837-56.857c2.133-5.824 3.784-11.88 4.902-18.116l130.137-19.308-130.147-19.307c-1.12-6.232-2.77-12.283-4.906-18.103l60.85-56.87-79.75 24.286C319.52 38.743 289.5 23.545 256 23.545zm.002 45.182c-23.1 0-42.257 23.548-45.89 54.412h36.544v18.686H209.85c1.698 19.243 9.403 35.878 20.408 46.133H219.94c-11.947 2.392-20.787 8.595-28.223 18.446-7.56 10.013-13.304 23.86-17.34 39.875-7.365 29.223-8.98 65.15-9.22 97.33h39.972l10.32 149.056h81.103l10.322-149.057h39.973c-.24-32.18-1.856-68.107-9.22-97.33-4.037-16.014-9.782-29.86-17.34-39.874-7.437-9.85-16.278-16.054-28.226-18.447h-10.316c11.005-10.256 18.71-26.89 20.408-46.134h-36.81V123.14h36.547c-3.633-30.865-22.79-54.413-45.888-54.413z"/></g><g transform="translate(-53.0 -53.0) scale(0.5977)" fill="#CC79FF" opacity="0.18"><path d="M237.4 20.73c-6.1 42.1-26.8 64.2-63.9 64 31.6 4.5 63.8 8 63.9 64.07-.6-46.1 24.5-63.07 64.1-64.07-38-1.5-64.9-16.3-64.1-64zm127.8 11.58c-9.1 14.25-20.8 21.29-38.9 10.28 14.9 11.79 18.6 24.76 10.2 38.97 8.9-11.18 17.5-22.73 39-10.27-17.8-10.06-18.8-23.57-10.3-38.98zM59.68 41.69c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM431 66.28c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM120.3 116.4c-15.8 53.7-47.76 48-79.35 43.4C76.6 170 90.3 197.1 84.28 239.2c12.66-46 42.62-52.6 79.42-43.4-37.6-12.1-56.9-35.4-43.4-79.4zm187 5c-8.8 61.6-39.3 94-93.6 93.7 46.2 6.5 93.6 11.7 93.6 93.7-.8-67.3 35.9-92.2 93.8-93.7-55.5-2.2-94.9-23.9-93.8-93.7zm136.8 38.3c-13.1 21.6-29.5 28.8-49.7 20.1 16.3 9.7 33 19.1 20.1 49.6 10.3-25.2 27.9-28.7 49.7-20-20.3-9.7-31.6-23.9-20.1-49.7zM50.7 243.2c9.16 16.7 7.63 30.1-5.61 40 12.46-6.9 24.85-14.3 39.91 5.6-12.57-16.2-8.2-29 5.61-40-13.92 9.7-27.47 11.6-39.91-5.6zm137.2.3c11.4 26.8-.5 41.3-21.7 50.9 22.7-8.5 40.8-4.5 50.9 21.7-12.7-31.8 4.8-41.2 21.7-50.9-21 8.5-37.8.9-50.9-21.7zm228 12.6c-26.6 64.7-68.7 91.7-127.8 76.4 48.6 19.8 98.8 38.5 76.4 127.9 17.5-73.7 64.4-90.7 127.9-76.5-59.9-17.5-96.9-52-76.5-127.8zM99.94 295.5c15.66 57.8.86 98.1-47.32 118.5 43.46-11.8 87.38-25.2 118.68 47.4-26.4-59.3-3.4-95.4 47.3-118.8-50 19.2-93.1 15-118.66-47.1zm169.36 61c-21.8 20.6-43 23.6-63.2 7.3 15.5 16.3 31.6 32.4 7.2 63.3 19.8-25.6 41.2-24.1 63.3-7.3-20.2-17.4-28.6-37.5-7.3-63.3zM443.2 404c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5zm-169.7 36c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5z"/></g></g>
+    <g filter="url(#br6)" transform="translate(54.0 62.0) scale(0.1797)" fill="#eccdff"><path d="M263.375 19.375c-11.768 0-22.676 6.137-31.156 17.22-7.267 9.494-12.397 22.54-13.72 37.25 11.14-4.926 22.473-7.91 33.813-9V83.25c-10.965 1.377-22.008 5.008-33.157 11.03 1.968 12.487 6.703 23.502 13.063 31.814 8.48 11.082 19.387 17.22 31.155 17.22s22.707-6.138 31.188-17.22c6.167-8.06 10.783-18.667 12.843-30.688-12.07-6.832-24.194-10.997-36.406-12.344V64.75c12.676 1.087 25.22 4.516 37.344 10.188-1.155-15.158-6.336-28.614-13.78-38.344-8.482-11.082-19.42-17.22-31.19-17.22zm-46.594 117.25c-10.442 4.8-18.39 11.182-22.593 18.47l-.375-.095-41.625 64.438-50.656-21.97c-29.375-16.118-61.574 24-30.624 41.688l94.47 44.063 38.03-50.064c18.7 33.703 16.77 67.43-10.97 101.156-8.344-.642-16.37-.958-23.967-.906-40.312.278-68.942 10.254-73.907 28.78l.03.002c-4.44 16.58 10.992 36.67 39.126 55.28 55.675 29.297 95.38 38.468 156.968 42.344h1.562l.438.125c.424.026.823.07 1.25.094l-.032.314 92.063 28.72-22.19-53.72L183.595 375.5l5.875-17.72 71.81 23.845 71.845-23.844L339 375.5l-48.094 15.97 94.438 31.374c33.494-20.046 52.528-42.468 47.656-60.656-5.95-22.21-45.925-32.107-99.25-27.782-26.392-33.215-26.196-66.41-9.53-99.625L361 283.22l94.47-44.064c30.95-17.687-1.25-57.806-30.626-41.687l-50.688 21.968L332.562 155h-.062c-4.217-7.246-12.135-13.596-22.53-18.375-.2.27-.392.547-.595.813-11.268 14.725-27.633 24.562-46 24.562s-34.732-9.837-46-24.563c-.203-.265-.394-.543-.594-.812zm-63.686 311l-16.72 40.5 69.876-21.78c-17.624-4.574-34.93-10.634-53.156-18.72z"/></g>
+  </svg></div></div>
+  <div class="tell">
+    <span class="cjk" style="color:#CC79FF">蜈蚣</span>
+    <em>Iron Centipede</em>
+  </div>
+</div></div>
+  </section><section class="prop">
+    <div class="said">
+      <p class="tag">Proposta 3</p>
+      <div class="title">
+        <span class="han cjk">卷</span>
+        <h2>O Rolo</h2>
+      </div>
+      <p class="idea">A luta lê-se, como uma página de um romance wuxia.</p>
+      <p class="says">Os dois ficam pequenos no topo, com a vida num anel à volta da cara. O corpo
+      da janela é um rolo que <b>escreve uma linha por golpe</b> — a mais recente em
+      baixo, as antigas a desvanecer para cima. É a opção mais barata de fazer e a que
+      mais parece o género.</p>
+      <p class="gives">Muita personalidade e texto para ler. Menos acção para ver.</p>
+    </div>
+    <div class="phone"><div class="win c" data-demo="c">
+  <div class="heads">
+    <div class="head">
+      <span class="ring">
+        <svg class="gauge" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none"
+          stroke="var(--line)" stroke-width="2.5"/><circle class="arc p" cx="24" cy="24" r="21" fill="none"
+          stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"
+          transform="rotate(-90 24 24)"/></svg>
+        <span class="art"><svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Void Refining, realm 6">
+    <defs>
+      <radialGradient id="gr6">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="mr6">
+        <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".62" stop-color="#fff" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="kr6"><rect width="200" height="200" fill="url(#mr6)"/></mask>
+      <filter id="br6" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="2.6" result="bl"/>
+        <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="100" cy="100" r="100" fill="url(#gr6)"/>
+    <circle cx="100" cy="84" r="34.0" fill="none" stroke="#CC79FF" stroke-width="1.5" stroke-opacity="0.75"/>
+    <!-- The aura is masked by a radial gradient: scaled to 2x it hits the edge of the
+         viewBox, and without the mask the icons show as hard cropped blocks instead of
+         as glow. -->
+    <g mask="url(#kr6)"><g transform="translate(-105.0 -105.0) scale(0.8008)" fill="#CC79FF" opacity="0.11"><path d="M263.594 20.625c-13.394 0-25.824 7.217-35.47 20.188-9.644 12.97-15.968 31.547-15.968 52.25 0 20.702 6.324 39.248 15.97 52.218 9.644 12.972 22.074 20.19 35.468 20.19 13.393 0 25.855-7.218 35.5-20.19 9.645-12.97 15.97-31.516 15.97-52.218-.002-20.702-6.325-39.28-15.97-52.25-9.645-12.97-22.107-20.187-35.5-20.187zM153.188 25l-16.563 8.625 60.5 116.063c2.778-1.51 5.673-2.87 8.72-4.032-7.715-13.314-12.578-29.542-13.845-46.187L153.187 25zM374 25l-39.313 75.438c-1.316 15.668-5.802 31.003-12.843 43.78 3.2 1.052 6.26 2.264 9.187 3.657l59.564-114.25L374 25zM102.687 64.844l-13.874 12.53 84.124 93.19c3.88-4.996 8.217-9.51 13.063-13.44l-83.313-92.28zm321.844 0l-81.467 90.22c4.357 3.202 8.283 6.853 11.78 10.874.59.677 1.185 1.366 1.75 2.062l81.813-90.625-13.875-12.53zM63.064 117.688L53 133.438l103.875 66.406c2.283-5.967 4.938-11.697 7.97-17.063L63.062 117.688zm401.093 0l-98.875 63.25c3.01 5.416 5.56 11.208 7.72 17.25l101.22-64.75-10.064-15.75zm-153.28 42.78c-12.165 14.36-28.78 23.688-47.282 23.688-18.056 0-34.3-8.885-46.375-22.656-25.124 6.894-38.6 27.533-46.94 57.344-8.19 29.287-9.914 66.253-10.155 101.562h26l-3.5-67.72 18.688-.936 4.125 80 11.218 163.78h38V362.97h18.688v132.56h40.812l9.97-164.467 4.093-79.313 18.655.938-3.5 67.718h23.813c-.02-35.714-.425-73.276-7.844-102.812-4.032-16.05-10.072-29.544-18.625-39.375-7.528-8.652-16.887-14.755-29.845-17.75zM36.968 180.032l-5.314 17.907 116.28 34.532c1.187-6.24 2.613-12.345 4.25-18.25L36.97 180.03zm453.28 0l-112.688 33.44c1.485 5.964 2.715 12.113 3.72 18.405l114.28-33.938-5.312-17.906zM26.22 247.688v18.688h117.218c.54-6.298 1.224-12.532 2.062-18.688H26.22zm357.124 0c.645 6.16 1.106 12.402 1.47 18.688h116.155v-18.688H383.343zm-241.03 35.594L31.654 316.126l5.313 17.938 104.593-31.032c.148-6.562.41-13.16.75-19.75zm243.217.19c.185 6.568.27 13.104.314 19.624l104.406 30.97 5.313-17.94L385.53 283.47zm-244.186 40.686L53 380.656l10.063 15.72 89.562-57.282h-11.313v-9.344c0-1.844.026-3.733.032-5.594zm244.562.03v14.908h-11.312l89.562 57.28 10.063-15.718-88.314-56.47zm-208.97 14.908L88.814 436.72l13.876 12.53 85.562-94.78-1.063-15.376h-10.25zm165.44 0l-1.095 17.937 83.25 92.22 13.876-12.53-88.125-97.626h-7.905zm-152.5 39.156l-53.25 102.188 16.56 8.656 39.158-75.125-2.47-35.72zm149.843 4.594l-2.19 36.25 36.47 70 16.594-8.656-50.875-97.594z"/></g><g transform="translate(-79.0 -79.0) scale(0.6992)" fill="#CC79FF" opacity="0.14"><path d="M256 23.545c-33.5 0-63.525 15.197-83.55 39.053L92.7 38.313l60.85 56.867c-2.134 5.82-3.785 11.872-4.905 18.105L18.498 132.592 148.635 151.9c1.118 6.238 2.768 12.293 4.902 18.118L92.7 226.873l78.898-24.025c1.62-2.674 3.35-5.246 5.203-7.702 2.154-2.85 4.502-5.53 7.02-8.027-11.435-15.14-18.21-34.01-18.21-54.503 0-50.03 40.357-90.39 90.39-90.39 50.03 0 90.39 40.36 90.39 90.39 0 20.494-6.774 39.36-18.208 54.5 2.518 2.497 4.868 5.177 7.02 8.03 1.855 2.455 3.585 5.028 5.204 7.703l78.895 24.023-60.837-56.857c2.133-5.824 3.784-11.88 4.902-18.116l130.137-19.308-130.147-19.307c-1.12-6.232-2.77-12.283-4.906-18.103l60.85-56.87-79.75 24.286C319.52 38.743 289.5 23.545 256 23.545zm.002 45.182c-23.1 0-42.257 23.548-45.89 54.412h36.544v18.686H209.85c1.698 19.243 9.403 35.878 20.408 46.133H219.94c-11.947 2.392-20.787 8.595-28.223 18.446-7.56 10.013-13.304 23.86-17.34 39.875-7.365 29.223-8.98 65.15-9.22 97.33h39.972l10.32 149.056h81.103l10.322-149.057h39.973c-.24-32.18-1.856-68.107-9.22-97.33-4.037-16.014-9.782-29.86-17.34-39.874-7.437-9.85-16.278-16.054-28.226-18.447h-10.316c11.005-10.256 18.71-26.89 20.408-46.134h-36.81V123.14h36.547c-3.633-30.865-22.79-54.413-45.888-54.413z"/></g><g transform="translate(-53.0 -53.0) scale(0.5977)" fill="#CC79FF" opacity="0.18"><path d="M237.4 20.73c-6.1 42.1-26.8 64.2-63.9 64 31.6 4.5 63.8 8 63.9 64.07-.6-46.1 24.5-63.07 64.1-64.07-38-1.5-64.9-16.3-64.1-64zm127.8 11.58c-9.1 14.25-20.8 21.29-38.9 10.28 14.9 11.79 18.6 24.76 10.2 38.97 8.9-11.18 17.5-22.73 39-10.27-17.8-10.06-18.8-23.57-10.3-38.98zM59.68 41.69c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM431 66.28c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM120.3 116.4c-15.8 53.7-47.76 48-79.35 43.4C76.6 170 90.3 197.1 84.28 239.2c12.66-46 42.62-52.6 79.42-43.4-37.6-12.1-56.9-35.4-43.4-79.4zm187 5c-8.8 61.6-39.3 94-93.6 93.7 46.2 6.5 93.6 11.7 93.6 93.7-.8-67.3 35.9-92.2 93.8-93.7-55.5-2.2-94.9-23.9-93.8-93.7zm136.8 38.3c-13.1 21.6-29.5 28.8-49.7 20.1 16.3 9.7 33 19.1 20.1 49.6 10.3-25.2 27.9-28.7 49.7-20-20.3-9.7-31.6-23.9-20.1-49.7zM50.7 243.2c9.16 16.7 7.63 30.1-5.61 40 12.46-6.9 24.85-14.3 39.91 5.6-12.57-16.2-8.2-29 5.61-40-13.92 9.7-27.47 11.6-39.91-5.6zm137.2.3c11.4 26.8-.5 41.3-21.7 50.9 22.7-8.5 40.8-4.5 50.9 21.7-12.7-31.8 4.8-41.2 21.7-50.9-21 8.5-37.8.9-50.9-21.7zm228 12.6c-26.6 64.7-68.7 91.7-127.8 76.4 48.6 19.8 98.8 38.5 76.4 127.9 17.5-73.7 64.4-90.7 127.9-76.5-59.9-17.5-96.9-52-76.5-127.8zM99.94 295.5c15.66 57.8.86 98.1-47.32 118.5 43.46-11.8 87.38-25.2 118.68 47.4-26.4-59.3-3.4-95.4 47.3-118.8-50 19.2-93.1 15-118.66-47.1zm169.36 61c-21.8 20.6-43 23.6-63.2 7.3 15.5 16.3 31.6 32.4 7.2 63.3 19.8-25.6 41.2-24.1 63.3-7.3-20.2-17.4-28.6-37.5-7.3-63.3zM443.2 404c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5zm-169.7 36c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5z"/></g></g>
+    <g filter="url(#br6)" transform="translate(54.0 62.0) scale(0.1797)" fill="#eccdff"><path d="M263.375 19.375c-11.768 0-22.676 6.137-31.156 17.22-7.267 9.494-12.397 22.54-13.72 37.25 11.14-4.926 22.473-7.91 33.813-9V83.25c-10.965 1.377-22.008 5.008-33.157 11.03 1.968 12.487 6.703 23.502 13.063 31.814 8.48 11.082 19.387 17.22 31.155 17.22s22.707-6.138 31.188-17.22c6.167-8.06 10.783-18.667 12.843-30.688-12.07-6.832-24.194-10.997-36.406-12.344V64.75c12.676 1.087 25.22 4.516 37.344 10.188-1.155-15.158-6.336-28.614-13.78-38.344-8.482-11.082-19.42-17.22-31.19-17.22zm-46.594 117.25c-10.442 4.8-18.39 11.182-22.593 18.47l-.375-.095-41.625 64.438-50.656-21.97c-29.375-16.118-61.574 24-30.624 41.688l94.47 44.063 38.03-50.064c18.7 33.703 16.77 67.43-10.97 101.156-8.344-.642-16.37-.958-23.967-.906-40.312.278-68.942 10.254-73.907 28.78l.03.002c-4.44 16.58 10.992 36.67 39.126 55.28 55.675 29.297 95.38 38.468 156.968 42.344h1.562l.438.125c.424.026.823.07 1.25.094l-.032.314 92.063 28.72-22.19-53.72L183.595 375.5l5.875-17.72 71.81 23.845 71.845-23.844L339 375.5l-48.094 15.97 94.438 31.374c33.494-20.046 52.528-42.468 47.656-60.656-5.95-22.21-45.925-32.107-99.25-27.782-26.392-33.215-26.196-66.41-9.53-99.625L361 283.22l94.47-44.064c30.95-17.687-1.25-57.806-30.626-41.687l-50.688 21.968L332.562 155h-.062c-4.217-7.246-12.135-13.596-22.53-18.375-.2.27-.392.547-.595.813-11.268 14.725-27.633 24.562-46 24.562s-34.732-9.837-46-24.563c-.203-.265-.394-.543-.594-.812zm-63.686 311l-16.72 40.5 69.876-21.78c-17.624-4.574-34.93-10.634-53.156-18.72z"/></g>
+  </svg></span>
+      </span>
+      <b class="cjk" style="color:#CC79FF">煉虛</b>
+    </div>
+    <span class="vs cjk">鬥</span>
+    <div class="head r">
+      <span class="ring">
+        <svg class="gauge" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none"
+          stroke="var(--line)" stroke-width="2.5"/><circle class="arc b" cx="24" cy="24" r="21" fill="none"
+          stroke="var(--magenta)" stroke-width="2.5" stroke-linecap="round"
+          transform="rotate(-90 24 24)"/></svg>
+        <span class="art"><svg viewBox="0 0 512 512" width="26" height="26" aria-hidden="true"><g fill="#CC79FF" opacity="1"><path d="M103.12 15.697l-30.364 10.07c2.132 3.412 3.902 7.116 5.223 11.098.693 2.094 1.228 4.2 1.643 6.31l29.38-9.74-5.884-17.738zm-80.975 3.25c-1.438.126-2.884.317-4.336.567v129.812c4.642 3.457 10.744 5.995 17.336 7.317 1.792-2.69 3.824-5.25 6.067-7.664 3.214 5.766 6.57 11.448 10.055 17.047-8.84 12.366-9.92 28.358-1.98 40.64 5.96 9.215 15.91 14.655 26.802 15.536 1.91-4.064 4.302-7.973 7.166-11.642 4.07 4.942 8.252 9.784 12.54 14.526-10.71 16.322-8.597 37.015 4.847 48.705 8.243 7.17 19.245 9.643 29.908 7.52.592-6.093 2.13-12.2 4.65-18.09 5.02 4.246 10.14 8.37 15.355 12.362-5.245 17.902 1.975 36.393 17.36 44.117 8.827 4.43 18.888 4.585 27.98 1.103-.452-4.9-.29-9.918.49-14.932 5.874 3.315 11.832 6.476 17.87 9.472-.06 15.63 8.735 29.594 22.772 34.785 9.716 3.593 20.26 2.36 29.19-2.684-.755-3.713-1.154-7.538-1.197-11.418 6.297 2.03 12.652 3.897 19.064 5.577 2.214 15.41 12.886 27.908 27.47 31.04 10.786 2.314 21.726-.918 30.067-8.074-1.587-4.19-2.685-8.627-3.227-13.252 6.336.617 12.71 1.045 19.115 1.305 3.928 18.824 21.574 32.055 42.64 30.36 4.906-.397 9.55-1.593 13.815-3.427 50.857 41.905 57.015 94.14-26.582 113.084 94.115 2.325 106.816-72.573 45.854-129.438 4.343-6.848 6.654-14.918 6.168-23.337-.187-3.25-.78-6.37-1.713-9.326 73.82-44.358 76.68-122.575-17.778-137.824 78.128 32.182 63.177 84.56 2.39 117.61-7.312-4.797-16.425-7.286-26.294-6.49-14.564 1.172-26.844 9.335-33.633 20.653-6.755-.22-13.48-.655-20.166-1.31 1.882-4.65 4.353-9.032 7.325-13.053-4.956-7.48-12.43-12.924-21.377-14.844-2.396-.515-4.8-.756-7.18-.74-12.55.08-24.468 7.27-31.345 18.964-6.12-1.66-12.19-3.492-18.203-5.496 2.96-5.945 6.824-11.273 11.367-15.8-3.922-7.43-10.26-13.31-18.326-16.294-4.022-1.488-8.19-2.147-12.324-2.053-.59.015-1.18.043-1.77.087-9.92.743-19.512 5.808-26.358 14.192-5.603-2.85-11.136-5.844-16.59-8.988 3.493-4.782 7.612-8.966 12.187-12.437-3.116-7.598-8.68-13.954-16.203-17.73-4.38-2.2-9.066-3.347-13.787-3.518-.443-.016-.885-.025-1.328-.024-7.363.017-14.74 2.405-21.13 6.832-5.063-3.875-10.032-7.883-14.903-12.015 3.476-2.892 7.23-5.365 11.185-7.365-1.5-7.214-5.16-13.83-10.887-18.81-5.55-4.826-12.35-7.527-19.456-8.13-.74-.063-1.482-.104-2.228-.12-4.187-.098-8.445.522-12.583 1.852-4.45-4.82-8.78-9.755-12.984-14.8 4.905-2.315 10.048-3.945 15.27-4.84 1.405-8.398-.12-17.03-4.85-24.344-6.653-10.292-18.283-15.88-30.647-15.662-3.625.065-7.313.632-10.957 1.722-3.356-5.388-6.58-10.86-9.665-16.41 6.697-2.53 13.666-3.813 20.55-3.895.234-.003.468.012.704.012 2.56-8.096 2.275-16.83-1.353-24.714-5.758-12.515-18.612-20.043-32.78-20.168-.946-.008-1.896.016-2.85.074-2.167.132-4.355.447-6.544.934-2.233-5.84-4.31-11.743-6.24-17.7 5.77-1.484 11.626-2.09 17.37-1.873 1.985.076 3.956.254 5.906.524 3.1-7.53 3.635-15.884 1.01-23.8-4.48-13.518-17.1-22.556-31.787-23.8h-6.308zm101.837 54.176L94.928 86.49c2.497 3.156 4.662 6.643 6.416 10.453.922 2.004 1.69 4.04 2.336 6.09L131.793 90.1l-7.81-16.977zm26.405 53.55l-26.87 17.372c2.95 2.786 5.613 5.958 7.91 9.512 1.18 1.822 2.213 3.696 3.134 5.6l25.973-16.792-10.146-15.693zm25.342 42.343l-20.97 24.113c3.544 1.84 6.923 4.12 10.064 6.852 1.688 1.468 3.242 3.03 4.692 4.66l20.314-23.363-14.1-12.264zm38.915 30.623l-14.313 28.51c3.895.907 7.74 2.263 11.465 4.133 1.996 1.002 3.886 2.13 5.69 3.346l13.86-27.607-16.702-8.384zm-186.46 6.048l-10.376 6.708v22.254l19.612-12.68c-1.36-1.623-2.646-3.334-3.824-5.157-2.3-3.555-4.085-7.29-5.414-11.125zM270 225.494l-11.102 30.02c4.038.46 8.078 1.403 12.053 2.873 2.03.75 3.976 1.627 5.85 2.597l10.727-29.007L270 225.494zm56.537 19.194l-6.695 31.195c.375-.01.75-.03 1.127-.03 3.665-.02 7.383.353 11.11 1.153 2.15.46 4.23 1.065 6.254 1.773l6.477-30.17-18.273-3.923zM80.203 278.865l-21.912 25.2 14.103 12.263 21.25-24.437c-1.813-1.21-3.577-2.53-5.264-3.997-3.144-2.734-5.86-5.772-8.177-9.028zm69.164 50.81L134.35 359.59l16.703 8.385 14.56-29.008c-2.053-.722-4.086-1.565-6.082-2.567-3.724-1.87-7.11-4.142-10.163-6.724zm70.158 32.305l-11.6 31.374 17.526 6.482 11.224-30.348c-2.053-.482-4.1-1.082-6.127-1.832-3.98-1.47-7.653-3.396-11.022-5.676zm76.487 24.928l-7.033 32.764 18.27 3.922 6.81-31.733c-2.134-.183-4.278-.487-6.427-.948-4.11-.882-7.99-2.25-11.62-4.004z"/></g></svg></span>
+      </span>
+      <b class="cjk" style="color:#CC79FF">蜈蚣</b>
+    </div>
+  </div>
+  <div class="paper"><div class="lines"></div></div>
+</div></div>
+  </section><section class="prop">
+    <div class="said">
+      <p class="tag">Proposta 4</p>
+      <div class="title">
+        <span class="han cjk">陣</span>
+        <h2>O Círculo</h2>
+      </div>
+      <p class="idea">Um objecto só: o anel é o combate todo.</p>
+      <p class="says">O anel é a vida dos dois — a tua metade cresce de um lado, a da besta do
+      outro, e encontram-se onde uma está a ganhar. Cada golpe risca uma corda através
+      do círculo. É a linguagem que o jogo já tem (o anel do equipamento, as auréolas,
+      a órbita da aura) levada ao combate.</p>
+      <p class="gives">Gráfica, limpa, muito legível de relance. Menos «mundo».</p>
+    </div>
+    <div class="phone"><div class="win d" data-demo="d">
+  <div class="circle">
+    <svg viewBox="0 0 300 300" aria-hidden="true">
+      <circle cx="150" cy="150" r="128" fill="none" stroke="#252A5C" stroke-width="7"/>
+      <!-- The left half is yours and the right half is the beast's. Both are drawn from
+           the bottom upward, so the ring reads as two lives meeting at the floor. -->
+      <path class="arc p" d="M 150 278 A 128 128 0 0 1 150 22" fill="none"
+        stroke="var(--cyan)" stroke-width="7" stroke-linecap="round"/>
+      <path class="arc b" d="M 150 278 A 128 128 0 0 0 150 22" fill="none"
+        stroke="var(--magenta)" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="150" cy="150" r="112" fill="none" stroke="#CC79FF" stroke-opacity=".16" stroke-width="1"/>
+      <g class="spin" style="transform-origin:150px 150px">
+        <circle cx="262.0" cy="150.0" r="2.4" fill="#CC79FF" opacity=".5"/><circle cx="206.0" cy="247.0" r="2.4" fill="#CC79FF" opacity=".5"/><circle cx="94.0" cy="247.0" r="2.4" fill="#CC79FF" opacity=".5"/><circle cx="38.0" cy="150.0" r="2.4" fill="#CC79FF" opacity=".5"/><circle cx="94.0" cy="53.0" r="2.4" fill="#CC79FF" opacity=".5"/><circle cx="206.0" cy="53.0" r="2.4" fill="#CC79FF" opacity=".5"/>
+      </g>
+      <line class="chord" x1="60" y1="150" x2="240" y2="150" stroke="#CC79FF" stroke-width="2"/>
+    </svg>
+    <div class="inner hero"><div class="art"><svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Void Refining, realm 6">
+    <defs>
+      <radialGradient id="gr6">
+        <stop offset="0" stop-color="#CC79FF" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#CC79FF" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="mr6">
+        <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".62" stop-color="#fff" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="kr6"><rect width="200" height="200" fill="url(#mr6)"/></mask>
+      <filter id="br6" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="2.6" result="bl"/>
+        <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="100" cy="100" r="100" fill="url(#gr6)"/>
+    <circle cx="100" cy="84" r="34.0" fill="none" stroke="#CC79FF" stroke-width="1.5" stroke-opacity="0.75"/>
+    <!-- The aura is masked by a radial gradient: scaled to 2x it hits the edge of the
+         viewBox, and without the mask the icons show as hard cropped blocks instead of
+         as glow. -->
+    <g mask="url(#kr6)"><g transform="translate(-105.0 -105.0) scale(0.8008)" fill="#CC79FF" opacity="0.11"><path d="M263.594 20.625c-13.394 0-25.824 7.217-35.47 20.188-9.644 12.97-15.968 31.547-15.968 52.25 0 20.702 6.324 39.248 15.97 52.218 9.644 12.972 22.074 20.19 35.468 20.19 13.393 0 25.855-7.218 35.5-20.19 9.645-12.97 15.97-31.516 15.97-52.218-.002-20.702-6.325-39.28-15.97-52.25-9.645-12.97-22.107-20.187-35.5-20.187zM153.188 25l-16.563 8.625 60.5 116.063c2.778-1.51 5.673-2.87 8.72-4.032-7.715-13.314-12.578-29.542-13.845-46.187L153.187 25zM374 25l-39.313 75.438c-1.316 15.668-5.802 31.003-12.843 43.78 3.2 1.052 6.26 2.264 9.187 3.657l59.564-114.25L374 25zM102.687 64.844l-13.874 12.53 84.124 93.19c3.88-4.996 8.217-9.51 13.063-13.44l-83.313-92.28zm321.844 0l-81.467 90.22c4.357 3.202 8.283 6.853 11.78 10.874.59.677 1.185 1.366 1.75 2.062l81.813-90.625-13.875-12.53zM63.064 117.688L53 133.438l103.875 66.406c2.283-5.967 4.938-11.697 7.97-17.063L63.062 117.688zm401.093 0l-98.875 63.25c3.01 5.416 5.56 11.208 7.72 17.25l101.22-64.75-10.064-15.75zm-153.28 42.78c-12.165 14.36-28.78 23.688-47.282 23.688-18.056 0-34.3-8.885-46.375-22.656-25.124 6.894-38.6 27.533-46.94 57.344-8.19 29.287-9.914 66.253-10.155 101.562h26l-3.5-67.72 18.688-.936 4.125 80 11.218 163.78h38V362.97h18.688v132.56h40.812l9.97-164.467 4.093-79.313 18.655.938-3.5 67.718h23.813c-.02-35.714-.425-73.276-7.844-102.812-4.032-16.05-10.072-29.544-18.625-39.375-7.528-8.652-16.887-14.755-29.845-17.75zM36.968 180.032l-5.314 17.907 116.28 34.532c1.187-6.24 2.613-12.345 4.25-18.25L36.97 180.03zm453.28 0l-112.688 33.44c1.485 5.964 2.715 12.113 3.72 18.405l114.28-33.938-5.312-17.906zM26.22 247.688v18.688h117.218c.54-6.298 1.224-12.532 2.062-18.688H26.22zm357.124 0c.645 6.16 1.106 12.402 1.47 18.688h116.155v-18.688H383.343zm-241.03 35.594L31.654 316.126l5.313 17.938 104.593-31.032c.148-6.562.41-13.16.75-19.75zm243.217.19c.185 6.568.27 13.104.314 19.624l104.406 30.97 5.313-17.94L385.53 283.47zm-244.186 40.686L53 380.656l10.063 15.72 89.562-57.282h-11.313v-9.344c0-1.844.026-3.733.032-5.594zm244.562.03v14.908h-11.312l89.562 57.28 10.063-15.718-88.314-56.47zm-208.97 14.908L88.814 436.72l13.876 12.53 85.562-94.78-1.063-15.376h-10.25zm165.44 0l-1.095 17.937 83.25 92.22 13.876-12.53-88.125-97.626h-7.905zm-152.5 39.156l-53.25 102.188 16.56 8.656 39.158-75.125-2.47-35.72zm149.843 4.594l-2.19 36.25 36.47 70 16.594-8.656-50.875-97.594z"/></g><g transform="translate(-79.0 -79.0) scale(0.6992)" fill="#CC79FF" opacity="0.14"><path d="M256 23.545c-33.5 0-63.525 15.197-83.55 39.053L92.7 38.313l60.85 56.867c-2.134 5.82-3.785 11.872-4.905 18.105L18.498 132.592 148.635 151.9c1.118 6.238 2.768 12.293 4.902 18.118L92.7 226.873l78.898-24.025c1.62-2.674 3.35-5.246 5.203-7.702 2.154-2.85 4.502-5.53 7.02-8.027-11.435-15.14-18.21-34.01-18.21-54.503 0-50.03 40.357-90.39 90.39-90.39 50.03 0 90.39 40.36 90.39 90.39 0 20.494-6.774 39.36-18.208 54.5 2.518 2.497 4.868 5.177 7.02 8.03 1.855 2.455 3.585 5.028 5.204 7.703l78.895 24.023-60.837-56.857c2.133-5.824 3.784-11.88 4.902-18.116l130.137-19.308-130.147-19.307c-1.12-6.232-2.77-12.283-4.906-18.103l60.85-56.87-79.75 24.286C319.52 38.743 289.5 23.545 256 23.545zm.002 45.182c-23.1 0-42.257 23.548-45.89 54.412h36.544v18.686H209.85c1.698 19.243 9.403 35.878 20.408 46.133H219.94c-11.947 2.392-20.787 8.595-28.223 18.446-7.56 10.013-13.304 23.86-17.34 39.875-7.365 29.223-8.98 65.15-9.22 97.33h39.972l10.32 149.056h81.103l10.322-149.057h39.973c-.24-32.18-1.856-68.107-9.22-97.33-4.037-16.014-9.782-29.86-17.34-39.874-7.437-9.85-16.278-16.054-28.226-18.447h-10.316c11.005-10.256 18.71-26.89 20.408-46.134h-36.81V123.14h36.547c-3.633-30.865-22.79-54.413-45.888-54.413z"/></g><g transform="translate(-53.0 -53.0) scale(0.5977)" fill="#CC79FF" opacity="0.18"><path d="M237.4 20.73c-6.1 42.1-26.8 64.2-63.9 64 31.6 4.5 63.8 8 63.9 64.07-.6-46.1 24.5-63.07 64.1-64.07-38-1.5-64.9-16.3-64.1-64zm127.8 11.58c-9.1 14.25-20.8 21.29-38.9 10.28 14.9 11.79 18.6 24.76 10.2 38.97 8.9-11.18 17.5-22.73 39-10.27-17.8-10.06-18.8-23.57-10.3-38.98zM59.68 41.69c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM431 66.28c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.52-.3-20.5 10.9-28.12 28.5-28.52-16.9-.7-28.9-7.3-28.5-28.5zM120.3 116.4c-15.8 53.7-47.76 48-79.35 43.4C76.6 170 90.3 197.1 84.28 239.2c12.66-46 42.62-52.6 79.42-43.4-37.6-12.1-56.9-35.4-43.4-79.4zm187 5c-8.8 61.6-39.3 94-93.6 93.7 46.2 6.5 93.6 11.7 93.6 93.7-.8-67.3 35.9-92.2 93.8-93.7-55.5-2.2-94.9-23.9-93.8-93.7zm136.8 38.3c-13.1 21.6-29.5 28.8-49.7 20.1 16.3 9.7 33 19.1 20.1 49.6 10.3-25.2 27.9-28.7 49.7-20-20.3-9.7-31.6-23.9-20.1-49.7zM50.7 243.2c9.16 16.7 7.63 30.1-5.61 40 12.46-6.9 24.85-14.3 39.91 5.6-12.57-16.2-8.2-29 5.61-40-13.92 9.7-27.47 11.6-39.91-5.6zm137.2.3c11.4 26.8-.5 41.3-21.7 50.9 22.7-8.5 40.8-4.5 50.9 21.7-12.7-31.8 4.8-41.2 21.7-50.9-21 8.5-37.8.9-50.9-21.7zm228 12.6c-26.6 64.7-68.7 91.7-127.8 76.4 48.6 19.8 98.8 38.5 76.4 127.9 17.5-73.7 64.4-90.7 127.9-76.5-59.9-17.5-96.9-52-76.5-127.8zM99.94 295.5c15.66 57.8.86 98.1-47.32 118.5 43.46-11.8 87.38-25.2 118.68 47.4-26.4-59.3-3.4-95.4 47.3-118.8-50 19.2-93.1 15-118.66-47.1zm169.36 61c-21.8 20.6-43 23.6-63.2 7.3 15.5 16.3 31.6 32.4 7.2 63.3 19.8-25.6 41.2-24.1 63.3-7.3-20.2-17.4-28.6-37.5-7.3-63.3zM443.2 404c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5zm-169.7 36c-2.7 18.8-12 28.6-28.5 28.5 14.1 2 28.4 3.6 28.5 28.5-.3-20.5 10.9-28.1 28.5-28.5-16.9-.7-28.9-7.3-28.5-28.5z"/></g></g>
+    <g filter="url(#br6)" transform="translate(54.0 62.0) scale(0.1797)" fill="#eccdff"><path d="M263.375 19.375c-11.768 0-22.676 6.137-31.156 17.22-7.267 9.494-12.397 22.54-13.72 37.25 11.14-4.926 22.473-7.91 33.813-9V83.25c-10.965 1.377-22.008 5.008-33.157 11.03 1.968 12.487 6.703 23.502 13.063 31.814 8.48 11.082 19.387 17.22 31.155 17.22s22.707-6.138 31.188-17.22c6.167-8.06 10.783-18.667 12.843-30.688-12.07-6.832-24.194-10.997-36.406-12.344V64.75c12.676 1.087 25.22 4.516 37.344 10.188-1.155-15.158-6.336-28.614-13.78-38.344-8.482-11.082-19.42-17.22-31.19-17.22zm-46.594 117.25c-10.442 4.8-18.39 11.182-22.593 18.47l-.375-.095-41.625 64.438-50.656-21.97c-29.375-16.118-61.574 24-30.624 41.688l94.47 44.063 38.03-50.064c18.7 33.703 16.77 67.43-10.97 101.156-8.344-.642-16.37-.958-23.967-.906-40.312.278-68.942 10.254-73.907 28.78l.03.002c-4.44 16.58 10.992 36.67 39.126 55.28 55.675 29.297 95.38 38.468 156.968 42.344h1.562l.438.125c.424.026.823.07 1.25.094l-.032.314 92.063 28.72-22.19-53.72L183.595 375.5l5.875-17.72 71.81 23.845 71.845-23.844L339 375.5l-48.094 15.97 94.438 31.374c33.494-20.046 52.528-42.468 47.656-60.656-5.95-22.21-45.925-32.107-99.25-27.782-26.392-33.215-26.196-66.41-9.53-99.625L361 283.22l94.47-44.064c30.95-17.687-1.25-57.806-30.626-41.687l-50.688 21.968L332.562 155h-.062c-4.217-7.246-12.135-13.596-22.53-18.375-.2.27-.392.547-.595.813-11.268 14.725-27.633 24.562-46 24.562s-34.732-9.837-46-24.563c-.203-.265-.394-.543-.594-.812zm-63.686 311l-16.72 40.5 69.876-21.78c-17.624-4.574-34.93-10.634-53.156-18.72z"/></g>
+  </svg></div></div>
+    <div class="inner foe"><div class="art"><svg viewBox="0 0 512 512" width="68" height="68" aria-hidden="true"><g fill="#CC79FF" opacity="1"><path d="M103.12 15.697l-30.364 10.07c2.132 3.412 3.902 7.116 5.223 11.098.693 2.094 1.228 4.2 1.643 6.31l29.38-9.74-5.884-17.738zm-80.975 3.25c-1.438.126-2.884.317-4.336.567v129.812c4.642 3.457 10.744 5.995 17.336 7.317 1.792-2.69 3.824-5.25 6.067-7.664 3.214 5.766 6.57 11.448 10.055 17.047-8.84 12.366-9.92 28.358-1.98 40.64 5.96 9.215 15.91 14.655 26.802 15.536 1.91-4.064 4.302-7.973 7.166-11.642 4.07 4.942 8.252 9.784 12.54 14.526-10.71 16.322-8.597 37.015 4.847 48.705 8.243 7.17 19.245 9.643 29.908 7.52.592-6.093 2.13-12.2 4.65-18.09 5.02 4.246 10.14 8.37 15.355 12.362-5.245 17.902 1.975 36.393 17.36 44.117 8.827 4.43 18.888 4.585 27.98 1.103-.452-4.9-.29-9.918.49-14.932 5.874 3.315 11.832 6.476 17.87 9.472-.06 15.63 8.735 29.594 22.772 34.785 9.716 3.593 20.26 2.36 29.19-2.684-.755-3.713-1.154-7.538-1.197-11.418 6.297 2.03 12.652 3.897 19.064 5.577 2.214 15.41 12.886 27.908 27.47 31.04 10.786 2.314 21.726-.918 30.067-8.074-1.587-4.19-2.685-8.627-3.227-13.252 6.336.617 12.71 1.045 19.115 1.305 3.928 18.824 21.574 32.055 42.64 30.36 4.906-.397 9.55-1.593 13.815-3.427 50.857 41.905 57.015 94.14-26.582 113.084 94.115 2.325 106.816-72.573 45.854-129.438 4.343-6.848 6.654-14.918 6.168-23.337-.187-3.25-.78-6.37-1.713-9.326 73.82-44.358 76.68-122.575-17.778-137.824 78.128 32.182 63.177 84.56 2.39 117.61-7.312-4.797-16.425-7.286-26.294-6.49-14.564 1.172-26.844 9.335-33.633 20.653-6.755-.22-13.48-.655-20.166-1.31 1.882-4.65 4.353-9.032 7.325-13.053-4.956-7.48-12.43-12.924-21.377-14.844-2.396-.515-4.8-.756-7.18-.74-12.55.08-24.468 7.27-31.345 18.964-6.12-1.66-12.19-3.492-18.203-5.496 2.96-5.945 6.824-11.273 11.367-15.8-3.922-7.43-10.26-13.31-18.326-16.294-4.022-1.488-8.19-2.147-12.324-2.053-.59.015-1.18.043-1.77.087-9.92.743-19.512 5.808-26.358 14.192-5.603-2.85-11.136-5.844-16.59-8.988 3.493-4.782 7.612-8.966 12.187-12.437-3.116-7.598-8.68-13.954-16.203-17.73-4.38-2.2-9.066-3.347-13.787-3.518-.443-.016-.885-.025-1.328-.024-7.363.017-14.74 2.405-21.13 6.832-5.063-3.875-10.032-7.883-14.903-12.015 3.476-2.892 7.23-5.365 11.185-7.365-1.5-7.214-5.16-13.83-10.887-18.81-5.55-4.826-12.35-7.527-19.456-8.13-.74-.063-1.482-.104-2.228-.12-4.187-.098-8.445.522-12.583 1.852-4.45-4.82-8.78-9.755-12.984-14.8 4.905-2.315 10.048-3.945 15.27-4.84 1.405-8.398-.12-17.03-4.85-24.344-6.653-10.292-18.283-15.88-30.647-15.662-3.625.065-7.313.632-10.957 1.722-3.356-5.388-6.58-10.86-9.665-16.41 6.697-2.53 13.666-3.813 20.55-3.895.234-.003.468.012.704.012 2.56-8.096 2.275-16.83-1.353-24.714-5.758-12.515-18.612-20.043-32.78-20.168-.946-.008-1.896.016-2.85.074-2.167.132-4.355.447-6.544.934-2.233-5.84-4.31-11.743-6.24-17.7 5.77-1.484 11.626-2.09 17.37-1.873 1.985.076 3.956.254 5.906.524 3.1-7.53 3.635-15.884 1.01-23.8-4.48-13.518-17.1-22.556-31.787-23.8h-6.308zm101.837 54.176L94.928 86.49c2.497 3.156 4.662 6.643 6.416 10.453.922 2.004 1.69 4.04 2.336 6.09L131.793 90.1l-7.81-16.977zm26.405 53.55l-26.87 17.372c2.95 2.786 5.613 5.958 7.91 9.512 1.18 1.822 2.213 3.696 3.134 5.6l25.973-16.792-10.146-15.693zm25.342 42.343l-20.97 24.113c3.544 1.84 6.923 4.12 10.064 6.852 1.688 1.468 3.242 3.03 4.692 4.66l20.314-23.363-14.1-12.264zm38.915 30.623l-14.313 28.51c3.895.907 7.74 2.263 11.465 4.133 1.996 1.002 3.886 2.13 5.69 3.346l13.86-27.607-16.702-8.384zm-186.46 6.048l-10.376 6.708v22.254l19.612-12.68c-1.36-1.623-2.646-3.334-3.824-5.157-2.3-3.555-4.085-7.29-5.414-11.125zM270 225.494l-11.102 30.02c4.038.46 8.078 1.403 12.053 2.873 2.03.75 3.976 1.627 5.85 2.597l10.727-29.007L270 225.494zm56.537 19.194l-6.695 31.195c.375-.01.75-.03 1.127-.03 3.665-.02 7.383.353 11.11 1.153 2.15.46 4.23 1.065 6.254 1.773l6.477-30.17-18.273-3.923zM80.203 278.865l-21.912 25.2 14.103 12.263 21.25-24.437c-1.813-1.21-3.577-2.53-5.264-3.997-3.144-2.734-5.86-5.772-8.177-9.028zm69.164 50.81L134.35 359.59l16.703 8.385 14.56-29.008c-2.053-.722-4.086-1.565-6.082-2.567-3.724-1.87-7.11-4.142-10.163-6.724zm70.158 32.305l-11.6 31.374 17.526 6.482 11.224-30.348c-2.053-.482-4.1-1.082-6.127-1.832-3.98-1.47-7.653-3.396-11.022-5.676zm76.487 24.928l-7.033 32.764 18.27 3.922 6.81-31.733c-2.134-.183-4.278-.487-6.427-.948-4.11-.882-7.99-2.25-11.62-4.004z"/></g></svg></div></div>
+    <div class="middle"><span class="beatmark cjk"></span></div>
+  </div>
+  <div class="tags">
+    <span><b class="cjk" style="color:#CC79FF">煉虛</b> 力 411k</span>
+    <span class="r"><b class="cjk" style="color:#CC79FF">蜈蚣</b> 力 445k</span>
+  </div>
+</div></div>
+  </section>
+
+  <div class="end">
+    <p class="says">Todas elas usam o desenho do cultivador e da besta que o jogo já tem,
+      e a luta que estás a ver é a que o simulador dá de verdade —
+      煉虛 reino 6 contra 蜈蚣, 9 rondas.</p>
+  </div>
+</div>
+
+<script>
+/* The same fight, played into whichever window asked for it. */
+const BEATS = [{"by":"p","dmg":496732.3069957811,"hp":1,"hb":0.8882775806081066,"n":"497k"},{"by":"b","dmg":444504.3893155316,"hp":0.8918929791523704,"hb":0.8882775806081066,"n":"445k"},{"by":"p","dmg":354400.6584647283,"hp":0.8918929791523704,"hb":0.8085676474305655,"n":"354k"},{"by":"b","dmg":541317.4985263724,"hp":0.7602402362211039,"hb":0.8085676474305655,"n":"541k"},{"by":"p","dmg":342733.1564721156,"hp":0.7602402362211039,"hb":0.7314819074704095,"n":"343k"},{"by":"b","dmg":457246.3046727736,"hp":0.6490342796997789,"hb":0.7314819074704095,"n":"457k"},{"by":"p","dmg":409250.91805139586,"hp":0.6490342796997789,"hb":0.6394353422296998,"n":"409k"},{"by":"b","dmg":510503.21362400183,"hp":0.5248758171860242,"hb":0.6394353422296998,"n":"511k"},{"by":"p","dmg":337911.3194769124,"hp":0.5248758171860242,"hb":0.5634341045002836,"n":"338k"},{"by":"b","dmg":459668.14956502547,"hp":0.41308084862668626,"hb":0.5634341045002836,"n":"460k"},{"by":"p","dmg":504412.6158107943,"hp":0.41308084862668626,"hb":0.4499842704216354,"n":"504k"},{"by":"b","dmg":445704.532063748,"hp":0.3046819434687547,"hb":0.4499842704216354,"n":"446k"},{"by":"p","dmg":379430.18333750713,"hp":0.3046819434687547,"hb":0.3646448280786271,"n":"379k"},{"by":"b","dmg":517541.613883907,"hp":0.17881168574685094,"hb":0.3646448280786271,"n":"518k"},{"by":"p","dmg":481380.18445825105,"hp":0.17881168574685094,"hb":0.2563753273886941,"n":"481k"},{"by":"b","dmg":549818.632278433,"hp":0.04509139912905833,"hb":0.2563753273886941,"n":"550k"},{"by":"p","dmg":410170.291242593,"hp":0.04509139912905833,"hb":0.16412198156255034,"n":"410k"},{"by":"b","dmg":478149.84110737493,"hp":0,"hb":0.16412198156255034,"n":"478k"}];
+const HERO_HAN = "煉虛";
+const FOE_HAN = "蜈蚣";
+const FOE_NAME = "Iron Centipede";
+/* Two registers: what you do, and what it does back. A line that says the body sways
+   while *you* are the one swinging reads as a bug, because it is one. */
+const MINE = [
+  ['劍光掠過', 'you strike — the blade light passes'],
+  ['一步踏出', 'you strike — one step forward'],
+  ['氣勢壓下', 'you strike — the pressure comes down'],
+  ['掌風如雷', 'you strike — the palm wind like thunder'],
+];
+const THEIRS = [
+  ['爪牙撲來', 'it answers — claws come on'],
+  ['硬接一記', 'it answers — the blow is taken'],
+  ['身形一晃', 'it answers — your body sways'],
+  ['毒尾橫掃', 'it answers — the tail sweeps across'],
+];
+
+const DELAY = 480;
+
+function play(el) {
+  const demo = el.dataset.demo;
+  let i = 0;
+  const lines = el.querySelector('.lines');
+
+  function beat() {
+    const b = BEATS[i % BEATS.length];
+    const fresh = i % BEATS.length === 0;
+    el.dataset.by = b.by;
+    el.dataset.shake = b.dmg > 4e5 ? '1' : '0';
+
+    // Health, however this window happens to show it.
+    const hp = fresh ? 1 : b.hp;
+    const hb = fresh ? 1 : b.hb;
+    el.querySelectorAll('.hp.p').forEach((x) => { x.style.width = (hp * 100) + '%'; });
+    el.querySelectorAll('.hp.b').forEach((x) => { x.style.width = (hb * 100) + '%'; });
+    // Both windows that draw health as an arc drain it the same way: the whole stroke
+    // is one life, and the dash offset is how much of it is gone.
+    const LEN = demo === 'd' ? 402.1 : 131.9;
+    el.querySelectorAll('.arc.p').forEach((x) => { x.style.strokeDashoffset = LEN * (1 - hp); });
+    el.querySelectorAll('.arc.b').forEach((x) => { x.style.strokeDashoffset = LEN * (1 - hb); });
+
+    // 境 has no bars: the beast dissolves, the cultivator dims.
+    const looming = el.querySelector('.looming');
+    if (looming) looming.style.opacity = (0.28 + 0.72 * hb).toFixed(2);
+    const small = el.querySelector('.small');
+    if (small) small.style.opacity = (0.35 + 0.65 * hp).toFixed(2);
+
+    // The mark thrown between them.
+    const mark = el.querySelector('.mark');
+    if (mark) {
+      mark.textContent = b.by === 'p' ? '擊' : '反';
+      mark.style.animation = 'none'; void mark.offsetWidth;
+      mark.style.animation = 'pop .34s ease-out';
+    }
+    const streak = el.querySelector('.streak');
+    if (streak) {
+      streak.style.animation = 'none'; void streak.offsetWidth;
+      streak.style.animation = 'cut .3s ease-out';
+    }
+    const bm = el.querySelector('.beatmark');
+    if (bm) bm.textContent = b.by === 'p' ? '擊' : '反';
+
+    // The floating number, wherever this window puts it.
+    if (demo !== 'c') {
+      const hit = document.createElement('span');
+      hit.className = 'dmg';
+      hit.textContent = '−' + b.n;
+      const onFoe = b.by === 'p';
+      hit.style.color = onFoe ? 'var(--cyan)' : 'var(--magenta)';
+      // The number lands on whoever took it, not in the middle of the sky.
+      if (demo === 'a') { hit.style.left = onFoe ? '77%' : '23%'; hit.style.top = '52%'; }
+      if (demo === 'b') { hit.style.left = '50%'; hit.style.top = onFoe ? '34%' : '70%'; }
+      if (demo === 'd') { hit.style.left = onFoe ? '74%' : '26%'; hit.style.top = '40%'; }
+      el.appendChild(hit);
+      setTimeout(() => hit.remove(), 950);
+    }
+
+    // 卷 writes the blow instead of showing it.
+    if (lines) {
+      if (fresh) lines.innerHTML = '';
+      const pool = b.by === 'p' ? MINE : THEIRS;
+      const say = pool[Math.floor(i / 2) % pool.length];
+      const ln = document.createElement('div');
+      ln.className = 'ln';
+      ln.innerHTML = '<span class="say"><span class="cjk">' + say[0] + '</span>' +
+        '<i>' + say[1] + '</i></span>' +
+        '<span class="n" style="color:' + (b.by === 'p' ? 'var(--cyan)' : 'var(--magenta)') + '">−' + b.n + '</span>';
+      lines.appendChild(ln);
+      while (lines.children.length > 5) lines.removeChild(lines.firstChild);
+    }
+
+    i++;
+    setTimeout(beat, i % BEATS.length === 0 ? DELAY * 3 : DELAY);
+  }
+  beat();
+}
+
+document.querySelectorAll('.win').forEach((el, i) => setTimeout(() => play(el), i * 160));
+</script>
