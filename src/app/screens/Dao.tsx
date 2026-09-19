@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { WARDENS } from '../../data/bestiary.ts';
 import {
-  NODE_BY_KEY, PATHS, PATH_INFO, TOTAL_COST, nodesOf, type Node, type Path,
+  ALL_NODES, LINKS, NODE_BY_KEY, PATHS, PATH_INFO, ROOT, TOTAL_COST,
+  nodesOf, type Node, type Path,
 } from '../../data/techniques.ts';
 import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
 import { layersOpened } from '../../sim/time.ts';
 import type { State } from '../../sim/state.ts';
-import { icon } from '../../art/icon.ts';
-import { Svg } from '../ui/Svg.tsx';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -19,11 +18,12 @@ import { Svg } from '../ui/Svg.tsx';
  * detail underneath rather than spelling every node out at once.
  */
 
-const R = 21;          // node radius
-const GAP = 74;        // vertical distance between tiers
-const SPREAD = 62;     // how far the fork's two nodes sit from the trunk
-const W = 300;
-const CX = W / 2;
+const R = 17;          // node radius
+const GAP = 58;        // vertical distance between tiers
+const FORK = 21;       // how far a fork's two nodes sit from their column
+const COLS: Record<Path, number> = { sword: 62, spirit: 180, fortune: 298 };
+const W = 360;
+const TOP = 26;        // where the root sits
 
 type Status = 'have' | 'open' | 'poor' | 'shut' | 'locked';
 
@@ -36,22 +36,49 @@ function statusOf(node: Node, unlocked: readonly string[], free: number): Status
   return 'locked';
 }
 
-/** Where every node of a branch sits. Tier 5 forks; everything else rides the trunk. */
-function layout(path: Path): { node: Node; x: number; y: number }[] {
-  const nodes = nodesOf(path);
-  const byTier = new Map<number, Node[]>();
-  for (const n of nodes) {
-    if (!byTier.has(n.tier)) byTier.set(n.tier, []);
-    byTier.get(n.tier)!.push(n);
-  }
-  const out: { node: Node; x: number; y: number }[] = [];
-  for (const [tier, row] of [...byTier.entries()].sort((a, b) => a[0] - b[0])) {
-    const y = R + 10 + tier * GAP;
-    if (row.length === 1) out.push({ node: row[0], x: CX, y });
-    else row.forEach((node, i) => out.push({ node, x: CX + (i === 0 ? -SPREAD : SPREAD), y }));
+interface Placed { node: Node; x: number; y: number }
+
+/**
+ * Where every node sits on one canvas: the root at the top, three columns below it, and
+ * a fork's two nodes offset to either side of their own column.
+ */
+function layout(): Placed[] {
+  const out: Placed[] = [{ node: ROOT, x: COLS.spirit, y: TOP }];
+  for (const path of PATHS) {
+    const byTier = new Map<number, Node[]>();
+    for (const node of nodesOf(path)) {
+      if (!byTier.has(node.tier)) byTier.set(node.tier, []);
+      byTier.get(node.tier)!.push(node);
+    }
+    for (const [tier, row] of byTier) {
+      const y = TOP + 52 + tier * GAP;
+      if (row.length === 1) out.push({ node: row[0], x: COLS[path], y });
+      else row.forEach((node, i) => out.push({ node, x: COLS[path] + (i === 0 ? -FORK : FORK), y }));
+    }
   }
   return out;
 }
+
+const PLACED = layout();
+const HEIGHT = Math.max(...PLACED.map((p) => p.y)) + R + 14;
+const AT = new Map(PLACED.map((p) => [p.node.key, p]));
+
+/** Every edge once, so a bridge is not drawn twice. */
+const EDGES: { a: Placed; b: Placed }[] = (() => {
+  const seen = new Set<string>();
+  const out: { a: Placed; b: Placed }[] = [];
+  for (const [from, tos] of Object.entries(LINKS)) {
+    for (const to of tos) {
+      const id = [from, to].sort().join('|');
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const a = AT.get(from);
+      const b = AT.get(to);
+      if (a && b) out.push({ a, b });
+    }
+  }
+  return out;
+})();
 
 export function Dao({ state, onUnlock }: {
   state: State;
@@ -63,6 +90,9 @@ export function Dao({ state, onUnlock }: {
   const spent = daoSpent(state.unlocked);
   const free = daoFree(layersOpened(state), wardens, state.unlocked);
   const chosen = picked ? NODE_BY_KEY[picked] : null;
+  const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
+
+  const hue = (node: Node) => (node.key === ROOT.key ? '#E7EAFF' : PATH_INFO[node.path].colour);
 
   return (
     <>
@@ -76,10 +106,19 @@ export function Dao({ state, onUnlock }: {
         </span>
       </div>
 
-      <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 2px' }}>
-        A point per three layers, two per warden. The whole tree costs {TOTAL_COST} and a
-        run earns about 42 — you will never take all of it. Tap a node to read it.
+      <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 0' }}>
+        One tree. Every branch grows from 起, and bridges cross between neighbours twice —
+        so you can climb one side, step across, and come back down another. {taken}/{ALL_NODES.length}
+        {' '}taken; the whole thing costs {TOTAL_COST} and a run earns about 42.
       </p>
+
+      <div className="legend">
+        {PATHS.map((p) => (
+          <span key={p} className="leg" style={{ ['--hue' as string]: PATH_INFO[p].colour }}>
+            <i /><b className="cjk">{PATH_INFO[p].han}</b> {PATH_INFO[p].name}
+          </span>
+        ))}
+      </div>
 
       {chosen && (
         <Detail
@@ -90,16 +129,63 @@ export function Dao({ state, onUnlock }: {
         />
       )}
 
-      {PATHS.map((path) => (
-        <Branch
-          key={path}
-          path={path}
-          state={state}
-          free={free}
-          picked={picked}
-          onPick={setPicked}
-        />
-      ))}
+      <div className="canvas">
+        <svg viewBox={`0 0 ${W} ${HEIGHT}`} className="treesvg" role="img"
+             aria-label={`The technique tree, ${taken} of ${ALL_NODES.length} taken`}>
+          {EDGES.map(({ a, b }) => {
+            const lit = state.unlocked.includes(a.node.key) && state.unlocked.includes(b.node.key);
+            const bridge = a.node.path !== b.node.path
+              && a.node.key !== ROOT.key && b.node.key !== ROOT.key;
+            const dead = statusOf(b.node, state.unlocked, free) === 'shut'
+              || statusOf(a.node, state.unlocked, free) === 'shut';
+            return (
+              <line
+                key={`${a.node.key}-${b.node.key}`}
+                x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                stroke={lit ? hue(b.node) : bridge ? '#FFCE6B' : '#252A5C'}
+                strokeWidth={lit ? 2.2 : bridge ? 1.6 : 1.2}
+                strokeOpacity={dead ? 0.2 : bridge && !lit ? 0.6 : 1}
+                strokeDasharray={bridge ? '3 4' : b.node.keystone ? '5 4' : undefined}
+              />
+            );
+          })}
+
+          {PLACED.map(({ node, x, y }) => {
+            const status = statusOf(node, state.unlocked, free);
+            const on = status === 'have';
+            const open = status === 'open';
+            const colour = hue(node);
+            const faded = status === 'locked' || status === 'shut';
+            return (
+              <g key={node.key} className="tnode" data-status={status}
+                 onClick={() => setPicked(node.key)} style={{ cursor: 'pointer' }}>
+                {open && <circle cx={x} cy={y} r={R + 5} fill={colour} fillOpacity=".13" />}
+                <circle
+                  cx={x} cy={y} r={R}
+                  fill={on ? colour : '#111433'} fillOpacity={on ? 0.24 : 1}
+                  stroke={on || open ? colour : '#252A5C'}
+                  strokeWidth={on ? 2.2 : open ? 1.7 : 1.1}
+                  strokeDasharray={node.keystone ? '4 3' : undefined}
+                  opacity={faded ? 0.4 : 1}
+                />
+                <text x={x} y={y + 5} textAnchor="middle" fontSize="14.5"
+                      fontFamily="'Noto Serif SC', serif"
+                      fill={on ? colour : node.keystone ? '#FF5FC8' : '#E7EAFF'}
+                      opacity={faded ? 0.45 : on ? 1 : 0.82}>{node.han}</text>
+                {!on && (
+                  <text x={x + R} y={y - R + 7} textAnchor="middle" fontSize="10"
+                        fontFamily="Rajdhani, sans-serif" fontWeight="700"
+                        fill={open ? '#FFCE6B' : '#7A80B8'}>{node.cost}</text>
+                )}
+                {picked === node.key && (
+                  <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#E7EAFF"
+                          strokeWidth="1" strokeOpacity=".7" />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
     </>
   );
 }
@@ -112,95 +198,6 @@ function countWardens(state: State): number {
     if (count > 0 && WARDEN_KEYS.has(key)) n++;
   }
   return n;
-}
-
-function Branch({ path, state, free, picked, onPick }: {
-  path: Path;
-  state: State;
-  free: number;
-  picked: string | null;
-  onPick: (key: string) => void;
-}) {
-  const info = PATH_INFO[path];
-  const placed = layout(path);
-  const height = Math.max(...placed.map((p) => p.y)) + R + 12;
-  const taken = placed.filter((p) => state.unlocked.includes(p.node.key)).length;
-
-  // A limb runs from every node to every node of the tier below it, so the fork opens
-  // into two and closes back into one without any special-casing.
-  const limbs: { a: typeof placed[number]; b: typeof placed[number] }[] = [];
-  for (const p of placed) {
-    for (const q of placed) {
-      if (q.node.tier === p.node.tier + 1) limbs.push({ a: p, b: q });
-    }
-  }
-
-  return (
-    <div className="limb" style={{ ['--hue' as string]: info.colour }}>
-      <div className="lhead">
-        <span className="ic"><Svg html={icon(info.icon, 24)} /></span>
-        <span className="ltxt">
-          <b className="cjk">{info.han}</b> <em>{info.name}</em>
-          <i>{info.blurb}</i>
-        </span>
-        <span className="lcount mono">{taken}/8</span>
-      </div>
-
-      <svg viewBox={`0 0 ${W} ${height}`} className="treesvg" role="img"
-           aria-label={`${info.name} branch, ${taken} of 8 taken`}>
-        {limbs.map(({ a, b }) => {
-          const lit = state.unlocked.includes(a.node.key) && state.unlocked.includes(b.node.key);
-          const dead = statusOf(b.node, state.unlocked, free) === 'shut';
-          return (
-            <line
-              key={`${a.node.key}-${b.node.key}`}
-              x1={a.x} y1={a.y + R} x2={b.x} y2={b.y - R}
-              stroke={lit ? info.colour : '#252A5C'}
-              strokeWidth={lit ? 2.4 : 1.4}
-              strokeOpacity={dead ? 0.25 : 1}
-              strokeDasharray={b.node.keystone ? '5 4' : undefined}
-            />
-          );
-        })}
-
-        {placed.map(({ node, x, y }) => {
-          const status = statusOf(node, state.unlocked, free);
-          const on = status === 'have';
-          const open = status === 'open';
-          return (
-            <g key={node.key} className="tnode" data-status={status}
-               onClick={() => onPick(node.key)} style={{ cursor: 'pointer' }}>
-              {open && <circle cx={x} cy={y} r={R + 6} fill={info.colour} fillOpacity=".12" />}
-              <circle
-                cx={x} cy={y} r={R}
-                fill={on ? info.colour : '#111433'}
-                fillOpacity={on ? 0.22 : 1}
-                stroke={on || open ? info.colour : '#252A5C'}
-                strokeWidth={on ? 2.4 : open ? 1.8 : 1.2}
-                strokeDasharray={node.keystone ? '4 3' : undefined}
-                opacity={status === 'locked' || status === 'shut' ? 0.4 : 1}
-              />
-              <text
-                x={x} y={y + 6} textAnchor="middle" fontSize="18"
-                fontFamily="'Noto Serif SC', serif"
-                fill={on ? info.colour : node.keystone ? '#FF5FC8' : '#E7EAFF'}
-                opacity={status === 'locked' || status === 'shut' ? 0.45 : on ? 1 : 0.8}
-              >{node.han}</text>
-              {!on && (
-                <text x={x + R - 2} y={y - R + 6} textAnchor="middle" fontSize="11"
-                      fontFamily="Rajdhani, sans-serif" fontWeight="700"
-                      fill={open ? '#FFCE6B' : '#7A80B8'}>{node.cost}</text>
-              )}
-              {picked === node.key && (
-                <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#E7EAFF"
-                        strokeWidth="1" strokeOpacity=".7" />
-              )}
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
 }
 
 function Detail({ node, status, onLearn, onClose }: {

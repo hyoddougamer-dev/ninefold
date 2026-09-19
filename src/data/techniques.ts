@@ -124,12 +124,78 @@ export const NODES: readonly Node[] = [
   n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something'),
 ];
 
+/**
+ * 根 The root, and the bridges.
+ *
+ * The first shape was three separate branches, which is three trees rather than one —
+ * a player could walk a path but never mix. This is one tree: every branch grows from a
+ * single root, and bridges cross between neighbouring branches at two depths, so a
+ * cultivator can climb 劍 to the middle, step across into 神, and come back down 運.
+ *
+ * The middle column is 神, so it neighbours both others. Getting from 劍 to 運 means
+ * passing through 神 — which is a cost, and the reason the middle is worth standing in.
+ */
+export const ROOT: Node = {
+  key: 'root', han: '起', name: 'The Beginning', path: 'spirit', tier: -1, cost: 1,
+  effects: [{ kind: 'rate', percent: 10 }, { kind: 'power', percent: 10 }],
+  text: '+10% power and +10% qi — where every path starts',
+};
+
+/** Which branches sit next to each other, and may be bridged. */
+export const NEIGHBOURS: readonly (readonly [Path, Path])[] = [
+  ['sword', 'spirit'],
+  ['spirit', 'fortune'],
+];
+
+/** The depths a bridge crosses at. Low enough to matter, high enough to cost something. */
+export const BRIDGE_TIERS: readonly number[] = [2, 6];
+
+export const ALL_NODES: readonly Node[] = [ROOT, ...NODES];
+
 export const NODE_BY_KEY: Readonly<Record<string, Node>> =
-  Object.fromEntries(NODES.map((x) => [x.key, x]));
+  Object.fromEntries(ALL_NODES.map((x) => [x.key, x]));
+
+/** Every edge of the tree, built rather than listed so a new node cannot be orphaned. */
+export const LINKS: Readonly<Record<string, readonly string[]>> = (() => {
+  const out: Record<string, string[]> = {};
+  const join = (a: string, b: string) => {
+    (out[a] ??= []).push(b);
+    (out[b] ??= []).push(a);
+  };
+
+  for (const path of PATHS) {
+    const byTier = new Map<number, Node[]>();
+    for (const node of nodesOf(path)) {
+      if (!byTier.has(node.tier)) byTier.set(node.tier, []);
+      byTier.get(node.tier)!.push(node);
+    }
+    const tiers = [...byTier.keys()].sort((x, y) => x - y);
+    for (const node of byTier.get(tiers[0]) ?? []) join(ROOT.key, node.key);
+    for (let i = 0; i < tiers.length - 1; i++) {
+      for (const a of byTier.get(tiers[i]) ?? []) {
+        for (const b of byTier.get(tiers[i + 1]) ?? []) join(a.key, b.key);
+      }
+    }
+  }
+
+  for (const [left, right] of NEIGHBOURS) {
+    for (const tier of BRIDGE_TIERS) {
+      const a = nodesOf(left).filter((x) => x.tier === tier && !x.keystone)[0];
+      const b = nodesOf(right).filter((x) => x.tier === tier && !x.keystone)[0];
+      if (a && b) join(a.key, b.key);
+    }
+  }
+
+  return out;
+})();
+
+export function linksOf(key: string): readonly string[] {
+  return LINKS[key] ?? [];
+}
 
 export function nodesOf(path: Path): readonly Node[] {
   return NODES.filter((x) => x.path === path).sort((a, b) => a.tier - b.tier);
 }
 
-/** Everything the tree costs if you tried to buy all of it. */
-export const TOTAL_COST = NODES.reduce((sum, x) => sum + x.cost, 0);
+/** Everything the tree costs if you tried to buy all of it, the root included. */
+export const TOTAL_COST = ALL_NODES.reduce((sum, x) => sum + x.cost, 0);

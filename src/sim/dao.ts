@@ -1,4 +1,7 @@
-import { NODES, NODE_BY_KEY, nodesOf, type Effect, type Node, type Path } from '../data/techniques.ts';
+import {
+  ALL_NODES, NODES, NODE_BY_KEY, ROOT, linksOf, nodesOf,
+  type Effect, type Node, type Path,
+} from '../data/techniques.ts';
 import type { Slot } from '../data/gear.ts';
 
 /**
@@ -29,12 +32,13 @@ export function daoFree(layersOpened: number, wardensKilled: number, unlocked: r
 }
 
 /**
- * A node needs *a* node of the tier above it in its own branch — any of them, since a
- * fork puts two nodes on the same tier. The first of a branch needs nothing.
+ * A node is reachable from anything it is linked to. The tree is a graph, not three
+ * queues: that is what lets a cultivator climb 劍, cross a bridge into 神 and come back
+ * down 運 — and it is why mixing costs nothing but the points to walk there.
  */
 export function requirements(node: Node): readonly Node[] {
-  if (node.tier === 0) return [];
-  return nodesOf(node.path).filter((x) => x.tier === node.tier - 1);
+  if (node.key === ROOT.key) return [];
+  return linksOf(node.key).map((k) => NODE_BY_KEY[k]).filter(Boolean);
 }
 
 /** The node this one would put out of reach, if it has a twin. */
@@ -57,6 +61,11 @@ export function canUnlock(
 /** The next node available on a branch, or null when the branch is finished. */
 export function nextOn(path: Path, unlocked: readonly string[]): Node | null {
   return nodesOf(path).find((x) => !unlocked.includes(x.key)) ?? null;
+}
+
+/** Everything reachable right now, whatever it costs. */
+export function frontier(unlocked: readonly string[]): readonly Node[] {
+  return ALL_NODES.filter((x) => canUnlock(x.key, unlocked, Infinity));
 }
 
 // ── what a bought tree does ──────────────────────────────────────────────────
@@ -154,19 +163,25 @@ export function validateUnlocked(raw: unknown): string[] {
     if (typeof key !== 'string' || !NODE_BY_KEY[key] || seen.has(key)) continue;
     seen.add(key);
   }
-  // Walk each branch tier by tier and stop at the first gap, so an edited save cannot
-  // hold 萬劍 without everything above it — and cannot hold both sides of a fork.
+  // Grow outward from the root and keep only what is actually connected, so an edited
+  // save cannot hold 萬劍 with nothing leading to it, and cannot hold both sides of a
+  // fork — the twin is dropped the moment one side is kept.
   const kept: string[] = [];
-  for (const path of ['sword', 'spirit', 'fortune'] as const) {
-    const byTier = new Map<number, Node[]>();
-    for (const node of nodesOf(path)) {
-      if (!byTier.has(node.tier)) byTier.set(node.tier, []);
-      byTier.get(node.tier)!.push(node);
-    }
-    for (const [, nodes] of [...byTier.entries()].sort((a, b) => a[0] - b[0])) {
-      const taken = nodes.filter((x) => seen.has(x.key));
-      if (taken.length === 0) break;                 // a gap: nothing below it survives
-      kept.push(taken[0].key);                       // one side of a fork, never both
+  const held = new Set<string>();
+  const shut = new Set<string>();
+  if (!seen.has(ROOT.key)) return kept;
+  kept.push(ROOT.key);
+  held.add(ROOT.key);
+
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const node of ALL_NODES) {
+      if (held.has(node.key) || shut.has(node.key) || !seen.has(node.key)) continue;
+      if (!linksOf(node.key).some((k) => held.has(k))) continue;
+      kept.push(node.key);
+      held.add(node.key);
+      if (node.excludes) shut.add(node.excludes);
+      grew = true;
     }
   }
   return kept;

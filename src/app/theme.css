@@ -258,21 +258,17 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
    leave room for them — otherwise the numbers on the right slide underneath. */
 .sheet > .row:first-child { padding-right: 70px; }
 
-/* ── 道 the tree, drawn ─────────────────────────────────────────────────── */
+/* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
 
-.limb { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
-        padding: 13px 10px 8px; margin-top: 16px; }
-.lhead { display: flex; align-items: flex-start; gap: 11px; padding: 0 4px; }
-.lhead .ic { color: var(--hue); flex: none; display: grid; place-items: center; }
-.lhead .ic svg { display: block; }
-.lhead .ltxt { flex: 1; min-width: 0; }
-.lhead b { font-size: 20px; color: var(--hue); }
-.lhead em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15.5px; }
-.lhead i { font-style: normal; display: block; font-size: 11.5px; color: var(--faint); }
-.lcount { flex: none; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 13px;
-          color: var(--hue); opacity: .8; }
+.canvas { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
+          padding: 10px 6px; margin-top: 12px; }
+.treesvg { display: block; width: 100%; height: auto; }
 
-.treesvg { display: block; width: 100%; height: auto; margin-top: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; font-size: 12px;
+          color: var(--faint); }
+.leg { display: inline-flex; align-items: center; gap: 5px; }
+.leg i { width: 8px; height: 8px; border-radius: 50%; background: var(--hue); flex: none; }
+.leg b { font-size: 14px; color: var(--hue); font-weight: 400; }
 .tnode { transition: opacity .15s ease; }
 .tnode[data-status='open'] circle:first-child { animation: breathe 2.4s ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }

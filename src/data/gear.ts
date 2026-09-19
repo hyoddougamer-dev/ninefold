@@ -114,90 +114,137 @@ export interface GearTemplate {
   readonly name: string;
   readonly slot: Slot;
   readonly icon: string;
-  /** Realm the item starts dropping in. */
+  /** The realm this version of the archetype belongs to. */
   readonly realm: number;
+  readonly affix: Affix;
+  /** Which shape it is, independent of realm. */
+  readonly archetype: string;
+}
+
+/**
+ * 型 An archetype: a shape of thing, with its own icon and its own axis.
+ *
+ * An archetype is *not* tied to a realm. The first table bound them together — one piece
+ * per slot per realm — which meant a cultivator in the third realm had exactly one
+ * weapon to find, and no choice at all. Now every archetype exists at every realm, so
+ * the question at any point in the game is "which of the nine, and at what rank",
+ * instead of "here is the one".
+ */
+export interface Archetype {
+  readonly key: string;
+  readonly han: string;
+  readonly name: string;
+  readonly slot: Slot;
+  readonly icon: string;
   readonly affix: Affix;
 }
 
-const t = (key: string, han: string, name: string, slot: Slot, icon: string, realm: number, affix: Affix): GearTemplate =>
-  ({ key, han, name, slot, icon, realm, affix });
+const a = (key: string, han: string, name: string, slot: Slot, icon: string, affix: Affix): Archetype =>
+  ({ key, han, name, slot, icon, affix });
 
 /**
- * Fifty-four pieces: nine per slot, one per realm. Every realm brings one new piece in
- * every slot, so there is always something new to find and never a slot that goes
- * unanswered for twenty days.
- *
- * Variety is the point. The first table had eighteen pieces and four of them were
- * swords — a chest full of swords is a chest full of one idea. These are drawn from the
- * whole library: fans and bells, greaves and tabi, laurels and dragon heads.
+ * Nine archetypes per slot, spread across the axes so no slot serves one path only.
+ * Every one of them is findable in every realm.
  */
-export const GEAR: readonly GearTemplate[] = [
-  // 劍 weapons — the hand. Mostly power, with two that channel instead.
-  t('ironsword', '鐵劍', 'Iron Sword', 'weapon', 'ancient-sword', 1, 'power'),
-  t('woodsaber', '木刀', 'Wooden Saber', 'weapon', 'katana', 2, 'rate'),
-  t('moonblade', '月刃', 'Moon Blade', 'weapon', 'crescent-blade', 3, 'power'),
-  t('twinhooks', '雙鉤', 'Twin Hooks', 'weapon', 'hook-swords', 4, 'luck'),
-  t('spiritspear', '靈槍', 'Spirit Spear', 'weapon', 'barbed-spear', 5, 'power'),
-  t('jadefan', '玉扇', 'Jade Fan', 'weapon', 'handheld-fan', 6, 'rate'),
-  t('voidstaff', '虛杖', 'Void Staff', 'weapon', 'wizard-staff', 7, 'sunder'),
-  t('trident', '叉戟', 'Spirit Trident', 'weapon', 'trident', 8, 'power'),
-  t('heavenscythe', '天鐮', 'Heaven Scythe', 'weapon', 'scythe', 9, 'rate'),
+export const ARCHETYPES: readonly Archetype[] = [
+  // 劍 the hand
+  a('sword',    '劍', 'Sword',      'weapon', 'ancient-sword',  'power'),
+  a('saber',    '刀', 'Saber',      'weapon', 'katana',         'power'),
+  a('crescent', '鉤', 'Crescent',   'weapon', 'crescent-blade', 'power'),
+  a('hooks',    '雙鉤', 'Twin Hooks','weapon', 'hook-swords',   'sunder'),
+  a('spear',    '槍', 'Spear',      'weapon', 'barbed-spear',   'power'),
+  a('fan',      '扇', 'Fan',        'weapon', 'handheld-fan',   'rate'),
+  a('staff',    '杖', 'Staff',      'weapon', 'wizard-staff',   'rate'),
+  a('trident',  '戟', 'Trident',    'weapon', 'trident',        'power'),
+  a('scythe',   '鐮', 'Scythe',     'weapon', 'scythe',         'luck'),
 
-  // 袍 robes — the body. Cloth gathers qi, plate holds blows.
-  t('clothrobe', '布袍', 'Cloth Robe', 'robe', 'robe', 1, 'rate'),
-  t('leathervest', '皮甲', 'Leather Vest', 'robe', 'leather-vest', 2, 'power'),
-  t('daoistrobe', '道衣', 'Daoist Kimono', 'robe', 'kimono', 3, 'rate'),
-  t('greycloak', '灰氅', 'Grey Cloak', 'robe', 'cloak', 4, 'capacity'),
-  t('lamellar', '鱗甲', 'Lamellar', 'robe', 'lamellar', 5, 'power'),
-  t('breastplate', '胸鎧', 'Breastplate', 'robe', 'chest-armor', 6, 'rate'),
-  t('pauldrons', '肩鎧', 'Pauldrons', 'robe', 'shoulder-armor', 7, 'power'),
-  t('starrobe', '星袍', 'Star Robe', 'robe', 'wing-cloak', 8, 'sunder'),
-  t('heavenmantle', '天衣', 'Heaven Mantle', 'robe', 'cape', 9, 'capacity'),
+  // 袍 the body
+  a('robe',     '袍', 'Robe',       'robe', 'robe',           'rate'),
+  a('vest',     '甲', 'Vest',       'robe', 'leather-vest',   'power'),
+  a('kimono',   '道衣', 'Kimono',   'robe', 'kimono',         'rate'),
+  a('cloak',    '氅', 'Cloak',      'robe', 'cloak',          'luck'),
+  a('lamellar', '鱗', 'Lamellar',   'robe', 'lamellar',       'power'),
+  a('plate',    '鎧', 'Breastplate','robe', 'chest-armor',    'power'),
+  a('pauldrons','肩', 'Pauldrons',  'robe', 'shoulder-armor', 'sunder'),
+  a('wings',    '翼', 'Winged Robe','robe', 'wing-cloak',     'rate'),
+  a('mantle',   '衣', 'Mantle',     'robe', 'cape',           'capacity'),
 
-  // 冠 crowns — the head. Where the mind is sharpened, so mostly rate.
-  t('clothband', '布巾', 'Cloth Band', 'crown', 'bandana', 1, 'rate'),
-  t('laurels', '桂冠', 'Laurels', 'crown', 'laurels', 2, 'luck'),
-  t('jadepin', '玉簪', 'Jade Pin', 'crown', 'jewel-crown', 3, 'rate'),
-  t('hornedhelm', '角盔', 'Horned Helm', 'crown', 'horned-helm', 4, 'refine'),
-  t('bonecrown', '骨冠', 'Bone Crown', 'crown', 'crenel-crown', 5, 'rate'),
-  t('visoredhelm', '面甲', 'Visored Helm', 'crown', 'visored-helm', 6, 'power'),
-  t('imperialcrown', '帝冠', 'Imperial Crown', 'crown', 'imperial-crown', 7, 'rate'),
-  t('ritualcrown', '法冠', 'Ritual Crown', 'crown', 'pope-crown', 8, 'power'),
-  t('dragonhead', '龍首', 'Dragon Head', 'crown', 'dragon-head', 9, 'luck'),
+  // 冠 the head
+  a('band',     '巾', 'Band',       'crown', 'bandana',       'rate'),
+  a('laurel',   '桂', 'Laurel',     'crown', 'laurels',       'luck'),
+  a('pin',      '簪', 'Hairpin',    'crown', 'jewel-crown',   'rate'),
+  a('horned',   '角', 'Horned Helm','crown', 'horned-helm',   'power'),
+  a('bonecrown','骨冠', 'Bone Crown','crown', 'crenel-crown', 'refine'),
+  a('visor',    '面', 'Visor',      'crown', 'visored-helm',  'power'),
+  a('diadem',   '帝冠', 'Diadem',   'crown', 'imperial-crown','rate'),
+  a('ritual',   '法冠', 'Ritual Crown','crown','pope-crown',  'refine'),
+  a('dragonhead','龍首','Dragon Head','crown','dragon-head',  'power'),
 
-  // 靴 boots — the ground. Light feet gather, heavy feet hold.
-  t('barefoot', '赤足', 'Barefoot', 'boots', 'barefoot', 1, 'rate'),
-  t('strawsandals', '草鞋', 'Straw Sandals', 'boots', 'sandal', 2, 'find'),
-  t('tabiboots', '布靴', 'Tabi Boots', 'boots', 'tabi-boot', 3, 'rate'),
-  t('walkingboots', '行靴', 'Walking Boots', 'boots', 'walking-boot', 4, 'power'),
-  t('leatherboots', '皮靴', 'Leather Boots', 'boots', 'leather-boot', 5, 'find'),
-  t('greaves', '脛甲', 'Greaves', 'boots', 'greaves', 6, 'rate'),
-  t('ironboots', '鐵靴', 'Iron Boots', 'boots', 'metal-boot', 7, 'power'),
-  t('furboots', '裘靴', 'Fur Boots', 'boots', 'fur-boot', 8, 'capacity'),
-  t('windfoot', '風足', 'Wind Foot', 'boots', 'wingfoot', 9, 'rate'),
+  // 靴 the feet
+  a('bare',     '赤', 'Bare Feet',  'boots', 'barefoot',      'rate'),
+  a('sandals',  '鞋', 'Sandals',    'boots', 'sandal',        'find'),
+  a('tabi',     '布靴', 'Tabi',     'boots', 'tabi-boot',     'rate'),
+  a('walkers',  '行靴', 'Walkers',  'boots', 'walking-boot',  'find'),
+  a('leather',  '皮靴', 'Leather Boots','boots','leather-boot','power'),
+  a('greaves',  '脛甲', 'Greaves',  'boots', 'greaves',       'power'),
+  a('ironboots','鐵靴', 'Iron Boots','boots','metal-boot',    'sunder'),
+  a('furboots', '裘靴', 'Fur Boots','boots', 'fur-boot',      'capacity'),
+  a('windfoot', '風足', 'Wind Foot','boots', 'wingfoot',      'rate'),
 
-  // 珮 talismans — the pocket. Almost all of them feed the gathering.
-  t('woodcharm', '木符', 'Wood Charm', 'talisman', 'wax-seal', 1, 'rate'),
-  t('bonependant', '骨佩', 'Bone Pendant', 'talisman', 'tribal-pendant', 2, 'luck'),
-  t('prayerbeads', '佛珠', 'Prayer Beads', 'talisman', 'prayer-beads', 3, 'rate'),
-  t('boundscroll', '卷軸', 'Bound Scroll', 'talisman', 'tied-scroll', 4, 'refine'),
-  t('gempendant', '寶珮', 'Gem Pendant', 'talisman', 'gem-pendant', 5, 'luck'),
-  t('starmedal', '星章', 'Star Medal', 'talisman', 'star-medal', 6, 'rate'),
-  t('censer', '香爐', 'Censer', 'talisman', 'incense', 7, 'power'),
-  t('crystalorb', '水晶', 'Crystal Orb', 'talisman', 'crystal-ball', 8, 'refine'),
-  t('orbwand', '珠杖', 'Orb Wand', 'talisman', 'orb-wand', 9, 'rate'),
+  // 珮 the pocket
+  a('charm',    '符', 'Charm',      'talisman', 'wax-seal',       'rate'),
+  a('bonecharm','骨佩', 'Bone Charm','talisman','tribal-pendant', 'power'),
+  a('beads',    '珠', 'Beads',      'talisman', 'prayer-beads',   'rate'),
+  a('scroll',   '卷', 'Scroll',     'talisman', 'tied-scroll',    'refine'),
+  a('pendant',  '珮', 'Pendant',    'talisman', 'gem-pendant',    'power'),
+  a('medal',    '章', 'Medal',      'talisman', 'star-medal',     'luck'),
+  a('censer',   '爐', 'Censer',     'talisman', 'incense',        'rate'),
+  a('orb',      '球', 'Orb',        'talisman', 'crystal-ball',   'luck'),
+  a('wand',     '珠杖', 'Orb Wand', 'talisman', 'orb-wand',       'capacity'),
 
-  // 戒 rings — the smallest thing, and the one that gets the loudest names.
-  t('plainring', '素戒', 'Plain Ring', 'ring', 'ring', 1, 'power'),
-  t('topazring', '黃玉', 'Topaz Ring', 'ring', 'topaz', 2, 'rate'),
-  t('amethystring', '紫晶', 'Amethyst Ring', 'ring', 'amethyst', 3, 'luck'),
-  t('emeraldring', '翠戒', 'Emerald Ring', 'ring', 'emerald', 4, 'power'),
-  t('flamering', '炎戒', 'Flame Ring', 'ring', 'fire-ring', 5, 'rate'),
-  t('frostring', '霜戒', 'Frost Ring', 'ring', 'frozen-ring', 6, 'find'),
-  t('powerring', '力戒', 'Power Ring', 'ring', 'power-ring', 7, 'power'),
-  t('spiralring', '渦戒', 'Spiral Ring', 'ring', 'swirl-ring', 8, 'sunder'),
-  t('ringedstar', '星環', 'Ringed Star', 'ring', 'ringed-planet', 9, 'rate'),
+  // 戒 the finger
+  a('plainring','素戒', 'Plain Ring','ring', 'ring',          'power'),
+  a('topaz',    '黃玉', 'Topaz',    'ring', 'topaz',          'rate'),
+  a('amethyst', '紫晶', 'Amethyst', 'ring', 'amethyst',       'luck'),
+  a('emerald',  '翠戒', 'Emerald',  'ring', 'emerald',        'find'),
+  a('flamering','炎戒', 'Flame Ring','ring','fire-ring',      'power'),
+  a('frostring','霜戒', 'Frost Ring','ring','frozen-ring',    'sunder'),
+  a('powerring','力戒', 'Power Ring','ring','power-ring',     'power'),
+  a('spiralring','渦戒','Spiral Ring','ring','swirl-ring',    'refine'),
+  a('starring', '星環', 'Ringed Star','ring','ringed-planet', 'rate'),
 ];
+
+/** 階 What a realm puts in front of an archetype's name. Nine steps, no rarity words. */
+export const REALM_WORD: readonly { han: string; name: string }[] = [
+  { han: '鐵', name: 'Iron' },
+  { han: '骨', name: 'Bone' },
+  { han: '銅', name: 'Bronze' },
+  { han: '銀', name: 'Silver' },
+  { han: '玉', name: 'Jade' },
+  { han: '星', name: 'Star' },
+  { han: '雷', name: 'Thunder' },
+  { han: '龍', name: 'Dragon' },
+  { han: '仙', name: 'Immortal' },
+];
+
+/**
+ * Every archetype at every realm: 54 shapes times nine realms, 486 pieces.
+ *
+ * They are generated rather than typed out, which is the point — a new archetype adds
+ * nine pieces, and a tenth realm would add fifty-four, without a line of naming.
+ */
+export const GEAR: readonly GearTemplate[] = ARCHETYPES.flatMap((arch) =>
+  REALM_WORD.map((word, i): GearTemplate => ({
+    key: `${arch.key}${i + 1}`,
+    han: `${word.han}${arch.han}`,
+    name: `${word.name} ${arch.name}`,
+    slot: arch.slot,
+    icon: arch.icon,
+    realm: i + 1,
+    affix: arch.affix,
+    archetype: arch.key,
+  })),
+);
 
 /** One rolled line on a piece. 12 on a percentage affix means +12%. */
 export interface Roll {
@@ -250,6 +297,18 @@ export function templateOf(item: Item): GearTemplate {
 /** Gear that can drop in a realm: anything whose own realm has been reached. */
 export function droppableIn(realm: number): readonly GearTemplate[] {
   return GEAR.filter((g) => g.realm <= realm);
+}
+
+export const ARCHETYPE_BY_KEY: Readonly<Record<string, Archetype>> =
+  Object.fromEntries(ARCHETYPES.map((x) => [x.key, x]));
+
+export function archetypesOf(slot: Slot): readonly Archetype[] {
+  return ARCHETYPES.filter((x) => x.slot === slot);
+}
+
+/** The same shape at every realm, for a catalogue row. */
+export function ladderOf(archetype: string): readonly GearTemplate[] {
+  return GEAR.filter((g) => g.archetype === archetype).sort((x, y) => x.realm - y.realm);
 }
 
 export type Worn = Partial<Record<Slot, Item>>;

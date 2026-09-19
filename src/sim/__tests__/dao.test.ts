@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { NODES, NODE_BY_KEY, PATHS, PATH_INFO, TOTAL_COST, nodesOf } from '../../data/techniques.ts';
+import {
+  ALL_NODES, NODES, NODE_BY_KEY, PATHS, PATH_INFO, ROOT, TOTAL_COST, linksOf, nodesOf,
+} from '../../data/techniques.ts';
 import { SLOTS } from '../../data/gear.ts';
 import {
   affinity, canUnlock, daoEarned, daoFree, daoSpent, extraChestSlots,
@@ -17,15 +19,16 @@ const FULL_RUN = daoEarned(73, 9);
  * a test that does it is testing a state the game can never be in.
  */
 function branch(path: Parameters<typeof nodesOf>[0], keystone = false): string[] {
+  // Every branch grows from the root, so a legal build always holds it.
   const byTier = new Map<number, typeof NODES[number][]>();
   for (const node of nodesOf(path)) {
     if (!byTier.has(node.tier)) byTier.set(node.tier, []);
     byTier.get(node.tier)!.push(node);
   }
-  return [...byTier.entries()].sort((a, b) => a[0] - b[0]).map(([, nodes]) => {
+  return [ROOT.key, ...[...byTier.entries()].sort((a, b) => a[0] - b[0]).map(([, nodes]) => {
     const pick = nodes.find((x) => (keystone ? x.keystone : !x.keystone)) ?? nodes[0];
     return pick.key;
-  });
+  })];
 }
 
 describe('道 the tree', () => {
@@ -41,21 +44,22 @@ describe('道 the tree', () => {
 
   it('gives every path the same price and the same shape, fork included', () => {
     expect(NODES.length).toBe(27);                    // 24 steps plus one keystone each
+    expect(ALL_NODES.length).toBe(28);                // and the root they all grow from
     for (const path of PATHS) {
       const nodes = nodesOf(path);
       expect(nodes.length).toBe(9);
       // Eight tiers, with two nodes sharing tier 5 — the fork.
       expect(nodes.filter((n) => n.tier === 5)).toHaveLength(2);
       expect(nodes.filter((n) => n.keystone)).toHaveLength(1);
-      // Either way down the branch costs the same.
-      expect(branch(path).reduce((s, k) => s + NODE_BY_KEY[k].cost, 0)).toBe(20);
-      expect(branch(path, true).reduce((s, k) => s + NODE_BY_KEY[k].cost, 0)).toBe(20);
+      // Either way down the branch costs the same: 20 for the eight steps, +1 for 起 the root.
+      expect(branch(path).reduce((s, k) => s + NODE_BY_KEY[k].cost, 0)).toBe(21);
+      expect(branch(path, true).reduce((s, k) => s + NODE_BY_KEY[k].cost, 0)).toBe(21);
     }
     expect(new Set(NODES.map((n) => n.key)).size).toBe(NODES.length);
   });
 
   it('will not sell both sides of a fork', () => {
-    const upTo5 = branch('sword').slice(0, 5);
+    const upTo5 = branch('sword').slice(0, 6);
     expect(canUnlock('heavyplate', upTo5, 99)).toBe(true);
     expect(canUnlock('forsake', upTo5, 99)).toBe(true);
     expect(canUnlock('forsake', [...upTo5, 'heavyplate'], 99)).toBe(false);
@@ -63,24 +67,41 @@ describe('道 the tree', () => {
   });
 
   it('lets the branch continue past either side of the fork', () => {
-    const viaStep = [...branch('sword').slice(0, 5), 'heavyplate'];
-    const viaStone = [...branch('sword').slice(0, 5), 'forsake'];
+    const viaStep = [...branch('sword').slice(0, 6), 'heavyplate'];
+    const viaStone = [...branch('sword').slice(0, 6), 'forsake'];
     expect(canUnlock('formless', viaStep, 99)).toBe(true);
     expect(canUnlock('formless', viaStone, 99)).toBe(true);
   });
 
-  it('will not sell a node whose requirement is missing', () => {
-    expect(canUnlock('opening', [], 99)).toBe(true);
-    expect(canUnlock('edge', [], 99)).toBe(false);          // needs 起手 above it
-    expect(canUnlock('edge', ['opening'], 99)).toBe(true);
-    expect(canUnlock('opening', ['opening'], 99)).toBe(false); // already taken
-    expect(canUnlock('opening', [], 0)).toBe(false);        // no points
+  it('will not sell a node with nothing leading to it', () => {
+    expect(canUnlock(ROOT.key, [], 99)).toBe(true);
+    expect(canUnlock('opening', [], 99)).toBe(false);          // the root comes first
+    expect(canUnlock('opening', [ROOT.key], 99)).toBe(true);
+    expect(canUnlock('edge', [ROOT.key], 99)).toBe(false);     // 起手 is still missing
+    expect(canUnlock(ROOT.key, [ROOT.key], 99)).toBe(false);   // already taken
+    expect(canUnlock(ROOT.key, [], 0)).toBe(false);            // no points
+  });
+
+  it('is one tree: the branches meet at the root and bridge to their neighbours', () => {
+    expect([...linksOf(ROOT.key)].sort()).toEqual(['breathing', 'gleaning', 'opening']);
+
+    // 神 sits in the middle, so it touches both others; 劍 and 運 never touch directly.
+    const crosses = (a: string, b: string) => linksOf(a).includes(b);
+    expect(crosses('chain', 'circulation')).toBe(true);       // 劍 ↔ 神 at tier 2
+    expect(crosses('circulation', 'pouch')).toBe(true);       // 神 ↔ 運 at tier 2
+    expect(crosses('chain', 'pouch')).toBe(false);
+
+    // And a bridge is walkable: 劍 to tier 2, across, and on down 神.
+    const mixed = [ROOT.key, 'opening', 'edge', 'chain'];
+    expect(canUnlock('circulation', mixed, 99)).toBe(true);
+    expect(canUnlock('focus', [...mixed, 'circulation'], 99)).toBe(true);
+    console.log('\n  劍 → 鋒 → 連擊 → bridge → 周天 → 凝神: a mixed build, four points in\n');
   });
 
   it('counts points spent and left over', () => {
-    const taken = ['opening', 'edge', 'chain'];
-    expect(daoSpent(taken)).toBe(1 + 1 + 2);
-    expect(daoFree(73, 9, taken)).toBe(FULL_RUN - 4);
+    const taken = [ROOT.key, 'opening', 'edge', 'chain'];
+    expect(daoSpent(taken)).toBe(1 + 1 + 1 + 2);
+    expect(daoFree(73, 9, taken)).toBe(FULL_RUN - 5);
   });
 
   it('prints what a finished branch is worth', () => {
@@ -132,19 +153,27 @@ describe('道 the tree', () => {
     const monk: State = { ...bare, unlocked: branch('spirit') };
     expect(power(swordsman)).toBeGreaterThan(power(bare) * 2);
     expect(rateBonus(monk)).toBeGreaterThan(rateBonus(bare) * 2);
-    expect(power(monk)).toBeCloseTo(power(bare), 6);   // 神 buys no power at all
+    // 起 the root hands everyone +10% of both, and nothing on 神 adds power beyond it.
+    const rooted: State = { ...bare, unlocked: [ROOT.key] };
+    expect(power(monk)).toBeCloseTo(power(rooted), 6);
   });
 
-  it('a save cannot hold a node without the ones above it', () => {
+  it('a save cannot hold a node with nothing leading to it', () => {
     expect(validateUnlocked(['tenthousand'])).toEqual([]);
-    expect(validateUnlocked(['opening', 'chain'])).toEqual(['opening']);   // 鋒 is missing
+    expect(validateUnlocked(['opening'])).toEqual([]);                      // no root
+    expect(validateUnlocked([ROOT.key, 'chain'])).toEqual([ROOT.key]);      // 起手 is missing
+    expect(validateUnlocked([ROOT.key, 'opening', 'edge']))
+      .toEqual([ROOT.key, 'opening', 'edge']);
+    expect(validateUnlocked([ROOT.key, ROOT.key])).toEqual([ROOT.key]);
+    expect(validateUnlocked(['nonsense', 42, null])).toEqual([]);
+
     // Both sides of a fork in one save: only one survives.
-    const both = validateUnlocked([...branch('sword').slice(0, 5), 'heavyplate', 'forsake']);
+    const both = validateUnlocked([...branch('sword').slice(0, 6), 'heavyplate', 'forsake']);
     expect(both).toContain('heavyplate');
     expect(both).not.toContain('forsake');
-    expect(validateUnlocked(['opening', 'edge', 'breathing']))
-      .toEqual(['opening', 'edge', 'breathing']);
-    expect(validateUnlocked(['opening', 'opening'])).toEqual(['opening']);
-    expect(validateUnlocked(['nonsense', 42, null])).toEqual([]);
+
+    // A save that walked a bridge keeps the whole mixed shape.
+    const mixed = [ROOT.key, 'opening', 'edge', 'chain', 'circulation', 'focus'];
+    expect(validateUnlocked(mixed).sort()).toEqual([...mixed].sort());
   });
 });

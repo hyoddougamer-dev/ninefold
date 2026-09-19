@@ -10,10 +10,12 @@ import { writeFileSync } from 'node:fs';
 import { gearTile } from '../src/art/gear.ts';
 import { icon } from '../src/art/icon.ts';
 import {
-  AFFIXES, AFFIX_INFO, GEAR, RARITY_INFO, SECONDARIES, SLOTS, SLOT_INFO,
-  baseValue, type Rarity,
+  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITY_INFO, REALM_WORD, SECONDARIES,
+  SLOTS, SLOT_INFO, archetypesOf, baseValue, ladderOf, type Rarity,
 } from '../src/data/gear.ts';
-import { PATHS, PATH_INFO, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
+import {
+  LINKS, PATHS, PATH_INFO, ROOT, TOTAL_COST, nodesOf, type Node, type Path,
+} from '../src/data/techniques.ts';
 import { affinity, daoEarned, extraChestSlots, powerMultiplier, rateMultiplier } from '../src/sim/dao.ts';
 import { realm as realmOf } from '../src/data/realms.ts';
 
@@ -25,34 +27,121 @@ const rarityForRealm = (realm: number): Rarity =>
 
 const catalogue = SLOTS.map((slot) => {
   const info = SLOT_INFO[slot];
-  const pieces = GEAR.filter((g) => g.slot === slot).sort((a, b) => a.realm - b.realm);
+  const shapes = archetypesOf(slot);
   return `<section class="slot">
     <div class="slothead">
       <span class="ic">${icon(info.empty, 28)}</span>
       <h3><span class="cjk">${info.han}</span> ${info.name}</h3>
-      <span class="axes">${[...new Set(pieces.map((x) => x.affix))]
+      <span class="axes">${[...new Set(shapes.map((x) => x.affix))]
         .map((a) => `<span class="cjk">${AFFIX_INFO[a].han}</span>`).join('')}</span>
-      <span class="count">${pieces.length}</span>
+      <span class="count">${shapes.length} × 9</span>
     </div>
-    <div class="grid">
-      ${pieces.map((g) => {
-        const rarity = rarityForRealm(g.realm);
-        const rar = RARITY_INFO[rarity];
-        const affix = AFFIX_INFO[g.affix];
-        const value = baseValue(g, rarity, g.affix);
-        return `<figure class="piece">
-          ${gearTile({ id: g.key, template: g.key, rarity, rolls: [] }, { size: 68, spin: 0.12 })}
-          <figcaption>
-            <b class="cjk" style="color:${rar.colour}">${g.han}</b>
-            <i>${g.name}</i>
-            <span class="axis"><span class="cjk">${affix.han}</span> +${value}${affix.unit === '%' ? '%' : ''}</span>
-            <span style="color:${realmOf(g.realm).colour}">reino ${g.realm}</span>
-          </figcaption>
-        </figure>`;
+    <div class="scrollx"><div class="ladders">
+      <div class="lhead"><span></span>${REALM_WORD.map((w, i) =>
+        `<span style="color:${realmOf(i + 1).colour}"><b class="cjk">${w.han}</b>${i + 1}</span>`).join('')}</div>
+      ${shapes.map((arch) => {
+        const affix = AFFIX_INFO[arch.affix];
+        return `<div class="ladder">
+          <div class="shape">
+            <span class="ic">${icon(arch.icon, 22)}</span>
+            <span>
+              <b class="cjk">${arch.han}</b> <em>${arch.name}</em>
+              <i><span class="cjk">${affix.han}</span> ${affix.label}</i>
+            </span>
+          </div>
+          ${ladderOf(arch.key).map((g) => {
+            const rarity = rarityForRealm(g.realm);
+            const value = baseValue(g, rarity, g.affix);
+            return `<figure class="piece" title="${g.han} ${g.name}">
+              ${gearTile({ id: g.key, template: g.key, rarity, rolls: [] }, { size: 52, spin: 0.1 })}
+              <figcaption>
+                <b class="cjk" style="color:${RARITY_INFO[rarity].colour}">${g.han}</b>
+                <span class="axis">+${value}${affix.unit === '%' ? '%' : ''}</span>
+              </figcaption>
+            </figure>`;
+          }).join('')}
+        </div>`;
       }).join('')}
-    </div>
+    </div></div>
   </section>`;
 }).join('');
+
+/* 道 The tree, drawn on one canvas — the same layout the game's own 道 screen uses. */
+const R = 15;
+const GAP = 62;
+const FORK = 19;
+const COLS: Record<Path, number> = { sword: 84, spirit: 250, fortune: 416 };
+const CW = 500;
+const TOP = 26;
+
+interface Placed { node: Node; x: number; y: number }
+
+const PLACED: Placed[] = (() => {
+  const out: Placed[] = [{ node: ROOT, x: COLS.spirit, y: TOP }];
+  for (const path of PATHS) {
+    const byTier = new Map<number, Node[]>();
+    for (const node of nodesOf(path)) {
+      if (!byTier.has(node.tier)) byTier.set(node.tier, []);
+      byTier.get(node.tier)!.push(node);
+    }
+    for (const [tier, row] of byTier) {
+      const y = TOP + 52 + tier * GAP;
+      if (row.length === 1) out.push({ node: row[0], x: COLS[path], y });
+      else row.forEach((node, i) => out.push({ node, x: COLS[path] + (i === 0 ? -FORK : FORK), y }));
+    }
+  }
+  return out;
+})();
+
+const CH = Math.max(...PLACED.map((p) => p.y)) + R + 16;
+const AT = new Map(PLACED.map((p) => [p.node.key, p]));
+const hueOf = (node: Node) => (node.key === ROOT.key ? '#E7EAFF' : PATH_INFO[node.path].colour);
+
+const edges = (() => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const [from, tos] of Object.entries(LINKS)) {
+    for (const to of tos) {
+      const id = [from, to].sort().join('|');
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const a = AT.get(from);
+      const b = AT.get(to);
+      if (!a || !b) continue;
+      const bridge = a.node.path !== b.node.path && a.node.key !== ROOT.key && b.node.key !== ROOT.key;
+      const stone = a.node.keystone || b.node.keystone;
+      out.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${
+        bridge ? 'var(--gold)' : 'var(--line)'}" stroke-width="${bridge ? 1.6 : 2}"${
+        bridge ? ' stroke-dasharray="3 4"' : stone ? ' stroke-dasharray="5 4"' : ''} />`);
+    }
+  }
+  return out.join('');
+})();
+
+/** A fork puts two nodes on one line, so their names are staggered rather than stacked. */
+const FORKED = new Set(PLACED.filter(({ node }) =>
+  PLACED.some((o) => o.node !== node && o.y === PLACED.find((q) => q.node === node)!.y
+    && o.node.path === node.path)).map((p) => p.node.key));
+
+const dots = PLACED.map(({ node, x, y }) => {
+  const hue = hueOf(node);
+  const r = node.key === ROOT.key ? R + 3 : node.keystone ? R + 1 : R;
+  const two = node.han.length > 1;
+  const drop = FORKED.has(node.key) && node.keystone ? r + 25 : r + 12;
+  return `<g>
+    <circle cx="${x}" cy="${y}" r="${r}" fill="var(--panel2)" stroke="${hue}"
+      stroke-width="${node.keystone || node.key === ROOT.key ? 2.2 : 1.4}"
+      ${node.keystone ? 'stroke-dasharray="4 3"' : ''} />
+    <text x="${x}" y="${y + (two ? 5 : 6)}" text-anchor="middle" font-size="${two ? 12 : 17}"
+      fill="${hue}" font-family="'Noto Serif SC',serif">${node.han}</text>
+    <text x="${x}" y="${y + drop}" text-anchor="middle" font-size="9.5" fill="var(--faint)"
+      font-family="Archivo,sans-serif">${node.name}</text>
+  </g>`;
+}).join('');
+
+const canvas = `<div class="scrollx"><svg class="canvas" viewBox="0 0 ${CW} ${CH}" width="${CW}" height="${CH}">
+  ${edges}${dots}
+</svg></div>`;
 
 const tree = PATHS.map((path) => {
   const info = PATH_INFO[path];
@@ -73,7 +162,7 @@ const tree = PATHS.map((path) => {
       </span>
     </div>
     <ol class="nodes">
-      ${nodes.map((x) => `<li>
+      ${nodes.map((x) => `<li${x.keystone ? ' class="stone"' : ''}>
         <span class="cost">${x.cost}</span>
         <span class="body">
           <b class="cjk">${x.han}</b> <em>${x.name}</em>
@@ -81,7 +170,7 @@ const tree = PATHS.map((path) => {
         </span>
       </li>`).join('')}
     </ol>
-    <p class="gains">Inteiro: ${gains} · custa 20 道</p>
+    <p class="gains">Um ramo até ao fim: ${gains} · 20 道 (+1 pela raiz 起)</p>
   </div>`;
 }).join('');
 
@@ -121,23 +210,37 @@ const page = `<title>器道 Equipamento e Árvore</title>
           display:flex; flex-direction:column; gap:16px; }
 
   /* catálogo */
-  .slot { display:flex; flex-direction:column; gap:12px; margin-top:26px; }
+  .scrollx { overflow-x:auto; }
+  .slot { display:flex; flex-direction:column; gap:12px; margin-top:32px; }
   .slothead { display:flex; align-items:center; gap:11px; }
   .slothead .ic { color:var(--cyan); display:grid; place-items:center; }
   .slothead .ic svg { display:block; }
   .slothead .count { margin-left:auto; font-family:Rajdhani,sans-serif; font-weight:700;
                      color:var(--faint); }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:12px; }
-  .piece { margin:0; display:flex; flex-direction:column; align-items:center; gap:5px; }
-  .piece svg { display:block; }
-  .piece figcaption { text-align:center; line-height:1.3; }
-  .piece b { display:block; font-size:15px; }
-  .piece i { font-style:normal; font-size:10.5px; color:var(--faint); display:block; }
-  .piece span { font-size:9.5px; letter-spacing:.06em; }
-  .piece .axis { display:block; font-size:11px; color:var(--gold); font-family:Rajdhani,sans-serif;
-                 font-weight:700; margin-top:1px; }
-  .piece .axis .cjk { font-family:'Noto Serif SC',serif; font-weight:400; margin-right:2px; }
   .slothead .axes { margin-left:10px; font-size:15px; color:var(--faint); letter-spacing:.14em; }
+
+  /* uma escada por forma: a mesma peça, do reino 1 ao 9 */
+  .ladders { display:flex; flex-direction:column; gap:4px; min-width:660px; }
+  .lhead, .ladder { display:grid; grid-template-columns:154px repeat(9,1fr); gap:6px;
+                    align-items:center; }
+  .lhead span { text-align:center; font-family:Rajdhani,sans-serif; font-weight:700;
+                font-size:11px; letter-spacing:.08em; }
+  .lhead b { font-family:'Noto Serif SC',serif; font-weight:400; margin-right:3px; }
+  .ladder { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
+            padding:7px 9px; }
+  .shape { display:flex; gap:8px; align-items:flex-start; }
+  .shape .ic { color:var(--cyan); flex:none; display:grid; place-items:center; margin-top:2px; }
+  .shape .ic svg { display:block; }
+  .shape b { font-size:16px; }
+  .shape em { font-style:normal; font-size:12.5px; color:var(--text); }
+  .shape i { font-style:normal; display:block; font-size:10.5px; color:var(--faint); }
+  .shape i .cjk { margin-right:3px; }
+  .piece { margin:0; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .piece svg { display:block; }
+  .piece figcaption { text-align:center; line-height:1.25; }
+  .piece b { display:block; font-size:13px; }
+  .piece .axis { display:block; font-size:10.5px; color:var(--gold);
+                 font-family:Rajdhani,sans-serif; font-weight:700; }
 
   /* árvore */
   .tree { display:grid; gap:20px; }
@@ -164,6 +267,10 @@ const page = `<title>器道 Equipamento e Árvore</title>
   .nodes i { font-style:normal; display:block; font-size:12.5px; color:var(--text); opacity:.8; }
   .gains { font-size:13px; color:var(--hue); font-family:Rajdhani,sans-serif; font-weight:600;
            border-top:1px solid var(--line); padding-top:10px; }
+  .nodes li.stone::before { background:var(--ground); border:2px solid var(--hue); left:-6px;
+                            width:9px; height:9px; }
+  .nodes li.stone b { color:var(--hue); }
+  .canvas { display:block; margin:6px auto; max-width:100%; height:auto; }
 
   table { width:100%; border-collapse:collapse; font-size:15px; }
   th { text-align:right; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
@@ -185,7 +292,7 @@ const page = `<title>器道 Equipamento e Árvore</title>
 <div class="sheet">
   <header>
     <h1>器道</h1>
-    <p class="sub">As 54 peças, e a árvore de técnicas.</p>
+    <p class="sub">As ${GEAR.length} peças, e a árvore de técnicas.</p>
   </header>
 
   <div class="part">
@@ -212,14 +319,25 @@ const page = `<title>器道 Equipamento e Árvore</title>
 
   <div class="part">
     <p class="tag">道 A árvore</p>
-    <h2>Três caminhos, oito nós cada</h2>
+    <h2>Uma árvore só</h2>
+    <p class="says">Não são três árvores lado a lado — é uma. Todos os ramos nascem da
+      mesma raiz <b class="cjk" style="color:var(--text)">起</b>, e há
+      <b style="color:var(--gold)">pontes</b> (a tracejado dourado) que atravessam entre
+      ramos vizinhos em duas alturas. Dá para subir o 劍 até ao meio, atravessar para o
+      神, e descer pelo 運.</p>
+    <p class="says">O 神 fica no meio, por isso toca nos outros dois; o 劍 e o 運 nunca se
+      tocam directamente. Ir de um ao outro custa uma passagem pelo meio — e é isso que
+      torna o centro um sítio que vale a pena ocupar.</p>
+    ${canvas}
     <p class="says">Uma corrida inteira ganha <span class="big">${FULL_RUN} 道</span> —
       e comprar a árvore toda custa <span class="big">${TOTAL_COST}</span>. Nunca chega,
       e é essa a ideia: uma árvore que se acaba é uma lista de tarefas, não uma escolha.</p>
-    <p class="says">Um caminho inteiro custa 20. Dá para terminar um e levar 22 para outro —
-      ou espalhar por três e não terminar nenhum.</p>
+    <p class="says">Um ramo inteiro custa 21 (a raiz incluída). Dá para terminar um e levar
+      21 para outro — ou espalhar por três e não terminar nenhum.</p>
     <p class="says" style="font-size:15px">Os pontos vêm da própria subida: um por cada
-      três camadas abertas, dois por cada guardiã que cai.</p>
+      três camadas abertas, dois por cada guardiã que cai. Os nós a tracejado são
+      <b style="color:var(--text)">chaves</b>: mais fortes do que o nó ao lado, e cada uma
+      abdica de alguma coisa. Só se pode levar um dos dois.</p>
     <div class="tree">${tree}</div>
   </div>
 
@@ -242,13 +360,17 @@ const page = `<title>器道 Equipamento e Árvore</title>
 
   <div class="part">
     <p class="tag">器 O catálogo</p>
-    <h2>As 54 peças</h2>
-    <p class="says">Nove por espaço, uma por reino. Nenhuma partilha desenho com outra —
-      há um teste a garanti-lo. A moldura mostra a raridade típica do reino de cada peça,
-      para se verem os cinco níveis, e o número dourado é a linha principal dessa peça
+    <h2>As ${GEAR.length} peças</h2>
+    <p class="says">${ARCHETYPES.length} formas — nove por cada espaço — e cada forma
+      existe <em>nos nove reinos</em>. É a liberdade que pediste: quem quer andar de leque
+      não é obrigado a trocar para espada no reino 4 porque o leque acabou. A forma é a
+      escolha; o reino é só a altura a que se encontra.</p>
+    <p class="says">Cada linha é uma escada: a mesma forma, do reino 1 ao 9. A moldura
+      mostra a raridade típica desse reino, e o número dourado é a linha principal da peça
       nesse nível.</p>
     <p class="says">Repara nos símbolos ao lado do nome de cada espaço: são os eixos que
-      esse espaço oferece ao longo dos nove reinos. Nenhum espaço serve um caminho só.</p>
+      esse espaço oferece. Nenhum espaço serve um caminho só, e nenhuma forma partilha
+      desenho com outra — há um teste a garanti-lo.</p>
     ${catalogue}
   </div>
 </div>`;
