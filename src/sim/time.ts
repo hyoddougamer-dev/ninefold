@@ -1,5 +1,6 @@
 import { BASE_RATE, LAYERS_PER_REALM, LAYER_BONUS, REALM_COST } from './balance.ts';
 import { rateBonus, type State } from './state.ts';
+import { layerCostFactor } from './dao.ts';
 
 /** How many layers have been opened in total, across every realm. 0..81. */
 export function layersOpened(s: State): number {
@@ -11,13 +12,13 @@ export function rate(s: State): number {
   return BASE_RATE * LAYER_BONUS ** layersOpened(s) * rateBonus(s);
 }
 
-export function layerCost(realm: number): number {
-  return REALM_COST[realm - 1] / LAYERS_PER_REALM;
+export function layerCost(realm: number, unlocked: readonly string[] = []): number {
+  return (REALM_COST[realm - 1] / LAYERS_PER_REALM) * layerCostFactor(unlocked);
 }
 
 /** 0..1 along the current layer. */
 export function progress(s: State): number {
-  const c = layerCost(s.realm);
+  const c = layerCost(s.realm, s.unlocked);
   return Number.isFinite(c) ? Math.min(1, s.qi / c) : 0;
 }
 
@@ -47,7 +48,7 @@ export function advance(s: State, now: number, auto = false): State {
 
   for (let guard = 0; guard <= LAYERS_PER_REALM * 9 + 1; guard++) {
     const r = rate({ ...s, realm, layer });
-    const cost = layerCost(realm);
+    const cost = layerCost(realm, s.unlocked);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
 
     // At the ceiling, qi banks and time ends here. Only 突破 leaves a realm.

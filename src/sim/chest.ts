@@ -16,13 +16,15 @@ import {
 export const CHEST_LIMIT = 40;
 export const FUSE_COUNT = 3;
 
-export function chestFull(chest: readonly Item[]): boolean {
-  return chest.length >= CHEST_LIMIT;
+export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean {
+  return chest.length >= limit;
 }
 
 /** Adds an item if there is room. Returns null when the chest is full — the caller decides. */
-export function addToChest(chest: readonly Item[], item: Item): readonly Item[] | null {
-  return chestFull(chest) ? null : [...chest, item];
+export function addToChest(
+  chest: readonly Item[], item: Item, limit = CHEST_LIMIT,
+): readonly Item[] | null {
+  return chestFull(chest, limit) ? null : [...chest, item];
 }
 
 export function removeFromChest(chest: readonly Item[], id: string): readonly Item[] {
@@ -44,12 +46,12 @@ export function equip(worn: Worn, chest: readonly Item[], item: Item, slot: Slot
   };
 }
 
-export function unequip(worn: Worn, chest: readonly Item[], slot: Slot): {
+export function unequip(worn: Worn, chest: readonly Item[], slot: Slot, limit = CHEST_LIMIT): {
   worn: Worn; chest: readonly Item[]; refused: boolean;
 } {
   const item = worn[slot];
   if (!item) return { worn, chest, refused: false };
-  if (chestFull(chest)) return { worn, chest, refused: true };
+  if (chestFull(chest, limit)) return { worn, chest, refused: true };
   const next = { ...worn };
   delete next[slot];
   return { worn: next, chest: [...chest, item], refused: false };
@@ -82,9 +84,9 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
  * rank's base. Three lucky 靈 make a better 玄 than three unlucky ones, so a good roll
  * is never wasted by fusing it.
  */
-export function fuse(chest: readonly Item[], template: string, rarity: Rarity): {
-  chest: readonly Item[]; made: Item | null;
-} {
+export function fuse(
+  chest: readonly Item[], template: string, rarity: Rarity, quality = 1,
+): { chest: readonly Item[]; made: Item | null } {
   const up = nextRarity(rarity);
   const tpl = TEMPLATE_BY_KEY[template];
   if (!up || !tpl) return { chest, made: null };
@@ -95,15 +97,15 @@ export function fuse(chest: readonly Item[], template: string, rarity: Rarity): 
   const eaten = matching.slice(0, FUSE_COUNT);
   const eatenIds = new Set(eaten.map((x) => x.id));
   const base = basePercent(tpl, rarity);
-  const quality = base > 0
+  const rolled = (base > 0
     ? eaten.reduce((sum, x) => sum + x.percent, 0) / FUSE_COUNT / base
-    : 1;
+    : 1) * quality;                            // 巧手 Deft Hands lifts this
 
   const made: Item = {
-    id: `fuse-${template}-${up}-${chest.length}-${Math.round(quality * 1000)}`,
+    id: `fuse-${template}-${up}-${chest.length}-${Math.round(rolled * 1000)}`,
     template,
     rarity: up,
-    percent: Math.round(basePercent(tpl, up) * quality * 10) / 10,
+    percent: Math.round(basePercent(tpl, up) * rolled * 10) / 10,
   };
 
   return { chest: [...chest.filter((x) => !eatenIds.has(x.id)), made], made };

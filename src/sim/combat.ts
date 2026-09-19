@@ -1,6 +1,7 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
 import { UPGRADE_INFO, power, type State } from './state.ts';
+import { beastWeakness } from './dao.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -90,7 +91,7 @@ function dice(seed: number): () => number {
 
 export function fight(s: State, b: Beast, seed: number): Outcome {
   const pp = power(s);
-  const bp = beastPower(b);
+  const bp = effectiveBeastPower(s, b);
   let ph = pp * 10;
   let bh = bp * 10;
   const ph0 = ph;
@@ -123,8 +124,13 @@ export function loot(b: Beast): number {
 
 /** An honest reading of the odds, so the screen can warn before you go in. */
 export function odds(s: State, b: Beast): number {
-  const r = power(s) / beastPower(b);
+  const r = power(s) / effectiveBeastPower(s, b);
   return Math.max(0.02, Math.min(0.98, 1 / (1 + Math.exp(-(r - 1) * 4))));
+}
+
+/** A beast's power as this cultivator meets it — 破甲 Sunder shaves it down. */
+export function effectiveBeastPower(s: State, b: Beast): number {
+  return beastPower(b) * beastWeakness(s.unlocked);
 }
 
 export function currentWarden(s: State): Beast {

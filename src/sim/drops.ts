@@ -12,9 +12,15 @@ import {
  * reloaded to re-roll a bad drop, and nothing has to be stored to prevent that.
  */
 
-/** Commons drop sometimes; a warden always leaves something, because it only dies once. */
-export function dropChance(beast: Beast): number {
-  return beast.warden ? 1 : 0.18;
+export const BASE_DROP_CHANCE = 0.18;
+
+/**
+ * Commons drop sometimes; a warden always leaves something, because it only dies once.
+ * 運 Fortune adds to the first and can make the second true of everything.
+ */
+export function dropChance(beast: Beast, bonus = 0, always = false): number {
+  if (beast.warden || always) return 1;
+  return Math.min(1, BASE_DROP_CHANCE + bonus);
 }
 
 /**
@@ -22,9 +28,9 @@ export function dropChance(beast: Beast): number {
  * harder still — which is what makes the nine warden fights worth looking forward to
  * rather than being a toll on the way up.
  */
-export function rarityWeights(beast: Beast): Record<Rarity, number> {
+export function rarityWeights(beast: Beast, luck = 1): Record<Rarity, number> {
   const r = beast.realm;
-  const lift = beast.warden ? 2.6 : 1;
+  const lift = (beast.warden ? 2.6 : 1) * luck;
   return {
     common: Math.max(4, 60 - 5 * r) / lift,
     spirit: 25 + r,
@@ -46,8 +52,8 @@ function dice(seed: number): () => number {
   };
 }
 
-function pickRarity(beast: Beast, roll: number): Rarity {
-  const w = rarityWeights(beast);
+function pickRarity(beast: Beast, roll: number, luck: number): Rarity {
+  const w = rarityWeights(beast, luck);
   const total = RARITIES.reduce((sum, r) => sum + w[r], 0);
   let at = roll * total;
   for (const r of RARITIES) {
@@ -60,16 +66,27 @@ function pickRarity(beast: Beast, roll: number): Rarity {
 /** How much an item's rolled percentage may swing either side of its base. */
 export const VARIANCE = 0.15;
 
-export function rollDrop(beast: Beast, realm: number, seed: number): Item | null {
+export interface Fortune {
+  /** Points added to a common's drop chance, as a fraction. */
+  readonly chance?: number;
+  /** How much the rare end of the table is weighted up. */
+  readonly luck?: number;
+  /** 造化 Creation: every beast drops something. */
+  readonly always?: boolean;
+}
+
+export function rollDrop(
+  beast: Beast, realm: number, seed: number, fortune: Fortune = {},
+): Item | null {
   const d = dice(seed);
-  if (d() > dropChance(beast)) return null;
+  if (d() > dropChance(beast, fortune.chance ?? 0, fortune.always ?? false)) return null;
 
   // Only gear the cultivator could plausibly find: the beast's realm, capped by theirs.
   const pool = droppableIn(Math.min(beast.realm, realm));
   if (pool.length === 0) return null;
   const template: GearTemplate = pool[Math.floor(d() * pool.length) % pool.length];
 
-  const rarity = pickRarity(beast, d());
+  const rarity = pickRarity(beast, d(), fortune.luck ?? 1);
   const swing = 1 - VARIANCE + d() * VARIANCE * 2;
   const percent = Math.round(basePercent(template, rarity) * swing * 10) / 10;
 
@@ -77,8 +94,8 @@ export function rollDrop(beast: Beast, realm: number, seed: number): Item | null
 }
 
 /** The odds of each rank from one beast, for the screen to show honestly. */
-export function rarityOdds(beast: Beast): Record<Rarity, number> {
-  const w = rarityWeights(beast);
+export function rarityOdds(beast: Beast, luck = 1): Record<Rarity, number> {
+  const w = rarityWeights(beast, luck);
   const total = RARITIES.reduce((sum, r) => sum + w[r], 0);
   return Object.fromEntries(
     RARITIES.map((r) => [r, w[r] / total]),

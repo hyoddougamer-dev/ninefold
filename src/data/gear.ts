@@ -188,15 +188,24 @@ export function droppableIn(realm: number): readonly GearTemplate[] {
 
 export type Worn = Partial<Record<Slot, Item>>;
 
-/** What a whole set is worth: one multiplier for power, one for the qi rate. */
-export function setBonus(worn: Worn): { power: number; rate: number } {
+/**
+ * What a whole set is worth: one multiplier for power, one for the qi rate.
+ *
+ * `affinityOf` is how the technique tree reaches gear without locking any of it away —
+ * a path makes certain slots count for more, rather than making the rest unwearable.
+ */
+export function setBonus(
+  worn: Worn,
+  affinityOf: (slot: Slot) => number = () => 1,
+): { power: number; rate: number } {
   let power = 0;
   let rate = 0;
   for (const slot of SLOTS) {
     const it = worn[slot];
     if (!it) continue;
-    if (templateOf(it).affix === 'power') power += it.percent;
-    else rate += it.percent;
+    const value = it.percent * affinityOf(slot);
+    if (templateOf(it).affix === 'power') power += value;
+    else rate += value;
   }
   return { power: 1 + power / 100, rate: 1 + rate / 100 };
 }

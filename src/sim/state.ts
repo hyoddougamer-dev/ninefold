@@ -4,6 +4,7 @@ import {
   RARITIES, SLOTS, TEMPLATE_BY_KEY, setBonus, type Item, type Rarity, type Worn,
 } from '../data/gear.ts';
 import { CHEST_LIMIT } from './chest.ts';
+import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -40,8 +41,10 @@ export interface State {
   killed: Record<string, number>;
   /** 器 What is on the body. */
   worn: Worn;
-  /** 藏 What is in the chest, capped at CHEST_LIMIT. */
+  /** 藏 What is in the chest, capped at CHEST_LIMIT plus whatever 運 has added. */
   chest: Item[];
+  /** 道 Technique nodes taken, in the order they were taken. */
+  unlocked: string[];
 }
 
 export function newState(now: number): State {
@@ -52,6 +55,7 @@ export function newState(now: number): State {
     killed: {},
     worn: {},
     chest: [],
+    unlocked: [],
   };
 }
 
@@ -82,7 +86,8 @@ export function buy(s: State, u: Upgrade): State {
 export function rateBonus(s: State): number {
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
-    * setBonus(s.worn).rate;
+    * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).rate
+    * rateMultiplier(s.unlocked);
 }
 
 /** 力 Combat power. It decides every beast, and only upgrades and the ladder move it. */
@@ -90,13 +95,14 @@ export function power(s: State): number {
   const ladder = (s.realm - 1) * LAYERS_PER_REALM + s.layer + 1;
   return ladder * UPGRADE_INFO.technique.gain ** s.levels.technique
     * UPGRADE_INFO.cores.gain ** s.levels.cores
-    * setBonus(s.worn).power;
+    * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).power
+    * powerMultiplier(s.unlocked);
 }
 
 /** The realm is full and only the warden is left? */
 export function atCeiling(s: State): boolean {
   return s.layer >= LAYERS_PER_REALM - 1
-    && s.qi >= REALM_COST[s.realm - 1] / LAYERS_PER_REALM
+    && s.qi >= (REALM_COST[s.realm - 1] / LAYERS_PER_REALM) * layerCostFactor(s.unlocked)
     && Number.isFinite(REALM_COST[s.realm - 1]);
 }
 
@@ -186,5 +192,6 @@ export function validate(raw: unknown, now: number): State {
     killed,
     worn,
     chest,
+    unlocked: validateUnlocked(o.unlocked),
   };
 }
