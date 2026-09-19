@@ -14,18 +14,21 @@ import { gearTile, wornRim } from '../src/art/gear.ts';
 import { icon } from '../src/art/icon.ts';
 import {
   GEAR, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO,
-  basePercent, setBonus, TEMPLATE_BY_KEY, type Item, type Rarity, type Slot, type Worn,
+  baseValue, setBonus, TEMPLATE_BY_KEY, type Item, type Rarity, type Slot, type Worn,
 } from '../src/data/gear.ts';
 import { commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { rarityOdds } from '../src/sim/drops.ts';
 import { realm as realmOf } from '../src/data/realms.ts';
 
-const mk = (template: string, rarity: Rarity): Item => ({
-  id: `${template}-${rarity}`,
-  template,
-  rarity,
-  percent: Math.round(basePercent(TEMPLATE_BY_KEY[template], rarity) * 10) / 10,
-});
+const mk = (template: string, rarity: Rarity): Item => {
+  const tpl = TEMPLATE_BY_KEY[template];
+  return {
+    id: `${template}-${rarity}`,
+    template,
+    rarity,
+    rolls: [{ affix: tpl.affix, value: baseValue(tpl, rarity, tpl.affix) }],
+  };
+};
 
 /** The best template in each slot, so a set reads as that rank's ceiling. */
 const BEST: Record<Slot, string> = Object.fromEntries(SLOTS.map((s) => {
@@ -46,7 +49,7 @@ const ladder = RARITIES.map((rarity) => {
     <figcaption>
       <b class="cjk" style="color:${info.colour}">${info.han}</b>
       <i>${info.name}</i>
-      <span class="mono" style="color:${info.colour}">+${it.percent}%</span>
+      <span class="mono" style="color:${info.colour}">+${it.rolls[0].value}%</span>
     </figcaption>
   </figure>`;
 }).join('');

@@ -1,6 +1,9 @@
 import {
-  RARITIES, TEMPLATE_BY_KEY, basePercent, type Item, type Rarity, type Slot, type Worn,
+  RARITIES, TEMPLATE_BY_KEY, baseValue, roundValue,
+  type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
+import { SECONDARIES } from '../data/gear.ts';
+import { chestCap, extraChestSlots } from './dao.ts';
 
 /**
  * 藏 The chest, and 煉 the fusion.
@@ -96,17 +99,50 @@ export function fuse(
 
   const eaten = matching.slice(0, FUSE_COUNT);
   const eatenIds = new Set(eaten.map((x) => x.id));
-  const base = basePercent(tpl, rarity);
+
+  // Quality carries across: the average of what went in, measured against its own rank's
+  // base, so three lucky pieces make a better one than three unlucky ones.
+  const base = baseValue(tpl, rarity, tpl.affix);
   const rolled = (base > 0
-    ? eaten.reduce((sum, x) => sum + x.percent, 0) / FUSE_COUNT / base
+    ? eaten.reduce((sum, x) => sum + (x.rolls[0]?.value ?? 0), 0) / FUSE_COUNT / base
     : 1) * quality;                            // 巧手 Deft Hands lifts this
+
+  // And so does the flavour: the new piece's extra lines are the ones that turned up
+  // most often in the three that were melted, so a set of luck pieces fuses into a luck
+  // piece rather than into a lottery.
+  const tally = new Map<Affix, number>();
+  for (const it of eaten) {
+    for (const roll of it.rolls.slice(1)) tally.set(roll.affix, (tally.get(roll.affix) ?? 0) + 1);
+  }
+  const inherited = [...tally.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, SECONDARIES[up])
+    .map(([affix]): Roll => ({
+      affix,
+      value: roundValue(affix, baseValue(tpl, up, affix) * 0.6 * rolled),
+    }));
 
   const made: Item = {
     id: `fuse-${template}-${up}-${chest.length}-${Math.round(rolled * 1000)}`,
     template,
     rarity: up,
-    percent: Math.round(basePercent(tpl, up) * rolled * 10) / 10,
+    rolls: [
+      { affix: tpl.affix, value: roundValue(tpl.affix, baseValue(tpl, up, tpl.affix) * rolled) },
+      ...inherited,
+    ],
   };
 
   return { chest: [...chest.filter((x) => !eatenIds.has(x.id)), made], made };
+}
+
+/**
+ * The chest's real size: the base, what 運 has added, what 藏 rolls on gear add, and any
+ * keystone's cap, which overrides the lot.
+ *
+ * Gear slots arrive as a fraction because affinity multiplies them, so they are floored
+ * here — half a place in a chest is not a place, and the screen must never promise one.
+ */
+export function chestLimit(unlocked: readonly string[], gearSlots = 0): number {
+  const cap = chestCap(unlocked);
+  return cap ?? CHEST_LIMIT + extraChestSlots(unlocked) + Math.floor(Math.max(0, gearSlots));
 }

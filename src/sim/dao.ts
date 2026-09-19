@@ -28,10 +28,18 @@ export function daoFree(layersOpened: number, wardensKilled: number, unlocked: r
   return daoEarned(layersOpened, wardensKilled) - daoSpent(unlocked);
 }
 
-/** A node needs the one above it in its own branch. The first of a branch needs nothing. */
-export function requirement(node: Node): Node | null {
-  if (node.tier === 0) return null;
-  return nodesOf(node.path).find((x) => x.tier === node.tier - 1) ?? null;
+/**
+ * A node needs *a* node of the tier above it in its own branch — any of them, since a
+ * fork puts two nodes on the same tier. The first of a branch needs nothing.
+ */
+export function requirements(node: Node): readonly Node[] {
+  if (node.tier === 0) return [];
+  return nodesOf(node.path).filter((x) => x.tier === node.tier - 1);
+}
+
+/** The node this one would put out of reach, if it has a twin. */
+export function excludedBy(node: Node): Node | null {
+  return node.excludes ? NODE_BY_KEY[node.excludes] ?? null : null;
 }
 
 export function canUnlock(
@@ -39,8 +47,10 @@ export function canUnlock(
 ): boolean {
   const node = NODE_BY_KEY[key];
   if (!node || unlocked.includes(key)) return false;
-  const needs = requirement(node);
-  if (needs && !unlocked.includes(needs.key)) return false;
+  const twin = excludedBy(node);
+  if (twin && unlocked.includes(twin.key)) return false;      // the fork was already taken
+  const needs = requirements(node);
+  if (needs.length > 0 && !needs.some((x) => unlocked.includes(x.key))) return false;
   return free >= node.cost;
 }
 
@@ -52,7 +62,7 @@ export function nextOn(path: Path, unlocked: readonly string[]): Node | null {
 // ── what a bought tree does ──────────────────────────────────────────────────
 
 function effects(unlocked: readonly string[]): readonly Effect[] {
-  return unlocked.map((k) => NODE_BY_KEY[k]).filter(Boolean).map((x) => x.effect);
+  return unlocked.flatMap((k) => NODE_BY_KEY[k]?.effects ?? []);
 }
 
 function sum(unlocked: readonly string[], kind: Effect['kind'], field: 'percent' | 'slots'): number {
@@ -65,14 +75,16 @@ function sum(unlocked: readonly string[], kind: Effect['kind'], field: 'percent'
   return total;
 }
 
-/** Multiplier on combat power from 劍 nodes. */
+/** Multiplier on combat power from 劍 nodes, after any keystone's price. */
 export function powerMultiplier(unlocked: readonly string[]): number {
-  return 1 + sum(unlocked, 'power', 'percent') / 100;
+  const gain = 1 + sum(unlocked, 'power', 'percent') / 100;
+  return gain * (1 - sum(unlocked, 'powerCut', 'percent') / 100);
 }
 
-/** Multiplier on the qi rate from 神 nodes. */
+/** Multiplier on the qi rate from 神 nodes, after any keystone's price. */
 export function rateMultiplier(unlocked: readonly string[]): number {
-  return 1 + sum(unlocked, 'rate', 'percent') / 100;
+  const gain = 1 + sum(unlocked, 'rate', 'percent') / 100;
+  return gain * (1 - sum(unlocked, 'rateCut', 'percent') / 100);
 }
 
 /**
@@ -84,6 +96,8 @@ export function rateMultiplier(unlocked: readonly string[]): number {
 export function affinity(unlocked: readonly string[], slot: Slot): number {
   let bonus = 0;
   for (const e of effects(unlocked)) {
+    // 捨甲 Forsake Armour silences a slot outright — its price, and the reason it pays.
+    if (e.kind === 'affinityOff' && e.slots.includes(slot)) return 0;
     if (e.kind === 'affinity' && e.slots.includes(slot)) bonus += e.percent;
   }
   return 1 + bonus / 100;
@@ -113,6 +127,17 @@ export function extraChestSlots(unlocked: readonly string[]): number {
   return sum(unlocked, 'chestSlots', 'slots');
 }
 
+/** 空囊 Empty Pouch caps the chest outright, whatever else has been bought. */
+export function chestCap(unlocked: readonly string[]): number | null {
+  const caps = effects(unlocked).filter((e) => e.kind === 'chestCap');
+  return caps.length ? Math.min(...caps.map((e) => (e as { slots: number }).slots)) : null;
+}
+
+/** 空囊 also lifts every drop a rank. */
+export function dropsRankUp(unlocked: readonly string[]): boolean {
+  return effects(unlocked).some((e) => e.kind === 'rankUp');
+}
+
 export function fuseQuality(unlocked: readonly string[]): number {
   return 1 + sum(unlocked, 'fuseQuality', 'percent') / 100;
 }
@@ -129,13 +154,19 @@ export function validateUnlocked(raw: unknown): string[] {
     if (typeof key !== 'string' || !NODE_BY_KEY[key] || seen.has(key)) continue;
     seen.add(key);
   }
-  // Walk each branch in order and stop at the first gap, so an edited save cannot hold
-  // 萬劍 without everything above it.
+  // Walk each branch tier by tier and stop at the first gap, so an edited save cannot
+  // hold 萬劍 without everything above it — and cannot hold both sides of a fork.
   const kept: string[] = [];
   for (const path of ['sword', 'spirit', 'fortune'] as const) {
+    const byTier = new Map<number, Node[]>();
     for (const node of nodesOf(path)) {
-      if (!seen.has(node.key)) break;
-      kept.push(node.key);
+      if (!byTier.has(node.tier)) byTier.set(node.tier, []);
+      byTier.get(node.tier)!.push(node);
+    }
+    for (const [, nodes] of [...byTier.entries()].sort((a, b) => a[0] - b[0])) {
+      const taken = nodes.filter((x) => seen.has(x.key));
+      if (taken.length === 0) break;                 // a gap: nothing below it survives
+      kept.push(taken[0].key);                       // one side of a fork, never both
     }
   }
   return kept;

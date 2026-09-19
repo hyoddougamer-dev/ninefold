@@ -34,7 +34,7 @@ const catalogue = SLOTS.map((slot) => {
         const rarity = rarityForRealm(g.realm);
         const rar = RARITY_INFO[rarity];
         return `<figure class="piece">
-          ${gearTile({ id: g.key, template: g.key, rarity, percent: 0 }, { size: 68, spin: 0.12 })}
+          ${gearTile({ id: g.key, template: g.key, rarity, rolls: [] }, { size: 68, spin: 0.12 })}
           <figcaption>
             <b class="cjk" style="color:${rar.colour}">${g.han}</b>
             <i>${g.name}</i>

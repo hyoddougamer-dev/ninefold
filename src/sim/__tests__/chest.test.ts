@@ -1,19 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
-  GEAR, RARITIES, RARITY_INFO, SLOTS, TEMPLATE_BY_KEY, basePercent, setBonus,
+  GEAR, RARITIES, RARITY_INFO, SLOTS, TEMPLATE_BY_KEY, baseValue, setBonus,
   type Item, type Rarity,
 } from '../../data/gear.ts';
 import { CHEST_LIMIT, FUSE_COUNT, addToChest, equip, fusable, fuse, unequip } from '../chest.ts';
 import { rollDrop } from '../drops.ts';
 import { newState, power, validate } from '../state.ts';
 
-const mk = (template: string, rarity: Rarity, n: number): Item => ({
-  id: `${template}-${rarity}-${n}`,
-  template,
-  rarity,
-  percent: basePercent(TEMPLATE_BY_KEY[template], rarity),
-});
+/** A plain piece: its template's own line at its rank's base, and nothing else. */
+const mk = (template: string, rarity: Rarity, n: number): Item => {
+  const tpl = TEMPLATE_BY_KEY[template];
+  return {
+    id: `${template}-${rarity}-${n}`,
+    template,
+    rarity,
+    rolls: [{ affix: tpl.affix, value: baseValue(tpl, rarity, tpl.affix) }],
+  };
+};
+
+const primary = (it: Item) => it.rolls[0].value;
 
 describe('器 the table', () => {
   it('has nine pieces per slot, one per realm, and no repeated artwork', () => {
@@ -66,7 +72,7 @@ describe('煉 fusion', () => {
     const { chest: after, made } = fuse(chest, 'moonblade', 'spirit');
     expect(made?.rarity).toBe('mystic');
     expect(after).toHaveLength(1);
-    expect(made!.percent).toBeGreaterThan(chest[0].percent);
+    expect(primary(made!)).toBeGreaterThan(primary(chest[0]));
   });
 
   it('will not fuse two, and will not fuse past the top rank', () => {
@@ -81,12 +87,14 @@ describe('煉 fusion', () => {
 
   it('carries the roll quality across, so a lucky roll is never wasted', () => {
     const tpl = TEMPLATE_BY_KEY.moonblade;
-    const lucky = [0, 1, 2].map((i) => ({ ...mk('moonblade', 'spirit', i), percent: basePercent(tpl, 'spirit') * 1.15 }));
-    const poor = [0, 1, 2].map((i) => ({ ...mk('moonblade', 'spirit', i), percent: basePercent(tpl, 'spirit') * 0.85 }));
-    const a = fuse(lucky, 'moonblade', 'spirit').made!;
-    const b = fuse(poor, 'moonblade', 'spirit').made!;
-    expect(a.percent).toBeGreaterThan(b.percent);
-    console.log(`\n  three lucky 靈 make a 玄 of +${a.percent}%; three poor ones, +${b.percent}%\n`);
+    const at = (mult: number) => [0, 1, 2].map((i) => ({
+      ...mk('moonblade', 'spirit', i),
+      rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'spirit', tpl.affix) * mult }],
+    }));
+    const a = fuse(at(1.15), 'moonblade', 'spirit').made!;
+    const b = fuse(at(0.85), 'moonblade', 'spirit').made!;
+    expect(primary(a)).toBeGreaterThan(primary(b));
+    console.log(`\n  three lucky 靈 make a 玄 of +${primary(a)}; three poor ones, +${primary(b)}\n`);
   });
 
   it('climbing every rank by fusion costs 3^4 = 81 common pieces', () => {
@@ -96,14 +104,16 @@ describe('煉 fusion', () => {
     }
     const heaven = chest.filter((x) => x.rarity === 'heaven');
     expect(heaven).toHaveLength(1);
-    console.log(`  81 凡 pieces melt down into exactly one 天 at +${heaven[0].percent}%\n`);
+    console.log(`  81 凡 pieces melt down into exactly one 天 at +${primary(heaven[0])}\n`);
   });
 });
 
 describe('what is worn changes the cultivator', () => {
   it('raises power, and a bare body changes nothing', () => {
     const bare = newState(0);
-    const armed = { ...bare, worn: { weapon: mk('heavenscythe', 'heaven', 0) } };
+    // 天鐮 now rolls 氣, so power has to be tested with a piece that actually gives it.
+    const armed = { ...bare, worn: { weapon: mk('trident', 'heaven', 0) } };
+    expect(TEMPLATE_BY_KEY.trident.affix).toBe('power');
     expect(power(armed)).toBeGreaterThan(power(bare));
     expect(setBonus({}).power).toBe(1);
   });
@@ -125,11 +135,11 @@ describe('a save carrying gear is still input', () => {
   it('drops pieces that do not exist, duplicated ids, and anything over the limit', () => {
     const s = validate({
       ...newState(1000),
-      worn: { weapon: { id: 'a', template: 'notathing', rarity: 'heaven', percent: 999 } },
+      worn: { weapon: { id: 'a', template: 'notathing', rarity: 'heaven', rolls: [{ affix: 'power', value: 999 }] } },
       chest: [
-        { id: 'b', template: 'moonblade', rarity: 'spirit', percent: 11 },
-        { id: 'b', template: 'moonblade', rarity: 'spirit', percent: 11 },   // same id twice
-        ...Array.from({ length: 80 }, (_, i) => ({ id: `c${i}`, template: 'ironsword', rarity: 'common', percent: 7 })),
+        { id: 'b', template: 'moonblade', rarity: 'spirit', rolls: [{ affix: 'power', value: 11 }] },
+        { id: 'b', template: 'moonblade', rarity: 'spirit', rolls: [{ affix: 'power', value: 11 }] },  // same id twice
+        ...Array.from({ length: 80 }, (_, i) => ({ id: `c${i}`, template: 'ironsword', rarity: 'common', rolls: [{ affix: 'power', value: 7 }] })),
       ],
     }, 1000);
 
@@ -141,7 +151,7 @@ describe('a save carrying gear is still input', () => {
   it('refuses a piece worn in a slot it does not belong to', () => {
     const s = validate({
       ...newState(1000),
-      worn: { crown: { id: 'x', template: 'moonblade', rarity: 'heaven', percent: 40 } },
+      worn: { crown: { id: 'x', template: 'moonblade', rarity: 'heaven', rolls: [{ affix: 'power', value: 40 }] } },
     }, 1000);
     expect(s.worn.crown).toBeUndefined();
   });
@@ -149,9 +159,9 @@ describe('a save carrying gear is still input', () => {
   it('caps an edited percentage', () => {
     const s = validate({
       ...newState(1000),
-      worn: { weapon: { id: 'x', template: 'moonblade', rarity: 'common', percent: 1e9 } },
+      worn: { weapon: { id: 'x', template: 'moonblade', rarity: 'common', rolls: [{ affix: 'power', value: 1e9 }] } },
     }, 1000);
-    expect(s.worn.weapon!.percent).toBeLessThanOrEqual(100);
+    expect(s.worn.weapon!.rolls[0].value).toBeLessThanOrEqual(120);
   });
 });
 

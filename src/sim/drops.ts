@@ -1,7 +1,7 @@
 import type { Beast } from '../data/bestiary.ts';
 import {
-  RARITIES, RARITY_INFO, basePercent, droppableIn,
-  type GearTemplate, type Item, type Rarity,
+  AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, baseValue, droppableIn,
+  roundValue, type Affix, type GearTemplate, type Item, type Rarity, type Roll,
 } from '../data/gear.ts';
 
 /**
@@ -75,6 +75,33 @@ export interface Fortune {
   readonly always?: boolean;
 }
 
+/**
+ * Picks the extra lines a rank carries, weighted, and never the same axis twice — two
+ * lines of 力 on one piece read as a bug even when the maths is fine.
+ */
+export function rollSecondaries(
+  template: GearTemplate, rarity: Rarity, d: () => number,
+): readonly Roll[] {
+  const count = SECONDARIES[rarity];
+  const pool: Affix[] = AFFIXES.filter((a) => a !== template.affix);
+  const out: Roll[] = [];
+
+  for (let i = 0; i < count && pool.length > 0; i++) {
+    const total = pool.reduce((sum, a) => sum + AFFIX_INFO[a].weight, 0);
+    let at = d() * total;
+    let picked = pool[pool.length - 1];
+    for (const a of pool) {
+      at -= AFFIX_INFO[a].weight;
+      if (at <= 0) { picked = a; break; }
+    }
+    pool.splice(pool.indexOf(picked), 1);
+    // A secondary is worth 60% of what the same rank's primary would be.
+    const swing = 1 - VARIANCE + d() * VARIANCE * 2;
+    out.push({ affix: picked, value: roundValue(picked, baseValue(template, rarity, picked) * 0.6 * swing) });
+  }
+  return out;
+}
+
 export function rollDrop(
   beast: Beast, realm: number, seed: number, fortune: Fortune = {},
 ): Item | null {
@@ -88,9 +115,17 @@ export function rollDrop(
 
   const rarity = pickRarity(beast, d(), fortune.luck ?? 1);
   const swing = 1 - VARIANCE + d() * VARIANCE * 2;
-  const percent = Math.round(basePercent(template, rarity) * swing * 10) / 10;
+  const primary: Roll = {
+    affix: template.affix,
+    value: roundValue(template.affix, baseValue(template, rarity, template.affix) * swing),
+  };
 
-  return { id: `${seed.toString(36)}-${template.key}`, template: template.key, rarity, percent };
+  return {
+    id: `${seed.toString(36)}-${template.key}`,
+    template: template.key,
+    rarity,
+    rolls: [primary, ...rollSecondaries(template, rarity, d)],
+  };
 }
 
 /** The odds of each rank from one beast, for the screen to show honestly. */

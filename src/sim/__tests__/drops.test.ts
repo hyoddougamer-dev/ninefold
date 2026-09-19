@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
-  RARITIES, RARITY_INFO, SLOTS, basePercent, setBonus, templateOf, wornRarity,
+  RARITIES, RARITY_INFO, SECONDARIES, SLOTS, baseValue, setBonus, templateOf, wornRarity,
   type Item, type Worn,
 } from '../../data/gear.ts';
 import { dropChance, rarityOdds, rollDrop } from '../drops.ts';
@@ -38,6 +38,16 @@ describe('落 drops', () => {
     for (let i = 0; i < 200; i++) expect(rollDrop(wardenOf(4), 4, i)).not.toBeNull();
   });
 
+  it('gives a rank exactly as many lines as it is allowed', () => {
+    for (let i = 0; i < 300; i++) {
+      const it = rollDrop(wardenOf(7), 7, i);
+      if (!it) continue;
+      expect(it.rolls.length).toBe(1 + SECONDARIES[it.rarity]);
+      // The same axis twice on one piece reads as a bug even when the maths is fine.
+      expect(new Set(it.rolls.map((r) => r.affix)).size).toBe(it.rolls.length);
+    }
+  });
+
   it('the same kill always gives the same item — a reload cannot re-roll it', () => {
     const b = wardenOf(6);
     const a = rollDrop(b, 6, 12345);
@@ -61,7 +71,7 @@ describe('落 drops', () => {
         if (!tpl) continue;
         worn[slot] = {
           id: `${slot}`, template: tpl.key, rarity,
-          percent: Math.round(basePercent(tpl, rarity) * 10) / 10,
+          rolls: [{ affix: tpl.affix, value: baseValue(tpl, rarity, tpl.affix) }],
         } satisfies Item;
       }
       const bonus = setBonus(worn);
@@ -76,7 +86,7 @@ describe('落 drops', () => {
       const worn: Worn = {};
       for (const slot of SLOTS) {
         const tpl = [...templatesFor(slot)].sort((a, b) => b.realm - a.realm)[0];
-        if (tpl) worn[slot] = { id: slot, template: tpl.key, rarity, percent: basePercent(tpl, rarity) };
+        if (tpl) worn[slot] = { id: slot, template: tpl.key, rarity, rolls: [{ affix: tpl.affix, value: baseValue(tpl, rarity, tpl.affix) }] };
       }
       return setBonus(worn).power + setBonus(worn).rate;
     });

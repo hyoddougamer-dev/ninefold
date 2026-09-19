@@ -1,7 +1,8 @@
 import { LAYERS_PER_REALM, REALM_COST } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
-  RARITIES, SLOTS, TEMPLATE_BY_KEY, setBonus, type Item, type Rarity, type Worn,
+  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus,
+  type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
 import { CHEST_LIMIT } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
@@ -156,8 +157,22 @@ export function validate(raw: unknown, now: number): State {
     const id = typeof o.id === 'string' && o.id.length <= 64 ? o.id : `${tpl.key}-${used.size}`;
     if (used.has(id)) return null;                            // two things may not be one thing
     used.add(id);
-    // A percentage is capped at what the top rank of the last realm could ever roll.
-    return { id, template: tpl.key, rarity, percent: clamp(num(o.percent, 0), 0, 100) };
+
+    // Lines are validated one at a time: a line on an axis that does not exist is not a
+    // line, the same axis may not appear twice, no rank may carry more lines than it is
+    // allowed, and every value is capped at what the last realm's top rank could roll.
+    const seenAffix = new Set<Affix>();
+    const rolls: Roll[] = [];
+    for (const raw of Array.isArray(o.rolls) ? o.rolls : []) {
+      if (rolls.length > SECONDARIES[rarity]) break;          // one primary plus its share
+      const r = (raw ?? {}) as Record<string, unknown>;
+      const affix = AFFIXES.includes(r.affix as Affix) ? (r.affix as Affix) : null;
+      if (!affix || seenAffix.has(affix)) continue;
+      seenAffix.add(affix);
+      rolls.push({ affix, value: clamp(num(r.value, 0), 0, 120) });
+    }
+    if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
+    return { id, template: tpl.key, rarity, rolls };
   };
 
   const used = new Set<string>();

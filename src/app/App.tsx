@@ -5,13 +5,17 @@ import { beastPower, currentWarden, fight, loot, type Outcome } from '../sim/com
 import { newState, power, type State } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { load, save } from '../sim/save.ts';
-import { advance } from '../sim/time.ts';
+import { advance, layersOpened } from '../sim/time.ts';
 import { portrait, seal } from '../art/aura.ts';
 import { gearTile } from '../art/gear.ts';
 import { RARITY_INFO, templateOf, type Item, type Slot } from '../data/gear.ts';
-import { CHEST_LIMIT, addToChest, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
+import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
+import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
+import { WARDENS } from '../data/bestiary.ts';
+import { AFFIX_INFO, RARITIES, gearTotals } from '../data/gear.ts';
 import { Bestiary } from './screens/Bestiary.tsx';
+import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
@@ -24,12 +28,19 @@ const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate' },
   { key: 'hunt', han: '狩', label: 'Hunt' },
   { key: 'gear', han: '器', label: 'Gear' },
+  { key: 'dao', han: '道', label: 'Path' },
   { key: 'bestiary', han: '錄', label: 'Bestiary' },
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
 
 const now = () => Date.now() / 1000;
+
+/** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
+function limitOf(s: State): number {
+  const capacity = gearTotals(s.worn, (slot) => affinity(s.unlocked, slot)).capacity;
+  return chestLimit(s.unlocked, capacity);
+}
 
 interface Fight {
   readonly beast: Beast;
@@ -135,7 +146,11 @@ export function App() {
         outcome: fight(state, beast, seed),
         round: 0,
         over: false,
-        drop: rollDrop(beast, state.realm, seed ^ 0x9e3779b9),
+        drop: rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
+          chance: dropChanceBonus(state.unlocked),
+          luck: rarityLuck(state.unlocked),
+          always: alwaysDrops(state.unlocked),
+        }),
       };
     });
   }, [state]);
@@ -168,7 +183,11 @@ export function App() {
     const { beast, outcome, drop } = battle;
     if (outcome.won) {
       setState((s) => {
-        const kept = drop ? addToChest(s.chest, drop) : null;
+        // 空囊 Empty Pouch lifts every drop a rank on its way into the chest.
+        const lifted = drop && dropsRankUp(s.unlocked)
+          ? { ...drop, rarity: RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(drop.rarity) + 1)] }
+          : drop;
+        const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
         return {
           ...s,
           wardenFell: beast.warden ? true : s.wardenFell,
@@ -193,7 +212,7 @@ export function App() {
 
   const onUnequip = useCallback((slot: Slot) => {
     setState((s) => {
-      const next = unequipItem(s.worn, s.chest, slot);
+      const next = unequipItem(s.worn, s.chest, slot, limitOf(s));
       if (next.refused) return s;   // a full chest has nowhere to put it
       return { ...s, worn: next.worn, chest: [...next.chest] };
     });
@@ -203,7 +222,7 @@ export function App() {
 
   const onFuse = useCallback((template: string, rarity: string) => {
     setState((s) => {
-      const next = fuse(s.chest, template, rarity as Item['rarity']);
+      const next = fuse(s.chest, template, rarity as Item['rarity'], fuseQuality(s.unlocked));
       if (!next.made) return s;
       return { ...s, chest: [...next.chest] };
     });
@@ -232,6 +251,17 @@ export function App() {
     if (!next) sfx.tap();
   }, [muted]);
 
+  const onUnlock = useCallback((key: string) => {
+    setState((s) => {
+      const wardens = Object.entries(s.killed)
+        .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
+      if (!canUnlock(key, s.unlocked, daoFree(layersOpened(s), wardens, s.unlocked))) return s;
+      return { ...s, unlocked: [...s.unlocked, key] };
+    });
+    sfx.buy();
+    haptics.strike();
+  }, []);
+
   const r = realmOf(state.realm);
   const round = battle?.outcome.rounds[battle.round];
   const byKey = useMemo(
@@ -254,6 +284,7 @@ export function App() {
         {tab === 'gear' && (
           <Gear state={state} pulse={pulse} onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} />
         )}
+        {tab === 'dao' && <Dao state={state} onUnlock={onUnlock} />}
         {tab === 'bestiary' && <Bestiary state={state} />}
       </div>
 
@@ -328,8 +359,16 @@ export function App() {
                     <b className="cjk" style={{ color: RARITY_INFO[battle.drop.rarity].colour }}>
                       {templateOf(battle.drop).han}
                     </b>
-                    <i>{templateOf(battle.drop).name} · +{battle.drop.percent}%</i>
-                    {state.chest.length >= CHEST_LIMIT && (
+                    <i>
+                      {templateOf(battle.drop).name}
+                      {battle.drop.rolls.map((roll) => (
+                        <span key={roll.affix} style={{ marginLeft: 7 }}>
+                          <span className="cjk">{AFFIX_INFO[roll.affix].han}</span>
+                          +{Math.round(roll.value * 10) / 10}
+                        </span>
+                      ))}
+                    </i>
+                    {state.chest.length >= limitOf(state) && (
                       <em className="full">Chest full — this one is lost</em>
                     )}
                   </span>
