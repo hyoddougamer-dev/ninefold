@@ -10,6 +10,8 @@
  *
  *   the em-dash used as a rhetorical beat, several to a screen
  *   sentences explaining why the game was designed this way rather than what to do
+ *     (the bare phrase "the game" was in this list and had to come out: the game refers
+ *     to itself perfectly legitimately, in "back to the game")
  *   three clauses in a row where one would land
  *   sentences long enough that the eye slides off them
  *
@@ -61,7 +63,7 @@ const TELLS = [
   },
   {
     name: 'explains the design, not the game',
-    hit: (s: string) => /\b(that is (the point|why|what)|which is (the point|why)|it is what|by design|this version|the game)\b/i.test(s),
+    hit: (s: string) => /\b(that is (the point|why|what)|which is (the point|why)|it is what|by design|this version)\b/i.test(s),
   },
 ];
 

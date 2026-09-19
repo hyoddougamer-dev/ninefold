@@ -447,3 +447,23 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .pick .ic { display: grid; place-items: center; }
 .pick .ic svg { display: block; }
 .pick:disabled { opacity: .35; cursor: default; }
+
+/* 存 The save panel. It reuses the help sheet's frame; only its own parts are here. */
+.stat { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 18px;
+        font-size: 14px; }
+.stat dt { color: var(--faint); text-align: right; }
+.stat dd { margin: 0; font-family: Rajdhani, sans-serif; font-weight: 600; }
+.saverow { display: flex; gap: 8px; }
+.saverow .act { flex: 1; }
+.act.ghost { background: transparent; border: 1px solid var(--line); color: var(--text);
+             box-shadow: none; }
+.act.danger { background: transparent; border: 1px solid var(--magenta); color: var(--magenta);
+              box-shadow: none; }
+.paste { width: 100%; background: var(--panel2); border: 1px solid var(--line);
+         border-radius: 10px; color: var(--text); font: 12px/1.5 ui-monospace, monospace;
+         padding: 11px 13px; resize: vertical; }
+.paste:focus { outline: none; border-color: var(--cyan); }
+.good { margin: 0; font-size: 13px; color: var(--cyan); line-height: 1.5; }
+.bad { margin: 0; font-size: 13px; color: var(--magenta); line-height: 1.5; }
+.help .says { color: var(--faint); font-size: 13.5px; margin: 0; line-height: 1.55; }
+.help .says.small { font-size: 12px; }

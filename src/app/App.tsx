@@ -4,7 +4,7 @@ import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden, fight, loot } from '../sim/combat.ts';
 import { newState, power, type State } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
-import { load, save } from '../sim/save.ts';
+import { keepSpare, load, save } from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
 import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
@@ -19,6 +19,7 @@ import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Help } from './ui/Help.tsx';
+import { SavePanel } from './ui/SavePanel.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { RETURN } from './copy.ts';
@@ -58,6 +59,7 @@ export function App() {
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [muted, setMutedState] = useState(isMuted);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
@@ -77,6 +79,9 @@ export function App() {
     if (r.secondsAway === 0 && r.state.realm === 1 && r.state.layer === 0 && r.state.qi < 5) {
       setHelp(true);
     }
+    // The load came back whole, so this is a state worth keeping a spare of.
+    keepSpare(r.state);
+
     if (r.secondsAway > 120) {
       setHome({
         seconds: r.secondsAway, qi: r.qiEarned,
@@ -299,6 +304,7 @@ export function App() {
       </div>
 
       <div className="switches">
+        <button onClick={() => { setSaving(true); sfx.tap(); }} aria-label="Your save">存</button>
         <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
         <button onClick={toggleMute} data-on={!muted} aria-label={muted ? 'Unmute' : 'Mute'}>
           {muted ? '🔇' : '🔊'}
@@ -335,6 +341,14 @@ export function App() {
       )}
 
       {help && <Help onClose={() => { setHelp(false); sfx.tap(); }} />}
+
+      {saving && (
+        <SavePanel
+          state={state}
+          onRestore={(next) => { setState(next); save(next); keepSpare(next); }}
+          onClose={() => { setSaving(false); sfx.tap(); }}
+        />
+      )}
 
       {home && (
         <div className="back">

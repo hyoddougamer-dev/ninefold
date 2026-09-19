@@ -74,11 +74,35 @@ export const DAO = {
   costs: (n: number) => `costs ${n} 道`,
 };
 
+export const SAVE = {
+  title: 'Your save',
+  played: 'played for',
+  reached: 'reached',
+  gear: 'gear',
+  why: 'Your save lives in this browser, on this phone. There is no account. Clear the browser data and it is gone. Keep a copy somewhere you will find it again.',
+  copy: 'Copy the save',
+  copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things.',
+  copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
+  download: 'Download a file',
+  downloaded: 'Saved as a file.',
+  noDownload: 'This app is not allowed to hand you a file. Use Copy instead.',
+  restoreOpen: 'Restore from a copy',
+  restore: 'Restore this save',
+  restored: (realm: number) => `Restored. You are back at realm ${realm}.`,
+  pastePlaceholder: 'Paste a save here',
+  spare: 'The game also keeps a spare copy of its own, and falls back to it if the main one is ever lost. That protects you from the game. Only your own copy protects you from the phone.',
+  wipe: 'Start again',
+  wipeSure: 'This erases everything, including the spare copy. Copy your save first if you might want it back.',
+  wipeYes: 'Erase it all',
+  wipeNo: 'Keep my save',
+  close: 'Back to the game',
+};
+
 export const LOADOUT = {
   noStance: 'You have no stance yet. Reach realm 1 and 疾 Swift is yours.',
   pickStance: 'Pick one. It is always on, and it changes every round of every fight.',
   noArts: 'You hold no arts yet. Each warden you put down hands over its own.',
-  emptySlot: 'empty — a wasted round',
+  emptySlot: 'empty, a wasted round',
   rotation: 'One art fires each round, in this order, then it starts again. An empty slot fires nothing, so a full sequence is always worth more.',
 };
 
