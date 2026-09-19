@@ -139,3 +139,90 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .back dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 7px 22px; font-size: 15px; }
 .back dt { color: var(--faint); text-align: right; }
 .back dd { margin: 0; text-align: left; font-family: Rajdhani, sans-serif; font-weight: 600; }
+
+/* ── polish: hits, floating damage, the breakthrough bloom ──────────────── */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+@keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes rise {
+  0% { transform: translate(-50%, 0); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translate(-50%, -46px); opacity: 0; }
+}
+@keyframes bloom {
+  0% { transform: scale(.4); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes lift {
+  0% { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.side { position: relative; }
+.side[data-hit='true'] .fig { animation: shake .26s ease-out; }
+.side[data-hit='true'] .fig::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--tone, var(--magenta)); opacity: 0; animation: flash .3s ease-out;
+  pointer-events: none; mix-blend-mode: screen;
+}
+.dmg {
+  position: absolute; left: 50%; top: 6px; transform: translate(-50%, 0);
+  font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 21px;
+  animation: rise .75s ease-out forwards; pointer-events: none; text-shadow: 0 2px 10px #000;
+}
+
+.verdict { animation: lift .3s ease-out both; }
+
+/* 突破 The moment. Everything else stops for three quarters of a second. */
+.bloom { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center;
+         pointer-events: none; background: rgba(8,10,24,.82); }
+.bloom .ring { position: absolute; width: 190px; height: 190px; border-radius: 50%;
+               border: 2px solid currentColor; animation: bloom 1.1s ease-out forwards; }
+.bloom .ring:nth-child(2) { animation-delay: .16s; }
+.bloom .ring:nth-child(3) { animation-delay: .32s; }
+.bloom .han { font-family: 'Noto Serif SC', serif; font-size: 58px; animation: lift .5s ease-out both;
+              text-shadow: 0 0 40px currentColor, 0 4px 18px #000; }
+.bloom p { margin: 8px 0 0; font-size: 15px; color: var(--text); animation: lift .5s .12s ease-out both; }
+.bloom .mid { text-align: center; position: relative; z-index: 1; }
+
+/* ── the two small switches, always reachable ───────────────────────────── */
+
+.switches { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px;
+            display: flex; gap: 6px; z-index: 5; }
+.switches button {
+  width: 30px; height: 30px; border-radius: 8px; font: inherit; font-size: 14px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--faint);
+  cursor: pointer; display: grid; place-items: center;
+}
+.switches button[data-on='true'] { color: var(--cyan); border-color: var(--cyan); }
+
+/* ── help ───────────────────────────────────────────────────────────────── */
+
+.help { position: absolute; inset: 0; z-index: 13; background: rgba(8,10,24,.97);
+        display: flex; flex-direction: column; gap: 18px; overflow-y: auto;
+        padding: calc(env(safe-area-inset-top, 0px) + 30px) 22px
+                 calc(env(safe-area-inset-bottom, 0px) + 30px); }
+.help h2 { font-family: 'Noto Serif SC', serif; font-size: 25px; margin: 0; font-weight: 400;
+           color: var(--cyan); }
+.help ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 15px; }
+.help li { display: flex; gap: 13px; align-items: flex-start; }
+.help li > span:first-child {
+  flex: none; width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--panel); border: 1px solid var(--line); color: var(--cyan);
+  font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15px;
+}
+.help li b { display: block; font-weight: 500; font-size: 16px; }
+.help li i { font-style: normal; font-size: 13.5px; color: var(--faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .side[data-hit='true'] .fig, .side[data-hit='true'] .fig::after,
+  .dmg, .verdict, .bloom .ring, .bloom .han, .bloom p { animation: none; }
+  .bloom .ring { opacity: .3; }
+}

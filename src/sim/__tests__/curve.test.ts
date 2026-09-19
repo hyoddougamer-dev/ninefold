@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_GAP, REALM_COST, TARGET_DAYS, TOLERANCE_DAYS } from '../balance.ts';
-import { newState } from '../state.ts';
+import { LAYERS_PER_REALM, MAX_GAP, REALM_COST, TARGET_DAYS, TOLERANCE_DAYS } from '../balance.ts';
+import { breakThrough, canBreakThrough, newState } from '../state.ts';
 import { advance } from '../time.ts';
 
 /**
@@ -72,5 +72,44 @@ describe('the climb, opening the app once a day', () => {
     expect(many.qi).toBeCloseTo(once.qi, 3);
     console.log(`  30 days: one step and 43,200 steps both give realm ${once.realm}, layer ${once.layer}, ` +
       `qi ${once.qi.toFixed(2)} vs ${many.qi.toFixed(2)}\n`);
+  });
+});
+
+/**
+ * Climbing a realm is a player's act, never the clock's. The first version let a fallen
+ * warden open the gate inside advance(), so the realm ticked over on its own and the
+ * 突破 button never appeared.
+ */
+describe('time never climbs a realm by itself', () => {
+  const T0 = 1_700_000_000;
+
+  function atCeilingOfRealmOne() {
+    let s = newState(T0);
+    let t = T0;
+    for (let i = 0; i < 24 * 40; i++) {
+      if (s.layer === LAYERS_PER_REALM - 1) return s;
+      t += 600;
+      s = advance(s, t);
+    }
+    throw new Error('never reached the ceiling of realm 1');
+  }
+
+  it('banks qi at the ceiling instead of opening the next realm', () => {
+    const s = atCeilingOfRealmOne();
+    const later = advance(s, s.at + 30 * 86_400);
+    expect(later.realm).toBe(1);
+    expect(later.layer).toBe(LAYERS_PER_REALM - 1);
+    expect(later.qi).toBeGreaterThan(s.qi);
+  });
+
+  it('stays put even once the warden has fallen — only 突破 leaves', () => {
+    const beaten = { ...atCeilingOfRealmOne(), wardenFell: true };
+    const later = advance(beaten, beaten.at + 30 * 86_400);
+    expect(later.realm).toBe(1);
+    expect(later.wardenFell).toBe(true);
+
+    expect(canBreakThrough(later)).toBe(true);
+    expect(breakThrough(later).realm).toBe(2);
+    expect(breakThrough(later).wardenFell).toBe(false);
   });
 });

@@ -30,9 +30,14 @@ export function progress(s: State): number {
  * not a detail: it is the difference between paying the hours the player did not watch
  * and lying about them.
  *
- * At a realm's ceiling the layers stop opening and qi banks instead, because it is the
- * warden that unlocks the next realm, not the clock. `auto` ignores that gate and
- * exists only so the balance simulation can trace the theoretical curve.
+ * At a realm's ceiling the layers stop opening and qi banks instead. Time never climbs
+ * a realm: beating the warden only unlocks the breakthrough, and pressing 突破 is what
+ * takes it. The first version let a fallen warden open the gate here, so the realm
+ * advanced on the next tick — the player never saw the button, and never saw the one
+ * moment the game stops for.
+ *
+ * `auto` ignores the gate entirely and exists only so the balance simulation can trace
+ * the theoretical curve.
  */
 export function advance(s: State, now: number, auto = false): State {
   let dt = now - s.at;
@@ -45,8 +50,8 @@ export function advance(s: State, now: number, auto = false): State {
     const cost = layerCost(realm);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
 
-    // At the ceiling with the warden still standing, qi banks and time ends here.
-    if (ceiling && !(auto || wardenFell)) {
+    // At the ceiling, qi banks and time ends here. Only 突破 leaves a realm.
+    if (ceiling && !auto) {
       const remaining = cost - qi;
       const seconds = remaining / r;
       if (!Number.isFinite(seconds) || seconds > dt) { qi += r * dt; break; }

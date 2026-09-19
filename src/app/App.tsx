@@ -10,7 +10,10 @@ import { portrait, seal } from '../art/aura.ts';
 import { Bestiary } from './screens/Bestiary.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
+import { Help } from './ui/Help.tsx';
 import { Svg } from './ui/Svg.tsx';
+import { haptics } from './haptics.ts';
+import { isMuted, setMuted, sfx } from './sound.ts';
 
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate' },
@@ -43,7 +46,12 @@ export function App() {
   const [home, setHome] = useState<Homecoming | null>(null);
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [muted, setMutedState] = useState(isMuted);
+  /** 突破 The breakthrough moment: the realm just left, held for its animation. */
+  const [bloom, setBloom] = useState<number | null>(null);
   const loaded = useRef(false);
+  const lastLayer = useRef(0);
 
   // 歸 The return. An idle game is played closed, so opening the app is first of all
   // receiving the hours that passed — and the player wants to see that before anything.
@@ -53,6 +61,11 @@ export function App() {
     const r = load(now());
     setState(r.state);
     setReady(true);
+    lastLayer.current = (r.state.realm - 1) * 9 + r.state.layer;
+    // A first-ever run has no save and no hours away: that is who the help is for.
+    if (r.secondsAway === 0 && r.state.realm === 1 && r.state.layer === 0 && r.state.qi < 5) {
+      setHelp(true);
+    }
     if (r.secondsAway > 120) {
       setHome({
         seconds: r.secondsAway, qi: r.qiEarned,
@@ -66,7 +79,15 @@ export function App() {
   useEffect(() => {
     if (!ready) return;
     const id = setInterval(() => {
-      setState((s) => advance(s, now()));
+      setState((s) => {
+        const next = advance(s, now());
+        const layers = (next.realm - 1) * 9 + next.layer;
+        if (layers > lastLayer.current) {
+          lastLayer.current = layers;
+          sfx.layer();
+        }
+        return next;
+      });
       setPulse((p) => (p + 0.02) % 1);
     }, 200);
     return () => clearInterval(id);
@@ -94,6 +115,8 @@ export function App() {
   }, [state, ready]);
 
   const startFight = useCallback((beast: Beast) => {
+    sfx.tap();
+    haptics.tap();
     setBattle((current) => {
       if (current) return current;   // one fight at a time
       return {
@@ -105,9 +128,17 @@ export function App() {
     });
   }, [state]);
 
-  // The rounds are already computed; this only draws them, one at a time.
+  // The rounds are already computed; this only draws them, one at a time, and sounds
+  // each blow as it lands.
   useEffect(() => {
-    if (!battle || battle.over) return;
+    if (!battle) return;
+    if (battle.over) {
+      if (battle.outcome.won) { sfx.win(); haptics.win(); } else { sfx.lose(); haptics.lose(); }
+      return;
+    }
+    sfx.strike();
+    haptics.strike();
+    const hurt = setTimeout(() => { sfx.wound(); haptics.wound(); }, 110);
     const id = setTimeout(() => {
       setBattle((b) => {
         if (!b) return b;
@@ -116,8 +147,8 @@ export function App() {
           ? { ...b, round: b.outcome.rounds.length - 1, over: true }
           : { ...b, round: next };
       });
-    }, 260);
-    return () => clearTimeout(id);
+    }, 300);
+    return () => { clearTimeout(id); clearTimeout(hurt); };
   }, [battle]);
 
   const closeFight = useCallback(() => {
@@ -132,7 +163,29 @@ export function App() {
       }));
     }
     setBattle(null);
+    sfx.tap();
   }, [battle]);
+
+  /** Breaking through is the one moment the game stops for. */
+  const climb = useCallback((next: State) => {
+    if (next.realm !== state.realm) {
+      sfx.breakthrough();
+      haptics.breakthrough();
+      setBloom(next.realm);
+      setTimeout(() => setBloom(null), 1400);
+    } else {
+      sfx.buy();
+      haptics.tap();
+    }
+    setState(next);
+  }, [state.realm]);
+
+  const toggleMute = useCallback(() => {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+    if (!next) sfx.tap();
+  }, [muted]);
 
   const r = realmOf(state.realm);
   const round = battle?.outcome.rounds[battle.round];
@@ -148,12 +201,19 @@ export function App() {
           <Cultivate
             state={state}
             pulse={pulse}
-            set={setState}
+            set={climb}
             onFight={() => startFight(currentWarden(state))}
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
         {tab === 'bestiary' && <Bestiary state={state} />}
+      </div>
+
+      <div className="switches">
+        <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
+        <button onClick={toggleMute} data-on={!muted} aria-label={muted ? 'Unmute' : 'Mute'}>
+          {muted ? '🔇' : '🔊'}
+        </button>
       </div>
 
       <nav className="tabs">
@@ -167,10 +227,13 @@ export function App() {
 
       {battle && round && (
         <div className="arena">
-          <div className="side">
+          <div className="side" data-hit={round.beastDamage > 0} style={{ ['--tone' as string]: 'var(--magenta)' }}>
             <div className="fig">
               <Svg html={portrait({ realm: state.realm, pulse, focus: true })} />
             </div>
+            <span className="dmg" key={`p${battle.round}`} style={{ color: 'var(--magenta)' }}>
+              −{num(round.beastDamage)}
+            </span>
             <div className="row" style={{ fontSize: 12.5 }}>
               <span className="cjk" style={{ color: r.colour }}>{r.han}</span>
               <span className="mono faint">力 {num(battle.outcome.playerPower)}</span>
@@ -182,10 +245,13 @@ export function App() {
 
           <div className="versus">{battle.over ? '' : `round ${battle.round + 1}`}</div>
 
-          <div className="side">
+          <div className="side" data-hit={round.playerDamage > 0} style={{ ['--tone' as string]: 'var(--cyan)' }}>
             <div className="fig">
               <span><Svg html={seal(battle.beast.icon, realmOf(battle.beast.realm).colour, !!battle.beast.warden)} /></span>
             </div>
+            <span className="dmg" key={`b${battle.round}`} style={{ color: 'var(--cyan)' }}>
+              −{num(round.playerDamage)}
+            </span>
             <div className="row" style={{ fontSize: 12.5 }}>
               <span className="cjk" style={{ color: realmOf(battle.beast.realm).colour }}>{battle.beast.han}</span>
               <span className="mono faint">力 {num(beastPower(battle.beast))}</span>
@@ -216,6 +282,18 @@ export function App() {
         </div>
       )}
 
+      {bloom !== null && (
+        <div className="bloom" style={{ color: realmOf(bloom).colour }}>
+          <span className="ring" /><span className="ring" /><span className="ring" />
+          <div className="mid">
+            <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
+            <p>{realmOf(bloom).gains}</p>
+          </div>
+        </div>
+      )}
+
+      {help && <Help onClose={() => { setHelp(false); sfx.tap(); }} />}
+
       {home && (
         <div className="back">
           <Svg html={portrait({ realm: state.realm, pulse })} style={{ display: 'block', width: 150, height: 150 }} />
@@ -231,7 +309,7 @@ export function App() {
             <dt>power now</dt>
             <dd>{num(power(state))}</dd>
           </dl>
-          <button className="act" style={{ maxWidth: 240 }} onClick={() => setHome(null)}>
+          <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>
             續 <span>Continue</span>
           </button>
         </div>
