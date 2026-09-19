@@ -9,6 +9,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { BEASTS } from '../src/data/bestiary.ts';
+import { GEAR, SLOT_INFO, SLOTS } from '../src/data/gear.ts';
 import { REALMS } from '../src/data/realms.ts';
 
 const LIBRARY = '/home/user/game-icons/icons';
@@ -23,6 +24,8 @@ const NAMES = [...new Set([
   ...UI_ICONS,
   ...REALMS.flatMap((r) => r.aura),
   ...BEASTS.map((x) => x.icon),
+  ...GEAR.map((g) => g.icon),
+  ...SLOTS.map((s) => SLOT_INFO[s].empty),
 ])].sort();
 
 const entries = NAMES.map((name) => {
