@@ -42,7 +42,7 @@ export const BEASTS: readonly Beast[] = [
   b('beetle',    '鐵甲', 'Iron Beetle',    3, 'scarab-beetle'),
   b('owl',       '夜梟', 'Night Owl',      3, 'owl'),
   b('raven',     '血鴉', 'Blood Raven',    3, 'raven'),
-  w('crane',     '仙鶴', 'Immortal Crane', 3, 'crane'),
+  w('crane',     '仙鶴', 'Immortal Crane', 3, 'heron'),
 
   // 4 元嬰 — properly large beasts.
   b('boar',      '鐵根彘', 'Ironroot Boar', 4, 'boar-tusks'),
