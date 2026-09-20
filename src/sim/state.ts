@@ -1,5 +1,6 @@
 import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
+  uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, levelCap,
 } from './balance.ts';
@@ -255,10 +256,14 @@ export function buy(s: State, u: Upgrade): State {
 
 /** Qi rate multiplier coming from upgrades and from what is worn. */
 export function rateBonus(s: State): number {
+  // 頂 Gear and the tree are the two uncapped things that touch the qi rate, and together
+  // they bend toward a ceiling: see UNCAPPED_RATE_CEILING for the twenty-day game they
+  // made. The capped upgrades and 雷印 the marks are outside it on purpose.
+  const uncapped = setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).rate
+    * rateMultiplier(s.unlocked);
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
-    * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).rate
-    * rateMultiplier(s.unlocked)
+    * uncappedRate(uncapped)
     * markBonus(s.tribulation);
 }
 

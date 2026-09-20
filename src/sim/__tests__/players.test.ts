@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, focusAt } from '../balance.ts';
+import {
+  FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, UNCAPPED_RATE_CEILING, focusAt, uncappedRate,
+} from '../balance.ts';
+import { setBonus, wornTotals } from '../../data/gear.ts';
+import { affinity, rateMultiplier } from '../dao.ts';
 import { newState, power, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
 import { clearFloor, floorQi } from '../trials.ts';
@@ -121,6 +125,37 @@ describe('勤 what being there buys you', () => {
     // A floor at or above your power is always worth the whole six hours.
     expect(floorQi({ ...newState(T0), realm: 5, layer: 4 }, 60)).toBeCloseTo(
       rate({ ...newState(T0), realm: 5, layer: 4 }) * 3600 * TOWER_QI_HOURS, 4);
+  });
+
+  /**
+   * 頂 The guard the gear had no version of, and it was the widest hole in the game.
+   *
+   * The harness never equipped a single piece until now. With the drops picked up and
+   * worn, the 氣 axis — a qi-rate multiplier with no cap, earned by hunting — took the
+   * active cultivator from day 89 to day 38 and the hourly one to day 20, against a
+   * promise of ninety. The law was already written and nothing enforced it: everything
+   * that multiplies gathering is behind the realm cap.
+   */
+  it('lets no amount of gear or tree push the rate past its ceiling', () => {
+    const rows = runs.map((r) => {
+      const worn = wornTotals(r.state.worn, (x) => affinity(r.state.unlocked, x));
+      const raw = setBonus(r.state.worn, (x) => affinity(r.state.unlocked, x)).rate
+        * rateMultiplier(r.state.unlocked);
+      return { name: r.habit.name, worn: worn.rate, raw, kept: uncappedRate(raw) };
+    });
+    console.log(`\n  頂 what the uncapped sources ask for, and what they are given `
+      + `(ceiling x${UNCAPPED_RATE_CEILING}):\n`
+      + rows.map((r) => `    ${r.name.padEnd(12)} 器 氣 +${r.worn.toFixed(0)}%`
+        + `  asks x${r.raw.toFixed(2)}  keeps x${r.kept.toFixed(3)}`).join('\n') + '\n');
+
+    for (const r of rows) {
+      expect(r.kept).toBeLessThan(UNCAPPED_RATE_CEILING);
+      // And it is a bend, not a wall: more is always worth a little more.
+      expect(uncappedRate(r.raw * 1.5)).toBeGreaterThan(r.kept);
+    }
+    // Absurd gear cannot break it either.
+    expect(uncappedRate(1000)).toBeLessThan(UNCAPPED_RATE_CEILING);
+    expect(uncappedRate(1)).toBe(1);
   });
 
   it('gives the furnace and the tower to a fighter, and neither to a waiter', () => {

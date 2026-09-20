@@ -199,6 +199,52 @@ export const TREE_FOCUS_SHARE = 0.5;
  */
 export const TREE_RATE_CEILING = 1.25;
 
+/**
+ * 頂 The ceiling on everything uncapped, together.
+ *
+ * The tree was half of it. 器 gear was the other half, and worse: with the drops picked
+ * up and worn, measured on the same harness,
+ *
+ *     once a day   day 85   器 氣 +136%
+ *     casual       day 63   器 氣 +181%
+ *     active       day 38   器 氣 +240%
+ *     every hour   day 20   器 氣 +216%
+ *
+ * against a promise of ninety days. The 氣 axis on gear is a qi-rate multiplier with no
+ * cap at all, driven by how much you hunt — which is precisely the "playing more finishes
+ * sooner" trap the whole economy was built to avoid. The bible's own claim that playing
+ * every waking hour is worth about twice a casual run, not twenty times, was false: it
+ * was worth three times, and climbing.
+ *
+ * The law was already written and nothing enforced it: *everything that multiplies
+ * gathering is behind the realm cap; everything uncapped buys power, fortune or knowledge
+ * instead.* So this is the enforcement. Gear and the tree, multiplied together, may not
+ * move the qi rate past this — and `rate()` clamps them rather than trusting anybody to
+ * remember.
+ *
+ * 雷印 the thunder marks are deliberately outside it. They are the endgame's own ladder,
+ * they are capped by the pool's two days apiece, and they are meant to multiply.
+ */
+export const UNCAPPED_RATE_CEILING = 1.35;
+
+/**
+ * 緩 And it is approached, never hit.
+ *
+ * A hard clamp would be the easy version and it is the wrong one: a cultivator at the
+ * ceiling wearing 器 氣 +279% has two hundred and forty wasted points, and every 氣 roll
+ * they find afterwards does nothing at all. A stat that silently stops working is worse
+ * than a stat that was never there.
+ *
+ * So the gain bends instead. `c·x / (c + x)` gives back nearly all of a small bonus,
+ * gives back less and less of a large one, and can never reach the ceiling however much
+ * is piled on. Every roll is always worth something and nothing is ever worth too much.
+ */
+export function uncappedRate(raw: number): number {
+  const c = UNCAPPED_RATE_CEILING - 1;
+  const x = Math.max(0, raw - 1);
+  return 1 + (c * x) / (c + x);
+}
+
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;
 

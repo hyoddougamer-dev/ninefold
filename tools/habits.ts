@@ -17,7 +17,13 @@ import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, clearFloor, lootTaken, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import { canUnlock, daoFree, focusBonus } from '../src/sim/dao.ts';
+import {
+  affinity, canUnlock, daoFree, dropChanceBonus, dropsRankUp, focusBonus, rarityLuck,
+} from '../src/sim/dao.ts';
+import { rollDrop } from '../src/sim/drops.ts';
+import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
+import { templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
+import type { Beast } from '../src/data/bestiary.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -30,6 +36,8 @@ export interface Habit {
   readonly minutes: number;
   /** Beasts hunted on a visit. */
   readonly hunts: number;
+  /** 器 Whether they pick up what falls and wear it. */
+  readonly gear: boolean;
   readonly tower: boolean;
   readonly furnace: boolean;
   readonly build: boolean;
@@ -40,15 +48,15 @@ export interface Habit {
 }
 
 export const HABITS: readonly Habit[] = [
-  { name: 'never fights', checks: 1, minutes: 0, hunts: 0, tower: false, furnace: false, build: false,
+  { name: 'never fights', checks: 1, minutes: 0, hunts: 0, tower: false, furnace: false, build: false, gear: false,
     who: 'Opens it once a day, buys what the qi affords, and never taps a beast.' },
-  { name: 'once a day', checks: 1, minutes: 2, hunts: 4, tower: true, furnace: false, build: true,
+  { name: 'once a day', gear: true, checks: 1, minutes: 2, hunts: 4, tower: true, furnace: false, build: true,
     who: 'One visit a day, but the visit counts: a few kills and whatever the tower will give up.' },
-  { name: 'casual', checks: 3, minutes: 5, hunts: 3, tower: false, furnace: false, build: true,
+  { name: 'casual', gear: true, checks: 3, minutes: 5, hunts: 3, tower: false, furnace: false, build: true,
     who: 'Three visits, some hunting, never opens the tower.' },
-  { name: 'active', checks: 6, minutes: 10, hunts: 6, tower: true, furnace: true, build: true,
+  { name: 'active', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, furnace: true, build: true,
     who: 'Six visits, ten minutes each, hunts, climbs and brews.' },
-  { name: 'every hour', checks: 24, minutes: 15, hunts: 8, tower: true, furnace: true, build: true,
+  { name: 'every hour', gear: true, checks: 24, minutes: 15, hunts: 8, tower: true, furnace: true, build: true,
     who: 'Every waking hour. As played as this game can be played.' },
 ];
 
@@ -63,6 +71,41 @@ export interface Run {
   readonly reached: number;
   readonly done: boolean;
   readonly power: number;
+}
+
+/**
+ * 器 What a kill leaves behind, and what the cultivator does with it.
+ *
+ * This is the other half of the hole the tree came out of: for the whole of the game's
+ * life the harness never equipped a single piece. A cultivator who hunts thousands of
+ * beasts and wears nothing is not a cultivator, and every curve we printed was walked by
+ * one.
+ *
+ * The rule the fake player follows is the rule a real one follows without thinking:
+ * **keep the better piece.** `itemWorth` is the same rough comparison the chest itself
+ * uses when it is full, so nothing here knows more than the game does.
+ */
+function takeDrop(s: State, beast: Beast, seed: number): State {
+  const fortune = {
+    chance: dropChanceBonus(s.unlocked),
+    luck: rarityLuck(s.unlocked),
+    always: dropsRankUp(s.unlocked),
+  };
+  const item = rollDrop(beast, s.realm, seed, fortune);
+  if (!item) return s;
+
+  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity);
+  const kept = addToChest(s.chest, item, limit);
+  let out: State = { ...s, chest: [...kept.chest] };
+  if (kept.dropped?.id === item.id) return out;    // the chest kept something better
+
+  const slot = templateOf(item).slot as Slot;
+  const worn = out.worn[slot];
+  if (!worn || itemWorth(item) > itemWorth(worn)) {
+    const after = equip(out.worn, out.chest, item, slot);
+    out = { ...out, worn: after.worn, chest: [...after.chest] };
+  }
+  return out;
 }
 
 /** 道 Buy down one branch, as far as the points reach. */
@@ -89,6 +132,8 @@ export function play(h: Habit, maxDays = 400): Run {
   const tick = DAY / h.checks;
   const arrival = [0];
   let fights = 0;
+  // 器 The drops are seeded, so the same habit always finds the same gear.
+  let seed = 991;
 
   while ((t - T0) / DAY < maxDays && layersOpened(s) < LAYERS - 1) {
     // 入定 the part of the visit spent looking at it, walked in steps so the ramp counts.
@@ -123,7 +168,9 @@ export function play(h: Habit, maxDays = 400): Run {
     for (let i = 0; i < h.hunts; i++) {
       const b = [...huntable(s.realm)].reverse().find((x) => odds(s, x) > 0.7);
       if (!b) break;
-      s = { ...s, materials: s.materials + lootTaken(s, loot(b)) };
+      s = { ...s, materials: s.materials + lootTaken(s, loot(b)),
+        killed: { ...s.killed, [b.key]: (s.killed[b.key] ?? 0) + 1 } };
+      if (h.gear) s = takeDrop(s, b, ++seed);
       fights++;
     }
 

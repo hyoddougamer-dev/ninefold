@@ -27,6 +27,7 @@ import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
+  UNCAPPED_RATE_CEILING,
   TRIBULATION_CHALLENGE,
   TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
 } from '../src/sim/balance.ts';
@@ -676,6 +677,10 @@ const page = `<title>九境 Ninefold — the Bible</title>
       pay below the promised rate. Being active is worth something because it adds, never
       because being away subtracts.</div>
     <h3>Five cultivators, one game — played out, not guessed</h3>
+    <p class="t">Every one of them walks a 道 branch, hunts, picks up what falls and wears
+      it. That sentence is newer than it should be: for most of this game's life the
+      harness did none of those things, and every number it printed belonged to a
+      cultivator who does not exist.</p>
     <table>
       <tr><th>habit</th><th style="text-align:right">visits</th>
           <th style="text-align:right">open</th><th style="text-align:right">realm 9</th>
@@ -689,6 +694,17 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <p class="t">And the bottom row is the other half: playing every waking hour is worth
       about <b>twice</b> the speed of playing casually, not twenty times. The game is not
       supposed to belong to whoever has the most free time.</p>
+    <div class="warn"><b>器 Gear was the widest hole the game ever had.</b> The 氣 axis on a
+      piece is a qi-rate multiplier with no cap, earned by hunting — exactly the
+      <em>playing more finishes sooner</em> trap the whole economy was built to avoid. With
+      the drops finally picked up and worn, the active cultivator finished on
+      <b>day 38</b> and the hourly one on <b>day 20</b>, against a promise of ninety; the
+      claim above was false and nothing could see it, because nothing had ever equipped a
+      piece. Gear and 道 the tree together now bend toward
+      <b>×${UNCAPPED_RATE_CEILING}</b> and can never reach it. It is a bend and not a wall
+      on purpose: a cultivator at a hard clamp has two hundred wasted points and every 氣
+      roll they find afterwards does nothing, and a stat that silently stops working is
+      worse than a stat that was never there.</div>
   </section>
 
   <section class="sec" id="ladder">
@@ -1099,7 +1115,9 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <div class="row"><span class="body"><b class="cjk">氣</b> <em>Nothing uncapped raises the qi rate</em>
         <i>The rule that keeps the economy safe for good. Everything that multiplies
         gathering is behind the realm cap; everything uncapped buys power, fortune or
-        knowledge instead.</i></span></div>
+        knowledge instead. It was written down long before anything enforced it, and both
+        器 gear and 道 the tree quietly broke it for months — so <code>rate()</code> now bends them
+        toward ×${UNCAPPED_RATE_CEILING} rather than trusting anybody to remember.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">文</b> <em>All the prose is in one file</em>
         <i>src/app/copy.ts. Text scattered across six screens cannot be reviewed, and this
         is the file a translation would replace.</i></span></div>
