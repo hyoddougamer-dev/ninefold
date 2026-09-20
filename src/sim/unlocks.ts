@@ -17,16 +17,29 @@
  * to fall, the tower when there is power and a need for material, the furnace when qi
  * has started to pile up, refining when material has.
  *
- * The first realm is deliberately bare: one screen, a bar, three boxes and a warden at
- * the top of it. A cultivator who meets five tabs, six gear slots, five ranks, seven
- * axes, a chest, a tree and two endless towers in their first ten minutes has met a
- * spreadsheet, not a game.
+ * The first realm was bare, and that was an over-correction. The fear was right — a
+ * cultivator who meets five tabs, six gear slots, five ranks, seven axes, a chest, a
+ * tree and two endless towers in their first ten minutes has met a spreadsheet, not a
+ * game — but the answer taken from it was *nothing at all*, for thirteen hours. Played
+ * from a clean save, the first realm is a bar, eighteen purchases and one fight at the
+ * very end of it.
  *
- * The second realm is where it blooms, and it blooms all at once on purpose: hunting,
- * gear and the build arrive together because they are one idea — fight things, keep what
- * they leave, decide how you fight. A beast you cannot take anything from is a button
- * that does nothing, and a stance with nothing to choose between is not a decision. From
- * the third realm it goes back to one thing at a time.
+ * And it did not have to be. The first realm's own three beasts were already there,
+ * already balanced, and already arrive as a ladder — measured, layer by layer:
+ *
+ *     layer 5, about two hours in   山鼠 the rat        66%
+ *     layer 6                       野犬 the hound      20% → 98%
+ *     layer 7                       澤蛙 the frog       24% → 98%
+ *     layer 9, the realm full       妖狐 the fox, warden      63%
+ *
+ * Four fights, each one a real question when it arrives, and the game hid all of them
+ * behind the second realm. So 狩 Hunt opens at the first. Not the bestiary, not gear,
+ * not a stance: three beasts, honest odds, and nothing to lose by trying.
+ *
+ * 器 Gear and 勢 the build still arrive together at the second realm, and they read
+ * better for it — you have been killing these animals for hours, and now they start
+ * leaving things behind, and now you get to choose how you fight them. From the third
+ * realm it goes back to one thing at a time.
  *
  * Nothing is taken away when it opens: the kills counted before 錄 pays still count, and
  * the 道 points earned before the tree opens are still there waiting. A system arriving
@@ -48,8 +61,8 @@ export interface SystemInfo {
 }
 
 export const SYSTEMS: readonly SystemInfo[] = [
-  { key: 'hunt', han: '狩', name: 'Hunting', realm: 2,
-    gives: 'Beasts you can fight whenever you like, as often as you like, for nothing.' },
+  { key: 'hunt', han: '狩', name: 'Hunting', realm: 1,
+    gives: 'Beasts you can fight whenever you like, as often as you like, for nothing. They will be too strong for a while. That is what the upgrades are for.' },
   { key: 'gear', han: '器', name: 'Gear', realm: 2,
     gives: 'And what they leave behind, which you can wear.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,

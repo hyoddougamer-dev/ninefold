@@ -30,13 +30,17 @@ describe('開 what each realm opens', () => {
       expect(STANCES.some((s) => s.realm === r.n)).toBe(true);
       expect(ARTS.some((a) => a.realm === r.n)).toBe(true);
     }
-    // Every system opens somewhere on the ladder, and none of them at the first realm:
-    // realm 1 is the bare loop on purpose.
+    // Every system opens somewhere on the ladder. 狩 Hunt is the one at the first realm
+    // and it is the only one allowed to be: the first realm used to hand over nothing
+    // for thirteen hours, and its own three beasts were sitting there already balanced,
+    // becoming winnable one at a time from about two hours in. Everything else still
+    // waits, so the first realm is one screen and one list, not a spreadsheet.
     for (const s of SYSTEMS) {
-      expect(s.realm).toBeGreaterThan(1);
+      expect(s.realm).toBeGreaterThanOrEqual(s.key === 'hunt' ? 1 : 2);
       expect(s.realm).toBeLessThanOrEqual(9);
       expect(s.gives.length).toBeGreaterThan(30);
     }
+    expect(opensIn(1).map((x) => x.key)).toEqual(['hunt']);
     // And from the third realm it is one thing at a time, so nothing arrives in a heap.
     for (let r = 3; r <= 9; r++) expect(opensIn(r).length).toBeLessThanOrEqual(2);
   });

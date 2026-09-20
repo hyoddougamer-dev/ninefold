@@ -634,10 +634,20 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <tr><th>realm</th><th>勢 stance</th><th>訣 art</th><th>開 and what opens</th></tr>
       ${opensRows}
     </table>
-    <p class="t">The first realm is deliberately bare: one screen, a bar, three boxes and a
-      warden at the top of it. The second is where it blooms, and it blooms all at once on
-      purpose — hunting, gear and the build are one idea. From the third it goes back to
-      one thing at a time.</p>
+    <p class="t">The first realm was deliberately bare, and that was an over-correction.
+      The fear was right; the answer taken from it was <em>nothing at all</em>, for
+      thirteen hours — a bar, eighteen purchases, and one fight at the very end. The
+      second realm blooms, but a player has to last until it.</p>
+    <div class="rule"><b>弱 And the first realm's own beasts were sitting there the whole
+      time.</b> Measured layer by layer, they arrive as a ladder without a number being
+      touched: 山鼠 the rat becomes winnable at the fifth layer, around two hours in, at
+      <b>66%</b>; 野犬 the hound at the sixth; 澤蛙 the frog at the seventh; and 妖狐 the
+      fox, the warden, at the ninth. Four fights, each a real question when it comes —
+      and every one of them was hidden behind the second realm. So 狩 Hunt opens at the
+      <b>first</b>. Not the bestiary, not gear, not a stance: three beasts, honest odds,
+      and nothing to lose by trying. 器 gear and 勢 the build still arrive together at
+      the second, and they read better for it — you have been killing these animals for
+      hours, and now they start leaving things behind.</div>
     <div class="rows">${opensCards}</div>
     <div class="rule"><b>A system that arrives late arrives full.</b> The 道 points earned
       from the first layer are all waiting when the tree opens at the fourth realm, and

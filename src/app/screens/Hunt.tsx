@@ -44,7 +44,10 @@ export function Hunt({ state, onFight }: {
     const all = [...huntable(state.realm)];
     return all.sort((a, b) => {
       const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
-      return left(a) - left(b) || b.realm - a.realm || a.key.localeCompare(b.key);
+      // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
+      // alphabet put 澤蛙 the frog — the hardest of the three — at the top, so a new
+      // cultivator's first sight of 狩 was the one beast furthest out of reach.
+      return left(a) - left(b) || b.realm - a.realm || beastPower(a) - beastPower(b);
     });
   }, [state.realm, state.killed]);
 

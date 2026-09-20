@@ -213,7 +213,12 @@ export function App() {
         beat: 0,
         over: false,
         // A tower floor pays in materials, not in gear. Gear comes from the world.
-        drop: floor !== undefined ? null : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
+        //
+        // 狩 And nothing drops before 器 opens. The first realm hunts a realm before it
+        // can wear anything, so a piece falling there would go into a chest the player
+        // cannot open, off a screen that cannot explain it.
+        drop: floor !== undefined || !isOpen(state.realm, 'gear') ? null
+          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
           chance: dropChanceBonus(state.unlocked),
           luck: rarityLuck(state.unlocked) * pillFortune(state.brewed),
           always: alwaysDrops(state.unlocked),
