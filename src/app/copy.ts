@@ -93,10 +93,41 @@ export const TRIALS = {
   rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell you, and it is why the climb still takes three months.',
 };
 
+/**
+ * 示 The line that tells a stuck player why they are stuck.
+ *
+ * Every one of these names the thing to do and where to do it. None of them explains the
+ * design, and none of them says "you should" — the game states the fact and the player
+ * decides.
+ */
+export const ADVICE = {
+  needMaterial: (short: number) =>
+    `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
+    + `You are ${short.toLocaleString('en-GB')} short. Material comes from hunting.`,
+  buyCores: (han: string) => `You can afford another ${han}. Cores are the one upgrade qi cannot buy, and a warden asks for them.`,
+  buyTechnique: 'You can afford another 劍訣. Buy it and try the warden again.',
+  waitTechnique: (cost: number) =>
+    `The next 劍訣 costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
+  noStance: 'You are fighting with no 勢 stance. Pick one in 道 Path. It is free and it changes every round.',
+  noSequence: 'Your 訣 sequence is empty, so every round fires nothing. Fill it in 道 Path.',
+  brew: 'The furnace will sell you a 煉體丹. It is power you keep for good.',
+  climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
+  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays hours of gathering, once.`,
+  cappedSoSpend: 'Nothing left to buy in this realm. The tower and the furnace are where qi goes now.',
+};
+
 export const HUNT = {
   /** Shown under the power figure. Losing a hunt has no cost at all, and it must say so. */
   free: 'A loss costs you nothing.',
   reach: (n: number) => `${n} beasts within reach`,
+
+  /** 錄 The record. Old beasts have to be worth killing, or the screen is one button. */
+  toward: (kills: number, at: number, han: string) =>
+    (kills === 0 ? `never hunted` : `${kills} / ${at} toward ${han}`),
+  mastered: 'mastered',
+  record: 'Every beast carries three marks. 熟 at ten kills gives you more 材 material from '
+    + 'everything; 通 at a hundred gives you power. A beast you have finished with sinks to '
+    + 'the bottom of this list.',
 };
 
 export const GEAR = {

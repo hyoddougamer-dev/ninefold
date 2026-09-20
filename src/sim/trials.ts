@@ -2,6 +2,7 @@ import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
 import { floorLoot, lootBonus, nextFloor } from './tower.ts';
 import { TOWER_QI_HOURS } from './balance.ts';
+import { recordMaterial } from './record.ts';
 import { rate, type State } from './state.ts';
 
 /**
@@ -36,13 +37,13 @@ export function clearFloor(s: State, floor: number): State {
     ...s,
     tower: floor,
     qi: s.qi + floorQi(s),
-    materials: s.materials + Math.round(floorLoot(floor) * lootBonus(s.tower)),
+    materials: s.materials + lootTaken(s, floorLoot(floor)),
   };
 }
 
-/** What a kill is worth in materials, once the tower's seals are counted. */
+/** What a kill is worth in materials, once the tower's seals and 錄 the record count. */
 export function lootTaken(s: State, base: number): number {
-  return Math.max(1, Math.round(base * lootBonus(s.tower)));
+  return Math.max(1, Math.round(base * lootBonus(s.tower) * recordMaterial(s.killed)));
 }
 
 export function canBrew(s: State, line: Line): boolean {

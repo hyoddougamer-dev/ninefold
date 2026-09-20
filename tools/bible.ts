@@ -36,6 +36,10 @@ import { daoEarned } from '../src/sim/dao.ts';
 import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
+import {
+  KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
+} from '../src/sim/record.ts';
+import { LEVELS } from '../src/app/sound.ts';
 import { num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
@@ -98,13 +102,15 @@ const SYSTEMS: readonly System[] = [
   { han: '包', name: 'Page and APK', status: 'done', at: 'where',
     line: 'One codebase, published to GitHub Pages, wrapped once in an APK that never needs installing again.' },
 
-  { han: '音', name: 'Sound', status: 'open',
-    line: 'Four synthesised sounds and a mute switch. No volume, no music, nothing for the tower or the furnace.' },
-  { han: '引', name: 'Teaching the game', status: 'open',
-    line: 'One help screen at the start. Nothing explains the cap, the tower or the furnace when they first matter.' },
+  { han: '錄', name: 'The record', status: 'done', at: 'record',
+    line: `Three marks on every beast at ${MARKS.join(', ')} kills. It is what makes a beast below your realm worth killing at all.` },
+  { han: '示', name: 'Telling a stuck player why', status: 'done', at: 'record',
+    line: 'One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.' },
+  { han: '音', name: 'Sound', status: 'done',
+    line: `${LEVELS.length} volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.` },
 
-  { han: '錄', name: 'The bestiary paying something', status: 'planned',
-    line: 'Filling it in is its own reward right now. A kill count that bought anything would make hunting a goal.' },
+  { han: '引', name: 'Teaching the rest', status: 'open',
+    line: 'The wall is explained now. The cap, the tower and the furnace still arrive with no introduction beyond the help screen.' },
   { han: '煉器', name: 'Refining worn gear', status: 'planned',
     line: 'Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.' },
   { han: '轉世', name: 'Rebirth', status: 'planned',
@@ -143,6 +149,16 @@ const habitRows = RUNS.map((r) => {
     <td class="n">${r.fights.toLocaleString('en-GB')}</td>
   </tr>`;
 }).join('');
+
+const ceiling = recordCeiling();
+
+const markRows = MARK_INFO.map((m, i) => `
+  <div class="row">
+    <span class="body">
+      <b class="cjk">${m.han}</b> <em>${m.name}</em>
+      <i>at ${MARKS[i]} ${MARKS[i] === 1 ? 'kill' : 'kills'} · ${m.pays}</i>
+    </span>
+  </div>`).join('');
 
 const ladderRows = REALMS.map((r) => {
   const first = ladderAt((r.n - 1) * LAYERS_PER_REALM);
@@ -470,6 +486,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#qi"><b>氣</b> Qi</a>
       <a href="#realms"><b>境</b> The realms</a>
       <a href="#beasts"><b>狩</b> The beasts</a>
+      <a href="#record"><b>錄</b> The record</a>
       <a href="#combat"><b>戰</b> Combat</a>
       <a href="#build"><b>勢</b> The build</a>
       <a href="#gear"><b>器</b> Gear</a>
@@ -652,6 +669,37 @@ const page = `<title>九境 Ninefold — the Bible</title>
       fought as often as you like. Wardens die once.</p>
     <div class="beastgrid">${beastGrid}</div>
     <div class="cards">${beastNames}</div>
+  </section>
+
+  <section class="sec" id="record">
+    <h2><span class="h">錄</span> The record</h2>
+    <p class="t">狩 Hunt had a real problem. By the fifth realm it was fifteen buttons all
+      reading 98%, and only the last one was worth pressing: every beast below your realm
+      had fixed power, paid less material and dropped nothing you wanted. Thirty-six
+      animals were drawn and twenty-seven of them stopped existing the moment you climbed
+      past them.</p>
+    <p class="t">So the kills already sitting in the save mean something. Every beast
+      carries three marks:</p>
+    <div class="rows">${markRows}</div>
+    <p class="t">A finished record — all ${BEASTS.length} beasts, ${MARKS[MARKS.length - 1]}
+      kills each — is <b>×${ceiling.material.toFixed(2)}</b> material and
+      <b>×${ceiling.power.toFixed(2)}</b> power. Worth having, never worth grinding for in
+      one sitting, and reached by somebody who has been hunting for months rather than by
+      somebody who farmed the first rat. ${(KNOWN_MATERIAL * 100).toFixed(0)}% and
+      ${(MASTERED_POWER * 100).toFixed(0)}% a beast.</p>
+    <div class="rule"><b>Neither mark touches the qi rate.</b> A mark is a hundred taps or
+      it is nothing, so if the record paid in gathering it would be the one uncapped thing
+      in the game that pays for waiting. It pays in material and in power, and the list
+      re-sorts itself: a beast with a mark still in it rises, and one you have finished
+      with sinks and goes quiet.</div>
+    <h3>示 And the game says why you are stuck</h3>
+    <p class="t">From the third realm a warden will not fall without 妖丹 cores, and a
+      player who has never opened 狩 Hunt meets that wall, loses a fight they cannot read,
+      and has nothing anywhere telling them why. 修 Cultivate now carries one line,
+      computed from the state, that names the thing actually blocking them — the material
+      they are short of, the level they can already afford, the empty 訣 sequence — and
+      takes them to the screen that fixes it. It says nothing at all the rest of the
+      time.</p>
   </section>
 
   <section class="sec" id="combat">

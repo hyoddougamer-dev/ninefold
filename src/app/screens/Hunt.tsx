@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BEASTS, huntable } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, loot, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
+import { lootTaken } from '../../sim/trials.ts';
+import { MARK_INFO, marksOf, nextMark, recordMaterial, recordTally } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
@@ -26,9 +28,25 @@ export function Hunt({ state, onFight }: {
   state: State;
   onFight: (key: string) => void;
 }) {
-  const list = [...huntable(state.realm)].reverse();
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
+  const tally = recordTally(state.killed);
+
+  /**
+   * 錄 The order is the point of this screen.
+   *
+   * It used to be every beast you had ever reached, newest first, and by the fifth realm
+   * that was fifteen rows all reading 98% of which only the top one was worth pressing.
+   * Now a beast with a mark still to earn comes first — newest realm first among those —
+   * and the ones with nothing left in them sink to the bottom and go quiet.
+   */
+  const list = useMemo(() => {
+    const all = [...huntable(state.realm)];
+    return all.sort((a, b) => {
+      const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
+      return left(a) - left(b) || b.realm - a.realm || a.key.localeCompare(b.key);
+    });
+  }, [state.realm, state.killed]);
 
   return (
     <>
@@ -42,6 +60,20 @@ export function Hunt({ state, onFight }: {
         力 {num(power(state))} power. {HUNT.free}
       </p>
 
+      <div className="tally">
+        {MARK_INFO.map((m, i) => (
+          <span key={m.han} data-on={tally[i] > 0}>
+            <b className="cjk">{m.han}</b>
+            <em className="mono">{tally[i]}<i>/{BEASTS.length}</i></em>
+            <i>{m.name}</i>
+          </span>
+        ))}
+        <span className="pay">
+          <b className="mono">×{recordMaterial(state.killed).toFixed(2)}</b>
+          <i>材 from the record</i>
+        </span>
+      </div>
+
       <h2 className="heading">{HUNT.reach(list.length)}</h2>
       <div className="stack">
         {list.map((b) => {
@@ -49,15 +81,24 @@ export function Hunt({ state, onFight }: {
           const c = odds(state, b);
           const tone = c > 0.66 ? 'var(--cyan)' : c > 0.33 ? 'var(--gold)' : 'var(--magenta)';
           const kills = state.killed[b.key] ?? 0;
+          const marks = marksOf(kills);
+          const next = nextMark(kills);
           return (
-            <button key={b.key} className="beast" onClick={() => onFight(b.key)}>
+            <button key={b.key} className="beast" data-done={!next} onClick={() => onFight(b.key)}>
               <span className="seal"><Svg html={seal(b.icon, r.colour)} /></span>
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
                 <i>
-                  {b.name} · 力 {num(beastPower(b))} · 材 {loot(b)}
-                  {kills > 0 && <> · <span className="mono">{kills} killed</span></>}
+                  {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, loot(b)))}
                 </i>
+                <span className="marks">
+                  {MARK_INFO.map((m, i) => (
+                    <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
+                  ))}
+                  <i className="mono">
+                    {next ? HUNT.toward(kills, next.at, MARK_INFO[next.index].han) : HUNT.mastered}
+                  </i>
+                </span>
               </span>
               <span className="odds" style={{ color: tone }}>
                 {Math.round(c * 100)}%
@@ -67,6 +108,7 @@ export function Hunt({ state, onFight }: {
           );
         })}
       </div>
+      <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{HUNT.record}</p>
 
       <button className="fold" data-open={record} onClick={() => setRecord((x) => !x)}>
         <span className="cjk">錄</span>

@@ -9,28 +9,53 @@
  * the first cue — which is always a tap — and everything before that is a silent no-op.
  */
 
-const KEY = 'ninefold.muted';
+const KEY = 'ninefold.volume';
+
+/**
+ * 量 Three steps, not a slider.
+ *
+ * A slider on a phone is a drag inside a scrolling sheet, which is a fight. Three states
+ * on the one button that was already there covers what anybody actually wants: off,
+ * quiet enough for a room with other people in it, and on.
+ */
+export const LEVELS = [
+  { volume: 0, icon: '🔇', label: 'Sound off' },
+  { volume: 0.4, icon: '🔈', label: 'Sound quiet' },
+  { volume: 1, icon: '🔊', label: 'Sound on' },
+] as const;
 
 let ctx: AudioContext | null = null;
-let muted = false;
+let level = LEVELS.length - 1;
 
 try {
-  muted = localStorage.getItem(KEY) === '1';
+  const raw = localStorage.getItem(KEY);
+  // `Number(null)` is 0, not NaN, so a missing key read as "silent" and the game
+  // started muted for everybody. The null has to be ruled out before the number is.
+  const held = raw === null ? null : Number(raw);
+  if (held !== null && Number.isInteger(held) && held >= 0 && held < LEVELS.length) level = held;
+  // The old key held a boolean mute. Honour it once so nobody's silence is undone.
+  else if (localStorage.getItem('ninefold.muted') === '1') level = 0;
 } catch { /* storage blocked: default to audible */ }
 
-export function isMuted(): boolean {
-  return muted;
+export function soundLevel(): number {
+  return level;
 }
 
-export function setMuted(value: boolean): void {
-  muted = value;
+export function isMuted(): boolean {
+  return LEVELS[level].volume === 0;
+}
+
+/** Steps to the next level and returns it, so the button can say what it became. */
+export function cycleSound(): number {
+  level = (level + 1) % LEVELS.length;
   try {
-    localStorage.setItem(KEY, value ? '1' : '0');
+    localStorage.setItem(KEY, String(level));
   } catch { /* nothing to do */ }
+  return level;
 }
 
 function audio(): AudioContext | null {
-  if (muted) return null;
+  if (LEVELS[level].volume === 0) return null;
   if (!ctx) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
@@ -69,7 +94,7 @@ function play(notes: readonly Note[]): void {
     if (n.to) osc.frequency.exponentialRampToValueAtTime(n.to, at + length);
     // A short attack and an exponential tail: a square wave cut off square clicks.
     amp.gain.setValueAtTime(0.0001, at);
-    amp.gain.exponentialRampToValueAtTime(n.gain ?? 0.09, at + 0.012);
+    amp.gain.exponentialRampToValueAtTime((n.gain ?? 0.09) * LEVELS[level].volume, at + 0.012);
     amp.gain.exponentialRampToValueAtTime(0.0001, at + length);
     osc.connect(amp).connect(a.destination);
     osc.start(at);
@@ -105,4 +130,20 @@ export const sfx = {
   ]),
   /** A layer opens. Quiet on purpose: it happens hundreds of times. */
   layer: () => play([{ freq: 880, length: 0.05, gain: 0.03 }]),
+  /** 塔 A floor falls. A step up, because that is what it is. */
+  floor: () => play([
+    { freq: 440, length: 0.09, gain: 0.06, type: 'triangle' },
+    { freq: 587, at: 0.07, length: 0.09, gain: 0.06, type: 'triangle' },
+    { freq: 880, at: 0.14, length: 0.18, gain: 0.05 },
+  ]),
+  /** 爐 A pill comes out of the furnace. Round and low, like something cooling. */
+  brew: () => play([
+    { freq: 300, to: 200, length: 0.22, gain: 0.07, type: 'sine' },
+    { freq: 600, at: 0.04, length: 0.16, gain: 0.03, type: 'triangle' },
+  ]),
+  /** 錄 A mark is earned. Two clear notes, rare enough to be worth hearing. */
+  mark: () => play([
+    { freq: 784, length: 0.1, gain: 0.06 },
+    { freq: 1175, at: 0.09, length: 0.2, gain: 0.05 },
+  ]),
 };

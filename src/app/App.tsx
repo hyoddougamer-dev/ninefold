@@ -14,6 +14,7 @@ import { rollDrop } from '../sim/drops.ts';
 import { brew, clearFloor, floorQi, lootTaken, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillFortune } from '../sim/furnace.ts';
+import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
 import { WARDENS } from '../data/bestiary.ts';
@@ -29,7 +30,7 @@ import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { RETURN } from './copy.ts';
 import { haptics } from './haptics.ts';
-import { isMuted, setMuted, sfx } from './sound.ts';
+import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { UPDATE } from './copy.ts';
 
@@ -68,7 +69,7 @@ export function App() {
   const [help, setHelp] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fresh, setFresh] = useState(false);
-  const [muted, setMutedState] = useState(isMuted);
+  const [sound, setSound] = useState(soundLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
   const loaded = useRef(false);
@@ -205,7 +206,7 @@ export function App() {
     setState((s) => {
       const next = brew(s, line);
       if (next === s) return s;
-      sfx.breakthrough();
+      sfx.brew();
       haptics.win();
       return next;
     });
@@ -243,7 +244,8 @@ export function App() {
     if (!battle) return;
     const { beast, outcome, drop, floor } = battle;
     if (outcome.won && floor !== undefined) {
-      // 塔 A floor counts once. It pays material and nothing else.
+      // 塔 A floor counts once. It pays material and hours of gathering.
+      sfx.floor();
       setState((s) => clearFloor(s, floor));
     } else if (outcome.won) {
       setState((s) => {
@@ -252,6 +254,9 @@ export function App() {
           ? { ...drop, rarity: RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(drop.rarity) + 1)] }
           : drop;
         const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
+        // 錄 A mark earned is rare enough to be worth hearing.
+        const before = marksOf(s.killed[beast.key] ?? 0);
+        if (marksOf((s.killed[beast.key] ?? 0) + 1) > before) sfx.mark();
         return {
           ...s,
           wardenFell: beast.warden ? true : s.wardenFell,
@@ -309,11 +314,10 @@ export function App() {
   }, [state.realm]);
 
   const toggleMute = useCallback(() => {
-    const next = !muted;
-    setMuted(next);
-    setMutedState(next);
-    if (!next) sfx.tap();
-  }, [muted]);
+    const next = cycleSound();
+    setSound(next);
+    if (LEVELS[next].volume > 0) sfx.tap();
+  }, []);
 
   const onUnlock = useCallback((key: string) => {
     setState((s) => {
@@ -358,6 +362,7 @@ export function App() {
             focus={focus}
             set={climb}
             onFight={() => startFight(currentWarden(state))}
+            onGo={(next) => { setTab(next); sfx.tap(); }}
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
@@ -373,8 +378,8 @@ export function App() {
       <div className="switches">
         <button onClick={() => { setSaving(true); sfx.tap(); }} aria-label="Your save">存</button>
         <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
-        <button onClick={toggleMute} data-on={!muted} aria-label={muted ? 'Unmute' : 'Mute'}>
-          {muted ? '🔇' : '🔊'}
+        <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0} aria-label={LEVELS[sound].label}>
+          {LEVELS[sound].icon}
         </button>
       </div>
 

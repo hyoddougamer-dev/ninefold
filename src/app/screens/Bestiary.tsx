@@ -4,6 +4,7 @@ import type { State } from '../../sim/state.ts';
 import { seal } from '../../art/aura.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import { BESTIARY } from '../copy.ts';
 
 /**
@@ -31,12 +32,19 @@ export function Bestiary({ state }: { state: State }) {
             </h2>
             <div className="grid3">
               {ofRealm.map((b) => {
-                const found = (state.killed[b.key] ?? 0) > 0;
+                const kills = state.killed[b.key] ?? 0;
+                const found = kills > 0;
+                const marks = marksOf(kills);
                 return (
                   <div key={b.key} className="card3" data-seen={found}>
                     <span className="seal"><Svg html={seal(b.icon, realmOf(b.realm).colour, !!b.warden)} /></span>
                     <b style={{ color: found ? r.colour : 'var(--faint)' }}>{found ? b.han : '？'}</b>
-                    <i>{found ? `${state.killed[b.key]} killed` : b.warden ? 'warden' : '—'}</i>
+                    <i>{found ? `${kills} killed` : b.warden ? 'warden' : '—'}</i>
+                    <span className="marks">
+                      {MARK_INFO.map((m, i) => (
+                        <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
+                      ))}
+                    </span>
                   </div>
                 );
               })}

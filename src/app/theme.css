@@ -83,6 +83,17 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 @keyframes settle { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .deep { animation: none; } }
 
+/* 示 The one line that says why you are stuck. It is a button when it can take you
+   somewhere, and it reads as advice rather than as an error. */
+.tip { margin-top: 14px; width: 100%; display: flex; gap: 11px; align-items: flex-start;
+       text-align: left; font: inherit; color: var(--text); cursor: pointer;
+       background: color-mix(in srgb, var(--gold) 10%, var(--panel2));
+       border: 1px solid var(--gold); border-radius: 11px; padding: 11px 13px; }
+.tip:disabled { cursor: default; }
+.tip b { flex: none; font-size: 17px; font-weight: 400; color: var(--gold); line-height: 1.3; }
+.tip i { font-style: normal; font-size: 13px; line-height: 1.5; }
+.tip em { margin-left: auto; font-style: normal; color: var(--gold); font-size: 19px; }
+
 .upgrades { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
 .upg { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
        padding: 11px 12px; display: flex; gap: 10px; align-items: center; text-align: left;
@@ -141,6 +152,33 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .beast .odds em { display: block; font-style: normal; font-size: 9.5px; letter-spacing: .12em;
                     text-transform: uppercase; color: var(--faint); font-family: Archivo, sans-serif; }
 .stack { display: flex; flex-direction: column; gap: 8px; }
+
+/* ── 錄 the record ──────────────────────────────────────────────────────── */
+
+/* A beast with nothing left in it goes quiet rather than disappearing: the record
+   still wants it, and a list that shrinks reads as content being taken away. */
+.beast[data-done="true"] { opacity: .55; }
+.beast[data-done="true"] .marks em[data-on="true"] { color: var(--gold); }
+
+.marks { display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+.marks em { font-style: normal; font-size: 11px; color: var(--line); line-height: 1; }
+.marks em[data-on="true"] { color: var(--cyan); }
+.marks i { font-style: normal; font-size: 10.5px; color: var(--faint); margin-left: 4px; }
+
+.tally { display: flex; gap: 7px; margin: 10px 0 2px; }
+.tally span { flex: 1; background: var(--panel); border: 1px solid var(--line);
+              border-radius: 10px; padding: 7px 4px 6px; text-align: center; }
+.tally span[data-on="true"] { border-color: var(--cyan); }
+.tally b { display: block; font-size: 15px; color: var(--faint); line-height: 1.2; }
+.tally span[data-on="true"] b { color: var(--cyan); }
+.tally em { display: block; font-style: normal; font-size: 14px; font-weight: 600; }
+.tally em i { font-style: normal; font-size: 10px; color: var(--faint); }
+.tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
+           text-transform: uppercase; color: var(--faint); }
+.tally .pay { flex: 1.1; }
+.tally .pay b { color: var(--gold); font-size: 15px; }
+
+.card3 .marks { justify-content: center; }
 
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .card3 { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;

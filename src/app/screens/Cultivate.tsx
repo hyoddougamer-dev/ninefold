@@ -12,14 +12,17 @@ import { portrait, seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { CULTIVATE } from '../copy.ts';
+import { advice } from '../advice.ts';
 
-export function Cultivate({ state, pulse, focus, set, onFight }: {
+export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
   set: (s: State) => void;
   onFight: () => void;
+  /** 示 Where the advice points, when it points anywhere. */
+  onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear') => void;
 }) {
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -35,6 +38,7 @@ export function Cultivate({ state, pulse, focus, set, onFight }: {
   const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
   const cap = capOf(state);
+  const tip = advice(state);
 
   return (
     <>
@@ -141,6 +145,14 @@ export function Cultivate({ state, pulse, focus, set, onFight }: {
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
           {focus >= FOCUS_MAX - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
         </p>
+      )}
+
+      {tip && (
+        <button className="tip" disabled={!tip.tab} onClick={() => tip.tab && onGo(tip.tab)}>
+          <b className="cjk">{tip.han}</b>
+          <i>{tip.text}</i>
+          {tip.tab && <em className="cjk">›</em>}
+        </button>
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>

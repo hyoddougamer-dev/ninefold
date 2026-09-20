@@ -182,6 +182,7 @@
       <a href="#qi"><b>氣</b> Qi</a>
       <a href="#realms"><b>境</b> The realms</a>
       <a href="#beasts"><b>狩</b> The beasts</a>
+      <a href="#record"><b>錄</b> The record</a>
       <a href="#combat"><b>戰</b> Combat</a>
       <a href="#build"><b>勢</b> The build</a>
       <a href="#gear"><b>器</b> Gear</a>
@@ -246,15 +247,18 @@
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">包</b> <em><a href="#where">Page and APK</a></em><i>One codebase, published to GitHub Pages, wrapped once in an APK that never needs installing again.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">錄</b> <em><a href="#record">The record</a></em><i>Three marks on every beast at 1, 10, 100 kills. It is what makes a beast below your realm worth killing at all.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">示</b> <em><a href="#record">Telling a stuck player why</a></em><i>One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">音</b> <em>Sound</em><i>3 volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.</i></span>
   </div><div class="srow" style="--hue:var(--gold)">
     <span class="st"><b class="cjk">行</b><i>open</i></span>
-    <span class="body"><b class="cjk">音</b> <em>Sound</em><i>Four synthesised sounds and a mute switch. No volume, no music, nothing for the tower or the furnace.</i></span>
-  </div><div class="srow" style="--hue:var(--gold)">
-    <span class="st"><b class="cjk">行</b><i>open</i></span>
-    <span class="body"><b class="cjk">引</b> <em>Teaching the game</em><i>One help screen at the start. Nothing explains the cap, the tower or the furnace when they first matter.</i></span>
-  </div><div class="srow" style="--hue:var(--faint)">
-    <span class="st"><b class="cjk">待</b><i>planned</i></span>
-    <span class="body"><b class="cjk">錄</b> <em>The bestiary paying something</em><i>Filling it in is its own reward right now. A kill count that bought anything would make hunting a goal.</i></span>
+    <span class="body"><b class="cjk">引</b> <em>Teaching the rest</em><i>The wall is explained now. The cap, the tower and the furnace still arrive with no introduction beyond the help screen.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
     <span class="st"><b class="cjk">待</b><i>planned</i></span>
     <span class="body"><b class="cjk">煉器</b> <em>Refining worn gear</em><i>Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.</i></span>
@@ -958,6 +962,55 @@
     <b class="cjk">渡劫</b> <i class="faint">Tribulation</i>
     <div class="lin"><span><b style="color:#FF5AA6">羽妖</b> <i>Harpy · 力 24.5M · 材 434k</i></span><span><b style="color:#FF5AA6">獨角</b> <i>Unicorn · 力 33.8M · 材 625k</i></span><span><b style="color:#FF5AA6">巨章</b> <i>Colossal Squid · 力 45.8M · 材 900k</i></span><span><b style="color:#FF5AA6">龍</b> <i>Dragon · warden · 力 81.1M · 材 5.18M</i></span></div>
   </div></div>
+  </section>
+
+  <section class="sec" id="record">
+    <h2><span class="h">錄</span> The record</h2>
+    <p class="t">狩 Hunt had a real problem. By the fifth realm it was fifteen buttons all
+      reading 98%, and only the last one was worth pressing: every beast below your realm
+      had fixed power, paid less material and dropped nothing you wanted. Thirty-six
+      animals were drawn and twenty-seven of them stopped existing the moment you climbed
+      past them.</p>
+    <p class="t">So the kills already sitting in the save mean something. Every beast
+      carries three marks:</p>
+    <div class="rows">
+  <div class="row">
+    <span class="body">
+      <b class="cjk">見</b> <em>Seen</em>
+      <i>at 1 kill · the record fills in</i>
+    </span>
+  </div>
+  <div class="row">
+    <span class="body">
+      <b class="cjk">熟</b> <em>Known</em>
+      <i>at 10 kills · +2% 材 material</i>
+    </span>
+  </div>
+  <div class="row">
+    <span class="body">
+      <b class="cjk">通</b> <em>Mastered</em>
+      <i>at 100 kills · +2% power</i>
+    </span>
+  </div></div>
+    <p class="t">A finished record — all 36 beasts, 100
+      kills each — is <b>×1.72</b> material and
+      <b>×1.72</b> power. Worth having, never worth grinding for in
+      one sitting, and reached by somebody who has been hunting for months rather than by
+      somebody who farmed the first rat. 2% and
+      2% a beast.</p>
+    <div class="rule"><b>Neither mark touches the qi rate.</b> A mark is a hundred taps or
+      it is nothing, so if the record paid in gathering it would be the one uncapped thing
+      in the game that pays for waiting. It pays in material and in power, and the list
+      re-sorts itself: a beast with a mark still in it rises, and one you have finished
+      with sinks and goes quiet.</div>
+    <h3>示 And the game says why you are stuck</h3>
+    <p class="t">From the third realm a warden will not fall without 妖丹 cores, and a
+      player who has never opened 狩 Hunt meets that wall, loses a fight they cannot read,
+      and has nothing anywhere telling them why. 修 Cultivate now carries one line,
+      computed from the state, that names the thing actually blocking them — the material
+      they are short of, the level they can already afford, the empty 訣 sequence — and
+      takes them to the screen that fixes it. It says nothing at all the rest of the
+      time.</p>
   </section>
 
   <section class="sec" id="combat">
