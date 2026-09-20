@@ -6,12 +6,16 @@
  * a change to the furnace made all of them wrong at once without a single test noticing.
  */
 import { LAYERS } from '../src/sim/balance.ts';
-import { UPGRADES, buy, canBuy, newState, upgradeCost } from '../src/sim/state.ts';
+import { UPGRADES, buy, canBuy, newState, upgradeCost, type State } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { odds } from '../src/sim/combat.ts';
 import { LINES } from '../src/data/alchemy.ts';
+import { ALL_NODES, type Path } from '../src/data/techniques.ts';
+import { canUnlock, daoFree } from '../src/sim/dao.ts';
+import { wardenOf } from '../src/data/bestiary.ts';
+import { REALMS } from '../src/data/realms.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -29,7 +33,42 @@ const DAY = 86_400;
  * furnace. To ask what the furnace costs, hold the tower still and change only the
  * brewing.
  */
-export function climb(checks: number, spends = true, brews = false, climbs = brews) {
+/**
+ * 道 The branch this cultivator walks, bought the moment the points allow.
+ *
+ * It is a parameter rather than a fixed choice because the branches are not worth the
+ * same, and for a long time nobody knew that: the curve was measured on a cultivator who
+ * never spent a 道 point at all, and 神 the Spirit branch turned out to cut the climb
+ * from eighty-four days to thirty.
+ */
+export type Branch = Path | 'none';
+
+/** Every branch a cultivator can walk, and walking none of them. */
+export const BRANCHES: readonly Branch[] = ['none', 'sword', 'spirit', 'fortune'];
+
+function spend(s: State, branch: Branch): State {
+  if (branch === 'none') return s;
+  // 道 points come from layers and from wardens. The theoretical curve fells the warden
+  // the moment the realm fills, so the wardens are counted the same way here.
+  const wardens = REALMS.filter((x) => x.n < s.realm).length;
+  const killed = Object.fromEntries(
+    REALMS.filter((x) => x.n < s.realm).map((x) => [wardenOf(x.n).key, 1]),
+  );
+  let out: State = { ...s, killed: { ...s.killed, ...killed } };
+  for (let guard = 0; guard < 200; guard++) {
+    const free = daoFree(layersOpened(out), wardens, out.unlocked);
+    const want = ALL_NODES
+      .filter((n) => n.key === 'root' || n.path === branch)
+      .find((n) => canUnlock(n.key, out.unlocked, free));
+    if (!want) break;
+    out = { ...out, unlocked: [...out.unlocked, want.key] };
+  }
+  return out;
+}
+
+export function climb(
+  checks: number, spends = true, brews = false, climbs = brews, branch: Branch = 'none',
+) {
   const tick = DAY / checks;
   let s = newState(T0);
   let t = T0;
@@ -41,6 +80,7 @@ export function climb(checks: number, spends = true, brews = false, climbs = bre
     s = advance(s, t, true);                 // theoretical curve: the warden falls at once
     while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
     if (!spends) continue;
+    s = spend(s, branch);
     // Cheapest first, for as long as anything is affordable: the way a person plays.
     for (let guard = 0; guard < 500; guard++) {
       const open = UPGRADES.filter((u) => u !== 'cores' && canBuy(s, u));

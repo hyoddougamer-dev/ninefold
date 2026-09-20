@@ -31,7 +31,7 @@ export const LAYER_BONUS = 1.02;
  */
 export const LADDER_FIRST = 900;
 /** How much dearer each layer is than the last, at the foot of the mountain… */
-export const LADDER_GROWTH_FIRST = 1.4614;
+export const LADDER_GROWTH_FIRST = 1.4660;
 /** …and at the summit. It never falls below the rate's own growth, so the climb never
  *  speeds up: every realm is longer than the one before it, all nine of them. */
 export const LADDER_GROWTH_LAST = 1.20;
@@ -140,11 +140,13 @@ export const FOCUS_MAX = 3;
 export const FOCUS_RAMP = 180;
 export const FOCUS_HOLD = 900;
 
-export function focusAt(secondsOpen: number): number {
+export function focusAt(secondsOpen: number, deeper = 0): number {
   if (!(secondsOpen > 0)) return 1;
   if (secondsOpen >= FOCUS_HOLD) return 1;
   const t = Math.min(1, secondsOpen / FOCUS_RAMP);
-  return 1 + (FOCUS_MAX - 1) * t;
+  // 道 神 the Spirit branch deepens the sitting rather than the rate. It rides the same
+  // ramp and the same ending, so everything that made 入定 safe still holds.
+  return 1 + (FOCUS_MAX + Math.max(0, deeper) - 1) * t;
 }
 
 /**
@@ -155,6 +157,47 @@ export function focusAt(secondsOpen: number): number {
  * be generous without ever becoming a loop that feeds itself.
  */
 export const TOWER_QI_HOURS = 6;
+
+/**
+ * 道 Why 神 the Spirit branch stopped selling the qi rate.
+ *
+ * The tree's two big branches were written with the same numbers — 15, 20, 30, 45, 80 —
+ * one on power and one on the rate. It reads as fair and it is not, and the reason is
+ * the only thing in this file worth learning twice:
+ *
+ *   **A multiplier on power is linear. A multiplier on the rate divides the whole game.**
+ *
+ * Power buys fights, and the climb is not gated by fights; it is gated by qi. Doubling
+ * power shortens nothing. Doubling the rate halves every layer, every realm and the whole
+ * run at once — the run length is very nearly `days / rateMultiplier`. Measured on the
+ * shared harness, with the tower and the furnace:
+ *
+ *     no tree       day 84.2
+ *     劍 the sword  day 81.7   (力 x3.00)
+ *     運 fortune    day 77.0
+ *     神 the spirit day 30.0   (氣 x3.00)
+ *
+ * Nine nodes turned a three-month game into a one-month game, and the curve never saw it
+ * because the curve was measured on a cultivator who never spent a 道 point.
+ *
+ * Scaling the percentages down does not fix it, and that is the part worth writing down:
+ * at a fifth of their old size the branch still landed on day 57, and at a *seventh* it
+ * still landed on 61. Any rate multiplier at all divides the run, so a rate branch and a
+ * ninety-day promise cannot both be true. The tuning knob was the wrong tool.
+ *
+ * So 神 keeps one rate node, 吐納 Breathing, which is its identity and small enough to
+ * cost three days. Its four big nodes now deepen 入定 instead — which is still gathering,
+ * still the branch's own idea, and **cannot divide the clock, because it only pays while
+ * you are looking at the phone.** An idle game spends almost all of its life shut.
+ */
+export const TREE_FOCUS_SHARE = 0.5;
+
+/**
+ * 頂 And the ceiling that would have caught it. No branch of the tree, taken to its end,
+ * may multiply the qi rate by more than this — because the run is very nearly
+ * `days / rateMultiplier` and there is no other number in the game that can say no.
+ */
+export const TREE_RATE_CEILING = 1.25;
 
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;

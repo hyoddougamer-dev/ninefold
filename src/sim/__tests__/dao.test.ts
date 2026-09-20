@@ -4,9 +4,10 @@ import {
 } from '../../data/techniques.ts';
 import { SLOTS } from '../../data/gear.ts';
 import {
-  affinity, canUnlock, daoEarned, daoFree, daoSpent, extraChestSlots,
+  affinity, canUnlock, daoEarned, daoFree, daoSpent, extraChestSlots, focusBonus,
   powerMultiplier, rateMultiplier, validateUnlocked,
 } from '../dao.ts';
+import { FOCUS_MAX, TREE_RATE_CEILING, focusAt } from '../balance.ts';
 import { newState, power, rateBonus, type State } from '../state.ts';
 
 /** Everything a whole run can earn: 73 layers and nine wardens. */
@@ -117,8 +118,32 @@ describe('道 the tree', () => {
     console.log(`\n  a branch taken to the end:\n${rows.join('\n')}\n`);
 
     expect(powerMultiplier(branch('sword'))).toBeGreaterThan(2);
-    expect(rateMultiplier(branch('spirit'))).toBeGreaterThan(2);
     expect(extraChestSlots(branch('fortune'))).toBe(20);
+    // 神 pays in 入定, not in the rate. That is the whole of what it is for now.
+    expect(focusBonus(branch('spirit'))).toBeGreaterThan(0.5);
+  });
+
+  /**
+   * 頂 The guard that was missing, and the reason the tree once cut the game to a third.
+   *
+   * 劍 and 神 were written with the same numbers, 15/20/30/45/80, one on power and one on
+   * the rate. Power buys fights and the climb is not gated by fights; the rate divides
+   * the whole run. Measured, 神 took the ninth realm on day 30 against the sword's 82 —
+   * and no test anywhere could see it, because no harness spent a 道 point.
+   */
+  it('lets no branch multiply the qi rate past its ceiling', () => {
+    const rows = PATHS.flatMap((path) => [false, true].map((stone) => {
+      const keys = branch(path, stone);
+      return `  ${PATH_INFO[path].han} ${(stone ? 'keystone' : 'standard').padEnd(9)}` +
+        ` 氣 ×${rateMultiplier(keys).toFixed(2)}   入定 +${focusBonus(keys).toFixed(2)}`;
+    }));
+    console.log(`\n  what a finished branch does to the clock (ceiling ×${TREE_RATE_CEILING}):\n${rows.join('\n')}\n`);
+
+    for (const path of PATHS) {
+      for (const stone of [false, true]) {
+        expect(rateMultiplier(branch(path, stone))).toBeLessThanOrEqual(TREE_RATE_CEILING);
+      }
+    }
   });
 
   it('nothing is locked away by default — only a keystone ever silences a slot', () => {
@@ -152,7 +177,14 @@ describe('道 the tree', () => {
     const swordsman: State = { ...bare, unlocked: branch('sword') };
     const monk: State = { ...bare, unlocked: branch('spirit') };
     expect(power(swordsman)).toBeGreaterThan(power(bare) * 2);
-    expect(rateBonus(monk)).toBeGreaterThan(rateBonus(bare) * 2);
+    // 神 moves the sitting, not the rate: at the bottom of the ramp both are 1, and at
+    // the top the monk sits deeper than anybody else can.
+    const settled = 10 * 60;
+    expect(focusAt(settled, focusBonus(monk.unlocked)))
+      .toBeGreaterThan(focusAt(settled) + 0.5);
+    expect(focusAt(0, focusBonus(monk.unlocked))).toBe(1);
+    expect(focusAt(settled)).toBeCloseTo(FOCUS_MAX, 6);
+    expect(rateBonus(monk)).toBeLessThanOrEqual(rateBonus(bare) * TREE_RATE_CEILING);
     // 起 the root hands everyone +10% of both, and nothing on 神 adds power beyond it.
     const rooted: State = { ...bare, unlocked: [ROOT.key] };
     expect(power(monk)).toBeCloseTo(power(rooted), 6);

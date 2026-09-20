@@ -11,7 +11,7 @@ import { advance, rate } from '../time.ts';
 import { num } from '../format.ts';
 import { pillsTaken } from '../furnace.ts';
 import { LINES } from '../../data/alchemy.ts';
-import { climb } from '../../../tools/climb.ts';
+import { BRANCHES, climb } from '../../../tools/climb.ts';
 
 /**
  * The curve is the most irreversible decision in the game, and it is where every
@@ -101,6 +101,35 @@ describe('the climb, for a cultivator who spends', () => {
     expect(arrival).toBeLessThan(climber.arrival[8] * 2);
     expect(power(brewer.state)).toBeGreaterThan(power(climber.state));
   });
+
+  /**
+   * 道 The measurement that was missing, and it was missing for the whole of the game's
+   * life: every curve above is walked by a cultivator who never spends a 道 point, and
+   * every real cultivator spends all of them.
+   *
+   * It hid a hole you could drive a game through. 神 the Spirit branch multiplied the qi
+   * rate by three, the run is very nearly `days / rateMultiplier`, and nine nodes turned
+   * a three-month climb into a one-month climb. Nothing could see it.
+   */
+  it('lands near ninety days down every branch of the tree', () => {
+    const rows = BRANCHES.map((b) => {
+      const r = climb(6, true, true, true, b);
+      return { b, day: r.arrival[8] };
+    });
+    console.log(`\n  the same cultivator, by 道 branch — tower and furnace on:\n`
+      + rows.map((r) => `    ${r.b.padEnd(8)} realm 9 on day ${r.day.toFixed(1)}`).join('\n')
+      + `\n    spread across the three: `
+      + `${(Math.max(...rows.slice(1).map((r) => r.day)) - Math.min(...rows.slice(1).map((r) => r.day))).toFixed(1)} days\n`);
+
+    for (const r of rows) {
+      expect(Math.abs(r.day - TARGET_DAYS)).toBeLessThanOrEqual(TOLERANCE_DAYS * 2);
+    }
+    // And no branch may be a speedrun: the tree is a build, not a pace. The spread is
+    // read across the branches a cultivator can actually pick — walking none of them is
+    // not a choice anybody makes, and it is only in the table to show what it costs.
+    const picked = rows.filter((r) => r.b !== 'none').map((r) => r.day);
+    expect(Math.max(...picked) - Math.min(...picked)).toBeLessThanOrEqual(TOLERANCE_DAYS * 1.5);
+  }, 30_000);
 
   it('never stops getting slower, so the mountain always reads as taller', () => {
     const { arrival } = climb(6);

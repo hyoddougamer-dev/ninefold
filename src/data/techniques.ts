@@ -1,3 +1,4 @@
+import { TREE_FOCUS_SHARE } from '../sim/balance.ts';
 import type { Slot } from './gear.ts';
 
 /**
@@ -52,7 +53,9 @@ export type Effect =
   | { kind: 'rarityLuck'; percent: number }
   | { kind: 'chestSlots'; slots: number }
   | { kind: 'fuseQuality'; percent: number }
-  | { kind: 'alwaysDrop' };
+  | { kind: 'alwaysDrop' }
+  /** 入定 How much deeper the sitting goes, added to FOCUS_MAX. */
+  | { kind: 'focus'; depth: number };
 
 export interface Node {
   readonly key: string;
@@ -77,6 +80,9 @@ export interface Node {
   readonly keystone?: true;
 }
 
+/** 入定 How much deeper a 神 node sits you, from its 劍 twin's percentage. */
+const deep = (twin: number): number => Math.round(twin * TREE_FOCUS_SHARE) / 100;
+
 const n = (
   key: string, han: string, name: string, path: Path, tier: number,
   cost: number, effects: readonly Effect[], text: string,
@@ -98,17 +104,21 @@ export const NODES: readonly Node[] = [
   n('tenthousand','萬劍','Ten Thousand Swords', 'sword', 7, 4, [{ kind: 'power', percent: 80 }], '+80% power'),
 
   // 神 The Spirit — the gathering rate, and affinity for what you think with.
-  n('breathing', '吐納', 'Breathing',      'spirit', 0, 1, [{ kind: 'rate', percent: 15 }], '+15% qi per second'),
+  //
+  // 吐納 is the only node here that touches the rate, and the four big ones deepen 入定
+  // instead. See balance.ts: a rate branch and a ninety-day promise cannot both be true,
+  // and scaling the percentages down does not fix it — only changing what they buy does.
+  n('breathing', '吐納', 'Breathing',      'spirit', 0, 1, [{ kind: 'rate', percent: 10 }], '+10% qi per second'),
   n('clearmind', '明心', 'Clear Mind',     'spirit', 1, 1, [{ kind: 'affinity', slots: ['crown'], percent: 40 }], 'crowns count 40% more'),
-  n('circulation','周天','Circulation',    'spirit', 2, 2, [{ kind: 'rate', percent: 20 }], '+20% qi per second'),
+  n('circulation','周天','Circulation',    'spirit', 2, 2, [{ kind: 'focus', depth: deep(20) }], `入定 sits ${deep(20)}x deeper`),
   n('focus',     '凝神', 'Focus',          'spirit', 3, 2, [{ kind: 'affinity', slots: ['talisman', 'ring'], percent: 40 }], 'talismans and rings count 40% more'),
-  n('inner',     '內景', 'Inner Landscape','spirit', 4, 3, [{ kind: 'rate', percent: 30 }], '+30% qi per second'),
+  n('inner',     '內景', 'Inner Landscape','spirit', 4, 3, [{ kind: 'focus', depth: deep(30) }], `入定 sits ${deep(30)}x deeper`),
   n('travel',    '神遊', 'Spirit Travel',  'spirit', 5, 3, [{ kind: 'layerCost', percent: 6 }], 'layers cost 6% less qi', { excludes: 'forget' }),
   n('forget',    '忘機', 'Forget the Mechanism', 'spirit', 5, 3,
     [{ kind: 'layerCost', percent: 18 }, { kind: 'powerCut', percent: 45 }],
     'Layers cost 18% less qi. You lose 45% of your power.', { excludes: 'travel', keystone: true }),
-  n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'rate', percent: 45 }], '+45% qi per second'),
-  n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'rate', percent: 80 }], '+80% qi per second'),
+  n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'focus', depth: deep(45) }], `入定 sits ${deep(45)}x deeper`),
+  n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'focus', depth: deep(80) }], `入定 sits ${deep(80)}x deeper`),
 
   // 運 Fortune — what falls, and what you can keep.
   n('gleaning',  '拾遺', 'Gleaning',       'fortune', 0, 1, [{ kind: 'dropChance', percent: 5 }], '+5 to drop chance'),

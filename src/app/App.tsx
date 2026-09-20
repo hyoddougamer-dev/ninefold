@@ -7,6 +7,7 @@ import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save } from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
 import { focusAt } from '../sim/balance.ts';
+import { focusBonus } from '../sim/dao.ts';
 import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
@@ -145,12 +146,20 @@ export function App() {
     };
   }, [ready]);
 
+  // 道 The tree as the clock sees it, kept fresh for an interval that is only set up once.
+  const tree = useRef<readonly string[]>(state.unlocked);
+  useEffect(() => { tree.current = state.unlocked; }, [state.unlocked]);
+
   // The clock. Time moves by timestamp, never by frame: this interval only asks what
   // time it is, and `advance` does the rest — so dropped frames lose no progress.
   useEffect(() => {
     if (!ready) return;
     const id = setInterval(() => {
-      const deep = since.current === null ? 1 : focusAt(now() - since.current);
+      // 道 神 the Spirit branch deepens the sitting; everything else leaves it at
+      // FOCUS_MAX. It reads a ref rather than the state, because this interval is set up
+      // once and would otherwise hold the tree the player had when it started.
+      const deep = since.current === null ? 1
+        : focusAt(now() - since.current, focusBonus(tree.current));
       setFocus(deep);
       setState((s) => {
         const next = advance(s, now(), false, deep);

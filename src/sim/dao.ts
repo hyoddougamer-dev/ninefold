@@ -97,6 +97,18 @@ export function rateMultiplier(unlocked: readonly string[]): number {
 }
 
 /**
+ * 入定 How much deeper 神 the Spirit branch sits you, on top of FOCUS_MAX.
+ *
+ * It is the branch's weight, and the reason it no longer sells the qi rate: this pays
+ * only while the phone is open, so it can never divide the length of a run the way a
+ * rate multiplier does. See balance.ts for the thirty-day game that taught us the
+ * difference.
+ */
+export function focusBonus(unlocked: readonly string[]): number {
+  return effects(unlocked).reduce((sum, e) => (e.kind === 'focus' ? sum + e.depth : sum), 0);
+}
+
+/**
  * 親 Affinity: how much more a slot's gear counts.
  *
  * This is what a path does *instead of* locking gear away. Nothing becomes unwearable;

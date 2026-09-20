@@ -16,6 +16,8 @@ import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, clearFloor, lootTaken, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
+import { ALL_NODES, type Path } from '../src/data/techniques.ts';
+import { canUnlock, daoFree, focusBonus } from '../src/sim/dao.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -33,6 +35,8 @@ export interface Habit {
   readonly build: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
+  /** 道 The branch they walk, bought the moment the points allow. */
+  readonly branch?: Path;
 }
 
 export const HABITS: readonly Habit[] = [
@@ -61,6 +65,24 @@ export interface Run {
   readonly power: number;
 }
 
+/** 道 Buy down one branch, as far as the points reach. */
+function spendTree(s: State, branch: Path | undefined): State {
+  if (!branch) return s;
+  let out = s;
+  for (let guard = 0; guard < 200; guard++) {
+    const wardens = Object.keys(out.killed).filter((k) => WARDEN_KEYS.has(k)).length;
+    const free = daoFree(layersOpened(out), wardens, out.unlocked);
+    const want = ALL_NODES
+      .filter((n) => n.key === 'root' || n.path === branch)
+      .find((n) => canUnlock(n.key, out.unlocked, free));
+    if (!want) break;
+    out = { ...out, unlocked: [...out.unlocked, want.key] };
+  }
+  return out;
+}
+
+const WARDEN_KEYS = new Set(Array.from({ length: 9 }, (_, i) => wardenOf(i + 1).key));
+
 export function play(h: Habit, maxDays = 400): Run {
   let s = newState(T0);
   let t = T0;
@@ -71,11 +93,14 @@ export function play(h: Habit, maxDays = 400): Run {
   while ((t - T0) / DAY < maxDays && layersOpened(s) < LAYERS - 1) {
     // 入定 the part of the visit spent looking at it, walked in steps so the ramp counts.
     const open = h.minutes * 60;
+    const deeper = focusBonus(s.unlocked);
     for (let k = 1; k <= 10 && open > 0; k++) {
-      s = advance(s, t + (open * k) / 10, false, focusAt((open * k) / 10));
+      s = advance(s, t + (open * k) / 10, false, focusAt((open * k) / 10, deeper));
     }
     t += tick;
     s = advance(s, t);
+
+    s = spendTree(s, h.branch);
 
     if (h.build) {
       const stance = [...STANCES].reverse().find((x) => x.realm <= s.realm);

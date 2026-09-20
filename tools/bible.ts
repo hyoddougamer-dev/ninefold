@@ -26,7 +26,8 @@ import { UPGRADES, UPGRADE_INFO, newState, power, upgradeCost } from '../src/sim
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
-  LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TRIBULATION_CHALLENGE,
+  LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
+  TRIBULATION_CHALLENGE,
   TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
@@ -38,7 +39,7 @@ import { daoEarned } from '../src/sim/dao.ts';
 import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
-import { climb } from './climb.ts';
+import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
@@ -69,6 +70,8 @@ const FULL_RUN = daoEarned(LAYERS - 1, WARDENS.length);
  */
 const CLIMBER = climb(6, true, false, true);     // climbs the tower, never brews
 const BREWER = climb(6, true, true);             // and pours everything into the furnace
+/** 道 The same cultivator down each branch of the tree — the measurement that was missing. */
+const BY_BRANCH = BRANCHES.map((b) => ({ b, day: climb(6, true, true, true, b).arrival[8] }));
 const ENDGAME = playEndgame(40);
 const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
@@ -910,6 +913,23 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <p class="t">At the middle of each branch there are two nodes and room for one. Each
       keystone is stronger than the node beside it and each one gives something up.</p>
     <div class="cards three">${treeColumns}</div>
+    <h3>What a branch costs the clock — measured, tower and furnace on</h3>
+    <table>
+      <tr><th>branch</th><th style="text-align:right">realm 9 on day</th></tr>
+      ${BY_BRANCH.map(({ b, day }) => `<tr><td><b class="cjk">${
+        { none: '—', sword: '劍', spirit: '神', fortune: '運' }[b]}</b> <i>${
+        { none: 'no tree at all', sword: 'The Sword', spirit: 'The Spirit', fortune: 'Fortune' }[b]}</i></td>
+        <td class="n">${day.toFixed(1)}</td></tr>`).join('')}
+    </table>
+    <div class="warn"><b>神 once cut the game to a third, and nothing could see it.</b>
+      劍 and 神 were written with the same numbers — 15, 20, 30, 45, 80 — one on power and
+      one on the qi rate. It reads as fair and it is not: power buys fights, and the climb
+      is not gated by fights. The run is very nearly <em>days ÷ rate</em>, so nine 神 nodes
+      took the ninth realm on <b>day 30</b> against the sword's 82. No test could catch it,
+      because no harness had ever spent a 道 point. 神 now pays in 入定 the sitting instead,
+      which only counts while you are looking at the phone — and an idle game spends almost
+      all of its life shut. No branch may multiply the rate past
+      <b>×${TREE_RATE_CEILING}</b>, and <code>dao.test.ts</code> fails if one does.</div>
   </section>
 
   <section class="sec" id="tower">
