@@ -66,7 +66,16 @@ export const CULTIVATE = {
   deep: 'Sitting with it deepens your gathering. It keeps rising for a few minutes.',
   deepFull: 'Fully settled. This is as deep as sitting with it goes.',
 
-  /** 雷池 The pool. It is the ninth realm's bar, and it refills. */
+  /**
+   * 雷池 The pool. It is the ninth realm's bar, and it refills.
+   *
+   * `lastLayers` is the honest half of it. The breakthrough into 渡劫 promises the pool,
+   * and the pool is nine layers away: a player told about it at layer 1 goes looking for
+   * something that is not there for another fortnight. So the ninth realm says what it is
+   * doing while it is still climbing.
+   */
+  lastLayers: (n: number) =>
+    `${n} more ${n === 1 ? 'layer' : 'layers'} and the bar becomes 雷池 the thunder pool.`,
   pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   capped: 'Full for this realm. Climb to hold more.',

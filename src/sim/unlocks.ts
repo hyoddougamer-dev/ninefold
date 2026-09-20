@@ -69,7 +69,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
   { key: 'refine', han: '煉器', name: 'Refining', realm: 8,
     gives: 'Material makes a piece you already wear better, for ever.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,
-    gives: 'The thunder pool, and a Dragon that comes back heavier every time you put it down.' },
+    gives: 'The last layers of the whole climb. When they run out the bar becomes the thunder pool, and a Dragon comes back heavier every time you put it down.' },
 ];
 
 const BY_KEY: Readonly<Record<System, SystemInfo>> =

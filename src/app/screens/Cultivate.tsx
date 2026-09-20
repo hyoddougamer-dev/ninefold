@@ -1,4 +1,4 @@
-import { FOCUS_MAX, LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { FOCUS_MAX, LAYERS, LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { currentWarden, effectiveBeastPower, odds } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
@@ -6,7 +6,7 @@ import {
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { ladderDone, progress, rate } from '../../sim/time.ts';
+import { ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { portrait, seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
@@ -87,6 +87,12 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
         </span>
         <span className="mono" style={{ color: 'var(--gold)' }}>材 {num(state.materials)}</span>
       </div>
+
+      {/* 雷池 The ninth realm still has nine layers to climb before the pool takes the bar.
+          The breakthrough card names the pool, so this says how far off it is. */}
+      {state.realm === 9 && !top && (
+        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{CULTIVATE.lastLayers(LAYERS - 1 - layersOpened(state))}</p>
+      )}
 
       {full && !state.wardenFell && (
         <>
