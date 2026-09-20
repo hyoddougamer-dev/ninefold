@@ -195,7 +195,7 @@ export function App() {
       return {
         beast,
         floor,
-        qi: floor === undefined ? undefined : floorQi(state),
+        qi: floor === undefined ? undefined : floorQi(state, floor),
         outcome: fight(state, beast, seed, standing),
         beat: 0,
         over: false,
@@ -378,7 +378,12 @@ export function App() {
    * It is computed rather than fired, so a card the player earned while the app was shut
    * is waiting when they open it — and one they have read can never come back.
    */
-  const notice = useMemo(() => (ready && !battle ? nextNotice(state) : null), [state, ready, battle]);
+  const notice = useMemo(
+    // Never behind the 突破 bloom: that moment introduces what the realm opened, and a
+    // card saying the same thing underneath it is the game talking over itself.
+    () => (ready && !battle && bloom === null ? nextNotice(state) : null),
+    [state, ready, battle, bloom],
+  );
 
   const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao') => {
     setState((s) => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] }));

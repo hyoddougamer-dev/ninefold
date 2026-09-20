@@ -75,7 +75,7 @@ export function Trials({ state, onFloor, onBrew }: {
           <span className="mono" style={{ color: 'var(--gold)' }}>
             {TRIALS.pays(
               num(Math.round(floorLoot(floor) * lootBonus(state.tower))),
-              num(floorQi(state)),
+              num(floorQi(state, floor)),
             )}
           </span>
         </div>

@@ -180,8 +180,13 @@ export const DAO = {
 };
 
 /**
- * 新 The one-time cards. Each one says what the thing is and what to do with it, in two
- * sentences, in the words the screen uses. None of them explains why it was designed so.
+ * 新 The one-time cards.
+ *
+ * They are not introductions. 突破 the breakthrough already introduces whatever the realm
+ * opened, in the one moment the game stops for — so these say **what to do with it**, on
+ * the screen where it lives, at the moment it first becomes usable. Two cards saying the
+ * same thing is the game talking over itself, and it read exactly like that on screen
+ * before they were split.
  *
  * The titles carry no 漢字: the card draws the character in its own column, and a title
  * that repeats it reads as a stutter — which is exactly how it read in the screenshot
@@ -194,34 +199,35 @@ export const NOTICE = {
       + 'to hold more is to climb, so a full box is not a wall. It is the next realm calling.',
   },
   cores: {
-    title: 'Cores come from beasts',
-    text: 'Qi buys three of the four upgrades. The fourth costs 材 material, and material '
-      + 'only falls off things you kill. From the third realm a warden will not fall without it.',
+    title: 'Go and kill something',
+    text: '妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only '
+      + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
   tower: {
-    title: 'The tower is open',
-    text: 'One floor, one beast, and no top. A floor is yours for good once it falls, and it '
-      + 'pays six hours of your own gathering as well as material. Losing costs nothing.',
+    title: 'Only the next floor is ever open',
+    text: 'It never runs out, and losing costs nothing. The only question a floor asks is '
+      + 'whether your build clears it. Sweep what is below you for material; the floors '
+      + 'that can actually beat you are the ones that pay in qi.',
   },
   furnace: {
-    title: 'The furnace will sell you a pill',
-    text: 'Pills cost qi and 材 material together, and nothing here has a cap. No pill makes '
-      + 'qi come faster, which is why the climb still takes three months.',
+    title: 'Start with a 煉體丹',
+    text: 'It is power you keep for good, and every pill after it costs a little more. Qi '
+      + 'brewed is qi that did not open a layer, so this is a trade rather than a freebie.',
   },
   refine: {
-    title: 'You can refine what you wear',
-    text: 'Material makes a piece you already wear better, for ever, with no top level. The '
-      + 'levels stay on the piece, so pick the one you mean to keep.',
+    title: 'Pick the piece you mean to keep',
+    text: 'The levels stay on the piece, not on you. A run\'s material poured into one '
+      + 'sword is material that is not in the next sword you find.',
   },
   record: {
-    title: 'The record is filling in',
-    text: 'Ten kills of one beast is a 熟 mark, and every mark gives you more material from '
-      + 'everything. A hundred gives you power. Old beasts are worth killing again.',
+    title: 'Old beasts are worth going back for',
+    text: 'Ten kills of one beast is a 熟 mark and a hundred is 通. Every beast below your '
+      + 'realm still has marks in it, and the list puts the ones with something left on top.',
   },
   pool: {
-    title: 'The pool, and the Dragon',
-    text: 'There is no layer left to open, so the bar is now the thunder pool: two days of '
-      + 'your own gathering. Fill it and the Dragon comes. Crossing empties it again.',
+    title: 'Fill the pool and the Dragon comes',
+    text: 'It holds two days of your own gathering, and crossing empties it again. Qi spent '
+      + 'in the furnace is qi that is not in the pool, which is the whole decision up here.',
   },
   read: 'Got it',
 };

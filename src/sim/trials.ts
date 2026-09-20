@@ -1,9 +1,9 @@
 import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
-import { floorLoot, lootBonus, nextFloor } from './tower.ts';
+import { floorLoot, floorPower, lootBonus, nextFloor } from './tower.ts';
 import { TOWER_QI_HOURS } from './balance.ts';
 import { recordMaterial } from './record.ts';
-import { rate, type State } from './state.ts';
+import { power, rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
@@ -27,9 +27,26 @@ export function towerOpen(s: State): boolean {
   return isOpen(s.realm, 'tower');
 }
 
-/** 吸 What a floor gives up when it falls: material, and hours of gathering. */
-export function floorQi(s: State): number {
-  return rate(s) * 3600 * TOWER_QI_HOURS;
+/**
+ * 吸 What a floor gives up when it falls: material, and hours of gathering.
+ *
+ * Six hours, scaled by how much of a fight the floor actually was.
+ *
+ * Without the scaling the tower paid its whole back catalogue at once. 塔 opens at the
+ * fifth realm, and a cultivator arriving there swept forty-three floors in a single
+ * sitting and walked away with **ten days and eighteen hours** of gathering — measured —
+ * which made the fifth realm the shortest in the run, shorter than the fourth. A reward
+ * for opening a system is right; a reward that rewrites the curve is not.
+ *
+ * So a floor at your own power pays the full six hours and a floor a tenth of it pays a
+ * tenth. Sweeping what is far below you is a quick errand for material; pushing into
+ * something that can actually beat you is what pays in qi. Nothing changes for the floor
+ * you are really climbing — it is always near your power, and it always pays in full.
+ */
+export function floorQi(s: State, floor = standingFloor(s)): number {
+  const mine = power(s);
+  const standing = mine > 0 ? Math.min(1, floorPower(floor) / mine) : 1;
+  return rate(s) * 3600 * TOWER_QI_HOURS * standing;
 }
 
 /**
@@ -45,7 +62,7 @@ export function clearFloor(s: State, floor: number): State {
   return {
     ...s,
     tower: floor,
-    qi: s.qi + floorQi(s),
+    qi: s.qi + floorQi(s, floor),
     materials: s.materials + lootTaken(s, floorLoot(floor)),
   };
 }

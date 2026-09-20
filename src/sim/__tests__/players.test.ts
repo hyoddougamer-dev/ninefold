@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, focusAt } from '../balance.ts';
-import { newState, rate, type State } from '../state.ts';
+import { newState, power, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
-import { clearFloor } from '../trials.ts';
+import { clearFloor, floorQi } from '../trials.ts';
+import { floorPower } from '../tower.ts';
+import { TOWER_QI_HOURS } from '../balance.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -85,13 +87,40 @@ describe('勤 what being there buys you', () => {
     const s: State = { ...newState(T0), realm: 5, layer: 4, tower: 30, materials: 0 };
     const won = clearFloor(s, 31);
     const hours = (won.qi - s.qi) / rate(s) / 3600;
-    console.log(`  tower floor 31 pays ${num(won.qi - s.qi)} qi — ${hours.toFixed(0)} hours of ` +
-      `this cultivator's own gathering — and ${num(won.materials)} 材\n`);
+    console.log(`  tower floor 31 pays ${num(won.qi - s.qi)} qi — ${hours.toFixed(1)} hours of ` +
+      `this cultivator's own gathering — and ${num(won.materials)} 材`);
     expect(hours).toBeGreaterThan(1);
     expect(won.materials).toBeGreaterThan(0);
     // The same floor a second time pays nothing: there is no floor to farm.
     expect(clearFloor(won, 31)).toBe(won);
     expect(clearFloor(won, 30)).toBe(won);
+  });
+
+  /**
+   * 吸 And it pays for the fight, not for the sweep.
+   *
+   * 塔 opens at the fifth realm, so a cultivator arriving there has a back catalogue of
+   * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
+   * and eighteen hours** of gathering — measured — which made the fifth realm the
+   * shortest in the whole run, shorter than the fourth. A reward for opening a system is
+   * right; a reward that rewrites the curve is not.
+   */
+  it('pays a floor for how much of a fight it was', () => {
+    const mighty: State = {
+      ...newState(T0), realm: 9, layer: 8, tower: 0,
+      levels: { technique: 54, method: 54, pills: 54, cores: 54 },
+    };
+    const trivial = floorQi(mighty, 1);
+    const real = floorQi(mighty, 80);
+    const full = rate(mighty) * 3600 * TOWER_QI_HOURS;
+    console.log(`  the same cultivator is paid ${num(real)} qi for a floor at their own power ` +
+      `and ${num(trivial)} for the first floor in the tower\n`);
+
+    expect(real).toBeCloseTo(full * Math.min(1, floorPower(80) / power(mighty)), 4);
+    expect(trivial).toBeLessThan(real / 1000);
+    // A floor at or above your power is always worth the whole six hours.
+    expect(floorQi({ ...newState(T0), realm: 5, layer: 4 }, 60)).toBeCloseTo(
+      rate({ ...newState(T0), realm: 5, layer: 4 }) * 3600 * TOWER_QI_HOURS, 4);
   });
 
   it('gives the furnace and the tower to a fighter, and neither to a waiter', () => {
