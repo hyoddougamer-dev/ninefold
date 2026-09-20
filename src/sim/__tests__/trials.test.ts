@@ -9,7 +9,8 @@ import {
 import {
   PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
 } from '../furnace.ts';
-import { brew, canBrew, clearFloor, furnaceMenu, standingFloor } from '../trials.ts';
+import { brew, canBrew, clearFloor, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
+import { isOpen, opensAt } from '../unlocks.ts';
 import { newState, power, validate, type State } from '../state.ts';
 import { num } from '../format.ts';
 
@@ -49,8 +50,18 @@ describe('塔 the Endless Tower', () => {
     expect(Number.isFinite(floorPower(2000))).toBe(true);
   });
 
+  it('is shut until its realm, and open for good after it', () => {
+    const before = { ...atCap(opensAt('tower') - 1), tower: 0 };
+    expect(towerOpen(before)).toBe(false);
+    expect(clearFloor(before, 1)).toBe(before);
+
+    const after = { ...atCap(opensAt('tower')), tower: 0 };
+    expect(towerOpen(after)).toBe(true);
+    expect(clearFloor(after, 1).tower).toBe(1);
+  });
+
   it('offers exactly one floor, and only ever the next one', () => {
-    const s = { ...atCap(3), tower: 12 };
+    const s = { ...atCap(opensAt('tower')), tower: 12 };
     expect(standingFloor(s)).toBe(13);
     // A floor already taken pays nothing a second time, and floors cannot be skipped.
     expect(clearFloor(s, 12)).toBe(s);
@@ -127,8 +138,16 @@ describe('爐 the Furnace', () => {
     expect(Number.isFinite(pillCost({ ...none, body: 2999 }, 'body').qi)).toBe(true);
   });
 
+  it('is shut until its realm, however much qi and material is in hand', () => {
+    const loaded = { ...atCap(opensAt('furnace') - 1), qi: 1e15, materials: 1e12 };
+    expect(isOpen(loaded.realm, 'furnace')).toBe(false);
+    expect(canBrew(loaded, 'body')).toBe(false);
+    expect(brew(loaded, 'body')).toBe(loaded);
+    expect(canBrew({ ...loaded, realm: opensAt('furnace') }, 'body')).toBe(true);
+  });
+
   it('takes qi and materials both, so waiting alone can never buy power', () => {
-    const rich = { ...atCap(4), qi: 1e15, materials: 0 };
+    const rich = { ...atCap(opensAt('furnace')), qi: 1e15, materials: 0 };
     expect(canBrew(rich, 'body')).toBe(false);
     expect(brew(rich, 'body')).toBe(rich);
 
@@ -164,11 +183,11 @@ describe('爐 the Furnace', () => {
   });
 
   it('shows the furnace as a menu the screen can draw without thinking', () => {
-    const s = { ...atCap(6), qi: 1e12, materials: 1e9 };
+    const s = { ...atCap(7), qi: 1e12, materials: 1e9 };
     const menu = furnaceMenu(s);
     expect(menu).toHaveLength(3);
     for (const row of menu) {
-      expect(row.pill.name).toBe(PILL_GRADES[row.line][5].name);
+      expect(row.pill.name).toBe(PILL_GRADES[row.line][6].name);
       expect(row.cost.qi).toBeGreaterThan(0);
       expect(typeof row.affordable).toBe('boolean');
     }

@@ -13,6 +13,7 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { CULTIVATE } from '../copy.ts';
 import { advice } from '../advice.ts';
+import { isOpen } from '../../sim/unlocks.ts';
 
 export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
   state: State;
@@ -156,11 +157,14 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>
-      {UPGRADES.every((u) => state.levels[u] >= cap) && (
+      {UPGRADES.every((u) => state.levels[u] >= cap
+        || (u === 'cores' && !isOpen(state.realm, 'cores'))) && (
         <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>{CULTIVATE.capped}</p>
       )}
       <div className="upgrades">
-        {UPGRADES.map((u) => {
+        {/* 妖丹 is not shown before the realm that sells it: a box you cannot use is a
+            question the first realm should not be asking. */}
+        {UPGRADES.filter((u) => u !== 'cores' || isOpen(state.realm, 'cores')).map((u) => {
           const i = UPGRADE_INFO[u];
           const cost = upgradeCost(state, u);
           const held = state.levels[u];

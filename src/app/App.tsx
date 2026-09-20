@@ -33,16 +33,25 @@ import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
+import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
+import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
-import { UPDATE } from './copy.ts';
+import { LOCKED, UPDATE } from './copy.ts';
 
+/**
+ * 開 The tabs, and what opens them.
+ *
+ * A locked tab is shown rather than hidden, dimmed and with the realm that opens it,
+ * because the whole point of a purely vertical game is that climbing hands you something
+ * — and you cannot look forward to a tab you have never seen.
+ */
 const TABS = [
-  { key: 'cultivate', han: '修', label: 'Cultivate' },
-  { key: 'hunt', han: '狩', label: 'Hunt' },
-  { key: 'trials', han: '塔', label: 'Trials' },
-  { key: 'gear', han: '器', label: 'Gear' },
-  { key: 'dao', han: '道', label: 'Path' },
-] as const;
+  { key: 'cultivate', han: '修', label: 'Cultivate', needs: null },
+  { key: 'hunt', han: '狩', label: 'Hunt', needs: 'hunt' },
+  { key: 'trials', han: '塔', label: 'Trials', needs: 'tower' },
+  { key: 'gear', han: '器', label: 'Gear', needs: 'gear' },
+  { key: 'dao', han: '道', label: 'Path', needs: 'arts' },
+] as const satisfies readonly { key: string; han: string; label: string; needs: System | null }[];
 
 type TabKey = (typeof TABS)[number]['key'];
 
@@ -74,6 +83,8 @@ export function App() {
   const [sound, setSound] = useState(soundLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
+  /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
+  const [locked, setLocked] = useState<System | null>(null);
   const loaded = useRef(false);
   const lastLayer = useRef(0);
   /**
@@ -415,13 +426,39 @@ export function App() {
       </div>
 
       <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t.key} data-on={tab === t.key} onClick={() => setTab(t.key)}>
-            <span className="g cjk">{t.han}</span>
-            <span className="l">{t.label}</span>
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const shut = t.needs !== null && !isOpen(state.realm, t.needs);
+          return (
+            <button
+              key={t.key}
+              data-on={tab === t.key}
+              data-shut={shut}
+              onClick={() => (shut ? setLocked(t.needs) : setTab(t.key))}
+            >
+              {/* A locked tab keeps its own character and swaps its name for the realm
+                  that opens it. Four identical padlocks in a row say nothing. */}
+              <span className="g cjk">{t.han}</span>
+              <span className="l">{shut ? realmInfo(systemInfo(t.needs!).realm).han : t.label}</span>
+            </button>
+          );
+        })}
       </nav>
+
+      {locked && (
+        <div className="shut" onClick={() => setLocked(null)}>
+          <b className="cjk" style={{ color: realmInfo(systemInfo(locked).realm).colour }}>
+            {systemInfo(locked).han}
+          </b>
+          <em>{systemInfo(locked).name}</em>
+          <i>{systemInfo(locked).gives}</i>
+          <p>{LOCKED.opensAt(
+            realmInfo(systemInfo(locked).realm).han,
+            realmInfo(systemInfo(locked).realm).name,
+            systemInfo(locked).realm,
+          )}</p>
+          <button className="act" onClick={() => setLocked(null)}>續 <span>{LOCKED.back}</span></button>
+        </div>
+      )}
 
       {battle && (
         <Arena
@@ -439,6 +476,17 @@ export function App() {
           <div className="mid">
             <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
             <p>{realmOf(bloom).gains}</p>
+            {opensIn(bloom).length > 0 && (
+              <div className="opened">
+                {opensIn(bloom).map((sys) => (
+                  <span key={sys.key}>
+                    <b className="cjk">{sys.han}</b>
+                    <em>{sys.name}</em>
+                    <i>{sys.gives}</i>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

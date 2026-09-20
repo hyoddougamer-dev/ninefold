@@ -14,6 +14,7 @@ import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
 import { recordPower } from './record.ts';
 import { clampRefine } from './refine.ts';
+import { isOpen } from './unlocks.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -276,7 +277,7 @@ export function power(s: State): number {
     * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).power
     * powerMultiplier(s.unlocked)
     * pillPower(s.brewed)
-    * recordPower(s.killed)
+    * (isOpen(s.realm, 'record') ? recordPower(s.killed) : 1)
     * markBonus(s.tribulation);
 }
 

@@ -5,7 +5,9 @@ import {
 } from '../sim/state.ts';
 import { ladderDone } from '../sim/time.ts';
 import { stanceOf, sequenceOf } from '../sim/arts.ts';
-import { canBrew, standingFloor } from '../sim/trials.ts';
+import { canBrew, standingFloor, towerOpen } from '../sim/trials.ts';
+import { SYSTEMS, isOpen } from '../sim/unlocks.ts';
+import { realm as realmOf } from '../data/realms.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { ADVICE } from './copy.ts';
 
@@ -40,6 +42,12 @@ export function advice(s: State): Advice | null {
 
   if (blocked) {
     const cap = capOf(s);
+    // Never point at a door the realm has not opened yet.
+    if (!isOpen(s.realm, 'cores')) {
+      return s.levels.technique < cap && canBuy(s, 'technique')
+        ? { han: '劍訣', text: ADVICE.buyTechnique }
+        : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
+    }
     // 妖丹 first, always. It is the one upgrade qi cannot buy, and it is the one that
     // stops a waiting cultivator dead.
     if (s.levels.cores < cap) {
@@ -57,17 +65,29 @@ export function advice(s: State): Advice | null {
       return { han: '訣', text: ADVICE.noSequence, tab: 'dao' };
     }
     if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew, tab: 'trials' };
-    return { han: '塔', text: ADVICE.climbForMaterial, tab: 'trials' };
+    if (towerOpen(s)) return { han: '塔', text: ADVICE.climbForMaterial, tab: 'trials' };
+    return { han: '狩', text: ADVICE.huntForMaterial, tab: 'hunt' };
   }
 
   // Nothing is blocking. Is there something plainly worth doing?
-  const floor = standingFloor(s);
-  if (odds(s, floorBeast(floor), floorPower(floor)) > 0.65) {
-    return { han: '塔', text: ADVICE.floorWaiting(floor), tab: 'trials' };
+  if (towerOpen(s)) {
+    const floor = standingFloor(s);
+    if (odds(s, floorBeast(floor), floorPower(floor)) > 0.65) {
+      return { han: '塔', text: ADVICE.floorWaiting(floor), tab: 'trials' };
+    }
   }
-  const allCapped = UPGRADES.every((u) => s.levels[u] >= capOf(s));
+  // 妖丹 does not count as uncapped before the realm that sells it: otherwise a first
+  // realm cultivator with three boxes half full reads as "nothing left to buy".
+  const allCapped = UPGRADES.every((u) =>
+    s.levels[u] >= capOf(s) || (u === 'cores' && !isOpen(s.realm, 'cores')));
   if (allCapped && !ladderDone(s)) {
-    return { han: '爐', text: ADVICE.cappedSoSpend, tab: 'trials' };
+    // What to do with a full realm depends on what the realm has opened.
+    if (isOpen(s.realm, 'furnace')) return { han: '爐', text: ADVICE.cappedSoSpend, tab: 'trials' };
+    if (isOpen(s.realm, 'tower')) return { han: '塔', text: ADVICE.cappedSoClimb, tab: 'trials' };
+    const soon = SYSTEMS.find((x) => x.realm > s.realm);
+    if (soon) {
+      return { han: '境', text: ADVICE.cappedSoClimbRealm(realmOf(soon.realm).han, realmOf(soon.realm).name) };
+    }
   }
   return null;
 }

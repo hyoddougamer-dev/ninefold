@@ -4,6 +4,7 @@ import {
 } from '../../data/gear.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
+import { isOpen } from '../../sim/unlocks.ts';
 import { REFINE_GAIN, REFINE_LIMIT, clampRefine } from '../../sim/refine.ts';
 import { num } from '../../sim/format.ts';
 import { affinity } from '../../sim/dao.ts';
@@ -36,7 +37,8 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
-  const groups = fusable(state.chest);
+  // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
+  const groups = isOpen(state.realm, 'fuse') ? fusable(state.chest) : [];
   const limit = chestLimit(state.unlocked, totals.capacity);
   const S = 200;
   const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
@@ -106,7 +108,7 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
       )}
 
       {/* 煉器 Where material goes. Everything else it buys is capped; this is not. */}
-      {SLOTS.some((slot) => state.worn[slot]) && (
+      {isOpen(state.realm, 'refine') && SLOTS.some((slot) => state.worn[slot]) && (
         <>
           <div className="row" style={{ marginTop: 18 }}>
             <h2 className="heading" style={{ margin: 0 }}>{GEAR.refineHead}</h2>

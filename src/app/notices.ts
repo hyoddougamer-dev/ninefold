@@ -5,6 +5,7 @@ import { odds } from '../sim/combat.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import { MARKS } from '../sim/record.ts';
 import { SLOTS } from '../data/gear.ts';
+import { isOpen, opensAt } from '../sim/unlocks.ts';
 import { NOTICE } from './copy.ts';
 
 /**
@@ -41,11 +42,11 @@ export const NOTICES: readonly Notice[] = [
   },
   {
     key: 'cores', han: '妖丹', title: NOTICE.cores.title, text: NOTICE.cores.text, tab: 'hunt',
-    when: (s) => s.realm >= 2 && s.levels.cores === 0,
+    when: (s) => s.realm >= opensAt('cores') && s.levels.cores === 0,
   },
   {
     key: 'tower', han: '塔', title: NOTICE.tower.title, text: NOTICE.tower.text, tab: 'trials',
-    when: (s) => s.tower === 0
+    when: (s) => isOpen(s.realm, 'tower') && s.tower === 0
       && odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) > 0.6,
   },
   {
@@ -58,7 +59,7 @@ export const NOTICES: readonly Notice[] = [
   },
   {
     key: 'record', han: '錄', title: NOTICE.record.title, text: NOTICE.record.text, tab: 'hunt',
-    when: (s) => BEASTS.some((b) => (s.killed[b.key] ?? 0) >= MARKS[1]),
+    when: (s) => isOpen(s.realm, 'record') && BEASTS.some((b) => (s.killed[b.key] ?? 0) >= MARKS[1]),
   },
   {
     key: 'pool', han: '雷池', title: NOTICE.pool.title, text: NOTICE.pool.text,

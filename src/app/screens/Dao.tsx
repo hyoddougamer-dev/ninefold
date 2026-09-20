@@ -7,6 +7,8 @@ import {
 import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
 import { layersOpened } from '../../sim/time.ts';
 import type { State } from '../../sim/state.ts';
+import { isOpen, opensAt } from '../../sim/unlocks.ts';
+import { realm as realmOf } from '../../data/realms.ts';
 import { DAO } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
 
@@ -98,10 +100,21 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
 
   const hue = (node: Node) => (node.key === ROOT.key ? '#E7EAFF' : PATH_INFO[node.path].colour);
 
+  // 道 The tree opens two realms after the build does. The points are earned from the
+  // first layer either way, so it arrives full rather than arriving empty.
+  const tree = isOpen(state.realm, 'tree');
+
   return (
     <>
       <Loadout state={state} onStance={onStance} onSequence={onSequence} />
 
+      {!tree && (
+        <p className="faint" style={{ margin: '24px 0 0', fontSize: 13 }}>
+          {DAO.shut(earned, realmOf(opensAt('tree')).han, realmOf(opensAt('tree')).name)}
+        </p>
+      )}
+
+      {tree && <>
       <div className="row" style={{ marginTop: 26 }}>
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           道 Techniques
@@ -191,6 +204,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           })}
         </svg>
       </div>
+      </>}
     </>
   );
 }

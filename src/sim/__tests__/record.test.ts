@@ -5,6 +5,7 @@ import {
   recordCeiling, recordMaterial, recordPower, recordTally,
 } from '../record.ts';
 import { newState, power, rate, type State } from '../state.ts';
+import { isOpen, opensAt } from '../unlocks.ts';
 import { lootTaken } from '../trials.ts';
 import { loot } from '../combat.ts';
 import { num } from '../format.ts';
@@ -60,7 +61,7 @@ describe('錄 the record', () => {
   });
 
   it('pays in material and power, and never in qi per second', () => {
-    const bare: State = { ...newState(T0), realm: 5, layer: 4 };
+    const bare: State = { ...newState(T0), realm: opensAt('record'), layer: 4 };
     const full: State = { ...bare, killed: all(100) };
 
     // The rule the whole economy stands on. A record is a hundred taps a beast, so if it
@@ -69,10 +70,32 @@ describe('錄 the record', () => {
     expect(power(full)).toBeGreaterThan(power(bare));
     expect(lootTaken(full, 100)).toBeGreaterThan(lootTaken(bare, 100));
 
-    const b = commonsOf(5)[2];
+    const b = commonsOf(opensAt('record'))[2];
     console.log(`  ${b.han} pays ${num(lootTaken(bare, loot(b)))} 材 with no record, ` +
       `${num(lootTaken(full, loot(b)))} 材 with a finished one, ` +
       `and the qi rate is ${num(rate(bare))}/s either way\n`);
+  });
+
+  /**
+   * 開 The marks are counted from the first kill and paid from the realm that opens them.
+   *
+   * A system that arrives late has to arrive *full*, or the realm that opens it hands
+   * the player an empty page and the unlock means nothing.
+   */
+  it('counts from the first kill and pays from the realm that opens it', () => {
+    const killed = all(100);
+    const early: State = { ...newState(T0), realm: opensAt('record') - 1, layer: 4, killed };
+    const open: State = { ...early, realm: opensAt('record') };
+
+    expect(isOpen(early.realm, 'record')).toBe(false);
+    expect(recordTally(early.killed)).toEqual(recordTally(open.killed));   // counted all along
+    expect(lootTaken(early, 1000)).toBeLessThan(lootTaken(open, 1000));    // paid from here
+    // Measured at the same realm, so only the record moves: the ladder does not.
+    expect(power(open) / power({ ...open, killed: {} })).toBeCloseTo(recordPower(killed), 6);
+    expect(power(early) / power({ ...early, killed: {} })).toBe(1);
+    console.log(`  the record is counted from the first kill and paid from realm ` +
+      `${opensAt('record')}: the same ${BEASTS.length} mastered beasts are worth ` +
+      `×1.00 at realm ${early.realm} and ×${recordPower(killed).toFixed(2)} at ${open.realm}\n`);
   });
 
   it('cannot be claimed by a save that never fought', async () => {

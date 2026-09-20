@@ -27,8 +27,8 @@ export const HELP = {
       'It keeps going with the phone closed. Come back tomorrow and it is waiting for you.'],
     ['Sitting with it open gathers faster',
       'Up to three times as fast after a few minutes. Closing the app never costs you anything.'],
-    ['Spend it on the four upgrades',
-      'Two make qi come faster, two make you stronger. You never lose a level you bought.'],
+    ['Spend it on the upgrades',
+      'Three to start with. They make qi come faster and make you stronger, and you never lose a level you bought.'],
     ['A realm only holds six levels of each',
       'When they are full, the only way to hold more is to climb. That is what a realm is for.'],
     ['Fill the bar, then fight the warden',
@@ -36,8 +36,8 @@ export const HELP = {
     ['突破 Break through',
       'You move up a realm and the light around you changes.'],
   ] as const,
-  hunt: '狩 Hunt has beasts you can fight any time. They drop 材 material, and material buys 妖丹 cores. From the third realm a warden will not fall without them.',
-  tower: '塔 The tower is one floor at a time, and it never ends. Floors pay the 材 material the furnace eats.',
+  opens: 'Every realm opens something new: hunting and gear at the second, 妖丹 cores at the third, the tree at the fourth, the tower at the fifth, and so on to the ninth. The locked tabs say which realm opens them.',
+  hunt: '狩 Hunt opens at the second realm. Beasts drop 材 material, and material buys 妖丹 cores. From the third realm a warden will not fall without them.',
   slow: 'The first hour is slow. Realm 1 gathers 1 qi a second. Buy 吐納 breathwork and 功法 method as soon as you can afford them.',
   begin: 'Begin',
 };
@@ -86,6 +86,9 @@ export const TRIALS = {
   hours: (span: string) => `A floor pays ${span} of your own gathering, once. This is the one place where fighting moves the bar.`,
 
   furnaceHead: '爐 The Furnace',
+  furnaceShut: (han: string, name: string) =>
+    `The furnace is cold until ${han} ${name}. Qi has nowhere else to go after that, and `
+    + 'this is where it goes.',
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
   brew: 'Brew',
   held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
@@ -113,7 +116,11 @@ export const ADVICE = {
   brew: 'The furnace will sell you a 煉體丹. It is power you keep for good.',
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
   floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays hours of gathering, once.`,
+  huntForMaterial: 'Everything else is at its cap. Hunt for 材 material, which is what 妖丹 cores cost.',
   cappedSoSpend: 'Nothing left to buy in this realm. The tower and the furnace are where qi goes now.',
+  cappedSoClimb: 'Nothing left to buy in this realm. The tower is where the next thing comes from.',
+  cappedSoClimbRealm: (han: string, name: string) =>
+    `Nothing left to buy in this realm. ${han} ${name} opens the next thing to spend on.`,
 };
 
 export const HUNT = {
@@ -156,6 +163,11 @@ export const GEAR = {
 };
 
 export const DAO = {
+  /** 道 What the screen says while the tree is still shut. The points are banking. */
+  shut: (earned: number, han: string, name: string) =>
+    `道 The technique tree opens at ${han} ${name}. You have earned ${earned} 道 already, `
+    + 'and every point is waiting for you. Nothing is being lost.',
+
   tree: 'All three branches grow from 起. The gold bridges cross between them, so you can climb one branch and step into the next.',
   short: (cost: number, earned: number) =>
     `You cannot buy all of it. The tree costs ${cost} 道 and a full climb earns about ${earned}.`,
@@ -212,6 +224,18 @@ export const NOTICE = {
       + 'your own gathering. Fill it and the Dragon comes. Crossing empties it again.',
   },
   read: 'Got it',
+};
+
+/**
+ * 鎖 What a locked tab says.
+ *
+ * It names the realm rather than a number of days, because a realm is a thing the player
+ * is already climbing toward and a day is not.
+ */
+export const LOCKED = {
+  opensAt: (han: string, name: string, n: number) =>
+    `This opens when you reach ${han} ${name}, the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][n - 1]} realm.`,
+  back: 'Back',
 };
 
 export const UPDATE = {

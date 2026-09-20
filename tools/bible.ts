@@ -41,6 +41,7 @@ import {
 } from '../src/sim/record.ts';
 import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
+import { SYSTEMS as OPENED, opensIn } from '../src/sim/unlocks.ts';
 import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
 
@@ -95,6 +96,8 @@ const SYSTEMS: readonly System[] = [
     line: 'Material makes a worn piece better, for ever, with no top level. It is the only thing 材 could not buy before, and 材 was eight times over-supplied.' },
   { han: '道', name: 'The technique tree', status: 'done', at: 'tree',
     line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道 against about ${FULL_RUN} a run. Nobody finishes it.` },
+  { han: '開', name: 'What each realm opens', status: 'done', at: 'opens',
+    line: 'Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.' },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
     line: 'A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights stalls in the third realm.' },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
@@ -120,7 +123,7 @@ const SYSTEMS: readonly System[] = [
   { han: '煉器', name: 'Refining worn gear', status: 'planned',
     line: 'Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.' },
   { han: '轉世', name: 'Rebirth', status: 'planned',
-    line: 'Starting again from the ninth realm for something permanent. 渡劫 is the ladder above the ladder until then.' },
+    line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
 
 const STATE = {
@@ -141,6 +144,27 @@ const statusRows = SYSTEMS.map((s) => {
 }).join('');
 
 const RUNS = playAll();
+
+const opensRows = REALMS.map((r) => {
+  const stance = STANCES.find((x) => x.realm === r.n)!;
+  const art = ARTS.find((x) => x.realm === r.n)!;
+  const systems = opensIn(r.n);
+  return `<tr style="--hue:${r.colour}">
+    <td><b class="cjk">${r.han}</b> <i>${r.name}</i></td>
+    <td><span class="cjk">${stance.han}</span> <i>${stance.name}</i></td>
+    <td><span class="cjk">${art.han}</span> <i>${art.name}</i></td>
+    <td>${systems.length === 0 ? '<i>the loop itself</i>' : systems.map((x) =>
+      `<b class="cjk" style="color:var(--gold)">${x.han}</b> <em>${x.name}</em>`).join('<br>')}</td>
+  </tr>`;
+}).join('');
+
+const opensCards = OPENED.map((x) => `
+  <div class="row" style="--hue:${realmOf(x.realm).colour}">
+    <span class="body">
+      <b class="cjk">${x.han}</b> <em>${x.name}</em>
+      <i>${realmOf(x.realm).han} ${realmOf(x.realm).name}, the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][x.realm - 1]} realm · ${x.gives}</i>
+    </span>
+  </div>`).join('');
 
 const habitRows = RUNS.map((r) => {
   const at9 = r.arrival[8];
@@ -498,6 +522,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
+      <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
@@ -572,6 +597,34 @@ const page = `<title>九境 Ninefold — the Bible</title>
           corner. Copy it somewhere, because it lives in this browser and nowhere
           else.</i></div>
     </div>
+  </section>
+
+  <section class="sec" id="opens">
+    <h2><span class="h">開</span> What each realm opens</h2>
+    <p class="t"><b>九境 is purely vertical. Nothing resets, ever.</b> There is no rebirth
+      and there will not be one: the ladder, 無盡塔 the tower, 爐 the furnace, 煉器 refining
+      and 渡劫 the marks all only go up, and four of those five have no top at all.</p>
+    <p class="t">A game shaped that way owes the player one thing in return, and for a
+      long time it did not pay it: <b>climbing has to hand you something you did not have
+      before.</b> Seven systems were open at realm 1, minute 1 — gear, fusing, the tree,
+      the tower, the record, the furnace, refining — so a new cultivator met five tabs and
+      a dozen mechanics at once and then climbed eight realms that gave them nothing but
+      bigger numbers.</p>
+    <table>
+      <tr><th>realm</th><th>勢 stance</th><th>訣 art</th><th>開 and what opens</th></tr>
+      ${opensRows}
+    </table>
+    <p class="t">The first realm is deliberately bare: one screen, a bar, three boxes and a
+      warden at the top of it. The second is where it blooms, and it blooms all at once on
+      purpose — hunting, gear and the build are one idea. From the third it goes back to
+      one thing at a time.</p>
+    <div class="rows">${opensCards}</div>
+    <div class="rule"><b>A system that arrives late arrives full.</b> The 道 points earned
+      from the first layer are all waiting when the tree opens at the fourth realm, and
+      every beast killed before the sixth is already counted when 錄 the record starts
+      paying. Nothing is withheld and then thrown away; it is withheld and then handed
+      over. A locked tab keeps its own character and says which realm opens it, because
+      you cannot look forward to a tab you have never seen.</div>
   </section>
 
   <section class="sec" id="habits">

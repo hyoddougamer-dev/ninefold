@@ -45,6 +45,32 @@ body {
 .tabs .g { font-size: 19px; line-height: 1.1; }
 .tabs .l { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; }
 .tabs button[data-on='true'] { color: var(--cyan); }
+/* 鎖 A tab the realm has not opened. Shown rather than hidden: you cannot look forward
+   to a tab you have never seen, and looking forward is what a vertical game runs on. */
+.tabs button[data-shut='true'] { color: var(--line); }
+.tabs button[data-shut='true'] .l { color: var(--faint); opacity: .7; }
+
+.shut { position: absolute; inset: 0; z-index: 12; background: rgba(8,10,24,.96);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 10px; padding: 40px 28px; text-align: center; }
+.shut > b { font-size: 46px; font-weight: 400; line-height: 1; }
+.shut em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
+           font-size: 21px; }
+.shut i { font-style: normal; font-size: 14px; color: var(--faint); line-height: 1.6;
+          max-width: 34ch; }
+.shut p { margin: 6px 0 14px; font-size: 13px; color: var(--gold); max-width: 32ch; }
+
+/* 開 What the realm you just entered handed over. It is the payoff of the one moment
+   the game stops for, so it is part of that moment rather than a card afterwards. */
+.opened { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
+.opened span { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px;
+               background: rgba(255,255,255,.05); border: 1px solid var(--line);
+               border-radius: 11px; padding: 10px 13px; text-align: left; }
+.opened b { grid-row: span 2; align-self: center; font-size: 22px; font-weight: 400;
+            color: var(--gold); }
+.opened em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
+             font-size: 15px; }
+.opened i { font-style: normal; font-size: 12px; color: var(--faint); line-height: 1.45; }
 
 /* ── shared ─────────────────────────────────────────────────────────────── */
 

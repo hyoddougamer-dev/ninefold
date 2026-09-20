@@ -19,6 +19,7 @@ export function Help({ onClose }: { onClose: () => void }) {
           </li>
         ))}
       </ol>
+      <p className="faint" style={{ fontSize: 13.5, margin: 0 }}>{HELP.opens}</p>
       <p className="faint" style={{ fontSize: 13.5, margin: 0 }}>{HELP.hunt}</p>
       <p className="faint" style={{ fontSize: 13.5, margin: 0 }}>{HELP.slow}</p>
       <button className="act" style={{ marginTop: 'auto' }} onClick={onClose}>

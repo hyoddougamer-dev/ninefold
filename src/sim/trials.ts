@@ -6,6 +6,7 @@ import { recordMaterial } from './record.ts';
 import { rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
 import type { Slot } from '../data/gear.ts';
+import { isOpen } from './unlocks.ts';
 
 /**
  * 塔, 爐 and 煉器 — everything that has no ceiling.
@@ -19,6 +20,11 @@ import type { Slot } from '../data/gear.ts';
 /** The floor waiting to be tried. Exactly one, always, and losing costs nothing. */
 export function standingFloor(s: State): number {
   return nextFloor(s.tower);
+}
+
+/** 塔 The tower opens at its realm, and until then there is no floor to stand on. */
+export function towerOpen(s: State): boolean {
+  return isOpen(s.realm, 'tower');
 }
 
 /** 吸 What a floor gives up when it falls: material, and hours of gathering. */
@@ -35,7 +41,7 @@ export function floorQi(s: State): number {
  * always harder than the last.
  */
 export function clearFloor(s: State, floor: number): State {
-  if (floor !== standingFloor(s)) return s;
+  if (!towerOpen(s) || floor !== standingFloor(s)) return s;
   return {
     ...s,
     tower: floor,
@@ -44,12 +50,19 @@ export function clearFloor(s: State, floor: number): State {
   };
 }
 
-/** What a kill is worth in materials, once the tower's seals and 錄 the record count. */
+/**
+ * What a kill is worth in materials, once the tower's seals and 錄 the record count.
+ *
+ * The record's marks are counted from the first kill of the game but only *pay* from the
+ * realm that opens them — so the system arrives full rather than arriving empty.
+ */
 export function lootTaken(s: State, base: number): number {
-  return Math.max(1, Math.round(base * lootBonus(s.tower) * recordMaterial(s.killed)));
+  const record = isOpen(s.realm, 'record') ? recordMaterial(s.killed) : 1;
+  return Math.max(1, Math.round(base * lootBonus(s.tower) * record));
 }
 
 export function canBrew(s: State, line: Line): boolean {
+  if (!isOpen(s.realm, 'furnace')) return false;
   const cost = pillCost(s.brewed, line);
   return s.qi >= cost.qi && s.materials >= cost.materials;
 }
@@ -78,11 +91,13 @@ export function refinePrice(s: State, slot: Slot): number | null {
 }
 
 export function canRefine(s: State, slot: Slot): boolean {
+  if (!isOpen(s.realm, 'refine')) return false;
   const price = refinePrice(s, slot);
   return price !== null && s.materials >= price;
 }
 
 export function refine(s: State, slot: Slot): State {
+  if (!isOpen(s.realm, 'refine')) return s;
   const item = s.worn[slot];
   const price = refinePrice(s, slot);
   if (!item || price === null || s.materials < price) return s;

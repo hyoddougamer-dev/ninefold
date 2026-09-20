@@ -5,7 +5,8 @@ import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
 import { TOWER_QI_HOURS } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorLoot, floorPower, lootBonus, seals } from '../../sim/tower.ts';
-import { floorQi, furnaceMenu, standingFloor } from '../../sim/trials.ts';
+import { floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
+import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
 import { seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
@@ -25,6 +26,7 @@ export function Trials({ state, onFloor, onBrew }: {
   onFloor: (floor: number) => void;
   onBrew: (line: (typeof LINES)[number]) => void;
 }) {
+  void towerOpen;
   const floor = standingFloor(state);
   const beast = floorBeast(floor);
   const standing = floorPower(floor);
@@ -35,6 +37,7 @@ export function Trials({ state, onFloor, onBrew }: {
   const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
+  const furnace = isOpen(state.realm, 'furnace');
 
   return (
     <>
@@ -91,11 +94,18 @@ export function Trials({ state, onFloor, onBrew }: {
       </div>
 
       <h2 className="heading">{TRIALS.furnaceHead}</h2>
-      <div className="row" style={{ marginBottom: 8 }}>
-        <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
-      </div>
+      {!furnace && (
+        <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
+          {TRIALS.furnaceShut(realmOf(opensAt('furnace')).han, realmOf(opensAt('furnace')).name)}
+        </p>
+      )}
+      {furnace && (
+        <div className="row" style={{ marginBottom: 8 }}>
+          <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
+        </div>
+      )}
 
-      <div className="stack">
+      {furnace && <div className="stack">
         {menu.map(({ line, pill, cost, held: taken, affordable }) => {
           const info = PILL_LINES[line];
           const short = state.materials < cost.materials;
@@ -116,16 +126,18 @@ export function Trials({ state, onFloor, onBrew }: {
             </button>
           );
         })}
-      </div>
+      </div>}
 
-      {menu.some((m) => state.materials < m.cost.materials) && (
+      {furnace && menu.some((m) => state.materials < m.cost.materials) && (
         <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{TRIALS.needMaterial}</p>
       )}
 
-      <p className="faint" style={{ margin: '14px 0 0', fontSize: 12 }}>
-        {pillsTaken(state.brewed) > 0 && <>{TRIALS.held(pillsTaken(state.brewed))} in all. </>}
-        {TRIALS.rule}
-      </p>
+      {furnace && (
+        <p className="faint" style={{ margin: '14px 0 0', fontSize: 12 }}>
+          {pillsTaken(state.brewed) > 0 && <>{TRIALS.held(pillsTaken(state.brewed))} in all. </>}
+          {TRIALS.rule}
+        </p>
+      )}
     </>
   );
 }

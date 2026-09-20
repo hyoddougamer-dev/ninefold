@@ -1,4 +1,5 @@
 import type { Beast } from '../data/bestiary.ts';
+import { isOpen } from './unlocks.ts';
 import {
   AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, baseValue, droppableIn,
   roundValue, type Affix, type GearTemplate, type Item, type Rarity, type Roll,
@@ -21,6 +22,17 @@ export const BASE_DROP_CHANCE = 0.18;
 export function dropChance(beast: Beast, bonus = 0, always = false): number {
   if (beast.warden || always) return 1;
   return Math.min(1, BASE_DROP_CHANCE + bonus);
+}
+
+/**
+ * 器 Nothing falls in the first realm.
+ *
+ * Gear opens at the second, and the first realm is deliberately the bare loop: gather,
+ * spend, fight, climb. A cultivator who meets six slots, five ranks, seven axes and a
+ * chest in their first ten minutes has met a spreadsheet, not a game.
+ */
+function dropsYet(realm: number): boolean {
+  return isOpen(realm, 'gear');
 }
 
 /**
@@ -105,6 +117,7 @@ export function rollSecondaries(
 export function rollDrop(
   beast: Beast, realm: number, seed: number, fortune: Fortune = {},
 ): Item | null {
+  if (!dropsYet(realm)) return null;
   const d = dice(seed);
   if (d() > dropChance(beast, fortune.chance ?? 0, fortune.always ?? false)) return null;
 
