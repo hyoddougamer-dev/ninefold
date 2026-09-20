@@ -191,8 +191,35 @@ export const TRIBULATION_CHALLENGE = 1.89;
 /** What the Dragon gains each time it comes back, before the anchor is taken into account. */
 export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
 
-/** How far over the last Dragon a crossing may leave you before the next one notices. */
-export const TRIBULATION_SLACK = 1.2;
+/**
+ * 立 Where the next Dragon plants its feet, as a multiple of the 力 the last one faced.
+ *
+ * 力 is not what fights. A stance bends every blow and three arts bend three more, and
+ * `arts.test.ts` measures the lot at 1.82x — none of it in `power()`, because `power()`
+ * is also the cultivator's health and doubling that would be a different game.
+ *
+ * The endgame was built without that in mind. The Dragon anchored to `power(s) / 1.2`,
+ * which reads as *it never falls more than a fifth behind you*, and then the build
+ * covered the difference for nothing: measured over twenty-four crossings the odds never
+ * once fell below 90%, and 雷池 the pool was the only thing between a cultivator and the
+ * next mark. Two days, tap, win, for ever. 煉體 the one pill that matters up there was
+ * never worth brewing.
+ *
+ * The right footing is not 1.82 either, because a multiplier on blows is worth about its
+ * *square root* in the power ratio — 力 is the sword and the shield at once, so losing a
+ * third of it costs twice over. Played out, the band is narrow and measured:
+ *
+ *     1.20   odds 98% every crossing, two days, no decision
+ *     1.35   two and three days, 63% and 98% alternating
+ *     1.45   three days, 66-68%, six to eleven pills a crossing
+ *     1.50   three days, 59-61%
+ *     1.60   runs away: 6, 8, 11, 15, 22, 30, 43, 62 days
+ *     1.70   a wall by the ninth mark, and never crossed again
+ *
+ * 1.45 is the middle of what holds. `tribulation.test.ts` plays forty crossings out and
+ * prints them, so moving this is never quiet.
+ */
+export const TRIBULATION_FOOTING = 1.45;
 
 /**
  * 雷池 How many days of gathering the thunder pool holds.

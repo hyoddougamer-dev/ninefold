@@ -9,6 +9,7 @@ import { canBrew, standingFloor, towerOpen } from '../sim/trials.ts';
 import { SYSTEMS, isOpen } from '../sim/unlocks.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
+import { pillOf } from '../data/alchemy.ts';
 import { ADVICE } from './copy.ts';
 
 /**
@@ -34,6 +35,14 @@ export interface Advice {
 
 /** The odds below which a fight is worth explaining rather than worth trying. */
 const STUCK = 0.35;
+
+/** And the odds above which a Dragon needs no comment. Below it, the furnace is the answer. */
+const DRAGON_COMFORT = 0.85;
+
+/** The 煉體 pill by the name this realm's furnace actually sells it under. */
+function bodyPill(s: State): string {
+  return pillOf('body', s.realm).han;
+}
 
 export function advice(s: State): Advice | null {
   const warden = currentWarden(s);
@@ -64,9 +73,23 @@ export function advice(s: State): Advice | null {
     if (sequenceOf(s).every((a) => a === null)) {
       return { han: '訣', text: ADVICE.noSequence, tab: 'dao' };
     }
-    if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew, tab: 'trials' };
+    if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew(bodyPill(s)), tab: 'trials' };
     if (towerOpen(s)) return { han: '塔', text: ADVICE.climbForMaterial, tab: 'trials' };
     return { han: '狩', text: ADVICE.huntForMaterial, tab: 'hunt' };
+  }
+
+  /**
+   * 立 The Dragon is standing and the odds are not comfortable.
+   *
+   * This is the whole endgame decision and it needs saying, because nothing above it
+   * fires: `blocked` wants the odds under 35% and a crossing settles in the sixties, so
+   * a cultivator looking at a 66% Dragon was told to go and climb a tower floor. The
+   * honest line is the other one — 煉體 is the only pill the Dragon feels, and brewing
+   * one is what turns 66% into 70%.
+   */
+  if (atTribulation(s) && !s.wardenFell && odds(s, warden) < DRAGON_COMFORT && canBrew(s, 'body')) {
+    const text = ADVICE.brewForDragon(bodyPill(s), Math.round(odds(s, warden) * 100));
+    return { han: '爐', text, tab: 'trials' };
   }
 
   // Nothing is blocking. Is there something plainly worth doing?

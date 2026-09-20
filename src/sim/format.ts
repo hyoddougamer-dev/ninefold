@@ -6,8 +6,16 @@
  * suffix behind eventually. Before this list existed the screen printed
  * "146419072126555360T", which is not a number anybody reads.
  */
-const SUFFIX = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
-  'UDc', 'DDc', 'TDc', 'QaDc', 'QiDc', 'SxDc', 'SpDc', 'ODc', 'NDc', 'Vg'];
+const SUFFIX = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qn', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+  'UDc', 'DDc', 'TDc', 'QaDc', 'QnDc', 'SxDc', 'SpDc', 'ODc', 'NDc', 'Vg'];
+
+/**
+ * Quintillion is 'Qn', not the usual 'Qi'.
+ *
+ * The endgame reaches it — a cultivator holding twelve marks reads 2.67 of them — and
+ * the screen prints it two lines above "+78.2B qi / s". A currency called qi and a
+ * suffix called Qi in the same glance is the one collision this game could not afford.
+ */
 
 /** Numbers a player reads at a glance, not numbers an accountant prints. */
 export function num(n: number): string {

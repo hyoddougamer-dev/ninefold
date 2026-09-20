@@ -122,7 +122,16 @@ export const ADVICE = {
     `The next 劍訣 costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
   noStance: 'You are fighting with no 勢 stance. Pick one in 道 Path. It is free and it changes every round.',
   noSequence: 'Your 訣 sequence is empty, so every round fires nothing. Fill it in 道 Path.',
-  brew: 'The furnace will sell you a 煉體丹. It is power you keep for good.',
+  /**
+   * Both of these take the pill's name rather than printing 煉體丹, which is the *line*
+   * and not a pill anybody can see: the screen sells 合道丹 at the seventh realm and
+   * 渡劫丹 at the ninth. A line naming something that is nowhere on the list sends the
+   * player looking for it.
+   */
+  brew: (han: string) => `The furnace will sell you a ${han}. It is power you keep for good.`,
+  /** 立 The endgame's one decision, said out loud while the Dragon is standing. */
+  brewForDragon: (han: string, pct: number) =>
+    `The Dragon is at ${pct}%. A ${han} raises that, and the power stays with you afterwards.`,
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
   floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays hours of gathering, once.`,
   huntForMaterial: 'Everything else is at its cap. Hunt for 材 material, which is what 妖丹 cores cost.',

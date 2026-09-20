@@ -1,6 +1,6 @@
 import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
-  TRIBULATION_CHALLENGE, TRIBULATION_GAIN, TRIBULATION_POWER, TRIBULATION_SLACK,
+  TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, levelCap,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
@@ -120,17 +120,6 @@ export function tribulationPower(s: State, base: number): number {
   return Math.max(base * tribulationScale(s.tribulation), s.tribulationAt * TRIBULATION_CHALLENGE);
 }
 
-/**
- * 劫 How ready you are for the next crossing: your power against the Dragon's.
- *
- * This is what the bar reads at the top, and it is the honest thing to show. Qi is not
- * the gate up there — the wait is the wait to afford the next levels of 劍訣, and this
- * says how much of that wait is behind you.
- */
-export function tribulationReadiness(s: State, dragonPower: number): number {
-  return dragonPower > 0 ? Math.min(1, power(s) / dragonPower) : 0;
-}
-
 /** How many layers have been opened in total, across every realm. 0..80. */
 export function layersOpened(s: State): number {
   return (s.realm - 1) * LAYERS_PER_REALM + s.layer;
@@ -191,7 +180,11 @@ export function crossTribulation(s: State, dragonPower: number): State {
     // cores, gear and tree that the first Dragon knows nothing about — without this
     // second reading they would walk through twenty crossings on that margin alone
     // before the endgame started asking them for anything.
-    tribulationAt: Math.max(s.tribulationAt, dragonPower, power(s) / TRIBULATION_SLACK),
+    //
+    // 立 TRIBULATION_FOOTING is what makes that reading honest. What stood in front of the
+    // Dragon was not 力; it was 力 with a stance and three arts on it, and that is the
+    // number the next Dragon has to be built from.
+    tribulationAt: Math.max(s.tribulationAt, dragonPower, power(s) * TRIBULATION_FOOTING),
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
   };

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  LAYERS_PER_REALM, MAX_MARK_DAYS, TRIBULATION_CHALLENGE, TRIBULATION_POWER,
+  LAYERS_PER_REALM, MAX_MARK_DAYS, TRIBULATION_CHALLENGE, TRIBULATION_FOOTING,
+  TRIBULATION_POWER,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { effectiveBeastPower, odds } from '../combat.ts';
 import {
   atTribulation, buy, canBuy, canCross, crossTribulation, markBonus, newState, power,
-  tribulationPool, tribulationReadiness, tribulationScale, validate, type State,
+  tribulationPool, tribulationScale, validate, type State,
 } from '../state.ts';
 import { rate } from '../time.ts';
 import { LINES } from '../../data/alchemy.ts';
@@ -68,6 +69,7 @@ function play(marks: number) {
   let s = arrived();
   const days: number[] = [];
   const floors: number[] = [];
+  const chances: number[] = [];
 
   for (let m = 0; m < marks; m++) {
     let waited = 0;
@@ -109,9 +111,10 @@ function play(marks: number) {
     }
     days.push(waited);
     floors.push(s.tower);
+    chances.push(odds(s, DRAGON));
     s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, DRAGON));
   }
-  return { days, floors, end: s };
+  return { days, floors, chances, end: s };
 }
 
 describe('渡劫 the ladder above the ladder', () => {
@@ -182,20 +185,33 @@ describe('渡劫 the ladder above the ladder', () => {
       .toBeCloseTo(TRIBULATION_POWER ** 3, 4);
   });
 
-  it('reads the bar as power against the Dragon, not as qi', () => {
-    const s = { ...newState(T0), realm: 9, tribulation: 0 };
-    const d = effectiveBeastPower(s, DRAGON);
-    expect(tribulationReadiness(s, d)).toBeLessThan(1);
-    expect(tribulationReadiness({ ...s, levels: { ...s.levels, technique: 400 } }, d)).toBe(1);
+  /**
+   * 立 The footing. A crossing is settled in blows, and a stance with three arts on it is
+   * worth nearly twice the number on the screen — so a Dragon built from bare 力 is a
+   * Dragon the build beats for free, which is exactly what the endgame used to be.
+   */
+  it('builds the next Dragon from the power that actually faced the last one', () => {
+    const s: State = {
+      ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, killed: ALL_WARDENS,
+      stance: 'endure', sequence: ['crane', 'tiger', 'wolf'],
+      levels: { ...newState(T0).levels, technique: 54 },
+    };
+    const won = { ...s, qi: tribulationPool(s), wardenFell: true };
+    const after = crossTribulation(won, effectiveBeastPower(won, DRAGON));
+    expect(after.tribulationAt).toBeGreaterThanOrEqual(power(won) * TRIBULATION_FOOTING);
+    // And the next one stands a whole challenge above that footing, not level with it.
+    expect(effectiveBeastPower(after, DRAGON))
+      .toBeCloseTo(after.tribulationAt * TRIBULATION_CHALLENGE, 4);
   });
 
   it('plays, and never lets one mark become a wall', () => {
-    const { days, floors, end } = play(40);
+    const { days, floors, chances, end } = play(40);
     let total = 0;
     const rows = days.map((d, i) => {
       total += d;
       return `  劫 ${String(i + 1).padStart(2)}   ${String(d).padStart(3)} days` +
-        `   ${String(total).padStart(4)} days in all   tower floor ${String(floors[i]).padStart(3)}`;
+        `   ${String(total).padStart(4)} days in all   tower floor ${String(floors[i]).padStart(3)}` +
+        `   odds ${String(Math.round(chances[i] * 100)).padStart(3)}%`;
     });
     console.log(`\n  渡劫 the endgame, played out — gather, climb, brew, cross:\n${rows.join('\n')}\n` +
       `  ${days.length} marks in ${total} days, ` +
@@ -217,5 +233,19 @@ describe('渡劫 the ladder above the ladder', () => {
     // And the loop actually turns — the tower is climbed and the furnace is used.
     expect(end.tower).toBeGreaterThan(81);
     expect(pillsTaken(end.brewed)).toBeGreaterThan(40);
+
+    /**
+     * 立 And the crossings are *contested*. This is the assertion the old endgame had no
+     * version of, and it is the one that would have caught it: the Dragon was anchored
+     * below what the build was worth, so every crossing came in at 90-98% and 煉體 — the
+     * only pill that touches the Dragon — was never once worth brewing. The endgame read
+     * as two days, tap, win, for ever.
+     */
+    const walkovers = chances.filter((c) => c > 0.9).length;
+    console.log(`  ${walkovers} of ${chances.length} crossings came in over 90%, `
+      + `${end.brewed.body} 煉體 pills brewed for them\n`);
+    expect(walkovers).toBeLessThanOrEqual(chances.length / 4);
+    // At least one power pill a crossing, or the furnace is not in the loop at all.
+    expect(end.brewed.body).toBeGreaterThan(days.length);
   }, 30_000);
 });

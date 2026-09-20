@@ -139,6 +139,17 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
         </div>
       )}
 
+      {/* 示 sits above the 雷印 card, not below it. The card is five lines of reference
+          and the tip is the only thing on the screen that says what to do, so at the top
+          of the endgame it was the one line a player had to scroll to find. */}
+      {tip && (
+        <button className="tip" disabled={!tip.tab} onClick={() => tip.tab && onGo(tip.tab)}>
+          <b className="cjk">{tip.han}</b>
+          <i>{tip.text}</i>
+          {tip.tab && <em className="cjk">›</em>}
+        </button>
+      )}
+
       {top && (
         <div className="card" style={{ marginTop: 16, borderColor: r.colour }}>
           <b className="cjk" style={{ color: r.colour }}>雷印</b>
@@ -152,14 +163,6 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
           {focus >= FOCUS_MAX - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
         </p>
-      )}
-
-      {tip && (
-        <button className="tip" disabled={!tip.tab} onClick={() => tip.tab && onGo(tip.tab)}>
-          <b className="cjk">{tip.han}</b>
-          <i>{tip.text}</i>
-          {tip.tab && <em className="cjk">›</em>}
-        </button>
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>
