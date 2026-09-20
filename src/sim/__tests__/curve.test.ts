@@ -101,7 +101,9 @@ describe('the climb, for a cultivator who spends', () => {
     expect(arrival).toBeGreaterThan(climber.arrival[8]);
     expect(arrival).toBeLessThan(climber.arrival[8] * 2);
     expect(power(brewer.state)).toBeGreaterThan(power(climber.state));
-  });
+    // 時 A whole 81-rung climb walked twice, and CI's runner is slower than a laptop:
+    // it took 2.7s here and blew vitest's 5s default there, which stopped a deploy.
+  }, 30_000);
 
   /**
    * 道 The measurement that was missing, and it was missing for the whole of the game's
