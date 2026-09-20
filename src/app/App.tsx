@@ -25,6 +25,7 @@ import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
+import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
@@ -78,6 +79,9 @@ export function App() {
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
+  // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
+  // than taking a sixth place in a tab bar that has to fit on a phone.
+  const [stele, setStele] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fresh, setFresh] = useState(false);
   const [sound, setSound] = useState(soundLevel);
@@ -412,7 +416,7 @@ export function App() {
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
-        {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
+        {tab === 'trials' && <Trials state={state} pulse={pulse} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}
@@ -427,6 +431,7 @@ export function App() {
       <div className="switches">
         <button onClick={() => { setSaving(true); sfx.tap(); }} aria-label="Your save">存</button>
         <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
+        <button className="cjk" onClick={() => { setStele(true); sfx.tap(); }} aria-label="The stele">碑</button>
         <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0} aria-label={LEVELS[sound].label}>
           {LEVELS[sound].icon}
         </button>
@@ -527,6 +532,16 @@ export function App() {
       )}
 
       {help && <Help onClose={() => { setHelp(false); sfx.tap(); }} />}
+
+      {stele && (
+        <div className="stelepage">
+          <Chronicle state={state} pulse={pulse} />
+          <button className="act" style={{ marginTop: 18 }}
+            onClick={() => { setStele(false); sfx.tap(); }}>
+            續 <span>Back</span>
+          </button>
+        </div>
+      )}
 
       {saving && (
         <SavePanel

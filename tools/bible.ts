@@ -40,6 +40,7 @@ import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
+import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
   KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
@@ -118,6 +119,8 @@ const SYSTEMS: readonly System[] = [
     line: `One floor, one beast, no top. The material economy and ${TOWER_QI_HOURS} hours of gathering a floor.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
+  { han: '碑', name: 'The stele', status: 'done', at: 'stele',
+    line: `${DEEDS.length} deeds across ${TRACKS.length} tracks, every one of them derived from the save and worth nothing. A record, not a currency.` },
   { han: '劫', name: 'The tribulation', status: 'done', at: 'top',
     line: `A pool that refills in ${MARK_DAYS} days, a Dragon that grows ${TRIBULATION_CHALLENGE}x a crossing, and a mark worth ${(1 + TRIBULATION_GAIN).toFixed(2)}x.` },
   { han: '存', name: 'The save', status: 'done', at: 'save',
@@ -552,6 +555,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#tower"><b>塔</b> The tower</a>
       <a href="#furnace"><b>爐</b> The furnace</a>
       <a href="#top"><b>劫</b> The top</a>
+      <a href="#stele"><b>碑</b> The stele</a>
       <a href="#save"><b>存</b> The save</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
@@ -1011,6 +1015,30 @@ const page = `<title>九境 Ninefold — the Bible</title>
       ${Math.round(Math.max(...ENDGAME.chances) * 100)}%; the odds then walk down and settle
       at ${Math.round(ENDGAME.chances[ENDGAME.chances.length - 1] * 100)}%, and the furnace
       is what holds them there.</p>
+  </section>
+
+  <section class="sec" id="stele">
+    <h2><span class="h">碑</span> The stele, and what a deed is worth</h2>
+    <p class="t">A cultivator collects numbers in their head — the day, the floor, the
+      kills, the marks — and until now the game had nowhere to show them. 碑 the stele is
+      that page: ${DEEDS.length} deeds across ${TRACKS.length} tracks, and every unfinished
+      one is a <b>bar rather than a padlock</b>, because <em>two floors away</em> is a
+      reason to open the app tonight and a locked box is not.</p>
+    <div class="rule"><b>A deed pays nothing.</b> Not qi, not power, not material. The
+      economy's one law is that nothing uncapped may raise the qi rate, and a list of
+      deeds is about as uncapped as a thing gets — but the deeper reason is that 九境 is
+      meant to go online. A deed that pays is a deed worth forging, and a leaderboard of
+      forged deeds is not a leaderboard.</div>
+    <div class="rule"><b>And a deed is derived, never stored.</b> Exactly like 勢 the
+      stances and 訣 the arts: nothing in the save says <em>I have done this</em>. Every
+      deed is recomputed from numbers the save already carries and the validator already
+      caps, so there is no flag to flip — a hand-edited save cannot claim a deed without
+      claiming the whole run underneath it.</div>
+    ${TRACKS.map((t) => `<div class="card" style="--hue:var(--cyan)">
+      <b class="cjk">${t.han}</b> <em>${t.name}</em>
+      <div class="lin" style="margin-top:8px">${deedsOn(t.key).map((d) =>
+        `<span><b style="color:var(--gold)">${d.han}</b> <i>${d.name} · ${d.line}</i></span>`).join('')}</div>
+    </div>`).join('')}
   </section>
 
   <section class="sec" id="save">

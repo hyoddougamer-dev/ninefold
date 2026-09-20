@@ -82,6 +82,28 @@ export const CULTIVATE = {
   cap: (held: number, cap: number) => `${held} of ${cap}`,
 };
 
+/**
+ * 碑 The stele.
+ *
+ * It says what was done and never what it is worth, because the deeds are worth nothing
+ * — and the page has to say so out loud, or a player will spend a week hunting one on
+ * the assumption that it pays.
+ */
+export const CHRONICLE = {
+  title: 'The stele',
+  standing: (day: number, realm: string) => `Day ${day} of the climb, standing in ${realm}.`,
+  nearest: (han: string, name: string) => `Nearest: ${han} ${name} ·`,
+  figures: 'Where you have got to',
+  day: 'day', realm: 'realm', rungs: 'layers opened', power: 'power', rate: 'gathering',
+  kills: 'beasts killed', seen: 'beasts met', mastered: '通 mastered', wardens: 'wardens down',
+  floor: 'best floor', seals: '塔印 seals', pills: 'pills brewed', refine: 'deepest 煉器',
+  dao: '道 spent', marks: '雷印 marks',
+  rule: 'A deed pays nothing. Not qi, not power, not material. They are a record of what '
+    + 'this cultivator did, and the record is the reward.',
+  counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
+    + 'no list of what you have earned, so there is nothing to forge.',
+};
+
 export const TRIALS = {
   towerHead: '塔 The Endless Tower',
   tower: 'One floor, one beast. Win and the floor is yours for good. Lose and nothing happens.',

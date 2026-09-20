@@ -9,6 +9,7 @@ import { floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
 import { seal } from '../../art/aura.ts';
+import { furnace, tower } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { TRIALS } from '../copy.ts';
@@ -21,8 +22,9 @@ import { TRIALS } from '../copy.ts';
  * touches the qi rate, which is the rule the whole economy stands on, and the screen
  * says so at the bottom rather than leaving the player to work it out.
  */
-export function Trials({ state, onFloor, onBrew }: {
+export function Trials({ state, pulse, onFloor, onBrew }: {
   state: State;
+  pulse: number;
   onFloor: (floor: number) => void;
   onBrew: (line: (typeof LINES)[number]) => void;
 }) {
@@ -37,7 +39,7 @@ export function Trials({ state, onFloor, onBrew }: {
   const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
-  const furnace = isOpen(state.realm, 'furnace');
+  const lit = isOpen(state.realm, 'furnace');
 
   return (
     <>
@@ -52,6 +54,11 @@ export function Trials({ state, onFloor, onBrew }: {
       </p>
 
       <h2 className="heading">{TRIALS.towerHead}</h2>
+      {/* 塔 The tower drawn as far up as it has been climbed: one tier to a 塔印 seal,
+          so the silhouette is the progress and not an illustration beside it. */}
+      <span className="place" data-tall="true">
+        <Svg html={tower(state.tower, pulse)} />
+      </span>
       <div className="card" style={{ borderColor: r.colour }}>
         <div className="row">
           <span className="seal" style={{ width: 52, height: 52, flex: 'none' }}>
@@ -94,18 +101,25 @@ export function Trials({ state, onFloor, onBrew }: {
       </div>
 
       <h2 className="heading">{TRIALS.furnaceHead}</h2>
-      {!furnace && (
+      {!lit && (
         <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
           {TRIALS.furnaceShut(realmOf(opensAt('furnace')).han, realmOf(opensAt('furnace')).name)}
         </p>
       )}
-      {furnace && (
-        <div className="row" style={{ marginBottom: 8 }}>
-          <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
-        </div>
+      {lit && (
+        <>
+          {/* 爐 The fire reads what has been brewed, so a furnace lit an hour ago is a
+              candle and one that has taken four hundred pills is a forge. */}
+          <span className="place" data-tall="false">
+            <Svg html={furnace(state.realm, pillsTaken(state.brewed), pulse)} />
+          </span>
+          <div className="row" style={{ marginBottom: 8 }}>
+            <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
+          </div>
+        </>
       )}
 
-      {furnace && <div className="stack">
+      {lit && <div className="stack">
         {menu.map(({ line, pill, cost, held: taken, affordable }) => {
           const info = PILL_LINES[line];
           const short = state.materials < cost.materials;
@@ -128,11 +142,11 @@ export function Trials({ state, onFloor, onBrew }: {
         })}
       </div>}
 
-      {furnace && menu.some((m) => state.materials < m.cost.materials) && (
+      {lit && menu.some((m) => state.materials < m.cost.materials) && (
         <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{TRIALS.needMaterial}</p>
       )}
 
-      {furnace && (
+      {lit && (
         <p className="faint" style={{ margin: '14px 0 0', fontSize: 12 }}>
           {pillsTaken(state.brewed) > 0 && <>{TRIALS.held(pillsTaken(state.brewed))} in all. </>}
           {TRIALS.rule}

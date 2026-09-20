@@ -418,10 +418,13 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 /* ── the two small switches, always reachable ───────────────────────────── */
 
+/* 存 ? 碑 音 — four of them now, and each one takes width off the first row of every
+   screen. The sheet's first row is padded to clear them rather than every screen being
+   asked to remember. */
 .switches { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px;
-            display: flex; gap: 6px; z-index: 5; }
+            display: flex; gap: 5px; z-index: 5; }
 .switches button {
-  width: 30px; height: 30px; border-radius: 8px; font: inherit; font-size: 14px;
+  width: 28px; height: 28px; border-radius: 8px; font: inherit; font-size: 13.5px;
   background: var(--panel); border: 1px solid var(--line); color: var(--faint);
   cursor: pointer; display: grid; place-items: center;
 }
@@ -478,11 +481,14 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .spoil i { font-style: normal; font-size: 12px; color: var(--faint); }
 .spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--magenta); margin-top: 3px; }
 
-/* The ? and sound switches float over the sheet, so every screen's header row has to
-   leave room for them — otherwise the numbers on the right slide underneath. */
-/* The three switches float over the top-right corner, so the first row of every
-   screen keeps its reading clear of them. */
-.sheet > .row:first-child { padding-right: 116px; }
+/* 存 ? 碑 音 float over the top-right corner, so the first row of every screen keeps
+   its reading clear of them — and the figure on that row never shrinks, because 力 1.38T
+   lost its T to a long "CULTIVATE · DAY 526" beside it, which is flex doing what flex
+   does. The long side truncates instead. */
+.sheet > .row:first-child { padding-right: 140px; }
+.sheet > .row:first-child > :last-child { flex: none; white-space: nowrap; }
+.sheet > .row:first-child > :first-child { min-width: 0; overflow: hidden;
+                                           text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
 
@@ -635,3 +641,69 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
                  background: var(--cyan); color: #06121a; border: none;
                  border-radius: 8px; padding: 7px 14px; }
 .newver button.later { background: transparent; color: var(--faint); padding: 7px 4px; }
+
+/* ── 碑 the stele: what this cultivator has done ────────────────────────── */
+
+.stelepage { position: absolute; inset: 0; z-index: 13; background: var(--ground);
+             display: flex; flex-direction: column; gap: 11px; overflow-y: auto;
+             padding: calc(env(safe-area-inset-top, 0px) + 22px) 18px
+                      calc(env(safe-area-inset-bottom, 0px) + 28px); }
+
+/* The cultivator, and the one line about tonight. A page of thirty deeds needs a top. */
+/* The counts sit at the right of their own heading, so a track reads "6 / 9" without a
+   second row. `.heading` is not a flex anywhere else, and this is scoped so it stays
+   that way. */
+.stelepage .heading { display: flex; align-items: baseline; gap: 8px; }
+
+.stele { display: flex; gap: 13px; align-items: center; background: var(--panel2);
+         border: 1px solid var(--line); border-radius: 13px; padding: 12px 14px; }
+.stele .who { flex: none; width: 62px; height: 62px; }
+.stele .who svg { display: block; width: 100%; height: 100%; }
+.stele .said { flex: 1; min-width: 0; }
+.stele .said b { display: block; font-size: 23px; font-weight: 400; line-height: 1.1; }
+.stele .said i { font-style: normal; display: block; font-size: 13px; color: var(--faint);
+                 margin-top: 2px; }
+.stele .said em { font-style: normal; display: block; font-size: 12.5px; color: var(--gold);
+                  margin-top: 5px; }
+
+/* 錄 the figures: a grid of the numbers a player counts in their head anyway. */
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 7px; }
+.fig { background: var(--panel2); border: 1px solid var(--line); border-radius: 11px;
+       padding: 9px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.fig b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 13px;
+         color: var(--cyan); line-height: 1; }
+.fig em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
+          font-size: 19px; color: var(--gold); line-height: 1.15;
+          overflow: hidden; text-overflow: ellipsis; }
+.fig i { font-style: normal; font-size: 10.5px; color: var(--faint); }
+
+/* 碑 the deeds. An unfinished one is a bar, never a padlock: a padlock says "no" and a
+   bar says "two floors". */
+.deeds { display: flex; flex-direction: column; gap: 6px; }
+.deed { display: flex; gap: 11px; align-items: flex-start; background: var(--panel2);
+        border: 1px solid var(--line); border-radius: 11px; padding: 9px 12px; }
+.deed[data-got='true'] { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.deed > b { flex: none; font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 19px;
+            color: var(--faint); line-height: 1.2; min-width: 2.6ch; }
+.deed[data-got='true'] > b { color: var(--gold); text-shadow: 0 0 12px rgba(255,206,107,.45); }
+.deed .body { flex: 1; min-width: 0; }
+.deed .body em { font-style: normal; display: block; font-family: Rajdhani, sans-serif;
+                 font-weight: 700; font-size: 15px; }
+.deed .body i { font-style: normal; display: block; font-size: 12px; color: var(--faint);
+                margin-top: 1px; line-height: 1.45; }
+.deed .bar { display: block; height: 3px; border-radius: 2px; background: var(--panel);
+             margin-top: 7px; overflow: hidden; }
+.deed .bar i { display: block; height: 100%; margin: 0; opacity: .75; }
+.deed .n { flex: none; align-self: center; font-family: Rajdhani, sans-serif; font-weight: 700;
+           font-size: 13px; color: var(--faint); text-align: right; }
+.deed .n i { font-style: normal; font-size: 11px; opacity: .65; }
+.deed[data-got='true'] .n b { font-size: 17px; color: var(--gold); font-weight: 400; }
+
+/* ── 塔 爐 雷池: the drawings the late systems now have ─────────────────── */
+
+.place { width: 100%; border: 1px solid var(--line); border-radius: 13px; overflow: hidden;
+         background: #05060F; display: block; }
+.place svg { display: block; width: 100%; height: 100%; }
+.place[data-tall='true'] { aspect-ratio: 200 / 160; }
+.place[data-tall='false'] { aspect-ratio: 200 / 200; }
+.place[data-wide='true'] { aspect-ratio: 200 / 180; }
