@@ -36,7 +36,7 @@ import { nextNotice } from './notices.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
-import { LOCKED, UPDATE } from './copy.ts';
+import { BLOOM, LOCKED, UPDATE } from './copy.ts';
 
 /**
  * 開 The tabs, and what opens them.
@@ -329,7 +329,9 @@ export function App() {
       sfx.breakthrough();
       haptics.breakthrough();
       setBloom(next.realm);
-      setTimeout(() => setBloom(null), 1400);
+      // A realm that handed something over waits to be read. One that only changed the
+      // light does not — 1.4 seconds is right for a colour and wrong for three cards.
+      if (opensIn(next.realm).length === 0) setTimeout(() => setBloom(null), 1400);
     } else {
       sfx.buy();
       haptics.tap();
@@ -471,21 +473,27 @@ export function App() {
       )}
 
       {bloom !== null && (
-        <div className="bloom" style={{ color: realmOf(bloom).colour }}>
+        <div className="bloom" data-held={opensIn(bloom).length > 0}
+             style={{ color: realmOf(bloom).colour }}>
           <span className="ring" /><span className="ring" /><span className="ring" />
           <div className="mid">
             <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
             <p>{realmOf(bloom).gains}</p>
             {opensIn(bloom).length > 0 && (
-              <div className="opened">
-                {opensIn(bloom).map((sys) => (
-                  <span key={sys.key}>
-                    <b className="cjk">{sys.han}</b>
-                    <em>{sys.name}</em>
-                    <i>{sys.gives}</i>
-                  </span>
-                ))}
-              </div>
+              <>
+                <div className="opened">
+                  {opensIn(bloom).map((sys) => (
+                    <span key={sys.key}>
+                      <b className="cjk">{sys.han}</b>
+                      <em>{sys.name}</em>
+                      <i>{sys.gives}</i>
+                    </span>
+                  ))}
+                </div>
+                <button className="act" onClick={() => { setBloom(null); sfx.tap(); }}>
+                  續 <span>{BLOOM.on}</span>
+                </button>
+              </>
             )}
           </div>
         </div>

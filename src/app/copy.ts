@@ -232,6 +232,11 @@ export const NOTICE = {
  * It names the realm rather than a number of days, because a realm is a thing the player
  * is already climbing toward and a day is not.
  */
+/** 突破 The one moment the game stops for, and the word that ends it. */
+export const BLOOM = {
+  on: 'Go on',
+};
+
 export const LOCKED = {
   opensAt: (han: string, name: string, n: number) =>
     `This opens when you reach ${han} ${name}, the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][n - 1]} realm.`,
