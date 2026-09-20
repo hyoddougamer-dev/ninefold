@@ -219,7 +219,10 @@ export const NOTICE = {
       + 'that can actually beat you are the ones that pay in qi.',
   },
   furnace: {
-    title: 'Start with a 煉體丹',
+    // Not "start with a 煉體丹": 煉體 is the *line*, and the pill on the screen is named
+    // for the realm brewing it — 合道丹 at the seventh, 大乘丹 at the eighth. A card
+    // naming a pill that is nowhere on the list is a card sending the player looking.
+    title: 'Start with the power pill',
     text: 'It is power you keep for good, and every pill after it costs a little more. Qi '
       + 'brewed is qi that did not open a layer, so this is a trade rather than a freebie.',
   },

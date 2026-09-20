@@ -37,8 +37,14 @@ const DAY = 86_400;
  * `brews` is the second half of the question. 丹爐 the furnace is the one thing qi buys
  * that no realm caps, so a cultivator who pours everything into it is the fastest way
  * the curve could possibly be broken — and the schedule has to survive them too.
+ *
+ * `climbs` is separate from it on purpose. The furnace eats materials, so a brewer has
+ * to climb 無盡塔 the tower, and the tower pays qi — which means a brewer measured
+ * against somebody who does neither is two changes at once, and says nothing about the
+ * furnace. To ask what the furnace costs, hold the tower still and change only the
+ * brewing.
  */
-function climb(checks: number, spends = true, brews = false) {
+function climb(checks: number, spends = true, brews = false, climbs = brews) {
   const tick = DAY / checks;
   let s = newState(T0);
   let t = T0;
@@ -58,14 +64,14 @@ function climb(checks: number, spends = true, brews = false) {
       s = buy(s, open[0]);
       buys.push((t - T0) / DAY);
     }
-    if (!brews) continue;
     // The furnace eats materials as well as qi, and materials come from the tower. A
     // cultivator who wants to brew has to climb, so the brewer climbs.
-    for (let guard = 0; guard < 40; guard++) {
+    if (climbs) for (let guard = 0; guard < 40; guard++) {
       const floor = standingFloor(s);
       if (odds(s, floorBeast(floor), floorPower(floor)) < 0.6) break;
       s = clearFloor(s, floor);
     }
+    if (!brews) continue;
     for (let guard = 0; guard < 500; guard++) {
       const line = LINES.find((l) => canBrew(s, l));
       if (!line) break;
@@ -129,19 +135,23 @@ describe('the climb, for a cultivator who spends', () => {
    */
   it('survives a cultivator who pours everything into the furnace', () => {
     const plain = climb(6);
+    const climber = climb(6, true, false, true);
     const brewer = climb(6, true, true);
     const arrival = brewer.arrival[brewer.arrival.length - 1];
     console.log(`\n  spending on upgrades only:     realm 9 on day ${plain.arrival[8].toFixed(1)}`);
-    console.log(`  brewing everything as well:    realm 9 on day ${arrival.toFixed(1)}   ` +
+    console.log(`  climbing the tower as well:    realm 9 on day ${climber.arrival[8].toFixed(1)}`
+      + `   (the tower is meant to pay, and it does)`);
+    console.log(`  and brewing everything too:    realm 9 on day ${arrival.toFixed(1)}   ` +
       `${pillsTaken(brewer.state.brewed)} pills — ` +
       `${LINES.map((l) => `${l} ${brewer.state.brewed[l]}`).join(' · ')}`);
-    console.log(`  and it costs them power ${num(power(plain.state))} → ${num(power(brewer.state))}\n`);
+    console.log(`  and it costs them power ${num(power(climber.state))} → ${num(power(brewer.state))}\n`);
     expect(brewer.state.realm).toBe(9);
-    // Slower, because every pill is qi that did not open a layer — but never so much
-    // slower that the furnace is a trap, and never faster, which is what would be a bug.
-    expect(arrival).toBeGreaterThan(plain.arrival[8]);
-    expect(arrival).toBeLessThan(plain.arrival[8] * 2);
-    expect(power(brewer.state)).toBeGreaterThan(power(plain.state));
+    // Slower than the same cultivator who climbs and does not brew, because every pill
+    // is qi that did not open a layer — but never so much slower that the furnace is a
+    // trap, and never faster, which is what would be a bug.
+    expect(arrival).toBeGreaterThan(climber.arrival[8]);
+    expect(arrival).toBeLessThan(climber.arrival[8] * 2);
+    expect(power(brewer.state)).toBeGreaterThan(power(climber.state));
   });
 
   it('never stops getting slower, so the mountain always reads as taller', () => {

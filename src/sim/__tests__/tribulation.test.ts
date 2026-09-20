@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  LAYERS, LAYERS_PER_REALM, MAX_MARK_DAYS, TRIBULATION_CHALLENGE, TRIBULATION_POWER,
-  ladderAt,
+  LAYERS_PER_REALM, MAX_MARK_DAYS, TRIBULATION_CHALLENGE, TRIBULATION_POWER,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { effectiveBeastPower, odds } from '../combat.ts';
@@ -14,6 +13,7 @@ import { LINES } from '../../data/alchemy.ts';
 import { pillCost, pillsTaken } from '../furnace.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../trials.ts';
 import { floorBeast, floorPower, seals } from '../tower.ts';
+import { HABITS, play as playHabit } from '../../../tools/habits.ts';
 
 const T0 = 1_700_000_000;
 const DRAGON = wardenOf(9);
@@ -22,26 +22,35 @@ const ALL_WARDENS = {
   fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1,
 };
 
-/** Everything the whole climb could have banked, spent the way a player would. */
+/**
+ * The cultivator who actually reaches the top, and not an idea of one.
+ *
+ * This used to be built by hand: realm 9, a day's qi, six hundred upgrade taps and
+ * `brewed: 81` of every line. The pill count was the tell. It was there to skip past
+ * first-realm pill prices, because the furnace used to start at the foot of the mountain
+ * however late it opened, and without the skip the fixture had no power to speak of.
+ *
+ * 爐底 PILL_RUNG fixed the prices, and then the hand-built cultivator fell apart: no
+ * gear, no 道 tree, no 妖丹 cores, 2.55M power against a Dragon of 81.1M. It could not
+ * climb a floor, could not afford a pill, and sat there for four hundred days. That is
+ * not the endgame being a wall; that is the fixture not being a player.
+ *
+ * So the endgame is now measured on somebody who played the game to get here: the
+ * `active` habit, run out of `tools/habits.ts`, which is the same cultivator the curve
+ * and the bible are written from. They arrive at 力 238M against a first Dragon of
+ * 81.1M, which is what ninety days of climbing is supposed to be worth.
+ */
+let ARRIVED: State | null = null;
+
 function arrived(): State {
-  let s: State = {
-    ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1,
-    // A day's gathering in hand, not the whole mountain: this is somebody who has just
-    // opened the last layer, not somebody handed the run's entire earnings at once.
-    qi: ladderAt(LAYERS - 2) * 3, killed: ALL_WARDENS,
-    stance: 'endure', sequence: ['crane', 'tiger', 'wolf'],
-    // Somebody who climbed the mountain, and brewed and climbed the tower on the way —
-    // which is what `curve.test.ts` measures a brewing cultivator arriving with. Starting
-    // the endgame from an empty furnace is the one thing that makes it read as free: the
-    // first pills would be the ones a first-realm cultivator buys, at first-realm prices.
-    tower: 81, brewed: { body: 81, bane: 81, fortune: 81 },
-  };
-  for (let i = 0; i < 600; i++) {
-    const u = (['technique', 'method', 'pills'] as const)[i % 3];
-    if (!canBuy(s, u)) continue;
-    s = buy(s, u);
+  // Ninety days of simulation is a few seconds, and nothing about it varies, so it is
+  // run once for the file rather than once per test.
+  if (!ARRIVED) {
+    const active = HABITS.find((h) => h.name === 'active')!;
+    const s = playHabit(active).state;
+    ARRIVED = { ...s, killed: { ...s.killed, ...ALL_WARDENS } };
   }
-  return s;
+  return ARRIVED;
 }
 
 /**
@@ -208,5 +217,5 @@ describe('渡劫 the ladder above the ladder', () => {
     // And the loop actually turns — the tower is climbed and the furnace is used.
     expect(end.tower).toBeGreaterThan(81);
     expect(pillsTaken(end.brewed)).toBeGreaterThan(40);
-  });
+  }, 30_000);
 });
