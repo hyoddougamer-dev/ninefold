@@ -137,8 +137,6 @@ const SYSTEMS: readonly System[] = [
 
   { han: '新', name: 'Teaching each system', status: 'done', at: 'refine',
     line: `${NOTICES.length} cards that arrive once, when the thing they explain first becomes true, and never block the game.` },
-  { han: '煉器', name: 'Refining worn gear', status: 'planned',
-    line: 'Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.' },
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
