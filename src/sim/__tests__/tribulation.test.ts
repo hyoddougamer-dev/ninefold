@@ -4,17 +4,16 @@ import {
   TRIBULATION_POWER,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
-import { effectiveBeastPower, odds } from '../combat.ts';
+import { effectiveBeastPower } from '../combat.ts';
 import {
-  atTribulation, buy, canBuy, canCross, crossTribulation, markBonus, newState, power,
+  atTribulation, canCross, crossTribulation, markBonus, newState, power,
   tribulationPool, tribulationScale, validate, type State,
 } from '../state.ts';
 import { rate } from '../time.ts';
 import { LINES } from '../../data/alchemy.ts';
-import { pillCost, pillsTaken } from '../furnace.ts';
-import { brew, canBrew, clearFloor, standingFloor } from '../trials.ts';
-import { floorBeast, floorPower, seals } from '../tower.ts';
-import { HABITS, play as playHabit } from '../../../tools/habits.ts';
+import { pillsTaken } from '../furnace.ts';
+import { seals } from '../tower.ts';
+import { playEndgame as play } from '../../../tools/endgame.ts';
 
 const T0 = 1_700_000_000;
 const DRAGON = wardenOf(9);
@@ -22,100 +21,6 @@ const DRAGON = wardenOf(9);
 const ALL_WARDENS = {
   fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1,
 };
-
-/**
- * The cultivator who actually reaches the top, and not an idea of one.
- *
- * This used to be built by hand: realm 9, a day's qi, six hundred upgrade taps and
- * `brewed: 81` of every line. The pill count was the tell. It was there to skip past
- * first-realm pill prices, because the furnace used to start at the foot of the mountain
- * however late it opened, and without the skip the fixture had no power to speak of.
- *
- * 爐底 PILL_RUNG fixed the prices, and then the hand-built cultivator fell apart: no
- * gear, no 道 tree, no 妖丹 cores, 2.55M power against a Dragon of 81.1M. It could not
- * climb a floor, could not afford a pill, and sat there for four hundred days. That is
- * not the endgame being a wall; that is the fixture not being a player.
- *
- * So the endgame is now measured on somebody who played the game to get here: the
- * `active` habit, run out of `tools/habits.ts`, which is the same cultivator the curve
- * and the bible are written from. They arrive at 力 238M against a first Dragon of
- * 81.1M, which is what ninety days of climbing is supposed to be worth.
- */
-let ARRIVED: State | null = null;
-
-function arrived(): State {
-  // Ninety days of simulation is a few seconds, and nothing about it varies, so it is
-  // run once for the file rather than once per test.
-  if (!ARRIVED) {
-    const active = HABITS.find((h) => h.name === 'active')!;
-    const s = playHabit(active).state;
-    ARRIVED = { ...s, killed: { ...s.killed, ...ALL_WARDENS } };
-  }
-  return ARRIVED;
-}
-
-/**
- * Plays the endgame loop as a person plays it: gather qi, climb the tower for materials,
- * brew what the furnace will sell, face the Dragon, cross.
- *
- * This is the only test that measures the endgame honestly, because the endgame is not
- * one system. The Dragon grows 1.6x a crossing; a mark pays 1.5x; the furnace is the
- * only thing at the top that qi still buys, and the tower is the only thing that feeds
- * the furnace. Take any one of the four away and the ladder becomes a wall — which is
- * exactly what it was before the tower and the furnace existed, measured here as a
- * cultivator who could not cross a single mark inside four hundred days.
- */
-function play(marks: number) {
-  let s = arrived();
-  const days: number[] = [];
-  const floors: number[] = [];
-  const chances: number[] = [];
-
-  for (let m = 0; m < marks; m++) {
-    let waited = 0;
-    for (let day = 0; day < 400; day++) {
-      if (odds(s, DRAGON) > 0.55 && canCross({ ...s, wardenFell: true })) break;
-      s = { ...s, qi: s.qi + rate(s) * 86_400 };
-      waited += 1;
-
-      // The tower, while the next floor is worth trying. Losing costs nothing, so the
-      // only question is whether the build clears it.
-      for (let i = 0; i < 200; i++) {
-        const floor = standingFloor(s);
-        if (odds(s, floorBeast(floor), floorPower(floor)) < 0.6) break;
-        s = clearFloor(s, floor);
-      }
-
-      // Then the spending, in the order a person would: the capped upgrades first
-      // because they are finite, then 煉體 while the Dragon is still out of reach, and
-      // only what is left over the pool on the other two lines. Qi brewed is qi not
-      // pooled, so a cultivator who brews everything never crosses anything.
-      for (let i = 0; i < 4000; i++) {
-        const u = (['technique', 'cores', 'method', 'pills'] as const).find((x) => canBuy(s, x));
-        if (!u) break;
-        s = buy(s, u);
-      }
-      const short = odds(s, DRAGON) <= 0.55;
-      for (let i = 0; i < 4000; i++) {
-        if (short) {
-          if (!canBrew(s, 'body')) break;
-          s = brew(s, 'body');
-          continue;
-        }
-        const spare = s.qi - tribulationPool(s);
-        const line = (['bane', 'fortune'] as const)
-          .find((l) => canBrew(s, l) && pillCost(s.brewed, l).qi <= spare);
-        if (!line) break;
-        s = brew(s, line);
-      }
-    }
-    days.push(waited);
-    floors.push(s.tower);
-    chances.push(odds(s, DRAGON));
-    s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, DRAGON));
-  }
-  return { days, floors, chances, end: s };
-}
 
 describe('渡劫 the ladder above the ladder', () => {
   it('keeps the Dragon on its feet at the top, for ever', () => {

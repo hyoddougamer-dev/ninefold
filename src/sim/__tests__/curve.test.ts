@@ -4,16 +4,14 @@ import {
   MAX_GAP, TARGET_DAYS, TOLERANCE_DAYS, ladderAt, levelCap, realmCost,
 } from '../balance.ts';
 import {
-  UPGRADES, breakThrough, buy, canBreakThrough, canBuy, newState, power, upgradeCost,
+  UPGRADES, breakThrough, buy, canBreakThrough, canBuy, newState, power,
   type State, type Upgrade,
 } from '../state.ts';
-import { advance, layersOpened, rate } from '../time.ts';
+import { advance, rate } from '../time.ts';
 import { num } from '../format.ts';
-import { brew, canBrew, clearFloor, standingFloor } from '../trials.ts';
-import { floorBeast, floorPower } from '../tower.ts';
-import { odds } from '../combat.ts';
 import { pillsTaken } from '../furnace.ts';
 import { LINES } from '../../data/alchemy.ts';
+import { climb } from '../../../tools/climb.ts';
 
 /**
  * The curve is the most irreversible decision in the game, and it is where every
@@ -30,56 +28,6 @@ import { LINES } from '../../data/alchemy.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
-
-/**
- * A cultivator who opens the app `checks` times a day and buys whatever they can.
- *
- * `brews` is the second half of the question. 丹爐 the furnace is the one thing qi buys
- * that no realm caps, so a cultivator who pours everything into it is the fastest way
- * the curve could possibly be broken — and the schedule has to survive them too.
- *
- * `climbs` is separate from it on purpose. The furnace eats materials, so a brewer has
- * to climb 無盡塔 the tower, and the tower pays qi — which means a brewer measured
- * against somebody who does neither is two changes at once, and says nothing about the
- * furnace. To ask what the furnace costs, hold the tower still and change only the
- * brewing.
- */
-function climb(checks: number, spends = true, brews = false, climbs = brews) {
-  const tick = DAY / checks;
-  let s = newState(T0);
-  let t = T0;
-  const arrival = [0];
-  const buys: number[] = [];
-
-  for (let i = 0; i < checks * 400 && layersOpened(s) < LAYERS - 1; i++) {
-    t += tick;
-    s = advance(s, t, true);                 // theoretical curve: the warden falls at once
-    while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
-    if (!spends) continue;
-    // Cheapest first, for as long as anything is affordable: the way a person plays.
-    for (let guard = 0; guard < 500; guard++) {
-      const open = UPGRADES.filter((u) => u !== 'cores' && canBuy(s, u));
-      if (open.length === 0) break;
-      open.sort((a, b) => upgradeCost(s, a) - upgradeCost(s, b));
-      s = buy(s, open[0]);
-      buys.push((t - T0) / DAY);
-    }
-    // The furnace eats materials as well as qi, and materials come from the tower. A
-    // cultivator who wants to brew has to climb, so the brewer climbs.
-    if (climbs) for (let guard = 0; guard < 40; guard++) {
-      const floor = standingFloor(s);
-      if (odds(s, floorBeast(floor), floorPower(floor)) < 0.6) break;
-      s = clearFloor(s, floor);
-    }
-    if (!brews) continue;
-    for (let guard = 0; guard < 500; guard++) {
-      const line = LINES.find((l) => canBrew(s, l));
-      if (!line) break;
-      s = brew(s, line);
-    }
-  }
-  return { arrival, buys, state: s, days: (t - T0) / DAY };
-}
 
 const NAMES = ['練氣', '築基', '金丹', '元嬰', '化神', '煉虛', '合體', '大乘', '渡劫'];
 

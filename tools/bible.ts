@@ -22,20 +22,24 @@ import {
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { UPGRADES, UPGRADE_INFO, newState, upgradeCost } from '../src/sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, newState, power, upgradeCost } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TRIBULATION_CHALLENGE,
-  TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
+  TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
 import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
-import { PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost } from '../src/sim/furnace.ts';
+import {
+  PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
+} from '../src/sim/furnace.ts';
 import { daoEarned } from '../src/sim/dao.ts';
 import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
+import { climb } from './climb.ts';
+import { playEndgame } from './endgame.ts';
 import {
   KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
@@ -55,6 +59,16 @@ const REPO = 'https://github.com/hyoddougamer-dev/ninefold';
 const ACTIONS = `${REPO}/actions/workflows/apk.yml`;
 
 const FULL_RUN = daoEarned(LAYERS - 1, WARDENS.length);
+
+/**
+ * 量 The three measurements this page quotes, made here rather than typed in.
+ *
+ * Every one of these used to be a sentence somebody wrote down after reading a test, and
+ * every one of them was wrong within a week of the balance moving. They are run now.
+ */
+const CLIMBER = climb(6, true, false, true);     // climbs the tower, never brews
+const BREWER = climb(6, true, true);             // and pours everything into the furnace
+const ENDGAME = playEndgame(40);
 const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
 /**
@@ -943,9 +957,18 @@ const page = `<title>九境 Ninefold — the Bible</title>
       its power — a beast that can be reduced to nothing stops being a fight, and then the
       tower has no top. One 聚寶丹 is +${pc(PILL_FORTUNE)} on the rare end of the drop
       table.</p>
-    <p class="t">Brewing everything, all the way up, is a real choice and a real cost:
-      measured, it takes a cultivator from ${TARGET_DAYS} days to about 162, and leaves them
-      eleven times stronger at the top.</p>
+    <p class="t">Brewing everything, all the way up, is a real choice and a real cost.
+      Measured against the same cultivator climbing the same tower and brewing nothing, it
+      takes them from day ${CLIMBER.arrival[8].toFixed(1)} to day
+      ${BREWER.arrival[8].toFixed(1)} and leaves them
+      ${(power(BREWER.state) / power(CLIMBER.state)).toFixed(1)}x stronger, on
+      ${pillsTaken(BREWER.state.brewed)} pills.</p>
+    <div class="rule"><b>爐底 The furnace starts one realm behind you, not at the foot of
+      the mountain.</b> It opens at the seventh realm, and its first pill used to be priced
+      for the first: 450 qi to somebody gathering 192k qi a second. Measured, an hour after
+      it opened, tapping the buttons bought a hundred pills and 3.2x power. A system that
+      opens late starts where the player is standing — one realm back, so the first pill is
+      an hour and a half of gathering rather than fifteen hours or seven minutes.</div>
   </section>
 
   <section class="sec" id="top">
@@ -965,17 +988,29 @@ const page = `<title>九境 Ninefold — the Bible</title>
       hundred daily until the arithmetic ran out of exponent. A pool that refills is what
       makes 渡劫 a ladder rather than a lever you hold down. It also puts the furnace in
       real tension with the Dragon: qi brewed is qi not pooled.</div>
-    <p class="t">The Dragon is anchored to <b>the Dragon that fell</b>, not to the
-      cultivator. Anchoring to the cultivator quietly forgives everything the build is
-      worth — a stance and a sequence are together worth nearly twice the number on the
-      screen — so somebody who beat one Dragon beat every one after it without ever brewing
-      a thing. Anchoring to the Dragon cancels the build out of both sides, and what is left
-      is the honest question: what have you added since last time?</p>
-    <p class="t">The numbers are solved, not chosen. Three pills a crossing, a price that
-      rises ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
-      ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.
-      Measured: forty marks in 95 days, two to three days each, the tower at floor 279 and
-      522 pills brewed.</p>
+    <p class="t">The next Dragon is built from <b>the power that actually faced the last
+      one</b> — which is not 力. A stance bends every blow and three arts bend three more,
+      worth about 1.8x between them, and none of that is in the number on the screen. The
+      Dragon used to be anchored below all of it, and the build covered the gap for free:
+      measured over twenty-four crossings, the odds never once fell under 90% and 煉體, the
+      one pill a Dragon can feel, was never worth brewing. Two days, tap, win, for ever.</p>
+    <div class="rule"><b>立 Where the Dragon plants its feet.</b> ${TRIBULATION_FOOTING}x
+      the 力 it last faced — not 1.8x, because 力 is the sword and the shield at once and a
+      multiplier on blows is worth about its square root in the ratio. The band is narrow
+      and it was measured, forty crossings each: 1.20 gives 98% every time and no decision;
+      1.45 gives three days and the high sixties; 1.60 runs away to sixty-day crossings;
+      1.70 is a wall by the ninth mark.</div>
+    <p class="t">The rest is solved, not chosen. Three pills a crossing, a price that rises
+      ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
+      ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.</p>
+    <p class="t">Measured, played out crossing by crossing: <b>${ENDGAME.days.length} marks
+      in ${ENDGAME.days.reduce((a, b) => a + b, 0)} days</b>, ${Math.min(...ENDGAME.days)} to
+      ${Math.max(...ENDGAME.days)} days each, ending on tower floor ${ENDGAME.end.tower}
+      with ${pillsTaken(ENDGAME.end.brewed)} pills brewed. The margin a good run arrives
+      with buys the first crossings at
+      ${Math.round(Math.max(...ENDGAME.chances) * 100)}%; the odds then walk down and settle
+      at ${Math.round(ENDGAME.chances[ENDGAME.chances.length - 1] * 100)}%, and the furnace
+      is what holds them there.</p>
   </section>
 
   <section class="sec" id="save">
