@@ -11,7 +11,7 @@ import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
-import { brew, clearFloor, floorQi, lootTaken, standingFloor } from '../sim/trials.ts';
+import { brew, clearFloor, floorQi, lootTaken, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillFortune } from '../sim/furnace.ts';
 import { marksOf } from '../sim/record.ts';
@@ -32,6 +32,8 @@ import { RETURN } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
+import { nextNotice } from './notices.ts';
+import { NOTICE } from './copy.ts';
 import { UPDATE } from './copy.ts';
 
 const TABS = [
@@ -262,7 +264,7 @@ export function App() {
           wardenFell: beast.warden ? true : s.wardenFell,
           materials: s.materials + lootTaken(s, loot(beast)),
           killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
-          chest: kept ? [...kept] : s.chest,
+          chest: kept ? [...kept.chest] : s.chest,
         };
       });
     }
@@ -287,6 +289,17 @@ export function App() {
     });
     sfx.tap();
     haptics.tap();
+  }, []);
+
+  /** 煉器 Refining spends material on a piece you are already wearing. */
+  const onRefine = useCallback((slot: Slot) => {
+    setState((s) => {
+      const next = refine(s, slot);
+      if (next === s) return s;
+      sfx.buy();
+      haptics.strike();
+      return next;
+    });
   }, []);
 
   const onFuse = useCallback((template: string, rarity: string) => {
@@ -346,6 +359,21 @@ export function App() {
     haptics.tap();
   }, []);
 
+  /**
+   * 新 The next one-time card, if there is one.
+   *
+   * It is computed rather than fired, so a card the player earned while the app was shut
+   * is waiting when they open it — and one they have read can never come back.
+   */
+  const notice = useMemo(() => (ready && !battle ? nextNotice(state) : null), [state, ready, battle]);
+
+  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao') => {
+    setState((s) => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] }));
+    if (go) setTab(go);
+    sfx.tap();
+    haptics.tap();
+  }, []);
+
   const r = realmOf(state.realm);
   const byKey = useMemo(
     () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
@@ -368,7 +396,10 @@ export function App() {
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'gear' && (
-          <Gear state={state} pulse={pulse} onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} />
+          <Gear
+            state={state} pulse={pulse}
+            onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} onRefine={onRefine}
+          />
         )}
         {tab === 'dao' && (
           <Dao state={state} onUnlock={onUnlock} onStance={onStance} onSequence={onSequence} />
@@ -409,6 +440,17 @@ export function App() {
             <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
             <p>{realmOf(bloom).gains}</p>
           </div>
+        </div>
+      )}
+
+      {notice && (
+        <div className="notice">
+          <b className="cjk">{notice.han}</b>
+          <span>
+            <em>{notice.title}</em>
+            <i>{notice.text}</i>
+          </span>
+          <button onClick={() => readNotice(notice.key, notice.tab)}>{NOTICE.read}</button>
         </div>
       )}
 

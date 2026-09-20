@@ -334,13 +334,31 @@ export interface Item {
   readonly rarity: Rarity;
   /** The first is the template's own line; the rest are rolled by rank. */
   readonly rolls: readonly Roll[];
+  /** 煉 How many times it has been refined. Every line on it is multiplied by this. */
+  readonly refine?: number;
 }
 
-/** What this piece gives on one axis, counting every line it carries. */
+/**
+ * 煉 What a piece's lines are multiplied by, from refining.
+ *
+ * It lives here rather than in sim/refine.ts so that nothing can read a roll without it:
+ * a refined piece has to be worth more everywhere at once — the totals, the screen, the
+ * comparison that says one piece beats another — or the number the player refined stops
+ * being the number the game uses.
+ */
+export const REFINE_PER_LEVEL = 0.04;
+
+export function refinedBy(item: Item): number {
+  const n = item.refine;
+  if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) return 1;
+  return (1 + REFINE_PER_LEVEL) ** Math.floor(n);
+}
+
+/** What this piece gives on one axis, counting every line it carries, refining included. */
 export function valueOf(item: Item, affix: Affix): number {
   let total = 0;
   for (const r of item.rolls) if (r.affix === affix) total += r.value;
-  return total;
+  return total * refinedBy(item);
 }
 
 /** The line the piece is named by — what a one-line summary shows. */
@@ -410,7 +428,7 @@ export function gearTotals(
   for (const slot of SLOTS) {
     const it = worn[slot];
     if (!it) continue;
-    const mult = affinityOf(slot);
+    const mult = affinityOf(slot) * refinedBy(it);
     for (const roll of it.rolls) totals[roll.affix] += roll.value * mult;
   }
   return totals;

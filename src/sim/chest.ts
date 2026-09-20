@@ -1,5 +1,5 @@
 import {
-  RARITIES, TEMPLATE_BY_KEY, baseValue, roundValue,
+  RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { SECONDARIES } from '../data/gear.ts';
@@ -23,11 +23,48 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
   return chest.length >= limit;
 }
 
-/** Adds an item if there is room. Returns null when the chest is full — the caller decides. */
+/**
+ * 值 How good a piece is, roughly, for deciding which of two to keep.
+ *
+ * Rank, realm and refining — not the roll values, because seven axes on different scales
+ * cannot be added together into a number that means anything. This is only ever used to
+ * answer "is the thing that just dropped better than the worst thing in the chest", and
+ * for that it is right far more often than it is wrong.
+ */
+export function itemWorth(item: Item): number {
+  return RARITY_INFO[item.rarity].mult * templateOf(item).realm * refinedBy(item);
+}
+
+export interface Kept {
+  readonly chest: readonly Item[];
+  /** What fell on the floor: the worst piece, the new one, or nothing. */
+  readonly dropped: Item | null;
+}
+
+/**
+ * Puts a piece in the chest, and when there is no room keeps the better of the two.
+ *
+ * It used to refuse, which meant a full chest silently ate every drop after the fortieth
+ * — and a cultivator hunting properly fills forty slots in one visit. Losing the 天 that
+ * just fell because forty 凡 got there first is the game wasting the player's time, and
+ * the player cannot even see it happen. Now the worst piece goes instead, and the arena
+ * says which.
+ */
 export function addToChest(
   chest: readonly Item[], item: Item, limit = CHEST_LIMIT,
-): readonly Item[] | null {
-  return chestFull(chest, limit) ? null : [...chest, item];
+): Kept {
+  if (!chestFull(chest, limit)) return { chest: [...chest, item], dropped: null };
+
+  let worstAt = 0;
+  for (let i = 1; i < chest.length; i++) {
+    if (itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
+  }
+  const worst = chest[worstAt];
+  if (!worst || itemWorth(item) <= itemWorth(worst)) return { chest, dropped: item };
+
+  const next = chest.slice();
+  next[worstAt] = item;
+  return { chest: next, dropped: worst };
 }
 
 export function removeFromChest(chest: readonly Item[], id: string): readonly Item[] {

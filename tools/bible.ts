@@ -40,6 +40,10 @@ import {
   KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
 import { LEVELS } from '../src/app/sound.ts';
+import { NOTICES } from '../src/app/notices.ts';
+import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
+import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
+
 import { num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
@@ -87,6 +91,8 @@ const SYSTEMS: readonly System[] = [
     line: `Nine stances, nine arts, ${SEQUENCE_SLOTS} slots in the sequence. The order matters.` },
   { han: '器', name: 'Gear and the nine sets', status: 'done', at: 'gear',
     line: `${GEAR.length} pieces, ${RARITIES.length} ranks, ${AFFIXES.length} axes, and a named lineage for every realm.` },
+  { han: '煉器', name: 'Refining', status: 'done', at: 'refine',
+    line: 'Material makes a worn piece better, for ever, with no top level. It is the only thing 材 could not buy before, and 材 was eight times over-supplied.' },
   { han: '道', name: 'The technique tree', status: 'done', at: 'tree',
     line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道 against about ${FULL_RUN} a run. Nobody finishes it.` },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
@@ -109,8 +115,8 @@ const SYSTEMS: readonly System[] = [
   { han: '音', name: 'Sound', status: 'done',
     line: `${LEVELS.length} volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.` },
 
-  { han: '引', name: 'Teaching the rest', status: 'open',
-    line: 'The wall is explained now. The cap, the tower and the furnace still arrive with no introduction beyond the help screen.' },
+  { han: '新', name: 'Teaching each system', status: 'done', at: 'refine',
+    line: `${NOTICES.length} cards that arrive once, when the thing they explain first becomes true, and never block the game.` },
   { han: '煉器', name: 'Refining worn gear', status: 'planned',
     line: 'Spending qi and material to lift a piece you already wear, so a good drop keeps growing with you.' },
   { han: '轉世', name: 'Rebirth', status: 'planned',
@@ -151,6 +157,18 @@ const habitRows = RUNS.map((r) => {
 }).join('');
 
 const ceiling = recordCeiling();
+
+const refineRows = [0, 5, 10, 15, 20, 25, 30].map((n) => `<tr>
+    <td><b class="cjk">煉 ${n}</b></td>
+    <td class="n">${num(refineCost(n))}</td>
+    <td class="n">${num(refineSpent(n))}</td>
+    <td class="n">×${refineFactor(n).toFixed(2)}</td>
+  </tr>`).join('');
+
+const noticeRows = NOTICES.map((n) => `
+  <div class="row">
+    <span class="body"><b class="cjk">${n.han}</b> <em>${n.title}</em><i>${n.text}</i></span>
+  </div>`).join('');
 
 const markRows = MARK_INFO.map((m, i) => `
   <div class="row">
@@ -490,6 +508,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#combat"><b>戰</b> Combat</a>
       <a href="#build"><b>勢</b> The build</a>
       <a href="#gear"><b>器</b> Gear</a>
+      <a href="#refine"><b>煉器</b> Refining</a>
       <a href="#tree"><b>道</b> The tree</a>
       <a href="#tower"><b>塔</b> The tower</a>
       <a href="#furnace"><b>爐</b> The furnace</a>
@@ -754,7 +773,8 @@ const page = `<title>九境 Ninefold — the Bible</title>
       the nine realms. ${RARITIES.length} ranks, ${AFFIXES.length} axes, ${SLOTS.length}
       slots, and a chest of ${CHEST_LIMIT} before anything widens it. Gear always grants a
       <b>percentage</b>, never a flat amount, so a good weapon found at the third realm is
-      still a good weapon at the ninth.</p>
+      still a good weapon at the ninth — and with 煉器 <a href="#refine">refining</a> it can
+      go on growing rather than being replaced and forgotten.</p>
     <h3>The five ranks</h3>
     <div class="pills">${RARITIES.map((r) => `<span class="pill">
       <b class="cjk" style="color:${RARITY_INFO[r].colour}">${RARITY_INFO[r].han}</b>
@@ -772,6 +792,42 @@ const page = `<title>九境 Ninefold — the Bible</title>
       and 仙蛻劍 is an Ascendant Sword. Nothing is typed out — a new shape adds nine pieces
       and a tenth realm would add ${ARCHETYPES.length}, without a line of naming.</p>
     <div class="cards">${itemNames}</div>
+  </section>
+
+  <section class="sec" id="refine">
+    <h2><span class="h">煉器</span> Refining, and what 材 is actually for</h2>
+    <p class="t">材 Material was <b>eight times over-supplied</b>, measured. Everything it
+      could ever buy — all ${levelCap(9)} 妖丹 cores — costs 93.6M, and 無盡塔 the tower
+      alone pays 803M over its first ninety floors before a single beast is hunted. A
+      cultivator playing normally finished the climb sitting on three billion of it with
+      nothing to spend it on; one who tapped 狩 Hunt hard finished on two hundred and
+      eighty billion. Material stopped meaning anything the moment the cores were full.</p>
+    <p class="t">So a piece you wear can be <b>refined</b>, with material, for ever. Every
+      level adds ${(REFINE_GAIN * 100).toFixed(0)}% to every line on that piece, and there
+      is no top level — the price is the only ceiling. It rides the tower's own pay curve,
+      ${REFINE_DEPTH} floors to a level, so it is meaningful at the first realm and still
+      meaningful at the ninth.</p>
+    <table>
+      <tr><th>level</th><th style="text-align:right">next costs</th>
+          <th style="text-align:right">all of it so far</th>
+          <th style="text-align:right">its lines</th></tr>
+      ${refineRows}
+    </table>
+    <p class="t">A run's material roughly <b>doubles</b> what your gear is worth, and a run
+      spent farming gets a little further up the same curve rather than somewhere else
+      entirely. <b>The levels stay on the piece</b>, which is the decision: material poured
+      into one sword is not in the next sword.</p>
+    <div class="rule"><b>And the chest stopped eating drops.</b> ${CHEST} slots, and a full
+      one used to refuse everything that fell after the last — which a cultivator hunting
+      properly manages inside one visit. Losing the 天 that just dropped because forty 凡
+      got there first is the game wasting the player's time where they cannot even see it.
+      Now the worst piece goes instead, and the arena says which.</div>
+
+    <h3>新 And every system introduces itself, once</h3>
+    <p class="t">示 the advice line answers <em>why am I stuck</em>. These answer the other
+      half — <em>what is this thing that just appeared</em>. Each one fires when the thing
+      it describes first becomes true, fires once ever, and never blocks the game.</p>
+    <div class="rows">${noticeRows}</div>
   </section>
 
   <section class="sec" id="tree">

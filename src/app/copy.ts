@@ -140,6 +140,18 @@ export const GEAR = {
   drops: (realm: number) => `Beasts here drop gear up to realm ${realm}.`,
   better: 'Worth more than what you are wearing',
   sets: 'Wear pieces of one realm together and the set pays you extra.',
+
+  /**
+   * 煉器 Refining. It has to say three things: what it costs, that it has no top, and
+   * that the levels belong to the piece rather than to you — because choosing which
+   * piece to pour a run's material into is the decision, and a decision you did not
+   * know you were making is not one.
+   */
+  refineHead: '煉器 Refine',
+  refine: 'Material makes a piece you already wear better, and there is no top level. '
+    + 'The levels stay on the piece, so pick the one you mean to keep.',
+  refineAt: (level: number, pct: number) =>
+    (level === 0 ? 'not refined yet' : `煉 ${level} · every line on it +${pct}%`),
   setNeed: (n: number) => `${n} more ${n === 1 ? 'piece' : 'pieces'} of this realm`,
 };
 
@@ -153,6 +165,53 @@ export const DAO = {
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
   costs: (n: number) => `costs ${n} 道`,
+};
+
+/**
+ * 新 The one-time cards. Each one says what the thing is and what to do with it, in two
+ * sentences, in the words the screen uses. None of them explains why it was designed so.
+ *
+ * The titles carry no 漢字: the card draws the character in its own column, and a title
+ * that repeats it reads as a stutter — which is exactly how it read in the screenshot
+ * that caught it.
+ */
+export const NOTICE = {
+  cap: {
+    title: 'A realm only holds so much',
+    text: 'Six levels of each upgrade, and this realm is full of one of them. The only way '
+      + 'to hold more is to climb, so a full box is not a wall. It is the next realm calling.',
+  },
+  cores: {
+    title: 'Cores come from beasts',
+    text: 'Qi buys three of the four upgrades. The fourth costs 材 material, and material '
+      + 'only falls off things you kill. From the third realm a warden will not fall without it.',
+  },
+  tower: {
+    title: 'The tower is open',
+    text: 'One floor, one beast, and no top. A floor is yours for good once it falls, and it '
+      + 'pays six hours of your own gathering as well as material. Losing costs nothing.',
+  },
+  furnace: {
+    title: 'The furnace will sell you a pill',
+    text: 'Pills cost qi and 材 material together, and nothing here has a cap. No pill makes '
+      + 'qi come faster, which is why the climb still takes three months.',
+  },
+  refine: {
+    title: 'You can refine what you wear',
+    text: 'Material makes a piece you already wear better, for ever, with no top level. The '
+      + 'levels stay on the piece, so pick the one you mean to keep.',
+  },
+  record: {
+    title: 'The record is filling in',
+    text: 'Ten kills of one beast is a 熟 mark, and every mark gives you more material from '
+      + 'everything. A hundred gives you power. Old beasts are worth killing again.',
+  },
+  pool: {
+    title: 'The pool, and the Dragon',
+    text: 'There is no layer left to open, so the bar is now the thunder pool: two days of '
+      + 'your own gathering. Fill it and the Dragon comes. Crossing empties it again.',
+  },
+  read: 'Got it',
 };
 
 export const UPDATE = {

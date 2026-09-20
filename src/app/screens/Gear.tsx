@@ -3,6 +3,9 @@ import {
   activeSets, primaryOf, templateOf, wornRarity, wornTotals, type Affix, type Item, type Slot,
 } from '../../data/gear.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
+import { canRefine, refinePrice } from '../../sim/trials.ts';
+import { REFINE_GAIN, REFINE_LIMIT, clampRefine } from '../../sim/refine.ts';
+import { num } from '../../sim/format.ts';
 import { affinity } from '../../sim/dao.ts';
 import type { State } from '../../sim/state.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -21,12 +24,14 @@ import { GEAR } from '../copy.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
+export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
   state: State;
   pulse: number;
   onEquip: (item: Item) => void;
   onUnequip: (slot: Slot) => void;
   onFuse: (template: string, rarity: string) => void;
+  /** 煉器 Refining the piece in a slot. Paid in 材 material and never in qi. */
+  onRefine: (slot: Slot) => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   const sets = activeSets(state.worn);
@@ -98,6 +103,46 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse }: {
           Your best piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
             {RARITY_INFO[best].han}</span>. That is the rim you are wearing.
         </p>
+      )}
+
+      {/* 煉器 Where material goes. Everything else it buys is capped; this is not. */}
+      {SLOTS.some((slot) => state.worn[slot]) && (
+        <>
+          <div className="row" style={{ marginTop: 18 }}>
+            <h2 className="heading" style={{ margin: 0 }}>{GEAR.refineHead}</h2>
+            <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+          </div>
+          <p className="faint" style={{ fontSize: 12.5, margin: '4px 0 8px' }}>{GEAR.refine}</p>
+          <div className="stack">
+            {SLOTS.filter((slot) => state.worn[slot]).map((slot) => {
+              const item = state.worn[slot]!;
+              const level = clampRefine(item.refine);
+              const price = refinePrice(state, slot) ?? 0;
+              const maxed = level >= REFINE_LIMIT;
+              return (
+                <button
+                  key={slot}
+                  className="refine"
+                  disabled={maxed || !canRefine(state, slot)}
+                  onClick={() => onRefine(slot)}
+                >
+                  <span className="tile"><Svg html={gearTile(item, { size: 40, slot })} /></span>
+                  <span className="rname">
+                    <b className="cjk" style={{ color: RARITY_INFO[item.rarity].colour }}>
+                      {templateOf(item).han}
+                    </b>
+                    <i>{templateOf(item).name}</i>
+                    <em>{GEAR.refineAt(level, Math.round(((1 + REFINE_GAIN) ** level - 1) * 100))}</em>
+                  </span>
+                  <span className="price">
+                    <b>{maxed ? '滿' : `+${num(price)}`}</b>
+                    <i className="tag">{maxed ? '' : '材'}</i>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* 系 What lineage you are wearing. A set is the realm, so any shape of it counts. */}

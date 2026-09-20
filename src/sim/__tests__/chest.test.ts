@@ -4,7 +4,9 @@ import {
   ARCHETYPES, GEAR, RARITIES, RARITY_INFO, SLOTS, TEMPLATE_BY_KEY, archetypesOf,
   baseValue, setBonus, type Item, type Rarity,
 } from '../../data/gear.ts';
-import { CHEST_LIMIT, FUSE_COUNT, addToChest, equip, fusable, fuse, unequip } from '../chest.ts';
+import {
+  CHEST_LIMIT, FUSE_COUNT, addToChest, equip, fusable, fuse, itemWorth, unequip,
+} from '../chest.ts';
 import { rollDrop } from '../drops.ts';
 import { newState, power, validate } from '../state.ts';
 
@@ -53,10 +55,38 @@ describe('器 the table', () => {
 });
 
 describe('藏 the chest', () => {
-  it('refuses a drop once it is full, rather than silently eating it', () => {
+  it('keeps the better piece once it is full, rather than eating the new one', () => {
     const chest = Array.from({ length: CHEST_LIMIT }, (_, i) => mk('sword1', 'common', i));
-    expect(addToChest(chest, mk('crescent5', 'spirit', 99))).toBeNull();
-    expect(addToChest(chest.slice(1), mk('crescent5', 'spirit', 99))).toHaveLength(CHEST_LIMIT);
+    expect(chest).toHaveLength(CHEST_LIMIT);
+
+    // A full chest used to refuse, which meant a cultivator hunting properly lost every
+    // drop after the fortieth without ever seeing it happen.
+    const better = mk('crescent5', 'spirit', 99);
+    const kept = addToChest(chest, better);
+    expect(kept.chest).toHaveLength(CHEST_LIMIT);
+    expect(kept.chest.some((x) => x.id === better.id)).toBe(true);
+    expect(kept.dropped?.id).toMatch(/^sword1-common-/);
+    expect(itemWorth(better)).toBeGreaterThan(itemWorth(kept.dropped!));
+
+    // And the worse piece is the one that falls, even when it is the one that just did.
+    const worse = mk('sword1', 'common', 98);
+    const refused = addToChest(kept.chest, worse);
+    expect(refused.chest).toBe(kept.chest);
+    expect(refused.dropped?.id).toBe(worse.id);
+
+    // With room, nothing is dropped at all.
+    const roomy = addToChest(chest.slice(1), better);
+    expect(roomy.chest).toHaveLength(CHEST_LIMIT);
+    expect(roomy.dropped).toBeNull();
+  });
+
+  it('weighs a piece by rank, realm and refining, and by nothing else', () => {
+    // Seven axes on different scales cannot be added into a number that means anything,
+    // so worth is the three things that are comparable across every piece in the game.
+    expect(itemWorth(mk('sword9', 'heaven', 0))).toBeGreaterThan(itemWorth(mk('sword9', 'earth', 0)));
+    expect(itemWorth(mk('sword9', 'common', 0))).toBeGreaterThan(itemWorth(mk('sword1', 'common', 0)));
+    const plain = mk('sword5', 'mystic', 0);
+    expect(itemWorth({ ...plain, refine: 8 })).toBeGreaterThan(itemWorth(plain));
   });
 
   it('equipping swaps, so it can never overflow a full chest', () => {
@@ -191,8 +221,7 @@ describe('落 what the beasts actually give', () => {
       const beast = i % 40 === 0 ? wardenOf(5) : commonsOf(5)[i % 3];
       const drop = rollDrop(beast, 5, i);
       if (!drop) continue;
-      const next = addToChest(chest, drop);
-      if (next) chest = next;
+      chest = addToChest(chest, drop).chest;
     }
     expect(chest.length).toBe(CHEST_LIMIT);
     for (const it of chest) expect(TEMPLATE_BY_KEY[it.template]).toBeDefined();

@@ -13,6 +13,7 @@ import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnl
 import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
 import { recordPower } from './record.ts';
+import { clampRefine } from './refine.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -93,6 +94,8 @@ export interface State {
   tower: number;
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
+  /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
+  seen: string[];
 }
 
 /** What the marks already taken are worth. They multiply, to power and to qi alike. */
@@ -208,6 +211,7 @@ export function newState(now: number): State {
     tribulationAt: 0,
     tower: 0,
     brewed: { ...NO_PILLS },
+    seen: [],
   };
 }
 
@@ -350,7 +354,12 @@ export function validate(raw: unknown, now: number): State {
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, 120) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
-    return { id, template: tpl.key, rarity, rolls };
+    // 煉 Refining is levels on the piece, paid for in material. It is capped here at a
+    // number nothing reachable comes near, so a hand-edited save cannot claim a sword
+    // worth fifty thousand of itself.
+    const refine = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
+    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine }
+      : { id, template: tpl.key, rarity, rolls };
   };
 
   const used = new Set<string>();
@@ -402,5 +411,11 @@ export function validate(raw: unknown, now: number): State {
     // claiming floor nine thousand is claiming nine thousand fights that never happened.
     tower: clamp(Math.floor(num(o.tower, 0)), 0, 3000),
     brewed: validBrewed(o.brewed),
+    // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
+    // is skip a card that explains the game. It is bounded so it cannot grow a save.
+    seen: (Array.isArray(o.seen) ? o.seen : [])
+      .filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 32)
+      .filter((x, i, all) => all.indexOf(x) === i)
+      .slice(0, 32),
   };
 }

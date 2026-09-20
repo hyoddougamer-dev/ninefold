@@ -4,13 +4,16 @@ import { floorLoot, lootBonus, nextFloor } from './tower.ts';
 import { TOWER_QI_HOURS } from './balance.ts';
 import { recordMaterial } from './record.ts';
 import { rate, type State } from './state.ts';
+import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
+import type { Slot } from '../data/gear.ts';
 
 /**
- * 塔 and 爐 — the two halves of the loop that has no ceiling.
+ * 塔, 爐 and 煉器 — everything that has no ceiling.
  *
- * The curves live in `tower.ts` and `furnace.ts` and know nothing about a save. This is
- * where they touch the state: climbing a floor, and brewing a pill. Both are pure, both
- * refuse rather than half-apply, and neither can ever raise the qi rate.
+ * The curves live in `tower.ts`, `furnace.ts` and `refine.ts` and know nothing about a
+ * save. This is where they touch the state: climbing a floor, brewing a pill, refining a
+ * worn piece. All three are pure, all three refuse rather than half-apply, and none of
+ * them can ever raise the qi rate.
  */
 
 /** The floor waiting to be tried. Exactly one, always, and losing costs nothing. */
@@ -59,6 +62,35 @@ export function brew(s: State, line: Line): State {
     qi: s.qi - cost.qi,
     materials: s.materials - cost.materials,
     brewed: { ...s.brewed, [line]: s.brewed[line] + 1 },
+  };
+}
+
+/**
+ * 煉器 What refining the piece in a slot would cost, and whether it can be paid.
+ *
+ * Material only. Qi buys the mountain and the furnace; material buys the body of your
+ * gear, and until this existed material stopped meaning anything the moment the cores
+ * were full — measured, eight times more of it than the game had any use for.
+ */
+export function refinePrice(s: State, slot: Slot): number | null {
+  const item = s.worn[slot];
+  return item ? refineCost(clampRefine(item.refine)) : null;
+}
+
+export function canRefine(s: State, slot: Slot): boolean {
+  const price = refinePrice(s, slot);
+  return price !== null && s.materials >= price;
+}
+
+export function refine(s: State, slot: Slot): State {
+  const item = s.worn[slot];
+  const price = refinePrice(s, slot);
+  if (!item || price === null || s.materials < price) return s;
+  if (clampRefine(item.refine) >= REFINE_LIMIT) return s;
+  return {
+    ...s,
+    materials: s.materials - price,
+    worn: { ...s.worn, [slot]: { ...item, refine: clampRefine(item.refine) + 1 } },
   };
 }
 
