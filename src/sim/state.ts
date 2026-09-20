@@ -2,7 +2,7 @@ import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
-  ladderAt, ladderBetween, levelCap,
+  ladderAt, ladderBetween, levelCap, OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
@@ -194,7 +194,8 @@ export function crossTribulation(s: State, dragonPower: number): State {
 export function newState(now: number): State {
   return {
     v: 1, at: now, startedAt: now,
-    realm: 1, layer: 0, qi: 0, materials: 0, wardenFell: false,
+    // 囊 The purse the first minute is bought with. See OPENING_PURSE.
+    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
     worn: {},

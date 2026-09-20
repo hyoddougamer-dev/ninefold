@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS, LAYERS_PER_REALM, LEVELS_PER_REALM,
-  MAX_GAP, TARGET_DAYS, TOLERANCE_DAYS, ladderAt, levelCap, realmCost,
+  MAX_GAP, OPENING_PURSE, TARGET_DAYS, TOLERANCE_DAYS, focusAt, ladderAt, levelCap,
+  realmCost,
 } from '../balance.ts';
 import {
   UPGRADES, breakThrough, buy, canBreakThrough, canBuy, newState, power,
@@ -176,6 +177,61 @@ describe('the climb, for a cultivator who spends', () => {
  * Without it the rate upgrades pay for the rate upgrades and the climb collapses. The
  * test below is the measurement that found it, kept so it can never come back.
  */
+/**
+ * 囊 The first minute, which is the only one a player has not yet decided to give you.
+ *
+ * Played from a clean save on a phone, the opening was three minutes and forty-five
+ * seconds of nothing: 1 qi a second, the cheapest box at 491, and the words SPEND YOUR
+ * QI standing over three buttons that could not be pressed. This pins the fix — that a
+ * cultivator starts holding a purse, and that the purse is small enough for the ladder
+ * to leave alone.
+ */
+describe('囊 the opening', () => {
+  /** Sit with the game open, and say when the first thing happens. */
+  const sit = (s: State, until: (x: State) => boolean) => {
+    if (until(s)) return 0;
+    let now = s.at;
+    for (let t = 1; t <= 4000; t++) {
+      now = s.at + 1;
+      s = advance(s, now, false, focusAt(t));
+      if (until(s)) return t;
+    }
+    return Infinity;
+  };
+
+  it('asks the player a question in its first frame', () => {
+    const fresh = newState(T0);
+    expect(fresh.qi).toBe(OPENING_PURSE);
+
+    // Something is already pressable at second zero, and it is a choice, not a single
+    // lit button: two of the three boxes are affordable and the third is not.
+    const lit = UPGRADES.filter((u) => canBuy(fresh, u));
+    expect(lit.length).toBeGreaterThanOrEqual(2);
+    expect(lit.length).toBeLessThan(UPGRADES.length);
+    expect(sit(fresh, (s) => UPGRADES.some((u) => canBuy(s, u)))).toBe(0);
+  });
+
+  it('leaves the purse where the ladder cannot swallow it', () => {
+    // At or above the first rung the ladder would take it on the first tick, and the
+    // player would watch a layer open by itself instead of choosing.
+    expect(OPENING_PURSE).toBeLessThan(ladderAt(0));
+    expect(advance(newState(T0), T0 + 1, false, 3).layer).toBe(0);
+
+    // And it is nothing: one part in tens of billions of what the ninth realm costs.
+    expect(OPENING_PURSE / realmCost(9)).toBeLessThan(1e-9);
+  });
+
+  it('moves the first event of the game from six minutes to about one', () => {
+    const opened = (s: State) => s.layer > 0;
+    const bare = sit({ ...newState(T0), qi: 0 }, opened);
+    const purse = sit(newState(T0), opened);
+    console.log(`\n  囊 the opening: first press 3m44s → 0m00s · ` +
+      `first layer ${(bare / 60).toFixed(1)} min → ${(purse / 60).toFixed(1)} min\n`);
+    expect(bare).toBeGreaterThan(5 * 60);
+    expect(purse).toBeLessThan(2 * 60);
+  });
+});
+
 describe('the cap on what a realm may hold', () => {
   it('allows six levels of each per realm and not one more', () => {
     const s = { ...newState(T0), realm: 3, qi: 1e30, materials: 1e30 };

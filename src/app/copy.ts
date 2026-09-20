@@ -28,7 +28,7 @@ export const HELP = {
     ['Sitting with it open gathers faster',
       'Up to three times as fast after a few minutes. Closing the app never costs you anything.'],
     ['Spend it on the upgrades',
-      'Three to start with. They make qi come faster and make you stronger, and you never lose a level you bought.'],
+      'Three to start with. They make qi come faster and make you stronger, and you never lose a level you bought. Qi you spend is qi that did not open a layer — that is the trade, all the way up.'],
     ['A realm only holds six levels of each',
       'When they are full, the only way to hold more is to climb. That is what a realm is for.'],
     ['Fill the bar, then fight the warden',
@@ -38,7 +38,7 @@ export const HELP = {
   ] as const,
   opens: 'Every realm opens something new: hunting and gear at the second, 妖丹 cores at the third, the tree at the fourth, the tower at the fifth, and so on to the ninth. The locked tabs say which realm opens them.',
   hunt: '狩 Hunt opens at the second realm. Beasts drop 材 material, and material buys 妖丹 cores. From the third realm a warden will not fall without them.',
-  slow: 'The first hour is slow. Realm 1 gathers 1 qi a second. Buy 吐納 breathwork and 功法 method as soon as you can afford them.',
+  slow: '囊 You begin holding what your master left you — enough for a first upgrade, and very nearly enough to open the first layer by itself. Spend it or let it carry you up: that trade is the whole game, and it is the first thing it asks you.',
   begin: 'Begin',
 };
 

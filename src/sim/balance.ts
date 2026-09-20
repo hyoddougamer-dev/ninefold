@@ -29,6 +29,32 @@ export const LAYER_BONUS = 1.02;
  *
  * A layer that costs more than the one below it is what spreads a realm out.
  */
+/**
+ * 囊 What your master left you.
+ *
+ * Measured by playing it: a new cultivator gathers 1 qi a second and the cheapest thing
+ * on the screen costs 491, so for the first three minutes and forty-five seconds the
+ * game says SPEND YOUR QI over three boxes that cannot be pressed. That is not a slow
+ * opening, it is an opening with no decision in it, and an idle game's first minute is
+ * the only one a player has not yet decided to give you.
+ *
+ * So the cultivator begins holding something. Not a head start — 800 qi is nothing
+ * against a climb measured in quintillions, and it is gone by the first hour. What it
+ * buys is the *question*, at second zero: the two cheaper upgrades are already lit, and
+ * the bar is already nine tenths of the way up the first rung.
+ *
+ * That is the whole game in its first frame. Qi spent is qi that did not open a layer,
+ * and qi banked is an upgrade not bought — the same trade the furnace and the thunder
+ * pool ask about eighty rungs later. It is better met in the first minute, for 800 qi,
+ * than in the ninth realm for a fortnight of gathering.
+ *
+ * It sits **below** LADDER_FIRST on purpose. A purse at or above the first rung would be
+ * swallowed by the ladder on the first tick — the player would open the app, watch a
+ * layer open by itself, and never see the choice. Below it, nothing moves until they
+ * move it.
+ */
+export const OPENING_PURSE = 800;
+
 export const LADDER_FIRST = 900;
 /** How much dearer each layer is than the last, at the foot of the mountain… */
 export const LADDER_GROWTH_FIRST = 1.4660;

@@ -77,7 +77,9 @@ describe('勤 what being there buys you', () => {
     expect(focusAt(FOCUS_HOLD)).toBe(1);
     expect(focusAt(FOCUS_HOLD * 100)).toBe(1);
 
-    const s: State = { ...newState(T0), realm: 4, layer: 3 };
+    // 囊 Starting qi is set to zero here on purpose: what is being measured is what the
+    // *hour* pays, and the opening purse would sit on both sides of the ratio.
+    const s: State = { ...newState(T0), realm: 4, layer: 3, qi: 0 };
     const away = advance(s, T0 + 3600);
     const there = advance(s, T0 + 3600, false, FOCUS_MAX);
     const absurd = advance(s, T0 + 3600, false, -5);

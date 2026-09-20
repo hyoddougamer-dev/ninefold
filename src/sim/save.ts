@@ -1,4 +1,5 @@
 import { newState, validate, type State } from './state.ts';
+import { OPENING_PURSE } from './balance.ts';
 import { advance } from './time.ts';
 
 const KEY = 'ninefold.save.v1';
@@ -113,6 +114,26 @@ export interface Imported {
   readonly error: string | null;
 }
 
+/**
+ * 空 A cultivator who has not begun.
+ *
+ * This guards the paste box: if a mispaste validated into a fresh cultivator it would
+ * silently wipe a real save, so a save that has done nothing is refused rather than
+ * loaded. It cannot be "qi is zero" any more — 囊 the opening purse means a cultivator
+ * starts holding something — so it asks the honest question instead: has this save
+ * *done* anything at all? Bought a level, killed a beast, climbed a rung, worn a piece.
+ */
+function untouched(s: State): boolean {
+  return s.realm === 1 && s.layer === 0
+    && s.qi <= OPENING_PURSE
+    && s.tower === 0 && s.tribulation === 0
+    && Object.values(s.levels).every((n) => n === 0)
+    && Object.keys(s.killed).length === 0
+    && Object.keys(s.worn).length === 0
+    && s.chest.length === 0
+    && s.unlocked.length === 0;
+}
+
 export function importSave(text: string, now: number): Imported {
   let parsed: unknown;
   try {
@@ -126,7 +147,7 @@ export function importSave(text: string, now: number): Imported {
   if (!body) return { state: null, error: 'That is a file, but not a Ninefold save.' };
 
   const state = validate(body, now);
-  if (state.realm === 1 && state.layer === 0 && state.qi === 0) {
+  if (untouched(state)) {
     return { state: null, error: 'That save is empty. Nothing was changed.' };
   }
   return { state, error: null };

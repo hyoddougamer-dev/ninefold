@@ -29,7 +29,7 @@ import {
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
   UNCAPPED_RATE_CEILING,
   TRIBULATION_CHALLENGE,
-  TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost,
+  TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
 import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
@@ -754,6 +754,18 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <p class="t">材 <b>Material</b> is the other currency and it cannot be waited for. It
       comes from killing things: a tower floor pays it once, a beast pays
       ${pc(HUNT_SHARE)} of that every time it dies.</p>
+    <div class="rule"><b>囊 And the first minute was bought for ${num(OPENING_PURSE)} qi.</b>
+      Played from a clean save, the opening was <b>three minutes and forty-five seconds</b>
+      of nothing: 1 qi a second, the cheapest box on the screen at
+      ${num(upgradeCost(newState(0), 'pills'))}, and the words SPEND YOUR QI standing over
+      three buttons that could not be pressed. Not a slow opening — an opening with no
+      decision in it. So a cultivator now begins holding ${num(OPENING_PURSE)} qi, which is
+      nothing against a climb measured in quintillions and gone inside the first hour. It
+      sits just under the first rung at ${num(ladderAt(0))} on purpose: at or above it the
+      ladder would swallow the purse on the first tick and the player would watch a layer
+      open by itself instead of choosing. Below it, the bar starts nine tenths full and the
+      game's first question is the same one it asks in the ninth realm — <em>spend it, or
+      let it carry you up?</em></div>
   </section>
 
   <section class="sec" id="realms">
