@@ -1,4 +1,4 @@
-import { UPGRADES, UPGRADE_INFO, power, type State } from '../sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, atCeiling, power, type State } from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
 import { commonsOf, wardenOf } from '../data/bestiary.ts';
 import { beastPower } from '../sim/combat.ts';
@@ -88,9 +88,25 @@ export const STEPS: readonly Step[] = [
   },
 ];
 
-/** Which step the player is on, and how far along — or nothing, once they are past it. */
+/**
+ * Which step the player is on, and how far along — or nothing, once they are past it.
+ *
+ * 急 With one exception, and it was found by playing: a cultivator who filled the realm
+ * while the guide was still on the fourth step sat at nine layers of nine with a warden
+ * in front of them, a quarter of a million qi banked, and one line on the screen telling
+ * them to go and kill ten more rats. It held them there for nineteen hours.
+ *
+ * A guide that can hold a player back is worse than no guide. So when the realm is full
+ * and the warden is still standing, that is the step — whatever number it is. Nothing is
+ * skipped: the steps behind it are not marked done, and if the warden wins the guide
+ * goes straight back to where it was.
+ */
 export function guide(s: State): { step: Step; n: number; of: number } | null {
   const i = STEPS.findIndex((x) => !x.done(s));
   if (i < 0) return null;
+  const last = STEPS.length - 1;
+  if (atCeiling(s) && !s.wardenFell && !STEPS[last].done(s)) {
+    return { step: STEPS[last], n: last + 1, of: STEPS.length };
+  }
   return { step: STEPS[i], n: i + 1, of: STEPS.length };
 }

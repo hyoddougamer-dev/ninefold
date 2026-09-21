@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEPS, guide } from '../guide.ts';
 import { buy, newState, type State } from '../../sim/state.ts';
 import { MARKS } from '../../sim/record.ts';
+import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { icon } from '../../art/icon.ts';
 
 /**
@@ -65,6 +66,29 @@ describe('引 the first session, one step at a time', () => {
     expect(order).toEqual(STEPS.map((x) => x.key));
     // And once the last one is done it is gone, and 示 the advice line takes over.
     expect(guide(s)).toBeNull();
+  });
+
+  /**
+   * 急 The bug this exists to stop, found by playing the first realm end to end: the
+   * guide sat on "kill the same beast ten times" while the cultivator stood at nine
+   * layers of nine with a warden in front of them and a quarter of a million qi banked.
+   * It held them there for nineteen hours of game time.
+   */
+  it('points at the warden the moment the realm is full, whatever step it was on', () => {
+    const full: State = {
+      ...newState(T0), layer: LAYERS_PER_REALM - 1, qi: 1e9,
+      levels: { technique: 1, method: 0, pills: 0, cores: 1 },
+      killed: { rat: 1 },
+    };
+    // Without the exception this is the fourth step, because ten kills are not in yet.
+    expect(STEPS.findIndex((x) => !x.done(full))).toBe(3);
+    const g = guide(full);
+    expect(g!.step.key).toBe('climb');
+    expect(g!.n).toBe(STEPS.length);
+
+    // And nothing is skipped: put the warden down without climbing and it goes back.
+    const beaten = { ...full, wardenFell: true };
+    expect(guide(beaten)!.step.key).toBe('mark');
   });
 
   it('is not there at all for a save that is already past it', () => {
