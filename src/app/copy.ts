@@ -20,27 +20,40 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
+/**
+ * 引 How to play — and now, only the part that cannot be shown.
+ *
+ * It used to be seven steps and three paragraphs, and it was written when the first
+ * screen was the only teacher there was. It is not any more: 引 the guide walks a new
+ * cultivator through buying, killing, spending what the kill paid, earning a mark and
+ * breaking through, one step at a time, each one finished by doing it.
+ *
+ * So this keeps four facts and hands the rest over. Every one of the four is a *promise
+ * about the game* rather than an instruction — things a player cannot find out by
+ * pressing anything, and would otherwise have to discover by being burned:
+ *
+ *   that leaving does not cost them, which is the whole contract of an idle game;
+ *   that staying is worth something, which is the other half of it;
+ *   that losing a fight is free, or they will never take one;
+ *   and where to look up a character, because that is the complaint this answers.
+ *
+ * Anything a first step can teach, a first step teaches.
+ */
 export const HELP = {
   title: '引 How to play',
   steps: [
-    ['Qi gathers on its own',
-      'It keeps going with the phone closed. Come back tomorrow and it is waiting for you.'],
+    ['Qi gathers whether you are here or not',
+      'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes. Closing the app never costs you anything.'],
-    ['Spend it on the upgrades',
-      'Three to start with. They make qi come faster and make you stronger, and you never lose a level you bought. Qi you spend is qi that did not open a layer — that is the trade, all the way up.'],
-    ['A realm only holds six levels of each',
-      'When they are full, the only way to hold more is to climb. That is what a realm is for.'],
-    ['Go and fight something',
-      'Three beasts in 狩 Hunt from the first minute. They are too strong at first and the odds say so; come back when you are not. Losing costs nothing, ever.'],
-    ['Fill the bar, then fight the warden',
-      'One beast guards each realm. Tap 戰 and watch. If you lose, you lose nothing.'],
-    ['突破 Break through',
-      'You move up a realm and the light around you changes.'],
+      'Up to three times as fast after a few minutes, for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
+    ['Losing a fight costs nothing',
+      'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
+    ['釋 says what every character means',
+      'The button beside this one. Every symbol the game uses, in English, on one page — the upgrades, the marks, the ranks, the axes, the systems.'],
   ] as const,
-  opens: 'Every realm opens something new: gear and the build at the second, 妖丹 cores at the third, the tree at the fourth, the tower at the fifth, and so on to the ninth. The locked tabs say which realm opens them.',
-  hunt: '狩 Hunt is open from the start, and the first three beasts will beat you for the first couple of hours — the odds are on the button, so you can see them coming. Losing costs nothing. They drop 材 material, and material buys 妖丹 cores, which a warden will not fall without from the third realm.',
-  slow: '囊 You begin holding what your master left you — enough for a first upgrade, and very nearly enough to open the first layer by itself. Spend it or let it carry you up: that trade is the whole game, and it is the first thing it asks you.',
+  opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
+  hunt: '',
+  slow: '囊 You begin holding what your master left you. Spend it or let it carry you up the first layer: that trade is the whole game, and it is the first thing it asks you.',
   begin: 'Begin',
 };
 

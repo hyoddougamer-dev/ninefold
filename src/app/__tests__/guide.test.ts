@@ -4,6 +4,7 @@ import { buy, newState, type State } from '../../sim/state.ts';
 import { MARKS } from '../../sim/record.ts';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { icon } from '../../art/icon.ts';
+import { untouched } from '../../sim/save.ts';
 
 /**
  * 引 The guide, and the three promises that come from storing nothing.
@@ -126,5 +127,34 @@ describe('引 the first session, one step at a time', () => {
       // in English, and the characters live in the han beside it.
       expect(/[一-鿿]/.test(step.title)).toBe(false);
     }
+  });
+});
+
+/**
+ * 引 And the screen that opens before it.
+ *
+ * The help is for somebody who has not begun, and it decided that with "qi under five".
+ * 囊 the opening purse starts a cultivator on 800, so the condition quietly went false
+ * and the help stopped appearing for new players — the one audience it exists for.
+ * Nothing failed, nothing logged, and it would have gone unnoticed indefinitely.
+ */
+describe('引 who the first screen is for', () => {
+  it('counts a brand-new cultivator as new, purse and all', () => {
+    const fresh = newState(T0);
+    expect(fresh.qi).toBeGreaterThan(5);
+    expect(untouched(fresh)).toBe(true);
+  });
+
+  it('counts anyone who has done anything at all as begun', () => {
+    const fresh = newState(T0);
+    const begun: State[] = [
+      buy({ ...fresh, qi: 1e9 }, 'technique'),
+      { ...fresh, killed: { rat: 1 } },
+      { ...fresh, layer: 1 },
+      { ...fresh, realm: 2 },
+      { ...fresh, tower: 1 },
+      { ...fresh, qi: fresh.qi + 1 },
+    ];
+    for (const s of begun) expect(untouched(s)).toBe(false);
   });
 });

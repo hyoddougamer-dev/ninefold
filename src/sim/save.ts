@@ -122,8 +122,13 @@ export interface Imported {
  * loaded. It cannot be "qi is zero" any more — 囊 the opening purse means a cultivator
  * starts holding something — so it asks the honest question instead: has this save
  * *done* anything at all? Bought a level, killed a beast, climbed a rung, worn a piece.
+ *
+ * It is exported because the app asks the same question for a different reason: 引 the
+ * help is for somebody who has not begun, and it used to ask "is qi under five", which
+ * the purse quietly made false. The help stopped appearing for new players and nothing
+ * said so. One definition, asked in both places.
  */
-function untouched(s: State): boolean {
+export function untouched(s: State): boolean {
   return s.realm === 1 && s.layer === 0
     && s.qi <= OPENING_PURSE
     && s.tower === 0 && s.tribulation === 0

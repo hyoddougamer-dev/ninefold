@@ -5,7 +5,7 @@ import { currentWarden, fight, loot } from '../sim/combat.ts';
 import { newState, power, type State, filledRealms,
 } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
-import { keepSpare, load, save } from '../sim/save.ts';
+import { keepSpare, load, save, untouched} from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
 import { focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
@@ -115,10 +115,11 @@ export function App() {
     setState(r.state);
     setReady(true);
     lastLayer.current = (r.state.realm - 1) * 9 + r.state.layer;
-    // A first-ever run has no save and no hours away: that is who the help is for.
-    if (r.secondsAway === 0 && r.state.realm === 1 && r.state.layer === 0 && r.state.qi < 5) {
-      setHelp(true);
-    }
+    // A first-ever run has no save and no hours away: that is who the help is for. It
+    // asks save.ts for what "has not begun" means rather than keeping its own idea of
+    // it — the old one was "qi under five", which 囊 the opening purse made false, and
+    // the help silently stopped appearing for new players.
+    if (r.secondsAway === 0 && untouched(r.state)) setHelp(true);
     // The load came back whole, so this is a state worth keeping a spare of.
     keepSpare(r.state);
 
