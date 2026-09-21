@@ -36,6 +36,7 @@ export function Coach({ at }: { at: string | null }) {
   useEffect(() => {
     if (!at) { setBox(null); return; }
     let raf = 0;
+    let bring = 0;
     let brought = false;
     const find = () => document.querySelector<HTMLElement>(`[data-coach="${CSS.escape(at)}"]`);
 
@@ -54,12 +55,16 @@ export function Coach({ at }: { at: string | null }) {
       if (next && !brought) {
         brought = true;
         const off = next.top < 8 || next.bottom > window.innerHeight - 8;
-        if (off) setTimeout(() => el?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 1100);
+        if (off) bring = window.setTimeout(() => el?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 1100);
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // 取消 Both of them. The delayed scroll outlives the target that asked for it
+    // otherwise: the app boots on a blank cultivator, the first step finds a box to
+    // point at, the saved game lands a moment later with nothing to point at — and a
+    // second after that the page scrolled itself to a ring that is no longer there.
+    return () => { cancelAnimationFrame(raf); clearTimeout(bring); };
   }, [at]);
 
   if (!box) return null;

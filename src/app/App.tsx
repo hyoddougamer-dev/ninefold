@@ -38,7 +38,7 @@ import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
-import { guide } from './guide.ts';
+import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
@@ -407,7 +407,13 @@ export function App() {
   const notice = useMemo(
     // Never behind the 突破 bloom: that moment introduces what the realm opened, and a
     // card saying the same thing underneath it is the game talking over itself.
-    () => (ready && !battle && bloom === null ? nextNotice(state) : null),
+    //
+    // 引 And never while the guide is running, which is the same rule one level up. The
+    // guide and the cards both answer "what now", and in the first realm they answered
+    // it about the *same thing* at the same moment: the guide's third step saying to go
+    // and hunt for material, with a card underneath it saying to go and hunt for
+    // material. Nothing is lost by waiting — a card keeps its turn until it is seen.
+    () => (ready && !battle && bloom === null && !guide(state) ? nextNotice(state) : null),
     [state, ready, battle, bloom],
   );
 
@@ -434,8 +440,8 @@ export function App() {
   const step = guide(state);
   const covered = help || key || stele || saving || !!home || !!battle
     || locked !== null || bloom !== null;
-  const coachAt = step && !covered && (step.step.tab ?? 'cultivate') === tab
-    ? step.step.at?.(state) ?? null
+  const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
+    ? step.at
     : null;
 
   const byKey = useMemo(
@@ -574,7 +580,19 @@ export function App() {
         </div>
       )}
 
-      {help && <Help onClose={() => { setHelp(false); sfx.tap(); }} />}
+      {help && (
+        <Help
+          onClose={() => { setHelp(false); sfx.tap(); }}
+          onReopenGuide={state.seen.includes(DISMISSED)
+            ? () => {
+              setState((s) => ({ ...s, seen: s.seen.filter((k) => k !== DISMISSED) }));
+              setHelp(false);
+              setTab('cultivate');
+              sfx.tap();
+            }
+            : undefined}
+        />
+      )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
 
       {stele && (

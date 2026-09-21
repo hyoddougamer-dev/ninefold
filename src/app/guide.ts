@@ -1,7 +1,13 @@
-import { UPGRADES, UPGRADE_INFO, atCeiling, canBreakThrough, power, type State } from '../sim/state.ts';
+import {
+  UPGRADES, UPGRADE_INFO, atCeiling, canBreakThrough, canBuy, power, upgradeCost,
+  type State,
+} from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
+import { LAYERS_PER_REALM } from '../sim/balance.ts';
+import { progress } from '../sim/time.ts';
 import { commonsOf, wardenOf } from '../data/bestiary.ts';
-import { beastPower } from '../sim/combat.ts';
+import { beastPower, oddsRaw } from '../sim/combat.ts';
+import { isOpen } from '../sim/unlocks.ts';
 import { GUIDE } from './copy.ts';
 
 /**
@@ -62,8 +68,50 @@ export interface Step {
    * the honest answer whenever the target is on a tab the player is not looking at.
    */
   readonly at?: (s: State) => string | undefined;
+  /**
+   * 時 Can the player actually do this, right now?
+   *
+   * Bruno, after playing the arrow version: *"as coisas ficam stuck e nao saem e devem
+   * aparecer na altura que os players tiverem prestes a desbloquear esse acontecimento."*
+   *
+   * He had found the hole. The second step says "go and kill the rat" from the first
+   * second of the game, and the rat is not winnable for about twelve minutes. So for
+   * twelve minutes the card asked for something impossible and the ring pulsed on a
+   * fight that could not be won — a tutorial that has stopped teaching and is now just
+   * in the way.
+   *
+   * A step that is not ready is not the instruction. It is the *next* instruction, and
+   * the card says so, shows how close it is, and hands the player something they can do
+   * in the meantime. Nothing is ever skipped and nothing is ever unreachable: a step
+   * with no `ready` is ready always.
+   */
+  readonly ready?: (s: State) => boolean;
+  /**
+   * What the card says and points at while `ready` is false.
+   *
+   * This is the half that keeps it interactive. "You cannot do this yet" on its own is
+   * a locked door; "you cannot do this yet, so buy this instead, and here is how close
+   * you are" is still a game.
+   */
+  readonly waiting?: {
+    readonly text: string;
+    readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
+    readonly at?: (s: State) => string | undefined;
+  };
   /** True once the player has done it. Every one of these only ever goes from false to true. */
   readonly done: (s: State) => boolean;
+}
+
+/**
+ * 買 The box the player can afford right now, if there is one.
+ *
+ * It is the answer to "what do I do while I wait", three times over, because in the
+ * first realm spending qi is the only thing that closes any of the gaps: more power
+ * reaches the beast, more rate fills the rung, and both of them are bought here.
+ */
+export function nowBuyable(s: State): string | undefined {
+  const u = UPGRADES.find((x) => (x !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, x));
+  return u && `upg-${u}`;
 }
 
 /** The first realm's own three, in the order they come into reach. */
@@ -75,21 +123,31 @@ export const STEPS: readonly Step[] = [
   {
     key: 'buy', han: '買', title: GUIDE.buy.title, text: GUIDE.buy.text,
     art: UPGRADE_INFO.technique.icon,
-    // 劍訣 is one of the two the opening purse can already afford, and it is the one
-    // that leads to the next step, so it is the box the arrow lands on.
-    at: () => 'upg-technique',
+    // Whichever box the purse can actually reach, not a box chosen in advance. The
+    // arrow must never land on something that is greyed out.
+    at: (s) => nowBuyable(s),
     done: (s) => UPGRADES.some((u) => s.levels[u] > 0),
   },
   {
     key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
     art: FIRST[0].icon,
     toward: (s) => Math.max(0, Math.min(1, power(s) / beastPower(FIRST[0]))),
+    // 時 Not until the fight can be won. The rat is about twelve minutes away at the
+    // start, and for those twelve minutes this step was pointing a pulsing ring at a
+    // fight with no winning seed in it.
+    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
+    waiting: { text: GUIDE.kill.waiting, at: (s) => nowBuyable(s) },
     at: () => 'beast-first',
     done: (s) => killsOf(s).some((n) => n > 0),
   },
   {
     key: 'core', han: '妖丹', title: GUIDE.core.title, text: GUIDE.core.text,
     art: UPGRADE_INFO.cores.icon,
+    toward: (s) => Math.min(1, s.materials / Math.max(1, upgradeCost(s, 'cores'))),
+    ready: (s) => canBuy(s, 'cores'),
+    // Material only falls off things you kill, so the waiting half of this step sends
+    // the player hunting rather than leaving them looking at a box they cannot buy.
+    waiting: { text: GUIDE.core.waiting, tab: 'hunt', at: () => 'beast-first' },
     at: () => 'upg-cores',
     done: (s) => s.levels.cores > 0,
   },
@@ -97,21 +155,24 @@ export const STEPS: readonly Step[] = [
     key: 'mark', han: '熟', title: GUIDE.mark.title, text: GUIDE.mark.text, tab: 'hunt',
     art: FIRST[0].icon,
     toward: (s) => Math.max(...killsOf(s), 0) / MARKS[1],
+    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
+    waiting: { text: GUIDE.mark.waiting, at: (s) => nowBuyable(s) },
     at: () => 'beast-first',
     done: (s) => killsOf(s).some((n) => n >= MARKS[1]),
   },
   {
     key: 'climb', han: '突破', title: GUIDE.climb.title, text: GUIDE.climb.text,
     art: wardenOf(1).icon,
-    // Three buttons over the life of one step. While there are rungs left there is
-    // nothing to press, so it points at 梯 the ladder instead: the thing Bruno said he
-    // could not read is exactly the thing this step is waiting on.
-    at: (s) => (canBreakThrough(s) ? 'breakthrough'
-      : atCeiling(s) && !s.wardenFell ? 'fight-warden'
-      : 'ladder'),
+    toward: (s) => Math.min(1, (s.layer + progress(s)) / LAYERS_PER_REALM),
+    // The warden is not there until the ninth rung is paid for. Until then this is a
+    // thing to watch, not a thing to do, so it waits like the others.
+    ready: (s) => atCeiling(s),
+    waiting: { text: GUIDE.climb.waiting, at: (s) => nowBuyable(s) },
+    at: (s) => (canBreakThrough(s) ? 'breakthrough' : 'fight-warden'),
     done: (s) => s.realm > 1,
   },
 ];
+
 
 /**
  * Which step the player is on, and how far along — or nothing, once they are past it.
@@ -126,12 +187,43 @@ export const STEPS: readonly Step[] = [
  * skipped: the steps behind it are not marked done, and if the warden wins the guide
  * goes straight back to where it was.
  */
-export function guide(s: State): { step: Step; n: number; of: number } | null {
+export interface Guiding {
+  readonly step: Step;
+  readonly n: number;
+  readonly of: number;
+  /** False while the step's own action is not possible yet. */
+  readonly ready: boolean;
+  /** What to draw the ring on right now, or nothing when there is nothing to press. */
+  readonly at: string | null;
+  /** Where the chevron goes, which is not the step's tab while it is waiting. */
+  readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
+  /** The line to read, which is the waiting line while it is waiting. */
+  readonly text: string;
+}
+
+export function guide(s: State): Guiding | null {
+  // 退 The player can put it away. It is one key in the same list the notices use, so
+  // it survives a reload, and 引 in the help panel brings it back.
+  if (s.seen.includes(DISMISSED)) return null;
+
   const i = STEPS.findIndex((x) => !x.done(s));
   if (i < 0) return null;
   const last = STEPS.length - 1;
-  if (atCeiling(s) && !s.wardenFell && !STEPS[last].done(s)) {
-    return { step: STEPS[last], n: last + 1, of: STEPS.length };
-  }
-  return { step: STEPS[i], n: i + 1, of: STEPS.length };
+  const n = atCeiling(s) && !s.wardenFell && !STEPS[last].done(s) ? last : i;
+  const step = STEPS[n];
+
+  const ready = step.ready ? step.ready(s) : true;
+  const at = (ready ? step.at?.(s) : step.waiting?.at?.(s)) ?? null;
+  return {
+    step,
+    n: n + 1,
+    of: STEPS.length,
+    ready,
+    at,
+    tab: ready ? step.tab : step.waiting?.tab,
+    text: ready ? step.text : step.waiting?.text ?? step.text,
+  };
 }
+
+/** The key that hides the guide, kept in the same seen-list the notices use. */
+export const DISMISSED = 'guide';

@@ -290,16 +290,21 @@ export const KEY = {
  */
 export const GUIDE = {
   step: (n: number, of: number) => `Step ${n} of ${of}`,
+  /** 時 The same step, before the player can do it. It is the *next* one, not the one. */
+  next: (n: number, of: number) => `Next \u00b7 ${n} of ${of}`,
+  close: 'Put the guide away',
+  /** 引 In the help panel, for anyone who put it away and wants it back. */
+  reopen: 'Bring the guide back',
+  reopenNote: 'You put 引 the guide away. It picks up wherever you are.',
   /**
-   * 指 Shorter, because the arrow now does the pointing.
+   * 指 Short, because the arrow does the pointing — and each one has a second line for
+   * the stretch before it can be done at all.
    *
-   * Bruno: *"explicações pouco resumidas"*. He was right, and the reason the old ones
-   * ran to four lines is that they had to *describe* the thing to press — where it was,
-   * what it looked like, which of the four it was. A ring drawn on the button says all
-   * of that in one glance, so the words get to do the only job left: say what pressing
-   * it costs and what it gives.
-   *
-   * Two sentences each, three at the most, and never a sentence about where something is.
+   * Bruno: *"as coisas ficam stuck e nao saem e devem aparecer na altura que os players
+   * tiverem prestes a desbloquear esse acontecimento."* The rat is twelve minutes away
+   * at the start of the game, and for twelve minutes the card asked for it anyway. The
+   * `waiting` line is what the card says instead: never "you cannot do this yet" on its
+   * own, always "you cannot do this yet, and here is the thing that gets you there".
    */
   buy: {
     title: 'Spend what you were given',
@@ -309,23 +314,30 @@ export const GUIDE = {
   kill: {
     title: 'Go and kill something',
     text: 'Press the beast the arrow points at. '
-      + 'It is stronger than you at first and the odds say so honestly, '
-      + 'but losing costs you nothing at all, so try anyway.',
+      + 'The odds are honest, and losing costs you nothing at all.',
+    waiting: '\u5c71\u9f20 the rat is still stronger than you, and the hunt screen says by how '
+      + 'much. Buy power and the gap closes. The bar below is how close you are.',
   },
   core: {
     title: 'Spend what the beast left',
-    text: 'That kill paid 材 material. Material buys 妖丹 Beast Cores, the one upgrade '
-      + 'qi cannot. Three rats pay for the first, and it is +8% power for good.',
+    text: '\u6750 Material buys \u5996\u4e39 Beast Cores, the one upgrade qi cannot. '
+      + '+8% power, for good.',
+    waiting: '\u5996\u4e39 costs 3 \u6750 material, and material only falls off things you kill. '
+      + 'Three rats pay for the first one.',
   },
   mark: {
     title: 'Kill the same beast ten times',
-    text: 'Ten kills of one animal earns its 熟 Known mark. '
+    text: 'Ten kills of one animal earns its \u719f Known mark. '
       + 'Every drop in the game then pays more, permanently.',
+    waiting: 'Nothing in reach is worth killing yet. Buy power, and the beasts come back '
+      + 'into range.',
   },
   climb: {
     title: 'Beat the warden and break through',
-    text: 'Nine layers fill the realm. Its warden then stands at the end of them, '
-      + 'and beating it opens 突破 into the next realm.',
+    text: 'The realm is full and its warden is standing at the end of it. '
+      + 'Beat it and \u7a81\u7834 opens.',
+    waiting: 'Nine rungs fill the realm, and the warden only appears once they all are. '
+      + 'Every box you buy opens them faster. The bar below is the whole realm.',
   },
 };
 
@@ -422,7 +434,10 @@ export const NOTICE = {
       + 'to hold more is to climb, so a full box is not a wall. It is the next realm calling.',
   },
   cores: {
-    title: 'Go and kill something',
+    // 名 Not "Go and kill something": that is the title of 引 the guide's second step,
+    // word for word, and two different cards with one name is the fastest way to make a
+    // player think the game is repeating itself. This one is about the currency.
+    title: '材 Material is the other currency',
     text: '妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },

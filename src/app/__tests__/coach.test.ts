@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { STEPS } from '../guide.ts';
+import { STEPS, guide } from '../guide.ts';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { UPGRADES, buy, newState, type State } from '../../sim/state.ts';
 import { wardenOf } from '../../data/bestiary.ts';
@@ -73,8 +73,7 @@ describe('指 the pointing finger', () => {
     const named = new Set<string>();
     for (const step of STEPS) {
       for (const s of states()) {
-        const at = step.at?.(s);
-        if (at) named.add(at);
+        for (const at of [step.at?.(s), step.waiting?.at?.(s)]) if (at) named.add(at);
       }
     }
     expect(named.size).toBeGreaterThan(0);
@@ -84,21 +83,44 @@ describe('指 the pointing finger', () => {
   });
 
   /**
-   * The last step is the only one that moves. It waits on three different buttons over
-   * the life of one realm, and a player stuck on any of the three should see a ring.
+   * 時 The point of the whole readiness idea, as an assertion.
+   *
+   * Bruno's report was that the card got stuck asking for something impossible. So:
+   * wherever a cultivator stands in the first realm, the guide either asks for
+   * something that can be done, or says it is waiting and hands over something else.
+   * It is never a ring on a thing that cannot be pressed.
    */
-  it('the last step always points somewhere, wherever the realm is', () => {
-    const climb = STEPS[STEPS.length - 1];
+  it('never asks for a step the player cannot do yet', () => {
     for (const s of states()) {
-      expect(climb.at?.(s), `nothing to point at from layer ${s.layer}`).toBeTruthy();
+      const g = guide(s);
+      if (!g) continue;
+      if (!g.ready) {
+        expect(g.step.waiting, `step ${g.step.key} waits with nothing to say`).toBeTruthy();
+        expect(g.text).toBe(g.step.waiting!.text);
+      }
+      // Whatever it points at, it is a real mark on a real element.
+      if (g.at) expect(marked().has(g.at)).toBe(true);
     }
   });
 
-  it('points at the ladder while there are rungs left, and at a button once there are not', () => {
+  it('points at the warden only once the warden is standing there', () => {
     const [, bought, full, beaten] = states();
+    // Mid-realm the last step is not even the current one, and when it is reached by
+    // the ceiling rule it waits rather than pointing at a fight that does not exist.
     const climb = STEPS[STEPS.length - 1];
-    expect(climb.at!(bought)).toBe('ladder');
+    expect(climb.ready!(bought)).toBe(false);
+    expect(climb.ready!(full)).toBe(true);
     expect(climb.at!(full)).toBe('fight-warden');
     expect(climb.at!(beaten)).toBe('breakthrough');
+    // While it waits it offers a box to buy instead, never the absent warden.
+    expect(climb.waiting!.at!(bought)).not.toBe('fight-warden');
+  });
+
+  it('goes away when put away, and comes back when the key is removed', () => {
+    const s = states()[0];
+    expect(guide(s)).not.toBeNull();
+    const shut = { ...s, seen: [...s.seen, 'guide'] };
+    expect(guide(shut)).toBeNull();
+    expect(guide({ ...shut, seen: shut.seen.filter((k) => k !== 'guide') })).not.toBeNull();
   });
 });

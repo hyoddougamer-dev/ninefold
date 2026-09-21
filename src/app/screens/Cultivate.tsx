@@ -15,7 +15,7 @@ import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { CULTIVATE, GUIDE, HUNT } from '../copy.ts';
 import { advice } from '../advice.ts';
-import { guide } from '../guide.ts';
+import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
 export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
@@ -51,22 +51,35 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
 
   return (
     <>
+      {/* 引 Two states, one card.
+          Ready: "Step 2 of 5 · go and kill something", bright, with the ring on the
+          beast. Waiting: "Next · step 2 of 5", dimmer, the line that says what to do
+          in the meantime, and the ring on *that* instead. The step never changes under
+          the player; only whether the game is asking for it yet. */}
       {step && (
-        <button className="guide" disabled={!step.step.tab}
-          onClick={() => step.step.tab && onGo(step.step.tab)}>
-          <span className="n mono">{GUIDE.step(step.n, step.of)}</span>
-          <b><span className="cjk">{step.step.han}</span> {step.step.title}</b>
-          <i>
-            {step.step.text}
-            {step.step.toward && (
-              <span className="toward">
-                <span style={{ width: `${Math.round(Math.min(1, step.step.toward(state)) * 100)}%` }} />
-              </span>
-            )}
-          </i>
-          <span className="art"><Svg html={icon(step.step.art, 30)} /></span>
-          {step.step.tab && <em className="cjk">›</em>}
-        </button>
+        <div className="guidewrap">
+          <button className="guide" data-waiting={!step.ready} disabled={!step.tab}
+            onClick={() => step.tab && onGo(step.tab)}>
+            <span className="n mono">
+              {step.ready ? GUIDE.step(step.n, step.of) : GUIDE.next(step.n, step.of)}
+            </span>
+            <b><span className="cjk">{step.step.han}</span> {step.step.title}</b>
+            <i>
+              {step.text}
+              {step.step.toward && (
+                <span className="toward">
+                  <span style={{ width: `${Math.round(Math.min(1, step.step.toward(state)) * 100)}%` }} />
+                </span>
+              )}
+            </i>
+            <span className="art"><Svg html={icon(step.step.art, 30)} /></span>
+            {step.tab && <em className="cjk">›</em>}
+          </button>
+          {/* 退 A way out. It is one key in the save, so it stays shut across a reload,
+              and the ? panel puts it back. Nothing in a game should be unclosable. */}
+          <button className="guidex" aria-label={GUIDE.close}
+            onClick={() => set({ ...state, seen: [...state.seen, DISMISSED] })}>✕</button>
+        </div>
       )}
 
       <div className="row">

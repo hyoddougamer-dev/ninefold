@@ -491,6 +491,14 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 /* It sits above everything on 修, because a player who has just opened the game for the
    first time should not have to find it. It is the only thing on the screen with a
    number on it, and it is gone for good after the fifth. */
+/* 退 The card and its close button, so the \u2715 can sit on the corner of the card
+   without being a button inside a button. */
+.guidewrap { position: relative; }
+.guidex { position: absolute; right: 6px; bottom: 6px; width: 30px; height: 30px;
+          display: grid; place-items: center; border: 0; background: transparent;
+          color: var(--faint); font-size: 13px; cursor: pointer; border-radius: 8px; }
+.guidex:hover { color: var(--text); }
+
 .guide { width: 100%; text-align: left; font: inherit; color: var(--text); cursor: pointer;
          background: linear-gradient(180deg, rgba(95,220,255,.09), rgba(95,220,255,.03));
          border: 1px solid rgba(95,220,255,.33); border-radius: 12px;
@@ -502,7 +510,9 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 /* 存 ? 釋 碑 float over the top-right corner, so the first line of the card stops short
    of them rather than running underneath. Only the first line: the paragraph below is
    clear of the buttons and uses the full width. */
-.guide .n, .guide b { padding-right: 132px; }
+/* Only the first line: the title sits below the buttons already, and reserving the
+   width for it was breaking three-word titles across three lines. */
+.guide .n { padding-right: 132px; }
 .guide:disabled { cursor: default; }
 .guide .n { font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
             color: var(--cyan); }
@@ -511,13 +521,23 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .guide i { font-style: normal; font-size: 12.5px; color: var(--faint);
            line-height: 1.5; }
 .guide em { grid-row: 3; align-self: center; font-style: normal;
-            font-size: 21px; color: var(--cyan); padding-left: 8px; }
+            font-size: 21px; color: var(--cyan); padding-left: 8px; padding-right: 26px; }
 /* 圖 The picture of what the step is asking for. Rows 1 and 2 are under the floating
    存 ? 釋 碑 buttons, so it sits on the third with the chevron beside it. */
 .guide .art { grid-row: 3; align-self: center; justify-self: center;
               color: var(--cyan); opacity: .85; padding-left: 12px; display: grid;
               place-items: center; }
 .guide .art svg { display: block; }
+/* 時 Waiting: the same card, quieter.
+   It is not asking for anything yet, so it stops shouting — the border and the number
+   drop back to the body colour, and only the progress bar keeps the guide's cyan,
+   because the bar is the one part that is still saying something new every second. */
+.guide[data-waiting="true"] { background: var(--panel);
+                              border-color: var(--line); }
+.guide[data-waiting="true"] .n { color: var(--faint); }
+.guide[data-waiting="true"] b .cjk { color: var(--faint); }
+.guide[data-waiting="true"] .art { opacity: .45; }
+
 /* 尺 The same bar the advice line uses, in the guide's own colour. */
 .guide .toward { display: block; height: 4px; border-radius: 99px; margin-top: 9px;
                  background: rgba(95,220,255,.2); overflow: hidden; }
