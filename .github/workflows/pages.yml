@@ -14,9 +14,15 @@ permissions:
   pages: write
   id-token: write
 
-# One deploy at a time, and a push that lands mid-deploy wins rather than queues.
+# One run at a time **per branch**, and a push that lands mid-run wins rather than queues.
+#
+# It used to be one group for the whole repository, which was wrong in a way that hid
+# itself: pushing the same commit to main and then to the working branch a second later
+# started two runs, and the second cancelled the first. The first was main's — the only
+# one that can actually publish — so the site quietly stopped updating while every push
+# still looked like it had gone out.
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -41,8 +47,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+  # 主 Only main publishes. GitHub Pages deploys from the branch its environment is
+  # configured for, so this job on any other branch fails at the last step — which is
+  # exactly what it did, loudly, on every branch push. The branch still builds and still
+  # runs the suite above, which is the part worth having on it.
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
