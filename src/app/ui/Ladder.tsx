@@ -33,10 +33,13 @@ import { LADDER } from '../copy.ts';
 export function Ladder({ state }: { state: State }) {
   const r = realmOf(state.realm);
   const w = currentWarden(state);
-  // s.layer counts layers *opened*, 0..8. So the rung being worked on is s.layer itself,
-  // and the realm is full when that ninth one is paid for — which is the warden's cue.
+  // s.layer counts layers *opened*, 0..8, so the rung being worked on is s.layer itself.
   const opened = state.layer;
-  const here = progress(state);
+  // 費 The ninth rung is the warden's. It fills as you gather toward it, and the warden
+  // falling is what completes it — see canBreakThrough. Before that change the qi on
+  // this rung was the breakthrough's toll and was burned on the way out; now it carries,
+  // so what this rung really shows is the head start you are building for the next realm.
+  const here = state.wardenFell ? 1 : progress(state);
   // 守 Lit once the last rung is reached, and it stays lit. See wardenStands.
   const wardenUp = canFightWarden(state);
 

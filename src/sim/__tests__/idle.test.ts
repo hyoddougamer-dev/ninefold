@@ -45,23 +45,33 @@ describe('閒 where a realm\'s qi goes', () => {
     const first = (run: typeof light) => run.rows.find((r) => r.realm === 1)!;
 
     /**
-     * 頂 The finding. A realm's bar stops at its ninth rung and qi banks there until 突破
-     * takes it, and for somebody who opens the app once a day that is three quarters of
-     * the first realm — the one realm where a player has not yet decided to stay.
+     * 頂 The finding, and what is left of it. A realm's bar stops at its last rung and
+     * qi banks there, and for somebody who opens the app once a day that used to be
+     * three quarters of the first realm — the one realm where a player has not yet
+     * decided to stay. It is about half of a realm that is itself half as long now.
      */
-    expect(first(light).stuckHours / first(light).hours).toBeGreaterThan(0.5);
+    expect(first(light).stuckHours / first(light).hours).toBeGreaterThan(0.3);
+    expect(first(light).stuckHours / first(light).hours).toBeLessThan(0.6);
     // And it is a *habit* problem rather than a pricing one: showing up shortens it.
     expect(first(busy).stuckHours / first(busy).hours)
       .toBeLessThan(first(light).stuckHours / first(light).hours);
 
     /**
-     * 守 And the half of it that was genuinely dead — bar full, warden standing there
-     * out of reach — is the half that the warden's own gate was causing. It used to be
-     * 74% of the first realm and 20-41% of the next three; it is a quarter of the first
-     * realm now and **nothing at all** from the fourth up, because a warden no longer
-     * walks off when you spend the qi that beats it. See wardenStands.
+     * 費 The two halves of that wait have collapsed into one, which is the plainest way
+     * to state what the 費 change did. There used to be two reasons to stand at a full
+     * bar: a warden you could not beat, and a ninth rung you had to re-earn after
+     * spending it. The second is gone — the warden *is* the ninth rung — so every hour
+     * still spent waiting is spent waiting to be strong enough, which is a fight to
+     * prepare for rather than a toll to re-pay.
      */
-    expect(first(light).ceilingHours / first(light).hours).toBeLessThan(0.35);
+    for (const run of runs) {
+      for (const row of run.rows) expect(row.stuckHours).toBeCloseTo(row.ceilingHours, 5);
+    }
+
+    /**
+     * 守 And from the fourth realm up there is no wait at all for anybody, because a
+     * warden no longer walks off when you spend the qi that beats it. See wardenStands.
+     */
     for (const run of runs) {
       for (const row of run.rows.filter((r) => r.realm >= 4)) {
         expect(row.ceilingHours).toBe(0);
@@ -69,12 +79,24 @@ describe('閒 where a realm\'s qi goes', () => {
     }
 
     /**
-     * 梯 And the mechanism, stated as a number: a layer opens by itself the moment the qi
-     * reaches its price, so the ladder takes the qi before a light visitor can reach it.
-     * Visiting six times a day rather than once roughly triples the share they get to
-     * spend on upgrades in the first realm.
+     * 梯 A layer still opens by itself the moment the qi reaches its price, so the ladder
+     * takes the qi before a light visitor can reach it. That used to be a wide gap — 44%
+     * of the first realm's qi into upgrades for somebody visiting six times a day
+     * against 13% for somebody visiting once — and 銀 the carry closed most of it: qi
+     * banked at a full bar is no longer burned on the way out, so the visitor who could
+     * not intercept it gets it at the next breakthrough instead.
+     *
+     * That is worth knowing, because it means this is no longer one of the reasons
+     * playing beats waiting. The reasons that are left are 材 material, 塔 the tower,
+     * 爐 the furnace and 器 the gear — all of which need a tap — and the gap they hold
+     * up on their own is asserted in players.test.ts, where it belongs.
      */
-    expect(first(busy).intoUpgrades).toBeGreaterThan(first(light).intoUpgrades * 2);
+    for (const run of runs) {
+      for (const row of run.rows) {
+        expect(row.intoUpgrades).toBeGreaterThan(0.2);
+        expect(row.intoUpgrades).toBeLessThan(0.8);
+      }
+    }
 
     // By the middle realms the wait at a full bar is a rounding error for everybody.
     for (const run of runs) {

@@ -346,12 +346,13 @@ export function takeKill(s: State, b: Beast): State {
  * realm and everything at the first.
  */
 export function seenBounty(b: Beast): number {
-  // 守 No bounty for a warden, and the reason is 突破 rather than balance: breaking
-  // through sets the qi to nothing. A warden paid on the kill and then broken through
-  // a second later — which is what every cultivator does, because the breakthrough is
-  // the whole point of the fight — hands over a reward the next tap destroys. A prize
-  // that is normally thrown away is worse than no prize; it is a trap for anybody who
-  // notices. The warden's reward is the realm.
+  // 守 No bounty for a warden, and the reason used to be 突破 rather than balance:
+  // breaking through set the qi to nothing, so a warden paid on the kill handed over a
+  // prize the next tap destroyed. 銀 That reason is gone — the breakthrough carries the
+  // qi now — and the answer is still no, on the original grounds. A warden falls once
+  // per realm, nine times in a lifetime, and what it pays is the realm. Bolting a qi
+  // prize onto the one fight that already hands over a whole new mountain is paying
+  // twice for the same moment.
   if (b.warden) return 0;
   return Math.max(1, Math.round(ladderBetween(beastDepth(b)) * (SEEN_BOUNTY / b.realm)));
 }

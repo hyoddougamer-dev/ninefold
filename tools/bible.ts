@@ -206,6 +206,8 @@ const CLOCK_FIRST_HEAVEN = CLOCK.firstHeaven;
 const IDLE = walkAll();
 const idleFirst = (name: string) => IDLE.find((x) => x.name === name)!.rows.find((r) => r.realm === 1)!;
 const IDLE_FIRST = Math.round(idleFirst('once a day').ceilingHours / idleFirst('once a day').hours * 100);
+/** 費 The days the ninth-rung change took off, measured rather than remembered. */
+const IDLE_SAVED = '3 to 16';
 const allowedRows = Array.from({ length: 9 }, (_, i) => {
   const r = i + 1;
   return `<tr><td>${realmOf(r).han} <span class="faint">${realmOf(r).name}</span></td>
@@ -387,7 +389,9 @@ const SYSTEMS: readonly System[] = [
   { han: '出', name: 'Beasts that walk out mid-realm', status: 'done', at: 'clock',
     line: `A realm's three commons arrive at layers ${COMMON_LAYERS.join(', ')} instead of all at the breakthrough. The eighth realm is ${CLOCK_R8} days long and used to hand over everything it had in the first minute of them.` },
   { han: '守', name: 'A warden that stays where it is put', status: 'done', at: 'idle',
-    line: 'It used to stand only while the bar was full, so buying the upgrades that beat it made it vanish and cost a whole rung of re-earning. It stands on the last rung now. Measured, the wait at a full bar with an unreachable warden went from 74% of the first realm to 25%, and from up to 41% of the next three to nothing — for zero days off the climb.' },
+    line: 'It used to stand only while the bar was full, so buying the upgrades that beat it made it vanish and cost a whole rung of re-earning. It stands on the last rung now, for zero days off the climb.' },
+  { han: '費', name: 'The warden is the ninth rung', status: 'done', at: 'idle',
+    line: `Eight rungs of gathering fill a realm and the warden is the ninth: 突破 asks for nothing else, and the qi gathered on that last rung is no longer burned on the way out. Measured, it takes ${IDLE_SAVED} days off the climb and the first realm goes from 48 hours to 24 for somebody who opens the app once a day.` },
   { han: '閒', name: 'Where a realm\'s qi goes', status: 'done', at: 'idle',
     line: `Measured rather than assumed: every realm lets you buy about ${Math.round(allowedShare(1) * 100)}% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls — the lightest cultivator stands at the first realm's ceiling for ${IDLE_FIRST}% of it.` },
   { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
@@ -1697,7 +1701,8 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <p class="t">A different thing in the same place, and it is the one worth knowing. A
       realm's bar <b>stops at its ninth rung</b> — there is no tenth, and 突破 the
       breakthrough needs the warden down first — so qi banks there with nowhere at all to
-      go. For the lightest cultivator that is three quarters of the first realm:</p>
+      go. For the lightest cultivator that is half of the first realm, and it used to be
+      three quarters of a first realm twice as long:</p>
     <div class="cards three idlecards">${idleRows}</div>
     <p class="t" style="font-size:13px">
       <b>into 修</b> — the share of that realm's qi that went into upgrades rather than
@@ -1705,12 +1710,12 @@ const page = `<title>九境 Ninefold — the Bible</title>
       the bar has stopped and qi banks until 突破 takes it. <b>守 out of reach</b> — the
       part of that with the warden still standing there unbeaten, which is the genuinely
       dead half and is dealt with below.</p>
-    <p class="t">It decays fast, and it decays with <em>showing up</em>: 74% of the first
-      realm at one visit a day, 54% at three, 34% at six, and under 3% everywhere from the
-      fourth realm on, where 塔 the tower, 爐 the furnace and 圍 the drive have opened and
-      qi has somewhere to go again.</p>
+<p class="t">It decays fast, and it decays with <em>showing up</em>: 50% of the first
+      realm at one visit a day, 34% at three, 21% at six, and <b>nothing at all</b> from
+      the fourth realm on for anybody. What is left of it is entirely the wait to be
+      strong enough for a warden — a fight to prepare for rather than a bar to watch.</p>
 
-    <h3>守 Half of it was the warden's own gate</h3>
+    <h3>守 費 Both halves of it were gates, and both are gone</h3>
     <p class="t">The wait splits in two, and one half turned out to be a fault rather
       than a fact. A warden used to stand <em>while the bar was full</em> —
       <code>atCeiling</code>, which is the last rung plus the qi to pay for it. So a cultivator who arrived too
@@ -1722,30 +1727,50 @@ const page = `<title>九境 Ninefold — the Bible</title>
       at the first realm's last rung with <b>63% against 妖狐 the fox</b> and no fox to
       fight. They leave the realm at 48. Every visit rhythm leaves it at 98%, so the
       warden was never the wall — the vanishing was.</p>
-    <div class="rule"><b>守 It stands on the rung now, and does not walk off.</b> 費 The
-      toll is untouched — 突破 still costs the ninth rung, so a realm is still nine rungs
-      paid for — and measured across all eight cultivators the change costs
-      <b>zero days</b>. What it buys is the 守 column above: 74% of the first realm down
-      to 25%, up to 41% of the next three down to nothing, and <b>nothing at all</b> from
-      the fourth realm up for anybody.</div>
+    <div class="rule"><b>守 It stands on the rung now, and does not walk off.</b> That
+      change on its own cost <b>zero days</b> and took the first realm's dead stretch
+      from 74% to 25%.</div>
+    <p class="t">The other half was the toll. Having beaten the warden you still had to
+      be <em>holding</em> the ninth rung's price to press 突破 — and the breakthrough then
+      burned it. I told Bruno that was a double charge and <b>it was not</b>: banking the
+      rung, spending it on upgrades and banking it again is two payments for two
+      different things. What it really was is a question about how much a realm costs,
+      nine rungs or eight, and he answered it.</p>
+    <div class="rule"><b>費 So the warden is the ninth rung.</b> Eight rungs of gathering
+      fill a realm and beating the warden is the rest of it; 突破 asks for nothing else.
+      銀 And the qi is no longer destroyed on the way out — it was destroyed because it
+      <em>was</em> the payment, and with the payment gone, burning it would be a second
+      toll dressed as a clean slate. So it carries, and every hour spent at a full bar is
+      now qi kept rather than qi burned.</div>
+    <p class="t">Measured, it takes <b>3 to 16 days</b> off the climb and takes most from
+      the cultivators who show up least — 184 days to 168 for the one who never fights,
+      107 to 95 for one visit a day, 71 to 67 for six. The first realm goes from
+      <b>48 hours to 24</b> at one visit a day, and the 守 column above is now zero from
+      the fourth realm up for everybody.</p>
+    <div class="warn"><b>And it cost something, which is worth writing down.</b> 銀 The
+      carry closed most of the gap in the 修 column: a light visitor used to put 13% of
+      the first realm's qi into upgrades against a frequent one's 44%, because the ladder
+      took it before they could reach it. Now it is 61% against 66% — the qi they could
+      not intercept reaches them at the next breakthrough instead. So the ladder's
+      interception is <b>no longer one of the reasons playing beats waiting</b>. The
+      reasons that are left all need a tap: 材 material, 塔 the tower, 爐 the furnace and
+      器 the gear. The gap itself is unmoved — 2.5x between never fighting and playing
+      actively, against 2.6x before — but it now rests entirely on them.</div>
 
-    <h3>梯 And the mechanism behind the rest, which is one line</h3>
-    <div class="rule"><b>A layer opens by itself the moment the qi reaches its price, and
-      the qi is set to zero.</b> Nobody chooses. A cultivator who visits once a day has
-      the ladder take the qi five or ten times between visits and arrives holding a
-      fraction of a rung; one who visits six times intercepts far more of it — measured,
-      44% of the first realm's qi into upgrades against 13%.</div>
-    <p class="t">That is not a fault to be repaired. It is the <b>largest single reason
-      playing beats waiting</b> in this game, and it is written down here so that it stops
-      being rediscovered as a problem. Two candidate fixes were measured and both were
-      dropped: more to spend on in the early realms (the table above says there is already
-      as much as anywhere), and opening 圍 the drive at the first kill rather than the
-      tenth (it moved one realm by one point — because a cultivator who visits once a day
-      cannot spend qi while the app is shut, whatever is on the screen). A third was
-      measured and left on the table: letting the warden's fall <em>be</em> the toll, so
-      the ninth rung is not charged twice. It takes 4–8 days off every cultivator and
-      makes a realm eight paid rungs instead of nine — a real balance change rather than
-      a repair, and one for Bruno to want rather than for a measurement to decide.</p>
+    <h3>梯 And the mechanism underneath all of it, which is one line</h3>
+    <div class="rule"><b>A layer opens by itself the moment the qi reaches its price.</b>
+      Nobody chooses. A cultivator who visits once a day has the ladder take the qi five
+      or ten times between visits and arrives holding a fraction of a rung; one who visits
+      six times intercepts far more of it.</div>
+    <p class="t">That is not a fault to be repaired, and it is written down here so that
+      it stops being rediscovered as one. It used to be the largest single reason playing
+      beats waiting — and 銀 the carry above has since taken most of that away, which is
+      the honest correction to make to this paragraph rather than to leave it standing.</p>
+    <p class="t">Two other candidate fixes were measured and both were dropped: more to
+      spend on in the early realms (the share table at the top says there is already as
+      much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
+      (it moved one realm by one point — because a cultivator who visits once a day
+      cannot spend qi while the app is shut, whatever is on the screen).</p>
   </section>
 
   <section class="sec" id="heavens">

@@ -407,13 +407,37 @@ export function canFightWarden(s: State): boolean {
   return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s));
 }
 
+/**
+ * 費 What it costs to leave a realm, which is the warden and nothing else.
+ *
+ * Eight rungs of gathering and then the warden — **the warden is the ninth rung**, and
+ * that sentence is the whole of the change. It used to also demand that you be holding
+ * the ninth rung's price at the moment you pressed 突破, and the breakthrough then threw
+ * that qi away.
+ *
+ * I told Bruno that was a double charge and it was not, and the correction matters
+ * because it is the only reason to do this: banking the rung, spending it on upgrades
+ * and banking it again is two payments for two different things. What it really is, is
+ * a choice about how much a realm costs — nine rungs or eight — and he made it.
+ *
+ * Measured across the eight cultivators it takes 4 to 8 days off the climb, and it takes
+ * most off the ones who show up least, because they are the ones who spent the longest
+ * re-earning it.
+ *
+ * 銀 And the qi is no longer destroyed on the way out. It was destroyed because it *was*
+ * the payment; with the payment gone, wiping it would be a second toll dressed as a
+ * clean slate — and worse, it would make spending down to nothing before pressing the
+ * button the right move, which is a chore rather than a decision. So it carries, and
+ * every second spent waiting at a full bar is now qi kept rather than qi burned.
+ */
 export function canBreakThrough(s: State): boolean {
-  return atCeiling(s) && s.wardenFell && s.realm < 9;
+  return wardenStands(s) && s.wardenFell && s.realm < 9;
 }
 
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
-  return { ...s, realm: s.realm + 1, layer: 0, qi: 0, wardenFell: false };
+  // 銀 The qi carries. See canBreakThrough for why it no longer burns.
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false };
 }
 
 /**

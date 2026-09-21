@@ -325,10 +325,17 @@ describe('time never climbs a realm by itself', () => {
     expect(atCeiling(spent)).toBe(false);
     expect(canFightWarden(spent)).toBe(true);
 
-    // 費 But the toll is untouched: 突破 still costs the ninth rung.
+    /**
+     * 費 And beating it is the whole toll. The ninth rung is the warden, so a cultivator
+     * who spent every coin on the levels that beat it does not then have to re-earn a
+     * rung to walk out — which is the thing that used to cost the lightest player a
+     * second day in the first realm.
+     */
     const beaten: State = { ...spent, wardenFell: true };
-    expect(canBreakThrough(beaten)).toBe(false);
-    expect(canBreakThrough(advance(beaten, beaten.at + 5 * DAY))).toBe(true);
+    expect(canBreakThrough(beaten)).toBe(true);
+    // 銀 And the qi is not burned on the way out. There is none here; the carry is
+    // asserted where there is some.
+    expect(breakThrough(beaten).realm).toBe(2);
   });
 
   /** And it is never reachable before the last rung, which was only ever a screen rule. */
@@ -339,6 +346,18 @@ describe('time never climbs a realm by itself', () => {
     expect(canFightWarden({ ...half, layer: LAYERS_PER_REALM - 1 })).toBe(true);
     // And once it has fallen it is not standing any more.
     expect(canFightWarden({ ...half, layer: LAYERS_PER_REALM - 1, wardenFell: true })).toBe(false);
+  });
+
+  /** 銀 Whatever was gathered on the last rung comes with you. */
+  it('carries the qi through the breakthrough instead of burning it', () => {
+    const banked = advance(atCeilingOfRealmOne(), atCeilingOfRealmOne().at + 2 * DAY);
+    const beaten: State = { ...banked, wardenFell: true };
+    expect(beaten.qi).toBeGreaterThan(0);
+    const next = breakThrough(beaten);
+    expect(next.realm).toBe(2);
+    expect(next.layer).toBe(0);
+    expect(next.qi).toBe(beaten.qi);
+    expect(next.wardenFell).toBe(false);
   });
 
   it('stays put even once the warden has fallen — only 突破 leaves', () => {

@@ -184,8 +184,9 @@ export const REALMCARD = {
 
 export const LADDER = {
   rule: (han: string, name: string) =>
-    `Your qi fills one rung. Nine rungs fill ${han} ${name}. `
-    + 'Its warden then stands at the end, and beating it opens the next realm.',
+    `Your qi fills one rung. Eight of them fill ${han} ${name}, and its warden is the `
+    + 'ninth: beat it and the next realm opens, with whatever qi you have gathered '
+    + 'coming with you.',
   /** Written on the row itself. Two rows of dashes with nothing naming them is a
    *  diagram of something, and the player is left to guess what. */
   realms: (n: number, of: number) => `境 realm ${n}/${of}`,
@@ -408,7 +409,7 @@ export const GUIDE = {
     title: 'Beat the warden and break through',
     text: 'The realm is full and its warden is standing at the end of it. '
       + 'Beat it and \u7a81\u7834 opens.',
-    waiting: 'Nine rungs fill the realm, and the warden only appears once they all are. '
+    waiting: 'Eight rungs fill the realm, and its warden walks out at the end of them. '
       + 'Every box you buy opens them faster. The bar below is the whole realm.',
   },
 };
