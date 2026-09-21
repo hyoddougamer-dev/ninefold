@@ -64,6 +64,12 @@ Each of these cost real time once. They are written down so they cost it once.
 - **A `.notice` card blocks pointer events.** Dismiss it before clicking anything.
 - **`pgrep -f <name>` matches the waiting loop's own command line**, so an
   `until ! pgrep -f x.mjs` loop never exits.
+- **Never share a CSS class between two screens.** `.help` was the save panel and the
+  help sheet; `.ladder` was the game's climb widget and the bible's realm cards. Both
+  cost a debugging session. Scope every new block (`#mockups .ladder`, `.condense .chead`).
+- **Read the harness by name, never by position.** `RUNS[0]`, `const [waiter, , , active]
+  = runs` — adding one cultivator to `HABITS` silently made every assertion and every
+  sentence on the bible page about somebody else. Use `runs.find(r => r.habit.name === …)`.
 
 ## Where things go
 

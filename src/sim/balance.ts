@@ -130,6 +130,64 @@ export const OLD_BEAST_FLOOR = 0.25;
  */
 export const SEEN_BOUNTY = 0.5;
 
+/**
+ * 守貢 What a warden pays in 材 material, as a share of what its depth is worth.
+ *
+ * This is the wall, and it is a wall made of arithmetic rather than of a locked door.
+ *
+ * A warden's power already counts 妖丹 cores — `referenceAt` says so — so from the third
+ * realm a warden cannot be walked past by somebody who has never killed anything. That
+ * was the design. It did not hold, for one reason: **the warden itself paid a full
+ * harvest**, so nine warden kills funded the cores for the next nine warden kills and the
+ * gate financed itself. Measured, a cultivator who never tapped a beast reached the
+ * ninth realm with 39 core levels against the 40 the last warden reads for — through by a
+ * hair, on a loop that never asked them to play.
+ *
+ * Paying nothing would shut the door outright, and a shut door is not what was asked
+ * for: *"não um muro que torne impossivel mas que dificulte players 100% idle e premeie
+ * jogadores mais ativos."* So the warden pays a **tribute** — a fraction, enough that the
+ * cores keep creeping forward and the climb never stops, far too little to keep pace with
+ * a gate that steepens by six core levels a realm.
+ *
+ * What that buys, in one sentence each:
+ *
+ *   - The cultivator who never fights still finishes. They simply take much longer,
+ *     because every warden now costs them a longer stretch of gathering.
+ *   - Three rats close the gap in a minute. The wall is never a dead end; it is a
+ *     signpost pointing at 狩 Hunt, and it can be answered the moment it is read.
+ *   - Nothing is taken away for being away. The qi rate is untouched, offline is
+ *     untouched, and a fight lost still costs nothing. What changed is the *price of a
+ *     warden*, paid in the one currency that has always come from playing.
+ */
+export const WARDEN_TRIBUTE = 0.18;
+
+/**
+ * 凝丹 Condensing a core from raw qi, when there is no beast to take one from.
+ *
+ * WARDEN_TRIBUTE on its own is a cliff and not a wall. Measured across the whole range,
+ * the cultivator who never taps a beast finishes in 142 days at a tribute of 0.8 and
+ * **never finishes at all** at 0.7 — there is no setting between "unchanged" and
+ * "stopped for ever", because a core's price climbs by a third each level while a
+ * warden's tribute is flat. A lever with no middle cannot do what was asked of it:
+ * *"não um muro que torne impossivel mas que dificulte."*
+ *
+ * The middle has to be built, not tuned. So 妖丹 gets a second price, in qi:
+ *
+ *   - **Kill something, and a core is cheap.** 材 material off a beast, as it always was.
+ *   - **Kill nothing, and a core is a stretch of the climb.** CORE_QI_RUNGS rungs of the
+ *     ladder you are standing on, for one level — qi that would otherwise have opened
+ *     layers.
+ *
+ * Which turns the cliff into a slope with a dial on it. Nobody is ever stopped: the
+ * cultivator who will not fight can always pay in the only currency they have. They
+ * simply pay a great deal more of it, and the difference between them and somebody who
+ * hunts is the difference Bruno asked to see.
+ *
+ * It cannot break the economic law, and that is the reason it is priced in qi rather
+ * than handed out: this **spends** qi. Nothing here raises the rate.
+ */
+export const CORE_QI_RUNGS = 6;
+
 export function ladderAt(n: number): number {
   return LADDER[Math.max(0, Math.min(LAYERS, Math.round(n)))];
 }

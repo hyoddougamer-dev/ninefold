@@ -1,8 +1,9 @@
-import { FOCUS_MAX, LAYERS, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
-  canBuy, canCross, capOf, crossTribulation, power, tribulationPool, upgradeCost,
+  canBuy, canCondense, canCross, capOf, condense, condenseCost, crossTribulation, power,
+  tribulationPool, upgradeCost,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -285,6 +286,32 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
           );
         })}
       </div>
+
+      {/* 凝丹 The way out of the one dead end the game has.
+          It appears only when 材 material has actually run out and a core is still to be
+          had — which is the moment it answers a question instead of asking one. */}
+      {isOpen(state.realm, 'cores') && state.levels.cores < cap
+        && !canBuy(state, 'cores') && (
+        <div className="condense">
+          <div className="chead">
+            <b className="cjk">凝丹</b>
+            <em>{CULTIVATE.condenseHead}</em>
+            <span className="mono">
+              {CULTIVATE.condensePrice(num(condenseCost(state)), String(CORE_QI_RUNGS))}
+            </span>
+          </div>
+          <p>{CULTIVATE.condense}</p>
+          <button className="act" disabled={!canCondense(state)}
+                  onClick={() => set(condense(state))}>
+            凝 <span>Condense a core</span>
+          </button>
+          <button className="tip" onClick={() => onGo('hunt')}>
+            <b className="cjk">狩</b>
+            <i>{CULTIVATE.condenseHunt}</i>
+            <em className="cjk">›</em>
+          </button>
+        </div>
+      )}
     </>
   );
 }

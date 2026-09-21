@@ -22,7 +22,7 @@ import {
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { UPGRADES, UPGRADE_INFO, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, condenseCost, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
@@ -36,9 +36,10 @@ import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/t
 import {
   PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
 } from '../src/sim/furnace.ts';
-import { daoEarned, POINTS_PER_BESTIARY,
+import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
-import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
+import { layersOpened } from '../src/sim/time.ts';
+import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { BRANCHES, climb } from './climb.ts';
@@ -108,9 +109,73 @@ const RUNS = playAll();
  * changes, so the examples have to *be* real: the same art functions the game draws
  * with, the same comparison the item sheet runs, the same prices the drive charges.
  */
-const WAITER = RUNS[0];
-const HUNTER = RUNS[1];
+/**
+ * By name, never by position. These were `RUNS[0]` and `RUNS[1]` until a cultivator was
+ * added to the harness, at which point every sentence on this page that said "somebody
+ * who hunts a little" was quietly describing somebody else. The same slip was in
+ * players.test.ts on the same day, which is what makes it a rule rather than a fix.
+ */
+const runNamed = (name: string) => RUNS.find((r) => r.habit.name === name)!;
+const WAITER = runNamed('never fights');
+const BARELY = runNamed('barely fights');
+const HUNTER = runNamed('once a day');
 const WAITER_COST = Math.round((WAITER.arrival[8] ?? 0) - (HUNTER.arrival[8] ?? 0));
+/** 守貢 What two beasts a day are worth, in days off the climb. */
+const BARELY_SAVES = Math.round((WAITER.arrival[8] ?? 0) - (BARELY.arrival[8] ?? 0));
+
+/**
+ * 曆 The content clock: when the last new thing in the game arrives.
+ *
+ * Every number here is read off the same run the rest of the page is written from, so a
+ * beast moved to another realm or a realm that takes a week longer moves this section
+ * without anybody remembering to.
+ *
+ * Gear is left out of the count on purpose. It is 54 archetypes recoloured once a realm,
+ * and counting all ${GEAR.length} pieces drowns the nine things a player would actually
+ * name as new.
+ */
+const CLOCK = (() => {
+  const run = runNamed('active');
+  const at = (realm: number) => run.arrival[realm - 1] ?? Infinity;
+  const met: number[] = [];
+  const add = (realm: number) => { if (Number.isFinite(at(realm))) met.push(at(realm)); };
+  for (const sys of OPENED) add(sys.realm);
+  for (const b of BEASTS) add(b.realm);
+  for (const st of STANCES) add(st.realm);
+  for (const a of ARTS) add(a.realm);
+  for (const rs of REALM_SETS) add(rs.realm);
+
+  const byWeek = new Map<number, number>();
+  for (const d of met) byWeek.set(Math.floor(d / 7), (byWeek.get(Math.floor(d / 7)) ?? 0) + 1);
+  const weeks = 13;                                    // three months, which is the ask
+  const peak = Math.max(...byWeek.values());
+  const rows = Array.from({ length: weeks }, (_, w) => {
+    const n = byWeek.get(w) ?? 0;
+    const bar = Math.round((n / peak) * 100);
+    return `<tr><td>week ${w + 1}<span class="faint"> · day ${w * 7}–${w * 7 + 6}</span></td>
+      <td style="text-align:right">${n || '—'}</td>
+      <td><span class="wk"><i style="width:${bar}%"></i></span></td></tr>`;
+  }).join('');
+  return {
+    rows, run,
+    r4: Math.round(at(4)),
+    r8: Math.round(at(9) - at(8)),
+    last: Math.round(at(9)),
+    done: Math.round(run.days),
+    name: run.habit.name,
+  };
+})();
+const CLOCK_ROWS = CLOCK.rows;
+const CLOCK_R4 = CLOCK.r4;
+const CLOCK_R8 = CLOCK.r8;
+const CLOCK_LAST = CLOCK.last;
+const CLOCK_DONE = CLOCK.done;
+const ACTIVE_NAME = CLOCK.name;
+/** 劫 How long a mark takes once the pace has settled, from the endgame harness. */
+const ENDGAME_PACE = (() => {
+  const d = playEndgame(12).days;
+  return Math.round(d.slice(4).reduce((a, b) => a + b, 0) / d.slice(4).length);
+})();
 const DRIVE_TAPS = BEASTS.length * (1 + Math.ceil((MARKS[2] - MARKS[1]) / DRIVE_SIZES[DRIVE_SIZES.length - 1]));
 const NINTH = { ...newState(0), realm: 9 } as State;
 const OLD_RAT = num(lootFrom(NINTH, commonsOf(1)[0]));
@@ -154,6 +219,8 @@ const SYSTEMS: readonly System[] = [
     line: 'Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.' },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
     line: `A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, ${WAITER_COST} days later.` },
+  { han: '守貢', name: 'The wall, and why it is a slope', status: 'done', at: 'wall',
+    line: `A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one — and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth ${BARELY_SAVES} days of the climb.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
     line: `One floor, one beast, no top. The material economy and ${TOWER_QI_HOURS} hours of gathering a floor.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
@@ -200,8 +267,15 @@ const SYSTEMS: readonly System[] = [
     line: 'Tapping a piece opened nothing and wore it. It now opens a sheet: the rank named, every line, both sides of the trade, and the swing taken from the sim rather than from adding roll values up.' },
   { han: '誠', name: 'Honest odds', status: 'done', at: 'combat',
     line: 'A fight that wins none of its sampled seeds says how far off it is rather than quoting the 2% floor. The first realm\'s three beasts read 2%, 2%, 2% and now read ×2.4, ×7.0, ×14.0.' },
+  { han: '半', name: 'Finding the tree', status: 'done', at: 'mockups',
+    line: 'The 道 tab held a stance picker, nine sequence slots and an art pool before it held any tree, so the tree began fourteen hundred pixels below the fold. Two halves and a switch; the tree is the one that opens.' },
+  { han: '點', name: 'Points you have not spent', status: 'done', at: 'mockups',
+    line: 'An unspent 道 point was money on the floor two taps and a scroll away. The count now rides the tab itself, so it is visible from every other screen in the game.' },
   { han: '收', name: 'The corner, folded', status: 'done', at: 'mockups',
     line: 'Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.' },
+
+  { han: '曆', name: 'Three months of content', status: 'open', at: 'clock',
+    line: 'Measured: an active cultivator meets four of the nine realms in the first five days and the last new thing in the game on day 60. The climb has a pace. What comes after it does not have a calendar.' },
 
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
@@ -515,6 +589,42 @@ const MOCK_DRIVE = (() => {
   </div>`;
 })();
 
+// 半 The 道 screen's two halves, and the count that rides the tab.
+const MOCK_HALVES = (() => {
+  // A real cultivator at the fifth realm: the points are what daoFree() actually says.
+  const s5: State = { ...newState(0), realm: 5, layer: 4, unlocked: ['root'] };
+  const free = daoFree(layersOpened(s5), 4, s5.unlocked, 0);
+  return `<div class="mk two">
+    <div class="halfbar">
+      <span data-on="true"><b class="cjk">道</b><em>Techniques</em><i class="pip">${free}</i></span>
+      <span><b class="cjk">勢</b><em>Stance &amp; Arts</em></span>
+    </div>
+    <div class="tabbar">
+      ${[['修', 'Cultivate'], ['狩', 'Hunt'], ['塔', 'Trials'], ['器', 'Gear']].map(
+        ([h, n]) => `<span><b class="cjk">${h}</b><i>${n}</i></span>`).join('')}
+      <span data-on="true"><b class="cjk">道<u>${free}</u></b><i>Path</i></span>
+    </div>
+    <p class="cap">The switch, and the same count on the tab bar — which is where it is
+      seen from every other screen in the game.</p>
+  </div>`;
+})();
+
+// 凝丹 The card that appears only when 材 material has run out, at the real price.
+const MOCK_CONDENSE = (() => {
+  const s5: State = { ...newState(0), realm: 5, layer: 8 };
+  return `<div class="mk cond">
+    <div class="chd"><b class="cjk">凝丹</b><span><em>No 材 material left</em>
+      <i>${num(condenseCost(s5))} qi — ${CORE_QI_RUNGS} rungs of the climb</i></span></div>
+    <p class="body">You can force a 妖丹 out of raw qi instead. It works, and it is dear:
+      this is qi that would have opened layers.</p>
+    <span class="go">凝 Condense a core</span>
+    <span class="hint"><b class="cjk">狩</b> A beast leaves material when it falls. That
+      is the cheap way, and it is one tap away.</span>
+    <p class="cap">At the fifth realm's ceiling. The price is condenseCost() and the card
+      is drawn only while canBuy(cores) is false — it is an answer, not a fifth box.</p>
+  </div>`;
+})();
+
 // 收 The corner, shut and open.
 const MOCK_MENU = `<div class="mk two">
   <div class="corner"><span class="sw1">≡</span><p class="cap">Shut, which is how every
@@ -557,6 +667,12 @@ const page = `<title>九境 Ninefold — the Bible</title>
   .t b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
+
+  /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
+  #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
+               overflow:hidden; min-width:120px; }
+  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
+  #clock td:last-child { width:45%; }
 
   /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
   /* Every rule is scoped to the section. The first draft was not, and its .ladder
@@ -676,6 +792,53 @@ const page = `<title>九境 Ninefold — the Bible</title>
   #mockups .drive .size .price em { display:block; font-style:normal; font-size:10px;
                            color:var(--faint); font-weight:400; letter-spacing:.1em;
                            text-transform:uppercase; }
+
+  /* 半 the two halves of 道, and 點 the count on the tab bar */
+  #mockups .halfbar { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px;
+              background:var(--panel2); border:1px solid var(--line); border-radius:11px; }
+  #mockups .halfbar > span { display:flex; align-items:center; justify-content:center;
+              gap:7px; padding:10px 6px; border-radius:8px; color:var(--faint); }
+  #mockups .halfbar > span[data-on] { background:var(--panel); color:var(--ink);
+              box-shadow:inset 0 0 0 1px var(--line); }
+  #mockups .halfbar b { font-size:17px; font-weight:400; }
+  #mockups .halfbar > span[data-on] b { color:var(--cyan); }
+  #mockups .halfbar em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:13px; }
+  #mockups .halfbar .pip { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:11px; color:#0A0C1C; background:var(--gold); border-radius:99px;
+              padding:3px 6px; }
+  #mockups .tabbar { display:grid; grid-template-columns:repeat(5,1fr);
+              background:var(--panel2); border:1px solid var(--line); border-radius:11px;
+              padding:9px 0 11px; }
+  #mockups .tabbar > span { display:flex; flex-direction:column; align-items:center; gap:3px;
+              color:var(--faint); }
+  #mockups .tabbar > span[data-on] { color:var(--cyan); }
+  #mockups .tabbar b { position:relative; font-size:19px; font-weight:400; line-height:1.1; }
+  #mockups .tabbar u { position:absolute; left:100%; bottom:55%; transform:translateX(-3px);
+              text-decoration:none; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:10px; line-height:1; color:#0A0C1C; background:var(--gold);
+              border-radius:99px; padding:2.5px 5px; }
+  #mockups .tabbar i { font-style:normal; font-size:9.5px; letter-spacing:.16em;
+              text-transform:uppercase; }
+
+  /* 凝丹 the card that appears only when 材 runs out */
+  #mockups .mk.cond { border-color:var(--magenta); }
+  #mockups .cond .chd { display:flex; align-items:center; gap:11px; }
+  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--magenta); }
+  #mockups .cond .chd em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
+              font-weight:700; font-size:16px; }
+  #mockups .cond .chd i { font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .cond .body { margin:9px 0 12px; font-size:13.5px; color:var(--faint);
+              line-height:1.6; }
+  #mockups .cond .go { display:block; text-align:center; background:var(--magenta);
+              color:#0A0C1C; border-radius:8px; padding:12px; font-size:15px;
+              font-family:Rajdhani,sans-serif; font-weight:700; letter-spacing:.06em;
+              text-transform:uppercase; }
+  #mockups .cond .hint { display:flex; gap:11px; align-items:flex-start; margin-top:10px;
+              background:color-mix(in srgb, var(--gold) 10%, var(--panel));
+              border:1px solid var(--gold); border-radius:11px; padding:11px 13px;
+              font-size:13px; line-height:1.5; }
+  #mockups .cond .hint b { flex:none; font-size:17px; font-weight:400; color:var(--gold); }
 
   /* 收 */
   #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
@@ -840,6 +1003,8 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
+      <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
       <a href="#qi"><b>氣</b> Qi</a>
@@ -909,6 +1074,23 @@ const page = `<title>九境 Ninefold — the Bible</title>
       have 熟 Known can be driven instead: ${DRIVE_SIZES.join(', ')} kills in one tap,
       paid for in qi, which is also the exchange the economy never had.</p>
     ${MOCK_DRIVE}
+
+    <h3>半 Finding the tree</h3>
+    <p class="t">Bruno, standing in the fifth realm with ${daoFree(
+      layersOpened({ ...newState(0), realm: 5, layer: 4 } as State), 4, ['root'], 0)} 道
+      unspent: <i>"não encontro o tree/path function estou confuso."</i> He was not
+      missing it. The 道 tab opened on a stance picker, nine sequence slots and an art
+      pool, and the tree's first node began about fourteen hundred pixels down — a tab
+      called Path whose first screenful contains no path. Two halves and a switch, tree
+      first, and the unspent count moved onto the tab bar where it is visible from
+      anywhere.</p>
+    ${MOCK_HALVES}
+
+    <h3>凝丹 The way out of the only dead end</h3>
+    <p class="t">The wall below needs an escape hatch or it is not a wall, it is a stop.
+      This is it, and it is drawn only at the moment it is an answer: 材 material at
+      zero, a 妖丹 still to be had, and a warden that will not fall without one.</p>
+    ${MOCK_CONDENSE}
 
     <h3>收 The corner</h3>
     <p class="t">Five bare characters floating over the corner of a screen that is already
@@ -1084,6 +1266,105 @@ const page = `<title>九境 Ninefold — the Bible</title>
       on purpose: a cultivator at a hard clamp has two hundred wasted points and every 氣
       roll they find afterwards does nothing, and a stat that silently stops working is
       worse than a stat that was never there.</div>
+  </section>
+
+  <section class="sec" id="wall">
+    <h2><span class="h">守貢</span> The wall, and why it had to be a slope</h2>
+    <p class="t">Bruno asked for it in one sentence: <i>"não um muro que torne impossivel
+      mas que dificulte players 100% idle e premeie jogadores mais ativos."</i> Not a
+      locked door — a climb that is harder for somebody who never plays and kinder to
+      somebody who does.</p>
+
+    <h3>Why the obvious lever could not do it</h3>
+    <p class="t">The design was already there and it was not holding. A warden's power
+      counts 妖丹 cores, so from the third realm a warden cannot be walked past by anyone
+      who has never killed anything — except that <b>the warden itself paid a full
+      harvest of 材</b>, so nine warden kills funded the cores for the next nine warden
+      kills and the gate financed its own key. Measured, a cultivator who never tapped a
+      beast reached the ninth realm holding 39 core levels against the 40 the last warden
+      reads for: through by a hair, on a loop that never asked them to play.</p>
+    <p class="t">The obvious fix is to cut what a warden pays. It was swept across its
+      whole range, and it turns out to have <b>no middle at all</b>:</p>
+    <table>
+      <tr><th>a warden pays…</th><th style="text-align:right">the waiter finishes</th></tr>
+      <tr><td>everything (as shipped)</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>90%</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>80%</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>70%</td><td style="text-align:right"><b>never</b> — stuck in the eighth realm</td></tr>
+      <tr><td>60%</td><td style="text-align:right"><b>never</b> — stuck in the seventh</td></tr>
+    </table>
+    <p class="t">A core's price climbs by a third every level and a tribute is flat, so
+      the two curves cross once and the answer flips from <em>unchanged</em> to
+      <em>stopped for ever</em> between two neighbouring settings. There is no number to
+      tune. A lever with no middle cannot build a wall that only slows you down.</p>
+
+    <h3>So the middle was built instead</h3>
+    <p class="t">Two pieces, and neither works without the other.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">守貢</b> <em>A warden pays a tribute, not a harvest</em>
+        <i>${Math.round(WARDEN_TRIBUTE * 100)}% of what its depth is worth, and never the
+        old-beast floor. A gate that pays for its own key is not a gate.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">凝丹</b> <em>And a core can always be forced out of raw qi</em>
+        <i>${CORE_QI_RUNGS} rungs of the ladder you are standing on, for one level. It is
+        a bad exchange and the screen says so, which is the whole point: it is the door
+        that stops the wall being a stop, and it is priced so that using it hurts.</i></span></div>
+    </div>
+    <p class="t">The second one is what turns the cliff into a dial. Measured across it,
+      with every other cultivator unchanged <b>to the day</b>:</p>
+    <table>
+      <tr><th>a condensed core costs…</th><th style="text-align:right">the waiter finishes</th>
+          <th style="text-align:right">everybody who fights</th></tr>
+      <tr><td>2.2 rungs</td><td style="text-align:right">day 171</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>4 rungs</td><td style="text-align:right">day 188</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td><b>6 rungs (shipped)</b></td><td style="text-align:right"><b>day 217</b></td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>9 rungs</td><td style="text-align:right">day 253</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>14 rungs</td><td style="text-align:right">day 316</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>20 rungs</td><td style="text-align:right">day 392</td><td style="text-align:right">unchanged</td></tr>
+    </table>
+
+    <h3>What it actually asks for</h3>
+    <p class="t">This is the number that matters, and it is deliberately small. 勤 the
+      harness grew a cultivator whose day is the waiter's day exactly — one visit, no
+      tower, no gear, no furnace — <b>plus two beasts before putting the phone down</b>.
+      Two beasts a day is worth <b class="big">${BARELY_SAVES} days</b> off the climb.</p>
+    <div class="rule"><b>And nothing was taken away.</b> The qi rate is untouched. Offline
+      is untouched. Losing a fight still costs nothing, and the screen still says so. The
+      only thing that changed is the price of a warden, paid in the one currency that has
+      always come from playing — and the one thing that was added is a way to pay it
+      without playing, dearly.</div>
+  </section>
+
+  <section class="sec" id="clock">
+    <h2><span class="h">曆</span> The content clock</h2>
+    <p class="t">Bruno: <i>"o ideal seria haver conteudo para 3 meses para o lançamento
+      para dar tempo de planearmos expansões."</i> Three months is thirteen weeks. So the
+      question is not how long the climb takes — it is <b>when the last new thing
+      arrives</b>, which is a different number and nobody had measured it.</p>
+    <p class="t">Counting every named thing a player meets — a system opening, a beast, a
+      stance, an art, a lineage of gear — against the days the ${ACTIVE_NAME} cultivator
+      actually reaches each realm:</p>
+    <table>
+      <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
+      ${CLOCK_ROWS}
+    </table>
+    <p class="t">Three readings, and all three are uncomfortable:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is spent in week one</em>
+        <i>Four of the nine realms arrive by day ${CLOCK_R4}. A player has met a third of
+        every named thing in 九境 before they have formed a habit of opening it.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塊</b> <em>A realm empties itself in its first minute</em>
+        <i>Every realm hands over all of its beasts, its stance, its art and its lineage
+        at the breakthrough — and the later realms last twelve to sixteen days each. The
+        eighth realm is ${CLOCK_R8} days long and delivers everything it has on day one
+        of them.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">後</b> <em>And after day ${CLOCK_LAST}, nothing, for ever</em>
+        <i>The summit is reached on day ${CLOCK_DONE} and 劫 the tribulation runs at a
+        steady ${ENDGAME_PACE} days a mark from there to infinity — the same Dragon, the
+        same loop, at a bigger number. That is a pace, not a calendar.</i></span></div>
+    </div>
+    <div class="warn"><b>What this section is not.</b> It is not a plan yet. It is the
+      measurement that any plan has to start from, and it is on this page so that the
+      three months are argued about with a number rather than a feeling.</div>
   </section>
 
   <section class="sec" id="ladder">

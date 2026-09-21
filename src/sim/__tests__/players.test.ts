@@ -36,6 +36,12 @@ const T0 = 1_700_000_000;
 
 describe('勤 what being there buys you', () => {
   const runs = playAll();
+  /**
+   * By name, never by position. These were destructured positionally until a new
+   * cultivator was added to the harness, at which point `active` silently became
+   * somebody else and the assertions went on passing about the wrong person.
+   */
+  const who = (name: string) => runs.find((r) => r.habit.name === name)!;
 
   it('prints the five cultivators, and keeps them in order', () => {
     const rows = runs.map((run) => {
@@ -50,23 +56,43 @@ describe('勤 what being there buys you', () => {
     });
     console.log(`\n  勤 five cultivators, one game:\n${rows.join('\n')}\n`);
 
-    const [waiter, once, casual, active, hourly] = runs;
+    const waiter = who('never fights');
+    const barely = who('barely fights');
+    const once = who('once a day');
+    const casual = who('casual');
+    const active = who('active');
+    const hourly = who('every hour');
 
     /**
-     * 牆 The wall that was not there.
+     * 牆 The wall, built the second time and measured both ways.
      *
-     * This used to assert that a cultivator who never hunts is stuck in the low realms
-     * for ever, and it passed — because *this harness* was crediting a warden kill with
-     * the count and nothing else, while the game has always paid a warden's 材 material
-     * like any other beast. Four wardens' material is enough 妖丹 to keep climbing, so
-     * the stall was a measuring error and the shipped game never had it.
+     * The first attempt at it was a single dial — 守貢 WARDEN_TRIBUTE — and the sweep
+     * killed it: at 0.8 the waiter finished in 142 days and at 0.7 they never finished
+     * at all. There is no setting in between, because a core's price climbs by a third
+     * each level and a tribute is flat. Bruno asked for a wall that *slows* and does not
+     * stop, and a lever with no middle cannot be one.
      *
-     * The honest guarantee is the one that survives the correction, and it is the one
-     * that matters anyway: hunting is worth a large, measured share of the whole climb.
-     * A waiter still gets there; it costs them about a month.
+     * So the middle was built instead: 凝丹 a core can always be forced out of raw qi,
+     * at CORE_QI_RUNGS rungs of the climb a level. Nobody is ever stopped, and the
+     * exchange rate is a smooth dial — measured across it, the waiter lands on day 171,
+     * 188, 217, 253, 316, 392 while every cultivator who fights stays exactly where
+     * they were, to the day.
+     *
+     * These two lines are the whole promise, and they are opposite ends of it:
+     * the waiter still finishes, and the waiter pays dearly for it.
      */
     expect(waiter.arrival[8]).toBeDefined();
-    expect(waiter.arrival[8]).toBeGreaterThan(once.arrival[8] * 1.25);
+    expect(waiter.arrival[8]).toBeGreaterThan(once.arrival[8] * 1.5);
+
+    /**
+     * 狩 And what the wall actually asks for, which is the part that has to stay small.
+     * `barely fights` is the waiter's day exactly — one visit, no tower, no gear, no
+     * furnace — plus two beasts before putting the phone down. Two beasts a day is
+     * worth about seven weeks of the climb, and that is the whole lesson the wall is
+     * there to teach.
+     */
+    expect(barely.arrival[8]).toBeLessThan(waiter.arrival[8] * 0.85);
+    expect(barely.arrival[8]).toBeGreaterThan(once.arrival[8]);
 
     // And everybody who does fight gets there, sooner the more they play.
     for (const r of [once, casual, active, hourly]) expect(r.arrival[8]).toBeDefined();
@@ -172,7 +198,8 @@ describe('勤 what being there buys you', () => {
   });
 
   it('gives the furnace and the tower to a fighter, and barely either to a waiter', () => {
-    const [waiter, , , active] = runs;
+    const waiter = who('never fights');
+    const active = who('active');
     // A cultivator who never opens 狩 Hunt never climbs a tower floor and never brews a
     // pill: both of those eat material by the sackful, and four wardens a realm do not
     // pay by the sackful.
@@ -180,11 +207,11 @@ describe('勤 what being there buys you', () => {
     expect(pillsTaken(waiter.state.brewed)).toBe(0);
     expect(active.state.tower).toBeGreaterThan(50);
 
-    // 妖丹 cores are *not* the difference, which is worth stating out loud because the
-    // old version of this test assumed they were: measured, a waiter's wardens buy them
-    // most of the way to a fighter's core count. What separates the two is everything
-    // material buys on top of the cores — the tower, the furnace, the gear — and it
-    // separates them by more than an order of magnitude of power.
+    // 妖丹 cores are part of the difference again, and only part of it. 守貢 the
+    // tribute stopped a warden from funding the next warden, so a waiter now falls
+    // behind on cores as well — but the gap that actually shows is everything else
+    // material buys: the tower, the furnace, the gear, none of which a waiter ever
+    // touches. It separates them by more than an order of magnitude of power.
     expect(active.power).toBeGreaterThan(waiter.power * 5);
   });
 });

@@ -1,7 +1,7 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
-  OLD_BEAST_FLOOR, SEEN_BOUNTY, ladderBetween,
+  OLD_BEAST_FLOOR, SEEN_BOUNTY, WARDEN_TRIBUTE, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
@@ -370,6 +370,10 @@ export function seenBounty(b: Beast): number {
  */
 export function lootFrom(s: State, b: Beast): number {
   const own = loot(b);
+  // 守貢 A warden pays a tribute, not a harvest, and never takes the old-beast floor:
+  // it is the gate, and a gate that pays for its own key is not a gate. See
+  // WARDEN_TRIBUTE for the measurement that made this necessary.
+  if (b.warden) return Math.max(1, Math.round(own * WARDEN_TRIBUTE));
   const mine = (Math.max(1, Math.min(9, s.realm)) - 1) * LAYERS_PER_REALM + 3;
   const floor = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (mine - 1) * HUNT_SHARE * OLD_BEAST_FLOOR;
   return Math.max(own, Math.round(floor));

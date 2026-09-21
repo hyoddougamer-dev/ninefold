@@ -2,7 +2,7 @@ import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
-  ladderAt, ladderBetween, levelCap, OPENING_PURSE,
+  ladderAt, ladderBetween, levelCap, CORE_QI_RUNGS, OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
@@ -252,6 +252,30 @@ export function buy(s: State, u: Upgrade): State {
     qi: i.currency === 'qi' ? s.qi - cost : s.qi,
     materials: i.currency === 'material' ? s.materials - cost : s.materials,
     levels: { ...s.levels, [u]: s.levels[u] + 1 },
+  };
+}
+
+/**
+ * 凝丹 The other price of a 妖丹 core: raw qi, for somebody with no beast to hand.
+ *
+ * It rides the rung the cultivator is standing on rather than the core's own level, so
+ * it means the same thing at every realm — *this many layers of climbing* — and it can
+ * never be outgrown or gamed by stalling. See CORE_QI_RUNGS for why it exists at all.
+ */
+export function condenseCost(s: State): number {
+  return Math.ceil(ladderBetween(layersOpened(s)) * CORE_QI_RUNGS);
+}
+
+export function canCondense(s: State): boolean {
+  return !atCap(s, 'cores') && s.qi >= condenseCost(s);
+}
+
+export function condense(s: State): State {
+  if (!canCondense(s)) return s;
+  return {
+    ...s,
+    qi: s.qi - condenseCost(s),
+    levels: { ...s.levels, cores: s.levels.cores + 1 },
   };
 }
 

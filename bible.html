@@ -30,6 +30,12 @@
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
 
+  /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
+  #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
+               overflow:hidden; min-width:120px; }
+  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
+  #clock td:last-child { width:45%; }
+
   /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
   /* Every rule is scoped to the section. The first draft was not, and its .ladder
      collided with the realm-ladder cards further down the page — which is the same
@@ -148,6 +154,53 @@
   #mockups .drive .size .price em { display:block; font-style:normal; font-size:10px;
                            color:var(--faint); font-weight:400; letter-spacing:.1em;
                            text-transform:uppercase; }
+
+  /* 半 the two halves of 道, and 點 the count on the tab bar */
+  #mockups .halfbar { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px;
+              background:var(--panel2); border:1px solid var(--line); border-radius:11px; }
+  #mockups .halfbar > span { display:flex; align-items:center; justify-content:center;
+              gap:7px; padding:10px 6px; border-radius:8px; color:var(--faint); }
+  #mockups .halfbar > span[data-on] { background:var(--panel); color:var(--ink);
+              box-shadow:inset 0 0 0 1px var(--line); }
+  #mockups .halfbar b { font-size:17px; font-weight:400; }
+  #mockups .halfbar > span[data-on] b { color:var(--cyan); }
+  #mockups .halfbar em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:13px; }
+  #mockups .halfbar .pip { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:11px; color:#0A0C1C; background:var(--gold); border-radius:99px;
+              padding:3px 6px; }
+  #mockups .tabbar { display:grid; grid-template-columns:repeat(5,1fr);
+              background:var(--panel2); border:1px solid var(--line); border-radius:11px;
+              padding:9px 0 11px; }
+  #mockups .tabbar > span { display:flex; flex-direction:column; align-items:center; gap:3px;
+              color:var(--faint); }
+  #mockups .tabbar > span[data-on] { color:var(--cyan); }
+  #mockups .tabbar b { position:relative; font-size:19px; font-weight:400; line-height:1.1; }
+  #mockups .tabbar u { position:absolute; left:100%; bottom:55%; transform:translateX(-3px);
+              text-decoration:none; font-family:Rajdhani,sans-serif; font-weight:700;
+              font-size:10px; line-height:1; color:#0A0C1C; background:var(--gold);
+              border-radius:99px; padding:2.5px 5px; }
+  #mockups .tabbar i { font-style:normal; font-size:9.5px; letter-spacing:.16em;
+              text-transform:uppercase; }
+
+  /* 凝丹 the card that appears only when 材 runs out */
+  #mockups .mk.cond { border-color:var(--magenta); }
+  #mockups .cond .chd { display:flex; align-items:center; gap:11px; }
+  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--magenta); }
+  #mockups .cond .chd em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
+              font-weight:700; font-size:16px; }
+  #mockups .cond .chd i { font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .cond .body { margin:9px 0 12px; font-size:13.5px; color:var(--faint);
+              line-height:1.6; }
+  #mockups .cond .go { display:block; text-align:center; background:var(--magenta);
+              color:#0A0C1C; border-radius:8px; padding:12px; font-size:15px;
+              font-family:Rajdhani,sans-serif; font-weight:700; letter-spacing:.06em;
+              text-transform:uppercase; }
+  #mockups .cond .hint { display:flex; gap:11px; align-items:flex-start; margin-top:10px;
+              background:color-mix(in srgb, var(--gold) 10%, var(--panel));
+              border:1px solid var(--gold); border-radius:11px; padding:11px 13px;
+              font-size:13px; line-height:1.5; }
+  #mockups .cond .hint b { flex:none; font-size:17px; font-weight:400; color:var(--gold); }
 
   /* 收 */
   #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
@@ -312,6 +365,8 @@
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
+      <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
       <a href="#qi"><b>氣</b> Qi</a>
@@ -439,6 +494,43 @@
       one rung wherever you are standing, and fighting it one at a time is still free.</p>
   </div>
 
+    <h3>半 Finding the tree</h3>
+    <p class="t">Bruno, standing in the fifth realm with 20 道
+      unspent: <i>"não encontro o tree/path function estou confuso."</i> He was not
+      missing it. The 道 tab opened on a stance picker, nine sequence slots and an art
+      pool, and the tree's first node began about fourteen hundred pixels down — a tab
+      called Path whose first screenful contains no path. Two halves and a switch, tree
+      first, and the unspent count moved onto the tab bar where it is visible from
+      anywhere.</p>
+    <div class="mk two">
+    <div class="halfbar">
+      <span data-on="true"><b class="cjk">道</b><em>Techniques</em><i class="pip">20</i></span>
+      <span><b class="cjk">勢</b><em>Stance &amp; Arts</em></span>
+    </div>
+    <div class="tabbar">
+      <span><b class="cjk">修</b><i>Cultivate</i></span><span><b class="cjk">狩</b><i>Hunt</i></span><span><b class="cjk">塔</b><i>Trials</i></span><span><b class="cjk">器</b><i>Gear</i></span>
+      <span data-on="true"><b class="cjk">道<u>20</u></b><i>Path</i></span>
+    </div>
+    <p class="cap">The switch, and the same count on the tab bar — which is where it is
+      seen from every other screen in the game.</p>
+  </div>
+
+    <h3>凝丹 The way out of the only dead end</h3>
+    <p class="t">The wall below needs an escape hatch or it is not a wall, it is a stop.
+      This is it, and it is drawn only at the moment it is an answer: 材 material at
+      zero, a 妖丹 still to be had, and a warden that will not fall without one.</p>
+    <div class="mk cond">
+    <div class="chd"><b class="cjk">凝丹</b><span><em>No 材 material left</em>
+      <i>10.3B qi — 6 rungs of the climb</i></span></div>
+    <p class="body">You can force a 妖丹 out of raw qi instead. It works, and it is dear:
+      this is qi that would have opened layers.</p>
+    <span class="go">凝 Condense a core</span>
+    <span class="hint"><b class="cjk">狩</b> A beast leaves material when it falls. That
+      is the cheap way, and it is one tap away.</span>
+    <p class="cap">At the fifth realm's ceiling. The price is condenseCost() and the card
+      is drawn only while canBuy(cores) is false — it is an answer, not a fifth box.</p>
+  </div>
+
     <h3>收 The corner</h3>
     <p class="t">Five bare characters floating over the corner of a screen that is already
       teaching characters is five unanswered questions at once. One button, and every row
@@ -459,8 +551,8 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>35 closed,
-      0 open,
+    <p class="t"><b>38 closed,
+      1 open,
       1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
     <div class="board"><div class="srow" style="--hue:var(--cyan)">
@@ -498,7 +590,10 @@
     <span class="body"><b class="cjk">開</b> <em><a href="#opens">What each realm opens</a></em><i>Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 32 days later.</i></span>
+    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 81 days later.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one — and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 59 days of the climb.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
@@ -567,7 +662,16 @@
     <span class="body"><b class="cjk">誠</b> <em><a href="#combat">Honest odds</a></em><i>A fight that wins none of its sampled seeds says how far off it is rather than quoting the 2% floor. The first realm's three beasts read 2%, 2%, 2% and now read ×2.4, ×7.0, ×14.0.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">半</b> <em><a href="#mockups">Finding the tree</a></em><i>The 道 tab held a stance picker, nine sequence slots and an art pool before it held any tree, so the tree began fourteen hundred pixels below the fold. Two halves and a switch; the tree is the one that opens.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">點</b> <em><a href="#mockups">Points you have not spent</a></em><i>An unspent 道 point was money on the floor two taps and a scroll away. The count now rides the tab itself, so it is visible from every other screen in the game.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">收</b> <em><a href="#mockups">The corner, folded</a></em><i>Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.</i></span>
+  </div><div class="srow" style="--hue:var(--gold)">
+    <span class="st"><b class="cjk">行</b><i>open</i></span>
+    <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured: an active cultivator meets four of the nine realms in the first five days and the last new thing in the game on day 60. The climb has a pace. What comes after it does not have a calendar.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
     <span class="st"><b class="cjk">待</b><i>planned</i></span>
     <span class="body"><b class="cjk">轉世</b> <em>Rebirth</em><i>Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody's memory.</i></span>
@@ -829,50 +933,66 @@
     <td><b class="cjk">never fights</b><i style="display:block">Opens it once a day, buys what the qi affords, and never taps a beast.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--cyan)">day 123</td>
-    <td class="n">41.3M</td>
+    <td class="n" style="color:var(--cyan)">day 169</td>
+    <td class="n">33.4M</td>
     <td class="n">—</td>
     <td class="n">8</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">barely fights</b><i style="display:block">The same visit as the one above, and two beasts before putting it down.</i></td>
+    <td class="n">1x</td>
+    <td class="n">0 min</td>
+    <td class="n" style="color:var(--cyan)">day 110</td>
+    <td class="n">115M</td>
+    <td class="n">—</td>
+    <td class="n">270</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
-    <td class="n" style="color:var(--cyan)">day 91</td>
-    <td class="n">351M</td>
-    <td class="n">90</td>
-    <td class="n">1,210</td>
+    <td class="n" style="color:var(--cyan)">day 88</td>
+    <td class="n">1.05B</td>
+    <td class="n">96</td>
+    <td class="n">1,160</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--cyan)">day 81</td>
-    <td class="n">745M</td>
+    <td class="n" style="color:var(--cyan)">day 80</td>
+    <td class="n">2.58B</td>
     <td class="n">—</td>
-    <td class="n">875</td>
+    <td class="n">857</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 61</td>
-    <td class="n">1.22B</td>
-    <td class="n">97</td>
-    <td class="n">5,223</td>
+    <td class="n" style="color:var(--cyan)">day 60</td>
+    <td class="n">4.25B</td>
+    <td class="n">103</td>
+    <td class="n">5,073</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
     <td class="n" style="color:var(--cyan)">day 44</td>
-    <td class="n">1.07B</td>
-    <td class="n">96</td>
-    <td class="n">16,896</td>
+    <td class="n">3.7B</td>
+    <td class="n">103</td>
+    <td class="n">16,823</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
     <td class="n" style="color:var(--cyan)">day 61</td>
-    <td class="n">1.02B</td>
-    <td class="n">96</td>
-    <td class="n">5,426</td>
+    <td class="n">4.25B</td>
+    <td class="n">103</td>
+    <td class="n">5,357</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">walks 神</b><i style="display:block">The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.</i></td>
+    <td class="n">6x</td>
+    <td class="n">10 min</td>
+    <td class="n" style="color:var(--cyan)">day 57</td>
+    <td class="n">1.27B</td>
+    <td class="n">97</td>
+    <td class="n">4,907</td>
   </tr>
     </table>
     <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
@@ -892,6 +1012,131 @@
       on purpose: a cultivator at a hard clamp has two hundred wasted points and every 氣
       roll they find afterwards does nothing, and a stat that silently stops working is
       worse than a stat that was never there.</div>
+  </section>
+
+  <section class="sec" id="wall">
+    <h2><span class="h">守貢</span> The wall, and why it had to be a slope</h2>
+    <p class="t">Bruno asked for it in one sentence: <i>"não um muro que torne impossivel
+      mas que dificulte players 100% idle e premeie jogadores mais ativos."</i> Not a
+      locked door — a climb that is harder for somebody who never plays and kinder to
+      somebody who does.</p>
+
+    <h3>Why the obvious lever could not do it</h3>
+    <p class="t">The design was already there and it was not holding. A warden's power
+      counts 妖丹 cores, so from the third realm a warden cannot be walked past by anyone
+      who has never killed anything — except that <b>the warden itself paid a full
+      harvest of 材</b>, so nine warden kills funded the cores for the next nine warden
+      kills and the gate financed its own key. Measured, a cultivator who never tapped a
+      beast reached the ninth realm holding 39 core levels against the 40 the last warden
+      reads for: through by a hair, on a loop that never asked them to play.</p>
+    <p class="t">The obvious fix is to cut what a warden pays. It was swept across its
+      whole range, and it turns out to have <b>no middle at all</b>:</p>
+    <table>
+      <tr><th>a warden pays…</th><th style="text-align:right">the waiter finishes</th></tr>
+      <tr><td>everything (as shipped)</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>90%</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>80%</td><td style="text-align:right">day 142</td></tr>
+      <tr><td>70%</td><td style="text-align:right"><b>never</b> — stuck in the eighth realm</td></tr>
+      <tr><td>60%</td><td style="text-align:right"><b>never</b> — stuck in the seventh</td></tr>
+    </table>
+    <p class="t">A core's price climbs by a third every level and a tribute is flat, so
+      the two curves cross once and the answer flips from <em>unchanged</em> to
+      <em>stopped for ever</em> between two neighbouring settings. There is no number to
+      tune. A lever with no middle cannot build a wall that only slows you down.</p>
+
+    <h3>So the middle was built instead</h3>
+    <p class="t">Two pieces, and neither works without the other.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">守貢</b> <em>A warden pays a tribute, not a harvest</em>
+        <i>18% of what its depth is worth, and never the
+        old-beast floor. A gate that pays for its own key is not a gate.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">凝丹</b> <em>And a core can always be forced out of raw qi</em>
+        <i>6 rungs of the ladder you are standing on, for one level. It is
+        a bad exchange and the screen says so, which is the whole point: it is the door
+        that stops the wall being a stop, and it is priced so that using it hurts.</i></span></div>
+    </div>
+    <p class="t">The second one is what turns the cliff into a dial. Measured across it,
+      with every other cultivator unchanged <b>to the day</b>:</p>
+    <table>
+      <tr><th>a condensed core costs…</th><th style="text-align:right">the waiter finishes</th>
+          <th style="text-align:right">everybody who fights</th></tr>
+      <tr><td>2.2 rungs</td><td style="text-align:right">day 171</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>4 rungs</td><td style="text-align:right">day 188</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td><b>6 rungs (shipped)</b></td><td style="text-align:right"><b>day 217</b></td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>9 rungs</td><td style="text-align:right">day 253</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>14 rungs</td><td style="text-align:right">day 316</td><td style="text-align:right">unchanged</td></tr>
+      <tr><td>20 rungs</td><td style="text-align:right">day 392</td><td style="text-align:right">unchanged</td></tr>
+    </table>
+
+    <h3>What it actually asks for</h3>
+    <p class="t">This is the number that matters, and it is deliberately small. 勤 the
+      harness grew a cultivator whose day is the waiter's day exactly — one visit, no
+      tower, no gear, no furnace — <b>plus two beasts before putting the phone down</b>.
+      Two beasts a day is worth <b class="big">59 days</b> off the climb.</p>
+    <div class="rule"><b>And nothing was taken away.</b> The qi rate is untouched. Offline
+      is untouched. Losing a fight still costs nothing, and the screen still says so. The
+      only thing that changed is the price of a warden, paid in the one currency that has
+      always come from playing — and the one thing that was added is a way to pay it
+      without playing, dearly.</div>
+  </section>
+
+  <section class="sec" id="clock">
+    <h2><span class="h">曆</span> The content clock</h2>
+    <p class="t">Bruno: <i>"o ideal seria haver conteudo para 3 meses para o lançamento
+      para dar tempo de planearmos expansões."</i> Three months is thirteen weeks. So the
+      question is not how long the climb takes — it is <b>when the last new thing
+      arrives</b>, which is a different number and nobody had measured it.</p>
+    <p class="t">Counting every named thing a player meets — a system opening, a beast, a
+      stance, an art, a lineage of gear — against the days the active cultivator
+      actually reaches each realm:</p>
+    <table>
+      <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
+      <tr><td>week 1<span class="faint"> · day 0–6</span></td>
+      <td style="text-align:right">35</td>
+      <td><span class="wk"><i style="width:100%"></i></span></td></tr><tr><td>week 2<span class="faint"> · day 7–13</span></td>
+      <td style="text-align:right">8</td>
+      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
+      <td style="text-align:right">8</td>
+      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
+      <td style="text-align:right">8</td>
+      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 7<span class="faint"> · day 42–48</span></td>
+      <td style="text-align:right">8</td>
+      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 8<span class="faint"> · day 49–55</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
+      <td style="text-align:right">8</td>
+      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 10<span class="faint"> · day 63–69</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 11<span class="faint"> · day 70–76</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 12<span class="faint"> · day 77–83</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 13<span class="faint"> · day 84–90</span></td>
+      <td style="text-align:right">—</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr>
+    </table>
+    <p class="t">Three readings, and all three are uncomfortable:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is spent in week one</em>
+        <i>Four of the nine realms arrive by day 5. A player has met a third of
+        every named thing in 九境 before they have formed a habit of opening it.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塊</b> <em>A realm empties itself in its first minute</em>
+        <i>Every realm hands over all of its beasts, its stance, its art and its lineage
+        at the breakthrough — and the later realms last twelve to sixteen days each. The
+        eighth realm is 16 days long and delivers everything it has on day one
+        of them.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">後</b> <em>And after day 60, nothing, for ever</em>
+        <i>The summit is reached on day 71 and 劫 the tribulation runs at a
+        steady 3 days a mark from there to infinity — the same Dragon, the
+        same loop, at a bigger number. That is a pace, not a calendar.</i></span></div>
+    </div>
+    <div class="warn"><b>What this section is not.</b> It is not a plan yet. It is the
+      measurement that any plan has to start from, and it is on this page so that the
+      three months are argued about with a number rather than a feeling.</div>
   </section>
 
   <section class="sec" id="ladder">
@@ -2329,8 +2574,8 @@
       1.728x and a Dragon of 1.89x.</p>
     <p class="t">Measured, played out crossing by crossing: <b>40 marks
       in 120 days</b>, 2 to
-      4 days each, ending on tower floor 237
-      with 445 pills brewed. The margin a good run arrives
+      4 days each, ending on tower floor 244
+      with 446 pills brewed. The margin a good run arrives
       with buys the first crossings at
       98%; the odds then walk down and settle
       at 66%, and the furnace

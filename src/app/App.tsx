@@ -45,7 +45,7 @@ import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
-import { BLOOM, LOCKED, MENU, UPDATE } from './copy.ts';
+import { BLOOM, DAO, LOCKED, MENU, UPDATE } from './copy.ts';
 
 /**
  * 開 The tabs, and what opens them.
@@ -108,6 +108,13 @@ export function App() {
   const [bloom, setBloom] = useState<number | null>(null);
   /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
   const [locked, setLocked] = useState<System | null>(null);
+  /** 點 道 points earned and not yet spent. The tab bar wears the count. */
+  const freePoints = daoFree(
+    layersOpened(state),
+    Object.entries(state.killed).filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length,
+    state.unlocked,
+    filledRealms(state),
+  );
   const loaded = useRef(false);
   const lastLayer = useRef(0);
   /**
@@ -530,6 +537,10 @@ export function App() {
       <nav className="tabs">
         {TABS.map((t) => {
           const shut = t.needs !== null && !isOpen(state.realm, t.needs);
+          // 點 An unspent 道 point is money on the floor, and the screen it is spent on
+          // is three taps and a scroll away. So the tab carries the count: the one place
+          // a player looking at any other screen will see it.
+          const owed = t.key === 'dao' && !shut && isOpen(state.realm, 'tree') ? freePoints : 0;
           return (
             <button
               key={t.key}
@@ -539,7 +550,10 @@ export function App() {
             >
               {/* A locked tab keeps its own character and swaps its name for the realm
                   that opens it. Four identical padlocks in a row say nothing. */}
-              <span className="g cjk">{t.han}</span>
+              <span className="g cjk">
+                {t.han}
+                {owed > 0 && <i className="owed" title={DAO.freePoints(owed)}>{owed}</i>}
+              </span>
               <span className="l">{shut ? realmInfo(systemInfo(t.needs!).realm).han : t.label}</span>
             </button>
           );

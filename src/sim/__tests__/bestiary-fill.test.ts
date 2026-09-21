@@ -51,9 +51,9 @@ describe('圖鑑 finishing a realm of the bestiary', () => {
   });
 
   /**
-   * The measurement that set the bar, kept so it cannot quietly stop being true. These
-   * five play the game without knowing 圖鑑 exists, and none of them stumbles into it —
-   * which is the point. It has to be gone after on purpose.
+   * The measurement that set the bar, kept so it cannot quietly stop being true. Every
+   * cultivator in the harness plays without knowing 圖鑑 exists, and none of them
+   * stumbles into it — which is the point. It has to be gone after on purpose.
    */
   it('is never finished by accident, however much somebody hunts', () => {
     const rows = playAll().map((run) => {
@@ -69,5 +69,5 @@ describe('圖鑑 finishing a realm of the bestiary', () => {
     }
     console.log('');
     for (const r of rows) expect(r.filled).toBe(0);
-  }, 30_000);
+  }, 120_000);
 });

@@ -94,6 +94,19 @@ export const CULTIVATE = {
   pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   capped: 'Full for this realm. Climb to hold more.',
+
+  /**
+   * 凝丹 Condensing a core out of raw qi, for a cultivator with nothing to skin.
+   *
+   * It only ever appears when 材 material has run out, which is the one moment it is an
+   * answer rather than a fifth box. The wording has to be honest about the exchange
+   * rate — it is a bad deal and saying so is what points at 狩 Hunt.
+   */
+  condenseHead: 'No 材 material left',
+  condense: 'You can force a 妖丹 out of raw qi instead. It works, and it is dear: '
+    + 'this is qi that would have opened layers.',
+  condensePrice: (qi: string, rungs: string) => `${qi} qi — ${rungs} rungs of the climb`,
+  condenseHunt: 'A beast leaves material when it falls. That is the cheap way, and it is one tap away.',
   /** 境 How far this realm is out of. Nine is worth knowing on the first day. */
   ofNine: (n: number, of: number) => `realm ${n} of ${of}`,
   cap: (held: number, cap: number) => `${held} of ${cap}`,
@@ -495,8 +508,15 @@ export const GEAR = {
 export const DAO = {
   /** 道 What the screen says while the tree is still shut. The points are banking. */
   shut: (earned: number, han: string, name: string) =>
-    `道 The technique tree opens at ${han} ${name}. You have earned ${earned} 道 already, `
+    `The technique tree opens at ${han} ${name}. You have earned ${earned} 道 already, `
     + 'and every point is waiting for you. Nothing is being lost.',
+
+  /** 半 The two halves of the 道 screen. They are different questions. */
+  halfTree: 'Techniques',
+  halfBuild: 'Stance & Arts',
+  /** 點 What the dot on the 道 tab means, for the tooltip and the screen reader. */
+  freePoints: (n: number) =>
+    `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 
   tree: 'All three branches grow from 起. The gold bridges cross between them, so you can climb one branch and step into the next.',
   short: (cost: number, earned: number) =>

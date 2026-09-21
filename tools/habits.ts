@@ -7,8 +7,8 @@
  */
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
-  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, newState, power,
-  upgradeCost, type State,
+  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense, condense,
+  newState, power, upgradeCost, type State,
   filledRealms,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
@@ -58,21 +58,50 @@ export interface Habit {
   readonly branch?: Path;
 }
 
+/**
+ * 道 Which branch each of them walks.
+ *
+ * For most of this game's life the answer was *none*: no habit carried a `branch`, so
+ * `spendTree` was a no-op and every curve ever printed — in the tests, in the bible, in
+ * the arguments those numbers settled — was walked by a cultivator who had never spent a
+ * 道 point. The tree is the game's whole theorycrafting and it had never been measured.
+ *
+ * Everyone who builds walks 劍 the Sword, because a shared axis is what makes five rows
+ * comparable: if each habit took a different branch, the table would be measuring the
+ * branches and pretending to measure the habits. The spread between branches gets its own
+ * cultivator instead — `walks 神` — so both questions are answered and neither is mixed
+ * into the other.
+ */
 export const HABITS: readonly Habit[] = [
   { name: 'never fights', checks: 1, minutes: 0, hunts: 0, tower: false, furnace: false, build: false, gear: false,
+    branch: 'spirit',
     who: 'Opens it once a day, buys what the qi affords, and never taps a beast.' },
+  // 守貢 What the wall actually asks for, stated as a cultivator rather than as an
+  // argument: one visit, no tower, no gear, no furnace, and two beasts before bed.
+  { name: 'barely fights', checks: 1, minutes: 0, hunts: 2, tower: false, furnace: false,
+    build: false, gear: false, branch: 'spirit',
+    who: 'The same visit as the one above, and two beasts before putting it down.' },
   { name: 'once a day', gear: true, checks: 1, minutes: 2, hunts: 4, tower: true, furnace: false, build: true,
+    branch: 'sword',
     who: 'One visit a day, but the visit counts: a few kills and whatever the tower will give up.' },
   { name: 'casual', gear: true, checks: 3, minutes: 5, hunts: 3, tower: false, furnace: false, build: true,
+    branch: 'sword',
     who: 'Three visits, some hunting, never opens the tower.' },
   { name: 'active', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, furnace: true, build: true,
+    branch: 'sword',
     who: 'Six visits, ten minutes each, hunts, climbs and brews.' },
   { name: 'every hour', gear: true, checks: 24, minutes: 15, hunts: 8, tower: true, furnace: true, build: true,
+    branch: 'sword',
     who: 'Every waking hour. As played as this game can be played.' },
   // 圍 The worst case for the economy: every spare coin of qi turned into material.
   { name: 'drives it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
-    furnace: true, build: true, drives: true,
+    furnace: true, build: true, drives: true, branch: 'sword',
     who: 'Plays like the active cultivator and pours every spare coin into 圍 drives.' },
+  // 道 The same cultivator as `active`, down the other branch, so the tree's own spread
+  // is measured instead of being assumed.
+  { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+    furnace: true, build: true, branch: 'spirit',
+    who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
 ];
 
 const ARTS_BY_REALM: Record<string, number> = { crane: 3, tiger: 4, wolf: 7 };
@@ -170,6 +199,17 @@ export function play(h: Habit, maxDays = 400): Run {
         sequence: Object.keys(ARTS_BY_REALM).filter((k) => ARTS_BY_REALM[k] <= s.realm),
         killed: { ...s.killed, crane: 1, tiger: 1, direwolf: 1 },
       };
+    }
+
+    // 凝丹 Stuck at the ceiling with a warden out of reach: the layers are full, so
+    // qi has nowhere else to go and the only move left is to condense cores out of it.
+    // Everybody does this when cornered; the difference between the habits is how often
+    // they are cornered, which is exactly the difference being measured.
+    if (atCeiling(s) && !s.wardenFell) {
+      for (let i = 0; i < 40; i++) {
+        if (odds(s, wardenOf(s.realm)) > 0.5 || !canCondense(s)) break;
+        s = condense(s);
+      }
     }
 
     // 妖 The gate: the warden is fought when the realm is full and it looks worth trying.

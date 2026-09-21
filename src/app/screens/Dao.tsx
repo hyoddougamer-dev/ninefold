@@ -84,6 +84,8 @@ const EDGES: { a: Placed; b: Placed }[] = (() => {
   return out;
 })();
 
+type Half = 'tree' | 'build';
+
 export function Dao({ state, onUnlock, onStance, onSequence }: {
   state: State;
   onUnlock: (key: string) => void;
@@ -91,8 +93,20 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   onSequence: (keys: string[]) => void;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
+  /**
+   * 半 Which half of the screen is showing.
+   *
+   * Bruno, at the fifth realm, with twenty-two points unspent: *"não encontro o
+   * tree/path function estou confuso."* He was not missing it. It was fourteen hundred
+   * pixels below the fold, under a stance picker, five sequence slots and an art pool —
+   * a tab called 道 Path whose first screenful contains no path.
+   *
+   * Two things live here and they are different questions, so they get a switch instead
+   * of a scroll, and the tree is the one that opens.
+   */
+  const [half, setHalf] = useState<Half>('tree');
   const wardens = countWardens(state);
-  const earned = daoEarned(layersOpened(state), wardens);
+  const earned = daoEarned(layersOpened(state), wardens, filledRealms(state));
   const spent = daoSpent(state.unlocked);
   const free = daoFree(layersOpened(state), wardens, state.unlocked, filledRealms(state));
   const chosen = picked ? NODE_BY_KEY[picked] : null;
@@ -104,18 +118,41 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   // first layer either way, so it arrives full rather than arriving empty.
   const tree = isOpen(state.realm, 'tree');
 
+  // Before the tree opens there is only one half, so there is nothing to switch.
+  const showing: Half = tree ? half : 'build';
+
   return (
     <>
-      <Loadout state={state} onStance={onStance} onSequence={onSequence} />
-
-      {!tree && (
-        <p className="faint" style={{ margin: '24px 0 0', fontSize: 13 }}>
-          {DAO.shut(earned, realmOf(opensAt('tree')).han, realmOf(opensAt('tree')).name)}
-        </p>
+      {tree && (
+        <div className="halves" role="tablist">
+          <button role="tab" aria-selected={showing === 'tree'} data-on={showing === 'tree'}
+                  onClick={() => setHalf('tree')}>
+            <b className="cjk">道</b><em>{DAO.halfTree}</em>
+            {free > 0 && <i className="pip">{free}</i>}
+          </button>
+          <button role="tab" aria-selected={showing === 'build'} data-on={showing === 'build'}
+                  onClick={() => setHalf('build')}>
+            <b className="cjk">勢</b><em>{DAO.halfBuild}</em>
+          </button>
+        </div>
       )}
 
-      {tree && <>
-      <div className="row" style={{ marginTop: 26 }}>
+      {/* 鎖 Before the tree opens, this tab is called Path and holds no path. Say so
+          first rather than last: the answer to "where is it" belongs above the thing
+          that is not it, not below a screenful of stances. */}
+      {!tree && (
+        <div className="waiting">
+          <b className="cjk">道</b>
+          <p>{DAO.shut(earned, realmOf(opensAt('tree')).han, realmOf(opensAt('tree')).name)}</p>
+        </div>
+      )}
+
+      {showing === 'build' && (
+        <Loadout state={state} onStance={onStance} onSequence={onSequence} />
+      )}
+
+      {showing === 'tree' && <>
+      <div className="row" style={{ marginTop: 18 }}>
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           道 Techniques
         </span>
