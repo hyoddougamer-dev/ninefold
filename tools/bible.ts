@@ -1443,6 +1443,25 @@ const page = `<title>九境 Ninefold — the Bible</title>
       joga com regularidade, o <b>último nome novo do jogo chega ao dia ${CLOCK_LAST}</b>.
       Três meses são o dia 91.</p>
 
+    <h3>O que mudou na \u00faltima noite</h3>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">\u6c23</b> <em>O qi por segundo j\u00e1 n\u00e3o anda sozinho</em>
+        <i>S\u00e3o dois n\u00fameros: o teu ritmo fixo, e o \u5165\u5b9a que sobe at\u00e9 \u00d73 e acaba ao fim de
+        quinze minutos. Agora o fixo vem \u00e0 frente e o outro diz-se pelo nome.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u5f85</b> <em>Um pre\u00e7o que n\u00e3o podes pagar diz quando podes</em>
+        <i>Ou <code>in 8 min</code>, ou <code>4 rungs up the climb</code> \u2014 porque a barra
+        gasta o teu qi antes de ele chegar t\u00e3o alto, e h\u00e1 coisas que s\u00f3 abrem a subir.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u5b8c</b> <em>As bestas acabadas dobram-se</em>
+        <i>No nono reino o ecr\u00e3 da ca\u00e7a tinha 25 bot\u00f5es todos a dizer 98%, metade deles j\u00e1
+        terminados. Passou de 26 cart\u00f5es para 14.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u5ee3</b> <em>O 材 material nunca mais fica morto</em>
+        <i>Zero por cento em todos os nove reinos, mesmo para quem carrega no bot\u00e3o sem
+        parar. Antes eram 70% do s\u00e9timo reino.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u983b</b> <em>O save escrevia 5 vezes por segundo</em>
+        <i>Dizia de 4 em 4 segundos. Agora \u00e9 mesmo de 4 em 4 \u2014 bateria e fluidez no
+        telem\u00f3vel.</i></span></div>
+    </div>
+
     <h3>Está tudo funcional?</h3>
     <div class="rule"><b>Sim, e há um comando que o confirma.</b> <code>npm run smoke</code>
       abre o jogo construído num browser a sério, em seis profundidades, visita todos os
@@ -2000,6 +2019,18 @@ const page = `<title>九境 Ninefold — the Bible</title>
       saying why. Read off the real sixth realm: 5.95B one rung up, 12.5B four rungs up,
       8.22B two rungs up. The screen went from three dead prices to three answers, and
       the economy did not move by a single qi.</div>
+    <div class="rule"><b>\u521d And it lands hardest where it matters most.</b> Driven from
+      a brand new save with the clock wound forward, the tenth minute of 九境 is a screen
+      with <b>nothing affordable on it</b> \u2014 measured, 0 of 4 boxes lit, and still 0 at
+      half an hour. It now reads <code>763 qi \u00b7 in 8 min</code>,
+      <code>1090 qi \u00b7 in 14 min</code>, <code>491 qi \u00b7 in 4 min</code>. A dead first ten
+      minutes became a schedule, which is the difference between a game that is idling
+      and a game that looks broken.</div>
+    <p class="t">The countdown rides the <b>standing</b> rate and not the one \u5165\u5b9a is
+      paying at that moment, on purpose: the sitting ends after a quarter of an hour, so
+      a countdown riding on it would promise a minute that arrives at four. A player who
+      is sitting gets there sooner than the screen said, which is the only direction this
+      is allowed to be wrong in.</p>
   </section>
 
   <section class="sec" id="huntlist">
