@@ -491,6 +491,10 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .keyrow em { display: block; font-style: normal; font-size: 14px; }
 .keyrow i { display: block; font-style: normal; font-size: 12px; color: var(--faint);
             line-height: 1.45; margin-top: 1px; }
+/* 圖 The same icon the game draws, so the row is recognised rather than read. */
+.keyrow .art { margin-left: auto; flex: none; color: var(--cyan); display: grid;
+               place-items: center; opacity: .8; align-self: center; padding-left: 12px; }
+.keyrow .art svg { display: block; }
 
 @media (prefers-reduced-motion: reduce) {
   .side[data-hit='true'] .fig, .side[data-hit='true'] .fig::after,

@@ -290,13 +290,23 @@ export const HUNT = {
   free: 'A loss costs you nothing.',
   reach: (n: number) => `${n} beasts within reach`,
 
-  /** 錄 The record. Old beasts have to be worth killing, or the screen is one button. */
-  toward: (kills: number, at: number, han: string) =>
-    (kills === 0 ? `never hunted` : `${kills} / ${at} toward ${han}`),
-  mastered: 'mastered',
-  record: 'Every beast carries three marks. 熟 at ten kills gives you more 材 material from '
-    + 'everything; 通 at a hundred gives you power. A beast you have finished with sinks to '
-    + 'the bottom of this list.',
+  /**
+   * 錄 The record. Old beasts have to be worth killing, or the screen is one button.
+   *
+   * The row used to read "0 / 10 toward 熟", which tells a player who does not read
+   * Chinese that something is 10 away and nothing about what it is or what it gives.
+   * Now it names the mark in English and says what it pays, on the row where the
+   * killing happens.
+   */
+  toward: (kills: number, at: number, han: string, name: string, pays: string) =>
+    (kills === 0
+      ? `never hunted · ${at} ${at === 1 ? 'kill' : 'kills'} earns ${han} ${name}, ${pays}`
+      : `${kills} / ${at} toward ${han} ${name} · ${pays}`),
+  mastered: 'mastered · every mark earned',
+  record: 'Every beast you kill is counted for ever, and the count pays. 見 Seen at one kill '
+    + 'fills in the bestiary; 熟 Known at ten gives you more 材 material from everything in '
+    + 'the game; 通 Mastered at a hundred gives you power. Both of those are permanent, and neither '
+    + 'can be hurried by waiting. A beast you have finished with sinks to the bottom.',
 };
 
 export const GEAR = {

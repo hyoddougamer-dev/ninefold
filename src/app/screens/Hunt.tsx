@@ -99,7 +99,10 @@ export function Hunt({ state, onFight }: {
                     <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
                   ))}
                   <i className="mono">
-                    {next ? HUNT.toward(kills, next.at, MARK_INFO[next.index].han) : HUNT.mastered}
+                    {next
+                      ? HUNT.toward(kills, next.at, MARK_INFO[next.index].han,
+                          MARK_INFO[next.index].name, MARK_INFO[next.index].pays)
+                      : HUNT.mastered}
                   </i>
                 </span>
               </span>

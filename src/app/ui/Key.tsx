@@ -6,6 +6,8 @@ import { SYSTEMS } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { LINES, PILL_LINES } from '../../data/alchemy.ts';
 import { KEY } from '../copy.ts';
+import { icon } from '../../art/icon.ts';
+import { Svg } from './Svg.tsx';
 
 /**
  * 釋 What every character on the screen means.
@@ -23,8 +25,16 @@ import { KEY } from '../copy.ts';
  * appears on this page by itself.
  */
 
-interface Row { han: string; name: string; note?: string; colour?: string }
+interface Row { han: string; name: string; note?: string; colour?: string; art?: string }
 
+/**
+ * 圖 And where the game draws a thing, the key draws the same thing.
+ *
+ * A page of characters explaining characters helps least exactly where it is needed
+ * most. The upgrades, the slots and the pill lines all carry an icon on the screen the
+ * player met them on, so the key carries it too — it is the picture, not the word, that
+ * a player recognises when they go back.
+ */
 function Group({ title, blurb, rows }: { title: string; blurb: string; rows: Row[] }) {
   return (
     <section>
@@ -38,6 +48,7 @@ function Group({ title, blurb, rows }: { title: string; blurb: string; rows: Row
               <em>{r.name}</em>
               {r.note && <i>{r.note}</i>}
             </span>
+            {r.art && <span className="art"><Svg html={icon(r.art, 26)} /></span>}
           </span>
         ))}
       </div>
@@ -56,6 +67,7 @@ export function Key({ onClose }: { onClose: () => void }) {
   const buys: Row[] = UPGRADES.map((u) => ({
     han: UPGRADE_INFO[u].han,
     name: UPGRADE_INFO[u].name,
+    art: UPGRADE_INFO[u].icon,
     note: `${UPGRADE_INFO[u].effect} · paid in ${UPGRADE_INFO[u].currency === 'qi' ? '氣 qi' : '材 material'}`,
   }));
 
@@ -72,7 +84,9 @@ export function Key({ onClose }: { onClose: () => void }) {
     han: AFFIX_INFO[a].han, name: AFFIX_INFO[a].label,
   }));
 
-  const slots: Row[] = SLOTS.map((s) => ({ han: SLOT_INFO[s].han, name: SLOT_INFO[s].name }));
+  const slots: Row[] = SLOTS.map((s) => ({
+    han: SLOT_INFO[s].han, name: SLOT_INFO[s].name, art: SLOT_INFO[s].empty,
+  }));
 
   const systems: Row[] = SYSTEMS.map((s) => ({
     han: s.han, name: s.name,
@@ -89,6 +103,7 @@ export function Key({ onClose }: { onClose: () => void }) {
 
   const lines: Row[] = LINES.map((l) => ({
     han: PILL_LINES[l].han, name: PILL_LINES[l].name, note: PILL_LINES[l].effect,
+    art: PILL_LINES[l].icon,
   }));
 
   const doing: Row[] = [
