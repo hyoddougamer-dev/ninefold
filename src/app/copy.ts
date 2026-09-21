@@ -94,6 +94,8 @@ export const CULTIVATE = {
   pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   capped: 'Full for this realm. Climb to hold more.',
+  /** 境 How far this realm is out of. Nine is worth knowing on the first day. */
+  ofNine: (n: number, of: number) => `realm ${n} of ${of}`,
   cap: (held: number, cap: number) => `${held} of ${cap}`,
 };
 

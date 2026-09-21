@@ -7,7 +7,7 @@ import {
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
 import { ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
-import { realm as realmOf } from '../../data/realms.ts';
+import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { portrait, seal } from '../../art/aura.ts';
 import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
@@ -81,7 +81,12 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
             : <>layer {Math.min(state.layer + 1, LAYERS_PER_REALM)} / {LAYERS_PER_REALM}</>}
         </span>
       </div>
-      <p className="faint" style={{ margin: '1px 0 8px', fontSize: 13 }}>{r.name}</p>
+      {/* 境 "Qi Refining" alone never says how far this is out of. A player three hours
+          in has no idea whether they are near the start of something or the end of it,
+          and nine is a number worth knowing on the first day. */}
+      <p className="faint" style={{ margin: '1px 0 8px', fontSize: 13 }}>
+        {r.name} <span className="mono" style={{ opacity: .65 }}>· {CULTIVATE.ofNine(state.realm, REALMS.length)}</span>
+      </p>
 
       {/* 雷池 Once the ladder runs out the portrait gives the screen over to the pool:
           the basin fills with the qi, and the bolts only come down when it is full. It
