@@ -36,7 +36,8 @@ import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/t
 import {
   PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
 } from '../src/sim/furnace.ts';
-import { daoEarned } from '../src/sim/dao.ts';
+import { daoEarned, POINTS_PER_BESTIARY,
+} from '../src/sim/dao.ts';
 import { FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
@@ -48,6 +49,7 @@ import {
 } from '../src/sim/record.ts';
 import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
+import { STEPS } from '../src/app/guide.ts';
 import { SYSTEMS as OPENED, opensIn } from '../src/sim/unlocks.ts';
 import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
@@ -141,6 +143,12 @@ const SYSTEMS: readonly System[] = [
 
   { han: '新', name: 'Teaching each system', status: 'done', at: 'refine',
     line: `${NOTICES.length} cards that arrive once, when the thing they explain first becomes true, and never block the game.` },
+  { han: '引', name: 'The first session', status: 'done', at: 'opens',
+    line: `${STEPS.length} numbered steps on 修, each finished by doing the thing and not by reading it. Nothing about it is stored, so it ends by itself and cannot come back.` },
+  { han: '釋', name: 'The key to every character', status: 'done', at: 'rules',
+    line: 'One tap from every screen, read out of the same tables the game reads. No character is ever the only place a thing is named.' },
+  { han: '圖鑑', name: 'Finishing a realm of the bestiary', status: 'done', at: 'record',
+    line: `A realm whose four beasts are all 熟 Known pays ${POINTS_PER_BESTIARY} 道, from the sixth realm. The one thing hunting never asked for: going back.` },
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
@@ -570,6 +578,10 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
+    <p class="t"><b>${SYSTEMS.filter((x) => x.status === 'done').length} closed,
+      ${SYSTEMS.filter((x) => x.status === 'open').length} open,
+      ${SYSTEMS.filter((x) => x.status === 'planned').length} planned.</b> Counted from the
+      board itself, so it cannot disagree with the rows under it.</p>
     <div class="board">${statusRows}</div>
   </section>
 
@@ -651,10 +663,21 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <div class="rows">${opensCards}</div>
     <div class="rule"><b>A system that arrives late arrives full.</b> The 道 points earned
       from the first layer are all waiting when the tree opens at the fourth realm, and
-      every beast killed before the sixth is already counted when 錄 the record starts
-      paying. Nothing is withheld and then thrown away; it is withheld and then handed
-      over. A locked tab keeps its own character and says which realm opens it, because
-      you cannot look forward to a tab you have never seen.</div>
+      every beast killed before the sixth is already counted when 圖鑑 the bestiary starts
+      paying for finished realms. Nothing is withheld and then thrown away; it is withheld
+      and then handed over. A locked tab keeps its own character and says which realm
+      opens it, because you cannot look forward to a tab you have never seen.</div>
+    <div class="rule"><b>環 And the first realm has to close its loop.</b> Bruno, playing
+      it: <em>"a primeira hunt não dá nada. Apenas está lá."</em> He was right, and the
+      hunting was not the problem. A kill paid 材 material, and material bought nothing
+      until the third realm — two days with a dead coin in your pocket — while the marks
+      those kills earned were counted from the first one and paid from the sixth. Both
+      rewards existed. Both were locked in cupboards a fortnight away. So the first realm
+      holds one whole loop instead of a third of one: 狩 something to kill, 妖丹 something
+      the killing buys at 3 材 for +8% power, and 錄 the count that makes the tenth kill
+      worth more than the first. Wardens still do not <em>demand</em> cores until the
+      third realm — being sold a thing earlier than you are required to have it is the
+      right way round, and the reverse is the wall this section exists to stop.</div>
   </section>
 
   <section class="sec" id="habits">
@@ -807,8 +830,9 @@ const page = `<title>九境 Ninefold — the Bible</title>
       had fixed power, paid less material and dropped nothing you wanted. Thirty-six
       animals were drawn and twenty-seven of them stopped existing the moment you climbed
       past them.</p>
-    <p class="t">So the kills already sitting in the save mean something. Every beast
-      carries three marks:</p>
+    <p class="t">So the kills already sitting in the save mean something, and they mean it
+      from the first one rather than from the sixth realm. Every beast carries three
+      marks:</p>
     <div class="rows">${markRows}</div>
     <p class="t">A finished record — all ${BEASTS.length} beasts, ${MARKS[MARKS.length - 1]}
       kills each — is <b>×${ceiling.material.toFixed(2)}</b> material and
@@ -821,6 +845,17 @@ const page = `<title>九境 Ninefold — the Bible</title>
       in the game that pays for waiting. It pays in material and in power, and the list
       re-sorts itself: a beast with a mark still in it rises, and one you have finished
       with sinks and goes quiet.</div>
+    <div class="rule"><b>圖鑑 And a realm you have finished is worth a 道 point.</b>
+      From the sixth realm, a realm whose four beasts are all 熟 Known pays one. The bar
+      was set at 通 Mastered first and measuring it killed the idea: across five
+      cultivators and ten thousand fights, <b>not one realm was ever finished</b>, and
+      not one at ten kills each either. The reason is a fact about the game rather than
+      about the harness — a player hunts the strongest beast they can beat, because that
+      is the one that pays, so a realm's weakest animal is killed once for its 見 mark
+      and then never again. Nothing had ever given a reason to go back for it. Forty
+      fights against animals you outclass is that reason, and the test fails if any of
+      the five habits ever finishes a realm by accident.</div>
+
     <h3>示 And the game always says what to do next</h3>
     <p class="t">From the third realm a warden will not fall without 妖丹 cores, and a
       player who has never opened 狩 Hunt meets that wall, loses a fight they cannot read,
@@ -1177,6 +1212,13 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <div class="row"><span class="body"><b class="cjk">文</b> <em>All the prose is in one file</em>
         <i>src/app/copy.ts. Text scattered across six screens cannot be reviewed, and this
         is the file a translation would replace.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">譯</b> <em>No character is ever the only place a thing is named</em>
+        <i>The characters stay — they are what the game looks like, and a version without
+        them is a spreadsheet about numbers going up. So every one of them carries an
+        English name somewhere it can be found: on the row itself where there is space,
+        and on 釋 the key, which is one tap from every screen and is read out of the same
+        tables the game reads. A test fails if a rank, an axis, a slot, a pill line or a
+        whole system is ever added without one.</i></span></div>
     </div>
   </section>
 
