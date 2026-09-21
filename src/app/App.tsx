@@ -29,6 +29,7 @@ import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
 import { RealmCard } from './ui/RealmCard.tsx';
+import { Drive } from './ui/Drive.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
@@ -96,6 +97,8 @@ export function App() {
   const [menu, setMenu] = useState(false);
   // 境 The page that says what this realm is, reached from the realm's own name.
   const [realmPage, setRealmPage] = useState(false);
+  // 圍 The beast whose drive sheet is open, if any.
+  const [driving, setDriving] = useState<Beast | null>(null);
   const [fresh, setFresh] = useState(false);
   const [sound, setSound] = useState(soundLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
@@ -442,7 +445,7 @@ export function App() {
    *   reach, which is worse than pointing at nothing.
    */
   const step = guide(state);
-  const covered = help || key || stele || saving || realmPage || menu || !!home || !!battle
+  const covered = help || key || stele || saving || realmPage || menu || !!driving || !!home || !!battle
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
     ? step.at
@@ -467,7 +470,13 @@ export function App() {
             onRealm={() => { setRealmPage(true); sfx.tap(); }}
           />
         )}
-        {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
+        {tab === 'hunt' && (
+          <Hunt
+            state={state}
+            onFight={(key) => startFight(byKey[key])}
+            onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
+          />
+        )}
         {tab === 'trials' && <Trials state={state} pulse={pulse} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'gear' && (
           <Gear
@@ -621,6 +630,30 @@ export function App() {
         />
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
+
+      {/* 圍 A drive. The sim hands back the best piece that fell and leaves the chest
+          alone on purpose — two hundred kills can roll forty pieces, and forty pieces
+          poured into a chest that holds a dozen is a sorting job, not a reward. The
+          app is what decides whether the one worth keeping fits. */}
+      {driving && (
+        <Drive
+          state={state}
+          beast={driving}
+          seed={Math.floor(Math.random() * 0xffffffff)}
+          onTake={(result) => {
+            setState((s) => {
+              const lifted = result.best && dropsRankUp(s.unlocked)
+                ? { ...result.best, rarity: RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(result.best.rarity) + 1)] }
+                : result.best;
+              const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
+              return { ...result.state, chest: kept ? [...kept.chest] : s.chest };
+            });
+            sfx.mark();
+            haptics.tap();
+          }}
+          onClose={() => { setDriving(null); sfx.tap(); }}
+        />
+      )}
 
       {realmPage && (
         <RealmCard state={state} onClose={() => { setRealmPage(false); sfx.tap(); }} />

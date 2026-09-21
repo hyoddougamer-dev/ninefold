@@ -1,7 +1,7 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
-  SEEN_BOUNTY, ladderBetween,
+  OLD_BEAST_FLOOR, SEEN_BOUNTY, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
@@ -329,7 +329,7 @@ export function takeKill(s: State, b: Beast): State {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
     qi: s.qi + (kills === 0 ? seenBounty(b) : 0),
-    materials: s.materials + lootTaken(s, loot(b)),
+    materials: s.materials + lootTaken(s, lootFrom(s, b)),
     killed: { ...s.killed, [b.key]: kills + 1 },
   };
 }
@@ -353,6 +353,26 @@ export function seenBounty(b: Beast): number {
   // notices. The warden's reward is the realm.
   if (b.warden) return 0;
   return Math.max(1, Math.round(ladderBetween(beastDepth(b)) * (SEEN_BOUNTY / b.realm)));
+}
+
+/**
+ * 舊 A beast's material as *this* cultivator meets it.
+ *
+ * `loot` is what the beast is worth on its own, which is a property of the beast and
+ * belongs to the table. This is what it is worth to the person killing it, which is a
+ * different question and the one the screen should be answering: a first-realm rat is
+ * worth two material to a first-realm cultivator and rather more to a sixth-realm one,
+ * because a sixth-realm cultivator skins it in a second.
+ *
+ * The floor rides the weakest common of the hunter's realm, so it moves with the
+ * mountain on its own. It is only ever a floor: a beast already worth more than it
+ * keeps its own number.
+ */
+export function lootFrom(s: State, b: Beast): number {
+  const own = loot(b);
+  const mine = (Math.max(1, Math.min(9, s.realm)) - 1) * LAYERS_PER_REALM + 3;
+  const floor = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (mine - 1) * HUNT_SHARE * OLD_BEAST_FLOOR;
+  return Math.max(own, Math.round(floor));
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */

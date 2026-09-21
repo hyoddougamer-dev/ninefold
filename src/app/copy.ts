@@ -416,6 +416,30 @@ export const HUNT = {
     + 'can be hurried by waiting. A beast you have finished with sinks to the bottom.',
 };
 
+/**
+ * 圍 The drive.
+ *
+ * It has to say three things and no more: what it is, what it costs, and what it pays.
+ * A player is spending qi they cannot get back, so the screen owes them the numbers
+ * before the tap rather than a reassurance after it.
+ */
+export const DRIVE = {
+  tag: 'Drive this beast',
+  what: 'You have beaten this one ten times, so there is nothing left to find out. '
+    + 'A drive settles the rest at once: the same material, the same record, the same '
+    + 'drops. What the qi buys is the tapping.',
+  free: 'Fighting it one at a time is still free, and always will be.',
+  never: 'Not now',
+  back: 'Back',
+  kills: (n: number) => `${n} kills`,
+  pays: (m: string) => `${m} \u6750 each`,
+  willPay: (m: string) => `about ${m} \u6750`,
+  took: (n: number) => `${n} kills, settled`,
+  fell: 'drops fell',
+  bestOf: (n: number) => (n === 1 ? 'the only one that fell' : `the best of ${n} that fell`),
+  earned: (han: string, pays: string) => `${han} \u00b7 ${pays}`,
+};
+
 export const GEAR = {
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
   fuse: '煉 Fuse: three make one',

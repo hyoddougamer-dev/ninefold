@@ -988,3 +988,64 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
    material, so it borrows the qi colour to say so. */
 .verdict .mark[data-seen="true"] > b { color: var(--cyan); }
 .verdict .mark[data-seen="true"] { border-color: rgba(95,220,255,.35); }
+
+/* ── 圍 the drive: many kills, one tap, paid for in qi ───────────────────── */
+
+/* The tag on a beast's row. Small and quiet: the row is still a fight, and this is the
+   second thing you can do with it, not the first. */
+.drivetag { flex: none; margin-left: 9px; width: 30px; height: 30px; border-radius: 9px;
+            display: grid; place-items: center; cursor: pointer;
+            color: var(--faint); border: 1px solid var(--line); background: var(--panel); }
+.drivetag:hover { color: var(--cyan); border-color: var(--cyan); }
+.drivetag svg { display: block; }
+
+.drivesheet { position: absolute; inset: 0; z-index: 13; background: var(--ground);
+              overflow-y: auto; display: flex; flex-direction: column;
+              padding: calc(env(safe-area-inset-top, 0px) + 26px) 18px
+                       calc(env(safe-area-inset-bottom, 0px) + 22px); gap: 14px; }
+.drivesheet .head { display: flex; gap: 13px; align-items: center; }
+.drivesheet .head .seal { width: 54px; height: 54px; flex: none; }
+.drivesheet .head b { display: block; font-size: 22px; font-weight: 400; }
+.drivesheet .head i { display: block; margin-top: 2px; font-style: normal; font-size: 13px;
+                      color: var(--faint); }
+.drivesheet .blurb { margin: 0; font-size: 13px; line-height: 1.55; }
+
+.drivesheet .sizes { display: flex; flex-direction: column; gap: 9px; }
+.drivesheet .size { display: flex; align-items: center; gap: 13px; width: 100%;
+                    padding: 14px; border-radius: 11px; background: var(--panel);
+                    border: 1px solid var(--line); font: inherit; color: var(--text);
+                    cursor: pointer; text-align: left; }
+.drivesheet .size:disabled { opacity: .42; cursor: default; }
+.drivesheet .size .n { flex: none; min-width: 42px; font-size: 21px; color: var(--cyan); }
+.drivesheet .size .what { flex: 1; min-width: 0; }
+.drivesheet .size .what b { display: block; font-size: 14.5px; font-weight: 500; }
+.drivesheet .size .what i { display: block; margin-top: 2px; font-style: normal;
+                            font-size: 12px; color: var(--faint); }
+.drivesheet .size .price { flex: none; text-align: right; font-size: 15px;
+                           color: var(--gold); font-weight: 600; }
+.drivesheet .size .price em { display: block; font-style: normal; font-size: 10px;
+                              letter-spacing: .1em; text-transform: uppercase;
+                              color: var(--faint); font-weight: 400; }
+
+/* What the drive brought back, in three numbers. */
+.drivesheet .tally { display: flex; gap: 8px; }
+.drivesheet .tally > span { flex: 1; background: var(--panel); border: 1px solid var(--line);
+                            border-radius: 10px; padding: 12px 8px; text-align: center; }
+.drivesheet .tally b { display: block; font-size: 17px; font-weight: 500; }
+.drivesheet .tally i { display: block; margin-top: 3px; font-style: normal; font-size: 10px;
+                       letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+
+.drivesheet .mark { display: flex; gap: 11px; align-items: center; margin: 0;
+                    padding: 12px 14px; border-radius: 11px;
+                    border: 1px solid rgba(255,196,84,.35); background: rgba(255,196,84,.06); }
+.drivesheet .mark > b { flex: none; font-size: 21px; color: var(--gold); }
+.drivesheet .mark em { display: block; font-style: normal; font-size: 14px; }
+.drivesheet .mark i { display: block; margin-top: 2px; font-style: normal; font-size: 12px;
+                      color: var(--faint); }
+
+.drivesheet .spoil { display: flex; gap: 13px; align-items: center; padding: 12px 14px;
+                     border: 1px solid var(--line); border-radius: 11px; }
+.drivesheet .spoil b { display: block; font-size: 17px; font-weight: 400; }
+.drivesheet .spoil i { display: block; margin-top: 2px; font-style: normal; font-size: 12px;
+                       color: var(--faint); }
+.drivesheet .act { margin-top: auto; }

@@ -74,6 +74,41 @@ const LADDER: number[] = (() => {
 
 /** What the nth layer costs, counting from zero across the whole climb. */
 /**
+ * 圍 What one kill of a drive costs, as a share of the first rung of the hunter's realm.
+ *
+ * Two per cent, so a drive of fifty costs about one rung and a drive of two hundred
+ * costs four. A rung is the unit a player already feels — it is the thing the bar fills
+ * with — so the price reads as "this drive costs me a layer", which is a decision
+ * rather than a number.
+ *
+ * It is priced off the *hunter's* realm and not the beast's, because what a drive buys
+ * is the cultivator's own time: two hundred rats and two hundred dragons are the same
+ * afternoon. It is also why the price is flat per kill — a player should be able to do
+ * the arithmetic without the screen doing it for them.
+ */
+export const DRIVE_QI = 0.02;
+
+/**
+ * 舊 What an old beast pays, as a share of what this realm's weakest pays.
+ *
+ * Measured, before this existed: the frog of the first realm paid **2 材** and the frog
+ * of the ninth paid **900,095**. So going back to finish a beast you had left behind
+ * was a hundred fights for a rounding error, and 圖鑑 the bestiary — which asks for four
+ * beasts *mastered* in a realm, four hundred kills — was a chore nobody would ever have
+ * a reason to do twice.
+ *
+ * A beast now pays at least this share of what the weakest common of the *hunter's* own
+ * realm pays. A quarter, so that hunting at the top of your reach is still plainly the
+ * better way to earn — a current beast pays four times this, and the hard one of the
+ * realm more — but going back is no longer charity. The old animal is easier and safer
+ * and pays a quarter; the new one is a fight and pays full.
+ *
+ * It is a floor, never a cap: a beast whose own depth pays more than the floor keeps
+ * its own number, so nothing in the existing table moves.
+ */
+export const OLD_BEAST_FLOOR = 0.25;
+
+/**
  * 見 What the first sight of a beast is worth, as a share of the rung it lives beside.
  *
  * Bruno, three realms in: *"sinto que o combat nada faz nos primeiros realms."* He was

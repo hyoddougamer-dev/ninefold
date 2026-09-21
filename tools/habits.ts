@@ -5,7 +5,7 @@
  * which asserts the order and prints the table on every run, and `bible.ts`, which puts
  * the same table on the page. A measurement that appears twice has to be made once.
  */
-import { LAYERS, focusAt } from '../src/sim/balance.ts';
+import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, newState, power,
   upgradeCost, type State,
@@ -13,6 +13,7 @@ import {
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { odds, takeKill } from '../src/sim/combat.ts';
+import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
@@ -42,6 +43,15 @@ export interface Habit {
   readonly tower: boolean;
   readonly furnace: boolean;
   readonly build: boolean;
+  /**
+   * 圍 Whether they buy drives with the qi they are not spending on the ladder.
+   *
+   * A drive costs qi and pays material, and it is the only thing in the game that
+   * converts one into the other. So it has to be measured the way everything else is:
+   * a cultivator who pours every spare coin into hunting is the worst case for the
+   * economy, and this is the habit that plays them.
+   */
+  readonly drives?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -59,6 +69,10 @@ export const HABITS: readonly Habit[] = [
     who: 'Six visits, ten minutes each, hunts, climbs and brews.' },
   { name: 'every hour', gear: true, checks: 24, minutes: 15, hunts: 8, tower: true, furnace: true, build: true,
     who: 'Every waking hour. As played as this game can be played.' },
+  // 圍 The worst case for the economy: every spare coin of qi turned into material.
+  { name: 'drives it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+    furnace: true, build: true, drives: true,
+    who: 'Plays like the active cultivator and pours every spare coin into 圍 drives.' },
 ];
 
 const ARTS_BY_REALM: Record<string, number> = { crane: 3, tiger: 4, wolf: 7 };
@@ -172,6 +186,25 @@ export function play(h: Habit, maxDays = 400): Run {
       s = takeKill(s, b);
       if (h.gear) s = takeDrop(s, b, ++seed);
       fights++;
+    }
+
+    // 圍 Drives, bought with whatever the ladder is not about to need. The rule is
+    // deliberately greedy — spend down to one rung of headroom — because the question
+    // being asked is what the *worst* case does to the climb, not what a careful
+    // player does.
+    if (h.drives) for (let i = 0; i < 40; i++) {
+      const b = [...huntable(s.realm)].reverse().find((x) => canDrive(s, x));
+      if (!b) break;
+      // Stuck at a ceiling with a warden they cannot beat, qi has nowhere else to go,
+      // so it all goes here. Otherwise they keep one rung of headroom and drive the
+      // rest — which is still far greedier than anybody would really play.
+      const stuck = atCeiling(s) && !s.wardenFell;
+      const keep = stuck ? 0 : ladderBetween(layersOpened(s));
+      const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x) >= keep);
+      if (!n) break;
+      const d = drive(s, b, n, ++seed);
+      s = d.state;
+      fights += n;
     }
 
     if (h.tower) for (let i = 0; i < 40; i++) {

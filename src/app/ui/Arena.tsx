@@ -1,7 +1,7 @@
 import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
-import { loot, type Outcome } from '../../sim/combat.ts';
+import { type Outcome } from '../../sim/combat.ts';
 import { num } from '../../sim/format.ts';
 import { portrait } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -13,7 +13,7 @@ import { Svg } from './Svg.tsx';
 import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
 import { lootTaken } from '../../sim/trials.ts';
-import { seenBounty } from '../../sim/combat.ts';
+import { lootFrom, seenBounty } from '../../sim/combat.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -218,7 +218,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
               + (battle.qi ? ` · +${num(battle.qi)} qi` : '')
             )}
             {outcome.won && battle.floor === undefined
-              && ` · +${num(lootTaken(state, loot(beast)))} 材`}
+              && ` · +${num(lootTaken(state, lootFrom(state, beast)))} 材`}
           </p>
 
           {/* 熟 A mark earned is the most valuable thing a kill can do in the first hour

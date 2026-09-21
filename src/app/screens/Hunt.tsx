@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BEASTS, huntable } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { beastPower, effectiveBeastPower, loot, oddsRaw } from '../../sim/combat.ts';
+import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
@@ -12,6 +12,8 @@ import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { HUNT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
+import { DriveTag } from '../ui/Drive.tsx';
+import { canDrive } from '../../sim/hunt.ts';
 
 /**
  * 狩 Free hunting.
@@ -26,9 +28,11 @@ import { Bestiary } from './Bestiary.tsx';
  * tab it used to hold went to 塔 the tower, which is a place you go rather than a page
  * you read.
  */
-export function Hunt({ state, onFight }: {
+export function Hunt({ state, onFight, onDrive }: {
   state: State;
   onFight: (key: string) => void;
+  /** 圍 Open the drive sheet for a beast you have 熟 Known. */
+  onDrive: (key: string) => void;
 }) {
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
@@ -116,7 +120,7 @@ export function Hunt({ state, onFight }: {
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
                 <i>
-                  {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, loot(b)))}
+                  {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
                 </i>
                 <span className="marks">
                   {MARK_INFO.map((m, i) => (
@@ -134,6 +138,9 @@ export function Hunt({ state, onFight }: {
                 {raw > 0 ? `${Math.round(c * 100)}%` : `×${gap < 10 ? gap.toFixed(1) : Math.round(gap)}`}
                 <em>{raw > 0 ? HUNT.odds : HUNT.toReach}</em>
               </span>
+              {/* 圍 Ten wins earn the right to stop tapping. The tag sits inside the
+                  row but swallows its own click, so the row still fights once. */}
+              {canDrive(state, b) && <DriveTag onOpen={() => onDrive(b.key)} />}
             </button>
           );
         })}
