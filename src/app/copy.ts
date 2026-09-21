@@ -163,6 +163,22 @@ export const ADVICE = {
   cappedSoClimb: 'Nothing left to buy in this realm. The tower is where the next thing comes from.',
   cappedSoClimbRealm: (han: string, name: string) =>
     `Nothing left to buy in this realm. ${han} ${name} opens the next thing to spend on.`,
+
+  /**
+   * 續 The lines that keep 示 from ever going quiet. Everything above says what is
+   * blocking you; these say what is worth doing when nothing is, which is most of the
+   * time. A line that only speaks when you are stuck teaches a player that not being
+   * stuck means there is nothing to do.
+   */
+  goHunt: (han: string, pct: number, left: number, mark: string) =>
+    `${han} is within reach at ${pct}%. ${left} more ${left === 1 ? 'kill' : 'kills'} earns its ${mark} mark.`,
+  canAfford: (han: string) => `You can afford another ${han} right now.`,
+  reachFor: (han: string, wants: number, mine: number) =>
+    `${han} stands at 力 ${Math.round(wants * 10) / 10}. You are at 力 ${Math.round(mine * 10) / 10}. `
+    + `Every level and every layer closes that.`,
+  opensSoon: (han: string, name: string, realmHan: string, realmName: string, gives: string) =>
+    `${han} ${name} opens at ${realmHan} ${realmName}. ${gives}`,
+  theTop: 'Fill the pool and the Dragon comes. Every mark makes you heavier, and so does it.',
 };
 
 export const HUNT = {

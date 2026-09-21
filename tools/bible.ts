@@ -821,14 +821,34 @@ const page = `<title>九境 Ninefold — the Bible</title>
       in the game that pays for waiting. It pays in material and in power, and the list
       re-sorts itself: a beast with a mark still in it rises, and one you have finished
       with sinks and goes quiet.</div>
-    <h3>示 And the game says why you are stuck</h3>
+    <h3>示 And the game always says what to do next</h3>
     <p class="t">From the third realm a warden will not fall without 妖丹 cores, and a
       player who has never opened 狩 Hunt meets that wall, loses a fight they cannot read,
-      and has nothing anywhere telling them why. 修 Cultivate now carries one line,
-      computed from the state, that names the thing actually blocking them — the material
-      they are short of, the level they can already afford, the empty 訣 sequence — and
-      takes them to the screen that fixes it. It says nothing at all the rest of the
-      time.</p>
+      and has nothing anywhere telling them why. 修 Cultivate carries one line, computed
+      from the state, that names the thing actually blocking them — the material they are
+      short of, the level they can already afford, the empty 訣 sequence — and takes them
+      to the screen that fixes it.</p>
+    <div class="rule"><b>續 And it is never silent, which is the harder half.</b> For a
+      long time that line answered only <em>what is blocking you</em> and said nothing at
+      all the rest of the time — which is most of the game, and all of the quiet
+      stretches a player actually leaves over. A sentence that only speaks when you are
+      stuck teaches a player that not being stuck means there is nothing to do. So below
+      the blocking lines there is always another: a beast you can take and the mark it
+      still owes you, a level you can afford right now, a beast you cannot take yet
+      <em>and the power it stands at against yours</em>, or the next thing the mountain
+      will hand over and the realm that hands it. A target with a number on it is
+      gameplay. An empty line is not. It is checked the only way a promise like that can
+      be — 324 places on the mountain, every realm, every layer, four depths of
+      investment, and not one of them with nothing to say.</div>
+    <p class="t">Walking the first realm, it reads:</p>
+    <table>
+      <tr><th>when</th><th>示</th></tr>
+      <tr><td class="n">0 min</td><td>山鼠 stands at 力 2.4. You are at 力 1. Every level and every layer closes that.</td></tr>
+      <tr><td class="n">11 min</td><td>山鼠 is within reach at 71%. 1 more kill earns its 見 mark.</td></tr>
+      <tr><td class="n">1.6 h</td><td>野犬 is within reach at 85%.</td></tr>
+      <tr><td class="n">3.5 h</td><td>澤蛙 is within reach at 98%.</td></tr>
+      <tr><td class="n">6.9 h</td><td>Nothing left to buy in this realm. 築基 Foundation opens the next thing to spend on.</td></tr>
+    </table>
   </section>
 
   <section class="sec" id="combat">

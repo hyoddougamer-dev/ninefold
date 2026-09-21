@@ -1,6 +1,6 @@
 import { currentWarden, odds } from '../sim/combat.ts';
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, canBuy, capOf, upgradeCost,
+  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, canBuy, capOf, power, upgradeCost,
   type State,
 } from '../sim/state.ts';
 import { ladderDone } from '../sim/time.ts';
@@ -8,6 +8,9 @@ import { stanceOf, sequenceOf } from '../sim/arts.ts';
 import { canBrew, standingFloor, towerOpen } from '../sim/trials.ts';
 import { SYSTEMS, isOpen } from '../sim/unlocks.ts';
 import { realm as realmOf } from '../data/realms.ts';
+import { huntable } from '../data/bestiary.ts';
+import { beastPower } from '../sim/combat.ts';
+import { MARK_INFO, nextMark } from '../sim/record.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
 import { ADVICE } from './copy.ts';
@@ -112,5 +115,62 @@ export function advice(s: State): Advice | null {
       return { han: '境', text: ADVICE.cappedSoClimbRealm(realmOf(soon.realm).han, realmOf(soon.realm).name) };
     }
   }
-  return null;
+
+  /**
+   * 續 And from here it is never silent.
+   *
+   * Everything above answers *what is blocking you*, and returned nothing the rest of
+   * the time — which is most of the game, and all of the quiet stretches a player
+   * actually complains about. A line that only speaks when you are stuck tells a player
+   * that not being stuck means there is nothing to do.
+   *
+   * So below it there is always something: a beast you can take, a level you can afford,
+   * a beast you cannot take yet *and the power it wants*, or the next thing the mountain
+   * will hand you and the realm that hands it over. A target with a number on it is
+   * gameplay; an empty screen is not.
+   */
+  const mine = power(s);
+
+  // 狩 The strongest thing you can actually beat, if it still has a mark left in it.
+  if (isOpen(s.realm, 'hunt')) {
+    const reachable = [...huntable(s.realm)]
+      .sort((a, b) => beastPower(b) - beastPower(a))
+      .find((b) => nextMark(s.killed[b.key] ?? 0) && odds(s, b) >= 0.6);
+    if (reachable) {
+      const mark = nextMark(s.killed[reachable.key] ?? 0)!;
+      return {
+        han: '狩',
+        text: ADVICE.goHunt(reachable.han, Math.round(odds(s, reachable) * 100),
+          mark.at - (s.killed[reachable.key] ?? 0), MARK_INFO[mark.index].han),
+        tab: 'hunt',
+      };
+    }
+  }
+
+  // 買 Something on the cultivate screen is affordable right now.
+  const affordable = UPGRADES.find((u) =>
+    (u !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, u));
+  if (affordable) {
+    return { han: UPGRADE_INFO[affordable].han, text: ADVICE.canAfford(UPGRADE_INFO[affordable].han) };
+  }
+
+  // 望 Nothing is in reach — so name what is nearest, and the power it asks for.
+  if (isOpen(s.realm, 'hunt')) {
+    const next = [...huntable(s.realm)]
+      .sort((a, b) => beastPower(a) - beastPower(b))
+      .find((b) => odds(s, b) < 0.6);
+    if (next) {
+      return { han: '狩', text: ADVICE.reachFor(next.han, beastPower(next), mine), tab: 'hunt' };
+    }
+  }
+
+  // 開 Otherwise point at the next thing the climb will hand over, and say what it is.
+  const coming = SYSTEMS.find((x) => x.realm > s.realm);
+  if (coming) {
+    const r = realmOf(coming.realm);
+    return { han: coming.han, text: ADVICE.opensSoon(coming.han, coming.name, r.han, r.name, coming.gives) };
+  }
+
+  // 頂 Past the last system there is one thing left, and it is the whole endgame.
+  return { han: '雷池', text: ADVICE.theTop };
 }
