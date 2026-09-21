@@ -127,17 +127,30 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .tip .toward > span { display: block; height: 100%; border-radius: 99px;
                       background: var(--gold); transition: width .3s linear; }
 
-.upgrades { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
-.upg { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-       padding: 11px 12px; display: flex; gap: 10px; align-items: center; text-align: left;
+/* 闊 One column, not two.
+   Four upgrades in a 2x2 grid on a phone is four boxes about 150px wide holding an
+   icon, a name, a level, an effect and a price — five things in a space that fits
+   three. Bruno: *"imensos botoes pequenos com explicacoes pouco resumidas"*. Stacked,
+   each one gets the full width, the type goes up two points, and the line under the
+   name is one short phrase instead of a wrapped sentence. It is one more scroll and
+   it is legible at arm's length, which the grid was not. */
+.upgrades { display: flex; flex-direction: column; gap: 8px; }
+.upg { background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+       padding: 13px 14px; display: flex; gap: 13px; align-items: center; text-align: left;
        font: inherit; color: var(--text); cursor: pointer; }
 .upg:disabled { opacity: .45; cursor: default; }
+.upg > span:nth-child(2) { min-width: 0; flex: 1; }
 .upg .ic { flex: none; color: var(--cyan); display: grid; place-items: center; }
 .upg .ic svg { display: block; }
-.upg b { display: block; font-size: 13.5px; font-weight: 500; font-family: 'Noto Serif SC', serif; }
-.upg i { display: block; font-style: normal; font-size: 10.5px; color: var(--faint); }
-.upg .price { margin-left: auto; text-align: right; font-size: 12px; }
-.upg .price b { font-family: Rajdhani, sans-serif; font-size: 14px; color: var(--gold); font-weight: 600; }
+/* The English name is the heading now, so it is set in the body face at a readable
+   size and the characters ride after it, small. */
+.upg b { display: block; font-size: 15px; font-weight: 500; }
+.upg b .cjk { font-size: 13px; font-weight: 400; margin-left: 3px; }
+.upg i { display: block; font-style: normal; font-size: 12.5px; color: var(--faint);
+         margin-top: 2px; }
+.upg i .mono { font-size: 11.5px; }
+.upg .price { margin-left: auto; flex: none; text-align: right; font-size: 12px; }
+.upg .price b { font-family: Rajdhani, sans-serif; font-size: 16px; color: var(--gold); font-weight: 600; }
 /* 滿 Full for this realm. It is not "you cannot afford this", so it must not read
    like it: the box keeps its colour and the price becomes the character. */
 .upg[data-full="true"] { opacity: 1; border-color: var(--gold); }
@@ -794,3 +807,87 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .place[data-tall='true'] { aspect-ratio: 200 / 160; }
 .place[data-tall='false'] { aspect-ratio: 200 / 200; }
 .place[data-wide='true'] { aspect-ratio: 200 / 180; }
+
+/* ── 梯 the climb, drawn ──────────────────────────────────────────────────── */
+
+/* Two numbers the screen used to state separately, put back into the shape they
+   describe: nine realms, and inside the one you are in, nine rungs with the warden at
+   the end of them. It sits directly under the live bar, because the live bar is the
+   rung that is currently filling and the whole point is to show what it is one of. */
+.ladder { margin: 12px 0 2px; }
+
+/* Label, then the row. The label is a fixed column so the two rows line up under each
+   other and the diagram reads as one object rather than two strips. */
+.ladder .lrow { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.ladder .lab { flex: none; width: 82px; font-size: 10.5px; letter-spacing: .04em;
+               color: var(--faint); }
+.ladder .lab .cjk, .ladder .lab { white-space: nowrap; }
+.ladder .realms { flex: 1; display: flex; gap: 5px; align-items: center; }
+.ladder .dot { flex: 1; height: 3px; border-radius: 99px; background: var(--line); }
+.ladder .dot[data-done="true"] { background: var(--c); opacity: .5; }
+.ladder .dot[data-here="true"] { background: var(--c); opacity: 1; height: 5px;
+                                 box-shadow: 0 0 8px -1px var(--c); }
+
+.ladder .rungs { flex: 1; display: flex; gap: 3px; align-items: center; }
+.ladder .rung { flex: 1; height: 9px; border-radius: 3px; background: var(--line);
+                overflow: hidden; }
+/* The rung being paid for is the one the bar above is filling, so it is marked — a
+   player can put their finger on the two and see they are the same thing. */
+.ladder .rung[data-here="true"] { box-shadow: 0 0 0 1px var(--line-strong, var(--line)); }
+.ladder .rung > i { display: block; height: 100%; border-radius: 2px;
+                    transition: width .3s linear; }
+
+/* 妖 The warden. Dark until the ninth rung is paid for, lit the moment it is actually
+   standing in front of you, and struck through once it has fallen. */
+.ladder .warden { flex: none; margin-left: 7px; display: grid; place-items: center;
+                  color: var(--line); opacity: .55; transition: opacity .3s, color .3s; }
+.ladder .warden svg { display: block; }
+.ladder .warden[data-up="true"] { opacity: 1; animation: wardenUp 1.6s ease-in-out infinite; }
+.ladder .warden[data-fell="true"] { opacity: .3; color: var(--gold); animation: none; }
+@keyframes wardenUp { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+
+.ladder > p.faint { margin: 7px 0 0; font-size: 12px; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ladder .warden[data-up="true"] { animation: none; }
+  .ladder .rung > i { transition: none; }
+}
+
+/* ── 指 the pointing finger ───────────────────────────────────────────────── */
+
+/* The whole layer is inert. The ring is drawn over the button the guide is asking for
+   and the button underneath still takes the tap — a tutorial that swallowed the press
+   it is asking for would be unusable. */
+.coach { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.coach > span { position: absolute; }
+
+.coach .ring { border: 2px solid var(--cyan); border-radius: 13px;
+               box-shadow: 0 0 0 3px rgba(95,220,255,.14), 0 0 22px -4px rgba(95,220,255,.75);
+               animation: coachRing 1.7s ease-in-out infinite; }
+@keyframes coachRing {
+  0%, 100% { opacity: .95; box-shadow: 0 0 0 3px rgba(95,220,255,.14), 0 0 22px -4px rgba(95,220,255,.75); }
+  50%      { opacity: .62; box-shadow: 0 0 0 7px rgba(95,220,255,.05), 0 0 26px -2px rgba(95,220,255,.45); }
+}
+
+/* Above the target by preference: on a phone the thumb is below what it is about to
+   press, and an arrow underneath would be the one thing covered by the hand. */
+/* On its own disc. The arrow sits ten pixels off the target, which on a busy screen is
+   usually right on top of a heading — a bare glyph there reads as a smudge in the text
+   rather than as a pointer. The disc gives it its own ground and its own edge. */
+.coach .point { color: var(--cyan); margin-left: -17px;
+                width: 34px; height: 34px; display: grid; place-items: center;
+                border-radius: 99px; background: rgba(6,8,18,.92);
+                border: 1px solid rgba(95,220,255,.45);
+                box-shadow: 0 0 14px -3px rgba(95,220,255,.8);
+                animation: coachNudge 1.7s ease-in-out infinite; }
+.coach .point[data-above="true"]  { transform: translateY(-100%); }
+.coach .point[data-above="false"] { transform: rotate(180deg); }
+.coach .point svg { display: block; }
+@keyframes coachNudge {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .72; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach .ring, .coach .point { animation: none; }
+}

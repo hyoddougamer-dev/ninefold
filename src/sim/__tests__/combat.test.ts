@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { LAYERS_PER_REALM, levelCap } from '../balance.ts';
-import { beastPower, fight, odds, referencePower } from '../combat.ts';
+import { beastPower, fight, odds, oddsRaw, referencePower } from '../combat.ts';
 import { focusAt } from '../balance.ts';
 import { buy, canBuy, newState, power, type State } from '../state.ts';
 import { advance } from '../time.ts';
@@ -232,5 +232,53 @@ describe('戰 the beasts', () => {
       expect(b.icon.length).toBeGreaterThan(0);
     }
     for (let r = 1; r <= 9; r++) expect(commonsOf(r).length).toBe(3);
+  });
+});
+
+/**
+ * 誠 Three unwinnable fights are not the same fight.
+ *
+ * The quoted odds have a floor under them so that a run of bad seeds does not read as
+ * hopeless. The floor was flattening the whole of the first realm: a new cultivator
+ * looking at the rat, the hound and the frog saw 2%, 2% and 2%, on the one screen whose
+ * entire job is choosing which of them to work toward.
+ *
+ * So the screen asks for the unclamped reading, and when that is flat zero it stops
+ * quoting a percentage and says how many times the cultivator's own power the beast is.
+ * These check that the two readings stay different things.
+ */
+describe('誠 out of reach is not two per cent', () => {
+  it('floors the quoted odds and does not floor the raw ones', () => {
+    const s = newState(T0);
+    const frog = commonsOf(1)[2];
+    expect(odds(s, frog)).toBe(0.02);
+    expect(oddsRaw(s, frog)).toBe(0);
+  });
+
+  it('tells the first realm’s three beasts apart while all three are unwinnable', () => {
+    const s = newState(T0);
+    const gaps = commonsOf(1).map((b) => beastPower(b) / power(s));
+
+    // Every one of them is out of reach at minute zero: that is the ramp working.
+    for (const b of commonsOf(1)) expect(oddsRaw(s, b)).toBe(0);
+    // And the screen can still say which is closest, because these are three numbers.
+    expect(new Set(gaps.map((g) => g.toFixed(1))).size).toBe(3);
+    expect(gaps[0]).toBeLessThan(gaps[1]);
+    expect(gaps[1]).toBeLessThan(gaps[2]);
+    // eslint-disable-next-line no-console
+    console.log(`\n  誠 the first realm at minute zero, as the screen now reads it:`);
+    commonsOf(1).forEach((b, i) => {
+      // eslint-disable-next-line no-console
+      console.log(`    ${b.han} ${b.name.padEnd(14)} ×${gaps[i].toFixed(1)} needed`);
+    });
+  });
+
+  it('goes back to quoting odds the moment the fight can be won', () => {
+    let s = newState(T0);
+    const rat = commonsOf(1)[0];
+    // The twelve minutes the ramp is written for, bought rather than waited out.
+    for (let i = 0; i < 4; i++) s = buy({ ...s, qi: 1e9 }, 'technique');
+    expect(oddsRaw(s, rat)).toBeGreaterThan(0);
+    expect(odds(s, rat)).toBeGreaterThan(0.02);
   });
 });

@@ -100,6 +100,27 @@ export const CULTIVATE = {
 };
 
 /**
+ * 梯 The climb, said out loud.
+ *
+ * The drawing shows that the layers sit inside the realm. It cannot show what *fills*
+ * them, and that was the actual gap: a player watching a bar rise had no way to learn
+ * that the bar is one of nine, that filling all nine summons something, or that beating
+ * that something is what moves the realm on.
+ *
+ * Three sentences, one fact each, and every one of them is a thing the player is about
+ * to watch happen.
+ */
+export const LADDER = {
+  rule: (han: string, name: string) =>
+    `Your qi fills one rung. Nine rungs fill ${han} ${name}. `
+    + 'Its warden then stands at the end, and beating it opens the next realm.',
+  /** Written on the row itself. Two rows of dashes with nothing naming them is a
+   *  diagram of something, and the player is left to guess what. */
+  realms: (n: number, of: number) => `境 realm ${n}/${of}`,
+  layers: (n: number, of: number) => `層 layer ${n}/${of}`,
+};
+
+/**
  * 碑 The stele.
  *
  * It says what was done and never what it is worth, because the deeds are worth nothing
@@ -269,40 +290,53 @@ export const KEY = {
  */
 export const GUIDE = {
   step: (n: number, of: number) => `Step ${n} of ${of}`,
+  /**
+   * 指 Shorter, because the arrow now does the pointing.
+   *
+   * Bruno: *"explicações pouco resumidas"*. He was right, and the reason the old ones
+   * ran to four lines is that they had to *describe* the thing to press — where it was,
+   * what it looked like, which of the four it was. A ring drawn on the button says all
+   * of that in one glance, so the words get to do the only job left: say what pressing
+   * it costs and what it gives.
+   *
+   * Two sentences each, three at the most, and never a sentence about where something is.
+   */
   buy: {
     title: 'Spend what you were given',
-    text: 'You begin holding 800 qi and two of the four boxes below are already lit. '
-      + 'Buy one. Qi you spend is qi that did not fill the bar — that trade is the whole game.',
+    text: 'You start holding 800 qi. Buy the box the arrow points at. '
+      + 'Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   kill: {
     title: 'Go and kill something',
-    text: 'Three beasts in 狩 Hunt. They are stronger than you for the first hour or two '
-      + 'and the odds on each one say so honestly. Losing costs you nothing at all, so try '
-      + 'anyway — and come back when 山鼠 the rat is in reach.',
+    text: 'Press the beast the arrow points at. '
+      + 'It is stronger than you at first and the odds say so honestly, '
+      + 'but losing costs you nothing at all, so try anyway.',
   },
   core: {
     title: 'Spend what the beast left',
-    text: 'That kill paid 材 material, and material buys the one upgrade qi cannot: '
-      + '妖丹 Beast Cores. The first costs 3 — three rats — and is +8% power for good. '
-      + 'This is the loop: kill, take, buy, kill something bigger.',
+    text: 'That kill paid 材 material. Material buys 妖丹 Beast Cores, the one upgrade '
+      + 'qi cannot. Three rats pay for the first, and it is +8% power for good.',
   },
   mark: {
     title: 'Kill the same beast ten times',
-    text: 'Every beast is counted for ever. Ten kills of one animal earns its 熟 Known '
-      + 'mark and every drop in the game pays more, permanently. A hundred earns 通 '
-      + 'Mastered and pays in power.',
+    text: 'Ten kills of one animal earns its 熟 Known mark. '
+      + 'Every drop in the game then pays more, permanently.',
   },
   climb: {
     title: 'Beat the warden and break through',
-    text: 'Fill all nine layers, then 妖狐 the Spirit Fox stands at the top of the realm. '
-      + 'Beat it and 突破 opens. The next realm brings gear you can wear and a stance to '
-      + 'fight in.',
+    text: 'Nine layers fill the realm. Its warden then stands at the end of them, '
+      + 'and beating it opens 突破 into the next realm.',
   },
 };
 
 export const HUNT = {
   /** Shown under the power figure. Losing a hunt has no cost at all, and it must say so. */
   free: 'A loss costs you nothing.',
+  odds: 'odds',
+  /** 誠 What the right-hand figure means when the fight cannot be won yet: not a
+   *  percentage, but how many times your own power the beast is. It is the one number
+   *  that tells three unwinnable fights apart. */
+  toReach: 'needed',
   reach: (n: number) => `${n} beasts within reach`,
   paysMaterial: '材 material, from the record',
   paysPower: '力 power, from the record',

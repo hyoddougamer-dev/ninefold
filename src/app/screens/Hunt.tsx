@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BEASTS, huntable } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { beastPower, loot, odds } from '../../sim/combat.ts';
+import { beastPower, effectiveBeastPower, loot, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
@@ -87,15 +87,31 @@ export function Hunt({ state, onFight }: {
 
       <h2 className="heading">{HUNT.reach(list.length)}</h2>
       <div className="stack">
-        {list.map((b) => {
+        {list.map((b, i) => {
           const r = realmOf(b.realm);
-          const c = odds(state, b);
-          const tone = c > 0.66 ? 'var(--cyan)' : c > 0.33 ? 'var(--gold)' : 'var(--magenta)';
+          /**
+           * 誠 Out of reach is not two per cent.
+           *
+           * The floor under the quoted odds is there so a run of bad seeds does not read
+           * as hopeless, and it was quietly flattening the whole first realm: the rat at
+           * twice your power, the hound at six times and the frog at twelve all said the
+           * same 2%, on the one screen whose entire job is choosing between them. A beast
+           * that wins none of its sampled fights now says how far off it is instead.
+           */
+          const raw = oddsRaw(state, b);
+          const c = Math.max(0.02, Math.min(0.98, raw));
+          const gap = effectiveBeastPower(state, b) / Math.max(1e-9, power(state));
+          const tone = raw <= 0 ? 'var(--faint)'
+            : c > 0.66 ? 'var(--cyan)' : c > 0.33 ? 'var(--gold)' : 'var(--magenta)';
           const kills = state.killed[b.key] ?? 0;
           const marks = marksOf(kills);
           const next = nextMark(kills);
           return (
-            <button key={b.key} className="beast" data-done={!next} onClick={() => onFight(b.key)}>
+            /* 指 The sort already puts the beast worth pressing at the top, so that is
+               the row 引 the guide points its arrow at. */
+            <button key={b.key} className="beast" data-done={!next}
+              data-coach={i === 0 ? 'beast-first' : undefined}
+              onClick={() => onFight(b.key)}>
               <span className="seal"><Svg html={seal(b.icon, r.colour)} /></span>
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
@@ -115,8 +131,8 @@ export function Hunt({ state, onFight }: {
                 </span>
               </span>
               <span className="odds" style={{ color: tone }}>
-                {Math.round(c * 100)}%
-                <em>odds</em>
+                {raw > 0 ? `${Math.round(c * 100)}%` : `×${gap < 10 ? gap.toFixed(1) : Math.round(gap)}`}
+                <em>{raw > 0 ? HUNT.odds : HUNT.toReach}</em>
               </span>
             </button>
           );

@@ -28,6 +28,7 @@ import { Cultivate } from './screens/Cultivate.tsx';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
+import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Svg } from './ui/Svg.tsx';
@@ -37,6 +38,7 @@ import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
+import { guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
@@ -417,6 +419,25 @@ export function App() {
   }, []);
 
   const r = realmOf(state.realm);
+
+  /**
+   * 指 What the guide is pointing at, right now, on this tab.
+   *
+   * Three conditions, and all three have to hold or the ring would be a lie:
+   *
+   *   the guide is still running at all — it ends for good after the fifth step;
+   *   the step's target is on the tab being looked at, not one tap away;
+   *   and nothing is covering the screen. A ring drawn on a button underneath the
+   *   help sheet, the arena or the 突破 bloom points at something the player cannot
+   *   reach, which is worse than pointing at nothing.
+   */
+  const step = guide(state);
+  const covered = help || key || stele || saving || !!home || !!battle
+    || locked !== null || bloom !== null;
+  const coachAt = step && !covered && (step.step.tab ?? 'cultivate') === tab
+    ? step.step.at?.(state) ?? null
+    : null;
+
   const byKey = useMemo(
     () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
     [],
@@ -594,6 +615,10 @@ export function App() {
           </button>
         </div>
       )}
+
+      {/* 指 Last in the tree and inert to the touch: it draws over the game without ever
+          taking the tap it is asking the player to make. */}
+      <Coach at={coachAt} />
     </div>
   );
 }

@@ -324,11 +324,28 @@ const SAMPLES = 41;
  * and it can never disagree with what the player is about to watch.
  */
 export function odds(s: State, b: Beast, standing?: number): number {
+  return Math.max(0.02, Math.min(0.98, oddsRaw(s, b, standing)));
+}
+
+/**
+ * The same reading without the floor under it.
+ *
+ * 誠 The floor exists because "0%" on a button invites nobody to press it, and a run of
+ * bad seeds should not read as impossible. But it hides a real difference: a cultivator
+ * looking at the first realm's three beasts saw 2%, 2% and 2%, when one of them was
+ * twice their power and one was twelve times it. Three identical numbers on a screen
+ * whose whole job is choosing which to fight.
+ *
+ * So the screen asks for the raw share, and when it is a flat zero it stops quoting a
+ * percentage at all and says how far off the beast is instead. Nothing about the fight
+ * changes; the screen stops rounding the answer up to something that sounds possible.
+ */
+export function oddsRaw(s: State, b: Beast, standing?: number): number {
   let won = 0;
   for (let i = 0; i < SAMPLES; i++) {
     if (fight(s, b, (i * 2654435761) >>> 0, standing).won) won++;
   }
-  return Math.max(0.02, Math.min(0.98, won / SAMPLES));
+  return won / SAMPLES;
 }
 
 /**

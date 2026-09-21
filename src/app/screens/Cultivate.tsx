@@ -1,5 +1,5 @@
-import { FOCUS_MAX, LAYERS, LAYERS_PER_REALM, TRIBULATION_GAIN } from '../../sim/balance.ts';
-import { currentWarden, effectiveBeastPower, odds } from '../../sim/combat.ts';
+import { FOCUS_MAX, LAYERS, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
   canBuy, canCross, capOf, crossTribulation, power, tribulationPool, upgradeCost,
@@ -12,7 +12,8 @@ import { portrait, seal } from '../../art/aura.ts';
 import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { CULTIVATE, GUIDE } from '../copy.ts';
+import { Ladder } from '../ui/Ladder.tsx';
+import { CULTIVATE, GUIDE, HUNT } from '../copy.ts';
 import { advice } from '../advice.ts';
 import { guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -41,6 +42,8 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
   const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
   const cap = capOf(state);
+  const wardenRaw = oddsRaw(state, w);
+  const wardenGap = dragon / Math.max(1e-9, power(state));
   const tip = advice(state);
   // 引 The first session, one step at a time. It is computed, never stored, so it ends
   // by itself and cannot come back.
@@ -75,11 +78,13 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
 
       <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
         <h1 className="cjk" style={{ margin: 0, fontSize: 30, fontWeight: 400, color: r.colour }}>{r.han}</h1>
-        <span className="faint mono" style={{ fontSize: 13 }}>
-          {top
-            ? <>劫 {state.tribulation} · {CULTIVATE.marks(state.tribulation)}</>
-            : <>layer {Math.min(state.layer + 1, LAYERS_PER_REALM)} / {LAYERS_PER_REALM}</>}
-        </span>
+        {/* 梯 The layer number used to live here, and now lives on the ladder below
+            with the eight other rungs around it. One number in one place. */}
+        {top && (
+          <span className="faint mono" style={{ fontSize: 13 }}>
+            劫 {state.tribulation} · {CULTIVATE.marks(state.tribulation)}
+          </span>
+        )}
       </div>
       {/* 境 "Qi Refining" alone never says how far this is out of. A player three hours
           in has no idea whether they are near the start of something or the end of it,
@@ -121,6 +126,11 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
         <span className="mono" style={{ color: 'var(--gold)' }}>材 {num(state.materials)}</span>
       </div>
 
+      {/* 梯 The bar above is one rung. This is the other eight, the realm they sit in,
+          and the warden at the end of them. Bruno had read "layer 3 / 9" and "realm 1 of
+          9" for a week without the screen ever showing that one is inside the other. */}
+      {!top && <Ladder state={state} />}
+
       {/* 雷池 The ninth realm still has nine layers to climb before the pool takes the bar.
           The breakthrough card names the pool, so this says how far off it is. */}
       {state.realm === 9 && !top && (
@@ -141,15 +151,22 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
                 <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>{w.han}</b>
                 <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>{w.name}</i>
               </span>
+              {/* 誠 The same honesty the hunt screen uses: a warden that wins none of
+                  its sampled fights says how far off it is, rather than quoting a two
+                  per cent that is really a zero. */}
               <span className="tech mono" style={{ fontSize: 17, textAlign: 'right' }}>
-                {Math.round(odds(state, w) * 100)}%
-                <em className="faint" style={{ display: 'block', fontStyle: 'normal', fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', fontFamily: 'Archivo' }}>odds</em>
+                {wardenRaw > 0
+                  ? `${Math.round(Math.max(0.02, Math.min(0.98, wardenRaw)) * 100)}%`
+                  : `×${wardenGap < 10 ? wardenGap.toFixed(1) : Math.round(wardenGap)}`}
+                <em className="faint" style={{ display: 'block', fontStyle: 'normal', fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', fontFamily: 'Archivo' }}>
+                  {wardenRaw > 0 ? HUNT.odds : HUNT.toReach}
+                </em>
               </span>
             </div>
             <p className="faint" style={{ margin: '11px 0 12px', fontSize: 12.5 }}>
               {top ? CULTIVATE.tribulation : CULTIVATE.warden}
             </p>
-            <button className="act" data-tone="magenta" onClick={onFight}>
+            <button className="act" data-tone="magenta" data-coach="fight-warden" onClick={onFight}>
               戰 <span>Fight</span>
             </button>
           </div>
@@ -158,7 +175,7 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
 
       {ready && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" onClick={() => set(breakThrough(state))}>
+          <button className="act" data-coach="breakthrough" onClick={() => set(breakThrough(state))}>
             突破 <span>Break through</span>
           </button>
         </div>
@@ -222,15 +239,17 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
           const held = state.levels[u];
           const maxed = held >= cap;
           return (
-            <button key={u} className="upg" data-full={maxed}
+            /* 指 Named so 引 the guide can put an arrow on this exact box. */
+            <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
               disabled={!canBuy(state, u)} onClick={() => set(buy(state, u))}>
-              <span className="ic"><Svg html={icon(i.icon, 22)} /></span>
+              <span className="ic"><Svg html={icon(i.icon, 26)} /></span>
+              {/* 譯 The English name leads and the characters follow it, rather than the
+                  other way round. A player who does not read Chinese was being sold four
+                  things called 劍訣, 功法, 吐納 and 妖丹, told what each one did, and
+                  never told, first, what any of them was. */}
               <span>
-                <b>{i.han} <span className="mono faint" style={{ fontSize: 11 }}>{CULTIVATE.cap(held, cap)}</span></b>
-                {/* 譯 The English name, not only the characters. A player who does not
-                    read Chinese was being sold four things called 劍訣, 功法, 吐納 and
-                    妖丹, told what each one did, and never told what any of them was. */}
-                <i><em style={{ fontStyle: 'normal', color: 'var(--text)' }}>{i.name}</em> · {i.effect}</i>
+                <b>{i.name} <span className="cjk faint">{i.han}</span></b>
+                <i>{i.effect} <span className="mono faint">· {CULTIVATE.cap(held, cap)}</span></i>
               </span>
               <span className="price">
                 {maxed

@@ -1,4 +1,4 @@
-import { UPGRADES, UPGRADE_INFO, atCeiling, power, type State } from '../sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, atCeiling, canBreakThrough, power, type State } from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
 import { commonsOf, wardenOf } from '../data/bestiary.ts';
 import { beastPower } from '../sim/combat.ts';
@@ -49,6 +49,19 @@ export interface Step {
    * give somebody to watch.
    */
   readonly toward?: (s: State) => number;
+  /**
+   * 指 The thing on the screen to point at, by its `data-coach` name.
+   *
+   * This is what turns the card from a paragraph into a tutorial: 指 the Coach draws a
+   * ring and an arrow on whatever this names, and the player presses the ring. It is a
+   * function of the save rather than a constant because the last step points at three
+   * different buttons depending on how far along the realm is — the ladder while there
+   * are rungs left, the warden once it is standing there, 突破 once it has fallen.
+   *
+   * Returning undefined is allowed and means "nothing to point at right now", which is
+   * the honest answer whenever the target is on a tab the player is not looking at.
+   */
+  readonly at?: (s: State) => string | undefined;
   /** True once the player has done it. Every one of these only ever goes from false to true. */
   readonly done: (s: State) => boolean;
 }
@@ -62,28 +75,40 @@ export const STEPS: readonly Step[] = [
   {
     key: 'buy', han: '買', title: GUIDE.buy.title, text: GUIDE.buy.text,
     art: UPGRADE_INFO.technique.icon,
+    // 劍訣 is one of the two the opening purse can already afford, and it is the one
+    // that leads to the next step, so it is the box the arrow lands on.
+    at: () => 'upg-technique',
     done: (s) => UPGRADES.some((u) => s.levels[u] > 0),
   },
   {
     key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
     art: FIRST[0].icon,
     toward: (s) => Math.max(0, Math.min(1, power(s) / beastPower(FIRST[0]))),
+    at: () => 'beast-first',
     done: (s) => killsOf(s).some((n) => n > 0),
   },
   {
     key: 'core', han: '妖丹', title: GUIDE.core.title, text: GUIDE.core.text,
     art: UPGRADE_INFO.cores.icon,
+    at: () => 'upg-cores',
     done: (s) => s.levels.cores > 0,
   },
   {
     key: 'mark', han: '熟', title: GUIDE.mark.title, text: GUIDE.mark.text, tab: 'hunt',
     art: FIRST[0].icon,
     toward: (s) => Math.max(...killsOf(s), 0) / MARKS[1],
+    at: () => 'beast-first',
     done: (s) => killsOf(s).some((n) => n >= MARKS[1]),
   },
   {
     key: 'climb', han: '突破', title: GUIDE.climb.title, text: GUIDE.climb.text,
     art: wardenOf(1).icon,
+    // Three buttons over the life of one step. While there are rungs left there is
+    // nothing to press, so it points at 梯 the ladder instead: the thing Bruno said he
+    // could not read is exactly the thing this step is waiting on.
+    at: (s) => (canBreakThrough(s) ? 'breakthrough'
+      : atCeiling(s) && !s.wardenFell ? 'fight-warden'
+      : 'ladder'),
     done: (s) => s.realm > 1,
   },
 ];
