@@ -216,11 +216,13 @@ const idleRows = IDLE.map((run) => `
     <table style="margin-top:8px">
       <tr><th>realm</th><th style="text-align:right">lasts</th>
           <th style="text-align:right">into 修</th>
-          <th style="text-align:right">at 頂</th></tr>
+          <th style="text-align:right">bar full</th>
+          <th style="text-align:right">守 out of reach</th></tr>
       ${run.rows.map((r) => `<tr><td>${realmOf(r.realm).han}</td>
         <td style="text-align:right">${r.hours.toFixed(0)}h</td>
         <td style="text-align:right">${(r.intoUpgrades * 100).toFixed(0)}%</td>
-        <td style="text-align:right"${r.realm <= 3 ? ' class="hot"' : ''}>${
+        <td style="text-align:right">${(r.stuckHours / r.hours * 100).toFixed(0)}%</td>
+        <td style="text-align:right"${r.ceilingHours > 0 ? ' class="hot"' : ''}>${
           (r.ceilingHours / r.hours * 100).toFixed(0)}%</td></tr>`).join('')}
     </table></div>`).join('');
 
@@ -384,6 +386,8 @@ const SYSTEMS: readonly System[] = [
     line: `A full chest threw the worst piece on the floor and paid nothing for it. A piece now melts for a share of the first rung of **its own** realm, falling from ${SALVAGE_SHARE_FIRST} at the first to ${SALVAGE_SHARE_LAST} at the ninth — one at a time, or everything at or below a rank in one tap.` },
   { han: '出', name: 'Beasts that walk out mid-realm', status: 'done', at: 'clock',
     line: `A realm's three commons arrive at layers ${COMMON_LAYERS.join(', ')} instead of all at the breakthrough. The eighth realm is ${CLOCK_R8} days long and used to hand over everything it had in the first minute of them.` },
+  { han: '守', name: 'A warden that stays where it is put', status: 'done', at: 'idle',
+    line: 'It used to stand only while the bar was full, so buying the upgrades that beat it made it vanish and cost a whole rung of re-earning. It stands on the last rung now. Measured, the wait at a full bar with an unreachable warden went from 74% of the first realm to 25%, and from up to 41% of the next three to nothing — for zero days off the climb.' },
   { han: '閒', name: 'Where a realm\'s qi goes', status: 'done', at: 'idle',
     line: `Measured rather than assumed: every realm lets you buy about ${Math.round(allowedShare(1) * 100)}% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls — the lightest cultivator stands at the first realm's ceiling for ${IDLE_FIRST}% of it.` },
   { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
@@ -1697,14 +1701,35 @@ const page = `<title>九境 Ninefold — the Bible</title>
     <div class="cards three idlecards">${idleRows}</div>
     <p class="t" style="font-size:13px">
       <b>into 修</b> — the share of that realm's qi that went into upgrades rather than
-      into the bar. <b>at 頂</b> — the share of the realm spent at its ceiling with the
-      bar full and the warden still standing.</p>
+      into the bar. <b>bar full</b> — the share of the realm spent at its ceiling, where
+      the bar has stopped and qi banks until 突破 takes it. <b>守 out of reach</b> — the
+      part of that with the warden still standing there unbeaten, which is the genuinely
+      dead half and is dealt with below.</p>
     <p class="t">It decays fast, and it decays with <em>showing up</em>: 74% of the first
       realm at one visit a day, 54% at three, 34% at six, and under 3% everywhere from the
       fourth realm on, where 塔 the tower, 爐 the furnace and 圍 the drive have opened and
       qi has somewhere to go again.</p>
 
-    <h3>梯 And the mechanism, which is one line</h3>
+    <h3>守 Half of it was the warden's own gate</h3>
+    <p class="t">The wait splits in two, and one half turned out to be a fault rather
+      than a fact. A warden used to stand <em>while the bar was full</em> —
+      <code>atCeiling</code>, which is the last rung plus the qi to pay for it. So a cultivator who arrived too
+      weak, banked until they could afford the upgrades that would beat it, and then
+      bought them, <b>watched the warden vanish</b>: the qi they had just spent was what
+      was holding it there. The game took the fight away at the exact moment they did the
+      right thing to win it, and asked for a whole rung back before offering it again.</p>
+    <p class="t">Traced on somebody who opens the app once a day: at 24 hours they stand
+      at the first realm's last rung with <b>63% against 妖狐 the fox</b> and no fox to
+      fight. They leave the realm at 48. Every visit rhythm leaves it at 98%, so the
+      warden was never the wall — the vanishing was.</p>
+    <div class="rule"><b>守 It stands on the rung now, and does not walk off.</b> 費 The
+      toll is untouched — 突破 still costs the ninth rung, so a realm is still nine rungs
+      paid for — and measured across all eight cultivators the change costs
+      <b>zero days</b>. What it buys is the 守 column above: 74% of the first realm down
+      to 25%, up to 41% of the next three down to nothing, and <b>nothing at all</b> from
+      the fourth realm up for anybody.</div>
+
+    <h3>梯 And the mechanism behind the rest, which is one line</h3>
     <div class="rule"><b>A layer opens by itself the moment the qi reaches its price, and
       the qi is set to zero.</b> Nobody chooses. A cultivator who visits once a day has
       the ladder take the qi five or ten times between visits and arrives holding a
@@ -1716,7 +1741,11 @@ const page = `<title>九境 Ninefold — the Bible</title>
       dropped: more to spend on in the early realms (the table above says there is already
       as much as anywhere), and opening 圍 the drive at the first kill rather than the
       tenth (it moved one realm by one point — because a cultivator who visits once a day
-      cannot spend qi while the app is shut, whatever is on the screen).</p>
+      cannot spend qi while the app is shut, whatever is on the screen). A third was
+      measured and left on the table: letting the warden's fall <em>be</em> the toll, so
+      the ninth rung is not charged twice. It takes 4–8 days off every cultivator and
+      makes a realm eight paid rungs instead of nine — a real balance change rather than
+      a repair, and one for Bruno to want rather than for a measurement to decide.</p>
   </section>
 
   <section class="sec" id="heavens">

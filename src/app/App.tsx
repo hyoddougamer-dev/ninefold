@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden, fight, takeKill } from '../sim/combat.ts';
-import { newState, power, type State, filledRealms,
+import { canFightWarden, newState, power, type State, filledRealms,
 } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
@@ -227,6 +227,10 @@ export function App() {
   }, [state, ready]);
 
   const startFight = useCallback((beast: Beast, floor?: number) => {
+    // 守 A warden is only ever reachable at the end of its own realm. The screens have
+    // always declined to draw it anywhere else, and that is exactly the kind of guard
+    // that a second screen forgets — so it is asked of the sim here, once.
+    if (beast.warden && floor === undefined && !canFightWarden(state)) return;
     sfx.tap();
     haptics.tap();
     setBattle((current) => {

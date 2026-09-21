@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { currentWarden } from '../../sim/combat.ts';
 import { progress } from '../../sim/time.ts';
-import { atCeiling, type State } from '../../sim/state.ts';
+import { canFightWarden, type State } from '../../sim/state.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
@@ -37,7 +37,8 @@ export function Ladder({ state }: { state: State }) {
   // and the realm is full when that ninth one is paid for — which is the warden's cue.
   const opened = state.layer;
   const here = progress(state);
-  const wardenUp = atCeiling(state) && !state.wardenFell;
+  // 守 Lit once the last rung is reached, and it stays lit. See wardenStands.
+  const wardenUp = canFightWarden(state);
 
   return (
     <div className="ladder" data-coach="ladder">

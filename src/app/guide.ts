@@ -1,5 +1,6 @@
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, canBreakThrough, canBuy, power, upgradeCost,
+  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, power, upgradeCost,
+  wardenStands,
   type State,
 } from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
@@ -164,9 +165,9 @@ export const STEPS: readonly Step[] = [
     key: 'climb', han: '突破', title: GUIDE.climb.title, text: GUIDE.climb.text,
     art: wardenOf(1).icon,
     toward: (s) => Math.min(1, (s.layer + progress(s)) / LAYERS_PER_REALM),
-    // The warden is not there until the ninth rung is paid for. Until then this is a
-    // thing to watch, not a thing to do, so it waits like the others.
-    ready: (s) => atCeiling(s),
+    // The warden is not there until the realm's last rung is reached. Until then this
+    // is a thing to watch, not a thing to do, so it waits like the others.
+    ready: (s) => wardenStands(s),
     waiting: { text: GUIDE.climb.waiting, at: (s) => nowBuyable(s) },
     at: (s) => (canBreakThrough(s) ? 'breakthrough' : 'fight-warden'),
     done: (s) => s.realm > 1,
@@ -209,7 +210,7 @@ export function guide(s: State): Guiding | null {
   const i = STEPS.findIndex((x) => !x.done(s));
   if (i < 0) return null;
   const last = STEPS.length - 1;
-  const n = atCeiling(s) && !s.wardenFell && !STEPS[last].done(s) ? last : i;
+  const n = canFightWarden(s) && !STEPS[last].done(s) ? last : i;
   const step = STEPS[n];
 
   const ready = step.ready ? step.ready(s) : true;

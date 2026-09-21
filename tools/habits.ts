@@ -7,7 +7,8 @@
  */
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
-  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense, condense,
+  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense,
+  canFightWarden, condense,
   newState, power, upgradeCost, type State,
   filledRealms,
 } from '../src/sim/state.ts';
@@ -223,7 +224,7 @@ export function play(h: Habit, maxDays = 400): Run {
     // qi has nowhere else to go and the only move left is to condense cores out of it.
     // Everybody does this when cornered; the difference between the habits is how often
     // they are cornered, which is exactly the difference being measured.
-    if (atCeiling(s) && !s.wardenFell) {
+    if (canFightWarden(s)) {
       for (let i = 0; i < 40; i++) {
         if (odds(s, wardenOf(s.realm)) > 0.5 || !canCondense(s)) break;
         s = condense(s);
@@ -231,7 +232,7 @@ export function play(h: Habit, maxDays = 400): Run {
     }
 
     // 妖 The gate: the warden is fought when the realm is full and it looks worth trying.
-    if (atCeiling(s) && !s.wardenFell && odds(s, wardenOf(s.realm)) > 0.2) {
+    if (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.2) {
       s = takeKill(s, wardenOf(s.realm));
       fights++;
     }

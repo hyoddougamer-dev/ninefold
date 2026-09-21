@@ -2,8 +2,8 @@ import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN }
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
-  canBuy, canCondense, canCross, capOf, condense, condenseCost, crossTribulation, power,
-  tribulationPool, upgradeCost,
+  canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
+  crossTribulation, power, tribulationPool, upgradeCost,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -44,6 +44,10 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
   const left2 = marksToNext(state.tribulation);
   const pool = tribulationPool(state);
   const full = top ? atTribulation(state) : atCeiling(state);
+  // 守 Whether the warden is standing there, which is no longer the same question as
+  // whether the bar is full. See wardenStands: buying the upgrades that beat it used to
+  // make it vanish.
+  const standing = canFightWarden(state);
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
@@ -171,7 +175,7 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{CULTIVATE.lastLayers(LAYERS - 1 - layersOpened(state))}</p>
       )}
 
-      {full && !state.wardenFell && (
+      {standing && (
         <>
           <h2 className="heading">
             {top ? `${CULTIVATE.tribulationHead} ${state.tribulation + 1}` : CULTIVATE.wardenHead}

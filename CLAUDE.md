@@ -67,6 +67,9 @@ Each of these cost real time once. They are written down so they cost it once.
 - **Never share a CSS class between two screens.** `.help` was the save panel and the
   help sheet; `.ladder` was the game's climb widget and the bible's realm cards. Both
   cost a debugging session. Scope every new block (`#mockups .ladder`, `.condense .chead`).
+- **No backticks inside `tools/bible.ts` prose.** The whole page is one template
+  literal, so a stray `` ` `` around a function name ends the string and the build fails
+  with a parse error fifty lines away. Use `<code>`.
 - **Read the harness by name, never by position.** `RUNS[0]`, `const [waiter, , , active]
   = runs` — adding one cultivator to `HABITS` silently made every assertion and every
   sentence on the bible page about somebody else. Use `runs.find(r => r.habit.name === …)`.

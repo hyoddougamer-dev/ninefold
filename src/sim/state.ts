@@ -364,6 +364,49 @@ export function atCeiling(s: State): boolean {
   return s.qi >= ladderAt(n) * layerCostFactor(s.unlocked);
 }
 
+/**
+ * 守 When the realm's warden is standing at the end of it.
+ *
+ * Not *while the bar is full* — **once the last rung is reached**, and it does not walk
+ * off again. That distinction is one line and it was worth a day of the first realm.
+ *
+ * It used to be `atCeiling`, which is the last rung *plus the qi to pay for it*. So a
+ * cultivator who arrived at the ceiling too weak, banked qi until they could afford the
+ * upgrades that would beat the warden, and then bought them, watched the warden vanish
+ * from the screen — because the qi they had just spent was the qi that was holding it
+ * there. The game took the fight away at the exact moment the player did the right thing
+ * to win it, and then asked them to re-earn a whole rung before offering it again.
+ *
+ * Traced on a cultivator who opens the app once a day: at 24 hours they stand at the
+ * first realm's last rung with 63% against 妖狐 the fox and no fox to fight. They leave
+ * the realm at 48 hours. Every visit rhythm leaves it at 98%, so the warden was never
+ * the wall — the vanishing was.
+ *
+ * 費 The toll is untouched. 突破 the breakthrough still costs the ninth rung, which is
+ * `canBreakThrough` below, so a realm is still nine rungs paid for. Measured across all
+ * eight cultivators, this change costs **zero days**: what it buys is a warden that
+ * stays where it is put.
+ *
+ * 頂 The ninth realm is not part of this. There the bar becomes 雷池 the thunder pool and
+ * the Dragon comes when the pool is full — the pool *is* the crossing's price, refilling
+ * is the endgame's whole clock, and "fill it and the Dragon comes" is the promise the
+ * screen makes.
+ */
+export function wardenStands(s: State): boolean {
+  const n = (s.realm - 1) * LAYERS_PER_REALM + s.layer;
+  return s.layer >= LAYERS_PER_REALM - 1 && n < LAYERS - 1;
+}
+
+/**
+ * 守 And whether it can be fought right now, which is the guard itself rather than a
+ * rule a screen remembers. A warden below the last rung has never been reachable; it was
+ * only ever the screens declining to draw it, and a guard that lives in a screen is one
+ * that a second screen forgets.
+ */
+export function canFightWarden(s: State): boolean {
+  return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s));
+}
+
 export function canBreakThrough(s: State): boolean {
   return atCeiling(s) && s.wardenFell && s.realm < 9;
 }

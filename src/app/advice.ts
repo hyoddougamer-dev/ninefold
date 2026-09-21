@@ -1,6 +1,6 @@
 import { currentWarden, odds } from '../sim/combat.ts';
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, canBuy, capOf, power, upgradeCost,
+  UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, upgradeCost,
   type State,
 } from '../sim/state.ts';
 import { ladderDone } from '../sim/time.ts';
@@ -58,8 +58,7 @@ function bodyPill(s: State): string {
 
 export function advice(s: State): Advice | null {
   const warden = currentWarden(s);
-  const blocked = (atCeiling(s) || atTribulation(s)) && !s.wardenFell
-    && odds(s, warden) < STUCK;
+  const blocked = canFightWarden(s) && odds(s, warden) < STUCK;
 
   if (blocked) {
     const cap = capOf(s, 'technique');

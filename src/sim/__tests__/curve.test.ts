@@ -5,7 +5,8 @@ import {
   realmCost,
 } from '../balance.ts';
 import {
-  UPGRADES, breakThrough, buy, canBreakThrough, canBuy, newState, power,
+  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canFightWarden,
+  newState, power, wardenStands,
   type State, type Upgrade,
 } from '../state.ts';
 import { advance, rate } from '../time.ts';
@@ -291,6 +292,53 @@ describe('time never climbs a realm by itself', () => {
     expect(later.realm).toBe(1);
     expect(later.layer).toBe(LAYERS_PER_REALM - 1);
     expect(later.qi).toBeGreaterThan(s.qi);
+  });
+
+  /**
+   * 守 The warden stands on the rung, not on the bar.
+   *
+   * The fault this pins down: a cultivator arrives at the last rung too weak, banks qi
+   * until they can afford the upgrades that would beat the warden, buys them — and the
+   * warden vanishes, because the qi they just spent was what was holding it there. The
+   * game took the fight away at the exact moment they did the right thing to win it.
+   */
+  it('keeps the warden standing after you spend the qi on beating it', () => {
+    const arrived = atCeilingOfRealmOne();
+    // Bank until the last rung is affordable, which is when the warden appears.
+    const banked = advance(arrived, arrived.at + 2 * DAY);
+    expect(atCeiling(banked)).toBe(true);
+    expect(canFightWarden(banked)).toBe(true);
+
+    // Now do the sensible thing: spend it on the levels that beat the warden.
+    let bought = banked;
+    for (let i = 0; i < 40; i++) {
+      const next = (['technique', 'method', 'pills'] as const).find((u) => canBuy(bought, u));
+      if (!next) break;
+      bought = buy(bought, next);
+    }
+    expect(bought.qi).toBeLessThan(banked.qi);
+    expect(power(bought)).toBeGreaterThan(power(banked));
+
+    // And spent right down, which is what a cultivator short of the warden would do:
+    // the bar is no longer full, and the warden is still there anyway.
+    const spent: State = { ...bought, qi: 0 };
+    expect(atCeiling(spent)).toBe(false);
+    expect(canFightWarden(spent)).toBe(true);
+
+    // 費 But the toll is untouched: 突破 still costs the ninth rung.
+    const beaten: State = { ...spent, wardenFell: true };
+    expect(canBreakThrough(beaten)).toBe(false);
+    expect(canBreakThrough(advance(beaten, beaten.at + 5 * DAY))).toBe(true);
+  });
+
+  /** And it is never reachable before the last rung, which was only ever a screen rule. */
+  it('does not let a warden be fought from halfway up a realm', () => {
+    const half: State = { ...newState(T0), realm: 3, layer: 4, qi: 1e12 };
+    expect(wardenStands(half)).toBe(false);
+    expect(canFightWarden(half)).toBe(false);
+    expect(canFightWarden({ ...half, layer: LAYERS_PER_REALM - 1 })).toBe(true);
+    // And once it has fallen it is not standing any more.
+    expect(canFightWarden({ ...half, layer: LAYERS_PER_REALM - 1, wardenFell: true })).toBe(false);
   });
 
   it('stays put even once the warden has fallen — only 突破 leaves', () => {

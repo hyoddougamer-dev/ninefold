@@ -30,7 +30,7 @@
  * rediscovered.
  */
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, breakThrough, buy, canBreakThrough, canBuy,
+  UPGRADES, UPGRADE_INFO, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canFightWarden,
   canCondense, capOf, condense, newState, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
@@ -53,6 +53,8 @@ export interface Realm {
   readonly intoUpgrades: number;
   /** Hours stood at the ceiling with the bar full and the warden still alive. */
   readonly ceilingHours: number;
+  /** Hours with the bar full at all — warden alive or the toll not yet re-earned. */
+  readonly stuckHours: number;
   /** Share of the realm's whole qi income that piled up at that ceiling. */
   readonly ceilingQi: number;
   /** Hours with every qi upgrade already at the realm's cap. */
@@ -72,6 +74,7 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
   const hours = new Array(10).fill(0);
   const capped = new Array(10).fill(0);
   const ceiling = new Array(10).fill(0);
+  const stuck = new Array(10).fill(0);
   const ceilingQi = new Array(10).fill(0);
   const spent = new Array(10).fill(0);
   const income = new Array(10).fill(0);
@@ -100,13 +103,13 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
         if (!b) break;
         s = takeKill(s, b);
       }
-      if (atCeiling(s) && !s.wardenFell) {
+      if (canFightWarden(s)) {
         for (let i = 0; i < 40; i++) {
           if (odds(s, wardenOf(s.realm)) > 0.5 || !canCondense(s)) break;
           s = condense(s);
         }
       }
-      if (atCeiling(s) && !s.wardenFell && odds(s, wardenOf(s.realm)) > 0.25) s = takeKill(s, wardenOf(s.realm));
+      if (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.25) s = takeKill(s, wardenOf(s.realm));
       if (canBreakThrough(s)) s = breakThrough(s);
     }
 
@@ -114,7 +117,10 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
     if (QI_UPGRADES.every((u) => s.levels[u] >= capOf(s, u))) capped[s.realm] += SAMPLE;
     // 頂 The bar has stopped and the warden still stands: the one stretch of a realm
     // where gathered qi has nowhere at all to go.
-    if (atCeiling(s) && !s.wardenFell) { ceiling[s.realm] += SAMPLE; ceilingQi[s.realm] += earned; }
+    if (atCeiling(s)) {
+      stuck[s.realm] += SAMPLE;
+      if (!s.wardenFell) { ceiling[s.realm] += SAMPLE; ceilingQi[s.realm] += earned; }
+    }
   }
 
   const rows: Realm[] = [];
@@ -125,6 +131,7 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
       hours: hours[realm] / 3600,
       intoUpgrades: spent[realm] / Math.max(1, income[realm]),
       ceilingHours: ceiling[realm] / 3600,
+      stuckHours: stuck[realm] / 3600,
       ceilingQi: ceilingQi[realm] / Math.max(1, income[realm]),
       cappedHours: capped[realm] / 3600,
     });
