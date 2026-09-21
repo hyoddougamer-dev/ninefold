@@ -38,7 +38,7 @@ export interface Notice {
 export const NOTICES: readonly Notice[] = [
   {
     key: 'cap', han: '上限', title: NOTICE.cap.title, text: NOTICE.cap.text,
-    when: (s) => UPGRADES.some((u) => s.levels[u] >= capOf(s)),
+    when: (s) => UPGRADES.some((u) => s.levels[u] >= capOf(s, u)),
   },
   {
     key: 'cores', han: '妖丹', title: NOTICE.cores.title, text: NOTICE.cores.text, tab: 'hunt',

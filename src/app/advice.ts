@@ -62,7 +62,7 @@ export function advice(s: State): Advice | null {
     && odds(s, warden) < STUCK;
 
   if (blocked) {
-    const cap = capOf(s);
+    const cap = capOf(s, 'technique');
     // Never point at a door the realm has not opened yet.
     if (!isOpen(s.realm, 'cores')) {
       return s.levels.technique < cap && canBuy(s, 'technique')
@@ -114,7 +114,7 @@ export function advice(s: State): Advice | null {
   // 妖丹 does not count as uncapped before the realm that sells it: otherwise a first
   // realm cultivator with three boxes half full reads as "nothing left to buy".
   const allCapped = UPGRADES.every((u) =>
-    s.levels[u] >= capOf(s) || (u === 'cores' && !isOpen(s.realm, 'cores')));
+    s.levels[u] >= capOf(s, u) || (u === 'cores' && !isOpen(s.realm, 'cores')));
   if (allCapped && !ladderDone(s)) {
     // What to do with a full realm depends on what the realm has opened.
     if (isOpen(s.realm, 'furnace')) return { han: '爐', text: ADVICE.cappedSoSpend, tab: 'trials' };
@@ -142,7 +142,7 @@ export function advice(s: State): Advice | null {
 
   // 狩 The strongest thing you can actually beat, if it still has a mark left in it.
   if (isOpen(s.realm, 'hunt')) {
-    const reachable = [...huntable(s.realm)]
+    const reachable = [...huntable(s.realm, s.layer)]
       .sort((a, b) => beastPower(b) - beastPower(a))
       .find((b) => nextMark(s.killed[b.key] ?? 0) && odds(s, b) >= 0.6);
     if (reachable) {
@@ -168,7 +168,7 @@ export function advice(s: State): Advice | null {
 
   // 望 Nothing is in reach — so name what is nearest, and the power it asks for.
   if (isOpen(s.realm, 'hunt')) {
-    const next = [...huntable(s.realm)]
+    const next = [...huntable(s.realm, s.layer)]
       .sort((a, b) => beastPower(a) - beastPower(b))
       .find((b) => odds(s, b) < 0.6);
     if (next) {

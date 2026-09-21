@@ -5,6 +5,7 @@ import {
 } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
+import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
 import { pillBane } from './furnace.ts';
 import { lootTaken } from './trials.ts';
@@ -438,6 +439,20 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
   return base * beastWeakness(s.unlocked) * pillBane(s.brewed);
 }
 
+/**
+ * 守 What stands in front of this cultivator right now.
+ *
+ * Below the summit it is the realm's warden. Above it, it is the Dragon of the heaven
+ * they have climbed into — the same fight, the same anchor, a different animal with a
+ * different name and a different shape drawn beside it. Forty crossings against one
+ * beast called 龍 was measured and it was grim.
+ */
 export function currentWarden(s: State): Beast {
+  const heaven = heavenAt(s.tribulation);
+  if (s.realm === 9 && heaven) {
+    const dragon = wardenOf(9);
+    return { ...dragon, han: heaven.dragon.han, name: heaven.dragon.name,
+             icon: heaven.dragon.icon };
+  }
   return wardenOf(s.realm);
 }

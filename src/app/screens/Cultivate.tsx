@@ -1,4 +1,4 @@
-import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
@@ -9,6 +9,7 @@ import {
 import { duration, num } from '../../sim/format.ts';
 import { ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
+import { HEAVENS, heavenAt, marksToNext, nextHeaven } from '../../data/heavens.ts';
 import { portrait, seal } from '../../art/aura.ts';
 import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
@@ -37,6 +38,10 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
   // 雷池 Once the last rung is open there is no layer left to fill, so the bar becomes
   // the thunder pool: two days of your own gathering, and the gate on the Dragon.
   const top = ladderDone(state);
+  // 境外 Which heaven this cultivator stands in, and the one after it.
+  const heaven = heavenAt(state.tribulation);
+  const coming2 = nextHeaven(state.tribulation);
+  const left2 = marksToNext(state.tribulation);
   const pool = tribulationPool(state);
   const full = top ? atTribulation(state) : atCeiling(state);
   const ready = canBreakThrough(state);
@@ -44,7 +49,7 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
   const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
-  const cap = capOf(state);
+
   const wardenRaw = oddsRaw(state, w);
   const wardenGap = dragon / Math.max(1e-9, power(state));
   const tip = advice(state);
@@ -95,7 +100,9 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
       {/* 境 The realm's own name is the way in to the page that explains it. A player
           asking "what is this realm" reaches for the realm, not for a tab. */}
       <button className="realmname" onClick={onRealm}>
-        <h1 className="cjk" style={{ margin: 0, fontSize: 30, fontWeight: 400, color: r.colour }}>{r.han}</h1>
+        <h1 className="cjk" style={{
+          margin: 0, fontSize: 30, fontWeight: 400, color: heaven?.colour ?? r.colour,
+        }}>{heaven?.han ?? r.han}</h1>
         <span className="ask" aria-hidden="true">?</span>
       </button>
       <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
@@ -111,7 +118,13 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
           in has no idea whether they are near the start of something or the end of it,
           and nine is a number worth knowing on the first day. */}
       <p className="faint" style={{ margin: '1px 0 8px', fontSize: 13 }}>
-        {r.name} <span className="mono" style={{ opacity: .65 }}>· {CULTIVATE.ofNine(state.realm, REALMS.length)}</span>
+        {/* 境外 Above the summit the player is standing in a heaven, not in the ninth
+            realm, and the name at the top of the screen is where they read that. */}
+        {heaven ? heaven.name : r.name}{' '}
+        <span className="mono" style={{ opacity: .65 }}>
+          · {heaven ? CULTIVATE.ofHeavens(heaven.n, HEAVENS.length)
+                    : CULTIVATE.ofNine(state.realm, REALMS.length)}
+        </span>
       </p>
 
       {/* 雷池 Once the ladder runs out the portrait gives the screen over to the pool:
@@ -231,12 +244,38 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
         </button>
       )}
 
+      {/* 境外 Above the ninth realm the card is a ladder rather than a tally: the heaven
+          you stand in, the one after it, and how many crossings away it is. */}
       {top && (
-        <div className="card" style={{ marginTop: 16, borderColor: r.colour }}>
-          <b className="cjk" style={{ color: r.colour }}>雷印</b>
-          <p className="faint" style={{ margin: '4px 0 0', fontSize: 13 }}>
+        <div className="heaven" style={{ ['--hue' as string]: heaven?.colour ?? r.colour }}>
+          <div className="hhead">
+            <span className="hnow">
+              <b className="cjk">{heaven?.han ?? '渡劫'}</b>
+              <em>{heaven?.name ?? realmOf(9).name}</em>
+            </span>
+            <span className="hmarks mono">
+              <b>{state.tribulation}</b>
+              <i>{CULTIVATE.marks(state.tribulation)}</i>
+            </span>
+          </div>
+          {heaven && <>
+            <p className="hgain">{heaven.gains}</p>
+            <p className="hroom">{CULTIVATE.heavenRoom(LEVELS_PER_HEAVEN)}</p>
+          </>}
+          <p className="faint" style={{ margin: '7px 0 0', fontSize: 12.5 }}>
             {CULTIVATE.ceiling(state.tribulation, `${(1 + TRIBULATION_GAIN).toFixed(2)}x`)}
           </p>
+          {coming2 && left2 !== null && (
+            <div className="hnext">
+              <span className="seal"><Svg html={seal(coming2.dragon.icon, coming2.colour)} /></span>
+              <span>
+                <em>{CULTIVATE.nextHeaven(left2)}</em>
+                <i><b className="cjk" style={{ color: coming2.colour }}>{coming2.han}</b>{' '}
+                  {coming2.name} · {coming2.dragon.han} {coming2.dragon.name}</i>
+              </span>
+            </div>
+          )}
+          {!coming2 && <p className="hgain">{CULTIVATE.lastHeaven}</p>}
         </div>
       )}
 
@@ -247,9 +286,11 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
       )}
 
       <h2 className="heading">{CULTIVATE.spend}</h2>
-      {UPGRADES.every((u) => state.levels[u] >= cap
+      {UPGRADES.every((u) => state.levels[u] >= capOf(state, u)
         || (u === 'cores' && !isOpen(state.realm, 'cores'))) && (
-        <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>{CULTIVATE.capped}</p>
+        <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
+          {top ? CULTIVATE.cappedTop : CULTIVATE.capped}
+        </p>
       )}
       <div className="upgrades">
         {/* 妖丹 is not shown before the realm that sells it: a box you cannot use is a
@@ -258,6 +299,9 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
           const i = UPGRADE_INFO[u];
           const cost = upgradeCost(state, u);
           const held = state.levels[u];
+          // 境外 The cap is per upgrade above the summit: a heaven opens room on 力 and
+          // never on 氣. See capOf.
+          const cap = capOf(state, u);
           const maxed = held >= cap;
           return (
             /* 指 Named so 引 the guide can put an arrow on this exact box. */
@@ -290,7 +334,7 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
       {/* 凝丹 The way out of the one dead end the game has.
           It appears only when 材 material has actually run out and a core is still to be
           had — which is the moment it answers a question instead of asking one. */}
-      {isOpen(state.realm, 'cores') && state.levels.cores < cap
+      {isOpen(state.realm, 'cores') && state.levels.cores < capOf(state, 'cores')
         && !canBuy(state, 'cores') && (
         <div className="condense">
           <div className="chead">

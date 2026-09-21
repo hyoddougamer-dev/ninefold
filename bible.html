@@ -30,6 +30,18 @@
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
 
+  /* 境外 the heavens, one card each. */
+  #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
+  #heavens .hic { flex:none; }
+  #heavens .hic svg { display:block; }
+  #heavens .card > .hrow b { font-size:20px; font-weight:400; color:var(--hue); }
+  #heavens .hrow em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+                      font-size:16px; }
+  #heavens .hrow i { display:block; font-style:normal; font-size:12px; margin-top:2px; }
+  #heavens .hg { margin:9px 0 0; font-size:13.5px; color:var(--faint); line-height:1.55; }
+  #heavens .hr { margin:5px 0 0; font-size:12px; font-family:Rajdhani,sans-serif;
+                 font-weight:700; letter-spacing:.03em; }
+
   /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
   #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
                overflow:hidden; min-width:120px; }
@@ -202,6 +214,42 @@
               font-size:13px; line-height:1.5; }
   #mockups .cond .hint b { flex:none; font-size:17px; font-weight:400; color:var(--gold); }
 
+  /* 境外 the heaven card */
+  #mockups .mk.hcard { border-color:var(--hue); }
+  #mockups .hcard .hh { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  #mockups .hcard .hn b { font-size:23px; font-weight:400; color:var(--hue); }
+  #mockups .hcard .hn em { font-style:normal; font-family:Rajdhani,sans-serif;
+                           font-weight:700; font-size:16px; margin-left:8px; }
+  #mockups .hcard .hm { text-align:right; flex:none; }
+  #mockups .hcard .hm b { display:block; font-family:Rajdhani,sans-serif; font-weight:700;
+                          font-size:22px; color:var(--hue); }
+  #mockups .hcard .hm i { font-style:normal; font-size:10px; letter-spacing:.1em;
+                          text-transform:uppercase; color:var(--faint); }
+  #mockups .hcard .hgain { margin:8px 0 0; font-size:14px; }
+  #mockups .hcard .hroom { margin:6px 0 0; font-size:13px; color:var(--hue);
+                           font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .hcard .hnx { display:flex; gap:12px; align-items:center; margin-top:13px;
+                         padding-top:13px; border-top:1px solid var(--line); }
+  #mockups .hcard .hic { flex:none; }
+  #mockups .hcard .hic svg { display:block; }
+  #mockups .hcard .hnx em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
+                            font-weight:700; font-size:13px; color:var(--faint);
+                            letter-spacing:.06em; text-transform:uppercase; }
+  #mockups .hcard .hnx i { display:block; font-style:normal; font-size:14px; margin-top:2px; }
+
+  /* 出 the beasts still to come */
+  #mockups .coming2 { background:none; border:0; padding:0; }
+  #mockups .crow { display:flex; align-items:center; gap:12px; padding:11px 13px;
+                   background:var(--panel2); border:1px dashed var(--line);
+                   border-radius:11px; margin-bottom:7px; opacity:.75; }
+  #mockups .crow .cic { flex:none; }
+  #mockups .crow .cic svg { display:block; }
+  #mockups .crow .cn { flex:1; }
+  #mockups .crow .cn b { display:block; font-size:16px; font-weight:400; }
+  #mockups .crow .cn i { font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .crow .cl { flex:none; font-size:12px; color:var(--faint);
+                       font-family:Rajdhani,sans-serif; font-weight:700; }
+
   /* 收 */
   #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
             padding:16px; }
@@ -366,6 +414,7 @@
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
@@ -531,6 +580,43 @@
       is drawn only while canBuy(cores) is false — it is an answer, not a fifth box.</p>
   </div>
 
+    <h3>境外 The card above the summit</h3>
+    <p class="t">Forty crossings against one animal called 龍 was the endgame, and this
+      is what stands in its place: the heaven you are in, what it opened, and the next
+      one with its own Dragon already drawn. The whole card is read out of heavens.ts —
+      the name, the colour, the count of crossings, and which animal the icon is.</p>
+    <div class="mk hcard" style="--hue:#FF6E8E">
+    <div class="hh"><span class="hn"><b class="cjk">金仙</b><em>Golden Immortal</em></span>
+      <span class="hm"><b>4</b><i>4 marks</i></span></div>
+    <p class="hgain">Your qi runs gold, and it no longer leaves you when you spend it.</p>
+    <p class="hroom">＋6 levels of 劍訣 and 妖丹, for good</p>
+    <div class="hnx"><span class="hic" style="color:#FF8878"><svg viewBox="0 0 512 512" width="40" height="40" fill="currentColor" aria-hidden="true"><path d="M345.594 20.28c-11.443.087-23.37 1.194-36.094 3.845 33.485 7.004 54.532 21.844 65.844 39.22-15.476-2.647-30.64-4.472-45.47-5.532L311 40.374l-19.28 16.438c-7.537.167-14.98.55-22.314 1.156L239.97 41.78l-14.907 22.814c-8.1 1.775-16.05 3.846-23.844 6.22l-29.47-14.97-11.313 30.75c-8.783 4.197-17.31 8.868-25.593 13.937l-32.688-5.31-.47 29.03c-6.313 5.248-12.44 10.808-18.374 16.656H48l3.563 36.656c-4.38 5.908-8.603 12.045-12.688 18.375L18.47 192.25v39.5c-.012.02-.022.042-.032.063V493.28h18.5c23.523-92.965 94.565-130.4 168.968-85.25 42.127 25.566 93.783 62.296 149.063 41.158-.9 7.955-3.276 15.623-6.908 22.562l95.344 19.188c2.99-7.75 5.584-15.712 7.625-23.563-3.557 2.29-10.352 4.79-19.78 3.313-41.302-6.47-33.15-54.034-.53-58.407 10.915-1.456 21.15 3.22 27.56 11.25l18.283-38.874c-68.1 6.078-129.61-30.834-197.47-16.687 35.468 7.415 56.983 23.64 67.75 42.342-7.332.564-14.425.598-21.28.157l-10.813-10.25-13.625 6.436c-5.98-1.52-11.737-3.448-17.313-5.75l-7.718-15.47-10.906 5.97c-7.152-4.38-13.924-9.414-20.344-15.062l-1.813-26.75-19.436 5.03c-7.508-7.63-15.15-13.68-22.875-18.343l-1.282-19.75-23.875 9.408c-11.712-2.7-23.455-2.622-35.063-.25 44.223-90.392 134.06-92.4 180.813-64.563-5.227 5.68-11.388 10.355-18.125 13.78l66.562 70.908c6.928-4.58 13.63-9.564 19.844-14.782-4.228-.204-14.15-5.01-17.47-8.06-34.53-31.74 7.1-63.854 32.876-48.626 9.484 5.603 15.366 14.898 15.938 25.156l34.75-23.875c-59.015-34.522-85.098-97.445-148.594-125.25 23.092 24.968 31.707 49.115 30.97 69.75-8.93-6.752-18.606-12.1-28.845-16.188l-13.845-21.25-18.188 12.75c-5.18-.755-10.455-1.246-15.78-1.5l-19.094-18.093-15.25 19.687c-7.918 1.068-15.884 2.592-23.844 4.564l-15.75-13-9.75 20.812c-6.988 2.552-13.936 5.42-20.782 8.594l-23.594-8.28-8.625 25.874c-12.263 7.768-23.966 16.49-34.876 26.062C124.307 122.443 296.518 88.99 384.938 108.562c-1.12 6.798-3.333 13.35-6.47 19.344l95.344 19.188c2.99-7.75 5.585-15.71 7.625-23.563-3.558 2.29-7.502 5.33-11.968 4.72-46.308-6.31-43.81-54.725-8.345-59.813 10.903-1.57 21.15 3.193 27.563 11.22 1-10.184 1.808-35.654 2.187-45.907-55.332 4.938-95.695-13.84-145.28-13.47z"/></svg></span>
+      <span><em>3 more crossings open</em>
+        <i><b class="cjk" style="color:#FF8878">太乙</b> Supreme Unity ·
+          九嬰 Nine-Headed Hydra</i></span></div>
+    <p class="cap">At four marks. The heaven, the room it opened, and the animal three
+      crossings away — all of it out of heavens.ts, including which Dragon is drawn.</p>
+  </div>
+
+    <h3>出 Beasts still to come</h3>
+    <p class="t">A realm's three commons now walk out at layers 0, 4, 7
+      rather than all at once. The ones that have not arrived are <b>shown</b> rather than
+      hidden, dimmed and dashed with the layer that brings them — the same argument as a
+      locked tab, for the same reason: you cannot look forward to a thing you have never
+      seen.</p>
+    <div class="mk coming2"><div class="crow">
+      <span class="cic" style="color:#CC79FF"><svg viewBox="0 0 512 512" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M118.2 13.613c-9.34.05-18.525 2.977-25.878 9.2-28.494-14.11-63.64.133-58.814 33.37C7.16 77.84 13.01 118.364 43.355 131.036c-.715 28.33 22.506 53.156 49.643 50.957 7.358 19.48 25.91 31.78 45.996 34.16.1 2.352.31 4.766.63 7.235-9.325 4.95-18.904 9.69-28.645 14.374l8.098 16.84c8.28-3.98 16.58-8.045 24.8-12.307 1.822 5.843 4.153 11.877 6.93 18.027-9.202 4.788-18.57 9.436-28.048 14.037l8.16 16.814c9.49-4.607 18.984-9.31 28.394-14.195 3.407 5.985 7.2 12.024 11.393 18.067-9.837 5.116-19.83 10.094-29.934 15.02l8.19 16.798c11.075-5.4 22.15-10.903 33.11-16.646 4.754 5.912 9.852 11.78 15.302 17.55-12.022 6.36-24.303 12.478-36.713 18.54l8.203 16.794c14.22-6.947 28.442-14.04 42.432-21.567 4.807 4.436 9.683 8.62 14.6 12.547-19.234 11.162-38.166 24.76-55.102 40.38l-4.783 4.41 2.478 6.017c6.126 14.866 12.37 27.647 19.33 38.534 16.73 43.73 117.658 67.51 169.87 49.974-40.098-76.48-110.48-107.213-163.516-77.16-1.91-3.884-3.808-7.983-5.7-12.338 16.67-14.624 35.242-27.457 53.913-37.656 14.745 9.996 29.484 17.747 43.312 23.174 4.953-1.442 9.74-3.09 14.36-4.91-5.082-4.966-10.262-10.56-15.505-16.832l14.34-11.985c6.706 8.026 13.247 14.75 19.41 20.267 9.148-5.032 17.394-10.79 24.644-17.03-4.422-6.302-9.917-13.245-16.64-20.736l13.91-12.48c6.27 6.987 11.628 13.576 16.176 19.802 2.76-3.212 5.29-6.494 7.563-9.825-2.275-9.77-6.05-20.19-11.212-30.927 4.547-14.812 10.333-29.638 17.244-43.776 4.26.62 8.324 1.297 12.215 2.03-23.748 40.476 31.817 122.773 84.082 144.218 29.62-76.177 7.565-136.216-53.038-155.462-13.592-4.834-29.27-8.007-47.555-10.31l-6.457-.815-3.002 5.773c-6.094 11.72-11.37 23.9-15.847 36.21-5.395-8.492-11.577-17.043-18.5-25.503 7.895-9.388 15.278-19.488 22.038-30.44l-15.903-9.816c-5.726 9.277-11.96 17.903-18.61 26-2.39-2.562-4.838-5.11-7.362-7.634-2.882-2.88-5.797-5.67-8.733-8.382 7.245-8.65 14.023-17.95 20.244-28.008l-15.892-9.83c-5.664 9.157-11.848 17.648-18.477 25.58-6-4.88-12.05-9.395-18.093-13.53 6.332-7.583 12.27-15.716 17.728-24.504l-15.875-9.86c-5.434 8.747-11.412 16.803-17.84 24.302-6.575-3.778-13.08-7.073-19.443-9.856 4.955-5.94 9.616-12.294 13.912-19.146l-15.834-9.928c-5.074 8.093-10.74 15.45-16.895 22.223-9.522-2.728-18.495-4.106-26.615-4.004-.202.003-.398.017-.6.02-15.792-17.983-44.215-24.07-67.113-15.15-3.733-21.79-22.074-39.414-42.832-41.6 4.765-14.846 1.142-31.49-8.877-43.204 14.55-2 28.25-10.616 35.153-22.598 12.188 14.724 34.067 21.62 51.673 15.564 8.117 17.202 29.023 28.58 48.562 26.01 35.58 81.022 139.882 84.89 177.424 1.266-36.924 23.267-66.726 3.737-89.6-26.473-17.638-23.298-43.473-38.92-75.83-8.985-10.208-15.318-30.848-23.5-49.33-18.993-8.477-14.405-24.79-22.622-40.67-22.54z"/></svg></span>
+      <span class="cn"><b class="cjk" style="color:#CC79FF">毒蠍</b>
+        <i>Venom Scorpion</i></span>
+      <span class="cl">layer 5</span></div><div class="crow">
+      <span class="cic" style="color:#CC79FF"><svg viewBox="0 0 512 512" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M192.871 24.238c-2.922.01-5.68.59-8.017 1.867-30.965 16.925-46.995 70.705-29.278 99.276 6.013 9.288 35.177 31.022 51.639 36.482 3.31-10.387 5.34-23.214 5.853-35.693-8.602-2.862-13.373-7.625-15.955-11.613-10.829-24.35 22.596-52 21.485-74.487-2.775-8.647-15.29-15.87-25.727-15.832zm126.59 70.746c-38.49-.4-87.103 18.08-88.285 27.786-.502 12.09-2.315 36.34-5.643 47.439-1.234 14.431 87.48-5.57 106.672-21.281 3.176-11.361 1.196-43.319-5.197-53.604-2.46-.202-4.981-.313-7.547-.34zm28.451 11.293c2.179 11.94 2.38 23.831 2.328 35.397 24.468 2.872 39.495 9.848 50.838 28.388 10.528-6.271 18.877-14.117 24.22-20.718-15.992-22.873-53.878-42.774-77.386-43.067zm84.883 61.733c-6.452 6.57-14.632 13.136-24.434 18.658 2.773 9.263 4.44 20.778 4.254 35.41 9.53 2.348 17.532 5.491 25.44 9.787 12.263-3.983-.165-45.48-5.26-63.855zm-22.13 72.2c-5.913 16.8-13.378 27.969-26.95 37.089 5.335 5.922 10.432 12.272 14.537 19.416 16.4-11.115 28.944-29.614 35.28-46.48-7.212-4.612-14.948-8.004-22.868-10.024zm-254.722 9.772c-24.968-.307-47.952 10.125-61.707 24.893 1.556 3.27 3.396 6.784 5.502 10.252 2.755 4.534 6.008 8.743 9.262 12.19 5.876-11.771 21.173-21.212 47.217-20.891 8.001 2.264 16.151 4.846 24.396 7.59 4.333-9.553 7.41-18.737 8.285-27.426-11.047-3.5-22.016-5.98-32.955-6.608zm50.323 12.805c-1.452 9.327-4.576 18.335-8.49 27.088 17.964 13.908 36.962 27.223 65.505 21.303.433-8.204 2.108-16.182 4.307-23.92-9.427-10.632-30.547-24.13-61.322-24.47zm160.699 22.99c-26.515 10.09-56.853 12.248-82.022 6.467-2.248 8.07-3.721 15.815-3.734 23.25 38.962 6.89 67.922 5.617 101.28-9.906-3.975-6.755-9.436-13.219-15.524-19.81zm-283.768 6.746c-1.208 3.439-1.943 6.956-2.129 10.504-.721 13.824 7.697 32.776 20.162 44.024 12.466 11.247 32.526 19.822 57.666 24.181 19.718 2.524 38.49 4.82 56.96 9.612 6.719-5.705 14.204-11.757 23.804-16.399-9.359-5.49-19.785-10.33-26.48-12.129-48.547-13.821-72.614-1.06-100.813-30.17-12.66-4.688-21.287-16.6-28.013-27.673-.396-.65-.778-1.3-1.157-1.95zm173.555 84.254c-9.066 2.375-15.618 6.49-21.852 11.463 9.566 5.204 14.975 12.275 12.979 24.41-3.506 14.75-8.537 21-18.244 25.897-9.771 4.93-23.045 6.94-37.278 8.205-14.232 1.266-29.276 1.817-43.109 5.498-13.833 3.681-29.906 10.464-33.836 26.186-3.596 14.386 13.073 14.019 16.397 7.43 4.507-8.936 11.086-13.3 22.068-16.221 10.982-2.923 28.776-1.663 43.553-2.977 14.776-1.314 30.158-3.186 43.789-10.063 13.63-6.876 25.22-18.329 28.91-35.978 3.689-17.65-4.299-34.268-12.775-43.26-.181-.192-.408-.394-.602-.59z"/></svg></span>
+      <span class="cn"><b class="cjk" style="color:#CC79FF">屍蟲</b>
+        <i>Corpse Worm</i></span>
+      <span class="cl">layer 8</span></div>
+    <p class="cap">Standing on the third rung of 煉虛
+      Void Refining. Iron Centipede is already out; the other two
+      are the realm's next two events.</p></div>
+
     <h3>收 The corner</h3>
     <p class="t">Five bare characters floating over the corner of a screen that is already
       teaching characters is five unanswered questions at once. One button, and every row
@@ -551,8 +637,8 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>38 closed,
-      1 open,
+    <p class="t"><b>41 closed,
+      0 open,
       1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
     <div class="board"><div class="srow" style="--hue:var(--cyan)">
@@ -590,10 +676,10 @@
     <span class="body"><b class="cjk">開</b> <em><a href="#opens">What each realm opens</a></em><i>Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 81 days later.</i></span>
+    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 79 days later.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one — and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 59 days of the climb.</i></span>
+    <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one — and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 57 days of the climb.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
@@ -669,9 +755,15 @@
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">收</b> <em><a href="#mockups">The corner, folded</a></em><i>Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.</i></span>
-  </div><div class="srow" style="--hue:var(--gold)">
-    <span class="st"><b class="cjk">行</b><i>open</i></span>
-    <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured: an active cultivator meets four of the nine realms in the first five days and the last new thing in the game on day 60. The climb has a pace. What comes after it does not have a calendar.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">境外</b> <em><a href="#heavens">The heavens above the ninth realm</a></em><i>9 named heavens, one every 3 crossings, each with its own Dragon drawn and named and 6 more levels of 劍訣 and 妖丹 behind it. The endgame was forty crossings against one animal.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">出</b> <em><a href="#clock">Beasts that walk out mid-realm</a></em><i>A realm's three commons arrive at layers 0, 4, 7 instead of all at the breakthrough. The eighth realm is 16 days long and used to hand over everything it had in the first minute of them.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 162, against a climb that used to run out on day 60.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
     <span class="st"><b class="cjk">待</b><i>planned</i></span>
     <span class="body"><b class="cjk">轉世</b> <em>Rebirth</em><i>Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody's memory.</i></span>
@@ -941,58 +1033,58 @@
     <td><b class="cjk">barely fights</b><i style="display:block">The same visit as the one above, and two beasts before putting it down.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--cyan)">day 110</td>
-    <td class="n">115M</td>
+    <td class="n" style="color:var(--cyan)">day 112</td>
+    <td class="n">106M</td>
     <td class="n">—</td>
-    <td class="n">270</td>
+    <td class="n">272</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
-    <td class="n" style="color:var(--cyan)">day 88</td>
-    <td class="n">1.05B</td>
+    <td class="n" style="color:var(--cyan)">day 90</td>
+    <td class="n">944M</td>
     <td class="n">96</td>
-    <td class="n">1,160</td>
+    <td class="n">1,216</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--cyan)">day 80</td>
-    <td class="n">2.58B</td>
+    <td class="n" style="color:var(--cyan)">day 81</td>
+    <td class="n">2.39B</td>
     <td class="n">—</td>
-    <td class="n">857</td>
+    <td class="n">863</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
     <td class="n" style="color:var(--cyan)">day 60</td>
-    <td class="n">4.25B</td>
-    <td class="n">103</td>
-    <td class="n">5,073</td>
+    <td class="n">4.4B</td>
+    <td class="n">104</td>
+    <td class="n">5,258</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
     <td class="n" style="color:var(--cyan)">day 44</td>
-    <td class="n">3.7B</td>
-    <td class="n">103</td>
-    <td class="n">16,823</td>
+    <td class="n">4.52B</td>
+    <td class="n">104</td>
+    <td class="n">17,144</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
     <td class="n" style="color:var(--cyan)">day 61</td>
-    <td class="n">4.25B</td>
-    <td class="n">103</td>
-    <td class="n">5,357</td>
+    <td class="n">4.4B</td>
+    <td class="n">104</td>
+    <td class="n">5,370</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">walks 神</b><i style="display:block">The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 57</td>
-    <td class="n">1.27B</td>
+    <td class="n" style="color:var(--cyan)">day 58</td>
+    <td class="n">1.38B</td>
     <td class="n">97</td>
-    <td class="n">4,907</td>
+    <td class="n">4,925</td>
   </tr>
     </table>
     <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
@@ -1072,12 +1164,133 @@
     <p class="t">This is the number that matters, and it is deliberately small. 勤 the
       harness grew a cultivator whose day is the waiter's day exactly — one visit, no
       tower, no gear, no furnace — <b>plus two beasts before putting the phone down</b>.
-      Two beasts a day is worth <b class="big">59 days</b> off the climb.</p>
+      Two beasts a day is worth <b class="big">57 days</b> off the climb.</p>
     <div class="rule"><b>And nothing was taken away.</b> The qi rate is untouched. Offline
       is untouched. Losing a fight still costs nothing, and the screen still says so. The
       only thing that changed is the price of a warden, paid in the one currency that has
       always come from playing — and the one thing that was added is a way to pay it
       without playing, dearly.</div>
+  </section>
+
+  <section class="sec" id="heavens">
+    <h2><span class="h">境外</span> Beyond the ninth realm</h2>
+    <p class="t">The climb ends at 渡劫 the ninth realm and 劫 the tribulation runs on for
+      ever after it — a pool that refills in 2 days, a Dragon that comes back
+      1.89x heavier, a mark worth 1.73x.
+      A fine engine with nothing in it: <b>forty crossings against one animal called 龍</b>,
+      told apart only by the number beside it.</p>
+    <p class="t">So the ladder continues, and a heaven is exactly what a realm is — a
+      name, a colour, a thing standing at the end of it, and something it opens. One
+      every 3 crossings, which at the 4 days a crossing
+      settles at is a little over a week each.</p>
+    <div class="cards two">
+  <div class="card" style="--hue:#FF5AA6">
+    <div class="hrow">
+      <span class="hic" style="color:#FF5AA6"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M200.947 18.686c-6.98.087-14.64.774-22.85 1.9 27.57 20.468 51.098 45.25 67.594 70.527 1.66 0 3.312.012 4.958.047 18.066.39 35.487 2.906 53.217 7.2-15.695-28.457-29.935-50.19-47.45-63.22-13.817-10.278-30.063-16.168-52.52-16.454-.967-.013-1.95-.013-2.948 0zm-91.66 22.96c-.73-.002-1.46.006-2.195.022-14.045.31-29.36 3.92-46.86 11.13 56.18 18.807 106.985 50.468 133.907 83.585 18.377-5.13 29.44-14.72 36.454-28.817C195.84 78.18 168.118 56.19 140.65 46.96c-10.168-3.418-20.433-5.306-31.363-5.315zm-.203 52.786c-39.42 6.758-74.73 31.854-87.822 74.19v322.345h212.73C100.352 442.58 61.19 206.49 187.115 230.104c5.838-14.164 9.92-28.027 11.018-41.465l18.627 1.522c-1.684 20.592-8.828 40.49-18.033 59.943-.732 2.035-1.472 4.12-2.186 6.063 32.842 85.24 113.77 160.69 169.495 168.197.915.033 1.905-.002 2.953-.09 17.016 1.035 35.86-4.222 52.21-22.304l7.984-8.83-10.473-5.658c-6.507-3.515-14.29-7.094-18.167-10.925-1.938-1.916-2.793-3.47-3.074-5.194-.282-1.725-.13-4.227 2.23-8.578l10.673-19.656-21.484 6.222c-6.304 1.825-17.305-3.032-23.224-10.71-2.96-3.84-4.408-7.907-4.387-10.843.02-2.938.72-5.125 4.747-8.05l19.453-14.125-23.884-2.72c-9.974-1.137-16.37-6.658-19.17-12.294-2.802-5.634-2.312-10.084 1.375-13.31l12.204-10.677-15.358-5.205c-6.717-2.276-10.296-7.555-10.357-10.633-.028-1.373.238-2.666 1.843-4.476 10.93-2.39 21.258-.45 28.088 6.374 6.154 6.146 8.35 15.128 6.977 24.832 8.55-2.254 16.985-1.616 24.112 2.494 9.34 5.387 14.647 15.692 15.67 27.965 15.212-10.132 32.152-12.725 45.262-5.164 15.467 8.92 21.36 29.513 16.805 51.75 23.992-33.355 34.588-75.717 5.617-120.43-46.726-4.442-81.693-30.676-93.293-67.64-5.026-16.016-21.284-28.67-42-37.904l-.08.217c-29.74-10.823-55.575-17.35-82.604-18.733l.08.155c-2.294-.093-4.56-.16-6.762-.172-9.537 22.874-28.662 39.9-57.436 46.054l-5.906 1.262-3.576-4.864c-14.216-19.33-41.23-40.452-74.002-58.074zm156.215 65.26c27.927-.073 44.874 11.617 42.09 44.45-35.844 3.39-51.933-16.683-63.074-42.632 7.507-1.155 14.538-1.8 20.983-1.817zm48.407 66.363c3.708.07 7.14.994 10.014 2.812-1.51 1.102-2.898 2.28-4.16 3.543-5.246 5.24-8.087 12.122-7.956 18.742.183 9.322 5.27 17.184 12.68 22.56-3.14 8.103-2.452 17.455 1.407 25.22 3.813 7.668 10.54 14.273 19.302 18.398-1.445 3.366-2.375 6.862-2.4 10.33-.062 8.407 3.38 16.042 8.273 22.39 6.792 8.81 16.862 15.936 28.026 17.91-.183 2.18-.204 4.333.133 6.407 1.05 6.444 4.515 11.66 8.38 15.48 3.41 3.37 7.19 5.892 10.798 7.993-6.345 4.792-12.414 7.056-18.618 7.79-6.515-7.937-9.71-19.084-9.41-31.454-11.767 6.177-24.21 7.156-34.12 1.44-14.668-8.46-19.393-29.036-13.187-50.33-11.336 2.77-22.13.92-29.187-6.132-8.875-8.865-9.535-23.626-3.094-37.95-3.676-.615-6.963-2.166-9.525-4.725-8.808-8.798-5.773-26.09 6.776-38.626 7.843-7.835 17.546-11.957 25.87-11.8z"/></svg></span>
+      <span><b class="cjk">真仙</b> <em>True Immortal</em>
+        <i class="faint">蒼龍 Azure Dragon · from mark 1 · about day 75</i></span>
+    </div>
+    <p class="hg">The first name above the ninth realm. Nobody who knew you is still alive.</p>
+    <p class="hr" style="color:#FF5AA6">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FF6E8E">
+    <div class="hrow">
+      <span class="hic" style="color:#FF6E8E"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M215.125 17.188C142.557 18.134 72.68 64.075 40.187 132.25c-56.91 119.42 7.05 260.175 122.313 314.406 53.513 25.185 114.67 31.57 172.563 19.78l9.625 21.845 152.75-34.03c-.64-13.024-1.892-29.087-3.407-45.97-3.353 6.146-8.283 11.545-14.655 15.5-19.667 12.21-45.51 6.137-57.72-13.53-12.208-19.667-6.165-45.51 13.5-57.72 6.762-4.196 14.274-6.21 21.69-6.28 12.278-.118 24.32 5.173 32.53 15-4.06-38.385-8.03-70.97-8.03-70.97-58.49 31.19-115.34 47.06-174.47 60.408v-.375c-46.538 12.515-126.428 1.26-156.5-30.22 18.292 40.602 81.708 65.04 149.313 65.844l8.343 18.938c-24.334 9.436-50.313 14.416-76.374 14.313l-14.22-17.97L194.72 415.5c-13.017-2.59-25.656-6.54-37.69-11.72l-9.56-23.186-23.876 4.656c-7.174-4.967-13.972-10.416-20.375-16.28l-.564-24.126-26.344-6.5c-3.69-5.284-7.09-10.758-10.187-16.406L74.97 295l-23.657-9.47c-1.876-6.79-3.32-13.74-4.313-20.81l13.875-21.564-14.125-21.844c.057-.448.095-.894.156-1.343.87-6.424 2.175-12.74 3.844-18.94l20.188-13.25-6.594-20.686c3.268-6 6.91-11.757 10.906-17.25l25.688-5.406 3.093-24.625c5.754-4.555 11.836-8.695 18.19-12.313l22.718 6.78 9.812-20.124c9.6-2.523 19.57-3.957 29.78-4.187l20.845 15.25 20.063-9.376c50.687 16.437 88.647 65.967 80.53 121.594-2.905 19.914-12.198 38.33-25.437 52.437 3.03-20.242-10.88-43.178-35.092-55-28.472-13.902-60.35-7.162-71.188 15.03-10.836 22.194 3.466 51.443 31.938 65.345 4.653 2.272 9.396 3.995 14.125 5.188 57.96 18.97 121.378-12.46 147.593-66.063 36.94-75.536-3.372-165.134-76.125-200.22-23.733-11.444-48.587-16.803-73.186-16.968-1.153-.007-2.317-.015-3.47 0zM396.47 348.375l-1.626 37.188-60.53-10.657 62.155-26.53z"/></svg></span>
+      <span><b class="cjk">金仙</b> <em>Golden Immortal</em>
+        <i class="faint">金龍 Golden Dragon · from mark 4 · about day 85</i></span>
+    </div>
+    <p class="hg">Your qi runs gold, and it no longer leaves you when you spend it.</p>
+    <p class="hr" style="color:#FF6E8E">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FF8878">
+    <div class="hrow">
+      <span class="hic" style="color:#FF8878"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M345.594 20.28c-11.443.087-23.37 1.194-36.094 3.845 33.485 7.004 54.532 21.844 65.844 39.22-15.476-2.647-30.64-4.472-45.47-5.532L311 40.374l-19.28 16.438c-7.537.167-14.98.55-22.314 1.156L239.97 41.78l-14.907 22.814c-8.1 1.775-16.05 3.846-23.844 6.22l-29.47-14.97-11.313 30.75c-8.783 4.197-17.31 8.868-25.593 13.937l-32.688-5.31-.47 29.03c-6.313 5.248-12.44 10.808-18.374 16.656H48l3.563 36.656c-4.38 5.908-8.603 12.045-12.688 18.375L18.47 192.25v39.5c-.012.02-.022.042-.032.063V493.28h18.5c23.523-92.965 94.565-130.4 168.968-85.25 42.127 25.566 93.783 62.296 149.063 41.158-.9 7.955-3.276 15.623-6.908 22.562l95.344 19.188c2.99-7.75 5.584-15.712 7.625-23.563-3.557 2.29-10.352 4.79-19.78 3.313-41.302-6.47-33.15-54.034-.53-58.407 10.915-1.456 21.15 3.22 27.56 11.25l18.283-38.874c-68.1 6.078-129.61-30.834-197.47-16.687 35.468 7.415 56.983 23.64 67.75 42.342-7.332.564-14.425.598-21.28.157l-10.813-10.25-13.625 6.436c-5.98-1.52-11.737-3.448-17.313-5.75l-7.718-15.47-10.906 5.97c-7.152-4.38-13.924-9.414-20.344-15.062l-1.813-26.75-19.436 5.03c-7.508-7.63-15.15-13.68-22.875-18.343l-1.282-19.75-23.875 9.408c-11.712-2.7-23.455-2.622-35.063-.25 44.223-90.392 134.06-92.4 180.813-64.563-5.227 5.68-11.388 10.355-18.125 13.78l66.562 70.908c6.928-4.58 13.63-9.564 19.844-14.782-4.228-.204-14.15-5.01-17.47-8.06-34.53-31.74 7.1-63.854 32.876-48.626 9.484 5.603 15.366 14.898 15.938 25.156l34.75-23.875c-59.015-34.522-85.098-97.445-148.594-125.25 23.092 24.968 31.707 49.115 30.97 69.75-8.93-6.752-18.606-12.1-28.845-16.188l-13.845-21.25-18.188 12.75c-5.18-.755-10.455-1.246-15.78-1.5l-19.094-18.093-15.25 19.687c-7.918 1.068-15.884 2.592-23.844 4.564l-15.75-13-9.75 20.812c-6.988 2.552-13.936 5.42-20.782 8.594l-23.594-8.28-8.625 25.874c-12.263 7.768-23.966 16.49-34.876 26.062C124.307 122.443 296.518 88.99 384.938 108.562c-1.12 6.798-3.333 13.35-6.47 19.344l95.344 19.188c2.99-7.75 5.585-15.71 7.625-23.563-3.558 2.29-7.502 5.33-11.968 4.72-46.308-6.31-43.81-54.725-8.345-59.813 10.903-1.57 21.15 3.193 27.563 11.22 1-10.184 1.808-35.654 2.187-45.907-55.332 4.938-95.695-13.84-145.28-13.47z"/></svg></span>
+      <span><b class="cjk">太乙</b> <em>Supreme Unity</em>
+        <i class="faint">九嬰 Nine-Headed Hydra · from mark 7 · about day 96</i></span>
+    </div>
+    <p class="hg">One body, nine heads. Cutting one off has never once helped.</p>
+    <p class="hr" style="color:#FF8878">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFA268">
+    <div class="hrow">
+      <span class="hic" style="color:#FFA268"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M239.03 21.875c-1.406-.007-2.842.01-4.28.03-19.1.284-40.94 3.138-66.97 9.72 57.367 4.75 94.558 22.836 116.283 46.406-24.045-5.13-49.508-7.01-75.438-5.81-65.45 3.02-133.1 25.878-186.28 66.56v352.814h69.25c24.58-124.19 150.084-151.697 204.593-123.313-6.39 7.464-14.14 14.026-22.875 19.564l117.593 103.47c11.426-9.222 22.02-19.048 31.97-29.345 3.555-6.757 5.15-14.46 5.437-23.157-6.92 9.63-16.32 16.047-29.844 21.812-23.843-10.546-35.178-38.2-25.314-62.53 7.544-18.608 25.33-29.97 44.22-30.25 6.295-.095 12.734 1.048 18.937 3.56 7.767 3.15 14.286 8.074 19.25 14.126-1.87 17.62-5.607 29.942-14.094 40.314 8.26-2.506 15.254-5.98 20.843-11.094 11.06-15.077 21.41-30.684 31.375-46.562-140.284-55.405-112.67-123.29-262.97-165.844 40.218 27.884 63.98 55.072 75.532 80.062-81.775-31.722-164.477-34.046-229.03 8.813 42.262-102.17 173.387-141.1 226.093-117.72-1.64 4.707-3.617 9.282-5.907 13.656L450.97 217.97c5.305-13.755 9.585-27.614 13.06-41.564-.354-7.532-2.824-14.89-6.874-22.468-1.17 11.726-6.002 21.958-14.718 33.625-26.015 2.93-49.773-15.384-53.407-41.47-3.693-26.515 14.8-50.992 41.314-54.687 2.486-.28 4.94-.468 7.375-.468 5.688.075 11.183 1.165 16.31 3.093 7.24 16.273 10.207 28.856 8.033 42.126 5.872-6.27 10.144-12.753 12.437-19.937 2.063-18.68 3.243-37.46 3.938-56.282-121.62 18.065-150.75-37.62-239.407-38.063zm89.75 48.375v.063c7.988-.298 15.062 5.507 16.19 13.593 1.2 8.625-4.813 16.585-13.44 17.782-8.624 1.2-16.61-4.813-17.81-13.438-1.203-8.625 4.842-16.616 13.468-17.812.54-.187 1.06-.17 1.593-.188zm22.533 230.22c2.048-.04 4.138.333 6.156 1.155 8.07 3.272 11.958 12.462 8.686 20.53-3.272 8.073-12.49 11.96-20.562 8.69-8.07-3.274-11.96-12.463-8.688-20.532 2.454-6.054 8.262-9.844 14.407-9.844z"/></svg></span>
+      <span><b class="cjk">大羅</b> <em>Grand Veil</em>
+        <i class="faint">雙龍 Twin Dragons · from mark 10 · about day 107</i></span>
+    </div>
+    <p class="hg">Two of them now, and they come together. Neither is the real one.</p>
+    <p class="hr" style="color:#FFA268">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFBC5E">
+    <div class="hrow">
+      <span class="hic" style="color:#FFBC5E"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M324.97 17.54c.03.034.057.07.087.106l-34.924 32.428 36.904-3.752-15.396 30.12 38.048-16.075c26.147 69.965.623 154.277-52.555 166.262-6.554-25.37-34.13-37.945-36.055-57.382.303.093.604.187.912.27 4.833 1.295 9.736 1.183 14.274-.07l25.138 22.89 20.653-16.377c-7.363 2.836-28.588-1.402-33.25-13.923 3.154-3.24 5.55-7.284 6.793-11.922.485-1.813.757-3.635.86-5.445l11.524 22.777 5.22-16.94c7.625 5.575 12.474 13.605 11.49 21.136l16.673-29.4-72.14-29.56-58.057-48.03 17.1 31.25-48.206-19.753 35.14 31.237c-40.602 28.158-22.085 85.04-1.796 119.29-57.5-9.685-103.128-77.435-95.763-145.03l49.21-21.366-31.08-5.14 29.207-33.417-32.015 11.54c.037-.067.07-.135.107-.202-168.36 66.33-116.413 367-63.728 417.99-.19-1.317-.364-2.58-.54-3.855-14.922-56.244-20.375-125.624-17.5-190.53 3.02-68.237 14.834-131.16 36.794-169.522l16.22 9.283c-18.894 33.008-31.4 94.563-34.345 161.064-1.942 43.86.106 90.022 6.275 132.082 6.124 1.892 15.046 9.615 27.295 23.24-4.818-13.35-6.78-26.5-6.482-38.28 20.286 41.665 67.34 69.234 104.633 62.308 22.444-4.17 41.803-12.73 57.81-24.475l7.31 15.418c-20.068 5.036-22.807 32.635-14.737 55.112 1.748-19.882 11.36-29.794 21.73-32.303-6.598 15.867-4.698 30.623-3.117 44.158 10.15-12.147 21.47-23.793 23.628-39.354 8.738 7.332 12.317 21.49 1.194 39.057 26.32-15.473 31.565-41.994 7.978-57.685l-32.07-34.297c5.918-5.55 11.24-11.6 15.947-18.066l39.28 15.776c-3.942 13.69 5.833 31.512 19.77 43.31-8.055-17.288-4.826-30.08 2.562-37.103 1.63 17.39 10.64 29.193 18.733 40.064 2.73-15.665 6.79-31.493-.213-45.987 11.016 1.56 21.2 11.568 20.338 31.877 14.362-25.313 6.11-49.702-20.742-51.52l-71.135-9.892c12.757-22.982 18.676-49.823 17.015-77.475 14.188-34.708 50.058-11.816 54.523 49.16C394.924 262.27 434.58 304 426.324 367.13c11.808-23.38 21.835-35.013 29.862-36.247-10.772-91.925-40.458-191.57-77.637-250.748l15.823-9.942c50.328 80.106 85.112 220.65 84.88 331.547 42.403-115.912-2.347-356.61-154.282-384.2zm-29.458 476.913l-.026.016-.015.05c.015-.02.027-.044.042-.067zm26.543-318.492h.01v-.007l-.01.008zm-53.348-41.716c.866-.027 1.757.073 2.652.313 4.774 1.28 7.467 5.945 6.187 10.72-1.28 4.776-5.943 7.47-10.72 6.19-4.775-1.28-7.468-5.943-6.188-10.72.96-3.584 3.823-5.993 7.21-6.435.282-.036.568-.06.857-.068zM204.904 297.13c11.878-.2 22.637 6.756 26.172 22.487-.008 35.88-9.557 68.823-42.137 77.412-27.624 7.283-69.725-11.398-84.12-53.663 12.28-21.078 37.362-21.986 62.838 22.592-12.583-41.596 14.386-68.444 37.246-68.83z"/></svg></span>
+      <span><b class="cjk">准聖</b> <em>Quasi-Sage</em>
+        <i class="faint">應龍 Winged Dragon · from mark 13 · about day 118</i></span>
+    </div>
+    <p class="hg">It stopped touching the ground somewhere below you, and never came back down.</p>
+    <p class="hr" style="color:#FFBC5E">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFCE6B">
+    <div class="hrow">
+      <span class="hic" style="color:#FFCE6B"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M15.327 12.997v61.32c76.696 54.194 157.847 147.575 64.827 125.566 57.116 55.067 104.12 26.786 174.037 135.492 30.42 47.297 7.473 80.54-29.785 90.524-47.88 12.828-114.353-30.45-57.82-54.314-59.296-1.45-66.954 47.977-38.727 80.237-27.93-9.635-46.01-34.308-43.034-60.605-36.043 48.278-5.362 93.284 54.313 102.43h357.42v-344.57c-15.752-70.31-94.876-87.764-103.372-3.504 14.61-36.423 50.96-20.625 84.1 18.688-11.28-7.498-24.24-11.49-36.21-11.097-19.73.65-37.36 12.086-41.466 36.794 55.902-46.113 84.628 34.717 61.74 76.876-24.744 45.582-94.89-20.467-95.03-75.71-27.974 31.235-7.813 108.298 52.37 122.548C304.635 301.29 342.743 182.92 295.655 157.84 324.383 285.473 121.728 62.26 66.137 13h-50.81z"/></svg></span>
+      <span><b class="cjk">聖人</b> <em>Sage</em>
+        <i class="faint">燭龍 Torch Dragon · from mark 16 · about day 129</i></span>
+    </div>
+    <p class="hg">The one whose eyes opening is daylight, and whose breath is the winter.</p>
+    <p class="hr" style="color:#FFCE6B">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFE08F">
+    <div class="hrow">
+      <span class="hic" style="color:#FFE08F"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M255.9 19.77C241.5 109.6 229.4 163 196.2 196.2c-33.2 33.2-86.6 45.3-176.43 59.7C109.6 270.3 163 282.4 196.2 315.7c33.2 33.2 45.3 86.6 59.7 176.5 14.4-89.9 26.5-143.3 59.7-176.6 33.3-33.2 86.7-45.3 176.6-59.7-89.9-14.4-143.3-26.5-176.5-59.7-33.3-33.2-45.4-86.6-59.8-176.43zM423 89c-45.8 33.1-81 56.9-112.4 70.2 5.1 9.4 11 17.4 17.8 24.2 6.8 6.8 14.8 12.7 24.3 17.9 13.4-31.4 37.2-66.6 70.3-112.3zm-333.94.06C122.2 134.8 145.9 169.9 159.2 201.2c9.4-5.1 17.4-11 24.2-17.8 6.8-6.8 12.7-14.8 17.8-24.2-31.3-13.3-66.4-37-112.14-70.14zM352.7 310.5c-9.5 5.2-17.5 11.1-24.3 17.9-6.8 6.8-12.7 14.8-17.9 24.3C342 366 377.2 389.8 423 423c-33.2-45.8-57-81-70.3-112.5zm-193.5.1C145.9 342 122.1 377.2 89 423c45.7-33.1 80.9-56.9 112.3-70.3-5.2-9.5-11.1-17.5-17.9-24.3-6.8-6.8-14.8-12.7-24.2-17.8z"/></svg></span>
+      <span><b class="cjk">道祖</b> <em>Dao Ancestor</em>
+        <i class="faint">星君 Star Lord · from mark 19 · about day 140</i></span>
+    </div>
+    <p class="hg">You are older now than most of what you fight, and it shows in the fighting.</p>
+    <p class="hr" style="color:#FFE08F">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFEFC0">
+    <div class="hrow">
+      <span class="hic" style="color:#FFEFC0"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M125.5 18.32c-7.6 11.66-3.8 25.54-29.09 27.43C122 47.6 119.6 62.27 116.7 79.64c7-10.99 5.8-26.11 29.6-26.37-17.6-8.95-20.8-21.77-20.8-34.95zm289.3 23.86c-7.9 15.84-10.7 33.81-42.5 39.75 32.5-1.2 35.5 18.01 34.2 40.27 7.8-16.6 6.5-43.57 33.9-37.6-23.5-8.64-23.7-25.84-25.6-42.42zM256 48c-46.3 0-117.6 75.3-153.6 177.4 7.3 3.1 14.3 6.9 21 11.3 5-2.7 10.4-4 15.9-4.1 6.1-.1 12.2 1.3 17.9 3.9 11.3 5.2 21.3 15 28.2 28.4 6.9 13.3 9.4 27.8 7.6 40.9-1.5 10.9-6.1 21.2-13.9 28.3 5.8 13.1 14 25.9 24.1 36.9 10.7 11.7 23.5 21.4 37.9 27.7a40 40 0 0 1 38.8-30.7 40 40 0 0 1 .1 0 40 40 0 0 1 23.5 7.7c13.8-17.5 26.1-34.9 33.1-53.6a30.91 36.38 9.798 0 1-9.9-33.7 30.91 36.38 9.798 0 1 31.9-31 30.91 36.38 9.798 0 1 4.7.4 30.91 36.38 9.798 0 1 10 3.9c-2.6-10.6-6.6-20.6-22.7-24.3 20.1-.2 21-10.8 24.9-23.8 3 17.7 3.3 26 24.2 28.4-21.6 6.8-20.7 11.8-23.4 21.9a30.91 36.38 9.798 0 1 11.3 35 30.91 36.38 9.798 0 1-1.7 6.6c8.6 2.2 18.9 3 29.5 2.5 4.5-.3 9.1-.8 13.6-1.6C410.9 165.6 313.8 48 256 48zM39.74 73.43c2.02 15.89-3.06 25.8-10.52 33.77 11.39-1.3 18.79-9.04 31.53 7-8.69-15.97 3.77-19.21 13.51-28.88-10.56.26-23.53 3.95-34.52-11.89zM255.9 80a80 80 0 0 1 .1 0 80 80 0 0 1 80 80 80 80 0 0 1-80 80 80 80 0 0 1-80-80 80 80 0 0 1 79.9-80zm.1 16-16 40-48 24 48 12 16 52 16-52 48-12-48-24-16-40zm182.9 40.6c2.7 13.6 15.1 20.9-1.7 39.9 19.6-16.5 28.1-4.3 38.1 10.2-2.6-12.8-14-22.8 2.9-39.6-18.9 5.9-30.1-1.1-39.3-10.5zM33.68 157.3c9.19 14.5 31.84 29 8.15 50 21.42-13 35.01-2.4 49.14 6.5-7.42-16.1-17.78-22.1-2.52-50.6-19.37 26.1-38.17 9-54.77-5.9zm63.21 84.9C86.35 276.7 80 313.9 80 352c0 42.7 35.7 92.6 88 121a40 33.09 35.15 0 1 2.4-4.2 40 33.09 35.15 0 1 25.8-12.5 40 33.09 35.15 0 1 25.9 8.5 40 33.09 35.15 0 1 18.7 30.5c5 .5 10.1.7 15.2.7 24.8 0 48.6-5.4 70.2-14.4-9.3-3.7-17.3-8.6-24.4-14.4-7.2-5.8-13.3-12.4-18.8-19.3a40 40 0 0 1-3 .1 40 40 0 0 1-38.6-29.7c-20.1-7.2-37.5-19.8-51.5-35.1-11.2-12.2-20.3-26.2-26.9-40.7-8.3 1.8-17.1.5-24.9-3.2-5.5-2.5-10.7-6.1-15.4-10.7 2.6 17.2 9.9 28.8 32.9 28.3-30.9 9.7-27.6 21.3-33.6 38-3.9-16.2-9.6-31.4-30.54-39 22.44 0 25.94-14.9 28.84-29.7-4-4.4-7.5-9.5-10.5-15.2-6.9-13.3-9.4-27.8-7.6-40.9 1-7.6 3.6-15 7.7-21.1-4.1-2.6-8.5-4.9-13.01-6.8zm279.01 79.1a30.91 36.38 9.798 0 1-22.7 8.5c-8.5 21.9-22.6 41.3-37.6 59.9A40 40 0 0 1 320 408a40 40 0 0 1-18.6 33.8c3.7 4.2 7.6 8.1 11.8 11.5 9.8 8 21.3 13.9 36.8 16.4 49-28.9 82-76.6 82-117.7 0-9.2-.4-18.4-1.1-27.5-4.8.7-9.7 1.1-14.5 1.4-14.1.8-28.2-.4-40.5-4.6zm-22.5 39.2c18.6 17.4 28.7 8.5 43.6 0-12.8 18.8-19.7 26.7-2.7 47.1-29.1-14.4-29.7-5.6-45.5 2.4 8.3-14.4 18.5-28.4 4.6-49.5zm-191.5 20.2c4.6 16 7.6 30.3 32.2 34.9-28.3 6.2-22.4 20-25.8 36-6-21.1-14.4-38.1-38.4-34.2 30.5-11 26.7-19.8 32-36.7z"/></svg></span>
+      <span><b class="cjk">混元</b> <em>Primordial Unity</em>
+        <i class="faint">混沌 Chaos · from mark 22 · about day 151</i></span>
+    </div>
+    <p class="hg">It has no face. It has never needed one.</p>
+    <p class="hr" style="color:#FFEFC0">＋6 levels of 劍訣 and 妖丹</p>
+  </div>
+  <div class="card" style="--hue:#FFFFFF">
+    <div class="hrow">
+      <span class="hic" style="color:#FFFFFF"><svg viewBox="0 0 512 512" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M342.5 17.9c-3.1 11.63-2.2 21.56-23.8 25.11 20.3-2.7 22.3 9.58 24.8 21.49-2.8 1.94-5.5 4.11-8.1 6.49-21.9 20.84-33 41.11-49 61.61-6.3 1.2 5.3-53.52 31.1-79.87C225.1 40.92 207.6 268.4 236.4 275c-51.7 18.4-72.6-98.3-59.4-157.3-37.1 3.9-62 39.8-67.9 60 2.8 27.1 6.1 55.1 38.7 80.9-32.1 3.6-42-27.8-55.31-54C13.9 309.5 198.4 311.4 228.5 299.1c-93 70.5-149.62 52.3-196.77 39-40.48 85.1 61.46 56 107.57 35.7-18.4 30.7-72.25 37.6-88.92 41 61.62 51.3 174.42-67 200.02-106.5 2.5 65.7-74.3 134.4-122.8 171.7 43.6 2.2 83.2-17.9 102.4-55.5 0 10.1-4.1 22.6-9.6 35.8 15-2.1 39.6-6.2 48.8-24.2 25-54.1 37.8-93.1 15.3-138.2 29.9 33.5 63.6 65.3 58.4 114.5 26.9-15.6 48.8-33.6 24.7-60.1 14.1 1.4 23.6 7.7 32.8 13.7 13.9-2.8 34.4-19.9 33.7-33-31.6-29.8-83.4-43.7-133.8-55.9 72.1-19.8 136.9-10.1 175.6 5.6 5-11.7 9.4-29.6 5.9-41.9-16.4-9.7-62.7-7.8-83.3-5.6 17.7-15.7 56.8-21.1 81.3-21.2-2-67.7-162.6 27.8-182.2 42.8 32.7-59.1 123.2-112.7 178.7-121.1-13.2-31.1-37.2-34-64.3-22.4 2.4-9.5 6.7-17.49 23.4-15.29-21.6-3.51-20.7-13.44-23.8-25.07-2.4 13.55-4.1 17.11-19.4 26.67 14.3-2.17 16.4 6.69 17.4 14.69-53.5 24.4-117.8 102.8-135.1 132.5-22.1-24 51-121.5 107.7-187.46-3.1-9.48-21.8-6.31-38.2 4.81 1.1-8.63.7-22.16 17.9-19.54-15.3-9.6-17-13.16-19.4-26.71zm-166.3.3c5.4 10.73 12.7 17.53-1 34.56 13.8-16.07 23.7-7.13 33.9.22-4.6-7.19-16.3-17.67-.7-27.86-17.8 3.09-21.4 1.57-32.2-6.92zM47.71 26.61c-3.08 11.63-2.13 21.56-23.76 25.05 21.02-2.74 22.39 10.55 25.06 22.81 1.43-8.43-.28-23.97 18.14-21.16-15.27-9.59-16.98-13.15-19.44-26.7zm419.39 5.5c1.6 10.83 1.3 13.93-7.8 25.07 13.1-6.8 15.9 5.39 19.1 11.38-1.2-9.97-3.4-20.36 13.1-23.64-17.2 2.87-19.1-4.85-24.4-12.81zM125.3 84.28c-.6 18.02-12 17.32-22.7 17.92 7 2.4 20.3 3 15.3 18.2 10.2-11.6 13.3-12.5 25.2-12.6-9.4-4.3-17.8-4.9-17.8-23.52zM71.21 153.9c-8.61 8.5-12.85 17.5-33.24 9.6 19.47 8.3 13.98 20.4 10.08 32.4 5.46-6.6 11.9-20.9 26.35-9.1-8.38-16-8.02-19.9-3.19-32.9zM453.9 282.7c-2.4 8.9-1.7 16.5-18.2 19.2 16-2.1 17.1 8.1 19.2 17.5 1.1-6.5-.2-18.4 13.8-16.3-11.7-7.3-13-10-14.8-20.4zM69.25 293.8c-12.82 12.7-16.72 13.5-30.41 12.7 10.55 5.7 20.39 7.1 18.72 29 2.3-21.1 15.46-19.4 28.05-19.1-7.83-3.3-23.4-5.3-16.36-22.6zm394.55 50.7c3.1 11.6 8.9 19.7-8 33.6 16.8-12.9 24.6-2.2 33.2 7.1-3.1-8-12.4-20.6 4.9-27.4-18-.5-21.3-2.8-30.1-13.3zm-139.2 72.1c-2.7 12.3-4.1 25.5-25.1 22.8 21.6 3.5 20.7 13.4 23.8 25 2.4-13.5 4.1-17.1 19.4-26.6-18.4 2.8-16.7-12.8-18.1-21.2zM83.9 438.2c-2.83 16-4.84 20.2-22.86 31.5 21.68-3.3 19.67 15.1 21.33 25 3.19-14.5 4.84-30.1 29.63-26.9-25.5-4.2-24.43-15.9-28.1-29.6zm366.2 11.4c-7.3 9.6-10.2 19.1-31.5 14.2 20.4 5.4 16.8 18.1 14.6 30.6 4.5-7.3 8.8-22.4 24.8-12.8-10.6-14.6-10.8-18.6-7.9-32z"/></svg></span>
+      <span><b class="cjk">鴻蒙</b> <em>The Uncarved</em>
+        <i class="faint">鴻蒙 The Uncarved · from mark 25 · about day 162</i></span>
+    </div>
+    <p class="hg">The block before anyone took a knife to it. There is no tenth name.</p>
+    <p class="hr" style="color:#FFFFFF">＋6 levels of 劍訣 and 妖丹</p>
+  </div></div>
+    <div class="rule"><b>What a heaven opens, and what it deliberately does not.</b>
+      6 more levels of 劍訣 and 妖丹 — the two upgrades that buy power —
+      and <em>nothing at all</em> on 功法 or 吐納. That restriction is not tidiness; it is
+      the whole lesson of the first version, which opened room on all four.</div>
+    <p class="t">The rate ones look safe, and that is what makes them dangerous.
+      雷池 the pool is measured in days of your own gathering, so a heaven that multiplies
+      the rate multiplies the pool with it and <b>the clock holds perfectly</b>. What does
+      not ride the rate is every price written against the ladder — and the furnace is the
+      largest of them. A rate six and a half times bigger makes every pill six and a half
+      times cheaper in real terms, and pills are uncapped power. Measured, on the endgame
+      harness, forty crossings:</p>
+    <table>
+      <tr><th>a heaven opens…</th><th style="text-align:right">walkovers (over 90%)</th>
+          <th style="text-align:right">days for 40 marks</th></tr>
+      <tr><td>nothing — the endgame as it was</td><td style="text-align:right">4 of 40</td><td style="text-align:right">119</td></tr>
+      <tr><td>6 levels of all four</td><td style="text-align:right"><b>28 of 40</b></td><td style="text-align:right">117</td></tr>
+      <tr><td><b>6 levels of 劍訣 and 妖丹 only (shipped)</b></td>
+          <td style="text-align:right"><b>5 of 40</b></td><td style="text-align:right">137</td></tr>
+    </table>
+    <div class="warn"><b>立 And the Dragon is handed the same step.</b> Six levels of 劍訣
+      and six of 妖丹 are worth ×5.23 power, so that figure is read
+      out of the upgrade table and multiplied into the next Dragon's anchor at the moment
+      the heaven opens. It cannot drift from what the player actually receives, because it
+      is computed from the thing the player receives. A heaven raises both sides: what it
+      really gives is a name, an animal, and four boxes that stop saying 滿 for the rest of
+      the game.</div>
   </section>
 
   <section class="sec" id="clock">
@@ -1092,51 +1305,81 @@
     <table>
       <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
       <tr><td>week 1<span class="faint"> · day 0–6</span></td>
-      <td style="text-align:right">35</td>
+      <td style="text-align:right">32</td>
       <td><span class="wk"><i style="width:100%"></i></span></td></tr><tr><td>week 2<span class="faint"> · day 7–13</span></td>
-      <td style="text-align:right">8</td>
-      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
-      <td style="text-align:right">8</td>
-      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
+      <td style="text-align:right">9</td>
+      <td><span class="wk"><i style="width:28%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
+      <td style="text-align:right">7</td>
+      <td><span class="wk"><i style="width:22%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
+      <td style="text-align:right">2</td>
+      <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
+      <td style="text-align:right">6</td>
+      <td><span class="wk"><i style="width:19%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
+      <td style="text-align:right">2</td>
+      <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 7<span class="faint"> · day 42–48</span></td>
+      <td style="text-align:right">6</td>
+      <td><span class="wk"><i style="width:19%"></i></span></td></tr><tr><td>week 8<span class="faint"> · day 49–55</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
+      <td style="text-align:right">7</td>
+      <td><span class="wk"><i style="width:22%"></i></span></td></tr><tr><td>week 10<span class="faint"> · day 63–69</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 11<span class="faint"> · day 70–76</span></td>
+      <td style="text-align:right">3</td>
+      <td><span class="wk"><i style="width:9%"></i></span></td></tr><tr><td>week 12<span class="faint"> · day 77–83</span></td>
       <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
-      <td style="text-align:right">8</td>
-      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 13<span class="faint"> · day 84–90</span><span class="faint"> ← three months</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 14<span class="faint"> · day 91–97</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 15<span class="faint"> · day 98–104</span></td>
       <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 7<span class="faint"> · day 42–48</span></td>
-      <td style="text-align:right">8</td>
-      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 8<span class="faint"> · day 49–55</span></td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 16<span class="faint"> · day 105–111</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 17<span class="faint"> · day 112–118</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 18<span class="faint"> · day 119–125</span></td>
       <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
-      <td style="text-align:right">8</td>
-      <td><span class="wk"><i style="width:23%"></i></span></td></tr><tr><td>week 10<span class="faint"> · day 63–69</span></td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 19<span class="faint"> · day 126–132</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 20<span class="faint"> · day 133–139</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 21<span class="faint"> · day 140–146</span></td>
       <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 11<span class="faint"> · day 70–76</span></td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 22<span class="faint"> · day 147–153</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 23<span class="faint"> · day 154–160</span></td>
       <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 12<span class="faint"> · day 77–83</span></td>
-      <td style="text-align:right">—</td>
-      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 13<span class="faint"> · day 84–90</span></td>
+      <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 24<span class="faint"> · day 161–167</span></td>
+      <td style="text-align:right">1</td>
+      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 25<span class="faint"> · day 168–174</span></td>
       <td style="text-align:right">—</td>
       <td><span class="wk"><i style="width:0%"></i></span></td></tr>
     </table>
-    <p class="t">Three readings, and all three are uncomfortable:</p>
+    <p class="t">The first reading of this table had three uncomfortable answers in it,
+      and two of them have been dealt with since:</p>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is spent in week one</em>
-        <i>Four of the nine realms arrive by day 5. A player has met a third of
-        every named thing in 九境 before they have formed a habit of opening it.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">塊</b> <em>A realm empties itself in its first minute</em>
-        <i>Every realm hands over all of its beasts, its stance, its art and its lineage
-        at the breakthrough — and the later realms last twelve to sixteen days each. The
-        eighth realm is 16 days long and delivers everything it has on day one
-        of them.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">後</b> <em>And after day 60, nothing, for ever</em>
-        <i>The summit is reached on day 71 and 劫 the tribulation runs at a
-        steady 3 days a mark from there to infinity — the same Dragon, the
-        same loop, at a bigger number. That is a pace, not a calendar.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is still spent in week one</em>
+        <i>Four of the nine realms arrive by day 5, and that is left alone on
+        purpose. Slowing the opening of an idle game to protect its ending is how you
+        lose the players who would have reached the ending.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">出</b> <em>A realm no longer empties itself in its first minute</em>
+        <i>It used to hand over all three of its beasts at the breakthrough, and the
+        eighth realm is 16 days long. Its commons now walk out at layers
+        0, 4, 7 — about a quarter and two thirds of the way through —
+        so the weeks that read as blank above have something in them. The first realm is
+        the exception and keeps all three, because its beasts are already spaced by
+        difficulty and there is nothing else in it to look at.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">境外</b> <em>And the summit is no longer the end of the content</em>
+        <i>The climb finishes on day 72; the first heaven opens on day
+        75 and the ninth on day 162. 劫 the tribulation still
+        runs for ever, but for 9 heavens it is running <b>toward</b>
+        something with a name.</i></span></div>
     </div>
-    <div class="warn"><b>What this section is not.</b> It is not a plan yet. It is the
-      measurement that any plan has to start from, and it is on this page so that the
-      three months are argued about with a number rather than a feeling.</div>
+    <div class="rule"><b>Three months was the ask, and it is met with room to spare.</b>
+      Thirteen weeks is day 91; the last named thing in the game now arrives on day
+      162. Everything in this table is read off the same two harnesses the rest
+      of the page is written from, so it moves when the game moves.</div>
   </section>
 
   <section class="sec" id="ladder">
@@ -2573,12 +2816,12 @@
       1.2x a pill and a pill worth 3% give a mark of
       1.728x and a Dragon of 1.89x.</p>
     <p class="t">Measured, played out crossing by crossing: <b>40 marks
-      in 120 days</b>, 2 to
-      4 days each, ending on tower floor 244
+      in 137 days</b>, 3 to
+      5 days each, ending on tower floor 324
       with 446 pills brewed. The margin a good run arrives
       with buys the first crossings at
       98%; the odds then walk down and settle
-      at 66%, and the furnace
+      at 68%, and the furnace
       is what holds them there.</p>
   </section>
 

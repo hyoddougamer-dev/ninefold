@@ -2,7 +2,8 @@ import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
-  ladderAt, ladderBetween, levelCap, CORE_QI_RUNGS, OPENING_PURSE,
+  ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS,
+  OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
@@ -16,6 +17,7 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine } from './refine.ts';
 import { isOpen } from './unlocks.ts';
+import { heavensOpened } from '../data/heavens.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -171,8 +173,25 @@ export function canCross(s: State): boolean {
  * cancels the build out of both sides, and what is left is the honest question — what
  * have you added since last time?
  */
+/**
+ * 立 What a heaven's room is worth in power, and therefore what the Dragon is owed.
+ *
+ * The two capped upgrades that touch power are 劍訣 and 妖丹, so this is exactly the
+ * multiplier a cultivator gets out of a heaven once they have filled the new room. It
+ * is computed from the same table the upgrades are bought from, so it cannot drift from
+ * what the player actually receives.
+ */
+export function heavenStep(): number {
+  return UPGRADE_INFO.technique.gain ** LEVELS_PER_HEAVEN
+    * UPGRADE_INFO.cores.gain ** LEVELS_PER_HEAVEN;
+}
+
 export function crossTribulation(s: State, dragonPower: number): State {
   if (!canCross(s)) return s;
+  // 境外 Did this crossing open a heaven? If it did, the thing at the end of the next
+  // one grows by exactly what the new room is worth. See LEVELS_PER_HEAVEN.
+  const opened = heavensOpened(s.tribulation + 1) > heavensOpened(s.tribulation);
+  const step = opened ? heavenStep() : 1;
   return {
     ...s,
     tribulation: s.tribulation + 1,
@@ -185,7 +204,7 @@ export function crossTribulation(s: State, dragonPower: number): State {
     // 立 TRIBULATION_FOOTING is what makes that reading honest. What stood in front of the
     // Dragon was not 力; it was 力 with a stance and three arts on it, and that is the
     // number the next Dragon has to be built from.
-    tribulationAt: Math.max(s.tribulationAt, dragonPower, power(s) * TRIBULATION_FOOTING),
+    tribulationAt: Math.max(s.tribulationAt, dragonPower, power(s) * TRIBULATION_FOOTING) * step,
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
   };
@@ -218,12 +237,36 @@ export function newState(now: number): State {
  * curve hold whatever the player does, and the reason the ladder is worth climbing:
  * more realm is more room.
  */
-export function capOf(s: State): number {
-  return levelCap(s.realm);
+/**
+ * 上限 How many levels of an upgrade this cultivator may hold.
+ *
+ * Below the summit it is the realm's cap and nothing else. Above it, 境外 a heaven opens
+ * LEVELS_PER_HEAVEN more — **but only on the two upgrades that buy power**, and that
+ * restriction is the whole of the lesson the first version taught:
+ *
+ * 功法 and 吐納 multiply the qi rate, and a heaven every three crossings would have
+ * multiplied it by six and a half. 雷池 the pool rides the rate, so the *clock* would
+ * have held perfectly — which is exactly what made it hard to see. What does not ride
+ * the rate is every price written against the ladder, and the furnace is the biggest of
+ * them: a rate six times larger makes every pill six times cheaper in real terms, and
+ * pills are uncapped power. Measured, the endgame went from 4 walkover crossings in 40
+ * to 28.
+ *
+ * So a heaven does not teach you to gather faster. It gives you somewhere to put what
+ * you already gather — and 立 heavenStep hands the same increase to the thing waiting at
+ * the end of it, so the fight is exactly as contested as it was before.
+ *
+ * Passing no upgrade answers the realm's own cap, which is what the screens that speak
+ * about all four at once need.
+ */
+export function capOf(s: State, u?: Upgrade): number {
+  const room = u && UPGRADE_INFO[u].affects === 'power'
+    ? LEVELS_PER_HEAVEN * heavensOpened(s.tribulation) : 0;
+  return levelCap(s.realm) + room;
 }
 
 export function atCap(s: State, u: Upgrade): boolean {
-  return s.levels[u] >= capOf(s);
+  return s.levels[u] >= capOf(s, u);
 }
 
 /** What the next level costs. Qi levels ride the mountain; cores ride materials. */
@@ -232,8 +275,10 @@ export function upgradeCost(s: State, u: Upgrade): number {
   const level = s.levels[u];
   if (i.currency === 'material') return Math.ceil(i.share * CORE_STEP ** level);
   // The rung this level belongs to: LEVELS_PER_REALM levels span LAYERS_PER_REALM rungs.
+  // Past the eighty-first it is `ladderOpen` rather than `ladderBetween`, which is the
+  // same rule the furnace already climbs by: the mountain ends, the price does not.
   const rung = ((level + 1) * LAYERS_PER_REALM) / LEVELS_PER_REALM - 1;
-  return Math.ceil(i.share * ladderBetween(rung));
+  return Math.ceil(i.share * ladderOpen(rung));
 }
 
 export function canBuy(s: State, u: Upgrade): boolean {

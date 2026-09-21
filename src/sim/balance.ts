@@ -188,6 +188,7 @@ export const WARDEN_TRIBUTE = 0.18;
  */
 export const CORE_QI_RUNGS = 6;
 
+
 export function ladderAt(n: number): number {
   return LADDER[Math.max(0, Math.min(LAYERS, Math.round(n)))];
 }
@@ -240,6 +241,27 @@ export const LEVELS_PER_REALM = 6;
 export function levelCap(realm: number): number {
   return Math.max(1, Math.min(9, Math.round(realm))) * LEVELS_PER_REALM;
 }
+
+/**
+ * 境外 How much room one heaven opens, in levels of every capped upgrade.
+ *
+ * A realm's worth, because a heaven *is* a realm: the ladder above the ladder should
+ * open the same thing the ladder opened, or it is a different game wearing the same
+ * clothes.
+ *
+ * 立 And the reason HEAVEN_STEP exists beside it. The first version of this handed the
+ * room over and nothing else, and the endgame's own test caught it within the hour:
+ * **thirty of forty crossings came in over ninety per cent**, against a rule of no more
+ * than a quarter. The arithmetic is plain once it is written down — six levels of 劍訣
+ * and six of 妖丹 are worth 5.2x power, they cost nothing a cultivator at the summit
+ * would notice, and the Dragon had no answer to them.
+ *
+ * So a heaven raises *both* sides. What it opens for you, it also gives to the thing
+ * standing at the end of it, exactly and by construction — which means the fight is as
+ * contested after the change as before it, and the heaven is what it was meant to be:
+ * a name, an animal, and room. Not a gift of power wearing a name.
+ */
+export const LEVELS_PER_HEAVEN = LEVELS_PER_REALM;
 
 /**
  * 材 What a fight pays.

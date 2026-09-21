@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BEASTS, huntable } from '../../data/bestiary.ts';
+import { BEASTS, comingIn, huntable } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
@@ -46,8 +46,11 @@ export function Hunt({ state, onFight, onDrive }: {
    * Now a beast with a mark still to earn comes first — newest realm first among those —
    * and the ones with nothing left in them sink to the bottom and go quiet.
    */
+  // 出 The commons of this realm that have not walked out yet.
+  const coming = comingIn(state.realm, state.layer);
+
   const list = useMemo(() => {
-    const all = [...huntable(state.realm)];
+    const all = [...huntable(state.realm, state.layer)];
     return all.sort((a, b) => {
       const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
@@ -145,6 +148,29 @@ export function Hunt({ state, onFight, onDrive }: {
           );
         })}
       </div>
+      {/* 出 What has not walked out yet. A beast held back and not shown is a beast
+          taken away; shown, it is the next thing to climb toward — which is the same
+          argument as a locked tab, and the reason locked tabs are drawn rather than
+          hidden. */}
+      {coming.length > 0 && (
+        <div className="coming">
+          <h2 className="heading" style={{ margin: '18px 0 8px' }}>出 {HUNT.coming}</h2>
+          {coming.map((b) => {
+            const r = realmOf(b.realm);
+            return (
+              <div key={b.key} className="row">
+                <span className="seal"><Svg html={seal(b.icon, r.colour)} /></span>
+                <span className="bname">
+                  <b style={{ color: r.colour }}>{b.han}</b>
+                  <i>{b.name}</i>
+                </span>
+                <span className="at mono">{HUNT.walksOut(b.layer + 1)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{HUNT.record}</p>
 
       <button className="fold" data-open={record} onClick={() => setRecord((x) => !x)}>

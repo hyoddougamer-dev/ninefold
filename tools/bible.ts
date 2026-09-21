@@ -17,12 +17,14 @@ import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
 import { LINES, PILL_GRADES, PILL_LINES } from '../src/data/alchemy.ts';
+import { HEAVENS, MARKS_PER_HEAVEN, heavenAt, heavensOpened, marksToNext, nextHeaven } from '../src/data/heavens.ts';
+import { COMMON_LAYERS, comingIn } from '../src/data/bestiary.ts';
 import {
   AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITIES, RARITY_INFO, REALM_SETS, SECONDARIES,
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { UPGRADES, UPGRADE_INFO, condenseCost, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
@@ -39,7 +41,7 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { BRANCHES, climb } from './climb.ts';
@@ -137,22 +139,44 @@ const BARELY_SAVES = Math.round((WAITER.arrival[8] ?? 0) - (BARELY.arrival[8] ??
 const CLOCK = (() => {
   const run = runNamed('active');
   const at = (realm: number) => run.arrival[realm - 1] ?? Infinity;
+  /** 層 A thing that arrives at a layer rather than at a breakthrough. */
+  const atLayer = (realm: number, layer: number) =>
+    run.layerDay[(realm - 1) * LAYERS_PER_REALM + layer] ?? Infinity;
   const met: number[] = [];
-  const add = (realm: number) => { if (Number.isFinite(at(realm))) met.push(at(realm)); };
-  for (const sys of OPENED) add(sys.realm);
-  for (const b of BEASTS) add(b.realm);
-  for (const st of STANCES) add(st.realm);
-  for (const a of ARTS) add(a.realm);
-  for (const rs of REALM_SETS) add(rs.realm);
+  const add = (d: number) => { if (Number.isFinite(d)) met.push(d); };
+  for (const sys of OPENED) add(at(sys.realm));
+  // 出 Beasts walk out at a layer now, which is the whole point of the change below.
+  for (const b of BEASTS) add(atLayer(b.realm, b.layer));
+  for (const st of STANCES) add(at(st.realm));
+  for (const a of ARTS) add(at(a.realm));
+  for (const rs of REALM_SETS) add(at(rs.realm));
+
+  /**
+   * 境外 And the heavens, which arrive after the summit and are the only reason this
+   * table now runs past week nine. Their days come from the endgame harness rather than
+   * from the climb, and the two are joined end to end the way a player meets them.
+   */
+  const end = playEndgame(MARKS_PER_HEAVEN * HEAVENS.length + 2);
+  const summit = run.days;
+  const heavenDay: number[] = [];
+  let cum = 0;
+  end.days.forEach((d, i) => {
+    cum += d;
+    const marks = i + 1;
+    // A heaven opens on the crossing that first reaches it.
+    if (heavensOpened(marks) > heavensOpened(marks - 1)) heavenDay.push(summit + cum);
+  });
+  for (const d of heavenDay) add(d);
 
   const byWeek = new Map<number, number>();
   for (const d of met) byWeek.set(Math.floor(d / 7), (byWeek.get(Math.floor(d / 7)) ?? 0) + 1);
-  const weeks = 13;                                    // three months, which is the ask
+  const weeks = Math.ceil((heavenDay[heavenDay.length - 1] ?? summit) / 7) + 1;
   const peak = Math.max(...byWeek.values());
   const rows = Array.from({ length: weeks }, (_, w) => {
     const n = byWeek.get(w) ?? 0;
     const bar = Math.round((n / peak) * 100);
-    return `<tr><td>week ${w + 1}<span class="faint"> · day ${w * 7}–${w * 7 + 6}</span></td>
+    const mark = w === 12 ? '<span class="faint"> ← three months</span>' : '';
+    return `<tr><td>week ${w + 1}<span class="faint"> · day ${w * 7}–${w * 7 + 6}</span>${mark}</td>
       <td style="text-align:right">${n || '—'}</td>
       <td><span class="wk"><i style="width:${bar}%"></i></span></td></tr>`;
   }).join('');
@@ -160,9 +184,11 @@ const CLOCK = (() => {
     rows, run,
     r4: Math.round(at(4)),
     r8: Math.round(at(9) - at(8)),
-    last: Math.round(at(9)),
+    last: Math.round(heavenDay[heavenDay.length - 1] ?? at(9)),
     done: Math.round(run.days),
     name: run.habit.name,
+    firstHeaven: Math.round(heavenDay[0] ?? 0),
+    heavenDays: heavenDay.map((d) => Math.round(d)),
   };
 })();
 const CLOCK_ROWS = CLOCK.rows;
@@ -171,6 +197,20 @@ const CLOCK_R8 = CLOCK.r8;
 const CLOCK_LAST = CLOCK.last;
 const CLOCK_DONE = CLOCK.done;
 const ACTIVE_NAME = CLOCK.name;
+const CLOCK_FIRST_HEAVEN = CLOCK.firstHeaven;
+
+/** 境外 One card a heaven, with its Dragon drawn from the game's own icon table. */
+const heavenRows = `<div class="cards two">${HEAVENS.map((h, i) => `
+  <div class="card" style="--hue:${h.colour}">
+    <div class="hrow">
+      <span class="hic" style="color:${h.colour}">${icon(h.dragon.icon, 34)}</span>
+      <span><b class="cjk">${h.han}</b> <em>${h.name}</em>
+        <i class="faint">${h.dragon.han} ${h.dragon.name} · from mark ${MARKS_PER_HEAVEN * i + 1}${
+          CLOCK.heavenDays[i] !== undefined ? ` · about day ${CLOCK.heavenDays[i]}` : ''}</i></span>
+    </div>
+    <p class="hg">${h.gains}</p>
+    <p class="hr" style="color:${h.colour}">＋${LEVELS_PER_HEAVEN} levels of 劍訣 and 妖丹</p>
+  </div>`).join('')}</div>`;
 /** 劫 How long a mark takes once the pace has settled, from the endgame harness. */
 const ENDGAME_PACE = (() => {
   const d = playEndgame(12).days;
@@ -274,8 +314,12 @@ const SYSTEMS: readonly System[] = [
   { han: '收', name: 'The corner, folded', status: 'done', at: 'mockups',
     line: 'Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.' },
 
-  { han: '曆', name: 'Three months of content', status: 'open', at: 'clock',
-    line: 'Measured: an active cultivator meets four of the nine realms in the first five days and the last new thing in the game on day 60. The climb has a pace. What comes after it does not have a calendar.' },
+  { han: '境外', name: 'The heavens above the ninth realm', status: 'done', at: 'heavens',
+    line: `${HEAVENS.length} named heavens, one every ${MARKS_PER_HEAVEN} crossings, each with its own Dragon drawn and named and ${LEVELS_PER_HEAVEN} more levels of 劍訣 and 妖丹 behind it. The endgame was forty crossings against one animal.` },
+  { han: '出', name: 'Beasts that walk out mid-realm', status: 'done', at: 'clock',
+    line: `A realm's three commons arrive at layers ${COMMON_LAYERS.join(', ')} instead of all at the breakthrough. The eighth realm is ${CLOCK_R8} days long and used to hand over everything it had in the first minute of them.` },
+  { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
+    line: `Measured rather than hoped for: the last named thing now arrives on day ${CLOCK_LAST}, against a climb that used to run out on day 60.` },
 
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
@@ -625,6 +669,43 @@ const MOCK_CONDENSE = (() => {
   </div>`;
 })();
 
+// 出 The beasts of a realm that have not walked out yet, at the sixth realm's third rung.
+const MOCK_COMING = (() => {
+  const realm = 6;
+  const layer = 2;
+  const rows = comingIn(realm, layer).map((b) => {
+    const r = realmOf(b.realm);
+    return `<div class="crow">
+      <span class="cic" style="color:${r.colour}">${icon(b.icon, 30)}</span>
+      <span class="cn"><b class="cjk" style="color:${r.colour}">${b.han}</b>
+        <i>${b.name}</i></span>
+      <span class="cl">layer ${b.layer + 1}</span></div>`;
+  }).join('');
+  return `<div class="mk coming2">${rows}
+    <p class="cap">Standing on the third rung of ${realmOf(realm).han}
+      ${realmOf(realm).name}. ${commonsOf(realm)[0].name} is already out; the other two
+      are the realm's next two events.</p></div>`;
+})();
+
+// 境外 The card above the summit, at the fourth mark — the real copy and the real icon.
+const MOCK_HEAVEN = (() => {
+  const marks = 4;
+  const h = heavenAt(marks)!;
+  const nx = nextHeaven(marks)!;
+  return `<div class="mk hcard" style="--hue:${h.colour}">
+    <div class="hh"><span class="hn"><b class="cjk">${h.han}</b><em>${h.name}</em></span>
+      <span class="hm"><b>${marks}</b><i>${marks} marks</i></span></div>
+    <p class="hgain">${h.gains}</p>
+    <p class="hroom">＋${LEVELS_PER_HEAVEN} levels of 劍訣 and 妖丹, for good</p>
+    <div class="hnx"><span class="hic" style="color:${nx.colour}">${icon(nx.dragon.icon, 40)}</span>
+      <span><em>${marksToNext(marks)} more crossings open</em>
+        <i><b class="cjk" style="color:${nx.colour}">${nx.han}</b> ${nx.name} ·
+          ${nx.dragon.han} ${nx.dragon.name}</i></span></div>
+    <p class="cap">At four marks. The heaven, the room it opened, and the animal three
+      crossings away — all of it out of heavens.ts, including which Dragon is drawn.</p>
+  </div>`;
+})();
+
 // 收 The corner, shut and open.
 const MOCK_MENU = `<div class="mk two">
   <div class="corner"><span class="sw1">≡</span><p class="cap">Shut, which is how every
@@ -667,6 +748,18 @@ const page = `<title>九境 Ninefold — the Bible</title>
   .t b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
+
+  /* 境外 the heavens, one card each. */
+  #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
+  #heavens .hic { flex:none; }
+  #heavens .hic svg { display:block; }
+  #heavens .card > .hrow b { font-size:20px; font-weight:400; color:var(--hue); }
+  #heavens .hrow em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+                      font-size:16px; }
+  #heavens .hrow i { display:block; font-style:normal; font-size:12px; margin-top:2px; }
+  #heavens .hg { margin:9px 0 0; font-size:13.5px; color:var(--faint); line-height:1.55; }
+  #heavens .hr { margin:5px 0 0; font-size:12px; font-family:Rajdhani,sans-serif;
+                 font-weight:700; letter-spacing:.03em; }
 
   /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
   #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
@@ -840,6 +933,42 @@ const page = `<title>九境 Ninefold — the Bible</title>
               font-size:13px; line-height:1.5; }
   #mockups .cond .hint b { flex:none; font-size:17px; font-weight:400; color:var(--gold); }
 
+  /* 境外 the heaven card */
+  #mockups .mk.hcard { border-color:var(--hue); }
+  #mockups .hcard .hh { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  #mockups .hcard .hn b { font-size:23px; font-weight:400; color:var(--hue); }
+  #mockups .hcard .hn em { font-style:normal; font-family:Rajdhani,sans-serif;
+                           font-weight:700; font-size:16px; margin-left:8px; }
+  #mockups .hcard .hm { text-align:right; flex:none; }
+  #mockups .hcard .hm b { display:block; font-family:Rajdhani,sans-serif; font-weight:700;
+                          font-size:22px; color:var(--hue); }
+  #mockups .hcard .hm i { font-style:normal; font-size:10px; letter-spacing:.1em;
+                          text-transform:uppercase; color:var(--faint); }
+  #mockups .hcard .hgain { margin:8px 0 0; font-size:14px; }
+  #mockups .hcard .hroom { margin:6px 0 0; font-size:13px; color:var(--hue);
+                           font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .hcard .hnx { display:flex; gap:12px; align-items:center; margin-top:13px;
+                         padding-top:13px; border-top:1px solid var(--line); }
+  #mockups .hcard .hic { flex:none; }
+  #mockups .hcard .hic svg { display:block; }
+  #mockups .hcard .hnx em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
+                            font-weight:700; font-size:13px; color:var(--faint);
+                            letter-spacing:.06em; text-transform:uppercase; }
+  #mockups .hcard .hnx i { display:block; font-style:normal; font-size:14px; margin-top:2px; }
+
+  /* 出 the beasts still to come */
+  #mockups .coming2 { background:none; border:0; padding:0; }
+  #mockups .crow { display:flex; align-items:center; gap:12px; padding:11px 13px;
+                   background:var(--panel2); border:1px dashed var(--line);
+                   border-radius:11px; margin-bottom:7px; opacity:.75; }
+  #mockups .crow .cic { flex:none; }
+  #mockups .crow .cic svg { display:block; }
+  #mockups .crow .cn { flex:1; }
+  #mockups .crow .cn b { display:block; font-size:16px; font-weight:400; }
+  #mockups .crow .cn i { font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .crow .cl { flex:none; font-size:12px; color:var(--faint);
+                       font-family:Rajdhani,sans-serif; font-weight:700; }
+
   /* 收 */
   #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
             padding:16px; }
@@ -1004,6 +1133,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
@@ -1091,6 +1221,21 @@ const page = `<title>九境 Ninefold — the Bible</title>
       This is it, and it is drawn only at the moment it is an answer: 材 material at
       zero, a 妖丹 still to be had, and a warden that will not fall without one.</p>
     ${MOCK_CONDENSE}
+
+    <h3>境外 The card above the summit</h3>
+    <p class="t">Forty crossings against one animal called 龍 was the endgame, and this
+      is what stands in its place: the heaven you are in, what it opened, and the next
+      one with its own Dragon already drawn. The whole card is read out of heavens.ts —
+      the name, the colour, the count of crossings, and which animal the icon is.</p>
+    ${MOCK_HEAVEN}
+
+    <h3>出 Beasts still to come</h3>
+    <p class="t">A realm's three commons now walk out at layers ${COMMON_LAYERS.join(', ')}
+      rather than all at once. The ones that have not arrived are <b>shown</b> rather than
+      hidden, dimmed and dashed with the layer that brings them — the same argument as a
+      locked tab, for the same reason: you cannot look forward to a thing you have never
+      seen.</p>
+    ${MOCK_COMING}
 
     <h3>收 The corner</h3>
     <p class="t">Five bare characters floating over the corner of a screen that is already
@@ -1334,6 +1479,46 @@ const page = `<title>九境 Ninefold — the Bible</title>
       without playing, dearly.</div>
   </section>
 
+  <section class="sec" id="heavens">
+    <h2><span class="h">境外</span> Beyond the ninth realm</h2>
+    <p class="t">The climb ends at 渡劫 the ninth realm and 劫 the tribulation runs on for
+      ever after it — a pool that refills in ${MARK_DAYS} days, a Dragon that comes back
+      ${TRIBULATION_CHALLENGE}x heavier, a mark worth ${(1 + TRIBULATION_GAIN).toFixed(2)}x.
+      A fine engine with nothing in it: <b>forty crossings against one animal called 龍</b>,
+      told apart only by the number beside it.</p>
+    <p class="t">So the ladder continues, and a heaven is exactly what a realm is — a
+      name, a colour, a thing standing at the end of it, and something it opens. One
+      every ${MARKS_PER_HEAVEN} crossings, which at the ${ENDGAME_PACE} days a crossing
+      settles at is a little over a week each.</p>
+    ${heavenRows}
+    <div class="rule"><b>What a heaven opens, and what it deliberately does not.</b>
+      ${LEVELS_PER_HEAVEN} more levels of 劍訣 and 妖丹 — the two upgrades that buy power —
+      and <em>nothing at all</em> on 功法 or 吐納. That restriction is not tidiness; it is
+      the whole lesson of the first version, which opened room on all four.</div>
+    <p class="t">The rate ones look safe, and that is what makes them dangerous.
+      雷池 the pool is measured in days of your own gathering, so a heaven that multiplies
+      the rate multiplies the pool with it and <b>the clock holds perfectly</b>. What does
+      not ride the rate is every price written against the ladder — and the furnace is the
+      largest of them. A rate six and a half times bigger makes every pill six and a half
+      times cheaper in real terms, and pills are uncapped power. Measured, on the endgame
+      harness, forty crossings:</p>
+    <table>
+      <tr><th>a heaven opens…</th><th style="text-align:right">walkovers (over 90%)</th>
+          <th style="text-align:right">days for 40 marks</th></tr>
+      <tr><td>nothing — the endgame as it was</td><td style="text-align:right">4 of 40</td><td style="text-align:right">119</td></tr>
+      <tr><td>${LEVELS_PER_HEAVEN} levels of all four</td><td style="text-align:right"><b>28 of 40</b></td><td style="text-align:right">117</td></tr>
+      <tr><td><b>${LEVELS_PER_HEAVEN} levels of 劍訣 and 妖丹 only (shipped)</b></td>
+          <td style="text-align:right"><b>5 of 40</b></td><td style="text-align:right">137</td></tr>
+    </table>
+    <div class="warn"><b>立 And the Dragon is handed the same step.</b> Six levels of 劍訣
+      and six of 妖丹 are worth ×${heavenStep().toFixed(2)} power, so that figure is read
+      out of the upgrade table and multiplied into the next Dragon's anchor at the moment
+      the heaven opens. It cannot drift from what the player actually receives, because it
+      is computed from the thing the player receives. A heaven raises both sides: what it
+      really gives is a name, an animal, and four boxes that stop saying 滿 for the rest of
+      the game.</div>
+  </section>
+
   <section class="sec" id="clock">
     <h2><span class="h">曆</span> The content clock</h2>
     <p class="t">Bruno: <i>"o ideal seria haver conteudo para 3 meses para o lançamento
@@ -1347,24 +1532,30 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
       ${CLOCK_ROWS}
     </table>
-    <p class="t">Three readings, and all three are uncomfortable:</p>
+    <p class="t">The first reading of this table had three uncomfortable answers in it,
+      and two of them have been dealt with since:</p>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is spent in week one</em>
-        <i>Four of the nine realms arrive by day ${CLOCK_R4}. A player has met a third of
-        every named thing in 九境 before they have formed a habit of opening it.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">塊</b> <em>A realm empties itself in its first minute</em>
-        <i>Every realm hands over all of its beasts, its stance, its art and its lineage
-        at the breakthrough — and the later realms last twelve to sixteen days each. The
-        eighth realm is ${CLOCK_R8} days long and delivers everything it has on day one
-        of them.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">後</b> <em>And after day ${CLOCK_LAST}, nothing, for ever</em>
-        <i>The summit is reached on day ${CLOCK_DONE} and 劫 the tribulation runs at a
-        steady ${ENDGAME_PACE} days a mark from there to infinity — the same Dragon, the
-        same loop, at a bigger number. That is a pace, not a calendar.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">前</b> <em>Half the game is still spent in week one</em>
+        <i>Four of the nine realms arrive by day ${CLOCK_R4}, and that is left alone on
+        purpose. Slowing the opening of an idle game to protect its ending is how you
+        lose the players who would have reached the ending.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">出</b> <em>A realm no longer empties itself in its first minute</em>
+        <i>It used to hand over all three of its beasts at the breakthrough, and the
+        eighth realm is ${CLOCK_R8} days long. Its commons now walk out at layers
+        ${COMMON_LAYERS.join(', ')} — about a quarter and two thirds of the way through —
+        so the weeks that read as blank above have something in them. The first realm is
+        the exception and keeps all three, because its beasts are already spaced by
+        difficulty and there is nothing else in it to look at.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">境外</b> <em>And the summit is no longer the end of the content</em>
+        <i>The climb finishes on day ${CLOCK_DONE}; the first heaven opens on day
+        ${CLOCK_FIRST_HEAVEN} and the ninth on day ${CLOCK_LAST}. 劫 the tribulation still
+        runs for ever, but for ${HEAVENS.length} heavens it is running <b>toward</b>
+        something with a name.</i></span></div>
     </div>
-    <div class="warn"><b>What this section is not.</b> It is not a plan yet. It is the
-      measurement that any plan has to start from, and it is on this page so that the
-      three months are argued about with a number rather than a feeling.</div>
+    <div class="rule"><b>Three months was the ask, and it is met with room to spare.</b>
+      Thirteen weeks is day 91; the last named thing in the game now arrives on day
+      ${CLOCK_LAST}. Everything in this table is read off the same two harnesses the rest
+      of the page is written from, so it moves when the game moves.</div>
   </section>
 
   <section class="sec" id="ladder">

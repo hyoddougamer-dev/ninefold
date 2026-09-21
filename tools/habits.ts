@@ -110,6 +110,15 @@ export interface Run {
   readonly habit: Habit;
   readonly days: number;
   readonly arrival: readonly number[];
+  /**
+   * 層 The day each of the eighty-one rungs opened.
+   *
+   * `arrival` answers "when did they reach a realm", which was enough while a realm
+   * handed over everything it had at the breakthrough. Beasts now walk out at a layer
+   * (see Beast.layer), so 曆 the content clock has to ask a finer question, and this is
+   * the only honest place to answer it.
+   */
+  readonly layerDay: readonly number[];
   readonly state: State;
   readonly fights: number;
   readonly reached: number;
@@ -175,6 +184,7 @@ export function play(h: Habit, maxDays = 400): Run {
   let t = T0;
   const tick = DAY / h.checks;
   const arrival = [0];
+  const layerDay = [0];
   let fights = 0;
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = 991;
@@ -219,9 +229,10 @@ export function play(h: Habit, maxDays = 400): Run {
     }
     if (canBreakThrough(s)) s = breakThrough(s);
     while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
+    while (layerDay.length <= layersOpened(s)) layerDay.push((t - T0) / DAY);
 
     for (let i = 0; i < h.hunts; i++) {
-      const b = [...huntable(s.realm)].reverse().find((x) => odds(s, x) > 0.7);
+      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
       if (!b) break;
       s = takeKill(s, b);
       if (h.gear) s = takeDrop(s, b, ++seed);
@@ -233,7 +244,7 @@ export function play(h: Habit, maxDays = 400): Run {
     // being asked is what the *worst* case does to the climb, not what a careful
     // player does.
     if (h.drives) for (let i = 0; i < 40; i++) {
-      const b = [...huntable(s.realm)].reverse().find((x) => canDrive(s, x));
+      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => canDrive(s, x));
       if (!b) break;
       // Stuck at a ceiling with a warden they cannot beat, qi has nowhere else to go,
       // so it all goes here. Otherwise they keep one rung of headroom and drive the
@@ -271,7 +282,7 @@ export function play(h: Habit, maxDays = 400): Run {
   }
 
   return {
-    habit: h, days: (t - T0) / DAY, arrival, state: s, fights,
+    habit: h, days: (t - T0) / DAY, arrival, layerDay, state: s, fights,
     reached: s.realm, done: layersOpened(s) >= LAYERS - 1, power: power(s),
   };
 }

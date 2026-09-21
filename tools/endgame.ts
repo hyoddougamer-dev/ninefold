@@ -7,7 +7,7 @@
  * has to be made once, and the endgame's numbers were typed into the bible by hand until
  * a change to the furnace made every one of them wrong at a stroke.
  */
-import { effectiveBeastPower, odds } from '../src/sim/combat.ts';
+import { currentWarden, effectiveBeastPower, odds } from '../src/sim/combat.ts';
 import {
   buy, canBuy, canCross, crossTribulation, tribulationPool, type State,
 } from '../src/sim/state.ts';
@@ -15,10 +15,17 @@ import { rate } from '../src/sim/time.ts';
 import { pillCost } from '../src/sim/furnace.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
-import { wardenOf } from '../src/data/bestiary.ts';
+import { heavenAt } from '../src/data/heavens.ts';
 import { HABITS, play as playHabit } from './habits.ts';
 
-const DRAGON = wardenOf(9);
+/**
+ * 境外 What stands there is no longer one animal.
+ *
+ * It was `wardenOf(9)` — the 龍 — for every crossing, which is exactly the thing the
+ * heavens were built to stop. The harness now asks the same question the screen asks,
+ * `currentWarden(s)`, so a measurement taken here is a measurement of what a player
+ * actually faces.
+ */
 
 /** Every warden, so the arts the climb earned are all in hand at the top. */
 const ALL_WARDENS = {
@@ -64,6 +71,8 @@ export interface Endgame {
   readonly floors: readonly number[];
   /** The odds the crossing was actually taken at. */
   readonly chances: readonly number[];
+  /** 境外 The heaven each crossing opened into, by its 漢字. */
+  readonly heavens: readonly string[];
   readonly end: State;
 }
 
@@ -82,11 +91,12 @@ export function playEndgame(marks: number): Endgame {
   const days: number[] = [];
   const floors: number[] = [];
   const chances: number[] = [];
+  const heavens: string[] = [];
 
   for (let m = 0; m < marks; m++) {
     let waited = 0;
     for (let day = 0; day < 400; day++) {
-      if (odds(s, DRAGON) > WILLING && canCross({ ...s, wardenFell: true })) break;
+      if (odds(s, currentWarden(s)) > WILLING && canCross({ ...s, wardenFell: true })) break;
       s = { ...s, qi: s.qi + rate(s) * 86_400 };
       waited += 1;
 
@@ -107,7 +117,7 @@ export function playEndgame(marks: number): Endgame {
         if (!u) break;
         s = buy(s, u);
       }
-      const short = odds(s, DRAGON) <= WILLING;
+      const short = odds(s, currentWarden(s)) <= WILLING;
       for (let i = 0; i < 4000; i++) {
         if (short) {
           if (!canBrew(s, 'body')) break;
@@ -123,8 +133,9 @@ export function playEndgame(marks: number): Endgame {
     }
     days.push(waited);
     floors.push(s.tower);
-    chances.push(odds(s, DRAGON));
-    s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, DRAGON));
+    chances.push(odds(s, currentWarden(s)));
+    s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, currentWarden(s)));
+    heavens.push(heavenAt(s.tribulation)?.han ?? '');
   }
-  return { days, floors, chances, end: s };
+  return { days, floors, chances, heavens, end: s };
 }

@@ -67,6 +67,17 @@ export const CULTIVATE = {
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
+  /** 境外 What every heaven opens, said once rather than nine times. */
+  heavenRoom: (n: number) => `＋${n} levels of 劍訣 and 妖丹, for good`,
+
+  /** 境外 The ladder above the ladder. */
+  nextHeaven: (n: number) =>
+    n === 1 ? 'One more crossing opens' : `${n} more crossings open`,
+  /** The last heaven's own line already says there is no tenth name; this must not
+   *  say it again on the same card. */
+  lastHeaven: 'From here it comes back for ever, and always heavier than the one you '
+    + 'put down.',
+
   ceiling: (n: number, gain: string) =>
     `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}. `
     + 'There is no rebirth yet, so this is the ladder above the ladder.',
@@ -94,6 +105,8 @@ export const CULTIVATE = {
   pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   capped: 'Full for this realm. Climb to hold more.',
+  /** 境外 At the summit there is no realm left to climb, so the room comes from crossing. */
+  cappedTop: 'Full for this heaven. Cross the tribulation to hold more.',
 
   /**
    * 凝丹 Condensing a core out of raw qi, for a cultivator with nothing to skin.
@@ -109,6 +122,8 @@ export const CULTIVATE = {
   condenseHunt: 'A beast leaves material when it falls. That is the cheap way, and it is one tap away.',
   /** 境 How far this realm is out of. Nine is worth knowing on the first day. */
   ofNine: (n: number, of: number) => `realm ${n} of ${of}`,
+  /** 境外 And the same question above the summit, where realms have run out. */
+  ofHeavens: (n: number, of: number) => `heaven ${n} of ${of}`,
   cap: (held: number, cap: number) => `${held} of ${cap}`,
 };
 
@@ -399,6 +414,10 @@ export const GUIDE = {
 };
 
 export const HUNT = {
+  /** 出 When a beast of this realm walks out, for the rows that have not yet. */
+  walksOut: (layer: number) => `layer ${layer}`,
+  coming: 'Still to come in this realm',
+
   /** Shown under the power figure. Losing a hunt has no cost at all, and it must say so. */
   free: 'A loss costs you nothing.',
   odds: 'odds',
