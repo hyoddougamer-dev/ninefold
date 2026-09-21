@@ -53,6 +53,16 @@
   #salvage .card em { display:block; margin-bottom:2px; }
   #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
 
+  /* 閒 the ceiling column, where it is worth looking at. */
+  #idle td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #idle td, #idle th { padding:5px 6px; font-size:13px; }
+  #idle .card em { display:block; margin-bottom:2px; }
+  #idle .card .t { font-size:13.5px; }
+  /* Three tables do not fit three columns on this page; two do, and the third wraps
+     under them rather than running off the edge — which is how the first draft read. */
+  #idle .idlecards { grid-template-columns:1fr; }
+  @media(min-width:760px){ #idle .idlecards { grid-template-columns:1fr 1fr; } }
+
   /* 境外 the heavens, one card each. */
   #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
   #heavens .hic { flex:none; }
@@ -309,7 +319,13 @@
   .srow .body em a { text-decoration:none; }
   .srow .body i { font-style:normal; display:block; font-size:13.5px; color:var(--faint); }
 
-  table { border-collapse:collapse; width:100%; font-size:14px; }
+  /* 幅 A table is the one thing on this page allowed to be wider than the phone, and
+     only inside its own scroller. Read on a 400px screen the wide ones used to push the
+     whole page sideways, which moves every paragraph with them. */
+  table { border-collapse:collapse; width:100%; font-size:14px; display:block;
+          overflow-x:auto; }
+  @media(min-width:560px){ table { display:table; } }
+  table tr { display:table; width:100%; table-layout:fixed; }
   th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
   td { border-top:1px solid var(--line); padding:7px 8px; }
@@ -438,6 +454,7 @@
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
       <a href="#salvage"><b>拆</b> Melting gear</a>
+      <a href="#idle"><b>閒</b> Where the qi goes</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
@@ -661,7 +678,7 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>42 closed,
+    <p class="t"><b>43 closed,
       0 open,
       1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
@@ -788,6 +805,9 @@
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">出</b> <em><a href="#clock">Beasts that walk out mid-realm</a></em><i>A realm's three commons arrive at layers 0, 4, 7 instead of all at the breakthrough. The eighth realm is 15 days long and used to hand over everything it had in the first minute of them.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">閒</b> <em><a href="#idle">Where a realm's qi goes</a></em><i>Measured rather than assumed: every realm lets you buy about 156% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls — the lightest cultivator stands at the first realm's ceiling for 74% of it.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 162, against a climb that used to run out on day 60.</i></span>
@@ -1282,6 +1302,168 @@
       the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
       the qi. And 煉器 refining is not counted at all, or 材 material would have a second
       door out into qi and the furnace would have two.</div>
+  </section>
+
+  <section class="sec" id="idle">
+    <h2><span class="h">閒</span> Where a realm's qi goes</h2>
+    <p class="t">A claim that felt true, and was worth testing before anything was built
+      on it — Bruno, on the early game: <i>"hoje os quatro upgrades enchem-se em ~9 horas
+      e depois a barra só enche"</i>, and the answer that suggested itself was to give the
+      first three realms something more to spend qi on.</p>
+    <p class="t"><b>It would have been wasted work.</b> Every realm lets you buy the same
+      share of its own ladder, to within six points:</p>
+    <div class="cards two">
+      <div class="card"><em>The eighteen qi levels a realm allows, against that realm's
+        own nine rungs</em>
+        <table style="margin-top:8px"><tr><th>realm</th>
+          <th style="text-align:right">allows</th></tr><tr><td>練氣 <span class="faint">Qi Refining</span></td>
+    <td style="text-align:right">156%</td></tr><tr><td>築基 <span class="faint">Foundation</span></td>
+    <td style="text-align:right">155%</td></tr><tr><td>金丹 <span class="faint">Golden Core</span></td>
+    <td style="text-align:right">155%</td></tr><tr><td>元嬰 <span class="faint">Nascent Soul</span></td>
+    <td style="text-align:right">154%</td></tr><tr><td>化神 <span class="faint">Spirit Severing</span></td>
+    <td style="text-align:right">153%</td></tr><tr><td>煉虛 <span class="faint">Void Refining</span></td>
+    <td style="text-align:right">152%</td></tr><tr><td>合體 <span class="faint">Unity</span></td>
+    <td style="text-align:right">152%</td></tr><tr><td>大乘 <span class="faint">Great Vehicle</span></td>
+    <td style="text-align:right">151%</td></tr><tr><td>渡劫 <span class="faint">Tribulation</span></td>
+    <td style="text-align:right">150%</td></tr></table></div>
+      <div class="card"><em>And what that means</em>
+        <p class="t" style="margin-top:8px">The first realm is not an outlier by a single
+        point. A cultivator who checks in puts <b>44–62%</b> of their qi into upgrades and
+        the bar gets the rest, which is the idle contract working rather than failing. And
+        the four boxes are full at most 4–14% of a realm, only in the stretch right before
+        the warden.</p></div>
+    </div>
+
+    <h3>頂 What the measurement did find</h3>
+    <p class="t">A different thing in the same place, and it is the one worth knowing. A
+      realm's bar <b>stops at its ninth rung</b> — there is no tenth, and 突破 the
+      breakthrough needs the warden down first — so qi banks there with nowhere at all to
+      go. For the lightest cultivator that is three quarters of the first realm:</p>
+    <div class="cards three idlecards">
+  <div class="card"><em>once a day<span class="faint"> · 1× a day</span></em>
+    <table style="margin-top:8px">
+      <tr><th>realm</th><th style="text-align:right">lasts</th>
+          <th style="text-align:right">into 修</th>
+          <th style="text-align:right">at 頂</th></tr>
+      <tr><td>練氣</td>
+        <td style="text-align:right">48h</td>
+        <td style="text-align:right">13%</td>
+        <td style="text-align:right" class="hot">74%</td></tr><tr><td>築基</td>
+        <td style="text-align:right">72h</td>
+        <td style="text-align:right">44%</td>
+        <td style="text-align:right" class="hot">41%</td></tr><tr><td>金丹</td>
+        <td style="text-align:right">144h</td>
+        <td style="text-align:right">46%</td>
+        <td style="text-align:right" class="hot">30%</td></tr><tr><td>元嬰</td>
+        <td style="text-align:right">288h</td>
+        <td style="text-align:right">49%</td>
+        <td style="text-align:right">20%</td></tr><tr><td>化神</td>
+        <td style="text-align:right">408h</td>
+        <td style="text-align:right">61%</td>
+        <td style="text-align:right">8%</td></tr><tr><td>煉虛</td>
+        <td style="text-align:right">576h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">2%</td></tr><tr><td>合體</td>
+        <td style="text-align:right">672h</td>
+        <td style="text-align:right">57%</td>
+        <td style="text-align:right">5%</td></tr><tr><td>大乘</td>
+        <td style="text-align:right">648h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>渡劫</td>
+        <td style="text-align:right">426h</td>
+        <td style="text-align:right">38%</td>
+        <td style="text-align:right">0%</td></tr>
+    </table></div>
+  <div class="card"><em>casual<span class="faint"> · 3× a day</span></em>
+    <table style="margin-top:8px">
+      <tr><th>realm</th><th style="text-align:right">lasts</th>
+          <th style="text-align:right">into 修</th>
+          <th style="text-align:right">at 頂</th></tr>
+      <tr><td>練氣</td>
+        <td style="text-align:right">24h</td>
+        <td style="text-align:right">30%</td>
+        <td style="text-align:right" class="hot">54%</td></tr><tr><td>築基</td>
+        <td style="text-align:right">56h</td>
+        <td style="text-align:right">42%</td>
+        <td style="text-align:right" class="hot">32%</td></tr><tr><td>金丹</td>
+        <td style="text-align:right">112h</td>
+        <td style="text-align:right">56%</td>
+        <td style="text-align:right" class="hot">12%</td></tr><tr><td>元嬰</td>
+        <td style="text-align:right">208h</td>
+        <td style="text-align:right">61%</td>
+        <td style="text-align:right">2%</td></tr><tr><td>化神</td>
+        <td style="text-align:right">360h</td>
+        <td style="text-align:right">59%</td>
+        <td style="text-align:right">3%</td></tr><tr><td>煉虛</td>
+        <td style="text-align:right">496h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">2%</td></tr><tr><td>合體</td>
+        <td style="text-align:right">616h</td>
+        <td style="text-align:right">59%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>大乘</td>
+        <td style="text-align:right">608h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">0%</td></tr><tr><td>渡劫</td>
+        <td style="text-align:right">404h</td>
+        <td style="text-align:right">56%</td>
+        <td style="text-align:right">0%</td></tr>
+    </table></div>
+  <div class="card"><em>active<span class="faint"> · 6× a day</span></em>
+    <table style="margin-top:8px">
+      <tr><th>realm</th><th style="text-align:right">lasts</th>
+          <th style="text-align:right">into 修</th>
+          <th style="text-align:right">at 頂</th></tr>
+      <tr><td>練氣</td>
+        <td style="text-align:right">20h</td>
+        <td style="text-align:right">44%</td>
+        <td style="text-align:right" class="hot">34%</td></tr><tr><td>築基</td>
+        <td style="text-align:right">44h</td>
+        <td style="text-align:right">62%</td>
+        <td style="text-align:right" class="hot">14%</td></tr><tr><td>金丹</td>
+        <td style="text-align:right">96h</td>
+        <td style="text-align:right">62%</td>
+        <td style="text-align:right" class="hot">4%</td></tr><tr><td>元嬰</td>
+        <td style="text-align:right">196h</td>
+        <td style="text-align:right">61%</td>
+        <td style="text-align:right">2%</td></tr><tr><td>化神</td>
+        <td style="text-align:right">336h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>煉虛</td>
+        <td style="text-align:right">488h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>合體</td>
+        <td style="text-align:right">588h</td>
+        <td style="text-align:right">61%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>大乘</td>
+        <td style="text-align:right">580h</td>
+        <td style="text-align:right">61%</td>
+        <td style="text-align:right">1%</td></tr><tr><td>渡劫</td>
+        <td style="text-align:right">423h</td>
+        <td style="text-align:right">60%</td>
+        <td style="text-align:right">0%</td></tr>
+    </table></div></div>
+    <p class="t" style="font-size:13px">
+      <b>into 修</b> — the share of that realm's qi that went into upgrades rather than
+      into the bar. <b>at 頂</b> — the share of the realm spent at its ceiling with the
+      bar full and the warden still standing.</p>
+    <p class="t">It decays fast, and it decays with <em>showing up</em>: 74% of the first
+      realm at one visit a day, 54% at three, 34% at six, and under 3% everywhere from the
+      fourth realm on, where 塔 the tower, 爐 the furnace and 圍 the drive have opened and
+      qi has somewhere to go again.</p>
+
+    <h3>梯 And the mechanism, which is one line</h3>
+    <div class="rule"><b>A layer opens by itself the moment the qi reaches its price, and
+      the qi is set to zero.</b> Nobody chooses. A cultivator who visits once a day has
+      the ladder take the qi five or ten times between visits and arrives holding a
+      fraction of a rung; one who visits six times intercepts far more of it — measured,
+      44% of the first realm's qi into upgrades against 13%.</div>
+    <p class="t">That is not a fault to be repaired. It is the <b>largest single reason
+      playing beats waiting</b> in this game, and it is written down here so that it stops
+      being rediscovered as a problem. Two candidate fixes were measured and both were
+      dropped: more to spend on in the early realms (the table above says there is already
+      as much as anywhere), and opening 圍 the drive at the first kill rather than the
+      tenth (it moved one realm by one point — because a cultivator who visits once a day
+      cannot spend qi while the app is shut, whatever is on the screen).</p>
   </section>
 
   <section class="sec" id="heavens">

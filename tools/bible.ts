@@ -46,6 +46,7 @@ import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
+import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
   KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
@@ -200,6 +201,28 @@ const CLOCK_LAST = CLOCK.last;
 const CLOCK_DONE = CLOCK.done;
 const ACTIVE_NAME = CLOCK.name;
 const CLOCK_FIRST_HEAVEN = CLOCK.firstHeaven;
+
+/** 閒 Where a realm's qi goes, and how long the bar stands still. */
+const IDLE = walkAll();
+const idleFirst = (name: string) => IDLE.find((x) => x.name === name)!.rows.find((r) => r.realm === 1)!;
+const IDLE_FIRST = Math.round(idleFirst('once a day').ceilingHours / idleFirst('once a day').hours * 100);
+const allowedRows = Array.from({ length: 9 }, (_, i) => {
+  const r = i + 1;
+  return `<tr><td>${realmOf(r).han} <span class="faint">${realmOf(r).name}</span></td>
+    <td style="text-align:right">${Math.round(allowedShare(r) * 100)}%</td></tr>`;
+}).join('');
+const idleRows = IDLE.map((run) => `
+  <div class="card"><em>${run.name}<span class="faint"> · ${run.checks}× a day</span></em>
+    <table style="margin-top:8px">
+      <tr><th>realm</th><th style="text-align:right">lasts</th>
+          <th style="text-align:right">into 修</th>
+          <th style="text-align:right">at 頂</th></tr>
+      ${run.rows.map((r) => `<tr><td>${realmOf(r.realm).han}</td>
+        <td style="text-align:right">${r.hours.toFixed(0)}h</td>
+        <td style="text-align:right">${(r.intoUpgrades * 100).toFixed(0)}%</td>
+        <td style="text-align:right"${r.realm <= 3 ? ' class="hot"' : ''}>${
+          (r.ceilingHours / r.hours * 100).toFixed(0)}%</td></tr>`).join('')}
+    </table></div>`).join('');
 
 /** 境外 One card a heaven, with its Dragon drawn from the game's own icon table. */
 /** 拆 What a melt is worth early and late, and what it adds up to over a realm. */
@@ -361,6 +384,8 @@ const SYSTEMS: readonly System[] = [
     line: `A full chest threw the worst piece on the floor and paid nothing for it. A piece now melts for a share of the first rung of **its own** realm, falling from ${SALVAGE_SHARE_FIRST} at the first to ${SALVAGE_SHARE_LAST} at the ninth — one at a time, or everything at or below a rank in one tap.` },
   { han: '出', name: 'Beasts that walk out mid-realm', status: 'done', at: 'clock',
     line: `A realm's three commons arrive at layers ${COMMON_LAYERS.join(', ')} instead of all at the breakthrough. The eighth realm is ${CLOCK_R8} days long and used to hand over everything it had in the first minute of them.` },
+  { han: '閒', name: 'Where a realm\'s qi goes', status: 'done', at: 'idle',
+    line: `Measured rather than assumed: every realm lets you buy about ${Math.round(allowedShare(1) * 100)}% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls — the lightest cultivator stands at the first realm's ceiling for ${IDLE_FIRST}% of it.` },
   { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
     line: `Measured rather than hoped for: the last named thing now arrives on day ${CLOCK_LAST}, against a climb that used to run out on day 60.` },
 
@@ -845,6 +870,16 @@ const page = `<title>九境 Ninefold — the Bible</title>
   #salvage .card em { display:block; margin-bottom:2px; }
   #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
 
+  /* 閒 the ceiling column, where it is worth looking at. */
+  #idle td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #idle td, #idle th { padding:5px 6px; font-size:13px; }
+  #idle .card em { display:block; margin-bottom:2px; }
+  #idle .card .t { font-size:13.5px; }
+  /* Three tables do not fit three columns on this page; two do, and the third wraps
+     under them rather than running off the edge — which is how the first draft read. */
+  #idle .idlecards { grid-template-columns:1fr; }
+  @media(min-width:760px){ #idle .idlecards { grid-template-columns:1fr 1fr; } }
+
   /* 境外 the heavens, one card each. */
   #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
   #heavens .hic { flex:none; }
@@ -1101,7 +1136,13 @@ const page = `<title>九境 Ninefold — the Bible</title>
   .srow .body em a { text-decoration:none; }
   .srow .body i { font-style:normal; display:block; font-size:13.5px; color:var(--faint); }
 
-  table { border-collapse:collapse; width:100%; font-size:14px; }
+  /* 幅 A table is the one thing on this page allowed to be wider than the phone, and
+     only inside its own scroller. Read on a 400px screen the wide ones used to push the
+     whole page sideways, which moves every paragraph with them. */
+  table { border-collapse:collapse; width:100%; font-size:14px; display:block;
+          overflow-x:auto; }
+  @media(min-width:560px){ table { display:table; } }
+  table tr { display:table; width:100%; table-layout:fixed; }
   th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
   td { border-top:1px solid var(--line); padding:7px 8px; }
@@ -1230,6 +1271,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
       <a href="#salvage"><b>拆</b> Melting gear</a>
+      <a href="#idle"><b>閒</b> Where the qi goes</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
@@ -1624,6 +1666,57 @@ const page = `<title>九境 Ninefold — the Bible</title>
       the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
       the qi. And 煉器 refining is not counted at all, or 材 material would have a second
       door out into qi and the furnace would have two.</div>
+  </section>
+
+  <section class="sec" id="idle">
+    <h2><span class="h">閒</span> Where a realm's qi goes</h2>
+    <p class="t">A claim that felt true, and was worth testing before anything was built
+      on it — Bruno, on the early game: <i>"hoje os quatro upgrades enchem-se em ~9 horas
+      e depois a barra só enche"</i>, and the answer that suggested itself was to give the
+      first three realms something more to spend qi on.</p>
+    <p class="t"><b>It would have been wasted work.</b> Every realm lets you buy the same
+      share of its own ladder, to within six points:</p>
+    <div class="cards two">
+      <div class="card"><em>The eighteen qi levels a realm allows, against that realm's
+        own nine rungs</em>
+        <table style="margin-top:8px"><tr><th>realm</th>
+          <th style="text-align:right">allows</th></tr>${allowedRows}</table></div>
+      <div class="card"><em>And what that means</em>
+        <p class="t" style="margin-top:8px">The first realm is not an outlier by a single
+        point. A cultivator who checks in puts <b>44–62%</b> of their qi into upgrades and
+        the bar gets the rest, which is the idle contract working rather than failing. And
+        the four boxes are full at most 4–14% of a realm, only in the stretch right before
+        the warden.</p></div>
+    </div>
+
+    <h3>頂 What the measurement did find</h3>
+    <p class="t">A different thing in the same place, and it is the one worth knowing. A
+      realm's bar <b>stops at its ninth rung</b> — there is no tenth, and 突破 the
+      breakthrough needs the warden down first — so qi banks there with nowhere at all to
+      go. For the lightest cultivator that is three quarters of the first realm:</p>
+    <div class="cards three idlecards">${idleRows}</div>
+    <p class="t" style="font-size:13px">
+      <b>into 修</b> — the share of that realm's qi that went into upgrades rather than
+      into the bar. <b>at 頂</b> — the share of the realm spent at its ceiling with the
+      bar full and the warden still standing.</p>
+    <p class="t">It decays fast, and it decays with <em>showing up</em>: 74% of the first
+      realm at one visit a day, 54% at three, 34% at six, and under 3% everywhere from the
+      fourth realm on, where 塔 the tower, 爐 the furnace and 圍 the drive have opened and
+      qi has somewhere to go again.</p>
+
+    <h3>梯 And the mechanism, which is one line</h3>
+    <div class="rule"><b>A layer opens by itself the moment the qi reaches its price, and
+      the qi is set to zero.</b> Nobody chooses. A cultivator who visits once a day has
+      the ladder take the qi five or ten times between visits and arrives holding a
+      fraction of a rung; one who visits six times intercepts far more of it — measured,
+      44% of the first realm's qi into upgrades against 13%.</div>
+    <p class="t">That is not a fault to be repaired. It is the <b>largest single reason
+      playing beats waiting</b> in this game, and it is written down here so that it stops
+      being rediscovered as a problem. Two candidate fixes were measured and both were
+      dropped: more to spend on in the early realms (the table above says there is already
+      as much as anywhere), and opening 圍 the drive at the first kill rather than the
+      tenth (it moved one realm by one point — because a cultivator who visits once a day
+      cannot spend qi while the app is shut, whatever is on the screen).</p>
   </section>
 
   <section class="sec" id="heavens">
