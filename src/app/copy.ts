@@ -482,4 +482,7 @@ export const RETURN = {
 
 export const ARENA = {
   chestFull: 'Chest is full. This one is lost.',
+  /** 熟 Said at the moment it happens, because a permanent reward that passes in
+   *  silence is one the player never learns to go looking for. */
+  earned: (han: string, pays: string) => `${han} · ${pays}, for good`,
 };

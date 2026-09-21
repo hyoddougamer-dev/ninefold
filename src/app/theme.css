@@ -216,6 +216,15 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 .card3 .marks { justify-content: center; }
 
+/* 熟 A mark earned, said in the arena where the kill happened. */
+.verdict .mark { display: flex; gap: 11px; align-items: center; justify-content: center;
+                 margin: 10px 0 0; padding: 9px 13px; border-radius: 11px;
+                 background: color-mix(in srgb, var(--gold) 12%, transparent);
+                 border: 1px solid var(--gold); }
+.verdict .mark > b { font-size: 21px; color: var(--gold); line-height: 1; }
+.verdict .mark em { display: block; font-style: normal; font-size: 13px; }
+.verdict .mark i { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
+
 /* 圖鑑 How near a realm's four are to being finished, beside the realm's own name. */
 .filled { margin-left: auto; display: flex; align-items: baseline; gap: 7px;
           font-family: 'Noto Serif SC', serif; font-size: 12px; letter-spacing: 0;

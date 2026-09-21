@@ -496,7 +496,7 @@ export function App() {
       {battle && (
         <Arena
           battle={battle}
-          realm={state.realm}
+          state={state}
           pulse={pulse}
           chestFull={state.chest.length >= limitOf(state)}
           onClose={closeFight}

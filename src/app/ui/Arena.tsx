@@ -12,6 +12,9 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
+import { lootTaken } from '../../sim/trials.ts';
+import { MARK_INFO, marksOf } from '../../sim/record.ts';
+import type { State } from '../../sim/state.ts';
 
 /**
  * 對 The facing.
@@ -91,19 +94,34 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, realm, pulse, onClose, chestFull }: {
+export function Arena({ battle, state, pulse, onClose, chestFull }: {
   battle: Battle;
-  realm: number;
+  /**
+   * 得 The whole state, not only the realm, because what a kill is *worth* depends on
+   * the cultivator: 熟 marks and 塔印 seals both multiply what a beast pays, and the
+   * arena was showing the table's number while the save was credited the real one.
+   */
+  state: State;
   pulse: number;
   chestFull: boolean;
   onClose: () => void;
 }) {
+  const realm = state.realm;
   const { beast, outcome, beat, over } = battle;
   const f = frameAt(outcome, beat);
   const r = realmOf(realm);
   const br = realmOf(beast.realm);
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const say = over ? verdictLine(outcome.won, !!beast.warden) : blowLine(f.striker, f.round);
+  /**
+   * 熟 Whether this kill is the one that earns a mark. It is asked of the state *before*
+   * the kill is written, so the arena is describing the fight it just played rather than
+   * the save it is about to become.
+   */
+  const before = state.killed[beast.key] ?? 0;
+  const earned = outcome.won && battle.floor === undefined && marksOf(before + 1) > marksOf(before)
+    ? { index: marksOf(before + 1) - 1 }
+    : null;
   const arts = f.arts.map((k) => ART_BY_KEY[k]).filter(Boolean);
 
   return (
@@ -195,8 +213,22 @@ export function Arena({ battle, realm, pulse, onClose, chestFull }: {
               ` · +${num(floorLoot(battle.floor) * lootBonus(battle.floor - 1))} 材`
               + (battle.qi ? ` · +${num(battle.qi)} qi` : '')
             )}
-            {outcome.won && battle.floor === undefined && ` · +${num(loot(beast))} 材`}
+            {outcome.won && battle.floor === undefined
+              && ` · +${num(lootTaken(state, loot(beast)))} 材`}
           </p>
+          {/* 熟 A mark earned is the most valuable thing a kill can do in the first hour
+              and the arena used to let it pass in silence. It is permanent, it is the
+              reason to kill the same animal again, and it has to be said out loud where
+              it happens. */}
+          {outcome.won && earned && (
+            <p className="mark">
+              <b className="cjk">{MARK_INFO[earned.index].han}</b>
+              <span>
+                <em>{MARK_INFO[earned.index].name}</em>
+                <i>{ARENA.earned(beast.han, MARK_INFO[earned.index].pays)}</i>
+              </span>
+            </p>
+          )}
           {outcome.won && battle.drop && (
             <div className="spoil">
               <Svg html={gearTile(battle.drop, { size: 62, spin: pulse })} />

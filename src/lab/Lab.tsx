@@ -237,7 +237,7 @@ export function Lab() {
       {battle && (
         <Arena
           battle={battle}
-          realm={realm}
+          state={hero}
           pulse={pulse}
           chestFull={false}
           onClose={() => setBattle(null)}
