@@ -110,6 +110,50 @@ export const CULTIVATE = {
  * Three sentences, one fact each, and every one of them is a thing the player is about
  * to watch happen.
  */
+/**
+ * 收 The corner, folded into one button.
+ *
+ * Five bare characters floating over a screen that is already teaching characters is
+ * five unanswered questions at once. Folded, they are one button; opened, every one of
+ * them says in English what it is, which is the rule the rest of the game already
+ * follows and the one place that had escaped it.
+ */
+export const MENU = {
+  label: 'Menu',
+  save: 'Your save',
+  help: 'How to play',
+  key: 'What the characters mean',
+  stele: 'The stele',
+};
+
+/**
+ * 境 What a realm is, on one page.
+ *
+ * Every line here answers a question a player actually asks, in the order they ask it,
+ * and none of it is a new fact: the page is assembled from the same tables the game
+ * plays by. It exists because the answer was scattered across five screens and a player
+ * standing in the third realm could not find out what the third realm was.
+ */
+export const REALMCARD = {
+  of: (n: number, all: number) => `realm ${n} of ${all}`,
+  what: (layers: number) =>
+    `A realm is ${layers} layers. Your qi fills them one at a time, and each one you `
+    + 'open makes you gather a little faster for ever. When the last one is full the '
+    + "realm's warden appears. Beat it and you break through to the next realm.",
+  hereHead: 'Where you are',
+  layers: 'layers filled',
+  day: 'days climbing',
+  wardenHead: 'What stands at the end',
+  warden: 'It has exactly the power of a cultivator who filled this realm and brought '
+    + 'nothing else, so the levels get you to the door and everything else opens it. '
+    + 'Losing costs you nothing at all.',
+  gaveHead: 'What this realm opened',
+  nextHead: 'What the next one is worth',
+  opens: (list: string) => `Opens ${list}.`,
+  opensNothing: 'Opens no new system. It is the top of the climb.',
+  back: 'Back',
+};
+
 export const LADDER = {
   rule: (han: string, name: string) =>
     `Your qi fills one rung. Nine rungs fill ${han} ${name}. `
@@ -545,6 +589,16 @@ export const RETURN = {
 };
 
 export const ARENA = {
+  /**
+   * 見 The first time a beast falls, and only the first.
+   *
+   * It is the same card as the 見 Seen mark, because it is the same event. The qi leads,
+   * because the qi is the part that moves the number the player has been watching all
+   * day — which was the whole complaint: combat never touched it.
+   */
+  firstSight: (qi: string, han: string) =>
+    `+${qi} qi for the first ${han} you ever killed, once and never again. `
+    + 'Every beast in the game pays this the first time it falls.',
   chestFull: 'Chest is full. This one is lost.',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in
    *  silence is one the player never learns to go looking for. */

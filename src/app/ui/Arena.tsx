@@ -13,6 +13,7 @@ import { Svg } from './Svg.tsx';
 import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
 import { lootTaken } from '../../sim/trials.ts';
+import { seenBounty } from '../../sim/combat.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -119,6 +120,9 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
    * the save it is about to become.
    */
   const before = state.killed[beast.key] ?? 0;
+  // 見 What this kill pays in qi, which is only ever on the very first one.
+  const bounty = outcome.won && battle.floor === undefined && before === 0
+    ? seenBounty(beast) : 0;
   const earned = outcome.won && battle.floor === undefined && marksOf(before + 1) > marksOf(before)
     ? { index: marksOf(before + 1) - 1 }
     : null;
@@ -216,16 +220,26 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
             {outcome.won && battle.floor === undefined
               && ` · +${num(lootTaken(state, loot(beast)))} 材`}
           </p>
+
           {/* 熟 A mark earned is the most valuable thing a kill can do in the first hour
               and the arena used to let it pass in silence. It is permanent, it is the
               reason to kill the same animal again, and it has to be said out loud where
               it happens. */}
           {outcome.won && earned && (
-            <p className="mark">
+            /* 見 The first mark and 見 the first-sight bounty are the same event, and
+               for a while they were two cards stacked on top of each other saying
+               nearly the same sentence. They are one card: the mark names it, and the
+               qi is the first thing the line says, because the qi is the part that
+               moves the number the player has been watching all day. */
+            <p className="mark" data-seen={earned.index === 0 && bounty > 0}>
               <b className="cjk">{MARK_INFO[earned.index].han}</b>
               <span>
                 <em>{MARK_INFO[earned.index].name}</em>
-                <i>{ARENA.earned(beast.han, MARK_INFO[earned.index].pays)}</i>
+                <i>
+                  {bounty > 0 && earned.index === 0
+                    ? ARENA.firstSight(num(bounty), beast.han)
+                    : ARENA.earned(beast.han, MARK_INFO[earned.index].pays)}
+                </i>
               </span>
             </p>
           )}

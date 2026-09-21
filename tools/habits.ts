@@ -12,10 +12,10 @@ import {
   filledRealms,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
-import { loot, odds } from '../src/sim/combat.ts';
+import { odds, takeKill } from '../src/sim/combat.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { STANCES } from '../src/data/arts.ts';
-import { brew, canBrew, clearFloor, lootTaken, standingFloor } from '../src/sim/trials.ts';
+import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import {
@@ -160,7 +160,7 @@ export function play(h: Habit, maxDays = 400): Run {
 
     // 妖 The gate: the warden is fought when the realm is full and it looks worth trying.
     if (atCeiling(s) && !s.wardenFell && odds(s, wardenOf(s.realm)) > 0.2) {
-      s = { ...s, wardenFell: true, killed: { ...s.killed, [wardenOf(s.realm).key]: 1 } };
+      s = takeKill(s, wardenOf(s.realm));
       fights++;
     }
     if (canBreakThrough(s)) s = breakThrough(s);
@@ -169,8 +169,7 @@ export function play(h: Habit, maxDays = 400): Run {
     for (let i = 0; i < h.hunts; i++) {
       const b = [...huntable(s.realm)].reverse().find((x) => odds(s, x) > 0.7);
       if (!b) break;
-      s = { ...s, materials: s.materials + lootTaken(s, loot(b)),
-        killed: { ...s.killed, [b.key]: (s.killed[b.key] ?? 0) + 1 } };
+      s = takeKill(s, b);
       if (h.gear) s = takeDrop(s, b, ++seed);
       fights++;
     }

@@ -18,7 +18,7 @@ import { advice } from '../advice.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
-export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
+export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
@@ -27,6 +27,8 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
   onFight: () => void;
   /** 示 Where the advice points, when it points anywhere. */
   onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear') => void;
+  /** 境 Open the page that says what this realm is. */
+  onRealm: () => void;
 }) {
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -89,8 +91,13 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
         <span className="faint mono" style={{ fontSize: 12 }}>力 {num(power(state))}</span>
       </div>
 
-      <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
+      {/* 境 The realm's own name is the way in to the page that explains it. A player
+          asking "what is this realm" reaches for the realm, not for a tab. */}
+      <button className="realmname" onClick={onRealm}>
         <h1 className="cjk" style={{ margin: 0, fontSize: 30, fontWeight: 400, color: r.colour }}>{r.han}</h1>
+        <span className="ask" aria-hidden="true">?</span>
+      </button>
+      <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
         {/* 梯 The layer number used to live here, and now lives on the ladder below
             with the eight other rungs around it. One number in one place. */}
         {top && (

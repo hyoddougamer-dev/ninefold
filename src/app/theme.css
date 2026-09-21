@@ -459,14 +459,33 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 /* 存 ? 碑 音 — four of them now, and each one takes width off the first row of every
    screen. The sheet's first row is padded to clear them rather than every screen being
    asked to remember. */
+/* 收 One button in the corner, and a named list under it when it opens. */
 .switches { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); right: 12px;
-            display: flex; gap: 5px; z-index: 5; }
-.switches button {
-  width: 28px; height: 28px; border-radius: 8px; font: inherit; font-size: 13.5px;
+            z-index: 16; }
+.switches .mainswitch {
+  width: 28px; height: 28px; border-radius: 8px; font: inherit; font-size: 14px;
   background: var(--panel); border: 1px solid var(--line); color: var(--faint);
   cursor: pointer; display: grid; place-items: center;
 }
-.switches button[data-on='true'] { color: var(--cyan); border-color: var(--cyan); }
+.switches .mainswitch[data-on='true'] { color: var(--cyan); border-color: var(--cyan); }
+
+/* The scrim is invisible and only there to catch the tap that shuts the list. It sits
+   under the list and over everything else, so the game is never pressed by accident
+   through an open menu. */
+.scrim { position: absolute; inset: 0; z-index: 15; }
+
+.switchmenu { position: absolute; top: 34px; right: 0; min-width: 214px;
+              display: flex; flex-direction: column; padding: 5px;
+              background: var(--ground); border: 1px solid var(--line);
+              border-radius: 11px; box-shadow: 0 14px 34px -12px rgba(0,0,0,.85); }
+.switchmenu button { display: flex; align-items: center; gap: 11px; width: 100%;
+                     padding: 9px 9px; border: 0; background: transparent; border-radius: 8px;
+                     font: inherit; color: var(--text); cursor: pointer; text-align: left; }
+.switchmenu button:hover { background: var(--panel); }
+.switchmenu button > b { flex: none; width: 22px; text-align: center; font-weight: 400;
+                         font-size: 16px; color: var(--cyan); }
+.switchmenu button > span { font-size: 13.5px; }
+.switchmenu button[data-on='false'] > b { color: var(--faint); }
 
 /* ── help ───────────────────────────────────────────────────────────────── */
 
@@ -512,7 +531,7 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
    clear of the buttons and uses the full width. */
 /* Only the first line: the title sits below the buttons already, and reserving the
    width for it was breaking three-word titles across three lines. */
-.guide .n { padding-right: 132px; }
+.guide .n { padding-right: 44px; }
 .guide:disabled { cursor: default; }
 .guide .n { font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
             color: var(--cyan); }
@@ -911,3 +930,61 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 @media (prefers-reduced-motion: reduce) {
   .coach .ring, .coach .point { animation: none; }
 }
+
+/* ── 境 the page that says what a realm is ───────────────────────────────── */
+
+/* The realm's name is the way in. It has to read as a name first and a button second,
+   so the only affordance is a small ? riding after it. */
+.realmname { display: flex; align-items: center; gap: 8px; margin-top: 4px;
+             padding: 0; border: 0; background: transparent; font: inherit;
+             color: var(--text); cursor: pointer; }
+.realmname .ask { width: 19px; height: 19px; border-radius: 99px; flex: none;
+                  display: grid; place-items: center; font-size: 11px;
+                  font-family: Rajdhani, sans-serif; font-weight: 600;
+                  color: var(--faint); border: 1px solid var(--line); }
+.realmname:hover .ask { color: var(--cyan); border-color: var(--cyan); }
+
+.realmcard { position: absolute; inset: 0; z-index: 13; background: var(--ground);
+             overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 22px) 18px
+                                       calc(env(safe-area-inset-bottom, 0px) + 22px);
+             display: flex; flex-direction: column; }
+/* The realm's own portrait, large and quiet, so the page is recognisably about *this*
+   realm before a word of it is read. */
+.realmcard .crown { display: grid; place-items: center; margin-bottom: 6px; opacity: .9; }
+.realmcard .crown svg { display: block; width: 132px; height: 132px; }
+.realmcard h2 { margin: 0; font-size: 34px; font-weight: 400; line-height: 1.1; }
+.realmcard .sub { margin: 3px 0 0; font-size: 14px; color: var(--faint); }
+.realmcard .lead { margin: 12px 0 0; font-size: 13.5px; line-height: 1.6; }
+.realmcard h3 { margin: 22px 0 9px; font-size: 10.5px; letter-spacing: .14em;
+                text-transform: uppercase; color: var(--faint);
+                font-family: Archivo, sans-serif; font-weight: 600; }
+.realmcard p.faint { margin: 9px 0 0; font-size: 12.5px; line-height: 1.55; }
+
+/* Three numbers, side by side: where in the realm, how long, which realm. */
+.realmcard .facts { display: flex; gap: 8px; }
+.realmcard .facts > span { flex: 1; background: var(--panel); border: 1px solid var(--line);
+                           border-radius: 10px; padding: 11px 10px; text-align: center; }
+.realmcard .facts b { display: block; font-size: 19px; font-weight: 500; }
+.realmcard .facts i { display: block; margin-top: 3px; font-style: normal; font-size: 10px;
+                      letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+
+.realmcard .gives { list-style: none; margin: 0; padding: 0; display: flex;
+                    flex-direction: column; gap: 12px; }
+.realmcard .gives li { display: flex; gap: 12px; align-items: baseline; }
+.realmcard .gives li > b { flex: none; min-width: 34px; font-weight: 400; font-size: 17px;
+                           color: var(--cyan); }
+.realmcard .gives em { display: block; font-style: normal; font-size: 14px; }
+.realmcard .gives i { display: block; margin-top: 3px; font-style: normal; font-size: 12.5px;
+                      line-height: 1.55; color: var(--faint); }
+
+/* The hook. A vertical game has to keep saying what the next realm is worth. */
+.realmcard .nextup { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.realmcard .nextup > b { font-size: 21px; font-weight: 400; }
+.realmcard .nextup > i { font-style: normal; font-size: 13px; color: var(--faint);
+                         margin-left: 8px; }
+.realmcard .nextup p.faint:first-of-type { color: var(--text); }
+
+/* 見 The first kill is still a mark card, but it is the one that pays qi rather than
+   material, so it borrows the qi colour to say so. */
+.verdict .mark[data-seen="true"] > b { color: var(--cyan); }
+.verdict .mark[data-seen="true"] { border-color: rgba(95,220,255,.35); }

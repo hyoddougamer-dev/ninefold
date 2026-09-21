@@ -73,6 +73,28 @@ const LADDER: number[] = (() => {
 })();
 
 /** What the nth layer costs, counting from zero across the whole climb. */
+/**
+ * 見 What the first sight of a beast is worth, as a share of the rung it lives beside.
+ *
+ * Bruno, three realms in: *"sinto que o combat nada faz nos primeiros realms."* He was
+ * right about the feeling and right about the cause. A kill paid 材 material, and
+ * material bought 妖丹 cores at three material each — real, permanent, and completely
+ * invisible next to a qi bar that is the only number the screen ever shows moving. The
+ * player's whole attention is on qi, and combat never touched it.
+ *
+ * So the *first* kill of every beast pays qi. Not every kill: the first, once, for ever,
+ * and it goes in the same 見 Seen mark that already exists and until now only filled in
+ * a page. Thirty-six beasts in the game, thirty-six payments in a lifetime — so it
+ * cannot be farmed, it cannot compound, and it is not a rate. It is the game paying for
+ * the one thing it most wants a new cultivator to do: go and look at something new.
+ *
+ * Half a rung at the first realm, and divided by the realm after that — see seenBounty.
+ * Flat, it took twenty-two days off a hundred-and-twelve-day climb, which answers a
+ * complaint nobody made. Shrinking, it is loud where the complaint was and silent where
+ * it was not.
+ */
+export const SEEN_BOUNTY = 0.5;
+
 export function ladderAt(n: number): number {
   return LADDER[Math.max(0, Math.min(LAYERS, Math.round(n)))];
 }

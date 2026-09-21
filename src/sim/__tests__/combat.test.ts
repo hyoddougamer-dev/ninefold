@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
-import { LAYERS_PER_REALM, levelCap } from '../balance.ts';
-import { beastPower, fight, odds, oddsRaw, referencePower } from '../combat.ts';
+import { LAYERS_PER_REALM, ladderAt, levelCap } from '../balance.ts';
+import {
+  beastPower, fight, odds, oddsRaw, referencePower, seenBounty, takeKill,
+} from '../combat.ts';
 import { focusAt } from '../balance.ts';
 import { buy, canBuy, newState, power, type State } from '../state.ts';
+import { num } from '../format.ts';
 import { advance } from '../time.ts';
 import { ARTS, STANCES } from '../../data/arts.ts';
 
@@ -280,5 +283,71 @@ describe('誠 out of reach is not two per cent', () => {
     for (let i = 0; i < 4; i++) s = buy({ ...s, qi: 1e9 }, 'technique');
     expect(oddsRaw(s, rat)).toBeGreaterThan(0);
     expect(odds(s, rat)).toBeGreaterThan(0.02);
+  });
+});
+
+/**
+ * 見 What the first sight of a beast is worth, where it was asked for.
+ *
+ * Bruno: *"sinto que o combat nada faz nos primeiros realms."* The fix has to be loud
+ * in the first realm and quiet by the ninth, or it is not a first-realm fix — it is a
+ * rebalance of the whole climb by the back door, which is what a flat share measured
+ * as: twenty-two days off a hundred-and-twelve-day game.
+ *
+ * So these state the shape as numbers, and print them, because a share of a rung means
+ * nothing until you see it beside the rung.
+ */
+describe('見 the first sight of a beast', () => {
+  it('is paid once and never again', () => {
+    const rat = commonsOf(1)[0];
+    const fresh = newState(T0);
+    const first = takeKill(fresh, rat);
+    expect(first.qi - fresh.qi).toBe(seenBounty(rat));
+    const second = takeKill(first, rat);
+    expect(second.qi - first.qi).toBe(0);
+    // The count and the material keep coming; only the bounty stops.
+    expect(second.killed[rat.key]).toBe(2);
+    expect(second.materials).toBeGreaterThan(first.materials);
+  });
+
+  it('is loud in the first realm and quiet in the ninth', () => {
+    const share = (b: ReturnType<typeof commonsOf>[number]) =>
+      seenBounty(b) / ladderAt((b.realm - 1) * LAYERS_PER_REALM + 3);
+    const rat = commonsOf(1)[0];
+    const deep = commonsOf(9)[0];
+    expect(share(rat)).toBeGreaterThan(0.3);
+    expect(share(deep)).toBeLessThan(0.1);
+
+    // eslint-disable-next-line no-console
+    console.log('\n  見 what a first kill pays, as a share of the rung it lives beside:');
+    for (const r of [1, 3, 5, 7, 9]) {
+      const b = commonsOf(r)[0];
+      const w = wardenOf(r);
+      // eslint-disable-next-line no-console
+      console.log(`    realm ${r}  ${b.han} ${num(seenBounty(b)).padStart(8)} qi `
+        + `(${(share(b) * 100).toFixed(0)}% of a rung)   warden ${w.han} ${seenBounty(w) === 0 ? 'nothing' : num(seenBounty(w))}`);
+    }
+  });
+
+  it('pays a warden nothing, because 突破 would throw it away', () => {
+    // Breaking through sets the qi to nothing, and breaking through is what a player
+    // does the moment the warden falls. A prize the next tap destroys is a trap.
+    for (const r of [1, 5, 9]) expect(seenBounty(wardenOf(r))).toBe(0);
+    const s = newState(T0);
+    const after = takeKill(s, wardenOf(1));
+    expect(after.qi).toBe(s.qi);
+    expect(after.wardenFell).toBe(true);
+    expect(after.materials).toBeGreaterThan(s.materials);
+  });
+
+  it('cannot be farmed: every beast in the game pays it exactly once', () => {
+    // 36 beasts, 36 payments, for the life of a save. It is a fixed, finite sum — so it
+    // is not a rate, and no amount of hunting can turn it into one.
+    let s = newState(T0);
+    const before = s.qi;
+    for (const b of BEASTS) s = takeKill(s, b);
+    const once = s.qi - before;
+    for (let i = 0; i < 20; i++) for (const b of BEASTS) s = takeKill(s, b);
+    expect(s.qi - before).toBe(once);
   });
 });

@@ -52,10 +52,21 @@ describe('勤 what being there buys you', () => {
 
     const [waiter, once, casual, active, hourly] = runs;
 
-    // A cultivator who never fights anything never leaves the low realms, whatever they
-    // gather. Their qi is not the problem; 妖丹 cores are, and those only fall off beasts.
-    expect(waiter.arrival[8]).toBeUndefined();
-    expect(waiter.reached).toBeLessThanOrEqual(4);
+    /**
+     * 牆 The wall that was not there.
+     *
+     * This used to assert that a cultivator who never hunts is stuck in the low realms
+     * for ever, and it passed — because *this harness* was crediting a warden kill with
+     * the count and nothing else, while the game has always paid a warden's 材 material
+     * like any other beast. Four wardens' material is enough 妖丹 to keep climbing, so
+     * the stall was a measuring error and the shipped game never had it.
+     *
+     * The honest guarantee is the one that survives the correction, and it is the one
+     * that matters anyway: hunting is worth a large, measured share of the whole climb.
+     * A waiter still gets there; it costs them about a month.
+     */
+    expect(waiter.arrival[8]).toBeDefined();
+    expect(waiter.arrival[8]).toBeGreaterThan(once.arrival[8] * 1.25);
 
     // And everybody who does fight gets there, sooner the more they play.
     for (const r of [once, casual, active, hourly]) expect(r.arrival[8]).toBeDefined();
@@ -160,12 +171,20 @@ describe('勤 what being there buys you', () => {
     expect(uncappedRate(1)).toBe(1);
   });
 
-  it('gives the furnace and the tower to a fighter, and neither to a waiter', () => {
+  it('gives the furnace and the tower to a fighter, and barely either to a waiter', () => {
     const [waiter, , , active] = runs;
+    // A cultivator who never opens 狩 Hunt never climbs a tower floor and never brews a
+    // pill: both of those eat material by the sackful, and four wardens a realm do not
+    // pay by the sackful.
     expect(waiter.state.tower).toBe(0);
     expect(pillsTaken(waiter.state.brewed)).toBe(0);
-    expect(waiter.state.levels.cores).toBe(0);
     expect(active.state.tower).toBeGreaterThan(50);
-    expect(active.state.levels.cores).toBeGreaterThan(0);
+
+    // 妖丹 cores are *not* the difference, which is worth stating out loud because the
+    // old version of this test assumed they were: measured, a waiter's wardens buy them
+    // most of the way to a fighter's core count. What separates the two is everything
+    // material buys on top of the cores — the tower, the furnace, the gear — and it
+    // separates them by more than an order of magnitude of power.
+    expect(active.power).toBeGreaterThan(waiter.power * 5);
   });
 });

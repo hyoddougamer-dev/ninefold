@@ -1,11 +1,13 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
+  SEEN_BOUNTY, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
 import { pillBane } from './furnace.ts';
+import { lootTaken } from './trials.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -307,6 +309,50 @@ export function loot(b: Beast): number {
   const depth = b.warden ? b.realm * LAYERS_PER_REALM : beastDepth(b);
   const share = b.warden ? HUNT_SHARE * 4 : HUNT_SHARE;
   return Math.max(1, Math.round(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (depth - 1) * share));
+}
+
+/**
+ * 收 Taking a kill: the one place a beast is written into a save.
+ *
+ * It lived in the app, which meant 見 the first-sight bounty was invisible to every
+ * harness that measures this game — the five cultivators, the climb, the endgame — and
+ * a reward the measuring never sees is a reward nobody can tell you is wrong. Anything
+ * that changes the numbers belongs in `sim/`, and this is the thing that changes them.
+ *
+ * It does not touch the chest or the drop: gear is rolled with a seed and the caller
+ * owns that. What it owns is the three facts every kill is worth — the count, the
+ * material, and the bounty the count decides.
+ */
+export function takeKill(s: State, b: Beast): State {
+  const kills = s.killed[b.key] ?? 0;
+  return {
+    ...s,
+    wardenFell: b.warden ? true : s.wardenFell,
+    qi: s.qi + (kills === 0 ? seenBounty(b) : 0),
+    materials: s.materials + lootTaken(s, loot(b)),
+    killed: { ...s.killed, [b.key]: kills + 1 },
+  };
+}
+
+/**
+ * 見 The one-off qi a beast pays the first time it is killed, and never again.
+ *
+ * It rides the same depth the loot does, so it scales with the mountain on its own and
+ * nothing here needs touching when the curve moves.
+ *
+ * It is a *share of a rung*, which is what makes it legible. "Half a layer" means
+ * something to a player watching a bar fill; a flat number means nothing at the third
+ * realm and everything at the first.
+ */
+export function seenBounty(b: Beast): number {
+  // 守 No bounty for a warden, and the reason is 突破 rather than balance: breaking
+  // through sets the qi to nothing. A warden paid on the kill and then broken through
+  // a second later — which is what every cultivator does, because the breakthrough is
+  // the whole point of the fight — hands over a reward the next tap destroys. A prize
+  // that is normally thrown away is worse than no prize; it is a trap for anybody who
+  // notices. The warden's reward is the realm.
+  if (b.warden) return 0;
+  return Math.max(1, Math.round(ladderBetween(beastDepth(b)) * (SEEN_BOUNTY / b.realm)));
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */

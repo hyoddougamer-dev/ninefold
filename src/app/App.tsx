@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
-import { currentWarden, fight, loot } from '../sim/combat.ts';
+import { currentWarden, fight, takeKill } from '../sim/combat.ts';
 import { newState, power, type State, filledRealms,
 } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
@@ -13,7 +13,7 @@ import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
-import { brew, clearFloor, floorQi, lootTaken, refine, standingFloor } from '../sim/trials.ts';
+import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillFortune } from '../sim/furnace.ts';
 import { marksOf } from '../sim/record.ts';
@@ -28,6 +28,7 @@ import { Cultivate } from './screens/Cultivate.tsx';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
+import { RealmCard } from './ui/RealmCard.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
@@ -42,7 +43,7 @@ import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
-import { BLOOM, LOCKED, UPDATE } from './copy.ts';
+import { BLOOM, LOCKED, MENU, UPDATE } from './copy.ts';
 
 /**
  * 開 The tabs, and what opens them.
@@ -90,6 +91,11 @@ export function App() {
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
   const [saving, setSaving] = useState(false);
+  // 收 The corner. Shut by default, and shut again on every open: the game's own
+  // screen is what a player came back for, not its settings.
+  const [menu, setMenu] = useState(false);
+  // 境 The page that says what this realm is, reached from the realm's own name.
+  const [realmPage, setRealmPage] = useState(false);
   const [fresh, setFresh] = useState(false);
   const [sound, setSound] = useState(soundLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
@@ -293,15 +299,13 @@ export function App() {
           : drop;
         const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
         // 錄 A mark earned is rare enough to be worth hearing.
-        const before = marksOf(s.killed[beast.key] ?? 0);
-        if (marksOf((s.killed[beast.key] ?? 0) + 1) > before) sfx.mark();
-        return {
-          ...s,
-          wardenFell: beast.warden ? true : s.wardenFell,
-          materials: s.materials + lootTaken(s, loot(beast)),
-          killed: { ...s.killed, [beast.key]: (s.killed[beast.key] ?? 0) + 1 },
-          chest: kept ? [...kept.chest] : s.chest,
-        };
+        const kills = s.killed[beast.key] ?? 0;
+        const before = marksOf(kills);
+        if (marksOf(kills + 1) > before) sfx.mark();
+        // 收 The count, the material and 見 the first-sight bounty all come from the
+        // sim, so the harnesses that measure this game see exactly what the player gets.
+        // The chest is the app's, because the drop above was rolled with the app's seed.
+        return { ...takeKill(s, beast), chest: kept ? [...kept.chest] : s.chest };
       });
     }
     setBattle(null);
@@ -438,7 +442,7 @@ export function App() {
    *   reach, which is worse than pointing at nothing.
    */
   const step = guide(state);
-  const covered = help || key || stele || saving || !!home || !!battle
+  const covered = help || key || stele || saving || realmPage || menu || !!home || !!battle
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
     ? step.at
@@ -460,6 +464,7 @@ export function App() {
             set={climb}
             onFight={() => startFight(currentWarden(state))}
             onGo={(next) => { setTab(next); sfx.tap(); }}
+            onRealm={() => { setRealmPage(true); sfx.tap(); }}
           />
         )}
         {tab === 'hunt' && <Hunt state={state} onFight={(key) => startFight(byKey[key])} />}
@@ -475,16 +480,38 @@ export function App() {
         )}
       </div>
 
-      <div className="switches">
-        <button onClick={() => { setSaving(true); sfx.tap(); }} aria-label="Your save">存</button>
-        <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
-        <button className="cjk" onClick={() => { setKey(true); sfx.tap(); }}
-          aria-label="What the characters mean">釋</button>
-        <button className="cjk" onClick={() => { setStele(true); sfx.tap(); }} aria-label="The stele">碑</button>
-        <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0} aria-label={LEVELS[sound].label}>
-          {LEVELS[sound].icon}
+      {/* 收 One button, not five.
+          Five bare characters floating over the corner of a screen that is already
+          asking a new player to learn characters is five unanswered questions, and
+          Bruno said so: *"fica muito confuso"*. They fold into one, and when it opens
+          each one arrives with its name in English beside it — which is the same rule
+          the upgrades follow, applied to the one place that had escaped it. */}
+      <div className="switches" data-open={menu} hidden={covered && !menu}>
+        <button className="mainswitch" data-on={menu} aria-expanded={menu}
+          aria-label={MENU.label} onClick={() => { setMenu((m) => !m); sfx.tap(); }}>
+          {menu ? '✕' : '≡'}
         </button>
+        {menu && (
+          <div className="switchmenu">
+            {([
+              ['存', MENU.save, () => setSaving(true)],
+              ['?', MENU.help, () => setHelp(true)],
+              ['釋', MENU.key, () => setKey(true)],
+              ['碑', MENU.stele, () => setStele(true)],
+            ] as const).map(([han, label, go]) => (
+              <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
+                <b className="cjk">{han}</b><span>{label}</span>
+              </button>
+            ))}
+            <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0}>
+              <b>{LEVELS[sound].icon}</b><span>{LEVELS[sound].label}</span>
+            </button>
+          </div>
+        )}
       </div>
+      {/* Anywhere else shuts it, which is what a menu that floats over a live game has
+          to do or the player is left tapping the game through a list. */}
+      {menu && <div className="scrim" onClick={() => setMenu(false)} />}
 
       <nav className="tabs">
         {TABS.map((t) => {
@@ -594,6 +621,10 @@ export function App() {
         />
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
+
+      {realmPage && (
+        <RealmCard state={state} onClose={() => { setRealmPage(false); sfx.tap(); }} />
+      )}
 
       {stele && (
         <div className="stelepage">
