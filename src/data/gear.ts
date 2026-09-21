@@ -108,11 +108,6 @@ export const SECONDARIES: Record<Rarity, number> = {
 export const BASE_PERCENT = 4;
 export const PERCENT_PER_REALM = 1;
 
-/** The primary line's value before variance, in its own axis's units. */
-export function basePercent(template: GearTemplate, rarity: Rarity): number {
-  return (BASE_PERCENT + PERCENT_PER_REALM * template.realm) * RARITY_INFO[rarity].mult;
-}
-
 export interface GearTemplate {
   readonly key: string;
   readonly han: string;
@@ -391,9 +386,6 @@ export function templateOf(item: Item): GearTemplate {
 export function droppableIn(realm: number): readonly GearTemplate[] {
   return GEAR.filter((g) => g.realm <= realm);
 }
-
-export const ARCHETYPE_BY_KEY: Readonly<Record<string, Archetype>> =
-  Object.fromEntries(ARCHETYPES.map((x) => [x.key, x]));
 
 export function archetypesOf(slot: Slot): readonly Archetype[] {
   return ARCHETYPES.filter((x) => x.slot === slot);

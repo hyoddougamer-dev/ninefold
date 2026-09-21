@@ -12,7 +12,3 @@ export function icon(name: string, size = 24): string {
   if (!body) return '';
   return `<svg viewBox="0 0 512 512" width="${size}" height="${size}" fill="currentColor" aria-hidden="true">${body}</svg>`;
 }
-
-export function hasIcon(name: string): boolean {
-  return name in ICONS;
-}

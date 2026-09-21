@@ -68,8 +68,3 @@ export function lootBonus(best: number): number {
 export function nextFloor(best: number): number {
   return Math.max(0, Math.floor(best)) + 1;
 }
-
-/** The name a floor goes by on screen. */
-export function floorName(floor: number): string {
-  return `${floor}`;
-}

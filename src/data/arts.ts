@@ -111,11 +111,6 @@ export const ART_BY_KEY: Readonly<Record<string, Art>> =
 /** How many arts fit in a sequence. Three is enough to order and few enough to hold. */
 export const SEQUENCE_SLOTS = 3;
 
-/** The art a warden hands over, or nothing if that beast is not a warden. */
-export function artOfWarden(beastKey: string): Art | undefined {
-  return ARTS.find((a) => WARDEN_ART[beastKey] === a.key);
-}
-
 /** Which warden drops which art. Named rather than positional, so a reorder is safe. */
 export const WARDEN_ART: Readonly<Record<string, string>> = {
   fox: 'fox', ape: 'ape', crane: 'crane', tiger: 'tiger', turtle: 'turtle',

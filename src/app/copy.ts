@@ -102,7 +102,6 @@ export const CULTIVATE = {
    */
   lastLayers: (n: number) =>
     `${n} more ${n === 1 ? 'layer' : 'layers'} and the bar becomes 雷池 the thunder pool.`,
-  pool: 'The thunder pool holds two days of your gathering. Fill it and the Dragon comes.',
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   capped: 'Full for this realm. Climb to hold more.',
   /** 境外 At the summit there is no realm left to climb, so the room comes from crossing. */
@@ -166,8 +165,9 @@ export const REALMCARD = {
   of: (n: number, all: number) => `realm ${n} of ${all}`,
   what: (layers: number) =>
     `A realm is ${layers} layers. Your qi fills them one at a time, and each one you `
-    + 'open makes you gather a little faster for ever. When the last one is full the '
-    + "realm's warden appears. Beat it and you break through to the next realm.",
+    + 'open makes you gather a little faster for ever. The last of them is the warden: '
+    + 'reach it and the beast walks out, and beating it is what opens the next realm. '
+    + 'Whatever qi you have gathered comes with you.',
   hereHead: 'Where you are',
   layers: 'layers filled',
   day: 'days climbing',
@@ -232,7 +232,6 @@ export const TRIALS = {
     `The furnace is cold until ${han} ${name}. Qi has nowhere else to go after that, and `
     + 'this is where it goes.',
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
-  brew: 'Brew',
   held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
   needMaterial: 'You need more 材 material. The tower pays it.',
   rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell you, and it is why the climb still takes three months.',
@@ -457,7 +456,6 @@ export const HUNT = {
  * before the tap rather than a reassurance after it.
  */
 export const DRIVE = {
-  tag: 'Drive this beast',
   what: 'You have beaten this one ten times, so there is nothing left to find out. '
     + 'A drive settles the rest at once: the same material, the same record, the same '
     + 'drops. What the qi buys is the tapping.',
@@ -579,8 +577,13 @@ export const DAO = {
 export const NOTICE = {
   cap: {
     title: 'A realm only holds so much',
-    text: 'Six levels of each upgrade, and this realm is full of one of them. The only way '
-      + 'to hold more is to climb, so a full box is not a wall. It is the next realm calling.',
+    // 數 The number is handed in rather than written here. It is LEVELS_PER_REALM, it has
+    // been six for a long time, and a line that says "six" in prose is a copy of a
+    // balance number that nothing will ever come back and correct.
+    text: (n: number) =>
+      `${n} levels of each upgrade per realm, and this realm is full of one of them. `
+      + 'The only way to hold more is to climb, so a full box is not a wall. It is the '
+      + 'next realm calling.',
   },
   cores: {
     // 名 Not "Go and kill something": that is the title of 引 the guide's second step,

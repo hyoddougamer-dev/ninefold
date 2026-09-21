@@ -118,8 +118,3 @@ export function marksToNext(marks: number): number | null {
   const n = Math.max(0, Math.floor(marks));
   return MARKS_PER_HEAVEN * heavensOpened(n) + 1 - n;
 }
-
-/** What the marks are worth as extra room, in levels of every capped upgrade. */
-export function heavenLevels(marks: number): number {
-  return heavensOpened(marks);
-}

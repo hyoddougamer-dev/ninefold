@@ -1,6 +1,6 @@
 import {
   ALL_NODES, NODES, NODE_BY_KEY, ROOT, linksOf, nodesOf,
-  type Effect, type Node, type Path,
+  type Effect, type Node,
 } from '../data/techniques.ts';
 import type { Slot } from '../data/gear.ts';
 
@@ -71,16 +71,6 @@ export function canUnlock(
   const needs = requirements(node);
   if (needs.length > 0 && !needs.some((x) => unlocked.includes(x.key))) return false;
   return free >= node.cost;
-}
-
-/** The next node available on a branch, or null when the branch is finished. */
-export function nextOn(path: Path, unlocked: readonly string[]): Node | null {
-  return nodesOf(path).find((x) => !unlocked.includes(x.key)) ?? null;
-}
-
-/** Everything reachable right now, whatever it costs. */
-export function frontier(unlocked: readonly string[]): readonly Node[] {
-  return ALL_NODES.filter((x) => canUnlock(x.key, unlocked, Infinity));
 }
 
 // ── what a bought tree does ──────────────────────────────────────────────────

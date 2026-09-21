@@ -92,6 +92,3 @@ export function arenaScene(realm: number): string {
     <rect y="${FLOOR - 2}" width="${W}" height="2" fill="url(#edge${uid})"/>
   </svg>`;
 }
-
-/** How far up the scene the floor sits, as a fraction — the layout stands on it. */
-export const FLOOR_FRACTION = (H - FLOOR) / H;

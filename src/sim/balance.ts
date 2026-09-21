@@ -275,8 +275,11 @@ export function realmCost(realm: number): number {
  * This is the wall the old economy had no version of. Without it a cultivator who
  * spends reaches the ninth realm in *three days* — measured, not guessed — because the
  * rate upgrades pay for the rate upgrades and nothing anywhere says stop. With it the
- * climb takes between 86 and 114 days whether the app is opened once a day or two
- * hundred times, which is what an idle game is supposed to promise.
+ * climb stays inside one band however the game is played: 45 days for somebody who opens
+ * the app every waking hour against 168 for somebody who never taps a beast, and 95 for
+ * one visit a day. That band is what an idle game is supposed to promise, and it is
+ * printed by `players.test.ts` on every run rather than remembered here — this sentence
+ * has been wrong twice already because the numbers moved underneath it.
  *
  * It also says something true: a body only holds so much. To hold more, raise the realm.
  */

@@ -1,8 +1,7 @@
 import {
-  AFFIXES, RARITIES, SECONDARIES, primaryOf, templateOf, valueOf,
-  wornTotals, type Affix, type Item, type Rarity,
+  AFFIXES, SECONDARIES, primaryOf, templateOf, valueOf,
+  type Affix, type Item, type Rarity,
 } from '../data/gear.ts';
-import { affinity } from './dao.ts';
 import { power, rate as rateOf, type State } from './state.ts';
 
 /**
@@ -87,20 +86,9 @@ export function compare(item: Item, worn?: Item): readonly LineDelta[] {
     .filter((d) => d.theirs > 0 || d.mine > 0);
 }
 
-/** Where a rank sits on the five-step ladder, for the strip that draws it. */
-export function rarityStep(r: Rarity): number {
-  return RARITIES.indexOf(r);
-}
-
 /** How many lines a piece of this rank carries: one primary and the rank's secondaries. */
 export function linesOf(r: Rarity): number {
   return 1 + SECONDARIES[r];
-}
-
-/** The totals a save would have with this piece on, for the screen that shows both. */
-export function totalsWith(s: State, item?: Item) {
-  const next = item ? ifWorn(s, item) : s;
-  return wornTotals(next.worn, (slot) => affinity(next.unlocked, slot));
 }
 
 /** The piece's own primary line, which is the one the chest tile shows. */

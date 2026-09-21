@@ -17,7 +17,8 @@
     "catalogue": "tsx tools/catalogue.ts",
     "arts": "tsx tools/arts.ts",
     "bible": "tsx tools/bible.ts",
-    "prose": "npm run build && tsx tools/prose.ts"
+    "prose": "npm run build && tsx tools/prose.ts",
+    "smoke": "node tools/smoke.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

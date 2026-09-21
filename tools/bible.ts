@@ -12,7 +12,7 @@
  *
  * Run with `npm run bible`.
  */
-import { writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
@@ -67,6 +67,35 @@ import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
 import { gearTile } from '../src/art/gear.ts';
+
+/**
+ * 測 How many tests there are, counted rather than remembered.
+ *
+ * The number was written into the Portuguese page by hand once, and a hand-written count
+ * is a claim with a shelf life. Every `it(` in the suite is counted here instead, so the
+ * page says what the repository actually holds on the day it was built.
+ */
+/**
+ * 譯 The eight cultivators' names, for the one page written in Portuguese.
+ *
+ * The names themselves stay English, because they are identifiers the harness, the tests
+ * and every other section use. This is a gloss beside them, not a rename: a reader of
+ * the Portuguese page should not have to hold an English glossary to read a table.
+ */
+const HABIT_PT: Record<string, string> = {
+  'never fights': 'nunca luta',
+  'barely fights': 'quase não luta',
+  'once a day': 'uma vez por dia',
+  casual: 'ocasional',
+  active: 'ativo',
+  'every hour': 'de hora a hora',
+  'drives it all': 'usa o 圍 em tudo',
+  'walks 神': 'segue o 神',
+};
+
+const TEST_DIRS = ['src/sim/__tests__', 'src/app/__tests__'];
+const TESTS = TEST_DIRS.flatMap((d) => readdirSync(d).filter((f) => f.endsWith('.test.ts')).map((f) => `${d}/${f}`))
+  .reduce((n, f) => n + (readFileSync(f, 'utf8').match(/^\s*it\(/gm)?.length ?? 0), 0);
 
 const PAGES = 'https://hyoddougamer-dev.github.io/ninefold/';
 const REPO = 'https://github.com/hyoddougamer-dev/ninefold';
@@ -400,6 +429,11 @@ const SYSTEMS: readonly System[] = [
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
+
+/** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
+const CLOSED = SYSTEMS.filter((x) => x.status === 'done').length;
+const OPEN = SYSTEMS.filter((x) => x.status === 'open').length;
+const PLANNED = SYSTEMS.filter((x) => x.status === 'planned').length;
 
 const STATE = {
   done: { han: '成', word: 'closed', tone: 'var(--cyan)' },
@@ -1271,6 +1305,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       board underneath says what is finished and what is not, and closing a system means
       moving its row and writing its section.</p>
     <div class="toc">
+      <a href="#resumo"><b>簡</b> Em português</a>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#where"><b>包</b> Where to play</a>
@@ -1302,6 +1337,70 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
+
+  <section class="sec resumo" id="resumo">
+    <h2><span class="h">簡</span> Em duas páginas, em português</h2>
+    <p class="t"><b>Esta página é para o Bruno.</b> Tudo o resto na bíblia está em inglês
+      porque o jogo e o código estão em inglês; isto está aqui porque a pergunta
+      <i>"não sei bem o que temos e se está tudo funcional"</i> merece uma resposta curta
+      antes das quarenta e tal secções que explicam porquê.</p>
+
+    <h3>O que é o jogo</h3>
+    <p class="t">Um jogo <b>idle</b> de cultivo, para telemóvel, ao alto, com uma mão. O qi
+      sobe sozinho — com a app fechada, sempre, sem exceção. Gasta-se em quatro coisas que
+      multiplicam e nunca se perdem. Nove reinos, cada um com nove degraus, e no fim de
+      cada um está uma besta que tem de cair para se avançar. Acima do nono reino há mais
+      nove <b>céus</b>, e depois disso não acaba.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">氣</b> <em>Juntar</em>
+        <i>Sozinho, com o telemóvel fechado. Nunca se perde nada por se estar ausente.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">修</b> <em>Gastar</em>
+        <i>劍訣 poder · 功法 e 吐納 velocidade · 妖丹 núcleos, que só o 材 material compra.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">狩</b> <em>Caçar</em>
+        <i>Perder não custa nada, nunca. As bestas dão 材 material e deixam cair equipamento.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">突破</b> <em>Passar de reino</em>
+        <i>Oito degraus enchem o reino e o warden é o nono. O qi que tiveres vem contigo.</i></span></div>
+    </div>
+
+    <h3>O que já lá está</h3>
+    <div class="cards two">
+      <div class="card"><em>Sistemas</em>
+        <p class="t" style="margin-top:6px"><b>${CLOSED}</b> fechados, <b>${OPEN}</b> abertos,
+        <b>${PLANNED}</b> planeado. Um sistema só conta como fechado quando está construído,
+        medido por um teste e escrito nesta página.</p></div>
+      <div class="card"><em>Conteúdo</em>
+        <p class="t" style="margin-top:6px">${REALMS.length} reinos · ${HEAVENS.length} céus ·
+        ${BEASTS.length} bestas e ${HEAVENS.length} Dragões com nome · ${STANCES.length} posturas ·
+        ${ARTS.length} artes · ${GEAR.length} peças de equipamento · ${ALL_NODES.length} nós na
+        árvore · 27 pílulas · ${DEEDS.length} feitos.</p></div>
+    </div>
+
+    <h3>Quanto tempo dá</h3>
+    <table>
+      <tr><th>como se joga</th><th style="text-align:right">chega ao 9.º reino</th>
+          <th style="text-align:right">acaba a subida</th></tr>
+      ${RUNS.map((r) => `<tr><td style="white-space:nowrap">${HABIT_PT[r.habit.name] ?? r.habit.name}<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">${r.habit.name}</i></td>
+        <td style="text-align:right">${(r.arrival[8] ?? 0).toFixed(0)} dias</td>
+        <td style="text-align:right">${r.days.toFixed(0)} dias</td></tr>`).join('')}
+    </table>
+    <p class="t">Depois disso abrem-se os nove céus, um a cada três travessias. Para quem
+      joga com regularidade, o <b>último nome novo do jogo chega ao dia ${CLOCK_LAST}</b>.
+      Três meses são o dia 91.</p>
+
+    <h3>Está tudo funcional?</h3>
+    <div class="rule"><b>Sim, e há um comando que o confirma.</b> <code>npm run smoke</code>
+      abre o jogo construído num browser a sério, em seis profundidades, visita todos os
+      separadores, abre o canto e todos os painéis atrás dele, e falha se alguma coisa
+      rebentar, não desenhar nada, ou mostrar <code>NaN</code> ao jogador. A última vez que
+      correu: <b>todos os ecrãs abriram e nada estava partido</b>. Ao lado disso correm
+      <b>${TESTS} testes</b> que verificam os números.</div>
+
+    <h3>O que falta decidir</h3>
+    <p class="t">Nada está a meio. A única linha do quadro que não está fechada é
+      <b>轉世 Rebirth</b>, e está marcada como <em>planeada</em> só para a decisão ficar
+      escrita: 九境 é puramente vertical, nada faz reset, e todas as barras só sobem.</p>
+  </section>
 
   <section class="sec" id="mockups">
     <h2><span class="h">樣</span> What it looks like</h2>
@@ -1398,9 +1497,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>${SYSTEMS.filter((x) => x.status === 'done').length} closed,
-      ${SYSTEMS.filter((x) => x.status === 'open').length} open,
-      ${SYSTEMS.filter((x) => x.status === 'planned').length} planned.</b> Counted from the
+    <p class="t"><b>${CLOSED} closed, ${OPEN} open, ${PLANNED} planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
     <div class="board">${statusRows}</div>
   </section>

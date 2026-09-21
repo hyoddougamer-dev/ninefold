@@ -446,6 +446,7 @@
       board underneath says what is finished and what is not, and closing a system means
       moving its row and writing its section.</p>
     <div class="toc">
+      <a href="#resumo"><b>簡</b> Em português</a>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#where"><b>包</b> Where to play</a>
@@ -477,6 +478,91 @@
       <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
+
+  <section class="sec resumo" id="resumo">
+    <h2><span class="h">簡</span> Em duas páginas, em português</h2>
+    <p class="t"><b>Esta página é para o Bruno.</b> Tudo o resto na bíblia está em inglês
+      porque o jogo e o código estão em inglês; isto está aqui porque a pergunta
+      <i>"não sei bem o que temos e se está tudo funcional"</i> merece uma resposta curta
+      antes das quarenta e tal secções que explicam porquê.</p>
+
+    <h3>O que é o jogo</h3>
+    <p class="t">Um jogo <b>idle</b> de cultivo, para telemóvel, ao alto, com uma mão. O qi
+      sobe sozinho — com a app fechada, sempre, sem exceção. Gasta-se em quatro coisas que
+      multiplicam e nunca se perdem. Nove reinos, cada um com nove degraus, e no fim de
+      cada um está uma besta que tem de cair para se avançar. Acima do nono reino há mais
+      nove <b>céus</b>, e depois disso não acaba.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">氣</b> <em>Juntar</em>
+        <i>Sozinho, com o telemóvel fechado. Nunca se perde nada por se estar ausente.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">修</b> <em>Gastar</em>
+        <i>劍訣 poder · 功法 e 吐納 velocidade · 妖丹 núcleos, que só o 材 material compra.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">狩</b> <em>Caçar</em>
+        <i>Perder não custa nada, nunca. As bestas dão 材 material e deixam cair equipamento.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">突破</b> <em>Passar de reino</em>
+        <i>Oito degraus enchem o reino e o warden é o nono. O qi que tiveres vem contigo.</i></span></div>
+    </div>
+
+    <h3>O que já lá está</h3>
+    <div class="cards two">
+      <div class="card"><em>Sistemas</em>
+        <p class="t" style="margin-top:6px"><b>45</b> fechados, <b>0</b> abertos,
+        <b>1</b> planeado. Um sistema só conta como fechado quando está construído,
+        medido por um teste e escrito nesta página.</p></div>
+      <div class="card"><em>Conteúdo</em>
+        <p class="t" style="margin-top:6px">9 reinos · 9 céus ·
+        36 bestas e 9 Dragões com nome · 9 posturas ·
+        9 artes · 486 peças de equipamento · 28 nós na
+        árvore · 27 pílulas · 32 feitos.</p></div>
+    </div>
+
+    <h3>Quanto tempo dá</h3>
+    <table>
+      <tr><th>como se joga</th><th style="text-align:right">chega ao 9.º reino</th>
+          <th style="text-align:right">acaba a subida</th></tr>
+      <tr><td style="white-space:nowrap">nunca luta<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">never fights</i></td>
+        <td style="text-align:right">152 dias</td>
+        <td style="text-align:right">168 dias</td></tr><tr><td style="white-space:nowrap">quase não luta<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">barely fights</i></td>
+        <td style="text-align:right">96 dias</td>
+        <td style="text-align:right">119 dias</td></tr><tr><td style="white-space:nowrap">uma vez por dia<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">once a day</i></td>
+        <td style="text-align:right">77 dias</td>
+        <td style="text-align:right">95 dias</td></tr><tr><td style="white-space:nowrap">ocasional<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">casual</i></td>
+        <td style="text-align:right">74 dias</td>
+        <td style="text-align:right">88 dias</td></tr><tr><td style="white-space:nowrap">ativo<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">active</i></td>
+        <td style="text-align:right">55 dias</td>
+        <td style="text-align:right">67 dias</td></tr><tr><td style="white-space:nowrap">de hora a hora<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">every hour</i></td>
+        <td style="text-align:right">37 dias</td>
+        <td style="text-align:right">45 dias</td></tr><tr><td style="white-space:nowrap">usa o 圍 em tudo<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">drives it all</i></td>
+        <td style="text-align:right">55 dias</td>
+        <td style="text-align:right">67 dias</td></tr><tr><td style="white-space:nowrap">segue o 神<br>
+        <i style="font-style:normal;opacity:.45;font-size:11px">walks 神</i></td>
+        <td style="text-align:right">52 dias</td>
+        <td style="text-align:right">63 dias</td></tr>
+    </table>
+    <p class="t">Depois disso abrem-se os nove céus, um a cada três travessias. Para quem
+      joga com regularidade, o <b>último nome novo do jogo chega ao dia 157</b>.
+      Três meses são o dia 91.</p>
+
+    <h3>Está tudo funcional?</h3>
+    <div class="rule"><b>Sim, e há um comando que o confirma.</b> <code>npm run smoke</code>
+      abre o jogo construído num browser a sério, em seis profundidades, visita todos os
+      separadores, abre o canto e todos os painéis atrás dele, e falha se alguma coisa
+      rebentar, não desenhar nada, ou mostrar <code>NaN</code> ao jogador. A última vez que
+      correu: <b>todos os ecrãs abriram e nada estava partido</b>. Ao lado disso correm
+      <b>211 testes</b> que verificam os números.</div>
+
+    <h3>O que falta decidir</h3>
+    <p class="t">Nada está a meio. A única linha do quadro que não está fechada é
+      <b>轉世 Rebirth</b>, e está marcada como <em>planeada</em> só para a decisão ficar
+      escrita: 九境 é puramente vertical, nada faz reset, e todas as barras só sobem.</p>
+  </section>
 
   <section class="sec" id="mockups">
     <h2><span class="h">樣</span> What it looks like</h2>
@@ -678,9 +764,7 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>45 closed,
-      0 open,
-      1 planned.</b> Counted from the
+    <p class="t"><b>45 closed, 0 open, 1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
     <div class="board"><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
@@ -2889,7 +2973,7 @@
       it describes first becomes true, fires once ever, and never blocks the game.</p>
     <div class="rows">
   <div class="row">
-    <span class="body"><b class="cjk">上限</b> <em>A realm only holds so much</em><i>Six levels of each upgrade, and this realm is full of one of them. The only way to hold more is to climb, so a full box is not a wall. It is the next realm calling.</i></span>
+    <span class="body"><b class="cjk">上限</b> <em>A realm only holds so much</em><i>6 levels of each upgrade per realm, and this realm is full of one of them. The only way to hold more is to climb, so a full box is not a wall. It is the next realm calling.</i></span>
   </div>
   <div class="row">
     <span class="body"><b class="cjk">妖丹</b> <em>材 Material is the other currency</em><i>妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only falls off beasts. Until you have some, this realm's warden will not fall.</i></span>
