@@ -859,6 +859,20 @@ const page = `<title>九境 Ninefold — the Bible</title>
       cores and the tree are what turn the coin over. Commons stand at
       ${[0.45, 0.62, 0.84].map((s) => pc(s)).join(', ')} of the realm's reference, which is
       a cultivator ${REFERENCE_BELOW} levels short of the cap.</div>
+    <div class="rule"><b>初 Except the first realm, which is spaced against the player.</b>
+      Every realm is entered weak — measured, a cultivator arrives at 25%, 23%, 16%, 11%
+      and 7% of the realm they are climbing into, and the first at 5%. That is one
+      pattern, not an exception. What makes the first realm different is that it is the
+      only one with <em>nothing else in it</em>: from the second there is gear to find, a
+      stance to choose, a record filling, a tower, a tree, and the wait is furnished. In
+      the first there is a bar and three boxes. At the standard spacing the first fight a
+      player could win arrived <b>two hours and six minutes</b> in, and the true odds
+      before it were not small — they were 0.0%, flat, the whole way. Combat there was a
+      step, not a ramp. So the first realm's three commons stand at
+      ${[0.12, 0.35, 0.70].map((x) => pc(x)).join(', ')} instead, and were measured back:
+      ${commonsOf(1).map((c) => `${c.han} 力 ${beastPower(c).toFixed(1)}`).join(', ')},
+      winnable at <b>12 minutes</b>, <b>1.7 hours</b> and <b>3.6 hours</b>. The warden
+      does not move: a warden is always a filled realm cap.</div>
   </section>
 
   <section class="sec" id="build">

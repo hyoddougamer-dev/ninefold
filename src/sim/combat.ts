@@ -91,6 +91,35 @@ export function referencePower(realm: number): number {
 const STEPS = [0.45, 0.62, 0.84];
 
 /**
+ * 初 And the first realm is spaced against the player, not against its own summit.
+ *
+ * Every realm is entered weak — measured, a cultivator arrives at 25%, 23%, 16%, 11%,
+ * 7% of the realm they are entering. The first is 5%, and it is the same pattern, not an
+ * exception. What makes it different is that it is the only realm with **nothing else in
+ * it**: from the second there is gear to find, a stance to pick, a record filling, a
+ * tower, a tree. In the first there is a bar and three boxes, and if the beasts are out
+ * of reach as well then there is nothing at all.
+ *
+ * At the standard spacing the first fight a player can win arrives **two hours and six
+ * minutes** in, and the true odds before it are not small — they are 0.0%, flat, for the
+ * whole of it. Combat in the first realm was a step, not a ramp: nothing, nothing,
+ * nothing, then 66% and trivial forty minutes later.
+ *
+ * So the first realm's three commons are placed where the player actually stands while
+ * climbing it. Measured, at this spacing:
+ *
+ *     山鼠 the rat     力  2.4    winnable at 12 minutes
+ *     野犬 the hound   力  7.0    at 1.6 hours
+ *     澤蛙 the frog    力 14.0    at 3.5 hours
+ *     妖狐 the fox     力 29.7    at the cap, as every warden is
+ *
+ * Four fights across the first realm, the first of them inside the first sitting. The
+ * warden is untouched: a warden is always a cultivator who has filled the realm's cap,
+ * and that is the one number in the realm that should not move.
+ */
+const FIRST_STEPS = [0.12, 0.35, 0.70];
+
+/**
  * 守 What a warden asks for, as a multiple of its realm's reference.
  *
  * It is not a number at all: a warden stands at exactly the power of a cultivator who
@@ -108,7 +137,8 @@ export function beastPower(b: Beast): number {
   const ref = referencePower(b.realm);
   if (b.warden) return ref * WARDEN_EDGE;
   const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
-  return ref * STEPS[Math.max(0, i) % STEPS.length];
+  const steps = b.realm === 1 ? FIRST_STEPS : STEPS;
+  return ref * steps[Math.max(0, i) % steps.length];
 }
 
 export interface Round {

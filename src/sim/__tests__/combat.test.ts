@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { LAYERS_PER_REALM, levelCap } from '../balance.ts';
 import { beastPower, fight, odds, referencePower } from '../combat.ts';
-import { newState, power, type State } from '../state.ts';
+import { focusAt } from '../balance.ts';
+import { buy, canBuy, newState, power, type State } from '../state.ts';
+import { advance } from '../time.ts';
 import { ARTS, STANCES } from '../../data/arts.ts';
 
 const T0 = 1_700_000_000;
@@ -131,6 +133,36 @@ describe('戰 the beasts', () => {
     }
     console.log(`  a realm-5 cultivator reaches tower floor ${a}; with a stance and arts, floor ${b}\n`);
     expect(b).toBeGreaterThan(a);
+  });
+
+  /**
+   * 初 The first realm is the one a player decides the game on, and for a long time it
+   * had no fight in it at all — the first winnable beast arrived two hours in, and the
+   * true odds before it were 0.0%, flat.
+   */
+  it('gives the first realm a fight inside the first sitting, and three after it', () => {
+    /** Walk the first realm the way a player does, and note when each beast turns. */
+    const won: Record<string, number> = {};
+    let s: State = newState(T0);
+    for (let t = 1; t <= 14 * 3600; t++) {
+      s = advance(s, T0 + t, false, focusAt(t % 5400));
+      for (const u of ['pills', 'method', 'technique'] as const) if (canBuy(s, u)) s = buy(s, u);
+      if (t % 120) continue;
+      for (const c of commonsOf(1)) if (won[c.key] === undefined && odds(s, c) >= 0.6) won[c.key] = t;
+      if (s.realm > 1) break;
+    }
+    const [rat, hound, frog] = commonsOf(1).map((c) => won[c.key] ?? Infinity);
+    console.log(`\n  初 the first realm's own ladder: ${commonsOf(1).map((c) =>
+      `${c.han} 力 ${beastPower(c).toFixed(1)} at ${((won[c.key] ?? Infinity) / 60).toFixed(0)} min`).join(' · ')}\n`);
+
+    // The first fight lands inside a first sitting, not two hours later.
+    expect(rat).toBeLessThan(30 * 60);
+    // And the other two are spread, so the realm keeps asking something new.
+    expect(hound).toBeGreaterThan(rat * 2);
+    expect(frog).toBeGreaterThan(hound * 1.5);
+    expect(frog).toBeLessThan(6 * 3600);
+    // The warden is untouched: it still stands at a filled realm cap.
+    expect(beastPower(wardenOf(1))).toBeGreaterThan(beastPower(commonsOf(1)[2]) * 1.5);
   });
 
   it('commons are hunting, not a wall — and three steps, not three identical buttons', () => {
