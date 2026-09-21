@@ -2457,6 +2457,22 @@ const page = `<title>九境 Ninefold — the Bible</title>
       and 仙蛻劍 is an Ascendant Sword. Nothing is typed out — a new shape adds nine pieces
       and a tenth realm would add ${ARCHETYPES.length}, without a line of naming.</p>
     <div class="cards">${itemNames}</div>
+  
+    <h3>\u5ea6 What it is actually worth, measured</h3>
+    <p class="t">Nothing in this repository had ever answered that. The harness equips
+      what it finds, so the answer is the same climb run twice \u2014 once wearing what
+      dropped and once wearing nothing at all:</p>
+    <table>
+      <tr><th>cultivator</th><th style="text-align:right">wearing it</th>
+          <th style="text-align:right">wearing none</th>
+          <th style="text-align:right">the power between them</th></tr>
+      <tr><td>active</td><td style="text-align:right">day 65</td><td style="text-align:right">day 82</td><td style="text-align:right">5.2\u00d7</td></tr>
+      <tr><td>once a day</td><td style="text-align:right">day 95</td><td style="text-align:right">day 110</td><td style="text-align:right">3.4\u00d7</td></tr>
+    </table>
+    <p class="t"><b>Thirteen to seventeen days</b>, and three to five times the power at
+      the summit. It is printed by <code>players.test.ts</code> on every run, because a
+      silent break in the drops, the chest or the set bonuses would otherwise cost days
+      off every curve on this page and show up as nothing at all.</p>
   </section>
 
   <section class="sec" id="refine">

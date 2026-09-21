@@ -6,6 +6,7 @@ import { setBonus, wornTotals } from '../../data/gear.ts';
 import { affinity, rateMultiplier } from '../dao.ts';
 import { newState, power, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
+import { HABITS, play } from '../../../tools/habits.ts';
 import { clearFloor, floorQi } from '../trials.ts';
 import { floorPower } from '../tower.ts';
 import { TOWER_QI_HOURS } from '../balance.ts';
@@ -213,5 +214,36 @@ describe('勤 what being there buys you', () => {
     // material buys: the tower, the furnace, the gear, none of which a waiter ever
     // touches. It separates them by more than an order of magnitude of power.
     expect(active.power).toBeGreaterThan(waiter.power * 5);
+  });
+});
+
+/**
+ * 器 What the gear is worth, which nothing in this repository had ever measured.
+ *
+ * The harness equips what it finds — see takeDrop in tools/habits.ts — so the answer is
+ * the same climb run twice. It is worth putting a floor under: a silent break in drops,
+ * the chest or the set bonuses would otherwise cost days off every curve on the page and
+ * show up as nothing at all.
+ */
+describe('器 what the gear is worth', () => {
+  // Four whole climbs. It is the slowest test in the suite and it earns its seconds.
+  it('takes real days off the climb, and is printed so it cannot drift', { timeout: 120_000 }, () => {
+    const rows = (['active', 'once a day'] as const).map((name) => {
+      const h = HABITS.find((x) => x.name === name)!;
+      const worn = play(h);
+      const bare = play({ ...h, gear: false });
+      return { name, worn, bare };
+    });
+    console.log('\n  器 the same cultivator, with and without what falls:');
+    for (const r of rows) {
+      console.log(`    ${r.name.padEnd(12)} day ${r.worn.days.toFixed(0).padStart(3)} wearing it` +
+        ` · day ${r.bare.days.toFixed(0).padStart(3)} wearing none` +
+        ` · ${(r.worn.power / r.bare.power).toFixed(1)}x the power`);
+    }
+    console.log('');
+    for (const r of rows) {
+      expect(r.worn.days).toBeLessThan(r.bare.days);
+      expect(r.worn.power).toBeGreaterThan(r.bare.power * 2);
+    }
   });
 });
