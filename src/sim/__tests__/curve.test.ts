@@ -11,7 +11,7 @@ import {
   newState, power, wardenStands,
   type State, type Upgrade,
 } from '../state.ts';
-import { advance, rate } from '../time.ts';
+import { advance, layerCost, rate } from '../time.ts';
 import { num } from '../format.ts';
 import { pillsTaken } from '../furnace.ts';
 import { LINES } from '../../data/alchemy.ts';
@@ -298,6 +298,47 @@ describe('the cap on what a realm may hold', () => {
  * warden open the gate inside advance(), so the realm ticked over on its own and the
  * 突破 button never appeared.
  */
+/**
+ * 溢 Qi that arrives in a lump, against a rung that costs less than the lump.
+ *
+ * Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
+ * contabilizar."* `advance` walks the ladder rung by rung and used to set the qi to zero
+ * on each one it opened, which is exactly right for qi that arrives from the clock —
+ * that qi lands on the price — and silently destroys every other kind. 拆 a melt, 塔 a
+ * tower floor, 見 the first sight of a beast and 囊 the opening purse are all lumps.
+ */
+describe('qi that arrives all at once', () => {
+  it('carries what is left over the rung instead of burning it', () => {
+    const s = newState(T0);
+    const rung = layerCost(1, 0, s.unlocked);
+    // Ten rungs' worth in the hand, dropped in between two ticks.
+    const lump = { ...s, qi: rung * 10 };
+    const after = advance(lump, T0 + 1);
+    const kept = after.qi + Array.from({ length: after.layer }, (_, i) => layerCost(1, i, s.unlocked))
+      .reduce((a, b) => a + b, 0);
+    // Every qi is either standing in the bar or spent on a rung. None of it vanished.
+    expect(kept).toBeGreaterThan(rung * 10);
+    expect(after.layer).toBeGreaterThan(1);
+  });
+
+  it('opens as many rungs as the lump actually paid for', () => {
+    const s = newState(T0);
+    const three = layerCost(1, 0, s.unlocked) + layerCost(1, 1, s.unlocked) + layerCost(1, 2, s.unlocked);
+    const after = advance({ ...s, qi: three }, T0 + 1);
+    expect(after.layer).toBe(3);
+  });
+
+  it('pays a lump and an hour of gathering the same as the hour and then the lump', () => {
+    const s = newState(T0);
+    const lump = layerCost(1, 0, s.unlocked) * 4;
+    const first = advance({ ...s, qi: lump }, T0 + 3600);
+    const second = advance({ ...advance(s, T0 + 3600), qi: advance(s, T0 + 3600).qi + lump }, T0 + 3601);
+    // Not identical — the second gathered at a lower rate for the hour — but the one
+    // that got the qi earlier must never end up behind.
+    expect(first.layer).toBeGreaterThanOrEqual(second.layer);
+  });
+});
+
 describe('time never climbs a realm by itself', () => {
   function atCeilingOfRealmOne(): State {
     let s = newState(T0);

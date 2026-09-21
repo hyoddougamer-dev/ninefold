@@ -62,10 +62,13 @@ export function excludedBy(node: Node): Node | null {
 }
 
 export function canUnlock(
-  key: string, unlocked: readonly string[], free: number,
+  key: string, unlocked: readonly string[], free: number, keystones = true,
 ): boolean {
   const node = NODE_BY_KEY[key];
   if (!node || unlocked.includes(key)) return false;
+  // 樞 The three that take something away arrive at their own realm. See unlocks.ts —
+  // the tree is the second realm's gift and the decisions are the fourth's.
+  if (node.keystone && !keystones) return false;
   const twin = excludedBy(node);
   if (twin && unlocked.includes(twin.key)) return false;      // the fork was already taken
   const needs = requirements(node);

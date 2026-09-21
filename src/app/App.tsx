@@ -414,7 +414,7 @@ export function App() {
       const wardens = Object.entries(s.killed)
         .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
       const free = daoFree(layersOpened(s), wardens, s.unlocked, filledRealms(s));
-      if (!canUnlock(key, s.unlocked, free)) return s;
+      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
       return { ...s, unlocked: [...s.unlocked, key] };
     });
     sfx.buy();

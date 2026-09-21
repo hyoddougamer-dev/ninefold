@@ -58,7 +58,7 @@ import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
 import { salvageValue, salvageWorth, salvageable } from '../src/sim/salvage.ts';
 import { BASE_DROP_CHANCE, rollDrop } from '../src/sim/drops.ts';
 import { compare, linesOf, swing } from '../src/sim/inspect.ts';
-import { SYSTEMS as OPENED, opensIn } from '../src/sim/unlocks.ts';
+import { SYSTEMS as OPENED, opensAt, opensIn } from '../src/sim/unlocks.ts';
 import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
 
@@ -1631,11 +1631,28 @@ const page = `<title>九境 Ninefold — the Bible</title>
       hours, and now they start leaving things behind.</div>
     <div class="rows">${opensCards}</div>
     <div class="rule"><b>A system that arrives late arrives full.</b> The 道 points earned
-      from the first layer are all waiting when the tree opens at the fourth realm, and
-      every beast killed before the sixth is already counted when 圖鑑 the bestiary starts
-      paying for finished realms. Nothing is withheld and then thrown away; it is withheld
+      from the first layer are all waiting when the tree opens at the
+      ${realmOf(opensAt('tree')).han} ${realmOf(opensAt('tree')).name} realm, and
+      every beast killed before the ${realmOf(opensAt('bestiary')).name} realm is already
+      counted when 圖鑑 the bestiary starts paying for finished realms. Nothing is withheld and then thrown away; it is withheld
       and then handed over. A locked tab keeps its own character and says which realm
       opens it, because you cannot look forward to a tab you have never seen.</div>
+    <div class="rule"><b>道 And the tree came down two realms, because it was already
+      paid for.</b> Bruno, halfway up the second: <em>"não existe bem gasto nem incentivo
+      para mais nada."</em> Measured at that exact spot he was holding <b>six 道 points</b>
+      — one for every three layers opened since the first minute, two for the warden he
+      had put down — and the cheapest node in the tree costs one. The whole of the game's
+      theorycrafting was bought and sitting behind two more realms. Moving it costs
+      <b>three days either way</b> across all eight cultivators: the deepest thing in 九境
+      was free to hand over.</div>
+    <div class="rule"><b>樞 What the fourth realm gives instead is the half of the tree
+      that is a decision.</b> The three keystones, each stronger than the node beside it
+      and each taking something away to pay for it: 捨甲 Forsake Armour silences two
+      slots, 忘機 Forget the Mechanism costs 45% of your power, 空囊 Empty Pouch shrinks
+      the chest to twelve. Those are not upgrades and they are not what a second-realm
+      cultivator should meet first. They are drawn from the second realm on and the card
+      says which realm opens them, because a fork you know is coming is a climb with a
+      plan in it.</div>
     <div class="rule"><b>環 And the first realm has to close its loop.</b> Bruno, playing
       it: <em>"a primeira hunt não dá nada. Apenas está lá."</em> He was right, and the
       hunting was not the problem. A kill paid 材 material, and material bought nothing
@@ -1823,6 +1840,31 @@ const page = `<title>九境 Ninefold — the Bible</title>
       the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
       the qi. And 煉器 refining is not counted at all, or 材 material would have a second
       door out into qi and the furnace would have two.</div>
+
+    <h3>\u8cb7 Where the qi goes the moment it lands</h3>
+    <p class="t">Bruno, having played with it: <i>"j\u00e1 tive imensos casos de salvage items
+      e o meu qi resetar ou n\u00e3o contabilizar."</i> Traced in the running game, at the
+      second realm's fourth rung: he stands at <b>60,059 qi</b>, melts four pieces for
+      <b>24,000</b>, and the number on the screen reads <b>8,892</b>. He was paid, and he
+      watched fifty-one thousand qi leave.</p>
+    <p class="t">Nothing was taken. That rung costs 75,000 and <code>advance</code> has
+      one rule it has always had \u2014 <b>a layer opens the instant its price is met</b>, and
+      nobody chooses. A lump landing on a rung you can nearly afford buys it, and the bar
+      starts again on the next one. It is the climb happening. The game simply never said
+      so.</p>
+    <div class="rule"><b>\u6eA2 So the melt says it before the tap, not after.</b> The button
+      carries a second line \u2014 <em>opens 1 layer straight away</em>, or <em>goes into the
+      bar</em> \u2014 read from <code>buysWith</code>, which walks the same rungs
+      <code>advance</code> walks with no clock in it, so the button cannot promise one
+      thing and the ladder do another.</div>
+    <div class="warn"><b>And the arithmetic under it was not exact either.</b> The rung
+      loop was written for qi that arrives from the clock, and that qi lands on the price
+      exactly \u2014 so setting the leftover to zero was right by accident and only by
+      accident. Every other way qi arrives is a lump: \u62c6 a melt, \u5854 a tower floor, \u898b
+      the first sight of a beast, \u56ca the opening purse. Those went through a branch that
+      fed the shortfall back as negative time and <b>over-credited</b>: a 45,000 lump was
+      accounted as 50,541. It carries the remainder across the rung now, and the tests
+      check that every qi is either standing in the bar or spent on a rung.</div>
   </section>
 
   <section class="sec" id="idle">

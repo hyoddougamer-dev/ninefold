@@ -41,6 +41,23 @@
  * leaving things behind, and now you get to choose how you fight them. From the third
  * realm it goes back to one thing at a time.
  *
+ * 道 And the tree arrives with them, two realms earlier than it did. Bruno, halfway up
+ * the second realm: *"não existe bem gasto nem incentivo para mais nada."* Measured at
+ * that exact spot, he was holding **six 道 points** — one for every three layers opened
+ * since the first minute of the game, two for the warden he had put down — and the
+ * cheapest node in the tree costs one. The whole of the game's theorycrafting was
+ * already paid for and sitting behind two more realms. Moving it costs, measured across
+ * all eight cultivators, **three days either way**: it is the deepest thing in 九境 and
+ * it was free to hand over.
+ *
+ * 樞 What the fourth realm gives instead is the half of the tree that is a *decision*:
+ * the three keystones, each of which is stronger than the node beside it and takes
+ * something away to pay for it — 捨甲 Forsake Armour silences two slots, 忘機 Forget the
+ * Mechanism costs you 45% of your power, 空囊 Empty Pouch shrinks the chest to twelve.
+ * Those are not upgrades and they should not be the first thing a second-realm
+ * cultivator meets. The tree at the second realm is the *spending*; the fourth is where
+ * it starts asking what you are willing to lose.
+ *
  * 環 And the first realm has to *close its loop*, which took two more moves.
  *
  * Bruno, playing it: "a primeira hunt não dá nada. Apenas está lá." He was right, and
@@ -67,8 +84,8 @@
  */
 
 export type System =
-  | 'hunt' | 'gear' | 'arts' | 'cores' | 'fuse' | 'tree' | 'tower' | 'record'
-  | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
+  | 'hunt' | 'gear' | 'arts' | 'cores' | 'fuse' | 'tree' | 'keystones' | 'tower'
+  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
 
 export interface SystemInfo {
   readonly key: System;
@@ -91,14 +108,16 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'The fourth upgrade, and the only one qi cannot buy. It costs 材 material, and material falls off beasts — so this is what the hunting is for. From the third realm a warden will not fall without it.' },
   { key: 'fuse', han: '煉', name: 'Fusing', realm: 3,
     gives: 'Three of a kind become one of the rank above.' },
-  { key: 'tree', han: '道', name: 'The Path', realm: 4,
+  { key: 'tree', han: '道', name: 'The Path', realm: 2,
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
+  { key: 'keystones', han: '樞', name: 'The Keystones', realm: 4,
+    gives: 'The three nodes of the tree that take something away to pay for what they give. Each one is stronger than the node beside it, and each one closes a door.' },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'bestiary', han: '圖鑑', name: 'The Bestiary', realm: 6,
-    gives: 'A realm whose four beasts you have all mastered pays a 道 point. The kills were being counted all along, and now the deepest hunting there is pays for the tree.' },
+    gives: 'A realm whose four beasts you have all 熟 Known — ten kills of each — pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 7,
     gives: 'Pills, bought with qi and material together, with no cap on any of it.' },
   { key: 'refine', han: '煉器', name: 'Refining', realm: 8,

@@ -17,6 +17,7 @@ import { Svg } from '../ui/Svg.tsx';
 import { GEAR } from '../copy.ts';
 import { swing } from '../../sim/inspect.ts';
 import { salvageWorth, salvageable } from '../../sim/salvage.ts';
+import { buysWith } from '../../sim/time.ts';
 
 /**
  * 器 The gear screen — the ring.
@@ -52,6 +53,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
   // 拆 What the melt would take, so the button can say so before it is pressed.
   const melting = salvageable(state.chest, upTo);
+  const opening = buysWith(state, salvageWorth(melting));
 
   return (
     <>
@@ -259,7 +261,12 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           <button className="melt wide" disabled={melting.length === 0}
                   onClick={() => onSalvageAll(upTo)}>
             <b className="cjk">拆</b>
-            <i>{GEAR.salvage(melting.length)}</i>
+            <i>{GEAR.salvage(melting.length)}
+              {/* 買 Where the qi goes the instant it lands. The ladder buys a rung the
+                  moment it can afford one, so a melt worth more than the rung you are
+                  standing on makes the big number fall — and the button says so first. */}
+              <span className="goes">{opening.rungs > 0 ? GEAR.opens(opening.rungs) : GEAR.banks}</span>
+            </i>
             <em className="mono">{num(salvageWorth(melting))}<span>qi</span></em>
           </button>
         </div>

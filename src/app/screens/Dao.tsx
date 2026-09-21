@@ -31,12 +31,16 @@ const TOP = 26;        // where the root sits
 
 type Status = 'have' | 'open' | 'poor' | 'shut' | 'locked';
 
-function statusOf(node: Node, unlocked: readonly string[], free: number): Status {
+function statusOf(
+  node: Node, unlocked: readonly string[], free: number, keystones: boolean,
+): Status {
   if (unlocked.includes(node.key)) return 'have';
   const twin = node.excludes ? NODE_BY_KEY[node.excludes] : null;
   if (twin && unlocked.includes(twin.key)) return 'shut';
-  if (canUnlock(node.key, unlocked, free)) return 'open';
-  if (canUnlock(node.key, unlocked, Infinity)) return 'poor';
+  if (canUnlock(node.key, unlocked, free, keystones)) return 'open';
+  // 樞 A keystone below its realm reads as locked, not as unaffordable — the difference
+  // matters, because one of them is a thing you can fix by saving up.
+  if (canUnlock(node.key, unlocked, Infinity, keystones)) return 'poor';
   return 'locked';
 }
 
@@ -109,6 +113,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const earned = daoEarned(layersOpened(state), wardens, filledRealms(state));
   const spent = daoSpent(state.unlocked);
   const free = daoFree(layersOpened(state), wardens, state.unlocked, filledRealms(state));
+  // 樞 The three that cost you something arrive at their own realm, two above this one.
+  const keys = isOpen(state.realm, 'keystones');
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
 
@@ -178,7 +184,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       {chosen && (
         <Detail
           node={chosen}
-          status={statusOf(chosen, state.unlocked, free)}
+          status={statusOf(chosen, state.unlocked, free, keys)}
+          keystones={keys}
           onLearn={() => { onUnlock(chosen.key); setPicked(null); }}
           onClose={() => setPicked(null)}
         />
@@ -191,8 +198,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
             const lit = state.unlocked.includes(a.node.key) && state.unlocked.includes(b.node.key);
             const bridge = a.node.path !== b.node.path
               && a.node.key !== ROOT.key && b.node.key !== ROOT.key;
-            const dead = statusOf(b.node, state.unlocked, free) === 'shut'
-              || statusOf(a.node, state.unlocked, free) === 'shut';
+            const dead = statusOf(b.node, state.unlocked, free, keys) === 'shut'
+              || statusOf(a.node, state.unlocked, free, keys) === 'shut';
             return (
               <line
                 key={`${a.node.key}-${b.node.key}`}
@@ -206,7 +213,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           })}
 
           {PLACED.map(({ node, x, y }) => {
-            const status = statusOf(node, state.unlocked, free);
+            const status = statusOf(node, state.unlocked, free, keys);
             const on = status === 'have';
             const open = status === 'open';
             const colour = hue(node);
@@ -256,9 +263,11 @@ function countWardens(state: State): number {
   return n;
 }
 
-function Detail({ node, status, onLearn, onClose }: {
+function Detail({ node, status, keystones, onLearn, onClose }: {
   node: Node;
   status: Status;
+  /** 樞 Whether the three that cost you something are open yet. See unlocks.ts. */
+  keystones: boolean;
   onLearn: () => void;
   onClose: () => void;
 }) {
@@ -279,6 +288,11 @@ function Detail({ node, status, onLearn, onClose }: {
       <p style={{ margin: '6px 0 0', fontSize: 14 }}>{node.text}</p>
       {node.keystone && (
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>{DAO.keystone}</p>
+      )}
+      {node.keystone && !keystones && (
+        <p style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
+          {DAO.keystoneShut(realmOf(opensAt('keystones')).han, realmOf(opensAt('keystones')).name)}
+        </p>
       )}
       {twin && (
         <p className="faint" style={{ margin: '5px 0 0', fontSize: 12.5 }}>

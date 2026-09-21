@@ -16,6 +16,7 @@ import { odds } from '../src/sim/combat.ts';
 import { LINES } from '../src/data/alchemy.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import { canUnlock, daoFree } from '../src/sim/dao.ts';
+import { isOpen } from '../src/sim/unlocks.ts';
 import { wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 
@@ -61,7 +62,7 @@ function spend(s: State, branch: Branch): State {
     const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
-      .find((n) => canUnlock(n.key, out.unlocked, free));
+      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));
     if (!want) break;
     out = { ...out, unlocked: [...out.unlocked, want.key] };
   }

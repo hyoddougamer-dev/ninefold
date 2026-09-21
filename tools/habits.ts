@@ -188,7 +188,7 @@ function spendTree(s: State, branch: Path | undefined): State {
     const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
-      .find((n) => canUnlock(n.key, out.unlocked, free));
+      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));
     if (!want) break;
     out = { ...out, unlocked: [...out.unlocked, want.key] };
   }

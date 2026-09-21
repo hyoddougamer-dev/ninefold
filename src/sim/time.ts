@@ -71,11 +71,22 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
       break;
     }
 
-    const remaining = cost - qi;
-    const seconds = remaining / r;
+    // 溢 The overflow is carried, not thrown away, and for a long time it was thrown away.
+    //
+    // Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
+    // contabilizar."* This loop was written for qi that arrives from the clock, and qi
+    // from the clock lands on the rung price exactly — so `qi = 0` was right by accident
+    // and only ever by accident. Every other way qi arrives is a **lump**: 拆 melting a
+    // chest, 塔 a tower floor, 見 first sight of a beast, 囊 the opening purse. Land a
+    // lump on a rung that costs less than it and the next tick opened one layer and
+    // deleted the rest, with nothing on the screen to say so.
+    //
+    // A melt of ten pieces worth fifty thousand qi against a five-thousand rung bought
+    // one layer and burned forty-five thousand. That is the whole of what he was seeing.
+    const seconds = Math.max(0, cost - qi) / r;
     if (!Number.isFinite(seconds) || seconds > dt) { qi += r * dt; break; }
 
-    qi = 0;
+    qi = Math.max(0, qi - cost);
     dt -= seconds;
     if (++layer >= LAYERS_PER_REALM) {
       layer = 0;
@@ -85,4 +96,33 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
   }
 
   return { ...s, at: now, realm, layer, qi, wardenFell };
+}
+
+/**
+ * 買 What a lump of qi would buy, if it landed right now.
+ *
+ * Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
+ * contabilizar."* Traced in the running game, at the second realm's fourth rung: he
+ * stands at 60,059 qi, melts four pieces for 24,000, and the number on the screen reads
+ * **8,892**. Nothing was lost — the rung cost 75,000 and the ladder took it the instant
+ * he could afford it, which is the one rule `advance` has always had — but the game said
+ * none of that. It showed a number falling by fifty-one thousand after a reward.
+ *
+ * So the trade is stated *before* the tap rather than explained after it. This walks the
+ * same rungs `advance` walks, with no clock in it, so the button cannot promise one thing
+ * and the ladder do another.
+ */
+export function buysWith(s: State, lump: number): { rungs: number; left: number } {
+  let { realm, layer } = s;
+  let qi = s.qi + lump;
+  let rungs = 0;
+  for (let guard = 0; guard <= LAYERS + 1; guard++) {
+    if (layer >= LAYERS_PER_REALM - 1) break;      // 頂 the ceiling: qi banks, nothing opens
+    const cost = layerCost(realm, layer, s.unlocked);
+    if (!Number.isFinite(cost) || qi < cost) break;
+    qi -= cost;
+    rungs += 1;
+    if (++layer >= LAYERS_PER_REALM) { layer = 0; realm += 1; }
+  }
+  return { rungs, left: qi };
 }

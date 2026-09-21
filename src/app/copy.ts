@@ -511,6 +511,15 @@ export const GEAR = {
    */
   upTo: (rank: string) => `${rank} and below`,
   salvage: (n: number) => (n === 1 ? 'Melt 1 piece' : `Melt ${n} pieces`),
+  /**
+   * 買 What the qi does the moment it arrives, said before the tap.
+   *
+   * The ladder takes qi as soon as it can afford a rung, so a melt worth more than the
+   * rung you are standing on makes the big number *fall*. That is the climb happening,
+   * not a loss, and it has to be on the button rather than left to be worked out.
+   */
+  opens: (n: number) => (n === 1 ? 'opens 1 layer straight away' : `opens ${n} layers straight away`),
+  banks: 'goes into the bar',
   melting: 'Gear you will never wear is qi you have not collected. A piece is worth a share of a layer of the realm it was made in — so old junk stays old junk, however far you climb.',
 
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
@@ -555,6 +564,17 @@ export const DAO = {
     `You cannot buy all of it. The tree costs ${cost} 道 and a full climb earns about ${earned}.`,
   taken: (n: number, total: number) => `${n} of ${total} taken`,
   keystone: 'A keystone. Stronger than the node beside it, and it takes something away.',
+  /**
+   * 樞 Why a keystone is dark in the second realm.
+   *
+   * The tree opens two realms before its keystones do, so the three that take something
+   * away are drawn but not buyable — and the card has to say which realm, the same way
+   * every locked tab in the game does. A dark node with no reason on it is the bug that
+   * made the tree unfindable in the first place.
+   */
+  keystoneShut: (han: string, name: string) =>
+    `樞 The keystones open in ${han} ${name}. You can see them from here, and they are ` +
+    'meant to be seen: a fork you know is coming is a climb with a plan in it.',
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
