@@ -2,7 +2,7 @@ import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
-  ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS,
+  ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
@@ -262,7 +262,10 @@ export function newState(now: number): State {
 export function capOf(s: State, u?: Upgrade): number {
   const room = u && UPGRADE_INFO[u].affects === 'power'
     ? LEVELS_PER_HEAVEN * heavensOpened(s.tribulation) : 0;
-  return levelCap(s.realm) + room;
+  // 丹 Cores go further than the rest, because they are bought by hand rather than
+  // waited for and their own price is already the wall. See CORE_CAP_EXTRA.
+  const reach = u === 'cores' ? CORE_CAP_EXTRA : 0;
+  return levelCap(s.realm) + reach + room;
 }
 
 export function atCap(s: State, u: Upgrade): boolean {
@@ -460,11 +463,25 @@ export function validate(raw: unknown, now: number): State {
   const realm = clamp(Math.floor(num(o.realm, 1)), 1, 9);
   const layer = clamp(Math.floor(num(o.layer, 0)), 0, LAYERS_PER_REALM - 1);
 
+  // 印 The marks are read before the levels, because the levels are capped against them.
+  const tribulation = realm === 9 ? clamp(Math.floor(num(o.tribulation, 0)), 0, 300) : 0;
+
   const rawLevels = (o.levels ?? {}) as Record<string, unknown>;
-  // Nothing may hold more levels than its realm allows — the cap is what holds the
-  // whole curve up, so a hand-edited save does not get to walk around it.
+  /**
+   * Nothing may hold more levels than it is allowed — the cap is what holds the whole
+   * curve up, so a hand-edited save does not get to walk around it.
+   *
+   * 失 It has to be the *same* cap the game sells against, and for a while it was not.
+   * This clamped to `levelCap(realm)` flat, while `capOf` adds a heaven's room to the
+   * power upgrades and two realms' worth to 妖丹. So a ninth-realm cultivator with two
+   * heavens open bought 劍訣 up to 66, closed the app, and reopened it at 54: the save is
+   * rewritten on unload, validated on load, and the levels 境外 had just paid for were
+   * deleted every single time. Found by round-tripping a save rather than by reading the
+   * code, which is the only way this kind of thing is ever found.
+   */
+  const capFor = (u: Upgrade) => capOf({ realm, tribulation } as State, u);
   const levels = Object.fromEntries(
-    UPGRADES.map((u) => [u, clamp(Math.floor(num(rawLevels[u], 0)), 0, levelCap(realm))]),
+    UPGRADES.map((u) => [u, clamp(Math.floor(num(rawLevels[u], 0)), 0, capFor(u))]),
   ) as Record<Upgrade, number>;
 
   const rawKilled = (o.killed ?? {}) as Record<string, unknown>;
@@ -549,7 +566,7 @@ export function validate(raw: unknown, now: number): State {
     // Marks are only reachable at realm 9, and only one at a time.
     // Capped at three hundred so the multipliers stay inside a double: a mark is
     // worth 4.3x and 4.3^300 is already a number with a hundred and ninety digits.
-    tribulation: realm === 9 ? clamp(Math.floor(num(o.tribulation, 0)), 0, 300) : 0,
+    tribulation,
     tribulationAt: realm === 9 ? Math.max(0, num(o.tribulationAt, 0)) : 0,
     // The tower is climbed one floor at a time and every floor is a fight, so a save
     // claiming floor nine thousand is claiming nine thousand fights that never happened.

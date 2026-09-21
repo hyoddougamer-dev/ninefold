@@ -580,10 +580,11 @@ export const NOTICE = {
     // 數 The number is handed in rather than written here. It is LEVELS_PER_REALM, it has
     // been six for a long time, and a line that says "six" in prose is a copy of a
     // balance number that nothing will ever come back and correct.
-    text: (n: number) =>
-      `${n} levels of each upgrade per realm, and this realm is full of one of them. `
+    text: (n: number, extra: number) =>
+      `${n} levels of each qi upgrade per realm, and this realm is full of one of them. `
       + 'The only way to hold more is to climb, so a full box is not a wall. It is the '
-      + 'next realm calling.',
+      + `next realm calling. 妖丹 is the exception: it runs ${extra} levels further, `
+      + 'because it is bought with 材 material you went and killed something for.',
   },
   cores: {
     // 名 Not "Go and kill something": that is the title of 引 the guide's second step,

@@ -59,6 +59,12 @@ export interface Realm {
   readonly ceilingQi: number;
   /** Hours with every qi upgrade already at the realm's cap. */
   readonly cappedHours: number;
+  /** 材 earned by hunting in this realm… */
+  readonly materialEarned: number;
+  /** …and how much of it 妖丹 was ever able to take. */
+  readonly materialSpent: number;
+  /** Share of the realm spent with 妖丹 at its cap, so material bought nothing at all. */
+  readonly deadMaterial: number;
 }
 
 export interface Idle {
@@ -78,6 +84,9 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
   const ceilingQi = new Array(10).fill(0);
   const spent = new Array(10).fill(0);
   const income = new Array(10).fill(0);
+  const matEarned = new Array(10).fill(0);
+  const matSpent = new Array(10).fill(0);
+  const matDead = new Array(10).fill(0);
   const visit = 86_400 / checks;
   let nextVisit = T0;
 
@@ -96,12 +105,15 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
         open.sort((a, b) => upgradeCost(s, a) - upgradeCost(s, b));
         const pick = open[0];
         if (UPGRADE_INFO[pick].currency === 'qi') spent[s.realm] += upgradeCost(s, pick);
+        else matSpent[s.realm] += upgradeCost(s, pick);
         s = buy(s, pick);
       }
       for (let i = 0; i < hunts; i++) {
         const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
         if (!b) break;
+        const before = s.materials;
         s = takeKill(s, b);
+        matEarned[s.realm] += Math.max(0, s.materials - before);
       }
       if (canFightWarden(s)) {
         for (let i = 0; i < 40; i++) {
@@ -115,6 +127,8 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
 
     hours[s.realm] += SAMPLE;
     if (QI_UPGRADES.every((u) => s.levels[u] >= capOf(s, u))) capped[s.realm] += SAMPLE;
+    // 丹 The one stretch where the hunting pays a coin with nothing behind it.
+    if (s.levels.cores >= capOf(s, 'cores')) matDead[s.realm] += SAMPLE;
     // 頂 The bar has stopped and the warden still stands: the one stretch of a realm
     // where gathered qi has nowhere at all to go.
     if (atCeiling(s)) {
@@ -134,6 +148,9 @@ export function walk(name: string, checks: number, hunts: number, maxDays = 260)
       stuckHours: stuck[realm] / 3600,
       ceilingQi: ceilingQi[realm] / Math.max(1, income[realm]),
       cappedHours: capped[realm] / 3600,
+      materialEarned: matEarned[realm],
+      materialSpent: matSpent[realm],
+      deadMaterial: matDead[realm] / Math.max(1, hours[realm]),
     });
   }
   return { name, checks, rows };
@@ -144,6 +161,11 @@ export const IDLERS: readonly { name: string; checks: number; hunts: number }[] 
   { name: 'once a day', checks: 1, hunts: 4 },
   { name: 'casual', checks: 3, hunts: 3 },
   { name: 'active', checks: 6, hunts: 6 },
+  // 打 Somebody who actually taps. The three above hunt like a model of restraint, and
+  // Bruno does not: *"dei max em todos os monstros disponíveis e vou a meio do realm."*
+  // A cultivator who presses the button sixty times a visit is the one who finds the
+  // end of what a realm has, and 材 is the currency that ends first.
+  { name: 'taps it out', checks: 6, hunts: 60 },
 ];
 
 export function walkAll(): readonly Idle[] {

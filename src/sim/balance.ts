@@ -290,6 +290,51 @@ export function levelCap(realm: number): number {
 }
 
 /**
+ * 丹 How much further 妖丹 cores may go than the other three, in realms' worth of levels.
+ *
+ * Bruno, in the second realm: *"dei max em todos os monstros disponíveis e vou a meio do
+ * realm, não existe bem gasto nem incentivo para mais nada."* Measured, he was describing
+ * something worse than he thought. 材 material is the one currency the hunting pays, and
+ * the cap is the only thing that can buy it — so once the cap is reached the hunting
+ * earns a coin with nothing behind it. Across the early realms, for a cultivator who
+ * actually taps:
+ *
+ *     realm 2   材 dead 75% of the realm   earned 3360, spent 266
+ *     realm 3   材 dead 95%                earned 47970, spent 1590
+ *     realm 4   材 dead 98%                earned 585500, spent 9611
+ *
+ * Eight per cent of what the hunting pays was ever spendable. That is the hole, and it
+ * is not a content hole: it is a cap set for a currency that is not the one it needed to
+ * hold back.
+ *
+ * The other three upgrades are bought with qi, and qi arrives at a rate the game
+ * controls, so their cap is what stops a spender finishing the climb in three days. 妖丹
+ * is bought with material, and material is earned *by hand*: it cannot be waited for, it
+ * never raises the qi rate, and its own price already climbs 35% a level against a gain
+ * of 8%. The price is the wall. The cap was a second wall in front of it, and it was the
+ * one that bound.
+ *
+ * Two realms' worth of room is enough to hand the job back to the price: measured, the
+ * dead stretch goes to **zero in every realm and for every habit**, and beyond two the
+ * curve stops moving at all because the material, not the cap, is what runs out. What it
+ * costs is one to three days off the climb of somebody who hunts, and *nothing at all*
+ * for somebody who does not — 169 days for the cultivator who never fights either way.
+ * Which is the wall the right way round.
+ *
+ * 定 And it is **flat rather than a multiplier**, which is the whole of what the first
+ * attempt got wrong. Doubling the cap fixed the second realm and broke the ninth: above
+ * the fifth realm material is no longer earned by hand at all — 塔 the tower pays it in
+ * bulk — so a doubled cap there is not a wall handed back to the price, it is no wall.
+ * The endgame's own test caught it in one run: walkover crossings went from 5 of 40 to
+ * **14 of 40**, against a rule of at most 10.
+ *
+ * Flat, the same twelve levels are a doubling where the hole is and a fifth of a cap
+ * where the tower is filling your pockets — which is the shape the measurement asked
+ * for, rather than the shape that was easiest to write.
+ */
+export const CORE_CAP_EXTRA = 2 * LEVELS_PER_REALM;
+
+/**
  * 境外 How much room one heaven opens, in levels of every capped upgrade.
  *
  * A realm's worth, because a heaven *is* a realm: the ladder above the ladder should

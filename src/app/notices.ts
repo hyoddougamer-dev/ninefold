@@ -6,7 +6,7 @@ import { BEASTS } from '../data/bestiary.ts';
 import { MARKS } from '../sim/record.ts';
 import { SLOTS } from '../data/gear.ts';
 import { isOpen } from '../sim/unlocks.ts';
-import { LEVELS_PER_REALM } from '../sim/balance.ts';
+import { CORE_CAP_EXTRA, LEVELS_PER_REALM } from '../sim/balance.ts';
 import { NOTICE } from './copy.ts';
 
 /**
@@ -38,7 +38,7 @@ export interface Notice {
 
 export const NOTICES: readonly Notice[] = [
   {
-    key: 'cap', han: '上限', title: NOTICE.cap.title, text: NOTICE.cap.text(LEVELS_PER_REALM),
+    key: 'cap', han: '上限', title: NOTICE.cap.title, text: NOTICE.cap.text(LEVELS_PER_REALM, CORE_CAP_EXTRA),
     when: (s) => UPGRADES.some((u) => s.levels[u] >= capOf(s, u)),
   },
   {

@@ -3,7 +3,9 @@ import {
   LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS, LAYERS_PER_REALM, LEVELS_PER_REALM,
   MAX_GAP, OPENING_PURSE, TARGET_DAYS, TOLERANCE_DAYS, focusAt, ladderAt, levelCap,
   realmCost,
+  CORE_CAP_EXTRA,
 } from '../balance.ts';
+import { MARKS_PER_HEAVEN } from '../../data/heavens.ts';
 import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canFightWarden,
   newState, power, wardenStands,
@@ -236,13 +238,16 @@ describe('囊 the opening', () => {
 });
 
 describe('the cap on what a realm may hold', () => {
-  it('allows six levels of each per realm and not one more', () => {
+  it('allows six levels of each per realm, and 妖丹 two realms further', () => {
     const s = { ...newState(T0), realm: 3, qi: 1e30, materials: 1e30 };
     expect(levelCap(3)).toBe(3 * LEVELS_PER_REALM);
     for (const u of UPGRADES) {
       let held = s;
-      for (let i = 0; i < 100; i++) held = buy(held, u);
-      expect(held.levels[u]).toBe(levelCap(3));
+      for (let i = 0; i < 400; i++) held = buy(held, u);
+      // 丹 Cores reach further than the other three: they are bought by hand rather
+      // than waited for, and their own price is the wall. See CORE_CAP_EXTRA.
+      const reach = u === 'cores' ? CORE_CAP_EXTRA : 0;
+      expect(held.levels[u]).toBe(levelCap(3) + reach);
       expect(canBuy(held, u)).toBe(false);
     }
   });
@@ -265,7 +270,26 @@ describe('the cap on what a realm may hold', () => {
       levels: { technique: 900, method: 900, pills: 900, cores: 900 } as Record<Upgrade, number>,
     };
     const held = validate(forged, T0 + 10);
-    for (const u of UPGRADES) expect(held.levels[u]).toBe(levelCap(2));
+    for (const u of UPGRADES) {
+      expect(held.levels[u]).toBe(levelCap(2) + (u === 'cores' ? CORE_CAP_EXTRA : 0));
+    }
+  });
+
+  /**
+   * 失 The clamp has to be the cap the game actually sells against, and for a while it
+   * was not: it read `levelCap(realm)` flat while `capOf` adds a heaven's room to the
+   * power upgrades. The save is rewritten on unload and validated on load, so every
+   * level 境外 had paid for was deleted on the next open — silently, every single time.
+   */
+  it('keeps the levels a heaven paid for through a save and a load', async () => {
+    const { validate, capOf } = await import('../state.ts');
+    const crossed = {
+      ...newState(T0), v: 1 as const, realm: 9, layer: 8, tribulation: 2 * MARKS_PER_HEAVEN,
+    };
+    const bought = capOf(crossed, 'technique');
+    expect(bought).toBeGreaterThan(levelCap(9));
+    const held = validate({ ...crossed, levels: { ...crossed.levels, technique: bought } }, T0 + 10);
+    expect(held.levels.technique).toBe(bought);
   });
 });
 

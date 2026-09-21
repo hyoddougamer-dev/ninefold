@@ -170,9 +170,18 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   return out;
 }
 
-/** 道 Buy down one branch, as far as the points reach. */
+/**
+ * 道 Buy down one branch, as far as the points reach.
+ *
+ * 開 The gate is checked here, and it was not before. Every curve this harness has ever
+ * printed was measured with the tree spent from the first realm, while the game does not
+ * open it until the fourth — so the first three realms were modelled with 起 The
+ * Beginning's +10% rate and a branch's worth of nodes that a real cultivator does not
+ * have. The points still accrue from the first realm and still wait, which is the rule;
+ * what waits with them now is the spending.
+ */
 function spendTree(s: State, branch: Path | undefined): State {
-  if (!branch) return s;
+  if (!branch || !isOpen(s.realm, 'tree')) return s;
   let out = s;
   for (let guard = 0; guard < 200; guard++) {
     const wardens = Object.keys(out.killed).filter((k) => WARDEN_KEYS.has(k)).length;

@@ -41,7 +41,7 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { BRANCHES, climb } from './climb.ts';
@@ -256,6 +256,46 @@ const idleRows = IDLE.map((run) => `
         <td style="text-align:right"${r.ceilingHours > 0 ? ' class="hot"' : ''}>${
           (r.ceilingHours / r.hours * 100).toFixed(0)}%</td></tr>`).join('')}
     </table></div>`).join('');
+
+/**
+ * 丹 What the hunting earns against what the cap ever let it spend.
+ *
+ * The one cultivator who matters to this question is the one who actually presses the
+ * button, so IDLERS carries a fourth now — see tools/idle.ts.
+ */
+const coreRows = IDLE.map((run) => `
+  <div class="card"><em>${run.name}<span class="faint"> · ${run.checks}\u00d7 a day</span></em>
+    <table style="margin-top:8px">
+      <tr><th>realm</th><th style="text-align:right">\u6750 earned</th>
+          <th style="text-align:right">\u6750 spent</th>
+          <th style="text-align:right">dead</th></tr>
+      ${run.rows.filter((r) => r.realm <= 5).map((r) => `<tr><td>${realmOf(r.realm).han}</td>
+        <td style="text-align:right">${num(Math.round(r.materialEarned))}</td>
+        <td style="text-align:right">${num(Math.round(r.materialSpent))}</td>
+        <td style="text-align:right"${r.deadMaterial > 0.1 ? ' class="hot"' : ''}>${
+          (r.deadMaterial * 100).toFixed(0)}%</td></tr>`).join('')}
+    </table></div>`).join('');
+
+/** 丹 The fourth box, at the old cap and at the new one, drawn with the game's own row. */
+const MOCK_CORES = (() => {
+  const row = (levels: number, cap: number, price: string) => `
+    <div class="upg">
+      <span class="ic">${icon(UPGRADE_INFO.cores.icon, 26)}</span>
+      <span><b>${UPGRADE_INFO.cores.name} <em class="cjk">${UPGRADE_INFO.cores.han}</em></b>
+        <i>${UPGRADE_INFO.cores.effect} \u00b7 ${levels} of ${cap}</i></span>
+      <span class="price">${price}</span>
+    </div>`;
+  return `<div class="mk two">
+    <div>
+      <p class="cap" style="margin:0 0 8px">Before \u2014 halfway up the second realm, holding 3360 \u6750</p>
+      ${row(LEVELS_PER_REALM * 2, LEVELS_PER_REALM * 2, '<b class="cjk" style="color:var(--gold)">\u6eff</b>')}
+    </div>
+    <div>
+      <p class="cap" style="margin:0 0 8px">After \u2014 the same save, the same material</p>
+      ${row(LEVELS_PER_REALM * 2, LEVELS_PER_REALM * 2 + CORE_CAP_EXTRA, '110<em>\u6750</em>')}
+    </div>
+  </div>`;
+})();
 
 /** 境外 One card a heaven, with its Dragon drawn from the game's own icon table. */
 /** 拆 What a melt is worth early and late, and what it adds up to over a realm. */
@@ -947,6 +987,17 @@ const page = `<title>九境 Ninefold — the Bible</title>
   #mockups .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
         padding:16px; }
   #mockups .mk .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  /* 丹 The same two blocks the mockups use, borrowed by name for the cores section. */
+  #cores .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+               padding:16px; }
+  #cores .mk.two { background:none; border:0; padding:0; display:grid; gap:14px; }
+  @media(min-width:640px){ #cores .mk.two { grid-template-columns:1fr 1fr; } }
+  #cores .cap { margin:0 0 8px; font-size:12.5px; color:var(--faint);
+                font-family:Rajdhani,sans-serif; font-weight:700; letter-spacing:.06em;
+                text-transform:uppercase; }
+  #cores td, #cores th { padding:5px 6px; font-size:13px; }
+  #cores .card em { display:block; margin-bottom:2px; }
+  #cores td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
 
@@ -974,20 +1025,20 @@ const page = `<title>九境 Ninefold — the Bible</title>
                   border:1px solid rgba(95,220,255,.45); color:var(--cyan);
                   box-shadow:0 0 14px -3px rgba(95,220,255,.8); }
   #mockups .coach .arrow svg { display:block; }
-  #mockups .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
+  #mockups .upg, #cores .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
          padding:13px 14px; border-radius:11px; background:var(--panel);
          border:1px solid var(--line); }
-  #mockups .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
+  #mockups .upg.ringed, #cores .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
                            0 0 22px -4px rgba(95,220,255,.75); }
-  #mockups .upg .ic { flex:none; width:26px; color:var(--cyan); }
-  #mockups .upg .ic svg { display:block; }
-  #mockups .upg > span:nth-child(2) { flex:1; }
-  #mockups .upg b { display:block; font-size:15px; font-weight:500; }
-  #mockups .upg b em { font-style:normal; font-size:13px; color:var(--faint); margin-left:4px; }
-  #mockups .upg i { display:block; font-style:normal; font-size:12.5px; color:var(--faint); }
-  #mockups .upg .price { flex:none; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px;
+  #mockups .upg .ic, #cores .upg .ic { flex:none; width:26px; color:var(--cyan); }
+  #mockups .upg .ic svg, #cores .upg .ic svg { display:block; }
+  #mockups .upg > span:nth-child(2), #cores .upg > span:nth-child(2) { flex:1; }
+  #mockups .upg b, #cores .upg b { display:block; font-size:15px; font-weight:500; }
+  #mockups .upg b em, #cores .upg b em { font-style:normal; font-size:13px; color:var(--faint); margin-left:4px; }
+  #mockups .upg i, #cores .upg i { display:block; font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .upg .price, #cores .upg .price { flex:none; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px;
                 color:var(--gold); text-align:right; }
-  #mockups .upg .price em { display:block; font-style:normal; font-size:10px; color:var(--faint);
+  #mockups .upg .price em, #cores .upg .price em { display:block; font-style:normal; font-size:10px; color:var(--faint);
                    font-weight:400; letter-spacing:.1em; text-transform:uppercase; }
 
   /* 時 */
@@ -1313,6 +1364,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#cores"><b>丹</b> The coin the hunting paid</a>
       <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#idle"><b>閒</b> Where the qi goes</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
@@ -1868,6 +1920,48 @@ const page = `<title>九境 Ninefold — the Bible</title>
       much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
       (it moved one realm by one point — because a cultivator who visits once a day
       cannot spend qi while the app is shut, whatever is on the screen).</p>
+  </section>
+
+  <section class="sec" id="cores">
+    <h2><span class="h">\u4e39</span> The coin the hunting paid, and what it could buy</h2>
+    <p class="t">Bruno, halfway up the second realm: <i>"dei max em todos os monstros
+      dispon\u00edveis e vou a meio do realm, n\u00e3o existe bem gasto nem incentivo para mais
+      nada."</i> Measured, it was worse than that reads. \u6750 material is the one thing
+      hunting pays, \u5996\u4e39 cores are the only thing that buys it, and the cores cap was
+      <b>the realm's cap, the same as the three bought with qi</b>. So the cap was reached
+      early and every kill after it earned a coin with nothing behind it.</p>
+    <p class="t">For a cultivator who actually taps the button, before the change:
+      <b>eight per cent</b> of what the hunting paid was ever spendable \u2014 3360 \u6750
+      earned in the second realm against 266 spent, and 585,500 against 9611 in the
+      fourth. The dead stretch ran 75% of the second realm, 95% of the third and 98% of
+      the fourth.</p>
+    <div class="rule"><b>\u5996\u4e39 runs ${CORE_CAP_EXTRA} levels past the realm's cap now, and
+      nothing else does.</b> The other three are bought with qi, which arrives at a rate
+      the game controls, so their cap is what stops a spender finishing the climb in
+      three days. Material is earned <em>by hand</em>: it cannot be waited for, it never
+      touches the qi rate, and its own price already climbs 35% a level against a gain of
+      8%. The price was always the wall. The cap was a second wall in front of it, and it
+      was the one that bound.</div>
+    <h3>\u5f8c What it reads as, on the screen</h3>
+    <p class="t">The same save either way: three boxes at \u6eff full, 3360 \u6750 in the pocket
+      and nothing to press \u2014 against the same three boxes full and a fourth that is still
+      asking. Drawn with the game's own row and the game's own table.</p>
+    ${MOCK_CORES}
+    <h3>\u5ea6 And measured after, which is the half that decides it</h3>
+    <div class="cards two">${coreRows}</div>
+    <p class="t" style="font-size:13px">The dead stretch is <b>0% in every one of the
+      first three realms, for every habit</b>, including the one who taps it out. What it
+      costs the climb is one to three days for somebody who hunts and <b>nothing at all</b>
+      for somebody who does not \u2014 ${WAITER.days.toFixed(0)} days for the cultivator who
+      never fights, either way.</p>
+    <div class="warn"><b>\u5b9a And it is a flat number rather than a multiplier, which is
+      what the first attempt got wrong.</b> Doubling the cap fixed the second realm and
+      broke the ninth: above the fifth realm material is no longer earned by hand at all
+      \u2014 \u5854 the tower pays it in bulk \u2014 so a doubled cap there is not a wall handed back
+      to the price, it is no wall. The endgame's own test caught it in one run, with
+      walkover crossings going from 5 of 40 to <b>14 of 40</b> against a rule of at most
+      10. Flat, the same ${CORE_CAP_EXTRA} levels are a doubling where the hole is and a
+      fifth of a cap where the tower is filling your pockets.</div>
   </section>
 
   <section class="sec" id="heavens">
