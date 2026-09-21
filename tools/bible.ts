@@ -27,7 +27,7 @@ import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/te
 import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
-  HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
+  HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS, LAYER_BONUS,
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
   UNCAPPED_RATE_CEILING,
   TRIBULATION_CHALLENGE,
@@ -1364,6 +1364,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#rate"><b>氣</b> Why the rate moves</a>
       <a href="#cores"><b>丹</b> The coin the hunting paid</a>
       <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#idle"><b>閒</b> Where the qi goes</a>
@@ -1962,6 +1963,36 @@ const page = `<title>九境 Ninefold — the Bible</title>
       much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
       (it moved one realm by one point — because a cultivator who visits once a day
       cannot spend qi while the app is shut, whatever is on the screen).</p>
+  </section>
+
+  <section class="sec" id="rate">
+    <h2><span class="h">\u6c23</span> Why the qi a second would not stand still</h2>
+    <p class="t">Bruno, watching the number: <i>"verifiquei que o qi per sec est\u00e1 sempre a
+      alterar. N\u00e3o faz muito sentido, n\u00e3o deveria ser um valor fixo consoante stats?"</i>
+      He was right, and the game agreed with him without ever telling him.</p>
+    <p class="t">There are <b>two</b> numbers and the screen was showing their product
+      under one name. The <b>standing</b> rate is fixed by what has been climbed and what
+      has been bought \u2014 ${LAYERS} layers at \u00d7${LAYER_BONUS} each, the upgrades, the
+      gear, the tree. It does not move unless you move it. \u5165\u5b9a <b>the sitting</b> is the
+      other one: it climbs from \u00d71 to \u00d7${FOCUS_MAX} over ${FOCUS_RAMP / 60} minutes with
+      the app open, holds, and ends after ${FOCUS_HOLD / 60} minutes. So the one number on
+      the screen rose for three minutes, sat still for twelve, and then fell to a third
+      of itself while the player watched \u2014 with nothing beside it.</p>
+    <div class="rule"><b>The standing rate leads now, and the sitting rides alongside
+      it.</b> <code>+124 qi / s standing</code>, a \u5165\u5b9a \u00d73.0 badge, and
+      <code>373 qi / s now</code> underneath. The fixed number is the one the eye rests
+      on and the moving one says what is moving it \u2014 which is the rule every other pair
+      of numbers in this game already followed.</div>
+    <div class="rule"><b>And when it ends, the screen says so.</b> A rate that falls by
+      two thirds with nothing beside it reads as something taken away, and the one
+      promise 九境 makes is that nothing ever is. The line names the standing rate it
+      returned to, says the sitting was extra, and says another one begins when you come
+      back. Which is also true: leaving is what starts the next one.</div>
+    <div class="warn"><b>\u9418 Found with a clock, not with a stopwatch.</b> The ending is
+      ${FOCUS_HOLD / 60} minutes in, so nobody was ever going to catch it by watching.
+      Playwright's <code>page.clock</code> drives the built game's own clock forward, and
+      both states \u2014 the sitting at \u00d73 and the line after it passes \u2014 were read off the
+      real screen in a second and a half.</div>
   </section>
 
   <section class="sec" id="cores">

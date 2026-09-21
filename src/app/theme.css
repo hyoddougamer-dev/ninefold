@@ -104,6 +104,8 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* 氣 The live rate, under the standing one it rides on. */
+.rnow { margin-top: 2px; font-size: 12.5px; color: var(--gold); opacity: .85; }
 .deep { margin-left: 9px; font-size: 11px; letter-spacing: .04em; color: var(--gold);
         border: 1px solid var(--gold); border-radius: 7px; padding: 1px 7px;
         animation: settle .5s ease both; }

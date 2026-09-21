@@ -20,11 +20,13 @@ import { advice } from '../advice.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
-export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: {
+export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onRealm }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
+  /** 入定 True once this visit's sitting has run its quarter of an hour. */
+  satOut: boolean;
   set: (s: State) => void;
   onFight: () => void;
   /** 示 Where the advice points, when it points anywhere. */
@@ -142,14 +144,20 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
 
       <div className="qi">
         <div className="n mono" style={{ color: r.colour }}>{num(state.qi)}</div>
+        {/* 氣 The standing rate leads, because it is the one fixed by what you have
+            bought and climbed. 入定 rides alongside it with its own name and its own
+            number, so nothing on this line moves without saying why it moved. */}
         <div className="r mono">
-          +{num(rate(state) * focus)} qi / s
+          {CULTIVATE.standing(`+${num(rate(state))} qi / s`)}
           {focus > 1.15 && (
             <span className="deep" data-full={focus >= FOCUS_MAX - 0.001}>
               入定 ×{focus.toFixed(1)}
             </span>
           )}
         </div>
+        {focus > 1.15 && (
+          <div className="rnow mono">{num(rate(state) * focus)} qi / s now</div>
+        )}
       </div>
 
       <div className="bar" style={{ margin: '14px 0 6px' }}>
@@ -286,6 +294,14 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo, onRealm }: 
       {focus > 1.15 && (
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
           {focus >= FOCUS_MAX - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
+          {' '}{CULTIVATE.sitting}
+        </p>
+      )}
+      {/* 入定 And when it ends the screen says so, because a number that falls by two
+          thirds with nothing beside it reads as something taken away. */}
+      {satOut && (
+        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
+          {CULTIVATE.sittingOver(num(rate(state)))}
         </p>
       )}
 

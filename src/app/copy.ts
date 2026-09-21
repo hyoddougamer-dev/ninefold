@@ -91,6 +91,25 @@ export const CULTIVATE = {
    */
   deep: 'Sitting with it deepens your gathering. It keeps rising for a few minutes.',
   deepFull: 'Fully settled. This is as deep as sitting with it goes.',
+  /**
+   * 氣 Why the number moves, said on the screen where it moves.
+   *
+   * Bruno: *"verifiquei que o qi per sec está sempre a alterar. Não faz muito sentido,
+   * não deveria ser um valor fixo consoante stats?"* He is right, and the game agreed
+   * with him without telling him: the **standing** rate is fixed by the layers opened
+   * and what has been bought, and the only thing that moves is 入定 the sitting, which
+   * climbs to ×3 over three minutes and ends after fifteen. The screen showed the two of
+   * them multiplied together as one number and named neither.
+   *
+   * So the standing rate leads and the sitting rides alongside it, which is the same
+   * rule every other pair of numbers in this game follows.
+   */
+  standing: (n: string) => `${n} standing`,
+  sitting: 'The sitting lasts a quarter of an hour. Leave and come back for another one.',
+  /** And what the number falls back to, framed as the thing it is: a bonus that ended. */
+  sittingOver: (n: string) =>
+    `入定 That sitting has passed and you are back to your standing ${n} a second. ` +
+    'Nothing was taken: the sitting was extra. Come back later and it begins again.',
 
   /**
    * 雷池 The pool. It is the ninth realm's bar, and it refills.

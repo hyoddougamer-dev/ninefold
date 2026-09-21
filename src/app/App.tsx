@@ -7,7 +7,7 @@ import { canFightWarden, newState, power, type State, filledRealms,
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
-import { focusAt } from '../sim/balance.ts';
+import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portrait } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
@@ -130,6 +130,7 @@ export function App() {
    */
   const since = useRef<number | null>(null);
   const [focus, setFocus] = useState(1);
+  const [satOut, setSatOut] = useState(false);
 
   // 歸 The return. An idle game is played closed, so opening the app is first of all
   // receiving the hours that passed — and the player wants to see that before anything.
@@ -161,7 +162,7 @@ export function App() {
   useEffect(() => {
     if (!ready) return;
     const enter = () => { since.current = now(); };
-    const leave = () => { since.current = null; setFocus(1); };
+    const leave = () => { since.current = null; setFocus(1); setSatOut(false); };
     const onVisibility = () => (document.hidden ? leave() : enter());
     enter();
     document.addEventListener('visibilitychange', onVisibility);
@@ -188,9 +189,13 @@ export function App() {
       // 道 神 the Spirit branch deepens the sitting; everything else leaves it at
       // FOCUS_MAX. It reads a ref rather than the state, because this interval is set up
       // once and would otherwise hold the tree the player had when it started.
-      const deep = since.current === null ? 1
-        : focusAt(now() - since.current, focusBonus(tree.current));
+      const open = since.current === null ? 0 : now() - since.current;
+      const deep = since.current === null ? 1 : focusAt(open, focusBonus(tree.current));
       setFocus(deep);
+      // 入定 Whether this visit's sitting has run out, which `focus` alone cannot say:
+      // it reads 1 both before the sitting begins and after it ends, and those are two
+      // very different things to put on a screen.
+      setSatOut(open >= FOCUS_HOLD);
       setState((s) => {
         const next = advance(s, now(), false, deep);
         const layers = (next.realm - 1) * 9 + next.layer;
@@ -512,6 +517,7 @@ export function App() {
             state={state}
             pulse={pulse}
             focus={focus}
+            satOut={satOut}
             set={climb}
             onFight={() => startFight(currentWarden(state))}
             onGo={(next) => { setTab(next); sfx.tap(); }}
