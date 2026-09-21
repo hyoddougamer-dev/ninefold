@@ -448,6 +448,30 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .help li b { display: block; font-weight: 500; font-size: 16px; }
 .help li i { font-style: normal; font-size: 13.5px; color: var(--faint); }
 
+/* ── 引 the guide: the first session, one numbered step at a time ─────────── */
+
+/* It sits above everything on 修, because a player who has just opened the game for the
+   first time should not have to find it. It is the only thing on the screen with a
+   number on it, and it is gone for good after the fifth. */
+.guide { width: 100%; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+         background: linear-gradient(180deg, rgba(95,220,255,.09), rgba(95,220,255,.03));
+         border: 1px solid rgba(95,220,255,.33); border-radius: 12px;
+         padding: 12px 14px; margin: 0 0 14px; display: grid; gap: 4px;
+         grid-template-columns: 1fr auto; align-items: start; }
+/* 存 ? 釋 碑 float over the top-right corner, so the first line of the card stops short
+   of them rather than running underneath. Only the first line: the paragraph below is
+   clear of the buttons and uses the full width. */
+.guide .n, .guide b { padding-right: 132px; }
+.guide:disabled { cursor: default; }
+.guide .n { grid-column: 1; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+            color: var(--cyan); }
+.guide b { grid-column: 1; font-weight: 500; font-size: 15.5px; }
+.guide b .cjk { color: var(--cyan); margin-right: 3px; }
+.guide i { grid-column: 1; font-style: normal; font-size: 12.5px; color: var(--faint);
+           line-height: 1.5; }
+.guide em { grid-column: 2; grid-row: 1 / span 3; align-self: center; font-style: normal;
+            font-size: 21px; color: var(--cyan); padding-left: 10px; }
+
 /* ── 釋 the key: every character on the screen, and what it means ────────── */
 
 .key { gap: 22px; }

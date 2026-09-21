@@ -12,8 +12,9 @@ import { portrait, seal } from '../../art/aura.ts';
 import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { CULTIVATE } from '../copy.ts';
+import { CULTIVATE, GUIDE } from '../copy.ts';
 import { advice } from '../advice.ts';
+import { guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
 export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
@@ -41,9 +42,22 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
   const cap = capOf(state);
   const tip = advice(state);
+  // 引 The first session, one step at a time. It is computed, never stored, so it ends
+  // by itself and cannot come back.
+  const step = guide(state);
 
   return (
     <>
+      {step && (
+        <button className="guide" disabled={!step.step.tab}
+          onClick={() => step.step.tab && onGo(step.step.tab)}>
+          <span className="n mono">{GUIDE.step(step.n, step.of)}</span>
+          <b><span className="cjk">{step.step.han}</span> {step.step.title}</b>
+          <i>{step.step.text}</i>
+          {step.step.tab && <em className="cjk">›</em>}
+        </button>
+      )}
+
       <div className="row">
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           修 Cultivate · day {day}
@@ -148,7 +162,9 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
       {/* 示 sits above the 雷印 card, not below it. The card is five lines of reference
           and the tip is the only thing on the screen that says what to do, so at the top
           of the endgame it was the one line a player had to scroll to find. */}
-      {tip && (
+      {/* 引 While the guide is running it is the only instruction on the screen. Two
+          voices telling a new player what to do at once is worse than either alone. */}
+      {tip && !step && (
         <button className="tip" disabled={!tip.tab} onClick={() => tip.tab && onGo(tip.tab)}>
           <b className="cjk">{tip.han}</b>
           <i>{tip.text}</i>

@@ -172,7 +172,7 @@ export const ADVICE = {
    */
   goHunt: (han: string, pct: number, left: number, mark: string) =>
     `${han} is within reach at ${pct}%. ${left} more ${left === 1 ? 'kill' : 'kills'} earns its ${mark} mark.`,
-  canAfford: (han: string) => `You can afford another ${han} right now.`,
+  canAfford: (han: string, name: string) => `You can afford another ${han} ${name} right now.`,
   reachFor: (han: string, wants: number, mine: number) =>
     `${han} stands at 力 ${Math.round(wants * 10) / 10}. You are at 力 ${Math.round(mine * 10) / 10}. `
     + `Every level and every layer closes that.`,
@@ -242,6 +242,47 @@ export const KEY = {
   back: 'What gathered while the app was shut, paid in full.',
 
   close: 'Back to the game',
+};
+
+/**
+ * 引 The five steps of the first session.
+ *
+ * Each one names a thing to do, says why it is worth doing, and is finished by the
+ * player doing it — never by reading. Together they are the first realm's loop said out
+ * loud once: buy, kill, spend what the kill gave you, keep killing the same animal
+ * until the counting pays, climb.
+ */
+export const GUIDE = {
+  step: (n: number, of: number) => `Step ${n} of ${of}`,
+  buy: {
+    title: 'Spend what you were given',
+    text: 'You begin holding 800 qi and two of the four boxes below are already lit. '
+      + 'Buy one. Qi you spend is qi that did not fill the bar — that trade is the whole game.',
+  },
+  kill: {
+    title: 'Go and kill something',
+    text: 'Three beasts in 狩 Hunt. They are stronger than you for the first hour or two '
+      + 'and the odds on each one say so honestly. Losing costs you nothing at all, so try '
+      + 'anyway — and come back when 山鼠 the rat is in reach.',
+  },
+  core: {
+    title: 'Spend what the beast left',
+    text: 'That kill paid 材 material, and material buys the one upgrade qi cannot: '
+      + '妖丹 Beast Cores. The first costs 3 — three rats — and is +8% power for good. '
+      + 'This is the loop: kill, take, buy, kill something bigger.',
+  },
+  mark: {
+    title: 'Kill the same beast ten times',
+    text: 'Every beast is counted for ever. Ten kills of one animal earns its 熟 Known '
+      + 'mark and every drop in the game pays more, permanently. A hundred earns 通 '
+      + 'Mastered and pays in power.',
+  },
+  climb: {
+    title: 'Beat the warden and break through',
+    text: 'Fill all nine layers, then 妖狐 the Spirit Fox stands at the top of the realm. '
+      + 'Beat it and 突破 opens. The next realm brings gear you can wear and a stance to '
+      + 'fight in.',
+  },
 };
 
 export const HUNT = {

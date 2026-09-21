@@ -151,7 +151,10 @@ export function advice(s: State): Advice | null {
   const affordable = UPGRADES.find((u) =>
     (u !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, u));
   if (affordable) {
-    return { han: UPGRADE_INFO[affordable].han, text: ADVICE.canAfford(UPGRADE_INFO[affordable].han) };
+    return {
+      han: UPGRADE_INFO[affordable].han,
+      text: ADVICE.canAfford(UPGRADE_INFO[affordable].han, UPGRADE_INFO[affordable].name),
+    };
   }
 
   // 望 Nothing is in reach — so name what is nearest, and the power it asks for.
