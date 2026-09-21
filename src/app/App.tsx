@@ -30,6 +30,7 @@ import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
 import { RealmCard } from './ui/RealmCard.tsx';
 import { Drive } from './ui/Drive.tsx';
+import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
@@ -99,6 +100,8 @@ export function App() {
   const [realmPage, setRealmPage] = useState(false);
   // 圍 The beast whose drive sheet is open, if any.
   const [driving, setDriving] = useState<Beast | null>(null);
+  // 鑑 The piece being looked at, and whether it is the one on the body.
+  const [inspect, setInspect] = useState<{ item: Item; wearing: boolean } | null>(null);
   const [fresh, setFresh] = useState(false);
   const [sound, setSound] = useState(soundLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
@@ -445,7 +448,8 @@ export function App() {
    *   reach, which is worse than pointing at nothing.
    */
   const step = guide(state);
-  const covered = help || key || stele || saving || realmPage || menu || !!driving || !!home || !!battle
+  const covered = help || key || stele || saving || realmPage || menu || !!driving
+    || !!inspect || !!home || !!battle
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
     ? step.at
@@ -481,7 +485,8 @@ export function App() {
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}
-            onEquip={onEquip} onUnequip={onUnequip} onFuse={onFuse} onRefine={onRefine}
+            onInspect={(item, wearing) => { setInspect({ item, wearing }); sfx.tap(); }}
+            onFuse={onFuse} onRefine={onRefine}
           />
         )}
         {tab === 'dao' && (
@@ -652,6 +657,20 @@ export function App() {
             haptics.tap();
           }}
           onClose={() => { setDriving(null); sfx.tap(); }}
+        />
+      )}
+
+      {/* 鑑 Looking at a piece, which is now what a tap on one does. Wearing it is a
+          button on the sheet — a blind tap that swapped your gear was the whole of
+          Bruno's complaint about the inventory. */}
+      {inspect && (
+        <ItemSheet
+          state={state}
+          item={inspect.item}
+          wearing={inspect.wearing}
+          onWear={() => { onEquip(inspect.item); setInspect(null); }}
+          onTakeOff={() => { onUnequip(templateOf(inspect.item).slot); setInspect(null); }}
+          onClose={() => { setInspect(null); sfx.tap(); }}
         />
       )}
 

@@ -14,6 +14,7 @@ import { portrait } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { GEAR } from '../copy.ts';
+import { swing } from '../../sim/inspect.ts';
 
 /**
  * 器 The gear screen — the ring.
@@ -25,11 +26,11 @@ import { GEAR } from '../copy.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
+export function Gear({ state, pulse, onInspect, onFuse, onRefine }: {
   state: State;
   pulse: number;
-  onEquip: (item: Item) => void;
-  onUnequip: (slot: Slot) => void;
+  /** 鑑 Open a piece. Wearing it is a button on the sheet, not a blind tap on a tile. */
+  onInspect: (item: Item, wearing: boolean) => void;
   onFuse: (template: string, rarity: string) => void;
   /** 煉器 Refining the piece in a slot. Paid in 材 material and never in qi. */
   onRefine: (slot: Slot) => void;
@@ -91,8 +92,8 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
               key={slot}
               className="orb"
               style={{ left: `${x}%`, top: `${y}%` }}
-              onClick={() => item && onUnequip(slot)}
-              aria-label={item ? `Remove ${templateOf(item).name}` : `${SLOT_INFO[slot].name}, empty`}
+              onClick={() => item && onInspect(item, true)}
+              aria-label={item ? `${templateOf(item).name}` : `${SLOT_INFO[slot].name}, empty`}
             >
               <Svg html={gearTile(item, { size: 54, slot, spin: pulse })} />
             </button>
@@ -236,15 +237,15 @@ export function Gear({ state, pulse, onEquip, onUnequip, onFuse, onRefine }: {
           {state.chest.map((item) => {
             const tpl = templateOf(item);
             const rar = RARITY_INFO[item.rarity];
-            const worn = state.worn[tpl.slot];
             const primary = primaryOf(item);
-            // "Better" is judged on the lines, not on one number: a piece with three
-            // useful rolls can beat a bigger single line.
-            const weight = (it?: Item) => (it?.rolls ?? []).reduce((s, x) => s + x.value, 0);
-            const better = weight(item) > weight(worn);
+            // 鑑 "Better" is what the sim says happens to 力 and 氣 when you put it on.
+            // It used to be the sum of the raw roll values, which answers nothing: a
+            // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
+            // so four small lines could out-triangle a piece that doubles your power.
+            const better = swing(state, item).better;
             return (
-              <button key={item.id} className="chestit" onClick={() => onEquip(item)}
-                      aria-label={`Wear ${tpl.name}`}>
+              <button key={item.id} className="chestit" onClick={() => onInspect(item, false)}
+                      aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}`}>
                 <Svg html={gearTile(item, { size: 56, spin: pulse })} />
                 <span className="pct mono" style={{ color: rar.colour }}>
                   {primary && <>

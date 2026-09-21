@@ -440,6 +440,33 @@ export const DRIVE = {
   earned: (han: string, pays: string) => `${han} \u00b7 ${pays}`,
 };
 
+/**
+ * 鑑 Reading a piece.
+ *
+ * The sheet has one job the chest never did: let a player *look* at something before
+ * deciding. So every line of it is a fact about the object or about the trade, and none
+ * of it is encouragement. "This is better" is not said anywhere — the two numbers at
+ * the bottom say what would happen and the player decides what better means.
+ */
+export const ITEM = {
+  what: 'What it gives',
+  against: (name: string) => `Against the ${name} you are wearing`,
+  fromRealm: (n: number) => `realm ${n} make`,
+  lines: (n: number) => (n === 1 ? '1 line' : `${n} lines`),
+  refined: (level: number, gain: number, per: number) =>
+    `\u7149 Refined ${level} ${level === 1 ? 'time' : 'times'}. Every line on it is `
+    + `${gain}% higher than it rolled, and each refining adds another ${per}%.`,
+  times: (x: number) => {
+    const pct = (x - 1) * 100;
+    if (Math.abs(pct) < 0.05) return 'no change';
+    return `${pct > 0 ? '+' : ''}${Math.round(pct * 10) / 10}%`;
+  },
+  wear: 'Wear it',
+  swap: 'Wear it instead',
+  takeOff: 'Take it off',
+  close: 'Back',
+};
+
 export const GEAR = {
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
   fuse: '煉 Fuse: three make one',

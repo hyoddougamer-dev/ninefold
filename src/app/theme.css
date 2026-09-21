@@ -1049,3 +1049,71 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .drivesheet .spoil i { display: block; margin-top: 2px; font-style: normal; font-size: 12px;
                        color: var(--faint); }
 .drivesheet .act { margin-top: auto; }
+
+/* ── 鑑 the item sheet: what a piece is, and what it would do ────────────── */
+
+.itemsheet { position: absolute; inset: 0; z-index: 13; background: var(--ground);
+             overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+             padding: calc(env(safe-area-inset-top, 0px) + 26px) 18px
+                      calc(env(safe-area-inset-bottom, 0px) + 22px); }
+
+.itemsheet .head { display: flex; gap: 15px; align-items: center; }
+.itemsheet .head .tile { flex: none; }
+.itemsheet .head .tile svg { display: block; }
+.itemsheet .head .who { min-width: 0; }
+.itemsheet .head b { display: block; font-size: 25px; font-weight: 400; line-height: 1.15; }
+.itemsheet .head i { display: block; margin-top: 1px; font-style: normal; font-size: 15px; }
+.itemsheet .head em { display: block; margin-top: 5px; font-style: normal; font-size: 12px;
+                      color: var(--faint); }
+.itemsheet .head em .dot { margin: 0 6px; opacity: .5; }
+
+/* 階 The five-step ladder, drawn, with the one it is on lit. The frame and the glow on
+   the tile were carrying the whole rank system by themselves. */
+.itemsheet .ranks { display: flex; align-items: center; gap: 5px; }
+.itemsheet .rank { width: 30px; height: 30px; border-radius: 8px; display: grid;
+                   place-items: center; border: 1px solid var(--line);
+                   color: var(--line); font-size: 15px; }
+.itemsheet .rank[data-on="true"] { border-color: var(--c); color: var(--c);
+                                   box-shadow: 0 0 12px -3px var(--c); }
+.itemsheet .rankname { margin-left: 8px; font-size: 14px; }
+.itemsheet .rankname i { display: block; font-style: normal; font-size: 11px;
+                         color: var(--faint); margin-top: 2px; }
+.itemsheet .refined { margin: 0; font-size: 12.5px; line-height: 1.55; }
+
+.itemsheet h3 { margin: 4px 0 0; font-size: 10.5px; letter-spacing: .14em;
+                text-transform: uppercase; color: var(--faint);
+                font-family: Archivo, sans-serif; font-weight: 600; }
+
+.itemsheet .lines { display: flex; flex-direction: column; }
+.itemsheet .line { display: flex; align-items: center; gap: 12px; padding: 11px 0;
+                   border-bottom: 1px solid var(--line); }
+.itemsheet .line:last-child { border-bottom: 0; }
+.itemsheet .line > b { flex: none; min-width: 26px; font-size: 18px; font-weight: 400;
+                       color: var(--text); }
+.itemsheet .line .lab { flex: 1; min-width: 0; font-size: 13.5px; }
+.itemsheet .line .lab em { font-style: normal; font-size: 11px; color: var(--cyan);
+                           margin-left: 7px; }
+/* 比 Both sides of the trade, always: losing 破 sunder is as much a fact as gaining 力. */
+.itemsheet .line .vs { flex: none; display: flex; align-items: baseline; gap: 7px;
+                       font-size: 14px; }
+.itemsheet .line .vs i { font-style: normal; color: var(--faint); }
+.itemsheet .line .vs em { font-style: normal; color: var(--faint); font-size: 12px; }
+.itemsheet .line .vs b { font-weight: 600; }
+.itemsheet .line[data-up="true"] .vs b { color: var(--cyan); }
+.itemsheet .line[data-down="true"] .vs b { color: var(--magenta); }
+
+/* 果 The verdict. Two numbers from the sim, and no adjective. */
+.itemsheet .verdictbox { display: flex; gap: 9px; }
+.itemsheet .swing { flex: 1; background: var(--panel); border: 1px solid var(--line);
+                    border-radius: 11px; padding: 13px 10px; text-align: center; }
+.itemsheet .swing > b { display: block; font-size: 17px; font-weight: 400; color: var(--faint); }
+.itemsheet .swing em { display: block; margin-top: 3px; font-style: normal; font-size: 17px;
+                       font-weight: 600; }
+.itemsheet .swing i { display: block; margin-top: 3px; font-style: normal; font-size: 10px;
+                      letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.itemsheet .swing[data-sign="1"] em { color: var(--cyan); }
+.itemsheet .swing[data-sign="-1"] em { color: var(--magenta); }
+.itemsheet .swing[data-sign="0"] em { color: var(--faint); font-size: 13px; }
+
+.itemsheet .acts { margin-top: auto; display: flex; flex-direction: column; gap: 9px;
+                   padding-top: 14px; }
