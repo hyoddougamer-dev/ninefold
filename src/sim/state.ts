@@ -13,7 +13,7 @@ import { CHEST_LIMIT } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
-import { recordPower } from './record.ts';
+import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine } from './refine.ts';
 import { isOpen } from './unlocks.ts';
 
@@ -253,6 +253,14 @@ export function buy(s: State, u: Upgrade): State {
     materials: i.currency === 'material' ? s.materials - cost : s.materials,
     levels: { ...s.levels, [u]: s.levels[u] + 1 },
   };
+}
+
+/**
+ * 圖鑑 The 道 points a cultivator's bestiary is paying, which is none before the sixth
+ * realm. It lives here so that every screen and every harness asks the same question.
+ */
+export function filledRealms(s: State): number {
+  return isOpen(s.realm, 'bestiary') ? realmsKnown(s.killed) : 0;
 }
 
 /** Qi rate multiplier coming from upgrades and from what is worn. */

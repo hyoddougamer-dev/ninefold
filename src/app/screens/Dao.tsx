@@ -6,7 +6,7 @@ import {
 } from '../../data/techniques.ts';
 import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
 import { layersOpened } from '../../sim/time.ts';
-import type { State } from '../../sim/state.ts';
+import { filledRealms, type State } from '../../sim/state.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { DAO } from '../copy.ts';
@@ -94,7 +94,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const wardens = countWardens(state);
   const earned = daoEarned(layersOpened(state), wardens);
   const spent = daoSpent(state.unlocked);
-  const free = daoFree(layersOpened(state), wardens, state.unlocked);
+  const free = daoFree(layersOpened(state), wardens, state.unlocked, filledRealms(state));
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
 

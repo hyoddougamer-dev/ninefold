@@ -18,17 +18,32 @@ import type { Slot } from '../data/gear.ts';
 
 export const LAYERS_PER_POINT = 3;
 export const POINTS_PER_WARDEN = 2;
+/**
+ * 圖鑑 And what a realm's whole bestiary is worth, from the sixth realm.
+ *
+ * Four hundred fights for one point. It is deliberately the slowest 道 in the game and
+ * the only one that cannot be climbed toward — the ladder pays the other two just for
+ * going up, and this one is paid only for going back.
+ */
+export const POINTS_PER_BESTIARY = 1;
 
-export function daoEarned(layersOpened: number, wardensKilled: number): number {
-  return Math.floor(layersOpened / LAYERS_PER_POINT) + POINTS_PER_WARDEN * wardensKilled;
+export function daoEarned(
+  layersOpened: number, wardensKilled: number, realmsKnown = 0,
+): number {
+  return Math.floor(layersOpened / LAYERS_PER_POINT)
+    + POINTS_PER_WARDEN * wardensKilled
+    + POINTS_PER_BESTIARY * realmsKnown;
 }
 
 export function daoSpent(unlocked: readonly string[]): number {
   return unlocked.reduce((sum, key) => sum + (NODE_BY_KEY[key]?.cost ?? 0), 0);
 }
 
-export function daoFree(layersOpened: number, wardensKilled: number, unlocked: readonly string[]): number {
-  return daoEarned(layersOpened, wardensKilled) - daoSpent(unlocked);
+export function daoFree(
+  layersOpened: number, wardensKilled: number, unlocked: readonly string[],
+  realmsKnown = 0,
+): number {
+  return daoEarned(layersOpened, wardensKilled, realmsKnown) - daoSpent(unlocked);
 }
 
 /**

@@ -465,6 +465,8 @@ export const LOADOUT = {
 };
 
 export const BESTIARY = {
+  /** 圖鑑 What finishing a realm's four is worth, said where the four are listed. */
+  pays: (n: number) => `${n} 道 when all four are 熟 Known`,
   credits: 'Art credits',
   icons: (authors: string) =>
     `Icons from game-icons.net, Creative Commons BY 3.0. Authors: ${authors}.`,

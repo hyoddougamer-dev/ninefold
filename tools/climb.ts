@@ -6,7 +6,9 @@
  * a change to the furnace made all of them wrong at once without a single test noticing.
  */
 import { LAYERS } from '../src/sim/balance.ts';
-import { UPGRADES, buy, canBuy, newState, upgradeCost, type State } from '../src/sim/state.ts';
+import {
+  UPGRADES, buy, canBuy, filledRealms, newState, upgradeCost, type State,
+} from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
@@ -56,7 +58,7 @@ function spend(s: State, branch: Branch): State {
   );
   let out: State = { ...s, killed: { ...s.killed, ...killed } };
   for (let guard = 0; guard < 200; guard++) {
-    const free = daoFree(layersOpened(out), wardens, out.unlocked);
+    const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
       .find((n) => canUnlock(n.key, out.unlocked, free));

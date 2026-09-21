@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden, fight, loot } from '../sim/combat.ts';
-import { newState, power, type State } from '../sim/state.ts';
+import { newState, power, type State, filledRealms,
+} from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save } from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
@@ -370,7 +371,8 @@ export function App() {
     setState((s) => {
       const wardens = Object.entries(s.killed)
         .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
-      if (!canUnlock(key, s.unlocked, daoFree(layersOpened(s), wardens, s.unlocked))) return s;
+      const free = daoFree(layersOpened(s), wardens, s.unlocked, filledRealms(s));
+      if (!canUnlock(key, s.unlocked, free)) return s;
       return { ...s, unlocked: [...s.unlocked, key] };
     });
     sfx.buy();

@@ -4,7 +4,9 @@ import type { State } from '../../sim/state.ts';
 import { seal } from '../../art/aura.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { MARK_INFO, marksOf } from '../../sim/record.ts';
+import { MARK_INFO, knownIn, marksOf } from '../../sim/record.ts';
+import { isOpen } from '../../sim/unlocks.ts';
+import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
 
 /**
@@ -19,6 +21,7 @@ import { BESTIARY } from '../copy.ts';
  * as a thumb can find.
  */
 export function Bestiary({ state }: { state: State }) {
+  const filled = (realm: number) => knownIn(state.killed, realm);
   return (
     <>
       {REALMS.map((r) => {
@@ -29,6 +32,16 @@ export function Bestiary({ state }: { state: State }) {
             <h2 className="heading" style={{ color: reached ? r.colour : undefined, opacity: reached ? 1 : 0.5 }}>
               <span className="cjk" style={{ fontSize: 14 }}>{r.han}</span>
               <span style={{ marginLeft: 8 }}>{r.name}</span>
+              {/* 圖鑑 A realm is *finished* when all four of its beasts are 熟 Known, and
+                  that pays a 道 point. Without this line the reward is invisible, and an
+                  invisible reward is worse than none: it asks for the one thing hunting
+                  never asked for — going back — and nothing would say so. */}
+              {isOpen(state.realm, 'bestiary') && reached && (
+                <span className="filled" data-done={filled(r.n).done === filled(r.n).of}>
+                  熟 {filled(r.n).done}/{filled(r.n).of}
+                  <em>{BESTIARY.pays(POINTS_PER_BESTIARY)}</em>
+                </span>
+              )}
             </h2>
             <div className="grid3">
               {ofRealm.map((b) => {

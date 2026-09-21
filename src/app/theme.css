@@ -216,6 +216,14 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 .card3 .marks { justify-content: center; }
 
+/* 圖鑑 How near a realm's four are to being finished, beside the realm's own name. */
+.filled { margin-left: auto; display: flex; align-items: baseline; gap: 7px;
+          font-family: 'Noto Serif SC', serif; font-size: 12px; letter-spacing: 0;
+          text-transform: none; color: var(--faint); font-weight: 400; }
+.filled em { font-style: normal; font-family: Archivo, sans-serif; font-size: 10px;
+             letter-spacing: .04em; opacity: .85; }
+.filled[data-done="true"] { color: var(--gold); }
+
 /* ── 煉器 refining ──────────────────────────────────────────────────────── */
 
 .refine { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;

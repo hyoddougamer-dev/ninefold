@@ -68,7 +68,7 @@
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cores' | 'fuse' | 'tree' | 'tower' | 'record'
-  | 'furnace' | 'refine' | 'tribulation';
+  | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
 
 export interface SystemInfo {
   readonly key: System;
@@ -97,6 +97,8 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
+  { key: 'bestiary', han: '圖鑑', name: 'The Bestiary', realm: 6,
+    gives: 'A realm whose four beasts you have all mastered pays a 道 point. The kills were being counted all along, and now the deepest hunting there is pays for the tree.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 7,
     gives: 'Pills, bought with qi and material together, with no cap on any of it.' },
   { key: 'refine', han: '煉器', name: 'Refining', realm: 8,

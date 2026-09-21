@@ -9,6 +9,7 @@ import { LAYERS, focusAt } from '../src/sim/balance.ts';
 import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, newState, power,
   upgradeCost, type State,
+  filledRealms,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { loot, odds } from '../src/sim/combat.ts';
@@ -114,7 +115,7 @@ function spendTree(s: State, branch: Path | undefined): State {
   let out = s;
   for (let guard = 0; guard < 200; guard++) {
     const wardens = Object.keys(out.killed).filter((k) => WARDEN_KEYS.has(k)).length;
-    const free = daoFree(layersOpened(out), wardens, out.unlocked);
+    const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
       .find((n) => canUnlock(n.key, out.unlocked, free));

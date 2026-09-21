@@ -73,6 +73,35 @@ export function recordPower(killed: Killed): number {
   return 1 + MASTERED_POWER * countAt(killed, MARKS[2]);
 }
 
+/**
+ * 圖鑑 A realm whose every beast is 熟 Known — ten kills of each of its four.
+ *
+ * The bar was set at 通 Mastered first, a hundred kills of each, and measuring it killed
+ * the idea: across five cultivators and ten thousand fights, **not one realm was ever
+ * finished**, and not one at ten kills either. The reason is the useful part. A player
+ * hunts the strongest beast they can beat, because that is the one that pays — so a
+ * realm's weakest animal is killed once for its 見 mark and then never again. There has
+ * never been a reason to go back for it.
+ *
+ * That is the hole this fills. Ten kills of each of four is forty fights against animals
+ * you outclass, so it costs a couple of minutes and no risk at all; what it asks for is
+ * the one thing hunting never asked for, which is *finishing* a realm instead of moving
+ * on from it. The harness still measures every curve without it, so the point it pays
+ * can only ever be a bonus on top of a run that was already balanced.
+ */
+export function realmsKnown(killed: Killed): number {
+  const realms = new Set(BEASTS.map((b) => b.realm));
+  let n = 0;
+  for (const r of realms) if (knownIn(killed, r).done === knownIn(killed, r).of) n++;
+  return n;
+}
+
+/** A realm's four, and how many of them are 熟 Known. */
+export function knownIn(killed: Killed, realm: number): { done: number; of: number } {
+  const of = BEASTS.filter((b) => b.realm === realm);
+  return { done: of.filter((b) => (killed[b.key] ?? 0) >= MARKS[1]).length, of: of.length };
+}
+
 /** Everything the record could ever be worth, for the screen that has to promise it. */
 export function recordCeiling(): { material: number; power: number } {
   return {
