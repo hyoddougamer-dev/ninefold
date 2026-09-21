@@ -190,7 +190,10 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
               <span className="ic"><Svg html={icon(i.icon, 22)} /></span>
               <span>
                 <b>{i.han} <span className="mono faint" style={{ fontSize: 11 }}>{CULTIVATE.cap(held, cap)}</span></b>
-                <i>{i.effect}</i>
+                {/* 譯 The English name, not only the characters. A player who does not
+                    read Chinese was being sold four things called 劍訣, 功法, 吐納 and
+                    妖丹, told what each one did, and never told what any of them was. */}
+                <i><em style={{ fontStyle: 'normal', color: 'var(--text)' }}>{i.name}</em> · {i.effect}</i>
               </span>
               <span className="price">
                 {maxed

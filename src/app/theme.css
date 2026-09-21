@@ -448,6 +448,26 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .help li b { display: block; font-weight: 500; font-size: 16px; }
 .help li i { font-style: normal; font-size: 13.5px; color: var(--faint); }
 
+/* ── 釋 the key: every character on the screen, and what it means ────────── */
+
+.key { gap: 22px; }
+.key section { display: flex; flex-direction: column; gap: 7px; }
+.key h3 { margin: 0; font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 17px;
+          color: var(--cyan); }
+.key section > p.faint { margin: 0; font-size: 12.5px; line-height: 1.45; }
+.keys { display: flex; flex-direction: column; gap: 1px; margin-top: 3px; }
+.keyrow { display: flex; gap: 12px; align-items: baseline; padding: 7px 0;
+          border-bottom: 1px solid var(--line); }
+.keyrow:last-child { border-bottom: 0; }
+/* The character is the anchor of the row, so it gets a fixed column: the English names
+   line up under each other and the page can be read straight down. */
+.keyrow > b { flex: none; min-width: 42px; font-family: 'Noto Serif SC', serif;
+              font-weight: 400; font-size: 19px; line-height: 1.1; color: var(--text); }
+.keyrow > span { min-width: 0; }
+.keyrow em { display: block; font-style: normal; font-size: 14px; }
+.keyrow i { display: block; font-style: normal; font-size: 12px; color: var(--faint);
+            line-height: 1.45; margin-top: 1px; }
+
 @media (prefers-reduced-motion: reduce) {
   .side[data-hit='true'] .fig, .side[data-hit='true'] .fig::after,
   .dmg, .verdict, .bloom .ring, .bloom .han, .bloom p { animation: none; }

@@ -181,6 +181,69 @@ export const ADVICE = {
   theTop: 'Fill the pool and the Dragon comes. Every mark makes you heavier, and so does it.',
 };
 
+/**
+ * 釋 The key: what every character on the screen means.
+ *
+ * The characters are what 九境 looks like, and taking them off would leave a spreadsheet
+ * about numbers going up. So they stay — and none of them is ever the only place a thing
+ * is named. This page is the guarantee behind that: one tap from anywhere, every symbol
+ * the game uses, in English, read out of the same tables the game itself reads.
+ */
+export const KEY = {
+  title: '釋 The key',
+  blurb: 'Every character the game uses, and what it means. The game keeps the characters '
+    + 'because they are what it looks like — but nothing here is ever only a character.',
+
+  heldHead: '數 What you hold',
+  heldBlurb: 'The four things you can have. Two of them tick up on their own.',
+  qi: 'Gathers on its own, awake or asleep. It fills the bar and buys upgrades.',
+  power: 'How hard you hit and how much you can take. Beasts are measured in it too.',
+  material: 'Falls off beasts and tower floors. Qi cannot buy it and waiting cannot earn it.',
+  dao: 'One for every three layers climbed, two for every warden. Spent on the tree.',
+
+  buysHead: '買 What you can buy',
+  buysBlurb: 'Four upgrades. A realm holds six levels of each and not one more.',
+
+  marksHead: '錄 The marks on every beast',
+  marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
+  mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
+
+  fightHead: '戰 Fighting',
+  fightBlurb: 'The whole fight is settled the moment you press. Losing costs nothing, ever.',
+  fight: 'Start it. You watch it play back, round by round.',
+  stance: (n: number) => `Always on. You hold the stance of every realm you have reached, ${n} in all.`,
+  art: 'Three in an order, one firing each round, then looping. A warden gives up its own.',
+  collect: 'You won. Take the material, and whatever it left behind.',
+  withdraw: 'You lost. Nothing is taken from you. Come back stronger.',
+
+  ranksHead: '階 The five ranks of gear',
+  ranksBlurb: 'The rank sets how much a piece is worth and how many lines it carries.',
+  rank: (mult: number) => `x${mult} on every line`,
+
+  axesHead: '軸 What gear can give',
+  axesBlurb: 'Seven axes. A piece always grants a percentage, so an old piece stays good.',
+
+  slotsHead: '位 The six places you wear it',
+  slotsBlurb: 'One piece each. Wear several of one realm and the lineage pays on top.',
+
+  pillsHead: '丹 The three lines of pills',
+  pillsBlurb: 'Brewed in 爐 the furnace, from qi and material together. Kept for good.',
+
+  systemsHead: '開 The systems, and the realm that opens each',
+  systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
+  opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
+
+  doingHead: '作 Words you will meet',
+  doingBlurb: 'The rest of the characters that ask you to do something.',
+  breakThrough: 'Take the next realm. Only you can press it, never the clock.',
+  full: 'This upgrade is at its cap for this realm. Climb to hold more.',
+  save: 'Your save, to copy out or paste back. It lives in this browser only.',
+  stele: 'Everything you have done, counted: the deeds and the figures.',
+  back: 'What gathered while the app was shut, paid in full.',
+
+  close: 'Back to the game',
+};
+
 export const HUNT = {
   /** Shown under the power figure. Losing a hunt has no cost at all, and it must say so. */
   free: 'A loss costs you nothing.',

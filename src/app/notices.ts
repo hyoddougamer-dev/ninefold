@@ -5,7 +5,7 @@ import { odds } from '../sim/combat.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import { MARKS } from '../sim/record.ts';
 import { SLOTS } from '../data/gear.ts';
-import { isOpen, opensAt } from '../sim/unlocks.ts';
+import { isOpen } from '../sim/unlocks.ts';
 import { NOTICE } from './copy.ts';
 
 /**

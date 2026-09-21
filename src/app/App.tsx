@@ -26,6 +26,7 @@ import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
+import { Key } from './ui/Key.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Svg } from './ui/Svg.tsx';
@@ -80,6 +81,8 @@ export function App() {
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
+  // 釋 The key: what every character on the screen means.
+  const [key, setKey] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
@@ -445,6 +448,8 @@ export function App() {
       <div className="switches">
         <button onClick={() => { setSaving(true); sfx.tap(); }} aria-label="Your save">存</button>
         <button onClick={() => setHelp(true)} aria-label="How to play">?</button>
+        <button className="cjk" onClick={() => { setKey(true); sfx.tap(); }}
+          aria-label="What the characters mean">釋</button>
         <button className="cjk" onClick={() => { setStele(true); sfx.tap(); }} aria-label="The stele">碑</button>
         <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0} aria-label={LEVELS[sound].label}>
           {LEVELS[sound].icon}
@@ -546,6 +551,7 @@ export function App() {
       )}
 
       {help && <Help onClose={() => { setHelp(false); sfx.tap(); }} />}
+      {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
 
       {stele && (
         <div className="stelepage">
