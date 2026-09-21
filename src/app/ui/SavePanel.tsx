@@ -72,7 +72,10 @@ export function SavePanel({ state, onRestore, onClose }: {
   };
 
   return (
-    <div className="help">
+    /* It borrows the help sheet's layout, but it is not the help sheet. Sharing one
+       class meant nothing on the page could tell them apart — which cost an afternoon
+       of a test harness quietly pressing "copy" when it meant "close". */
+    <div className="help savepanel">
       <h2>存 {SAVE.title}</h2>
 
       <dl className="stat">
