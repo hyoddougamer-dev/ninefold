@@ -19,10 +19,10 @@ import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
 import { LINES, PILL_GRADES, PILL_LINES } from '../src/data/alchemy.ts';
 import {
   AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITIES, RARITY_INFO, REALM_SETS, SECONDARIES,
-  SET_STEPS, SLOTS, SLOT_INFO, archetypesOf,
+  SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { UPGRADES, UPGRADE_INFO, newState, power, upgradeCost } from '../src/sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS,
@@ -31,7 +31,7 @@ import {
   TRIBULATION_CHALLENGE,
   TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
-import { FORM, REFERENCE_BELOW, beastPower, loot } from '../src/sim/combat.ts';
+import { FORM, REFERENCE_BELOW, beastPower, loot, lootFrom, seenBounty } from '../src/sim/combat.ts';
 import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
@@ -50,6 +50,8 @@ import {
 import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
 import { STEPS } from '../src/app/guide.ts';
+import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
+import { compare, linesOf, swing } from '../src/sim/inspect.ts';
 import { SYSTEMS as OPENED, opensIn } from '../src/sim/unlocks.ts';
 import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
@@ -58,6 +60,7 @@ import { num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
+import { gearTile } from '../src/art/gear.ts';
 
 const PAGES = 'https://hyoddougamer-dev.github.io/ninefold/';
 const REPO = 'https://github.com/hyoddougamer-dev/ninefold';
@@ -96,6 +99,36 @@ interface System {
   readonly at?: string;
 }
 
+const RUNS = playAll();
+
+/**
+ * 樣 The numbers the mockups and the board quote, taken from the game rather than typed.
+ *
+ * Bruno asked for a visual mockup with real examples whenever anything about the look
+ * changes, so the examples have to *be* real: the same art functions the game draws
+ * with, the same comparison the item sheet runs, the same prices the drive charges.
+ */
+const WAITER = RUNS[0];
+const HUNTER = RUNS[1];
+const WAITER_COST = Math.round((WAITER.arrival[8] ?? 0) - (HUNTER.arrival[8] ?? 0));
+const DRIVE_TAPS = BEASTS.length * (1 + Math.ceil((MARKS[2] - MARKS[1]) / DRIVE_SIZES[DRIVE_SIZES.length - 1]));
+const NINTH = { ...newState(0), realm: 9 } as State;
+const OLD_RAT = num(lootFrom(NINTH, commonsOf(1)[0]));
+
+/** 鑑 A real trade, run through the real comparison, for the sheet the mockup draws. */
+const MOCK_WORN: Item = { id: 'w', template: 'sword3', rarity: 'spirit',
+  rolls: [{ affix: 'power', value: 12.8 }, { affix: 'sunder', value: 2.3 }] };
+const MOCK_HELD: Item = { id: 'h', template: 'sword5', rarity: 'heaven', refine: 3,
+  rolls: [{ affix: 'power', value: 32.5 }, { affix: 'rate', value: 18.2 },
+    { affix: 'luck', value: 9.1 }, { affix: 'find', value: 2.9 }, { affix: 'capacity', value: 2 }] };
+const MOCK_HERO: State = { ...newState(0), realm: 5, layer: 4, worn: { weapon: MOCK_WORN } };
+const MOCK_LINES = compare(MOCK_HELD, MOCK_WORN);
+const MOCK_SWING = swing(MOCK_HERO, MOCK_HELD);
+
+const pct = (v: number, a: Affix) =>
+  (AFFIX_INFO[a].unit === '%' ? `${Math.round(v * 10) / 10}%` : `${Math.floor(v)}`);
+const sign = (x: number) => `${x > 1 ? '+' : ''}${Math.round((x - 1) * 1000) / 10}%`;
+
 const SYSTEMS: readonly System[] = [
   { han: '階', name: 'The ladder', status: 'done', at: 'ladder',
     line: `Eighty-one rungs, each dearer than the last. ${TARGET_DAYS} days to the top, measured against a cultivator who spends.` },
@@ -120,7 +153,7 @@ const SYSTEMS: readonly System[] = [
   { han: '開', name: 'What each realm opens', status: 'done', at: 'opens',
     line: 'Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.' },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
-    line: 'A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights stalls in the third realm.' },
+    line: `A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, ${WAITER_COST} days later.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
     line: `One floor, one beast, no top. The material economy and ${TOWER_QI_HOURS} hours of gathering a floor.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
@@ -149,6 +182,27 @@ const SYSTEMS: readonly System[] = [
     line: 'One tap from every screen, read out of the same tables the game reads. No character is ever the only place a thing is named.' },
   { han: '圖鑑', name: 'Finishing a realm of the bestiary', status: 'done', at: 'record',
     line: `A realm whose four beasts are all 熟 Known pays ${POINTS_PER_BESTIARY} 道, from the sixth realm. The one thing hunting never asked for: going back.` },
+  { han: '梯', name: 'Seeing the climb', status: 'done', at: 'mockups',
+    line: `Nine realms and nine rungs drawn as one object under the bar, with the warden lit at the end of them. "layer 3 of 9" and "realm 1 of 9" were two numbers at opposite ends of a screen and nothing ever said one was inside the other.` },
+  { han: '指', name: 'The pointing finger', status: 'done', at: 'mockups',
+    line: 'The guide draws a ring and an arrow on the real button. The overlay takes no taps, so the ring is over the button and the button still works.' },
+  { han: '時', name: 'A step you cannot do yet', status: 'done', at: 'mockups',
+    line: 'A step that is not possible yet is the *next* step, not the instruction: a quieter card, a bar showing how close, and something to do in the meantime.' },
+  { han: '境', name: 'What a realm is', status: 'done', at: 'mockups',
+    line: 'A page reached from the realm\'s own name: what a realm is, what stands at the end of this one, what it opened, and what the next one is worth.' },
+  { han: '見', name: 'The first sight of a beast', status: 'done', at: 'beasts',
+    line: `Half a rung of qi the first time each beast falls, divided by the realm after that. 36 beasts, 36 payments in a lifetime, so it cannot be farmed and it is not a rate.` },
+  { han: '圍', name: 'The drive', status: 'done', at: 'mockups',
+    line: `${DRIVE_SIZES.join(', ')} kills in one tap on a beast you have 熟 Known, paid for in qi. The whole record goes from ${MARKS[2] * BEASTS.length} taps to ${DRIVE_TAPS}.` },
+  { han: '舊', name: 'Old beasts worth going back for', status: 'done', at: 'beasts',
+    line: `A beast pays at least a quarter of what the weakest common of *your* realm pays. 山鼠 the rat went from 1 材 for ever to ${OLD_RAT} at the ninth realm.` },
+  { han: '鑑', name: 'Reading a piece of gear', status: 'done', at: 'mockups',
+    line: 'Tapping a piece opened nothing and wore it. It now opens a sheet: the rank named, every line, both sides of the trade, and the swing taken from the sim rather than from adding roll values up.' },
+  { han: '誠', name: 'Honest odds', status: 'done', at: 'combat',
+    line: 'A fight that wins none of its sampled seeds says how far off it is rather than quoting the 2% floor. The first realm\'s three beasts read 2%, 2%, 2% and now read ×2.4, ×7.0, ×14.0.' },
+  { han: '收', name: 'The corner, folded', status: 'done', at: 'mockups',
+    line: 'Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.' },
+
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
@@ -170,7 +224,6 @@ const statusRows = SYSTEMS.map((s) => {
   </div>`;
 }).join('');
 
-const RUNS = playAll();
 
 const opensRows = REALMS.map((r) => {
   const stance = STANCES.find((x) => x.realm === r.n)!;
@@ -371,6 +424,108 @@ const pillPrices = [0, 20, 40, 60, 80, 120].map((n) => {
 
 // ── the page ─────────────────────────────────────────────────────────────────
 
+/**
+ * 樣 The mockups.
+ *
+ * Bruno: *"faz um mockup visual sempre com exemplos quando se altera algo relacionado
+ * com aspecto/arte."* So every screen change since the last version is drawn here, with
+ * the game's own art functions and the game's own numbers — a mockup assembled from
+ * invented values would be a drawing of a thing that does not exist.
+ */
+
+// 梯 The climb, exactly as the screen draws it: a realm halfway up, five rungs paid.
+const MOCK_LADDER = (() => {
+  const r = realmOf(5);
+  const dots = REALMS.map((x, i) => `<span class="dot" style="--c:${x.colour}"${
+    i + 1 < 5 ? ' data-done="true"' : i + 1 === 5 ? ' data-here="true"' : ''}></span>`).join('');
+  const rungs = Array.from({ length: LAYERS_PER_REALM }, (_, i) =>
+    `<span class="rung"><i style="width:${i < 4 ? 100 : i === 4 ? 62 : 0}%;background:${r.colour}"></i></span>`).join('');
+  return `<div class="mk ladder">
+    <div class="lrow"><span class="lab">境 realm 5/9</span><span class="realms">${dots}</span></div>
+    <div class="lrow"><span class="lab">層 layer 5/9</span><span class="rungs">${rungs}</span>
+      <span class="warden">${icon(wardenOf(5).icon, 17)}</span></div>
+    <p class="cap">Your qi fills one rung. Nine rungs fill ${r.han} ${r.name}. Its warden
+      then stands at the end, and beating it opens the next realm.</p>
+  </div>`;
+})();
+
+// 指 The ring and the arrow, over a real upgrade box.
+const MOCK_COACH = `<div class="mk coach">
+  <span class="arrow"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3 L12 19 M5.5 12.5 L12 19.5 L18.5 12.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <div class="upg ringed">
+    <span class="ic">${icon(UPGRADE_INFO.technique.icon, 26)}</span>
+    <span><b>${UPGRADE_INFO.technique.name} <em class="cjk">${UPGRADE_INFO.technique.han}</em></b>
+      <i>${UPGRADE_INFO.technique.effect} · 0 of ${LEVELS_PER_REALM}</i></span>
+    <span class="price">763<em>qi</em></span>
+  </div>
+</div>`;
+
+// 時 The same guide step in both of its states.
+const MOCK_GUIDE = `<div class="mk two">
+  <div class="gcard">
+    <span class="n">Step 2 of ${STEPS.length}</span>
+    <b><span class="cjk">狩</span> ${STEPS[1].title}</b>
+    <i>${STEPS[1].text}</i>
+  </div>
+  <div class="gcard waiting">
+    <span class="n">Next · 2 of ${STEPS.length}</span>
+    <b><span class="cjk">狩</span> ${STEPS[1].title}</b>
+    <i>${STEPS[1].waiting?.text ?? ''}<span class="bar"><i style="width:44%"></i></span></i>
+  </div>
+</div>`;
+
+// 鑑 A real trade, through the real comparison.
+const MOCK_ITEM = (() => {
+  const tpl = templateOf(MOCK_HELD);
+  const rar = RARITY_INFO[MOCK_HELD.rarity];
+  const ranks = RARITIES.map((x) => `<span class="rank"${x === MOCK_HELD.rarity
+    ? ` data-on="true" style="--c:${RARITY_INFO[x].colour}"` : ''}><b class="cjk">${RARITY_INFO[x].han}</b></span>`).join('');
+  const rows = MOCK_LINES.map((d) => {
+    const dir = d.theirs > d.mine ? 'up' : d.theirs < d.mine ? 'down' : '';
+    return `<div class="line ${dir}"><b class="cjk">${AFFIX_INFO[d.affix].han}</b>
+      <span class="lab">${AFFIX_INFO[d.affix].label}</span>
+      <span class="vs"><i>${d.mine > 0 ? pct(d.mine, d.affix) : '—'}</i><em>→</em><b>${
+        d.theirs > 0 ? pct(d.theirs, d.affix) : '—'}</b></span></div>`;
+  }).join('');
+  return `<div class="mk sheet2">
+    <div class="ihead">${gearTile(MOCK_HELD, { size: 76 })}
+      <span><b class="cjk" style="color:${rar.colour}">${tpl.han}</b>
+        <i>${tpl.name}</i>
+        <em>${SLOT_INFO[tpl.slot].han} ${SLOT_INFO[tpl.slot].name} · realm ${tpl.realm} make</em></span></div>
+    <div class="ranks">${ranks}<span class="rn" style="color:${rar.colour}">${rar.name}<i>${
+      linesOf(MOCK_HELD.rarity)} lines</i></span></div>
+    <h4>Against the ${templateOf(MOCK_WORN).name} you are wearing</h4>
+    ${rows}
+    <div class="verd"><span class="sw"><b class="cjk">力</b><em>${sign(MOCK_SWING.power)}</em><i>power</i></span>
+      <span class="sw"><b class="cjk">氣</b><em>${sign(MOCK_SWING.rate)}</em><i>qi per second</i></span></div>
+  </div>`;
+})();
+
+// 圍 The drive's three sizes, at the price the game charges halfway up the fifth realm.
+const MOCK_DRIVE = (() => {
+  const s5: State = { ...newState(0), realm: 5, layer: 4 };
+  const b = commonsOf(5)[0];
+  const per = lootFrom(s5, b);
+  return `<div class="mk drive">
+    ${DRIVE_SIZES.map((n) => `<div class="size"><span class="n">${n}</span>
+      <span class="what"><b>${n} kills</b><i>about ${num(per * n)} 材</i></span>
+      <span class="price">${num(driveCost(s5, n))}<em>qi</em></span></div>`).join('')}
+    <p class="cap">${b.han} ${b.name}, halfway up the fifth realm. Fifty kills costs about
+      one rung wherever you are standing, and fighting it one at a time is still free.</p>
+  </div>`;
+})();
+
+// 收 The corner, shut and open.
+const MOCK_MENU = `<div class="mk two">
+  <div class="corner"><span class="sw1">≡</span><p class="cap">Shut, which is how every
+    visit starts.</p></div>
+  <div class="corner"><div class="menu">
+    ${[['存', 'Your save'], ['?', 'How to play'], ['釋', 'What the characters mean'],
+       ['碑', 'The stele'], ['♪', 'Sound on']].map(([h, n]) =>
+      `<span><b class="cjk">${h}</b><i>${n}</i></span>`).join('')}
+  </div></div>
+</div>`;
+
 const page = `<title>九境 Ninefold — the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,6 +557,139 @@ const page = `<title>九境 Ninefold — the Bible</title>
   .t b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
+
+  /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
+  /* Every rule is scoped to the section. The first draft was not, and its .ladder
+     collided with the realm-ladder cards further down the page — which is the same
+     shared-class bug the save sheet had in the game, found twice in one day. */
+  #mockups .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+        padding:16px; }
+  #mockups .mk .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
+  @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
+
+  /* 梯 — and the block itself has to say so: the page's own .ladder is a grid of
+     realm cards, and scoping the children was not enough to stop it applying here. */
+  #mockups .mk.ladder { display:block; }
+  #mockups .ladder .lrow { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  #mockups .ladder .lab { flex:none; width:96px; font-size:11.5px; color:var(--faint);
+                 font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .ladder .realms { flex:1; display:flex; gap:5px; }
+  #mockups .ladder .dot { flex:1; height:3px; border-radius:99px; background:var(--line); }
+  #mockups .ladder .dot[data-done] { background:var(--c); opacity:.5; }
+  #mockups .ladder .dot[data-here] { background:var(--c); height:5px; box-shadow:0 0 8px -1px var(--c); }
+  #mockups .ladder .rungs { flex:1; display:flex; gap:3px; }
+  #mockups .ladder .rung { flex:1; height:10px; border-radius:3px; background:var(--line);
+                  overflow:hidden; }
+  #mockups .ladder .rung i { display:block; height:100%; border-radius:2px; }
+  #mockups .ladder .warden { flex:none; width:17px; color:var(--cyan); }
+  #mockups .ladder .warden svg { display:block; }
+
+  /* 指 */
+  #mockups .coach { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  #mockups .coach .arrow { width:34px; height:34px; display:grid; place-items:center;
+                  border-radius:99px; background:rgba(6,8,18,.92);
+                  border:1px solid rgba(95,220,255,.45); color:var(--cyan);
+                  box-shadow:0 0 14px -3px rgba(95,220,255,.8); }
+  #mockups .coach .arrow svg { display:block; }
+  #mockups .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
+         padding:13px 14px; border-radius:11px; background:var(--panel);
+         border:1px solid var(--line); }
+  #mockups .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
+                           0 0 22px -4px rgba(95,220,255,.75); }
+  #mockups .upg .ic { flex:none; width:26px; color:var(--cyan); }
+  #mockups .upg .ic svg { display:block; }
+  #mockups .upg > span:nth-child(2) { flex:1; }
+  #mockups .upg b { display:block; font-size:15px; font-weight:500; }
+  #mockups .upg b em { font-style:normal; font-size:13px; color:var(--faint); margin-left:4px; }
+  #mockups .upg i { display:block; font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .upg .price { flex:none; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px;
+                color:var(--gold); text-align:right; }
+  #mockups .upg .price em { display:block; font-style:normal; font-size:10px; color:var(--faint);
+                   font-weight:400; letter-spacing:.1em; text-transform:uppercase; }
+
+  /* 時 */
+  #mockups .gcard { background:linear-gradient(180deg,rgba(95,220,255,.09),rgba(95,220,255,.03));
+           border:1px solid rgba(95,220,255,.33); border-radius:12px; padding:13px 15px; }
+  #mockups .gcard.waiting { background:var(--panel); border-color:var(--line); }
+  #mockups .gcard .n { font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+              color:var(--cyan); font-family:Archivo,sans-serif; }
+  #mockups .gcard.waiting .n { color:var(--faint); }
+  #mockups .gcard b { display:block; margin-top:4px; font-size:15.5px; font-weight:500; }
+  #mockups .gcard b .cjk { color:var(--cyan); margin-right:4px; }
+  #mockups .gcard.waiting b .cjk { color:var(--faint); }
+  #mockups .gcard i { display:block; margin-top:5px; font-style:normal; font-size:12.5px;
+             color:var(--faint); line-height:1.5; }
+  #mockups .gcard .bar { display:block; height:4px; border-radius:99px; margin-top:9px;
+                background:rgba(95,220,255,.2); overflow:hidden; }
+  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--cyan);
+                  border-radius:99px; }
+
+  /* 鑑 */
+  #mockups .sheet2 .ihead { display:flex; gap:15px; align-items:center; }
+  #mockups .sheet2 .ihead svg { display:block; flex:none; }
+  #mockups .sheet2 .ihead b { display:block; font-size:24px; font-weight:400; line-height:1.15; }
+  #mockups .sheet2 .ihead i { display:block; font-style:normal; font-size:15px; }
+  #mockups .sheet2 .ihead em { display:block; margin-top:5px; font-style:normal; font-size:12px;
+                      color:var(--faint); }
+  #mockups .sheet2 .ranks { display:flex; align-items:center; gap:5px; margin-top:14px; }
+  #mockups .sheet2 .rank { width:30px; height:30px; border-radius:8px; display:grid;
+                  place-items:center; border:1px solid var(--line); color:var(--line); }
+  #mockups .sheet2 .rank b { font-size:15px; font-weight:400; color:inherit; }
+  #mockups .sheet2 .rank[data-on] { border-color:var(--c); color:var(--c);
+                           box-shadow:0 0 12px -3px var(--c); }
+  #mockups .sheet2 .rn { margin-left:8px; font-size:14px; }
+  #mockups .sheet2 .rn i { display:block; font-style:normal; font-size:11px; color:var(--faint); }
+  #mockups .sheet2 h4 { margin:16px 0 2px; font-family:Rajdhani,sans-serif; font-size:12px;
+               color:var(--faint); letter-spacing:.1em; text-transform:uppercase; }
+  #mockups .sheet2 .line { display:flex; align-items:center; gap:12px; padding:10px 0;
+                  border-bottom:1px solid var(--line); }
+  #mockups .sheet2 .line b { flex:none; min-width:26px; font-size:18px; font-weight:400;
+                    color:var(--text); }
+  #mockups .sheet2 .line .lab { flex:1; font-size:13.5px; }
+  #mockups .sheet2 .line .vs { flex:none; display:flex; gap:7px; align-items:baseline; font-size:14px;
+                      font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .sheet2 .line .vs i, #mockups .sheet2 .line .vs em { font-style:normal; color:var(--faint);
+                                              font-weight:400; }
+  #mockups .sheet2 .line.up .vs b { color:var(--cyan); }
+  #mockups .sheet2 .line.down .vs b { color:var(--magenta); }
+  #mockups .sheet2 .verd { display:flex; gap:9px; margin-top:16px; }
+  #mockups .sheet2 .sw { flex:1; background:var(--panel); border:1px solid var(--line);
+                border-radius:11px; padding:13px 10px; text-align:center; }
+  #mockups .sheet2 .sw b { display:block; font-size:17px; font-weight:400; color:var(--faint); }
+  #mockups .sheet2 .sw em { display:block; margin-top:3px; font-style:normal; font-size:17px;
+                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--cyan); }
+  #mockups .sheet2 .sw i { display:block; margin-top:3px; font-style:normal; font-size:10px;
+                  letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
+
+  /* 圍 */
+  #mockups .drive .size { display:flex; align-items:center; gap:13px; padding:13px 14px;
+                 border-radius:11px; background:var(--panel); border:1px solid var(--line);
+                 margin-bottom:8px; }
+  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--cyan);
+                    font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .drive .size .what { flex:1; }
+  #mockups .drive .size .what b { display:block; font-size:14.5px; font-weight:500; }
+  #mockups .drive .size .what i { display:block; font-style:normal; font-size:12px; color:var(--faint); }
+  #mockups .drive .size .price { flex:none; text-align:right; font-family:Rajdhani,sans-serif;
+                        font-weight:700; font-size:15px; color:var(--gold); }
+  #mockups .drive .size .price em { display:block; font-style:normal; font-size:10px;
+                           color:var(--faint); font-weight:400; letter-spacing:.1em;
+                           text-transform:uppercase; }
+
+  /* 收 */
+  #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+            padding:16px; }
+  #mockups .corner .sw1 { display:grid; place-items:center; width:28px; height:28px; margin-left:auto;
+                 border-radius:8px; background:var(--panel); border:1px solid var(--line);
+                 color:var(--faint); }
+  #mockups .corner .menu { margin-left:auto; max-width:230px; padding:5px; background:var(--ground);
+                  border:1px solid var(--line); border-radius:11px; }
+  #mockups .corner .menu span { display:flex; align-items:center; gap:11px; padding:9px; }
+  #mockups .corner .menu b { flex:none; width:22px; text-align:center; font-size:16px;
+                    font-weight:400; color:var(--cyan); }
+  #mockups .corner .menu i { font-style:normal; font-size:13.5px; }
+  #mockups .corner .cap { margin:12px 0 0; font-size:13px; color:var(--faint); }
 
   .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:7px;
          margin-top:22px; }
@@ -547,6 +835,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       moving its row and writing its section.</p>
     <div class="toc">
       <a href="#board"><b>狀</b> Where we are</a>
+      <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -556,6 +845,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#qi"><b>氣</b> Qi</a>
       <a href="#realms"><b>境</b> The realms</a>
       <a href="#beasts"><b>狩</b> The beasts</a>
+      <a href="#seen"><b>見</b> First sight</a>
       <a href="#record"><b>錄</b> The record</a>
       <a href="#combat"><b>戰</b> Combat</a>
       <a href="#build"><b>勢</b> The build</a>
@@ -570,6 +860,62 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
+
+  <section class="sec" id="mockups">
+    <h2><span class="h">樣</span> What it looks like</h2>
+    <p class="t">A standing rule, and Bruno's words for it: <i>"faz um mockup visual
+      sempre com exemplos quando se altera algo relacionado com aspecto/arte."</i> So
+      every screen that changed is drawn here rather than described — with the game's own
+      art functions, the game's own tables and, where there is a number, the number the
+      game would actually show. A mockup assembled from invented values is a drawing of
+      something that does not exist.</p>
+
+    <h3>梯 The climb, drawn</h3>
+    <p class="t">"layer 5 of 9" and "realm 5 of 9" were two numbers at opposite ends of
+      the screen, and nothing on it ever said that one was <b>inside</b> the other. They
+      are one object now, under the live bar, with the warden lit at the end of the rungs
+      only when it is actually standing there.</p>
+    ${MOCK_LADDER}
+
+    <h3>指 The pointing finger</h3>
+    <p class="t">The guide used to describe the button. It now draws a ring on it. The
+      whole overlay is <b>inert to the touch</b> — the ring is over the button and the
+      button still takes the tap, which is the one thing a coach mark must never get
+      wrong. It waits a beat before scrolling, so the card is read before the screen
+      moves, and it sits at the empty right-hand end of a wide target rather than over
+      the sentence above it.</p>
+    ${MOCK_COACH}
+
+    <h3>時 A step you cannot do yet</h3>
+    <p class="t">The second step asked for a kill that is not winnable for the first few
+      minutes of the game, and asked for it anyway — a ring pulsing on a fight with no
+      winning seed in it. A step that is not possible is now the <b>next</b> step: the
+      same step, a quieter card, a bar showing how close, and a line handing over
+      something to do in the meantime.</p>
+    ${MOCK_GUIDE}
+
+    <h3>鑑 Reading a piece of gear</h3>
+    <p class="t">Tapping a piece in the chest <b>wore it</b>, so there was never a moment
+      in which a player could look at it. The numbers below are not illustrative: they
+      are ${templateOf(MOCK_HELD).name} against ${templateOf(MOCK_WORN).name} run through
+      the same comparison the game runs, and the two figures at the bottom are
+      <code>power()</code> and <code>rate()</code> with the piece put on in a copy of the
+      save. Both sides of the trade appear, including the 破 line it loses.</p>
+    ${MOCK_ITEM}
+
+    <h3>圍 The drive</h3>
+    <p class="t">${MARKS[2] * BEASTS.length} taps to finish the record, and the most
+      played cultivator we model reaches eight beasts of ${BEASTS.length}. A beast you
+      have 熟 Known can be driven instead: ${DRIVE_SIZES.join(', ')} kills in one tap,
+      paid for in qi, which is also the exchange the economy never had.</p>
+    ${MOCK_DRIVE}
+
+    <h3>收 The corner</h3>
+    <p class="t">Five bare characters floating over the corner of a screen that is already
+      teaching characters is five unanswered questions at once. One button, and every row
+      arrives with its name in English.</p>
+    ${MOCK_MENU}
+  </section>
 
   <section class="sec" id="board">
     <h2><span class="h">狀</span> Where we are</h2>
@@ -821,6 +1167,38 @@ const page = `<title>九境 Ninefold — the Bible</title>
       fought as often as you like. Wardens die once.</p>
     <div class="beastgrid">${beastGrid}</div>
     <div class="cards">${beastNames}</div>
+  </section>
+
+  <section class="sec" id="seen">
+    <h2><span class="h">見</span> The first sight of a beast</h2>
+    <p class="t">A kill paid 材 material, material bought 妖丹 cores, and all of it was
+      invisible next to a qi bar that is the only number the screen ever shows moving.
+      The player's whole attention is on qi, and combat never touched it.</p>
+    <p class="t">So the <b>first</b> kill of every beast pays qi, once, for ever, inside
+      the 見 Seen mark that until then only filled in a page. The share is divided by the
+      realm on purpose: flat, it took twenty-two days off a hundred-and-twelve-day climb,
+      which answers a complaint nobody made.</p>
+    <table><thead><tr><th>Realm</th><th>Beast</th><th class="n">Pays</th>
+      <th class="n">Of a rung</th><th>Warden</th></tr></thead><tbody>${
+      [1, 3, 5, 7, 9].map((r) => {
+        const b = commonsOf(r)[0];
+        const rung = ladderAt((r - 1) * LAYERS_PER_REALM + 3);
+        return `<tr><td>${r}</td><td><b class="cjk">${b.han}</b> <i>${b.name}</i></td>
+          <td class="n">${num(seenBounty(b))}</td>
+          <td class="n">${Math.round(seenBounty(b) / rung * 100)}%</td>
+          <td><i>nothing</i></td></tr>`;
+      }).join('')}</tbody></table>
+    <div class="rule"><b>守 A warden pays nothing, and the reason is 突破 rather than
+      balance.</b> Breaking through sets the qi to nothing, and breaking through is what
+      every cultivator does the second the warden falls. A prize the next tap destroys is
+      a trap for anybody who notices.</div>
+    <div class="rule"><b>舊 And an old beast pays what it is worth to you.</b> 澤蛙 the
+      frog of the first realm paid 2 材 and the ninth realm's paid ${num(loot(commonsOf(9)[2]))},
+      so going back to finish a beast you had left behind was a hundred fights for a
+      rounding error. A beast now pays at least a quarter of what the weakest common of
+      <i>your own</i> realm pays: 山鼠 the rat goes from 1 材 for ever to ${OLD_RAT} at the
+      ninth. A quarter, so hunting at the top of your reach is still plainly better, and
+      going back is no longer charity.</div>
   </section>
 
   <section class="sec" id="record">

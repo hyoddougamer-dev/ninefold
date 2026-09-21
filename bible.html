@@ -30,6 +30,139 @@
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
 
+  /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
+  /* Every rule is scoped to the section. The first draft was not, and its .ladder
+     collided with the realm-ladder cards further down the page — which is the same
+     shared-class bug the save sheet had in the game, found twice in one day. */
+  #mockups .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+        padding:16px; }
+  #mockups .mk .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
+  @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
+
+  /* 梯 — and the block itself has to say so: the page's own .ladder is a grid of
+     realm cards, and scoping the children was not enough to stop it applying here. */
+  #mockups .mk.ladder { display:block; }
+  #mockups .ladder .lrow { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  #mockups .ladder .lab { flex:none; width:96px; font-size:11.5px; color:var(--faint);
+                 font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .ladder .realms { flex:1; display:flex; gap:5px; }
+  #mockups .ladder .dot { flex:1; height:3px; border-radius:99px; background:var(--line); }
+  #mockups .ladder .dot[data-done] { background:var(--c); opacity:.5; }
+  #mockups .ladder .dot[data-here] { background:var(--c); height:5px; box-shadow:0 0 8px -1px var(--c); }
+  #mockups .ladder .rungs { flex:1; display:flex; gap:3px; }
+  #mockups .ladder .rung { flex:1; height:10px; border-radius:3px; background:var(--line);
+                  overflow:hidden; }
+  #mockups .ladder .rung i { display:block; height:100%; border-radius:2px; }
+  #mockups .ladder .warden { flex:none; width:17px; color:var(--cyan); }
+  #mockups .ladder .warden svg { display:block; }
+
+  /* 指 */
+  #mockups .coach { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  #mockups .coach .arrow { width:34px; height:34px; display:grid; place-items:center;
+                  border-radius:99px; background:rgba(6,8,18,.92);
+                  border:1px solid rgba(95,220,255,.45); color:var(--cyan);
+                  box-shadow:0 0 14px -3px rgba(95,220,255,.8); }
+  #mockups .coach .arrow svg { display:block; }
+  #mockups .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
+         padding:13px 14px; border-radius:11px; background:var(--panel);
+         border:1px solid var(--line); }
+  #mockups .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
+                           0 0 22px -4px rgba(95,220,255,.75); }
+  #mockups .upg .ic { flex:none; width:26px; color:var(--cyan); }
+  #mockups .upg .ic svg { display:block; }
+  #mockups .upg > span:nth-child(2) { flex:1; }
+  #mockups .upg b { display:block; font-size:15px; font-weight:500; }
+  #mockups .upg b em { font-style:normal; font-size:13px; color:var(--faint); margin-left:4px; }
+  #mockups .upg i { display:block; font-style:normal; font-size:12.5px; color:var(--faint); }
+  #mockups .upg .price { flex:none; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px;
+                color:var(--gold); text-align:right; }
+  #mockups .upg .price em { display:block; font-style:normal; font-size:10px; color:var(--faint);
+                   font-weight:400; letter-spacing:.1em; text-transform:uppercase; }
+
+  /* 時 */
+  #mockups .gcard { background:linear-gradient(180deg,rgba(95,220,255,.09),rgba(95,220,255,.03));
+           border:1px solid rgba(95,220,255,.33); border-radius:12px; padding:13px 15px; }
+  #mockups .gcard.waiting { background:var(--panel); border-color:var(--line); }
+  #mockups .gcard .n { font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+              color:var(--cyan); font-family:Archivo,sans-serif; }
+  #mockups .gcard.waiting .n { color:var(--faint); }
+  #mockups .gcard b { display:block; margin-top:4px; font-size:15.5px; font-weight:500; }
+  #mockups .gcard b .cjk { color:var(--cyan); margin-right:4px; }
+  #mockups .gcard.waiting b .cjk { color:var(--faint); }
+  #mockups .gcard i { display:block; margin-top:5px; font-style:normal; font-size:12.5px;
+             color:var(--faint); line-height:1.5; }
+  #mockups .gcard .bar { display:block; height:4px; border-radius:99px; margin-top:9px;
+                background:rgba(95,220,255,.2); overflow:hidden; }
+  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--cyan);
+                  border-radius:99px; }
+
+  /* 鑑 */
+  #mockups .sheet2 .ihead { display:flex; gap:15px; align-items:center; }
+  #mockups .sheet2 .ihead svg { display:block; flex:none; }
+  #mockups .sheet2 .ihead b { display:block; font-size:24px; font-weight:400; line-height:1.15; }
+  #mockups .sheet2 .ihead i { display:block; font-style:normal; font-size:15px; }
+  #mockups .sheet2 .ihead em { display:block; margin-top:5px; font-style:normal; font-size:12px;
+                      color:var(--faint); }
+  #mockups .sheet2 .ranks { display:flex; align-items:center; gap:5px; margin-top:14px; }
+  #mockups .sheet2 .rank { width:30px; height:30px; border-radius:8px; display:grid;
+                  place-items:center; border:1px solid var(--line); color:var(--line); }
+  #mockups .sheet2 .rank b { font-size:15px; font-weight:400; color:inherit; }
+  #mockups .sheet2 .rank[data-on] { border-color:var(--c); color:var(--c);
+                           box-shadow:0 0 12px -3px var(--c); }
+  #mockups .sheet2 .rn { margin-left:8px; font-size:14px; }
+  #mockups .sheet2 .rn i { display:block; font-style:normal; font-size:11px; color:var(--faint); }
+  #mockups .sheet2 h4 { margin:16px 0 2px; font-family:Rajdhani,sans-serif; font-size:12px;
+               color:var(--faint); letter-spacing:.1em; text-transform:uppercase; }
+  #mockups .sheet2 .line { display:flex; align-items:center; gap:12px; padding:10px 0;
+                  border-bottom:1px solid var(--line); }
+  #mockups .sheet2 .line b { flex:none; min-width:26px; font-size:18px; font-weight:400;
+                    color:var(--text); }
+  #mockups .sheet2 .line .lab { flex:1; font-size:13.5px; }
+  #mockups .sheet2 .line .vs { flex:none; display:flex; gap:7px; align-items:baseline; font-size:14px;
+                      font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .sheet2 .line .vs i, #mockups .sheet2 .line .vs em { font-style:normal; color:var(--faint);
+                                              font-weight:400; }
+  #mockups .sheet2 .line.up .vs b { color:var(--cyan); }
+  #mockups .sheet2 .line.down .vs b { color:var(--magenta); }
+  #mockups .sheet2 .verd { display:flex; gap:9px; margin-top:16px; }
+  #mockups .sheet2 .sw { flex:1; background:var(--panel); border:1px solid var(--line);
+                border-radius:11px; padding:13px 10px; text-align:center; }
+  #mockups .sheet2 .sw b { display:block; font-size:17px; font-weight:400; color:var(--faint); }
+  #mockups .sheet2 .sw em { display:block; margin-top:3px; font-style:normal; font-size:17px;
+                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--cyan); }
+  #mockups .sheet2 .sw i { display:block; margin-top:3px; font-style:normal; font-size:10px;
+                  letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
+
+  /* 圍 */
+  #mockups .drive .size { display:flex; align-items:center; gap:13px; padding:13px 14px;
+                 border-radius:11px; background:var(--panel); border:1px solid var(--line);
+                 margin-bottom:8px; }
+  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--cyan);
+                    font-family:Rajdhani,sans-serif; font-weight:700; }
+  #mockups .drive .size .what { flex:1; }
+  #mockups .drive .size .what b { display:block; font-size:14.5px; font-weight:500; }
+  #mockups .drive .size .what i { display:block; font-style:normal; font-size:12px; color:var(--faint); }
+  #mockups .drive .size .price { flex:none; text-align:right; font-family:Rajdhani,sans-serif;
+                        font-weight:700; font-size:15px; color:var(--gold); }
+  #mockups .drive .size .price em { display:block; font-style:normal; font-size:10px;
+                           color:var(--faint); font-weight:400; letter-spacing:.1em;
+                           text-transform:uppercase; }
+
+  /* 收 */
+  #mockups .corner { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+            padding:16px; }
+  #mockups .corner .sw1 { display:grid; place-items:center; width:28px; height:28px; margin-left:auto;
+                 border-radius:8px; background:var(--panel); border:1px solid var(--line);
+                 color:var(--faint); }
+  #mockups .corner .menu { margin-left:auto; max-width:230px; padding:5px; background:var(--ground);
+                  border:1px solid var(--line); border-radius:11px; }
+  #mockups .corner .menu span { display:flex; align-items:center; gap:11px; padding:9px; }
+  #mockups .corner .menu b { flex:none; width:22px; text-align:center; font-size:16px;
+                    font-weight:400; color:var(--cyan); }
+  #mockups .corner .menu i { font-style:normal; font-size:13.5px; }
+  #mockups .corner .cap { margin:12px 0 0; font-size:13px; color:var(--faint); }
+
   .toc { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:7px;
          margin-top:22px; }
   .toc a { display:flex; align-items:baseline; gap:8px; text-decoration:none;
@@ -174,6 +307,7 @@
       moving its row and writing its section.</p>
     <div class="toc">
       <a href="#board"><b>狀</b> Where we are</a>
+      <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -183,6 +317,7 @@
       <a href="#qi"><b>氣</b> Qi</a>
       <a href="#realms"><b>境</b> The realms</a>
       <a href="#beasts"><b>狩</b> The beasts</a>
+      <a href="#seen"><b>見</b> First sight</a>
       <a href="#record"><b>錄</b> The record</a>
       <a href="#combat"><b>戰</b> Combat</a>
       <a href="#build"><b>勢</b> The build</a>
@@ -198,6 +333,125 @@
     </div>
   </header>
 
+  <section class="sec" id="mockups">
+    <h2><span class="h">樣</span> What it looks like</h2>
+    <p class="t">A standing rule, and Bruno's words for it: <i>"faz um mockup visual
+      sempre com exemplos quando se altera algo relacionado com aspecto/arte."</i> So
+      every screen that changed is drawn here rather than described — with the game's own
+      art functions, the game's own tables and, where there is a number, the number the
+      game would actually show. A mockup assembled from invented values is a drawing of
+      something that does not exist.</p>
+
+    <h3>梯 The climb, drawn</h3>
+    <p class="t">"layer 5 of 9" and "realm 5 of 9" were two numbers at opposite ends of
+      the screen, and nothing on it ever said that one was <b>inside</b> the other. They
+      are one object now, under the live bar, with the warden lit at the end of the rungs
+      only when it is actually standing there.</p>
+    <div class="mk ladder">
+    <div class="lrow"><span class="lab">境 realm 5/9</span><span class="realms"><span class="dot" style="--c:#5FDCFF" data-done="true"></span><span class="dot" style="--c:#5FC4FF" data-done="true"></span><span class="dot" style="--c:#77AEFF" data-done="true"></span><span class="dot" style="--c:#9B9BFF" data-done="true"></span><span class="dot" style="--c:#B587FF" data-here="true"></span><span class="dot" style="--c:#CC79FF"></span><span class="dot" style="--c:#E571F0"></span><span class="dot" style="--c:#FF63CE"></span><span class="dot" style="--c:#FF5AA6"></span></span></div>
+    <div class="lrow"><span class="lab">層 layer 5/9</span><span class="rungs"><span class="rung"><i style="width:100%;background:#B587FF"></i></span><span class="rung"><i style="width:100%;background:#B587FF"></i></span><span class="rung"><i style="width:100%;background:#B587FF"></i></span><span class="rung"><i style="width:100%;background:#B587FF"></i></span><span class="rung"><i style="width:62%;background:#B587FF"></i></span><span class="rung"><i style="width:0%;background:#B587FF"></i></span><span class="rung"><i style="width:0%;background:#B587FF"></i></span><span class="rung"><i style="width:0%;background:#B587FF"></i></span><span class="rung"><i style="width:0%;background:#B587FF"></i></span></span>
+      <span class="warden"><svg viewBox="0 0 512 512" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M258.406 25.03c-13.73 0-44.75 28.13-44.75 62.814 0 31.578 6.432 55.835 16.5 70.937-23.144 3.766-44.237 12.52-61.03 27.314-2.99 2.633-5.824 5.462-8.5 8.47-38.335-36.232-115.217 13.032-137 39.28-19.604 23.618 58.395 26.618 110.718 16.75-1.837 9.754-2.813 20.262-2.813 31.53 0 39.603 11.68 76.216 31.157 104.282-42.685 4.89-61.916 64.204-61.093 90.438.912 29.105 77-17.718 105.5-49.375 8.82 4.862 18.197 8.497 28 10.75 4.822 14.255 10.526 28.394 23.312 41.655 13.732-13.89 18.762-27.77 23.28-41.656 9.815-2.253 19.203-5.883 28.033-10.75 28.498 31.656 104.587 78.48 105.5 49.374.822-26.234-18.41-85.55-61.095-90.438 19.477-28.066 31.156-64.68 31.156-104.28 0-11.27-.974-21.778-2.81-31.532 52.322 9.868 130.32 6.868 110.717-16.75-21.784-26.248-98.666-75.512-137-39.28-2.677-3.008-5.51-5.837-8.5-8.47-16.86-14.855-38.058-23.604-61.312-27.344 10.232-15.31 16.78-39.817 16.78-70.906 0-34.683-31.018-62.813-44.75-62.813zm0 150.25c20.22 0 38.787 3.424 54.563 10.532l-26.345 31.97h-56.438l-26.343-31.97c15.775-7.108 34.34-10.53 54.562-10.53zm-70.937 20.032l25.75 31.25-29.97 44.032-4.28 6.28 5.31 5.47 36.532 37.625-23.312 28.436-5.28 6.438 5.78 6 27.125 28 13.438-13-21.344-22.03 21.53-26.22h39.313l21.53 26.22-21.343 22.03 13.438 13 27.125-28 5.78-6-5.28-6.438L296 319.97l36.563-37.626 5.25-5.438-4.22-6.28-29.718-44.376 25.5-30.938c2.06 1.506 4.06 3.1 5.97 4.782 19.106 16.832 31.25 42.762 31.25 82.03 0 78.538-49.7 140.063-108.19 140.063-58.486 0-108.186-61.525-108.186-140.062 0-39.27 12.14-65.2 31.25-82.03 1.913-1.688 3.93-3.273 6-4.782zm41.593 41.157h59.156l25.655 38.25-33.188 34.186h-44.562L203 274.78l26.063-38.31z"/></svg></span></div>
+    <p class="cap">Your qi fills one rung. Nine rungs fill 化神 Spirit Severing. Its warden
+      then stands at the end, and beating it opens the next realm.</p>
+  </div>
+
+    <h3>指 The pointing finger</h3>
+    <p class="t">The guide used to describe the button. It now draws a ring on it. The
+      whole overlay is <b>inert to the touch</b> — the ring is over the button and the
+      button still takes the tap, which is the one thing a coach mark must never get
+      wrong. It waits a beat before scrolling, so the card is read before the screen
+      moves, and it sits at the empty right-hand end of a wide target rather than over
+      the sentence above it.</p>
+    <div class="mk coach">
+  <span class="arrow"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3 L12 19 M5.5 12.5 L12 19.5 L18.5 12.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <div class="upg ringed">
+    <span class="ic"><svg viewBox="0 0 512 512" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M482.403 42.826c-10.537-8.76-24.84-4.167-43.264 11.643-76.1 65.307-202.78 179.14-282.432 269.103l21.07 21.07c82.21-87.285 203.37-205.524 304.625-301.817zm-338.477 293.42l-17.17 17.028 22.302 22.303c5.313-5.817 10.787-11.75 16.41-17.79zm-56.796.03l-12.728 12.728 79.196 79.196 12.728-12.728zm2.942 54.185l-60.475 60.475c.372 11.49 10.708 22.336 22.628 22.627l60.474-60.474-8.137-8.136c2.657 4.264 2.84 8.705.457 11.097-3.124 3.123-9.554 1.758-14.363-3.05 4.808 4.808 6.174 11.24 3.05 14.363-3.125 3.124-9.555 1.76-14.364-3.05 4.81 4.81 6.174 11.24 3.05 14.363-3.124 3.125-9.555 1.76-14.363-3.05 4.808 4.81 6.173 11.24 3.05 14.364-3.125 3.124-9.556 1.76-14.364-3.05 4.808 4.81 6.174 11.24 3.05 14.364-3.125 3.124-9.555 1.76-14.364-3.05-4.808-4.808-6.173-11.24-3.05-14.363 3.125-3.123 9.556-1.758 14.364 3.05-4.808-4.808-6.173-11.238-3.05-14.362 3.125-3.125 9.555-1.76 14.364 3.05-4.81-4.81-6.174-11.24-3.05-14.364 3.125-3.124 9.555-1.76 14.363 3.05-4.808-4.81-6.173-11.24-3.05-14.364 3.125-3.124 9.556-1.76 14.364 3.05-4.808-4.81-6.173-11.24-3.05-14.364 2.39-2.383 6.828-2.202 11.09.45z"/></svg></span>
+    <span><b>Sword Technique <em class="cjk">劍訣</em></b>
+      <i>+22% power · 0 of 6</i></span>
+    <span class="price">763<em>qi</em></span>
+  </div>
+</div>
+
+    <h3>時 A step you cannot do yet</h3>
+    <p class="t">The second step asked for a kill that is not winnable for the first few
+      minutes of the game, and asked for it anyway — a ring pulsing on a fight with no
+      winning seed in it. A step that is not possible is now the <b>next</b> step: the
+      same step, a quieter card, a bar showing how close, and a line handing over
+      something to do in the meantime.</p>
+    <div class="mk two">
+  <div class="gcard">
+    <span class="n">Step 2 of 5</span>
+    <b><span class="cjk">狩</span> Go and kill something</b>
+    <i>Press the beast the arrow points at. The odds are honest, and losing costs you nothing at all.</i>
+  </div>
+  <div class="gcard waiting">
+    <span class="n">Next · 2 of 5</span>
+    <b><span class="cjk">狩</span> Go and kill something</b>
+    <i>山鼠 the rat is still stronger than you, and the hunt screen says by how much. Buy power and the gap closes. The bar below is how close you are.<span class="bar"><i style="width:44%"></i></span></i>
+  </div>
+</div>
+
+    <h3>鑑 Reading a piece of gear</h3>
+    <p class="t">Tapping a piece in the chest <b>wore it</b>, so there was never a moment
+      in which a player could look at it. The numbers below are not illustrative: they
+      are Jadewater Sword against Elder Bronze Sword run through
+      the same comparison the game runs, and the two figures at the bottom are
+      <code>power()</code> and <code>rate()</code> with the piece put on in a copy of the
+      save. Both sides of the trade appear, including the 破 line it loses.</p>
+    <div class="mk sheet2">
+    <div class="ihead"><svg viewBox="0 0 76 76" width="76" height="76" role="img" aria-label="Jadewater Sword, Heaven, Jadewater set"><defs><radialGradient id="gheaven76"><stop offset=".35" stop-color="#FF5FC8" stop-opacity="0.27"/><stop offset="1" stop-color="#FF5FC8" stop-opacity="0"/></radialGradient></defs><rect width="76" height="76" rx="9" fill="url(#gheaven76)"/><rect x=".8" y=".8" width="74.4" height="74.4" rx="9" fill="none" stroke="#FF5FC8" stroke-width="1.5" stroke-opacity="0.97"/><path d="M 3.0 17.4 L 3.0 3.0 L 17.4 3.0" fill="none" stroke="#FF5FC8" stroke-width="1.4" stroke-opacity=".9" stroke-linecap="round"/><path d="M 73.0 17.4 L 73.0 3.0 L 58.6 3.0" fill="none" stroke="#FF5FC8" stroke-width="1.4" stroke-opacity=".9" stroke-linecap="round"/><path d="M 3.0 58.6 L 3.0 73.0 L 17.4 73.0" fill="none" stroke="#FF5FC8" stroke-width="1.4" stroke-opacity=".9" stroke-linecap="round"/><path d="M 73.0 58.6 L 73.0 73.0 L 58.6 73.0" fill="none" stroke="#FF5FC8" stroke-width="1.4" stroke-opacity=".9" stroke-linecap="round"/><circle cx="38" cy="38" r="31.2" fill="none" stroke="#FF5FC8" stroke-width="1" stroke-opacity=".55" stroke-dasharray="7.6 5.3" transform="rotate(0.0 38 38)"/><line x1="71.4" y1="38.0" x2="79.0" y2="38.0" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="67.0" y1="54.7" x2="70.9" y2="57.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><line x1="54.7" y1="67.0" x2="58.5" y2="73.5" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="38.0" y1="71.4" x2="38.0" y2="76.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><line x1="21.3" y1="67.0" x2="17.5" y2="73.5" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="9.0" y1="54.7" x2="5.1" y2="57.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><line x1="4.6" y1="38.0" x2="-3.0" y2="38.0" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="9.0" y1="21.3" x2="5.1" y2="19.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><line x1="21.3" y1="9.0" x2="17.5" y2="2.5" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="38.0" y1="4.6" x2="38.0" y2="0.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><line x1="54.7" y1="9.0" x2="58.5" y2="2.5" stroke="#FF5FC8" stroke-width="1.3" stroke-opacity="0.6"/><line x1="67.0" y1="21.3" x2="70.9" y2="19.0" stroke="#FF5FC8" stroke-width="0.8" stroke-opacity="0.35"/><circle cx="60.8" cy="38.0" r="1.7" fill="#FF5FC8" fill-opacity=".8"/><circle cx="45.0" cy="55.3" r="1.7" fill="#FF5FC8" fill-opacity=".8"/><circle cx="19.6" cy="48.7" r="1.7" fill="#FF5FC8" fill-opacity=".8"/><circle cx="19.6" cy="27.3" r="1.7" fill="#FF5FC8" fill-opacity=".8"/><circle cx="45.0" cy="20.7" r="1.7" fill="#FF5FC8" fill-opacity=".8"/><g transform="translate(20.5 20.5) scale(0.0683)" fill="#FF5FC8"><path d="M365.1 21.31c-6.3-.03-12.4.5-16.9 1.4-4.3.86-6.9 2.81-6.8 2.25-5.4 9.07-11.1 24.96-12.3 38.47-.7 6.95-.2 13.21 1.3 17.39 1.5 4.17 3.2 6.1 6.5 7.31.3.1.4.18.5.25 0-.11.1-.28.4-.55 1.1-.97 3.2-4.03 5.3-8.1 4.1-8.15 7.5-19.78 16.1-28.18 9.2-8.93 21.6-12.1 30.4-16.15 4.4-2.02 7.7-4.15 9.1-5.64.4-.5.6-.75.8-1.05-6.2-3.54-19.3-6.95-31.7-7.33v-.02c-.9-.03-1.8-.04-2.7-.05zm-27.7 67.07c-.1.18.1.14 0 0zm72.3-44.28c-3.8 3.39-8.2 5.63-12.6 7.65-10.4 4.81-21.4 8.86-25.3 12.69-1.2 1.19-2.6 3.38-4.1 6.13 3.4 3.18 7.5 6.16 12 8.69 10.1 5.62 20.8 7.85 29.1 7.08 8.4-.63 13.6-3.77 16.2-8.32 2.5-4.55 2.3-10.69-1.6-18.1-2.7-5.4-7.4-11.01-13.7-15.82zm-50.3 43.19c0 .17-.1.33-.2.5-2.4 4.82-5 9.59-9.4 13.51-3.4 2.9-8.6 5-13.8 4.8-7.4 10.2-16 20.9-26.7 32.2 21.9 9.6 38 18.5 57.8 31.9 7.1-27.8 16.3-48.5 25.9-67-7.3-1.4-14.8-4.2-22-8.19-4.2-2.3-8.1-4.9-11.6-7.72zm-102 16.91c-24.1 1.1-35.8 11.4-42.4 23.5-6.6 12-6.6 27-4.9 32 .5 1.8.3 1.3 1 1.4.7.2 3 .2 6.2-1.3 6.4-3.1 15.3-11.3 20.8-23.5l4.1-9 8.5 4.9c7.4 4.2 17.9.6 22.8-5.5.5-5.7-1.1-11.5-4.2-15.7-3.2-4.3-7.3-6.7-11.1-6.8h-.8zm22.4 41.2c-8.3 5.9-19 8.3-29.4 5.7-2.8 4.8-6 9.1-9.4 12.8 65.4 23.4 80.5 30.9 129.6 69.3 1.1 30.4 4 73.9 1 96.9-2.4 18.3 17.7 12 18 .2.4-18.3-3.1-37.9.7-54.7.8 15.7 14.8 13.5 15.1.3l.7-43.6 6.8-6.3c-63.8-48.1-79.5-59.2-133.1-80.6zm-8.3 48.8l-52.8 95.6 9.2 18.5-22.5 5.4-29.5 53.4 10 8.2 21.7-3.7 91.5-165.4c-8.1-4.1-16.9-7.8-27.6-12zm43.5 20.7l-84.5 152.8 37.8-6.4 37.6-68.1-1-24 17.8-6.3 17.1-30.9c-9.2-6.9-17.1-12.4-24.8-17.1zm-193.1 131L21.17 402.1v15.6l98.63-13.5 23 48.4-16.2 7.8-17.4-36.6-88.03 12V496H391.4l-5.9-10.8-74-29.3-55.4 21.7-6.6-16.8 62-24.3 60.4 23.9-.8-1.4-82-82.9-85.5 14.5 24.4 20.9-11.8 13.6-39.9-34.2-54.4-45z"/></g><text x="4" y="72.5" font-size="13.7" fill="#B587FF" fill-opacity=".85" font-family="'Noto Serif SC',serif">碧</text><text x="72" y="72.5" text-anchor="end" font-size="13.7" fill="#FF5FC8" fill-opacity=".9" font-family="'Noto Serif SC',serif">天</text></svg>
+      <span><b class="cjk" style="color:#FF5FC8">碧玉劍</b>
+        <i>Jadewater Sword</i>
+        <em>劍 Weapon · realm 5 make</em></span></div>
+    <div class="ranks"><span class="rank"><b class="cjk">凡</b></span><span class="rank"><b class="cjk">靈</b></span><span class="rank"><b class="cjk">玄</b></span><span class="rank"><b class="cjk">地</b></span><span class="rank" data-on="true" style="--c:#FF5FC8"><b class="cjk">天</b></span><span class="rn" style="color:#FF5FC8">Heaven<i>5 lines</i></span></div>
+    <h4>Against the Elder Bronze Sword you are wearing</h4>
+    <div class="line up"><b class="cjk">力</b>
+      <span class="lab">power</span>
+      <span class="vs"><i>12.8%</i><em>→</em><b>36.6%</b></span></div><div class="line up"><b class="cjk">氣</b>
+      <span class="lab">qi per second</span>
+      <span class="vs"><i>—</i><em>→</em><b>20.5%</b></span></div><div class="line up"><b class="cjk">運</b>
+      <span class="lab">rarer gear</span>
+      <span class="vs"><i>—</i><em>→</em><b>10.2%</b></span></div><div class="line up"><b class="cjk">拾</b>
+      <span class="lab">drop chance</span>
+      <span class="vs"><i>—</i><em>→</em><b>3.3%</b></span></div><div class="line up"><b class="cjk">藏</b>
+      <span class="lab">chest slots</span>
+      <span class="vs"><i>—</i><em>→</em><b>2</b></span></div><div class="line down"><b class="cjk">破</b>
+      <span class="lab">beasts weaker</span>
+      <span class="vs"><i>2.3%</i><em>→</em><b>—</b></span></div>
+    <div class="verd"><span class="sw"><b class="cjk">力</b><em>+21.1%</em><i>power</i></span>
+      <span class="sw"><b class="cjk">氣</b><em>+12.9%</em><i>qi per second</i></span></div>
+  </div>
+
+    <h3>圍 The drive</h3>
+    <p class="t">3600 taps to finish the record, and the most
+      played cultivator we model reaches eight beasts of 36. A beast you
+      have 熟 Known can be driven instead: 10, 50, 200 kills in one tap,
+      paid for in qi, which is also the exchange the economy never had.</p>
+    <div class="mk drive">
+    <div class="size"><span class="n">10</span>
+      <span class="what"><b>10 kills</b><i>about 6120 材</i></span>
+      <span class="price">113M<em>qi</em></span></div><div class="size"><span class="n">50</span>
+      <span class="what"><b>50 kills</b><i>about 30.6k 材</i></span>
+      <span class="price">565M<em>qi</em></span></div><div class="size"><span class="n">200</span>
+      <span class="what"><b>200 kills</b><i>about 122k 材</i></span>
+      <span class="price">2.26B<em>qi</em></span></div>
+    <p class="cap">巨蟹 Giant Crab, halfway up the fifth realm. Fifty kills costs about
+      one rung wherever you are standing, and fighting it one at a time is still free.</p>
+  </div>
+
+    <h3>收 The corner</h3>
+    <p class="t">Five bare characters floating over the corner of a screen that is already
+      teaching characters is five unanswered questions at once. One button, and every row
+      arrives with its name in English.</p>
+    <div class="mk two">
+  <div class="corner"><span class="sw1">≡</span><p class="cap">Shut, which is how every
+    visit starts.</p></div>
+  <div class="corner"><div class="menu">
+    <span><b class="cjk">存</b><i>Your save</i></span><span><b class="cjk">?</b><i>How to play</i></span><span><b class="cjk">釋</b><i>What the characters mean</i></span><span><b class="cjk">碑</b><i>The stele</i></span><span><b class="cjk">♪</b><i>Sound on</i></span>
+  </div></div>
+</div>
+  </section>
+
   <section class="sec" id="board">
     <h2><span class="h">狀</span> Where we are</h2>
     <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--cyan)">成</b>
@@ -205,7 +459,7 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>25 closed,
+    <p class="t"><b>35 closed,
       0 open,
       1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
@@ -244,7 +498,7 @@
     <span class="body"><b class="cjk">開</b> <em><a href="#opens">What each realm opens</a></em><i>Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights stalls in the third realm.</i></span>
+    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 32 days later.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
@@ -284,6 +538,36 @@
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">圖鑑</b> <em><a href="#record">Finishing a realm of the bestiary</a></em><i>A realm whose four beasts are all 熟 Known pays 1 道, from the sixth realm. The one thing hunting never asked for: going back.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">梯</b> <em><a href="#mockups">Seeing the climb</a></em><i>Nine realms and nine rungs drawn as one object under the bar, with the warden lit at the end of them. "layer 3 of 9" and "realm 1 of 9" were two numbers at opposite ends of a screen and nothing ever said one was inside the other.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">指</b> <em><a href="#mockups">The pointing finger</a></em><i>The guide draws a ring and an arrow on the real button. The overlay takes no taps, so the ring is over the button and the button still works.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">時</b> <em><a href="#mockups">A step you cannot do yet</a></em><i>A step that is not possible yet is the *next* step, not the instruction: a quieter card, a bar showing how close, and something to do in the meantime.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">境</b> <em><a href="#mockups">What a realm is</a></em><i>A page reached from the realm's own name: what a realm is, what stands at the end of this one, what it opened, and what the next one is worth.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">見</b> <em><a href="#beasts">The first sight of a beast</a></em><i>Half a rung of qi the first time each beast falls, divided by the realm after that. 36 beasts, 36 payments in a lifetime, so it cannot be farmed and it is not a rate.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">圍</b> <em><a href="#mockups">The drive</a></em><i>10, 50, 200 kills in one tap on a beast you have 熟 Known, paid for in qi. The whole record goes from 3600 taps to 72.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">舊</b> <em><a href="#beasts">Old beasts worth going back for</a></em><i>A beast pays at least a quarter of what the weakest common of *your* realm pays. 山鼠 the rat went from 1 材 for ever to 109k at the ninth realm.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">鑑</b> <em><a href="#mockups">Reading a piece of gear</a></em><i>Tapping a piece opened nothing and wore it. It now opens a sheet: the rank named, every line, both sides of the trade, and the swing taken from the sim rather than from adding roll values up.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">誠</b> <em><a href="#combat">Honest odds</a></em><i>A fight that wins none of its sampled seeds says how far off it is rather than quoting the 2% floor. The first realm's three beasts read 2%, 2%, 2% and now read ×2.4, ×7.0, ×14.0.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">收</b> <em><a href="#mockups">The corner, folded</a></em><i>Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
     <span class="st"><b class="cjk">待</b><i>planned</i></span>
     <span class="body"><b class="cjk">轉世</b> <em>Rebirth</em><i>Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody's memory.</i></span>
@@ -541,46 +825,54 @@
           <th style="text-align:right">open</th><th style="text-align:right">realm 9</th>
           <th style="text-align:right">力 at the end</th><th style="text-align:right">tower</th>
           <th style="text-align:right">fights</th></tr>
-      <tr style="--hue:var(--magenta)">
+      <tr style="--hue:var(--cyan)">
     <td><b class="cjk">never fights</b><i style="display:block">Opens it once a day, buys what the qi affords, and never taps a beast.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--magenta)">never · stuck at 3</td>
-    <td class="n">968</td>
+    <td class="n" style="color:var(--cyan)">day 123</td>
+    <td class="n">41.3M</td>
     <td class="n">—</td>
-    <td class="n">2</td>
+    <td class="n">8</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
-    <td class="n" style="color:var(--cyan)">day 96</td>
-    <td class="n">293M</td>
-    <td class="n">89</td>
-    <td class="n">1,265</td>
+    <td class="n" style="color:var(--cyan)">day 91</td>
+    <td class="n">351M</td>
+    <td class="n">90</td>
+    <td class="n">1,210</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--cyan)">day 85</td>
+    <td class="n" style="color:var(--cyan)">day 81</td>
     <td class="n">745M</td>
     <td class="n">—</td>
-    <td class="n">905</td>
+    <td class="n">875</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 63</td>
-    <td class="n">1.34B</td>
+    <td class="n" style="color:var(--cyan)">day 61</td>
+    <td class="n">1.22B</td>
     <td class="n">97</td>
-    <td class="n">5,417</td>
+    <td class="n">5,223</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
-    <td class="n" style="color:var(--cyan)">day 46</td>
-    <td class="n">1.11B</td>
+    <td class="n" style="color:var(--cyan)">day 44</td>
+    <td class="n">1.07B</td>
     <td class="n">96</td>
-    <td class="n">17,736</td>
+    <td class="n">16,896</td>
+  </tr><tr style="--hue:var(--cyan)">
+    <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
+    <td class="n">6x</td>
+    <td class="n">10 min</td>
+    <td class="n" style="color:var(--cyan)">day 61</td>
+    <td class="n">1.02B</td>
+    <td class="n">96</td>
+    <td class="n">5,426</td>
   </tr>
     </table>
     <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
@@ -1179,6 +1471,45 @@
   </div></div>
   </section>
 
+  <section class="sec" id="seen">
+    <h2><span class="h">見</span> The first sight of a beast</h2>
+    <p class="t">A kill paid 材 material, material bought 妖丹 cores, and all of it was
+      invisible next to a qi bar that is the only number the screen ever shows moving.
+      The player's whole attention is on qi, and combat never touched it.</p>
+    <p class="t">So the <b>first</b> kill of every beast pays qi, once, for ever, inside
+      the 見 Seen mark that until then only filled in a page. The share is divided by the
+      realm on purpose: flat, it took twenty-two days off a hundred-and-twelve-day climb,
+      which answers a complaint nobody made.</p>
+    <table><thead><tr><th>Realm</th><th>Beast</th><th class="n">Pays</th>
+      <th class="n">Of a rung</th><th>Warden</th></tr></thead><tbody><tr><td>1</td><td><b class="cjk">山鼠</b> <i>Mountain Rat</i></td>
+          <td class="n">1407</td>
+          <td class="n">50%</td>
+          <td><i>nothing</i></td></tr><tr><td>3</td><td><b class="cjk">鐵甲</b> <i>Iron Beetle</i></td>
+          <td class="n">273k</td>
+          <td class="n">17%</td>
+          <td><i>nothing</i></td></tr><tr><td>5</td><td><b class="cjk">巨蟹</b> <i>Giant Crab</i></td>
+          <td class="n">42.5M</td>
+          <td class="n">10%</td>
+          <td><i>nothing</i></td></tr><tr><td>7</td><td><b class="cjk">魔猿</b> <i>Demon Ogre</i></td>
+          <td class="n">3.49B</td>
+          <td class="n">7%</td>
+          <td><i>nothing</i></td></tr><tr><td>9</td><td><b class="cjk">羽妖</b> <i>Harpy</i></td>
+          <td class="n">139B</td>
+          <td class="n">6%</td>
+          <td><i>nothing</i></td></tr></tbody></table>
+    <div class="rule"><b>守 A warden pays nothing, and the reason is 突破 rather than
+      balance.</b> Breaking through sets the qi to nothing, and breaking through is what
+      every cultivator does the second the warden falls. A prize the next tap destroys is
+      a trap for anybody who notices.</div>
+    <div class="rule"><b>舊 And an old beast pays what it is worth to you.</b> 澤蛙 the
+      frog of the first realm paid 2 材 and the ninth realm's paid 900k,
+      so going back to finish a beast you had left behind was a hundred fights for a
+      rounding error. A beast now pays at least a quarter of what the weakest common of
+      <i>your own</i> realm pays: 山鼠 the rat goes from 1 材 for ever to 109k at the
+      ninth. A quarter, so hunting at the top of your reach is still plainly better, and
+      going back is no longer charity.</div>
+  </section>
+
   <section class="sec" id="record">
     <h2><span class="h">錄</span> The record</h2>
     <p class="t">狩 Hunt had a real problem. By the fifth realm it was fifteen buttons all
@@ -1699,7 +2030,7 @@
     <span class="body"><b class="cjk">上限</b> <em>A realm only holds so much</em><i>Six levels of each upgrade, and this realm is full of one of them. The only way to hold more is to climb, so a full box is not a wall. It is the next realm calling.</i></span>
   </div>
   <div class="row">
-    <span class="body"><b class="cjk">妖丹</b> <em>Go and kill something</em><i>妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only falls off beasts. Until you have some, this realm's warden will not fall.</i></span>
+    <span class="body"><b class="cjk">妖丹</b> <em>材 Material is the other currency</em><i>妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only falls off beasts. Until you have some, this realm's warden will not fall.</i></span>
   </div>
   <div class="row">
     <span class="body"><b class="cjk">塔</b> <em>Only the next floor is ever open</em><i>It never runs out, and losing costs nothing. The only question a floor asks is whether your build clears it. Sweep what is below you for material; the floors that can actually beat you are the ones that pay in qi.</i></span>
@@ -1997,8 +2328,8 @@
       1.2x a pill and a pill worth 3% give a mark of
       1.728x and a Dragon of 1.89x.</p>
     <p class="t">Measured, played out crossing by crossing: <b>40 marks
-      in 119 days</b>, 2 to
-      3 days each, ending on tower floor 238
+      in 120 days</b>, 2 to
+      4 days each, ending on tower floor 237
       with 445 pills brewed. The margin a good run arrives
       with buys the first crossings at
       98%; the odds then walk down and settle
