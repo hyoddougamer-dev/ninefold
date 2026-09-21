@@ -2069,7 +2069,14 @@ const page = `<title>九境 Ninefold — the Bible</title>
       to the price, it is no wall. The endgame's own test caught it in one run, with
       walkover crossings going from 5 of 40 to <b>14 of 40</b> against a rule of at most
       10. Flat, the same ${CORE_CAP_EXTRA} levels are a doubling where the hole is and a
-      fifth of a cap where the tower is filling your pockets.</div>
+      fraction of a cap where the tower is filling your pockets.</div>
+    <div class="rule"><b>\u5ee3 And two realms' worth was not enough either.</b> At two it
+      cleared the first three realms and left the rest of the climb dead again for
+      somebody who really taps \u2014 22% of the fourth, 41% of the fifth, <b>70% of the
+      seventh</b>. Swept: three realms' worth takes it to <b>zero in every realm of the
+      game</b>, four and five change nothing more, and the endgame does not move at all
+      \u2014 5 of 40 walkover crossings at two, at three and at four. Three is simply the
+      smallest number that finishes the job, which is the only reason it is the number.</div>
   </section>
 
   <section class="sec" id="heavens">

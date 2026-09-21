@@ -328,11 +328,18 @@ export function levelCap(realm: number): number {
  * The endgame's own test caught it in one run: walkover crossings went from 5 of 40 to
  * **14 of 40**, against a rule of at most 10.
  *
- * Flat, the same twelve levels are a doubling where the hole is and a fifth of a cap
- * where the tower is filling your pockets — which is the shape the measurement asked
- * for, rather than the shape that was easiest to write.
+ * Flat, the same levels are a doubling where the hole is and a fraction of a cap where
+ * the tower is filling your pockets — which is the shape the measurement asked for,
+ * rather than the shape that was easiest to write.
+ *
+ * 廣 And two realms' worth was not enough. At two it cleared the first three realms and
+ * left the rest of the climb dead again for somebody who really taps — 22% of the
+ * fourth, 41% of the fifth, 70% of the seventh. Swept: **three realms' worth takes it
+ * to zero in every realm of the game**, four and five change nothing more, and the
+ * endgame does not move at all — 5 of 40 walkover crossings at two, at three, and at
+ * four. Three is simply the smallest number that finishes the job.
  */
-export const CORE_CAP_EXTRA = 2 * LEVELS_PER_REALM;
+export const CORE_CAP_EXTRA = 3 * LEVELS_PER_REALM;
 
 /**
  * 境外 How much room one heaven opens, in levels of every capped upgrade.
