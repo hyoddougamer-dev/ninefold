@@ -212,19 +212,34 @@ export function App() {
    * state and its cleanup writes that emptiness over the loaded save, wiping the run of
    * anyone who opens the app. It happened, and that is how it was found.
    */
+  /**
+   * 頻 And it has to be the interval that saves, not the cleanup.
+   *
+   * This effect used to depend on `[state, ready]`, and the clock changes the state five
+   * times a second — so the interval was torn down and rebuilt before it could ever
+   * fire, and every save in the game came from the *cleanup* instead. Measured in the
+   * running app: **fifty writes in ten seconds**, 17 KB of JSON.stringify and synchronous
+   * localStorage, for ever, on a phone. The code said every four seconds. It was doing it
+   * twenty times more often than that.
+   *
+   * The state goes in a ref so the interval can read the latest one without the effect
+   * depending on it. Leaving the app still saves at once, which is the case that matters.
+   */
+  const latest = useRef(state);
+  latest.current = state;
   useEffect(() => {
     if (!ready) return;
-    const id = setInterval(() => save(state), 4000);
-    const onLeave = () => save(state);
+    const id = setInterval(() => save(latest.current), 4000);
+    const onLeave = () => save(latest.current);
     document.addEventListener('visibilitychange', onLeave);
     window.addEventListener('pagehide', onLeave);
     return () => {
       clearInterval(id);
       document.removeEventListener('visibilitychange', onLeave);
       window.removeEventListener('pagehide', onLeave);
-      save(state);
+      save(latest.current);
     };
-  }, [state, ready]);
+  }, [ready]);
 
   const startFight = useCallback((beast: Beast, floor?: number) => {
     // 守 A warden is only ever reachable at the end of its own realm. The screens have
