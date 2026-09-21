@@ -1,5 +1,7 @@
-import { UPGRADES, type State } from '../sim/state.ts';
+import { UPGRADES, UPGRADE_INFO, power, type State } from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
+import { commonsOf, wardenOf } from '../data/bestiary.ts';
+import { beastPower } from '../sim/combat.ts';
 import { GUIDE } from './copy.ts';
 
 /**
@@ -32,31 +34,56 @@ export interface Step {
   readonly text: string;
   /** Where the doing happens, if it is not this screen. */
   readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
+  /**
+   * 圖 The picture of the thing being asked for, drawn from the same icon set the game
+   * draws it with everywhere else. A step that says "go and kill 山鼠" and shows the rat
+   * is recognised on the hunt screen; one that shows nothing has to be read twice.
+   */
+  readonly art: string;
+  /**
+   * 尺 How close the player is, 0 to 1, where the step is about closing a gap.
+   *
+   * The second step asks for a kill the player cannot make for an hour or two. Without
+   * this it is a sentence that does not change; with it, it is a bar that creeps every
+   * time a level lands or a layer opens, which is the one thing the first hour has to
+   * give somebody to watch.
+   */
+  readonly toward?: (s: State) => number;
   /** True once the player has done it. Every one of these only ever goes from false to true. */
   readonly done: (s: State) => boolean;
 }
+
+/** The first realm's own three, in the order they come into reach. */
+const FIRST = commonsOf(1);
 
 const killsOf = (s: State) => Object.values(s.killed);
 
 export const STEPS: readonly Step[] = [
   {
     key: 'buy', han: '買', title: GUIDE.buy.title, text: GUIDE.buy.text,
+    art: UPGRADE_INFO.technique.icon,
     done: (s) => UPGRADES.some((u) => s.levels[u] > 0),
   },
   {
     key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
+    art: FIRST[0].icon,
+    toward: (s) => Math.max(0, Math.min(1, power(s) / beastPower(FIRST[0]))),
     done: (s) => killsOf(s).some((n) => n > 0),
   },
   {
     key: 'core', han: '妖丹', title: GUIDE.core.title, text: GUIDE.core.text,
+    art: UPGRADE_INFO.cores.icon,
     done: (s) => s.levels.cores > 0,
   },
   {
     key: 'mark', han: '熟', title: GUIDE.mark.title, text: GUIDE.mark.text, tab: 'hunt',
+    art: FIRST[0].icon,
+    toward: (s) => Math.max(...killsOf(s), 0) / MARKS[1],
     done: (s) => killsOf(s).some((n) => n >= MARKS[1]),
   },
   {
     key: 'climb', han: '突破', title: GUIDE.climb.title, text: GUIDE.climb.text,
+    art: wardenOf(1).icon,
     done: (s) => s.realm > 1,
   },
 ];

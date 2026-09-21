@@ -34,6 +34,15 @@ export interface Advice {
   readonly text: string;
   /** Which tab it is about, so the screen can point at it. */
   readonly tab?: 'hunt' | 'trials' | 'dao' | 'gear';
+  /**
+   * 尺 How close the player is, 0 to 1, when the line is about closing a gap.
+   *
+   * A sentence saying "it stands at 力 2.4 and you are at 力 1" is true and takes a
+   * moment to parse. The same fact as a bar is read at a glance and, more to the point,
+   * is watched: it moves every time a level lands or a layer opens, which is exactly
+   * what the first hour needs a player to notice.
+   */
+  readonly toward?: number;
 }
 
 /** The odds below which a fight is worth explaining rather than worth trying. */
@@ -163,7 +172,10 @@ export function advice(s: State): Advice | null {
       .sort((a, b) => beastPower(a) - beastPower(b))
       .find((b) => odds(s, b) < 0.6);
     if (next) {
-      return { han: '狩', text: ADVICE.reachFor(next.han, beastPower(next), mine), tab: 'hunt' };
+      return {
+        han: '狩', text: ADVICE.reachFor(next.han, beastPower(next), mine), tab: 'hunt',
+        toward: Math.max(0, Math.min(1, mine / beastPower(next))),
+      };
     }
   }
 

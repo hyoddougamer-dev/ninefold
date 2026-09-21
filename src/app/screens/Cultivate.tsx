@@ -53,7 +53,15 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
           onClick={() => step.step.tab && onGo(step.step.tab)}>
           <span className="n mono">{GUIDE.step(step.n, step.of)}</span>
           <b><span className="cjk">{step.step.han}</span> {step.step.title}</b>
-          <i>{step.step.text}</i>
+          <i>
+            {step.step.text}
+            {step.step.toward && (
+              <span className="toward">
+                <span style={{ width: `${Math.round(Math.min(1, step.step.toward(state)) * 100)}%` }} />
+              </span>
+            )}
+          </i>
+          <span className="art"><Svg html={icon(step.step.art, 30)} /></span>
           {step.step.tab && <em className="cjk">›</em>}
         </button>
       )}
@@ -167,7 +175,15 @@ export function Cultivate({ state, pulse, focus, set, onFight, onGo }: {
       {tip && !step && (
         <button className="tip" disabled={!tip.tab} onClick={() => tip.tab && onGo(tip.tab)}>
           <b className="cjk">{tip.han}</b>
-          <i>{tip.text}</i>
+          <i>
+            {tip.text}
+            {/* 尺 The same fact as a bar. It moves on every level and every layer. */}
+            {tip.toward !== undefined && (
+              <span className="toward">
+                <span style={{ width: `${Math.round(tip.toward * 100)}%` }} />
+              </span>
+            )}
+          </i>
           {tip.tab && <em className="cjk">›</em>}
         </button>
       )}

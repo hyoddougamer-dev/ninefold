@@ -4,7 +4,9 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, loot, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
-import { MARK_INFO, marksOf, nextMark, recordMaterial, recordTally } from '../../sim/record.ts';
+import {
+  MARK_INFO, marksOf, nextMark, recordMaterial, recordPower, recordTally,
+} from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
@@ -71,9 +73,15 @@ export function Hunt({ state, onFight }: {
             <i>{m.name}</i>
           </span>
         ))}
+        {/* 通 The record pays twice and only said so once. A cultivator with a mastered
+            beast was being given power by a page that never mentioned power. */}
         <span className="pay">
           <b className="mono">×{recordMaterial(state.killed).toFixed(2)}</b>
-          <i>材 from the record</i>
+          <i>{HUNT.paysMaterial}</i>
+        </span>
+        <span className="pay">
+          <b className="mono">×{recordPower(state.killed).toFixed(2)}</b>
+          <i>{HUNT.paysPower}</i>
         </span>
       </div>
 

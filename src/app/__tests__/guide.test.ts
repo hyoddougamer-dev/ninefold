@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEPS, guide } from '../guide.ts';
 import { buy, newState, type State } from '../../sim/state.ts';
 import { MARKS } from '../../sim/record.ts';
+import { icon } from '../../art/icon.ts';
 
 /**
  * 引 The guide, and the three promises that come from storing nothing.
@@ -72,6 +73,25 @@ describe('引 the first session, one step at a time', () => {
       levels: { technique: 20, method: 20, pills: 20, cores: 20 },
     };
     expect(guide(veteran)).toBeNull();
+  });
+
+  /** 尺 The bar the first hour is watched through, and it may not lie in either direction. */
+  it('keeps the closing bar between nothing and done', () => {
+    const fresh = newState(T0);
+    for (const step of STEPS) {
+      if (!step.toward) continue;
+      expect(step.toward(fresh)).toBeGreaterThanOrEqual(0);
+      // A step already finished may read past 1, so the screen clamps; what must never
+      // happen is a bar that is full while the step is still asking.
+      if (!step.done(fresh)) expect(step.toward(fresh)).toBeLessThan(1);
+    }
+  });
+
+  it('draws the thing it is asking for', () => {
+    for (const step of STEPS) {
+      expect(step.art.length).toBeGreaterThan(2);
+      expect(icon(step.art, 24)).toContain('<svg');
+    }
   });
 
   it('says something worth reading at every step', () => {

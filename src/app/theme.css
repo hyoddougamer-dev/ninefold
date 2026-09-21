@@ -121,6 +121,11 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .tip b { flex: none; font-size: 17px; font-weight: 400; color: var(--gold); line-height: 1.3; }
 .tip i { font-style: normal; font-size: 13px; line-height: 1.5; }
 .tip em { margin-left: auto; font-style: normal; color: var(--gold); font-size: 19px; }
+/* 尺 How close you are to the thing the line is about. */
+.tip .toward { display: block; height: 4px; border-radius: 99px; margin-top: 8px;
+               background: color-mix(in srgb, var(--gold) 22%, transparent); overflow: hidden; }
+.tip .toward > span { display: block; height: 100%; border-radius: 99px;
+                      background: var(--gold); transition: width .3s linear; }
 
 .upgrades { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
 .upg { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
@@ -193,9 +198,13 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .marks em[data-on="true"] { color: var(--cyan); }
 .marks i { font-style: normal; font-size: 10.5px; color: var(--faint); margin-left: 4px; }
 
-.tally { display: flex; gap: 7px; margin: 10px 0 2px; }
-.tally span { flex: 1; background: var(--panel); border: 1px solid var(--line);
+/* 錄 Three marks on the top row, and what they are paying you on the second. Five
+   boxes abreast is unreadable on a phone, and the two payoffs are the answer to the
+   question the three counters raise. */
+.tally { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin: 10px 0 2px; }
+.tally span { grid-column: span 2; background: var(--panel); border: 1px solid var(--line);
               border-radius: 10px; padding: 7px 4px 6px; text-align: center; }
+.tally .pay { grid-column: span 3; }
 .tally span[data-on="true"] { border-color: var(--cyan); }
 .tally b { display: block; font-size: 15px; color: var(--faint); line-height: 1.2; }
 .tally span[data-on="true"] b { color: var(--cyan); }
@@ -203,7 +212,6 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .tally em i { font-style: normal; font-size: 10px; color: var(--faint); }
 .tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
            text-transform: uppercase; color: var(--faint); }
-.tally .pay { flex: 1.1; }
 .tally .pay b { color: var(--gold); font-size: 15px; }
 
 .card3 .marks { justify-content: center; }
@@ -456,21 +464,35 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .guide { width: 100%; text-align: left; font: inherit; color: var(--text); cursor: pointer;
          background: linear-gradient(180deg, rgba(95,220,255,.09), rgba(95,220,255,.03));
          border: 1px solid rgba(95,220,255,.33); border-radius: 12px;
-         padding: 12px 14px; margin: 0 0 14px; display: grid; gap: 4px;
-         grid-template-columns: 1fr auto; align-items: start; }
+         padding: 12px 14px; margin: 0 0 14px; display: grid; gap: 4px 0;
+         grid-template-columns: 1fr auto auto; align-items: start; }
+.guide .n, .guide b, .guide i { grid-column: 1; }
+.guide .art { grid-column: 2; }
+.guide em { grid-column: 3; }
 /* 存 ? 釋 碑 float over the top-right corner, so the first line of the card stops short
    of them rather than running underneath. Only the first line: the paragraph below is
    clear of the buttons and uses the full width. */
 .guide .n, .guide b { padding-right: 132px; }
 .guide:disabled { cursor: default; }
-.guide .n { grid-column: 1; font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+.guide .n { font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
             color: var(--cyan); }
-.guide b { grid-column: 1; font-weight: 500; font-size: 15.5px; }
+.guide b { font-weight: 500; font-size: 15.5px; }
 .guide b .cjk { color: var(--cyan); margin-right: 3px; }
-.guide i { grid-column: 1; font-style: normal; font-size: 12.5px; color: var(--faint);
+.guide i { font-style: normal; font-size: 12.5px; color: var(--faint);
            line-height: 1.5; }
-.guide em { grid-column: 2; grid-row: 1 / span 3; align-self: center; font-style: normal;
-            font-size: 21px; color: var(--cyan); padding-left: 10px; }
+.guide em { grid-row: 3; align-self: center; font-style: normal;
+            font-size: 21px; color: var(--cyan); padding-left: 8px; }
+/* 圖 The picture of what the step is asking for. Rows 1 and 2 are under the floating
+   存 ? 釋 碑 buttons, so it sits on the third with the chevron beside it. */
+.guide .art { grid-row: 3; align-self: center; justify-self: center;
+              color: var(--cyan); opacity: .85; padding-left: 12px; display: grid;
+              place-items: center; }
+.guide .art svg { display: block; }
+/* 尺 The same bar the advice line uses, in the guide's own colour. */
+.guide .toward { display: block; height: 4px; border-radius: 99px; margin-top: 9px;
+                 background: rgba(95,220,255,.2); overflow: hidden; }
+.guide .toward > span { display: block; height: 100%; border-radius: 99px;
+                        background: var(--cyan); transition: width .3s linear; }
 
 /* ── 釋 the key: every character on the screen, and what it means ────────── */
 

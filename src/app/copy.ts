@@ -289,6 +289,8 @@ export const HUNT = {
   /** Shown under the power figure. Losing a hunt has no cost at all, and it must say so. */
   free: 'A loss costs you nothing.',
   reach: (n: number) => `${n} beasts within reach`,
+  paysMaterial: '材 material, from the record',
+  paysPower: '力 power, from the record',
 
   /**
    * 錄 The record. Old beasts have to be worth killing, or the screen is one button.
