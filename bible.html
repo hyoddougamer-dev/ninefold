@@ -30,6 +30,29 @@
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
 
+  /* 拆 the melt: the rank chips and the button that states its own size. */
+  #salvage .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+                 padding:16px; }
+  #salvage .mk .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  #salvage .chestrow { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  #salvage .rk { width:34px; height:34px; border-radius:9px; display:grid; place-items:center;
+                 background:var(--ground); border:1px solid var(--line); color:var(--line); }
+  #salvage .rk b { font-size:16px; font-weight:400; color:inherit; }
+  #salvage .rk[data-on] { border-color:var(--c); color:var(--c);
+                          box-shadow:0 0 12px -3px var(--c); }
+  #salvage .upto { margin-left:4px; font-size:12.5px; color:var(--faint); }
+  #salvage .meltbtn { display:flex; align-items:center; gap:12px; margin-top:10px;
+                      background:var(--panel); border:1px solid var(--line);
+                      border-radius:11px; padding:12px 14px; }
+  #salvage .meltbtn b { flex:none; font-size:20px; font-weight:400; color:var(--gold); }
+  #salvage .meltbtn i { flex:1; font-style:normal; font-size:14.5px; }
+  #salvage .meltbtn em { flex:none; font-style:normal; font-size:17px; color:var(--gold);
+                         font-family:Rajdhani,sans-serif; font-weight:700; text-align:right; }
+  #salvage .meltbtn em span { display:block; font-size:10px; color:var(--faint);
+                              font-weight:400; letter-spacing:.1em; text-transform:uppercase; }
+  #salvage .card em { display:block; margin-bottom:2px; }
+  #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
+
   /* 境外 the heavens, one card each. */
   #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
   #heavens .hic { flex:none; }
@@ -414,6 +437,7 @@
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
@@ -637,7 +661,7 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>41 closed,
+    <p class="t"><b>42 closed,
       0 open,
       1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
@@ -676,7 +700,7 @@
     <span class="body"><b class="cjk">開</b> <em><a href="#opens">What each realm opens</a></em><i>Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 79 days later.</i></span>
+    <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 77 days later.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one — and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 57 days of the climb.</i></span>
@@ -760,7 +784,10 @@
     <span class="body"><b class="cjk">境外</b> <em><a href="#heavens">The heavens above the ninth realm</a></em><i>9 named heavens, one every 3 crossings, each with its own Dragon drawn and named and 6 more levels of 劍訣 and 妖丹 behind it. The endgame was forty crossings against one animal.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">出</b> <em><a href="#clock">Beasts that walk out mid-realm</a></em><i>A realm's three commons arrive at layers 0, 4, 7 instead of all at the breakthrough. The eighth realm is 16 days long and used to hand over everything it had in the first minute of them.</i></span>
+    <span class="body"><b class="cjk">拆</b> <em><a href="#salvage">Melting gear down</a></em><i>A full chest threw the worst piece on the floor and paid nothing for it. A piece now melts for a share of the first rung of **its own** realm, falling from 0.3 at the first to 0.04 at the ninth — one at a time, or everything at or below a rank in one tap.</i></span>
+  </div><div class="srow" style="--hue:var(--cyan)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">出</b> <em><a href="#clock">Beasts that walk out mid-realm</a></em><i>A realm's three commons arrive at layers 0, 4, 7 instead of all at the breakthrough. The eighth realm is 15 days long and used to hand over everything it had in the first minute of them.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 162, against a climb that used to run out on day 60.</i></span>
@@ -1041,50 +1068,50 @@
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
-    <td class="n" style="color:var(--cyan)">day 90</td>
-    <td class="n">944M</td>
-    <td class="n">96</td>
-    <td class="n">1,216</td>
+    <td class="n" style="color:var(--cyan)">day 92</td>
+    <td class="n">774M</td>
+    <td class="n">95</td>
+    <td class="n">1,211</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--cyan)">day 81</td>
+    <td class="n" style="color:var(--cyan)">day 80</td>
     <td class="n">2.39B</td>
     <td class="n">—</td>
-    <td class="n">863</td>
+    <td class="n">857</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 60</td>
-    <td class="n">4.4B</td>
-    <td class="n">104</td>
-    <td class="n">5,258</td>
+    <td class="n" style="color:var(--cyan)">day 59</td>
+    <td class="n">4.32B</td>
+    <td class="n">103</td>
+    <td class="n">5,129</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
-    <td class="n" style="color:var(--cyan)">day 44</td>
-    <td class="n">4.52B</td>
+    <td class="n" style="color:var(--cyan)">day 40</td>
+    <td class="n">4.35B</td>
     <td class="n">104</td>
-    <td class="n">17,144</td>
+    <td class="n">15,936</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 61</td>
-    <td class="n">4.4B</td>
-    <td class="n">104</td>
-    <td class="n">5,370</td>
+    <td class="n" style="color:var(--cyan)">day 59</td>
+    <td class="n">4.32B</td>
+    <td class="n">103</td>
+    <td class="n">5,109</td>
   </tr><tr style="--hue:var(--cyan)">
     <td><b class="cjk">walks 神</b><i style="display:block">The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 58</td>
-    <td class="n">1.38B</td>
+    <td class="n" style="color:var(--cyan)">day 57</td>
+    <td class="n">1.33B</td>
     <td class="n">97</td>
-    <td class="n">4,925</td>
+    <td class="n">4,849</td>
   </tr>
     </table>
     <p class="t">The top row is the whole point. That cultivator's qi is not the problem —
@@ -1170,6 +1197,91 @@
       only thing that changed is the price of a warden, paid in the one currency that has
       always come from playing — and the one thing that was added is a way to pay it
       without playing, dearly.</div>
+  </section>
+
+  <section class="sec" id="salvage">
+    <h2><span class="h">拆</span> Melting gear down</h2>
+    <p class="t">Bruno, on the early game: <i>"uma nota para impulsionar ou melhorar
+      pelo menos um pouco o fluxo de qi inicialmente. Salvage gear por exemplo, multiple
+      salvage ou solo salvage, por algum qi."</i></p>
+    <p class="t">The hole it fills turned out to be older than the thin qi flow. 藏 A full
+      chest does not refuse a drop — it throws the worst piece on the floor to make room
+      — so from the second realm onward the game has been <b>deleting gear and paying
+      nothing for it</b>, one piece per drop for the rest of the run. Salvage is what
+      that deletion should always have been.</p>
+    <div class="mk salv">
+    <div class="chestrow"><span class="rk" data-on="true" style="--c:#7A80B8"><b class="cjk">凡</b></span><span class="rk"><b class="cjk">靈</b></span><span class="rk"><b class="cjk">玄</b></span><span class="rk"><b class="cjk">地</b></span><span class="rk"><b class="cjk">天</b></span><span class="upto">Common and below</span></div>
+    <div class="meltbtn"><b class="cjk">拆</b>
+      <i>Melt 4 pieces</i>
+      <em>435k<span>qi</span></em></div>
+    <p class="cap">Seven pieces in the chest at 金丹 the third realm, four of them 凡. The
+      button says what it will take and what it pays before it is pressed, because there
+      is no undo — and what it pays is 19%
+      of the layer being climbed.</p>
+  </div>
+
+    <h3>早 Why the share falls as the realms rise</h3>
+    <p class="t">The first version paid a flat share and it was swept across its whole
+      range. It did <b>nothing at all</b> for the cultivators it was asked to help:</p>
+    <table>
+      <tr><th>a flat share of…</th><th style="text-align:right">once a day</th>
+          <th style="text-align:right">casual</th><th style="text-align:right">active</th>
+          <th style="text-align:right">every hour</th></tr>
+      <tr><td>nothing</td><td style="text-align:right">108</td><td style="text-align:right">95</td><td style="text-align:right">72</td><td style="text-align:right">52</td></tr>
+      <tr><td>0.05</td><td style="text-align:right">107</td><td style="text-align:right">95</td><td style="text-align:right">71</td><td style="text-align:right">49</td></tr>
+      <tr><td>0.10</td><td style="text-align:right">107</td><td style="text-align:right">95</td><td style="text-align:right">70</td><td style="text-align:right">46</td></tr>
+      <tr><td>0.20</td><td style="text-align:right">108</td><td style="text-align:right">95</td><td style="text-align:right">68</td><td style="text-align:right">43</td></tr>
+      <tr><td>0.35</td><td style="text-align:right">108</td><td style="text-align:right">93</td><td style="text-align:right">66</td><td style="text-align:right"><b>38</b></td></tr>
+    </table>
+    <p class="t">Four kills a day is under one drop a day, so the two cultivators in the
+      middle did not move by a single day at any setting. What moved was the hourly one,
+      who melts thousands — and who already runs out of game first, so taking fourteen
+      days off their climb is the opposite of what was wanted.</p>
+    <div class="rule"><b>So the share is tilted, not tuned.</b> It falls geometrically
+      from <b>0.3</b> of a first-realm rung to
+      <b>0.04</b> of a ninth-realm one — generous where a piece of junk
+      is a real fraction of a layer and where there is nothing else to spend on, mean
+      where sheer volume could turn it into a second income. Shipped, the climb moves by
+      a day for everybody and by four for the hourly cultivator.</div>
+
+    <h3>What it is actually worth</h3>
+    <p class="t">A 凡 Common against the layer being climbed when it drops, and then what
+      the melt adds up to across a whole realm for each cultivator — both read out of the
+      game rather than argued about:</p>
+    <div class="cards two">
+    <div class="card"><em>One 凡 Common, against the layer it drops on</em>
+      <table style="margin-top:8px"><tr><th>realm</th><th style="text-align:right">melts for</th>
+        <th style="text-align:right">of a layer</th></tr><tr><td>練氣 <span class="faint">Qi Refining</span></td>
+      <td style="text-align:right">270</td>
+      <td style="text-align:right">6.6%</td></tr><tr><td>築基 <span class="faint">Foundation</span></td>
+      <td style="text-align:right">5999</td>
+      <td style="text-align:right">5.6%</td></tr><tr><td>金丹 <span class="faint">Golden Core</span></td>
+      <td style="text-align:right">109k</td>
+      <td style="text-align:right">4.8%</td></tr><tr><td>元嬰 <span class="faint">Nascent Soul</span></td>
+      <td style="text-align:right">1.61M</td>
+      <td style="text-align:right">4.1%</td></tr><tr><td>化神 <span class="faint">Spirit Severing</span></td>
+      <td style="text-align:right">19.5M</td>
+      <td style="text-align:right">3.5%</td></tr><tr><td>煉虛 <span class="faint">Void Refining</span></td>
+      <td style="text-align:right">193M</td>
+      <td style="text-align:right">2.9%</td></tr><tr><td>合體 <span class="faint">Unity</span></td>
+      <td style="text-align:right">1.55B</td>
+      <td style="text-align:right">2.5%</td></tr><tr><td>大乘 <span class="faint">Great Vehicle</span></td>
+      <td style="text-align:right">10.2B</td>
+      <td style="text-align:right">2.1%</td></tr><tr><td>渡劫 <span class="faint">Tribulation</span></td>
+      <td style="text-align:right">54.9B</td>
+      <td style="text-align:right">1.8%</td></tr></table></div>
+    <div class="card"><em>And the melt over a whole realm's ladder</em>
+      <table style="margin-top:8px"><tr><th>habit</th><th style="text-align:right">2</th>
+        <th style="text-align:right">3</th><th style="text-align:right">4</th>
+        <th style="text-align:right">5</th><th style="text-align:right">6</th></tr><tr><td>once a day</td><td style="text-align:right">0.7%</td><td style="text-align:right">1.4%</td><td style="text-align:right">1.7%</td><td style="text-align:right">1.3%</td><td style="text-align:right">2.0%</td></tr><tr><td>casual</td><td style="text-align:right">1.3%</td><td style="text-align:right">1.9%</td><td style="text-align:right">3.1%</td><td style="text-align:right">3.0%</td><td style="text-align:right">3.9%</td></tr><tr><td>active</td><td style="text-align:right">3.6%</td><td style="text-align:right">7.0%</td><td style="text-align:right">9.7%</td><td style="text-align:right">6.8%</td><td style="text-align:right">11.4%</td></tr><tr><td>every hour</td><td style="text-align:right">14.5%</td><td style="text-align:right">21.6%</td><td style="text-align:right">34.8%</td><td style="text-align:right">25.1%</td><td style="text-align:right">43.1%</td></tr><tr><td>drives it all</td><td style="text-align:right">4.1%</td><td style="text-align:right">6.7%</td><td style="text-align:right">9.4%</td><td style="text-align:right">6.6%</td><td style="text-align:right">11.6%</td></tr><tr><td>walks 神</td><td style="text-align:right">3.6%</td><td style="text-align:right">6.0%</td><td style="text-align:right">9.4%</td><td style="text-align:right">6.5%</td><td style="text-align:right">11.1%</td></tr></table></div>
+  </div>
+    <div class="warn"><b>舊 煉 煉器 The three things it must never become.</b> It reads the
+      <em>item's</em> realm and never the hunter's, so a second-realm 凡 pays a
+      second-realm sum for ever — less than a millionth of a layer by the ninth — and
+      farming weak beasts for qi is arithmetically impossible. Three 凡 melt for more than
+      the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
+      the qi. And 煉器 refining is not counted at all, or 材 material would have a second
+      door out into qi and the furnace would have two.</div>
   </section>
 
   <section class="sec" id="heavens">
@@ -1311,10 +1423,10 @@
       <td><span class="wk"><i style="width:28%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
       <td style="text-align:right">7</td>
       <td><span class="wk"><i style="width:22%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
-      <td style="text-align:right">2</td>
-      <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
-      <td style="text-align:right">6</td>
-      <td><span class="wk"><i style="width:19%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
+      <td style="text-align:right">3</td>
+      <td><span class="wk"><i style="width:9%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
+      <td style="text-align:right">5</td>
+      <td><span class="wk"><i style="width:16%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
       <td style="text-align:right">2</td>
       <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 7<span class="faint"> · day 42–48</span></td>
       <td style="text-align:right">6</td>
@@ -1323,10 +1435,10 @@
       <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
       <td style="text-align:right">7</td>
       <td><span class="wk"><i style="width:22%"></i></span></td></tr><tr><td>week 10<span class="faint"> · day 63–69</span></td>
-      <td style="text-align:right">1</td>
-      <td><span class="wk"><i style="width:3%"></i></span></td></tr><tr><td>week 11<span class="faint"> · day 70–76</span></td>
-      <td style="text-align:right">3</td>
-      <td><span class="wk"><i style="width:9%"></i></span></td></tr><tr><td>week 12<span class="faint"> · day 77–83</span></td>
+      <td style="text-align:right">2</td>
+      <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 11<span class="faint"> · day 70–76</span></td>
+      <td style="text-align:right">2</td>
+      <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 12<span class="faint"> · day 77–83</span></td>
       <td style="text-align:right">—</td>
       <td><span class="wk"><i style="width:0%"></i></span></td></tr><tr><td>week 13<span class="faint"> · day 84–90</span><span class="faint"> ← three months</span></td>
       <td style="text-align:right">1</td>
@@ -1365,13 +1477,13 @@
         lose the players who would have reached the ending.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">出</b> <em>A realm no longer empties itself in its first minute</em>
         <i>It used to hand over all three of its beasts at the breakthrough, and the
-        eighth realm is 16 days long. Its commons now walk out at layers
+        eighth realm is 15 days long. Its commons now walk out at layers
         0, 4, 7 — about a quarter and two thirds of the way through —
         so the weeks that read as blank above have something in them. The first realm is
         the exception and keeps all three, because its beasts are already spaced by
         difficulty and there is nothing else in it to look at.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">境外</b> <em>And the summit is no longer the end of the content</em>
-        <i>The climb finishes on day 72; the first heaven opens on day
+        <i>The climb finishes on day 71; the first heaven opens on day
         75 and the ninth on day 162. 劫 the tribulation still
         runs for ever, but for 9 heavens it is running <b>toward</b>
         something with a name.</i></span></div>
@@ -2816,7 +2928,7 @@
       1.2x a pill and a pill worth 3% give a mark of
       1.728x and a Dragon of 1.89x.</p>
     <p class="t">Measured, played out crossing by crossing: <b>40 marks
-      in 137 days</b>, 3 to
+      in 138 days</b>, 3 to
       5 days each, ending on tower floor 324
       with 446 pills brewed. The margin a good run arrives
       with buys the first crossings at

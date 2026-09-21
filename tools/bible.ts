@@ -41,7 +41,7 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { playAll } from './habits.ts';
 import { BRANCHES, climb } from './climb.ts';
@@ -54,6 +54,8 @@ import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
 import { STEPS } from '../src/app/guide.ts';
 import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
+import { salvageValue, salvageWorth, salvageable } from '../src/sim/salvage.ts';
+import { BASE_DROP_CHANCE, rollDrop } from '../src/sim/drops.ts';
 import { compare, linesOf, swing } from '../src/sim/inspect.ts';
 import { SYSTEMS as OPENED, opensIn } from '../src/sim/unlocks.ts';
 import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
@@ -200,6 +202,45 @@ const ACTIVE_NAME = CLOCK.name;
 const CLOCK_FIRST_HEAVEN = CLOCK.firstHeaven;
 
 /** 境外 One card a heaven, with its Dragon drawn from the game's own icon table. */
+/** 拆 What a melt is worth early and late, and what it adds up to over a realm. */
+const salvageRows = (() => {
+  const perRealm = Array.from({ length: 9 }, (_, i) => {
+    const realm = i + 1;
+    const pays = salvageValue({ id: 'x', template: `sword${realm}`, rarity: 'common', rolls: [] });
+    const layer = ladderAt((realm - 1) * LAYERS_PER_REALM + 4);
+    return `<tr><td>${realmOf(realm).han} <span class="faint">${realmOf(realm).name}</span></td>
+      <td style="text-align:right">${num(pays)}</td>
+      <td style="text-align:right">${(pays / layer * 100).toFixed(1)}%</td></tr>`;
+  }).join('');
+  const share = (h: typeof RUNS[number], realm: number) => {
+    const r = h;
+    const days = (r.arrival[realm] ?? r.days) - (r.arrival[realm - 1] ?? 0);
+    const kills = r.habit.checks * r.habit.hunts * days;
+    let worth = 0; let n = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const item = rollDrop(commonsOf(realm)[0], realm, seed);
+      if (item) { worth += salvageValue(item); n++; }
+    }
+    const pay = kills * BASE_DROP_CHANCE * (n ? worth / n : 0);
+    let ladder = 0;
+    for (let k = 0; k < LAYERS_PER_REALM; k++) ladder += ladderAt((realm - 1) * LAYERS_PER_REALM + k);
+    return `${(pay / ladder * 100).toFixed(1)}%`;
+  };
+  const hunters = RUNS.filter((r) => r.habit.gear);
+  const byHabit = hunters.map((r) => `<tr><td>${r.habit.name}</td>${
+    [2, 3, 4, 5, 6].map((realm) => `<td style="text-align:right">${share(r, realm)}</td>`).join('')
+  }</tr>`).join('');
+  return `<div class="cards two">
+    <div class="card"><em>One 凡 Common, against the layer it drops on</em>
+      <table style="margin-top:8px"><tr><th>realm</th><th style="text-align:right">melts for</th>
+        <th style="text-align:right">of a layer</th></tr>${perRealm}</table></div>
+    <div class="card"><em>And the melt over a whole realm's ladder</em>
+      <table style="margin-top:8px"><tr><th>habit</th><th style="text-align:right">2</th>
+        <th style="text-align:right">3</th><th style="text-align:right">4</th>
+        <th style="text-align:right">5</th><th style="text-align:right">6</th></tr>${byHabit}</table></div>
+  </div>`;
+})();
+
 const heavenRows = `<div class="cards two">${HEAVENS.map((h, i) => `
   <div class="card" style="--hue:${h.colour}">
     <div class="hrow">
@@ -316,6 +357,8 @@ const SYSTEMS: readonly System[] = [
 
   { han: '境外', name: 'The heavens above the ninth realm', status: 'done', at: 'heavens',
     line: `${HEAVENS.length} named heavens, one every ${MARKS_PER_HEAVEN} crossings, each with its own Dragon drawn and named and ${LEVELS_PER_HEAVEN} more levels of 劍訣 and 妖丹 behind it. The endgame was forty crossings against one animal.` },
+  { han: '拆', name: 'Melting gear down', status: 'done', at: 'salvage',
+    line: `A full chest threw the worst piece on the floor and paid nothing for it. A piece now melts for a share of the first rung of **its own** realm, falling from ${SALVAGE_SHARE_FIRST} at the first to ${SALVAGE_SHARE_LAST} at the ninth — one at a time, or everything at or below a rank in one tap.` },
   { han: '出', name: 'Beasts that walk out mid-realm', status: 'done', at: 'clock',
     line: `A realm's three commons arrive at layers ${COMMON_LAYERS.join(', ')} instead of all at the breakthrough. The eighth realm is ${CLOCK_R8} days long and used to hand over everything it had in the first minute of them.` },
   { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
@@ -687,6 +730,36 @@ const MOCK_COMING = (() => {
       are the realm's next two events.</p></div>`;
 })();
 
+// 拆 The melt, drawn: the rank chips and the button that states its own size.
+const MOCK_SALVAGE = (() => {
+  // A chest of the junk a real hunt leaves, at the third realm.
+  const realm = 3;
+  const junk: Item[] = [
+    { id: 'a', template: `sword${realm}`, rarity: 'common', rolls: [] },
+    { id: 'b', template: `robe${realm}`, rarity: 'common', rolls: [] },
+    { id: 'c', template: `plainring${realm}`, rarity: 'common', rolls: [] },
+    { id: 'd', template: `sandals${realm}`, rarity: 'common', rolls: [] },
+    { id: 'e', template: `band${realm}`, rarity: 'spirit', rolls: [] },
+    { id: 'f', template: `charm${realm}`, rarity: 'spirit', rolls: [] },
+    { id: 'g', template: `sword${realm}`, rarity: 'mystic', rolls: [] },
+  ];
+  const picked = salvageable(junk, 'common');
+  const chips = RARITIES.map((r) => `<span class="rk"${r === 'common'
+    ? ` data-on="true" style="--c:${RARITY_INFO[r].colour}"` : ''}><b class="cjk">${
+    RARITY_INFO[r].han}</b></span>`).join('');
+  const layer = ladderAt((realm - 1) * LAYERS_PER_REALM + 4);
+  return `<div class="mk salv">
+    <div class="chestrow">${chips}<span class="upto">Common and below</span></div>
+    <div class="meltbtn"><b class="cjk">拆</b>
+      <i>Melt ${picked.length} pieces</i>
+      <em>${num(salvageWorth(picked))}<span>qi</span></em></div>
+    <p class="cap">Seven pieces in the chest at 金丹 the third realm, four of them 凡. The
+      button says what it will take and what it pays before it is pressed, because there
+      is no undo — and what it pays is ${(salvageWorth(picked) / layer * 100).toFixed(0)}%
+      of the layer being climbed.</p>
+  </div>`;
+})();
+
 // 境外 The card above the summit, at the fourth mark — the real copy and the real icon.
 const MOCK_HEAVEN = (() => {
   const marks = 4;
@@ -748,6 +821,29 @@ const page = `<title>九境 Ninefold — the Bible</title>
   .t b { color:var(--text); font-weight:600; }
   .big { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
   .faint { color:var(--faint); }
+
+  /* 拆 the melt: the rank chips and the button that states its own size. */
+  #salvage .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+                 padding:16px; }
+  #salvage .mk .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  #salvage .chestrow { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  #salvage .rk { width:34px; height:34px; border-radius:9px; display:grid; place-items:center;
+                 background:var(--ground); border:1px solid var(--line); color:var(--line); }
+  #salvage .rk b { font-size:16px; font-weight:400; color:inherit; }
+  #salvage .rk[data-on] { border-color:var(--c); color:var(--c);
+                          box-shadow:0 0 12px -3px var(--c); }
+  #salvage .upto { margin-left:4px; font-size:12.5px; color:var(--faint); }
+  #salvage .meltbtn { display:flex; align-items:center; gap:12px; margin-top:10px;
+                      background:var(--panel); border:1px solid var(--line);
+                      border-radius:11px; padding:12px 14px; }
+  #salvage .meltbtn b { flex:none; font-size:20px; font-weight:400; color:var(--gold); }
+  #salvage .meltbtn i { flex:1; font-style:normal; font-size:14.5px; }
+  #salvage .meltbtn em { flex:none; font-style:normal; font-size:17px; color:var(--gold);
+                         font-family:Rajdhani,sans-serif; font-weight:700; text-align:right; }
+  #salvage .meltbtn em span { display:block; font-size:10px; color:var(--faint);
+                              font-weight:400; letter-spacing:.1em; text-transform:uppercase; }
+  #salvage .card em { display:block; margin-bottom:2px; }
+  #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
 
   /* 境外 the heavens, one card each. */
   #heavens .hrow { display:flex; gap:12px; align-items:flex-start; }
@@ -1133,6 +1229,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
@@ -1477,6 +1574,56 @@ const page = `<title>九境 Ninefold — the Bible</title>
       only thing that changed is the price of a warden, paid in the one currency that has
       always come from playing — and the one thing that was added is a way to pay it
       without playing, dearly.</div>
+  </section>
+
+  <section class="sec" id="salvage">
+    <h2><span class="h">拆</span> Melting gear down</h2>
+    <p class="t">Bruno, on the early game: <i>"uma nota para impulsionar ou melhorar
+      pelo menos um pouco o fluxo de qi inicialmente. Salvage gear por exemplo, multiple
+      salvage ou solo salvage, por algum qi."</i></p>
+    <p class="t">The hole it fills turned out to be older than the thin qi flow. 藏 A full
+      chest does not refuse a drop — it throws the worst piece on the floor to make room
+      — so from the second realm onward the game has been <b>deleting gear and paying
+      nothing for it</b>, one piece per drop for the rest of the run. Salvage is what
+      that deletion should always have been.</p>
+    ${MOCK_SALVAGE}
+
+    <h3>早 Why the share falls as the realms rise</h3>
+    <p class="t">The first version paid a flat share and it was swept across its whole
+      range. It did <b>nothing at all</b> for the cultivators it was asked to help:</p>
+    <table>
+      <tr><th>a flat share of…</th><th style="text-align:right">once a day</th>
+          <th style="text-align:right">casual</th><th style="text-align:right">active</th>
+          <th style="text-align:right">every hour</th></tr>
+      <tr><td>nothing</td><td style="text-align:right">108</td><td style="text-align:right">95</td><td style="text-align:right">72</td><td style="text-align:right">52</td></tr>
+      <tr><td>0.05</td><td style="text-align:right">107</td><td style="text-align:right">95</td><td style="text-align:right">71</td><td style="text-align:right">49</td></tr>
+      <tr><td>0.10</td><td style="text-align:right">107</td><td style="text-align:right">95</td><td style="text-align:right">70</td><td style="text-align:right">46</td></tr>
+      <tr><td>0.20</td><td style="text-align:right">108</td><td style="text-align:right">95</td><td style="text-align:right">68</td><td style="text-align:right">43</td></tr>
+      <tr><td>0.35</td><td style="text-align:right">108</td><td style="text-align:right">93</td><td style="text-align:right">66</td><td style="text-align:right"><b>38</b></td></tr>
+    </table>
+    <p class="t">Four kills a day is under one drop a day, so the two cultivators in the
+      middle did not move by a single day at any setting. What moved was the hourly one,
+      who melts thousands — and who already runs out of game first, so taking fourteen
+      days off their climb is the opposite of what was wanted.</p>
+    <div class="rule"><b>So the share is tilted, not tuned.</b> It falls geometrically
+      from <b>${SALVAGE_SHARE_FIRST}</b> of a first-realm rung to
+      <b>${SALVAGE_SHARE_LAST}</b> of a ninth-realm one — generous where a piece of junk
+      is a real fraction of a layer and where there is nothing else to spend on, mean
+      where sheer volume could turn it into a second income. Shipped, the climb moves by
+      a day for everybody and by four for the hourly cultivator.</div>
+
+    <h3>What it is actually worth</h3>
+    <p class="t">A 凡 Common against the layer being climbed when it drops, and then what
+      the melt adds up to across a whole realm for each cultivator — both read out of the
+      game rather than argued about:</p>
+    ${salvageRows}
+    <div class="warn"><b>舊 煉 煉器 The three things it must never become.</b> It reads the
+      <em>item's</em> realm and never the hunter's, so a second-realm 凡 pays a
+      second-realm sum for ever — less than a millionth of a layer by the ninth — and
+      farming weak beasts for qi is arithmetically impossible. Three 凡 melt for more than
+      the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
+      the qi. And 煉器 refining is not counted at all, or 材 material would have a second
+      door out into qi and the furnace would have two.</div>
   </section>
 
   <section class="sec" id="heavens">

@@ -15,6 +15,7 @@ import { advance, layersOpened } from '../src/sim/time.ts';
 import { odds, takeKill } from '../src/sim/combat.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
+import { isOpen } from '../src/sim/unlocks.ts';
 import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
@@ -23,6 +24,7 @@ import {
   affinity, canUnlock, daoFree, dropChanceBonus, dropsRankUp, focusBonus, rarityLuck,
 } from '../src/sim/dao.ts';
 import { rollDrop } from '../src/sim/drops.ts';
+import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
 import type { Beast } from '../src/data/bestiary.ts';
@@ -150,6 +152,12 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity);
   const kept = addToChest(s.chest, item, limit);
   let out: State = { ...s, chest: [...kept.chest] };
+  /**
+   * 拆 Whatever the chest threw on the floor is melted instead of vanishing, which is
+   * the whole of what salvage changes for somebody playing normally. The harness has to
+   * do it or the qi it pays is invisible to every curve on the page.
+   */
+  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped) };
   if (kept.dropped?.id === item.id) return out;    // the chest kept something better
 
   const slot = templateOf(item).slot as Slot;
@@ -257,6 +265,11 @@ export function play(h: Habit, maxDays = 400): Run {
       s = d.state;
       fights += n;
     }
+
+    // 拆 And on a visit, the junk goes. A cultivator who picks gear up is a cultivator
+    // who melts what they will never wear — anything at or below 靈 Spirit, which is
+    // the rank the game stops caring about within a realm of finding it.
+    if (h.gear && isOpen(s.realm, 'gear')) s = salvageUpTo(s, 'spirit');
 
     if (h.tower) for (let i = 0; i < 40; i++) {
       const f = standingFloor(s);

@@ -481,6 +481,9 @@ export const DRIVE = {
  * the bottom say what would happen and the player decides what better means.
  */
 export const ITEM = {
+  /** 拆 The single melt, on the sheet where the piece can actually be looked at. */
+  salvage: 'Melt it down',
+
   what: 'What it gives',
   against: (name: string) => `Against the ${name} you are wearing`,
   fromRealm: (n: number) => `realm ${n} make`,
@@ -500,6 +503,17 @@ export const ITEM = {
 };
 
 export const GEAR = {
+  /**
+   * 拆 Melting gear down.
+   *
+   * The bulk button has to state its own size before it is pressed, because there is no
+   * undo and a player who taps it expecting one piece and loses thirty will not tap it
+   * again. So the count and the qi are *on the button*, not near it.
+   */
+  upTo: (rank: string) => `${rank} and below`,
+  salvage: (n: number) => (n === 1 ? 'Melt 1 piece' : `Melt ${n} pieces`),
+  melting: 'Gear you will never wear is qi you have not collected. A piece is worth a share of a layer of the realm it was made in — so old junk stays old junk, however far you climb.',
+
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
   fuse: '煉 Fuse: three make one',
   empty: 'Empty. Beasts drop gear, and wardens always do.',

@@ -9,6 +9,8 @@ import { gearTile } from '../../art/gear.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
 import { ITEM } from '../copy.ts';
+import { salvageValue } from '../../sim/salvage.ts';
+import { num } from '../../sim/format.ts';
 
 /**
  * 鑑 What a piece is, and what it would do.
@@ -34,13 +36,15 @@ import { ITEM } from '../copy.ts';
  * piece put on in a copy of the save, which is the same pair of functions the entire
  * game is built on, so the sheet and the game can never disagree.
  */
-export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onClose }: {
+export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, onClose }: {
   state: State;
   item: Item;
   /** True when this is the piece already on the body, rather than one in the chest. */
   wearing: boolean;
   onWear: () => void;
   onTakeOff: () => void;
+  /** 拆 Melt it down for qi. */
+  onSalvage: () => void;
   onClose: () => void;
 }) {
   const tpl = templateOf(item);
@@ -140,6 +144,17 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onClose }: 
         )}
         <button className="act ghost" onClick={onClose}>退 <span>{ITEM.close}</span></button>
       </div>
+
+      {/* 拆 Melting the piece, on the one screen where a player is actually looking at
+          it and can see what they would be giving up. It is never offered for the piece
+          on the body — taking it off first is one tap and is the honest order. */}
+      {!wearing && (
+        <button className="melt" onClick={onSalvage}>
+          <b className="cjk">拆</b>
+          <i>{ITEM.salvage}</i>
+          <em className="mono">{num(salvageValue(item))}<span>qi</span></em>
+        </button>
+      )}
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { advance, layersOpened } from '../sim/time.ts';
 import { focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portrait } from '../art/aura.ts';
-import { templateOf, type Item, type Slot } from '../data/gear.ts';
+import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
@@ -19,6 +19,7 @@ import { pillFortune } from '../sim/furnace.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
+import { salvage, salvageUpTo } from '../sim/salvage.ts';
 import { WARDENS } from '../data/bestiary.ts';
 import { RARITIES, wornTotals } from '../data/gear.ts';
 import { Dao } from './screens/Dao.tsx';
@@ -108,6 +109,9 @@ export function App() {
   const [bloom, setBloom] = useState<number | null>(null);
   /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
   const [locked, setLocked] = useState<System | null>(null);
+  /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
+  const [meltUpTo, setMeltUpTo] = useState<Rarity>('common');
+
   /** 點 道 points earned and not yet spent. The tab bar wears the count. */
   const freePoints = daoFree(
     layersOpened(state),
@@ -387,6 +391,20 @@ export function App() {
     if (LEVELS[next].volume > 0) sfx.tap();
   }, []);
 
+  /** 拆 Melting one piece, from the sheet where it can be looked at first. */
+  const onSalvage = useCallback((id: string) => {
+    setState((s) => salvage(s, [id]));
+    sfx.buy();
+    haptics.strike();
+  }, []);
+
+  /** 拆 And the bulk form: everything at or below a rank, in one tap. */
+  const onSalvageAll = useCallback((upTo: Rarity) => {
+    setState((s) => salvageUpTo(s, upTo));
+    sfx.buy();
+    haptics.strike();
+  }, []);
+
   const onUnlock = useCallback((key: string) => {
     setState((s) => {
       const wardens = Object.entries(s.killed)
@@ -492,8 +510,9 @@ export function App() {
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}
+            upTo={meltUpTo} onUpTo={setMeltUpTo}
             onInspect={(item, wearing) => { setInspect({ item, wearing }); sfx.tap(); }}
-            onFuse={onFuse} onRefine={onRefine}
+            onFuse={onFuse} onRefine={onRefine} onSalvageAll={onSalvageAll}
           />
         )}
         {tab === 'dao' && (
@@ -684,6 +703,7 @@ export function App() {
           wearing={inspect.wearing}
           onWear={() => { onEquip(inspect.item); setInspect(null); }}
           onTakeOff={() => { onUnequip(templateOf(inspect.item).slot); setInspect(null); }}
+          onSalvage={() => { onSalvage(inspect.item.id); setInspect(null); }}
           onClose={() => { setInspect(null); sfx.tap(); }}
         />
       )}

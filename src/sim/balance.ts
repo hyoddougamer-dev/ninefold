@@ -188,6 +188,50 @@ export const WARDEN_TRIBUTE = 0.18;
  */
 export const CORE_QI_RUNGS = 6;
 
+/**
+ * 拆 What breaking a piece of gear down pays, as a share of the first rung of **its own
+ * realm** — never of the realm the cultivator is standing in.
+ *
+ * Bruno asked for the early qi flow to be helped along a little, and offered the shape
+ * himself: *"Salvage gear por exemplo, multiple salvage ou solo salvage, por algum qi."*
+ *
+ * The hole it fills is older and worse than a thin qi flow. A full chest does not refuse
+ * a drop — it throws the worst piece on the floor to make room — so from the second
+ * realm onward the game has been **deleting gear and paying nothing for it**, one piece
+ * per drop for the rest of the run. Salvage is what that deletion should always have
+ * been.
+ *
+ * 舊 Priced off the item's realm is the first half of the safety. A second-realm 凡 pays
+ * a second-realm sum for ever, which is a real number at the second realm and less than
+ * a millionth of a layer at the ninth — so this can never become a way of farming weak
+ * beasts for qi, which is the shape every uncapped faucet in this game has taken when it
+ * was allowed to read the *hunter's* depth instead.
+ *
+ * 早 And the tilt is the second half, which the measurement forced. A flat share was
+ * swept across its whole range and it did **nothing at all** for the cultivators it was
+ * asked to help: `once a day` and `casual` did not move by a single day at any setting,
+ * because four kills a day is under one drop a day. What did move was the hourly
+ * cultivator, who melts thousands — 52 days to 38 at the largest setting, which shortens
+ * the run for the one player who already runs out of game first.
+ *
+ * So the share falls as the realms rise, geometrically, exactly as LADDER_GROWTH does:
+ * generous where a piece of junk is a real fraction of a layer and where the player has
+ * nothing else to spend, mean where volume could turn it into a second income.
+ *
+ * 煉 It cannot be pumped against fusing at any point on that curve: three 凡 melt for 3
+ * units, and fused they make one 靈 that melts for 1.6. 煉器 refining is not counted at
+ * all, or 材 material would have a second door out into qi.
+ */
+export const SALVAGE_SHARE_FIRST = 0.30;
+export const SALVAGE_SHARE_LAST = 0.04;
+
+/** The share for a piece made in this realm. */
+export function salvageShare(realm: number): number {
+  const r = Math.max(1, Math.min(9, Math.round(realm)));
+  return SALVAGE_SHARE_FIRST
+    * (SALVAGE_SHARE_LAST / SALVAGE_SHARE_FIRST) ** ((r - 1) / 8);
+}
+
 
 export function ladderAt(n: number): number {
   return LADDER[Math.max(0, Math.min(LAYERS, Math.round(n)))];

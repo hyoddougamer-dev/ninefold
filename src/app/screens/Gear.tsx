@@ -1,6 +1,7 @@
 import {
-  AFFIXES, AFFIX_INFO, RARITY_INFO, SECONDARIES, SET_STEPS, SLOTS, SLOT_INFO,
-  activeSets, primaryOf, templateOf, wornRarity, wornTotals, type Affix, type Item, type Slot,
+  AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, SET_STEPS, SLOTS, SLOT_INFO,
+  activeSets, primaryOf, templateOf, wornRarity, wornTotals,
+  type Affix, type Item, type Rarity, type Slot,
 } from '../../data/gear.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
@@ -15,6 +16,7 @@ import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { GEAR } from '../copy.ts';
 import { swing } from '../../sim/inspect.ts';
+import { salvageWorth, salvageable } from '../../sim/salvage.ts';
 
 /**
  * 器 The gear screen — the ring.
@@ -26,9 +28,14 @@ import { swing } from '../../sim/inspect.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, onInspect, onFuse, onRefine }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll }: {
   state: State;
   pulse: number;
+  /** 拆 The rank the bulk melt reaches up to. Held by the app so it survives a tab. */
+  upTo: Rarity;
+  onUpTo: (r: Rarity) => void;
+  /** 拆 Melt everything at or below a rank. */
+  onSalvageAll: (upTo: Rarity) => void;
   /** 鑑 Open a piece. Wearing it is a button on the sheet, not a blind tap on a tile. */
   onInspect: (item: Item, wearing: boolean) => void;
   onFuse: (template: string, rarity: string) => void;
@@ -43,6 +50,8 @@ export function Gear({ state, pulse, onInspect, onFuse, onRefine }: {
   const limit = chestLimit(state.unlocked, totals.capacity);
   const S = 200;
   const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
+  // 拆 What the melt would take, so the button can say so before it is pressed.
+  const melting = salvageable(state.chest, upTo);
 
   return (
     <>
@@ -230,6 +239,32 @@ export function Gear({ state, pulse, onInspect, onFuse, onRefine }: {
         </span>
       </h2>
 
+      {/* 拆 Melting the junk. The rank chips are the whole control: whatever is lit,
+          everything at or below it goes, and the button says how many and for how much
+          before it is pressed. A bulk action that does not state its own size is a trap,
+          and this one cannot be undone. */}
+      {state.chest.length > 0 && (
+        <div className="melting">
+          <div className="ranks">
+            {RARITIES.map((r) => (
+              <button key={r} data-on={r === upTo} className="rk"
+                      style={{ ['--hue' as string]: RARITY_INFO[r].colour }}
+                      onClick={() => onUpTo(r)}
+                      aria-label={`${RARITY_INFO[r].name} and below`}>
+                <b className="cjk">{RARITY_INFO[r].han}</b>
+              </button>
+            ))}
+            <span className="upto">{GEAR.upTo(RARITY_INFO[upTo].name)}</span>
+          </div>
+          <button className="melt wide" disabled={melting.length === 0}
+                  onClick={() => onSalvageAll(upTo)}>
+            <b className="cjk">拆</b>
+            <i>{GEAR.salvage(melting.length)}</i>
+            <em className="mono">{num(salvageWorth(melting))}<span>qi</span></em>
+          </button>
+        </div>
+      )}
+
       {state.chest.length === 0 ? (
         <p className="faint" style={{ fontSize: 13, margin: 0 }}>{GEAR.empty}</p>
       ) : (
@@ -262,6 +297,7 @@ export function Gear({ state, pulse, onInspect, onFuse, onRefine }: {
       )}
 
       <p className="faint" style={{ fontSize: 12, marginTop: 12, lineHeight: 1.7 }}>
+        {GEAR.melting}<br />
         {GEAR.howTo}<br />
         {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)}{' '}
         {GEAR.drops(state.realm)}
