@@ -46,10 +46,12 @@ export function Hunt({ state, onFight, onDrive }: {
    * Now a beast with a mark still to earn comes first — newest realm first among those —
    * and the ones with nothing left in them sink to the bottom and go quiet.
    */
+  const [showDone, setShowDone] = useState(false);
+
   // 出 The commons of this realm that have not walked out yet.
   const coming = comingIn(state.realm, state.layer);
 
-  const list = useMemo(() => {
+  const sorted = useMemo(() => {
     const all = [...huntable(state.realm, state.layer)];
     return all.sort((a, b) => {
       const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
@@ -58,7 +60,20 @@ export function Hunt({ state, onFight, onDrive }: {
       // cultivator's first sight of 狩 was the one beast furthest out of reach.
       return left(a) - left(b) || b.realm - a.realm || beastPower(a) - beastPower(b);
     });
-  }, [state.realm, state.killed]);
+  }, [state.realm, state.layer, state.killed]);
+
+  /**
+   * 完 And the finished ones are folded, not listed.
+   *
+   * Sorting them to the bottom was the first half of this and it was not enough.
+   * Measured over a whole climb: the ninth realm's hunt screen offers **25 beasts, 13 of
+   * them with every mark earned** — and a screen of twenty-five rows is a screen nobody
+   * reads, however well it is ordered. What is still a question stays on top as cards;
+   * what is done goes behind one line that says how many, and opens if you want it.
+   */
+  const open = sorted.filter((b) => nextMark(state.killed[b.key] ?? 0));
+  const done = sorted.filter((b) => !nextMark(state.killed[b.key] ?? 0));
+  const list = showDone ? [...open, ...done] : open;
 
   return (
     <>
@@ -92,7 +107,7 @@ export function Hunt({ state, onFight, onDrive }: {
         </span>
       </div>
 
-      <h2 className="heading">{HUNT.reach(list.length)}</h2>
+      <h2 className="heading">{HUNT.reach(sorted.length)}</h2>
       <div className="stack">
         {list.map((b, i) => {
           const r = realmOf(b.realm);
@@ -148,6 +163,20 @@ export function Hunt({ state, onFight, onDrive }: {
           );
         })}
       </div>
+      {/* 完 The fold. It says the number and what they are still good for, so a player
+          who wants the material knows where it went and everyone else reads one line
+          instead of thirteen rows. */}
+      {done.length > 0 && (
+        <div className="folded">
+          <button className="foldbtn" onClick={() => setShowDone((x) => !x)}>
+            <b className="cjk">完</b>
+            <i>{HUNT.finished(done.length)}</i>
+            <em>{showDone ? HUNT.hideFinished : HUNT.showFinished}</em>
+          </button>
+          {!showDone && <p className="faint">{HUNT.finishedWhy}</p>}
+        </div>
+      )}
+
       {/* 出 What has not walked out yet. A beast held back and not shown is a beast
           taken away; shown, it is the next thing to climb toward — which is the same
           argument as a locked tab, and the reason locked tabs are drawn rather than

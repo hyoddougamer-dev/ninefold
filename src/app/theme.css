@@ -104,6 +104,17 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* 完 The fold under the hunt list: one line where thirteen rows used to be. */
+.folded { margin-top: 12px; }
+.folded .foldbtn { display: flex; align-items: center; gap: 11px; width: 100%; font: inherit;
+                   color: inherit; text-align: left; background: var(--panel2);
+                   border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; }
+.folded .foldbtn b { flex: none; font-size: 18px; font-weight: 400; color: var(--faint); }
+.folded .foldbtn i { flex: 1; font-style: normal; font-size: 14px; }
+.folded .foldbtn em { flex: none; font-style: normal; font-size: 12px; color: var(--cyan);
+                      letter-spacing: .04em; }
+.folded p { margin: 8px 2px 0; font-size: 12.5px; line-height: 1.5; }
+
 /* 氣 The live rate, under the standing one it rides on. */
 .rnow { margin-top: 2px; font-size: 12.5px; color: var(--gold); opacity: .85; }
 .deep { margin-left: 9px; font-size: 11px; letter-spacing: .04em; color: var(--gold);

@@ -445,6 +445,19 @@ export const HUNT = {
    *  that tells three unwinnable fights apart. */
   toReach: 'needed',
   reach: (n: number) => `${n} beasts within reach`,
+  /**
+   * 完 The beasts with nothing left in them.
+   *
+   * Measured across a whole climb: by the ninth realm the hunt screen offered 25 beasts,
+   * and 13 of them had every mark earned. Twenty-five cards, all reading 98%, half of
+   * them finished — which is the exact screen this game's notes said it feared. They are
+   * folded away now rather than deleted, because a beast you finished is a thing you did
+   * and the record is the page that remembers it.
+   */
+  finished: (n: number) => (n === 1 ? '1 finished' : `${n} finished`),
+  finishedWhy: 'Every mark earned. They still drop 材 material, and 圍 the drive is the way to take it without tapping.',
+  showFinished: 'Show them',
+  hideFinished: 'Fold them away',
   paysMaterial: '材 material, from the record',
   paysPower: '力 power, from the record',
 
@@ -464,7 +477,7 @@ export const HUNT = {
   record: 'Every beast you kill is counted for ever, and the count pays. 見 Seen at one kill '
     + 'fills in the bestiary; 熟 Known at ten gives you more 材 material from everything in '
     + 'the game; 通 Mastered at a hundred gives you power. Both of those are permanent, and neither '
-    + 'can be hurried by waiting. A beast you have finished with sinks to the bottom.',
+    + 'can be hurried by waiting. A beast you have finished with folds away, and is still there if you want it.',
 };
 
 /**

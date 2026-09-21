@@ -1364,6 +1364,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#huntlist"><b>狩</b> The 98% screen</a>
       <a href="#rate"><b>氣</b> Why the rate moves</a>
       <a href="#cores"><b>丹</b> The coin the hunting paid</a>
       <a href="#salvage"><b>拆</b> Melting gear</a>
@@ -1963,6 +1964,40 @@ const page = `<title>九境 Ninefold — the Bible</title>
       much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
       (it moved one realm by one point — because a cultivator who visits once a day
       cannot spend qi while the app is shut, whatever is on the screen).</p>
+  </section>
+
+  <section class="sec" id="huntlist">
+    <h2><span class="h">\u72e9</span> Twenty-five buttons that all said 98%</h2>
+    <p class="t">Measured over a whole climb, six visits a day, counting every beast the
+      hunt screen offered at every visit and what its odds actually said:</p>
+    <table>
+      <tr><th>realm</th><th style="text-align:right">beasts shown</th>
+          <th style="text-align:right">over 90%</th>
+          <th style="text-align:right">a real question</th>
+          <th style="text-align:right">finished</th></tr>
+      <tr><td>1</td><td style="text-align:right">3.0</td><td style="text-align:right">53%</td><td style="text-align:right">7%</td><td style="text-align:right">0.0</td></tr>
+      <tr><td>2</td><td style="text-align:right">5.1</td><td style="text-align:right">92%</td><td style="text-align:right">6%</td><td style="text-align:right">0.0</td></tr>
+      <tr><td>3</td><td style="text-align:right">7.8</td><td style="text-align:right">99%</td><td style="text-align:right">1%</td><td style="text-align:right">0.0</td></tr>
+      <tr><td>5</td><td style="text-align:right">13.6</td><td style="text-align:right">100%</td><td style="text-align:right">0%</td><td style="text-align:right">3.0</td></tr>
+      <tr><td>7</td><td style="text-align:right">19.6</td><td style="text-align:right">100%</td><td style="text-align:right">0%</td><td style="text-align:right">7.3</td></tr>
+      <tr><td><b>9</b></td><td style="text-align:right"><b>25.4</b></td><td style="text-align:right"><b>100%</b></td><td style="text-align:right"><b>0%</b></td><td style="text-align:right"><b>13.0</b></td></tr>
+    </table>
+    <p class="t">From the third realm on <b>nothing on that screen is ever a question</b>,
+      and by the ninth it is twenty-five rows of 98% with half of them already finished.
+      This page's own notes said it feared exactly that screen, and the sort that put the
+      unfinished ones on top was only half an answer: a list of twenty-five is a list
+      nobody reads, however well it is ordered.</p>
+    <div class="rule"><b>The odds were never the point, and the game already has a
+      difficulty ladder.</b> \u5854 The tower reads your own power at every floor and has no
+      top; the bestiary is a <em>collection</em>, priced as a share of a reference
+      cultivator who owns nothing but levels. Anybody who wears gear and walks the tree
+      is far above that reference, so every common is winnable and always was meant to
+      be. What was wrong was a screen presenting a collection as if it were a series of
+      fights.</div>
+    <div class="rule"><b>\u5b8c So the finished ones fold.</b> One line saying how many and
+      what they are still good for \u2014 \u6750 material, and \u570d the drive to take it without
+      tapping \u2014 and it opens if you want it. The ninth realm's screen goes from
+      <b>26 cards to 14</b>, and what is left is every beast with a mark still in it.</div>
   </section>
 
   <section class="sec" id="rate">
