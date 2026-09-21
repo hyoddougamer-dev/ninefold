@@ -78,6 +78,18 @@ export const CULTIVATE = {
   lastHeaven: 'From here it comes back for ever, and always heavier than the one you '
     + 'put down.',
 
+  /**
+   * 待 What an unaffordable row says, and it is two different sentences.
+   *
+   * A rung of the ladder takes your qi the moment it can afford it, so the rung you
+   * stand on is the most qi you can ever hold. Below that, waiting works. Above it,
+   * waiting does nothing at all and only the climb will do — which is a fact the screen
+   * owed the player rather than leaving them to watch a price never arrive.
+   */
+  soon: (when: string) => `in ${when}`,
+  afterRungs: (n: number) => (n === 1 ? 'one rung up the climb' : `${n} rungs up the climb`),
+  overRung: 'More than this rung holds. The bar spends your qi before it gets that high, so this one opens by climbing.',
+
   ceiling: (n: number, gain: string) =>
     `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}. `
     + 'There is no rebirth yet, so this is the ladder above the ladder.',

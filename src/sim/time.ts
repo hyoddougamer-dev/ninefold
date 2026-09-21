@@ -126,3 +126,42 @@ export function buysWith(s: State, lump: number): { rungs: number; left: number 
   }
   return { rungs, left: qi };
 }
+
+/**
+ * 待 When an upgrade you cannot afford becomes one you can.
+ *
+ * Measured, six visits a day: from the fourth realm on the home screen has **nothing to
+ * press in eighty per cent of visits**, and never because the boxes are full — always
+ * because nothing is affordable. The reason is the deepest rule in the game and the
+ * screen never said a word of it.
+ *
+ * A layer opens the instant its price is met and the qi is taken, so **the rung you are
+ * standing on is the ceiling on the qi you may ever hold**. An upgrade dearer than that
+ * rung cannot be saved for at all — not slowly, not ever. It becomes affordable by
+ * *climbing*, when the rungs themselves grow dearer than it. From the fourth realm on,
+ * about one of the three qi upgrades is in that state at any moment.
+ *
+ * That is not a fault to fix, it is the economy working; 功法 costs a whole rung by
+ * design. What was a fault is that the player was left to infer it from a price they
+ * watched never being reachable. So the row says which of the two it is:
+ *
+ *   `{ seconds }`  gather this long on the rung you are on, and it is yours
+ *   `{ rungs }`    no amount of waiting here will do it; it opens this many rungs up
+ */
+export function affordableIn(
+  s: State, cost: number,
+): { seconds: number; rungs: 0 } | { seconds: null; rungs: number } {
+  const here = layerCost(s.realm, s.layer, s.unlocked);
+  // 頂 At the summit there is no rung to take the qi, so everything is only ever a wait.
+  if (!Number.isFinite(here) || cost <= here) {
+    return { seconds: Math.max(0, cost - s.qi) / Math.max(1e-9, rate(s)), rungs: 0 };
+  }
+  let realm = s.realm;
+  let layer = s.layer;
+  for (let n = 1; n <= LAYERS; n++) {
+    if (++layer >= LAYERS_PER_REALM) { layer = 0; realm += 1; }
+    const price = layerCost(realm, layer, s.unlocked);
+    if (!Number.isFinite(price) || price >= cost) return { seconds: null, rungs: n };
+  }
+  return { seconds: null, rungs: LAYERS };
+}

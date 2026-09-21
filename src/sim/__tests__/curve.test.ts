@@ -11,7 +11,7 @@ import {
   newState, power, wardenStands,
   type State, type Upgrade,
 } from '../state.ts';
-import { advance, layerCost, rate } from '../time.ts';
+import { advance, affordableIn, layerCost, rate } from '../time.ts';
 import { num } from '../format.ts';
 import { pillsTaken } from '../furnace.ts';
 import { LINES } from '../../data/alchemy.ts';
@@ -336,6 +336,44 @@ describe('qi that arrives all at once', () => {
     // Not identical — the second gathered at a lower rate for the hour — but the one
     // that got the qi earlier must never end up behind.
     expect(first.layer).toBeGreaterThanOrEqual(second.layer);
+  });
+});
+
+/**
+ * 待 What an unaffordable price is actually waiting for.
+ *
+ * The rung you stand on is the most qi you may ever hold, because `advance` takes it the
+ * instant it can afford the layer. So an upgrade dearer than that rung is not a saving
+ * problem, it is a climbing problem, and the two have to read differently on the screen.
+ */
+describe('when an upgrade you cannot afford becomes one you can', () => {
+  it('counts seconds for anything the rung you stand on can hold', () => {
+    const s = newState(T0);
+    const rung = layerCost(1, 0, s.unlocked);
+    const { seconds, rungs } = affordableIn(s, rung / 2);
+    expect(rungs).toBe(0);
+    expect(seconds).not.toBeNull();
+    expect(seconds!).toBeGreaterThanOrEqual(0);
+  });
+
+  it('counts rungs for anything dearer than it, because waiting cannot get there', () => {
+    const s = newState(T0);
+    const rung = layerCost(1, 0, s.unlocked);
+    const far = affordableIn(s, rung * 20);
+    expect(far.seconds).toBeNull();
+    expect(far.rungs).toBeGreaterThan(0);
+    // And the rung it names really is dear enough to hold that price.
+    let realm = 1;
+    let layer = 0;
+    for (let i = 0; i < far.rungs; i++) if (++layer >= LAYERS_PER_REALM) { layer = 0; realm += 1; }
+    expect(layerCost(realm, layer, s.unlocked)).toBeGreaterThanOrEqual(rung * 20);
+  });
+
+  it('never says "climb" at the summit, where there is no rung to take the qi', () => {
+    const top = { ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1 };
+    const { seconds, rungs } = affordableIn(top, 1e30);
+    expect(rungs).toBe(0);
+    expect(seconds).not.toBeNull();
   });
 });
 

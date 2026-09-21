@@ -104,6 +104,11 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* 待 When an unaffordable box becomes affordable, under its price. */
+.upg .price .when { display: block; margin-top: 3px; font-size: 9.5px; font-style: normal;
+                    color: var(--faint); letter-spacing: .02em; max-width: 84px;
+                    white-space: normal; line-height: 1.25; }
+
 /* 完 The fold under the hunt list: one line where thirteen rows used to be. */
 .folded { margin-top: 12px; }
 .folded .foldbtn { display: flex; align-items: center; gap: 11px; width: 100%; font: inherit;

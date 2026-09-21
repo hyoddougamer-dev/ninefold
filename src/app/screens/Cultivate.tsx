@@ -7,7 +7,7 @@ import {
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
+import { affordableIn, ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { HEAVENS, heavenAt, marksToNext, nextHeaven } from '../../data/heavens.ts';
 import { portrait, seal } from '../../art/aura.ts';
@@ -323,6 +323,17 @@ export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onR
           // never on 氣. See capOf.
           const cap = capOf(state, u);
           const maxed = held >= cap;
+          /**
+           * 待 A price you cannot pay says when you can, and there are two answers.
+           *
+           * The rung you stand on is the most qi you may ever hold — the bar takes it
+           * the instant it can afford the layer — so an upgrade dearer than that rung
+           * cannot be waited for at all, only climbed to. Measured, from the fourth
+           * realm on, the home screen has nothing to press in eighty per cent of visits
+           * and this is the whole of why. See affordableIn.
+           */
+          const wait = !maxed && i.currency === 'qi' && !canBuy(state, u)
+            ? affordableIn(state, cost) : null;
           return (
             /* 指 Named so 引 the guide can put an arrow on this exact box. */
             <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
@@ -344,12 +355,25 @@ export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onR
                     <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
                       {i.currency === 'qi' ? 'qi' : '材'}
                     </i>
+                    {wait && (
+                      <i className="when">
+                        {wait.seconds === null
+                          ? CULTIVATE.afterRungs(wait.rungs)
+                          : CULTIVATE.soon(duration(wait.seconds))}
+                      </i>
+                    )}
                   </>}
               </span>
             </button>
           );
         })}
       </div>
+      {/* 階 Said once under the boxes rather than on every row that needs it. */}
+      {UPGRADES.some((u) => (u !== 'cores' || isOpen(state.realm, 'cores'))
+        && UPGRADE_INFO[u].currency === 'qi' && state.levels[u] < capOf(state, u)
+        && !canBuy(state, u) && affordableIn(state, upgradeCost(state, u)).seconds === null) && (
+        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{CULTIVATE.overRung}</p>
+      )}
 
       {/* 凝丹 The way out of the one dead end the game has.
           It appears only when 材 material has actually run out and a core is still to be
