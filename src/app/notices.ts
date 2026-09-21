@@ -42,7 +42,10 @@ export const NOTICES: readonly Notice[] = [
   },
   {
     key: 'cores', han: '妖丹', title: NOTICE.cores.title, text: NOTICE.cores.text, tab: 'hunt',
-    when: (s) => s.realm >= opensAt('cores') && s.levels.cores === 0,
+    // 材 When there is material in your pocket, not when the realm opens. 妖丹 is on
+    // sale from the first realm now, and a card explaining what material buys is worth
+    // reading the moment you have some — and worth nothing at all before that.
+    when: (s) => isOpen(s.realm, 'cores') && s.materials > 0 && s.levels.cores === 0,
   },
   {
     key: 'tower', han: '塔', title: NOTICE.tower.title, text: NOTICE.tower.text, tab: 'trials',

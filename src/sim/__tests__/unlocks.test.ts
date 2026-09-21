@@ -30,17 +30,19 @@ describe('開 what each realm opens', () => {
       expect(STANCES.some((s) => s.realm === r.n)).toBe(true);
       expect(ARTS.some((a) => a.realm === r.n)).toBe(true);
     }
-    // Every system opens somewhere on the ladder. 狩 Hunt is the one at the first realm
-    // and it is the only one allowed to be: the first realm used to hand over nothing
-    // for thirteen hours, and its own three beasts were sitting there already balanced,
-    // becoming winnable one at a time from about two hours in. Everything else still
-    // waits, so the first realm is one screen and one list, not a spreadsheet.
+    // Every system opens somewhere on the ladder, and the first realm holds exactly the
+    // three that make one loop: 狩 something to kill, 妖丹 something the kill buys, 錄
+    // the count that makes the tenth kill worth more than the first. The first realm
+    // used to hand over nothing for thirteen hours, and then hand over hunting whose
+    // two rewards were both locked a fortnight away. Everything else still waits, so
+    // the first realm is one screen and one list, not a spreadsheet.
+    const FIRST = ['hunt', 'cores', 'record'];
     for (const s of SYSTEMS) {
-      expect(s.realm).toBeGreaterThanOrEqual(s.key === 'hunt' ? 1 : 2);
+      expect(s.realm).toBeGreaterThanOrEqual(FIRST.includes(s.key) ? 1 : 2);
       expect(s.realm).toBeLessThanOrEqual(9);
       expect(s.gives.length).toBeGreaterThan(30);
     }
-    expect(opensIn(1).map((x) => x.key)).toEqual(['hunt']);
+    expect(opensIn(1).map((x) => x.key).sort()).toEqual([...FIRST].sort());
     // And from the third realm it is one thing at a time, so nothing arrives in a heap.
     for (let r = 3; r <= 9; r++) expect(opensIn(r).length).toBeLessThanOrEqual(2);
   });
@@ -84,10 +86,13 @@ describe('開 what each realm opens', () => {
   });
 
   it('agrees with the wall the wardens already put up', () => {
-    // 妖丹 becoming *required* and 妖丹 becoming *available* are the same realm, or a
-    // cultivator meets a warden they cannot beat with an upgrade they cannot buy.
-    expect(opensAt('cores')).toBe(CORES_FREE_REALMS + 1);
-    console.log(`  妖丹 opens and is demanded at the same realm: ` +
-      `${realmOf(opensAt('cores')).han} ${realmOf(opensAt('cores')).name}\n`);
+    // 妖丹 may never be *required* before it is *available*, or a cultivator meets a
+    // warden they cannot beat with an upgrade they cannot buy. Earlier than required is
+    // the right way round, and it is where it sits now: on sale from the first realm,
+    // demanded from the third, so the hunting has somewhere to go long before the wall.
+    expect(opensAt('cores')).toBeLessThanOrEqual(CORES_FREE_REALMS + 1);
+    console.log(`  妖丹 is on sale from ${realmOf(opensAt('cores')).han} ` +
+      `${realmOf(opensAt('cores')).name} and demanded from ` +
+      `${realmOf(CORES_FREE_REALMS + 1).han} ${realmOf(CORES_FREE_REALMS + 1).name}\n`);
   });
 });

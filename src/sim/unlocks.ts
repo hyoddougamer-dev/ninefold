@@ -41,6 +41,26 @@
  * leaving things behind, and now you get to choose how you fight them. From the third
  * realm it goes back to one thing at a time.
  *
+ * 環 And the first realm has to *close its loop*, which took two more moves.
+ *
+ * Bruno, playing it: "a primeira hunt não dá nada. Apenas está lá." He was right, and
+ * the reason was not the hunting. A kill paid 材 material and material bought nothing
+ * until the third realm — two days with a dead coin in your pocket — while the marks
+ * the kills earned were counted and paid nothing until the sixth. The hunting worked.
+ * Both of its rewards were locked in cupboards a fortnight away.
+ *
+ * So 妖丹 cores are for sale from the first realm: the first costs 3 material, which is
+ * three rats, and gives +8% power for good. Wardens still do not *demand* cores until
+ * the third — being sold a thing earlier than you are required to have it is the right
+ * way round, and the reverse is the wall this whole file exists to stop.
+ *
+ * And 錄 the record pays from the first kill rather than the sixth realm. Ten kills of
+ * one animal is +2% material from everything; a hundred is +2% power. Small, permanent,
+ * and earned by doing the thing the screen is already asking you to do.
+ *
+ * That is the loop the first hour was missing: kill, take material, buy power, kill
+ * something bigger. It was all there. None of it was switched on.
+ *
  * Nothing is taken away when it opens: the kills counted before 錄 pays still count, and
  * the 道 points earned before the tree opens are still there waiting. A system arriving
  * late arrives *full*.
@@ -67,16 +87,16 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'And what they leave behind, which you can wear.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
-  { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 3,
-    gives: 'The fourth upgrade, bought with material rather than qi. From here a warden will not fall without it.' },
+  { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,
+    gives: 'The fourth upgrade, and the only one qi cannot buy. It costs 材 material, and material falls off beasts — so this is what the hunting is for. From the third realm a warden will not fall without it.' },
   { key: 'fuse', han: '煉', name: 'Fusing', realm: 3,
     gives: 'Three of a kind become one of the rank above.' },
   { key: 'tree', han: '道', name: 'The Path', realm: 4,
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
-  { key: 'record', han: '錄', name: 'The Record', realm: 6,
-    gives: 'Every beast you have ever killed starts paying. The marks were being counted all along.' },
+  { key: 'record', han: '錄', name: 'The Record', realm: 1,
+    gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 7,
     gives: 'Pills, bought with qi and material together, with no cap on any of it.' },
   { key: 'refine', han: '煉器', name: 'Refining', realm: 8,

@@ -71,11 +71,18 @@ describe('示 the line that is never empty', () => {
       if (t % 300) continue;
       const tip = advice(s);
       expect(tip).not.toBeNull();
-      seen.add(tip!.han);
+      seen.add(tip!.text);
       if (s.realm > 1) break;
     }
-    // And it is not one sentence on a loop: the first realm alone moves through several.
-    console.log(`  示 across the first realm it spoke as: ${[...seen].join(' · ')}\n`);
-    expect(seen.size).toBeGreaterThan(1);
+    /**
+     * And it is not one sentence on a loop. It is checked on the *text* rather than the
+     * han: across the first realm the symbol is mostly 狩, and that is correct — hunting
+     * is what the first realm is. What has to move is what it says about it, which beast
+     * and at what odds.
+     */
+    console.log(`\n  示 across the first realm it said ${seen.size} different things:`);
+    for (const line of seen) console.log(`     ${line}`);
+    console.log('');
+    expect(seen.size).toBeGreaterThan(3);
   });
 });
