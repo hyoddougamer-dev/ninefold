@@ -281,6 +281,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           <button className="act" onClick={() => set((s) => crossTribulation(s, dragon))}>
             渡劫 <span>Cross the tribulation</span>
           </button>
+          {/* 價 The one button left in the game that took qi without saying so. */}
+          <p className="faint" style={{ margin: '7px 0 0', fontSize: 12.5, lineHeight: 1.5 }}>
+            {CULTIVATE.crossPrice(num(pool))}
+          </p>
         </div>
       )}
 

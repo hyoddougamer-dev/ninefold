@@ -27,7 +27,7 @@
  */
 import {
   atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense, condense,
-  condenseCost, tribulationPool, upgradeCost, validate,
+  condenseCost, crossTribulation, tribulationPool, upgradeCost, validate,
   type State, type Upgrade,
 } from '../src/sim/state.ts';
 import { advance, layerCost, layersOpened, rate } from '../src/sim/time.ts';
@@ -237,6 +237,17 @@ console.log('出入 every verb, against the price it quotes');
       }
       ok('緣 a meeting never takes more qi than its own offer asks');
     }
+  }
+
+  // 渡劫 The crossing, which is the one action in the game that spends a whole bar.
+  {
+    const end = playEndgame(1).end;
+    const s: State = { ...end, wardenFell: true, qi: tribulationPool(end) * 1.4 };
+    const pool = tribulationPool(s);
+    const after = crossTribulation(s, 1);
+    const took = s.qi - after.qi;
+    if (!same(took, pool)) fail('渡劫 the crossing', `pool is ${num(pool)}, it took ${num(took)}`);
+    else ok('渡劫 the crossing spends 雷池 the pool exactly, and the screen says so before the tap');
   }
 
   // 突破 The breakthrough. It used to burn the rung it stood on; it must not.

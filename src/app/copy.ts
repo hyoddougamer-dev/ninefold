@@ -149,6 +149,16 @@ export const CULTIVATE = {
   lastLayers: (n: number) =>
     `${n} more ${n === 1 ? 'layer' : 'layers'} and the bar becomes 雷池 the thunder pool.`,
   poolFilling: (left: string) => `The pool fills in ${left}.`,
+  /**
+   * 渡劫 What the crossing costs, said before the tap rather than discovered after it.
+   *
+   * Crossing spends 雷池 the whole pool, which at the summit is the whole bar, and the
+   * button said only "Cross the tribulation". A player pressed it and watched the number
+   * they had spent two days filling go to nothing, with the screen silent about it. That
+   * is the same fault 拆 the melt had, and this repository already decided how it ends:
+   * **the trade is stated before the tap, not explained after it.**
+   */
+  crossPrice: (qi: string) => `It spends 雷池 the pool, ${qi} qi. The pool starts filling again at once.`,
   capped: 'Full for this realm. Climb to hold more.',
   /** 境外 At the summit there is no realm left to climb, so the room comes from crossing. */
   cappedTop: 'Full for this heaven. Cross the tribulation to hold more.',
