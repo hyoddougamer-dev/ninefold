@@ -27,7 +27,7 @@ describe('拆 melting gear down', () => {
       return `    ${RARITY_INFO[r].han} ${RARITY_INFO[r].name.padEnd(7)} realm 2 ${
         num(at2).padStart(9)}    realm 9 ${num(at9).padStart(9)}`;
     });
-    console.log(`\n  拆 what a melt pays — a share of the first rung of its own realm,\n`
+    console.log(`\n  拆 what a melt pays: a share of the first rung of its own realm,\n`
       + `  falling from ${SALVAGE_SHARE_FIRST} at the first realm to ${SALVAGE_SHARE_LAST} at the ninth:\n`
       + `${rows.join('\n')}\n`);
 
@@ -82,7 +82,7 @@ describe('拆 melting gear down', () => {
     expect(made).not.toBeNull();
     const after = salvageValue(made!);
     console.log(`  煉 three 凡 melt for ${num(before)}; fused and melted they are worth ${
-      num(after)} — fusing for qi is always a loss\n`);
+      num(after)}: fusing for qi is always a loss\n`);
     expect(after).toBeLessThan(before);
   });
 

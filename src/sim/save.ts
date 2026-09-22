@@ -6,7 +6,7 @@ const KEY = 'ninefold.save.v1';
 /**
  * 備 The spare copy.
  *
- * Written only on a *clean* load — a save that came back whole and validated. If the
+ * Written only on a *clean* load: a save that came back whole and validated. If the
  * main key is ever emptied or corrupted, this is the last state the game is sure about.
  * It costs one extra write per session and it is the difference between losing an hour
  * and losing three months.
@@ -19,7 +19,7 @@ const BACKUP = 'ninefold.save.backup';
  * An idle game is played closed, so loading is not only reading: it is paying the hours
  * that passed while the app did not exist. `advance` does that from the stored stamp,
  * and the report handed back is what the screen uses to say *how much you earned while
- * you were away* — the first thing a player wants to know on opening.
+ * you were away*: the first thing a player wants to know on opening.
  */
 export interface Return {
   readonly state: State;
@@ -34,7 +34,7 @@ function read(key: string): unknown {
     const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : null;
   } catch {
-    return null;   // storage blocked, private window, corrupt JSON — all the same here
+    return null;   // storage blocked, private window, corrupt JSON: all the same here
   }
 }
 
@@ -100,7 +100,7 @@ export function wipe(): void {
  * 出 The save as text the player holds.
  *
  * Everything else here is insurance against the game's own accidents. This is insurance
- * against the *phone* — clearing the browser's data, losing the device, changing
+ * against the *phone*: clearing the browser's data, losing the device, changing
  * phones. There is no account and no cloud, so the only copy that survives any of that
  * is one the player put somewhere themselves.
  */
@@ -119,8 +119,8 @@ export interface Imported {
  *
  * This guards the paste box: if a mispaste validated into a fresh cultivator it would
  * silently wipe a real save, so a save that has done nothing is refused rather than
- * loaded. It cannot be "qi is zero" any more — 囊 the opening purse means a cultivator
- * starts holding something — so it asks the honest question instead: has this save
+ * loaded. It cannot be "qi is zero" any more: 囊 the opening purse means a cultivator
+ * starts holding something, so it asks the honest question instead: has this save
  * *done* anything at all? Bought a level, killed a beast, climbed a rung, worn a piece.
  *
  * It is exported because the app asks the same question for a different reason: 引 the

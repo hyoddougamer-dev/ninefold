@@ -16,7 +16,7 @@ export { layersOpened, rate };
 export function layerCost(realm: number, layer: number, unlocked: readonly string[] = []): number {
   const n = (realm - 1) * LAYERS_PER_REALM + layer;
   // The summit. There is no rung above the ninth layer of the ninth realm, so its price
-  // is infinite and qi banks there for ever — which is where 渡劫 begins.
+  // is infinite and qi banks there for ever, which is where 渡劫 begins.
   if (n >= LAYERS - 1) return Infinity;
   return ladderAt(n) * layerCostFactor(unlocked);
 }
@@ -37,18 +37,18 @@ export function ladderDone(s: State): boolean {
  *
  * It walks layer by layer rather than applying one rate across the whole gap, because
  * the rate *changes* every time a layer opens. Applying a single rate to a twenty-hour
- * absence would underpay it in silence — and an idle game is played closed, so this is
+ * absence would underpay it in silence, and an idle game is played closed, so this is
  * not a detail: it is the difference between paying the hours the player did not watch
  * and lying about them.
  *
  * At a realm's ceiling the layers stop opening and qi banks instead. Time never climbs
  * a realm: beating the warden only unlocks the breakthrough, and pressing 突破 is what
  * takes it. The first version let a fallen warden open the gate here, so the realm
- * advanced on the next tick — the player never saw the button, and never saw the one
+ * advanced on the next tick: the player never saw the button, and never saw the one
  * moment the game stops for.
  *
  * `auto` ignores the gate entirely and exists only so the balance simulation can trace
- * the theoretical curve. `focus` is 入定 — what the app being open is worth — and it is
+ * the theoretical curve. `focus` is 入定: what the app being open is worth, and it is
  * never below 1, so no call of this function can ever pay less than the promised rate.
  */
 export function advance(s: State, now: number, auto = false, focus = 1): State {
@@ -75,7 +75,7 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
     //
     // Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
     // contabilizar."* This loop was written for qi that arrives from the clock, and qi
-    // from the clock lands on the rung price exactly — so `qi = 0` was right by accident
+    // from the clock lands on the rung price exactly, so `qi = 0` was right by accident
     // and only ever by accident. Every other way qi arrives is a **lump**: 拆 melting a
     // chest, 塔 a tower floor, 見 first sight of a beast, 囊 the opening purse. Land a
     // lump on a rung that costs less than it and the next tick opened one layer and
@@ -104,8 +104,8 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
  * Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
  * contabilizar."* Traced in the running game, at the second realm's fourth rung: he
  * stands at 60,059 qi, melts four pieces for 24,000, and the number on the screen reads
- * **8,892**. Nothing was lost — the rung cost 75,000 and the ladder took it the instant
- * he could afford it, which is the one rule `advance` has always had — but the game said
+ * **8,892**. Nothing was lost: the rung cost 75,000 and the ladder took it the instant
+ * he could afford it, which is the one rule `advance` has always had, but the game said
  * none of that. It showed a number falling by fifty-one thousand after a reward.
  *
  * So the trade is stated *before* the tap rather than explained after it. This walks the
@@ -131,13 +131,13 @@ export function buysWith(s: State, lump: number): { rungs: number; left: number 
  * 待 When an upgrade you cannot afford becomes one you can.
  *
  * Measured, six visits a day: from the fourth realm on the home screen has **nothing to
- * press in eighty per cent of visits**, and never because the boxes are full — always
+ * press in eighty per cent of visits**, and never because the boxes are full: always
  * because nothing is affordable. The reason is the deepest rule in the game and the
  * screen never said a word of it.
  *
  * A layer opens the instant its price is met and the qi is taken, so **the rung you are
  * standing on is the ceiling on the qi you may ever hold**. An upgrade dearer than that
- * rung cannot be saved for at all — not slowly, not ever. It becomes affordable by
+ * rung cannot be saved for at all, not slowly, not ever. It becomes affordable by
  * *climbing*, when the rungs themselves grow dearer than it. From the fourth realm on,
  * about one of the three qi upgrades is in that state at any moment.
  *
@@ -156,7 +156,7 @@ export function affordableIn(
   //
   // 定 The wait is counted at the **standing** rate and not at the one 入定 is currently
   // paying, on purpose. The sitting ends after a quarter of an hour, so a countdown
-  // riding on it would promise a minute that arrives at four — and the standing rate is
+  // riding on it would promise a minute that arrives at four, and the standing rate is
   // the one that is still true tomorrow. A player who is sitting gets there sooner than
   // the screen said, which is the only direction this is allowed to be wrong in.
   if (!Number.isFinite(here) || cost <= here) {

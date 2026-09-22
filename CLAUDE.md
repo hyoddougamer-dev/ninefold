@@ -13,8 +13,12 @@ compaction.
 - **No em-dash as a rhetorical beat, anywhere.** Not in the game, not in the bible, not
   in a message to Bruno. He named it directly: *"texto muito AIsh e com muitos travessões
   longos."* `npm run prose` counts them in the player copy **and** in `bible.html`, and
-  the number it prints for the bible is the one to drive down. A sentence that needs a
-  dash usually wanted a full stop.
+  both read zero. A sentence that needs a dash usually wanted a full stop. Where the dash
+  was introducing the thing it named, a colon is right; where it was a pair, brackets
+  are; where it joined two clauses, a comma or a full stop. **Never `, the`**: that turns
+  "X — the player would…" into a comma splice, which is worse than the dash was.
+  The only dashes left in the repository are the ones standing for *nothing* in an empty
+  table cell, and the tooltip's own aria-label.
 
 ## 圖 Showing changes to the look
 

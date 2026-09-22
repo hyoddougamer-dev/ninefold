@@ -14,7 +14,7 @@ import { REALMS } from '../../data/realms.ts';
  * It answered *what is blocking you* and returned silence the rest of the time.
  *
  * The rest of the time is most of the game. A player climbing quietly through the
- * middle of a realm — not stuck, not finished — got a blank space where the only
+ * middle of a realm, neither stuck nor finished, got a blank space where the only
  * sentence on the screen lives, and an idle game with nothing on the screen and nothing
  * to read is an idle game you close.
  *
@@ -76,8 +76,8 @@ describe('示 the line that is never empty', () => {
     }
     /**
      * And it is not one sentence on a loop. It is checked on the *text* rather than the
-     * han: across the first realm the symbol is mostly 狩, and that is correct — hunting
-     * is what the first realm is. What has to move is what it says about it, which beast
+     * han. Across the first realm the symbol is mostly 狩, and that is correct, because
+     * hunting is what the first realm is. What has to move is what it says about it, which beast
      * and at what odds.
      */
     console.log(`\n  示 across the first realm it said ${seen.size} different things:`);

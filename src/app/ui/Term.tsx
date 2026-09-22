@@ -6,7 +6,7 @@ import { GLOSS } from '../glossary.ts';
  *
  * Bruno: *"existe demasiado texto que nem eu percebo ou sem tooltips explicado."* Both
  * halves of that are one problem. The screens explained themselves in paragraphs because
- * there was nowhere smaller to put an explanation — the only place a character was ever
+ * there was nowhere smaller to put an explanation: the only place a character was ever
  * defined was 釋 the key, a page you had to leave the screen to reach. So every sentence
  * carried its own glossary, and the hunt screen came to **553 words**.
  *

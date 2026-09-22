@@ -20,7 +20,7 @@ describe('新 the cards that arrive once', () => {
     const first = nextNotice(capped);
     expect(first?.key).toBe('cap');
 
-    // Read once, gone for good — even though the thing is still just as true.
+    // Read once, gone for good, even though the thing is still just as true.
     const after = { ...capped, seen: ['cap'] };
     expect(nextNotice(after)?.key).not.toBe('cap');
   });

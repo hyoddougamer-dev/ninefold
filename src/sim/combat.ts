@@ -13,7 +13,7 @@ import { lootTaken } from './trials.ts';
 /**
  * 戰 Automatic combat, watched.
  *
- * It resolves on its own over a handful of rounds — the screen draws the bars falling —
+ * It resolves on its own over a handful of rounds: the screen draws the bars falling,
  * and the player chooses nothing. It is the only moment in the game that is not a bar
  * filling, and it is what gives technique, pills, method and cores a reason to exist.
  *
@@ -26,7 +26,7 @@ import { lootTaken } from './trials.ts';
  *
  * Beasts have no curve of their own: they are tuned against *this*. The reference is a
  * cultivator standing at the realm's ceiling with 劍訣 *and* 妖丹 near the levels the
- * realm allows — not the one who spent nothing, not the one who optimised everything,
+ * realm allows, not the one who spent nothing, not the one who optimised everything,
  * but the one in the middle. Gear, the tree, the arts and the furnace are the margin on
  * top, and they are what turns a coin flip into a win.
  *
@@ -39,8 +39,8 @@ import { lootTaken } from './trials.ts';
  * nothing here needs touching when the curve moves.
  *
  * It sits a fixed *two levels* below the cap rather than a share of it. A share widens
- * as the cap does — at the ninth realm fifteen per cent of the cap is eight levels of
- * 劍訣, nearly five times the power — so the same warden would read as hopeless at 85%
+ * as the cap does: at the ninth realm fifteen per cent of the cap is eight levels of
+ * 劍訣, nearly five times the power, so the same warden would read as hopeless at 85%
  * of the cap and trivial at 100%. Two levels is two levels at every realm, so the last
  * stretch before a warden feels the same all the way up the mountain.
  *
@@ -52,7 +52,7 @@ import { lootTaken } from './trials.ts';
  * The wall arrives late on purpose. The first two realms ask for no cores at all, so a
  * new cultivator meets the 妖狐 and the 石猿 with qi alone and learns what a warden is
  * before learning that a warden is not enough. From the third realm the requirement
- * grows a realm at a time — measured, somebody who never fights anything stalls in the
+ * grows a realm at a time, measured, somebody who never fights anything stalls in the
  * fourth realm and stays there for ever.
  *
  * Nothing is taken from that cultivator for being away. The qi still gathers at full
@@ -65,7 +65,7 @@ export const REFERENCE_BELOW = 2;
 export const CORES_FREE_REALMS = 2;
 
 /**
- * The same reading, taken anywhere — between realms, and above the ninth.
+ * The same reading, taken anywhere: between realms, and above the ninth.
  *
  * The mountain stops at nine realms; 無盡塔 the tower does not, so it needs the reference
  * as a curve rather than as nine points. Feed it 4.5 and it gives what a cultivator
@@ -87,7 +87,7 @@ export function referencePower(realm: number): number {
 
 /**
  * The share of the reference each step of a realm occupies. The three commons of a
- * realm have to be an easy one, a middling one and a hard one — the first version
+ * realm have to be an easy one, a middling one and a hard one: the first version
  * indexed by *realm* rather than by beast, and all three came out with the same power
  * and the same odds, which turns three distinct animals into three identical buttons.
  */
@@ -96,7 +96,7 @@ const STEPS = [0.45, 0.62, 0.84];
 /**
  * 初 And the first realm is spaced against the player, not against its own summit.
  *
- * Every realm is entered weak — measured, a cultivator arrives at 25%, 23%, 16%, 11%,
+ * Every realm is entered weak, measured, a cultivator arrives at 25%, 23%, 16%, 11%,
  * 7% of the realm they are entering. The first is 5%, and it is the same pattern, not an
  * exception. What makes it different is that it is the only realm with **nothing else in
  * it**: from the second there is gear to find, a stance to pick, a record filling, a
@@ -104,7 +104,7 @@ const STEPS = [0.45, 0.62, 0.84];
  * of reach as well then there is nothing at all.
  *
  * At the standard spacing the first fight a player can win arrives **two hours and six
- * minutes** in, and the true odds before it are not small — they are 0.0%, flat, for the
+ * minutes** in, and the true odds before it are not small. They are 0.0%, flat, for the
  * whole of it. Combat in the first realm was a step, not a ramp: nothing, nothing,
  * nothing, then 66% and trivial forty minutes later.
  *
@@ -151,7 +151,7 @@ export interface Round {
   readonly beastDamage: number;
   /** 訣 The arts that fired this round, in the order the sequence ran them. */
   readonly arts: readonly string[];
-  /** True when the beast's blow was turned aside — the screen draws that differently. */
+  /** True when the beast's blow was turned aside: the screen draws that differently. */
   readonly missed: boolean;
 }
 
@@ -178,7 +178,7 @@ function dice(seed: number): () => number {
 export const ROUND_CAP = 24;
 
 /**
- * 氣運 How the qi runs today — one roll for each side, before a blow is thrown.
+ * 氣運 How the qi runs today: one roll for each side, before a blow is thrown.
  *
  * Blow-by-blow noise averages away. Ten blows of ±22% come out within 4% of the mean,
  * so whoever had more power won every single time and a fight was decided before it
@@ -316,12 +316,12 @@ export function loot(b: Beast): number {
  * 收 Taking a kill: the one place a beast is written into a save.
  *
  * It lived in the app, which meant 見 the first-sight bounty was invisible to every
- * harness that measures this game — the five cultivators, the climb, the endgame — and
+ * harness that measures this game: the five cultivators, the climb, the endgame, and
  * a reward the measuring never sees is a reward nobody can tell you is wrong. Anything
  * that changes the numbers belongs in `sim/`, and this is the thing that changes them.
  *
  * It does not touch the chest or the drop: gear is rolled with a seed and the caller
- * owns that. What it owns is the three facts every kill is worth — the count, the
+ * owns that. What it owns is the three facts every kill is worth: the count, the
  * material, and the bounty the count decides.
  */
 export function takeKill(s: State, b: Beast): State {
@@ -348,8 +348,8 @@ export function takeKill(s: State, b: Beast): State {
 export function seenBounty(b: Beast): number {
   // 守 No bounty for a warden, and the reason used to be 突破 rather than balance:
   // breaking through set the qi to nothing, so a warden paid on the kill handed over a
-  // prize the next tap destroyed. 銀 That reason is gone — the breakthrough carries the
-  // qi now — and the answer is still no, on the original grounds. A warden falls once
+  // prize the next tap destroyed. 銀 That reason is gone: the breakthrough carries the
+  // qi now, and the answer is still no, on the original grounds. A warden falls once
   // per realm, nine times in a lifetime, and what it pays is the realm. Bolting a qi
   // prize onto the one fight that already hands over a whole new mountain is paying
   // twice for the same moment.
@@ -392,7 +392,7 @@ const SAMPLES = 41;
  * triples a strike do not show up in a power ratio at all, so the screen would have
  * promised 40% on a fight the build wins nine times in ten.
  *
- * So it simply *fights* — twenty-five times, on spread seeds — and counts. Pure, cheap,
+ * So it simply *fights*: twenty-five times, on spread seeds, and counts. Pure, cheap,
  * and it can never disagree with what the player is about to watch.
  */
 export function odds(s: State, b: Beast, standing?: number): number {
@@ -444,7 +444,7 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
  * 守 What stands in front of this cultivator right now.
  *
  * Below the summit it is the realm's warden. Above it, it is the Dragon of the heaven
- * they have climbed into — the same fight, the same anchor, a different animal with a
+ * they have climbed into: the same fight, the same anchor, a different animal with a
  * different name and a different shape drawn beside it. Forty crossings against one
  * beast called 龍 was measured and it was grim.
  */

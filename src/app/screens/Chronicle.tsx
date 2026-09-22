@@ -19,8 +19,8 @@ import { CHRONICLE } from '../copy.ts';
  * 碑 The stele: everything this cultivator has done, on one page.
  *
  * Two halves, and they answer two different questions. 錄 the numbers answer *how far
- * have I come* — the figures a player collects in their head anyway and the game had
- * nowhere to show. 碑 the deeds answer *what is left* — and every unfinished one is a
+ * have I come*: the figures a player collects in their head anyway and the game had
+ * nowhere to show. 碑 the deeds answer *what is left*, and every unfinished one is a
  * bar rather than a locked box, because "two floors away" is a reason to open the app
  * tonight and a padlock is not.
  *

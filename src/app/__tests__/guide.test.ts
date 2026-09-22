@@ -27,8 +27,8 @@ describe('引 the first session, one step at a time', () => {
 
   /**
    * The property that makes it safe to store nothing: every condition only ever goes
-   * from false to true. If one of them could go back — a currency spent, a beast
-   * forgotten — the guide would reopen behind the player, on a save that had finished
+   * from false to true. If one of them could go back (a currency spent, a beast
+   * forgotten) the guide would reopen behind the player, on a save that had finished
    * it weeks ago.
    */
   it('never goes backwards, because nothing it asks for can be undone', () => {
@@ -135,7 +135,7 @@ describe('引 the first session, one step at a time', () => {
  *
  * The help is for somebody who has not begun, and it decided that with "qi under five".
  * 囊 the opening purse starts a cultivator on 800, so the condition quietly went false
- * and the help stopped appearing for new players — the one audience it exists for.
+ * and the help stopped appearing for new players: the one audience it exists for.
  * Nothing failed, nothing logged, and it would have gone unnoticed indefinitely.
  */
 describe('引 who the first screen is for', () => {

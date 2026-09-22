@@ -20,7 +20,7 @@ import { DRIVE } from '../copy.ts';
  * Two faces of one sheet. Before: three sizes with their price in qi and what they will
  * pay in 材, so the choice is made with the numbers in view. After: what actually
  * happened, which is the same shape as the arena's verdict because it is the same kind
- * of moment — the kills are done and this is what they left.
+ * of moment: the kills are done and this is what they left.
  *
  * The prices are not hidden behind a confirmation. A drive costs qi and cannot be
  * undone, so the button that spends it is the button that says the number.

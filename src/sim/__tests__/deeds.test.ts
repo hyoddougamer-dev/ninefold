@@ -15,7 +15,7 @@ const T0 = 1_700_000_000;
  * 道 A legal, affordable tree: the keystones first, then whatever the points still reach.
  *
  * The first version of this fixture simply claimed every node, and `validate` threw the
- * whole tree away — 27 nodes cost 70 道 and a finished run earns 44, so the save was
+ * whole tree away: 27 nodes cost 70 道 and a finished run earns 44, so the save was
  * claiming points that were never earned. That is the validator doing exactly its job,
  * and it is why the fixture has to buy the tree rather than assert it.
  */
@@ -85,7 +85,7 @@ describe('碑 the deeds', () => {
 
   /**
    * 律 The one rule the stele has to keep. A deed that paid anything would be the one
-   * uncapped thing in the game that a forged save could claim — and 九境 is meant to go
+   * uncapped thing in the game that a forged save could claim, and 九境 is meant to go
    * online, where that stops being only your own problem.
    */
   it('pays nothing, and is derived rather than stored', () => {
@@ -109,7 +109,7 @@ describe('碑 the deeds', () => {
       const on = DEEDS.filter((d) => d.track === t.key);
       return `    ${t.han} ${t.name.padEnd(16)} ${on.filter((d) => doneBy(end, d)).length} / ${on.length}`;
     });
-    console.log(`\n  碑 after twelve crossings — ${held.done} of ${held.all} deeds\n${rows.join('\n')}\n`
+    console.log(`\n  碑 after twelve crossings: ${held.done} of ${held.all} deeds\n${rows.join('\n')}\n`
       + '  (狩 器 道 read zero because the harness plays the curve, not the build:\n'
       + '   it never equips a drop or spends a 道 point. The game does.)\n');
     // What the harness does play, it finishes: every realm, and the whole furnace.

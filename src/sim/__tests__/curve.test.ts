@@ -22,7 +22,7 @@ import { BRANCHES, climb } from '../../../tools/climb.ts';
  * earlier version broke.
  *
  * The first broke by shape: realms 1 to 6 in six days and twenty-six days in the last
- * gap with nothing in it. The second broke by *audience* — it measured a cultivator who
+ * gap with nothing in it. The second broke by *audience*. It measured a cultivator who
  * never spent a single qi. Measured against someone who plays the game as written,
  * buying what they can afford, that same curve took **three days**, not ninety.
  *
@@ -51,7 +51,7 @@ describe('the climb, for a cultivator who spends', () => {
         (i > 0 ? `   (+${gaps[i - 1].toFixed(1)}d · ${(100 * gaps[i - 1] / total).toFixed(0)}%)` : '') +
         (i < 8 ? `   ${String(inRealm.length).padStart(2)} upgrades over ${spread.toFixed(0)}% of it` : '');
     });
-    console.log(`\n  six visits a day, buying what it can — ${total.toFixed(1)} days to the ninth realm\n${rows.join('\n')}\n`);
+    console.log(`\n  six visits a day, buying what it can: ${total.toFixed(1)} days to the ninth realm\n${rows.join('\n')}\n`);
 
     const worst = Math.max(...gaps);
     console.log(`  largest gap: ${worst.toFixed(1)}d = ${(100 * worst / total).toFixed(1)}% of the run (ceiling ${(100 * MAX_GAP).toFixed(0)}%)`);
@@ -94,12 +94,12 @@ describe('the climb, for a cultivator who spends', () => {
     console.log(`  climbing the tower as well:    realm 9 on day ${climber.arrival[8].toFixed(1)}`
       + `   (the tower is meant to pay, and it does)`);
     console.log(`  and brewing everything too:    realm 9 on day ${arrival.toFixed(1)}   ` +
-      `${pillsTaken(brewer.state.brewed)} pills — ` +
+      `${pillsTaken(brewer.state.brewed)} pills: ` +
       `${LINES.map((l) => `${l} ${brewer.state.brewed[l]}`).join(' · ')}`);
     console.log(`  and it costs them power ${num(power(climber.state))} → ${num(power(brewer.state))}\n`);
     expect(brewer.state.realm).toBe(9);
     // Slower than the same cultivator who climbs and does not brew, because every pill
-    // is qi that did not open a layer — but never so much slower that the furnace is a
+    // is qi that did not open a layer, but never so much slower that the furnace is a
     // trap, and never faster, which is what would be a bug.
     expect(arrival).toBeGreaterThan(climber.arrival[8]);
     expect(arrival).toBeLessThan(climber.arrival[8] * 2);
@@ -122,7 +122,7 @@ describe('the climb, for a cultivator who spends', () => {
       const r = climb(6, true, true, true, b);
       return { b, day: r.arrival[8] };
     });
-    console.log(`\n  the same cultivator, by 道 branch — tower and furnace on:\n`
+    console.log(`\n  the same cultivator, by 道 branch: tower and furnace on:\n`
       + rows.map((r) => `    ${r.b.padEnd(8)} realm 9 on day ${r.day.toFixed(1)}`).join('\n')
       + `\n    spread across the three: `
       + `${(Math.max(...rows.slice(1).map((r) => r.day)) - Math.min(...rows.slice(1).map((r) => r.day))).toFixed(1)} days\n`);
@@ -131,7 +131,7 @@ describe('the climb, for a cultivator who spends', () => {
       expect(Math.abs(r.day - TARGET_DAYS)).toBeLessThanOrEqual(TOLERANCE_DAYS * 2);
     }
     // And no branch may be a speedrun: the tree is a build, not a pace. The spread is
-    // read across the branches a cultivator can actually pick — walking none of them is
+    // read across the branches a cultivator can actually pick: walking none of them is
     // not a choice anybody makes, and it is only in the table to show what it costs.
     const picked = rows.filter((r) => r.b !== 'none').map((r) => r.day);
     expect(Math.max(...picked) - Math.min(...picked)).toBeLessThanOrEqual(TOLERANCE_DAYS * 1.5);
@@ -141,7 +141,7 @@ describe('the climb, for a cultivator who spends', () => {
     const { arrival } = climb(6);
     const gaps = arrival.slice(1).map((d, i) => d - arrival[i]);
     // Every realm takes longer than the one before it, bar the last, which is allowed
-    // to level off — beyond it there is no tenth realm to reach, only the tribulation.
+    // to level off: beyond it there is no tenth realm to reach, only the tribulation.
     for (let i = 1; i < gaps.length - 1; i++) expect(gaps[i]).toBeGreaterThan(gaps[i - 1]);
   });
 
@@ -187,7 +187,7 @@ describe('the climb, for a cultivator who spends', () => {
  *
  * Played from a clean save on a phone, the opening was three minutes and forty-five
  * seconds of nothing: 1 qi a second, the cheapest box at 491, and the words SPEND YOUR
- * QI standing over three buttons that could not be pressed. This pins the fix — that a
+ * QI standing over three buttons that could not be pressed. This pins the fix. That a
  * cultivator starts holding a purse, and that the purse is small enough for the ladder
  * to leave alone.
  */
@@ -279,7 +279,7 @@ describe('the cap on what a realm may hold', () => {
    * 失 The clamp has to be the cap the game actually sells against, and for a while it
    * was not: it read `levelCap(realm)` flat while `capOf` adds a heaven's room to the
    * power upgrades. The save is rewritten on unload and validated on load, so every
-   * level 境外 had paid for was deleted on the next open — silently, every single time.
+   * level 境外 had paid for was deleted on the next open: silently, every single time.
    */
   it('keeps the levels a heaven paid for through a save and a load', async () => {
     const { validate, capOf } = await import('../state.ts');
@@ -303,8 +303,8 @@ describe('the cap on what a realm may hold', () => {
  *
  * Bruno: *"já tive imensos casos de salvage items e o meu qi resetar ou não
  * contabilizar."* `advance` walks the ladder rung by rung and used to set the qi to zero
- * on each one it opened, which is exactly right for qi that arrives from the clock —
- * that qi lands on the price — and silently destroys every other kind. 拆 a melt, 塔 a
+ * on each one it opened, which is exactly right for qi that arrives from the clock.
+ * That qi lands on the price, and silently destroys every other kind. 拆 a melt, 塔 a
  * tower floor, 見 the first sight of a beast and 囊 the opening purse are all lumps.
  */
 describe('qi that arrives all at once', () => {
@@ -333,7 +333,7 @@ describe('qi that arrives all at once', () => {
     const lump = layerCost(1, 0, s.unlocked) * 4;
     const first = advance({ ...s, qi: lump }, T0 + 3600);
     const second = advance({ ...advance(s, T0 + 3600), qi: advance(s, T0 + 3600).qi + lump }, T0 + 3601);
-    // Not identical — the second gathered at a lower rate for the hour — but the one
+    // Not identical: the second gathered at a lower rate for the hour, but the one
     // that got the qi earlier must never end up behind.
     expect(first.layer).toBeGreaterThanOrEqual(second.layer);
   });
@@ -401,7 +401,7 @@ describe('time never climbs a realm by itself', () => {
    * 守 The warden stands on the rung, not on the bar.
    *
    * The fault this pins down: a cultivator arrives at the last rung too weak, banks qi
-   * until they can afford the upgrades that would beat the warden, buys them — and the
+   * until they can afford the upgrades that would beat the warden, buys them, and the
    * warden vanishes, because the qi they just spent was what was holding it there. The
    * game took the fight away at the exact moment they did the right thing to win it.
    */
@@ -431,7 +431,7 @@ describe('time never climbs a realm by itself', () => {
     /**
      * 費 And beating it is the whole toll. The ninth rung is the warden, so a cultivator
      * who spent every coin on the levels that beat it does not then have to re-earn a
-     * rung to walk out — which is the thing that used to cost the lightest player a
+     * rung to walk out, which is the thing that used to cost the lightest player a
      * second day in the first realm.
      */
     const beaten: State = { ...spent, wardenFell: true };
@@ -463,7 +463,7 @@ describe('time never climbs a realm by itself', () => {
     expect(next.wardenFell).toBe(false);
   });
 
-  it('stays put even once the warden has fallen — only 突破 leaves', () => {
+  it('stays put even once the warden has fallen: only 突破 leaves', () => {
     const beaten = { ...atCeilingOfRealmOne(), wardenFell: true };
     const later = advance(beaten, beaten.at + 30 * DAY);
     expect(later.realm).toBe(1);

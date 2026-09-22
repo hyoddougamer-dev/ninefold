@@ -6,7 +6,7 @@ import { BEAT_MS, beatsIn, frameAt, roundOf, strikerOf } from '../ui/Arena.tsx';
 
 /**
  * The arena only plays back what the sim already settled, but *how* it plays it back is
- * the whole of watching a fight — so the attribution of each blow is worth a test.
+ * the whole of watching a fight, so the attribution of each blow is worth a test.
  */
 const anyFight = () => {
   const beast = commonsOf(3)[1];
@@ -24,7 +24,7 @@ const anyFight = () => {
 };
 
 describe('戰 the playback', () => {
-  it('shows a round as two beats — the strike, then the answer', () => {
+  it('shows a round as two beats: the strike, then the answer', () => {
     const { outcome } = anyFight();
     expect(beatsIn(outcome)).toBe(outcome.rounds.length * 2);
 

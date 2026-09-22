@@ -24,7 +24,7 @@ const mk = (template: string, rarity: Rarity, n: number): Item => {
 const primary = (it: Item) => it.rolls[0].value;
 
 describe('器 the table', () => {
-  it('offers every shape in every realm — nine per slot, at all nine depths', () => {
+  it('offers every shape in every realm: nine per slot, at all nine depths', () => {
     expect(ARCHETYPES.length).toBe(54);
     expect(GEAR.length).toBe(54 * 9);
 
@@ -227,6 +227,6 @@ describe('落 what the beasts actually give', () => {
     for (const it of chest) expect(TEMPLATE_BY_KEY[it.template]).toBeDefined();
 
     const ranks = RARITIES.map((r) => `${RARITY_INFO[r].han} ${chest.filter((x) => x.rarity === r).length}`);
-    console.log(`\n  ${kills} kills filled a ${CHEST_LIMIT}-slot chest — ${ranks.join(' · ')}\n`);
+    console.log(`\n  ${kills} kills filled a ${CHEST_LIMIT}-slot chest: ${ranks.join(' · ')}\n`);
   });
 });

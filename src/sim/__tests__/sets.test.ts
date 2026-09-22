@@ -6,7 +6,7 @@ import {
 } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 
-/** A plain piece of a given realm in a given slot — whichever shape comes first. */
+/** A plain piece of a given realm in a given slot: whichever shape comes first. */
 const piece = (realm: number, slot: Slot, rarity: Rarity = 'common'): Item => {
   const tpl = GEAR.find((g) => g.realm === realm && g.slot === slot)!;
   return {
@@ -39,7 +39,7 @@ describe('系 the lineages', () => {
     expect(TEMPLATE_BY_KEY.crescent6.han).toBe('落星鉤');
   });
 
-  it('counts a set by realm, not by shape — any piece of it counts', () => {
+  it('counts a set by realm, not by shape: any piece of it counts', () => {
     const mixed: Worn = {
       weapon: piece(5, 'weapon'), robe: piece(5, 'robe'), crown: piece(2, 'crown'),
     };
@@ -81,7 +81,7 @@ describe('系 the lineages', () => {
     /**
      * Raw numbers from different axes cannot be added: a point of 破 Sunder is worth
      * several of 力 Power, which is exactly what each axis's `scale` says. So the
-     * comparison is made in scale-free units — what the set is worth, not what it reads.
+     * comparison is made in scale-free units: what the set is worth, not what it reads.
      */
     const weight = (s: typeof REALM_SETS[number]) => s.steps.reduce((t, step) =>
       t + Object.entries(step.effects).reduce(

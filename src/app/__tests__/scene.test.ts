@@ -16,7 +16,7 @@ describe('境 the place a fight happens in', () => {
      * The bug this exists for: the near ridge stopped eight pixels short of the floor,
      * and the lit bottom of the sky gradient showed through as a bright bar painted
      * across the window. The ridge is placed at FLOOR minus its own height, so the two
-     * meet exactly — this asserts the arithmetic, not the picture.
+     * meet exactly. This asserts the arithmetic, not the picture.
      */
     const svg = arenaScene(6);
     const near = svg.match(/points="([^"]+)" fill="[^"]+" transform="translate\(0 (\d+)\)"/g) ?? [];
@@ -49,7 +49,7 @@ describe('話 what the blow is called', () => {
       mine.add(blowLine('player', round).han);
       theirs.add(blowLine('beast', round).han);
     }
-    // The two registers must not overlap at all — one pool cycled between strikers is
+    // The two registers must not overlap at all: one pool cycled between strikers is
     // exactly the bug this separation exists to prevent.
     for (const han of mine) expect(theirs.has(han)).toBe(false);
     expect(mine.size).toBeGreaterThan(3);

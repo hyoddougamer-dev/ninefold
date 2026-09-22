@@ -4,7 +4,7 @@ import { realm as realmOf } from '../data/realms.ts';
 /**
  * 氣象 The cultivator's portrait.
  *
- * One figure, the same in every realm — what changes is the air around it. The auras
+ * One figure, the same in every realm: what changes is the air around it. The auras
  * are stacked: a large faint icon behind, tighter and stronger ones in front, in the
  * realm's colour, with a glow that grows.
  *
@@ -13,7 +13,7 @@ import { realm as realmOf } from '../data/realms.ts';
  *   1. The halo is drawn, not an icon. As an icon it read as a cog behind the head.
  *   2. The figure burns toward white as it climbs. Without that the aura swallowed the
  *      cultivator from the seventh realm on, which inverts the whole point of the image
- *      — the figure must stay the clearest thing however loud the aura gets.
+ *     : the figure must stay the clearest thing however loud the aura gets.
  */
 
 export function mix(a: string, b: string, k: number): string {
@@ -25,7 +25,7 @@ export function mix(a: string, b: string, k: number): string {
 
 export interface PortraitOptions {
   readonly realm: number;
-  /** 0..1 — a breathing pulse, so the figure is never quite still. */
+  /** 0..1: a breathing pulse, so the figure is never quite still. */
   readonly pulse?: number;
   /** Dims everything but the figure, for combat. */
   readonly focus?: boolean;

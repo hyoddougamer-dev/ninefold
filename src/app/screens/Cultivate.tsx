@@ -330,8 +330,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           /**
            * 待 A price you cannot pay says when you can, and there are two answers.
            *
-           * The rung you stand on is the most qi you may ever hold — the bar takes it
-           * the instant it can afford the layer — so an upgrade dearer than that rung
+           * The rung you stand on is the most qi you may ever hold: the bar takes it
+           * the instant it can afford the layer, so an upgrade dearer than that rung
            * cannot be waited for at all, only climbed to. Measured, from the fourth
            * realm on, the home screen has nothing to press in eighty per cent of visits
            * and this is the whole of why. See affordableIn.
@@ -381,7 +381,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {/* 凝丹 The way out of the one dead end the game has.
           It appears only when 材 material has actually run out and a core is still to be
-          had — which is the moment it answers a question instead of asking one. */}
+          had, which is the moment it answers a question instead of asking one. */}
       {isOpen(state.realm, 'cores') && state.levels.cores < capOf(state, 'cores')
         && !canBuy(state, 'cores') && (
         <div className="condense">

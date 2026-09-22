@@ -18,7 +18,7 @@ const hero = (worn: Partial<Record<string, Item>> = {}): State =>
  *
  * The chest used to mark a piece "better" with a ▲ computed from **the sum of the raw
  * roll values**. A 藏 chest-slots roll and a 力 power roll are not the same kind of
- * number, and adding them answers nothing — so four small lines could out-triangle a
+ * number, and adding them answers nothing, so four small lines could out-triangle a
  * piece that doubles your power, and the arrow pointed at the wrong item.
  *
  * The comparison now puts the piece on in a copy of the save and asks `power()` and
@@ -73,7 +73,7 @@ describe('鑑 what a piece would do', () => {
 
   /**
    * 比 Both sides of the trade, always. A comparison that only listed the winner's
-   * lines would hide half of every swap — losing 破 sunder is as much a fact as
+   * lines would hide half of every swap: losing 破 sunder is as much a fact as
    * gaining 力 power.
    */
   it('lists every axis either piece touches, and only those', () => {

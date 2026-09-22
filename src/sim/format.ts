@@ -12,7 +12,7 @@ const SUFFIX = ['', 'k', 'M', 'B', 'T', 'Qa', 'Qn', 'Sx', 'Sp', 'Oc', 'No', 'Dc'
 /**
  * Quintillion is 'Qn', not the usual 'Qi'.
  *
- * The endgame reaches it — a cultivator holding twelve marks reads 2.67 of them — and
+ * The endgame reaches it: a cultivator holding twelve marks reads 2.67 of them, and
  * the screen prints it two lines above "+78.2B qi / s". A currency called qi and a
  * suffix called Qi in the same glance is the one collision this game could not afford.
  */

@@ -34,7 +34,7 @@ describe('塔 the Endless Tower', () => {
         `   realm ${r}'s warden ${num(referencePower(r) * WARDEN_EDGE).padStart(8)}` +
         `   pays ${num(floorLoot(floor)).padStart(7)} 材`;
     });
-    console.log(`\n  無盡塔 — nine floors to a realm, and no top:\n${rows.join('\n')}`);
+    console.log(`\n  無盡塔: nine floors to a realm, and no top:\n${rows.join('\n')}`);
     console.log(`  floor 100 ${num(floorPower(100))} · floor 200 ${num(floorPower(200))}` +
       ` · floor 400 ${num(floorPower(400))}\n`);
 
@@ -130,7 +130,7 @@ describe('爐 the Furnace', () => {
       return `  pill ${String(n + 1).padStart(4)}   ${num(cost.qi).padStart(8)} qi   ` +
         `${num(cost.materials).padStart(8)} 材`;
     });
-    console.log(`\n  丹爐 — the nth pill costs half of what the nth layer of the climb costs:\n${rows.join('\n')}\n`);
+    console.log(`\n  丹爐: the nth pill costs half of what the nth layer of the climb costs:\n${rows.join('\n')}\n`);
     for (let n = 1; n < 300; n++) {
       expect(pillCost({ ...none, body: n }, 'body').qi)
         .toBeGreaterThan(pillCost({ ...none, body: n - 1 }, 'body').qi);
@@ -163,7 +163,7 @@ describe('爐 the Furnace', () => {
   it('thins beasts without ever erasing them', () => {
     expect(pillBane({ body: 0, bane: 0, fortune: 0 })).toBe(1);
     expect(pillBane({ body: 0, bane: 40, fortune: 0 })).toBeLessThan(1);
-    // However many are taken, a beast never falls below its floor — a beast that can be
+    // However many are taken, a beast never falls below its floor: a beast that can be
     // reduced to nothing is a beast that stops being a fight, and the tower has no top.
     expect(pillBane({ body: 0, bane: 100_000, fortune: 0 }))
       .toBeGreaterThanOrEqual(PILL_BANE_FLOOR);

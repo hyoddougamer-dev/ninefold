@@ -9,7 +9,7 @@ import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
 
 /**
- * 塔, 爐 and 煉器 — everything that has no ceiling.
+ * 塔, 爐 and 煉器: everything that has no ceiling.
  *
  * The curves live in `tower.ts`, `furnace.ts` and `refine.ts` and know nothing about a
  * save. This is where they touch the state: climbing a floor, brewing a pill, refining a
@@ -34,14 +34,14 @@ export function towerOpen(s: State): boolean {
  *
  * Without the scaling the tower paid its whole back catalogue at once. 塔 opens at the
  * fifth realm, and a cultivator arriving there swept forty-three floors in a single
- * sitting and walked away with **ten days and eighteen hours** of gathering — measured —
+ * sitting and walked away with **ten days and eighteen hours** of gathering, measured,
  * which made the fifth realm the shortest in the run, shorter than the fourth. A reward
  * for opening a system is right; a reward that rewrites the curve is not.
  *
  * So a floor at your own power pays the full six hours and a floor a tenth of it pays a
  * tenth. Sweeping what is far below you is a quick errand for material; pushing into
  * something that can actually beat you is what pays in qi. Nothing changes for the floor
- * you are really climbing — it is always near your power, and it always pays in full.
+ * you are really climbing. It is always near your power, and it always pays in full.
  */
 export function floorQi(s: State, floor = standingFloor(s)): number {
   const mine = power(s);
@@ -71,7 +71,7 @@ export function clearFloor(s: State, floor: number): State {
  * What a kill is worth in materials, once the tower's seals and 錄 the record count.
  *
  * The record's marks are counted from the first kill of the game but only *pay* from the
- * realm that opens them — so the system arrives full rather than arriving empty.
+ * realm that opens them, so the system arrives full rather than arriving empty.
  */
 export function lootTaken(s: State, base: number): number {
   const record = isOpen(s.realm, 'record') ? recordMaterial(s.killed) : 1;
@@ -100,7 +100,7 @@ export function brew(s: State, line: Line): State {
  *
  * Material only. Qi buys the mountain and the furnace; material buys the body of your
  * gear, and until this existed material stopped meaning anything the moment the cores
- * were full — measured, eight times more of it than the game had any use for.
+ * were full, measured, eight times more of it than the game had any use for.
  */
 export function refinePrice(s: State, slot: Slot): number | null {
   const item = s.worn[slot];

@@ -19,7 +19,7 @@ import { BEASTS, type Beast } from '../data/bestiary.ts';
  * neither can be hurried by waiting: a mark is a hundred taps or it is nothing.
  *
  * The numbers are small on purpose. All thirty-six mastered is +72% material and +72%
- * power — worth having, never worth grinding for in one sitting, and reached by somebody
+ * power: worth having, never worth grinding for in one sitting, and reached by somebody
  * who has been hunting for months rather than by somebody who farmed the first rat.
  */
 
@@ -74,12 +74,12 @@ export function recordPower(killed: Killed): number {
 }
 
 /**
- * 圖鑑 A realm whose every beast is 熟 Known — ten kills of each of its four.
+ * 圖鑑 A realm whose every beast is 熟 Known: ten kills of each of its four.
  *
  * The bar was set at 通 Mastered first, a hundred kills of each, and measuring it killed
  * the idea: across five cultivators and ten thousand fights, **not one realm was ever
  * finished**, and not one at ten kills either. The reason is the useful part. A player
- * hunts the strongest beast they can beat, because that is the one that pays — so a
+ * hunts the strongest beast they can beat, because that is the one that pays, so a
  * realm's weakest animal is killed once for its 見 mark and then never again. There has
  * never been a reason to go back for it.
  *
@@ -110,7 +110,7 @@ export function recordCeiling(): { material: number; power: number } {
   };
 }
 
-/** Is this beast worth hunting at all — is there a mark left in it? */
+/** Is this beast worth hunting at all: is there a mark left in it? */
 export function hasMarkLeft(killed: Killed, b: Beast): boolean {
   return nextMark(killed[b.key] ?? 0) !== null;
 }

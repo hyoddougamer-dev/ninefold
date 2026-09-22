@@ -22,11 +22,11 @@ import type { State } from '../../sim/state.ts';
  *
  * The fight is horizontal now, in a place: the beast's own realm behind it, a floor to
  * stand on, and a gap in the middle where the blow lands. What the old window got wrong
- * was not the art — it was that two figures stacked on a translucent scrim over the hunt
+ * was not the art. It was that two figures stacked on a translucent scrim over the hunt
  * list reads as a dialog over a list, and a fight has to read as a fight.
  *
- * The sim settles everything the moment you press the button — that is what lets losing
- * cost nothing — so this file's only job is to *play it back*.
+ * The sim settles everything the moment you press the button. That is what lets losing
+ * cost nothing, so this file's only job is to *play it back*.
  *
  * The one rule of the playback: **a round is two beats, not one**. The sim trades blows
  * simultaneously, which is right for the arithmetic and unwatchable on screen, because
@@ -69,7 +69,7 @@ export const beatsIn = (o: Outcome) => o.rounds.length * 2;
  * What the bars read at this beat.
  *
  * The cultivator's health only drops on the beast's beat, and the beast's only on the
- * cultivator's — so between the two you can see which blow did which damage.
+ * cultivator's, so between the two you can see which blow did which damage.
  */
 export function frameAt(o: Outcome, beat: number) {
   // Clamped to the fight's own length: asked for a beat past the end, the last beat is
@@ -90,7 +90,7 @@ export function frameAt(o: Outcome, beat: number) {
     // announce, or the name of the art would hang over the blow that answered it.
     arts: player ? here.arts : [],
     missed: !player && here.missed,
-    /** True when this blow took a real bite — the frame shakes only for those. */
+    /** True when this blow took a real bite: the frame shakes only for those. */
     heavy: (player ? here.playerDamage / o.beastPower : here.beastDamage / o.playerPower) / 10 > HEAVY,
   };
 }

@@ -12,7 +12,7 @@ import { wardenOf } from '../../data/bestiary.ts';
  * The pointing finger joins two halves that live in different files: 引 the guide names
  * a target, and a screen marks an element `data-coach="…"`. Nothing in the type system
  * connects them, so a rename on either side would quietly leave a step with no ring on
- * it — and it would only ever be noticed by a new player, who is exactly the person the
+ * it, and it would only ever be noticed by a new player, who is exactly the person the
  * guide exists for and the last person who will report it.
  *
  * So this reads the marks straight out of the source and checks that every name the

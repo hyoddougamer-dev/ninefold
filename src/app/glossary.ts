@@ -8,7 +8,7 @@ import { LINES, PILL_LINES } from '../data/alchemy.ts';
 import { KEY } from './copy.ts';
 
 /**
- * 釋 Every character the game uses, and what it means — assembled once.
+ * 釋 Every character the game uses, and what it means, assembled once.
  *
  * It used to be assembled inside 釋 the key's own component, which made the key the only
  * place a player could look a character up: a single page, 4419 pixels tall, that you

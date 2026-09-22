@@ -24,7 +24,7 @@ import { num } from '../../sim/format.ts';
  * So a tap opens this instead, and wearing it is a button on it. In order:
  *
  *   階 where its rank sits on the five-step ladder, drawn, with the rank named in
- *      English — the borders and the glow were carrying that on their own
+ *      English: the borders and the glow were carrying that on their own
  *   線 every line it has, with the character, the English label and the value, the
  *      first marked 主 because that is the one the chest tile shows
  *   比 the same lines against what you are wearing in that slot, both sides, so a
@@ -147,7 +147,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
 
       {/* 拆 Melting the piece, on the one screen where a player is actually looking at
           it and can see what they would be giving up. It is never offered for the piece
-          on the body — taking it off first is one tap and is the honest order. */}
+          on the body: taking it off first is one tap and is the honest order. */}
       {!wearing && (
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>

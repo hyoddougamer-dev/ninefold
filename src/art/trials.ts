@@ -3,7 +3,7 @@ import { realm as realmOf } from '../data/realms.ts';
 import { FLOORS_PER_REALM, seals } from '../sim/tower.ts';
 
 /**
- * 塔 爐 雷池 — the three places the late game happens in.
+ * 塔 爐 雷池: the three places the late game happens in.
  *
  * 無盡塔 the tower, 丹爐 the furnace and 雷池 the thunder pool had no drawings at all.
  * The tower borrowed a beast's seal, the furnace borrowed a potion icon, and the pool
@@ -11,7 +11,7 @@ import { FLOORS_PER_REALM, seals } from '../sim/tower.ts';
  * every one of them arrived looking like something else.
  *
  * They are drawn the way 氣象 the portrait and 境 the arena already are: procedurally,
- * from the state, in the realm's own colour. That is the rule this file exists to keep —
+ * from the state, in the realm's own colour. That is the rule this file exists to keep:
  * **the drawing is a reading of the save, not a picture next to it.** The tower has as
  * many tiers as you have seals. The furnace burns as high as you have brewed. The pool
  * holds as much light as it holds qi. Nothing here is decoration that would look the
@@ -32,7 +32,7 @@ function colourAt(floor: number): string {
  * the tiers below it fade toward the ground.
  *
  * It grows without end, so past nine tiers the drawing stops adding roofs and starts
- * compressing them — the tower keeps rising, the picture keeps fitting on a phone.
+ * compressing them: the tower keeps rising, the picture keeps fitting on a phone.
  */
 export function tower(best: number, pulse = 0): string {
   const W = 200;
@@ -152,7 +152,7 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
  * 雷池 The thunder pool, and the marks already taken.
  *
  * A basin cut into stone, filling with light. `filled` is the qi against the pool, so
- * the drawing is the bar — and when it reaches one, the bolts come down and the Dragon
+ * the drawing is the bar, and when it reaches one, the bolts come down and the Dragon
  * is standing. Every 雷印 already held is a ring around the rim, so a cultivator with
  * twelve marks is looking at twelve of them.
  */

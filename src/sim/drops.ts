@@ -9,7 +9,7 @@ import {
  * 落 What a dead beast leaves behind.
  *
  * Two rolls, in this order: does anything drop, and if so how good is it. Both are
- * seeded from the kill, so the same kill always yields the same item — a save cannot be
+ * seeded from the kill, so the same kill always yields the same item: a save cannot be
  * reloaded to re-roll a bad drop, and nothing has to be stored to prevent that.
  */
 
@@ -37,7 +37,7 @@ function dropsYet(realm: number): boolean {
 
 /**
  * Rarity weights for a beast. They tilt upward with the realm, and a warden's tilt
- * harder still — which is what makes the nine warden fights worth looking forward to
+ * harder still, which is what makes the nine warden fights worth looking forward to
  * rather than being a toll on the way up.
  */
 export function rarityWeights(beast: Beast, luck = 1): Record<Rarity, number> {
@@ -88,7 +88,7 @@ export interface Fortune {
 }
 
 /**
- * Picks the extra lines a rank carries, weighted, and never the same axis twice — two
+ * Picks the extra lines a rank carries, weighted, and never the same axis twice: two
  * lines of 力 on one piece read as a bug even when the maths is fine.
  */
 export function rollSecondaries(

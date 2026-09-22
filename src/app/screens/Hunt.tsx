@@ -19,13 +19,13 @@ import { canDrive } from '../../sim/hunt.ts';
 /**
  * 狩 Free hunting.
  *
- * Common beasts, hunted for material — it is what gives you something to do when the
+ * Common beasts, hunted for material. It is what gives you something to do when the
  * app opens, and a three-month climb needs that. Entering costs nothing and losing
  * punishes nothing; what hunting buys is 材 material, which 妖丹 cores and 丹爐 the
  * furnace both eat.
  *
  * 錄 The bestiary lives at the bottom of this screen rather than on a tab of its own.
- * It is a record of what has been hunted, so it belongs next to the hunting — and the
+ * It is a record of what has been hunted, so it belongs next to the hunting, and the
  * tab it used to hold went to 塔 the tower, which is a place you go rather than a page
  * you read.
  */
@@ -44,7 +44,7 @@ export function Hunt({ state, onFight, onDrive }: {
    *
    * It used to be every beast you had ever reached, newest first, and by the fifth realm
    * that was fifteen rows all reading 98% of which only the top one was worth pressing.
-   * Now a beast with a mark still to earn comes first — newest realm first among those —
+   * Now a beast with a mark still to earn comes first: newest realm first among those,
    * and the ones with nothing left in them sink to the bottom and go quiet.
    */
   const [showDone, setShowDone] = useState(false);
@@ -57,7 +57,7 @@ export function Hunt({ state, onFight, onDrive }: {
     return all.sort((a, b) => {
       const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
-      // alphabet put 澤蛙 the frog — the hardest of the three — at the top, so a new
+      // alphabet put 澤蛙 the frog (the hardest of the three) at the top, so a new
       // cultivator's first sight of 狩 was the one beast furthest out of reach.
       return left(a) - left(b) || b.realm - a.realm || beastPower(a) - beastPower(b);
     });
@@ -68,7 +68,7 @@ export function Hunt({ state, onFight, onDrive }: {
    *
    * Sorting them to the bottom was the first half of this and it was not enough.
    * Measured over a whole climb: the ninth realm's hunt screen offers **25 beasts, 13 of
-   * them with every mark earned** — and a screen of twenty-five rows is a screen nobody
+   * them with every mark earned**, and a screen of twenty-five rows is a screen nobody
    * reads, however well it is ordered. What is still a question stays on top as cards;
    * what is done goes behind one line that says how many, and opens if you want it.
    */
@@ -182,7 +182,7 @@ export function Hunt({ state, onFight, onDrive }: {
       )}
 
       {/* 出 What has not walked out yet. A beast held back and not shown is a beast
-          taken away; shown, it is the next thing to climb toward — which is the same
+          taken away; shown, it is the next thing to climb toward, which is the same
           argument as a locked tab, and the reason locked tabs are drawn rather than
           hidden. */}
       {coming.length > 0 && (
@@ -206,7 +206,7 @@ export function Hunt({ state, onFight, onDrive }: {
 
       {/* 註 The three marks stand beside the line instead of inside a paragraph
           explaining them. Each one answers for itself when tapped, from the same table
-          釋 the key draws — see glossary.ts. */}
+          釋 the key draws. See glossary.ts. */}
       <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>
         {HUNT.record}{' '}
         <Term han="見" /> <Term han="熟" /> <Term han="通" />

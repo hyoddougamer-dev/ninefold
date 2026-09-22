@@ -35,7 +35,7 @@ export function Bestiary({ state }: { state: State }) {
               {/* 圖鑑 A realm is *finished* when all four of its beasts are 熟 Known, and
                   that pays a 道 point. Without this line the reward is invisible, and an
                   invisible reward is worse than none: it asks for the one thing hunting
-                  never asked for — going back — and nothing would say so. */}
+                  never asked for, which is going back, and nothing would say so. */}
               {isOpen(state.realm, 'bestiary') && reached && (
                 <span className="filled" data-done={filled(r.n).done === filled(r.n).of}>
                   熟 {filled(r.n).done}/{filled(r.n).of}

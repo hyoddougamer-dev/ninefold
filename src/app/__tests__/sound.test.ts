@@ -4,7 +4,7 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
  * 音 The one thing about sound worth a test.
  *
  * A missing key is not a choice. `Number(null)` is 0, and 0 is a valid level, so the
- * first read of an empty store set the volume to silent — and the game shipped muted
+ * first read of an empty store set the volume to silent, and the game shipped muted
  * for anybody who had never touched the button. It was found in a screenshot, not in a
  * test, which is why there is one now.
  */

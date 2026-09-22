@@ -50,7 +50,7 @@ describe('渡劫 the ladder above the ladder', () => {
 
     expect(tribulationScale(0)).toBe(1);
     expect(tribulationScale(3)).toBeCloseTo(TRIBULATION_POWER ** 3, 6);
-    // Crossing notes the Dragon that fell, so the next one can grow from it — not the
+    // Crossing notes the Dragon that fell, so the next one can grow from it, not the
     // cultivator, whose build would otherwise be forgiven every single crossing.
     expect(after.tribulationAt).toBeCloseTo(beaten, 6);
   });
@@ -67,7 +67,7 @@ describe('渡劫 the ladder above the ladder', () => {
      * spend qi on reaches a qi rate of 10^28 a day inside a fortnight: the rate upgrades
      * pay for the rate upgrades and their cost curve is too shallow to stop it. That is
      * a real fault in the economy and it wants its own pass. Until then, a fixed ladder
-     * of Dragons would be walked over in an afternoon — this one cannot be.
+     * of Dragons would be walked over in an afternoon. This one cannot be.
      */
     const runaway: State = { ...strong, tribulationAt: 1e30 };
     expect(effectiveBeastPower(runaway, DRAGON)).toBeGreaterThan(1e30);
@@ -92,7 +92,7 @@ describe('渡劫 the ladder above the ladder', () => {
 
   /**
    * 立 The footing. A crossing is settled in blows, and a stance with three arts on it is
-   * worth nearly twice the number on the screen — so a Dragon built from bare 力 is a
+   * worth nearly twice the number on the screen, so a Dragon built from bare 力 is a
    * Dragon the build beats for free, which is exactly what the endgame used to be.
    */
   it('builds the next Dragon from the power that actually faced the last one', () => {
@@ -118,7 +118,7 @@ describe('渡劫 the ladder above the ladder', () => {
         `   ${String(total).padStart(4)} days in all   tower floor ${String(floors[i]).padStart(3)}` +
         `   odds ${String(Math.round(chances[i] * 100)).padStart(3)}%`;
     });
-    console.log(`\n  渡劫 the endgame, played out — gather, climb, brew, cross:\n${rows.join('\n')}\n` +
+    console.log(`\n  渡劫 the endgame, played out: gather, climb, brew, cross:\n${rows.join('\n')}\n` +
       `  ${days.length} marks in ${total} days, ` +
       `longest ${Math.max(...days)}, shortest ${Math.min(...days)}\n` +
       `  ended on tower floor ${end.tower} (${seals(end.tower)} seals) ` +
@@ -135,15 +135,15 @@ describe('渡劫 the ladder above the ladder', () => {
     expect(days.slice(-10).reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(10);
     // It never runs out: whatever the economy does, there is always a next Dragon.
     expect(days.length).toBe(40);
-    // And the loop actually turns — the tower is climbed and the furnace is used.
+    // And the loop actually turns: the tower is climbed and the furnace is used.
     expect(end.tower).toBeGreaterThan(81);
     expect(pillsTaken(end.brewed)).toBeGreaterThan(40);
 
     /**
      * 立 And the crossings are *contested*. This is the assertion the old endgame had no
      * version of, and it is the one that would have caught it: the Dragon was anchored
-     * below what the build was worth, so every crossing came in at 90-98% and 煉體 — the
-     * only pill that touches the Dragon — was never once worth brewing. The endgame read
+     * below what the build was worth, so every crossing came in at 90-98% and 煉體: the
+     * only pill that touches the Dragon: was never once worth brewing. The endgame read
      * as two days, tap, win, for ever.
      */
     const walkovers = chances.filter((c) => c > 0.9).length;

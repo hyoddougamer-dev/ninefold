@@ -2,7 +2,7 @@
  * 震 Vibration.
  *
  * `navigator.vibrate` exists on Android and is absent on iOS, and some browsers throw
- * rather than return false — so every call is wrapped and failure is silence. It also
+ * rather than return false, so every call is wrapped and failure is silence. It also
  * follows the sound switch: someone who muted the game did not ask to be buzzed either.
  */
 import { isMuted } from './sound.ts';

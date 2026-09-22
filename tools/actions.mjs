@@ -2,7 +2,7 @@
  * 行 Does it actually *do* anything?
  *
  * `npm run smoke` proves every screen opens. That is not the same question as whether
- * the game works, and Bruno said so in the plainest possible way — *"para pôr à frente
+ * the game works, and Bruno said so in the plainest possible way: *"para pôr à frente
  * das pessoas é necessário que as coisas estejam a funcionar e não existam erros
  * fraturantes."* A screen that renders and then throws on the one button it exists for
  * is exactly the failure a stranger meets in their first ten minutes and never reports.
@@ -110,7 +110,7 @@ async function act(page, name, press, check) {
   const before = await held(page);
   let threw = null;
   try { await press(); } catch (e) { threw = String(e).slice(0, 120); }
-  if (threw) return fail(name, `the tap itself failed — ${threw}`);
+  if (threw) return fail(name, `the tap itself failed: ${threw}`);
   await settle(page);
   const after = await held(page);
   if (!after) return fail(name, 'the save vanished');
@@ -139,7 +139,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
   await act(page, '修 buying an upgrade',
     () => page.click('.upg:not([disabled])', { timeout: 5000 }),
     (a, b) => Object.keys(b.levels).some((u) => b.levels[u] > a.levels[u]) || 'no level went up');
-  if (page.noise.length) fail('修', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('修', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -184,14 +184,14 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
   } else {
     console.log('  · nothing losable here; the loss law is tried on a first realm below');
   }
-  if (page.noise.length) fail('狩', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('狩', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
 /**
  * 敗 The loss law, where a loss is actually possible.
  *
- * At the fifth realm everything on the screen is a walkover — measured, 100% of them —
+ * At the fifth realm everything on the screen is a walkover, measured, 100% of them,
  * so the one law the hunt screen repeats on every visit cannot be tried there. A first
  * realm can still lose, and that is where it is asked.
  */
@@ -226,7 +226,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
         return true;
       });
   }
-  if (page.noise.length) fail('敗', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('敗', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -261,14 +261,14 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     /**
      * 氣 The qi is never allowed into a check, on any act.
      *
-     * It moves on its own every second, so `b.qi !== a.qi` is true whatever happened —
+     * It moves on its own every second, so `b.qi !== a.qi` is true whatever happened,
      * and this check said exactly that. Caught by breaking `salvage()` on purpose and
      * watching the walk pass anyway, which is the only way a weak assertion is ever
      * found. What a melt must do is take pieces out of the chest.
      */
     (a, b) => b.chest.length < a.chest.length
       || `the chest still holds ${b.chest.length} of ${a.chest.length}`);
-  if (page.noise.length) fail('器', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('器', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -287,7 +287,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       await page.waitForTimeout(400);
     },
     (a, b) => b.unlocked.length > a.unlocked.length || 'no node was learned');
-  if (page.noise.length) fail('道', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('道', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -314,7 +314,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       if (pill) { await pill.click(); await page.waitForTimeout(600); }
     },
     (a, b) => Object.keys(b.brewed).some((k) => b.brewed[k] > a.brewed[k]) || 'no pill was brewed');
-  if (page.noise.length) fail('塔爐', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('塔爐', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -343,7 +343,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => b.realm > a.realm || b.wardenFell !== a.wardenFell
       || 'neither the warden fell nor the realm turned over');
-  if (page.noise.length) fail('守', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('守', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -363,7 +363,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => (b.worn.weapon?.refine ?? 0) > (a.worn.weapon?.refine ?? 0)
       || b.materials < a.materials || 'the piece was not refined and no material was spent');
-  if (page.noise.length) fail('煉器', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('煉器', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -382,7 +382,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => kills(b) > kills(a) || b.materials > a.materials
       || 'the drive took no kills and paid no material');
-  if (page.noise.length) fail('圍', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('圍', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -420,7 +420,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       await page.waitForTimeout(900);
     },
     (a, b) => b.tribulation > a.tribulation || 'the crossing left no 雷印 mark');
-  if (page.noise.length) fail('渡劫', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('渡劫', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -437,7 +437,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       else fail('勢', 'the stance half offered no chip to pick');
     },
     (a, b) => b.stance !== a.stance || 'no stance was taken');
-  if (page.noise.length) fail('勢', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('勢', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 
@@ -470,7 +470,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       } catch { fail('存', 'the copied text is not valid JSON'); }
     }
   }
-  if (page.noise.length) fail('存', `console — ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  if (page.noise.length) fail('存', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 

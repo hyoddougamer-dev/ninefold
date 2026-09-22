@@ -8,7 +8,7 @@ import {
  *
  * Neither ownership is stored. The stances you may stand in follow from the realm you
  * reached; the arts you hold follow from the wardens you have put down. Both are
- * already in the save, so a save cannot claim an art it never earned — there is nothing
+ * already in the save, so a save cannot claim an art it never earned. There is nothing
  * to forge.
  */
 
@@ -37,7 +37,7 @@ export function stanceOf(l: Loadout): Stance | null {
  *
  * **The length is fixed on purpose.** The first version returned only the arts placed,
  * so a one-art sequence fired that art every single round while a three-art sequence
- * fired each one every third round — which made a full sequence *worse* than a single
+ * fired each one every third round, which made a full sequence *worse* than a single
  * art. Measured, a lone 虎嘯 was worth 1.43× power and three arts together 1.33×. The
  * rotation is three rounds long whatever you put in it; an empty slot is a wasted round,
  * and filling it is always an improvement.

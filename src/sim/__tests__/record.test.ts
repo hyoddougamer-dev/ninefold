@@ -19,7 +19,7 @@ describe('錄 the record', () => {
   it('prints what a finished record is worth, and keeps it modest', () => {
     const ceiling = recordCeiling();
     console.log(`\n  錄 ${BEASTS.length} beasts, ${MARKS.length} marks each:\n` +
-      MARK_INFO.map((m, i) => `    ${m.han} ${m.name.padEnd(9)} at ${String(MARKS[i]).padStart(3)} kills — ${m.pays}`).join('\n') +
+      MARK_INFO.map((m, i) => `    ${m.han} ${m.name.padEnd(9)} at ${String(MARKS[i]).padStart(3)} kills: ${m.pays}`).join('\n') +
       `\n  a finished record: ×${ceiling.material.toFixed(2)} 材 and ×${ceiling.power.toFixed(2)} 力\n`);
 
     // Worth having, never worth more than the systems it sits beside. A full record is
@@ -102,7 +102,7 @@ describe('錄 the record', () => {
     const { validate } = await import('../state.ts');
     const forged = { ...newState(T0), v: 1, killed: { rat: 1e9, notabeast: 500 } };
     const held = validate(forged, T0 + 10);
-    // A beast that does not exist is not a kill, and the ones that do are honoured —
+    // A beast that does not exist is not a kill, and the ones that do are honoured:
     // there is nothing to cheat here that is not already a hundred taps.
     expect(held.killed.notabeast).toBeUndefined();
     expect(marksOf(held.killed.rat)).toBe(MARKS.length);

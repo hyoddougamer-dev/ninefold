@@ -19,19 +19,19 @@ import { GUIDE } from './copy.ts';
  * A wall of text at the start cannot teach that. Five numbered steps that each complete
  * when the player *does the thing* can.
  *
- * Three properties, and all three come from one decision — **nothing about this is
+ * Three properties, and all three come from one decision: **nothing about this is
  * stored**:
  *
  *   1. It cannot desynchronise. The current step is the first one that is not true yet,
  *      computed from the save on every render. There is no cursor to get stuck.
- *   2. It cannot repeat. Every condition below is monotonic — a level bought, a beast
- *      killed, a realm climbed — so once a step is done it is done for the life of the
+ *   2. It cannot repeat. Every condition below is monotonic: a level bought, a beast
+ *      killed, a realm climbed, so once a step is done it is done for the life of the
  *      save, and the guide ends the moment the last one is.
  *   3. It cannot be wrong about a save it did not create. Paste in a ninth-realm save
  *      and every step is already true, so the guide simply is not there.
  *
  * It never blocks: it is one card at the top of 修 Cultivate with a number on it, and
- * the game runs behind it. When it finishes, 示 the advice line takes over for good —
+ * the game runs behind it. When it finishes, 示 the advice line takes over for good:
  * the guide is the same idea with a beginning and an end.
  */
 export interface Step {
@@ -62,7 +62,7 @@ export interface Step {
    * This is what turns the card from a paragraph into a tutorial: 指 the Coach draws a
    * ring and an arrow on whatever this names, and the player presses the ring. It is a
    * function of the save rather than a constant because the last step points at three
-   * different buttons depending on how far along the realm is — the ladder while there
+   * different buttons depending on how far along the realm is: the ladder while there
    * are rungs left, the warden once it is standing there, 突破 once it has fallen.
    *
    * Returning undefined is allowed and means "nothing to point at right now", which is
@@ -78,7 +78,7 @@ export interface Step {
    * He had found the hole. The second step says "go and kill the rat" from the first
    * second of the game, and the rat is not winnable for about twelve minutes. So for
    * twelve minutes the card asked for something impossible and the ring pulsed on a
-   * fight that could not be won — a tutorial that has stopped teaching and is now just
+   * fight that could not be won: a tutorial that has stopped teaching and is now just
    * in the way.
    *
    * A step that is not ready is not the instruction. It is the *next* instruction, and
@@ -176,7 +176,7 @@ export const STEPS: readonly Step[] = [
 
 
 /**
- * Which step the player is on, and how far along — or nothing, once they are past it.
+ * Which step the player is on, and how far along, or nothing, once they are past it.
  *
  * 急 With one exception, and it was found by playing: a cultivator who filled the realm
  * while the guide was still on the fourth step sat at nine layers of nine with a warden
@@ -184,7 +184,7 @@ export const STEPS: readonly Step[] = [
  * them to go and kill ten more rats. It held them there for nineteen hours.
  *
  * A guide that can hold a player back is worse than no guide. So when the realm is full
- * and the warden is still standing, that is the step — whatever number it is. Nothing is
+ * and the warden is still standing, that is the step: whatever number it is. Nothing is
  * skipped: the steps behind it are not marked done, and if the warden wins the guide
  * goes straight back to where it was.
  */

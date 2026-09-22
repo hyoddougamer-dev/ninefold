@@ -2,7 +2,7 @@
  * 文 An audit of the text the player reads.
  *
  * The first version of this tool scraped the built bundle and found 37 sentences out of
- * a game that has well over a hundred — regexes cannot reliably tell a sentence from a
+ * a game that has well over a hundred: regexes cannot reliably tell a sentence from a
  * CSS class in minified output. So the copy lives in one module instead, and this reads
  * that module plus the two data files that carry player-facing lines.
  *
@@ -92,7 +92,7 @@ console.log(`\n  flagged: ${flagged} of ${unique.length}\n`);
  *
  * Bruno: *"texto muito AIsh e com muitos travessões longos."* The game's own copy was
  * clean, because this tool has been auditing it. The page it never looked at was the one
- * I write — and that is where every one of the em-dashes actually was.
+ * I write, and that is where every one of the em-dashes actually was.
  *
  * The page is one template literal, so the prose is taken out of the built HTML instead
  * of out of the source: tags dropped, code dropped, what is left is the sentences a

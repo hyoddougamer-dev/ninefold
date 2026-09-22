@@ -16,7 +16,7 @@ import { Loadout } from '../ui/Loadout.tsx';
  * 道 The technique tree, drawn as a tree.
  *
  * The first version of this screen was a list of rows, and a list is not a tree: it
- * hides the one thing the player needs to see, which is the *shape* — where the branch
+ * hides the one thing the player needs to see, which is the *shape*: where the branch
  * splits, what a choice closes off, how far the end is from here. So the branch is drawn
  * as a trunk of nodes with a real fork in the middle, and tapping a node opens its
  * detail underneath rather than spelling every node out at once.
@@ -38,7 +38,7 @@ function statusOf(
   const twin = node.excludes ? NODE_BY_KEY[node.excludes] : null;
   if (twin && unlocked.includes(twin.key)) return 'shut';
   if (canUnlock(node.key, unlocked, free, keystones)) return 'open';
-  // 樞 A keystone below its realm reads as locked, not as unaffordable — the difference
+  // 樞 A keystone below its realm reads as locked, not as unaffordable: the difference
   // matters, because one of them is a thing you can fix by saving up.
   if (canUnlock(node.key, unlocked, Infinity, keystones)) return 'poor';
   return 'locked';
@@ -102,7 +102,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
    *
    * Bruno, at the fifth realm, with twenty-two points unspent: *"não encontro o
    * tree/path function estou confuso."* He was not missing it. It was fourteen hundred
-   * pixels below the fold, under a stance picker, five sequence slots and an art pool —
+   * pixels below the fold, under a stance picker, five sequence slots and an art pool:
    * a tab called 道 Path whose first screenful contains no path.
    *
    * Two things live here and they are different questions, so they get a switch instead

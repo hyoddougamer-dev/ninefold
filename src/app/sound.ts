@@ -6,7 +6,7 @@
  * the cues can be tuned by changing a number instead of re-recording.
  *
  * Browsers refuse to start audio before a gesture, so the context is created lazily on
- * the first cue — which is always a tap — and everything before that is a silent no-op.
+ * the first cue, which is always a tap, and everything before that is a silent no-op.
  */
 
 const KEY = 'ninefold.volume';

@@ -11,7 +11,7 @@ import { power, rate as rateOf, type State } from './state.ts';
  * certo os stats de cada item, a rarity, borders etc."*
  *
  * Every one of those is the same hole: the chest showed a picture, one number and a
- * little ▲, and the ▲ was computed from **the sum of the raw roll values** — which is
+ * little ▲, and the ▲ was computed from **the sum of the raw roll values**, which is
  * not what better means. A 藏 chest-slots roll and a 力 power roll are not the same
  * kind of number and adding them together answers nothing. A piece with four small
  * lines could out-triangle a piece that doubles your power.
@@ -72,7 +72,7 @@ export interface LineDelta {
  * The two pieces' lines, side by side, in one list.
  *
  * Every axis either of them touches appears exactly once, so a line that only one of
- * them has is still a row — losing 破 sunder is as much a fact as gaining 力 power, and
+ * them has is still a row: losing 破 sunder is as much a fact as gaining 力 power, and
  * a comparison that only listed the winner's lines would hide half of every trade.
  *
  * Values are the *effective* ones, with 煉 refining already folded in, because that is

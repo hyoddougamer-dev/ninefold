@@ -1,7 +1,7 @@
 /**
  * 閒 Where a realm's qi actually goes, and how long the bar stands still.
  *
- * It lives here rather than in a test because two things read it — `idle.test.ts`, which
+ * It lives here rather than in a test because two things read it: `idle.test.ts`, which
  * keeps the numbers from drifting and prints them on every run, and `bible.ts`, which
  * puts the same table on the page.
  *
@@ -53,7 +53,7 @@ export interface Realm {
   readonly intoUpgrades: number;
   /** Hours stood at the ceiling with the bar full and the warden still alive. */
   readonly ceilingHours: number;
-  /** Hours with the bar full at all — warden alive or the toll not yet re-earned. */
+  /** Hours with the bar full at all: warden alive or the toll not yet re-earned. */
   readonly stuckHours: number;
   /** Share of the realm's whole qi income that piled up at that ceiling. */
   readonly ceilingQi: number;

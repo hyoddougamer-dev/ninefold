@@ -92,7 +92,7 @@ describe('勢 and 訣', () => {
     /**
      * The bug this exists for: the rotation used to be as long as the arts placed, so a
      * lone 虎嘯 fired every round and three arts fired every third. A single art measured
-     * 1.43× power and a full sequence only 1.33× — a full sequence was a downgrade.
+     * 1.43× power and a full sequence only 1.33×: a full sequence was a downgrade.
      */
     const one = evenAt(null, ['tiger']);
     const two = evenAt(null, ['tiger', 'ape']);
@@ -123,7 +123,7 @@ describe('勢 and 訣', () => {
     const bare = evenAt(null, []);
     const full = evenAt('endure', ['crane', 'tiger', 'wolf']);
     const worth = bare / full;
-    console.log(`\n  a whole build — 續 with 鶴唳 虎嘯 狼噬 — is worth ×${worth.toFixed(2)} power\n`);
+    console.log(`\n  a whole build (續 with 鶴唳 虎嘯 狼噬) is worth ×${worth.toFixed(2)} power\n`);
     // Enough that it decides a warden fight, not so much that upgrades stop mattering.
     expect(worth).toBeGreaterThan(1.3);
     expect(worth).toBeLessThan(2.6);

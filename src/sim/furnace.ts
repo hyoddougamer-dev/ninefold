@@ -5,7 +5,7 @@ import { opensAt } from './unlocks.ts';
 /**
  * 丹爐 The Furnace: the one thing qi buys that no realm caps.
  *
- * It is paid for twice — in qi, which comes from waiting, and in 材 materials, which
+ * It is paid for twice: in qi, which comes from waiting, and in 材 materials, which
  * come from killing things. That is the point. Waiting alone cannot buy power any more,
  * and neither can fighting alone; the furnace is where the two halves of the game meet.
  *
@@ -15,7 +15,7 @@ import { opensAt } from './unlocks.ts';
  */
 
 /**
- * A pill's price rides the mountain, exactly as an upgrade's does — a pill costs half of
+ * A pill's price rides the mountain, exactly as an upgrade's does: a pill costs half of
  * what a layer of the climb costs, and past the summit it goes on rising at the rate the
  * summit was rising at.
  *
@@ -28,7 +28,7 @@ export const PILL_SHARE = 0.5;
  * 爐底 Where the furnace's prices start on the mountain.
  *
  * The furnace opens at 合體, the seventh realm, and until this existed its first pill was
- * priced for the first realm — 450 qi and 14 材 to somebody gathering 192k qi a second.
+ * priced for the first realm: 450 qi and 14 材 to somebody gathering 192k qi a second.
  * Measured on a traced save: **one hour after the furnace opened, tapping the buttons
  * bought a hundred pills and 3.2x power**, and a day bought 4.5x. That is a whole realm's
  * worth of power for an hour of nothing, and it is the same fault the tower had when it
@@ -43,7 +43,7 @@ export const PILL_SHARE = 0.5;
  * prices nobody can pay and the notice that says *start with a 煉體丹* is a lie. Two
  * realms behind, the first pill costs seven minutes and the back catalogue is a freebie
  * again. One realm behind, the first pill is an hour and a half, and buying a realm's
- * worth of pills costs about six days of a nineteen-day realm for 1.30x power — dear
+ * worth of pills costs about six days of a nineteen-day realm for 1.30x power: dear
  * enough to be a decision, cheap enough that the system is alive on the day it arrives.
  *
  * It is derived from the unlock ladder rather than written down, so moving the furnace
@@ -105,7 +105,7 @@ export function pillFortune(held: Brewed): number {
   return 1 + PILL_FORTUNE * held.fortune;
 }
 
-/** How many pills have been brewed in all — the number the furnace shows. */
+/** How many pills have been brewed in all: the number the furnace shows. */
 export function pillsTaken(held: Brewed): number {
   return LINES.reduce((sum, line) => sum + held[line], 0);
 }

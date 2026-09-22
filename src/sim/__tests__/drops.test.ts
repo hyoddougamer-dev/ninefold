@@ -48,7 +48,7 @@ describe('落 drops', () => {
     }
   });
 
-  it('the same kill always gives the same item — a reload cannot re-roll it', () => {
+  it('the same kill always gives the same item: a reload cannot re-roll it', () => {
     const b = wardenOf(6);
     const a = rollDrop(b, 6, 12345);
     const c = rollDrop(b, 6, 12345);

@@ -1,5 +1,5 @@
 /* 霓 The chosen direction: deep indigo, cyan and magenta. This commits to one world on
-   purpose — it is the game's art, not a stylesheet that follows the system theme. */
+   purpose. It is the game's art, not a stylesheet that follows the system theme. */
 
 :root {
   --ground: #080A18;
@@ -107,7 +107,7 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 /* ── 觸 What a tap feels like ────────────────────────────────────────────────
    Bruno: *"estética precisa de retoques mais impactantes e animações."* The arena
    already lunges and slashes and shakes. What had nothing at all was everything a
-   player does a hundred times a day — buying, tapping a beast, changing a tab. A
+   player does a hundred times a day: buying, tapping a beast, changing a tab. A
    button that does not move under the thumb reads as a picture of a button, and on a
    phone that is the whole of the feel of the thing.
 
@@ -292,7 +292,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .melting .upto { margin-left: 4px; font-size: 12.5px; color: var(--faint); }
 
 /* 出 The beasts of this realm that have not walked out yet. Deliberately quieter than
-   a huntable row — it is something to look forward to, not something to press. */
+   a huntable row. It is something to look forward to, not something to press. */
 .coming .row { display: flex; align-items: center; gap: 12px; padding: 10px 13px;
                background: var(--panel2); border: 1px dashed var(--line);
                border-radius: 11px; margin-bottom: 7px; opacity: .72; }
@@ -325,7 +325,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 闊 One column, not two.
    Four upgrades in a 2x2 grid on a phone is four boxes about 150px wide holding an
-   icon, a name, a level, an effect and a price — five things in a space that fits
+   icon, a name, a level, an effect and a price: five things in a space that fits
    three. Bruno: *"imensos botoes pequenos com explicacoes pouco resumidas"*. Stacked,
    each one gets the full width, the type goes up two points, and the line under the
    name is one short phrase instead of a wrapped sentence. It is one more scroll and
@@ -513,7 +513,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .duel { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 74px 1fr;
         align-items: end; padding: 0 6px 12.7%; }
 .fighter { position: relative; display: grid; place-items: center; }
-/* The flash hangs off .art, so .art has to be the thing it measures itself against —
+/* The flash hangs off .art, so .art has to be the thing it measures itself against:
    anchored on .fighter it covered the whole grid cell instead of the body. */
 .fighter .art { display: block; position: relative; }
 .fighter .art svg { display: block; width: 100%; height: 100%; }
@@ -539,7 +539,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .foe[data-strike='true'] .art svg, .foe[data-hit='true'] .art svg,
 .arena[data-over='true'] .foe .art svg { animation: none; }
 /* 息 The beast breathing. It was called `breathe`, and so was the tree node's glow two
-   hundred lines further down — the later definition won and the beast stopped moving
+   hundred lines further down: the later definition won and the beast stopped moving
    and started fading instead. Two animations, two names. */
 @keyframes breath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 
@@ -569,7 +569,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .you .dmg { color: var(--magenta); }
 .foe .dmg { color: var(--cyan); }
 
-/* 命 The two lives, small and close to the feet — they are not the spectacle. */
+/* 命 The two lives, small and close to the feet. They are not the spectacle. */
 .feet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
         padding: 14px 18px 0; }
 .who { display: flex; flex-direction: column; gap: 6px; }
@@ -656,7 +656,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* ── the two small switches, always reachable ───────────────────────────── */
 
-/* 存 ? 碑 音 — four of them now, and each one takes width off the first row of every
+/* 存 ? 碑 音: four of them now, and each one takes width off the first row of every
    screen. The sheet's first row is padded to clear them rather than every screen being
    asked to remember. */
 /* 收 One button in the corner, and a named list under it when it opens. */
@@ -750,7 +750,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
               place-items: center; }
 .guide .art svg { display: block; }
 /* 時 Waiting: the same card, quieter.
-   It is not asking for anything yet, so it stops shouting — the border and the number
+   It is not asking for anything yet, so it stops shouting: the border and the number
    drop back to the body colour, and only the progress bar keeps the guide's cyan,
    because the bar is the one part that is still saying something new every second. */
 .guide[data-waiting="true"] { background: var(--panel);
@@ -823,7 +823,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--magenta); margin-top: 3px; }
 
 /* 存 ? 碑 音 float over the top-right corner, so the first row of every screen keeps
-   its reading clear of them — and the figure on that row never shrinks, because 力 1.38T
+   its reading clear of them, and the figure on that row never shrinks, because 力 1.38T
    lost its T to a long "CULTIVATE · DAY 526" beside it, which is flex doing what flex
    does. The long side truncates instead. */
 .sheet > .row:first-child { padding-right: 140px; }
@@ -834,7 +834,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
 
 /* 半 The switch between the two halves of 道. Named for what it is rather than borrowing
-   .tabs or .chips — a class shared between two screens has bitten this repo twice. */
+   .tabs or .chips: a class shared between two screens has bitten this repo twice. */
 /* The right margin is the corner: 收 the menu floats over the top-right of every
    screen, and this is the first row of this one, so it gets out of the way exactly as
    `.sheet > .row:first-child` does for the others. */
@@ -1005,7 +1005,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .help .says { color: var(--faint); font-size: 13.5px; margin: 0; line-height: 1.55; }
 .help .says.small { font-size: 12px; }
 
-/* 新 A new version is ready. It never reloads on its own — that would throw away a fight. */
+/* 新 A new version is ready. It never reloads on its own. That would throw away a fight. */
 .newver { position: absolute; left: 12px; right: 12px; z-index: 14;
           bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
           display: flex; align-items: center; gap: 10px; padding: 10px 12px;
@@ -1109,7 +1109,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .ladder .rungs { flex: 1; display: flex; gap: 3px; align-items: center; }
 .ladder .rung { flex: 1; height: 9px; border-radius: 3px; background: var(--line);
                 overflow: hidden; }
-/* The rung being paid for is the one the bar above is filling, so it is marked — a
+/* The rung being paid for is the one the bar above is filling, so it is marked: a
    player can put their finger on the two and see they are the same thing. */
 .ladder .rung[data-here="true"] { box-shadow: 0 0 0 1px var(--line-strong, var(--line)); }
 .ladder .rung > i { display: block; height: 100%; border-radius: 2px;
@@ -1134,7 +1134,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* ── 指 the pointing finger ───────────────────────────────────────────────── */
 
 /* The whole layer is inert. The ring is drawn over the button the guide is asking for
-   and the button underneath still takes the tap — a tutorial that swallowed the press
+   and the button underneath still takes the tap: a tutorial that swallowed the press
    it is asking for would be unusable. */
 .coach { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .coach > span { position: absolute; }
@@ -1150,7 +1150,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* Above the target by preference: on a phone the thumb is below what it is about to
    press, and an arrow underneath would be the one thing covered by the hand. */
 /* On its own disc. The arrow sits ten pixels off the target, which on a busy screen is
-   usually right on top of a heading — a bare glyph there reads as a smudge in the text
+   usually right on top of a heading: a bare glyph there reads as a smudge in the text
    rather than as a pointer. The disc gives it its own ground and its own edge. */
 .coach .point { color: var(--cyan); margin-left: -17px;
                 width: 34px; height: 34px; display: grid; place-items: center;

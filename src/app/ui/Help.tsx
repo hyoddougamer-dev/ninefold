@@ -5,7 +5,7 @@ import { GUIDE, HELP } from '../copy.ts';
  *
  * Every step is one bold line and one thin line under it, and none of them is an
  * instruction: 引 the guide teaches the doing, one step at a time, by making the player
- * do it. What is left here is only what cannot be shown — that leaving costs nothing,
+ * do it. What is left here is only what cannot be shown. That leaving costs nothing,
  * that staying pays, that losing is free, and where to look a character up.
  */
 export function Help({ onClose, onReopenGuide }: {

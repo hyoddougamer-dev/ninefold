@@ -1,7 +1,7 @@
 /**
  * 劫 The endgame harness: the tribulation played out, crossing by crossing.
  *
- * It lives here for the same reason `habits.ts` does — two things read it. Those are
+ * It lives here for the same reason `habits.ts` does: two things read it. Those are
  * `tribulation.test.ts`, which asserts the pace and prints the table on every run, and
  * `bible.ts`, which puts the same numbers on the page. A measurement that appears twice
  * has to be made once, and the endgame's numbers were typed into the bible by hand until
@@ -21,7 +21,7 @@ import { HABITS, play as playHabit } from './habits.ts';
 /**
  * 境外 What stands there is no longer one animal.
  *
- * It was `wardenOf(9)` — the 龍 — for every crossing, which is exactly the thing the
+ * It was `wardenOf(9)` (the 龍) for every crossing, which is exactly the thing the
  * heavens were built to stop. The harness now asks the same question the screen asks,
  * `currentWarden(s)`, so a measurement taken here is a measurement of what a player
  * actually faces.
@@ -84,7 +84,7 @@ export interface Endgame {
  * system. The Dragon grows a fixed step a crossing; a mark pays back most of it; the
  * furnace is the only thing at the top that qi still buys, and the tower is the only
  * thing that feeds the furnace. Take any one of the four away and the ladder becomes a
- * wall — which is exactly what it was before the tower and the furnace existed.
+ * wall, which is exactly what it was before the tower and the furnace existed.
  */
 export function playEndgame(marks: number): Endgame {
   let s = arrived();

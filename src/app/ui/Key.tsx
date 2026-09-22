@@ -6,8 +6,8 @@ import { Svg } from './Svg.tsx';
 /**
  * 釋 The key: every character the game uses, on one page.
  *
- * The rows themselves live in ../glossary.ts, because 註 the tooltip reads the same ones
- * — a character tapped where it stands is answered from exactly the table this page
+ * The rows themselves live in ../glossary.ts, because 註 the tooltip reads the same
+ * ones. A character tapped where it stands is answered from exactly the table this page
  * draws, and neither can drift from the other.
  */
 function Group({ title, blurb, rows }: { title: string; blurb: string; rows: readonly Term[] }) {

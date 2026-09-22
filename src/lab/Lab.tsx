@@ -125,7 +125,7 @@ export function Lab() {
 
         <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 0' }}>
           The game's own arena, with the knobs a real fight hides. Pick who fights whom,
-          how even it is, and how fast it plays — then hit 戰.
+          how even it is, and how fast it plays, then hit 戰.
         </p>
 
         <h2 className="heading">Your realm</h2>

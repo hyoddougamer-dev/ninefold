@@ -8,7 +8,7 @@ import { realm as realmOf } from '../data/realms.ts';
  * 器 The gear tile.
  *
  * ART's one rule applies here more than anywhere: **a thing is an object plus a rank**.
- * The same sword at 凡 Common and at 天 Heaven is one drawing in two frames — the object
+ * The same sword at 凡 Common and at 天 Heaven is one drawing in two frames: the object
  * never changes, and everything that says *this one is rare* happens in the frame and
  * in the light around it. That is what lets a chest of twenty items be read at a glance
  * without reading a single word, and it is why a new item costs no new artwork.
@@ -28,7 +28,7 @@ export interface TileOptions {
   readonly size?: number;
   /** Drawn faint and dashed when the slot is empty. */
   readonly slot?: Slot;
-  /** 0..1 — turns the 地 ring and drifts the 天 motes. */
+  /** 0..1: turns the 地 ring and drifts the 天 motes. */
   readonly spin?: number;
 }
 
@@ -107,8 +107,8 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
   const off = (S - inner) / 2;
 
   // 系 The lineage mark, bottom left: one glyph in the realm's own colour, opposite the
-  // rank's glyph. Two different questions — *where is it from* and *how good is it* —
-  // so they get two different corners and never have to share a colour.
+  // rank's glyph. They are two different questions, *where is it from* and *how good
+  // is it*, so they get two different corners and never have to share a colour.
   const rs = realmSet(tpl.realm);
   const rc = realmOf(tpl.realm).colour;
 

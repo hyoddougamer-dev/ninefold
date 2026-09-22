@@ -8,7 +8,7 @@ import { realm as realmOf } from '../data/realms.ts';
  * showing through, which reads as a dialog box over a list rather than as a fight. A
  * fight needs somewhere to be: a sky, a horizon, and a floor to stand on.
  *
- * The scene belongs to the **beast's** realm, not the cultivator's — you go to where the
+ * The scene belongs to the **beast's** realm, not the cultivator's. You go to where the
  * thing lives. That also makes the climb visible: the ninth realm's sky is nothing like
  * the first's, without a single new drawing.
  *

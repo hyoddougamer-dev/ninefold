@@ -47,7 +47,7 @@ describe('閒 where a realm\'s qi goes', () => {
     /**
      * 頂 The finding, and what is left of it. A realm's bar stops at its last rung and
      * qi banks there, and for somebody who opens the app once a day that used to be
-     * three quarters of the first realm — the one realm where a player has not yet
+     * three quarters of the first realm: the one realm where a player has not yet
      * decided to stay. It is about half of a realm that is itself half as long now.
      */
     expect(first(light).stuckHours / first(light).hours).toBeGreaterThan(0.3);
@@ -60,7 +60,7 @@ describe('閒 where a realm\'s qi goes', () => {
      * 費 The two halves of that wait have collapsed into one, which is the plainest way
      * to state what the 費 change did. There used to be two reasons to stand at a full
      * bar: a warden you could not beat, and a ninth rung you had to re-earn after
-     * spending it. The second is gone — the warden *is* the ninth rung — so every hour
+     * spending it. The second is gone: the warden *is* the ninth rung, so every hour
      * still spent waiting is spent waiting to be strong enough, which is a fight to
      * prepare for rather than a toll to re-pay.
      */
@@ -80,15 +80,15 @@ describe('閒 where a realm\'s qi goes', () => {
 
     /**
      * 梯 A layer still opens by itself the moment the qi reaches its price, so the ladder
-     * takes the qi before a light visitor can reach it. That used to be a wide gap — 44%
+     * takes the qi before a light visitor can reach it. That used to be a wide gap: 44%
      * of the first realm's qi into upgrades for somebody visiting six times a day
-     * against 13% for somebody visiting once — and 銀 the carry closed most of it: qi
+     * against 13% for somebody visiting once, and 銀 the carry closed most of it: qi
      * banked at a full bar is no longer burned on the way out, so the visitor who could
      * not intercept it gets it at the next breakthrough instead.
      *
      * That is worth knowing, because it means this is no longer one of the reasons
      * playing beats waiting. The reasons that are left are 材 material, 塔 the tower,
-     * 爐 the furnace and 器 the gear — all of which need a tap — and the gap they hold
+     * 爐 the furnace and 器 the gear: all of which need a tap, and the gap they hold
      * up on their own is asserted in players.test.ts, where it belongs.
      */
     for (const run of runs) {

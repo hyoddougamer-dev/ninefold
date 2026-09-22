@@ -3,7 +3,7 @@
  *
  * A home-screen icon cannot be an SVG on Android, so the 192 and 512 squares are
  * rendered here with the same seated figure and the same ninth-realm magenta the game
- * ends on — no new drawing, no file anyone has to keep in sync by hand.
+ * ends on: no new drawing, no file anyone has to keep in sync by hand.
  */
 import { writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -44,7 +44,7 @@ for (const size of [192, 512]) {
   const shot = await page.screenshot({ omitBackground: false });
   writeFileSync(`public/icon-${size}.png`, shot);
   await page.close();
-  console.log(`public/icon-${size}.png — ${(shot.length / 1024).toFixed(0)} KB`);
+  console.log(`public/icon-${size}.png: ${(shot.length / 1024).toFixed(0)} KB`);
 }
 
 await browser.close();

@@ -1,7 +1,7 @@
 /**
  * 勤 The habit harness: five cultivators with the same game and different lives.
  *
- * It lives here rather than in a test because two things read it — `players.test.ts`,
+ * It lives here rather than in a test because two things read it: `players.test.ts`,
  * which asserts the order and prints the table on every run, and `bible.ts`, which puts
  * the same table on the page. A measurement that appears twice has to be made once.
  */
@@ -65,14 +65,14 @@ export interface Habit {
  * 道 Which branch each of them walks.
  *
  * For most of this game's life the answer was *none*: no habit carried a `branch`, so
- * `spendTree` was a no-op and every curve ever printed — in the tests, in the bible, in
- * the arguments those numbers settled — was walked by a cultivator who had never spent a
+ * `spendTree` was a no-op and every curve ever printed: in the tests, in the bible, in
+ * the arguments those numbers settled: was walked by a cultivator who had never spent a
  * 道 point. The tree is the game's whole theorycrafting and it had never been measured.
  *
  * Everyone who builds walks 劍 the Sword, because a shared axis is what makes five rows
  * comparable: if each habit took a different branch, the table would be measuring the
  * branches and pretending to measure the habits. The spread between branches gets its own
- * cultivator instead — `walks 神` — so both questions are answered and neither is mixed
+ * cultivator instead: `walks 神`, so both questions are answered and neither is mixed
  * into the other.
  */
 export const HABITS: readonly Habit[] = [
@@ -175,7 +175,7 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
  *
  * 開 The gate is checked here, and it was not before. Every curve this harness has ever
  * printed was measured with the tree spent from the first realm, while the game does not
- * open it until the fourth — so the first three realms were modelled with 起 The
+ * open it until the fourth, so the first three realms were modelled with 起 The
  * Beginning's +10% rate and a branch's worth of nodes that a real cultivator does not
  * have. The points still accrue from the first realm and still wait, which is the rule;
  * what waits with them now is the spending.
@@ -258,7 +258,7 @@ export function play(h: Habit, maxDays = 400): Run {
     }
 
     // 圍 Drives, bought with whatever the ladder is not about to need. The rule is
-    // deliberately greedy — spend down to one rung of headroom — because the question
+    // deliberately greedy: spend down to one rung of headroom, because the question
     // being asked is what the *worst* case does to the climb, not what a careful
     // player does.
     if (h.drives) for (let i = 0; i < 40; i++) {
@@ -266,7 +266,7 @@ export function play(h: Habit, maxDays = 400): Run {
       if (!b) break;
       // Stuck at a ceiling with a warden they cannot beat, qi has nowhere else to go,
       // so it all goes here. Otherwise they keep one rung of headroom and drive the
-      // rest — which is still far greedier than anybody would really play.
+      // rest, which is still far greedier than anybody would really play.
       const stuck = atCeiling(s) && !s.wardenFell;
       const keep = stuck ? 0 : ladderBetween(layersOpened(s));
       const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x) >= keep);
@@ -277,7 +277,7 @@ export function play(h: Habit, maxDays = 400): Run {
     }
 
     // 拆 And on a visit, the junk goes. A cultivator who picks gear up is a cultivator
-    // who melts what they will never wear — anything at or below 靈 Spirit, which is
+    // who melts what they will never wear: anything at or below 靈 Spirit, which is
     // the rank the game stops caring about within a realm of finding it.
     if (h.gear && isOpen(s.realm, 'gear')) s = salvageUpTo(s, 'spirit');
 

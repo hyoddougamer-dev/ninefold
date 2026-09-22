@@ -20,13 +20,13 @@ import type { Fortune } from './drops.ts';
  * agreed with him before a line of it was written:
  *
  *   通 Mastered is a hundred kills of one animal, thirty-six animals, **3,600 fights**.
- *   The most played cultivator we model — three hundred and eighty-five fights a day —
- *   reaches eight of thirty-six. 圖鑑 the bestiary asks four hundred kills of a realm.
+ *   The most played cultivator we model, at three hundred and eighty-five fights a
+ *   day, reaches eight of thirty-six. 圖鑑 the bestiary asks four hundred kills of a realm.
  *   The record was not hard. It was arithmetically out of reach, and the only strategy
  *   it ever rewarded was tapping.
  *
- * So a beast you have 熟 Known — ten kills, which is ten real fights you actually won —
- * can be *driven*: ten, fifty or two hundred at once, resolved in a single screen. The
+ * So a beast you have 熟 Known, at ten kills, which is ten real fights you actually
+ * won, can be *driven*: ten, fifty or two hundred at once, resolved in a single screen. The
  * fights are not simulated, because there is nothing left to find out: you have beaten
  * this animal ten times and your power only ever goes up.
  *
@@ -39,7 +39,7 @@ import type { Fortune } from './drops.ts';
  * Three rules keep it honest:
  *
  *   1. **The single fight stays free, always.** Losing costs nothing is the promise the
- *      whole game is built on, and a drive is not a fight — it is fifty fights you have
+ *      whole game is built on, and a drive is not a fight. It is fifty fights you have
  *      already proved you win, bought in one go. Nothing here can be lost.
  *   2. **It pays exactly what the taps would have paid.** Same material, same counts,
  *      same drop rolls. The qi buys your time, not an advantage. A player who wants to
@@ -75,7 +75,7 @@ export function canDrive(s: State, b: Beast): boolean {
  * 梯 The rung has to be the *current* one, and the harness proved it. Priced off the
  * first rung of the realm instead, a drive stayed cheap while the rungs around it grew
  * geometrically, so a cultivator sitting at a realm's ceiling could drive essentially
- * for free — and the measuring cultivator who tried it bought a million fights, never
+ * for free, and the measuring cultivator who tried it bought a million fights, never
  * climbed past the third realm, and ended weaker than one who never hunted at all.
  * Riding the current rung keeps "a drive of fifty costs about a layer" true everywhere
  * on the mountain, which is the only sentence about the price a player has to hold.
@@ -94,7 +94,7 @@ export interface Drive {
   readonly material: number;
   readonly qiSpent: number;
   readonly kills: number;
-  /** How many drops fell, and the best of them — the rest are not worth a chest slot. */
+  /** How many drops fell, and the best of them: the rest are not worth a chest slot. */
   readonly dropsRolled: number;
   readonly best: Item | null;
   /** Marks crossed by the drive, by index into MARK_INFO. */

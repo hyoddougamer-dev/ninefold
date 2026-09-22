@@ -13,14 +13,14 @@ import { REALMCARD } from '../copy.ts';
  * Bruno: *"Devia existir uma tooltip ou ?, a explicar o realm de forma simples e
  * estética. Sinto que está tudo muito perdido."*
  *
- * The game had the answer scattered across five places — the aura in the portrait, the
+ * The game had the answer scattered across five places: the aura in the portrait, the
  * rungs on the ladder, the warden in a card that only appears at the very end, the
  * locked tabs saying which realm opens them, and the 開 table nobody ever sees. A
  * player standing in the third realm could not find out what the third realm *is*.
  *
  * So: tap the realm's name and this says it, in the order the questions actually get
  * asked. Where am I, what is a realm, what stands at the end of this one, what did it
- * hand me, and what is the next one worth climbing for. Nothing here is a new fact —
+ * hand me, and what is the next one worth climbing for. Nothing here is a new fact,
  * every line is read from the same tables the game plays by, so it cannot drift.
  *
  * The last block is the point of the whole page. A purely vertical game has to keep

@@ -9,7 +9,7 @@ import { SAVE } from '../copy.ts';
  *
  * There is no account and no cloud. The save lives in one browser's storage on one
  * phone, which means clearing the browser's data, losing the phone or changing phones
- * costs three months. The game cannot fix that on its own — but it can make it one tap
+ * costs three months. The game cannot fix that on its own, but it can make it one tap
  * to hold a copy, and one paste to get it back.
  *
  * Copy comes before Download on purpose. A download is the nicer flow and it is the one
@@ -73,7 +73,7 @@ export function SavePanel({ state, onRestore, onClose }: {
 
   return (
     /* It borrows the help sheet's layout, but it is not the help sheet. Sharing one
-       class meant nothing on the page could tell them apart — which cost an afternoon
+       class meant nothing on the page could tell them apart, which cost an afternoon
        of a test harness quietly pressing "copy" when it meant "close". */
     <div className="help savepanel">
       <h2>存 {SAVE.title}</h2>

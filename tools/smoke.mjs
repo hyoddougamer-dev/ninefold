@@ -6,8 +6,8 @@
  * six depths, visits every tab, opens the corner and every panel behind it, and fails on
  * anything that throws, renders nothing, or puts NaN in front of the player.
  *
- * Bruno asked for it in the plainest possible way — *"não sei bem o que temos e se está
- * tudo funcional"* — and that is a question a repository should be able to answer with
+ * Bruno asked for it in the plainest possible way: *"não sei bem o que temos e se está
+ * tudo funcional"*, and that is a question a repository should be able to answer with
  * one command rather than with an argument.
  *
  *     npm run build && npm run preview &
@@ -15,7 +15,7 @@
  *
  * The only network request the page makes is the Google font stylesheet. In a sandbox
  * without egress it fails, the page falls back to its own stack, and that one failure is
- * ignored here on purpose — everything else is a real problem.
+ * ignored here on purpose: everything else is a real problem.
  */
 import { chromium } from 'playwright';
 
@@ -72,7 +72,7 @@ const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-/** Seed a save with the app's own scripts blocked — it rewrites the save on unload. */
+/** Seed a save with the app's own scripts blocked. It rewrites the save on unload. */
 async function open(page, state) {
   if (state) {
     await page.route('**/assets/*.js', (r) => r.abort());
@@ -170,7 +170,7 @@ async function walk(label, state) {
   }
 
   const unique = [...new Set(noise)];
-  if (unique.length) fail(label, `console — ${unique.slice(0, 3).join(' | ')}`);
+  if (unique.length) fail(label, `console: ${unique.slice(0, 3).join(' | ')}`);
   await page.close();
 }
 

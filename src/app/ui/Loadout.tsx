@@ -13,7 +13,7 @@ import { Svg } from './Svg.tsx';
  * kind of fighter you are, the sequence says how that fighter fights.
  *
  * The interaction is built for a thumb. Tap a stance to stand in it. Tap an art to add
- * it to the end of the sequence — which is how the order gets chosen, without dragging
+ * it to the end of the sequence, which is how the order gets chosen, without dragging
  * anything. Tap a filled slot to take that art back out.
  */
 export function Loadout({ state, onStance, onSequence }: {

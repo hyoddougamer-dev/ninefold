@@ -8,7 +8,7 @@ import { chestCap, extraChestSlots } from './dao.ts';
 /**
  * 藏 The chest, and 煉 the fusion.
  *
- * The chest is deliberately finite. Without a limit there is no decision in a drop —
+ * The chest is deliberately finite. Without a limit there is no decision in a drop:
  * everything is kept, nothing is ever weighed. With one, every 凡 Common that falls is
  * a small question: melt it, or make room for it?
  *
@@ -26,7 +26,7 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
 /**
  * 值 How good a piece is, roughly, for deciding which of two to keep.
  *
- * Rank, realm and refining — not the roll values, because seven axes on different scales
+ * Rank, realm and refining, not the roll values, because seven axes on different scales
  * cannot be added together into a number that means anything. This is only ever used to
  * answer "is the thing that just dropped better than the worst thing in the chest", and
  * for that it is right far more often than it is wrong.
@@ -45,7 +45,7 @@ export interface Kept {
  * Puts a piece in the chest, and when there is no room keeps the better of the two.
  *
  * It used to refuse, which meant a full chest silently ate every drop after the fortieth
- * — and a cultivator hunting properly fills forty slots in one visit. Losing the 天 that
+ *, and a cultivator hunting properly fills forty slots in one visit. Losing the 天 that
  * just fell because forty 凡 got there first is the game wasting the player's time, and
  * the player cannot even see it happen. Now the worst piece goes instead, and the arena
  * says which.
@@ -73,7 +73,7 @@ export function removeFromChest(chest: readonly Item[], id: string): readonly It
 
 /**
  * Equipping swaps: whatever was in the slot goes back to the chest, and since the new
- * item just left it, the count never rises — so equipping can never overflow.
+ * item just left it, the count never rises, so equipping can never overflow.
  */
 export function equip(worn: Worn, chest: readonly Item[], item: Item, slot: Slot): {
   worn: Worn; chest: readonly Item[];
@@ -102,7 +102,7 @@ export function nextRarity(rarity: Rarity): Rarity | null {
   return i >= 0 && i < RARITIES.length - 1 ? RARITIES[i + 1] : null;
 }
 
-/** Groups of three-or-more identical pieces — same template, same rank — in the chest. */
+/** Groups of three-or-more identical pieces (same template, same rank) in the chest. */
 export function fusable(chest: readonly Item[]): readonly { template: string; rarity: Rarity; count: number }[] {
   const tally = new Map<string, number>();
   for (const it of chest) {
@@ -118,7 +118,7 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
 }
 
 /**
- * Three become one, a rank higher — and the roll quality survives the melt.
+ * Three become one, a rank higher, and the roll quality survives the melt.
  *
  * The new piece keeps the average quality of what went in, measured against its own
  * rank's base. Three lucky 靈 make a better 玄 than three unlucky ones, so a good roll
@@ -177,7 +177,7 @@ export function fuse(
  * keystone's cap, which overrides the lot.
  *
  * Gear slots arrive as a fraction because affinity multiplies them, so they are floored
- * here — half a place in a chest is not a place, and the screen must never promise one.
+ * here: half a place in a chest is not a place, and the screen must never promise one.
  */
 export function chestLimit(unlocked: readonly string[], gearSlots = 0): number {
   const cap = chestCap(unlocked);

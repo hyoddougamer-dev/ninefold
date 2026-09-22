@@ -34,7 +34,7 @@ export const UPGRADES: readonly Upgrade[] = ['technique', 'method', 'pills', 'co
  * ever.
  *
  * That one rule is what killed the runaway. Prices used to be `base * step^level`,
- * a ladder of their own that had nothing to do with the mountain — so the mountain grew
+ * a ladder of their own that had nothing to do with the mountain, so the mountain grew
  * and the prices did not, every upgrade a realm allowed was affordable within its first
  * hour, and the whole nine-realm climb collapsed to three days for anyone who spent.
  * Riding the ladder means the last level a realm allows only becomes affordable near
@@ -116,7 +116,7 @@ export function tribulationScale(marks: number): number {
  * 劫 What the next Dragon brings.
  *
  * The greater of two things: the ladder, and a fixed step beyond **the Dragon you last
- * put down**. The anchor is what makes the endgame hold — the Dragon can never fall
+ * put down**. The anchor is what makes the endgame hold: the Dragon can never fall
  * behind, whatever the economy does.
  */
 export function tribulationPower(s: State, base: number): number {
@@ -137,12 +137,12 @@ export function rate(s: State): number {
  * 雷池 The thunder pool: two days of your own gathering, and the gate on the Dragon.
  *
  * Every other realm is left by filling a layer. The ninth has no layer left to fill, so
- * this is what stands in its place — and it is measured in *days of your own rate*
+ * this is what stands in its place, and it is measured in *days of your own rate*
  * rather than in a fixed number, so it grows exactly as fast as you do and a crossing
  * never stops costing two days.
  *
  * Without it the endgame had no clock at all. Power was the only gate, the furnace sold
- * power, and one day's qi bought a fortnight of crossings — measured, ten marks a day,
+ * power, and one day's qi bought a fortnight of crossings, measured, ten marks a day,
  * every number in the game multiplied by two hundred daily until the arithmetic ran out
  * of exponent. A pool that refills is the thing that makes 渡劫 a ladder rather than a
  * lever you hold down.
@@ -170,7 +170,7 @@ export function canCross(s: State): boolean {
  * the build is worth: a stance and a sequence are together worth nearly twice the
  * number on the screen, so a cultivator who beat one Dragon beat the next one too, and
  * the one after that, for ever, without ever brewing a thing. Anchoring to the Dragon
- * cancels the build out of both sides, and what is left is the honest question — what
+ * cancels the build out of both sides, and what is left is the honest question: what
  * have you added since last time?
  */
 /**
@@ -197,7 +197,7 @@ export function crossTribulation(s: State, dragonPower: number): State {
     tribulation: s.tribulation + 1,
     // Whichever is higher: the Dragon that fell, or what the cultivator actually stood
     // there with. A cultivator arriving at the top is carrying a whole climb's worth of
-    // cores, gear and tree that the first Dragon knows nothing about — without this
+    // cores, gear and tree that the first Dragon knows nothing about: without this
     // second reading they would walk through twenty crossings on that margin alone
     // before the endgame started asking them for anything.
     //
@@ -241,19 +241,19 @@ export function newState(now: number): State {
  * 上限 How many levels of an upgrade this cultivator may hold.
  *
  * Below the summit it is the realm's cap and nothing else. Above it, 境外 a heaven opens
- * LEVELS_PER_HEAVEN more — **but only on the two upgrades that buy power**, and that
+ * LEVELS_PER_HEAVEN more: **but only on the two upgrades that buy power**, and that
  * restriction is the whole of the lesson the first version taught:
  *
  * 功法 and 吐納 multiply the qi rate, and a heaven every three crossings would have
  * multiplied it by six and a half. 雷池 the pool rides the rate, so the *clock* would
- * have held perfectly — which is exactly what made it hard to see. What does not ride
+ * have held perfectly, which is exactly what made it hard to see. What does not ride
  * the rate is every price written against the ladder, and the furnace is the biggest of
  * them: a rate six times larger makes every pill six times cheaper in real terms, and
  * pills are uncapped power. Measured, the endgame went from 4 walkover crossings in 40
  * to 28.
  *
  * So a heaven does not teach you to gather faster. It gives you somewhere to put what
- * you already gather — and 立 heavenStep hands the same increase to the thing waiting at
+ * you already gather, and 立 heavenStep hands the same increase to the thing waiting at
  * the end of it, so the fight is exactly as contested as it was before.
  *
  * Passing no upgrade answers the realm's own cap, which is what the screens that speak
@@ -307,7 +307,7 @@ export function buy(s: State, u: Upgrade): State {
  * 凝丹 The other price of a 妖丹 core: raw qi, for somebody with no beast to hand.
  *
  * It rides the rung the cultivator is standing on rather than the core's own level, so
- * it means the same thing at every realm — *this many layers of climbing* — and it can
+ * it means the same thing at every realm: *this many layers of climbing*, and it can
  * never be outgrown or gamed by stalling. See CORE_QI_RUNGS for why it exists at all.
  */
 export function condenseCost(s: State): number {
@@ -370,20 +370,20 @@ export function atCeiling(s: State): boolean {
 /**
  * 守 When the realm's warden is standing at the end of it.
  *
- * Not *while the bar is full* — **once the last rung is reached**, and it does not walk
+ * Not *while the bar is full*: **once the last rung is reached**, and it does not walk
  * off again. That distinction is one line and it was worth a day of the first realm.
  *
  * It used to be `atCeiling`, which is the last rung *plus the qi to pay for it*. So a
  * cultivator who arrived at the ceiling too weak, banked qi until they could afford the
  * upgrades that would beat the warden, and then bought them, watched the warden vanish
- * from the screen — because the qi they had just spent was the qi that was holding it
+ * from the screen, because the qi they had just spent was the qi that was holding it
  * there. The game took the fight away at the exact moment the player did the right thing
  * to win it, and then asked them to re-earn a whole rung before offering it again.
  *
  * Traced on a cultivator who opens the app once a day: at 24 hours they stand at the
  * first realm's last rung with 63% against 妖狐 the fox and no fox to fight. They leave
  * the realm at 48 hours. Every visit rhythm leaves it at 98%, so the warden was never
- * the wall — the vanishing was.
+ * the wall: the vanishing was.
  *
  * 費 The toll is untouched. 突破 the breakthrough still costs the ninth rung, which is
  * `canBreakThrough` below, so a realm is still nine rungs paid for. Measured across all
@@ -391,7 +391,7 @@ export function atCeiling(s: State): boolean {
  * stays where it is put.
  *
  * 頂 The ninth realm is not part of this. There the bar becomes 雷池 the thunder pool and
- * the Dragon comes when the pool is full — the pool *is* the crossing's price, refilling
+ * the Dragon comes when the pool is full: the pool *is* the crossing's price, refilling
  * is the endgame's whole clock, and "fill it and the Dragon comes" is the promise the
  * screen makes.
  */
@@ -413,7 +413,7 @@ export function canFightWarden(s: State): boolean {
 /**
  * 費 What it costs to leave a realm, which is the warden and nothing else.
  *
- * Eight rungs of gathering and then the warden — **the warden is the ninth rung**, and
+ * Eight rungs of gathering and then the warden: **the warden is the ninth rung**, and
  * that sentence is the whole of the change. It used to also demand that you be holding
  * the ninth rung's price at the moment you pressed 突破, and the breakthrough then threw
  * that qi away.
@@ -421,7 +421,7 @@ export function canFightWarden(s: State): boolean {
  * I told Bruno that was a double charge and it was not, and the correction matters
  * because it is the only reason to do this: banking the rung, spending it on upgrades
  * and banking it again is two payments for two different things. What it really is, is
- * a choice about how much a realm costs — nine rungs or eight — and he made it.
+ * a choice about how much a realm costs: nine rungs or eight, and he made it.
  *
  * Measured across the eight cultivators it takes 4 to 8 days off the climb, and it takes
  * most off the ones who show up least, because they are the ones who spent the longest
@@ -429,7 +429,7 @@ export function canFightWarden(s: State): boolean {
  *
  * 銀 And the qi is no longer destroyed on the way out. It was destroyed because it *was*
  * the payment; with the payment gone, wiping it would be a second toll dressed as a
- * clean slate — and worse, it would make spending down to nothing before pressing the
+ * clean slate, and worse, it would make spending down to nothing before pressing the
  * button the right move, which is a chore rather than a decision. So it carries, and
  * every second spent waiting at a full bar is now qi kept rather than qi burned.
  */
@@ -468,7 +468,7 @@ export function validate(raw: unknown, now: number): State {
 
   const rawLevels = (o.levels ?? {}) as Record<string, unknown>;
   /**
-   * Nothing may hold more levels than it is allowed — the cap is what holds the whole
+   * Nothing may hold more levels than it is allowed: the cap is what holds the whole
    * curve up, so a hand-edited save does not get to walk around it.
    *
    * 失 It has to be the *same* cap the game sells against, and for a while it was not.

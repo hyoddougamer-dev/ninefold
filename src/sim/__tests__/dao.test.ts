@@ -16,7 +16,7 @@ const FULL_RUN = daoEarned(73, 9);
 /**
  * A legal build down one branch: every tier, and exactly one side of the fork.
  *
- * Taking *all* the nodes of a path is not a build — a fork means one or the other — so
+ * Taking *all* the nodes of a path is not a build: a fork means one or the other, so
  * a test that does it is testing a state the game can never be in.
  */
 function branch(path: Parameters<typeof nodesOf>[0], keystone = false): string[] {
@@ -49,7 +49,7 @@ describe('道 the tree', () => {
     for (const path of PATHS) {
       const nodes = nodesOf(path);
       expect(nodes.length).toBe(9);
-      // Eight tiers, with two nodes sharing tier 5 — the fork.
+      // Eight tiers, with two nodes sharing tier 5: the fork.
       expect(nodes.filter((n) => n.tier === 5)).toHaveLength(2);
       expect(nodes.filter((n) => n.keystone)).toHaveLength(1);
       // Either way down the branch costs the same: 20 for the eight steps, +1 for 起 the root.
@@ -128,7 +128,7 @@ describe('道 the tree', () => {
    *
    * 劍 and 神 were written with the same numbers, 15/20/30/45/80, one on power and one on
    * the rate. Power buys fights and the climb is not gated by fights; the rate divides
-   * the whole run. Measured, 神 took the ninth realm on day 30 against the sword's 82 —
+   * the whole run. Measured, 神 took the ninth realm on day 30 against the sword's 82,
    * and no test anywhere could see it, because no harness spent a 道 point.
    */
   it('lets no branch multiply the qi rate past its ceiling', () => {
@@ -146,7 +146,7 @@ describe('道 the tree', () => {
     }
   });
 
-  it('nothing is locked away by default — only a keystone ever silences a slot', () => {
+  it('nothing is locked away by default: only a keystone ever silences a slot', () => {
     for (const path of PATHS) {
       for (const slot of SLOTS) expect(affinity(branch(path), slot)).toBeGreaterThanOrEqual(1);
     }

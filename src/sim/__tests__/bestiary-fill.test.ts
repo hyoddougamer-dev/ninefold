@@ -9,7 +9,7 @@ import { playAll } from '../../../tools/habits.ts';
 /**
  * 圖鑑 Finishing a realm, and why the bar is where it is.
  *
- * The first version paid for a realm whose four beasts were all 通 Mastered — a hundred
+ * The first version paid for a realm whose four beasts were all 通 Mastered: a hundred
  * kills of each. Measured across the five habits and ten thousand fights, **not one
  * realm was ever finished by anybody**, and not one at ten kills each either.
  *
@@ -53,7 +53,7 @@ describe('圖鑑 finishing a realm of the bestiary', () => {
   /**
    * The measurement that set the bar, kept so it cannot quietly stop being true. Every
    * cultivator in the harness plays without knowing 圖鑑 exists, and none of them
-   * stumbles into it — which is the point. It has to be gone after on purpose.
+   * stumbles into it, which is the point. It has to be gone after on purpose.
    */
   it('is never finished by accident, however much somebody hunts', () => {
     const rows = playAll().map((run) => {

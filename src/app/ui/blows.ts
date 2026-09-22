@@ -6,7 +6,7 @@
  * genre's own language costs nothing and turns it into a duel.
  *
  * Two registers, kept apart on purpose. A line that says *your body sways* while you are
- * the one swinging is not flavour, it is a bug — the first draft had one pool and cycled
+ * the one swinging is not flavour, it is a bug: the first draft had one pool and cycled
  * it, and it said exactly that.
  */
 

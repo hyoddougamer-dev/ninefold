@@ -28,10 +28,10 @@ const DAY = 86_400;
  *
  * `brews` is the second half of the question. 丹爐 the furnace is the one thing qi buys
  * that no realm caps, so a cultivator who pours everything into it is the fastest way
- * the curve could possibly be broken — and the schedule has to survive them too.
+ * the curve could possibly be broken, and the schedule has to survive them too.
  *
  * `climbs` is separate from it on purpose. The furnace eats materials, so a brewer has
- * to climb 無盡塔 the tower, and the tower pays qi — which means a brewer measured
+ * to climb 無盡塔 the tower, and the tower pays qi, which means a brewer measured
  * against somebody who does neither is two changes at once, and says nothing about the
  * furnace. To ask what the furnace costs, hold the tower still and change only the
  * brewing.

@@ -4,7 +4,7 @@
  * Bruno asked outright to stop writing long and technical, so there is no paragraph
  * here: every block is one large image and one line of at most a dozen words.
  *
- * The copy is the one thing in this repository that is not in English — it is written
+ * The copy is the one thing in this repository that is not in English. It is written
  * for Bruno, in European Portuguese, not for the game.
  */
 import { writeFileSync } from 'node:fs';
@@ -197,4 +197,4 @@ const page = `<title>九境 Num relance</title>
 </div>`;
 
 writeFileSync('overview.html', page);
-console.log(`overview.html — ${(page.length / 1024).toFixed(0)} KB`);
+console.log(`overview.html: ${(page.length / 1024).toFixed(0)} KB`);

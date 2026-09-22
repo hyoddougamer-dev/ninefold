@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react';
  * web and fatal behind a service worker: a request in CORS mode may not be answered with
  * a `basic` response, so every cached asset is rejected with ERR_FAILED and the game
  * opens offline as a blank page with the right title. The files are same-origin, so the
- * attribute buys nothing — out it comes.
+ * attribute buys nothing: out it comes.
  */
 const noCrossOrigin = {
   name: 'no-crossorigin',

@@ -77,7 +77,7 @@ describe('開 what each realm opens', () => {
 
   it('lets a late system arrive full rather than arriving empty', () => {
     // 錄 the record is counted from the first kill and paid from the sixth realm, so the
-    // realm that opens it hands over everything hunted before it — not a blank page.
+    // realm that opens it hands over everything hunted before it, not a blank page.
     const killed = Object.fromEntries(commonsOf(1).map((b) => [b.key, 50]));
     const before = at(opensAt('record') - 1, { killed });
     const after = at(opensAt('record'), { killed });

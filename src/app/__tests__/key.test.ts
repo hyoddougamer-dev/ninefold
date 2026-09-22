@@ -11,13 +11,13 @@ import { KEY } from '../copy.ts';
  * 釋 The key, and the promise that it is complete.
  *
  * Bruno does not read Chinese: "está imensa informação só em chinês e não se percebe bem
- * os sistemas". The characters stay — they are what the game looks like — but the deal
+ * os sistemas". The characters stay. They are what the game looks like, but the deal
  * struck in return is that **no character is ever the only place a thing is named**.
  *
  * A key page is worth nothing if it drifts. So it is not typed: every row is read out of
  * the table it describes, and this file checks that the tables and the page cannot come
  * apart. Add a gear axis, a pill line, a rank or a whole system and it appears on the
- * page by itself — and if someone ever hand-writes a row instead, this fails.
+ * page by itself, and if someone ever hand-writes a row instead, this fails.
  */
 
 /**

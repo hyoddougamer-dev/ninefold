@@ -19,7 +19,7 @@ import { playAll } from '../../../tools/habits.ts';
  *
  * This is the file that answers the only question a player actually asks about an idle
  * game: **what does being there buy me?** Before it existed the answer was "almost
- * nothing, and if you use the furnace, less than nothing" — measured, somebody playing
+ * nothing, and if you use the furnace, less than nothing", measured, somebody playing
  * six times a day reached the ninth realm *later* than somebody opening the app once.
  *
  * Three things make the difference now, and all three are additive: 妖丹 cores, which a
@@ -67,7 +67,7 @@ describe('勤 what being there buys you', () => {
     /**
      * 牆 The wall, built the second time and measured both ways.
      *
-     * The first attempt at it was a single dial — 守貢 WARDEN_TRIBUTE — and the sweep
+     * The first attempt at it was a single dial: 守貢 WARDEN_TRIBUTE, and the sweep
      * killed it: at 0.8 the waiter finished in 142 days and at 0.7 they never finished
      * at all. There is no setting in between, because a core's price climbs by a third
      * each level and a tribute is flat. Bruno asked for a wall that *slows* and does not
@@ -75,7 +75,7 @@ describe('勤 what being there buys you', () => {
      *
      * So the middle was built instead: 凝丹 a core can always be forced out of raw qi,
      * at CORE_QI_RUNGS rungs of the climb a level. Nobody is ever stopped, and the
-     * exchange rate is a smooth dial — measured across it, the waiter lands on day 171,
+     * exchange rate is a smooth dial, measured across it, the waiter lands on day 171,
      * 188, 217, 253, 316, 392 while every cultivator who fights stays exactly where
      * they were, to the day.
      *
@@ -87,8 +87,8 @@ describe('勤 what being there buys you', () => {
 
     /**
      * 狩 And what the wall actually asks for, which is the part that has to stay small.
-     * `barely fights` is the waiter's day exactly — one visit, no tower, no gear, no
-     * furnace — plus two beasts before putting the phone down. Two beasts a day is
+     * `barely fights` is the waiter's day exactly: one visit, no tower, no gear, no
+     * furnace: plus two beasts before putting the phone down. Two beasts a day is
      * worth about seven weeks of the climb, and that is the whole lesson the wall is
      * there to teach.
      */
@@ -131,8 +131,8 @@ describe('勤 what being there buys you', () => {
     const s: State = { ...newState(T0), realm: 5, layer: 4, tower: 30, materials: 0 };
     const won = clearFloor(s, 31);
     const hours = (won.qi - s.qi) / rate(s) / 3600;
-    console.log(`  tower floor 31 pays ${num(won.qi - s.qi)} qi — ${hours.toFixed(1)} hours of ` +
-      `this cultivator's own gathering — and ${num(won.materials)} 材`);
+    console.log(`  tower floor 31 pays ${num(won.qi - s.qi)} qi: ${hours.toFixed(1)} hours of ` +
+      `this cultivator's own gathering, and ${num(won.materials)} 材`);
     expect(hours).toBeGreaterThan(1);
     expect(won.materials).toBeGreaterThan(0);
     // The same floor a second time pays nothing: there is no floor to farm.
@@ -145,7 +145,7 @@ describe('勤 what being there buys you', () => {
    *
    * 塔 opens at the fifth realm, so a cultivator arriving there has a back catalogue of
    * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
-   * and eighteen hours** of gathering — measured — which made the fifth realm the
+   * and eighteen hours** of gathering, measured, which made the fifth realm the
    * shortest in the whole run, shorter than the fourth. A reward for opening a system is
    * right; a reward that rewrites the curve is not.
    */
@@ -171,7 +171,7 @@ describe('勤 what being there buys you', () => {
    * 頂 The guard the gear had no version of, and it was the widest hole in the game.
    *
    * The harness never equipped a single piece until now. With the drops picked up and
-   * worn, the 氣 axis — a qi-rate multiplier with no cap, earned by hunting — took the
+   * worn, the 氣 axis (a qi-rate multiplier with no cap, earned by hunting) took the
    * active cultivator from day 89 to day 38 and the hourly one to day 20, against a
    * promise of ninety. The law was already written and nothing enforced it: everything
    * that multiplies gathering is behind the realm cap.
@@ -210,7 +210,7 @@ describe('勤 what being there buys you', () => {
 
     // 妖丹 cores are part of the difference again, and only part of it. 守貢 the
     // tribute stopped a warden from funding the next warden, so a waiter now falls
-    // behind on cores as well — but the gap that actually shows is everything else
+    // behind on cores as well, but the gap that actually shows is everything else
     // material buys: the tower, the furnace, the gear, none of which a waiter ever
     // touches. It separates them by more than an order of magnitude of power.
     expect(active.power).toBeGreaterThan(waiter.power * 5);
@@ -220,7 +220,7 @@ describe('勤 what being there buys you', () => {
 /**
  * 器 What the gear is worth, which nothing in this repository had ever measured.
  *
- * The harness equips what it finds — see takeDrop in tools/habits.ts — so the answer is
+ * The harness equips what it finds. See takeDrop in tools/habits.ts, so the answer is
  * the same climb run twice. It is worth putting a floor under: a silent break in drops,
  * the chest or the set bonuses would otherwise cost days off every curve on the page and
  * show up as nothing at all.

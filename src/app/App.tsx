@@ -54,7 +54,7 @@ import { BLOOM, DAO, LOCKED, MENU, UPDATE } from './copy.ts';
  *
  * A locked tab is shown rather than hidden, dimmed and with the realm that opens it,
  * because the whole point of a purely vertical game is that climbing hands you something
- * — and you cannot look forward to a tab you have never seen.
+ *, and you cannot look forward to a tab you have never seen.
  */
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate', needs: null },
@@ -125,8 +125,8 @@ export function App() {
   /**
    * 入定 When this visit started, or null while the app is in the background.
    *
-   * It is deliberately *not* in the save. Being away must never cost anything — that is
-   * the promise — so this can only ever add, and a save that came back claiming a deep
+   * It is deliberately *not* in the save. Being away must never cost anything. That is
+   * the promise, so this can only ever add, and a save that came back claiming a deep
    * meditation would be claiming hours nobody sat through.
    */
   const since = useRef<number | null>(null);
@@ -136,7 +136,7 @@ export function App() {
   const openedTimer = useRef(0);
 
   // 歸 The return. An idle game is played closed, so opening the app is first of all
-  // receiving the hours that passed — and the player wants to see that before anything.
+  // receiving the hours that passed, and the player wants to see that before anything.
   useEffect(() => {
     if (loaded.current) return;
     loaded.current = true;
@@ -146,7 +146,7 @@ export function App() {
     lastLayer.current = (r.state.realm - 1) * 9 + r.state.layer;
     // A first-ever run has no save and no hours away: that is who the help is for. It
     // asks save.ts for what "has not begun" means rather than keeping its own idea of
-    // it — the old one was "qi under five", which 囊 the opening purse made false, and
+    // it: the old one was "qi under five", which 囊 the opening purse made false, and
     // the help silently stopped appearing for new players.
     if (r.secondsAway === 0 && untouched(r.state)) setHelp(true);
     // The load came back whole, so this is a state worth keeping a spare of.
@@ -185,7 +185,7 @@ export function App() {
   useEffect(() => { tree.current = state.unlocked; }, [state.unlocked]);
 
   // The clock. Time moves by timestamp, never by frame: this interval only asks what
-  // time it is, and `advance` does the rest — so dropped frames lose no progress.
+  // time it is, and `advance` does the rest, so dropped frames lose no progress.
   useEffect(() => {
     if (!ready) return;
     const id = setInterval(() => {
@@ -207,8 +207,8 @@ export function App() {
           sfx.layer();
           // 階 A rung opening is the one moment the bar is worth looking at, and it used
           // to pass with a sound and nothing to see. The flag is cleared on a timer
-          // rather than by the animation, so a second rung inside half a second — which
-          // a melt can do — replays it instead of being swallowed.
+          // rather than by the animation, so a second rung inside half a second (which
+          // a melt can do) replays it instead of being swallowed.
           setOpened(true);
           window.clearTimeout(openedTimer.current);
           openedTimer.current = window.setTimeout(() => setOpened(false), 540);
@@ -231,7 +231,7 @@ export function App() {
    * 頻 And it has to be the interval that saves, not the cleanup.
    *
    * This effect used to depend on `[state, ready]`, and the clock changes the state five
-   * times a second — so the interval was torn down and rebuilt before it could ever
+   * times a second, so the interval was torn down and rebuilt before it could ever
    * fire, and every save in the game came from the *cleanup* instead. Measured in the
    * running app: **fifty writes in ten seconds**, 17 KB of JSON.stringify and synchronous
    * localStorage, for ever, on a phone. The code said every four seconds. It was doing it
@@ -259,14 +259,14 @@ export function App() {
   const startFight = useCallback((beast: Beast, floor?: number) => {
     // 守 A warden is only ever reachable at the end of its own realm. The screens have
     // always declined to draw it anywhere else, and that is exactly the kind of guard
-    // that a second screen forgets — so it is asked of the sim here, once.
+    // that a second screen forgets, so it is asked of the sim here, once.
     if (beast.warden && floor === undefined && !canFightWarden(state)) return;
     sfx.tap();
     haptics.tap();
     setBattle((current) => {
       if (current) return current;   // one fight at a time
       // One seed for the fight and its drop, so the same kill always gives the same
-      // item — closing the app and reopening it cannot re-roll a poor piece.
+      // item: closing the app and reopening it cannot re-roll a poor piece.
       const seed = Math.floor(now() * 1000) >>> 0;
       const standing = floor === undefined ? undefined : floorPower(floor);
       return {
@@ -310,7 +310,7 @@ export function App() {
   /**
    * The whole fight is already settled; this walks it one beat at a time.
    *
-   * A round is two beats — the cultivator strikes, then the beast answers — so a blow
+   * A round is two beats: the cultivator strikes, then the beast answers, so a blow
    * lands alone and you can see whose it was. The sound follows the same beat: the
    * swing on the strike, the wound a breath later.
    */
@@ -410,7 +410,7 @@ export function App() {
       haptics.breakthrough();
       setBloom(next.realm);
       // A realm that handed something over waits to be read. One that only changed the
-      // light does not — 1.4 seconds is right for a colour and wrong for three cards.
+      // light does not. 1.4 seconds is right for a colour and wrong for three cards.
       if (opensIn(next.realm).length === 0) setTimeout(() => setBloom(null), 1400);
     } else {
       sfx.buy();
@@ -471,7 +471,7 @@ export function App() {
    * 新 The next one-time card, if there is one.
    *
    * It is computed rather than fired, so a card the player earned while the app was shut
-   * is waiting when they open it — and one they have read can never come back.
+   * is waiting when they open it, and one they have read can never come back.
    */
   const notice = useMemo(
     // Never behind the 突破 bloom: that moment introduces what the realm opened, and a
@@ -481,7 +481,7 @@ export function App() {
     // guide and the cards both answer "what now", and in the first realm they answered
     // it about the *same thing* at the same moment: the guide's third step saying to go
     // and hunt for material, with a card underneath it saying to go and hunt for
-    // material. Nothing is lost by waiting — a card keeps its turn until it is seen.
+    // material. Nothing is lost by waiting: a card keeps its turn until it is seen.
     () => (ready && !battle && bloom === null && !guide(state) ? nextNotice(state) : null),
     [state, ready, battle, bloom],
   );
@@ -500,7 +500,7 @@ export function App() {
    *
    * Three conditions, and all three have to hold or the ring would be a lie:
    *
-   *   the guide is still running at all — it ends for good after the fifth step;
+   *   the guide is still running at all. It ends for good after the fifth step;
    *   the step's target is on the tab being looked at, not one tap away;
    *   and nothing is covering the screen. A ring drawn on a button underneath the
    *   help sheet, the arena or the 突破 bloom points at something the player cannot
@@ -560,7 +560,7 @@ export function App() {
           Five bare characters floating over the corner of a screen that is already
           asking a new player to learn characters is five unanswered questions, and
           Bruno said so: *"fica muito confuso"*. They fold into one, and when it opens
-          each one arrives with its name in English beside it — which is the same rule
+          each one arrives with its name in English beside it, which is the same rule
           the upgrades follow, applied to the one place that had escaped it. */}
       <div className="switches" data-open={menu} hidden={covered && !menu}>
         <button className="mainswitch" data-on={menu} aria-expanded={menu}
@@ -727,7 +727,7 @@ export function App() {
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
 
       {/* 圍 A drive. The sim hands back the best piece that fell and leaves the chest
-          alone on purpose — two hundred kills can roll forty pieces, and forty pieces
+          alone on purpose: two hundred kills can roll forty pieces, and forty pieces
           poured into a chest that holds a dozen is a sorting job, not a reward. The
           app is what decides whether the one worth keeping fits. */}
       {driving && (
@@ -751,7 +751,7 @@ export function App() {
       )}
 
       {/* 鑑 Looking at a piece, which is now what a tap on one does. Wearing it is a
-          button on the sheet — a blind tap that swapped your gear was the whole of
+          button on the sheet: a blind tap that swapped your gear was the whole of
           Bruno's complaint about the inventory. */}
       {inspect && (
         <ItemSheet

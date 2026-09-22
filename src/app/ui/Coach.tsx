@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
  * and a ring drawn around the box, with an arrow at it, that moves when the box moves.
  * The first is reading. The second is being shown.
  *
- * So: any element in the game can mark itself as a thing the guide might point at —
+ * So any element in the game can mark itself as a thing the guide might point at,
  *
  *     <button data-coach="upg-technique" …>
  *
@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
  *      whole game sixty times a second.
  *
  * It also scrolls the target into view once, the first time a step names it. Once, and
- * keyed on the target — a guide that yanked the screen back every frame would be worse
+ * keyed on the target: a guide that yanked the screen back every frame would be worse
  * than one that never moved it.
  */
 export function Coach({ at }: { at: string | null }) {
@@ -62,7 +62,7 @@ export function Coach({ at }: { at: string | null }) {
     raf = requestAnimationFrame(tick);
     // 取消 Both of them. The delayed scroll outlives the target that asked for it
     // otherwise: the app boots on a blank cultivator, the first step finds a box to
-    // point at, the saved game lands a moment later with nothing to point at — and a
+    // point at, the saved game lands a moment later with nothing to point at, and a
     // second after that the page scrolled itself to a ring that is no longer there.
     return () => { cancelAnimationFrame(raf); clearTimeout(bring); };
   }, [at]);
@@ -77,7 +77,7 @@ export function Coach({ at }: { at: string | null }) {
   // 避 And across, away from the words.
   //
   // Centred over a full-width button, the arrow lands in the middle of whatever line of
-  // text sits above it — the screen's heading, or the sentence explaining the fight —
+  // text sits above it, the screen's heading or the sentence explaining the fight,
   // and covers a word. Text on this screen is set from the left and rarely fills the
   // line, so the right-hand end of a wide target is reliably empty. Narrow targets keep
   // the centre, where there is nothing to miss.

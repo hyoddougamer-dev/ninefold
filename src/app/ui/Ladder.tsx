@@ -25,7 +25,7 @@ import { LADDER } from '../copy.ts';
  *   妖 the warden at the end of the rungs, lit only when it is actually standing there
  *
  * Everything in it is read from the save on every render. There is no second copy of
- * where the player is, so it cannot drift from the bar above it — it *is* the bar above
+ * where the player is, so it cannot drift from the bar above it. It *is* the bar above
  * it, with the eight rungs on either side put back.
  *
  * One sentence underneath says the rule out loud, because a picture can show that a
@@ -37,7 +37,7 @@ export function Ladder({ state }: { state: State }) {
   // s.layer counts layers *opened*, 0..8, so the rung being worked on is s.layer itself.
   const opened = state.layer;
   // 費 The ninth rung is the warden's. It fills as you gather toward it, and the warden
-  // falling is what completes it — see canBreakThrough. Before that change the qi on
+  // falling is what completes it. See canBreakThrough. Before that change the qi on
   // this rung was the breakthrough's toll and was burned on the way out; now it carries,
   // so what this rung really shows is the head start you are building for the next realm.
   const here = state.wardenFell ? 1 : progress(state);

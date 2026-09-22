@@ -15,7 +15,7 @@ import { Svg } from '../ui/Svg.tsx';
 import { TRIALS } from '../copy.ts';
 
 /**
- * 塔 and 爐 — the two halves of what qi buys once a realm is full.
+ * 塔 and 爐: the two halves of what qi buys once a realm is full.
  *
  * They share a screen because they share a loop. The tower pays 材 material and nothing
  * else; the furnace eats 材 material and qi together and pays power. Neither of them

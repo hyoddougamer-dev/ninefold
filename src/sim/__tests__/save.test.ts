@@ -44,9 +44,9 @@ describe('存 the save', () => {
 
   it('falls back to the spare when the main copy went backwards', () => {
     /**
-     * The accident this exists for: something writes a fresh state over a real one —
-     * the very bug that cost a session early on, when the save effect ran with the empty
-     * initial state. The only way the main key can be *behind* the spare is that it was
+     * The accident this exists for is something writing a fresh state over a real one.
+     * That is the very bug that cost a session early on, when the save effect ran with
+     * the empty initial state. The only way the main key can be *behind* the spare is that it was
      * written over, so the deeper of the two wins.
      */
     keepSpare(deep(7, 2));
@@ -109,7 +109,7 @@ describe('存 the save', () => {
     const forged = { ...deep(1, 0), qi: 1e30, materials: 1e30, stance: 'mirror',
                      sequence: ['dragon'], levels: { technique: 1e9, method: 0, pills: 0, cores: 0 } };
     const { state } = importSave(JSON.stringify(forged), T0);
-    // It loads — but through the same gate every save goes through.
+    // It loads, but through the same gate every save goes through.
     expect(state?.stance).toBeNull();
     expect(state?.sequence).toEqual([]);
     expect(state?.qi).toBeLessThan(1e30);
@@ -132,9 +132,9 @@ describe('存 the save', () => {
  *
  * "A save is input" is the rule, and `validate()` is where it is kept. That rule had
  * nine hand-written cases and no adversary. This is the adversary: a real save, taken
- * apart ten thousand ways with a seeded generator — fields deleted, retyped, made
+ * apart ten thousand ways with a seeded generator: fields deleted, retyped, made
  * negative, made Infinity, made an object where a number was, nested twenty deep, filled
- * with keys that do not exist — and after every one of them the game must still open.
+ * with keys that do not exist, and after every one of them the game must still open.
  *
  * Nothing here is random in the sense that matters: the seed is fixed, so a failure is
  * a failure anybody can reproduce by running the suite again.
@@ -186,7 +186,7 @@ describe('亂 a save that has been mangled', () => {
         held = validate(broken, T0 + 5);
       } catch (e) {
         worst = broken;
-        throw new Error(`validate threw on ${JSON.stringify(worst).slice(0, 300)} — ${String(e)}`);
+        throw new Error(`validate threw on ${JSON.stringify(worst).slice(0, 300)}: ${String(e)}`);
       }
       // Whatever came back has to be a cultivator: somewhere on the mountain, holding
       // numbers, with a chest and a record the screens can render without checking.

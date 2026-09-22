@@ -23,8 +23,8 @@ function hunter(realm: number): State {
  *
  * Before this, the frog of the first realm paid 2 材 and the frog of the ninth paid
  * 900,095. Going back to finish a beast you had left behind was a hundred fights for a
- * rounding error, and 圖鑑 the bestiary — four beasts *mastered* in a realm, four
- * hundred kills — was a chore with no reason to do it.
+ * rounding error, and 圖鑑 the bestiary: four beasts *mastered* in a realm, four
+ * hundred kills: was a chore with no reason to do it.
  */
 describe('舊 what an old beast is worth to someone who has moved on', () => {
   it('pays a floor set by the hunter, never less than its own table', () => {

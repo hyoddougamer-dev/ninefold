@@ -9,11 +9,11 @@ import { ESCAPE } from '../copy.ts';
  *     引 How to play      989px tall   the way out at 92% down
  *     存 The save panel   860px        at 91%
  *     境 The realm card  1028px        at 93%
- *     釋 The key        4419px        at 98%   — five screens of scrolling
+ *     釋 The key        4419px        at 98%   (five screens of scrolling)
  *
  * Five panels, five different shells, and every one of them buried its exit at the
  * bottom of its own content. A panel you have to read to the end of to leave is a panel
- * that traps you, and the 釋 key — the screen whose whole job is "look something up" —
+ * that traps you. And 釋 the key, the screen whose whole job is "look something up",
  * was the worst of them by a factor of four.
  *
  * So there is one escape, drawn by the app rather than by each panel, **fixed to the

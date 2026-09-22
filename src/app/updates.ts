@@ -9,7 +9,7 @@
  *
  *   1. Register the worker, and say nothing if the browser has none.
  *   2. Notice when a newer one has installed behind the running page.
- *   3. Tell the player, and let *them* pick the moment — never reload underneath them,
+ *   3. Tell the player, and let *them* pick the moment: never reload underneath them,
  *      because reloading mid-fight would throw away the fight.
  *
  * A save is untouched by any of this: it lives in localStorage, which survives every
@@ -54,8 +54,8 @@ export function watchForUpdates(onUpdate: OnUpdate): void {
 /**
  * Tell the worker what this page is made of, so it can hold on to it.
  *
- * The worker cannot know the asset names — they carry a build hash that changes every
- * time — and the first visit loads them before the worker exists to intercept anything.
+ * The worker cannot know the asset names. They carry a build hash that changes every
+ * time, and the first visit loads them before the worker exists to intercept anything.
  * So the page reads its own resource list and hands it over. Without this the game only
  * opens offline from the *second* visit, which for a three-month idle game is a visit
  * too late.

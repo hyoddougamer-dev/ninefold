@@ -95,7 +95,7 @@ export function advice(s: State): Advice | null {
    * This is the whole endgame decision and it needs saying, because nothing above it
    * fires: `blocked` wants the odds under 35% and a crossing settles in the sixties, so
    * a cultivator looking at a 66% Dragon was told to go and climb a tower floor. The
-   * honest line is the other one — 煉體 is the only pill the Dragon feels, and brewing
+   * honest line is the other one: 煉體 is the only pill the Dragon feels, and brewing
    * one is what turns 66% into 70%.
    */
   if (atTribulation(s) && !s.wardenFell && odds(s, warden) < DRAGON_COMFORT && canBrew(s, 'body')) {
@@ -128,7 +128,7 @@ export function advice(s: State): Advice | null {
    * 續 And from here it is never silent.
    *
    * Everything above answers *what is blocking you*, and returned nothing the rest of
-   * the time — which is most of the game, and all of the quiet stretches a player
+   * the time, which is most of the game, and all of the quiet stretches a player
    * actually complains about. A line that only speaks when you are stuck tells a player
    * that not being stuck means there is nothing to do.
    *
@@ -165,7 +165,7 @@ export function advice(s: State): Advice | null {
     };
   }
 
-  // 望 Nothing is in reach — so name what is nearest, and the power it asks for.
+  // 望 Nothing is in reach, so name what is nearest, and the power it asks for.
   if (isOpen(s.realm, 'hunt')) {
     const next = [...huntable(s.realm, s.layer)]
       .sort((a, b) => beastPower(a) - beastPower(b))

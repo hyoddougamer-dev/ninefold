@@ -2,13 +2,13 @@
  * 診 Reading a cultivator, from the save they sent you.
  *
  * Every improvement this repository has made came from Bruno playing and saying what he
- * felt — *"não encontro o tree"*, *"a primeira hunt não dá nada"*, *"o qi resetar"*. That
+ * felt: *"não encontro o tree"*, *"a primeira hunt não dá nada"*, *"o qi resetar"*. That
  * is the best signal the project has and it runs through exactly one phone. The moment
  * anybody else plays, it stops: somebody plays for twenty minutes, stops, and nothing
  * comes back but silence.
  *
  * There is no account and no cloud and there should not be one. What there is, is 出 the
- * save the player already holds — the panel hands them the whole thing as text. So a
+ * save the player already holds: the panel hands them the whole thing as text. So a
  * tester sends that text, and this reads the run out of it.
  *
  *     npm run read -- their-save.json
@@ -101,7 +101,7 @@ for (const run of runs) {
   const days = (n: number) => (Math.round(n) === 1 ? '1 day' : `${n.toFixed(0)} days`);
   const word = Math.abs(gap) < 1 ? 'about level with'
     : gap > 0 ? `${days(gap)} behind` : `${days(-gap)} ahead of`;
-  console.log(`     ${pad(run.habit.name, 16)}reached this realm on day ${reachedHere.toFixed(0).padStart(3)}  —  ${word} them`);
+  console.log(`     ${pad(run.habit.name, 16)}reached this realm on day ${reachedHere.toFixed(0).padStart(3)} :  ${word} them`);
 }
 
 // ── what they have used ────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ console.log(`     ${pad('劫 the tribulation', 18)}${s.tribulation} 雷印 marks
 //
 // The one section worth writing this whole tool for. A system that is open to them and
 // that they have never once used is either something they could not find or something
-// they did not want — and both of those are worth knowing before the next change.
+// they did not want, and both of those are worth knowing before the next change.
 console.log('\n  空 what is open to them and never been touched\n');
 const untouched: string[] = [];
 const since = (key: Parameters<typeof isOpen>[1]) => {
@@ -132,33 +132,33 @@ const since = (key: Parameters<typeof isOpen>[1]) => {
   return `open since the ${realmOf(info.realm).han} ${realmOf(info.realm).name} realm`;
 };
 if (isOpen(s.realm, 'tree') && s.unlocked.length === 0) {
-  untouched.push(`道 the tree — ${since('tree')}, not one node, ${daoFree(rung, wardensDown, s.unlocked, filledRealms(s))} 道 sitting unspent`);
+  untouched.push(`道 the tree: ${since('tree')}, not one node, ${daoFree(rung, wardensDown, s.unlocked, filledRealms(s))} 道 sitting unspent`);
 }
 if (isOpen(s.realm, 'arts') && !s.stance) {
-  untouched.push(`勢 no stance taken — ${since('arts')}, ${STANCES.length} to choose from`);
+  untouched.push(`勢 no stance taken: ${since('arts')}, ${STANCES.length} to choose from`);
 }
 if (isOpen(s.realm, 'gear') && Object.keys(s.worn).length === 0) {
-  untouched.push(`器 nothing worn — ${since('gear')}, ${s.chest.length} pieces in the chest`);
+  untouched.push(`器 nothing worn: ${since('gear')}, ${s.chest.length} pieces in the chest`);
 }
 if (isOpen(s.realm, 'tower') && s.tower === 0) {
-  untouched.push(`塔 the tower never climbed — ${since('tower')}`);
+  untouched.push(`塔 the tower never climbed: ${since('tower')}`);
 }
 if (isOpen(s.realm, 'furnace') && Object.values(s.brewed).every((n) => n === 0)) {
-  untouched.push(`爐 nothing brewed — ${since('furnace')}`);
+  untouched.push(`爐 nothing brewed: ${since('furnace')}`);
 }
 if (isOpen(s.realm, 'cores') && s.levels.cores === 0) {
-  untouched.push(`妖丹 no cores bought — ${since('cores')}, and a warden will not fall without them`);
+  untouched.push(`妖丹 no cores bought: ${since('cores')}, and a warden will not fall without them`);
 }
 const drivable = BEASTS.filter((b) => canDrive(s, b)).length;
 if (drivable > 0 && kills > 0) {
-  untouched.push(`圍 the drive — ${drivable} beasts are 熟 Known and could be driven instead of tapped`);
+  untouched.push(`圍 the drive: ${drivable} beasts are 熟 Known and could be driven instead of tapped`);
 }
 if (isOpen(s.realm, 'record') && mastered === 0 && kills > MARKS[2]) {
-  untouched.push(`錄 ${num(kills)} kills and not one beast 通 Mastered — the count is spread thin`);
+  untouched.push(`錄 ${num(kills)} kills and not one beast 通 Mastered: the count is spread thin`);
 }
 console.log(untouched.length
   ? untouched.map((line) => `     ${line}`).join('\n')
-  : '     nothing — every system open to them has been used at least once');
+  : '     nothing, every system open to them has been used at least once');
 
 // ── 止 where it stopped, and whether anything was in the way ───────────────
 console.log('\n  止 where it stopped\n');
@@ -167,14 +167,14 @@ const beasts = huntable(s.realm, s.layer).length;
 console.log(`     the last write was ${away > 60 ? `${duration(away)} ago` : 'just now'}, at ${r.han} ${r.name} layer ${s.layer + 1}`);
 console.log(`     ${affordable.length === 0
   ? 'nothing was affordable on the home screen'
-  : `${affordable.length} of the four boxes were lit — ${affordable.map((u) => UPGRADE_INFO[u].han).join(' ')}`}`);
+  : `${affordable.length} of the four boxes were lit: ${affordable.map((u) => UPGRADE_INFO[u].han).join(' ')}`}`);
 console.log(`     ${beasts} beasts were within reach`);
 
 /**
  * 判 One line at the end, because that is the line somebody actually reads.
  *
  * There are only two interesting shapes. Either the game had run out of things for
- * them — nothing to buy, nothing to fight, and they left — or it had not, and they
+ * them. Nothing to buy, nothing to fight, and they left, or it had not, and they
  * left anyway, which is the harder and more useful finding. The untouched list is the
  * first place to look for why.
  */
@@ -185,8 +185,8 @@ if (away < 600) {
 } else if (stuck) {
   console.log('     they ran out: nothing affordable and nothing to fight when they stopped.');
 } else if (untouched.length > 0) {
-  console.log(`     nothing was in the way — ${affordable.length} boxes lit and ${beasts} beasts`
-    + ` in reach — and they stopped anyway, with ${untouched.length} system${untouched.length === 1 ? '' : 's'}`
+  console.log(`     nothing was in the way: ${affordable.length} boxes lit and ${beasts} beasts`
+    + ` in reach, and they stopped anyway, with ${untouched.length} system${untouched.length === 1 ? '' : 's'}`
     + ' open and never once used. That list is where to look first.');
 } else {
   console.log(`     nothing was in the way and nothing was unused. They stopped for a reason`

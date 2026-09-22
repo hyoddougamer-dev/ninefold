@@ -7,7 +7,7 @@ import type { Slot } from '../data/gear.ts';
 /**
  * 道 The points the tree is bought with, and what a bought tree does.
  *
- * Points come from the climb itself — one for every three layers opened, two for every
+ * Points come from the climb itself: one for every three layers opened, two for every
  * warden that falls. A whole run earns about forty-two against the sixty the tree
  * costs, so nobody finishes it. That gap is the feature: a tree you can complete is a
  * checklist, and a checklist is not a build.
@@ -22,7 +22,7 @@ export const POINTS_PER_WARDEN = 2;
  * 圖鑑 And what a realm's whole bestiary is worth, from the sixth realm.
  *
  * Four hundred fights for one point. It is deliberately the slowest 道 in the game and
- * the only one that cannot be climbed toward — the ladder pays the other two just for
+ * the only one that cannot be climbed toward: the ladder pays the other two just for
  * going up, and this one is paid only for going back.
  */
 export const POINTS_PER_BESTIARY = 1;
@@ -49,7 +49,7 @@ export function daoFree(
 /**
  * A node is reachable from anything it is linked to. The tree is a graph, not three
  * queues: that is what lets a cultivator climb 劍, cross a bridge into 神 and come back
- * down 運 — and it is why mixing costs nothing but the points to walk there.
+ * down 運, and it is why mixing costs nothing but the points to walk there.
  */
 export function requirements(node: Node): readonly Node[] {
   if (node.key === ROOT.key) return [];
@@ -66,7 +66,7 @@ export function canUnlock(
 ): boolean {
   const node = NODE_BY_KEY[key];
   if (!node || unlocked.includes(key)) return false;
-  // 樞 The three that take something away arrive at their own realm. See unlocks.ts —
+  // 樞 The three that take something away arrive at their own realm. See unlocks.ts:
   // the tree is the second realm's gift and the decisions are the fourth's.
   if (node.keystone && !keystones) return false;
   const twin = excludedBy(node);
@@ -125,7 +125,7 @@ export function focusBonus(unlocked: readonly string[]): number {
 export function affinity(unlocked: readonly string[], slot: Slot): number {
   let bonus = 0;
   for (const e of effects(unlocked)) {
-    // 捨甲 Forsake Armour silences a slot outright — its price, and the reason it pays.
+    // 捨甲 Forsake Armour silences a slot outright: its price, and the reason it pays.
     if (e.kind === 'affinityOff' && e.slots.includes(slot)) return 0;
     if (e.kind === 'affinity' && e.slots.includes(slot)) bonus += e.percent;
   }
@@ -185,7 +185,7 @@ export function validateUnlocked(raw: unknown): string[] {
   }
   // Grow outward from the root and keep only what is actually connected, so an edited
   // save cannot hold 萬劍 with nothing leading to it, and cannot hold both sides of a
-  // fork — the twin is dropped the moment one side is kept.
+  // fork: the twin is dropped the moment one side is kept.
   const kept: string[] = [];
   const held = new Set<string>();
   const shut = new Set<string>();

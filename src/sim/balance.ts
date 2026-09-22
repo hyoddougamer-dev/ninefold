@@ -1,6 +1,6 @@
 /**
  * The balance table, and the only one. No number that shapes the curve lives outside
- * this file, and the test suite prints them all on every run — so changing one is
+ * this file, and the test suite prints them all on every run, so changing one is
  * never silent.
  */
 
@@ -18,7 +18,7 @@ export const LAYER_BONUS = 1.02;
  * 階 The ladder.
  *
  * Every one of the eighty-one layers has its own price, and the price grows from rung
- * to rung — fast at the bottom, more gently at the top. Three numbers describe the
+ * to rung: fast at the bottom, more gently at the top. Three numbers describe the
  * whole mountain.
  *
  * The earlier version priced a realm as one lump and split it into nine equal layers.
@@ -38,18 +38,18 @@ export const LAYER_BONUS = 1.02;
  * opening, it is an opening with no decision in it, and an idle game's first minute is
  * the only one a player has not yet decided to give you.
  *
- * So the cultivator begins holding something. Not a head start — 800 qi is nothing
+ * So the cultivator begins holding something. Not a head start: 800 qi is nothing
  * against a climb measured in quintillions, and it is gone by the first hour. What it
  * buys is the *question*, at second zero: the two cheaper upgrades are already lit, and
  * the bar is already nine tenths of the way up the first rung.
  *
  * That is the whole game in its first frame. Qi spent is qi that did not open a layer,
- * and qi banked is an upgrade not bought — the same trade the furnace and the thunder
+ * and qi banked is an upgrade not bought: the same trade the furnace and the thunder
  * pool ask about eighty rungs later. It is better met in the first minute, for 800 qi,
  * than in the ninth realm for a fortnight of gathering.
  *
  * It sits **below** LADDER_FIRST on purpose. A purse at or above the first rung would be
- * swallowed by the ladder on the first tick — the player would open the app, watch a
+ * swallowed by the ladder on the first tick: the player would open the app, watch a
  * layer open by itself, and never see the choice. Below it, nothing moves until they
  * move it.
  */
@@ -77,13 +77,13 @@ const LADDER: number[] = (() => {
  * 圍 What one kill of a drive costs, as a share of the first rung of the hunter's realm.
  *
  * Two per cent, so a drive of fifty costs about one rung and a drive of two hundred
- * costs four. A rung is the unit a player already feels — it is the thing the bar fills
- * with — so the price reads as "this drive costs me a layer", which is a decision
+ * costs four. A rung is the unit a player already feels. It is the thing the bar fills
+ * with, so the price reads as "this drive costs me a layer", which is a decision
  * rather than a number.
  *
  * It is priced off the *hunter's* realm and not the beast's, because what a drive buys
  * is the cultivator's own time: two hundred rats and two hundred dragons are the same
- * afternoon. It is also why the price is flat per kill — a player should be able to do
+ * afternoon. It is also why the price is flat per kill: a player should be able to do
  * the arithmetic without the screen doing it for them.
  */
 export const DRIVE_QI = 0.02;
@@ -93,14 +93,14 @@ export const DRIVE_QI = 0.02;
  *
  * Measured, before this existed: the frog of the first realm paid **2 材** and the frog
  * of the ninth paid **900,095**. So going back to finish a beast you had left behind
- * was a hundred fights for a rounding error, and 圖鑑 the bestiary — which asks for four
- * beasts *mastered* in a realm, four hundred kills — was a chore nobody would ever have
+ * was a hundred fights for a rounding error, and 圖鑑 the bestiary, which asks for four
+ * beasts *mastered* in a realm, four hundred kills: was a chore nobody would ever have
  * a reason to do twice.
  *
  * A beast now pays at least this share of what the weakest common of the *hunter's* own
  * realm pays. A quarter, so that hunting at the top of your reach is still plainly the
- * better way to earn — a current beast pays four times this, and the hard one of the
- * realm more — but going back is no longer charity. The old animal is easier and safer
+ * better way to earn: a current beast pays four times this, and the hard one of the
+ * realm more, but going back is no longer charity. The old animal is easier and safer
  * and pays a quarter; the new one is a fight and pays full.
  *
  * It is a floor, never a cap: a beast whose own depth pays more than the floor keeps
@@ -113,17 +113,17 @@ export const OLD_BEAST_FLOOR = 0.25;
  *
  * Bruno, three realms in: *"sinto que o combat nada faz nos primeiros realms."* He was
  * right about the feeling and right about the cause. A kill paid 材 material, and
- * material bought 妖丹 cores at three material each — real, permanent, and completely
+ * material bought 妖丹 cores at three material each: real, permanent, and completely
  * invisible next to a qi bar that is the only number the screen ever shows moving. The
  * player's whole attention is on qi, and combat never touched it.
  *
  * So the *first* kill of every beast pays qi. Not every kill: the first, once, for ever,
  * and it goes in the same 見 Seen mark that already exists and until now only filled in
- * a page. Thirty-six beasts in the game, thirty-six payments in a lifetime — so it
+ * a page. Thirty-six beasts in the game, thirty-six payments in a lifetime, so it
  * cannot be farmed, it cannot compound, and it is not a rate. It is the game paying for
  * the one thing it most wants a new cultivator to do: go and look at something new.
  *
- * Half a rung at the first realm, and divided by the realm after that — see seenBounty.
+ * Half a rung at the first realm, and divided by the realm after that. See seenBounty.
  * Flat, it took twenty-two days off a hundred-and-twelve-day climb, which answers a
  * complaint nobody made. Shrinking, it is loud where the complaint was and silent where
  * it was not.
@@ -135,17 +135,17 @@ export const SEEN_BOUNTY = 0.5;
  *
  * This is the wall, and it is a wall made of arithmetic rather than of a locked door.
  *
- * A warden's power already counts 妖丹 cores — `referenceAt` says so — so from the third
+ * A warden's power already counts 妖丹 cores: `referenceAt` says so, so from the third
  * realm a warden cannot be walked past by somebody who has never killed anything. That
  * was the design. It did not hold, for one reason: **the warden itself paid a full
  * harvest**, so nine warden kills funded the cores for the next nine warden kills and the
  * gate financed itself. Measured, a cultivator who never tapped a beast reached the
- * ninth realm with 39 core levels against the 40 the last warden reads for — through by a
+ * ninth realm with 39 core levels against the 40 the last warden reads for: through by a
  * hair, on a loop that never asked them to play.
  *
  * Paying nothing would shut the door outright, and a shut door is not what was asked
  * for: *"não um muro que torne impossivel mas que dificulte players 100% idle e premeie
- * jogadores mais ativos."* So the warden pays a **tribute** — a fraction, enough that the
+ * jogadores mais ativos."* So the warden pays a **tribute**: a fraction, enough that the
  * cores keep creeping forward and the climb never stops, far too little to keep pace with
  * a gate that steepens by six core levels a realm.
  *
@@ -166,7 +166,7 @@ export const WARDEN_TRIBUTE = 0.18;
  *
  * WARDEN_TRIBUTE on its own is a cliff and not a wall. Measured across the whole range,
  * the cultivator who never taps a beast finishes in 142 days at a tribute of 0.8 and
- * **never finishes at all** at 0.7 — there is no setting between "unchanged" and
+ * **never finishes at all** at 0.7. There is no setting between "unchanged" and
  * "stopped for ever", because a core's price climbs by a third each level while a
  * warden's tribute is flat. A lever with no middle cannot do what was asked of it:
  * *"não um muro que torne impossivel mas que dificulte."*
@@ -175,7 +175,7 @@ export const WARDEN_TRIBUTE = 0.18;
  *
  *   - **Kill something, and a core is cheap.** 材 material off a beast, as it always was.
  *   - **Kill nothing, and a core is a stretch of the climb.** CORE_QI_RUNGS rungs of the
- *     ladder you are standing on, for one level — qi that would otherwise have opened
+ *     ladder you are standing on, for one level: qi that would otherwise have opened
  *     layers.
  *
  * Which turns the cliff into a slope with a dial on it. Nobody is ever stopped: the
@@ -190,20 +190,20 @@ export const CORE_QI_RUNGS = 6;
 
 /**
  * 拆 What breaking a piece of gear down pays, as a share of the first rung of **its own
- * realm** — never of the realm the cultivator is standing in.
+ * realm**: never of the realm the cultivator is standing in.
  *
  * Bruno asked for the early qi flow to be helped along a little, and offered the shape
  * himself: *"Salvage gear por exemplo, multiple salvage ou solo salvage, por algum qi."*
  *
  * The hole it fills is older and worse than a thin qi flow. A full chest does not refuse
- * a drop — it throws the worst piece on the floor to make room — so from the second
+ * a drop. It throws the worst piece on the floor to make room, so from the second
  * realm onward the game has been **deleting gear and paying nothing for it**, one piece
  * per drop for the rest of the run. Salvage is what that deletion should always have
  * been.
  *
  * 舊 Priced off the item's realm is the first half of the safety. A second-realm 凡 pays
  * a second-realm sum for ever, which is a real number at the second realm and less than
- * a millionth of a layer at the ninth — so this can never become a way of farming weak
+ * a millionth of a layer at the ninth, so this can never become a way of farming weak
  * beasts for qi, which is the shape every uncapped faucet in this game has taken when it
  * was allowed to read the *hunter's* depth instead.
  *
@@ -211,7 +211,7 @@ export const CORE_QI_RUNGS = 6;
  * swept across its whole range and it did **nothing at all** for the cultivators it was
  * asked to help: `once a day` and `casual` did not move by a single day at any setting,
  * because four kills a day is under one drop a day. What did move was the hourly
- * cultivator, who melts thousands — 52 days to 38 at the largest setting, which shortens
+ * cultivator, who melts thousands: 52 days to 38 at the largest setting, which shortens
  * the run for the one player who already runs out of game first.
  *
  * So the share falls as the realms rise, geometrically, exactly as LADDER_GROWTH does:
@@ -253,7 +253,7 @@ export function ladderBetween(x: number): number {
  * The ladder continued past its own top.
  *
  * The mountain ends at the eighty-first rung. The furnace does not, so its prices go on
- * climbing at the rate the summit was climbing at — one rule, no second table, and a
+ * climbing at the rate the summit was climbing at: one rule, no second table, and a
  * price that is never cheaper than the last layer of the game.
  */
 export function ladderOpen(x: number): number {
@@ -273,12 +273,12 @@ export function realmCost(realm: number): number {
  * 修為上限 The cap: how many levels of one upgrade a realm allows.
  *
  * This is the wall the old economy had no version of. Without it a cultivator who
- * spends reaches the ninth realm in *three days* — measured, not guessed — because the
+ * spends reaches the ninth realm in *three days*, measured, not guessed, because the
  * rate upgrades pay for the rate upgrades and nothing anywhere says stop. With it the
  * climb stays inside one band however the game is played: 45 days for somebody who opens
  * the app every waking hour against 168 for somebody who never taps a beast, and 95 for
  * one visit a day. That band is what an idle game is supposed to promise, and it is
- * printed by `players.test.ts` on every run rather than remembered here — this sentence
+ * printed by `players.test.ts` on every run rather than remembered here. This sentence
  * has been wrong twice already because the numbers moved underneath it.
  *
  * It also says something true: a body only holds so much. To hold more, raise the realm.
@@ -295,7 +295,7 @@ export function levelCap(realm: number): number {
  * Bruno, in the second realm: *"dei max em todos os monstros disponíveis e vou a meio do
  * realm, não existe bem gasto nem incentivo para mais nada."* Measured, he was describing
  * something worse than he thought. 材 material is the one currency the hunting pays, and
- * the cap is the only thing that can buy it — so once the cap is reached the hunting
+ * the cap is the only thing that can buy it, so once the cap is reached the hunting
  * earns a coin with nothing behind it. Across the early realms, for a cultivator who
  * actually taps:
  *
@@ -318,25 +318,25 @@ export function levelCap(realm: number): number {
  * dead stretch goes to **zero in every realm and for every habit**, and beyond two the
  * curve stops moving at all because the material, not the cap, is what runs out. What it
  * costs is one to three days off the climb of somebody who hunts, and *nothing at all*
- * for somebody who does not — 169 days for the cultivator who never fights either way.
+ * for somebody who does not: 169 days for the cultivator who never fights either way.
  * Which is the wall the right way round.
  *
  * 定 And it is **flat rather than a multiplier**, which is the whole of what the first
  * attempt got wrong. Doubling the cap fixed the second realm and broke the ninth. Above
- * the fifth realm material is no longer earned by hand at all — 塔 the tower pays it in
- * bulk — so a doubled cap there is not a wall handed back to the price, it is no wall.
+ * the fifth realm material is no longer earned by hand at all: 塔 the tower pays it in
+ * bulk, so a doubled cap there is not a wall handed back to the price, it is no wall.
  * The endgame's own test caught it in one run: walkover crossings went from 5 of 40 to
  * **14 of 40**, against a rule of at most 10.
  *
  * Flat, the same levels are a doubling where the hole is and a fraction of a cap where
- * the tower is filling your pockets — which is the shape the measurement asked for,
+ * the tower is filling your pockets, which is the shape the measurement asked for,
  * rather than the shape that was easiest to write.
  *
  * 廣 And two realms' worth was not enough. At two it cleared the first three realms and
- * left the rest of the climb dead again for somebody who really taps — 22% of the
+ * left the rest of the climb dead again for somebody who really taps: 22% of the
  * fourth, 41% of the fifth, 70% of the seventh. Swept: **three realms' worth takes it
  * to zero in every realm of the game**, four and five change nothing more, and the
- * endgame does not move at all — 5 of 40 walkover crossings at two, at three, and at
+ * endgame does not move at all: 5 of 40 walkover crossings at two, at three, and at
  * four. Three is simply the smallest number that finishes the job.
  */
 export const CORE_CAP_EXTRA = 3 * LEVELS_PER_REALM;
@@ -351,12 +351,12 @@ export const CORE_CAP_EXTRA = 3 * LEVELS_PER_REALM;
  * 立 And the reason HEAVEN_STEP exists beside it. The first version of this handed the
  * room over and nothing else, and the endgame's own test caught it within the hour:
  * **thirty of forty crossings came in over ninety per cent**, against a rule of no more
- * than a quarter. The arithmetic is plain once it is written down — six levels of 劍訣
+ * than a quarter. The arithmetic is plain once it is written down: six levels of 劍訣
  * and six of 妖丹 are worth 5.2x power, they cost nothing a cultivator at the summit
  * would notice, and the Dragon had no answer to them.
  *
  * So a heaven raises *both* sides. What it opens for you, it also gives to the thing
- * standing at the end of it, exactly and by construction — which means the fight is as
+ * standing at the end of it, exactly and by construction, which means the fight is as
  * contested after the change as before it, and the heaven is what it was meant to be:
  * a name, an animal, and room. Not a gift of power wearing a name.
  */
@@ -383,12 +383,12 @@ export const HUNT_SHARE = 1 / 20;
  *
  * Bruno asked for a difference between somebody who plays and somebody who only waits,
  * and also asked that being away never cost anything. Those two are opposite ends of the
- * same lever if you pull it the usual way — an idle game normally pays less while the
+ * same lever if you pull it the usual way: an idle game normally pays less while the
  * app is shut. So this pulls it the other way: the rate with the phone closed is the
  * rate the game promises, and sitting with it open **adds** on top.
  *
  * It ramps rather than switching, so it pays for staying rather than for opening the app
- * and closing it again — and it **ends**, which is the part that matters. A multiplier
+ * and closing it again, and it **ends**, which is the part that matters. A multiplier
  * that simply held would be farmed by leaving the phone face-up on a charger, and the
  * game would be trivialised by its owner without a single decision being made. A sitting
  * lasts FOCUS_HOLD and then it is over; to have another one, leave and come back.
@@ -415,7 +415,7 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
  * 吸 What a tower floor is worth in qi, in hours of your own gathering.
  *
  * The tower is the one place where fighting turns into *progress* rather than only into
- * power. A floor pays this once and never again — there is no floor to farm — so it can
+ * power. A floor pays this once and never again. There is no floor to farm, so it can
  * be generous without ever becoming a loop that feeds itself.
  */
 export const TOWER_QI_HOURS = 6;
@@ -423,7 +423,7 @@ export const TOWER_QI_HOURS = 6;
 /**
  * 道 Why 神 the Spirit branch stopped selling the qi rate.
  *
- * The tree's two big branches were written with the same numbers — 15, 20, 30, 45, 80 —
+ * The tree's two big branches were written with the same numbers: 15, 20, 30, 45, 80:
  * one on power and one on the rate. It reads as fair and it is not, and the reason is
  * the only thing in this file worth learning twice:
  *
@@ -431,7 +431,7 @@ export const TOWER_QI_HOURS = 6;
  *
  * Power buys fights, and the climb is not gated by fights; it is gated by qi. Doubling
  * power shortens nothing. Doubling the rate halves every layer, every realm and the whole
- * run at once — the run length is very nearly `days / rateMultiplier`. Measured on the
+ * run at once: the run length is very nearly `days / rateMultiplier`. Measured on the
  * shared harness, with the tower and the furnace:
  *
  *     no tree       day 84.2
@@ -448,7 +448,7 @@ export const TOWER_QI_HOURS = 6;
  * ninety-day promise cannot both be true. The tuning knob was the wrong tool.
  *
  * So 神 keeps one rate node, 吐納 Breathing, which is its identity and small enough to
- * cost three days. Its four big nodes now deepen 入定 instead — which is still gathering,
+ * cost three days. Its four big nodes now deepen 入定 instead, which is still gathering,
  * still the branch's own idea, and **cannot divide the clock, because it only pays while
  * you are looking at the phone.** An idle game spends almost all of its life shut.
  */
@@ -456,7 +456,7 @@ export const TREE_FOCUS_SHARE = 0.5;
 
 /**
  * 頂 And the ceiling that would have caught it. No branch of the tree, taken to its end,
- * may multiply the qi rate by more than this — because the run is very nearly
+ * may multiply the qi rate by more than this, because the run is very nearly
  * `days / rateMultiplier` and there is no other number in the game that can say no.
  */
 export const TREE_RATE_CEILING = 1.25;
@@ -473,7 +473,7 @@ export const TREE_RATE_CEILING = 1.25;
  *     every hour   day 20   器 氣 +216%
  *
  * against a promise of ninety days. The 氣 axis on gear is a qi-rate multiplier with no
- * cap at all, driven by how much you hunt — which is precisely the "playing more finishes
+ * cap at all, driven by how much you hunt, which is precisely the "playing more finishes
  * sooner" trap the whole economy was built to avoid. The bible's own claim that playing
  * every waking hour is worth about twice a casual run, not twenty times, was false: it
  * was worth three times, and climbing.
@@ -481,7 +481,7 @@ export const TREE_RATE_CEILING = 1.25;
  * The law was already written and nothing enforced it: *everything that multiplies
  * gathering is behind the realm cap; everything uncapped buys power, fortune or knowledge
  * instead.* So this is the enforcement. Gear and the tree, multiplied together, may not
- * move the qi rate past this — and `rate()` clamps them rather than trusting anybody to
+ * move the qi rate past this, and `rate()` clamps them rather than trusting anybody to
  * remember.
  *
  * 雷印 the thunder marks are deliberately outside it. They are the endgame's own ladder,
@@ -527,14 +527,14 @@ export const TOLERANCE_DAYS = 10;
  *
  * **It is gated by power, not by qi.** Qi is effectively unlimited up there. What is not
  * unlimited is power, because every level of 劍訣 costs what a layer of the mountain
- * costs — so the real wait is the wait to afford the next few levels, which is exactly
+ * costs, so the real wait is the wait to afford the next few levels, which is exactly
  * the wait an idle game is made of.
  */
 
 /**
  * What the next crossing asks for, as a share of the power you had at the last mark.
  *
- * It is solved against the furnace, not chosen — see TRIBULATION_GAIN below, which has
+ * It is solved against the furnace, not chosen. See TRIBULATION_GAIN below, which has
  * the arithmetic. Three pills a crossing is what it comes to.
  */
 export const TRIBULATION_CHALLENGE = 1.89;
@@ -546,7 +546,7 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  * 立 Where the next Dragon plants its feet, as a multiple of the 力 the last one faced.
  *
  * 力 is not what fights. A stance bends every blow and three arts bend three more, and
- * `arts.test.ts` measures the lot at 1.82x — none of it in `power()`, because `power()`
+ * `arts.test.ts` measures the lot at 1.82x: none of it in `power()`, because `power()`
  * is also the cultivator's health and doubling that would be a different game.
  *
  * The endgame was built without that in mind. The Dragon anchored to `power(s) / 1.2`,
@@ -557,7 +557,7 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  * never worth brewing.
  *
  * The right footing is not 1.82 either, because a multiplier on blows is worth about its
- * *square root* in the power ratio — 力 is the sword and the shield at once, so losing a
+ * *square root* in the power ratio: 力 is the sword and the shield at once, so losing a
  * third of it costs twice over. Played out, the band is narrow and measured:
  *
  *     1.20   odds 98% every crossing, two days, no decision
@@ -593,7 +593,7 @@ export const MARK_DAYS = 2;
  *
  * With three pills a crossing, a price that rises 1.20x a pill and a pill worth 3%, that
  * gives a mark of 1.728x and a Dragon of 1.89x. The thirtieth crossing then takes about
- * as long as the third. Change any one of the four and this one has to be solved again —
+ * as long as the third. Change any one of the four and this one has to be solved again:
  * `tribulation.test.ts` plays it out and prints the days.
  *
  * It is also why the marks are not larger. A bigger mark paces the same but inflates

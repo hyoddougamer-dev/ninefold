@@ -2,7 +2,7 @@
  * Prepares a build for publishing as a page.
  *
  * The publisher wraps the file in an HTML skeleton of its own, so only the middle comes
- * out here — title, fonts, stylesheet, the root div and the script.
+ * out here: title, fonts, stylesheet, the root div and the script.
  *
  * The asset names carry a hash that changes on every build, and since the arena lab was
  * added there is more than one bundle in `dist/assets`. So the refs are read out of the
@@ -13,18 +13,18 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 
 const ENTRIES = {
   game: { html: 'dist/index.html', out: 'dist/page.html', title: '九境 Ninefold' },
-  lab: { html: 'dist/arena-lab.html', out: 'dist/lab.html', title: '戰 Arena — banco de ensaios' },
+  lab: { html: 'dist/arena-lab.html', out: 'dist/lab.html', title: '戰 Arena: banco de ensaios' },
 } as const;
 
 const which = (process.argv[2] ?? 'game') as keyof typeof ENTRIES;
 const entry = ENTRIES[which];
-if (!entry) throw new Error(`unknown entry "${which}" — one of ${Object.keys(ENTRIES).join(', ')}`);
+if (!entry) throw new Error(`unknown entry "${which}": one of ${Object.keys(ENTRIES).join(', ')}`);
 
 const built = readFileSync(entry.html, 'utf8');
 
 const css = built.match(/href="[^"]*?(assets\/[^"]+\.css)"/)?.[1];
 const js = built.match(/src="[^"]*?(assets\/[^"]+\.js)"/)?.[1];
-if (!css || !js) throw new Error(`${entry.html} has no css or js — run \`npm run build\` first`);
+if (!css || !js) throw new Error(`${entry.html} has no css or js: run \`npm run build\` first`);
 
 const fonts = built.split('\n')
   .filter((l) => l.includes('fonts.googleapis') || l.includes('fonts.gstatic'))
@@ -48,5 +48,5 @@ const files = Object.fromEntries(
   readdirSync('dist/assets').map((f) => [`assets/${f}`, `dist/assets/${f}`]),
 );
 
-console.log(`${entry.out} ready — ${css}, ${js} (+${Object.keys(files).length - 2} shared)`);
+console.log(`${entry.out} ready: ${css}, ${js} (+${Object.keys(files).length - 2} shared)`);
 console.log(JSON.stringify(files));

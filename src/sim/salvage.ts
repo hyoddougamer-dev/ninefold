@@ -31,7 +31,7 @@ export function salvageWorth(items: readonly Item[]): number {
 
 /**
  * 拆 Melt a set of pieces. Ids that are not in the chest are ignored rather than
- * refused — a save is input, and a stale id is not a reason to lose the rest.
+ * refused: a save is input, and a stale id is not a reason to lose the rest.
  */
 export function salvage(s: State, ids: readonly string[]): State {
   const wanted = new Set(ids);

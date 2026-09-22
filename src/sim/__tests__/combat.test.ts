@@ -13,12 +13,12 @@ import { ARTS, STANCES } from '../../data/arts.ts';
 const T0 = 1_700_000_000;
 
 /**
- * A cultivator at the *top* of the given realm — all nine layers open — having spent
+ * A cultivator at the *top* of the given realm (all nine layers open) having spent
  * nothing on upgrades. The top matters: it is what referencePower measures against, and
  * measuring a realm's floor against the reference for its ceiling loses half a ladder.
  *
  * It is built rather than simulated. Simulating it means simulating a cultivator who
- * never spends, and one of those never reaches the fourth realm at all — which is the
+ * never spends, and one of those never reaches the fourth realm at all, which is the
  * whole finding that rebuilt the curve.
  */
 function bare(realm: number): State {
@@ -34,7 +34,7 @@ function bare(realm: number): State {
  * because every upgrade price rides the mountain rather than a ladder of its own.
  *
  * Cores are in here because a warden asks for them, and a warden asks for them because
- * they are the one upgrade qi cannot buy — see `waiter` below, which is the same
+ * they are the one upgrade qi cannot buy. See `waiter` below, which is the same
  * cultivator with everything except the fighting.
  */
 function invested(realm: number, below = 2): State {
@@ -59,7 +59,7 @@ function waiter(realm: number): State {
  * The same cultivator, but actually built: standing in a stance and running a sequence.
  *
  * This is the honest picture of a player at a warden. `invested` alone is a cultivator
- * who bought 劍訣 and nothing else — no stance, no arts, no gear, no tree. Measuring the
+ * who bought 劍訣 and nothing else: no stance, no arts, no gear, no tree. Measuring the
  * warden against *that* is measuring it against a floor nobody stands on.
  */
 function built(realm: number, below = 2): State {
@@ -95,7 +95,7 @@ describe('戰 the beasts', () => {
     }
   });
 
-  it('a warden is not beaten by qi alone — it is beaten by 妖丹 and a build', () => {
+  it('a warden is not beaten by qi alone. It is beaten by 妖丹 and a build', () => {
     const rows = [2, 4, 6, 8, 9].map((r) => {
       const g = wardenOf(r);
       return `  realm ${r}  ${g.han.padEnd(2)} warden` +
@@ -140,7 +140,7 @@ describe('戰 the beasts', () => {
 
   /**
    * 初 The first realm is the one a player decides the game on, and for a long time it
-   * had no fight in it at all — the first winnable beast arrived two hours in, and the
+   * had no fight in it at all: the first winnable beast arrived two hours in, and the
    * true odds before it were 0.0%, flat.
    */
   it('gives the first realm a fight inside the first sitting, and three after it', () => {
@@ -168,9 +168,9 @@ describe('戰 the beasts', () => {
     expect(beastPower(wardenOf(1))).toBeGreaterThan(beastPower(commonsOf(1)[2]) * 1.5);
   });
 
-  it('commons are hunting, not a wall — and three steps, not three identical buttons', () => {
+  it('commons are hunting, not a wall, and three steps, not three identical buttons', () => {
     // The three commons of a realm are separated by *power*, which is the invariant. The
-    // odds cannot show it because a middling cultivator beats all three comfortably —
+    // odds cannot show it because a middling cultivator beats all three comfortably:
     // that is what makes them hunting rather than a wall. The difference is felt as how
     // long the fight runs.
     for (const r of [1, 3, 5, 7, 9]) {
@@ -188,7 +188,7 @@ describe('戰 the beasts', () => {
   /**
    * The wall between playing and waiting, which is the whole reason a warden counts 妖丹.
    *
-   * Nothing is taken from this cultivator for being away — their qi gathered at full rate
+   * Nothing is taken from this cultivator for being away: their qi gathered at full rate
    * every second of it, and every upgrade qi can buy is at its cap. What they are short
    * of is not qi.
    */
@@ -199,7 +199,7 @@ describe('戰 the beasts', () => {
         `${(100 * odds(waiter(r), g)).toFixed(0).padStart(3)}%   with 妖丹 too: ` +
         `${(100 * odds(invested(r, 0), g)).toFixed(0).padStart(3)}%`;
     });
-    console.log(`\n  妖丹 the wall — cores come from killing things, never from waiting:\n${rows.join('\n')}\n`);
+    console.log(`\n  妖丹 the wall: cores come from killing things, never from waiting:\n${rows.join('\n')}\n`);
 
     // The first two realms ask for nothing: a new cultivator meets a warden and learns
     // what one is before learning that a warden is not enough.
@@ -290,7 +290,7 @@ describe('誠 out of reach is not two per cent', () => {
  * 見 What the first sight of a beast is worth, where it was asked for.
  *
  * Bruno: *"sinto que o combat nada faz nos primeiros realms."* The fix has to be loud
- * in the first realm and quiet by the ninth, or it is not a first-realm fix — it is a
+ * in the first realm and quiet by the ninth, or it is not a first-realm fix. It is a
  * rebalance of the whole climb by the back door, which is what a flat share measured
  * as: twenty-two days off a hundred-and-twelve-day game.
  *
@@ -341,7 +341,7 @@ describe('見 the first sight of a beast', () => {
   });
 
   it('cannot be farmed: every beast in the game pays it exactly once', () => {
-    // 36 beasts, 36 payments, for the life of a save. It is a fixed, finite sum — so it
+    // 36 beasts, 36 payments, for the life of a save. It is a fixed, finite sum, so it
     // is not a rate, and no amount of hunting can turn it into one.
     let s = newState(T0);
     const before = s.qi;

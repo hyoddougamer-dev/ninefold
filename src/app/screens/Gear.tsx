@@ -21,7 +21,7 @@ import { salvageWorth, salvageable } from '../../sim/salvage.ts';
 import { buysWith } from '../../sim/time.ts';
 
 /**
- * 器 The gear screen — the ring.
+ * 器 The gear screen: the ring.
  *
  * The six slots orbit the cultivator, which is the layout Bruno chose and the one the
  * art was already heading toward: by the sixth realm the aura itself has an orbit ring,
@@ -214,7 +214,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
               const rar = RARITY_INFO[g.rarity];
               return (
-                /* 煉 The same row 狩 uses — a seal, a name, a figure on the right — shared
+                /* 煉 The same row 狩 uses (a seal, a name, a figure on the right) shared
                    on purpose rather than by accident, and carrying its own name so that
                    restyling one screen cannot silently restyle the other. */
                 <button key={`${g.template}-${g.rarity}`} className="beast fuserow"
@@ -269,7 +269,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             <i>{GEAR.salvage(melting.length)}
               {/* 買 Where the qi goes the instant it lands. The ladder buys a rung the
                   moment it can afford one, so a melt worth more than the rung you are
-                  standing on makes the big number fall — and the button says so first. */}
+                  standing on makes the big number fall, and the button says so first. */}
               <span className="goes">{opening.rungs > 0 ? GEAR.opens(opening.rungs) : GEAR.banks}</span>
             </i>
             <em className="mono">{num(salvageWorth(melting))}<span>qi</span></em>
