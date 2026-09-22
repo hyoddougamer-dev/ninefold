@@ -5,7 +5,7 @@
  *
  *   1. **A deed pays nothing.** Not qi, not power, not material. The economy's one law
  *      is that nothing uncapped may raise the qi rate, and a list of deeds is about as
- *      uncapped as a thing can get — but the deeper reason is that the moment a deed
+ *      uncapped as a thing can get, but the deeper reason is that the moment a deed
  *      pays, it becomes something worth faking. 九境 is meant to go online, and a
  *      leaderboard of achievements that buy power is a leaderboard of forged saves.
  *      These are a record. That is the entire point of them.
@@ -101,7 +101,7 @@ export function wornCount(s: State): number {
   return SLOTS.filter((slot) => s.worn[slot]).length;
 }
 
-/** The most pieces of one lineage worn at once — what the set bonuses count. */
+/** The most pieces of one lineage worn at once, which is what the set bonuses count. */
 export function bestLineage(s: State): number {
   const byRealm = new Map<number, number>();
   for (const slot of SLOTS) {
@@ -247,7 +247,7 @@ export const DEEDS: readonly Deed[] = [
 
   {
     key: 'mark1', track: 'thunder', han: '雷印', name: 'The first crossing',
-    want: 1, line: `Fill 雷池 the pool — ${MARK_DAYS} days of your own gathering — and put the Dragon down.`,
+    want: 1, line: `Fill 雷池 the pool, ${MARK_DAYS} days of your own gathering, and put the Dragon down.`,
     at: (s) => Math.min(1, s.tribulation),
   },
   {

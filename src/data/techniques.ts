@@ -4,13 +4,13 @@ import type { Slot } from './gear.ts';
 /**
  * 道 The technique tree.
  *
- * Three paths, eight nodes each, and never enough 道 points to take them all — a full
+ * Three paths, eight nodes each, and never enough 道 points to take them all. A full
  * run earns about forty-two against the sixty it would cost to buy everything. That
  * shortfall is the whole design: a tree you can complete is a checklist, not a choice.
  *
  * **On locking gear to a path.** The tree does not lock anything, and that is
  * deliberate. In a game whose gear falls at random, a hard class lock turns five drops
- * out of six into litter — the player is punished for the game's own dice. So instead
+ * out of six into litter, so the player is punished for the game's own dice. So instead
  * each path grants *affinity*: 鋒 Edge makes weapons count for more, 明心 Clear Mind
  * makes crowns count for more. Every piece stays wearable by everyone; what the path
  * changes is which pieces make you grin when they drop.
@@ -62,7 +62,7 @@ export interface Node {
   readonly han: string;
   readonly name: string;
   readonly path: Path;
-  /** 0..7 — its depth down the branch. A node needs a node of the tier above it. */
+  /** 0..7, its depth down the branch. A node needs a node of the tier above it. */
   readonly tier: number;
   readonly cost: number;
   readonly effects: readonly Effect[];
@@ -72,7 +72,7 @@ export interface Node {
    *
    * This is the whole of the theorycrafting: at the middle of each branch there are two
    * nodes and room for one. Each keystone is stronger than the node it stands beside and
-   * each one gives something up — which is what turns a tree into a decision instead of
+   * each one gives something up, which is what turns a tree into a decision instead of
    * a queue.
    */
   readonly excludes?: string;
@@ -90,7 +90,7 @@ const n = (
 ): Node => ({ key, han, name, path, tier, cost, effects, text, ...extra });
 
 export const NODES: readonly Node[] = [
-  // 劍 The Sword — power, and affinity for what you swing and wear.
+  // 劍 The Sword: power, and affinity for what you swing and wear.
   n('opening',   '起手', 'Opening Form',   'sword', 0, 1, [{ kind: 'power', percent: 15 }], '+15% power'),
   n('edge',      '鋒',   'Edge',           'sword', 1, 1, [{ kind: 'affinity', slots: ['weapon'], percent: 40 }], 'weapons count 40% more'),
   n('chain',     '連擊', 'Chain Strike',   'sword', 2, 2, [{ kind: 'power', percent: 20 }], '+20% power'),
@@ -103,11 +103,11 @@ export const NODES: readonly Node[] = [
   n('formless',  '無鋒', 'Formless Edge',  'sword', 6, 4, [{ kind: 'power', percent: 45 }], '+45% power'),
   n('tenthousand','萬劍','Ten Thousand Swords', 'sword', 7, 4, [{ kind: 'power', percent: 80 }], '+80% power'),
 
-  // 神 The Spirit — the gathering rate, and affinity for what you think with.
+  // 神 The Spirit: the gathering rate, and affinity for what you think with.
   //
   // 吐納 is the only node here that touches the rate, and the four big ones deepen 入定
   // instead. See balance.ts: a rate branch and a ninety-day promise cannot both be true,
-  // and scaling the percentages down does not fix it — only changing what they buy does.
+  // and scaling the percentages down does not fix it. Only changing what they buy does.
   n('breathing', '吐納', 'Breathing',      'spirit', 0, 1, [{ kind: 'rate', percent: 10 }], '+10% qi per second'),
   n('clearmind', '明心', 'Clear Mind',     'spirit', 1, 1, [{ kind: 'affinity', slots: ['crown'], percent: 40 }], 'crowns count 40% more'),
   n('circulation','周天','Circulation',    'spirit', 2, 2, [{ kind: 'focus', depth: deep(20) }], `入定 sits ${deep(20)}x deeper`),
@@ -120,7 +120,7 @@ export const NODES: readonly Node[] = [
   n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'focus', depth: deep(45) }], `入定 sits ${deep(45)}x deeper`),
   n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'focus', depth: deep(80) }], `入定 sits ${deep(80)}x deeper`),
 
-  // 運 Fortune — what falls, and what you can keep.
+  // 運 Fortune: what falls, and what you can keep.
   n('gleaning',  '拾遺', 'Gleaning',       'fortune', 0, 1, [{ kind: 'dropChance', percent: 5 }], '+5 to drop chance'),
   n('keeneye',   '慧眼', 'Discerning Eye', 'fortune', 1, 1, [{ kind: 'rarityLuck', percent: 25 }], 'rare gear turns up 25% more often'),
   n('pouch',     '囊',   'Pouch',          'fortune', 2, 2, [{ kind: 'chestSlots', slots: 8 }], '+8 places in the chest'),
@@ -137,13 +137,13 @@ export const NODES: readonly Node[] = [
 /**
  * 根 The root, and the bridges.
  *
- * The first shape was three separate branches, which is three trees rather than one —
+ * The first shape was three separate branches, which is three trees rather than one.
  * a player could walk a path but never mix. This is one tree: every branch grows from a
  * single root, and bridges cross between neighbouring branches at two depths, so a
  * cultivator can climb 劍 to the middle, step across into 神, and come back down 運.
  *
  * The middle column is 神, so it neighbours both others. Getting from 劍 to 運 means
- * passing through 神 — which is a cost, and the reason the middle is worth standing in.
+ * passing through 神, which is a cost, and the reason the middle is worth standing in.
  */
 export const ROOT: Node = {
   key: 'root', han: '起', name: 'The Beginning', path: 'spirit', tier: -1, cost: 1,

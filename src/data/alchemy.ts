@@ -1,8 +1,8 @@
 /**
  * 丹 Alchemy.
  *
- * Qi has to have somewhere to go. Every other thing qi buys is capped by the realm —
- * that cap is what holds the whole curve up — so without one uncapped sink a cultivator
+ * Qi has to have somewhere to go. Every other thing qi buys is capped by the realm,
+ * and that cap is what holds the whole curve up, so without one uncapped sink a cultivator
  * at the top gathers for ever and spends nothing, which is the state the ninth realm
  * used to be in.
  *
@@ -41,7 +41,7 @@ export const PILL_LINES: Record<Line, PillLine> = {
     key: 'bane', han: '破煞', name: 'Bane Breaking', icon: 'cracked-shield',
     effect: 'beasts read weaker',
     lore: 'Brewed from what the beasts themselves carried. What killed them thins their ' +
-      'kin — never to nothing, but never back either.',
+      'kin, never to nothing, but never back either.',
   },
   fortune: {
     key: 'fortune', han: '聚寶', name: 'Treasure Gathering', icon: 'gold-nuggets',
@@ -54,7 +54,7 @@ export const PILL_LINES: Record<Line, PillLine> = {
 /**
  * 丹名 What the pill in the furnace is called.
  *
- * The recipe does not change — the cultivator does. The same furnace and the same fire
+ * The recipe does not change. The cultivator does. The same furnace and the same fire
  * make a Qi-Knitting Pill for a first-realm body and a Tribulation Pill for one that has
  * stood under lightning, because a pill is named for what it is strong enough to change.
  */

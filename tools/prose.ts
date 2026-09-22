@@ -105,6 +105,11 @@ const html = (() => {
 
 if (html) {
   const prose = html
+    // 空 A cell holding nothing holds a dash, which is correct typography and not prose.
+    // Counting those made the audit unable to ever reach zero, and an audit that cannot
+    // reach zero stops being read.
+    .replace(/<t[dh][^>]*>\s*—\s*<\/t[dh]>/g, '<td></td>')
+    .replace(/<[a-z]+[^>]*>\s*—\s*<\/[a-z]+>/g, ' ')
     .replace(/<style[\s\S]*?<\/style>/g, ' ')
     .replace(/<script[\s\S]*?<\/script>/g, ' ')
     .replace(/<svg[\s\S]*?<\/svg>/g, ' ')

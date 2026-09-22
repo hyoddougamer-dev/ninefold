@@ -2,8 +2,8 @@
  * 境外 Beyond the realms.
  *
  * The climb ends at the ninth realm, and for a long time so did the game. 劫 the
- * tribulation ran on for ever afterwards — a pool that refills in two days, a Dragon
- * that comes back heavier, a mark that multiplies everything — and it was a fine engine
+ * tribulation ran on for ever afterwards: a pool that refills in two days, a Dragon
+ * that comes back heavier, a mark that multiplies everything. It was a fine engine
  * with nothing in it. Measured: the last new thing in 九境 arrived on day 60, the summit
  * on day 72, and every crossing after that was the same Dragon at a bigger number.
  *
@@ -21,7 +21,7 @@
  *
  * 律 And it cannot break the economic law, which is worth writing out because it looks
  * as though it should. Two of the four upgrades multiply the qi rate, so more room means
- * a faster rate — but 雷池 the thunder pool is *measured in days of your own gathering*,
+ * a faster rate, but 雷池 the thunder pool is *measured in days of your own gathering*,
  * so it grows at exactly the same speed. A heaven that doubles the rate doubles the pool
  * with it and the crossing still takes MARK_DAYS. The clock is safe because the clock
  * was never written in qi.
@@ -36,13 +36,13 @@ export interface Heaven {
   readonly name: string;
   /** Walks on past the ninth realm's magenta, into gold and then to white. */
   readonly colour: string;
-  /** What stands at the end of this heaven — 漢字, name, and the icon it is drawn with. */
+  /** What stands at the end of this heaven: 漢字, name, and the icon it is drawn with. */
   readonly dragon: { readonly han: string; readonly name: string; readonly icon: string };
   /**
    * One line, for the card that says what you just walked into.
    *
    * Flavour only. What a heaven *opens* is the same for all nine, so saying it nine
-   * times is the stutter the copy rules forbid — the screen says it once, beside the
+   * times is the stutter the copy rules forbid. The screen says it once, beside the
    * name, out of LEVELS_PER_HEAVEN.
    */
   readonly gains: string;
@@ -54,7 +54,7 @@ export interface Heaven {
  * Three, measured against the endgame harness: a crossing settles at about MARK_DAYS
  * plus the gathering either side of it, so three of them is a little over a week. Nine
  * heavens is then roughly eleven weeks of named arrivals on top of a climb that ends in
- * nine — which is the thirteen weeks that were asked for, with the climb and the
+ * nine, which is the thirteen weeks that were asked for, with the climb and the
  * endgame overlapping rather than queueing.
  */
 export const MARKS_PER_HEAVEN = 3;
@@ -93,7 +93,7 @@ export const HEAVENS: readonly Heaven[] = [
  * How many heavens the marks have opened. 0 before the first crossing.
  *
  * Heaven h is entered on mark `MARKS_PER_HEAVEN * (h - 1) + 1`, so the first crossing
- * of all opens 真仙 — the endgame's very first act is an arrival, not three more days
+ * of all opens 真仙, so the endgame's very first act is an arrival, not three more days
  * of the same thing.
  */
 export function heavensOpened(marks: number): number {

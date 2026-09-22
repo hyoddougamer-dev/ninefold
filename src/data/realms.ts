@@ -6,7 +6,7 @@
  * the rule is that a realm must be readable from the aura alone, without reading a word.
  *
  * `gains` is shown under the progress bar, so it says what the player will *see* when
- * they arrive. The first draft described the design intent instead — "the first sign
+ * they arrive. The first draft described the design intent instead: "the first sign
  * read from across a room" is a note to the artist, not a line for the player.
  */
 export interface Realm {

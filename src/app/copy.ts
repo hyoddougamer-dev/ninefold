@@ -2,7 +2,7 @@
  * 文 Everything the player reads.
  *
  * It lives in one file for two reasons. The first is that text scattered across six
- * screens cannot be reviewed — you cannot see that two screens call the same thing by
+ * screens cannot be reviewed. You cannot see that two screens call the same thing by
  * two different names until they are side by side. The second is that this is the file
  * a translation would replace.
  *
@@ -21,7 +21,7 @@
  */
 
 /**
- * 引 How to play — and now, only the part that cannot be shown.
+ * 引 How to play, and now only the part that cannot be shown.
  *
  * It used to be seven steps and three paragraphs, and it was written when the first
  * screen was the only teacher there was. It is not any more: 引 the guide walks a new
@@ -29,7 +29,7 @@
  * breaking through, one step at a time, each one finished by doing it.
  *
  * So this keeps four facts and hands the rest over. Every one of the four is a *promise
- * about the game* rather than an instruction — things a player cannot find out by
+ * about the game* rather than an instruction: things a player cannot find out by
  * pressing anything, and would otherwise have to discover by being burned:
  *
  *   that leaving does not cost them, which is the whole contract of an idle game;
@@ -83,7 +83,7 @@ export const CULTIVATE = {
    *
    * A rung of the ladder takes your qi the moment it can afford it, so the rung you
    * stand on is the most qi you can ever hold. Below that, waiting works. Above it,
-   * waiting does nothing at all and only the climb will do — which is a fact the screen
+   * waiting does nothing at all and only the climb will do, which is a fact the screen
    * owed the player rather than leaving them to watch a price never arrive.
    */
   soon: (when: string) => `in ${when}`,
@@ -143,12 +143,12 @@ export const CULTIVATE = {
    *
    * It only ever appears when 材 material has run out, which is the one moment it is an
    * answer rather than a fifth box. The wording has to be honest about the exchange
-   * rate — it is a bad deal and saying so is what points at 狩 Hunt.
+   * rate. It is a bad deal, and saying so is what points at 狩 Hunt.
    */
   condenseHead: 'No 材 material left',
   condense: 'You can force a 妖丹 out of raw qi instead. It works, and it is dear: '
     + 'this is qi that would have opened layers.',
-  condensePrice: (qi: string, rungs: string) => `${qi} qi — ${rungs} rungs of the climb`,
+  condensePrice: (qi: string, rungs: string) => `${qi} qi · ${rungs} rungs of the climb`,
   condenseHunt: 'A beast leaves material when it falls. That is the cheap way, and it is one tap away.',
   /** 境 How far this realm is out of. Nine is worth knowing on the first day. */
   ofNine: (n: number, of: number) => `realm ${n} of ${of}`,
@@ -230,7 +230,7 @@ export const LADDER = {
  * 碑 The stele.
  *
  * It says what was done and never what it is worth, because the deeds are worth nothing
- * — and the page has to say so out loud, or a player will spend a week hunting one on
+ * and the page has to say so out loud, or a player will spend a week hunting one on
  * the assumption that it pays.
  */
 export const CHRONICLE = {
@@ -273,7 +273,7 @@ export const TRIALS = {
  * 示 The line that tells a stuck player why they are stuck.
  *
  * Every one of these names the thing to do and where to do it. None of them explains the
- * design, and none of them says "you should" — the game states the fact and the player
+ * design, and none of them says "you should". The game states the fact and the player
  * decides.
  */
 export const ADVICE = {
@@ -325,7 +325,7 @@ export const ADVICE = {
  * 釋 The key: what every character on the screen means.
  *
  * The characters are what 九境 looks like, and taking them off would leave a spreadsheet
- * about numbers going up. So they stay — and none of them is ever the only place a thing
+ * about numbers going up. So they stay, and none of them is ever the only place a thing
  * is named. This page is the guarantee behind that: one tap from anywhere, every symbol
  * the game uses, in English, read out of the same tables the game itself reads.
  */
@@ -398,7 +398,7 @@ export const KEY = {
  * 引 The five steps of the first session.
  *
  * Each one names a thing to do, says why it is worth doing, and is finished by the
- * player doing it — never by reading. Together they are the first realm's loop said out
+ * player doing it, never by reading. Together they are the first realm's loop said out
  * loud once: buy, kill, spend what the kill gave you, keep killing the same animal
  * until the counting pays, climb.
  */
@@ -411,7 +411,7 @@ export const GUIDE = {
   reopen: 'Bring the guide back',
   reopenNote: 'You put 引 the guide away. It picks up wherever you are.',
   /**
-   * 指 Short, because the arrow does the pointing — and each one has a second line for
+   * 指 Short, because the arrow does the pointing, and each one has a second line for
    * the stretch before it can be done at all.
    *
    * Bruno: *"as coisas ficam stuck e nao saem e devem aparecer na altura que os players
@@ -473,7 +473,7 @@ export const HUNT = {
    *
    * Measured across a whole climb: by the ninth realm the hunt screen offered 25 beasts,
    * and 13 of them had every mark earned. Twenty-five cards, all reading 98%, half of
-   * them finished — which is the exact screen this game's notes said it feared. They are
+   * them finished, which is the exact screen this game's notes said it feared. They are
    * folded away now rather than deleted, because a beast you finished is a thing you did
    * and the record is the page that remembers it.
    */
@@ -496,8 +496,8 @@ export const HUNT = {
    * 短 And then it was said twenty-five times on one screen.
    *
    * Naming the mark and what it pays was right when a row was the only place either
-   * could be learned. It is not the only place any more — the mark characters under this
-   * list are 註 tappable and answer for themselves — and repeated down twenty-five rows
+   * could be learned. It is not the only place any more, because the mark characters under
+   * this list are 註 tappable and answer for themselves, and repeated down twenty-five rows
    * the same clause was a quarter of the words on the screen. The row keeps the count
    * and the name. What it pays is one tap away, once, instead of twenty-five times.
    */
@@ -508,7 +508,7 @@ export const HUNT = {
    * 短 Eleven words where there were seventy-one.
    *
    * The three marks each carried their own sentence here, explaining what 見, 熟 and 通
-   * mean — and every one of those three is a 註 tappable character on this very screen
+   * mean, and every one of those three is a 註 tappable character on this very screen
    * and on every row in the list. The screen was its own glossary because there was
    * nowhere smaller to put one. Now there is.
    */
@@ -543,7 +543,7 @@ export const DRIVE = {
  *
  * The sheet has one job the chest never did: let a player *look* at something before
  * deciding. So every line of it is a fact about the object or about the trade, and none
- * of it is encouragement. "This is better" is not said anywhere — the two numbers at
+ * of it is encouragement. "This is better" is not said anywhere. The two numbers at
  * the bottom say what would happen and the player decides what better means.
  */
 export const ITEM = {
@@ -603,7 +603,7 @@ export const GEAR = {
 
   /**
    * 煉器 Refining. It has to say three things: what it costs, that it has no top, and
-   * that the levels belong to the piece rather than to you — because choosing which
+   * that the levels belong to the piece rather than to you, because choosing which
    * piece to pour a run's material into is the decision, and a decision you did not
    * know you were making is not one.
    */
@@ -638,7 +638,7 @@ export const DAO = {
    * 樞 Why a keystone is dark in the second realm.
    *
    * The tree opens two realms before its keystones do, so the three that take something
-   * away are drawn but not buyable — and the card has to say which realm, the same way
+   * away are drawn but not buyable, and the card has to say which realm, the same way
    * every locked tab in the game does. A dark node with no reason on it is the bug that
    * made the tree unfindable in the first place.
    */
@@ -655,13 +655,13 @@ export const DAO = {
  * 新 The one-time cards.
  *
  * They are not introductions. 突破 the breakthrough already introduces whatever the realm
- * opened, in the one moment the game stops for — so these say **what to do with it**, on
+ * opened, in the one moment the game stops for, so these say **what to do with it**, on
  * the screen where it lives, at the moment it first becomes usable. Two cards saying the
  * same thing is the game talking over itself, and it read exactly like that on screen
  * before they were split.
  *
  * The titles carry no 漢字: the card draws the character in its own column, and a title
- * that repeats it reads as a stutter — which is exactly how it read in the screenshot
+ * that repeats it reads as a stutter, which is exactly how it read in the screenshot
  * that caught it.
  */
 /**
@@ -697,7 +697,7 @@ export const NOTICE = {
   },
   furnace: {
     // Not "start with a 煉體丹": 煉體 is the *line*, and the pill on the screen is named
-    // for the realm brewing it — 合道丹 at the seventh, 大乘丹 at the eighth. A card
+    // for the realm brewing it: 合道丹 at the seventh, 大乘丹 at the eighth. A card
     // naming a pill that is nowhere on the list is a card sending the player looking.
     title: 'Start with the power pill',
     text: 'It is power you keep for good, and every pill after it costs a little more. Qi '
@@ -798,7 +798,7 @@ export const ARENA = {
    *
    * It is the same card as the 見 Seen mark, because it is the same event. The qi leads,
    * because the qi is the part that moves the number the player has been watching all
-   * day — which was the whole complaint: combat never touched it.
+   * day, which was the whole complaint: combat never touched it.
    */
   firstSight: (qi: string, han: string) =>
     `+${qi} qi for the first ${han} you ever killed, once and never again. `

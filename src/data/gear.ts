@@ -35,7 +35,7 @@ export interface RarityInfo {
   /**
    * 光 How loud the item is on screen: 0 plain, 4 a corona.
    *
-   * Rank is carried by the frame and its light, never by the object — the same sword
+   * Rank is carried by the frame and its light, never by the object. The same sword
    * at 凡 and at 天 is one drawing in two frames, which is what lets a chest be read at
    * a glance without reading a word.
    */
@@ -58,7 +58,7 @@ export const RARITY_INFO: Record<Rarity, RarityInfo> = {
  * so a player can reach the same place by two routes and choose which.
  *
  * Two affixes were not enough. With one stat per piece, a player walking the 神 Spirit
- * path found every weapon useless — the whole slot was dead to them. Now every piece
+ * path found every weapon useless, so the whole slot was dead to them. Now every piece
  * carries a primary and, from 靈 up, rolled secondaries, so any slot can serve any path.
  */
 export type Affix = 'power' | 'rate' | 'luck' | 'find' | 'capacity' | 'sunder' | 'refine';
@@ -71,14 +71,14 @@ export interface AffixInfo {
   readonly label: string;
   /** How the number reads: a percentage, or a flat count. */
   readonly unit: '%' | 'flat';
-  /** Scales the rolled value — a point of 破 Sunder is worth far more than one of 力. */
+  /** Scales the rolled value: a point of 破 Sunder is worth far more than one of 力. */
   readonly scale: number;
   /** How often it turns up as a secondary. */
   readonly weight: number;
 }
 
 /**
- * 運 and 拾 both used to read as chance words — "rare drops" and "drop chance" — and
+ * 運 and 拾 both used to read as chance words, "rare drops" and "drop chance", and
  * nobody could tell which was which. They are two different questions: 拾 is whether
  * anything falls at all, 運 is how good it is when it does.
  */
@@ -124,8 +124,8 @@ export interface GearTemplate {
 /**
  * 型 An archetype: a shape of thing, with its own icon and its own axis.
  *
- * An archetype is *not* tied to a realm. The first table bound them together — one piece
- * per slot per realm — which meant a cultivator in the third realm had exactly one
+ * An archetype is *not* tied to a realm. The first table bound them together, one piece
+ * per slot per realm, which meant a cultivator in the third realm had exactly one
  * weapon to find, and no choice at all. Now every archetype exists at every realm, so
  * the question at any point in the game is "which of the nine, and at what rank",
  * instead of "here is the one".
@@ -215,7 +215,7 @@ export const ARCHETYPES: readonly Archetype[] = [
 ];
 
 /**
- * 系 The nine sets — one family of equipment per realm.
+ * 系 The nine sets: one family of equipment per realm.
  *
  * "Iron Sword" and "Heaven Scythe" named a material and a rank, which is a spreadsheet
  * column, not a place in a world. A set instead is a *lineage*: 落星 Fallen Star is the
@@ -224,8 +224,8 @@ export const ARCHETYPES: readonly Archetype[] = [
  * it came from, and every piece of that realm carries it.
  *
  * And a set is not only a name: wearing several pieces of the same lineage pays. That
- * turns a chest of loose drops into a question — six matched pieces of the fifth realm,
- * or six unmatched pieces of the seventh? — which is the whole reason sets exist.
+ * turns a chest of loose drops into a question. Six matched pieces of the fifth realm,
+ * or six unmatched pieces of the seventh? That is the whole reason sets exist.
  */
 export interface SetStep {
   /** How many pieces of the set must be worn for this step to count. */
@@ -243,7 +243,7 @@ export interface RealmSet {
   readonly word: string;
   /** One line: where the stuff comes from. */
   readonly lore: string;
-  /** What the set is good at — its steps all pull these levers. */
+  /** What the set is good at. Its steps all pull these levers. */
   readonly axes: readonly Affix[];
   readonly steps: readonly SetStep[];
 }
@@ -300,7 +300,7 @@ export function realmSet(realm: number): RealmSet {
 /**
  * Every archetype at every realm: 54 shapes times nine realms, 486 pieces.
  *
- * They are generated rather than typed out, which is the point — a new archetype adds
+ * They are generated rather than typed out, which is the point. A new archetype adds
  * nine pieces, and a tenth realm would add fifty-four, without a line of naming.
  */
 export const GEAR: readonly GearTemplate[] = ARCHETYPES.flatMap((arch) =>
@@ -337,8 +337,8 @@ export interface Item {
  * 煉 What a piece's lines are multiplied by, from refining.
  *
  * It lives here rather than in sim/refine.ts so that nothing can read a roll without it:
- * a refined piece has to be worth more everywhere at once — the totals, the screen, the
- * comparison that says one piece beats another — or the number the player refined stops
+ * a refined piece has to be worth more everywhere at once, in the totals, on the screen
+ * and in the comparison that says one piece beats another, or the number they refined stops
  * being the number the game uses.
  */
 export const REFINE_PER_LEVEL = 0.04;
@@ -356,7 +356,7 @@ export function valueOf(item: Item, affix: Affix): number {
   return total * refinedBy(item);
 }
 
-/** The line the piece is named by — what a one-line summary shows. */
+/** The line the piece is named by, which is what a one-line summary shows. */
 export function primaryOf(item: Item): Roll | undefined {
   return item.rolls[0];
 }
@@ -401,7 +401,7 @@ export type Worn = Partial<Record<Slot, Item>>;
 /**
  * What a whole set is worth: one multiplier for power, one for the qi rate.
  *
- * `affinityOf` is how the technique tree reaches gear without locking any of it away —
+ * `affinityOf` is how the technique tree reaches gear without locking any of it away.
  * a path makes certain slots count for more, rather than making the rest unwearable.
  */
 export type GearTotals = Record<Affix, number>;
@@ -409,7 +409,7 @@ export type GearTotals = Record<Affix, number>;
 /**
  * Everything the worn set adds, axis by axis, with affinity applied.
  *
- * `affinityOf` is how the technique tree reaches gear without locking any of it away —
+ * `affinityOf` is how the technique tree reaches gear without locking any of it away.
  * a path makes certain slots count for more, rather than making the rest unwearable.
  */
 export function gearTotals(
@@ -430,7 +430,7 @@ export function gearTotals(
  * 系 What lineage is on the body, and how many pieces of it.
  *
  * Keyed by realm, because the set *is* the realm: any 落星 piece counts toward 落星,
- * whichever shape it happens to be. That is what makes a set reachable — six matched
+ * whichever shape it happens to be. That is what makes a set reachable: six matched
  * pieces means six drops from one realm, not six drops of one sword.
  */
 export function setsWorn(worn: Worn): Map<number, number> {
@@ -506,7 +506,7 @@ export function setBonus(
 /**
  * 相 The worn aura: the highest rank anywhere on the body.
  *
- * It is what makes gear worth wearing beyond the numbers — a 天 Heaven piece shows on
+ * It is what makes gear worth wearing beyond the numbers. A 天 Heaven piece shows on
  * the cultivator, so other people can see what you found without opening a menu.
  */
 export function wornRarity(worn: Worn): Rarity | null {

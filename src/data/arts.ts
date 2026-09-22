@@ -3,7 +3,7 @@
  *
  * The fight was the only system in the game with no decision in it: you picked a beast,
  * you watched, and everything was settled before you pressed anything. These are the
- * decision, and they are both made *outside* the fight — an idle game that needs you
+ * decision, and they are both made *outside* the fight. An idle game that needs you
  * present at the fight stops being one.
  *
  * Two halves that answer two different questions:
