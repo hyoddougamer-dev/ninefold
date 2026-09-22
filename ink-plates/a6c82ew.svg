@@ -10,6 +10,7 @@
     <feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/>
     <feGaussianBlur stdDeviation=".5"/>
   </filter>
+  <clipPath id="disc"><circle cx="50" cy="50" r="44"/></clipPath>
   <filter id="wash" x="-30%" y="-30%" width="160%" height="160%">
     <feTurbulence type="fractalNoise" baseFrequency=".02 .04" numOctaves="3" seed="5" result="t"/>
     <feDisplacementMap in="SourceGraphic" in2="t" scale="16" xChannelSelector="R" yChannelSelector="G"/>

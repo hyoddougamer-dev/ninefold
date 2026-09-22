@@ -56,6 +56,7 @@ const PAPER_DEFS = `
     <feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/>
     <feGaussianBlur stdDeviation=".5"/>
   </filter>
+  <clipPath id="disc"><circle cx="50" cy="50" r="44"/></clipPath>
   <filter id="wash" x="-30%" y="-30%" width="160%" height="160%">
     <feTurbulence type="fractalNoise" baseFrequency=".02 .04" numOctaves="3" seed="5" result="t"/>
     <feDisplacementMap in="SourceGraphic" in2="t" scale="16" xChannelSelector="R" yChannelSelector="G"/>
@@ -185,7 +186,9 @@ function inkPlate(iconName: string, colour: string, tier: number, size = 104, se
       <circle cx="50" cy="50" r="40" fill="url(#w${uid})"/>
       <g filter="url(#bleed)" transform="translate(24 24) scale(0.1016)"
          fill="${mix(colour, '#EDE3D2', 0.25)}" opacity=".92">${body}</g>
-      <circle cx="50" cy="50" r="44" fill="none" filter="url(#grain)" opacity=".35"/>
+      <g clip-path="url(#disc)">
+        <circle cx="50" cy="50" r="44" fill="none" filter="url(#grain)" opacity=".35"/>
+      </g>
     </svg>
     <span class="ring">${enso(colour, tier, size, seed)}</span>
   </span>`;
