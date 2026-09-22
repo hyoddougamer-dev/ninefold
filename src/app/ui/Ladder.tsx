@@ -6,6 +6,7 @@ import { canFightWarden, type State } from '../../sim/state.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
+import { Term } from './Term.tsx';
 import { LADDER } from '../copy.ts';
 
 /**
@@ -48,7 +49,9 @@ export function Ladder({ state }: { state: State }) {
       {/* 讀 Each row says what it is, on the row. Two lines of dashes with nothing
           naming them is a diagram of something, and the player has to guess what. */}
       <div className="lrow">
-        <span className="lab mono">{LADDER.realms(state.realm, REALMS.length)}</span>
+        <span className="lab mono">
+          <Term han="境" /> {LADDER.realms(state.realm, REALMS.length)}
+        </span>
         <span className="realms">
           {REALMS.map((x, i) => (
             <span key={x.han} className="dot" data-done={i + 1 < state.realm}
@@ -60,7 +63,7 @@ export function Ladder({ state }: { state: State }) {
 
       <div className="lrow">
         <span className="lab mono">
-          {LADDER.layers(Math.min(opened + 1, LAYERS_PER_REALM), LAYERS_PER_REALM)}
+          <Term han="層" /> {LADDER.layers(Math.min(opened + 1, LAYERS_PER_REALM), LAYERS_PER_REALM)}
         </span>
         <span className="rungs">
           {Array.from({ length: LAYERS_PER_REALM }, (_, i) => (
@@ -78,7 +81,7 @@ export function Ladder({ state }: { state: State }) {
         </span>
       </div>
 
-      <p className="faint">{LADDER.rule(r.han, r.name)}</p>
+      <p className="faint">{LADDER.rule(r.han, r.name)} {LADDER.ruleAfter}</p>
     </div>
   );
 }

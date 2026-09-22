@@ -20,7 +20,14 @@ import { KEY } from '../copy.ts';
  * page by itself — and if someone ever hand-writes a row instead, this fails.
  */
 
-const SOURCE = readFileSync(new URL('../ui/Key.tsx', import.meta.url), 'utf8');
+/**
+ * 註 The assembly moved out of the page and into ../glossary.ts, because the tooltip
+ * reads the same rows: a character tapped in the middle of a sentence is answered from
+ * exactly the table this page draws. So the derived-ness is checked where it now lives,
+ * and the page is checked for having stopped doing it by hand.
+ */
+const SOURCE = readFileSync(new URL('../glossary.ts', import.meta.url), 'utf8');
+const PAGE = readFileSync(new URL('../ui/Key.tsx', import.meta.url), 'utf8');
 
 describe('釋 the key names everything the game shows', () => {
   it('is built from the tables, not typed out', () => {
@@ -33,6 +40,29 @@ describe('釋 the key names everything the game shows', () => {
     // And no beast, rank or axis name may be typed into it as a literal.
     for (const r of RARITIES) expect(SOURCE).not.toContain(`'${RARITY_INFO[r].han}'`);
     for (const a of AFFIXES) expect(SOURCE).not.toContain(`'${AFFIX_INFO[a].label}'`);
+    // The page itself draws GROUPS and types out nothing of its own.
+    expect(PAGE).toContain('GROUPS');
+    for (const r of RARITIES) expect(PAGE).not.toContain(`'${RARITY_INFO[r].han}'`);
+  });
+
+  /**
+   * 註 And what the tooltip answers with is what the page says, because there is one
+   * table. A character the game can put in a sentence and not explain is the bug this
+   * whole arrangement exists to stop.
+   */
+  it('answers every character it lists, from the one table', async () => {
+    const { GROUPS, GLOSS, known } = await import('../glossary.ts');
+    const rows = GROUPS.flatMap((g) => g.rows);
+    expect(rows.length).toBeGreaterThan(40);
+    for (const row of rows) {
+      expect(known(row.han)).toBe(true);
+      expect(GLOSS[row.han].name).toBe(GLOSS[row.han].name);
+    }
+    // The words a sentence is allowed to drop in must all be answerable.
+    for (const han of ['氣', '力', '材', '道', '見', '熟', '通', '拆', '圍', '境', '層', '滿']) {
+      expect(known(han), `${han} is used on a screen and the tooltip cannot explain it`).toBe(true);
+    }
+    console.log(`\n  註 ${Object.keys(GLOSS).length} characters a player can tap and be answered\n`);
   });
 
   it('gives every symbol an English name', () => {

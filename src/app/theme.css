@@ -104,6 +104,34 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* 註 A character you can tap, and the one line it answers with.
+   The dotted underline is the only affordance: a character that looks like a button
+   in the middle of a sentence reads as a button, and these are words. */
+/* 錄 Inside the mark pips the character is already the affordance and the row is
+   three of them in a row, so the underline would read as three dashes. */
+.marks .term { border-bottom: 0; color: inherit; }
+.term { background: none; border: 0; padding: 0; font: inherit; color: var(--cyan);
+        border-bottom: 1px dotted color-mix(in srgb, var(--cyan) 55%, transparent);
+        line-height: inherit; cursor: pointer; }
+.term[data-open] { color: var(--gold); border-bottom-color: var(--gold); }
+.termtip { position: fixed; z-index: 45; transform: translateX(-50%);
+           font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+           max-width: min(280px, calc(100vw - 24px)); display: block;
+           background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+           padding: 11px 13px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.9);
+           animation: tipin .16s ease-out both; }
+.termtip[data-below="false"] { transform: translate(-50%, -100%); }
+.termtip b { font-size: 19px; font-weight: 400; color: var(--cyan); margin-right: 7px; }
+.termtip em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
+              font-size: 15px; color: var(--text); }
+.termtip i { display: block; margin-top: 6px; font-style: normal; font-size: 12.5px;
+             color: var(--faint); line-height: 1.5; }
+.termtip b { font-family: 'Noto Serif SC', serif; }
+@keyframes tipin { from { opacity: 0; transform: translateX(-50%) translateY(-4px); } }
+.termtip[data-below="false"] { animation-name: tipinup; }
+@keyframes tipinup { from { opacity: 0; transform: translate(-50%, -100%) translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .termtip { animation: none; } }
+
 /* 出口 The one way out, fixed to the viewport so it can never scroll away.
    Above .help (13), .arena and every sheet, because it has to be reachable from all
    of them. 46px is the tap target a thumb wants; the icon inside is smaller. */
@@ -322,7 +350,8 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .beast[data-done="true"] .marks em[data-on="true"] { color: var(--gold); }
 
 .marks { display: flex; align-items: center; gap: 4px; margin-top: 3px; }
-.marks em { font-style: normal; font-size: 11px; color: var(--line); line-height: 1; }
+.marks em { font-style: normal; font-size: 11px; color: var(--line); line-height: 1;
+            font-family: 'Noto Serif SC', serif; }
 .marks em[data-on="true"] { color: var(--cyan); }
 .marks i { font-style: normal; font-size: 10.5px; color: var(--faint); margin-left: 4px; }
 

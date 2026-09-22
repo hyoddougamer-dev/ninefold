@@ -10,6 +10,7 @@ import {
 import { num } from '../../sim/format.ts';
 import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { Term } from '../ui/Term.tsx';
 import { HUNT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
@@ -140,15 +141,18 @@ export function Hunt({ state, onFight, onDrive }: {
                 <i>
                   {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
                 </i>
+                {/* 註 The pips are the characters, so they are the tappable ones. A
+                    second copy of 見 in the sentence beside them was the screen naming
+                    the same thing twice on the same line. */}
                 <span className="marks">
                   {MARK_INFO.map((m, i) => (
-                    <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
+                    <em key={m.han} data-on={i < marks}><Term han={m.han} /></em>
                   ))}
+                  {/* 註 The mark leads as a character you can tap, then the count and
+                      the name. What it pays is on the same screen, once, rather than on
+                      every one of twenty-five rows. */}
                   <i className="mono">
-                    {next
-                      ? HUNT.toward(kills, next.at, MARK_INFO[next.index].han,
-                          MARK_INFO[next.index].name, MARK_INFO[next.index].pays)
-                      : HUNT.mastered}
+                    {next ? HUNT.toward(kills, next.at, MARK_INFO[next.index].name) : HUNT.mastered}
                   </i>
                 </span>
               </span>
@@ -200,7 +204,13 @@ export function Hunt({ state, onFight, onDrive }: {
         </div>
       )}
 
-      <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{HUNT.record}</p>
+      {/* 註 The three marks stand beside the line instead of inside a paragraph
+          explaining them. Each one answers for itself when tapped, from the same table
+          釋 the key draws — see glossary.ts. */}
+      <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>
+        {HUNT.record}{' '}
+        <Term han="見" /> <Term han="熟" /> <Term han="通" />
+      </p>
 
       <button className="fold" data-open={record} onClick={() => setRecord((x) => !x)}>
         <span className="cjk">錄</span>

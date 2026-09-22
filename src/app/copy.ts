@@ -214,14 +214,17 @@ export const REALMCARD = {
 };
 
 export const LADDER = {
+  /** 短 Two short sentences where there was one long one. It is the first thing a new
+   *  cultivator reads, and 境 and 層 beside it answer for themselves. */
   rule: (han: string, name: string) =>
-    `Your qi fills one rung. Eight of them fill ${han} ${name}, and its warden is the `
-    + 'ninth: beat it and the next realm opens, with whatever qi you have gathered '
-    + 'coming with you.',
+    `Your qi fills one rung. Eight fill ${han} ${name}, and its warden is the ninth.`,
+  ruleAfter: 'Beat it and the next realm opens, with your qi coming with you.',
   /** Written on the row itself. Two rows of dashes with nothing naming them is a
    *  diagram of something, and the player is left to guess what. */
-  realms: (n: number, of: number) => `境 realm ${n}/${of}`,
-  layers: (n: number, of: number) => `層 layer ${n}/${of}`,
+  /** 註 The character is drawn by the widget as a tappable 註 Term, so these carry the
+   *  words alone. See ui/Ladder.tsx. */
+  realms: (n: number, of: number) => `realm ${n}/${of}`,
+  layers: (n: number, of: number) => `layer ${n}/${of}`,
 };
 
 /**
@@ -265,7 +268,7 @@ export const TRIALS = {
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
   held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
   needMaterial: 'You need more 材 material. The tower pays it.',
-  rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell you, and it is why the climb still takes three months.',
+  rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell.',
 };
 
 /**
@@ -341,7 +344,7 @@ export const KEY = {
   dao: 'One for every three layers climbed, two for every warden. Spent on the tree.',
 
   buysHead: '買 What you can buy',
-  buysBlurb: 'Four upgrades. A realm holds six levels of each and not one more.',
+  buysBlurb: 'Four upgrades. A realm holds so many levels of each; 妖丹 runs further, because you go and kill for it.',
 
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
@@ -375,6 +378,17 @@ export const KEY = {
   doingHead: '作 Words you will meet',
   doingBlurb: 'The rest of the characters that ask you to do something.',
   breakThrough: 'Take the next realm. Only you can press it, never the clock.',
+  /**
+   * 註 The words a player meets in the middle of a sentence, so the sentence can stop
+   * explaining itself. Every one of these was previously spelled out in prose on the
+   * screen it appeared on, which is how the hunt screen reached 553 words.
+   */
+  melt: 'Break a piece down into qi. Worth a share of a layer of the realm it was made in.',
+  drive: 'Buy many kills of a beast you already know, instead of tapping for each one.',
+  condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
+  sitting: 'Sitting with the app open deepens your gathering, up to three times. It ends after a quarter of an hour.',
+  realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
+  layerWord: 'One rung of the climb. Your qi fills it, then it opens by itself and the next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
   save: 'Your save, to copy out or paste back. It lives in this browser only.',
   stele: 'Everything you have done, counted: the deeds and the figures.',
@@ -481,15 +495,27 @@ export const HUNT = {
    * Now it names the mark in English and says what it pays, on the row where the
    * killing happens.
    */
-  toward: (kills: number, at: number, han: string, name: string, pays: string) =>
-    (kills === 0
-      ? `never hunted · ${at} ${at === 1 ? 'kill' : 'kills'} earns ${han} ${name}, ${pays}`
-      : `${kills} / ${at} toward ${han} ${name} · ${pays}`),
-  mastered: 'mastered · every mark earned',
-  record: 'Every beast you kill is counted for ever, and the count pays. 見 Seen at one kill '
-    + 'fills in the bestiary; 熟 Known at ten gives you more 材 material from everything in '
-    + 'the game; 通 Mastered at a hundred gives you power. Both of those are permanent, and neither '
-    + 'can be hurried by waiting. A beast you have finished with folds away, and is still there if you want it.',
+  /**
+   * 短 And then it was said twenty-five times on one screen.
+   *
+   * Naming the mark and what it pays was right when a row was the only place either
+   * could be learned. It is not the only place any more — the mark characters under this
+   * list are 註 tappable and answer for themselves — and repeated down twenty-five rows
+   * the same clause was a quarter of the words on the screen. The row keeps the count
+   * and the name. What it pays is one tap away, once, instead of twenty-five times.
+   */
+  toward: (kills: number, at: number, name: string) =>
+    (kills === 0 ? `not yet hunted · ${at} for ${name}` : `${kills} / ${at} toward ${name}`),
+  mastered: 'every mark earned',
+  /**
+   * 短 Eleven words where there were seventy-one.
+   *
+   * The three marks each carried their own sentence here, explaining what 見, 熟 and 通
+   * mean — and every one of those three is a 註 tappable character on this very screen
+   * and on every row in the list. The screen was its own glossary because there was
+   * nowhere smaller to put one. Now there is.
+   */
+  record: 'Every kill is counted, for ever, and the count pays.',
 };
 
 /**
@@ -564,15 +590,17 @@ export const GEAR = {
    */
   opens: (n: number) => (n === 1 ? 'opens 1 layer straight away' : `opens ${n} layers straight away`),
   banks: 'goes into the bar',
-  melting: 'Gear you will never wear is qi you have not collected. A piece is worth a share of a layer of the realm it was made in — so old junk stays old junk, however far you climb.',
+  melting: 'Gear you will not wear is qi you have not collected.',
+  /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
+  meltingWhy: 'A piece is worth a share of a layer of the realm it was made in, so old junk stays old junk however far you climb.',
 
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
   fuse: '煉 Fuse: three make one',
   empty: 'Empty. Beasts drop gear, and wardens always do.',
   howTo: 'Tap a piece to wear it. Tap a worn slot to take it off.',
   lines: (spirit: number, heaven: number) =>
-    `靈 pieces carry ${spirit} lines, 天 pieces carry ${heaven}.`,
-  drops: (realm: number) => `Beasts here drop gear up to realm ${realm}.`,
+    `靈 ${spirit} lines · 天 ${heaven}`,
+  drops: (realm: number) => `beasts here drop up to realm ${realm}`,
   better: 'Worth more than what you are wearing',
   sets: 'Wear pieces of one realm together and the set pays you extra.',
 
@@ -603,11 +631,12 @@ export const DAO = {
   freePoints: (n: number) =>
     `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 
-  tree: 'All three branches grow from 起. The gold bridges cross between them, so you can climb one branch and step into the next.',
+  tree: 'All three branches grow from 起, and the gold bridges cross between them.',
+  /** 短 The point is that you cannot have it all. It does not need a second sentence. */
   short: (cost: number, earned: number) =>
-    `You cannot buy all of it. The tree costs ${cost} 道 and a full climb earns about ${earned}.`,
+    `${cost} 道 to buy it all; a whole climb earns about ${earned}.`,
   taken: (n: number, total: number) => `${n} of ${total} taken`,
-  keystone: 'A keystone. Stronger than the node beside it, and it takes something away.',
+  keystone: 'Stronger than the node beside it, and it takes something away.',
   /**
    * 樞 Why a keystone is dark in the second realm.
    *

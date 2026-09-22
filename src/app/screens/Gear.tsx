@@ -14,6 +14,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { portrait } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { Term } from '../ui/Term.tsx';
 import { GEAR } from '../copy.ts';
 import { swing } from '../../sim/inspect.ts';
 import { salvageWorth, salvageable } from '../../sim/salvage.ts';
@@ -308,10 +309,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       )}
 
       <p className="faint" style={{ fontSize: 12, marginTop: 12, lineHeight: 1.7 }}>
-        {GEAR.melting}<br />
+        <Term han="拆" /> {GEAR.melting}<br />
         {GEAR.howTo}<br />
-        {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)}{' '}
-        {GEAR.drops(state.realm)}
+        {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)} · {GEAR.drops(state.realm)}
       </p>
     </>
   );
