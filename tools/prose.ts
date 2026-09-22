@@ -17,6 +17,7 @@
  *
  * A flag is not automatically a fault. It is a line to go and read out loud.
  */
+import { readFileSync } from 'node:fs';
 import * as COPY from '../src/app/copy.ts';
 import { AFFIX_INFO, REALM_SETS } from '../src/data/gear.ts';
 import { REALMS } from '../src/data/realms.ts';
@@ -85,3 +86,37 @@ console.log(`  longest three:`);
 for (const s of longest) console.log(`     ${s.length}  ${s}`);
 
 console.log(`\n  flagged: ${flagged} of ${unique.length}\n`);
+
+/**
+ * 頁 And the bible, which nobody had ever held to the same rule.
+ *
+ * Bruno: *"texto muito AIsh e com muitos travessões longos."* The game's own copy was
+ * clean, because this tool has been auditing it. The page it never looked at was the one
+ * I write — and that is where every one of the em-dashes actually was.
+ *
+ * The page is one template literal, so the prose is taken out of the built HTML instead
+ * of out of the source: tags dropped, code dropped, what is left is the sentences a
+ * reader actually meets.
+ */
+const html = (() => {
+  try { return readFileSync(new URL('../bible.html', import.meta.url), 'utf8'); }
+  catch { return null; }
+})();
+
+if (html) {
+  const prose = html
+    .replace(/<style[\s\S]*?<\/style>/g, ' ')
+    .replace(/<script[\s\S]*?<\/script>/g, ' ')
+    .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
+    .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;/g, ' ');
+  const lines = prose.split(/(?<=[.!?])\s+/).map((x) => x.replace(/\s+/g, ' ').trim())
+    .filter((x) => x.length > 30 && /[a-z]{4}/.test(x));
+  const dashes = lines.filter((x) => x.includes('—'));
+  const long = lines.filter((x) => x.length > 180);
+  console.log(`頁 the bible: ${lines.length} sentences a reader meets.\n`);
+  console.log(`  em-dash as a beat: ${dashes.length} (${Math.round(100 * dashes.length / lines.length)}%)`);
+  console.log(`  a sentence over 180 characters: ${long.length}`);
+  console.log(`  longest: ${[...lines].sort((a, b) => b.length - a.length)[0]?.slice(0, 160) ?? ''}\n`);
+}

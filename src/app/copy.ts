@@ -49,11 +49,11 @@ export const HELP = {
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     ['釋 says what every character means',
-      'The button beside this one. Every symbol the game uses, in English, on one page — the upgrades, the marks, the ranks, the axes, the systems.'],
+      'The button beside this one. Every symbol the game uses, named in English, on one page.'],
   ] as const,
   opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
   hunt: '',
-  slow: '囊 You begin holding what your master left you. Spend it or let it carry you up the first layer: that trade is the whole game, and it is the first thing it asks you.',
+  slow: '囊 You begin holding what your master left you. Spend it, or let it carry you up the first layer. That trade is the whole game.',
   begin: 'Begin',
 };
 
@@ -203,9 +203,8 @@ export const REALMCARD = {
   layers: 'layers filled',
   day: 'days climbing',
   wardenHead: 'What stands at the end',
-  warden: 'It has exactly the power of a cultivator who filled this realm and brought '
-    + 'nothing else, so the levels get you to the door and everything else opens it. '
-    + 'Losing costs you nothing at all.',
+  warden: 'It has the power of a cultivator who filled this realm and brought nothing else. '
+    + 'The levels get you to the door. Everything else opens it.',
   gaveHead: 'What this realm opened',
   nextHead: 'What the next one is worth',
   opens: (list: string) => `Opens ${list}.`,
@@ -243,8 +242,7 @@ export const CHRONICLE = {
   kills: 'beasts killed', seen: 'beasts met', mastered: '通 mastered', wardens: 'wardens down',
   floor: 'best floor', seals: '塔印 seals', pills: 'pills brewed', refine: 'deepest 煉器',
   dao: '道 spent', marks: '雷印 marks',
-  rule: 'A deed pays nothing. Not qi, not power, not material. They are a record of what '
-    + 'this cultivator did, and the record is the reward.',
+  rule: 'A deed pays nothing at all. It is a record of what this cultivator did, and the record is the reward.',
   counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
     + 'no list of what you have earned, so there is nothing to forge.',
 };
@@ -333,8 +331,7 @@ export const ADVICE = {
  */
 export const KEY = {
   title: '釋 The key',
-  blurb: 'Every character the game uses, and what it means. The game keeps the characters '
-    + 'because they are what it looks like — but nothing here is ever only a character.',
+  blurb: 'Every character the game uses, and what it means. Nothing is ever only a character.',
 
   heldHead: '數 What you hold',
   heldBlurb: 'The four things you can have. Two of them tick up on their own.',
@@ -592,7 +589,7 @@ export const GEAR = {
   banks: 'goes into the bar',
   melting: 'Gear you will not wear is qi you have not collected.',
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
-  meltingWhy: 'A piece is worth a share of a layer of the realm it was made in, so old junk stays old junk however far you climb.',
+  meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
   best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
   fuse: '煉 Fuse: three make one',
@@ -695,9 +692,8 @@ export const NOTICE = {
   },
   tower: {
     title: 'Only the next floor is ever open',
-    text: 'It never runs out, and losing costs nothing. The only question a floor asks is '
-      + 'whether your build clears it. Sweep what is below you for material; the floors '
-      + 'that can actually beat you are the ones that pay in qi.',
+    text: 'It never runs out, and losing costs nothing. Sweep the low floors for material. '
+      + 'The ones that can beat you are the ones that pay in qi.',
   },
   furnace: {
     // Not "start with a 煉體丹": 煉體 is the *line*, and the pill on the screen is named
@@ -714,8 +710,8 @@ export const NOTICE = {
   },
   record: {
     title: 'Old beasts are worth going back for',
-    text: 'Ten kills of one beast is a 熟 mark and a hundred is 通. Every beast below your '
-      + 'realm still has marks in it, and the list puts the ones with something left on top.',
+    text: 'Ten kills of one beast is a 熟 mark and a hundred is 通. Old beasts still have '
+      + 'marks in them, and the list puts those on top.',
   },
   pool: {
     title: 'Fill the pool and the Dragon comes',

@@ -10,6 +10,11 @@ compaction.
   message and line of player-facing copy.
 - **Talking to Bruno is in European Portuguese**, not Brazilian.
 - Keep explanations short and plain. No long technical build-ups.
+- **No em-dash as a rhetorical beat, anywhere.** Not in the game, not in the bible, not
+  in a message to Bruno. He named it directly: *"texto muito AIsh e com muitos travessões
+  longos."* `npm run prose` counts them in the player copy **and** in `bible.html`, and
+  the number it prints for the bible is the one to drive down. A sentence that needs a
+  dash usually wanted a full stop.
 
 ## 圖 Showing changes to the look
 
