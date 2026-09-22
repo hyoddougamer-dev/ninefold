@@ -11,6 +11,7 @@ import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { DAO } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
+import { Term } from '../ui/Term.tsx';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -148,7 +149,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           that is not it, not below a screenful of stances. */}
       {!tree && (
         <div className="waiting">
-          <b className="cjk">道</b>
+          <b className="cjk"><Term han="道" /></b>
           <p>{DAO.shut(earned, realmOf(opensAt('tree')).han, realmOf(opensAt('tree')).name)}</p>
         </div>
       )}
@@ -160,7 +161,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       {showing === 'tree' && <>
       <div className="row" style={{ marginTop: 18 }}>
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-          道 Techniques
+          <Term han="道" /> Techniques
         </span>
         <span className="mono" style={{ fontSize: 13 }}>
           <b style={{ color: free > 0 ? 'var(--gold)' : 'var(--faint)', fontSize: 19 }}>{free}</b>
@@ -176,7 +177,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       <div className="legend">
         {PATHS.map((p) => (
           <span key={p} className="leg" style={{ ['--hue' as string]: PATH_INFO[p].colour }}>
-            <i /><b className="cjk">{PATH_INFO[p].han}</b> {PATH_INFO[p].name}
+            {/* 三 The legend was three coloured characters and three English names,
+                and nothing on the screen ever said what a path *was*. */}
+            <i /><b className="cjk"><Term han={PATH_INFO[p].han} sense="path" plain /></b> {PATH_INFO[p].name}
           </span>
         ))}
       </div>

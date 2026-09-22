@@ -12,6 +12,7 @@ import { seal } from '../../art/aura.ts';
 import { furnace, tower } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { Term } from '../ui/Term.tsx';
 import { TRIALS } from '../copy.ts';
 
 /**
@@ -47,10 +48,10 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           塔 Trials
         </span>
-        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}><Term han="材" plain /> {num(state.materials)}</span>
       </div>
       <p className="faint" style={{ margin: '6px 0 0', fontSize: 13 }}>
-        力 {num(power(state))} power
+        <Term han="力" /> {num(power(state))} power
       </p>
 
       <h2 className="heading">{TRIALS.towerHead}</h2>
@@ -69,7 +70,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
               {TRIALS.floor(floor)}
             </b>
             <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>
-              {beast.han} {beast.name} · 力 {num(brings)}
+              {beast.han} {beast.name} · <Term han="力" /> {num(brings)}
             </i>
           </span>
           <span className="tech mono" style={{ fontSize: 17, textAlign: 'right', color: tone }}>

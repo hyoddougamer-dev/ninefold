@@ -82,10 +82,10 @@ export function Hunt({ state, onFight, onDrive }: {
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           狩 Hunt
         </span>
-        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}><Term han="材" plain /> {num(state.materials)}</span>
       </div>
       <p className="faint" style={{ margin: '6px 0 4px', fontSize: 13 }}>
-        力 {num(power(state))} power. {HUNT.free}
+        <Term han="力" /> {num(power(state))} power. {HUNT.free}
       </p>
 
       <div className="tally">

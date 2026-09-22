@@ -63,7 +63,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           器 Gear
         </span>
         <span className="mono faint" style={{ fontSize: 12 }}>
-          {shown.length} lines worn
+          {GEAR.linesWorn(shown.length)}
         </span>
       </div>
 
@@ -71,7 +71,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <div className="totals">
           {shown.map((a) => (
             <span key={a} className="tot">
-              <b className="cjk">{AFFIX_INFO[a].han}</b>
+              {/* 軸 The seven axes are the whole of what a piece gives, and the tally
+                  at the top of the screen was the one place they were named with
+                  nothing saying what any of them was. */}
+              <b className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></b>
               <em className="mono">
                 {AFFIX_INFO[a].unit === '%'
                   ? `+${Math.round(totals[a] * 10) / 10}%`
@@ -116,7 +119,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
           Your best piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
-            {RARITY_INFO[best].han}</span>. That is the rim you are wearing.
+            <Term han={RARITY_INFO[best].han} plain /></span>. That is the rim you are wearing.
         </p>
       )}
 

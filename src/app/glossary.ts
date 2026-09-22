@@ -2,6 +2,7 @@ import { UPGRADES, UPGRADE_INFO } from '../sim/state.ts';
 import { MARK_INFO, MARKS } from '../sim/record.ts';
 import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '../data/gear.ts';
 import { STANCES } from '../data/arts.ts';
+import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
@@ -35,6 +36,17 @@ export interface Group {
   readonly title: string;
   readonly blurb: string;
   readonly rows: readonly Term[];
+  /**
+   * 義 A name for this group's sense of a character, where the same character means two
+   * different things in two places.
+   *
+   * 劍 is 位 the weapon slot and it is also 三 the Sword path of the tree, and the flat
+   * map can only hold one of them. Tapping 劍 in the tree's legend answered "Weapon",
+   * which is not wrong about the character and is wrong about the screen. A group with a
+   * sense also registers its rows under `sense:han`, and a <Term sense="path"> asks for
+   * that one.
+   */
+  readonly sense?: string;
 }
 
 export const GROUPS: readonly Group[] = [
@@ -78,11 +90,11 @@ export const GROUPS: readonly Group[] = [
     })),
   },
   {
-    title: KEY.axesHead, blurb: KEY.axesBlurb,
+    title: KEY.axesHead, blurb: KEY.axesBlurb, sense: 'axis',
     rows: AFFIXES.map((a) => ({ han: AFFIX_INFO[a].han, name: AFFIX_INFO[a].label })),
   },
   {
-    title: KEY.slotsHead, blurb: KEY.slotsBlurb,
+    title: KEY.slotsHead, blurb: KEY.slotsBlurb, sense: 'slot',
     rows: SLOTS.map((s) => ({ han: SLOT_INFO[s].han, name: SLOT_INFO[s].name, art: SLOT_INFO[s].empty })),
   },
   {
@@ -90,6 +102,15 @@ export const GROUPS: readonly Group[] = [
     rows: LINES.map((l) => ({
       han: PILL_LINES[l].han, name: PILL_LINES[l].name,
       note: PILL_LINES[l].effect, art: PILL_LINES[l].icon,
+    })),
+  },
+  {
+    // 三 The legend on 道 the tree names these three and nothing ever said what they
+    // were. The blurb is the tree's own, so the legend and the key cannot disagree.
+    title: KEY.pathsHead, blurb: KEY.pathsBlurb, sense: 'path',
+    rows: PATHS.map((p) => ({
+      han: PATH_INFO[p].han, name: PATH_INFO[p].name,
+      colour: PATH_INFO[p].colour, note: PATH_INFO[p].blurb, art: PATH_INFO[p].icon,
     })),
   },
   {
@@ -119,12 +140,19 @@ export const GROUPS: readonly Group[] = [
 /**
  * The flat lookup, for a character tapped where it stands.
  *
- * First definition wins: a character that appears in two groups is the thing it is in
- * the group a player meets first, and the groups are in the order the game teaches them.
+ * A bare character gets the first definition: the thing it is in the group a player
+ * meets first, and the groups are in the order the game teaches them. A character whose
+ * group carries a 義 sense is *also* filed under `sense:han`, so a screen that means the
+ * other one can ask for it by name. See Group.sense.
  */
 export const GLOSS: Readonly<Record<string, Term>> = (() => {
   const out: Record<string, Term> = {};
-  for (const g of GROUPS) for (const row of g.rows) if (!out[row.han]) out[row.han] = row;
+  for (const g of GROUPS) {
+    for (const row of g.rows) {
+      if (!out[row.han]) out[row.han] = row;
+      if (g.sense) out[`${g.sense}:${row.han}`] = row;
+    }
+  }
   return out;
 })();
 

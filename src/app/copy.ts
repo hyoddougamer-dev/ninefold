@@ -368,6 +368,8 @@ export const KEY = {
   pillsHead: '丹 The three lines of pills',
   pillsBlurb: 'Brewed in 爐 the furnace, from qi and material together. Kept for good.',
 
+  pathsHead: '三 The three paths of the tree',
+  pathsBlurb: 'Every node in 道 the tree belongs to one of them, and the colour on the node is the path.',
   systemsHead: '開 The systems, and the realm that opens each',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
@@ -569,6 +571,8 @@ export const ITEM = {
 };
 
 export const GEAR = {
+  /** 數 One line is a line, and the screen read "1 lines worn" until somebody looked. */
+  linesWorn: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'} worn`,
   /**
    * 拆 Melting gear down.
    *

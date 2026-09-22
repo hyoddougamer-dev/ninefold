@@ -167,6 +167,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         border-bottom: 1px dotted color-mix(in srgb, var(--cyan) 55%, transparent);
         line-height: inherit; cursor: pointer; }
 .term[data-open] { color: var(--gold); border-bottom-color: var(--gold); }
+/* 色 A character told apart by its colour keeps it, and underlines in that colour.
+   階 the five ranks, 三 the three paths and 軸 the seven axes are all read by hue. */
+.term[data-plain] { color: inherit; border-bottom-color: currentColor; opacity: 1; }
+.term[data-plain][data-open] { color: inherit; border-bottom-style: solid; }
 /* 置 No translate anywhere on this box. It is placed by its own measured edges from
    ui/Term.tsx, because a translate cannot be clamped: a note on a character in the left
    margin used to be pulled 105px off the side of the screen with nothing to stop it.

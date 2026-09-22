@@ -48,8 +48,28 @@ import { GLOSS } from '../glossary.ts';
  * layout effect, before the browser paints, so there is no flash of it in the wrong
  * place.
  */
-export function Term({ han, children }: { han: string; children?: React.ReactNode }) {
-  const term = GLOSS[han];
+export function Term({ han, sense, plain, children }: {
+  han: string;
+  /**
+   * 義 Which sense of the character this screen means, where it has two.
+   *
+   * 劍 is 位 the weapon slot and 三 the Sword path of the tree, and the tree's legend
+   * was answering "Weapon". A sense asks the glossary for that group's row instead, and
+   * falls back to the plain character if there is none. See Group.sense.
+   */
+  sense?: string;
+  /**
+   * 色 Keep the colour the character already has, and underline in that colour instead.
+   *
+   * A rank, a path and an affix are all *told apart by their colour*: 天 is gold because
+   * it is the top rank, and the three paths of the tree are read off the legend by hue
+   * alone. Painting those cyan to say they are tappable would take the meaning out of
+   * them to add an affordance, which is a bad trade. The dotted underline is enough.
+   */
+  plain?: boolean;
+  children?: React.ReactNode;
+}) {
+  const term = (sense ? GLOSS[`${sense}:${han}`] : undefined) ?? GLOSS[han];
   const ref = useRef<HTMLButtonElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
   /** Where the character is. Set on the tap, and never recomputed. */
@@ -101,7 +121,8 @@ export function Term({ han, children }: { han: string; children?: React.ReactNod
 
   return (
     <>
-      <button ref={ref} className="term cjk" data-open={from ? 'true' : undefined}
+      <button ref={ref} className="term cjk" data-plain={plain || undefined}
+        data-open={from ? 'true' : undefined}
         onClick={(e) => { e.stopPropagation(); from ? (setFrom(null), setAt(null)) : open(); }}
         aria-label={`${han}: ${term.name}`}>
         {children ?? han}

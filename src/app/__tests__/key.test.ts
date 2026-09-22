@@ -62,7 +62,38 @@ describe('釋 the key names everything the game shows', () => {
     for (const han of ['氣', '力', '材', '道', '見', '熟', '通', '拆', '圍', '境', '層', '滿']) {
       expect(known(han), `${han} is used on a screen and the tooltip cannot explain it`).toBe(true);
     }
-    console.log(`\n  註 ${Object.keys(GLOSS).length} characters a player can tap and be answered\n`);
+    // 義 A qualified key is a second sense of a character already counted, not another
+    // character, so the tally counts the bare ones. See Group.sense.
+    const bare = Object.keys(GLOSS).filter((k) => !k.includes(':'));
+    console.log(`\n  註 ${bare.length} characters a player can tap and be answered\n`);
+  });
+
+  /**
+   * 義 The same character, two things, and the screen decides which.
+   *
+   * 劍 is 位 the weapon slot and it is also 三 the Sword path of the tree. The flat map
+   * holds one of them, so the tree's legend was answering "Weapon", which is true of the
+   * character and false on that screen. A group with a sense files its rows twice.
+   */
+  it('lets a screen ask for the other sense of a character', async () => {
+    const { GROUPS, GLOSS } = await import('../glossary.ts');
+    const { PATHS, PATH_INFO } = await import('../../data/techniques.ts');
+    const { SLOTS, SLOT_INFO } = await import('../../data/gear.ts');
+
+    // Every character that means two things has both filed, and they are not the same.
+    const collisions = PATHS.map((p) => PATH_INFO[p].han)
+      .filter((h) => SLOTS.some((s) => SLOT_INFO[s].han === h));
+    expect(collisions.length).toBeGreaterThan(0);
+    for (const han of collisions) {
+      expect(GLOSS[`path:${han}`], `path:${han}`).toBeDefined();
+      expect(GLOSS[`slot:${han}`], `slot:${han}`).toBeDefined();
+      expect(GLOSS[`path:${han}`].name).not.toBe(GLOSS[`slot:${han}`].name);
+    }
+    // And a sense only ever exists where a group asked for one.
+    for (const g of GROUPS) {
+      if (!g.sense) continue;
+      for (const row of g.rows) expect(GLOSS[`${g.sense}:${row.han}`]).toBe(row);
+    }
   });
 
   it('gives every symbol an English name', () => {
