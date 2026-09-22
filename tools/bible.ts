@@ -12,7 +12,7 @@
  *
  * Run with `npm run bible`.
  */
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
@@ -1061,7 +1061,8 @@ const SECRET_ROOMS_TABLE = (['spring', 'shrine', 'brazier'] as const).map((k) =>
     <b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</td>
     <td>${ROOM_INFO[k].says}</td></tr>`).join('');
 
-const page = `<title>九境 Ninefold · the Bible</title>
+const page = `<meta charset="utf-8">
+<title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
@@ -1641,6 +1642,15 @@ const page = `<title>九境 Ninefold · the Bible</title>
   .where a em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
                 font-size:16px; display:block; }
   .where a i { font-style:normal; font-size:13px; color:var(--faint); }
+
+  /* 圖外 A drawing that lives in a file beside this page.
+     An <img class="pl"> keeps its own colours. An <i class="pl"> is a silhouette:
+     the file is the shape, and the element paints currentColor through it, which is
+     what keeps every icon taking its colour from the CSS around it as before. */
+  i.pl { display:inline-block; vertical-align:middle; background:currentColor;
+         -webkit-mask:var(--pl) center/contain no-repeat;
+         mask:var(--pl) center/contain no-repeat; }
+  img.pl { display:block; object-fit:contain; }
 </style>
 
 <div class="sheet">
@@ -3423,9 +3433,70 @@ const page = `<title>九境 Ninefold · the Bible</title>
 </div>
 `;
 
-writeFileSync('bible.html', page);
-const kb = Math.round(page.length / 1024);
+/**
+ * 圖外 Every drawing on the page, lifted out into files beside it.
+ *
+ * The page is republished over itself as the game changes, and publishing over an
+ * artifact means reading the published copy back in full first. 九境's nine realm
+ * drawings are dense SVG: three hundred lines of this file tokenise to seventy-eight
+ * thousand tokens, so the page grew past the point where it could be written over at
+ * all, and a link had to be thrown away. The prose is a tenth of the weight. The
+ * drawings are the rest.
+ *
+ * So they live in bible-art/ and the page points at them. Two kinds, and the difference
+ * matters:
+ *
+ *   色 A drawing with its own colours (a realm, a piece of gear, the arena) becomes an
+ *     <img>. An image keeps every colour in it.
+ *   單 An icon drawn in currentColor is a silhouette that takes its colour from the CSS
+ *     around it, and an <img> would lose that. It becomes a CSS mask instead: the file
+ *     is the shape, and the element paints currentColor through it. Same colour, same
+ *     rule, none of the bytes.
+ *
+ * The name of each file is a hash of the drawing, so the same icon drawn in ten places
+ * is one file fetched once, and a drawing that has not changed keeps its name.
+ */
+function liftArt(html: string): { page: string; plates: Map<string, string> } {
+  const plates = new Map<string, string>();
+  const out = html.replace(/<svg\b[\s\S]*?<\/svg>/g, (svg) => {
+    const head = svg.slice(0, svg.indexOf('>') + 1);
+    const w = /\swidth="([^"]+)"/.exec(head)?.[1] ?? '';
+    const h = /\sheight="([^"]+)"/.exec(head)?.[1] ?? '';
+    const label = /\saria-label="([^"]*)"/.exec(head)?.[1] ?? '';
+    // 名 The hash is of the drawing itself, so nothing is renamed by being moved.
+    let a = 5381;
+    for (let i = 0; i < svg.length; i++) a = ((a * 33) ^ svg.charCodeAt(i)) >>> 0;
+    const name = `a${a.toString(36)}.svg`;
+    // 命 A standalone .svg file must carry the namespace. Inline SVG in an HTML page
+    // does not need it and none of these had it, so the first lift wrote 123 files that
+    // every browser refused to parse: nine broken-image boxes where the realms are.
+    plates.set(name, svg.includes('xmlns=')
+      ? svg : svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"'));
+    const size = (v: string) => (v.endsWith('%') ? v : `${v}px`);
+    const box = `width:${size(w || '100%')};height:${size(h || '100%')}`;
+    if (svg.includes('currentColor')) {
+      return `<i class="pl" style="${box};--pl:url(bible-art/${name})"`
+        + `${label ? ` role="img" aria-label="${label}"` : ' aria-hidden="true"'}></i>`;
+    }
+    return `<img class="pl" style="${box}" src="bible-art/${name}"`
+      + ` alt="${label}"${label ? '' : ' aria-hidden="true"'}>`;
+  });
+  return { page: out, plates };
+}
+
+const lifted = liftArt(page);
+const flat = lifted.page;
+mkdirSync('bible-art', { recursive: true });
+// 淨 The folder is rebuilt rather than added to, so a drawing that is no longer on the
+// page does not go on being published for ever.
+for (const gone of readdirSync('bible-art')) if (gone.endsWith('.svg')) rmSync(`bible-art/${gone}`);
+for (const [name, svg] of lifted.plates) writeFileSync(`bible-art/${name}`, svg);
+
+writeFileSync('bible.html', flat);
+const kb = Math.round(flat.length / 1024);
+const artKb = Math.round([...lifted.plates.values()].reduce((n, s) => n + s.length, 0) / 1024);
 console.log(`bible.html · ${kb} KB · ${SYSTEMS.filter((s) => s.status === 'done').length} closed, ` +
   `${SYSTEMS.filter((s) => s.status === 'open').length} open, ` +
   `${SYSTEMS.filter((s) => s.status === 'planned').length} planned · ` +
   `${GEAR.length} items, ${LINES.length * 9} pills, ${BEASTS.length} beasts named in full`);
+console.log(`bible-art/ · ${lifted.plates.size} drawings · ${artKb} KB, lifted off the page`);
