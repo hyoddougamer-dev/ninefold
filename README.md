@@ -13,16 +13,27 @@ always. Nine realms of nine rungs, nine heavens above them, and no end after tha
 Two commands answer that, and between them they are the whole answer.
 
 ```sh
-npm test                      # the numbers, the curve, the save
+npm test                      # the numbers, the curve, the save, 10,672 mangled saves
 npm run build && npm run preview &
-npm run smoke                 # the built game in a real browser, six depths, every screen
+npm run smoke                 # the built game in a real browser: every screen opens
+npm run actions               # and every verb in it does what it exists to do
 ```
 
 `npm test` prints the curve on every run: eight modelled cultivators, how many days each
-takes to reach the ninth realm and to finish the climb. `npm run smoke` opens the built
-page in Chromium at six depths plus a brand new save, visits every tab, opens the corner
-and every panel behind it, and fails on anything that throws, renders nothing, or puts
-`NaN` in front of the player.
+takes to reach the ninth realm and to finish the climb. It also throws ten thousand
+mangled saves and six hundred aimed ones at `validate()`, because a save is input and
+that rule needs an adversary.
+
+`npm run smoke` opens the built page in Chromium at six depths plus a brand new save,
+visits every tab, opens the corner and every panel behind it, and fails on anything that
+throws, renders nothing, or puts `NaN` in front of the player.
+
+`npm run actions` is the other half of that question, and it is the one that matters
+before anybody else plays: it **presses things**. Buying, fighting, losing, wearing,
+melting, fusing, refining, brewing, climbing the tower, learning a node, taking a
+stance, driving a beast, beating a warden, breaking through, crossing the tribulation,
+and copying the save out. Each act asserts on the saved state, not on the pixels — a
+button that lights up and does nothing passes a smoke walk and fails here.
 
 ## The commands
 
@@ -33,6 +44,7 @@ and every panel behind it, and fails on anything that throws, renders nothing, o
 | `npm run preview` | serve `dist/` at <http://localhost:4173/> |
 | `npm test` | the test suite, and the curve |
 | `npm run smoke` | drive the built game in a real browser |
+| `npm run actions` | press every verb the game has, and check it did something |
 | `npm run bible` | write `bible.html` |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |
 | `npm run icons` · `icons-png` | regenerate the icon set |

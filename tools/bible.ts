@@ -1463,12 +1463,21 @@ const page = `<title>九境 Ninefold — the Bible</title>
     </div>
 
     <h3>Está tudo funcional?</h3>
-    <div class="rule"><b>Sim, e há um comando que o confirma.</b> <code>npm run smoke</code>
+    <div class="rule"><b>Sim, e há dois comandos que o confirmam.</b> <code>npm run smoke</code>
       abre o jogo construído num browser a sério, em seis profundidades, visita todos os
       separadores, abre o canto e todos os painéis atrás dele, e falha se alguma coisa
       rebentar, não desenhar nada, ou mostrar <code>NaN</code> ao jogador. A última vez que
-      correu: <b>todos os ecrãs abriram e nada estava partido</b>. Ao lado disso correm
-      <b>${TESTS} testes</b> que verificam os números.</div>
+      correu: <b>todos os ecrãs abriram e nada estava partido</b>.</p>
+      <p class="t" style="margin-top:8px">E <code>npm run actions</code> é a outra metade
+      da pergunta, que é a que interessa antes de outra pessoa jogar: <b>carrega nas
+      coisas</b>. Comprar, lutar, perder, vestir, derreter, fundir, refinar, destilar,
+      subir a torre, aprender um nó, tomar uma postura, fazer um 圍, derrubar um warden,
+      passar de reino, atravessar o 劫, e copiar o save para fora. Cada acto verifica o
+      <em>save</em> e não os pixels — um botão que acende e não faz nada passa no smoke e
+      falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
+      Ao lado disso correm <b>${TESTS} testes</b>, dos quais um atira dez mil saves
+      estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
+      dirigidos, campo a campo.</div>
 
     <h3>O que falta decidir</h3>
     <p class="t">Nada está a meio. A única linha do quadro que não está fechada é

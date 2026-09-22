@@ -213,7 +213,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
               const rar = RARITY_INFO[g.rarity];
               return (
-                <button key={`${g.template}-${g.rarity}`} className="beast" onClick={() => onFuse(g.template, g.rarity)}>
+                /* 煉 The same row 狩 uses — a seal, a name, a figure on the right — shared
+                   on purpose rather than by accident, and carrying its own name so that
+                   restyling one screen cannot silently restyle the other. */
+                <button key={`${g.template}-${g.rarity}`} className="beast fuserow"
+                  onClick={() => onFuse(g.template, g.rarity)}>
                   <span className="seal" style={{ width: 44, height: 44 }}>
                     <Svg html={gearTile({ id: 'x', template: g.template, rarity: g.rarity, rolls: [] }, { size: 44 })} />
                   </span>

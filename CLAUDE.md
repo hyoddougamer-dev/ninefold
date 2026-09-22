@@ -68,6 +68,10 @@ Each of these cost real time once. They are written down so they cost it once.
 - **A `.notice` card blocks pointer events.** Dismiss it before clicking anything.
 - **`pgrep -f <name>` matches the waiting loop's own command line**, so an
   `until ! pgrep -f x.mjs` loop never exits.
+- **`.beast` is the one class two screens share, and it is on purpose.** 狩 the hunt list
+  and 器 the fuse groups are the same row — a seal, a name, a figure on the right. The
+  fuse one carries `fuserow` as well, so a test or a rule can name one screen without
+  touching the other. Restyle `.beast` and check both.
 - **Never share a CSS class between two screens.** `.help` was the save panel and the
   help sheet; `.ladder` was the game's climb widget and the bible's realm cards. Both
   cost a debugging session. Scope every new block (`#mockups .ladder`, `.condense .chead`).
