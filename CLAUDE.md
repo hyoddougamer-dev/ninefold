@@ -110,7 +110,13 @@ Each of these cost real time once. They are written down so they cost it once.
 - `src/app/copy.ts` holds everything the player reads, in one file, so it can be reviewed
   and so a translation has one place to replace.
 - `tools/bible.ts` generates `bible.html`, republished to the artifact as a living
-  document.
+  document: **https://claude.ai/artifact/NAEtbynbgUakGDESfpSp8W**
+
+  The link changed once, on 2026-09-22. Publishing over an existing artifact requires
+  reading the published copy in full first, and the bible's own realm drawings tokenise
+  to several hundred thousand tokens, so the old link could not be written over and a
+  new one was published instead. Keep the page's weight in mind: if it ever has to be
+  republished over itself, the drawings are what make that impossible.
 
 ## Git
 
