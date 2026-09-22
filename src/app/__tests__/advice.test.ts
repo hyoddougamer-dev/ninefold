@@ -86,3 +86,65 @@ describe('示 the line that is never empty', () => {
     expect(seen.size).toBeGreaterThan(3);
   });
 });
+
+/**
+ * 道 A free upgrade you already own outranks everything, and for the whole life of this
+ * function it outranked nothing.
+ *
+ * Measured with 早 tools/early.ts before the fix: on **100% of visits where a cultivator
+ * held unspent 道 points**, this line pointed somewhere else, every single time at 狩
+ * the hunt, while they carried as many as twelve of them. Bruno was carrying eleven and
+ * reading "血蝠 is within reach at 98%. 7 more kills earns its 熟 mark."
+ *
+ * Points cost nothing, never expire and always help, so nothing can rank above them.
+ */
+describe('道 unspent points come before everything', () => {
+  it('names them, with the count, and points at the tab', async () => {
+    const { freePoints } = await import('../../sim/points.ts');
+    // A third-realm cultivator who has never opened 道 the Path.
+    const s = {
+      ...newState(T0), realm: 3, layer: 5, qi: 3e5, materials: 2296,
+      levels: { technique: 8, method: 12, pills: 13, cores: 4 },
+      killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
+      unlocked: [], stance: 'swift', sequence: ['crane'],
+    } as unknown as State;
+
+    const free = freePoints(s);
+    expect(free, 'this cultivator should be carrying points').toBeGreaterThan(0);
+    const tip = advice(s);
+    expect(tip!.han).toBe('道');
+    expect(tip!.tab).toBe('dao');
+    expect(tip!.text).toContain(String(free));
+  });
+
+  it('stops saying it the moment there is nothing reachable to spend them on', () => {
+    // Nothing earned yet, so nothing to spend: the line has to move on rather than
+    // send a player to a tab with an empty tree in it.
+    const fresh = newState(T0);
+    expect(advice(fresh)!.han).not.toBe('道');
+  });
+
+  /**
+   * 煉器 And the other half: a system nothing ever points at is a system the player does
+   * not know they have. Below 狩 the hunt this line never fired once in three realms,
+   * because there is nearly always some beast with a mark left in it.
+   */
+  it('sends material to 煉器 refining once it buys real levels, and not before', () => {
+    const base = {
+      ...newState(T0), realm: 3, layer: 5, qi: 3e5,
+      levels: { technique: 8, method: 12, pills: 13, cores: 4 },
+      killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
+      worn: { weapon: { id: 'w', template: 'sword3', rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
+      unlocked: ['root', 'opening', 'edge', 'chain', 'breathing', 'clearmind', 'sunder', 'gleaning', 'keeneye'],
+      stance: 'swift', sequence: ['crane'],
+    } as unknown as State;
+
+    // Too little to matter: the line leaves it alone and sends them hunting.
+    expect(advice({ ...base, materials: 40 })!.han).toBe('狩');
+    // Enough for real levels: it names the piece and how many.
+    const rich = advice({ ...base, materials: 2296 })!;
+    expect(rich.han).toBe('煉器');
+    expect(rich.tab).toBe('gear');
+    expect(rich.text).toMatch(/\d+ levels/);
+  });
+});

@@ -42,6 +42,7 @@ import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
 import { canRefine, refine, refinePrice } from '../src/sim/trials.ts';
+import { advice } from '../src/app/advice.ts';
 import { MARKS, marksOf } from '../src/sim/record.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { ladderBetween } from '../src/sim/balance.ts';
@@ -98,6 +99,10 @@ export interface Offers {
   /** 妖 The warden, standing, and worth a try. */
   readonly warden: boolean;
   readonly breakthrough: boolean;
+  /** 道 Points already earned and not yet spent: a free upgrade sitting in a tab. */
+  readonly freePoints: number;
+  /** 示 Which character the one line of advice was pointing at. */
+  readonly pointedAt: string;
 }
 
 /** A visit with something to decide, as against one that is only tidying and grinding. */
@@ -155,7 +160,7 @@ export interface Early {
 }
 
 /** Play the first `upTo` realms, recording every visit and every first time. */
-export function walk(p: Player, upTo = 3): Early {
+export function walk(p: Player, upTo = 3, spends = true): Early {
   const { checks: CHECKS, minutes: MINUTES, hunts: HUNTS } = p;
   let s = newState(T0);
   let t = T0;
@@ -193,6 +198,8 @@ export function walk(p: Player, upTo = 3): Early {
       melt: s.chest.length > 0,
       warden: canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.2,
       breakthrough: canBreakThrough(s),
+      freePoints: isOpen(s.realm, 'tree') ? freeNodes(s) : 0,
+      pointedAt: advice(s)?.han ?? '',
     };
     visits.push(o);
 
@@ -239,6 +246,18 @@ export function walk(p: Player, upTo = 3): Early {
 
     if (isOpen(s.realm, 'gear')) s = salvageUpTo(s, 'spirit');
 
+    // 煉器 The visit walk refines too, or the state it measures the advice against is
+    // one where material only ever piles up and the line would fire for ever.
+    if (spends && isOpen(s.realm, 'refine')) for (let i = 0; i < 60; i++) {
+      const keep = canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0;
+      const slot = SLOTS.filter((x) => s.worn[x] && canRefine(s, x))
+        .sort((a, b) => itemWorth(s.worn[b]!) - itemWorth(s.worn[a]!))[0];
+      if (!slot) break;
+      const price = refinePrice(s, slot);
+      if (price === null || s.materials - price < keep) break;
+      s = refine(s, slot);
+    }
+
     for (let g = 0; g < 400; g++) {
       const can = UPGRADES.filter((u) => canBuy(s, u));
       if (!can.length) break;
@@ -246,7 +265,9 @@ export function walk(p: Player, upTo = 3): Early {
       s = buy(s, can[0]);
     }
     // 道 Nodes are bought the moment they can be, which is the most generous reading.
-    if (isOpen(s.realm, 'tree')) for (let g = 0; g < 200; g++) {
+    // 示 Unless we are measuring what a player who has not found the tab is told, which
+    // is Bruno's case exactly: eleven points unspent, and the advice pointing at a bat.
+    if (spends && isOpen(s.realm, 'tree')) for (let g = 0; g < 200; g++) {
       const want = ALL_NODES.find((n) => canUnlock(n.key, s.unlocked, freeNodes(s), isOpen(s.realm, 'keystones')));
       if (!want) break;
       s = { ...s, unlocked: [...s.unlocked, want.key] };

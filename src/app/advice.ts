@@ -14,6 +14,12 @@ import { MARK_INFO, nextMark } from '../sim/record.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
 import { ADVICE } from './copy.ts';
+import { freePoints } from '../sim/points.ts';
+import { canUnlock } from '../sim/dao.ts';
+import { ALL_NODES } from '../data/techniques.ts';
+import { canRefine } from '../sim/trials.ts';
+import { clampRefine, refineCost } from '../sim/refine.ts';
+import { SLOTS, templateOf } from '../data/gear.ts';
 
 /**
  * 示 One line telling the player the most useful thing they could do next.
@@ -45,6 +51,14 @@ export interface Advice {
   readonly toward?: number;
 }
 
+/**
+ * 煉器 How many refine levels the material has to buy before the line says so.
+ *
+ * Levels double in price, so three is already about seven times the next one: material
+ * has to have properly outrun the spending before this outranks 狩 the hunt.
+ */
+const PILING = 3;
+
 /** The odds below which a fight is worth explaining rather than worth trying. */
 const STUCK = 0.35;
 
@@ -56,9 +70,43 @@ function bodyPill(s: State): string {
   return pillOf('body', s.realm).han;
 }
 
+/**
+ * 道 Points earned, not spent, and a node actually within reach to spend them on.
+ *
+ * Both halves matter. Points with nothing reachable to buy is not a thing to do, and
+ * telling a player to go and spend what they cannot spend is worse than silence.
+ */
+function pointsWaiting(s: State): number {
+  if (!isOpen(s.realm, 'tree')) return 0;
+  const free = freePoints(s);
+  if (free <= 0) return 0;
+  const reachable = ALL_NODES
+    .some((n) => canUnlock(n.key, s.unlocked, free, isOpen(s.realm, 'keystones')));
+  return reachable ? free : 0;
+}
+
+/** 煉器 The piece worth pouring material into, if any of them can take a level now. */
+function refinable(s: State): string | null {
+  if (!isOpen(s.realm, 'refine')) return null;
+  const slot = SLOTS.find((x) => s.worn[x] && canRefine(s, x));
+  return slot ? templateOf(s.worn[slot]!).han : null;
+}
+
 export function advice(s: State): Advice | null {
   const warden = currentWarden(s);
   const blocked = canFightWarden(s) && odds(s, warden) < STUCK;
+
+  /**
+   * 道 Free points come before everything, including being blocked.
+   *
+   * This is the only thing in the game that costs nothing and is always an improvement,
+   * so nothing can outrank it. Measured before it existed: on **100% of visits where a
+   * cultivator held unspent points**, this function pointed somewhere else, every time
+   * at 狩 the hunt, while they carried as many as twelve. Bruno was carrying eleven,
+   * looking at a line telling him to go and kill a bat seven more times.
+   */
+  const waiting = pointsWaiting(s);
+  if (waiting > 0) return { han: '道', text: ADVICE.freePoints(waiting), tab: 'dao' };
 
   if (blocked) {
     const cap = capOf(s, 'technique');
@@ -80,6 +128,10 @@ export function advice(s: State): Advice | null {
         ? { han: '劍訣', text: ADVICE.buyTechnique }
         : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
     }
+    // 煉器 Cores are full and the technique is at its cap, so the material coming off
+    // the beasts has exactly one place left to go, and it is the one with no ceiling.
+    const piece = refinable(s);
+    if (piece) return { han: '煉器', text: ADVICE.refineCapped, tab: 'gear' };
     if (!stanceOf(s)) return { han: '勢', text: ADVICE.noStance, tab: 'dao' };
     if (sequenceOf(s).every((a) => a === null)) {
       return { han: '訣', text: ADVICE.noSequence, tab: 'dao' };
@@ -116,6 +168,8 @@ export function advice(s: State): Advice | null {
     s.levels[u] >= capOf(s, u) || (u === 'cores' && !isOpen(s.realm, 'cores')));
   if (allCapped && !ladderDone(s)) {
     // What to do with a full realm depends on what the realm has opened.
+    const piece = refinable(s);
+    if (piece) return { han: '煉器', text: ADVICE.refineCapped, tab: 'gear' };
     if (isOpen(s.realm, 'furnace')) return { han: '爐', text: ADVICE.cappedSoSpend, tab: 'trials' };
     if (isOpen(s.realm, 'tower')) return { han: '塔', text: ADVICE.cappedSoClimb, tab: 'trials' };
     const soon = SYSTEMS.find((x) => x.realm > s.realm);
@@ -138,6 +192,33 @@ export function advice(s: State): Advice | null {
    * gameplay; an empty screen is not.
    */
   const mine = power(s);
+
+  /**
+   * 煉器 Material piling up, with somewhere uncapped to put it.
+   *
+   * This sits **above** the hunt line, and that took a measurement to settle. Below it
+   * the line never fired once in three realms, because there is nearly always some
+   * beast with a mark left in it and 狩 answered first every single time. A system
+   * nothing ever points at is a system a player does not know they have, which is the
+   * whole of what is being fixed here.
+   *
+   * What keeps it from shouting is the threshold rather than the order: it wants
+   * material for **three levels** on the piece, over and above the 妖丹 core a warden
+   * will ask for, which is the point at which hunting has genuinely outrun spending.
+   */
+  const piece = refinable(s);
+  if (piece) {
+    const slot = SLOTS.find((x) => s.worn[x] && canRefine(s, x))!;
+    const coreRoom = !isOpen(s.realm, 'cores') || s.levels.cores >= capOf(s, 'cores')
+      ? 0 : upgradeCost(s, 'cores');
+    // 數 How many levels the material really buys, keeping back the core. Levels double,
+    // so this is a short loop and never a long one.
+    let spare = s.materials - coreRoom;
+    let level = clampRefine(s.worn[slot]!.refine);
+    let levels = 0;
+    while (levels < 20 && spare >= refineCost(level)) { spare -= refineCost(level); level++; levels++; }
+    if (levels >= PILING) return { han: '煉器', text: ADVICE.refine(piece, levels), tab: 'gear' };
+  }
 
   // 狩 The strongest thing you can actually beat, if it still has a mark left in it.
   if (isOpen(s.realm, 'hunt')) {

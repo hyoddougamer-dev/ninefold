@@ -277,6 +277,31 @@ export const TRIALS = {
  * decides.
  */
 export const ADVICE = {
+  /**
+   * 道 The one thing in the game that costs nothing and is always an improvement.
+   *
+   * Measured: on **100% of visits where a cultivator held unspent points**, 示 the line
+   * pointed somewhere else, every time at 狩 the hunt. A player can be carrying twelve
+   * of them, which is most of a branch, while the game tells them to go and tap a bat.
+   * Bruno was carrying eleven. So this goes first, before everything, and it goes away
+   * the moment they are spent.
+   */
+  freePoints: (n: number) =>
+    `You have ${n} 道 ${n === 1 ? 'point' : 'points'} unspent. They cost nothing and they never expire, `
+    + `and every one of them is a permanent upgrade sitting in 道 the Path.`,
+  /**
+   * 煉器 The uncapped sink, named when material is piling up with nowhere else to go.
+   * Before this moved to the second realm there was nowhere else for it to go at all.
+   */
+  /**
+   * 數 It says how many levels the material actually buys, because "piling up" is a
+   * feeling and a number is a fact. With 材 100 and a level costing 12 the old line
+   * claimed material was piling up, which was not true and was the right advice anyway.
+   */
+  refine: (han: string, levels: number) =>
+    `Your 材 will take ${han} ${levels} ${levels === 1 ? 'level' : 'levels'} further in 器 Gear. `
+    + `Refining has no cap, and the levels stay on the piece.`,
+  refineCapped: 'Your 妖丹 cores are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
   needMaterial: (short: number) =>
     `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
     + `You are ${short.toLocaleString('en-GB')} short. Material comes from hunting.`,

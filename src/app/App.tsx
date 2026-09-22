@@ -7,6 +7,7 @@ import { canFightWarden, newState, power, type State, filledRealms,
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
 import { advance, layersOpened } from '../sim/time.ts';
+import { freePoints as freeOf } from '../sim/points.ts';
 import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portrait } from '../art/aura.ts';
@@ -113,13 +114,9 @@ export function App() {
   /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
   const [meltUpTo, setMeltUpTo] = useState<Rarity>('common');
 
-  /** 點 道 points earned and not yet spent. The tab bar wears the count. */
-  const freePoints = daoFree(
-    layersOpened(state),
-    Object.entries(state.killed).filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length,
-    state.unlocked,
-    filledRealms(state),
-  );
+  /** 點 道 points earned and not yet spent. The tab bar wears the count, and 示 the
+      line of advice reads the same number. See sim/points.ts. */
+  const free = freeOf(state);
   const loaded = useRef(false);
   const lastLayer = useRef(0);
   /**
@@ -598,7 +595,7 @@ export function App() {
           // 點 An unspent 道 point is money on the floor, and the screen it is spent on
           // is three taps and a scroll away. So the tab carries the count: the one place
           // a player looking at any other screen will see it.
-          const owed = t.key === 'dao' && !shut && isOpen(state.realm, 'tree') ? freePoints : 0;
+          const owed = t.key === 'dao' && !shut && isOpen(state.realm, 'tree') ? free : 0;
           return (
             <button
               key={t.key}
