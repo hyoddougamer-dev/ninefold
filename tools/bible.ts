@@ -27,6 +27,8 @@ import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/te
 import { AWAKENINGS, ALL_CARDS } from '../src/data/awakening.ts';
 import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
+import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
+import { isGate } from '../src/sim/secret.ts';
 import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
@@ -1018,6 +1020,19 @@ const CAVE_TABLE = HERBS.map((h) => `
     <td class="n">${h.paysMinutes} min of qi</td>
     <td class="n">${(h.paysMinutes / h.hours).toFixed(1)}</td></tr>`).join('');
 
+/** 秘境 The seven rooms, and which of them are gates. */
+const SECRET_PATH = Array.from({ length: SECRET_ROOMS }, (_, i) => `
+  <span class="rm"${isGate(i) ? ' data-gate="true"' : ''}>
+    ${icon(isGate(i) ? ROOM_INFO.beast.icon : 'wax-seal', 20)}
+    <em>${i + 1}</em>
+  </span>`).join('');
+
+/** 秘境 What is behind a door that is not a gate. */
+const SECRET_ROOMS_TABLE = (['spring', 'shrine', 'brazier'] as const).map((k) => `
+  <tr><td><span class="s">${icon(ROOM_INFO[k].icon, 20)}</span>
+    <b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</td>
+    <td>${ROOM_INFO[k].says}</td></tr>`).join('');
+
 const page = `<title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1120,6 +1135,17 @@ const page = `<title>九境 Ninefold · the Bible</title>
         line-height:1.5; }
   #meet .meets td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
   #cave .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+        margin-right:5px; }
+  #secret .spath { display:flex; align-items:center; gap:6px; margin:16px 0 4px; }
+  #secret .rm { flex:1; display:grid; place-items:center; gap:4px; padding:10px 4px;
+        border-radius:11px; background:var(--panel); border:1px solid var(--line);
+        color:var(--line); }
+  #secret .rm[data-gate] { color:var(--magenta);
+        border-color:color-mix(in srgb, var(--magenta) 35%, transparent); }
+  #secret .rm em { font-style:normal; font-size:10.5px; color:var(--faint);
+        font-family:Rajdhani,sans-serif; font-weight:700; }
   #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
         margin-right:5px; }
 
@@ -1816,9 +1842,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
       ladder, and that is the whole of it. There is no place you own, no run with an
       ending, no choice that makes your cultivator different from anybody else's, and
       nothing in the world that ever speaks to you.</p>
-    <p class="t"><b>Three of the four are built now</b>, and 悟道, 緣 and 洞天 have
-      sections of their own further down this page. The last is drawn here rather than
-      described, with the game's own
+    <p class="t"><b>All four are built now</b>, and each has a section of its own
+      further down this page. They are drawn here as they were proposed, with the game's
+      own
       art and its own tables rather than described, because a system in a paragraph is a
       system nobody can judge. Each one is written to the laws this game already keeps:
       the sim stays pure, <b>nothing uncapped may ever raise the qi rate</b>, nothing is
@@ -1843,7 +1869,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t"><span class="cost">Cost:</span> a new screen, a table of herbs, one
       field on the save. The furnace already exists and already takes two inputs.</p>
 
-    <h3>提二 · 秘境 A run with an ending <span class="todo">not built</span></h3>
+    <h3>提二 · 秘境 A run with an ending <span class="built">built</span></h3>
     <p class="t">A door that opens at the third realm. Inside is a path of seven rooms,
       and at each one you are shown two ways on and told what is behind each. A beast. A
       cache. A cold shrine. A wanderer who wants something. You pick, you walk, and
@@ -1907,9 +1933,10 @@ const page = `<title>九境 Ninefold · the Bible</title>
       spending on a single button. The other is a day's work for the whole difference
       in how the world reads. Both have their own sections below, with what the
       measurements said.</p>
-    <p class="t"><b>洞天 is built too</b>, and has its own section below. <b>秘境 is
-      what is left</b>, because it is the one worth doing properly and the one that
-      needs the other three to have taught the player what the game is.</p>
+    <p class="t"><b>洞天 and 秘境 are built too</b>, each with its own section below.
+      秘境 was left for last because it is the one worth doing properly, and it took
+      five measurements and four different shapes before the wall between idle and
+      active held.</p>
   </section>
 
   <section class="sec" id="awaken">
@@ -2022,6 +2049,58 @@ const page = `<title>九境 Ninefold · the Bible</title>
       function; nothing had ever landed on the wrong side of a boundary before. It
       rounds to the smaller unit first and carries now, and a test walks three days a
       few seconds at a time looking for it.</p>
+  </section>
+
+  <section class="sec" id="secret">
+    <h2><span class="h">秘境</span> A run with an ending</h2>
+    <p class="t">A door that opens every ${DOOR_GAP / 3600} hours and then waits for
+      ever. ${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate
+      with a single guardian and no way past it. Everything else in this game is a loop
+      with no ending, which is why three minutes of it can feel like nothing
+      happened.</p>
+    <div class="spath">${SECRET_PATH}</div>
+
+    <h3>銀 Nothing is carried, so nothing is at stake</h3>
+    <p class="t">Every room pays into the save the moment it is opened, and that one
+      decision is what makes the rest of it simple. Losing costs nothing because there
+      is nothing to lose. Closing the app in room four keeps every room already walked.
+      A save can never hold a run's worth of gear in flight for <code>validate</code> to
+      have to reason about. Three numbers are stored and no loot: where you are, when
+      the last run ended, and how many you have finished.</p>
+
+    <h3>量 Three measurements, three leaks, and all of them the same law</h3>
+    <p class="t">This one took the longest to get right, and every version of the problem
+      was a version of the same rule: <b>a thing that pays must not pay the cultivator
+      who is never there</b>.</p>
+    <table class="tbl"><thead><tr><th>What was tried</th><th class="n">The wall</th>
+      <th>What was leaking</th></tr></thead><tbody>
+      <tr><td>Seven reward doors, no gates</td><td class="n">1.39</td>
+        <td>A cultivator who never hunts walked all seven, every run, and took 29 days off their climb.</td></tr>
+      <tr><td>Gates of two beasts a realm above</td><td class="n">1.56</td>
+        <td>The gates themselves paid: three kills of a beast above your realm a run, with the material and the drops.</td></tr>
+      <tr><td>A gate that pays nothing at all</td><td class="n">1.88</td>
+        <td>Better. But both doors read 2% at the fourth realm, which is not a choice, and it is content a mid-realm player cannot touch.</td></tr>
+      <tr><td>One guardian, ramped, own realm first</td><td class="n">1.53</td>
+        <td>Readable, and now the walker got through: 藏 the cache was handing a non-hunter a thousand beasts' worth of 材.</td></tr>
+      <tr><td><b>Shipped: no material anywhere in the run</b></td><td class="n"><b>1.91</b></td>
+        <td>材 comes off beasts and from nowhere else. What is left pays qi, 道 points and gear.</td></tr>
+    </tbody></table>
+    <p class="t">關 The rule the gates ended on was already written down in this
+      repository, for 守 the wardens: <b>a gate that pays for its own key is not a
+      gate</b>. Beating a guardian opens the way and does nothing else. No material, no
+      drop, and not a mark on 錄 the record, because it is not a hunt.</p>
+    <p class="t">Shipped, the whole run costs about <b>one per cent</b> of the climb for
+      every habit, which is what a content system should cost. What it is for is having
+      a beginning and an end.</p>
+
+    <h3>深 The three gates, and what is behind the other four doors</h3>
+    <p class="t">The first gate is the strongest common of the realm you stand in, which
+      somebody near their ceiling should beat. The second is the weakest of the realm
+      above. The third is the strongest thing the realm above has, and it is meant to
+      stop most people. A mid-realm walker gets two or three rooms and walks out with
+      them; a ceiling walker gets all ${SECRET_ROOMS}.</p>
+    <table class="tbl cavetbl"><thead><tr><th>Room</th><th>What is behind it</th></tr></thead>
+      <tbody>${SECRET_ROOMS_TABLE}</tbody></table>
   </section>
 
   <section class="sec" id="board">

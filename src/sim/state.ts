@@ -21,6 +21,7 @@ import { isOpen } from './unlocks.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
 import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
+import { OPENS_AT as SECRET_OPENS_AT, ROOMS } from '../data/secret.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -130,6 +131,18 @@ export interface State {
   beds: Bed[];
   /** How many beds have been taken, for 碑 the stele and for the harnesses. */
   reaped: number;
+  /**
+   * 秘境 Where the walker is: -1 outside, otherwise the room they stand at.
+   *
+   * Three numbers and no loot, because everything a room pays is banked the moment it
+   * is taken. So a save can never hold a run's worth of gear in flight, losing a fight
+   * has nothing to take back, and closing the app in room four keeps every room already
+   * walked. `runs` counts the runs finished and is what the next path is drawn from, so
+   * the path is fixed before it is walked. See sim/secret.ts.
+   */
+  runStep: number;
+  runAt: number;
+  runs: number;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -261,6 +274,7 @@ export function newState(now: number): State {
     awakened: [],
     met: [], metAt: 0, metPoints: 0,
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
+    runStep: -1, runAt: 0, runs: 0,
     seen: [],
   };
 }
@@ -625,6 +639,13 @@ export function validate(raw: unknown, now: number): State {
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
     reaped: clamp(Math.floor(num(o.reaped, 0)), 0, 1e6),
+    // 秘境 A step outside the seven rooms is outside, which is what an unknown number
+    // means. The realm gates it too: a save cannot claim to be standing in a door the
+    // second realm has never seen.
+    runStep: realm >= SECRET_OPENS_AT
+      ? clamp(Math.floor(num(o.runStep, -1)), -1, ROOMS - 1) : -1,
+    runAt: clamp(num(o.runAt, 0), 0, now),
+    runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

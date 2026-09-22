@@ -23,6 +23,10 @@ import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import { affinity, canUnlock, focusBonus } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, harvestAll, plant, plantable } from '../src/sim/cave.ts';
+import {
+  ROOMS, canEnter, doorsAt, enter as enterSecret, giftOf as secretGift,
+  inside as insideSecret, leave as leaveSecret, open as openDoor,
+} from '../src/sim/secret.ts';
 import { AWAKENINGS, due as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { rollDrop } from '../src/sim/drops.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
@@ -296,6 +300,31 @@ export function play(h: Habit, maxDays = 400): Run {
       const d = drive(s, b, n, ++seed);
       s = d.state;
       fights += n;
+    }
+
+    /**
+     * 秘境 The door, walked the way a visit walks it: in when it is open, and as far as
+     * it goes. A beast that puts them down ends it, which is the only thing that can.
+     *
+     * 全 It walks the whole path on purpose. A run abandoned early is worth a fraction
+     * of one finished, so walking all seven rooms is the most a run can ever be worth
+     * to a habit, and the most is what a harness should be measuring.
+     */
+    if (canEnter(s)) {
+      s = enterSecret(s);
+      for (let r = 0; r < ROOMS + 2 && insideSecret(s); r++) {
+        // 擇 The door with the better of the two on offer, read the way a player reads
+        // it: a fight they are likely to win is worth more than a cache, and one they
+        // are likely to lose is worth nothing at all.
+        const doors = doorsAt(s, s.runStep);
+        const worth = doors.map((d) => {
+          const g = secretGift(s, d, s.runStep);
+          if (g.fight) return odds(s, g.fight) > 0.7 ? 3 : 0;
+          return g.dao ? 4 : g.item ? 2 : 1;
+        });
+        s = openDoor(s, (worth[1] > worth[0] ? 1 : 0), ++seed);
+      }
+      if (insideSecret(s)) s = leaveSecret(s);
     }
 
     /**

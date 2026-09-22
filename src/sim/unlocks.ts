@@ -84,7 +84,7 @@
  */
 
 export type System =
-  | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'tree' | 'keystones' | 'tower'
+  | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
   | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
 
 export interface SystemInfo {
@@ -124,6 +124,10 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'The fourth upgrade, and the only one qi cannot buy. It costs 材 material, and material falls off beasts, so this is what the hunting is for. From the third realm a warden will not fall without it.' },
   { key: 'fuse', han: '煉', name: 'Fusing', realm: 3,
     gives: 'Three of a kind become one of the rank above.' },
+  // 秘境 A run with a beginning and an end, which nothing else in this game has. See
+  // data/secret.ts for the gates, and why a gate beast pays nothing at all.
+  { key: 'secret', han: '秘境', name: 'The Secret Realm', realm: 3,
+    gives: 'A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a pair of beasts a realm above you. Nothing is carried, so losing takes nothing back.' },
   { key: 'tree', han: '道', name: 'The Path', realm: 2,
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
   { key: 'keystones', han: '樞', name: 'The Keystones', realm: 4,

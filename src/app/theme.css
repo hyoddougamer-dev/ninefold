@@ -1235,6 +1235,66 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .awaken, .awaken .acard { animation: none; }
 }
 
+/* ── 秘境 seven rooms, and the two ways on ──────────────────────────────────
+   Above every sheet but 悟道, because it is a place the player walked into rather than
+   a page they opened. It still closes: nothing is carried, so walking out is free. */
+.secret { position: absolute; inset: 0; z-index: 13; background: var(--ground);
+          overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 28px) 18px
+                                     calc(env(safe-area-inset-bottom, 0px) + 22px);
+          display: flex; flex-direction: column; animation: arrive .26s ease both; }
+.secret .over { margin: 0; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+                color: var(--faint); font-family: Archivo, sans-serif; font-weight: 600; }
+.secret h2 { margin: 5px 0 0; font-size: 38px; font-weight: 400; line-height: 1;
+             color: var(--magenta); }
+
+/* 路 The whole path, with the gates named before they are walked. */
+.secret .path { display: flex; align-items: center; margin: 20px 0 6px; }
+.secret .room { position: relative; flex: 1; display: flex; align-items: center;
+                justify-content: center; height: 46px; }
+.secret .room > svg { position: relative; z-index: 1; display: grid; place-items: center;
+                      width: 38px; height: 38px; border-radius: 99px; padding: 8px;
+                      background: var(--panel); border: 1px solid var(--line);
+                      color: var(--line); }
+.secret .room[data-gate] > svg { color: color-mix(in srgb, var(--magenta) 45%, transparent);
+                                 border-color: color-mix(in srgb, var(--magenta) 30%, transparent); }
+.secret .room[data-done] > svg { color: var(--cyan); border-color: rgba(95,220,255,.45); }
+.secret .room[data-here] > svg { color: var(--gold); border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
+.secret .room .link { position: absolute; left: 50%; right: -50%; top: 50%; height: 2px;
+                      background: var(--line); }
+.secret .room[data-done] .link { background: rgba(95,220,255,.4); }
+
+.secret .doors { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.door { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left;
+        font: inherit; cursor: pointer; color: var(--text);
+        background: var(--panel); border: 1px solid var(--line); border-radius: 13px;
+        padding: 14px 15px; }
+.door:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
+.door[data-fight] { border-color: color-mix(in srgb, var(--magenta) 45%, transparent); }
+.door[data-fight] .s { color: var(--magenta); }
+.door .s { flex: none; color: var(--cyan); }
+.door .s svg { display: block; }
+.door .body { flex: 1; min-width: 0; }
+.door b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 16px;
+          line-height: 1.3; }
+.door b .cjk { color: var(--cyan); font-weight: 400; margin-right: 6px; }
+.door[data-fight] b .cjk { color: var(--magenta); }
+.door i { display: block; font-style: normal; margin-top: 4px; font-size: 12.5px;
+          color: var(--faint); line-height: 1.55; }
+.door em { display: block; font-style: normal; margin-top: 7px; font-size: 12px;
+           color: var(--gold); }
+.secret .law { margin: 16px 0 0; font-size: 12px; line-height: 1.55; }
+.secret .later { margin: 14px auto 0; background: none; border: 0; font: inherit;
+                 font-size: 12.5px; color: var(--faint); cursor: pointer;
+                 border-bottom: 1px dotted var(--line); padding: 2px 0; }
+
+/* 門 The card on 狩 that says whether the door is open. */
+.door.open { align-items: center; margin-bottom: 12px; }
+.door.open:disabled { opacity: .55; cursor: default; }
+.door.open .s { color: var(--magenta); }
+.door.open > em { flex: none; margin: 0; color: var(--magenta); font-size: 18px; }
+@media (prefers-reduced-motion: reduce) { .secret { animation: none; } }
+
 /* ── 洞天 three beds, and the ring that is the growing ──────────────────────
    The ring is a conic gradient rather than a bar because a bed is a cycle and comes
    round, and because three of them in a row read as a place rather than as a list. */

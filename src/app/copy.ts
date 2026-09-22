@@ -291,6 +291,8 @@ export const ADVICE = {
    * over later. The offer waits for ever and nothing else moves until it is taken.
    */
   awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
+  /** 秘境 A door standing open. It waits, so this is a reminder and not a deadline. */
+  doorOpen: 'The door to 秘境 is open, in 狩 Hunt. It waits for you.',
   /** 洞天 A ripe bed is free, it is one tap, and it is gone the moment it is taken. */
   ripe: (n: number) => n === 1
     ? 'A bed in 洞天 the cave is ripe. Take it, and put something else in.'
@@ -659,6 +661,32 @@ export const CAVE = {
   what: 'Three beds you own. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. The only thing a long wait costs is the bed it stands in.',
 };
 
+/**
+ * 秘境 The run with a beginning and an end.
+ *
+ * The copy's one job is saying out loud that nothing is carried. A player who thinks
+ * they are holding a run's worth of loot plays it as though they are, and the whole
+ * point of banking every room on the spot is that there is nothing to lose.
+ */
+export const SECRET = {
+  head: 'The secret realm',
+  ready: (rooms: number) => `The door is open. ${rooms} rooms, and every other one is a gate.`,
+  shut: (left: string) => `The door opens again in ${left}. It will wait for you.`,
+  over: (n: number, of: number) => `Room ${n} of ${of}`,
+  /**
+   * 誠 It says which realm the guardian is from, because the first gate is your own and
+   * the last two are the realm above. Saying "a realm above you" at every gate was a
+   * sentence the screen could not back up, and the first one it said it at was wrong.
+   */
+  beast: (power: string, pct: number, above: boolean) =>
+    `力 ${power}, ${above ? 'a realm above you' : 'the strongest thing this realm has'}. ${pct}% to put it down.`,
+  apiece: 'a piece of gear',
+  law: 'Everything you take is yours the moment you take it. A beast that puts you down ends the run and takes nothing back.',
+  out: 'Walk out',
+  /** 釋 What the character means, for the key and the tooltip. */
+  what: 'Seven rooms and two ways on at each. Every other room is a pair of beasts a realm above you, and there is no way past them. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
+};
+
 export const GEAR = {
   /** 數 One line is a line, and the screen read "1 lines worn" until somebody looked. */
   linesWorn: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'} worn`,
@@ -723,6 +751,8 @@ export const DAO = {
    * over later. The offer waits for ever and nothing else moves until it is taken.
    */
   awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
+  /** 秘境 A door standing open. It waits, so this is a reminder and not a deadline. */
+  doorOpen: 'The door to 秘境 is open, in 狩 Hunt. It waits for you.',
   /** 洞天 A ripe bed is free, it is one tap, and it is gone the moment it is taken. */
   ripe: (n: number) => n === 1
     ? 'A bed in 洞天 the cave is ripe. Take it, and put something else in.'

@@ -56,6 +56,8 @@ function save(over = {}) {
     met: [], metAt: at, metPoints: 0,
     // 洞天 Empty beds by default, so the two acts below start from a known cave.
     beds: [{ herb: null, at: 0 }, { herb: null, at: 0 }, { herb: null, at: 0 }], reaped: 0,
+    // 秘境 Outside, with the door shut, so nothing walks into a run by accident.
+    runStep: -1, runAt: at, runs: 0,
     seen: ['guide', 'cap', 'cores', 'tower', 'gear', 'furnace', 'refine'],
     ...over,
   };
@@ -454,6 +456,47 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => b.stance !== a.stance || 'no stance was taken');
   if (page.noise.length) fail('勢', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 秘境 walking through the door and opening a room ───────────────────────
+{
+  const at = Math.floor(Date.now() / 1000);
+  const page = await open(save({ runAt: at - 12 * 3600 }));
+  await tab(page, '狩');
+  await act(page, '秘境 walking through the door',
+    async () => {
+      const door = await page.$('.door.open:not([disabled])');
+      if (!door) fail('秘境', 'half a day past the last run and the door was shut');
+      else {
+        await door.click(); await page.waitForTimeout(600);
+        const room = await page.$('.secret .door');
+        if (!room) fail('秘境', 'inside, and the first room offered no way on');
+        else { await room.click(); await page.waitForTimeout(700); }
+      }
+    },
+    // 步 Either they are deeper in than they started, or a gate put them out. Both are
+    // a room opened; standing still in room one is the only wrong answer.
+    (a, b) => (b.runStep > a.runStep || b.runs > a.runs)
+      || `runStep ${a.runStep} to ${b.runStep}, runs ${a.runs} to ${b.runs}`);
+  if (page.noise.length) fail('秘境', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 秘境 walking out, keeping everything taken ─────────────────────────────
+{
+  const at = Math.floor(Date.now() / 1000);
+  const page = await open(save({ runAt: at - 12 * 3600, runStep: 2 }));
+  await act(page, '秘境 walking out with what you took',
+    async () => {
+      const out = await page.$('.secret .later');
+      if (!out) fail('秘境', 'standing in room three and no way out of it');
+      else { await out.click(); await page.waitForTimeout(600); }
+    },
+    // 銀 Nothing is carried, so walking out costs nothing and only the run ends.
+    (a, b) => (b.runStep === -1 && b.runs === a.runs + 1 && b.materials >= a.materials)
+      || `runStep ${b.runStep}, runs ${a.runs} to ${b.runs}, 材 ${Math.round(a.materials)} to ${Math.round(b.materials)}`);
+  if (page.noise.length) fail('秘境', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 

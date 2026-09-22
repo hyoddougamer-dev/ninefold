@@ -34,6 +34,10 @@ import { Awaken } from './ui/Awaken.tsx';
 import { due as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
+import {
+  enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor,
+} from '../sim/secret.ts';
+import { Secret } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
@@ -559,6 +563,7 @@ export function App() {
             state={state}
             onFight={(key) => startFight(byKey[key])}
             onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
+            onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
           />
         )}
         {tab === 'trials' && <Trials state={state} pulse={pulse} onFloor={climbTower} onBrew={onBrew} />}
@@ -786,6 +791,19 @@ export function App() {
 
       {realmPage && (
         <RealmCard state={state} onClose={() => { setRealmPage(false); sfx.tap(); }} />
+      )}
+
+      {/* 秘境 On the screen for as long as the walker is inside, which is a number in
+          the save. Closing the app in room four comes back to room four. */}
+      {insideSecret(state) && (
+        <Secret
+          state={state}
+          onOpen={(which) => {
+            setState((s) => openDoor(s, which, (s.at ^ (s.runs * 40503) ^ (s.runStep * 7)) | 0));
+            sfx.strike();
+          }}
+          onLeave={() => { setState((s) => leaveSecret(s)); sfx.tap(); }}
+        />
       )}
 
       {/* 悟道 Raised by the save rather than by an event: if a choice is owed and the

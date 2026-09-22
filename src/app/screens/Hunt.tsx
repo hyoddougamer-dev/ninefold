@@ -11,6 +11,8 @@ import { num } from '../../sim/format.ts';
 import { seal } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
+import { Door } from '../ui/Secret.tsx';
+import { isOpen } from '../../sim/unlocks.ts';
 import { HUNT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
@@ -29,11 +31,13 @@ import { canDrive } from '../../sim/hunt.ts';
  * tab it used to hold went to 塔 the tower, which is a place you go rather than a page
  * you read.
  */
-export function Hunt({ state, onFight, onDrive }: {
+export function Hunt({ state, onFight, onDrive, onSecret }: {
   state: State;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
+  /** 秘境 Walk through the door, when it is open. */
+  onSecret: () => void;
 }) {
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
@@ -87,6 +91,10 @@ export function Hunt({ state, onFight, onDrive }: {
       <p className="faint" style={{ margin: '6px 0 4px', fontSize: 13 }}>
         <Term han="力" /> {num(power(state))} power. {HUNT.free}
       </p>
+
+      {/* 秘境 The door, at the top of the hunt because a secret realm is a hunt with a
+          shape. It says when it opens again rather than going away, because it waits. */}
+      {isOpen(state.realm, 'secret') && <Door state={state} onEnter={onSecret} />}
 
       <div className="tally">
         {MARK_INFO.map((m, i) => (

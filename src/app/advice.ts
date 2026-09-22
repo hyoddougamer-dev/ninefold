@@ -17,6 +17,7 @@ import { ADVICE } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
 import { due as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
+import { canEnter as canEnterSecret } from '../sim/secret.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
@@ -121,6 +122,10 @@ export function advice(s: State): Advice | null {
    * Under 悟道 because a card is permanent and a bed comes round again, and above the
    * points because a ripe bed is one tap and spending points is a screen.
    */
+  // 秘境 A door standing open, which waits for ever and is the only thing in the game
+  // with a beginning and an end. Under a card and above a bed: a run is a sitting.
+  if (canEnterSecret(s)) return { han: '秘境', text: ADVICE.doorOpen, tab: 'hunt' };
+
   const ripe = ripeBeds(s);
   if (ripe > 0) return { han: '洞天', text: ADVICE.ripe(ripe) };
 

@@ -6,7 +6,7 @@ import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
-import { AWAKEN, CAVE, KEY } from './copy.ts';
+import { AWAKEN, CAVE, KEY, SECRET } from './copy.ts';
 
 /**
  * 釋 Every character the game uses, and what it means, assembled once.
@@ -136,6 +136,7 @@ export const GROUPS: readonly Group[] = [
       { han: '悟道', name: 'Enlightenment', note: AWAKEN.what },
       { han: '緣', name: 'A meeting', note: KEY.meeting },
       { han: '洞天', name: 'The cave', note: CAVE.what },
+      { han: '秘境', name: 'The secret realm', note: SECRET.what },
     ],
   },
 ];
