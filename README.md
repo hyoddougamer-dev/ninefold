@@ -124,6 +124,25 @@ It reads and prints. It never writes anything and it never asks the network.
 | `tools/` | the harnesses the tests and the bible are both written from |
 | `tools/bible.ts` | generates `bible.html` |
 
+## 張 Getting the paintings, four credits at a time
+
+An image model gives back one square picture per credit, so the unit of work is a sheet
+and not a creature. `npm run sheets` writes **sheets.html**: four prompts, each asking
+for a ruled album leaf of twelve panels, with a map of which panel is which creature.
+
+    npm run sheets                                  the prompts
+    npm run slice -- beasts-a ink-sheets/beasts-a.png   cut the sheet it gave back
+
+`slice` measures where the rules actually landed rather than dividing the page by four,
+cuts the panels, squares each one about its own subject and writes
+`public/art/beast/<key>.webp`. Then `npm run pictures` puts them in the game. It also
+writes `sheet-<name>-proof.png`, the sheet with every cut drawn on it, which is the only
+honest way to say the cut was right.
+
+樣 `ink-sheets/demo.png` is a fabricated leaf, drawn from the game's own icons at exactly
+the size a model returns. It is how the cutter is tested without spending a credit, and
+it is the reference picture to attach to the prompt.
+
 ## 繪 Adding a painting
 
 The game draws 牌 a plate around every creature: a frame, and inside it a painting when

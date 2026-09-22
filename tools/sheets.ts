@@ -1,0 +1,397 @@
+/**
+ * 張 The contact sheets: the whole bestiary in four generations, not fifty-four.
+ *
+ * Bruno: *"não consigo gerar tantas imagens com os créditos gratuitos do gpt. consegues
+ * dar-me um prompt por batches e depois recortar as imagens e fazer a tua magia?"*
+ *
+ * So the unit of work stops being one creature and becomes one sheet. An image model
+ * gives back one square picture per credit, and a square picture can hold twelve
+ * creatures as easily as one, because 牌 the plate shows a creature at about 120 pixels
+ * and a cell of a 1024 sheet is 256. The detail was never going to survive the frame.
+ *
+ * Four prompts cover everything the game can paint:
+ *
+ *     獸甲  realms 1 to 3    12 creatures   4 by 3
+ *     獸乙  realms 4 to 6    12 creatures   4 by 3
+ *     獸丙  realms 7 to 9    12 creatures   4 by 3
+ *     境    the nine realms   9 landscapes  3 by 3
+ *
+ * 界 The ruled grid is the point. A classical album leaf is ruled into panels anyway, so
+ * asking for the rules costs nothing in style and buys 刀 the cutter a line to find. It
+ * reads the rules rather than trusting the model to divide 1024 by four.
+ *
+ * This file is the one place a sheet is described. `npm run sheets` writes sheets.html
+ * from it, and `npm run slice` cuts by it, so the picture of the grid Bruno is given and
+ * the grid the cutter expects can never drift apart.
+ */
+import { writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { BEASTS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
+import { REALMS } from '../src/data/realms.ts';
+import { ICONS } from '../src/art/icons.generated.ts';
+import { mix } from '../src/art/aura.ts';
+import { MATERIALS, enso, inkOf } from './ink.ts';
+
+/** One cell of a sheet: what goes in it, and what the cut file is called. */
+export interface Cell {
+  readonly key: string;
+  readonly han: string;
+  readonly name: string;
+  /** The sentence that describes this subject inside the sheet prompt. */
+  readonly subject: string;
+}
+
+export interface Sheet {
+  readonly key: string;
+  readonly han: string;
+  readonly title: string;
+  readonly kind: 'beast' | 'realm';
+  readonly cols: number;
+  readonly rows: number;
+  /** Reading order: left to right, then down. */
+  readonly cells: readonly Cell[];
+  readonly realms: readonly number[];
+}
+
+const warden = (n: number) =>
+  `${wardenOf(n).name.toLowerCase()}, the guardian of its realm, huge and still, seen from slightly below`;
+const common = (b: { name: string }) => `${b.name.toLowerCase()}, alert, caught in the instant before it moves`;
+
+function beastSheet(key: string, han: string, title: string, realms: number[]): Sheet {
+  const cells: Cell[] = [];
+  for (const n of realms) {
+    for (const b of commonsOf(n)) cells.push({ key: b.key, han: b.han, name: b.name, subject: common(b) });
+    const w = wardenOf(n);
+    cells.push({ key: w.key, han: w.han, name: w.name, subject: warden(n) });
+  }
+  return { key, han, title, kind: 'beast', cols: 4, rows: realms.length, cells, realms };
+}
+
+export const SHEETS: readonly Sheet[] = [
+  beastSheet('beasts-a', '獸甲', 'Creatures, the first three realms', [1, 2, 3]),
+  beastSheet('beasts-b', '獸乙', 'Creatures, the middle three realms', [4, 5, 6]),
+  beastSheet('beasts-c', '獸丙', 'Creatures, the last three realms', [7, 8, 9]),
+  {
+    key: 'realms',
+    han: '境',
+    title: 'The nine realms',
+    kind: 'realm',
+    cols: 3,
+    rows: 3,
+    realms: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    cells: REALMS.map((r, i) => ({
+      key: String(i + 1),
+      han: r.han,
+      name: r.name,
+      subject: `an empty landscape for the realm called ${r.name}, mountains fading into mist, one cliff near the front, no people and no buildings`,
+    })),
+  },
+];
+
+export const sheetOf = (key: string) => SHEETS.find((s) => s.key === key);
+
+/** 甲乙丙 The cell a person points at, named the way the sheet prompt names it. */
+export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) + 1}, column ${(i % s.cols) + 1}`;
+
+/**
+ * 詞 The prompt for one sheet.
+ *
+ * Everything the cutter depends on is stated twice, because a model that drops the rules
+ * or lets a tail cross into the next panel costs a credit Bruno does not have: the ruled
+ * grid, the identical ground in every panel, and the subject kept inside its own panel.
+ */
+export function sheetPrompt(s: Sheet): string {
+  const shape = s.kind === 'beast'
+    ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
+    : 'Each panel holds one wide landscape, seen from a great height, with the bottom of the panel almost empty.';
+  const list = s.cells
+    .map((c, i) => {
+      const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
+      const pig = inkOf(n);
+      return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. Its one pigment is ${pig.stuff}.`;
+    })
+    .join('\n');
+  return `One single square image: a page from an old Chinese bestiary album, ruled
+into a grid of ${s.cols} columns by ${s.rows} rows, ${s.cells.length} panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+${s.cells.length} equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. ${shape} Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+${list}
+
+${MATERIALS}
+
+Again, and this matters more than anything else in this prompt: ${s.cells.length}
+panels, ${s.cols} across and ${s.rows} down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.`;
+}
+
+/* ── 樣 the demonstration leaf ───────────────────────────────────────────── */
+
+/**
+ * 假 A fabricated sheet, so the cutter is proved before a credit is spent.
+ *
+ * This draws what the prompt above asks for, using the game's own icons inked onto
+ * paper, at exactly the size a model returns. Shot with Playwright it becomes a real
+ * 1024 by 1024 PNG that 刀 the cutter has never seen, and cutting it correctly is the
+ * only evidence worth having that the chain works.
+ *
+ * 參 It is also the reference picture: it can be handed to the model alongside the
+ * prompt, which is worth more than another paragraph of English.
+ */
+function demoLeaf(s: Sheet): string {
+  const paper = '#E8DCC6';
+  const rule = '#4A4038';
+  const panels = s.cells
+    .map((c, i) => {
+      const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
+      const seed = (i * 37) % 11;
+      const wobble = 0.86 + (seed % 5) * 0.045;
+      const body = ICONS[BEASTS.find((b) => b.key === c.key)?.icon ?? ''] ?? '';
+      const tone = mix(inkOf(n).colour, '#221C16', 0.55);
+      // 圖 The icon library is drawn in a 512 box, so a panel is that box wobbled a
+      // little about its own centre: a model never places two creatures identically and
+      // 刀 the cutter must not be tuned to a grid where they all sit on the same pixel.
+      const off = (256 * (1 - wobble)).toFixed(1);
+      return `<div class="pn">
+        <svg viewBox="0 0 512 512" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <g filter="url(#wet)" transform="translate(${off} ${off}) scale(${wobble.toFixed(3)})"
+             fill="${tone}" opacity=".93">${body}</g>
+        </svg>
+      </div>`;
+    })
+    .join('');
+  return `<meta charset="utf-8">
+<title>九境 Ninefold · 樣 a fabricated contact sheet</title>
+<style>
+  html,body { margin:0; background:#555; }
+  #leaf { width:1024px; height:1024px; background:${paper}; position:relative;
+          padding:26px; box-sizing:border-box; }
+  #leaf .grid { width:100%; height:100%; display:grid; box-sizing:border-box;
+                grid-template-columns:repeat(${s.cols},1fr); grid-template-rows:repeat(${s.rows},1fr);
+                border:1.5px solid ${rule}; }
+  #leaf .pn { border-right:1.5px solid ${rule}; border-bottom:1.5px solid ${rule};
+              display:grid; place-items:center; overflow:hidden; }
+  #leaf .pn:nth-child(${s.cols}n) { border-right:0; }
+  #leaf .pn:nth-last-child(-n+${s.cols}) { border-bottom:0; }
+  #leaf .pn svg { width:88%; height:88%; display:block; }
+</style>
+<div id="leaf">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <filter id="wet" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency=".004 .009" numOctaves="4" seed="7" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="34" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="1.6"/>
+    </filter>
+  </defs></svg>
+  <div class="grid">${panels}</div>
+</div>`;
+}
+
+/**
+ * 證 The cut panels, in the frame they will actually be seen in.
+ *
+ * 刀 the cutter writes files. Files are not evidence: a panel that is two per cent late
+ * looks fine as a file and wrong inside 圓相 the ensō, where the circle crops it. So the
+ * proof is the panels in the ring, at the size the game shows them.
+ */
+function cutStrip(s: Sheet): string {
+  const cells = s.cells
+    .map((c, i) => {
+      const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
+      const pig = inkOf(n);
+      const tier = c.key === wardenOf(n).key ? 2 : 0;
+      return `<figure class="ct">
+        <span class="ctp">
+          <img src="public/art/${s.kind}/${c.key}.webp" alt="">
+          <span class="ctr">${enso(pig.colour, tier, 132, i + 1)}</span>
+        </span>
+        <figcaption><b class="cjk">${c.han}</b><i>${c.name}</i></figcaption>
+      </figure>`;
+    })
+    .join('');
+  return `<meta charset="utf-8">
+<title>九境 Ninefold · 證 the cut panels</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Noto+Serif+SC:wght@400&display=swap">
+<style>
+  html,body { margin:0; background:#0E0D12; color:#DCD2C2;
+              font:13px Archivo, ui-sans-serif, system-ui, sans-serif; }
+  #cuts { width:1024px; padding:22px; box-sizing:border-box; display:grid;
+          grid-template-columns:repeat(${s.cols},1fr); gap:16px 10px; }
+  #cuts .ct { margin:0; text-align:center; }
+  #cuts .ctp { position:relative; display:inline-grid; place-items:center;
+               width:132px; height:132px; }
+  #cuts .ctp img { width:132px; height:132px; display:block;
+                   clip-path:circle(41% at 50% 50%); }
+  #cuts .ctr { position:absolute; inset:0; }
+  #cuts .ctr svg { width:100%; height:100%; display:block; }
+  #cuts figcaption { margin-top:7px; }
+  #cuts b { display:block; font-family:'Noto Serif SC',serif; font-weight:400;
+            font-size:15px; color:#EDE3D2; }
+  #cuts i { font-style:normal; color:#8C8478; font-size:11.5px; }
+  .cjk { font-family:'Noto Serif SC',serif; }
+</style>
+<div id="cuts">${cells}</div>`;
+}
+
+/* ── 頁 the page Bruno reads ─────────────────────────────────────────────── */
+
+const gridMap = (s: Sheet) => `<div class="shgrid" style="grid-template-columns:repeat(${s.cols},1fr)">
+  ${s.cells
+    .map((c, i) => `<div class="shcell"><b>${i + 1}</b><span class="cjk">${c.han}</span>
+      <i>${c.name}</i><code>${s.kind}/${c.key}.webp</code></div>`)
+    .join('')}
+</div>`;
+
+const page = `<meta charset="utf-8">
+<title>九境 Ninefold · 張 four sheets, not fifty-four</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
+<style>
+  :root { --ground:#0E0D12; --panel:#17151C; --panel2:#131117; --line:#2E2A33;
+          --paper:#EDE3D2; --text:#DCD2C2; --faint:#8C8478; --gold:#C8A951;
+          --cinnabar:#B4332C; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--text);
+         font:17px/1.7 Archivo, ui-sans-serif, system-ui, sans-serif; }
+  .sheet { max-width:900px; margin:0 auto; padding:34px 18px 90px; }
+  .cjk { font-family:'Noto Serif SC',serif; }
+  h1 { font-family:'Noto Serif SC',serif; font-size:clamp(40px,12vw,60px); font-weight:400;
+       color:var(--gold); line-height:1; margin:0; }
+  h2 { font-family:Rajdhani,sans-serif; font-size:26px; margin:0; display:flex; gap:11px;
+       align-items:baseline; color:var(--paper); }
+  h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:30px; color:var(--gold); }
+  h3 { font-family:Rajdhani,sans-serif; font-size:13px; color:var(--faint); margin:0;
+       letter-spacing:.12em; text-transform:uppercase; }
+  p { margin:0; }
+  .lead { font-size:19px; margin-top:14px; color:var(--faint); }
+  .sec { margin-top:40px; border-top:1px solid var(--line); padding-top:22px;
+         display:flex; flex-direction:column; gap:14px; }
+  .t { color:var(--faint); max-width:64ch; }
+  .t b { color:var(--paper); font-weight:600; }
+  .rule { border-left:3px solid var(--gold); background:var(--panel2);
+          border-radius:0 10px 10px 0; padding:13px 16px; color:var(--faint); }
+  .rule b { color:var(--gold); }
+  pre { background:var(--panel2); border:1px solid var(--line); border-radius:4px;
+        padding:14px; overflow-x:auto; font-family:'Roboto Mono',monospace; font-size:12px;
+        line-height:1.7; color:var(--text); white-space:pre-wrap; margin:0;
+        -webkit-user-select:all; user-select:all; }
+  code { font-family:'Roboto Mono',monospace; font-size:12px; color:var(--gold); }
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
+       letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
+  td { border-top:1px solid var(--line); padding:8px; color:var(--faint); vertical-align:top; }
+  td b { color:var(--paper); font-weight:600; }
+  a { color:var(--gold); }
+  .shgrid { display:grid; gap:6px; }
+  .shcell { background:var(--panel2); border:1px solid var(--line); border-radius:3px;
+            padding:8px 9px; font-size:12px; color:var(--faint); position:relative; }
+  .shcell b { position:absolute; right:7px; top:5px; font-size:10px; color:var(--gold);
+              font-family:Rajdhani,sans-serif; }
+  .shcell .cjk { display:block; font-size:16px; color:var(--paper); }
+  .shcell i { display:block; font-style:normal; font-size:12px; margin-bottom:3px; }
+  .shcell code { font-size:10px; opacity:.75; }
+  .shot { display:block; width:100%; border:1px solid var(--line); border-radius:4px; }
+  .steps td:first-child { color:var(--gold); font-family:Rajdhani,sans-serif;
+                          font-weight:700; width:34px; }
+</style>
+
+<div class="sheet">
+  <header>
+    <h1>張</h1>
+    <p class="lead"><b style="color:var(--paper)">Four generations, not fifty-four.</b>
+      A free account hands out credits, and one credit is one square picture. So the unit
+      of work stops being one creature and becomes one ruled page holding twelve of them.
+      The cutting is mine.</p>
+    <p class="t" style="margin-top:12px">Bruno: <i>"não consigo gerar tantas imagens com
+      os créditos gratuitos do gpt. consegues dar-me um prompt por batches e depois
+      recortar as imagens e fazer a tua magia?"</i></p>
+  </header>
+
+  <section class="sec">
+    <h2><span class="h">數</span> What four credits buy</h2>
+    <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
+      1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
+      nothing is lost by drawing twelve at a time, and three sheets is the whole
+      bestiary.</p>
+    <table>
+      <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
+      ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
+        <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
+        <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
+    </table>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">用</span> What you do, and what I do</h2>
+    <table class="steps">
+      <tr><td>1</td><td>Open the image model. Paste <b>one</b> sheet prompt below. There
+        is no opener to paste first: each sheet prompt carries the whole style itself, so
+        a fresh chat is fine and a lost session costs nothing.</td></tr>
+      <tr><td>2</td><td>If it offers, attach 樣 the demonstration leaf further down as a
+        reference picture. It shows the ruled grid better than the English does.</td></tr>
+      <tr><td>3</td><td>Save the square image it returns. Do not crop it, do not
+        straighten it and do not cut anything out: <b>the whole page, exactly as it came
+        back.</b> Name it after the sheet.</td></tr>
+      <tr><td>4</td><td>Send me the file, or drop it in <code>ink-sheets/</code>.</td></tr>
+      <tr><td>5</td><td>I run <code>npm run slice</code>. It measures where the rules
+        actually fell, cuts the twelve panels, trims the bare paper off each one, squares
+        it and writes it into the game. Then <code>npm run pictures</code>, and they are
+        in.</td></tr>
+      <tr><td>6</td><td>I send back 證 the proof: the sheet with every cut drawn on it,
+        and the twelve panels in the game's own frame. A bad panel is redone alone, and
+        one panel costs one credit.</td></tr>
+    </table>
+    <div class="rule"><b>A wrong sheet is not a wasted credit either.</b> If the model
+      gives eleven panels, or lets a tail cross a rule, tell me which panel and I cut
+      around it. The cutter takes the grid it is told and the sheets are described in one
+      file, so a sheet that came back as three by four instead of four by three is one
+      line to change.</div>
+  </section>
+
+  ${SHEETS.map((s) => `<section class="sec">
+    <h2><span class="h cjk">${s.han}</span> ${s.title}</h2>
+    <p class="t">${s.cells.length} panels, ${s.cols} across and ${s.rows} down. Saved as
+      <code>ink-sheets/${s.key}.png</code>.</p>
+    ${gridMap(s)}
+    <h3>詞 The prompt</h3>
+    <pre>${sheetPrompt(s)}</pre>
+  </section>`).join('')}
+
+  <section class="sec">
+    <h2><span class="h">樣</span> The demonstration leaf</h2>
+    <p class="t">This is not a painting: it is the game's own icons inked onto paper and
+      ruled into the same grid, drawn at exactly the size a model returns. <b>It exists so
+      the cutter could be proved before a credit was spent</b>, and it is the picture to
+      attach to the prompt if the model takes one.</p>
+    <img class="shot" src="ink-sheets/demo.png" alt="A ruled album leaf of twelve inked creatures on paper">
+    <h3>證 And the same leaf, cut</h3>
+    <p class="t">The red lines are where 刀 the cutter decided the rules were, measured
+      off the picture rather than assumed. Every panel below it came out of the sheet
+      above it with no hand in between.</p>
+    <img class="shot" src="sheet-beasts-c-proof.png" alt="The same leaf with the measured cuts drawn on it">
+    <img class="shot" src="sheet-cut-strip.png" alt="The twelve panels after cutting, in the game's frame">
+  </section>
+
+  <footer class="sec" style="color:var(--faint);font-size:13.5px">
+    <p>Written by <code>npm run sheets</code>. The grids, the file names and the prompts
+      all come from the game's own tables, so the page cannot describe a sheet the cutter
+      does not expect. Icons from game-icons.net under CC BY 3.0.</p>
+  </footer>
+</div>
+`;
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  writeFileSync('sheets.html', page);
+  writeFileSync('sheet-demo.html', demoLeaf(SHEETS[2]));
+  writeFileSync('sheet-cut.html', cutStrip(SHEETS[2]));
+  console.log(`sheets.html · ${SHEETS.length} prompts · ${SHEETS.reduce((n, s) => n + s.cells.length, 0)} panels`);
+  console.log('sheet-demo.html · the fabricated leaf for ' + SHEETS[2].key);
+  console.log('sheet-cut.html · the panels it was cut into');
+}

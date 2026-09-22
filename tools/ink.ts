@@ -15,6 +15,7 @@
  * Run with `npm run ink`. It writes ink.html.
  */
 import { writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { BEASTS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
@@ -71,7 +72,7 @@ const PAPER_DEFS = `
  * than downloaded, so it still costs nothing and still reads the save: the sweep is
  * thicker and the opening smaller the deeper the thing inside it is.
  */
-function enso(colour: string, tier: number, size: number, seed = 1): string {
+export function enso(colour: string, tier: number, size: number, seed = 1): string {
   const uid = `e${Math.round(size)}${tier}${seed}${colour.slice(1)}`;
   const gap = 34 - tier * 8;                     // the brush lifts, and lifts less when deeper
   const from = -100 + seed * 7;
@@ -244,15 +245,32 @@ const oldSwatches = REALMS.map((r) => `
 
 /* ── the prompts, rewritten ─────────────────────────────────────────────── */
 
-export const STYLE = `Style: classical Chinese ink painting on aged silk. Wet brush, visible
+/**
+ * 質 The materials, which never change. Everything that made the first kit read as
+ * science fiction is refused here by name.
+ */
+export const MATERIALS = `Style: classical Chinese ink painting on aged silk. Wet brush, visible
 strokes, ink bleeding into the fibre, large areas of empty paper. Muted
 mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
 soot black. No neon, no glow, no rim light, no lens flare, no science
 fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
-Composition in the Song dynasty manner: the subject small against a great
-deal of empty space, mist swallowing the middle distance. It should look
-like a plate from a bestiary somebody believed in six hundred years ago.
-No text, no letters, no characters, no seal, no watermark, no border.`;
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.`;
+
+/**
+ * 構 The composition, which does change with what is being asked for.
+ *
+ * 張 A contact sheet wants the opposite of this: a creature must **fill** its panel,
+ * because the panel is going to be cut out and cropped to a circle, and the page wants
+ * its rules drawn rather than refused. So a sheet prompt takes MATERIALS and writes its
+ * own composition, and only a picture asked for on its own gets this paragraph.
+ */
+export const SOLO = `Composition in the Song dynasty manner: the subject small against a great
+deal of empty space, mist swallowing the middle distance. No seal, no
+watermark, no border.`;
+
+export const STYLE = `${MATERIALS}
+${SOLO}`;
 
 const beastPrompt = (b: typeof BEASTS[number]) => {
   const r = inkOf(b.realm);
@@ -525,7 +543,11 @@ const page = `<meta charset="utf-8">
 </div>
 `;
 
-const lifted = liftArt(page, 'ink-plates');
-writeFileSync('ink.html', lifted.page);
-const kb = Math.round(writePlates('ink-plates', lifted.plates) / 1024);
-console.log(`ink.html · ${Math.round(lifted.page.length / 1024)} KB · ${lifted.plates.size} drawings · ${kb} KB beside it`);
+/* 器 Other tools import STYLE and inkOf from here, so writing the page is the thing
+   this file does when it is *run*, never the thing it does when it is read. */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const lifted = liftArt(page, 'ink-plates');
+  writeFileSync('ink.html', lifted.page);
+  const kb = Math.round(writePlates('ink-plates', lifted.plates) / 1024);
+  console.log(`ink.html · ${Math.round(lifted.page.length / 1024)} KB · ${lifted.plates.size} drawings · ${kb} KB beside it`);
+}
