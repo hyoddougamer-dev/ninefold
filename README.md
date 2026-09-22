@@ -104,6 +104,9 @@ It reads and prints. It never writes anything and it never asks the network.
 | `npm run bible` | write `bible.html` |
 | `npm run qi` | 氣查 walk every path the qi can take: every verb against the price it quotes, the ladder across an absence, a save round-tripped through `validate`, a clock that jumps backwards |
 | `npm run artsheet` | 藝 write `art.html`: every drawing the game has, and where the art is weakest |
+| `npm run artprops` | 議 write `art-proposals.html`: three directions for the art, drawn rather than described |
+| `npm run artprompts` | 詞 write `art-prompts.html`: the 54 prompts the painted game needs, all sharing one style |
+| `npm run pictures` | 畫 read `public/art/` and tell the game which paintings exist. `-- --missing` lists what is left |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |
 | `npm run icons` · `icons-png` | regenerate the icon set |
 | `npm run page` · `lab` | package a single-file copy of the game or the arena lab |
@@ -120,6 +123,22 @@ It reads and prints. It never writes anything and it never asks the network.
 | `src/art/` | the drawings, as functions that return SVG |
 | `tools/` | the harnesses the tests and the bible are both written from |
 | `tools/bible.ts` | generates `bible.html` |
+
+## 繪 Adding a painting
+
+The game draws 牌 a plate around every creature: a frame, and inside it a painting when
+there is one and the icon it has always shipped when there is not. So the art arrives one
+file at a time and the game is never half-drawn.
+
+```sh
+# drop a 512x512 WebP at public/art/beast/<key>.webp, then
+npm run pictures            # it goes into src/data/pictures.ts, and into the game
+npm run pictures -- --missing   # what is still a silhouette
+```
+
+`npm run artprompts` writes the prompt for every one of them, all sharing one style
+block, because the hard part of fifty-four pictures is not making them. It is making them
+look like one game.
 
 ## The rules the code is written to
 

@@ -6,10 +6,10 @@ import { num } from '../../sim/format.ts';
 import { portrait } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
 import { gearTile } from '../../art/gear.ts';
-import { ICONS } from '../../art/icons.generated.ts';
 import { ART_BY_KEY } from '../../data/arts.ts';
 import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
+import { Plate } from './Plate.tsx';
 import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
 import { lootTaken } from '../../sim/trials.ts';
@@ -165,10 +165,19 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
           </div>
 
           <div className="fighter foe" data-hit={hit === 'beast'} data-strike={!over && f.striker === 'beast'}>
-            <span className="art" style={{ color: br.colour }}>
-              <svg viewBox="-70 -70 652 652" aria-label={beast.name} role="img">
-                <g fill="currentColor" dangerouslySetInnerHTML={{ __html: ICONS[beast.icon] ?? '' }} />
-              </svg>
+            {/**
+              * 牌 The beast gets what the cultivator already had: a frame, a glow of its
+              * own realm, and a painting inside it when there is one.
+              *
+              * For the whole of this game's life one side of every fight was a drawing
+              * with an aura and the other side was a flat silhouette at 94 pixels. That
+              * asymmetry is on the screen a player looks at more than any other, and the
+              * frame closes it without a single new file. See ui/Plate.tsx.
+              */}
+            <span className="art">
+              <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={br.colour}
+                     tier={beast.realm >= 9 ? 3 : beast.warden ? 2 : 1} size={94}
+                     alt={beast.name} />
             </span>
             {hit === 'beast' && (
               <span className="dmg" key={`b${beat}`}>−{num(f.damage)}</span>

@@ -1241,6 +1241,21 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                    letter-spacing: .02em; }
 .setrow .axes em .term { color: var(--hue); border-bottom-color: currentColor; }
 
+/* ── 牌 the plate: a frame, and a painting in it when there is one ──────────
+   繪 The frame is drawn and the picture is a file. When there is no file the icon the
+   game has always shipped stands in the same frame, so the art arrives one creature at
+   a time and the game is never half-drawn. The picture is clipped to the frame's own
+   circle, which is what stops a square photograph reading as a sticker. */
+.plate { position: relative; display: inline-grid; place-items: center; flex: none; }
+.plate .ring, .plate .sil, .plate .pic { position: absolute; inset: 0; display: block; }
+.plate .ring svg, .plate .sil svg { display: block; width: 100%; height: 100%; }
+/* 融 The painting is clipped to the frame's own circle, so a square file reads as a
+   thing in a frame rather than as a sticker. It keeps its own colours: blending it into
+   the realm was tried and it eats every dark tone in the picture, which is most of a
+   painting. What ties it to the realm is the frame around it and the glow under it. */
+.plate .pic { width: 100%; height: 100%; object-fit: cover;
+              clip-path: circle(42% at 50% 50%); }
+
 /* ── 秘境 seven rooms, and the two ways on ──────────────────────────────────
    Above every sheet but 悟道, because it is a place the player walked into rather than
    a page they opened. It still closes: nothing is carried, so walking out is free. */
