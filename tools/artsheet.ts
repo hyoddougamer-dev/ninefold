@@ -14,7 +14,7 @@ import { BEASTS, WARDENS } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { GEAR, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, REALM_SETS } from '../src/data/gear.ts';
 import { ARTS, STANCES } from '../src/data/arts.ts';
-import { LINES } from '../src/data/alchemy.ts';
+import { PILL_LINES } from '../src/data/alchemy.ts';
 import { ALL_CARDS } from '../src/data/awakening.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
 import { HERBS } from '../src/data/herbs.ts';
@@ -36,7 +36,7 @@ const referenced = new Set<string>();
 const add = (k?: string) => { if (k) referenced.add(k); };
 BEASTS.forEach((b) => add(b.icon));
 GEAR.forEach((g) => add(g.icon));
-[...ARTS, ...STANCES, ...ALL_CARDS, ...MEETINGS, ...HERBS, ...ALL_NODES, ...LINES]
+[...ARTS, ...ALL_CARDS, ...MEETINGS, ...HERBS, ...ALL_NODES, ...Object.values(PILL_LINES)]
   .forEach((x) => add((x as { icon?: string }).icon));
 Object.values(ROOM_INFO).forEach((r) => add(r.icon));
 HEAVENS.forEach((h) => add(h.dragon.icon));
@@ -255,6 +255,10 @@ const page = `<meta charset="utf-8">
       least drawn.</b> 境 The arena is a real place and 氣象 the cultivator is a real
       drawing, and the beast opposite is a flat single-colour icon at 70% of the frame.
       One side of every fight in the game has art and the other side has a symbol.</div>
+    <div class="warn"><b>四 勢 The nine stances have no drawing at all.</b> A stance is
+      the one thing in the game you choose and then carry into every fight, and it is
+      two characters and a line of text. The nine arts have icons; their stances do
+      not.</div>
     <div class="rule"><b>What is actually good, and worth building on.</b> The six
       procedural drawings look like one hand, they all read the save, and they cost
       nothing to extend. 印 The warden seals are the proof: the same borrowed silhouette
@@ -313,14 +317,22 @@ const page = `<meta charset="utf-8">
   <section class="sec">
     <h2><span class="h">物</span> Everything else that has a picture</h2>
     <div class="bands">
-      ${group('勢', 'Stances', STANCES)}
       ${group('訣', 'Arts', ARTS)}
+      <div class="band" style="--hue:var(--magenta)">
+        <h4><span class="cjk">勢</span> Stances <em>${STANCES.length}, none of them drawn</em></h4>
+        <div class="grid">${STANCES.map((x) => `
+          <figure class="cell" style="--hue:var(--magenta)">
+            <span class="ic" style="width:${ICON_SIZE}px;height:${ICON_SIZE}px;
+                  border:1px dashed var(--line);border-radius:9px"></span>
+            <figcaption><b>${x.han}</b><i>${x.name}</i></figcaption>
+          </figure>`).join('')}</div>
+      </div>
       ${group('悟道', 'Awakening cards', ALL_CARDS)}
       ${group('緣', 'Meetings', MEETINGS)}
       ${group('靈草', 'Herbs', HERBS)}
       ${group('龍', 'The dragons of the heavens', HEAVENS.map((h) => ({ han: h.dragon.han, name: h.dragon.name, icon: h.dragon.icon })))}
       ${group('秘境', 'The rooms', Object.values(ROOM_INFO))}
-      ${group('丹', 'The pill lines', LINES)}
+      ${group('丹', 'The pill lines', Object.values(PILL_LINES))}
     </div>
   </section>
 
