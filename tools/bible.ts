@@ -897,6 +897,93 @@ const MOCK_MENU = `<div class="mk two">
   </div></div>
 </div>`;
 
+/* ── 提 the proposals: content systems, drawn rather than described ──────────
+ *
+ * Bruno: "sem sistemas de conteúdo, sinto que é tudo muito superficial e vazio,
+ * consegues apresentar propostas visuais de coisas que possamos implementar".
+ *
+ * Nothing below exists in the game. Each one is drawn with the game's own art
+ * functions and its own tables, because a proposal described in a paragraph is a
+ * proposal nobody can judge, and the rule for anything a player would see is the same
+ * whether it is shipped or only offered.
+ *
+ * All four are written to the laws the game already keeps: sim stays pure, nothing
+ * uncapped may raise the qi rate, nothing is taken away for being away, and losing
+ * costs nothing.
+ */
+
+/** 洞天 Three beds, one ripe, one growing, one empty. */
+const MOCK_CAVE = (() => {
+  const beds = [
+    { han: '龍血草', name: 'Dragonblood Grass', ic: 'spiral-bloom', at: 1, say: 'Ripe. Take it.', hue: 'var(--gold)' },
+    { han: '月華蘭', name: 'Moonlight Orchid', ic: 'crystal-cluster', at: 0.62, say: 'Ripe in 2h 14m', hue: 'var(--cyan)' },
+    { han: '', name: 'Empty bed', ic: 'incense', at: 0, say: 'Plant something', hue: 'var(--line)' },
+  ];
+  return `<div class="mk cave">
+    <div class="beds">${beds.map((b) => `
+      <div class="bed" style="--c:${b.hue}"${b.at >= 1 ? ' data-ripe="true"' : ''}>
+        <span class="ring"><i style="--a:${Math.round(b.at * 360)}deg"></i>
+          <em>${icon(b.ic, 30)}</em></span>
+        <b class="cjk">${b.han || '空'}</b>
+        <i>${b.name}</i>
+        <span class="when">${b.say}</span>
+      </div>`).join('')}</div>
+  </div>`;
+})();
+
+/** 秘境 A seven room path, three walked, two doors open at the fourth. */
+const MOCK_SECRET = (() => {
+  const rooms = [
+    { ic: 'rat', done: true }, { ic: 'gold-nuggets', done: true },
+    { ic: 'praying-mantis', done: true }, { ic: 'wax-seal', here: true },
+    { ic: '', }, { ic: '' }, { ic: 'dragon-head', last: true },
+  ];
+  const path = rooms.map((r, i) => `<span class="room"${r.done ? ' data-done="true"'
+    : r.here ? ' data-here="true"' : r.last ? ' data-last="true"' : ''}>${
+    r.ic ? icon(r.ic, 24) : '<em>?</em>'}${i < rooms.length - 1 ? '<i class="link"></i>' : ''}</span>`).join('');
+  const doors = [
+    { han: '獸', name: 'A beast in the dark', ic: 'centipede', say: '力 340. It drops a piece of your realm plus one.' },
+    { han: '龕', name: 'A shrine, long cold', ic: 'crystal-shrine', say: 'One 道 point, or two if you leave the offering.' },
+  ];
+  return `<div class="mk secret">
+    <div class="path">${path}</div>
+    <div class="doors">${doors.map((d) => `
+      <div class="door"><span class="s">${icon(d.ic, 26)}</span>
+        <span><b class="cjk">${d.han}</b> <em>${d.name}</em><i>${d.say}</i></span>
+      </div>`).join('')}</div>
+  </div>`;
+})();
+
+/** 悟道 Three cards at a breakthrough, one taken. */
+const MOCK_AWAKEN = (() => {
+  const cards = [
+    { han: '血食', name: 'Blood Feast', ic: 'boar-tusks', say: 'Beasts give +25% 材 material, for ever.', on: true },
+    { han: '心鏡', name: 'Mirror Heart', ic: 'yin-yang', say: '入定 sitting lasts half an hour instead of a quarter.' },
+    { han: '逆鱗', name: 'Inverted Scale', ic: 'dragon-spiral', say: 'A beast one realm above you is fought at your own realm’s odds.' },
+  ];
+  return `<div class="mk awaken">${cards.map((c) => `
+    <div class="card"${c.on ? ' data-on="true"' : ''}>
+      <span class="s">${icon(c.ic, 30)}</span>
+      <b class="cjk">${c.han}</b><em>${c.name}</em>
+      <i>${c.say}</i>
+    </div>`).join('')}</div>`;
+})();
+
+/** 緣 One small thing, on the screen it would sit on. */
+const MOCK_MEET = `<div class="mk meet">
+  <div class="card">
+    <span class="s">${icon('tied-scroll', 30)}</span>
+    <span class="body">
+      <b><span class="cjk">緣</span> An old man on the mountain road</b>
+      <i>He is selling one thing and he will not say what it is. He wants 材 400.</i>
+      <span class="picks">
+        <span class="pick">Buy it</span>
+        <span class="pick">Walk on</span>
+      </span>
+    </span>
+  </div>
+</div>`;
+
 const page = `<title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -979,6 +1066,89 @@ const page = `<title>九境 Ninefold · the Bible</title>
                overflow:hidden; min-width:120px; }
   #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
   #clock td:last-child { width:45%; }
+
+  /* ── 提 the proposals: four content systems, drawn rather than described ── */
+  #proposals .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+                   padding:15px; margin:14px 0 0; }
+  #proposals .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
+  #proposals .law { display:inline-block; margin:10px 8px 0 0; padding:3px 9px; border-radius:99px;
+                    font-size:11.5px; color:var(--cyan); border:1px solid var(--line);
+                    background:rgba(95,220,255,.06); }
+  #proposals .cost { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
+
+  /* 洞天 three beds in a row */
+  #proposals .cave .beds { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  #proposals .bed { text-align:center; padding:12px 6px; border-radius:11px;
+                    border:1px solid var(--line); background:var(--panel); }
+  #proposals .bed[data-ripe] { border-color:var(--gold); box-shadow:0 0 22px -10px var(--gold); }
+  #proposals .bed .ring { position:relative; display:block; width:62px; height:62px; margin:0 auto 9px; }
+  #proposals .bed .ring i { position:absolute; inset:0; border-radius:99px;
+        background:conic-gradient(var(--c) var(--a), rgba(37,42,92,.55) 0); }
+  #proposals .bed .ring i::after { content:''; position:absolute; inset:4px; border-radius:99px;
+        background:var(--panel2); }
+  #proposals .bed .ring em { position:absolute; inset:0; display:grid; place-items:center;
+        color:var(--c); }
+  #proposals .bed b { display:block; font-size:16px; font-weight:400; color:var(--c); }
+  #proposals .bed i { display:block; font-style:normal; font-size:11.5px; color:var(--faint); }
+  #proposals .bed .when { display:block; margin-top:6px; font-family:Rajdhani,sans-serif;
+        font-weight:600; font-size:12.5px; color:var(--text); }
+
+  /* 秘境 a path of rooms, and the two doors at the one you stand in */
+  #proposals .secret .path { display:flex; align-items:center; margin:2px 0 16px; }
+  #proposals .room { position:relative; flex:1; display:flex; align-items:center;
+        justify-content:center; height:52px; }
+  #proposals .room em { font-style:normal; color:var(--line); font-size:17px; }
+  #proposals .room > svg, #proposals .room > em { position:relative; z-index:1;
+        display:grid; place-items:center; width:44px; height:44px; border-radius:99px;
+        background:var(--panel); border:1px solid var(--line); color:var(--line); }
+  #proposals .room[data-done] > svg { color:var(--cyan); border-color:rgba(95,220,255,.45); }
+  /* 此 Where you stand: the one room on the path that is a decision right now. */
+  #proposals .room[data-here] > svg { color:var(--gold); border-color:var(--gold);
+        box-shadow:0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
+  #proposals .room[data-last] > svg { color:var(--magenta); border-color:rgba(255,95,200,.5); }
+  #proposals .room .link { position:absolute; left:50%; right:-50%; top:50%; height:2px;
+        background:var(--line); }
+  #proposals .room[data-done] .link { background:linear-gradient(90deg,
+        rgba(95,220,255,.45), rgba(95,220,255,.22)); }
+  #proposals .doors { display:grid; gap:8px; }
+  @media(min-width:560px){ #proposals .doors { grid-template-columns:1fr 1fr; } }
+  #proposals .door { display:flex; gap:11px; align-items:flex-start; padding:11px 12px;
+        border:1px solid var(--line); border-radius:11px; background:var(--panel); }
+  #proposals .door .s { flex:none; color:var(--cyan); }
+  #proposals .door b { font-size:17px; font-weight:400; color:var(--cyan); }
+  #proposals .door em { font-style:normal; font-size:13px; color:var(--text); }
+  #proposals .door i { display:block; font-style:normal; margin-top:4px; font-size:12px;
+        color:var(--faint); line-height:1.5; }
+
+  /* 悟道 three cards, one taken */
+  #proposals .awaken { display:grid; gap:9px; }
+  @media(min-width:640px){ #proposals .awaken { grid-template-columns:repeat(3,1fr); } }
+  #proposals .awaken .card { padding:14px 13px; border-radius:12px; background:var(--panel);
+        border:1px solid var(--line); }
+  #proposals .awaken .card[data-on] { border-color:var(--gold);
+        box-shadow:0 0 26px -12px var(--gold); }
+  #proposals .awaken .s { display:block; color:var(--cyan); margin-bottom:8px; }
+  #proposals .awaken .card[data-on] .s { color:var(--gold); }
+  #proposals .awaken b { font-size:19px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #proposals .awaken .card[data-on] b { color:var(--gold); }
+  #proposals .awaken em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+        font-size:14px; }
+  #proposals .awaken i { display:block; font-style:normal; margin-top:7px; font-size:12.5px;
+        color:var(--faint); line-height:1.55; }
+
+  /* 緣 one small card, the way it would sit on a screen */
+  #proposals .meet .card { display:flex; gap:12px; align-items:flex-start; padding:13px 14px;
+        border-radius:13px; background:var(--panel); border:1px solid var(--cyan); }
+  #proposals .meet .s { flex:none; color:var(--cyan); }
+  #proposals .meet b { display:block; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
+  #proposals .meet b .cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #proposals .meet i { display:block; font-style:normal; margin-top:4px; font-size:12.5px;
+        color:var(--faint); line-height:1.55; }
+  #proposals .meet .picks { display:flex; gap:8px; margin-top:11px; }
+  #proposals .meet .pick { padding:7px 13px; border-radius:9px; font-size:12.5px;
+        background:var(--cyan); color:#04121A; font-weight:600; }
+  #proposals .meet .pick:last-child { background:none; color:var(--faint);
+        border:1px solid var(--line); }
 
   /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
   /* Every rule is scoped to the section. The first draft was not, and its .ladder
@@ -1572,6 +1742,110 @@ const page = `<title>九境 Ninefold · the Bible</title>
       teaching characters is five unanswered questions at once. One button, and every row
       arrives with its name in English.</p>
     ${MOCK_MENU}
+  </section>
+
+  <section class="sec" id="proposals">
+    <h2><span class="h">提</span> Four systems that are not in the game</h2>
+    <p class="t">Bruno, after a morning of the early game getting faster:</p>
+    <p class="t"><i>"sem sistemas de conteúdo, sinto que é tudo muito superficial e
+      vazio, consegues apresentar propostas visuais de coisas que possamos
+      implementar"</i></p>
+    <p class="t">He is right, and the measurement agrees. Everything the first three realms ask of a
+      player is a number going up. 材 material buys 妖丹 and now 煉器, qi buys the
+      ladder, and that is the whole of it. There is no place you own, no run with an
+      ending, no choice that makes your cultivator different from anybody else's, and
+      nothing in the world that ever speaks to you.</p>
+    <p class="t"><b>None of the four below exists.</b> They are drawn with the game's own
+      art and its own tables rather than described, because a system in a paragraph is a
+      system nobody can judge. Each one is written to the laws this game already keeps:
+      the sim stays pure, <b>nothing uncapped may ever raise the qi rate</b>, nothing is
+      taken away for being away, and losing costs nothing. They are in the order I would
+      build them.</p>
+
+    <h3>提一 · 洞天 A place you own</h3>
+    <p class="t">A cave with three beds. You plant a 靈草 spirit herb and it ripens over
+      real hours, and a ripe herb waits for you for ever. Herbs are the third thing 爐
+      the furnace wants, so pills stop being qi and material alone.</p>
+    <p class="t">This is the one that answers idle directly. Right now the only thing
+      that happens while you are away is a bar filling, and a bar is not a place. A bed
+      you planted six hours ago is a reason to open the app that is not arithmetic. The
+      decision is real too: a bed planted is a bed you cannot use until it is taken, so
+      three beds and five herbs is a choice every time.</p>
+    ${MOCK_CAVE}
+    <p class="cap">Two beds working and one waiting. The ring is the growing, the
+      character is the herb, and the line underneath is the only number on it.</p>
+    <p><span class="law">Idle: it grows while you are gone</span>
+       <span class="law">Never taken away: a ripe herb waits</span>
+       <span class="law">Pays pills, never the qi rate</span></p>
+    <p class="t"><span class="cost">Cost:</span> a new screen, a table of herbs, one
+      field on the save. The furnace already exists and already takes two inputs.</p>
+
+    <h3>提二 · 秘境 A run with an ending</h3>
+    <p class="t">A door that opens at the third realm. Inside is a path of seven rooms,
+      and at each one you are shown two ways on and told what is behind each. A beast. A
+      cache. A cold shrine. A wanderer who wants something. You pick, you walk, and
+      seven rooms later you come out with what you took.</p>
+    <p class="t">This is the session. Everything in the game today is a loop with no
+      ending, which is what makes three minutes of it feel like nothing happened. A run
+      has a beginning and an end and a story you can tell about it, and it is the shape
+      every idle game with legs eventually grows. Falling in a room does not hurt you.
+      You come out early with what you already have, because losing costs nothing is the
+      promise this whole game is built on.</p>
+    ${MOCK_SECRET}
+    <p class="cap">Three rooms walked, standing at the fourth, and a warden at the end of
+      it. The two doors name what is behind them, because a blind choice is a coin toss
+      and a coin toss is not a decision.</p>
+    <p><span class="law">Losing costs nothing: you walk out</span>
+       <span class="law">Entered when you choose, never on a timer</span>
+       <span class="law">Pays gear, 道 points and herbs</span></p>
+    <p class="t"><span class="cost">Cost:</span> the biggest of the four. A room table, a
+      path generator seeded off the save, and a screen. The fighting, the drops and the
+      gear it hands out are all already built.</p>
+
+    <h3>提三 · 悟道 A choice that makes you different</h3>
+    <p class="t">Every breakthrough, three cards. You take one and it is yours for the
+      rest of the climb. Nine realms, nine choices, and no two cultivators arrive at the
+      ninth realm the same.</p>
+    <p class="t">道 The tree is the closest thing the game has to this and it is not the
+      same: its nodes are bought with points that accumulate, so given enough time
+      everybody owns most of it. A card taken at a breakthrough is a door closed on two
+      others. That is what makes it a build rather than a checklist, and it is the one
+      of the four that costs almost nothing to make.</p>
+    ${MOCK_AWAKEN}
+    <p class="cap">Three cards at the fifth breakthrough, one taken. Every effect on them
+      pays material, odds, drops or the length of 入定, and never the gathering rate.</p>
+    <p><span class="law">Nothing uncapped touches the qi rate</span>
+       <span class="law">A door closed is what makes it a build</span>
+       <span class="law">Nine of them across a climb</span></p>
+    <p class="t"><span class="cost">Cost:</span> the cheapest by a long way. A table of
+      cards, one array on the save, and a sheet at the breakthrough. The effects plug
+      into the same places 道 the tree's already do.</p>
+
+    <h3>提四 · 緣 Somebody on the road</h3>
+    <p class="t">About one visit in six, a small card. An old man selling something he
+      will not name. A broken sword in the road. A merchant who takes material and gives
+      back a thing you cannot buy. One choice, two outcomes, and it is gone.</p>
+    <p class="t">This one is not economy at all, it is the world. 九境 has nine realms,
+      thirty-six beasts and a Dragon at the top, and nothing in it has ever spoken. A
+      card like this costs a day to build and is the difference between a spreadsheet
+      with characters on it and somewhere you are.</p>
+    ${MOCK_MEET}
+    <p class="cap">It sits where 示 the advice sits, it never blocks anything, and
+      walking on is always free.</p>
+    <p><span class="law">Never takes anything you did not offer</span>
+       <span class="law">Never blocks, never expires while you are away</span>
+       <span class="law">Flavour first, economy second</span></p>
+    <p class="t"><span class="cost">Cost:</span> a day. A table of meetings, a seeded
+      roll on the visit, and one card that already has a shape on the screen.</p>
+
+    <h3>What I would build, and in what order</h3>
+    <p class="t"><b>悟道 first.</b> It is the cheapest, it is the one that makes your
+      cultivator yours, and it lands at a moment the game already has and currently
+      spends on a single button. <b>緣 second</b>, for a day's work and the whole
+      difference in how the world reads. <b>洞天 third</b>, because it is the one that
+      makes being away mean something other than a bar. <b>秘境 last</b>, because it is
+      the one worth doing properly and the one that needs the other three to have taught
+      the player what the game is.</p>
   </section>
 
   <section class="sec" id="board">
