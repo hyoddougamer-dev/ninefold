@@ -1364,6 +1364,7 @@ const page = `<title>九境 Ninefold — the Bible</title>
       <a href="#opens"><b>開</b> What each realm opens</a>
       <a href="#habits"><b>勤</b> Playing vs waiting</a>
       <a href="#wall"><b>守貢</b> The wall</a>
+      <a href="#read"><b>診</b> Reading a save</a>
       <a href="#wait"><b>待</b> Prices you cannot pay</a>
       <a href="#huntlist"><b>狩</b> The 98% screen</a>
       <a href="#rate"><b>氣</b> Why the rate moves</a>
@@ -1993,6 +1994,43 @@ const page = `<title>九境 Ninefold — the Bible</title>
       much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
       (it moved one realm by one point — because a cultivator who visits once a day
       cannot spend qi while the app is shut, whatever is on the screen).</p>
+  </section>
+
+  <section class="sec" id="read">
+    <h2><span class="h">\u8a3a</span> Reading a cultivator from the save they sent you</h2>
+    <p class="t">Every improvement in this repository came from one person playing and
+      saying what they felt \u2014 <i>"n\u00e3o encontro o tree"</i>, <i>"a primeira hunt n\u00e3o d\u00e1
+      nada"</i>, <i>"o qi resetar"</i>, <i>"o qi per sec est\u00e1 sempre a alterar"</i>. That is
+      the best signal this project has, and it runs through exactly one phone. The moment
+      anybody else plays it stops working: somebody plays for twenty minutes, stops, and
+      nothing comes back but silence.</p>
+    <div class="rule"><b>There is no account and no cloud, and there should not be
+      one.</b> What there is, is \u51fa the save the player already holds \u2014 the corner
+      menu hands them the whole thing as text with a copy button. A tester sends that,
+      and <code>npm run read</code> reads the run out of it. It reads and prints; it never
+      writes anything and it never asks the network.</div>
+    <h3>\u7a7a The section it exists for</h3>
+    <p class="t">Where they got to and how they compare to the eight modelled
+      cultivators is worth knowing. <b>What is open to them and has never once been
+      touched</b> is worth building the tool for. Read off a fabricated tester who
+      reached the fifth realm in eleven days:</p>
+    <div class="mk"><pre style="margin:0;font-size:12.5px;line-height:1.6;white-space:pre-wrap;color:var(--faint)">\u7a7a what is open to them and never been touched
+
+   \u9053 the tree \u2014 open since the \u7bc9\u57fa Foundation realm, not one node, 21 \u9053 sitting unspent
+   \u52e2 no stance taken \u2014 open since the \u7bc9\u57fa Foundation realm, 9 to choose from
+   \u5854 the tower never climbed \u2014 open since the \u5316\u795e Spirit Severing realm
+   \u570d the drive \u2014 4 beasts are \u719f Known and could be driven instead of tapped
+
+\u5224 the one line
+
+   nothing was in the way \u2014 4 boxes lit and 13 beasts in reach \u2014 and they stopped
+   anyway, with 4 systems open and never once used. That list is where to look first.</pre>
+      <p class="cap">"Reached the fifth realm on day eleven and never opened \u9053" is a
+      sentence somebody can act on. "I played for a bit and stopped" is not.</p></div>
+    <div class="rule"><b>\u5224 There are only two interesting shapes.</b> Either the game
+      had run out of things for them \u2014 nothing to buy, nothing to fight \u2014 or it had
+      not, and they left anyway. The second is the harder finding and the more useful
+      one, and the untouched list is the first place to look for why.</div>
   </section>
 
   <section class="sec" id="wait">

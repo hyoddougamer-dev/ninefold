@@ -35,6 +35,25 @@ stance, driving a beast, beating a warden, breaking through, crossing the tribul
 and copying the save out. Each act asserts on the saved state, not on the pixels — a
 button that lights up and does nothing passes a smoke walk and fails here.
 
+## Reading somebody else's run
+
+There is no account and no cloud, and there should not be one. What there is, is the save
+the player already holds: the corner menu's **save** panel hands them the whole thing as
+text, with a copy button. Ask a tester for that and read it:
+
+```sh
+npm run read -- their-save.json
+pbpaste | npm run read
+```
+
+It prints where they got to, how they compare to the eight cultivators the harness
+models, what they used — and, the part worth having, **what is open to them and has never
+once been touched**. "Reached the fifth realm on day eleven and never opened 道, with 21
+points sitting unspent" is a sentence somebody can act on. "I played for a bit and
+stopped" is not.
+
+It reads and prints. It never writes anything and it never asks the network.
+
 ## The commands
 
 | | |
@@ -45,6 +64,7 @@ button that lights up and does nothing passes a smoke walk and fails here.
 | `npm test` | the test suite, and the curve |
 | `npm run smoke` | drive the built game in a real browser |
 | `npm run actions` | press every verb the game has, and check it did something |
+| `npm run read -- save.json` | read somebody's run out of the save they sent you |
 | `npm run bible` | write `bible.html` |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |
 | `npm run icons` · `icons-png` | regenerate the icon set |

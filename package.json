@@ -19,7 +19,8 @@
     "bible": "tsx tools/bible.ts",
     "prose": "npm run build && tsx tools/prose.ts",
     "smoke": "node tools/smoke.mjs",
-    "actions": "node tools/actions.mjs"
+    "actions": "node tools/actions.mjs",
+    "read": "tsx tools/read.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
