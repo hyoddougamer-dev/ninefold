@@ -8,6 +8,35 @@ always. Nine realms of nine rungs, nine heavens above them, and no end after tha
   game. Every number and name on it is read out of the game's own code on every build,
   so it cannot drift from what the game does.
 
+## Setting it up on another machine
+
+Nothing here is tied to one computer, and the game itself needs no setup at all: the
+page is live and it works on any browser.
+
+```sh
+git clone https://github.com/hyoddougamer-dev/ninefold.git
+cd ninefold
+npm install                   # Node 20 or newer
+npm run dev                   # the game, hot-reloading, at the address it prints
+```
+
+`npm test` and `npm run bible` work straight away. The browser harnesses (`smoke`,
+`actions`, `tips`, `han`, `artsheet` screenshots) drive a real Chromium, so on a fresh
+machine they need one extra step:
+
+```sh
+npx playwright install chromium
+npm run build && npm run preview &
+npm run smoke
+```
+
+**存 Your cultivator does not travel with the code.** The save lives in the browser it
+was played in, on that device, and there is no account anywhere. To carry a run to
+another machine: open the corner menu, **Copy the save**, paste it into a note or a
+message to yourself, then on the other machine open the same menu, **Restore from a
+copy**, and paste it in. The two browsers then hold two separate runs, and whichever one
+you play is the one that moves.
+
 ## Is it working?
 
 Two commands answer that, and between them they are the whole answer.
@@ -73,6 +102,8 @@ It reads and prints. It never writes anything and it never asks the network.
 | 洞天 `src/data/herbs.ts` | what grows in the cave |
 | `npm run read -- save.json` | read somebody's run out of the save they sent you |
 | `npm run bible` | write `bible.html` |
+| `npm run qi` | 氣查 walk every path the qi can take: every verb against the price it quotes, the ladder across an absence, a save round-tripped through `validate`, a clock that jumps backwards |
+| `npm run artsheet` | 藝 write `art.html`: every drawing the game has, and where the art is weakest |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |
 | `npm run icons` · `icons-png` | regenerate the icon set |
 | `npm run page` · `lab` | package a single-file copy of the game or the arena lab |

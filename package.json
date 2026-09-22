@@ -24,7 +24,8 @@
     "han": "tsx tools/han.ts",
     "early": "tsx tools/early.ts",
     "read": "tsx tools/read.ts",
-    "qi": "tsx tools/qi.ts"
+    "qi": "tsx tools/qi.ts",
+    "artsheet": "tsx tools/artsheet.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

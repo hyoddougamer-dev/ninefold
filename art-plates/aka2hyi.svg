@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="The furnace, 18 pills brewed">
+    <defs>
+      <radialGradient id="fglow"><stop offset="0" stop-color="#FFCE6B" stop-opacity="0.26"/>
+        <stop offset="1" stop-color="#FFCE6B" stop-opacity="0"/></radialGradient>
+      <linearGradient id="fbody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#80418b"/>
+        <stop offset="1" stop-color="#6e5a35"/>
+      </linearGradient>
+    </defs>
+    <circle cx="100" cy="118" r="86" fill="url(#fglow)"/>
+    <ellipse cx="91.0" cy="52.0" rx="15.0" ry="7.0" fill="#E571F0" opacity="0.13"/><ellipse cx="100.0" cy="37.0" rx="21.0" ry="10.0" fill="#E571F0" opacity="0.09"/><ellipse cx="109.0" cy="22.0" rx="27.0" ry="13.0" fill="#E571F0" opacity="0.06"/>
+    <!-- the lid, lifted a little: a sealed cauldron reads as a pot, not as a furnace -->
+    <path d="M56 78 h88 l-7 -9 h-74 Z" fill="#974ca1"/>
+    <circle cx="100" cy="66" r="5" fill="#E571F0" opacity=".8"/>
+    <!-- the belly -->
+    <path d="M52 84 q0 58 48 58 q48 0 48 -58 Z" fill="url(#fbody)"/>
+    <path d="M52 84 h96" stroke="#FFCE6B" stroke-opacity="0.49" stroke-width="2"/>
+    <!-- the three legs, which is what makes a 鼎 a 鼎 -->
+    <path d="M70 140 l-6 22 M130 140 l6 22 M100 143 v20" stroke="#80418b" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M78.0 154 q -6.4 -9.0 0 -16.4 q 6.4 9.0 0 16.4 Z" fill="#ff919e" opacity="0.56"/><path d="M89.0 154 q -6.4 -12.3 0 -22.3 q 6.4 12.3 0 22.3 Z" fill="#ffb282" opacity="0.56"/><path d="M100.0 154 q -6.4 -15.5 0 -28.2 q 6.4 15.5 0 28.2 Z" fill="#ffbd79" opacity="0.56"/><path d="M111.0 154 q -6.4 -12.3 0 -22.3 q 6.4 12.3 0 22.3 Z" fill="#ffb282" opacity="0.56"/><path d="M122.0 154 q -6.4 -9.0 0 -16.4 q 6.4 9.0 0 16.4 Z" fill="#ff919e" opacity="0.56"/>
+    <rect y="186" width="200" height="14" fill="#05060F"/>
+    <rect y="185" width="200" height="1" fill="#FFCE6B" opacity="0.39"/>
+  </svg>

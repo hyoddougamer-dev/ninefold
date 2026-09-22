@@ -1,0 +1,1577 @@
+<meta charset="utf-8">
+<title>九境 Ninefold · 藝 the art, as it stands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
+<style>
+  :root { --ground:#080A18; --panel:#111433; --panel2:#0C0F26; --line:#252A5C;
+          --cyan:#5FDCFF; --magenta:#FF5FC8; --text:#E7EAFF; --faint:#8289C0;
+          --gold:#FFCE6B; color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--text);
+         font:17px/1.65 Archivo, ui-sans-serif, system-ui, sans-serif; }
+  .sheet { max-width:920px; margin:0 auto; padding:34px 18px 90px; }
+  .cjk { font-family:'Noto Serif SC',serif; }
+  h1 { font-family:'Noto Serif SC',serif; font-size:clamp(38px,11vw,56px); font-weight:400;
+       color:var(--cyan); line-height:1; margin:0; }
+  h2 { font-family:Rajdhani,sans-serif; font-size:25px; margin:0; display:flex; gap:11px;
+       align-items:baseline; }
+  h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:29px; color:var(--cyan); }
+  h3 { font-family:Rajdhani,sans-serif; font-size:13px; color:var(--faint); margin:0;
+       letter-spacing:.1em; text-transform:uppercase; }
+  h4 { font-family:Rajdhani,sans-serif; font-size:15px; margin:0 0 9px; font-weight:700;
+       display:flex; gap:9px; align-items:baseline; color:var(--hue); }
+  h4 .cjk { font-weight:400; font-size:18px; }
+  h4 em { font-style:normal; margin-left:auto; font-size:12px; color:var(--faint);
+          font-family:Archivo,sans-serif; font-weight:400; }
+  p { margin:0; }
+  .lead { font-size:19px; margin-top:13px; color:var(--faint); }
+  .sec { margin-top:38px; border-top:1px solid var(--line); padding-top:20px;
+         display:flex; flex-direction:column; gap:13px; }
+  .t { color:var(--faint); max-width:64ch; }
+  .t b { color:var(--text); font-weight:600; }
+  .rule { border-left:3px solid var(--cyan); background:var(--panel2);
+          border-radius:0 10px 10px 0; padding:13px 16px; color:var(--faint); }
+  .rule b { color:var(--cyan); }
+  .warn { border-left:3px solid var(--magenta); background:var(--panel2);
+          border-radius:0 10px 10px 0; padding:13px 16px; color:var(--faint); }
+  .warn b { color:var(--magenta); }
+  .tally { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; }
+  .tally span { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
+                padding:11px 13px; }
+  .tally b { display:block; font-family:Rajdhani,sans-serif; font-weight:700; font-size:23px;
+             color:var(--gold); }
+  .tally i { font-style:normal; font-size:11.5px; color:var(--faint); }
+  .band { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
+          padding:14px 15px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:10px; }
+  .cell { margin:0; display:flex; flex-direction:column; align-items:center; gap:6px;
+          text-align:center; }
+  .cell .ic { display:grid; place-items:center; color:var(--hue,var(--cyan)); }
+  .cell .ic svg { display:block; }
+  .cell figcaption b { display:block; font-size:14px; font-weight:400; color:var(--hue,var(--cyan));
+                       font-family:'Noto Serif SC',serif; }
+  .cell figcaption i { display:block; font-style:normal; font-size:10.5px; color:var(--faint);
+                       line-height:1.3; }
+  .cell.wide { width:auto; }
+  .cell .fig { display:block; width:130px; height:130px; }
+  .cell .fig svg { display:block; width:100%; height:100%; }
+  .cell .sl svg { display:block; }
+  .cell.scene { width:100%; }
+  .cell .sc { display:block; width:100%; height:118px; border-radius:11px; overflow:hidden;
+              border:1px solid var(--line); }
+  .cell .sc svg { display:block; width:100%; height:100%; }
+  .wides { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .scenes { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
+  .cell.lib[data-off] { opacity:.4; }
+  .cell.lib figcaption i { font-size:9.5px; word-break:break-all; }
+  .libgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:9px; }
+  .bands { display:grid; gap:10px; }
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
+       letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
+  td { border-top:1px solid var(--line); padding:7px 8px; color:var(--faint); }
+  td b { color:var(--text); font-weight:600; }
+  code { font-family:'Roboto Mono',monospace; font-size:13px; color:var(--cyan); }
+  
+  /* 圖外 A drawing that lives in a file beside this page.
+     An <img class="pl"> keeps its own colours. An <i class="pl"> is a silhouette:
+     the file is the shape, and the element paints currentColor through it, which is
+     what keeps every icon taking its colour from the CSS around it as before. */
+  i.pl { display:inline-block; vertical-align:middle; background:currentColor;
+         -webkit-mask:var(--pl) center/contain no-repeat;
+         mask:var(--pl) center/contain no-repeat; }
+  img.pl { display:block; object-fit:contain; }
+
+</style>
+
+<div class="sheet">
+  <header>
+    <h1>藝</h1>
+    <p class="lead"><b style="color:var(--text)">The art of 九境, as it stands.</b>
+      Every drawing the game has, called through the game's own functions, at the size a
+      player meets it and again large enough to see what it is. Nothing here is a mockup:
+      if it is on this page, it is in the game.</p>
+  </header>
+
+  <section class="sec">
+    <h2><span class="h">數</span> What there is</h2>
+    <div class="tally">
+      <span><b>120</b><i>icons in the library</i></span>
+      <span><b>115</b><i>of them used</i></span>
+      <span><b>8</b><i>artists, all borrowed</i></span>
+      <span><b>6</b><i>drawings written as code</i></span>
+      <span><b>36</b><i>beasts</i></span>
+      <span><b>486</b><i>pieces of gear</i></span>
+      <span><b>54</b><i>gear drawings</i></span>
+      <span><b>9</b><i>realms drawn</i></span>
+    </div>
+    <p class="t">The library is <b>game-icons.net</b> under CC BY 3.0, by
+      caro-asercion, cathelineau, darkzaitzev, delapouite, lorc, lucasms, skoll, willdabeast. The six written as code are 氣象 the portrait, 境 the arena,
+      塔 the tower, 爐 the furnace, 雷池 the pool and 秘境 the chambers. Those six are the
+      only drawings in the game that are a <b>reading of the save</b> rather than a
+      picture: the tower has as many tiers as you have seals, the furnace burns as high
+      as you have brewed, the arches of a room recede with how deep you are in the run.</p>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">弱</span> Where it is weakest, and why</h2>
+    <div class="warn"><b>一 Every thing in the game is one borrowed silhouette.</b>
+      115 icons, eight authors, one flat colour each. Side by side the
+      line weights and the density do not match, because they were never drawn to sit
+      together: some are three heavy shapes, some are forty thin ones. At 22 to 44 pixels
+      in a list that reads as a set of symbols rather than as a world. Scroll 獸 the
+      beasts below and the mismatch is visible in one screen.</div>
+    <div class="warn"><b>二 The same drawing carries nine realms.</b>
+      486 pieces of gear are 54 drawings recoloured. A first
+      realm 凡 Common sword and a ninth realm 天 Heaven sword are the same shape: what
+      changes is the frame, the glow and the two small characters in the corners. The
+      frames are good and they are doing all of the work.</div>
+    <div class="warn"><b>三 The fight is the thing a player looks at most, and it is the
+      least drawn.</b> 境 The arena is a real place and 氣象 the cultivator is a real
+      drawing, and the beast opposite is a flat single-colour icon at 70% of the frame.
+      One side of every fight in the game has art and the other side has a symbol.</div>
+    <div class="rule"><b>What is actually good, and worth building on.</b> The six
+      procedural drawings look like one hand, they all read the save, and they cost
+      nothing to extend. 印 The warden seals are the proof: the same borrowed silhouette
+      inside a drawn frame stops reading as clip art and starts reading as a set. That
+      treatment exists and is used on nine beasts out of 36.</div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">獸</span> The beasts</h2>
+    <p class="t">36 of them, three commons and a warden to a realm, in the
+      colour of the realm they live in. This is the screen the mismatch is easiest to
+      see on: compare the weight of 山鼠 the rat with 石猿 the stone ape two rows down.</p>
+    <div class="bands"><div class="band" style="--hue:#5FDCFF">
+    <h4><span class="cjk">練氣</span> Qi Refining</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/avwm7wx.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>山鼠</b><i>Mountain Rat</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8m13qr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>野犬</b><i>Wild Hound</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a53plv1.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>澤蛙</b><i>Marsh Frog</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adxt3sm.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>妖狐</b><i>Spirit Fox · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#5FC4FF">
+    <h4><span class="cjk">築基</span> Foundation</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FC4FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1clxtqv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>青蛇</b><i>Green Serpent</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FC4FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1m7wlhr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>螳螂</b><i>Praying Mantis</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FC4FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1yabpua.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>血蝠</b><i>Blood Bat</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FC4FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1adq6z6.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>石猿</b><i>Stone Ape · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#77AEFF">
+    <h4><span class="cjk">金丹</span> Golden Core</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#77AEFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1x7k6mk.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鐵甲</b><i>Iron Beetle</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#77AEFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a6j3qki.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>夜梟</b><i>Night Owl</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#77AEFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a3hyfz4.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>血鴉</b><i>Blood Raven</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#77AEFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fozepv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>仙鶴</b><i>Immortal Crane · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#9B9BFF">
+    <h4><span class="cjk">元嬰</span> Nascent Soul</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#9B9BFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1r84q0a.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鐵根彘</b><i>Ironroot Boar</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#9B9BFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxqph3.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>灰狼</b><i>Grey Wolf</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#9B9BFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8ux2ms.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>山鷲</b><i>Ridge Vulture</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#9B9BFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1am4kx2.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>雷虎</b><i>Thunder Tiger · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#B587FF">
+    <h4><span class="cjk">化神</span> Spirit Severing</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#B587FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ayrf7fo.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>巨蟹</b><i>Giant Crab</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#B587FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1k75680.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>水母</b><i>Jellyfish</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#B587FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aynislg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>岩蜥</b><i>Rock Lizard</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#B587FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akph36w.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>玄武</b><i>Black Turtle · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#CC79FF">
+    <h4><span class="cjk">煉虛</span> Void Refining</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#CC79FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a184eo1q.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>蜈蚣</b><i>Iron Centipede</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#CC79FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1weebp7.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>毒蠍</b><i>Venom Scorpion</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#CC79FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aka6gx6.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>屍蟲</b><i>Corpse Worm</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#CC79FF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aepksau.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>石傀</b><i>Stone Puppet · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#E571F0">
+    <h4><span class="cjk">合體</span> Unity</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#E571F0">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xc0scg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>魔猿</b><i>Demon Ogre</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#E571F0">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1papf0a.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鬼面</b><i>Ghost Face</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#E571F0">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/auilvnf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>陰魂</b><i>Yin Wraith</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#E571F0">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aupa0su.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>魔狼</b><i>Demon Wolf · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#FF63CE">
+    <h4><span class="cjk">大乘</span> Great Vehicle</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FF63CE">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1lxskrc.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>骨將</b><i>Bone General</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF63CE">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fzm8bh.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>石鬼</b><i>Gargoyle</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF63CE">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a5z2vi7.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>牛魔</b><i>Bull Demon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF63CE">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xuldgd.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>蛟</b><i>Serpent Dragon · warden</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:#FF5AA6">
+    <h4><span class="cjk">渡劫</span> Tribulation</h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FF5AA6">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a152rgp9.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>羽妖</b><i>Harpy</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF5AA6">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/as330o9.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>獨角</b><i>Unicorn</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF5AA6">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aav61pi.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>巨章</b><i>Colossal Squid</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF5AA6">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a18epiju.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>龍</b><i>Dragon · warden</i></figcaption>
+  </figure></div>
+  </div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">印</span> The warden seals</h2>
+    <p class="t">The same icons, inside a drawn frame that the game generates. Nine of
+      them, and they are the strongest thing on this page: a frame is what makes a
+      borrowed silhouette belong to a set.</p>
+    <div class="band"><div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a1es2qlc.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">妖狐</b><i>Spirit Fox</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FC4FF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/aa0t2x0.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">石猿</b><i>Stone Ape</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#77AEFF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a1n4jed1.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">仙鶴</b><i>Immortal Crane</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#9B9BFF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a1cc9u9c.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">雷虎</b><i>Thunder Tiger</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#B587FF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/ayhc3lq.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">玄武</b><i>Black Turtle</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#CC79FF">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a1lqnb4g.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">石傀</b><i>Stone Puppet</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#E571F0">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a16mpamw.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">魔狼</b><i>Demon Wolf</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF63CE">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/a1gr0a8b.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">蛟</b><i>Serpent Dragon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FF5AA6">
+    <span class="sl"><img class="pl" style="width:100%;height:100%" src="art-plates/ahandi4.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">龍</b><i>Dragon</i></figcaption>
+  </figure></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">器</span> The gear</h2>
+    <p class="t">54 drawings, one per archetype, and every one of them is
+      worn at all nine realms and at all five ranks. That is 486 pieces from
+      54 pictures, nine pieces to a picture.</p>
+    <div class="bands"><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">劍</span> Weapon
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1lcybom.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵劍</b><i>Mortal Iron Sword</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1d5x9ex.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵刀</b><i>Mortal Iron Saber</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a12g069y.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鉤</b><i>Mortal Iron Crescent</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1vbebp.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵雙鉤</b><i>Mortal Iron Twin Hooks</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1j2recr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵槍</b><i>Mortal Iron Spear</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1oop581.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵扇</b><i>Mortal Iron Fan</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a188s4h8.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵杖</b><i>Mortal Iron Staff</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/abq8sf4.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵戟</b><i>Mortal Iron Trident</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1s8cj9j.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鐮</b><i>Mortal Iron Scythe</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">袍</span> Robe
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16xf1x3.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵袍</b><i>Mortal Iron Robe</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aseheua.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵甲</b><i>Mortal Iron Vest</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1dlhfyy.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵道衣</b><i>Mortal Iron Kimono</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adfbic1.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵氅</b><i>Mortal Iron Cloak</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ag383qc.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鱗</b><i>Mortal Iron Lamellar</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/alch0w5.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鎧</b><i>Mortal Iron Breastplate</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a170ckud.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵肩</b><i>Mortal Iron Pauldrons</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajukxvg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵翼</b><i>Mortal Iron Winged Robe</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aoe45z7.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵衣</b><i>Mortal Iron Mantle</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">冠</span> Crown
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/apyv8l6.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵巾</b><i>Mortal Iron Band</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/af4erje.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵桂</b><i>Mortal Iron Laurel</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/alva6jg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵簪</b><i>Mortal Iron Hairpin</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ai6it0d.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵角</b><i>Mortal Iron Horned Helm</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aei4pt2.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵骨冠</b><i>Mortal Iron Bone Crown</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8sa3ma.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵面</b><i>Mortal Iron Visor</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a11is1oz.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵帝冠</b><i>Mortal Iron Diadem</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ym1nqf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵法冠</b><i>Mortal Iron Ritual Crown</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aip7cwf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵龍首</b><i>Mortal Iron Dragon Head</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">靴</span> Boots
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a17jkhkv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵赤</b><i>Mortal Iron Bare Feet</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fi53cb.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鞋</b><i>Mortal Iron Sandals</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1gqqemk.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵布靴</b><i>Mortal Iron Tabi</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1244evh.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵行靴</b><i>Mortal Iron Walkers</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1gi6k40.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵皮靴</b><i>Mortal Iron Leather Boots</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1w4jxip.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵脛甲</b><i>Mortal Iron Greaves</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a56l6b4.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵鐵靴</b><i>Mortal Iron Iron Boots</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1rkndfu.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵裘靴</b><i>Mortal Iron Fur Boots</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ax2oy1o.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵風足</b><i>Mortal Iron Wind Foot</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">珮</span> Talisman
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ikeq32.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵符</b><i>Mortal Iron Charm</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1n8opi9.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵骨佩</b><i>Mortal Iron Bone Charm</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aisaedn.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵珠</b><i>Mortal Iron Beads</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aqp54v0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵卷</b><i>Mortal Iron Scroll</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a30l2tr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵珮</b><i>Mortal Iron Pendant</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akitp86.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵章</b><i>Mortal Iron Medal</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/av70jsc.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵爐</b><i>Mortal Iron Censer</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a15ydeuf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵球</b><i>Mortal Iron Orb</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/axygf3l.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵珠杖</b><i>Mortal Iron Orb Wand</i></figcaption>
+  </figure></div>
+  </div><div class="band" style="--hue:var(--cyan)">
+    <h4><span class="cjk">戒</span> Ring
+      <em>81 pieces, 9 drawings</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akd9v29.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵素戒</b><i>Mortal Iron Plain Ring</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ychrlv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵黃玉</b><i>Mortal Iron Topaz</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aovbzh4.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵紫晶</b><i>Mortal Iron Amethyst</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16i88qs.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵翠戒</b><i>Mortal Iron Emerald</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ayx5icf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵炎戒</b><i>Mortal Iron Flame Ring</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a7nzkoy.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵霜戒</b><i>Mortal Iron Frost Ring</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a5uyzp.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵力戒</b><i>Mortal Iron Power Ring</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1bzrq7j.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵渦戒</b><i>Mortal Iron Spiral Ring</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#5FDCFF">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fd9nra.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>凡鐵星環</b><i>Mortal Iron Ringed Star</i></figcaption>
+  </figure></div>
+  </div></div>
+    <h3>階 And what a rank looks like</h3>
+    <p class="t">The same sword at all five: the frame, the corner marks and the glow are
+      the whole of the difference. 9 realm sets exist and they are told
+      apart by colour and by the lineage character in the bottom left.</p>
+    <div class="band"><div class="wides">
+  <figure class="cell wide">
+    <img class="pl" style="width:76px;height:76px" src="art-plates/a1f5t6dv.svg" alt="Jadewater Sword, Common, Jadewater set">
+    <figcaption><b class="cjk">凡</b><i>Common</i></figcaption>
+  </figure>
+  <figure class="cell wide">
+    <img class="pl" style="width:76px;height:76px" src="art-plates/ab8uqtk.svg" alt="Jadewater Sword, Spirit, Jadewater set">
+    <figcaption><b class="cjk">靈</b><i>Spirit</i></figcaption>
+  </figure>
+  <figure class="cell wide">
+    <img class="pl" style="width:76px;height:76px" src="art-plates/a1x8ne74.svg" alt="Jadewater Sword, Mystic, Jadewater set">
+    <figcaption><b class="cjk">玄</b><i>Mystic</i></figcaption>
+  </figure>
+  <figure class="cell wide">
+    <img class="pl" style="width:76px;height:76px" src="art-plates/aotnwv4.svg" alt="Jadewater Sword, Earth, Jadewater set">
+    <figcaption><b class="cjk">地</b><i>Earth</i></figcaption>
+  </figure>
+  <figure class="cell wide">
+    <img class="pl" style="width:76px;height:76px" src="art-plates/a1vx2eje.svg" alt="Jadewater Sword, Heaven, Jadewater set">
+    <figcaption><b class="cjk">天</b><i>Heaven</i></figcaption>
+  </figure></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">境</span> The nine realms</h2>
+    <p class="t">One figure, and the air around it doing all the work. The rule the file
+      keeps is that a realm has to be readable from the aura alone, without reading a
+      word, and it holds. What it does not do is ever change the figure.</p>
+    <div class="band"><div class="wides">
+  <figure class="cell wide" style="--hue:#5FDCFF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/adp8cbd.svg" alt="Qi Refining, realm 1"></span>
+    <figcaption><b class="cjk">練氣</b><i>Qi Refining</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#5FC4FF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a113o3fq.svg" alt="Foundation, realm 2"></span>
+    <figcaption><b class="cjk">築基</b><i>Foundation</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#77AEFF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a18z3ced.svg" alt="Golden Core, realm 3"></span>
+    <figcaption><b class="cjk">金丹</b><i>Golden Core</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#9B9BFF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/aetog1j.svg" alt="Nascent Soul, realm 4"></span>
+    <figcaption><b class="cjk">元嬰</b><i>Nascent Soul</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#B587FF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a1oi53ar.svg" alt="Spirit Severing, realm 5"></span>
+    <figcaption><b class="cjk">化神</b><i>Spirit Severing</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#CC79FF">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a10hqzko.svg" alt="Void Refining, realm 6"></span>
+    <figcaption><b class="cjk">煉虛</b><i>Void Refining</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#E571F0">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/ad3u5qd.svg" alt="Unity, realm 7"></span>
+    <figcaption><b class="cjk">合體</b><i>Unity</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#FF63CE">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a1rharyi.svg" alt="Great Vehicle, realm 8"></span>
+    <figcaption><b class="cjk">大乘</b><i>Great Vehicle</i></figcaption>
+  </figure>
+  <figure class="cell wide" style="--hue:#FF5AA6">
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a1lbu6un.svg" alt="Tribulation, realm 9"></span>
+    <figcaption><b class="cjk">渡劫</b><i>Tribulation</i></figcaption>
+  </figure></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">場</span> The places that are drawn from the save</h2>
+    <p class="t">境 The arena is the beast's own realm: its sky, its hills, its floor.
+      Three of the nine are here.</p>
+    <div class="band"><div class="scenes">
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/a903d98.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">練氣</b><i>Qi Refining</i></figcaption>
+  </figure>
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/ajh8tyk.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">化神</b><i>Spirit Severing</i></figcaption>
+  </figure>
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/a1wer68w.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">渡劫</b><i>Tribulation</i></figcaption>
+  </figure></div></div>
+    <h3>秘境 And the rooms of the run</h3>
+    <div class="band"><div class="scenes">
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/adxv1i4.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">泉</b><i>A spring that has not been drunk</i></figcaption>
+  </figure>
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/ab9oxhs.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">龕</b><i>A shrine, long cold</i></figcaption>
+  </figure>
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/a19l8jx9.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">爐</b><i>A brazier with something left in it</i></figcaption>
+  </figure>
+  <figure class="cell scene">
+    <span class="sc"><img class="pl" style="width:100%;height:100%" src="art-plates/a3vf9qf.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">獸</b><i>Something in the dark</i></figcaption>
+  </figure></div></div>
+    <h3>塔 爐 雷池 The three late places</h3>
+    <div class="band"><div class="wides">
+  <figure class="cell wide"><span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/a120lqhj.svg" alt="The tower, floor 60"></span>
+    <figcaption><b class="cjk">無盡塔</b><i>The tower, at floor 60</i></figcaption></figure>
+  <figure class="cell wide"><span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/aka2hyi.svg" alt="The furnace, 18 pills brewed"></span>
+    <figcaption><b class="cjk">丹爐</b><i>The furnace, 18 brewed</i></figcaption></figure>
+  <figure class="cell wide"><span class="fig"><img class="pl" style="width:100%;height:100%" src="art-plates/aiaqq9k.svg" alt="The thunder pool, 70% full, 4 marks"></span>
+    <figcaption><b class="cjk">雷池</b><i>The pool, at four marks</i></figcaption></figure></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">物</span> Everything else that has a picture</h2>
+    <div class="bands">
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">勢</span> Stances <em>9</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>疾</b><i>Swift</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>守</b><i>Guard</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>兇</b><i>Ferocious</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>纏</b><i>Entangle</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>續</b><i>Endure</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>穩</b><i>Steady</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>險</b><i>Reckless</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>逆</b><i>Reverse</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>鏡</b><i>Mirror</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">訣</span> Arts <em>9</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adxt3sm.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>狐影</b><i>Fox Shadow</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1adq6z6.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>猿臂</b><i>Ape Arm</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fozepv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鶴唳</b><i>Crane Cry</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1am4kx2.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>虎嘯</b><i>Tiger Roar</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akph36w.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>龜息</b><i>Turtle Breath</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aepksau.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>傀儡</b><i>Puppet Thread</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aupa0su.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>狼噬</b><i>Wolf Bite</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xuldgd.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>蛟騰</b><i>Serpent Rise</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a18epiju.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>龍威</b><i>Dragon Might</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">悟道</span> Awakening cards <em>24</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1r84q0a.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>血食</b><i>Blood Feast</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajukxvg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>負笈</b><i>The Pack</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/amzq77a.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>頓悟</b><i>Sudden Insight</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxqph3.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>貪狼</b><i>Greedy Wolf</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aexfwtj.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>火候</b><i>Heat Control</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/arucqbh.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>遍野</b><i>Everywhere</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a12g069y.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>屠戮</b><i>Slaughter</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxgvm0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>福星</b><i>Lucky Star</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adfbic1.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>廣袖</b><i>Wide Sleeves</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ynnj5u.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>靈臺</b><i>Spirit Platform</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a15ydeuf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>洞察</b><i>Insight</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ychrlv.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>點石</b><i>Stone to Gold</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aoltl10.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>聚寶</b><i>Treasure Gathering</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ayx5icf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>薪火</b><i>Kindling</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a30l2tr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>天工</b><i>Heaven's Craft</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16wy2lr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>承露</b><i>Catching Dew</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1f7d1f0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>萬藏</b><i>Ten Thousand Stores</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a41gm4z.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>燎原</b><i>Wildfire</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aip7cwf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>饕餮</b><i>Taotie</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a6j3qki.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>明察</b><i>Clear Seeing</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/av70jsc.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>爐火</b><i>Furnace Fire</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/age4rjg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>一念</b><i>One Thought</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxgvm0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>通天</b><i>Reaching Heaven</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aav61pi.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鯨吞</b><i>The Whale Swallows</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">緣</span> Meetings <em>10</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aqp54v0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>老者</b><i>An old man on the mountain road</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1lcybom.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>斷劍</b><i>A broken sword in the road</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/av70jsc.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>乞兒</b><i>A child begging at a shrine</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ikeq32.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>行商</b><i>A merchant with a covered cart</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16wy2lr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>醉道</b><i>A drunk cultivator under a tree</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a3hyfz4.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>老鴉</b><i>A crow that will not leave</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ynnj5u.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>殘碑</b><i>A broken stele</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aexfwtj.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>棄爐</b><i>An abandoned furnace</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1d5x9ex.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>劍客</b><i>A swordsman who wants a bout</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aa69peb.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>靈池</b><i>A pool with nothing living in it</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">靈草</span> Herbs <em>3</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1h79ftk.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>青苔</b><i>Spirit Moss</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1c5yqrq.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>月華蘭</b><i>Moonlight Orchid</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a14sf0sa.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>龍血草</b><i>Dragonblood Grass</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">龍</span> The dragons of the heavens <em>9</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aip7cwf.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>蒼龍</b><i>Azure Dragon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ivryle.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>金龍</b><i>Golden Dragon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1high3s.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>九嬰</b><i>Nine-Headed Hydra</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/azclk8u.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>雙龍</b><i>Twin Dragons</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a7ke3pg.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>應龍</b><i>Winged Dragon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a41gm4z.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>燭龍</b><i>Torch Dragon</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxgvm0.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>星君</b><i>Star Lord</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a11qu3px.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>混沌</b><i>Chaos</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1y1ycqr.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>鴻蒙</b><i>The Uncarved</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">秘境</span> The rooms <em>4</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a184eo1q.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>獸</b><i>Something in the dark</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aa69peb.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>泉</b><i>A spring that has not been drunk</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ynnj5u.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>龕</b><i>A shrine, long cold</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aexfwtj.svg)" aria-hidden="true"></i></span>
+    <figcaption><b>爐</b><i>A brazier with something left in it</i></figcaption>
+  </figure></div>
+  </div>
+      
+  <div class="band" style="--hue:var(--gold)">
+    <h4><span class="cjk">丹</span> The pill lines <em>3</em></h4>
+    <div class="grid">
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>undefined</b><i>undefined</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>undefined</b><i>undefined</i></figcaption>
+  </figure>
+  <figure class="cell" style="--hue:#FFCE6B">
+    <span class="ic" style="width:40px;height:40px"></span>
+    <figcaption><b>undefined</b><i>undefined</i></figcaption>
+  </figure></div>
+  </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">庫</span> The whole library</h2>
+    <p class="t">All 120 icons the game ships, in one place. The
+      faded ones are the 5 nothing points at
+      yet.</p>
+    <div class="band"><div class="libgrid">
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aovbzh4.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>amethyst</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1lcybom.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>ancient-sword</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1x2x017.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>aura</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/apyv8l6.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>bandana</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1j2recr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>barbed-spear</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a17jkhkv.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>barefoot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1yabpua.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>bat</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xu26mc.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>beams-aura</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1r84q0a.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>boar-tusks</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="true">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1umhhdc.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>boots</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aoe45z7.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>cape</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aexfwtj.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>cauldron</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a184eo1q.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>centipede</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/alch0w5.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>chest-armor</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adfbic1.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>cloak</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a11qu3px.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>cosmic-egg</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ayrf7fo.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crab</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="true">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/anz86yp.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>cracked-shield</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aei4pt2.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crenel-crown</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a12g069y.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crescent-blade</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a15ydeuf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crystal-ball</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1c5yqrq.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crystal-cluster</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ynnj5u.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>crystal-shrine</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aupa0su.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>direwolf</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/azclk8u.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>double-dragon</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a41gm4z.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>dragon-breath</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aip7cwf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>dragon-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="true">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a17rsjc4.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>dragon-orb</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ivryle.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>dragon-spiral</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aka6gx6.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>earth-worm</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16i88qs.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>emerald</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="true">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1szdtmf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>energy-breath</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a14sf0sa.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>fire-gem</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ayx5icf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>fire-ring</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/auilvnf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>floating-ghost</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/adxt3sm.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>fox-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a53plv1.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>frog</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a7nzkoy.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>frozen-ring</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1rkndfu.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>fur-boot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1y1ycqr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>galaxy</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fzm8bh.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>gargoyle</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aynislg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>gecko</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a30l2tr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>gem-pendant</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aav61pi.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>giant-squid</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1papf0a.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>goblin-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aoltl10.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>gold-nuggets</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aepksau.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>golem-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1w4jxip.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>greaves</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1oop581.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>handheld-fan</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a152rgp9.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>harpy</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fozepv.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>heron</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1vbebp.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>hook-swords</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ai6it0d.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>horned-helm</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8m13qr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>hound</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1high3s.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>hydra</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aa69peb.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>icicles-aura</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a11is1oz.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>imperial-crown</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/av70jsc.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>incense</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1k75680.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>jellyfish</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/alva6jg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>jewel-crown</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1d5x9ex.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>katana</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1dlhfyy.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>kimono</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ag383qc.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>lamellar</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/af4erje.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>laurels</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1gi6k40.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>leather-boot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aseheua.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>leather-vest</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajsugh.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>lightning-helix</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/amzq77a.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>meditation</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a56l6b4.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>metal-boot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a5z2vi7.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>minotaur</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1adq6z6.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>monkey</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xc0scg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>ogre</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/axygf3l.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>orb-wand</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a6j3qki.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>owl</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1f7d1f0.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>pagoda</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxgvm0.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>polar-star</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ym1nqf.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>pope-crown</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a5uyzp.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>power-ring</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aisaedn.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>prayer-beads</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1m7wlhr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>praying-mantis</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/avwm7wx.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>rat</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a3hyfz4.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>raven</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1w53qsw.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>rear-aura</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akd9v29.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>ring</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fd9nra.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>ringed-planet</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16xf1x3.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>robe</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1f0ejgi.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>rolling-energy</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a16wy2lr.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>round-potion</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1fi53cb.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>sandal</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1x7k6mk.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>scarab-beetle</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1weebp7.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>scorpion</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="true">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a7u1cux.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>scroll-unfurled</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1s8cj9j.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>scythe</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1xuldgd.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>sea-serpent</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a170ckud.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>shoulder-armor</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1lxskrc.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>skeleton</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1clxtqv.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>snake</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/arucqbh.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>sparkles</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a18epiju.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>spiked-dragon-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1h79ftk.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>spiral-bloom</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akitp86.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>star-medal</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1bzrq7j.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>swirl-ring</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1gqqemk.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>tabi-boot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/aqp54v0.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>tied-scroll</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1am4kx2.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>tiger-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ychrlv.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>topaz</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1n8opi9.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>tribal-pendant</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/abq8sf4.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>trident</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/akph36w.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>turtle</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/as330o9.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>unicorn</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8sa3ma.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>visored-helm</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a8ux2ms.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>vulture</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1244evh.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>walking-boot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a1ikeq32.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wax-seal</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajukxvg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wing-cloak</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ax2oy1o.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wingfoot</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a188s4h8.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wizard-staff</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/ajxqph3.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wolf-head</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/a7ke3pg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>wyvern</i></figcaption>
+  </figure>
+  <figure class="cell lib" data-off="undefined">
+    <span class="ic" style="width:40px;height:40px"><i class="pl" style="width:40px;height:40px;--pl:url(art-plates/age4rjg.svg)" aria-hidden="true"></i></span>
+    <figcaption><i>yin-yang</i></figcaption>
+  </figure></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">路</span> Where the next hour of art should go</h2>
+    <p class="t">In order of what a player looks at per minute, which is the only
+      ordering worth using:</p>
+    <table>
+      <tr><th>What</th><th>Why it is first</th></tr>
+      <tr><td><b>對 The beast in the arena</b></td>
+        <td>Every fight in the game shows a drawn cultivator against a flat symbol. Giving
+          the beast the same treatment the cultivator has, a frame and an aura of its own
+          realm, is one function and it fixes the most looked at screen.</td></tr>
+      <tr><td><b>印 A frame for every beast</b></td>
+        <td>The seals already do it for nine. Extending the same frame to all
+          36 makes eight authors read as one set without redrawing a single
+          silhouette.</td></tr>
+      <tr><td><b>階 A rank that changes shape</b></td>
+        <td>天 Heaven and 凡 Common differ in frame and glow only. A silhouette that gains
+          something at 玄 and again at 天 would make a drop readable at a glance.</td></tr>
+      <tr><td><b>氣象 A figure that climbs</b></td>
+        <td>The aura earns its nine realms and the figure never changes. Even a posture
+          change at the fourth and the seventh would make the portrait a progress bar.</td></tr>
+      <tr><td><b>動 Motion</b></td>
+        <td>There is almost none: a few CSS transitions and one animated clash. A fight is
+          two static figures and a number.</td></tr>
+    </table>
+    <p class="t">None of these needs an artist. Every one of them is a function in
+      <code>src/art/</code> that reads the save, which is the thing this game's art is
+      already good at.</p>
+  </section>
+
+  <footer class="sec" style="color:var(--faint);font-size:13.5px">
+    <p>Written by <code>npm run artsheet</code> from the game's own tables and drawing
+      functions. Icons from game-icons.net under CC BY 3.0.</p>
+  </footer>
+</div>

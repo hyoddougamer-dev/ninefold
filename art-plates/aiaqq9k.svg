@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="The thunder pool, 70% full, 4 marks">
+    <defs>
+      <linearGradient id="pwater" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffa4ce" stop-opacity=".95"/>
+        <stop offset="1" stop-color="#FF5AA6" stop-opacity=".35"/>
+      </linearGradient>
+      <radialGradient id="pglow"><stop offset="0" stop-color="#FF5AA6" stop-opacity="0.40"/>
+        <stop offset="1" stop-color="#FF5AA6" stop-opacity="0"/></radialGradient>
+      <clipPath id="pbasin"><path d="M40 104 h120 l-14 60 h-92 Z"/></clipPath>
+    </defs>
+    <circle cx="100" cy="114" r="77.0" fill="url(#pglow)"/>
+    
+    <!-- the basin: cut stone, not a bowl -->
+    <path d="M40 104 h120 l-14 60 h-92 Z" fill="#32152a"/>
+    <g clip-path="url(#pbasin)">
+      <rect x="30" y="122.0" width="140" height="64" fill="url(#pwater)"/>
+      <ellipse cx="100" cy="122.0" rx="66" ry="3.0" fill="#ffbddb" opacity=".7"/>
+    </g>
+    <path d="M40 104 h120" stroke="#FF5AA6" stroke-opacity=".75" stroke-width="2"/>
+    <circle cx="22" cy="187" r="4" fill="none" stroke="#FF5AA6" stroke-opacity=".8" stroke-width="1.4"/><circle cx="36" cy="187" r="4" fill="none" stroke="#FF5AA6" stroke-opacity=".8" stroke-width="1.4"/><circle cx="50" cy="187" r="4" fill="none" stroke="#FF5AA6" stroke-opacity=".8" stroke-width="1.4"/><circle cx="64" cy="187" r="4" fill="none" stroke="#FF5AA6" stroke-opacity=".8" stroke-width="1.4"/>
+  </svg>
