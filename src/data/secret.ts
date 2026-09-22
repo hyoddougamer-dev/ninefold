@@ -90,3 +90,59 @@ export const SPRING_MINUTES = 4;
 
 /** 龕 A shrine pays one 道 point, and two in the last two rooms. */
 export const SHRINE_DEEP = ROOMS - 1;
+
+/**
+ * 記 What a run gave, kept so the end of it can say so.
+ *
+ * Bruno walked seven rooms and came out to nothing: *"no fim mostrar o loot e ganhos
+ * totais"*. Every room paid into the save the moment it was opened, which is the law
+ * this system is built on, and the cost of that law is that a run leaves no trace of
+ * itself. The qi went into a bar that was already moving, the 道 point into a badge on
+ * a tab, the piece of gear into a chest with forty others in it.
+ *
+ * 別 This is a *record*, not loot in flight. Nothing here is ever paid out: the payment
+ * already happened, room by room. Deleting this field would cost the player nothing but
+ * the sentence at the end, which is exactly the point of keeping it separate.
+ */
+export interface Take {
+  /** 氣 Qi taken, in total. */
+  readonly qi: number;
+  /** 道 Points taken. */
+  readonly dao: number;
+  /** 器 The pieces walked out with, enough of each to draw it. */
+  readonly items: readonly { readonly template: string; readonly rarity: string }[];
+  /** How many rooms were opened, gates included. */
+  readonly rooms: number;
+  /** 關 How many guardians were put down. */
+  readonly gates: number;
+  /** Whether a guardian is what ended it. */
+  readonly beaten: boolean;
+}
+
+export const NO_TAKE: Take = { qi: 0, dao: 0, items: [], rooms: 0, gates: 0, beaten: false };
+
+/**
+ * A save is input, and a record of a run is input like everything else.
+ *
+ * It lives here beside validBeds and for the same reason: state.ts has to reach it and
+ * sim/secret.ts reads a State, so putting it there would have the two importing each
+ * other at runtime.
+ */
+export function validTake(raw: unknown, keys: (k: string) => boolean,
+  rarities: readonly string[]): Take {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const n = (x: unknown, hi: number) =>
+    (typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(hi, Math.floor(x))) : 0);
+  const list = Array.isArray(o.items) ? o.items : [];
+  const items = list.slice(0, ROOMS).flatMap((raw) => {
+    const it = (raw ?? {}) as Record<string, unknown>;
+    const template = typeof it.template === 'string' && keys(it.template) ? it.template : null;
+    const rarity = typeof it.rarity === 'string' && rarities.includes(it.rarity)
+      ? it.rarity : null;
+    return template && rarity ? [{ template, rarity }] : [];
+  });
+  return {
+    qi: n(o.qi, 1e18), dao: n(o.dao, ROOMS * 2), items,
+    rooms: n(o.rooms, ROOMS), gates: n(o.gates, ROOMS), beaten: o.beaten === true,
+  };
+}

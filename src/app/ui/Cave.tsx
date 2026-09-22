@@ -59,7 +59,14 @@ export function Cave({ state, onPlant, onHarvest }: {
                   {CAVE.take(num(harvestValue(state, herb!)))}
                 </button>
               )}
-              {herb && !ripe && <span className="when">{CAVE.ripeIn(duration(leftOn(state, bed!)))}</span>}
+              {herb && !ripe && (
+                <>
+                  {/* 明 What it will be worth, while it is still growing. A bed that
+                      says only when it is ripe is a bed you cannot compare. */}
+                  <span className="worth">{CAVE.worth(num(harvestValue(state, herb)))}</span>
+                  <span className="when">{CAVE.ripeIn(duration(leftOn(state, bed!)))}</span>
+                </>
+              )}
               {!herb && (
                 <button className="act small ghost"
                   onClick={() => setPicking(picking === i ? null : i)}>
@@ -80,6 +87,12 @@ export function Cave({ state, onPlant, onHarvest }: {
               <span className="nm">
                 <b className="cjk">{h.han}</b> <em>{h.name}</em>
                 <i>{h.says}</i>
+                {/* 換 The whole exchange on one line: material in, qi out, and the rate,
+                    which is the only number that settles a short herb against a long
+                    one. It was not on the screen at all until Bruno asked what kind of
+                    gains the cave even pays. */}
+                <u>{CAVE.yields(num(harvestValue(state, h)))}
+                  {' · '}{CAVE.perHour(num(Math.round(harvestValue(state, h) / h.hours)))}</u>
               </span>
               <span className="price">
                 <b>材 {num(seedCost(state, h))}</b>
@@ -88,6 +101,7 @@ export function Cave({ state, onPlant, onHarvest }: {
             </button>
           ))}
           <p className="faint cavelaw"><Term han="洞天" /> {CAVE.law}</p>
+          <p className="faint cavelaw">{CAVE.settles}</p>
         </div>
       )}
     </>

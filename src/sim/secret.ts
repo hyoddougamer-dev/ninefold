@@ -1,6 +1,6 @@
 import {
-  DOOR_GAP, OPENS_AT, ROOMS, ROOM_INFO, SHRINE_DEEP, SPRING_MINUTES,
-  depthScale, type Room, type RoomKind,
+  DOOR_GAP, NO_TAKE, OPENS_AT, ROOMS, ROOM_INFO, SHRINE_DEEP, SPRING_MINUTES,
+  depthScale, type Room, type RoomKind, type Take,
 } from '../data/secret.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { beastPower, odds } from './combat.ts';
@@ -127,8 +127,16 @@ export function doorIn(s: State): number {
   return Math.max(0, DOOR_GAP - (s.at - (s.runAt || s.startedAt)));
 }
 
+/**
+ * 入 Walking in, which is also where the record of the last run is wiped.
+ *
+ * It is cleared here rather than on the way out so that the tally the end of a run
+ * shows survives the app being shut: a walker put down in room five, who closes the
+ * app and comes back tomorrow, is still owed the sentence about what those five rooms
+ * gave them.
+ */
 export function enter(s: State): State {
-  return canEnter(s) ? { ...s, runStep: 0 } : s;
+  return canEnter(s) ? { ...s, runStep: 0, lastRun: NO_TAKE } : s;
 }
 
 /**
@@ -142,6 +150,16 @@ export function enter(s: State): State {
 export function leave(s: State): State {
   if (!inside(s)) return s;
   return { ...s, runStep: OUTSIDE, runAt: s.at, runs: s.runs + 1 };
+}
+
+/** 記 One more of something on the record of the run. Nothing here is ever paid out. */
+function add(take: Take, more: { qi?: number; dao?: number; rooms?: number }): Take {
+  return {
+    ...take,
+    qi: take.qi + (more.qi ?? 0),
+    dao: take.dao + (more.dao ?? 0),
+    rooms: take.rooms + (more.rooms ?? 0),
+  };
 }
 
 /** What a door gives, in whole numbers, for the line that says so before it is opened. */
@@ -195,11 +213,14 @@ export function open(s: State, which: 0 | 1, seed: number): State {
     const beast = gift.fight;
     // 戰 One roll, the same odds the screen would quote, and nothing is staked on it.
     const won = (hash(seed) % 10_000) / 10_000 < odds(s, beast);
-    if (!won) return leave(s);
+    if (!won) return leave({ ...s, lastRun: { ...s.lastRun, beaten: true } });
+    out = { ...out, lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
   }
-  if (gift.qi) out = { ...out, qi: out.qi + gift.qi };
+  if (gift.qi) out = { ...out, qi: out.qi + gift.qi, lastRun: add(out.lastRun, { qi: gift.qi }) };
   if (gift.materials) out = { ...out, materials: out.materials + gift.materials };
-  if (gift.dao) out = { ...out, metPoints: out.metPoints + gift.dao };
+  if (gift.dao) {
+    out = { ...out, metPoints: out.metPoints + gift.dao, lastRun: add(out.lastRun, { dao: gift.dao }) };
+  }
   if (gift.item) {
     const pool = commonsOf(Math.max(1, Math.min(9, out.realm)));
     const from = pool[pool.length - 1] ?? pool[0];
@@ -212,12 +233,23 @@ export function open(s: State, which: 0 | 1, seed: number): State {
         wornTotals(out.worn, (x) => affinity(out.unlocked, x)).capacity, out.awakened);
       const kept = addToChest(out.chest, item, limit);
       out = { ...out, chest: [...kept.chest] };
+      out = { ...out, lastRun: {
+        ...out.lastRun,
+        items: [...out.lastRun.items, { template: item.template, rarity: item.rarity }],
+      } };
       if (kept.dropped) {
-        out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(out.awakened)) };
+        /**
+         * 拆 A chest with no room in it melts the worst piece down, and the qi that
+         * comes back is part of what the run gave. Saying "a piece of gear" and not
+         * counting the qi it turned into would be the tally lying about a room.
+         */
+        const back = salvageValue(kept.dropped, salvageBonus(out.awakened));
+        out = { ...out, qi: out.qi + back, lastRun: add(out.lastRun, { qi: back }) };
       }
     }
   }
 
+  out = { ...out, lastRun: add(out.lastRun, { rooms: 1 }) };
   const next = out.runStep + 1;
   return next >= ROOMS ? leave(out) : { ...out, runStep: next };
 }

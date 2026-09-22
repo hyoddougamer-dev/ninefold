@@ -118,6 +118,34 @@ describe('洞天 the cave', () => {
   });
 
   /**
+   * 換 The claim the seed list now makes out loud, held to by a test.
+   *
+   * Bruno asked to understand what kind of gains the cave pays, and the answer the
+   * screen gives is a rate: what a herb ripens into, and what that is an hour. The
+   * design behind it is that the longer herb is the better rate and the shorter one
+   * only wins if you really are coming back, so if that ever stops being true the
+   * screen starts lying and this test is what catches it.
+   */
+  it('pays a better rate the longer the herb, which is what the seed list says', () => {
+    const s = digger({ realm: 9 });
+    const rates = HERBS.map((h) => ({
+      hours: h.hours, perHour: harvestValue(s, h) / h.hours, cost: seedCost(s, h),
+    }));
+    const byTime = [...rates].sort((a, b) => a.hours - b.hours);
+    for (let i = 1; i < byTime.length; i++) {
+      expect(byTime[i].perHour).toBeGreaterThan(byTime[i - 1].perHour);
+      expect(byTime[i].cost).toBeGreaterThan(byTime[i - 1].cost);
+    }
+  });
+
+  /** 時 And the value is settled when it is taken, which is what the screen says. */
+  it('pays at the rate you are on when you take it, never the one you planted at', () => {
+    const early = digger({ realm: 3 });
+    const late = digger({ realm: 6, levels: { technique: 20, method: 20, pills: 20, cores: 20 } });
+    expect(harvestValue(late, HERBS[0])).toBeGreaterThan(harvestValue(early, HERBS[0]));
+  });
+
+  /**
    * 進 The formatter carried wrong and the cave is what landed on it: four hours less a
    * few seconds read as "3h 60min" on a real bed, and a day less a few minutes reads as
    * "1d 24h" the same way.

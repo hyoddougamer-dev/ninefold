@@ -470,7 +470,9 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       if (!door) fail('秘境', 'half a day past the last run and the door was shut');
       else {
         await door.click(); await page.waitForTimeout(600);
-        const room = await page.$('.secret .door');
+        // 途 A way on is .way and not .door: .door is the card on 狩 that opens the run,
+        // and the two were one class until the rooms were drawn.
+        const room = await page.$('.secret .way');
         if (!room) fail('秘境', 'inside, and the first room offered no way on');
         else { await room.click(); await page.waitForTimeout(700); }
       }
@@ -497,6 +499,22 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     (a, b) => (b.runStep === -1 && b.runs === a.runs + 1 && b.materials >= a.materials)
       || `runStep ${b.runStep}, runs ${a.runs} to ${b.runs}, 材 ${Math.round(a.materials)} to ${Math.round(b.materials)}`);
   if (page.noise.length) fail('秘境', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+
+  // 出 And the end of a run says what the run gave. Every ending raises it, this one
+  // included, and it closes back to the game rather than to another sheet.
+  {
+    const card = await page.$('.runend .endcard');
+    if (!card) fail('秘境 the end of a run', 'walked out and nothing said what it gave');
+    else {
+      const said = await page.$eval('.runend .endcard', (el) => el.textContent || '');
+      if (!/rooms/i.test(said)) fail('秘境 the end of a run', `no count of rooms: ${said.slice(0, 60)}`);
+      const back = await page.$('.runend .act');
+      await back?.click();
+      await page.waitForTimeout(400);
+      if (await page.$('.runend')) fail('秘境 the end of a run', 'it would not close');
+      else console.log('  ✓ 秘境 the end of a run says what it gave');
+    }
+  }
   await page.close();
 }
 

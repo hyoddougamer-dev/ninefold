@@ -103,6 +103,20 @@
   #secret .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
   #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
         margin-right:5px; }
+  /* 圖 the drawn rooms, scoped to this section so nothing else can wear them */
+  #secret .vaults { display:grid; gap:10px; margin:14px 0 6px; }
+  #secret .vault { margin:0; background:var(--panel2); border:1px solid var(--line);
+                   border-radius:13px; overflow:hidden; }
+  #secret .vault .art { display:block; height:120px; }
+  #secret .vault .art svg { display:block; width:100%; height:100%; }
+  #secret .vault figcaption { padding:10px 13px 12px; font-size:13.5px; }
+  #secret .vault figcaption b.cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #secret .vault figcaption em { display:block; margin-top:3px; font-style:normal;
+                                 font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+                                 color:var(--faint); }
+  #secret .mk.out .art { display:block; height:120px; border-radius:11px; overflow:hidden; }
+  #secret .mk.out .art svg { display:block; width:100%; height:100%; }
+  #secret .cap { margin:8px 0 0; font-size:12.5px; color:var(--faint); line-height:1.55; }
   #secret .spath { display:flex; align-items:center; gap:6px; margin:16px 0 4px; }
   #secret .rm { flex:1; display:grid; place-items:center; gap:4px; padding:10px 4px;
         border-radius:11px; background:var(--panel); border:1px solid var(--line);
@@ -719,7 +733,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>256 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>261 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -1341,6 +1355,20 @@
       is lost by being late. The only thing a long wait costs is the bed it stands
       in.</p>
 
+    <h3>明 The table above, on the screen</h3>
+    <p class="t">Bruno: <i>"a farming também devia ser mais coerente e perceber o tipo de
+      ganhos"</i>. The decision in the paragraph above was real and the screen was not
+      showing any of it. A seed asked for material and named an hour count. It said
+      nothing at all about what came back until the bed was ripe, which makes the one
+      choice the cave exists for a choice made blind.</p>
+    <p class="t">So a seed now says three things: what it costs, what it ripens into, and
+      what that is an hour. A bed still growing says what it will be worth rather than
+      only when it is ready. And the screen says the one thing about the value that
+      surprises people: a bed pays at the rate you gather at <b>when you take it</b>, so
+      a breakthrough while it grows makes it worth more, and nothing ever makes it worth
+      less. The claim that the longer herb is the better rate is now a test, because a
+      screen that quotes a rate is a screen that can start lying.</p>
+
     <h3>進 And the formatter carried wrong, which the cave is what landed on</h3>
     <p class="t">A bed four hours from ripe read as <b>3h 60min</b>. Rounding the hours
       and the minutes separately lets the remainder overflow its own unit, and a day
@@ -1419,6 +1447,203 @@
     <p class="t">Shipped, the whole run costs about <b>one per cent</b> of the climb for
       every habit, which is what a content system should cost. What it is for is having
       a beginning and an end.</p>
+
+    <h3>圖 A door is a picture of where it goes</h3>
+    <p class="t">A run was a paragraph, a row of seals and two buttons with a 26 pixel
+      icon on each. 藝 <code>art/secret.ts</code> draws the room behind each door
+      instead, and it keeps the rule 塔 the tower set: <b>the drawing is a reading of the
+      save, not a picture next to it</b>. The vault is the colour of the realm you are
+      standing in. The arches recede one further for every two rooms behind you, so room
+      six is visibly deeper underground than room one. A gate is drawn as what a gate is:
+      the way on, barred, with something awake in front of it.</p>
+    <div class="vaults">
+  <figure class="vault">
+    <span class="art"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowkspring06" cx=".5" cy="0.59" r=".62">
+        <stop offset="0" stop-color="#5FDCFF" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#5FDCFF" stop-opacity=".12"/>
+        <stop offset="1" stop-color="#5FDCFF" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="floorkspring06" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#5FDCFF" stop-opacity=".16"/>
+        <stop offset="1" stop-color="#5FDCFF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="132" fill="#191227"/>
+    <rect width="320" height="132" fill="url(#glowkspring06)"/>
+    <path d="M72 104 L72 34 Q160 2 248 34 L248 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.90" stroke-width="2.4"/><path d="M98 104 L98 52 Q160 20 222 52 L222 104"
+      fill="none" stroke="#5FDCFF" stroke-opacity="0.63" stroke-width="1.8"/>
+    <g>
+    <ellipse cx="160" cy="100" rx="44" ry="13" fill="#5FDCFF" opacity=".22"/>
+    <ellipse cx="160" cy="100" rx="30" ry="9" fill="#5FDCFF" opacity=".3"/>
+    <ellipse cx="160" cy="100" rx="16" ry="5" fill="#5FDCFF" opacity=".55"/>
+    <ellipse cx="160" cy="100" rx="44" ry="13" fill="none" stroke="#5FDCFF" stroke-opacity=".5"/>
+    <circle cx="134" cy="88" r="1.6" fill="#5FDCFF" opacity="0.6"/><circle cx="147" cy="75" r="1.3" fill="#5FDCFF" opacity="0.44999999999999996"/><circle cx="160" cy="62" r="1" fill="#5FDCFF" opacity="0.3"/><circle cx="173" cy="88" r="1.6" fill="#5FDCFF" opacity="0.6"/><circle cx="186" cy="75" r="1.3" fill="#5FDCFF" opacity="0.44999999999999996"/>
+  </g>
+    <circle cx="88.3" cy="65.2" r="0.9" fill="#5FDCFF" opacity="0.13"/><circle cx="308.7" cy="90.8" r="1.6" fill="#5FDCFF" opacity="0.27"/><circle cx="50.3" cy="76.1" r="1.3" fill="#5FDCFF" opacity="0.28"/><circle cx="18.3" cy="34.5" r="1.6" fill="#5FDCFF" opacity="0.38"/><circle cx="261.4" cy="17.4" r="1.4" fill="#5FDCFF" opacity="0.38"/><circle cx="313.2" cy="75.8" r="1.7" fill="#5FDCFF" opacity="0.26"/><circle cx="40.2" cy="26.2" r="0.6" fill="#5FDCFF" opacity="0.23"/><circle cx="208.8" cy="67.6" r="1.4" fill="#5FDCFF" opacity="0.21"/><circle cx="90.1" cy="82.5" r="0.8" fill="#5FDCFF" opacity="0.36"/><circle cx="68.3" cy="33.4" r="1.4" fill="#5FDCFF" opacity="0.25"/><circle cx="105.9" cy="69.6" r="0.9" fill="#5FDCFF" opacity="0.15"/><circle cx="190.4" cy="10.4" r="1.2" fill="#5FDCFF" opacity="0.31"/><circle cx="75.0" cy="74.0" r="1.6" fill="#5FDCFF" opacity="0.36"/><circle cx="53.2" cy="83.0" r="0.9" fill="#5FDCFF" opacity="0.10"/>
+    <rect y="104" width="320" height="28" fill="url(#floorkspring06)"/>
+    <rect y="104" width="320" height="1" fill="#5FDCFF" opacity=".45"/>
+  </svg></span>
+    <figcaption><b class="cjk">泉</b> A spring that has not been drunk
+      <em>room 1</em></figcaption>
+  </figure>
+  <figure class="vault">
+    <span class="art"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowkshrine26" cx=".5" cy="0.59" r=".62">
+        <stop offset="0" stop-color="#FFCE6B" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#FFCE6B" stop-opacity=".12"/>
+        <stop offset="1" stop-color="#FFCE6B" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="floorkshrine26" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFCE6B" stop-opacity=".16"/>
+        <stop offset="1" stop-color="#FFCE6B" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="132" fill="#191227"/>
+    <rect width="320" height="132" fill="url(#glowkshrine26)"/>
+    <path d="M72 104 L72 34 Q160 2 248 34 L248 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.90" stroke-width="2.4"/><path d="M89.33333333333333 104 L89.33333333333333 46 Q160 14 230.66666666666669 46 L230.66666666666669 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.72" stroke-width="2.0"/><path d="M106.66666666666666 104 L106.66666666666666 58 Q160 26 213.33333333333331 58 L213.33333333333331 104"
+      fill="none" stroke="#FFCE6B" stroke-opacity="0.53" stroke-width="1.6"/>
+    <g>
+    <path d="M145 98 L145 68 Q160 52 175 68 L175 98 Z"
+      fill="#05060F" stroke="#FFCE6B" stroke-opacity=".55"/>
+    <circle cx="160" cy="78" r="9" fill="#FFCE6B" opacity=".18"/>
+    <circle cx="160" cy="78" r="4.5" fill="#FFCE6B" opacity=".85"/>
+    <rect x="138" y="98" width="44" height="6" rx="2" fill="#FFCE6B" opacity=".3"/>
+  </g>
+    <circle cx="274.9" cy="70.3" r="1.5" fill="#FFCE6B" opacity="0.31"/><circle cx="177.8" cy="24.8" r="1.0" fill="#FFCE6B" opacity="0.29"/><circle cx="54.7" cy="46.6" r="1.7" fill="#FFCE6B" opacity="0.24"/><circle cx="86.6" cy="45.1" r="1.1" fill="#FFCE6B" opacity="0.12"/><circle cx="313.6" cy="64.6" r="0.7" fill="#FFCE6B" opacity="0.15"/><circle cx="130.2" cy="49.5" r="0.7" fill="#FFCE6B" opacity="0.23"/><circle cx="132.9" cy="35.5" r="0.8" fill="#FFCE6B" opacity="0.12"/><circle cx="81.2" cy="54.8" r="0.9" fill="#FFCE6B" opacity="0.17"/><circle cx="233.9" cy="41.7" r="1.1" fill="#FFCE6B" opacity="0.18"/><circle cx="165.0" cy="34.7" r="1.0" fill="#FFCE6B" opacity="0.20"/><circle cx="230.3" cy="68.7" r="0.7" fill="#FFCE6B" opacity="0.25"/><circle cx="307.7" cy="14.5" r="1.3" fill="#FFCE6B" opacity="0.19"/><circle cx="206.5" cy="44.3" r="1.3" fill="#FFCE6B" opacity="0.28"/><circle cx="261.3" cy="8.2" r="1.5" fill="#FFCE6B" opacity="0.12"/>
+    <rect y="104" width="320" height="28" fill="url(#floorkshrine26)"/>
+    <rect y="104" width="320" height="1" fill="#FFCE6B" opacity=".45"/>
+  </svg></span>
+    <figcaption><b class="cjk">龕</b> A shrine, long cold
+      <em>room 3</em></figcaption>
+  </figure>
+  <figure class="vault">
+    <span class="art"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowkbrazier46" cx=".5" cy="0.59" r=".62">
+        <stop offset="0" stop-color="#FF8A5B" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#FF8A5B" stop-opacity=".12"/>
+        <stop offset="1" stop-color="#FF8A5B" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="floorkbrazier46" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FF8A5B" stop-opacity=".16"/>
+        <stop offset="1" stop-color="#FF8A5B" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="132" fill="#191227"/>
+    <rect width="320" height="132" fill="url(#glowkbrazier46)"/>
+    <path d="M72 104 L72 34 Q160 2 248 34 L248 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.90" stroke-width="2.4"/><path d="M85 104 L85 43 Q160 11 235 43 L235 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.76" stroke-width="2.1"/><path d="M98 104 L98 52 Q160 20 222 52 L222 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.63" stroke-width="1.8"/><path d="M111 104 L111 61 Q160 29 209 61 L209 104"
+      fill="none" stroke="#FF8A5B" stroke-opacity="0.49" stroke-width="1.5"/>
+    <g>
+    <path d="M140 70 L180 70 L173 85 L147 85 Z"
+      fill="#0A0C1C" stroke="#FF8A5B" stroke-opacity=".6"/>
+    <path d="M148 85 L144 102 M172 85 L176 102 M160 85 L160 102"
+      stroke="#FF8A5B" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M160 48 Q171 62 167 69 Q160 64 153 69 Q149 62 160 48 Z"
+      fill="#FF8A5B" opacity=".8"/>
+    <ellipse cx="160" cy="70" rx="20" ry="5" fill="#FF8A5B" opacity=".35"/>
+  </g>
+    <circle cx="141.6" cy="75.5" r="1.0" fill="#FF8A5B" opacity="0.20"/><circle cx="10.8" cy="60.0" r="0.7" fill="#FF8A5B" opacity="0.18"/><circle cx="146.7" cy="26.6" r="1.5" fill="#FF8A5B" opacity="0.25"/><circle cx="115.7" cy="27.9" r="1.4" fill="#FF8A5B" opacity="0.27"/><circle cx="116.0" cy="41.4" r="0.7" fill="#FF8A5B" opacity="0.12"/><circle cx="197.6" cy="56.9" r="1.3" fill="#FF8A5B" opacity="0.35"/><circle cx="135.3" cy="26.2" r="0.6" fill="#FF8A5B" opacity="0.14"/><circle cx="87.0" cy="49.5" r="0.9" fill="#FF8A5B" opacity="0.18"/><circle cx="142.8" cy="21.5" r="0.7" fill="#FF8A5B" opacity="0.15"/><circle cx="59.3" cy="41.2" r="1.2" fill="#FF8A5B" opacity="0.32"/><circle cx="81.5" cy="15.6" r="1.6" fill="#FF8A5B" opacity="0.19"/><circle cx="310.7" cy="46.9" r="1.0" fill="#FF8A5B" opacity="0.23"/><circle cx="148.3" cy="60.3" r="1.1" fill="#FF8A5B" opacity="0.12"/><circle cx="4.9" cy="55.9" r="1.4" fill="#FF8A5B" opacity="0.27"/>
+    <rect y="104" width="320" height="28" fill="url(#floorkbrazier46)"/>
+    <rect y="104" width="320" height="1" fill="#FF8A5B" opacity=".45"/>
+  </svg></span>
+    <figcaption><b class="cjk">爐</b> A brazier with something left in it
+      <em>room 5</em></figcaption>
+  </figure>
+  <figure class="vault">
+    <span class="art"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowkbeast66" cx=".5" cy="0.59" r=".62">
+        <stop offset="0" stop-color="#FF5B7A" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#FF5B7A" stop-opacity=".12"/>
+        <stop offset="1" stop-color="#FF5B7A" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="floorkbeast66" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FF5B7A" stop-opacity=".16"/>
+        <stop offset="1" stop-color="#FF5B7A" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="132" fill="#191227"/>
+    <rect width="320" height="132" fill="url(#glowkbeast66)"/>
+    <path d="M72 104 L72 34 Q160 2 248 34 L248 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.90" stroke-width="2.4"/><path d="M82.4 104 L82.4 41.2 Q160 9.2 237.6 41.2 L237.6 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.79" stroke-width="2.2"/><path d="M92.8 104 L92.8 48.4 Q160 16.4 227.2 48.4 L227.2 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.68" stroke-width="1.9"/><path d="M103.2 104 L103.2 55.599999999999994 Q160 23.599999999999994 216.8 55.599999999999994 L216.8 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.57" stroke-width="1.7"/><path d="M113.6 104 L113.6 62.8 Q160 30.799999999999997 206.39999999999998 62.8 L206.39999999999998 104"
+      fill="none" stroke="#FF5B7A" stroke-opacity="0.46" stroke-width="1.4"/>
+    <g>
+    <line x1="134" y1="52" x2="134" y2="104" stroke="#FF5B7A" stroke-opacity=".38" stroke-width="2.4"/><line x1="147" y1="52" x2="147" y2="104" stroke="#FF5B7A" stroke-opacity=".38" stroke-width="2.4"/><line x1="160" y1="52" x2="160" y2="104" stroke="#FF5B7A" stroke-opacity=".38" stroke-width="2.4"/><line x1="173" y1="52" x2="173" y2="104" stroke="#FF5B7A" stroke-opacity=".38" stroke-width="2.4"/><line x1="186" y1="52" x2="186" y2="104" stroke="#FF5B7A" stroke-opacity=".38" stroke-width="2.4"/>
+    <ellipse cx="160" cy="78" rx="34" ry="26" fill="#FF5B7A" opacity=".1"/>
+    <g>
+      <ellipse cx="151" cy="74" rx="4.6" ry="3" fill="#FF5B7A" opacity=".95"/>
+      <ellipse cx="169" cy="74" rx="4.6" ry="3" fill="#FF5B7A" opacity=".95"/>
+      <ellipse cx="151" cy="74" rx="9" ry="7" fill="#FF5B7A" opacity=".2"/>
+      <ellipse cx="169" cy="74" rx="9" ry="7" fill="#FF5B7A" opacity=".2"/>
+    </g>
+  </g>
+    <circle cx="8.2" cy="80.6" r="1.4" fill="#FF5B7A" opacity="0.30"/><circle cx="176.1" cy="35.6" r="1.2" fill="#FF5B7A" opacity="0.18"/><circle cx="209.9" cy="88.7" r="1.4" fill="#FF5B7A" opacity="0.33"/><circle cx="47.9" cy="67.1" r="1.2" fill="#FF5B7A" opacity="0.28"/><circle cx="263.9" cy="61.4" r="1.6" fill="#FF5B7A" opacity="0.16"/><circle cx="249.5" cy="45.8" r="1.1" fill="#FF5B7A" opacity="0.31"/><circle cx="148.4" cy="10.5" r="1.3" fill="#FF5B7A" opacity="0.25"/><circle cx="243.3" cy="16.1" r="1.0" fill="#FF5B7A" opacity="0.24"/><circle cx="298.3" cy="53.6" r="0.8" fill="#FF5B7A" opacity="0.30"/><circle cx="196.6" cy="62.0" r="1.0" fill="#FF5B7A" opacity="0.31"/><circle cx="36.5" cy="72.9" r="0.7" fill="#FF5B7A" opacity="0.26"/><circle cx="310.3" cy="38.7" r="1.3" fill="#FF5B7A" opacity="0.37"/><circle cx="173.7" cy="47.2" r="0.7" fill="#FF5B7A" opacity="0.25"/><circle cx="97.5" cy="30.0" r="1.3" fill="#FF5B7A" opacity="0.31"/>
+    <rect y="104" width="320" height="28" fill="url(#floorkbeast66)"/>
+    <rect y="104" width="320" height="1" fill="#FF5B7A" opacity=".45"/>
+  </svg></span>
+    <figcaption><b class="cjk">獸</b> Something in the dark
+      <em>room 7</em></figcaption>
+  </figure></div>
+    <p class="cap">The four panels above are the real function, called with the arguments
+      the screen calls it with, at the sixth realm.</p>
+
+    <h3>記 What the run gave, at the end of it</h3>
+    <p class="t">Bruno: <i>"no fim mostrar o loot e ganhos totais"</i>. He was right, and
+      the cause was the law this system is built on. Every room pays into the save the
+      moment it is opened. So a run that paid four times over lands in a bar that was
+      already moving, a badge on a tab, and a chest with forty other pieces in it.
+      Nothing was ever wrong. Nothing was ever visible either.</p>
+    <p class="t">So the save carries a <b>record</b> of the run beside the run: qi, 道
+      points, the pieces walked out with, the rooms opened and the guardians put down.
+      It is a record and never loot in flight. The difference is held to by a test: the
+      qi on the tally has to equal the qi the save gained, to the unit.</p>
+    <p class="t">The running total is on the screen while the run is still being walked
+      too, because that is the question a gate asks: is what I am holding worth the next
+      one?</p>
+    <div class="mk secret out"><span class="art"><svg viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <radialGradient id="glowkout76" cx=".5" cy="0.59" r=".62">
+        <stop offset="0" stop-color="#E7EAFF" stop-opacity=".5"/>
+        <stop offset=".55" stop-color="#E7EAFF" stop-opacity=".12"/>
+        <stop offset="1" stop-color="#E7EAFF" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="floorkout76" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#E7EAFF" stop-opacity=".16"/>
+        <stop offset="1" stop-color="#E7EAFF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="132" fill="#191227"/>
+    <rect width="320" height="132" fill="url(#glowkout76)"/>
+    <path d="M72 104 L72 34 Q160 2 248 34 L248 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.90" stroke-width="2.4"/><path d="M82.4 104 L82.4 41.2 Q160 9.2 237.6 41.2 L237.6 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.79" stroke-width="2.2"/><path d="M92.8 104 L92.8 48.4 Q160 16.4 227.2 48.4 L227.2 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.68" stroke-width="1.9"/><path d="M103.2 104 L103.2 55.599999999999994 Q160 23.599999999999994 216.8 55.599999999999994 L216.8 104"
+      fill="none" stroke="#51326a" stroke-opacity="0.57" stroke-width="1.7"/><path d="M113.6 104 L113.6 62.8 Q160 30.799999999999997 206.39999999999998 62.8 L206.39999999999998 104"
+      fill="none" stroke="#E7EAFF" stroke-opacity="0.46" stroke-width="1.4"/>
+    <g>
+    <path d="M130 104 L130 60 Q160 30 190 60 L190 104 Z"
+      fill="#E7EAFF" opacity=".16"/>
+    <path d="M130 104 L130 60 Q160 30 190 60 L190 104"
+      fill="none" stroke="#E7EAFF" stroke-opacity=".7" stroke-width="2"/>
+    <rect x="130" y="100" width="60" height="4" fill="#E7EAFF" opacity=".5"/>
+  </g>
+    <circle cx="101.5" cy="41.1" r="1.4" fill="#E7EAFF" opacity="0.19"/><circle cx="80.3" cy="28.9" r="1.1" fill="#E7EAFF" opacity="0.24"/><circle cx="159.0" cy="30.0" r="0.8" fill="#E7EAFF" opacity="0.36"/><circle cx="59.1" cy="57.5" r="0.6" fill="#E7EAFF" opacity="0.20"/><circle cx="79.1" cy="33.4" r="0.8" fill="#E7EAFF" opacity="0.18"/><circle cx="89.7" cy="77.6" r="1.1" fill="#E7EAFF" opacity="0.28"/><circle cx="100.8" cy="89.8" r="1.3" fill="#E7EAFF" opacity="0.17"/><circle cx="290.8" cy="39.4" r="1.0" fill="#E7EAFF" opacity="0.19"/><circle cx="193.7" cy="32.4" r="1.3" fill="#E7EAFF" opacity="0.17"/><circle cx="281.9" cy="41.1" r="1.0" fill="#E7EAFF" opacity="0.34"/><circle cx="191.1" cy="89.5" r="1.2" fill="#E7EAFF" opacity="0.19"/><circle cx="305.9" cy="70.8" r="1.3" fill="#E7EAFF" opacity="0.29"/><circle cx="243.4" cy="10.6" r="0.7" fill="#E7EAFF" opacity="0.29"/><circle cx="78.6" cy="58.6" r="0.6" fill="#E7EAFF" opacity="0.36"/>
+    <rect y="104" width="320" height="28" fill="url(#floorkout76)"/>
+    <rect y="104" width="320" height="1" fill="#E7EAFF" opacity=".45"/>
+  </svg></span>
+      <p class="cap">出 The way out, the panel the end of a run wears.</p></div>
 
     <h3>深 The three gates, and what is behind the other four doors</h3>
     <p class="t">The first gate is the strongest common of the realm you stand in, which
@@ -1591,10 +1816,10 @@
     <span class="body"><b class="cjk">緣</b> <em><a href="#meet">Somebody on the road</a></em><i>10 meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is 9 道 against 70 for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">洞天</b> <em><a href="#cave">A place you own</a></em><i>3 beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. The first numbers took 40% off the climb and were cut to a seventh.</i></span>
+    <span class="body"><b class="cjk">洞天</b> <em><a href="#cave">A place you own</a></em><i>3 beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. Every seed says what it ripens into and what that is an hour, so the one decision the beds exist for is made with the numbers visible.</i></span>
   </div><div class="srow" style="--hue:var(--cyan)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">秘境</b> <em><a href="#secret">A run with an ending</a></em><i>7 rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Four shapes and five measurements before the wall held: the last one took 材 material out of the run entirely.</i></span>
+    <span class="body"><b class="cjk">秘境</b> <em><a href="#secret">A run with an ending</a></em><i>7 rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
     <span class="st"><b class="cjk">待</b><i>planned</i></span>
     <span class="body"><b class="cjk">轉世</b> <em>Rebirth</em><i>Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody's memory.</i></span>

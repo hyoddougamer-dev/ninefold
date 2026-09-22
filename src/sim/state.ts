@@ -21,7 +21,9 @@ import { isOpen } from './unlocks.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
 import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
-import { OPENS_AT as SECRET_OPENS_AT, ROOMS } from '../data/secret.ts';
+import {
+  NO_TAKE, OPENS_AT as SECRET_OPENS_AT, ROOMS, validTake, type Take,
+} from '../data/secret.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -143,6 +145,13 @@ export interface State {
   runStep: number;
   runAt: number;
   runs: number;
+  /**
+   * 記 What the last run gave, in total, so the end of one can say so.
+   *
+   * It is a record and not loot in flight: every room paid into the save the moment it
+   * was opened, and this is only the sum of what was already paid. See data/secret.ts.
+   */
+  lastRun: Take;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -274,7 +283,7 @@ export function newState(now: number): State {
     awakened: [],
     met: [], metAt: 0, metPoints: 0,
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
-    runStep: -1, runAt: 0, runs: 0,
+    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
     seen: [],
   };
 }
@@ -646,6 +655,7 @@ export function validate(raw: unknown, now: number): State {
       ? clamp(Math.floor(num(o.runStep, -1)), -1, ROOMS - 1) : -1,
     runAt: clamp(num(o.runAt, 0), 0, now),
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
+    lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

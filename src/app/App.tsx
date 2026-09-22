@@ -37,7 +37,7 @@ import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
   enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../sim/secret.ts';
-import { Secret } from './ui/Secret.tsx';
+import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
@@ -128,6 +128,15 @@ export function App() {
   const [locked, setLocked] = useState<System | null>(null);
   /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
   const [meltUpTo, setMeltUpTo] = useState<Rarity>('common');
+  /**
+   * 出 Whether the end of a run is on the screen.
+   *
+   * The tally itself is in the save, because it is a record of what the rooms already
+   * paid. This is only whether the player has read it yet, which is a screen's worth of
+   * state and not a save's: closing the app in room five and coming back tomorrow comes
+   * back to the game, not to yesterday's receipt.
+   */
+  const [tally, setTally] = useState(false);
 
   /** 點 道 points earned and not yet spent. The tab bar wears the count, and 示 the
       line of advice reads the same number. See sim/points.ts. */
@@ -146,6 +155,22 @@ export function App() {
    * meditation would be claiming hours nobody sat through.
    */
   const since = useRef<number | null>(null);
+  /**
+   * 出 The run ended, so the tally goes up.
+   *
+   * It is watched rather than raised at the tap because there are three ways out of a
+   * run and only one of them is a button: walking out, opening the seventh door, and
+   * being put down by a guardian. All three end with the same fact in the save, which
+   * is the walker standing outside, so that is what this reads.
+   */
+  const wasInside = useRef(false);
+  useEffect(() => {
+    const now = insideSecret(state);
+    // Every ending raises it, the one where a guardian at room one took the whole run
+    // included: that is the ending that most needs a sentence about what happened.
+    if (wasInside.current && !now) setTally(true);
+    wasInside.current = now;
+  }, [state]);
   const [focus, setFocus] = useState(1);
   const [satOut, setSatOut] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -808,6 +833,11 @@ export function App() {
           }}
           onLeave={() => { setState((s) => leaveSecret(s)); sfx.tap(); }}
         />
+      )}
+
+      {/* 出 What the run gave, in total, once it has ended. */}
+      {tally && !insideSecret(state) && (
+        <Tally state={state} onClose={() => { setTally(false); sfx.tap(); }} />
       )}
 
       {/* 悟道 Raised by the save rather than by an event: if a choice is owed and the

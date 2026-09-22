@@ -664,13 +664,37 @@ export const MEET = {
  */
 export const CAVE = {
   head: '洞天 The cave',
-  says: 'Three beds. 材 Material goes into the ground and comes up as qi, on its own, while the app is shut.',
+  says: 'Three beds. 材 Material goes into the ground and comes up as 氣 qi, on its own, while the app is shut.',
   empty: 'Nothing planted',
   plant: 'Plant something',
   close: 'Not now',
   take: (qi: string) => `Take it · ${qi} qi`,
   ripeIn: (left: string) => `Ripe in ${left}`,
   after: (hours: number) => `after ${hours}h`,
+  /**
+   * 明 What a bed is going to be worth, said before the material is spent.
+   *
+   * Bruno: *"a farming também devia ser mais coerente e perceber o tipo de ganhos"*. The
+   * screen asked for material, named an hour count, and then said nothing at all about
+   * what came back until the bed was ripe, which makes the one decision the cave exists
+   * for (short herb often against long herb overnight) a decision made blind.
+   *
+   * So a seed says three things now: what it costs, what it pays, and what that is an
+   * hour. The rate is the one that settles it, because the whole design of the beds is
+   * that the longer herb is the better rate and the shorter one only wins if you are
+   * really coming back.
+   */
+  yields: (qi: string) => `ripens into ${qi} qi`,
+  perHour: (qi: string) => `${qi} an hour`,
+  worth: (qi: string) => `${qi} qi`,
+  /**
+   * 時 And when the value is settled, which is not when it is planted.
+   *
+   * A bed pays in minutes of the planter's own standing gathering, read at the moment
+   * it is taken. A breakthrough while it grows makes it worth more, and nothing makes
+   * it worth less. Saying so turns a number that seems to wobble into a rule.
+   */
+  settles: 'A bed pays at the rate you gather at when you take it. A breakthrough while it grows makes it worth more, and nothing makes it worth less.',
   law: 'A ripe bed waits for you for ever. Nothing here rots and nothing is lost by being late.',
   /** 釋 What the character means, for the key and the tooltip. */
   what: 'Three beds you own. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. The only thing a long wait costs is the bed it stands in.',
@@ -697,7 +721,33 @@ export const SECRET = {
     `力 ${power}, ${above ? 'a realm above you' : 'the strongest thing this realm has'}. ${pct}% to put it down.`,
   apiece: 'a piece of gear',
   law: 'Everything you take is yours the moment you take it. A beast that puts you down ends the run and takes nothing back.',
-  out: 'Walk out',
+  out: 'Walk out and keep everything',
+  /**
+   * 記 The running total, on the screen while the run is still being walked.
+   *
+   * Bruno walked all seven rooms and came out to nothing he could point at: *"no fim
+   * mostrar o loot e ganhos totais"*. The qi went into a bar that was already moving
+   * and the 道 point into a badge on a tab, so a run that paid four times over read as
+   * a run that paid nothing. It is counted from the first room rather than only at the
+   * end, because the question a walker is answering at every gate is whether what they
+   * are holding is worth the next one.
+   */
+  sofar: 'Taken so far',
+  nothing: 'Nothing yet',
+  /** 出 The end of a run, which is three different endings and says which. */
+  endWalked: 'You walked out',
+  endDone: 'You walked the whole thing',
+  endBeaten: 'A guardian put you down',
+  endBeatenSays: 'The run ends here. Everything below was banked the moment you took it, and none of it goes back.',
+  endSays: 'Everything below was yours the moment you took it.',
+  tallyRooms: (n: number, of: number) => `${n} of ${of} rooms`,
+  tallyGates: (n: number) => `${n} ${n === 1 ? 'guardian' : 'guardians'} put down`,
+  tallyQi: 'qi',
+  tallyDao: '道 points',
+  tallyGear: (n: number) => (n === 1 ? '1 piece of gear' : `${n} pieces of gear`),
+  tallyNone: 'This run gave you nothing. The gate at room one is beaten with power, not with patience.',
+  again: (left: string) => `The door opens again in ${left}.`,
+  back: 'Back',
   /** 釋 What the character means, for the key and the tooltip. */
   what: 'Seven rooms and two ways on at each. Every other room is a pair of beasts a realm above you, and there is no way past them. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
 };

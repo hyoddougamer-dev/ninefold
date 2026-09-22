@@ -72,6 +72,7 @@ import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
 import { gearTile } from '../src/art/gear.ts';
+import { chamber } from '../src/art/secret.ts';
 
 /**
  * 測 How many tests there are, counted rather than remembered.
@@ -477,9 +478,9 @@ const SYSTEMS: readonly System[] = [
   { han: '緣', name: 'Somebody on the road', status: 'done', at: 'meet',
     line: `${MEETINGS.length} meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is ${MEET_POINT_CEILING} 道 against ${TOTAL_COST} for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.` },
   { han: '洞天', name: 'A place you own', status: 'done', at: 'cave',
-    line: `${BEDS} beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. The first numbers took 40% off the climb and were cut to a seventh.` },
+    line: `${BEDS} beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. Every seed says what it ripens into and what that is an hour, so the one decision the beds exist for is made with the numbers visible.` },
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
-    line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Four shapes and five measurements before the wall held: the last one took 材 material out of the run entirely.` },
+    line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.` },
 
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
@@ -1038,6 +1039,23 @@ const SECRET_PATH = Array.from({ length: SECRET_ROOMS }, (_, i) => `
   </span>`).join('');
 
 /** 秘境 What is behind a door that is not a gate. */
+/**
+ * 圖 The rooms, drawn, at the depth each of them sits at.
+ *
+ * Bruno again, on the whole game and this screen in particular: *"o jogo é puramente
+ * quase só texto."* These are the real panels art/secret.ts draws behind the two doors,
+ * called here with the same arguments the screen calls them with.
+ */
+const SECRET_VAULTS = (['spring', 'shrine', 'brazier', 'beast'] as const).map((k, i) => `
+  <figure class="vault">
+    <span class="art">${chamber({ kind: k, step: i * 2, realm: 6 })}</span>
+    <figcaption><b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}
+      <em>room ${i * 2 + 1}</em></figcaption>
+  </figure>`).join('');
+
+/** 出 The way out, which is the panel the end of a run wears. */
+const SECRET_OUT = `<span class="art">${chamber({ kind: 'out', step: SECRET_ROOMS, realm: 6 })}</span>`;
+
 const SECRET_ROOMS_TABLE = (['spring', 'shrine', 'brazier'] as const).map((k) => `
   <tr><td><span class="s">${icon(ROOM_INFO[k].icon, 20)}</span>
     <b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</td>
@@ -1148,6 +1166,20 @@ const page = `<title>九境 Ninefold · the Bible</title>
   #secret .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
   #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
         margin-right:5px; }
+  /* 圖 the drawn rooms, scoped to this section so nothing else can wear them */
+  #secret .vaults { display:grid; gap:10px; margin:14px 0 6px; }
+  #secret .vault { margin:0; background:var(--panel2); border:1px solid var(--line);
+                   border-radius:13px; overflow:hidden; }
+  #secret .vault .art { display:block; height:120px; }
+  #secret .vault .art svg { display:block; width:100%; height:100%; }
+  #secret .vault figcaption { padding:10px 13px 12px; font-size:13.5px; }
+  #secret .vault figcaption b.cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #secret .vault figcaption em { display:block; margin-top:3px; font-style:normal;
+                                 font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+                                 color:var(--faint); }
+  #secret .mk.out .art { display:block; height:120px; border-radius:11px; overflow:hidden; }
+  #secret .mk.out .art svg { display:block; width:100%; height:100%; }
+  #secret .cap { margin:8px 0 0; font-size:12.5px; color:var(--faint); line-height:1.55; }
   #secret .spath { display:flex; align-items:center; gap:6px; margin:16px 0 4px; }
   #secret .rm { flex:1; display:grid; place-items:center; gap:4px; padding:10px 4px;
         border-radius:11px; background:var(--panel); border:1px solid var(--line);
@@ -2052,6 +2084,20 @@ const page = `<title>九境 Ninefold · the Bible</title>
       is lost by being late. The only thing a long wait costs is the bed it stands
       in.</p>
 
+    <h3>明 The table above, on the screen</h3>
+    <p class="t">Bruno: <i>"a farming também devia ser mais coerente e perceber o tipo de
+      ganhos"</i>. The decision in the paragraph above was real and the screen was not
+      showing any of it. A seed asked for material and named an hour count. It said
+      nothing at all about what came back until the bed was ripe, which makes the one
+      choice the cave exists for a choice made blind.</p>
+    <p class="t">So a seed now says three things: what it costs, what it ripens into, and
+      what that is an hour. A bed still growing says what it will be worth rather than
+      only when it is ready. And the screen says the one thing about the value that
+      surprises people: a bed pays at the rate you gather at <b>when you take it</b>, so
+      a breakthrough while it grows makes it worth more, and nothing ever makes it worth
+      less. The claim that the longer herb is the better rate is now a test, because a
+      screen that quotes a rate is a screen that can start lying.</p>
+
     <h3>進 And the formatter carried wrong, which the cave is what landed on</h3>
     <p class="t">A bed four hours from ripe read as <b>3h 60min</b>. Rounding the hours
       and the minutes separately lets the remainder overflow its own unit, and a day
@@ -2102,6 +2148,34 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t">Shipped, the whole run costs about <b>one per cent</b> of the climb for
       every habit, which is what a content system should cost. What it is for is having
       a beginning and an end.</p>
+
+    <h3>圖 A door is a picture of where it goes</h3>
+    <p class="t">A run was a paragraph, a row of seals and two buttons with a 26 pixel
+      icon on each. 藝 <code>art/secret.ts</code> draws the room behind each door
+      instead, and it keeps the rule 塔 the tower set: <b>the drawing is a reading of the
+      save, not a picture next to it</b>. The vault is the colour of the realm you are
+      standing in. The arches recede one further for every two rooms behind you, so room
+      six is visibly deeper underground than room one. A gate is drawn as what a gate is:
+      the way on, barred, with something awake in front of it.</p>
+    <div class="vaults">${SECRET_VAULTS}</div>
+    <p class="cap">The four panels above are the real function, called with the arguments
+      the screen calls it with, at the sixth realm.</p>
+
+    <h3>記 What the run gave, at the end of it</h3>
+    <p class="t">Bruno: <i>"no fim mostrar o loot e ganhos totais"</i>. He was right, and
+      the cause was the law this system is built on. Every room pays into the save the
+      moment it is opened. So a run that paid four times over lands in a bar that was
+      already moving, a badge on a tab, and a chest with forty other pieces in it.
+      Nothing was ever wrong. Nothing was ever visible either.</p>
+    <p class="t">So the save carries a <b>record</b> of the run beside the run: qi, 道
+      points, the pieces walked out with, the rooms opened and the guardians put down.
+      It is a record and never loot in flight. The difference is held to by a test: the
+      qi on the tally has to equal the qi the save gained, to the unit.</p>
+    <p class="t">The running total is on the screen while the run is still being walked
+      too, because that is the question a gate asks: is what I am holding worth the next
+      one?</p>
+    <div class="mk secret out">${SECRET_OUT}
+      <p class="cap">出 The way out, the panel the end of a run wears.</p></div>
 
     <h3>深 The three gates, and what is behind the other four doors</h3>
     <p class="t">The first gate is the strongest common of the realm you stand in, which

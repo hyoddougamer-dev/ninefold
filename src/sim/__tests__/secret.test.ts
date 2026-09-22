@@ -88,6 +88,54 @@ describe('秘境 the secret realm', () => {
     }
   });
 
+  /**
+   * 記 The tally is a record and not loot in flight, and the difference is testable:
+   * the qi on it has already been paid into the save, so the two move together and a
+   * run that ends badly keeps both.
+   */
+  it('counts what the run gave, and counts nothing it did not pay', () => {
+    let s = enter(walker());
+    expect(s.lastRun.rooms).toBe(0);
+    expect(s.lastRun.qi).toBe(0);
+
+    const before = { qi: s.qi, dao: s.metPoints, chest: s.chest.length };
+    for (let i = 0; i < ROOMS && inside(s); i++) s = open(s, 0, 1000 + i * 17);
+
+    // Every number on the tally is exactly what the save gained, to the qi.
+    expect(s.lastRun.qi).toBe(s.qi - before.qi);
+    expect(s.lastRun.dao).toBe(s.metPoints - before.dao);
+    expect(s.lastRun.items.length).toBe(s.chest.length - before.chest);
+    expect(s.lastRun.rooms).toBeGreaterThan(0);
+    expect(s.lastRun.rooms).toBeLessThanOrEqual(ROOMS);
+    // 關 A gate opened is a guardian put down, and there are three of them in seven.
+    expect(s.lastRun.gates).toBeLessThanOrEqual(3);
+  });
+
+  it('says a guardian ended it, and keeps the rooms walked before it', () => {
+    const weak = enter(walker({ levels: { technique: 0, method: 0, pills: 0, cores: 0 } }));
+    let s: State = weak;
+    for (let i = 0; i < ROOMS && inside(s); i++) s = open(s, 0, 4242 + i);
+    if (s.lastRun.beaten) {
+      expect(inside(s)).toBe(false);
+      expect(s.qi).toBeGreaterThanOrEqual(weak.qi);
+      expect(s.lastRun.qi).toBe(s.qi - weak.qi);
+    }
+  });
+
+  /** A save is input: a forged tally cannot invent a piece of gear or a realm's qi. */
+  it('rebuilds the tally from a save rather than trusting it', () => {
+    const forged = validate({
+      ...walker(), realm: 5,
+      lastRun: { qi: -5, dao: 999, rooms: 40, gates: 99, beaten: 'yes',
+        items: [{ template: 'nosuchthing', rarity: 'divine' }, { template: 'sword3', rarity: 'earth' }] },
+    }, T0 + 10 * DOOR_GAP);
+    expect(forged.lastRun.qi).toBe(0);
+    expect(forged.lastRun.dao).toBeLessThanOrEqual(ROOMS * 2);
+    expect(forged.lastRun.rooms).toBe(ROOMS);
+    expect(forged.lastRun.beaten).toBe(false);
+    expect(forged.lastRun.items).toEqual([{ template: 'sword3', rarity: 'earth' }]);
+  });
+
   it('walks out from anywhere and starts the clock, whichever way it ended', () => {
     const s = { ...enter(walker()), runStep: 3 } as State;
     const out = leave(s);
