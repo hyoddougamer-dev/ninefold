@@ -20,6 +20,7 @@
     "prose": "npm run build && tsx tools/prose.ts",
     "smoke": "node tools/smoke.mjs",
     "actions": "node tools/actions.mjs",
+    "tips": "node tools/tips.mjs",
     "read": "tsx tools/read.ts"
   },
   "dependencies": {

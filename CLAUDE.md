@@ -81,6 +81,19 @@ Each of these cost real time once. They are written down so they cost it once.
   and 器 the fuse groups are the same row: a seal, a name, a figure on the right. The
   fuse one carries `fuserow` as well, so a test or a rule can name one screen without
   touching the other. Restyle `.beast` and check both.
+- **A filled animation leaves a transform behind, and a transform traps `position: fixed`.**
+  `.sheet > * { animation: sheetin .13s ease-out both; }` keeps `matrix(1,0,0,1,0,0)` on
+  every card for the life of the screen, because `both` keeps an animation in effect
+  after it ends. An identity matrix is still a transform, so that card becomes the
+  containing block for any fixed descendant **and** opens a stacking context. 註 the
+  tooltip was placed against the scrolled list instead of the screen, and its
+  `z-index: 45` only ever ranked it against its own siblings, so the next card painted
+  over it. Anything that has to float over the whole screen goes through a portal into
+  `document.body`. `npm run tips` opens every character on every screen and fails if a
+  note lands off the screen or has anything painted on top of it.
+- **A translate cannot be clamped.** The same tooltip was centred with
+  `translateX(-50%)`, which put a 300px note 105px off the left edge for any character in
+  the left margin. Measure the real box, then clamp its edges.
 - **Never share a CSS class between two screens.** `.help` was the save panel and the
   help sheet; `.ladder` was the game's climb widget and the bible's realm cards. Both
   cost a debugging session. Scope every new block (`#mockups .ladder`, `.condense .chead`).

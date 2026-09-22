@@ -15,6 +15,7 @@ import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
+import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GUIDE, HUNT } from '../copy.ts';
 import { advice } from '../advice.ts';
 import { DISMISSED, guide } from '../guide.ts';
@@ -102,7 +103,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           修 Cultivate · day {day}
         </span>
-        <span className="faint mono" style={{ fontSize: 12 }}>力 {num(power(state))}</span>
+        {/* 註 修 is the screen a player is on for most of the game and it had two
+            answerable characters on it, both of them inside 梯 the ladder. Every other
+            character here was a shape with a number beside it. These four are the ones
+            that name a thing the player owns or is doing, so these four answer. */}
+        <span className="faint mono" style={{ fontSize: 12 }}><Term han="力" /> {num(power(state))}</span>
       </div>
 
       {/* 境 The realm's own name is the way in to the page that explains it. A player
@@ -155,7 +160,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           {CULTIVATE.standing(`+${num(rate(state))} qi / s`)}
           {focus > 1.15 && (
             <span className="deep" data-full={focus >= FOCUS_MAX - 0.001}>
-              入定 ×{focus.toFixed(1)}
+              <Term han="入定" /> ×{focus.toFixed(1)}
             </span>
           )}
         </div>
@@ -173,7 +178,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             ? (full ? CULTIVATE.toward(num(dragon)) : CULTIVATE.poolFilling(duration(left)))
             : r.gains}
         </span>
-        <span className="mono" style={{ color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+        <span className="mono" style={{ color: 'var(--gold)' }}><Term han="材" /> {num(state.materials)}</span>
       </div>
 
       {/* 梯 The bar above is one rung. This is the other eight, the realm they sit in,
@@ -386,7 +391,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         && !canBuy(state, 'cores') && (
         <div className="condense">
           <div className="chead">
-            <b className="cjk">凝丹</b>
+            <b className="cjk"><Term han="凝丹" /></b>
             <em>{CULTIVATE.condenseHead}</em>
             <span className="mono">
               {CULTIVATE.condensePrice(num(condenseCost(state)), String(CORE_QI_RUNGS))}

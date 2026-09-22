@@ -521,7 +521,10 @@ export function App() {
 
   return (
     <div className="app">
-      <div className="sheet" key={tab}>
+      {/* 屏 The screen names itself in the DOM. A locked tab takes the tap and changes
+          nothing, and 註 the tooltip harness was walking the previous screen a second
+          time and reporting its characters under the wrong tab's name. */}
+      <div className="sheet" key={tab} data-screen={tab}>
         {tab === 'cultivate' && (
           <Cultivate
             state={state}

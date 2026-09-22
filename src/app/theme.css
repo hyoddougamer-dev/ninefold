@@ -167,22 +167,26 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         border-bottom: 1px dotted color-mix(in srgb, var(--cyan) 55%, transparent);
         line-height: inherit; cursor: pointer; }
 .term[data-open] { color: var(--gold); border-bottom-color: var(--gold); }
-.termtip { position: fixed; z-index: 45; transform: translateX(-50%);
+/* 置 No translate anywhere on this box. It is placed by its own measured edges from
+   ui/Term.tsx, because a translate cannot be clamped: a note on a character in the left
+   margin used to be pulled 105px off the side of the screen with nothing to stop it.
+   The shadow is heavier than the panels underneath, so the note reads as being in front
+   of the screen rather than part of it. */
+.termtip { position: fixed; z-index: 45;
            font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
-           max-width: min(280px, calc(100vw - 24px)); display: block;
-           background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
-           padding: 11px 13px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.9);
+           max-width: min(300px, calc(100vw - 20px)); display: block;
+           background: var(--panel); border: 1px solid var(--cyan); border-radius: 11px;
+           padding: 11px 13px; box-shadow: 0 14px 40px -8px rgba(0,0,0,.95);
            animation: tipin .16s ease-out both; }
-.termtip[data-below="false"] { transform: translate(-50%, -100%); }
 .termtip b { font-size: 19px; font-weight: 400; color: var(--cyan); margin-right: 7px; }
 .termtip em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
               font-size: 15px; color: var(--text); }
 .termtip i { display: block; margin-top: 6px; font-style: normal; font-size: 12.5px;
              color: var(--faint); line-height: 1.5; }
 .termtip b { font-family: 'Noto Serif SC', serif; }
-@keyframes tipin { from { opacity: 0; transform: translateX(-50%) translateY(-4px); } }
+@keyframes tipin { from { opacity: 0; transform: translateY(-4px); } }
 .termtip[data-below="false"] { animation-name: tipinup; }
-@keyframes tipinup { from { opacity: 0; transform: translate(-50%, -100%) translateY(4px); } }
+@keyframes tipinup { from { opacity: 0; transform: translateY(4px); } }
 @media (prefers-reduced-motion: reduce) { .termtip { animation: none; } }
 
 /* 出口 The one way out, fixed to the viewport so it can never scroll away.
