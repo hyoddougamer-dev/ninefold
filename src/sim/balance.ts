@@ -322,7 +322,7 @@ export function levelCap(realm: number): number {
  * Which is the wall the right way round.
  *
  * 定 And it is **flat rather than a multiplier**, which is the whole of what the first
- * attempt got wrong. Doubling the cap fixed the second realm and broke the ninth: above
+ * attempt got wrong. Doubling the cap fixed the second realm and broke the ninth. Above
  * the fifth realm material is no longer earned by hand at all — 塔 the tower pays it in
  * bulk — so a doubled cap there is not a wall handed back to the price, it is no wall.
  * The endgame's own test caught it in one run: walkover crossings went from 5 of 40 to

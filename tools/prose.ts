@@ -114,6 +114,11 @@ if (html) {
     .replace(/<script[\s\S]*?<\/script>/g, ' ')
     .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
     .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+    // 塊 A block ends a sentence whether or not it ends in a full stop. Without this a
+    // table of nine realms and a heading above it came back as one 400-character
+    // "sentence", and a third of what the audit flagged for length was that, not prose.
+    // It runs after the wholesale strips above, or it eats the </pre> they look for.
+    .replace(/<\/(p|div|li|td|th|tr|h[1-6]|section|blockquote|dt|dd|figcaption|code|em|b|i)>/g, '. ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&[a-z]+;/g, ' ');
   const lines = prose.split(/(?<=[.!?])\s+/).map((x) => x.replace(/\s+/g, ' ').trim())

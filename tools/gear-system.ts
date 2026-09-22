@@ -2,7 +2,7 @@
  * 器 The gear system, presented.
  *
  * Every figure on this page is rendered by the game's own code with the game's own
- * numbers — the tiles come from art/gear.ts, the set values from data/gear.ts, and the
+ * numbers. The tiles come from art/gear.ts, the set values from data/gear.ts, and the
  * drop odds from sim/drops.ts. Nothing here is a mock-up, so nothing here can flatter a
  * system that does not hold up.
  *
@@ -220,7 +220,7 @@ const page = `<title>器 O Equipamento</title>
   <section>
     <p class="tag">1 · Cinco raridades</p>
     <h2>O mesmo objecto, cinco vezes</h2>
-    <p class="says">É a mesma espada nas cinco. O que muda é a moldura e a luz à volta —
+    <p class="says">É a mesma espada nas cinco. O que muda é a moldura e a luz à volta.
       nunca o desenho. Por isso um baú com vinte peças lê-se num relance, e uma peça nova
       não custa desenho nenhum.</p>
     <div class="ladder">${ladder}</div>
@@ -231,7 +231,7 @@ const page = `<title>器 O Equipamento</title>
   <section>
     <p class="tag">2 · Seis espaços</p>
     <h2>O anel</h2>
-    <p class="says">O equipamento orbita o cultivador. Um espaço vazio fica a tracejado —
+    <p class="says">O equipamento orbita o cultivador. Um espaço vazio fica a tracejado.
       tem de se ver que está vazio tão depressa como se vê o que está cheio.</p>
     <div class="wheel">
       <div class="halo"></div>
@@ -260,7 +260,7 @@ const page = `<title>器 O Equipamento</title>
     <p class="tag">4 · De onde cai</p>
     <h2>As probabilidades</h2>
     <p class="says">Uma besta comum larga alguma coisa em 18% das mortes. Uma guardiã
-      larga <b style="color:var(--text)">sempre</b> — só morre uma vez. E quanto mais alto o
+      larga <b style="color:var(--text)">sempre</b>, porque só morre uma vez. E quanto mais alto o
       reino, melhores as probabilidades.</p>
     <div class="scrollx">
       <table>
@@ -271,7 +271,7 @@ const page = `<title>器 O Equipamento</title>
       </table>
     </div>
     <p class="note"><b>A mesma morte dá sempre a mesma peça.</b> Não dá para fechar o jogo
-      e voltar a abrir à espera de melhor sorte — e não foi preciso guardar nada para o
+      e voltar a abrir à espera de melhor sorte, e não foi preciso guardar nada para o
       impedir.</p>
   </section>
 
@@ -288,7 +288,7 @@ const page = `<title>器 O Equipamento</title>
     <p class="tag">6 · Onde encaixa</p>
     <h2>Isto não substitui as quatro caixas</h2>
     <p class="says">劍訣 técnica e 妖丹 núcleos continuam a ser onde gastas o qi.
-      O equipamento é o que <b style="color:var(--text)">cai</b> — não se compra, encontra-se.
+      O equipamento é o que <b style="color:var(--text)">cai</b>. Não se compra, encontra-se.
       É a única coisa no jogo que te dá uma surpresa em vez de um preço.</p>
     <p class="says">Falta decidir: se peças repetidas se fundem para subir de raridade
       (isso é o crafting), e se há um limite de espaço no baú.</p>
@@ -296,4 +296,4 @@ const page = `<title>器 O Equipamento</title>
 </div>`;
 
 writeFileSync('gear-system.html', page);
-console.log(`gear-system.html — ${(page.length / 1024).toFixed(0)} KB`);
+console.log(`gear-system.html · ${(page.length / 1024).toFixed(0)} KB`);

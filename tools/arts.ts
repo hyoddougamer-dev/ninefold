@@ -11,7 +11,7 @@
  * every proposal here makes its choice *before* the fight and then gets out of the way.
  *
  * They all share one hook, because it costs nothing and pays twice: **each warden
- * drops its own art**. Nine arts, one a realm, arriving at a known pace — and the
+ * drops its own art**. Nine arts, one a realm, arriving at a known pace, and the
  * warden fight stops being only a gate.
  *
  * The copy is European Portuguese: it is written for Bruno, not for the game.
@@ -132,7 +132,7 @@ const meridians = `
 
 // ── C 勢 One stance, always on ────────────────────────────────────────────────
 /**
- * Nine stances, one a realm, like the arts. Each is a *rule*, not a proc — and no two
+ * Nine stances, one a realm, like the arts. Each is a *rule*, not a proc, and no two
  * of them want the same gear, which is where the diversity has to come from when the
  * player only gets one choice.
  */
@@ -142,7 +142,7 @@ const STANCES = [
   { han: '兇', name: 'Ferocious', text: 'deal 50% more, take 50% more', wants: '力 power, short fights' },
   { han: '纏', name: 'Entangle', text: 'the beast loses 8% power a round', wants: 'fights above your weight' },
   { han: '續', name: 'Endure', text: 'you recover 6% of your health a round', wants: '氣 qi, long fights' },
-  { han: '穩', name: 'Steady', text: 'your damage never varies — no dice at all', wants: 'fights on a knife edge' },
+  { han: '穩', name: 'Steady', text: 'your damage never varies, no dice at all', wants: 'fights on a knife edge' },
   { han: '險', name: 'Reckless', text: 'half your blows miss, the rest hit for triple', wants: 'a gamble, 運 luck' },
   { han: '逆', name: 'Reverse', text: '+1% damage for every 1% of health you are missing', wants: 'surviving, not winning early' },
   { han: '鏡', name: 'Mirror', text: 'you deal whatever the beast dealt you last round', wants: 'beasts far above you' },
@@ -156,7 +156,7 @@ const stance = `
       <span class="wants">${s.wants}</span>
     </div>`).join('')}
   </div>
-  ${strip(6, [], '兇 Ferocious — every round, both ways')}`;
+  ${strip(6, [], '兇 Ferocious · every round, both ways')}`;
 
 // ── D 招 An ordered chain ─────────────────────────────────────────────────────
 const chain = `
@@ -184,12 +184,12 @@ const PROPOSALS = [
     key: 'a', han: '訣', name: 'A Carteira', tag: 'Três à escolha, disparam sozinhas',
     idea: 'Tens nove artes, levas três. Cada uma tem o seu momento fixo.',
     text: `A mais simples de perceber e a mais fácil de fazer. Cada arte tem um gatilho
-      que nunca muda — a primeira ronda, de três em três, abaixo de 30% de vida. A
+      que nunca muda: a primeira ronda, de três em três, abaixo de 30% de vida. A
       decisão é <b>quais as três</b>, e a decisão a sério é se os gatilhos se cobrem uns
       aos outros ou se deixam buracos.`,
-    space: '9 artes, 3 lugares — <b>84</b> carteiras',
+    space: '9 artes, 3 lugares · <b>84</b> carteiras',
     good: 'Percebe-se em cinco segundos. Cada guardiã que cai muda-te a carteira.',
-    bad: 'A escolha é uma lista. Não há interacção entre as três — cada uma faz a sua coisa e ignora as outras.',
+    bad: 'A escolha é uma lista. Não há interacção entre as três: cada uma faz a sua coisa e ignora as outras.',
     body: loadout,
   },
   {
@@ -198,7 +198,7 @@ const PROPOSALS = [
     text: `As artes deixam de ser um ecrã à parte e passam a viver no equipamento. Uma
       arma boa com um buraco vale mais do que uma arma melhor sem nenhum, e <b>trocar de
       peça troca-te a build</b>. Os buracos vêm da raridade: 凡 nenhum, 天 dois.`,
-    space: 'até 8 buracos × 9 artes — <b>milhares</b>, mas presos ao que te calha',
+    space: 'até 8 buracos × 9 artes · <b>milhares</b>, mas presos ao que te calha',
     good: 'A escolha mais profunda das quatro. Liga os dois sistemas que já tens em vez de acrescentar um terceiro.',
     bad: 'É o mais complicado, e a pior queda do jogo passa a ser uma peça ótima sem buracos. Contraria o «simples».',
     body: meridians,
@@ -208,9 +208,9 @@ const PROPOSALS = [
     idea: 'Não é um disparo. É uma regra diferente para todas as rondas.',
     text: `Escolhes <b>uma</b> e ela reescreve o combate: 疾 bates duas vezes por ronda
       mas mais fraco, 守 levas menos e dás menos, 兇 dás muito mais e levas muito mais.
-      Uma decisão só, com consequência enorme e imediatamente legível — e cada postura
+      Uma decisão só, com consequência enorme e imediatamente legível, e cada postura
       quer um equipamento diferente.`,
-    space: '9 posturas — <b>9</b> escolhas, e cada uma pede outra build de equipamento',
+    space: '9 posturas · <b>9</b> escolhas, e cada uma pede outra build de equipamento',
     good: 'A mais legível de longe. Dizer «ando de 兇» descreve a tua personagem numa palavra.',
     bad: 'Só uma escolha. A diversidade tem de vir toda do equipamento e da árvore.',
     body: stance,
@@ -218,11 +218,11 @@ const PROPOSALS = [
   {
     key: 'd', han: '招', name: 'A Sequência', tag: 'Quatro artes por ordem, em ciclo',
     idea: 'Uma arte por ronda, pela ordem que puseres, a repetir.',
-    text: `Não escolhes só quais — escolhes <b>a ordem</b>. E a ordem conta, porque umas
+    text: `Não escolhes só quais. Escolhes <b>a ordem</b>. E a ordem conta, porque umas
       preparam as outras: o 鶴唳 tira poder à besta, por isso vale mais cedo; o 虎嘯 bate
       a dobrar, por isso vale depois do 狼噬 já ter empilhado. Estás a programar o teu
       lutador e depois vê-lo executar.`,
-    space: '9 artes, 4 por ordem — <b>3 024</b> sequências',
+    space: '9 artes, 4 por ordem · <b>3 024</b> sequências',
     good: 'De longe a que dá mais theorycrafting. É uma rotação, como num ARPG, mas montada fora do combate.',
     bad: 'É a que mais se aproxima de «estar a jogar». Precisa de artes que conversem entre si ou a ordem não interessa.',
     body: chain,
@@ -367,7 +367,7 @@ const page = `<title>訣 Quatro Sistemas de Artes</title>
     <h1>訣</h1>
     <p class="sub">Quatro maneiras de ter artes de combate.</p>
     <p class="says" style="margin-top:14px">O combate é o único sistema do jogo
-      <b>sem decisão nenhuma</b>. Escolhes uma besta, vês, ganhas ou perdes — e tudo já
+      <b>sem decisão nenhuma</b>. Escolhes uma besta, vês, ganhas ou perdes, e tudo já
       estava decidido antes de carregares. O equipamento tem decisão. A árvore tem. Os
       sets têm. O combate não.</p>
     <p class="says" style="margin-top:10px">Nenhuma destas põe um botão <em>dentro</em> da
@@ -380,7 +380,7 @@ const page = `<title>訣 Quatro Sistemas de Artes</title>
     <h2>Cada guardiã larga a sua arte</h2>
     <p class="says">Nove artes, uma por reino, na ordem em que sobes. Não é preciso
       inventar uma fonte nova nem uma moeda nova, e a luta da guardiã deixa de ser só um
-      portão — passa a ser <b>a coisa que te muda a build</b>.</p>
+      portão. Passa a ser <b>a coisa que te muda a build</b>.</p>
     <div class="arts">${ARTS.map((a) => artCard(a, { note: a.when, from: true })).join('')}</div>
     <p class="says" style="margin-top:6px">Repara que já não puxam todas a mesma alavanca:
       três querem lutas longas, uma quer lutas curtas, uma só serve quando estás quase a
@@ -412,16 +412,16 @@ const page = `<title>訣 Quatro Sistemas de Artes</title>
       escolha, e a 招 tem escolha a mais para um jogo que queres simples. Juntas
       resolvem-se uma à outra: <b>uma postura</b> que diz em que género de personagem
       andas, e <b>três artes por ordem</b> que dizem como é que essa personagem luta.
-      São 9 × 9 × 8 × 7 = <b>4 536</b> combinações — e ao contrário dos números grandes
+      São 9 × 9 × 8 × 7 = <b>4 536</b> combinações, e ao contrário dos números grandes
       das outras, quase todas jogam mesmo de maneira diferente.</p>
     <p class="says" style="margin-top:10px">Ficas com dois ecrãs de decisão em vez de um,
-      e as duas metades conversam: o 疾 bate duas vezes por ronda, por isso quer artes que
-      disparem a cada ronda; o 兇 quer acabar depressa, por isso quer o 猿臂 e o 虎嘯 cedo.
+      e as duas metades conversam. O 疾 bate duas vezes por ronda, por isso quer artes que
+      disparem a cada ronda. O 兇 quer acabar depressa, por isso quer o 猿臂 e o 虎嘯 cedo.
       A mesma sequência em posturas diferentes joga de maneira diferente.</p>
     <p class="note" style="margin-top:14px"><b>Se tiver de ser só uma</b>, escolhe a
       <b>勢 Postura</b>. É a que se percebe sem ler nada, a que menos código precisa, e a
       única que te deixa dizer o que és numa palavra. A sequência pode vir depois sem
-      partir nada — as artes são as mesmas.</p>
+      partir nada. As artes são as mesmas.</p>
     <p class="says" style="margin-top:12px">Sobre <b>consumíveis</b>, mantenho o que disse:
       não. Num idle ou tens tantos que são poder de graça, ou guardas o elixir para o
       chefe final e nunca o usas. Se um dia quiseres a versão estreita que funciona, é um
@@ -431,4 +431,4 @@ const page = `<title>訣 Quatro Sistemas de Artes</title>
 </div>`;
 
 writeFileSync('arts.html', page);
-console.log(`arts.html — ${(page.length / 1024).toFixed(0)} KB · ${ARTS.length} arts, ${PROPOSALS.length} proposals`);
+console.log(`arts.html · ${(page.length / 1024).toFixed(0)} KB · ${ARTS.length} arts, ${PROPOSALS.length} proposals`);

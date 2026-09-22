@@ -4,7 +4,7 @@ An idle cultivation game for the phone. Qi gathers on its own, with the app clos
 always. Nine realms of nine rungs, nine heavens above them, and no end after that.
 
 - **Play it:** <https://hyoddougamer-dev.github.io/ninefold/>
-- **Read it:** `npm run bible` writes `bible.html` — the one page that explains the whole
+- **Read it:** `npm run bible` writes `bible.html`, the one page that explains the whole
   game. Every number and name on it is read out of the game's own code on every build,
   so it cannot drift from what the game does.
 
@@ -32,7 +32,7 @@ throws, renders nothing, or puts `NaN` in front of the player.
 before anybody else plays: it **presses things**. Buying, fighting, losing, wearing,
 melting, fusing, refining, brewing, climbing the tower, learning a node, taking a
 stance, driving a beast, beating a warden, breaking through, crossing the tribulation,
-and copying the save out. Each act asserts on the saved state, not on the pixels — a
+and copying the save out. Each act asserts on the saved state, not on the pixels. A
 button that lights up and does nothing passes a smoke walk and fails here.
 
 ## Reading somebody else's run
@@ -47,7 +47,7 @@ pbpaste | npm run read
 ```
 
 It prints where they got to, how they compare to the eight cultivators the harness
-models, what they used — and, the part worth having, **what is open to them and has never
+models, what they used, and the part worth having: **what is open to them and has never
 once been touched**. "Reached the fifth realm on day eleven and never opened 道, with 21
 points sitting unspent" is a sentence somebody can act on. "I played for a bit and
 stopped" is not.
@@ -85,8 +85,8 @@ It reads and prints. It never writes anything and it never asks the network.
 
 ## The rules the code is written to
 
-- **`sim/` is pure.** Anything that changes the numbers belongs there, never in the app —
-  a reward the harnesses cannot see is a reward nobody can tell you is wrong.
+- **`sim/` is pure.** Anything that changes the numbers belongs there, never in the app.
+  A reward the harnesses cannot see is a reward nobody can tell you is wrong.
 - **A save is input.** `validate()` caps everything, and derived facts are derived.
 - **Nothing uncapped may ever raise the qi rate.**
 - **Nothing is ever taken away for being away.** Idle is the whole contract.

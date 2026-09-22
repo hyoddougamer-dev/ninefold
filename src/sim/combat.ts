@@ -180,7 +180,7 @@ export const ROUND_CAP = 24;
 /**
  * 氣運 How the qi runs today — one roll for each side, before a blow is thrown.
  *
- * Blow-by-blow noise averages away: ten blows of ±22% come out within 4% of the mean,
+ * Blow-by-blow noise averages away. Ten blows of ±22% come out within 4% of the mean,
  * so whoever had more power won every single time and a fight was decided before it
  * started. The screen hid that behind a sigmoid over the power ratio, which cheerfully
  * promised 34% on fights the player would lose a hundred times out of a hundred.

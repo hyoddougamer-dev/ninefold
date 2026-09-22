@@ -1465,15 +1465,15 @@ const page = `<title>九境 Ninefold · the Bible</title>
 
     <h3>Está tudo funcional?</h3>
     <div class="rule"><b>Sim, e há dois comandos que o confirmam.</b> <code>npm run smoke</code>
-      abre o jogo construído num browser a sério, em seis profundidades, visita todos os
-      separadores, abre o canto e todos os painéis atrás dele, e falha se alguma coisa
-      rebentar, não desenhar nada, ou mostrar <code>NaN</code> ao jogador. A última vez que
+      abre o jogo construído num browser a sério, em seis profundidades. Visita todos os
+      separadores e abre o canto e os painéis atrás dele. Falha se alguma coisa rebentar,
+      não desenhar nada, ou mostrar <code>NaN</code> ao jogador. A última vez que
       correu: <b>todos os ecrãs abriram e nada estava partido</b>.</p>
       <p class="t" style="margin-top:8px">E <code>npm run actions</code> é a outra metade
       da pergunta, que é a que interessa antes de outra pessoa jogar: <b>carrega nas
-      coisas</b>. Comprar, lutar, perder, vestir, derreter, fundir, refinar, destilar,
-      subir a torre, aprender um nó, tomar uma postura, fazer um 圍, derrubar um warden,
-      passar de reino, atravessar o 劫, e copiar o save para fora. Cada acto verifica o
+      coisas</b>. Comprar, lutar, perder, vestir, derreter, fundir, refinar, destilar.
+      Subir a torre, aprender um nó, tomar uma postura, fazer um 圍. Derrubar um warden,
+      passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
       Ao lado disso correm <b>${TESTS} testes</b>, dos quais um atira dez mil saves
@@ -1490,9 +1490,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <h2><span class="h">樣</span> What it looks like</h2>
     <p class="t">A standing rule, and Bruno's words for it: <i>"faz um mockup visual
       sempre com exemplos quando se altera algo relacionado com aspecto/arte."</i> So
-      every screen that changed is drawn here rather than described, with the game's own
-      art functions, the game's own tables and, where there is a number, the number the
-      game would actually show. A mockup assembled from invented values is a drawing of
+      every screen that changed is drawn here rather than described. It uses the game's
+      own art functions and its own tables, and where there is a number it is the number
+      the game would actually show. A mockup assembled from invented values is a drawing of
       something that does not exist.</p>
 
     <h3>梯 The climb, drawn</h3>
@@ -1521,9 +1521,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
 
     <h3>鑑 Reading a piece of gear</h3>
     <p class="t">Tapping a piece in the chest <b>wore it</b>, so there was never a moment
-      in which a player could look at it. The numbers below are not illustrative: they
-      are ${templateOf(MOCK_HELD).name} against ${templateOf(MOCK_WORN).name} run through
-      the same comparison the game runs, and the two figures at the bottom are
+      in which a player could look at it. The numbers below are not illustrative. They
+      are ${templateOf(MOCK_HELD).name} against ${templateOf(MOCK_WORN).name}, run through
+      the same comparison the game runs. The two figures at the bottom are
       <code>power()</code> and <code>rate()</code> with the piece put on in a copy of the
       save. Both sides of the trade appear, including the 破 line it loses.</p>
     ${MOCK_ITEM}
@@ -1553,18 +1553,18 @@ const page = `<title>九境 Ninefold · the Bible</title>
     ${MOCK_CONDENSE}
 
     <h3>境外 The card above the summit</h3>
-    <p class="t">Forty crossings against one animal called 龍 was the endgame, and this
-      is what stands in its place: the heaven you are in, what it opened, and the next
-      one with its own Dragon already drawn. The whole card is read out of heavens.ts:
+    <p class="t">Forty crossings against one animal called 龍 was the endgame. This is
+      what stands in its place: the heaven you are in, what it opened, and the next one
+      with its own Dragon already drawn. The whole card is read out of heavens.ts:
       the name, the colour, the count of crossings, and which animal the icon is.</p>
     ${MOCK_HEAVEN}
 
     <h3>出 Beasts still to come</h3>
     <p class="t">A realm's three commons now walk out at layers ${COMMON_LAYERS.join(', ')}
       rather than all at once. The ones that have not arrived are <b>shown</b> rather than
-      hidden, dimmed and dashed with the layer that brings them, the same argument as a
-      locked tab, for the same reason: you cannot look forward to a thing you have never
-      seen.</p>
+      hidden, dimmed and dashed with the layer that brings them. It is the same argument
+      as a locked tab, for the same reason: you cannot look forward to a thing you have
+      never seen.</p>
     ${MOCK_COMING}
 
     <h3>收 The corner</h3>
@@ -1664,9 +1664,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <div class="rows">${opensCards}</div>
     <div class="rule"><b>A system that arrives late arrives full.</b> The 道 points earned
       from the first layer are all waiting when the tree opens at the
-      ${realmOf(opensAt('tree')).han} ${realmOf(opensAt('tree')).name} realm, and
-      every beast killed before the ${realmOf(opensAt('bestiary')).name} realm is already
-      counted when 圖鑑 the bestiary starts paying for finished realms. Nothing is withheld and then thrown away; it is withheld
+      ${realmOf(opensAt('tree')).han} ${realmOf(opensAt('tree')).name} realm. Every beast
+      killed before the ${realmOf(opensAt('bestiary')).name} realm is already counted when
+      圖鑑 the bestiary starts paying for finished realms. Nothing is withheld and then thrown away; it is withheld
       and then handed over. A locked tab keeps its own character and says which realm
       opens it, because you cannot look forward to a tab you have never seen.</div>
     <div class="rule"><b>道 And the tree came down two realms, because it was already
@@ -1678,22 +1678,22 @@ const page = `<title>九境 Ninefold · the Bible</title>
       <b>three days either way</b> across all eight cultivators: the deepest thing in 九境
       was free to hand over.</div>
     <div class="rule"><b>樞 What the fourth realm gives instead is the half of the tree
-      that is a decision.</b> The three keystones, each stronger than the node beside it
-      and each taking something away to pay for it: 捨甲 Forsake Armour silences two
-      slots, 忘機 Forget the Mechanism costs 45% of your power, 空囊 Empty Pouch shrinks
-      the chest to twelve. Those are not upgrades and they are not what a second-realm
+      that is a decision.</b> Three keystones, each stronger than the node beside it and
+      each taking something away to pay for it. 捨甲 Forsake Armour silences two slots.
+      忘機 Forget the Mechanism costs 45% of your power. 空囊 Empty Pouch shrinks the chest
+      to twelve. Those are not upgrades and they are not what a second-realm
       cultivator should meet first. They are drawn from the second realm on and the card
       says which realm opens them, because a fork you know is coming is a climb with a
       plan in it.</div>
     <div class="rule"><b>環 And the first realm has to close its loop.</b> Bruno, playing
       it: <em>"a primeira hunt não dá nada. Apenas está lá."</em> He was right, and the
       hunting was not the problem. A kill paid 材 material, and material bought nothing
-      until the third realm, two days with a dead coin in your pocket, while the marks
-      those kills earned were counted from the first one and paid from the sixth. Both
+      until the third realm: two days with a dead coin in your pocket. The marks those
+      kills earned were counted from the first one and paid from the sixth. Both
       rewards existed. Both were locked in cupboards a fortnight away. So the first realm
-      holds one whole loop instead of a third of one: 狩 something to kill, 妖丹 something
-      the killing buys at 3 材 for +8% power, and 錄 the count that makes the tenth kill
-      worth more than the first. Wardens still do not <em>demand</em> cores until the
+      holds one whole loop instead of a third of one. 狩 Something to kill. 妖丹 Something
+      the killing buys, at 3 材 for +8% power. 錄 A count that makes the tenth kill worth
+      more than the first. Wardens still do not <em>demand</em> cores until the
       third realm. Being sold a thing earlier than you are required to have it is the
       right way round, and the reverse is the wall this section exists to stop.</div>
   </section>
@@ -1730,7 +1730,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <h3>Five cultivators, one game, played out rather than guessed</h3>
     <p class="t">Every one of them walks a 道 branch, hunts, picks up what falls and wears
       it. That sentence is newer than it should be: for most of this game's life the
-      harness did none of those things, and every number it printed belonged to a
+      harness did none of those things. Every number it printed belonged to a
       cultivator who does not exist.</p>
     <table>
       <tr><th>habit</th><th style="text-align:right">visits</th>
@@ -1753,8 +1753,8 @@ const page = `<title>九境 Ninefold · the Bible</title>
       claim above was false and nothing could see it, because nothing had ever equipped a
       piece. Gear and 道 the tree together now bend toward
       <b>×${UNCAPPED_RATE_CEILING}</b> and can never reach it. It is a bend and not a wall
-      on purpose: a cultivator at a hard clamp has two hundred wasted points and every 氣
-      roll they find afterwards does nothing, and a stat that silently stops working is
+      on purpose. A cultivator at a hard clamp has two hundred wasted points, and every
+      氣 roll they find afterwards does nothing. A stat that silently stops working is
       worse than a stat that was never there.</div>
   </section>
 
@@ -1768,11 +1768,11 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <h3>Why the obvious lever could not do it</h3>
     <p class="t">The design was already there and it was not holding. A warden's power
       counts 妖丹 cores, so from the third realm a warden cannot be walked past by anyone
-      who has never killed anything, except that <b>the warden itself paid a full
-      harvest of 材</b>, so nine warden kills funded the cores for the next nine warden
-      kills and the gate financed its own key. Measured, a cultivator who never tapped a
-      beast reached the ninth realm holding 39 core levels against the 40 the last warden
-      reads for: through by a hair, on a loop that never asked them to play.</p>
+      who has never killed anything. Except that <b>the warden itself paid a full harvest
+      of 材</b>. Nine warden kills funded the cores for the next nine warden kills, and
+      the gate financed its own key. Measured, a cultivator who never tapped a beast
+      reached the ninth realm holding 39 core levels against the 40 the last warden reads
+      for. Through by a hair, on a loop that never asked them to play.</p>
     <p class="t">The obvious fix is to cut what a warden pays. It was swept across its
       whole range, and it turns out to have <b>no middle at all</b>:</p>
     <table>
@@ -1820,8 +1820,8 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <div class="rule"><b>And nothing was taken away.</b> The qi rate is untouched. Offline
       is untouched. Losing a fight still costs nothing, and the screen still says so. The
       only thing that changed is the price of a warden, paid in the one currency that has
-      always come from playing, and the one thing that was added is a way to pay it
-      without playing, dearly.</div>
+      always come from playing. The one thing that was added is a way to pay it without
+      playing, dearly.</div>
   </section>
 
   <section class="sec" id="salvage">
@@ -1855,20 +1855,20 @@ const page = `<title>九境 Ninefold · the Bible</title>
       days off their climb is the opposite of what was wanted.</p>
     <div class="rule"><b>So the share is tilted, not tuned.</b> It falls geometrically
       from <b>${SALVAGE_SHARE_FIRST}</b> of a first-realm rung to
-      <b>${SALVAGE_SHARE_LAST}</b> of a ninth-realm one: generous where a piece of junk
-      is a real fraction of a layer and where there is nothing else to spend on, mean
-      where sheer volume could turn it into a second income. Shipped, the climb moves by
+      <b>${SALVAGE_SHARE_LAST}</b> of a ninth-realm one. Generous where a piece of junk
+      is a real fraction of a layer and there is nothing else to spend on. Mean where
+      sheer volume could turn it into a second income. Shipped, the climb moves by
       a day for everybody and by four for the hourly cultivator.</div>
 
     <h3>What it is actually worth</h3>
     <p class="t">A 凡 Common against the layer being climbed when it drops, and then what
-      the melt adds up to across a whole realm for each cultivator, both read out of the
-      game rather than argued about:</p>
+      the melt adds up to across a whole realm. Both read out of the game rather than
+      argued about:</p>
     ${salvageRows}
     <div class="warn"><b>舊 煉 煉器 The three things it must never become.</b> It reads the
       <em>item's</em> realm and never the hunter's, so a second-realm 凡 pays a
-      second-realm sum for ever, less than a millionth of a layer by the ninth, and
-      farming weak beasts for qi is arithmetically impossible. Three 凡 melt for more than
+      second-realm sum for ever. That is less than a millionth of a layer by the ninth,
+      and farming weak beasts for qi is arithmetically impossible. Three 凡 melt for more than
       the one 靈 they fuse into, so 煉 stays a thing you do for the piece and never for
       the qi. And 煉器 refining is not counted at all, or 材 material would have a second
       door out into qi and the furnace would have two.</div>
@@ -1971,9 +1971,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
       <b>48 hours to 24</b> at one visit a day, and the 守 column above is now zero from
       the fourth realm up for everybody.</p>
     <div class="warn"><b>And it cost something, which is worth writing down.</b> 銀 The
-      carry closed most of the gap in the 修 column: a light visitor used to put 13% of
-      the first realm's qi into upgrades against a frequent one's 44%, because the ladder
-      took it before they could reach it. Now it is 61% against 66%, because the qi they could
+      carry closed most of the gap in the 修 column. A light visitor used to put 13% of
+      the first realm's qi into upgrades, against a frequent one's 44%, because the
+      ladder took it before they could reach it. Now it is 61% against 66%, because the qi they could
       not intercept reaches them at the next breakthrough instead. So the ladder's
       interception is <b>no longer one of the reasons playing beats waiting</b>. The
       reasons that are left all need a tap: 材 material, 塔 the tower, 爐 the furnace and
@@ -1983,17 +1983,17 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <h3>梯 And the mechanism underneath all of it, which is one line</h3>
     <div class="rule"><b>A layer opens by itself the moment the qi reaches its price.</b>
       Nobody chooses. A cultivator who visits once a day has the ladder take the qi five
-      or ten times between visits and arrives holding a fraction of a rung; one who visits
-      six times intercepts far more of it.</div>
+      or ten times between visits, and arrives holding a fraction of a rung. One who
+      visits six times intercepts far more of it.</div>
     <p class="t">That is not a fault to be repaired, and it is written down here so that
-      it stops being rediscovered as one. It used to be the largest single reason playing
-      beats waiting, and 銀 the carry above has since taken most of that away, which is
-      the honest correction to make to this paragraph rather than to leave it standing.</p>
+      it stops being rediscovered as one. It used to be the largest single reason that
+      playing beats waiting, and 銀 the carry above has since taken most of that away.
+      That is the honest correction to this paragraph, rather than leaving it standing.</p>
     <p class="t">Two other candidate fixes were measured and both were dropped: more to
       spend on in the early realms (the share table at the top says there is already as
-      much as anywhere), and opening 圍 the drive at the first kill rather than the tenth
-      (it moved one realm by one point, because a cultivator who visits once a day
-      cannot spend qi while the app is shut, whatever is on the screen).</p>
+      much as anywhere). And opening 圍 the drive at the first kill rather than the tenth,
+      which moved one realm by one point. A cultivator who visits once a day cannot spend
+      qi while the app is shut, whatever is on the screen.</p>
   </section>
 
   <section class="sec" id="read">
@@ -2099,7 +2099,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t">From the third realm on <b>nothing on that screen is ever a question</b>,
       and by the ninth it is twenty-five rows of 98% with half of them already finished.
       This page's own notes said it feared exactly that screen, and the sort that put the
-      unfinished ones on top was only half an answer: a list of twenty-five is a list
+      unfinished ones on top was only half an answer. A list of twenty-five is a list
       nobody reads, however well it is ordered.</p>
     <div class="rule"><b>The odds were never the point, and the game already has a
       difficulty ladder.</b> \u5854 The tower reads your own power at every floor and has no
@@ -2109,8 +2109,8 @@ const page = `<title>九境 Ninefold · the Bible</title>
       be. What was wrong was a screen presenting a collection as if it were a series of
       fights.</div>
     <div class="rule"><b>\u5b8c So the finished ones fold.</b> One line saying how many and
-      what they are still good for, \u6750 material and \u570d the drive to take it without
-      tapping, and it opens if you want it. The ninth realm's screen goes from
+      what they are still good for. \u6750 Material, and \u570d the drive to take it without
+      tapping. It opens if you want it. The ninth realm's screen goes from
       <b>26 cards to 14</b>, and what is left is every beast with a mark still in it.</div>
   </section>
 
@@ -2178,9 +2178,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
       never fights, either way.</p>
     <div class="warn"><b>\u5b9a And it is a flat number rather than a multiplier, which is
       what the first attempt got wrong.</b> Doubling the cap fixed the second realm and
-      broke the ninth: above the fifth realm material is no longer earned by hand at all
-      (\u5854 the tower pays it in bulk) so a doubled cap there is not a wall handed back
-      to the price, it is no wall. The endgame's own test caught it in one run, with
+      broke the ninth. Above the fifth realm material is no longer earned by hand at all,
+      because \u5854 the tower pays it in bulk. A doubled cap there is not a wall handed
+      back to the price. It is no wall. The endgame's own test caught it in one run, with
       walkover crossings going from 5 of 40 to <b>14 of 40</b> against a rule of at most
       10. Flat, the same ${CORE_CAP_EXTRA} levels are a doubling where the hole is and a
       fraction of a cap where the tower is filling your pockets.</div>
@@ -2327,7 +2327,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
       decision in it. So a cultivator now begins holding ${num(OPENING_PURSE)} qi, which is
       nothing against a climb measured in quintillions and gone inside the first hour. It
       sits just under the first rung at ${num(ladderAt(0))} on purpose: at or above it the
-      ladder would swallow the purse on the first tick and the player would watch a layer
+      ladder would swallow the purse on the first tick. The player would then watch a layer
       open by itself instead of choosing. Below it, the bar starts nine tenths full and the
       game's first question is the same one it asks in the ninth realm: <em>spend it, or
       let it carry you up?</em></div>
@@ -2390,7 +2390,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
   <section class="sec" id="record">
     <h2><span class="h">錄</span> The record</h2>
     <p class="t">狩 Hunt had a real problem. By the fifth realm it was fifteen buttons all
-      reading 98%, and only the last one was worth pressing: every beast below your realm
+      reading 98%, and only the last one was worth pressing. Every beast below your realm
       had fixed power, paid less material and dropped nothing you wanted. Thirty-six
       animals were drawn and twenty-seven of them stopped existing the moment you climbed
       past them.</p>
@@ -2422,18 +2422,18 @@ const page = `<title>九境 Ninefold · the Bible</title>
 
     <h3>示 And the game always says what to do next</h3>
     <p class="t">From the third realm a warden will not fall without 妖丹 cores, and a
-      player who has never opened 狩 Hunt meets that wall, loses a fight they cannot read,
+      player who has never opened 狩 Hunt meets that wall. They lose a fight they cannot read,
       and has nothing anywhere telling them why. 修 Cultivate carries one line, computed
-      from the state, that names the thing actually blocking them: the material they are
-      short of, the level they can already afford, the empty 訣 sequence. Then it takes them
-      to the screen that fixes it.</p>
+      from the state, that names the thing actually blocking them. The material they are
+      short of, the level they can already afford, the empty 訣 sequence. Then it takes
+      them to the screen that fixes it.</p>
     <div class="rule"><b>續 And it is never silent, which is the harder half.</b> For a
       long time that line answered only <em>what is blocking you</em> and said nothing at
       all the rest of the time, which is most of the game and all of the quiet
       stretches a player actually leaves over. A sentence that only speaks when you are
       stuck teaches a player that not being stuck means there is nothing to do. So below
-      the blocking lines there is always another: a beast you can take and the mark it
-      still owes you, a level you can afford right now, a beast you cannot take yet
+      the blocking lines there is always another. A beast you can take and the mark it
+      still owes you. A level you can afford right now. A beast you cannot take yet
       <em>and the power it stands at against yours</em>, or the next thing the mountain
       will hand over and the realm that hands it. A target with a number on it is
       gameplay. An empty line is not. It is checked the only way a promise like that can
@@ -2466,16 +2466,16 @@ const page = `<title>九境 Ninefold · the Bible</title>
       can cost nothing. There is nothing to lose that has not already happened.</p>
     <p class="t"><b>氣運 Form.</b> Each side rolls once, before any blow, for
       ±${pc(FORM)} of its power. Blow-by-blow noise averages away over ten rounds, so
-      whoever had more power won every single time; one roll per fight does not average
-      away, and it is what makes an underdog worth trying.</p>
+      whoever had more power won every single time. One roll per fight does not average
+      away, and that is what makes an underdog worth trying.</p>
     <p class="t"><b>The odds on screen are counted, not curved.</b> The number is 41 whole
-      fights on spread seeds, won and counted. A sigmoid over the power ratio cannot see a
-      stance that halves what you take or an art that triples a strike, and the old one
+      fights on spread seeds, won and counted. A sigmoid over the power ratio cannot see
+      a stance that halves what you take or an art that triples a strike. The old one
       cheerfully promised 34% on fights the build lost a hundred times out of a hundred.</p>
     <div class="rule"><b>What a warden asks for.</b> Exactly the power of a cultivator who
-      has filled the realm's cap and brought nothing else, so the fight is a coin flip for
-      somebody with the levels and nothing more, and the stance, the sequence, the gear, the
-      cores and the tree are what turn the coin over. Commons stand at
+      has filled the realm's cap and brought nothing else. So the fight is a coin flip
+      for somebody with the levels and nothing more. The stance, the sequence, the gear,
+      the cores and the tree are what turn the coin over. Commons stand at
       ${[0.45, 0.62, 0.84].map((s) => pc(s)).join(', ')} of the realm's reference, which is
       a cultivator ${REFERENCE_BELOW} levels short of the cap.</div>
     <div class="rule"><b>初 Except the first realm, which is spaced against the player.</b>
@@ -2515,7 +2515,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t"><b>${GEAR.length} pieces:</b> ${ARCHETYPES.length} shapes at every one of
       the nine realms. ${RARITIES.length} ranks, ${AFFIXES.length} axes, ${SLOTS.length}
       slots, and a chest of ${CHEST_LIMIT} before anything widens it. Gear always grants a
-      <b>percentage</b>, never a flat amount, so a good weapon found at the third realm is
+      <b>percentage</b>, never a flat amount. A good weapon found at the third realm is
       still a good weapon at the ninth, and with 煉器 <a href="#refine">refining</a> it can
       go on growing rather than being replaced and forgotten.</p>
     <h3>The five ranks</h3>
@@ -2700,15 +2700,15 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t">The next Dragon is built from <b>the power that actually faced the last
       one</b>, which is not 力. A stance bends every blow and three arts bend three more,
       worth about 1.8x between them, and none of that is in the number on the screen. The
-      Dragon used to be anchored below all of it, and the build covered the gap for free:
-      measured over twenty-four crossings, the odds never once fell under 90% and 煉體, the
-      one pill a Dragon can feel, was never worth brewing. Two days, tap, win, for ever.</p>
+      Dragon used to be anchored below all of it, and the build covered the gap for free.
+      Measured over twenty-four crossings, the odds never once fell under 90%, and 煉體,
+      the one pill a Dragon can feel, was never worth brewing. Two days, tap, win, for ever.</p>
     <div class="rule"><b>立 Where the Dragon plants its feet.</b> ${TRIBULATION_FOOTING}x
       the 力 it last faced, not 1.8x, because 力 is the sword and the shield at once and a
-      multiplier on blows is worth about its square root in the ratio. The band is narrow
-      and it was measured, forty crossings each: 1.20 gives 98% every time and no decision;
-      1.45 gives three days and the high sixties; 1.60 runs away to sixty-day crossings;
-      1.70 is a wall by the ninth mark.</div>
+      multiplier on blows is worth about its square root in the ratio. The band is narrow,
+      and it was measured at forty crossings each. 1.20 gives 98% every time and no
+      decision. 1.45 gives three days and the high sixties. 1.60 runs away to sixty-day
+      crossings. 1.70 is a wall by the ninth mark.</div>
     <p class="t">The rest is solved, not chosen. Three pills a crossing, a price that rises
       ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
       ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.</p>
@@ -2731,7 +2731,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
       reason to open the app tonight and a locked box is not.</p>
     <div class="rule"><b>A deed pays nothing.</b> Not qi, not power, not material. The
       economy's one law is that nothing uncapped may raise the qi rate, and a list of
-      deeds is about as uncapped as a thing gets, but the deeper reason is that 九境 is
+      deeds is about as uncapped as a thing gets. The deeper reason is that 九境 is
       meant to go online. A deed that pays is a deed worth forging, and a leaderboard of
       forged deeds is not a leaderboard.</div>
     <div class="rule"><b>And a deed is derived, never stored.</b> Exactly like 勢 the
@@ -2754,8 +2754,8 @@ const page = `<title>九境 Ninefold · the Bible</title>
       lost. That protects you from the game; only your own copy protects you from the
       phone.</p>
     <div class="warn"><b>A save is input, and it is validated like any other input.</b>
-      Every number is capped, every item is checked against the table it claims to come
-      from, no axis may appear twice on one piece, and nothing may hold more qi than the
+      Every number is capped and every item is checked against the table it claims to
+      come from. No axis may appear twice on one piece. Nothing may hold more qi than the
       fastest conceivable cultivator could have gathered since the run began. Some things
       are not stored at all but <em>derived</em>: stances follow from the realm reached and
       arts from the wardens put down, so an edited save cannot put 龍威 in the first slot at
@@ -2795,9 +2795,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
       <div class="row"><span class="body"><b class="cjk">譯</b> <em>No character is ever the only place a thing is named</em>
         <i>The characters stay, because they are what the game looks like, and a version without
         them is a spreadsheet about numbers going up. So every one of them carries an
-        English name somewhere it can be found: on the row itself where there is space,
-        and on 釋 the key, which is one tap from every screen and is read out of the same
-        tables the game reads. A test fails if a rank, an axis, a slot, a pill line or a
+        English name somewhere it can be found. On the row itself where there is space.
+        And on 釋 the key, which is one tap from every screen and reads out of the same
+        tables the game does. A test fails if a rank, an axis, a slot, a pill line or a
         whole system is ever added without one.</i></span></div>
     </div>
   </section>

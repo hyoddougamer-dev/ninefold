@@ -93,7 +93,7 @@ const lineages = REALM_SETS.map((rs) => {
   </div>`;
 }).join('');
 
-/* 道 The tree, drawn on one canvas — the same layout the game's own 道 screen uses. */
+/* 道 The tree, drawn on one canvas, in the layout the game's own 道 screen uses. */
 const R = 15;
 const GAP = 62;
 const FORK = 19;
@@ -344,13 +344,13 @@ const page = `<title>器道 Equipamento e Árvore</title>
   <div class="part">
     <p class="tag">A pergunta</p>
     <h2>Deve o equipamento ser trancado por classe?</h2>
-    <p class="says"><b style="color:var(--text)">Não — e a árvore é a razão.</b></p>
+    <p class="says"><b style="color:var(--text)">Não, e a árvore é a razão.</b></p>
     <p class="says">Num jogo em que o equipamento cai ao calhas, trancar por classe
       transforma cinco quedas em seis em lixo. O jogador é castigado pelos dados do
       próprio jogo, e a melhor peça que já viu fica a apodrecer no baú.</p>
     <p class="says">Em vez disso, cada caminho dá <b style="color:var(--text)">afinidade</b>:
       o 鋒 Edge faz as armas contarem 40% mais, o 明心 Clear Mind faz o mesmo às coroas.
-      Tudo continua vestível por toda a gente — o que o caminho muda é <em>quais as peças
+      Tudo continua vestível por toda a gente. O que o caminho muda é <em>quais as peças
       que te fazem sorrir quando caem</em>.</p>
     <div class="scrollx">
       <table>
@@ -359,43 +359,43 @@ const page = `<title>器道 Equipamento e Árvore</title>
       </table>
     </div>
     <p class="note"><b>Se mais tarde quiseres travar mesmo alguma coisa</b>, o sítio certo
-      não é o equipamento — é uma peça lendária por caminho, que só o caminho pode usar.
+      não é o equipamento. É uma peça lendária por caminho, que só o caminho pode usar.
       Uma peça trancada é um objectivo; cinquenta e quatro peças trancadas são um imposto.</p>
   </div>
 
   <div class="part">
     <p class="tag">系 As linhagens</p>
     <h2>Nove famílias, uma por reino</h2>
-    <p class="says">"Iron Sword" e "Heaven Scythe" diziam um material e um nível — é uma
+    <p class="says">"Iron Sword" e "Heaven Scythe" diziam um material e um nível. É uma
       coluna de folha de cálculo, não um sítio num mundo. Cada reino tem agora a sua
       <b style="color:var(--text)">linhagem</b>: o 落星 é o metal de uma estrela que caiu,
       o 龍骸 é talhado do que um dragão deixou, o 仙蛻 é a pele de que um imortal saiu.</p>
     <p class="says">E uma linhagem não é só um nome. Vestir várias peças da mesma família
-      paga — por isso um baú de quedas soltas passa a ser uma pergunta:
+      paga, por isso um baú de quedas soltas passa a ser uma pergunta:
       <em>seis peças do quinto reino a condizer, ou seis do sétimo desirmanadas?</em></p>
     <div class="lins">${lineages}</div>
     <p class="note">O set é o <b>reino</b>, não a forma. Qualquer peça de 落星 conta para
-      o 落星, seja leque ou lamelar — é isso que torna um set alcançável: seis quedas de
+      o 落星, seja leque ou lamelar. É isso que torna um set alcançável: seis quedas de
       um reino, e não seis quedas da mesma espada.</p>
   </div>
 
   <div class="part">
     <p class="tag">道 A árvore</p>
     <h2>Uma árvore só</h2>
-    <p class="says">Não são três árvores lado a lado — é uma. Todos os ramos nascem da
+    <p class="says">Não são três árvores lado a lado. É uma. Todos os ramos nascem da
       mesma raiz <b class="cjk" style="color:var(--text)">起</b>, e há
       <b style="color:var(--gold)">pontes</b> (a tracejado dourado) que atravessam entre
       ramos vizinhos em duas alturas. Dá para subir o 劍 até ao meio, atravessar para o
       神, e descer pelo 運.</p>
     <p class="says">O 神 fica no meio, por isso toca nos outros dois; o 劍 e o 運 nunca se
-      tocam directamente. Ir de um ao outro custa uma passagem pelo meio — e é isso que
+      tocam directamente. Ir de um ao outro custa uma passagem pelo meio, e é isso que
       torna o centro um sítio que vale a pena ocupar.</p>
     ${canvas}
-    <p class="says">Uma corrida inteira ganha <span class="big">${FULL_RUN} 道</span> —
+    <p class="says">Uma corrida inteira ganha <span class="big">${FULL_RUN} 道</span>,
       e comprar a árvore toda custa <span class="big">${TOTAL_COST}</span>. Nunca chega,
       e é essa a ideia: uma árvore que se acaba é uma lista de tarefas, não uma escolha.</p>
     <p class="says">Um ramo inteiro custa 21 (a raiz incluída). Dá para terminar um e levar
-      21 para outro — ou espalhar por três e não terminar nenhum.</p>
+      21 para outro, ou espalhar por três e não terminar nenhum.</p>
     <p class="says" style="font-size:15px">Os pontos vêm da própria subida: um por cada
       três camadas abertas, dois por cada guardiã que cai. Os nós a tracejado são
       <b style="color:var(--text)">chaves</b>: mais fortes do que o nó ao lado, e cada uma
@@ -406,7 +406,7 @@ const page = `<title>器道 Equipamento e Árvore</title>
   <div class="part">
     <p class="tag">Os sete eixos</p>
     <h2>Em que é que uma peça pode rolar</h2>
-    <p class="says">São os mesmos eixos que a árvore mexe — é isso que faz uma build ser
+    <p class="says">São os mesmos eixos que a árvore mexe. É isso que faz uma build ser
       uma build: um nó de 運 e uma linha de 運 num anel puxam a mesma alavanca.</p>
     <div class="axisgrid">
       ${AFFIXES.map((a) => `<div class="ax">
@@ -423,21 +423,21 @@ const page = `<title>器道 Equipamento e Árvore</title>
   <div class="part">
     <p class="tag">器 O catálogo</p>
     <h2>As ${GEAR.length} peças</h2>
-    <p class="says">${ARCHETYPES.length} formas — nove por cada espaço — e cada forma
+    <p class="says">${ARCHETYPES.length} formas, nove por cada espaço, e cada forma
       existe <em>nos nove reinos</em>. É a liberdade que pediste: quem quer andar de leque
       não é obrigado a trocar para espada no reino 4 porque o leque acabou. A forma é a
       escolha; o reino é só a altura a que se encontra.</p>
     <p class="says">Cada linha é uma escada: a mesma forma, do reino 1 ao 9. Cada peça
       traz dois sinais: em baixo à esquerda o glifo da <b style="color:var(--text)">linhagem</b>
       (凡 枯 古 霜 碧 落 雷 龍 仙, na cor do reino), em baixo à direita o da
-      <b style="color:var(--text)">raridade</b>. São duas perguntas diferentes — de onde
-      vem, e quão boa é — por isso têm dois cantos e nunca partilham a cor.</p>
+      <b style="color:var(--text)">raridade</b>. São duas perguntas diferentes, de onde
+      vem e quão boa é, por isso têm dois cantos e nunca partilham a cor.</p>
     <p class="says">Repara nos símbolos ao lado do nome de cada espaço: são os eixos que
       esse espaço oferece. Nenhum espaço serve um caminho só, e nenhuma forma partilha
-      desenho com outra — há um teste a garanti-lo.</p>
+      desenho com outra. Há um teste a garanti-lo.</p>
     ${catalogue}
   </div>
 </div>`;
 
 writeFileSync('catalogue.html', page);
-console.log(`catalogue.html — ${(page.length / 1024).toFixed(0)} KB`);
+console.log(`catalogue.html · ${(page.length / 1024).toFixed(0)} KB`);

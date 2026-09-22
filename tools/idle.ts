@@ -24,8 +24,8 @@
  * And the mechanism behind both is one line of `advance`: **a layer opens by itself the
  * moment the qi reaches its price, and the qi is set to zero.** Nobody chooses. A
  * cultivator who visits once a day has the ladder take the qi five or ten times between
- * visits and arrives holding a fraction of a rung; one who visits six times intercepts
- * far more of it. That is not a bug to be fixed — it is the largest single reason
+ * visits, and arrives holding a fraction of a rung. One who visits six times intercepts
+ * far more of it. That is not a bug to be fixed. It is the largest single reason
  * playing beats waiting in this game, and it is measured here so it stops being
  * rediscovered.
  */

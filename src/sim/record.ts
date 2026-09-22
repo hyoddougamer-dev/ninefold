@@ -3,9 +3,9 @@ import { BEASTS, type Beast } from '../data/bestiary.ts';
 /**
  * 錄 The record.
  *
- * 狩 Hunt had a real problem: by the fifth realm it was fifteen buttons all reading 98%,
+ * 狩 Hunt had a real problem. By the fifth realm it was fifteen buttons all reading 98%
  * and only the last one was worth pressing. Every beast below your realm was dead
- * content — fixed power, less material, nothing to find. Thirty-six animals were drawn
+ * content: fixed power, less material, nothing to find. Thirty-six animals were drawn
  * and twenty-seven of them stopped existing the moment you climbed past them.
  *
  * So the kills already in the save mean something now. Every beast carries three marks,
