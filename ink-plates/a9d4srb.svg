@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="46" height="46" aria-hidden="true">
+    <defs>
+      <linearGradient id="se4613C9713F" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#C9713F" stop-opacity=".95"/>
+        <stop offset=".55" stop-color="#C9713F" stop-opacity=".7"/>
+        <stop offset="1" stop-color="#C9713F" stop-opacity=".25"/>
+      </linearGradient>
+      <filter id="be4613C9713F" x="-25%" y="-25%" width="150%" height="150%">
+        <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="3" seed="3" result="t"/>
+        <feDisplacementMap in="SourceGraphic" in2="t" scale="2.4"/>
+      </filter>
+    </defs>
+    <path d="M 57.82 9.75 A 41 41 0 1 1 39.39 10.40"
+      fill="none" stroke="url(#se4613C9713F)" stroke-width="4.5"
+      stroke-linecap="round" filter="url(#be4613C9713F)"/>
+  </svg>

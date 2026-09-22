@@ -18,31 +18,22 @@
  */
 import { writeFileSync } from 'node:fs';
 import { BEASTS } from '../src/data/bestiary.ts';
-import { REALMS, realm as realmOf } from '../src/data/realms.ts';
+import { REALMS } from '../src/data/realms.ts';
+import { STYLE, inkOf } from './ink.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
 
 /**
- * 同 The style block. Every prompt in the set ends with this, word for word.
+ * 色 The one line that ties a picture to the realm it belongs to.
  *
- * It is long on purpose and none of it is decoration. The palette keeps forty-five
- * pictures inside one game. "Centred, filling the frame" keeps them all sitting the same
- * way inside 牌 the plate, which is a circle: anything near the edge is cropped away.
- * The list of things to avoid is the list of things a model adds when it is not told not
- * to, and every one of them breaks the frame.
+ * It names a **pigment**, not a hex value, because that is what an image model
+ * understands and it is what the direction is: somebody ground this colour. The hex is
+ * there for whoever is matching the file to the game afterwards.
  */
-const STYLE = `Style: dark fantasy Chinese ink painting crossed with clean digital art.
-Painted, not photographic. Heavy ink brushwork, visible strokes, wet edges.
-Strong silhouette readable at small size. Dramatic rim light only, deep
-shadow elsewhere. Background: near-black void (#080A18) with a soft glow
-behind the subject, nothing else. No ground, no horizon, no scenery.
-Subject centred, filling most of the frame, facing the viewer, head and
-upper body. Square 1:1 composition. No text, no letters, no characters,
-no watermark, no signature, no border, no frame, no UI, no logo. Not cute,
-not chibi, not cartoon. No humans unless asked for.`;
-
-/** 色 The one line that ties a picture to the realm it belongs to. */
-const lit = (colour: string, name: string) =>
-  `Lit in ${name} (${colour}) against near-black. That colour is the only strong hue in the image.`;
+const lit = (n: number) => {
+  const r = inkOf(n);
+  return `Painted in ink with ${r.stuff} as the only colour in the picture (${r.colour}),`
+    + ' used sparingly, on a warm dark ground.';
+};
 
 /**
  * 姿 What a creature is doing, which is the only thing that varies between the beasts.
@@ -53,39 +44,35 @@ const lit = (colour: string, name: string) =>
  * thing look like the moment before it moves.
  */
 const posture = (b: typeof BEASTS[number]) => b.warden
-  ? `A ${b.name.toLowerCase()}, the guardian of its realm, enormous and still, `
-    + 'seen from slightly below so it towers. It has just noticed you.'
-  : `A ${b.name.toLowerCase()}, wild and alert, coiled in the instant before it moves.`;
+  ? `${b.name}, the guardian of its mountain: ancient, enormous, unbothered, seen from `
+    + 'below through mist so that its full size is never shown at once.'
+  : `${b.name}, a wild spirit-beast, caught mid-turn as it notices a traveller.`;
 
-const beastPrompt = (b: typeof BEASTS[number]) => {
-  const r = realmOf(b.realm);
-  return `${posture(b)}
-${lit(r.colour, r.name)}
+const beastPrompt = (b: typeof BEASTS[number]) => `${posture(b)}
+${lit(b.realm)}
 ${STYLE}`;
-};
 
 const realmPrompt = (n: number) => {
-  const r = realmOf(n);
-  return `A wide empty landscape in Chinese ink painting, seen from a great height:
-mountains fading into mist, one cliff in the foreground, no people and no
-buildings. It is the realm called ${r.name}.
-${lit(r.colour, r.name)}
-Style: dark fantasy Chinese ink painting. Painted, not photographic. Heavy
-brushwork, wet edges, deep negative space. Background near-black (#080A18).
-Wide 16:9 composition, the bottom third almost empty so text can sit on it.
-No text, no letters, no characters, no watermark, no border, no people.`;
+  const r = inkOf(n);
+  return `A wide landscape in the Song dynasty manner, seen from a great height: mountains
+losing themselves in mist, one pine on a cliff in the foreground, a valley that goes
+nowhere. No people, no buildings, no path. It is the realm called ${r.name}.
+${lit(n)}
+${STYLE}
+Wide 16:9 composition instead of square, with the bottom third almost empty
+so that writing can sit on it.`;
 };
 
-const heavenPrompt = (h: typeof HEAVENS[number]) => `A sky above the world in Chinese ink
-painting: layered cloud, a break of light, and the suggestion of something vast passing
-through it without ever being fully shown. It is the heaven called ${h.name}.
-${lit(h.colour, h.name)}
-Style: dark fantasy Chinese ink painting. Painted, not photographic. Heavy
-brushwork, deep negative space, nothing solid. Background near-black (#080A18).
-Wide 16:9 composition. No text, no letters, no characters, no watermark,
-no border, no people, no creature fully visible.`;
+const heavenPrompt = (h: typeof HEAVENS[number]) => `A sky above the world, painted in ink:
+layered cloud, one break of pale light, and the suggestion of something vast moving
+through it that is never fully shown. Nothing solid anywhere in the picture. It is the
+heaven called ${h.name}.
+Painted in ink with worn gold leaf as the only colour (${h.colour}), used
+sparingly, on a warm dark ground.
+${STYLE}
+Wide 16:9 composition instead of square.`;
 
-const opener = `I am making art for a dark Chinese cultivation game. Everything you draw for
+const opener = `I am making art for a Chinese cultivation game, a xianxia story. Everything you draw for
 me from now on must follow one house style, exactly, every time, with no
 drift between images:
 
@@ -104,8 +91,10 @@ const block = (id: string, title: string, sub: string, file: string, text: strin
     <pre>${text}</pre>
   </div>`;
 
+// 墨 The page wears the direction it is asking for: the bands are dyed with 墨 the ink
+// palette rather than with the neon one the game still ships.
 const beasts = REALMS.map((r) => `
-  <div class="band" style="--hue:${r.colour}">
+  <div class="band" style="--hue:${inkOf(r.n).colour}">
     <h4><span class="cjk">${r.han}</span> ${r.name}</h4>
     ${BEASTS.filter((b) => b.realm === r.n).map((b) => block(
       `b-${b.key}`, `${b.han} ${b.name}`,
@@ -114,13 +103,13 @@ const beasts = REALMS.map((r) => `
   </div>`).join('');
 
 const realms = REALMS.map((r) => `
-  <div class="band" style="--hue:${r.colour}">
+  <div class="band" style="--hue:${inkOf(r.n).colour}">
     ${block(`r-${r.n}`, `${r.han} ${r.name}`, `realm ${r.n}`,
       `public/art/realm/${r.n}.webp`, realmPrompt(r.n))}
   </div>`).join('');
 
 const heavens = HEAVENS.map((h) => `
-  <div class="band" style="--hue:${h.colour}">
+  <div class="band" style="--hue:#C8A951">
     ${block(`h-${h.n}`, `${h.han} ${h.name}`, `heaven ${h.n}`,
       `public/art/heaven/${h.n}.webp`, heavenPrompt(h))}
   </div>`).join('');
@@ -131,19 +120,19 @@ const page = `<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
 <style>
-  :root { --ground:#080A18; --panel:#111433; --panel2:#0C0F26; --line:#252A5C;
-          --cyan:#5FDCFF; --magenta:#FF5FC8; --text:#E7EAFF; --faint:#8289C0;
-          --gold:#FFCE6B; color-scheme:dark; }
+  :root { --ground:#0E0D12; --panel:#17151C; --panel2:#131117; --line:#2E2A33;
+          --cyan:#5E8C76; --magenta:#B4332C; --text:#DCD2C2; --faint:#8C8478;
+          --gold:#C8A951; color-scheme:dark; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--ground); color:var(--text);
          font:17px/1.65 Archivo, ui-sans-serif, system-ui, sans-serif; }
   .sheet { max-width:880px; margin:0 auto; padding:34px 18px 90px; }
   .cjk { font-family:'Noto Serif SC',serif; }
   h1 { font-family:'Noto Serif SC',serif; font-size:clamp(38px,11vw,56px); font-weight:400;
-       color:var(--cyan); line-height:1; margin:0; }
+       color:var(--gold); line-height:1; margin:0; }
   h2 { font-family:Rajdhani,sans-serif; font-size:25px; margin:0; display:flex; gap:11px;
        align-items:baseline; }
-  h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:29px; color:var(--cyan); }
+  h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:29px; color:var(--gold); }
   h4 { font-family:Rajdhani,sans-serif; font-size:15px; margin:0 0 10px; color:var(--hue);
        font-weight:700; }
   h4 .cjk { font-weight:400; font-size:19px; margin-right:7px; }

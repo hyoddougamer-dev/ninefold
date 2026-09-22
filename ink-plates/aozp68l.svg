@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">
+    <defs>
+  <filter id="grain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="4" seed="3" result="n"/>
+    <feColorMatrix in="n" type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope=".16"/></feComponentTransfer>
+  </filter>
+  <filter id="bleed" x="-25%" y="-25%" width="150%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency=".013 .028" numOctaves="4" seed="11" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+    <feGaussianBlur stdDeviation=".5"/>
+  </filter>
+  <filter id="wash" x="-30%" y="-30%" width="160%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency=".02 .04" numOctaves="3" seed="5" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+    <feGaussianBlur stdDeviation="2.2"/>
+  </filter>
+      <linearGradient id="sk9" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#100E14"/>
+        <stop offset=".55" stop-color="#4f3023"/>
+        <stop offset="1" stop-color="#e3c3a9"/>
+      </linearGradient>
+      <linearGradient id="ms9" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#EDE3D2" stop-opacity="0"/>
+        <stop offset=".5" stop-color="#EDE3D2" stop-opacity=".3"/>
+        <stop offset="1" stop-color="#EDE3D2" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="96" fill="url(#sk9)"/>
+    <!-- 月 A pale disc, because a sky with nothing in it is a gradient. -->
+    <circle cx="77" cy="23" r="11"
+      fill="#EDE3D2" opacity=".13"/>
+    <g filter="url(#wash)" opacity=".85">
+      <polygon points="0,120 0,71.03999999999999 0,48 64,51 128,51 192,44 256,40 320,56 320,71.03999999999999 320,120" fill="#d8a17d" opacity=".5"/>
+    </g>
+    <rect y="60" width="320" height="21" fill="url(#ms9)"/>
+    <g filter="url(#wash)" opacity=".92">
+      <polygon points="0,120 0,84.48 0,65 80,66 160,66 240,71 320,44 320,84.48 320,120" fill="#683d28"/>
+    </g>
+    <g filter="url(#bleed)">
+      <polygon points="0,120 0,97.92 0,73 107,80 213,73 320,68 320,97.92 320,120" fill="#0A090D"/>
+    </g>
+    <rect width="320" height="96" filter="url(#grain)" opacity=".55"/>
+  </svg>

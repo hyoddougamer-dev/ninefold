@@ -1,0 +1,437 @@
+<meta charset="utf-8">
+<title>九境 Ninefold · 墨 the ink direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
+<style>
+  :root {
+    /* 今 what the game is today */
+    --now-ground:#080A18; --now-panel:#111433; --now-line:#252A5C;
+    --now-cyan:#5FDCFF; --now-magenta:#FF5FC8; --now-text:#E7EAFF; --now-faint:#8289C0;
+    /* 墨 what this page proposes */
+    --ground:#0E0D12; --panel:#17151C; --panel2:#131117; --line:#2E2A33;
+    --ink:#0B0A0E; --paper:#EDE3D2; --text:#DCD2C2; --faint:#8C8478;
+    --gold:#C8A951; --cinnabar:#B4332C; --jade:#5E8C76;
+    color-scheme:dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ground); color:var(--text);
+         font:17px/1.7 Archivo, ui-sans-serif, system-ui, sans-serif; }
+  .sheet { max-width:900px; margin:0 auto; padding:34px 18px 90px; }
+  .cjk { font-family:'Noto Serif SC',serif; }
+  h1 { font-family:'Noto Serif SC',serif; font-size:clamp(40px,12vw,60px); font-weight:400;
+       color:var(--gold); line-height:1; margin:0; }
+  h2 { font-family:Rajdhani,sans-serif; font-size:26px; margin:0; display:flex; gap:11px;
+       align-items:baseline; color:var(--paper); }
+  h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:30px; color:var(--gold); }
+  h3 { font-family:Rajdhani,sans-serif; font-size:13px; color:var(--faint); margin:0;
+       letter-spacing:.12em; text-transform:uppercase; }
+  p { margin:0; }
+  .lead { font-size:19px; margin-top:14px; color:var(--faint); }
+  .sec { margin-top:40px; border-top:1px solid var(--line); padding-top:22px;
+         display:flex; flex-direction:column; gap:14px; }
+  .t { color:var(--faint); max-width:64ch; }
+  .t b { color:var(--paper); font-weight:600; }
+  .rule { border-left:3px solid var(--gold); background:var(--panel2);
+          border-radius:0 10px 10px 0; padding:13px 16px; color:var(--faint); }
+  .rule b { color:var(--gold); }
+  .two { display:grid; gap:14px; }
+  @media(min-width:700px){ .two { grid-template-columns:1fr 1fr; } }
+  .box { background:var(--panel2); border:1px solid var(--line); border-radius:4px;
+         padding:14px; }
+  .box .lab { font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+              color:var(--faint); font-family:Archivo,sans-serif; font-weight:600;
+              display:block; margin-bottom:10px; }
+  .swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px; }
+  .sw { margin:0; }
+  .sw .chip { display:block; height:44px; border-radius:3px; }
+  .sw figcaption { margin-top:6px; }
+  .sw b { display:block; font-family:'Noto Serif SC',serif; font-weight:400; font-size:15px; }
+  .sw i { display:block; font-style:normal; font-size:11px; color:var(--faint); }
+  .sw em { display:block; font-style:normal; font-size:9.5px; color:var(--faint); opacity:.7;
+           font-family:'Roboto Mono',monospace; }
+  .ip { position:relative; display:inline-grid; place-items:center; flex:none; }
+  .ip > svg, .ip .ring { position:absolute; inset:0; }
+  .ip .ring svg { width:100%; height:100%; display:block; }
+  .scr { border:1px solid var(--line); border-radius:4px; overflow:hidden; }
+  .scr.now { background:var(--now-panel); border-color:var(--now-line); }
+  .scr.ink { background:var(--panel); }
+  .scr .top { position:relative; height:96px; }
+  .scr .top svg { display:block; }
+  .scr .top .ttl { position:absolute; left:14px; bottom:8px; font-size:30px;
+                   color:var(--paper); text-shadow:0 2px 14px #000; }
+  .scr .body { padding:12px; }
+  .scr .row { display:flex; align-items:center; gap:12px; padding:9px 11px; margin-bottom:8px;
+              border-radius:3px; }
+  .scr.now .row { background:var(--now-ground); border:1px solid var(--now-line); }
+  .scr.ink .row { background:var(--panel2); border:1px solid var(--line); }
+  .scr .row .s { flex:none; display:grid; place-items:center; width:46px; height:46px; }
+  .scr .row .s svg { display:block; }
+  .scr .row b { font-size:16px; font-weight:400; color:var(--hue);
+                font-family:'Noto Serif SC',serif; }
+  .scr .row i { display:block; font-style:normal; font-size:12.5px; }
+  .scr.now .row i { color:var(--now-faint); }
+  .scr.ink .row i { color:var(--faint); }
+  .scr .row em { margin-left:auto; font-style:normal; font-family:Rajdhani,sans-serif;
+                 font-weight:700; }
+  .scr.now .row em { color:var(--now-cyan); }
+  .scr.ink .row em { color:var(--gold); }
+  .rcards { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
+  .rcard { margin:0; position:relative; border:1px solid var(--line); border-radius:4px;
+           overflow:hidden; background:var(--panel2); }
+  .rcard .bg { display:block; height:150px; }
+  .rcard .bg svg { display:block; width:100%; height:100%; }
+  .rcard .seal { position:absolute; right:10px; top:10px; }
+  .rcard .seal svg { display:block; }
+  .rcard figcaption { padding:10px 13px 12px; }
+  .rcard b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:19px; color:var(--paper); }
+  .rcard i { font-style:normal; font-size:13px; color:var(--faint); margin-left:8px; }
+  .rcard em { display:block; font-style:normal; font-size:11px; color:var(--gold);
+              letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+  .beasts { display:flex; flex-wrap:wrap; gap:16px; }
+  .beasts figure { margin:0; text-align:center; }
+  .beasts figcaption { margin-top:7px; font-size:12px; color:var(--faint); }
+  .beasts figcaption b { display:block; font-family:'Noto Serif SC',serif; font-weight:400;
+                         font-size:15px; color:var(--hue); }
+  pre { background:var(--panel2); border:1px solid var(--line); border-radius:4px;
+        padding:14px; overflow-x:auto; font-family:'Roboto Mono',monospace; font-size:12px;
+        line-height:1.7; color:var(--text); white-space:pre-wrap; margin:0; }
+  table { border-collapse:collapse; width:100%; font-size:14px; }
+  th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
+       letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
+  td { border-top:1px solid var(--line); padding:8px; color:var(--faint); vertical-align:top; }
+  td b { color:var(--paper); font-weight:600; }
+  code { font-family:'Roboto Mono',monospace; font-size:12.5px; color:var(--gold); }
+  a { color:var(--gold); }
+  
+  /* 圖外 A drawing that lives in a file beside this page.
+     An <img class="pl"> keeps its own colours. An <i class="pl"> is a silhouette:
+     the file is the shape, and the element paints currentColor through it, which is
+     what keeps every icon taking its colour from the CSS around it as before. */
+  i.pl { display:inline-block; vertical-align:middle; background:currentColor;
+         -webkit-mask:var(--pl) center/contain no-repeat;
+         mask:var(--pl) center/contain no-repeat; }
+  img.pl { display:block; object-fit:contain; }
+
+</style>
+
+<div class="sheet">
+  <header>
+    <h1>墨</h1>
+    <p class="lead"><b style="color:var(--paper)">The ink direction.</b> What 九境 looks
+      like if it stops being lit by neon and starts being painted. Every drawing on this
+      page is generated from the game's own tables, so none of it is a promise the code
+      cannot keep.</p>
+    <p class="t" style="margin-top:12px">Bruno, on the first prompt kit: <i>"não me dá
+      muito intuito de xianxia/wuxia e demasiado neon."</i> The fault is older than the
+      prompts. The game is cyan to magenta on blue-black, which is a science fiction
+      palette wearing Chinese characters. A cultivation story is not lit by neon: it is
+      ink on silk, gold leaf, cinnabar on a seal, jade, and a great deal of empty paper.</p>
+  </header>
+
+  <section class="sec">
+    <h2><span class="h">色</span> The nine realms, re-dyed</h2>
+    <p class="t">The ramp keeps its one job, which is that a realm must be readable from
+      its colour alone without reading a word. What changes is the road it walks.
+      <b>Jade, then gold, then cinnabar, then imperial violet</b>: green is the first
+      breath and the body, gold is the core, red is the furnace and the tribulation, and
+      violet is what is left after all of it. Every one of these is a pigment somebody
+      ground.</p>
+    <div class="two">
+      <div class="box"><span class="lab">Now: a gas discharge tube</span>
+        <div class="swatches">
+  <figure class="sw">
+    <span class="chip" style="background:#5FDCFF"></span>
+    <figcaption><b class="cjk">練氣</b><i>Qi Refining</i><em>#5FDCFF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#5FC4FF"></span>
+    <figcaption><b class="cjk">築基</b><i>Foundation</i><em>#5FC4FF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#77AEFF"></span>
+    <figcaption><b class="cjk">金丹</b><i>Golden Core</i><em>#77AEFF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#9B9BFF"></span>
+    <figcaption><b class="cjk">元嬰</b><i>Nascent Soul</i><em>#9B9BFF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#B587FF"></span>
+    <figcaption><b class="cjk">化神</b><i>Spirit Severing</i><em>#B587FF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#CC79FF"></span>
+    <figcaption><b class="cjk">煉虛</b><i>Void Refining</i><em>#CC79FF</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#E571F0"></span>
+    <figcaption><b class="cjk">合體</b><i>Unity</i><em>#E571F0</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#FF63CE"></span>
+    <figcaption><b class="cjk">大乘</b><i>Great Vehicle</i><em>#FF63CE</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#FF5AA6"></span>
+    <figcaption><b class="cjk">渡劫</b><i>Tribulation</i><em>#FF5AA6</em></figcaption>
+  </figure></div></div>
+      <div class="box"><span class="lab">墨 Ink: minerals</span>
+        <div class="swatches">
+  <figure class="sw">
+    <span class="chip" style="background:#5E8C76"></span>
+    <figcaption><b class="cjk">練氣</b><i>Qi Refining</i><em>#5E8C76 · jade</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#7BA382"></span>
+    <figcaption><b class="cjk">築基</b><i>Foundation</i><em>#7BA382 · celadon</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#A89B5C"></span>
+    <figcaption><b class="cjk">金丹</b><i>Golden Core</i><em>#A89B5C · old bronze</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#C8A951"></span>
+    <figcaption><b class="cjk">元嬰</b><i>Nascent Soul</i><em>#C8A951 · gold leaf</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#D89B4A"></span>
+    <figcaption><b class="cjk">化神</b><i>Spirit Severing</i><em>#D89B4A · amber</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#C9713F"></span>
+    <figcaption><b class="cjk">煉虛</b><i>Void Refining</i><em>#C9713F · copper</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#B4332C"></span>
+    <figcaption><b class="cjk">合體</b><i>Unity</i><em>#B4332C · cinnabar</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#8E2B4B"></span>
+    <figcaption><b class="cjk">大乘</b><i>Great Vehicle</i><em>#8E2B4B · plum</em></figcaption>
+  </figure>
+  <figure class="sw">
+    <span class="chip" style="background:#6B3A7A"></span>
+    <figcaption><b class="cjk">渡劫</b><i>Tribulation</i><em>#6B3A7A · imperial violet</em></figcaption>
+  </figure></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">圓相</span> The frame is a brush stroke</h2>
+    <p class="t">The ensō is a circle painted in one breath and left open where the brush
+      lifted. It is the oldest mark in the tradition this game is set in, it crops a
+      picture to a circle the way the game's frame already does, and it is drawn rather
+      than downloaded. It still reads the save: the sweep is heavier and the opening
+      smaller the deeper the thing inside it.</p>
+    <div class="box">
+      <div class="beasts">
+        <figure style="--hue:#C9713F">
+          <span class="ip" style="width:118px;height:118px">
+    <img class="pl" style="width:118px;height:118px" src="ink-plates/a159gwxj.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:118px;height:118px" src="ink-plates/a109f7lj.svg" alt="" aria-hidden="true"></span>
+  </span>
+          <figcaption><b>蜈蚣</b>Iron Centipede</figcaption></figure><figure style="--hue:#C9713F">
+          <span class="ip" style="width:118px;height:118px">
+    <img class="pl" style="width:118px;height:118px" src="ink-plates/adbvm1e.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:118px;height:118px" src="ink-plates/a1bqp7z0.svg" alt="" aria-hidden="true"></span>
+  </span>
+          <figcaption><b>毒蠍</b>Venom Scorpion</figcaption></figure><figure style="--hue:#C9713F">
+          <span class="ip" style="width:118px;height:118px">
+    <img class="pl" style="width:118px;height:118px" src="ink-plates/au4nocj.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:118px;height:118px" src="ink-plates/a19qkpv1.svg" alt="" aria-hidden="true"></span>
+  </span>
+          <figcaption><b>屍蟲</b>Corpse Worm</figcaption></figure>
+        <figure style="--hue:#6B3A7A">
+          <span class="ip" style="width:118px;height:118px">
+    <img class="pl" style="width:118px;height:118px" src="ink-plates/alatjp6.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:118px;height:118px" src="ink-plates/a1ezr3tm.svg" alt="" aria-hidden="true"></span>
+  </span>
+          <figcaption><b>龍</b>Dragon</figcaption></figure>
+      </div>
+    </div>
+    <div class="rule"><b>And the silhouette is dipped in ink rather than lit from
+      behind.</b> The same 120 icons the game already ships, displaced by a turbulence
+      filter so the edge breaks the way a wet brush breaks, in bone white rather than in
+      a colour that glows. Nothing was downloaded to make these.</div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">狩</span> The same screen, both ways</h2>
+    <div class="two">
+      <div class="box"><span class="lab">Now</span>
+  <div class="scr now">
+    <div class="body">
+      <div class="row" style="--hue:#CC79FF">
+        <span class="s" style="color:#CC79FF"><i class="pl" style="width:34px;height:34px;--pl:url(ink-plates/a10vaqpq.svg)" aria-hidden="true"></i></span>
+        <span><b>蜈蚣</b><i>Iron Centipede</i></span><em>98%</em></div><div class="row" style="--hue:#CC79FF">
+        <span class="s" style="color:#CC79FF"><i class="pl" style="width:34px;height:34px;--pl:url(ink-plates/a1kyonqz.svg)" aria-hidden="true"></i></span>
+        <span><b>毒蠍</b><i>Venom Scorpion</i></span><em>98%</em></div><div class="row" style="--hue:#CC79FF">
+        <span class="s" style="color:#CC79FF"><i class="pl" style="width:34px;height:34px;--pl:url(ink-plates/aq86fmy.svg)" aria-hidden="true"></i></span>
+        <span><b>屍蟲</b><i>Corpse Worm</i></span><em>98%</em></div>
+    </div>
+  </div></div>
+      <div class="box"><span class="lab">墨 Ink</span>
+  <div class="scr ink">
+    <div class="top"><img class="pl" style="width:100%;height:100%" src="ink-plates/aozp68l.svg" alt="" aria-hidden="true">
+      <span class="ttl cjk">狩</span></div>
+    <div class="body">
+      <div class="row" style="--hue:#C9713F">
+        <span class="s"><span class="ip" style="width:46px;height:46px">
+    <img class="pl" style="width:46px;height:46px" src="ink-plates/avw9ybb.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:46px;height:46px" src="ink-plates/a1jx0whg.svg" alt="" aria-hidden="true"></span>
+  </span></span>
+        <span><b>蜈蚣</b><i>Iron Centipede</i></span><em>98%</em></div><div class="row" style="--hue:#C9713F">
+        <span class="s"><span class="ip" style="width:46px;height:46px">
+    <img class="pl" style="width:46px;height:46px" src="ink-plates/a1bsi7rm.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:46px;height:46px" src="ink-plates/a9d4srb.svg" alt="" aria-hidden="true"></span>
+  </span></span>
+        <span><b>毒蠍</b><i>Venom Scorpion</i></span><em>98%</em></div><div class="row" style="--hue:#C9713F">
+        <span class="s"><span class="ip" style="width:46px;height:46px">
+    <img class="pl" style="width:46px;height:46px" src="ink-plates/a9w12wz.svg" alt="" aria-hidden="true">
+    <span class="ring"><img class="pl" style="width:46px;height:46px" src="ink-plates/a1vp58vw.svg" alt="" aria-hidden="true"></span>
+  </span></span>
+        <span><b>屍蟲</b><i>Corpse Worm</i></span><em>98%</em></div>
+    </div>
+  </div></div>
+    </div>
+    <p class="t">The list is the same list. What changed is that it happens somewhere: a
+      wash of the realm's own mountains above it, the rows on warm dark paper instead of
+      blue, and gold instead of cyan for the one number that matters.</p>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">境</span> The realms, as places</h2>
+    <p class="t">Ink mountains, three washes deep, with the realm's own pigment in the
+      middle distance and a cinnabar seal stamped in the corner. All of it generated: the
+      ridges are seeded by the realm, so a realm's mountains are always its own.</p>
+    <div class="rcards">
+      <figure class="rcard">
+    <span class="bg"><img class="pl" style="width:100%;height:100%" src="ink-plates/ar6wggn.svg" alt="" aria-hidden="true"></span>
+    <span class="seal"><img class="pl" style="width:44px;height:44px" src="ink-plates/ai4vh5n.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">練氣</b><i>Qi Refining</i>
+      <em>jade</em></figcaption>
+  </figure><figure class="rcard">
+    <span class="bg"><img class="pl" style="width:100%;height:100%" src="ink-plates/a180f3cz.svg" alt="" aria-hidden="true"></span>
+    <span class="seal"><img class="pl" style="width:44px;height:44px" src="ink-plates/a1r6c7ik.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">元嬰</b><i>Nascent Soul</i>
+      <em>gold leaf</em></figcaption>
+  </figure><figure class="rcard">
+    <span class="bg"><img class="pl" style="width:100%;height:100%" src="ink-plates/a1yq2kj4.svg" alt="" aria-hidden="true"></span>
+    <span class="seal"><img class="pl" style="width:44px;height:44px" src="ink-plates/a1j4vup3.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">合體</b><i>Unity</i>
+      <em>cinnabar</em></figcaption>
+  </figure><figure class="rcard">
+    <span class="bg"><img class="pl" style="width:100%;height:100%" src="ink-plates/amt75up.svg" alt="" aria-hidden="true"></span>
+    <span class="seal"><img class="pl" style="width:44px;height:44px" src="ink-plates/azgrsby.svg" alt="" aria-hidden="true"></span>
+    <figcaption><b class="cjk">渡劫</b><i>Tribulation</i>
+      <em>imperial violet</em></figcaption>
+  </figure>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">印</span> The seal, and the logo</h2>
+    <p class="t">A cinnabar seal is the most recognisable object in this whole tradition
+      and the game already has the shape of one. Stamped in a corner it does what a logo
+      does, and it costs one function.</p>
+    <div class="box">
+      <div class="beasts">
+        <figure>
+          <img class="pl" style="width:76px;height:76px" src="ink-plates/a2mrope.svg" alt="" aria-hidden="true"><figcaption>九</figcaption></figure><figure>
+          <img class="pl" style="width:76px;height:76px" src="ink-plates/a1203dfw.svg" alt="" aria-hidden="true"><figcaption>境</figcaption></figure><figure>
+          <img class="pl" style="width:76px;height:76px" src="ink-plates/a17ws9ek.svg" alt="" aria-hidden="true"><figcaption>道</figcaption></figure><figure>
+          <img class="pl" style="width:76px;height:76px" src="ink-plates/aqmi1yk.svg" alt="" aria-hidden="true"><figcaption>氣</figcaption></figure>
+      </div>
+    </div>
+    <h3>標 And the prompt for the mark itself</h3>
+    <pre>An emblem for a Chinese cultivation game, in the manner of a carved
+seal and an ink brush. A single ensō, a circle painted in one brush stroke
+and left open where the brush lifted, in worn gold leaf on a deep ink ground.
+Inside the circle, very small and centred, the silhouette of a seated figure
+in meditation, painted in soot black with a dry brush. Around the outside of
+the circle, nine small cinnabar red dots evenly spaced, like the nine marks of
+a seal. Aged silk texture, mineral pigment, no gradients, no glow, no neon, no
+3D, no bevel. Flat, painted, austere, symmetrical, with generous empty margin.
+Square 1:1. No text, no letters, no Chinese characters, no watermark.</pre>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">詞</span> The prompts, rewritten</h2>
+    <p class="t">The old style block asked for a near-black void, rim light and a single
+      strong hue, which is a description of neon. This one asks for silk, mineral pigment
+      and empty space, and it says out loud what the pictures are supposed to feel like:
+      <b>a plate from a bestiary somebody believed in six hundred years ago.</b></p>
+    <h3>同 The style block every prompt carries</h3>
+    <pre>Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+Composition in the Song dynasty manner: the subject small against a great
+deal of empty space, mist swallowing the middle distance. It should look
+like a plate from a bestiary somebody believed in six hundred years ago.
+No text, no letters, no characters, no seal, no watermark, no border.</pre>
+    <h3>獸 And a creature, with it</h3>
+    <pre>Stone Puppet, the guardian of its mountain: ancient, enormous, unbothered, seen from below through mist so that its full size is never shown at once.
+Painted in ink with copper as the only colour in the picture (#C9713F),
+used sparingly, on a warm dark ground.
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+Composition in the Song dynasty manner: the subject small against a great
+deal of empty space, mist swallowing the middle distance. It should look
+like a plate from a bestiary somebody believed in six hundred years ago.
+No text, no letters, no characters, no seal, no watermark, no border.</pre>
+    <pre>Green Serpent, a wild spirit-beast, caught mid-turn as it notices a traveller.
+Painted in ink with celadon as the only colour in the picture (#7BA382),
+used sparingly, on a warm dark ground.
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+Composition in the Song dynasty manner: the subject small against a great
+deal of empty space, mist swallowing the middle distance. It should look
+like a plate from a bestiary somebody believed in six hundred years ago.
+No text, no letters, no characters, no seal, no watermark, no border.</pre>
+    <div class="rule"><b>What changed, line by line.</b> Out: near-black void, rim light,
+      dramatic lighting, one strong hue, digital art. In: aged silk, wet brush, ink
+      bleeding into the fibre, mineral pigment, mist, Song dynasty composition, and the
+      instruction that nothing emits light except a lantern or the moon. The list of
+      refusals grew too: no neon, no glow, no cyberpunk, no science fiction.</div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">工</span> What it would take in the code</h2>
+    <table>
+      <tr><th>Change</th><th>Where</th><th>Size of it</th></tr>
+      <tr><td><b>The nine realm colours</b></td><td><code>src/data/realms.ts</code></td>
+        <td>Nine hex values. Everything in the game reads the realm's colour from there,
+          so the whole app re-dyes itself from one edit.</td></tr>
+      <tr><td><b>The five UI colours</b></td><td><code>src/app/theme.css</code></td>
+        <td>Ground, panel, line, text, faint. An afternoon, plus a pass over every screen
+          to find the places that hard-coded cyan.</td></tr>
+      <tr><td><b>The frame</b></td><td><code>src/art/plate.ts</code></td>
+        <td>The ensō replaces the ring. One function, already written on this page.</td></tr>
+      <tr><td><b>The scenery</b></td><td><code>src/art/scene.ts</code></td>
+        <td>Ink washes replace the gradient sky. The shape of the code is the same.</td></tr>
+      <tr><td><b>The paper</b></td><td><code>src/app/theme.css</code></td>
+        <td>One turbulence filter over the ground, at very low opacity. It is the single
+          cheapest thing on this list and it is most of what makes a screen feel
+          painted.</td></tr>
+    </table>
+    <div class="rule"><b>The honest warning.</b> Cyan reads as 氣 qi to anybody who has
+      played an idle game, and gold on dark reads as expensive. This direction is more
+      beautiful and it is less legible at a glance: a jade and a celadon realm are closer
+      together than a cyan and a blue one. If we go, the fix is to lean harder on the
+      characters and the seals for identity, which is the tradition's own answer.</div>
+  </section>
+
+  <footer class="sec" style="color:var(--faint);font-size:13.5px">
+    <p>Written by <code>npm run ink</code>. Every drawing generated from the game's own
+      tables and its own icon set. Icons from game-icons.net under CC BY 3.0.</p>
+  </footer>
+</div>

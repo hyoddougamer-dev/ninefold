@@ -28,7 +28,8 @@
     "artsheet": "tsx tools/artsheet.ts",
     "artprops": "tsx tools/artprops.ts",
     "pictures": "tsx tools/pictures.ts",
-    "artprompts": "tsx tools/artprompts.ts"
+    "artprompts": "tsx tools/artprompts.ts",
+    "ink": "tsx tools/ink.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
