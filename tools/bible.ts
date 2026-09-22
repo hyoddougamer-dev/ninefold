@@ -471,6 +471,16 @@ const SYSTEMS: readonly System[] = [
   { han: '曆', name: 'Three months of content', status: 'done', at: 'clock',
     line: `Measured rather than hoped for: the last named thing now arrives on day ${CLOCK_LAST}, against a climb that used to run out on day 60.` },
 
+  // 提 The four content systems, in the order they were built.
+  { han: '悟道', name: 'A choice that makes you different', status: 'done', at: 'awaken',
+    line: `Three cards at every breakthrough and you keep one, ${ALL_CARDS.length} of them across eight choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.` },
+  { han: '緣', name: 'Somebody on the road', status: 'done', at: 'meet',
+    line: `${MEETINGS.length} meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is ${MEET_POINT_CEILING} 道 against ${TOTAL_COST} for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.` },
+  { han: '洞天', name: 'A place you own', status: 'done', at: 'cave',
+    line: `${BEDS} beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. The first numbers took 40% off the climb and were cut to a seventh.` },
+  { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
+    line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Four shapes and five measurements before the wall held: the last one took 材 material out of the run entirely.` },
+
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
