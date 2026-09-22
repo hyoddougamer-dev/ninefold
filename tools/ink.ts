@@ -465,8 +465,9 @@ const page = `<meta charset="utf-8">
       does, and it costs one function.</p>
     <div class="box">
       <div class="beasts">
-        ${['九', '境', '道', '氣'].map((c) => `<figure>
-          ${stamp(c, 76)}<figcaption>${c}</figcaption></figure>`).join('')}
+        ${[['九', 'Nine'], ['境', 'Realm'], ['道', 'The Path'], ['氣', 'Qi']]
+          .map(([c, name]) => `<figure>
+          ${stamp(c, 76)}<figcaption>${name}</figcaption></figure>`).join('')}
       </div>
     </div>
     <h3>標 And the prompt for the mark itself</h3>
