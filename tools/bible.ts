@@ -24,6 +24,8 @@ import {
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
+import { AWAKENINGS, ALL_CARDS } from '../src/data/awakening.ts';
+import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
@@ -984,6 +986,29 @@ const MOCK_MEET = `<div class="mk meet">
   </div>
 </div>`;
 
+/** 悟道 Every trio, as the game offers them. */
+const AWAKEN_TABLE = AWAKENINGS.map((trio, i) => `
+  <div class="trio">
+    <span class="at">Reaching ${realmOf(i + 2).han} ${realmOf(i + 2).name}</span>
+    <div class="three">${trio.map((c) => `
+      <div class="ac"><span class="s">${icon(c.icon, 24)}</span>
+        <b class="cjk">${c.han}</b><em>${c.name}</em>
+        <i>${c.says}</i></div>`).join('')}</div>
+  </div>`).join('');
+
+/** 緣 Everybody on the road, and what the two answers do. */
+const MEET_TABLE = MEETINGS.map((m) => `
+  <tr><td><b class="cjk">${m.han}</b> ${m.name}</td>
+    <td class="n">${m.realm}</td>
+    <td>${m.picks.map((p) => {
+      const cost = p.costMaterial ? `材 ${p.costMaterial} beasts` : p.costQi ? `${p.costQi} min of qi` : 'free';
+      const got = p.outcome.kind === 'qi' ? `${p.outcome.minutes} min of qi`
+        : p.outcome.kind === 'material' ? `材 ${p.outcome.share} beasts`
+        : p.outcome.kind === 'dao' ? `${p.outcome.points} 道`
+        : p.outcome.kind === 'item' ? 'a piece of gear' : 'nothing';
+      return `<i>${p.label}: ${cost} \u2192 ${got}</i>`;
+    }).join('')}</td></tr>`).join('');
+
 const page = `<title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1067,7 +1092,31 @@ const page = `<title>九境 Ninefold · the Bible</title>
   #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
   #clock td:last-child { width:45%; }
 
+  /* ── 悟道 the trios, and 緣 the people on the road ────────────────────── */
+  #awaken .trios { display:grid; gap:14px; margin-top:16px; }
+  #awaken .trio .at { display:block; font-size:10.5px; letter-spacing:.14em;
+        text-transform:uppercase; color:var(--faint); font-family:Archivo,sans-serif;
+        font-weight:600; margin-bottom:8px; }
+  #awaken .three { display:grid; gap:8px; }
+  @media(min-width:640px){ #awaken .three { grid-template-columns:repeat(3,1fr); } }
+  #awaken .ac { padding:12px 13px; border-radius:11px; background:var(--panel);
+        border:1px solid var(--line); }
+  #awaken .ac .s { display:block; color:var(--cyan); margin-bottom:6px; }
+  #awaken .ac b { font-size:18px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #awaken .ac em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
+        font-size:13.5px; }
+  #awaken .ac i { display:block; font-style:normal; margin-top:6px; font-size:12px;
+        color:var(--faint); line-height:1.5; }
+  #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
+        line-height:1.5; }
+  #meet .meets td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
+
   /* ── 提 the proposals: four content systems, drawn rather than described ── */
+  #proposals h3 .built, #proposals h3 .todo { margin-left: 9px; padding:3px 9px; border-radius:99px;
+        font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
+        vertical-align:middle; }
+  #proposals h3 .built { color:#04121A; background:var(--cyan); }
+  #proposals h3 .todo { color:var(--faint); border:1px solid var(--line); }
   #proposals .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
                    padding:15px; margin:14px 0 0; }
   #proposals .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
@@ -1755,14 +1804,16 @@ const page = `<title>九境 Ninefold · the Bible</title>
       ladder, and that is the whole of it. There is no place you own, no run with an
       ending, no choice that makes your cultivator different from anybody else's, and
       nothing in the world that ever speaks to you.</p>
-    <p class="t"><b>None of the four below exists.</b> They are drawn with the game's own
+    <p class="t"><b>Two of the four are built now</b>, and 悟道 and 緣 have sections of
+      their own further down this page. The other two are drawn here rather than
+      described, with the game's own
       art and its own tables rather than described, because a system in a paragraph is a
       system nobody can judge. Each one is written to the laws this game already keeps:
       the sim stays pure, <b>nothing uncapped may ever raise the qi rate</b>, nothing is
       taken away for being away, and losing costs nothing. They are in the order I would
       build them.</p>
 
-    <h3>提一 · 洞天 A place you own</h3>
+    <h3>提一 · 洞天 A place you own <span class="todo">not built</span></h3>
     <p class="t">A cave with three beds. You plant a 靈草 spirit herb and it ripens over
       real hours, and a ripe herb waits for you for ever. Herbs are the third thing 爐
       the furnace wants, so pills stop being qi and material alone.</p>
@@ -1780,7 +1831,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t"><span class="cost">Cost:</span> a new screen, a table of herbs, one
       field on the save. The furnace already exists and already takes two inputs.</p>
 
-    <h3>提二 · 秘境 A run with an ending</h3>
+    <h3>提二 · 秘境 A run with an ending <span class="todo">not built</span></h3>
     <p class="t">A door that opens at the third realm. Inside is a path of seven rooms,
       and at each one you are shown two ways on and told what is behind each. A beast. A
       cache. A cold shrine. A wanderer who wants something. You pick, you walk, and
@@ -1802,7 +1853,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
       path generator seeded off the save, and a screen. The fighting, the drops and the
       gear it hands out are all already built.</p>
 
-    <h3>提三 · 悟道 A choice that makes you different</h3>
+    <h3>提三 · 悟道 A choice that makes you different <span class="built">built</span></h3>
     <p class="t">Every breakthrough, three cards. You take one and it is yours for the
       rest of the climb. Nine realms, nine choices, and no two cultivators arrive at the
       ninth realm the same.</p>
@@ -1821,7 +1872,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
       cards, one array on the save, and a sheet at the breakthrough. The effects plug
       into the same places 道 the tree's already do.</p>
 
-    <h3>提四 · 緣 Somebody on the road</h3>
+    <h3>提四 · 緣 Somebody on the road <span class="built">built</span></h3>
     <p class="t">About one visit in six, a small card. An old man selling something he
       will not name. A broken sword in the road. A merchant who takes material and gives
       back a thing you cannot buy. One choice, two outcomes, and it is gone.</p>
@@ -1838,14 +1889,72 @@ const page = `<title>九境 Ninefold · the Bible</title>
     <p class="t"><span class="cost">Cost:</span> a day. A table of meetings, a seeded
       roll on the visit, and one card that already has a shape on the screen.</p>
 
-    <h3>What I would build, and in what order</h3>
-    <p class="t"><b>悟道 first.</b> It is the cheapest, it is the one that makes your
-      cultivator yours, and it lands at a moment the game already has and currently
-      spends on a single button. <b>緣 second</b>, for a day's work and the whole
-      difference in how the world reads. <b>洞天 third</b>, because it is the one that
-      makes being away mean something other than a bar. <b>秘境 last</b>, because it is
-      the one worth doing properly and the one that needs the other three to have taught
-      the player what the game is.</p>
+    <h3>What was built, and what is left</h3>
+    <p class="t"><b>悟道 and 緣 are in the game.</b> They were the first two for the same
+      reason they are cheapest. One lands at a moment the game already had and was
+      spending on a single button. The other is a day's work for the whole difference
+      in how the world reads. Both have their own sections below, with what the
+      measurements said.</p>
+    <p class="t"><b>洞天 is next</b>, because it is the one that makes being away mean
+      something other than a bar. <b>秘境 last</b>, because it is the one worth doing
+      properly and the one that needs the other three to have taught the player what the
+      game is.</p>
+  </section>
+
+  <section class="sec" id="awaken">
+    <h2><span class="h">悟道</span> The three cards at a breakthrough</h2>
+    <p class="t">Eight breakthroughs, ${ALL_CARDS.length} cards, and you keep one of every
+      three. The other two close for good. 道 The tree is the nearest thing the game
+      already had and it is not the same: its points accumulate, so given enough days
+      everybody owns most of it, which makes it a checklist. A card taken is two doors
+      shut, and that is what makes a build.</p>
+    <p class="t">It is not fired, it is derived. What is owed is the realm minus one,
+      what is taken is the length of the list, and the difference is the offer. So it
+      cannot be missed by a reload, cannot be lost by closing the app mid-choice, and a
+      save hand-edited to skip one is simply asked again. The whole mechanism is one
+      subtraction.</p>
+
+    <h3>力 Why no card pays power, which took a measurement to learn</h3>
+    <p class="t">The first table had five power cards compounding to <b>3.5x</b>. The
+      pure idler reached the ninth realm on day <b>121</b> instead of <b>171</b>, while
+      every cultivator who actually plays moved by less than a day: they are gated by qi
+      and the idler is gated by power. The repo's own wall rule caught it, which is what
+      it is for. Halving the numbers did not fix it either, because the shape was wrong
+      and not the size.</p>
+    <p class="t">So every card pays for <b>being there</b>. Material needs kills, drops
+      need kills, melting needs drops, refining needs material. A cultivator who never
+      opens the app gets nothing from any of them, which is the same deal the rest of
+      the game offers. The wall now reads <b>1.79x</b> against a rule of 1.5.</p>
+
+    <div class="trios">${AWAKEN_TABLE}</div>
+  </section>
+
+  <section class="sec" id="meet">
+    <h2><span class="h">緣</span> Somebody on the road</h2>
+    <p class="t">Every few hours, one small card. An old man selling something he will
+      not name, a broken sword in the road, a drunk two realms above you who cannot
+      stand up. One choice, two named outcomes, and it is gone.</p>
+    <p class="t">This one is not economy, and the numbers say so: the largest 道 haul
+      every meeting in the game could ever pay is <b>${MEET_POINT_CEILING}</b> points,
+      against ${TOTAL_COST} for the whole tree, and half the answers are nothing at all.
+      九境 has nine realms, thirty-six beasts and a Dragon at the top, and until this
+      nothing in it had ever spoken.</p>
+    <p class="t">Three rules, and they are the game's own. <b>取</b> Nothing is ever
+      taken that was not offered: every cost sits on the button that charges it and
+      walking on is free, always. <b>待</b> It never blocks and never expires, because
+      what is on offer is derived from the save rather than fired at a moment.
+      <b>定</b> It is chosen and not rolled: which meeting comes next is a function of
+      the save, so two cultivators with the same history meet the same people, and the
+      harness can walk it.</p>
+    <p class="t">A qi figure on a meeting is counted in <b>minutes of that cultivator's
+      own standing gathering</b>. A share of the rung was tried first and it is the
+      wrong scale. A rung is a whole layer and grows exponentially, so six tenths of one
+      read as 23.8M qi at the fourth realm to somebody holding two hundred thousand.</p>
+
+    <table class="tbl meets">
+      <thead><tr><th>Who</th><th class="n">From realm</th><th>The two answers</th></tr></thead>
+      <tbody>${MEET_TABLE}</tbody>
+    </table>
   </section>
 
   <section class="sec" id="board">

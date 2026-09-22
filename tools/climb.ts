@@ -7,15 +7,16 @@
  */
 import { LAYERS } from '../src/sim/balance.ts';
 import {
-  UPGRADES, buy, canBuy, filledRealms, newState, upgradeCost, type State,
+  UPGRADES, buy, canBuy, newState, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { odds } from '../src/sim/combat.ts';
 import { LINES } from '../src/data/alchemy.ts';
+import { freePoints } from '../src/sim/points.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import { canUnlock, daoFree } from '../src/sim/dao.ts';
+import { canUnlock } from '../src/sim/dao.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
 import { wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
@@ -52,14 +53,14 @@ export const BRANCHES: readonly Branch[] = ['none', 'sword', 'spirit', 'fortune'
 function spend(s: State, branch: Branch): State {
   if (branch === 'none') return s;
   // 道 points come from layers and from wardens. The theoretical curve fells the warden
-  // the moment the realm fills, so the wardens are counted the same way here.
-  const wardens = REALMS.filter((x) => x.n < s.realm).length;
+  // the moment the realm fills, so the killed list below says so and sim/points.ts
+  // counts them the same way it counts anybody's.
   const killed = Object.fromEntries(
     REALMS.filter((x) => x.n < s.realm).map((x) => [wardenOf(x.n).key, 1]),
   );
   let out: State = { ...s, killed: { ...s.killed, ...killed } };
   for (let guard = 0; guard < 200; guard++) {
-    const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
+    const free = freePoints(out);
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
       .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));

@@ -98,7 +98,16 @@ async function open(page, state) {
  * not a workaround: the first thing a real player taps is 始 BEGIN.
  */
 async function dismiss(page) {
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 24; i++) {
+    // 悟道 A breakthrough owes a card per realm behind you and the sheet is raised by
+    // the save rather than by an event, so a seeded ninth-realm cultivator meets eight
+    // of them on the first frame. Taking one is what a player does and the only way on.
+    // 悟道 The cards first, and separately, because page.$ with a comma answers in
+    // document order rather than selector order. 新 the notice card sits earlier in the
+    // tree and the sheet is painted over it, so the loop kept finding a button it could
+    // never tap and never reached the sheet at all.
+    const card = await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
     const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim');
     if (!el) return;
     await el.click({ timeout: 4000 }).catch(() => {});

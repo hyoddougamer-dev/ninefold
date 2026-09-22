@@ -28,11 +28,15 @@ export const POINTS_PER_WARDEN = 2;
 export const POINTS_PER_BESTIARY = 1;
 
 export function daoEarned(
-  layersOpened: number, wardensKilled: number, realmsKnown = 0,
+  layersOpened: number, wardensKilled: number, realmsKnown = 0, fromCards = 0,
 ): number {
   return Math.floor(layersOpened / LAYERS_PER_POINT)
     + POINTS_PER_WARDEN * wardensKilled
-    + POINTS_PER_BESTIARY * realmsKnown;
+    + POINTS_PER_BESTIARY * realmsKnown
+    // 悟道 頓悟, 靈臺, 承露 and 一念 hand points over once and for good, and they are
+    // earned exactly like any other: this module still never sees a State, so the
+    // number is handed in. sim/points.ts is the one place that assembles it.
+    + Math.max(0, fromCards);
 }
 
 export function daoSpent(unlocked: readonly string[]): number {
@@ -41,9 +45,9 @@ export function daoSpent(unlocked: readonly string[]): number {
 
 export function daoFree(
   layersOpened: number, wardensKilled: number, unlocked: readonly string[],
-  realmsKnown = 0,
+  realmsKnown = 0, fromCards = 0,
 ): number {
-  return daoEarned(layersOpened, wardensKilled, realmsKnown) - daoSpent(unlocked);
+  return daoEarned(layersOpened, wardensKilled, realmsKnown, fromCards) - daoSpent(unlocked);
 }
 
 /**

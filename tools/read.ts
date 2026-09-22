@@ -22,17 +22,17 @@
  */
 import { readFileSync } from 'node:fs';
 import { validate, power, rate, layersOpened, capOf, canBuy, UPGRADES, UPGRADE_INFO,
-  filledRealms, type State } from '../src/sim/state.ts';
+  type State } from '../src/sim/state.ts';
 import { advance } from '../src/sim/time.ts';
 import { duration, num } from '../src/sim/format.ts';
 import { LAYERS, LAYERS_PER_REALM } from '../src/sim/balance.ts';
 import { realm as realmOf } from '../src/data/realms.ts';
 import { BEASTS, WARDENS, huntable } from '../src/data/bestiary.ts';
 import { SLOTS } from '../src/data/gear.ts';
+import { earnedPoints, freePoints } from '../src/sim/points.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
 import { STANCES } from '../src/data/arts.ts';
 import { MARKS, recordTally } from '../src/sim/record.ts';
-import { daoEarned, daoFree } from '../src/sim/dao.ts';
 import { SYSTEMS, isOpen } from '../src/sim/unlocks.ts';
 import { canDrive } from '../src/sim/hunt.ts';
 import { playAll } from './habits.ts';
@@ -114,7 +114,7 @@ const wardensDown = WARDENS.filter((w) => (s.killed[w.key] ?? 0) > 0).length;
 console.log(`     ${pad('修 upgrades', 18)}${bought} levels bought of ${room} this realm allows`);
 console.log(`     ${pad('狩 hunting', 18)}${num(kills)} kills · 見 ${seen} · 熟 ${known} · 通 ${mastered} of ${BEASTS.length} · ${wardensDown} wardens down`);
 console.log(`     ${pad('器 gear', 18)}${Object.keys(s.worn).length} of ${SLOTS.length} slots worn · ${s.chest.length} in the chest`);
-console.log(`     ${pad('道 the tree', 18)}${s.unlocked.length} of ${ALL_NODES.length} nodes · ${daoFree(rung, wardensDown, s.unlocked, filledRealms(s))} 道 unspent of ${daoEarned(rung, wardensDown, filledRealms(s))} earned`);
+console.log(`     ${pad('道 the tree', 18)}${s.unlocked.length} of ${ALL_NODES.length} nodes · ${freePoints(s)} 道 unspent of ${earnedPoints(s)} earned`);
 console.log(`     ${pad('勢 the build', 18)}${s.stance ? `${s.stance} stance` : 'no stance'} · ${s.sequence.length} art${s.sequence.length === 1 ? '' : 's'} in the sequence`);
 console.log(`     ${pad('塔 the tower', 18)}${s.tower === 0 ? 'never climbed' : `floor ${s.tower}`}`);
 console.log(`     ${pad('爐 the furnace', 18)}${Object.values(s.brewed).reduce((a, b) => a + b, 0)} pills brewed`);
@@ -132,7 +132,7 @@ const since = (key: Parameters<typeof isOpen>[1]) => {
   return `open since the ${realmOf(info.realm).han} ${realmOf(info.realm).name} realm`;
 };
 if (isOpen(s.realm, 'tree') && s.unlocked.length === 0) {
-  untouched.push(`道 the tree: ${since('tree')}, not one node, ${daoFree(rung, wardensDown, s.unlocked, filledRealms(s))} 道 sitting unspent`);
+  untouched.push(`道 the tree: ${since('tree')}, not one node, ${freePoints(s)} 道 sitting unspent`);
 }
 if (isOpen(s.realm, 'arts') && !s.stance) {
   untouched.push(`勢 no stance taken: ${since('arts')}, ${STANCES.length} to choose from`);

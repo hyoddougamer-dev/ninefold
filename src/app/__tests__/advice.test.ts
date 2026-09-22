@@ -107,6 +107,9 @@ describe('道 unspent points come before everything', () => {
       levels: { technique: 8, method: 12, pills: 13, cores: 4 },
       killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
       unlocked: [], stance: 'swift', sequence: ['crane'],
+      // 悟道 Its two cards taken, so the line being measured is the one about points.
+      // A card owed outranks everything, which the test below is about.
+      awakened: ['feast', 'wolf'],
     } as unknown as State;
 
     const free = freePoints(s);
@@ -136,7 +139,7 @@ describe('道 unspent points come before everything', () => {
       killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
       worn: { weapon: { id: 'w', template: 'sword3', rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
       unlocked: ['root', 'opening', 'edge', 'chain', 'breathing', 'clearmind', 'sunder', 'gleaning', 'keeneye'],
-      stance: 'swift', sequence: ['crane'],
+      stance: 'swift', sequence: ['crane'], awakened: ['feast', 'wolf'],
     } as unknown as State;
 
     // Too little to matter: the line leaves it alone and sends them hunting.
@@ -146,5 +149,26 @@ describe('道 unspent points come before everything', () => {
     expect(rich.han).toBe('煉器');
     expect(rich.tab).toBe('gear');
     expect(rich.text).toMatch(/\d+ levels/);
+  });
+});
+
+/**
+ * 悟道 A card owed comes before the points, and the points come before everything else.
+ *
+ * It is the one thing the climb will not hand over later: the offer waits for ever, but
+ * nothing else in the game moves until it is taken.
+ */
+describe('悟道 a card owed comes first of all', () => {
+  it('outranks even unspent 道 points', async () => {
+    const { advice } = await import('../advice.ts');
+    const s = {
+      ...newState(T0), realm: 3, layer: 5, qi: 3e5, materials: 2296,
+      levels: { technique: 8, method: 12, pills: 13, cores: 4 },
+      killed: { rat: 120, hound: 40, frog: 12, serpent: 30, mantis: 11, bat: 13, fox: 1, ape: 1 },
+      unlocked: [], stance: 'swift', sequence: ['crane'], awakened: [],
+    } as unknown as State;
+    expect(advice(s)!.han).toBe('悟道');
+    // Take what is owed and the line moves on to the points.
+    expect(advice({ ...s, awakened: ['feast', 'wolf'] })!.han).toBe('道');
   });
 });

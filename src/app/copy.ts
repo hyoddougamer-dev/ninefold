@@ -286,6 +286,11 @@ export const ADVICE = {
    * Bruno was carrying eleven. So this goes first, before everything, and it goes away
    * the moment they are spent.
    */
+  /**
+   * 悟道 Above even the points, because a card is the one thing the climb will not hand
+   * over later. The offer waits for ever and nothing else moves until it is taken.
+   */
+  awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
   freePoints: (n: number) =>
     `You have ${n} 道 ${n === 1 ? 'point' : 'points'} unspent. They cost nothing and they never expire, `
     + `and every one of them is a permanent upgrade sitting in 道 the Path.`,
@@ -395,6 +400,7 @@ export const KEY = {
 
   pathsHead: '三 The three paths of the tree',
   pathsBlurb: 'Every node in 道 the tree belongs to one of them, and the colour on the node is the path.',
+  meeting: 'Somebody on the road, every few hours. One choice, and walking on is always free. Nothing is taken that you did not offer.',
   systemsHead: '開 The systems, and the realm that opens each',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
@@ -595,6 +601,39 @@ export const ITEM = {
   close: 'Back',
 };
 
+/**
+ * 悟道 The three cards at a breakthrough.
+ *
+ * It says what the choice costs before it says what it gives, because the cost is the
+ * point: two of these three are gone for good the moment one is taken.
+ */
+export const AWAKEN = {
+  over: 'A realm behind you',
+  sub: (han: string, name: string) => `You stand in ${han} ${name}. Something settles.`,
+  lead: 'Take one of the three. The other two close, and what you take is yours for the rest of the climb.',
+  take: 'Take this one',
+  later: 'Decide later',
+  /** 修 The card the home screen keeps up until the choice is made. */
+  waiting: 'A breakthrough is owed you a 悟道. Three cards, and one of them is yours.',
+  /** 釋 What the character means, for the key and the tooltip. */
+  what: 'Three cards at every breakthrough, and you keep one. Taking it closes the other two. Eight choices across a climb, so no two cultivators end up the same.',
+};
+
+/**
+ * 緣 Somebody on the road.
+ *
+ * The cost is on the button that charges it and the gift is beside it, because a choice
+ * whose price is hidden is a guess. The one thing left unnamed is a piece of gear: to
+ * name it would be to name the roll.
+ */
+export const MEET = {
+  costs: (what: string) => `costs ${what}`,
+  something: 'something falls out of it',
+  nothing: 'nothing happens',
+  /** What the line says after an answer, over the outcome the meeting wrote. */
+  went: 'They go on down the road.',
+};
+
 export const GEAR = {
   /** 數 One line is a line, and the screen read "1 lines worn" until somebody looked. */
   linesWorn: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'} worn`,
@@ -654,6 +693,11 @@ export const DAO = {
   halfTree: 'Techniques',
   halfBuild: 'Stance & Arts',
   /** 點 What the dot on the 道 tab means, for the tooltip and the screen reader. */
+  /**
+   * 悟道 Above even the points, because a card is the one thing the climb will not hand
+   * over later. The offer waits for ever and nothing else moves until it is taken.
+   */
+  awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
   freePoints: (n: number) =>
     `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 

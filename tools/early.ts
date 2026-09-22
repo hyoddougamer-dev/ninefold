@@ -29,15 +29,18 @@
 import { LAYERS_PER_REALM, focusAt } from '../src/sim/balance.ts';
 import {
   UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canCondense, canFightWarden,
-  capOf, condense, filledRealms, newState, upgradeCost, type State,
+  capOf, condense, newState, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { odds, takeKill } from '../src/sim/combat.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen, systemInfo, SYSTEMS } from '../src/sim/unlocks.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
-import { affinity, canUnlock, daoFree, dropChanceBonus, dropsRankUp, rarityLuck } from '../src/sim/dao.ts';
+import { affinity, canUnlock } from '../src/sim/dao.ts';
+import { freePoints } from '../src/sim/points.ts';
 import { rollDrop } from '../src/sim/drops.ts';
+import { fortuneOf } from '../src/sim/fortune.ts';
+import { salvageBonus } from '../src/sim/awaken.ts';
 import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
@@ -125,17 +128,14 @@ function betterInChest(s: State): number {
 }
 
 function takeDrop(s: State, beast: Beast, seed: number): State {
-  const fortune = {
-    chance: dropChanceBonus(s.unlocked),
-    luck: rarityLuck(s.unlocked),
-    always: dropsRankUp(s.unlocked),
-  };
-  const item = rollDrop(beast, s.realm, seed, fortune);
+  // 運 One place builds this now, and building it here by hand is what let two of the
+  // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
+  const item = rollDrop(beast, s.realm, seed, fortuneOf(s));
   if (!item) return s;
-  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity);
+  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
   const kept = addToChest(s.chest, item, limit);
   let out: State = { ...s, chest: [...kept.chest] };
-  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped) };
+  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(s.awakened)) };
   if (kept.dropped?.id === item.id) return out;
   const slot = templateOf(item).slot as Slot;
   const worn = out.worn[slot];
@@ -146,12 +146,9 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   return out;
 }
 
-const WARDEN_KEYS = new Set(Array.from({ length: 9 }, (_, i) => wardenOf(i + 1).key));
-
-function freeNodes(s: State): number {
-  const wardens = Object.keys(s.killed).filter((k) => WARDEN_KEYS.has(k)).length;
-  return daoFree(layersOpened(s), wardens, s.unlocked, filledRealms(s));
-}
+/* 點 The count is sim/points.ts now, cards included. It used to be assembled here and
+   in five other places, which is five places to forget a source of points. */
+const freeNodes = freePoints;
 
 export interface Early {
   readonly visits: readonly Offers[];

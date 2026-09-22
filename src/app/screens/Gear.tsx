@@ -49,7 +49,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const best = wornRarity(state.worn);
   // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
   const groups = isOpen(state.realm, 'fuse') ? fusable(state.chest) : [];
-  const limit = chestLimit(state.unlocked, totals.capacity);
+  const limit = chestLimit(state.unlocked, totals.capacity, state.awakened);
   const S = 200;
   const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
   // 拆 What the melt would take, so the button can say so before it is pressed.

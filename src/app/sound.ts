@@ -128,6 +128,15 @@ export const sfx = {
     { freq: 659, at: 0.12, length: 0.55, gain: 0.06, type: 'triangle' },
     { freq: 1047, at: 0.2, to: 1568, length: 0.5, gain: 0.04 },
   ]),
+  /**
+   * 悟道 A card taken. One note settling onto another, because a choice that closes two
+   * doors should not sound like a purchase.
+   */
+  awaken: () => play([
+    { freq: 294, length: 0.42, gain: 0.05, type: 'triangle' },
+    { freq: 440, at: 0.10, length: 0.42, gain: 0.05, type: 'triangle' },
+    { freq: 587, at: 0.20, length: 0.5, gain: 0.05, type: 'triangle' },
+  ]),
   /** A layer opens. Quiet on purpose: it happens hundreds of times. */
   layer: () => play([{ freq: 880, length: 0.05, gain: 0.03 }]),
   /** 塔 A floor falls. A step up, because that is what it is. */

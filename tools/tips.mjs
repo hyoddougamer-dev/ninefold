@@ -169,7 +169,16 @@ async function walk(realm) {
 
 /** Send away anything floating over the screen, the way a player would. */
 async function clear(page) {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 24; i++) {
+    // 悟道 A breakthrough owes a card per realm behind you and the sheet is raised by
+    // the save rather than by an event, so a seeded ninth-realm cultivator meets eight
+    // of them on the first frame. Taking one is what a player does and the only way on.
+    // 悟道 The cards first, and separately, because page.$ with a comma answers in
+    // document order rather than selector order. 新 the notice card sits earlier in the
+    // tree and the sheet is painted over it, so the loop kept finding a button it could
+    // never tap and never reached the sheet at all.
+    const card = await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
     const el = await page.$('.help button.act, .notice button, .scrim, .shut');
     if (!el) return;
     await el.click({ timeout: 3000 }).catch(() => {});

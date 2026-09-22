@@ -5,6 +5,7 @@ import { TOWER_QI_HOURS } from './balance.ts';
 import { recordMaterial } from './record.ts';
 import { power, rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
+import { materialBonus, refineFactor } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
 
@@ -75,7 +76,9 @@ export function clearFloor(s: State, floor: number): State {
  */
 export function lootTaken(s: State, base: number): number {
   const record = isOpen(s.realm, 'record') ? recordMaterial(s.killed) : 1;
-  return Math.max(1, Math.round(base * lootBonus(s.tower) * record));
+  // 悟道 Every card that pays material pays it here, which is the one place all of it
+  // passes through, hunting and 塔 the tower alike.
+  return Math.max(1, Math.round(base * lootBonus(s.tower) * record * materialBonus(s.awakened)));
 }
 
 export function canBrew(s: State, line: Line): boolean {
@@ -104,7 +107,10 @@ export function brew(s: State, line: Line): State {
  */
 export function refinePrice(s: State, slot: Slot): number | null {
   const item = s.worn[slot];
-  return item ? refineCost(clampRefine(item.refine)) : null;
+  if (!item) return null;
+  // 悟道 火候 and 薪火 make every level cheaper, for ever. Rounded up, so a discount
+  // can never make a level free however many of them are taken.
+  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened)));
 }
 
 export function canRefine(s: State, slot: Slot): boolean {

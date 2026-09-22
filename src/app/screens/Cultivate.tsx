@@ -16,12 +16,15 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
-import { CULTIVATE, GUIDE, HUNT } from '../copy.ts';
+import { Meet } from '../ui/Meet.tsx';
+import type { Meeting } from '../../sim/meet.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HUNT } from '../copy.ts';
 import { advice } from '../advice.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
-export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm }: {
+export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
+  owesCard, onAwaken, meeting, onMeet }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
@@ -36,6 +39,14 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear') => void;
   /** 境 Open the page that says what this realm is. */
   onRealm: () => void;
+  /** 悟道 True while a breakthrough still owes a card and the sheet is put aside. */
+  owesCard: boolean;
+  /** 悟道 Put the three cards back on the screen. */
+  onAwaken: () => void;
+  /** 緣 Somebody waiting on the road, or nobody. */
+  meeting: Meeting | null;
+  /** 緣 Answer them, one way or the other. */
+  onMeet: (which: 0 | 1) => void;
 }) {
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -226,6 +237,20 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             </button>
           </div>
         </>
+      )}
+
+      {/* 緣 Somebody on the road. Above 示 the advice, because a person waiting is more
+          interesting than a number, and below everything that is actually blocking. */}
+      {meeting && <Meet state={state} meeting={meeting} onAnswer={onMeet} />}
+
+      {/* 悟道 The offer is derived from the save, so putting the sheet aside cannot lose
+          it. This is what says so: it stays until the card is taken. */}
+      {owesCard && (
+        <button className="owes" onClick={onAwaken}>
+          <b className="cjk">悟道</b>
+          <i>{AWAKEN.waiting}</i>
+          <em className="cjk">›</em>
+        </button>
       )}
 
       {ready && (

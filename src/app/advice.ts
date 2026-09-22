@@ -15,6 +15,7 @@ import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
 import { ADVICE } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
+import { due as awakeningDue } from '../sim/awaken.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
@@ -105,6 +106,14 @@ export function advice(s: State): Advice | null {
    * at 狩 the hunt, while they carried as many as twelve. Bruno was carrying eleven,
    * looking at a line telling him to go and kill a bat seven more times.
    */
+  /**
+   * 悟道 And before even that, a card owed.
+   *
+   * It is free, it is permanent, and it is the only thing in the game the player cannot
+   * get later by climbing: the offer waits, but nothing else happens until it is taken.
+   */
+  if (awakeningDue(s.realm, s.awakened)) return { han: '悟道', text: ADVICE.awaken };
+
   const waiting = pointsWaiting(s);
   if (waiting > 0) return { han: '道', text: ADVICE.freePoints(waiting), tab: 'dao' };
 

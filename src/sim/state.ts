@@ -12,12 +12,14 @@ import {
 } from '../data/gear.ts';
 import { CHEST_LIMIT } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
+import { valid as validAwakened } from './awaken.ts';
 import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine } from './refine.ts';
 import { isOpen } from './unlocks.ts';
 import { heavensOpened } from '../data/heavens.ts';
+import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -98,6 +100,26 @@ export interface State {
   tower: number;
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
+  /**
+   * 悟道 The cards taken at each breakthrough, in the order they were taken.
+   *
+   * Same shape as `unlocked` and for the same reason: the list is the only thing stored
+   * and every fact about it is derived. What is *owed* is derived too, from the realm,
+   * so an offer cannot be lost by a reload and never had to be remembered. See
+   * sim/awaken.ts.
+   */
+  awakened: string[];
+  /**
+   * 緣 The people already met, by key, and the instant of the last one.
+   *
+   * Both are needed and neither is enough on its own: the list is what stops somebody
+   * being met twice, and the instant is what keeps them from arriving one after another
+   * on the same visit. `metPoints` is the 道 points meetings have handed over, which are
+   * earned exactly like any others. See sim/meet.ts.
+   */
+  met: string[];
+  metAt: number;
+  metPoints: number;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -226,6 +248,8 @@ export function newState(now: number): State {
     tribulationAt: 0,
     tower: 0,
     brewed: { ...NO_PILLS },
+    awakened: [],
+    met: [], metAt: 0, metPoints: 0,
     seen: [],
   };
 }
@@ -357,6 +381,9 @@ export function power(s: State): number {
     * powerMultiplier(s.unlocked)
     * pillPower(s.brewed)
     * (isOpen(s.realm, 'record') ? recordPower(s.killed) : 1)
+    // 悟道 No card multiplies this, and that is the measurement rather than an
+    // oversight: power is the axis the wall between idle and active is built on. See
+    // data/awakening.ts.
     * markBonus(s.tribulation);
 }
 
@@ -572,6 +599,17 @@ export function validate(raw: unknown, now: number): State {
     // claiming floor nine thousand is claiming nine thousand fights that never happened.
     tower: clamp(Math.floor(num(o.tower, 0)), 0, 3000),
     brewed: validBrewed(o.brewed),
+    // 悟道 A forged list could otherwise claim every card in the game, or claim the
+    // ninth realm's card in the second. Each entry has to be a card that exists, from
+    // the trio that entry's turn actually offers. See sim/awaken.ts.
+    awakened: [...validAwakened(Array.isArray(o.awakened) ? o.awakened.filter(
+      (x: unknown): x is string => typeof x === 'string') : [])],
+    // 緣 A key that names nobody is not a meeting, and nobody is met twice. The points
+    // are capped at what every meeting in the game could ever hand over, so a forged
+    // save cannot claim a tree's worth of them.
+    met: validMet(o.met),
+    metAt: clamp(num(o.metAt, 0), 0, now),
+    metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0, MEET_POINT_CEILING),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

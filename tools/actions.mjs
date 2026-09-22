@@ -49,6 +49,11 @@ function save(over = {}) {
     unlocked: [], stance: null, sequence: [],
     tribulation: 0, tribulationAt: 0, tower: 20,
     brewed: { body: 0, bane: 0, fortune: 0 },
+    // 悟道 Four realms behind this cultivator, so four cards are owed. The default
+    // fixture has taken them, or every other verb here would be standing behind a
+    // sheet. The two acts that test the sheet clear this on purpose.
+    awakened: ['feast', 'wolf', 'slaughter', 'platform'],
+    met: [], metAt: at, metPoints: 0,
     seen: ['guide', 'cap', 'cores', 'tower', 'gear', 'furnace', 'refine'],
     ...over,
   };
@@ -63,7 +68,7 @@ const triple = (template, rarity, n = 3) =>
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-async function open(state) {
+async function open(state, { keepCards = false } = {}) {
   const page = await browser.newPage({
     viewport: { width: 400, height: 860 },
     permissions: ['clipboard-read', 'clipboard-write'],
@@ -76,7 +81,16 @@ async function open(state) {
   await page.goto(BASE);
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
   await page.waitForTimeout(800);
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 24; i++) {
+    // 悟道 A breakthrough owes a card per realm behind you and the sheet is raised by
+    // the save rather than by an event, so a seeded ninth-realm cultivator meets eight
+    // of them on the first frame. Taking one is what a player does and the only way on.
+    // 悟道 The cards first, and separately, because page.$ with a comma answers in
+    // document order rather than selector order. 新 the notice card sits earlier in the
+    // tree and the sheet is painted over it, so the loop kept finding a button it could
+    // never tap and never reached the sheet at all.
+    const card = keepCards ? null : await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
     const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim');
     if (!el) break;
     await el.click({ timeout: 4000 }).catch(() => {});
@@ -438,6 +452,44 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => b.stance !== a.stance || 'no stance was taken');
   if (page.noise.length) fail('勢', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 悟道 taking one of the three cards ─────────────────────────────────────
+{
+  // 留 The sheet is left standing on purpose: if the arriving loop took the cards, this
+  // act would be checking that the harness works rather than that the game does.
+  const page = await open(save({ realm: 2, awakened: [] }), { keepCards: true });
+  await act(page, '悟道 taking a card at a breakthrough',
+    async () => {
+      const card = await page.$('.awaken .acard');
+      if (!card) fail('悟道', 'a realm behind them and no card was offered');
+      else { await card.click(); await page.waitForTimeout(600); }
+    },
+    // 取 The list grows by exactly one, and by a card that was on the trio offered.
+    (a, b) => (b.awakened.length === a.awakened.length + 1)
+      || `awakened went ${a.awakened.length} to ${b.awakened.length}`);
+  if (page.noise.length) fail('悟道', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 緣 answering somebody on the road ──────────────────────────────────────
+{
+  const at = Math.floor(Date.now() / 1000);
+  const page = await open(save({ met: [], metAt: at - 12 * 3600 }));
+  // 修 A notice card carries a "go there" arrow, so sending the floating cards away can
+  // leave the walk standing on 狩 the hunt. 緣 lives on the home screen.
+  await tab(page, '修');
+  await act(page, '緣 answering somebody on the road',
+    async () => {
+      const pick = await page.$('.meet .pick:not([disabled])');
+      if (!pick) fail('緣', 'half a day on the road and nobody was there');
+      else { await pick.click(); await page.waitForTimeout(600); }
+    },
+    // 待 Walking on is an answer, so the only thing that has to move is the list.
+    (a, b) => b.met.length === a.met.length + 1
+      || `met went ${a.met.length} to ${b.met.length}`);
+  if (page.noise.length) fail('緣', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 

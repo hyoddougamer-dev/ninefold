@@ -1191,6 +1191,88 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                   color: var(--faint); border: 1px solid var(--line); }
 .realmname:hover .ask { color: var(--cyan); border-color: var(--cyan); }
 
+/* ── 悟道 the three cards at a breakthrough ─────────────────────────────────
+   Above every other sheet, because it is the only one the game raises by itself and
+   the only one that is a decision rather than a page. It still closes: the offer is
+   derived from the save, so walking away from it loses nothing. */
+.awaken { position: absolute; inset: 0; z-index: 14; background: var(--ground);
+          overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 30px) 18px
+                                     calc(env(safe-area-inset-bottom, 0px) + 22px);
+          display: flex; flex-direction: column;
+          animation: awakenin .3s ease-out both; }
+@keyframes awakenin { from { opacity: 0; transform: scale(.985); } }
+.awaken .over { margin: 0; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+                color: var(--faint); font-family: Archivo, sans-serif; font-weight: 600; }
+.awaken h2 { margin: 5px 0 0; font-size: 40px; font-weight: 400; line-height: 1; }
+.awaken .sub { margin: 7px 0 0; font-size: 14px; color: var(--faint); }
+.awaken .lead { margin: 14px 0 0; font-size: 13.5px; line-height: 1.6; }
+.awaken .cards { display: flex; flex-direction: column; gap: 11px; margin: 22px 0 0; }
+.awaken .acard { display: grid; grid-template-columns: auto 1fr; gap: 3px 13px;
+                 text-align: left; font: inherit; cursor: pointer;
+                 background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+                 padding: 15px 16px; color: var(--text);
+                 animation: acardin .34s ease-out both; }
+.awaken .acard:nth-child(2) { animation-delay: .07s; }
+.awaken .acard:nth-child(3) { animation-delay: .14s; }
+@keyframes acardin { from { opacity: 0; transform: translateY(9px); } }
+.awaken .acard:active { transform: scale(.985); border-color: var(--cyan);
+                        background: rgba(24,28,54,.96); }
+.awaken .acard .s { grid-row: 1 / span 2; align-self: start; color: var(--cyan); }
+.awaken .acard .s svg { display: block; }
+.awaken .acard .nm b { font-size: 24px; font-weight: 400; color: var(--cyan); margin-right: 9px; }
+.awaken .acard .nm em { font-style: normal; font-family: Rajdhani, sans-serif;
+                        font-weight: 700; font-size: 16px; }
+.awaken .acard i { grid-column: 2; font-style: normal; font-size: 12.5px; color: var(--faint);
+                   line-height: 1.55; margin-top: 4px; }
+.awaken .acard .take { grid-column: 2; margin-top: 11px; justify-self: start;
+                       font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+                       font-family: Archivo, sans-serif; font-weight: 600;
+                       color: var(--cyan); }
+.awaken .later { margin: 20px auto 0; background: none; border: 0; font: inherit;
+                 font-size: 12.5px; color: var(--faint); cursor: pointer;
+                 border-bottom: 1px dotted var(--line); padding: 2px 0; }
+@media (prefers-reduced-motion: reduce) {
+  .awaken, .awaken .acard { animation: none; }
+}
+
+/* ── 緣 somebody on the road ────────────────────────────────────────────────
+   It sits in the flow of 修 rather than over it, because it is not an interruption.
+   Walking on is free and the card never blocks anything behind it. */
+.meet { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px;
+        background: var(--panel); border: 1px solid var(--cyan); border-radius: 13px;
+        padding: 13px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.45);
+        animation: arrive .3s ease both; }
+.meet > .s { flex: none; color: var(--cyan); }
+.meet .s svg { display: block; }
+.meet .body { flex: 1; min-width: 0; }
+.meet b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15.5px;
+          line-height: 1.3; }
+.meet b .cjk { color: var(--cyan); font-weight: 400; margin-right: 6px; }
+.meet > .body > i { display: block; font-style: normal; margin-top: 5px; font-size: 12.5px;
+                    color: var(--faint); line-height: 1.55; }
+.meet .picks { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+.meet .pick { text-align: left; font: inherit; cursor: pointer; color: var(--text);
+              background: var(--ground); border: 1px solid var(--line); border-radius: 10px;
+              padding: 9px 12px; }
+.meet .pick:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
+.meet .pick:disabled { opacity: .4; cursor: default; }
+.meet .pick b { display: block; font-size: 13.5px; font-weight: 600; }
+.meet .pick em { display: block; font-style: normal; margin-top: 2px; font-size: 11.5px;
+                 color: var(--faint); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+@media (prefers-reduced-motion: reduce) { .meet { animation: none; } }
+
+/* 悟道 The card 修 keeps up while a choice is still owed. */
+.owes { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left;
+        font: inherit; cursor: pointer; color: var(--text);
+        background: var(--panel); border: 1px solid var(--gold); border-radius: 13px;
+        padding: 13px 14px; margin-top: 14px;
+        box-shadow: 0 0 30px -14px var(--gold); }
+.owes:active { transform: scale(.99); }
+.owes > b { flex: none; font-size: 24px; font-weight: 400; color: var(--gold); line-height: 1; }
+.owes i { display: block; font-style: normal; font-size: 12.5px; color: var(--faint);
+          line-height: 1.5; }
+.owes em { flex: none; font-style: normal; color: var(--gold); font-size: 18px; }
+
 .realmcard { position: absolute; inset: 0; z-index: 13; background: var(--ground);
              overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 22px) 18px
                                        calc(env(safe-area-inset-bottom, 0px) + 22px);

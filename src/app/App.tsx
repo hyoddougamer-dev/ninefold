@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden, fight, takeKill } from '../sim/combat.ts';
-import { canFightWarden, newState, power, type State, filledRealms,
+import { canFightWarden, newState, power, type State,
 } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
-import { advance, layersOpened } from '../sim/time.ts';
+import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
+import { fortuneOf } from '../sim/fortune.ts';
 import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portrait } from '../art/aura.ts';
@@ -16,12 +17,10 @@ import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipIte
 import { rollDrop } from '../sim/drops.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
-import { pillFortune } from '../sim/furnace.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
-import { affinity, alwaysDrops, canUnlock, daoFree, dropChanceBonus, dropsRankUp, fuseQuality, rarityLuck } from '../sim/dao.ts';
+import { affinity, canUnlock, dropsRankUp, fuseQuality } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { WARDENS } from '../data/bestiary.ts';
 import { RARITIES, wornTotals } from '../data/gear.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
@@ -31,6 +30,9 @@ import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
 import { RealmCard } from './ui/RealmCard.tsx';
+import { Awaken } from './ui/Awaken.tsx';
+import { due as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
+import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
@@ -72,7 +74,7 @@ const now = () => Date.now() / 1000;
 /** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
 function limitOf(s: State): number {
   const capacity = wornTotals(s.worn, (slot) => affinity(s.unlocked, slot)).capacity;
-  return chestLimit(s.unlocked, capacity);
+  return chestLimit(s.unlocked, capacity, s.awakened);
 }
 
 interface Homecoming {
@@ -101,6 +103,14 @@ export function App() {
   const [menu, setMenu] = useState(false);
   // 境 The page that says what this realm is, reached from the realm's own name.
   const [realmPage, setRealmPage] = useState(false);
+  /**
+   * 悟道 Whether the three cards are on the screen right now.
+   *
+   * Only this is state. *Whether a choice is owed* is derived from the save, so it
+   * cannot be lost by a reload and nothing has to remember to raise it. This is the
+   * one thing that has to be remembered: that the player put it aside for a minute.
+   */
+  const [awakenShut, setAwakenShut] = useState(false);
   // 圍 The beast whose drive sheet is open, if any.
   const [driving, setDriving] = useState<Beast | null>(null);
   // 鑑 The piece being looked at, and whether it is the one on the body.
@@ -117,6 +127,10 @@ export function App() {
   /** 點 道 points earned and not yet spent. The tab bar wears the count, and 示 the
       line of advice reads the same number. See sim/points.ts. */
   const free = freeOf(state);
+  /** 悟道 Whether a breakthrough still owes this cultivator a card. Derived, always. */
+  const owesCard = awakeningDue(state.realm, state.awakened) !== null;
+  /** 緣 Who is on the road, if anybody. Derived from the save, so it cannot be lost. */
+  const meeting = meetingDue(state);
   const loaded = useRef(false);
   const lastLayer = useRef(0);
   /**
@@ -279,11 +293,7 @@ export function App() {
         // can wear anything, so a piece falling there would go into a chest the player
         // cannot open, off a screen that cannot explain it.
         drop: floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, {
-          chance: dropChanceBonus(state.unlocked),
-          luck: rarityLuck(state.unlocked) * pillFortune(state.brewed),
-          always: alwaysDrops(state.unlocked),
-        }),
+          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, fortuneOf(state)),
       };
     });
   }, [state]);
@@ -438,9 +448,7 @@ export function App() {
 
   const onUnlock = useCallback((key: string) => {
     setState((s) => {
-      const wardens = Object.entries(s.killed)
-        .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
-      const free = daoFree(layersOpened(s), wardens, s.unlocked, filledRealms(s));
+      const free = freeOf(s);
       if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
       return { ...s, unlocked: [...s.unlocked, key] };
     });
@@ -533,6 +541,14 @@ export function App() {
             onFight={() => startFight(currentWarden(state))}
             onGo={(next) => { setTab(next); sfx.tap(); }}
             onRealm={() => { setRealmPage(true); sfx.tap(); }}
+            owesCard={owesCard}
+            onAwaken={() => { setAwakenShut(false); sfx.tap(); }}
+            meeting={meeting}
+            onMeet={(which) => {
+              if (!meeting) return;
+              setState((s) => answerMeeting(s, meeting.key, which, (s.at ^ s.met.length * 2654435761) | 0));
+              sfx.buy();
+            }}
           />
         )}
         {tab === 'hunt' && (
@@ -767,6 +783,20 @@ export function App() {
 
       {realmPage && (
         <RealmCard state={state} onClose={() => { setRealmPage(false); sfx.tap(); }} />
+      )}
+
+      {/* 悟道 Raised by the save rather than by an event: if a choice is owed and the
+          player has not put it aside, the three cards are on the screen. */}
+      {owesCard && !awakenShut && (
+        <Awaken
+          state={state}
+          onTake={(key) => {
+            setState((s) => ({ ...s, awakened: [...takeAwakening(s.realm, s.awakened, key)] }));
+            setAwakenShut(false);
+            sfx.awaken();
+          }}
+          onClose={() => { setAwakenShut(true); sfx.tap(); }}
+        />
       )}
 
       {stele && (

@@ -6,7 +6,7 @@ import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
-import { KEY } from './copy.ts';
+import { AWAKEN, KEY } from './copy.ts';
 
 /**
  * 釋 Every character the game uses, and what it means, assembled once.
@@ -133,6 +133,8 @@ export const GROUPS: readonly Group[] = [
       { han: '入定', name: 'Sitting', note: KEY.sitting },
       { han: '境', name: 'Realm', note: KEY.realmWord },
       { han: '層', name: 'Layer', note: KEY.layerWord },
+      { han: '悟道', name: 'Enlightenment', note: AWAKEN.what },
+      { han: '緣', name: 'A meeting', note: KEY.meeting },
     ],
   },
 ];

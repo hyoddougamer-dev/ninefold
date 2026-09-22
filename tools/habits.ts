@@ -10,7 +10,6 @@ import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense,
   canFightWarden, condense,
   newState, power, upgradeCost, type State,
-  filledRealms,
 } from '../src/sim/state.ts';
 import { advance, layersOpened } from '../src/sim/time.ts';
 import { odds, takeKill } from '../src/sim/combat.ts';
@@ -21,10 +20,12 @@ import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import {
-  affinity, canUnlock, daoFree, dropChanceBonus, dropsRankUp, focusBonus, rarityLuck,
-} from '../src/sim/dao.ts';
+import { affinity, canUnlock, focusBonus } from '../src/sim/dao.ts';
+import { freePoints } from '../src/sim/points.ts';
+import { AWAKENINGS, due as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { rollDrop } from '../src/sim/drops.ts';
+import { fortuneOf } from '../src/sim/fortune.ts';
+import { salvageBonus } from '../src/sim/awaken.ts';
 import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
@@ -55,6 +56,15 @@ export interface Habit {
    * economy, and this is the habit that plays them.
    */
   readonly drives?: boolean;
+  /**
+   * 悟道 Which of the three they reach for at a breakthrough.
+   *
+   * It is a preference and not a script: if the trio holds nothing of that kind they
+   * take the first card, the way anybody does. The point of asking is that a system the
+   * harness never uses is a system no curve can tell you is wrong, and 悟道 is eight
+   * permanent choices across a climb.
+   */
+  readonly cards?: 'material' | 'salvage' | 'dao';
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -88,6 +98,7 @@ export const HABITS: readonly Habit[] = [
     branch: 'sword',
     who: 'One visit a day, but the visit counts: a few kills and whatever the tower will give up.' },
   { name: 'casual', gear: true, checks: 3, minutes: 5, hunts: 3, tower: false, furnace: false, build: true,
+    cards: 'material',
     branch: 'sword',
     who: 'Three visits, some hunting, never opens the tower.' },
   { name: 'active', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, furnace: true, build: true,
@@ -97,15 +108,18 @@ export const HABITS: readonly Habit[] = [
     branch: 'sword',
     who: 'Every waking hour. As played as this game can be played.' },
   // 圍 The worst case for the economy: every spare coin of qi turned into material.
-  { name: 'drives it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+  { name: 'drives it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'material',
     furnace: true, build: true, drives: true, branch: 'sword',
     who: 'Plays like the active cultivator and pours every spare coin into 圍 drives.' },
   // 道 The same cultivator as `active`, down the other branch, so the tree's own spread
   // is measured instead of being assumed.
-  { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+  { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'dao',
     furnace: true, build: true, branch: 'spirit',
     who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
 ];
+
+/** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
+const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
 
 const ARTS_BY_REALM: Record<string, number> = { crane: 3, tiger: 4, wolf: 7 };
 
@@ -142,15 +156,12 @@ export interface Run {
  * uses when it is full, so nothing here knows more than the game does.
  */
 function takeDrop(s: State, beast: Beast, seed: number): State {
-  const fortune = {
-    chance: dropChanceBonus(s.unlocked),
-    luck: rarityLuck(s.unlocked),
-    always: dropsRankUp(s.unlocked),
-  };
-  const item = rollDrop(beast, s.realm, seed, fortune);
+  // 運 One place builds this now, and building it here by hand is what let two of the
+  // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
+  const item = rollDrop(beast, s.realm, seed, fortuneOf(s));
   if (!item) return s;
 
-  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity);
+  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
   const kept = addToChest(s.chest, item, limit);
   let out: State = { ...s, chest: [...kept.chest] };
   /**
@@ -158,7 +169,7 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
    * the whole of what salvage changes for somebody playing normally. The harness has to
    * do it or the qi it pays is invisible to every curve on the page.
    */
-  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped) };
+  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(s.awakened)) };
   if (kept.dropped?.id === item.id) return out;    // the chest kept something better
 
   const slot = templateOf(item).slot as Slot;
@@ -184,8 +195,7 @@ function spendTree(s: State, branch: Path | undefined): State {
   if (!branch || !isOpen(s.realm, 'tree')) return s;
   let out = s;
   for (let guard = 0; guard < 200; guard++) {
-    const wardens = Object.keys(out.killed).filter((k) => WARDEN_KEYS.has(k)).length;
-    const free = daoFree(layersOpened(out), wardens, out.unlocked, filledRealms(out));
+    const free = freePoints(out);
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
       .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));
@@ -195,7 +205,6 @@ function spendTree(s: State, branch: Path | undefined): State {
   return out;
 }
 
-const WARDEN_KEYS = new Set(Array.from({ length: 9 }, (_, i) => wardenOf(i + 1).key));
 
 export function play(h: Habit, maxDays = 400): Run {
   let s = newState(T0);
@@ -246,6 +255,18 @@ export function play(h: Habit, maxDays = 400): Run {
       fights++;
     }
     if (canBreakThrough(s)) s = breakThrough(s);
+
+    /**
+     * 悟道 The card at the breakthrough, taken the way anybody takes one: the kind this
+     * cultivator leans towards, and the first of the three if the trio holds none of it.
+     * It is a loop rather than one call because a save can owe more than one.
+     */
+    for (let i = 0; i < AWAKENINGS.length && !NO_CARDS; i++) {
+      const trio = awakeningDue(s.realm, s.awakened);
+      if (!trio) break;
+      const want = trio.find((c) => c.effect.kind === (h.cards ?? 'salvage')) ?? trio[0];
+      s = { ...s, awakened: [...takeAwakening(s.realm, s.awakened, want.key)] };
+    }
     while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
     while (layerDay.length <= layersOpened(s)) layerDay.push((t - T0) / DAY);
 

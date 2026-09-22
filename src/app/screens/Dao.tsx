@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import { WARDENS } from '../../data/bestiary.ts';
 import {
   ALL_NODES, LINKS, NODE_BY_KEY, PATHS, PATH_INFO, ROOT, TOTAL_COST,
   nodesOf, type Node, type Path,
 } from '../../data/techniques.ts';
-import { canUnlock, daoEarned, daoFree, daoSpent } from '../../sim/dao.ts';
-import { layersOpened } from '../../sim/time.ts';
-import { filledRealms, type State } from '../../sim/state.ts';
+import { canUnlock, daoSpent } from '../../sim/dao.ts';
+import { type State } from '../../sim/state.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { DAO } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
 import { Term } from '../ui/Term.tsx';
+import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points.ts';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -110,10 +109,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
    * of a scroll, and the tree is the one that opens.
    */
   const [half, setHalf] = useState<Half>('tree');
-  const wardens = countWardens(state);
-  const earned = daoEarned(layersOpened(state), wardens, filledRealms(state));
+  const earned = earnedOf(state);
   const spent = daoSpent(state.unlocked);
-  const free = daoFree(layersOpened(state), wardens, state.unlocked, filledRealms(state));
+  const free = freeOf(state);
   // 樞 The three that cost you something arrive at their own realm, two above this one.
   const keys = isOpen(state.realm, 'keystones');
   const chosen = picked ? NODE_BY_KEY[picked] : null;
@@ -256,15 +254,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   );
 }
 
-const WARDEN_KEYS = new Set(WARDENS.map((b) => b.key));
-
-function countWardens(state: State): number {
-  let n = 0;
-  for (const [key, count] of Object.entries(state.killed)) {
-    if (count > 0 && WARDEN_KEYS.has(key)) n++;
-  }
-  return n;
-}
+/* 點 Counting the wardens for the point total used to live here, and in App.tsx, and
+   in four harnesses. It lives in sim/points.ts now, once, because 悟道 the cards hand
+   points over too and a count in six places is a count that will disagree in five. */
 
 function Detail({ node, status, keystones, onLearn, onClose }: {
   node: Node;

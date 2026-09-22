@@ -4,6 +4,7 @@ import {
 } from '../data/gear.ts';
 import { SECONDARIES } from '../data/gear.ts';
 import { chestCap, extraChestSlots } from './dao.ts';
+import { chestSlots } from './awaken.ts';
 
 /**
  * 藏 The chest, and 煉 the fusion.
@@ -179,7 +180,12 @@ export function fuse(
  * Gear slots arrive as a fraction because affinity multiplies them, so they are floored
  * here: half a place in a chest is not a place, and the screen must never promise one.
  */
-export function chestLimit(unlocked: readonly string[], gearSlots = 0): number {
+export function chestLimit(
+  unlocked: readonly string[], gearSlots = 0, awakened: readonly string[] = [],
+): number {
   const cap = chestCap(unlocked);
-  return cap ?? CHEST_LIMIT + extraChestSlots(unlocked) + Math.floor(Math.max(0, gearSlots));
+  // 捨甲 A keystone that caps the chest caps it against everything, cards included:
+  // a node that closes a door has to actually close it.
+  return cap ?? CHEST_LIMIT + extraChestSlots(unlocked)
+    + Math.floor(Math.max(0, gearSlots)) + chestSlots(awakened);
 }

@@ -1,4 +1,5 @@
-import { daoFree } from './dao.ts';
+import { daoEarned, daoFree } from './dao.ts';
+import { daoPoints } from './awaken.ts';
 import { layersOpened } from './time.ts';
 import { filledRealms, type State } from './state.ts';
 import { WARDENS } from '../data/bestiary.ts';
@@ -16,8 +17,20 @@ import { WARDENS } from '../data/bestiary.ts';
  * can read dao.ts without the two importing each other. That is the right shape for
  * dao.ts and the wrong shape for a caller, so the assembly happens once, here.
  */
-export function freePoints(s: State): number {
-  const wardens = Object.entries(s.killed)
+function wardensDown(s: State): number {
+  return Object.entries(s.killed)
     .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
-  return daoFree(layersOpened(s), wardens, s.unlocked, filledRealms(s));
+}
+
+/** Every point this cultivator has ever earned, cards included. */
+export function earnedPoints(s: State): number {
+  // 緣 A point given by somebody on the road is earned exactly like any other, so it is
+  // added here and nowhere else. See sim/meet.ts.
+  return daoEarned(layersOpened(s), wardensDown(s), filledRealms(s),
+    daoPoints(s.awakened) + Math.max(0, s.metPoints));
+}
+
+export function freePoints(s: State): number {
+  return daoFree(layersOpened(s), wardensDown(s), s.unlocked, filledRealms(s),
+    daoPoints(s.awakened) + Math.max(0, s.metPoints));
 }
