@@ -46,7 +46,7 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
-import { RETURN } from './copy.ts';
+import { RETURN, TABS_COPY } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
@@ -628,12 +628,16 @@ export function App() {
               onClick={() => (shut ? setLocked(t.needs) : setTab(t.key))}
             >
               {/* A locked tab keeps its own character and swaps its name for the realm
-                  that opens it. Four identical padlocks in a row say nothing. */}
+                  that opens it. Four identical padlocks in a row say nothing.
+                  譯 It says the realm's *number* and not its name. 化神 sat under 塔 on
+                  every screen in the game, in Chinese and nothing else, which is the
+                  complaint Bruno made in its purest form: a permanent label nobody who
+                  does not read Chinese can read. The realm page still names it. */}
               <span className="g cjk">
                 {t.han}
                 {owed > 0 && <i className="owed" title={DAO.freePoints(owed)}>{owed}</i>}
               </span>
-              <span className="l">{shut ? realmInfo(systemInfo(t.needs!).realm).han : t.label}</span>
+              <span className="l">{shut ? TABS_COPY.opensAt(systemInfo(t.needs!).realm) : t.label}</span>
             </button>
           );
         })}

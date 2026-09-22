@@ -23,7 +23,7 @@ import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points
  */
 
 const R = 17;          // node radius
-const GAP = 58;        // vertical distance between tiers
+const GAP = 82;        // vertical distance between tiers, with room for two lines of name
 const FORK = 21;       // how far a fork's two nodes sit from their column
 const COLS: Record<Path, number> = { sword: 62, spirit: 180, fortune: 298 };
 const W = 360;
@@ -59,7 +59,7 @@ function layout(): Placed[] {
       byTier.get(node.tier)!.push(node);
     }
     for (const [tier, row] of byTier) {
-      const y = TOP + 52 + tier * GAP;
+      const y = TOP + 68 + tier * GAP;   // 68, not 52: the root's own name needs two lines
       if (row.length === 1) out.push({ node: row[0], x: COLS[path], y });
       else row.forEach((node, i) => out.push({ node, x: COLS[path] + (i === 0 ? -FORK : FORK), y }));
     }
@@ -67,8 +67,31 @@ function layout(): Placed[] {
   return out;
 }
 
+/**
+ * 譯 A node's name, broken into at most two lines so it fits under the circle.
+ *
+ * Two lines and not three: the tiers are 82 apart and a circle is 34 across, so there
+ * are 48 pixels of clear air under each node and two lines of 9 use 18 of them. Two was
+ * the first try at 68 apart and the second line sat on the ring below it, which is why
+ * the tiers moved rather than the type shrinking. A name needing three lines at this
+ * size is a name to shorten.
+ */
+function wrap(name: string): readonly string[] {
+  const words = name.split(' ');
+  if (words.length === 1) return [name];
+  // The break that leaves the two halves closest in length reads best at this size.
+  let best = 1;
+  let gap = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(' ').length;
+    const b = words.slice(i).join(' ').length;
+    if (Math.abs(a - b) < gap) { gap = Math.abs(a - b); best = i; }
+  }
+  return [words.slice(0, best).join(' '), words.slice(best).join(' ')];
+}
+
 const PLACED = layout();
-const HEIGHT = Math.max(...PLACED.map((p) => p.y)) + R + 14;
+const HEIGHT = Math.max(...PLACED.map((p) => p.y)) + R + 26;
 const AT = new Map(PLACED.map((p) => [p.node.key, p]));
 
 /** Every edge once, so a bridge is not drawn twice. */
@@ -240,6 +263,18 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                         fontFamily="Rajdhani, sans-serif" fontWeight="700"
                         fill={open ? '#FFCE6B' : '#7A80B8'}>{node.cost}</text>
                 )}
+                {/* 譯 The name, under the character.
+                    Bruno: "existe muita coisa que só tem nomes chineses e não se percebe
+                    pra non chinese people." Measured with npm run han, the tree was the
+                    single worst place in the game for it: 27 nodes, 27 characters, and
+                    the English name only on the sheet you get after tapping one. A tree
+                    you cannot read at a glance is a tree nobody plans a build on. */}
+                {wrap(node.name).map((row, i) => (
+                  <text key={row} x={x} y={y + R + 12 + i * 9} textAnchor="middle" fontSize="8"
+                        fontFamily="Archivo, sans-serif" letterSpacing=".02em"
+                        fill={on ? colour : '#8289C0'}
+                        opacity={faded ? 0.4 : on ? 0.95 : 0.8}>{row}</text>
+                ))}
                 {picked === node.key && (
                   <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#E7EAFF"
                           strokeWidth="1" strokeOpacity=".7" />

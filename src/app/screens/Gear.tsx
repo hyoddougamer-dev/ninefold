@@ -15,7 +15,7 @@ import { portrait } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
-import { GEAR } from '../copy.ts';
+import { CULTIVATE, GEAR } from '../copy.ts';
 import { swing } from '../../sim/inspect.ts';
 import { salvageWorth, salvageable } from '../../sim/salvage.ts';
 import { buysWith } from '../../sim/time.ts';
@@ -153,8 +153,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <em>{GEAR.refineAt(level, Math.round(((1 + REFINE_GAIN) ** level - 1) * 100))}</em>
                   </span>
                   <span className="price">
-                    <b>{maxed ? '滿' : `+${num(price)}`}</b>
-                    <i className="tag">{maxed ? '' : '材'}</i>
+                    <b className={maxed ? 'cjk' : undefined}>{maxed ? '滿' : `+${num(price)}`}</b>
+                    <i className="tag">{maxed ? CULTIVATE.fullWord : CULTIVATE.materialWord}</i>
                   </span>
                 </button>
               );
@@ -179,6 +179,21 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                   <span className="sname">
                     <b className="cjk">{set.han}</b> <em>{set.name}</em>
                     <i>{set.lore}</i>
+                    {/* 譯 The axes this set pays on, named once, right above the rows
+                        that use them. The rows read 運 +2.1% 拾 +0.7% and there was
+                        nowhere on the screen saying what 運 or 拾 were: measured by
+                        npm run han, four of the thirteen bare characters in the whole
+                        game were these. Naming every axis on every row would be nine
+                        words per step; naming them once above is the same fact and
+                        leaves the rows readable. */}
+                    <span className="axes">
+                      {[...new Set(set.steps.flatMap((x) => Object.keys(x.effects)))].map((a) => (
+                        <em key={a}>
+                          <Term han={AFFIX_INFO[a as Affix].han} sense="axis" plain />
+                          {' '}{AFFIX_INFO[a as Affix].label}
+                        </em>
+                      ))}
+                    </span>
                   </span>
                   <span className="steps mono">
                     {SET_STEPS.map((n) => {

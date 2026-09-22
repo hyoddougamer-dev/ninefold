@@ -387,11 +387,18 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               </span>
               <span className="price">
                 {maxed
-                  ? <b className="cjk" style={{ color: 'var(--gold)' }}>滿</b>
+                  ? <>
+                    <b className="cjk" style={{ color: 'var(--gold)' }}>滿</b>
+                    {/* 譯 A box at its ceiling said 滿 and nothing else, which is a word
+                        in Chinese standing alone on the screen the game is played on. */}
+                    <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
+                      {CULTIVATE.fullWord}
+                    </i>
+                  </>
                   : <>
                     <b>{num(cost)}</b>
                     <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
-                      {i.currency === 'qi' ? 'qi' : '材'}
+                      {i.currency === 'qi' ? 'qi' : CULTIVATE.materialWord}
                     </i>
                     {wait && (
                       <i className="when">

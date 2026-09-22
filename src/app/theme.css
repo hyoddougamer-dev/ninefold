@@ -1235,6 +1235,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .awaken, .awaken .acard { animation: none; }
 }
 
+/* 譯 The axes a set pays on, named once above the compact rows that use them. */
+.setrow .axes { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 7px; }
+.setrow .axes em { font-style: normal; font-size: 11px; color: var(--faint);
+                   letter-spacing: .02em; }
+.setrow .axes em .term { color: var(--hue); border-bottom-color: currentColor; }
+
 /* ── 秘境 seven rooms, and the two ways on ──────────────────────────────────
    Above every sheet but 悟道, because it is a place the player walked into rather than
    a page they opened. It still closes: nothing is carried, so walking out is free. */

@@ -57,7 +57,22 @@ export const HELP = {
   begin: 'Begin',
 };
 
+export const TABS_COPY = {
+  /** 鎖 A tab this cultivator has not reached, named by the realm's number. */
+  opensAt: (realm: number) => `realm ${realm}`,
+};
+
 export const CULTIVATE = {
+  /**
+   * 譯 The two words that were a character and nothing else.
+   *
+   * 譯 npm run han reads the built game the way somebody who does not read Chinese
+   * reads it, and these two came back bare: 滿 on a box at its ceiling, and 材 as the
+   * tag under a price where the other currency's tag already said "qi" in English.
+   * The characters stay where they are named; these are the places nothing named them.
+   */
+  fullWord: 'full',
+  materialWord: 'material',
   spend: 'Spend your qi',
   wardenHead: "妖 The realm's warden",
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
