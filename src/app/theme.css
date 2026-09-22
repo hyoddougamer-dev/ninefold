@@ -104,6 +104,59 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* ── 觸 What a tap feels like ────────────────────────────────────────────────
+   Bruno: *"estética precisa de retoques mais impactantes e animações."* The arena
+   already lunges and slashes and shakes. What had nothing at all was everything a
+   player does a hundred times a day — buying, tapping a beast, changing a tab. A
+   button that does not move under the thumb reads as a picture of a button, and on a
+   phone that is the whole of the feel of the thing.
+
+   One rule, every pressable surface, 90ms. It is deliberately small: a tap that
+   bounces is a toy, and a tap that does nothing is a document. */
+.act, .upg, .beast, .pill, .melt, .refine, .chip, .rk, .foldbtn, .fold,
+nav.tabs button, .chestit, .tip, .term, button.mainswitch {
+  transition: transform .09s ease, filter .09s ease, opacity .09s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.act:active:not(:disabled), .upg:active:not(:disabled), .beast:active:not(:disabled),
+.pill:active:not(:disabled), .melt:active:not(:disabled), .refine:active:not(:disabled),
+.chip:active, .rk:active, .foldbtn:active, .fold:active,
+.chestit:active, .tip:active:not(:disabled), button.mainswitch:active {
+  transform: scale(.975);
+  filter: brightness(1.12);
+}
+nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
+
+/* 換 And the sheet arrives rather than appearing. Keyed on the tab in App, so every
+   switch replays it: 120ms, a hair of upward travel, nothing a thumb has to wait for. */
+.sheet > * { animation: sheetin .13s ease-out both; }
+@keyframes sheetin { from { opacity: 0; transform: translateY(5px); } }
+
+/* 階 A rung opening is the one moment the bar has to be looked at, and it used to pass
+   in silence with only a sound. The bar flashes along its own length and the number
+   above it lifts, once, for 520ms. */
+.bar[data-opened='true'] i::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+  animation: rungsweep .52s ease-out both;
+}
+.bar i { position: relative; overflow: hidden; }
+@keyframes rungsweep { from { transform: translateX(-100%); } to { transform: translateX(200%); } }
+.qi .n[data-opened='true'] { animation: qilift .52s ease-out both; }
+@keyframes qilift {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-5px); text-shadow: 0 0 22px currentColor; }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act, .upg, .beast, .pill, .melt, .refine, .chip, .rk, .foldbtn, .fold,
+  nav.tabs button, .chestit, .tip, .term, button.mainswitch { transition: none; }
+  .act:active, .upg:active, .beast:active, .pill:active, nav.tabs button:active,
+  .melt:active, .refine:active, .chestit:active { transform: none; }
+  .sheet > *, .bar[data-opened='true'] i::after, .qi .n[data-opened='true'] { animation: none; }
+}
+
 /* 註 A character you can tap, and the one line it answers with.
    The dotted underline is the only affordance: a character that looks like a button
    in the middle of a sentence reads as a button, and these are words. */
@@ -482,10 +535,13 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 @keyframes lungeL { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-18px) scale(1.05); } }
 
 /* 息 The beast breathes while it waits, so it is never a sticker on a wall. */
-.foe .art svg { animation: breathe 2.6s ease-in-out infinite; }
+.foe .art svg { animation: breath 2.6s ease-in-out infinite; }
 .foe[data-strike='true'] .art svg, .foe[data-hit='true'] .art svg,
 .arena[data-over='true'] .foe .art svg { animation: none; }
-@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+/* 息 The beast breathing. It was called `breathe`, and so was the tree node's glow two
+   hundred lines further down — the later definition won and the beast stopped moving
+   and started fading instead. Two animations, two names. */
+@keyframes breath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 
 /* A heavy blow moves the whole place, not just the body that took it. */
 .arena[data-heavy='true'] .stage { animation: shake .24s ease-out; }
@@ -824,8 +880,8 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .leg i { width: 8px; height: 8px; border-radius: 50%; background: var(--hue); flex: none; }
 .leg b { font-size: 14px; color: var(--hue); font-weight: 400; }
 .tnode { transition: opacity .15s ease; }
-.tnode[data-status='open'] circle:first-child { animation: breathe 2.4s ease-in-out infinite; }
-@keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.tnode[data-status='open'] circle:first-child { animation: nodeglow 2.4s ease-in-out infinite; }
+@keyframes nodeglow { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
 
 .ndetail { background: var(--panel); border: 1px solid var(--hue); border-radius: 11px;
            padding: 13px 14px; margin-top: 12px; }

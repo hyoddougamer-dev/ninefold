@@ -132,6 +132,8 @@ export function App() {
   const since = useRef<number | null>(null);
   const [focus, setFocus] = useState(1);
   const [satOut, setSatOut] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const openedTimer = useRef(0);
 
   // 歸 The return. An idle game is played closed, so opening the app is first of all
   // receiving the hours that passed — and the player wants to see that before anything.
@@ -203,6 +205,13 @@ export function App() {
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
           sfx.layer();
+          // 階 A rung opening is the one moment the bar is worth looking at, and it used
+          // to pass with a sound and nothing to see. The flag is cleared on a timer
+          // rather than by the animation, so a second rung inside half a second — which
+          // a melt can do — replays it instead of being swallowed.
+          setOpened(true);
+          window.clearTimeout(openedTimer.current);
+          openedTimer.current = window.setTimeout(() => setOpened(false), 540);
         }
         return next;
       });
@@ -519,6 +528,7 @@ export function App() {
             pulse={pulse}
             focus={focus}
             satOut={satOut}
+            opened={opened}
             set={climb}
             onFight={() => startFight(currentWarden(state))}
             onGo={(next) => { setTab(next); sfx.tap(); }}

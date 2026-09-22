@@ -20,13 +20,15 @@ import { advice } from '../advice.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
-export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onRealm }: {
+export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
   /** 入定 True once this visit's sitting has run its quarter of an hour. */
   satOut: boolean;
+  /** 階 True for half a second after a rung opens, so the bar can say so. */
+  opened: boolean;
   set: (s: State) => void;
   onFight: () => void;
   /** 示 Where the advice points, when it points anywhere. */
@@ -143,7 +145,9 @@ export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onR
       </div>
 
       <div className="qi">
-        <div className="n mono" style={{ color: r.colour }}>{num(state.qi)}</div>
+        <div className="n mono" data-opened={opened || undefined} style={{ color: r.colour }}>
+          {num(state.qi)}
+        </div>
         {/* 氣 The standing rate leads, because it is the one fixed by what you have
             bought and climbed. 入定 rides alongside it with its own name and its own
             number, so nothing on this line moves without saying why it moved. */}
@@ -160,7 +164,7 @@ export function Cultivate({ state, pulse, focus, satOut, set, onFight, onGo, onR
         )}
       </div>
 
-      <div className="bar" style={{ margin: '14px 0 6px' }}>
+      <div className="bar" data-opened={opened || undefined} style={{ margin: '14px 0 6px' }}>
         <i style={{ width: `${filled * 100}%`, background: r.colour }} />
       </div>
       <div className="row" style={{ fontSize: 12 }}>
