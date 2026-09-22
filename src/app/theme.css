@@ -104,6 +104,21 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
 .qi .r { font-size: 13px; color: var(--cyan); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
+/* 出口 The one way out, fixed to the viewport so it can never scroll away.
+   Above .help (13), .arena and every sheet, because it has to be reachable from all
+   of them. 46px is the tap target a thumb wants; the icon inside is smaller. */
+.escape { position: fixed; z-index: 40;
+          top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px;
+          width: 46px; height: 46px; display: grid; place-items: center;
+          border-radius: 99px; border: 1px solid var(--line);
+          background: rgba(10,12,28,.92); color: var(--text);
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          box-shadow: 0 6px 20px -8px rgba(0,0,0,.8);
+          animation: escapein .22s ease-out both; }
+.escape:active { transform: scale(.92); background: rgba(24,28,54,.96); }
+@keyframes escapein { from { opacity: 0; transform: translateY(-6px) scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .escape { animation: none; } }
+
 /* 待 When an unaffordable box becomes affordable, under its price. */
 .upg .price .when { display: block; margin-top: 3px; font-size: 9.5px; font-style: normal;
                     color: var(--faint); letter-spacing: .02em; max-width: 84px;
@@ -589,7 +604,9 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 /* ── help ───────────────────────────────────────────────────────────────── */
 
-.help { position: absolute; inset: 0; z-index: 13; background: rgba(8,10,24,.97);
+/* 幕 Solid, not nearly solid. At .97 the hunt screen's twenty-five rows of 98% read
+   straight through the key, which is a panel whose entire job is being read. */
+.help { position: absolute; inset: 0; z-index: 13; background: var(--ground);
         display: flex; flex-direction: column; gap: 18px; overflow-y: auto;
         padding: calc(env(safe-area-inset-top, 0px) + 30px) 22px
                  calc(env(safe-area-inset-bottom, 0px) + 30px); }

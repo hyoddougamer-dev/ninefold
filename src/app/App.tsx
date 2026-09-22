@@ -35,6 +35,7 @@ import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
+import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { RETURN } from './copy.ts';
@@ -619,6 +620,27 @@ export function App() {
           <button className="act" onClick={() => setLocked(null)}>續 <span>{LOCKED.back}</span></button>
         </div>
       )}
+
+      {/**
+        * 出口 One way out, drawn here rather than by each panel, so it is fixed to the
+        * viewport and cannot scroll away. See ui/Escape.tsx for the measurement that
+        * made it: every panel buried its exit at 91–98% of its own height, and 釋 the
+        * key was 4419px tall.
+        *
+        * 戰 The arena is deliberately not in this list. It has 退 Withdraw, which is a
+        * decision about a fight, and a cross beside it would read as a second, safer
+        * way out of the same thing. 歸 the return card is one button and no scroll.
+        */}
+      {(() => {
+        const out = saving ? () => { setSaving(false); sfx.tap(); }
+          : key ? () => { setKey(false); sfx.tap(); }
+          : help ? () => { setHelp(false); sfx.tap(); }
+          : inspect ? () => { setInspect(null); sfx.tap(); }
+          : driving ? () => { setDriving(null); sfx.tap(); }
+          : realmPage ? () => { setRealmPage(false); sfx.tap(); }
+          : null;
+        return out ? <Escape onClose={out} /> : null;
+      })()}
 
       {battle && (
         <Arena

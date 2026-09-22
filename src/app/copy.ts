@@ -638,6 +638,12 @@ export const DAO = {
  * that repeats it reads as a stutter — which is exactly how it read in the screenshot
  * that caught it.
  */
+/**
+ * 出口 The way out of any panel. One word, because it is an aria-label and nothing else:
+ * the button itself is a cross, which every phone on earth has already taught its owner.
+ */
+export const ESCAPE = { label: 'Close this and go back' };
+
 export const NOTICE = {
   cap: {
     title: 'A realm only holds so much',
