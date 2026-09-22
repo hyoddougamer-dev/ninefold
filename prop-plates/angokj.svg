@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 86" preserveAspectRatio="none" width="100%" height="86" aria-hidden="true">
+    <defs>
+      <linearGradient id="b6" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3d2652"/>
+        <stop offset="1" stop-color="#080A18"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="86" fill="url(#b6)"/>
+    <circle cx="186" cy="52" r="0.7" fill="#CC79FF" opacity="0.1"/><circle cx="283" cy="49" r="1.2" fill="#CC79FF" opacity="0.17"/><circle cx="60" cy="46" r="1.7" fill="#CC79FF" opacity="0.24000000000000002"/><circle cx="157" cy="43" r="0.7" fill="#CC79FF" opacity="0.31000000000000005"/><circle cx="254" cy="40" r="1.2" fill="#CC79FF" opacity="0.1"/><circle cx="31" cy="37" r="1.7" fill="#CC79FF" opacity="0.17"/><circle cx="128" cy="34" r="0.7" fill="#CC79FF" opacity="0.24000000000000002"/><circle cx="225" cy="31" r="1.2" fill="#CC79FF" opacity="0.31000000000000005"/><circle cx="2" cy="28" r="1.7" fill="#CC79FF" opacity="0.1"/><circle cx="99" cy="25" r="0.7" fill="#CC79FF" opacity="0.17"/><circle cx="196" cy="22" r="1.2" fill="#CC79FF" opacity="0.24000000000000002"/><circle cx="293" cy="19" r="1.7" fill="#CC79FF" opacity="0.31000000000000005"/><circle cx="70" cy="16" r="0.7" fill="#CC79FF" opacity="0.1"/><circle cx="167" cy="13" r="1.2" fill="#CC79FF" opacity="0.17"/><circle cx="264" cy="10" r="1.7" fill="#CC79FF" opacity="0.24000000000000002"/><circle cx="41" cy="7" r="0.7" fill="#CC79FF" opacity="0.31000000000000005"/><circle cx="138" cy="60" r="1.2" fill="#CC79FF" opacity="0.1"/><circle cx="235" cy="57" r="1.7" fill="#CC79FF" opacity="0.17"/>
+    <polygon points="0,86 60,52 120,74 190,46 250,70 320,56 320,86"
+      fill="#211631"/>
+    <rect y="84" width="320" height="2" fill="#CC79FF" opacity=".4"/>
+  </svg>

@@ -25,7 +25,8 @@
     "early": "tsx tools/early.ts",
     "read": "tsx tools/read.ts",
     "qi": "tsx tools/qi.ts",
-    "artsheet": "tsx tools/artsheet.ts"
+    "artsheet": "tsx tools/artsheet.ts",
+    "artprops": "tsx tools/artprops.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
