@@ -18,7 +18,7 @@ import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
 import { STANCES } from '../src/data/arts.ts';
-import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
+import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import {
@@ -27,7 +27,7 @@ import {
 import { rollDrop } from '../src/sim/drops.ts';
 import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
-import { templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
+import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 
 const T0 = 1_700_000_000;
@@ -280,6 +280,30 @@ export function play(h: Habit, maxDays = 400): Run {
     // who melts what they will never wear: anything at or below 靈 Spirit, which is
     // the rank the game stops caring about within a realm of finding it.
     if (h.gear && isOpen(s.realm, 'gear')) s = salvageUpTo(s, 'spirit');
+
+    /**
+     * 煉器 Refining, which the harness could not see until 煉器 moved to the second
+     * realm and somebody checked whether anything was measuring it.
+     *
+     * It was opening at the eighth realm, where the tower already pays material in
+     * bulk, so nothing on any curve ever turned on it. It now opens with gear, which
+     * makes it an **uncapped power source running the whole length of the climb**, and
+     * a reward the harnesses cannot see is a reward nobody can tell you is wrong.
+     *
+     * The rule the fake player follows is the one a real one follows: pour it into the
+     * best piece you own, and keep back what 妖丹 a core costs, because from the third
+     * realm a warden will not fall without one. So the two sinks compete, which is the
+     * decision the early game did not have.
+     */
+    if (h.gear && isOpen(s.realm, 'refine')) for (let i = 0; i < 60; i++) {
+      const keep = isOpen(s.realm, 'cores') && canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0;
+      const slot = SLOTS.filter((x) => s.worn[x] && canRefine(s, x))
+        .sort((a, b) => itemWorth(s.worn[b]!) - itemWorth(s.worn[a]!))[0];
+      if (!slot) break;
+      const price = refinePrice(s, slot);
+      if (price === null || s.materials - price < keep) break;
+      s = refine(s, slot);
+    }
 
     if (h.tower) for (let i = 0; i < 40; i++) {
       const f = standingFloor(s);

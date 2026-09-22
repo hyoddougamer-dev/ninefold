@@ -102,6 +102,17 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'Beasts you can fight whenever you like, as often as you like, for nothing. They will be too strong for a while. That is what the upgrades are for.' },
   { key: 'gear', han: '器', name: 'Gear', realm: 2,
     gives: 'And what they leave behind, which you can wear.' },
+  // 煉器 Moved from the eighth realm to the second, with gear itself. Measured, the
+  // first three realms had one currency that mattered and one place to put it: a
+  // cultivator doing everything the game offered got **one tap every 162 minutes** in
+  // the third realm, and one who never hunted could not finish it at all in 398 days.
+  // Bruno, playing it: "não há mais nada a fazer sem ser esperar e fazer hunt e salvage
+  // para qi nos early realms". Refining is the second axis, it was already built, and
+  // it was sitting behind six realms of waiting. A level costs 12 material and doubles
+  // from there, so it is affordable on the day gear arrives and never stops asking for
+  // more. It pays power and fortune and never the qi rate, so the standing rule holds.
+  { key: 'refine', han: '煉器', name: 'Refining', realm: 2,
+    gives: 'Material makes a piece you already wear better, for ever. It is the one thing material buys that has no ceiling.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
   { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,
@@ -120,8 +131,6 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'A realm whose four beasts you have all 熟 Known, ten kills of each, pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 7,
     gives: 'Pills, bought with qi and material together, with no cap on any of it.' },
-  { key: 'refine', han: '煉器', name: 'Refining', realm: 8,
-    gives: 'Material makes a piece you already wear better, for ever.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,
     gives: 'The last layers of the whole climb. When they run out the bar becomes the thunder pool, and a Dragon comes back heavier every time you put it down.' },
 ];

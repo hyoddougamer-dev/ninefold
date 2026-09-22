@@ -18,6 +18,7 @@ npm run build && npm run preview &
 npm run smoke                 # the built game in a real browser: every screen opens
 npm run actions               # and every verb in it does what it exists to do
 npm run tips                  # and every tappable character answers, on the screen
+npm run early                 # what there is to do in the first three realms, minute by minute
 ```
 
 `npm test` prints the curve on every run: eight modelled cultivators, how many days each
@@ -66,6 +67,7 @@ It reads and prints. It never writes anything and it never asks the network.
 | `npm run smoke` | drive the built game in a real browser |
 | `npm run actions` | press every verb the game has, and check it did something |
 | `npm run tips` | open every 註 character on every screen, and check the note lands on the screen and nothing paints over it |
+| `npm run early` | 早 count the waiting in the first three realms: how long between one thing to press and the next |
 | `npm run read -- save.json` | read somebody's run out of the save they sent you |
 | `npm run bible` | write `bible.html` |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |
