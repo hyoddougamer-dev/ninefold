@@ -54,6 +54,8 @@ function save(over = {}) {
     // sheet. The two acts that test the sheet clear this on purpose.
     awakened: ['feast', 'wolf', 'slaughter', 'platform'],
     met: [], metAt: at, metPoints: 0,
+    // 洞天 Empty beds by default, so the two acts below start from a known cave.
+    beds: [{ herb: null, at: 0 }, { herb: null, at: 0 }, { herb: null, at: 0 }], reaped: 0,
     seen: ['guide', 'cap', 'cores', 'tower', 'gear', 'furnace', 'refine'],
     ...over,
   };
@@ -452,6 +454,54 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => b.stance !== a.stance || 'no stance was taken');
   if (page.noise.length) fail('勢', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 洞天 planting a bed ────────────────────────────────────────────────────
+{
+  const page = await open(save());
+  await tab(page, '修');
+  await act(page, '洞天 planting a bed',
+    async () => {
+      const open2 = await page.$('.bed[data-empty] button.act');
+      if (!open2) fail('洞天', 'three empty beds and none of them offered to be planted');
+      else {
+        await open2.click(); await page.waitForTimeout(400);
+        const seed = await page.$('.seeds .seed:not([disabled])');
+        if (!seed) fail('洞天', 'the seed list opened with nothing plantable in it');
+        else { await seed.click(); await page.waitForTimeout(600); }
+      }
+    },
+    // 種 A bed fills and the material for it is gone. Both, or it is not a planting.
+    (a, b) => (b.beds.filter((x) => x.herb).length === a.beds.filter((x) => x.herb).length + 1
+      && b.materials < a.materials)
+      || `beds ${a.beds.filter((x) => x.herb).length} to ${b.beds.filter((x) => x.herb).length}, `
+         + `材 ${Math.round(a.materials)} to ${Math.round(b.materials)}`);
+  if (page.noise.length) fail('洞天', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 洞天 taking a ripe bed ─────────────────────────────────────────────────
+{
+  const at = Math.floor(Date.now() / 1000);
+  // 熟 Planted a day ago, so every herb in the game is long past ripe.
+  const page = await open(save({
+    beds: [{ herb: 'dragonblood', at: at - 86_400 }, { herb: null, at: 0 }, { herb: null, at: 0 }],
+  }));
+  await tab(page, '修');
+  await act(page, '洞天 taking a ripe bed',
+    async () => {
+      const take = await page.$('.bed[data-ripe] button.act');
+      if (!take) fail('洞天', 'a bed planted a day ago and nothing offered to take it');
+      else { await take.click(); await page.waitForTimeout(600); }
+    },
+    // 取 The bed empties and the qi lands. The qi alone would pass while doing nothing,
+    // because qi moves on its own every second.
+    (a, b) => (b.beds.filter((x) => x.herb).length === a.beds.filter((x) => x.herb).length - 1
+      && b.reaped === a.reaped + 1)
+      || `beds ${a.beds.filter((x) => x.herb).length} to ${b.beds.filter((x) => x.herb).length}, `
+         + `reaped ${a.reaped} to ${b.reaped}`);
+  if (page.noise.length) fail('洞天', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 

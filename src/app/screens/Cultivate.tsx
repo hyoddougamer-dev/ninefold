@@ -17,6 +17,7 @@ import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Meet } from '../ui/Meet.tsx';
+import { Cave } from '../ui/Cave.tsx';
 import type { Meeting } from '../../sim/meet.ts';
 import { AWAKEN, CULTIVATE, GUIDE, HUNT } from '../copy.ts';
 import { advice } from '../advice.ts';
@@ -24,7 +25,7 @@ import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, meeting, onMeet }: {
+  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest }: {
   state: State;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
@@ -47,6 +48,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   meeting: Meeting | null;
   /** 緣 Answer them, one way or the other. */
   onMeet: (which: 0 | 1) => void;
+  /** 洞天 Put a seed in a bed, and take a ripe one. */
+  onPlant: (which: number, key: string) => void;
+  onHarvest: (which: number) => void;
 }) {
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -407,6 +411,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         && UPGRADE_INFO[u].currency === 'qi' && state.levels[u] < capOf(state, u)
         && !canBuy(state, u) && affordableIn(state, upgradeCost(state, u)).seconds === null) && (
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{CULTIVATE.overRung}</p>
+      )}
+
+      {/* 洞天 Under the boxes, because it is the other place material goes and the
+          question is always the same one: cores, refining, or the ground. */}
+      {isOpen(state.realm, 'cave') && (
+        <Cave state={state} onPlant={onPlant} onHarvest={onHarvest} />
       )}
 
       {/* 凝丹 The way out of the one dead end the game has.

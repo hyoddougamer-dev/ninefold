@@ -16,6 +16,7 @@ import { pillOf } from '../data/alchemy.ts';
 import { ADVICE } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
 import { due as awakeningDue } from '../sim/awaken.ts';
+import { ripeCount as ripeBeds } from '../sim/cave.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
@@ -113,6 +114,15 @@ export function advice(s: State): Advice | null {
    * get later by climbing: the offer waits, but nothing else happens until it is taken.
    */
   if (awakeningDue(s.realm, s.awakened)) return { han: '悟道', text: ADVICE.awaken };
+
+  /**
+   * 洞天 A ripe bed, which costs nothing and is gone the moment it is taken.
+   *
+   * Under 悟道 because a card is permanent and a bed comes round again, and above the
+   * points because a ripe bed is one tap and spending points is a screen.
+   */
+  const ripe = ripeBeds(s);
+  if (ripe > 0) return { han: '洞天', text: ADVICE.ripe(ripe) };
 
   const waiting = pointsWaiting(s);
   if (waiting > 0) return { han: '道', text: ADVICE.freePoints(waiting), tab: 'dao' };

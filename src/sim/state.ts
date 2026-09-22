@@ -20,6 +20,7 @@ import { clampRefine } from './refine.ts';
 import { isOpen } from './unlocks.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
+import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -120,6 +121,15 @@ export interface State {
   met: string[];
   metAt: number;
   metPoints: number;
+  /**
+   * 洞天 The three beds. A key and the instant it was planted, and everything else
+   * about a bed is derived from those two: how far along it is, whether it is ripe, how
+   * long is left. Nothing ticks and nothing has to be caught up on load, which is why a
+   * save shut for a week comes back to three ripe beds. See sim/cave.ts.
+   */
+  beds: Bed[];
+  /** How many beds have been taken, for 碑 the stele and for the harnesses. */
+  reaped: number;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -250,6 +260,7 @@ export function newState(now: number): State {
     brewed: { ...NO_PILLS },
     awakened: [],
     met: [], metAt: 0, metPoints: 0,
+    beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     seen: [],
   };
 }
@@ -610,6 +621,10 @@ export function validate(raw: unknown, now: number): State {
     met: validMet(o.met),
     metAt: clamp(num(o.metAt, 0), 0, now),
     metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0, MEET_POINT_CEILING),
+    // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
+    // may claim to have been planted tomorrow or before the cultivator existed.
+    beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
+    reaped: clamp(Math.floor(num(o.reaped, 0)), 0, 1e6),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

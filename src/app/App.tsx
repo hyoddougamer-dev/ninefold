@@ -33,6 +33,7 @@ import { RealmCard } from './ui/RealmCard.tsx';
 import { Awaken } from './ui/Awaken.tsx';
 import { due as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
+import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Coach } from './ui/Coach.tsx';
@@ -543,6 +544,8 @@ export function App() {
             onRealm={() => { setRealmPage(true); sfx.tap(); }}
             owesCard={owesCard}
             onAwaken={() => { setAwakenShut(false); sfx.tap(); }}
+            onPlant={(which, key) => { setState((s) => plantSeed(s, which, key)); sfx.buy(); }}
+            onHarvest={(which) => { setState((s) => harvestBed(s, which)); sfx.floor(); }}
             meeting={meeting}
             onMeet={(which) => {
               if (!meeting) return;

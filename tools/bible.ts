@@ -26,6 +26,7 @@ import {
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
 import { AWAKENINGS, ALL_CARDS } from '../src/data/awakening.ts';
 import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
+import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
@@ -1009,6 +1010,14 @@ const MEET_TABLE = MEETINGS.map((m) => `
       return `<i>${p.label}: ${cost} \u2192 ${got}</i>`;
     }).join('')}</td></tr>`).join('');
 
+/** 洞天 The three herbs, priced and paid as the game prices and pays them. */
+const CAVE_TABLE = HERBS.map((h) => `
+  <tr><td><span class="s">${icon(h.icon, 20)}</span> <b class="cjk">${h.han}</b> ${h.name}</td>
+    <td class="n">${h.realm}</td><td class="n">${h.hours}h</td>
+    <td class="n">材 ${h.costBeasts} beasts</td>
+    <td class="n">${h.paysMinutes} min of qi</td>
+    <td class="n">${(h.paysMinutes / h.hours).toFixed(1)}</td></tr>`).join('');
+
 const page = `<title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1110,6 +1119,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
   #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
         line-height:1.5; }
   #meet .meets td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
+  #cave .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
+  #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+        margin-right:5px; }
 
   /* ── 提 the proposals: four content systems, drawn rather than described ── */
   #proposals h3 .built, #proposals h3 .todo { margin-left: 9px; padding:3px 9px; border-radius:99px;
@@ -1804,8 +1816,8 @@ const page = `<title>九境 Ninefold · the Bible</title>
       ladder, and that is the whole of it. There is no place you own, no run with an
       ending, no choice that makes your cultivator different from anybody else's, and
       nothing in the world that ever speaks to you.</p>
-    <p class="t"><b>Two of the four are built now</b>, and 悟道 and 緣 have sections of
-      their own further down this page. The other two are drawn here rather than
+    <p class="t"><b>Three of the four are built now</b>, and 悟道, 緣 and 洞天 have
+      sections of their own further down this page. The last is drawn here rather than
       described, with the game's own
       art and its own tables rather than described, because a system in a paragraph is a
       system nobody can judge. Each one is written to the laws this game already keeps:
@@ -1813,7 +1825,7 @@ const page = `<title>九境 Ninefold · the Bible</title>
       taken away for being away, and losing costs nothing. They are in the order I would
       build them.</p>
 
-    <h3>提一 · 洞天 A place you own <span class="todo">not built</span></h3>
+    <h3>提一 · 洞天 A place you own <span class="built">built</span></h3>
     <p class="t">A cave with three beds. You plant a 靈草 spirit herb and it ripens over
       real hours, and a ripe herb waits for you for ever. Herbs are the third thing 爐
       the furnace wants, so pills stop being qi and material alone.</p>
@@ -1895,10 +1907,9 @@ const page = `<title>九境 Ninefold · the Bible</title>
       spending on a single button. The other is a day's work for the whole difference
       in how the world reads. Both have their own sections below, with what the
       measurements said.</p>
-    <p class="t"><b>洞天 is next</b>, because it is the one that makes being away mean
-      something other than a bar. <b>秘境 last</b>, because it is the one worth doing
-      properly and the one that needs the other three to have taught the player what the
-      game is.</p>
+    <p class="t"><b>洞天 is built too</b>, and has its own section below. <b>秘境 is
+      what is left</b>, because it is the one worth doing properly and the one that
+      needs the other three to have taught the player what the game is.</p>
   </section>
 
   <section class="sec" id="awaken">
@@ -1955,6 +1966,62 @@ const page = `<title>九境 Ninefold · the Bible</title>
       <thead><tr><th>Who</th><th class="n">From realm</th><th>The two answers</th></tr></thead>
       <tbody>${MEET_TABLE}</tbody>
     </table>
+  </section>
+
+  <section class="sec" id="cave">
+    <h2><span class="h">洞天</span> A place you own</h2>
+    <p class="t">${BEDS} beds. 材 Material goes into the ground and comes up as 氣 qi,
+      on its own, over real hours. Until this the only thing that happened while the app
+      was shut was a bar filling, and a bar is not a place.</p>
+
+    <h3>律 Why it cannot be farmed by somebody who is never there</h3>
+    <p class="t">悟道 The cards taught this the hard way a few hours before the cave was
+      built. Anything that pays while you are away must not let the cultivator who is
+      never there win. So a bed is worked <b>from both ends by hand</b>. You plant it,
+      hours pass, and you come back and take it. Somebody who never opens the app plants
+      nothing and harvests nothing, and ${BEDS} beds cap what any amount of opening it
+      can ever be worth.</p>
+    <p class="t">換 And what it converts is the other half. A seed costs 材 material,
+      which only ever falls off beasts, and a ripe bed pays qi, which is the climb. So
+      the cave is a hunter's road to the ladder and cannot be walked by somebody who
+      does not hunt. It also puts a third answer beside 妖丹 cores and 煉器 refining for
+      the question of where the material goes.</p>
+
+    <h3>量 What it was worth, and what it had to be cut to</h3>
+    <p class="t">The first numbers were 13 to 18 minutes of qi an hour a bed. Three beds
+      is then <b>54 minutes of gathering an hour</b> on top of the sixty you already
+      have, which is very nearly doubling the rate, and the climb collapsed:</p>
+    <table class="tbl"><thead><tr><th>Habit</th><th class="n">Before the cave</th>
+      <th class="n">First numbers</th><th class="n">Shipped</th></tr></thead><tbody>
+      <tr><td>never fights</td><td class="n">145</td><td class="n">145</td><td class="n">145</td></tr>
+      <tr><td>once a day</td><td class="n">90</td><td class="n">64</td><td class="n">85</td></tr>
+      <tr><td>casual</td><td class="n">88</td><td class="n">64</td><td class="n">83</td></tr>
+      <tr><td>active</td><td class="n">61.5</td><td class="n">36</td><td class="n">56</td></tr>
+      <tr><td>every hour</td><td class="n">39.8</td><td class="n">26.5</td><td class="n">37</td></tr>
+    </tbody></table>
+    <p class="t">Cut to about a seventh, the cave takes <b>5 to 9 per cent</b> off the
+      climb for the cultivators who work it and nothing at all off the one who never
+      fights, because that one never has the material to plant with. The wall reads
+      <b>1.87x</b> against a rule of 1.5.</p>
+
+    <table class="tbl cavetbl">
+      <thead><tr><th>Herb</th><th class="n">From realm</th><th class="n">Takes</th>
+        <th class="n">Seed</th><th class="n">Pays</th><th class="n">Min of qi an hour</th></tr></thead>
+      <tbody>${CAVE_TABLE}</tbody>
+    </table>
+    <p class="t">The longer herb is the better rate, and that is the decision the beds
+      are for. A two-hour herb three times a day beats a twelve-hour one if you are
+      there three times a day, and loses badly if you are not. Nothing rots and nothing
+      is lost by being late. The only thing a long wait costs is the bed it stands
+      in.</p>
+
+    <h3>進 And the formatter carried wrong, which the cave is what landed on</h3>
+    <p class="t">A bed four hours from ripe read as <b>3h 60min</b>. Rounding the hours
+      and the minutes separately lets the remainder overflow its own unit, and a day
+      less a few minutes reads as 1d 24h the same way. The bug is as old as the
+      function; nothing had ever landed on the wrong side of a boundary before. It
+      rounds to the smaller unit first and carries now, and a test walks three days a
+      few seconds at a time looking for it.</p>
   </section>
 
   <section class="sec" id="board">

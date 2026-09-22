@@ -291,6 +291,10 @@ export const ADVICE = {
    * over later. The offer waits for ever and nothing else moves until it is taken.
    */
   awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
+  /** 洞天 A ripe bed is free, it is one tap, and it is gone the moment it is taken. */
+  ripe: (n: number) => n === 1
+    ? 'A bed in 洞天 the cave is ripe. Take it, and put something else in.'
+    : `${n} beds in 洞天 the cave are ripe. Take them, and put something else in.`,
   freePoints: (n: number) =>
     `You have ${n} 道 ${n === 1 ? 'point' : 'points'} unspent. They cost nothing and they never expire, `
     + `and every one of them is a permanent upgrade sitting in 道 the Path.`,
@@ -634,6 +638,27 @@ export const MEET = {
   went: 'They go on down the road.',
 };
 
+/**
+ * 洞天 The cave, which is the only thing in the game that grows while the app is shut.
+ *
+ * The copy says what it costs and what it pays in the two currencies a player already
+ * holds, and it says out loud that nothing is lost by being late, because that is the
+ * promise that makes a twelve-hour herb a decision instead of a risk.
+ */
+export const CAVE = {
+  head: '洞天 The cave',
+  says: 'Three beds. 材 Material goes into the ground and comes up as qi, on its own, while the app is shut.',
+  empty: 'Nothing planted',
+  plant: 'Plant something',
+  close: 'Not now',
+  take: (qi: string) => `Take it · ${qi} qi`,
+  ripeIn: (left: string) => `Ripe in ${left}`,
+  after: (hours: number) => `after ${hours}h`,
+  law: 'A ripe bed waits for you for ever. Nothing here rots and nothing is lost by being late.',
+  /** 釋 What the character means, for the key and the tooltip. */
+  what: 'Three beds you own. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. The only thing a long wait costs is the bed it stands in.',
+};
+
 export const GEAR = {
   /** 數 One line is a line, and the screen read "1 lines worn" until somebody looked. */
   linesWorn: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'} worn`,
@@ -698,6 +723,10 @@ export const DAO = {
    * over later. The offer waits for ever and nothing else moves until it is taken.
    */
   awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
+  /** 洞天 A ripe bed is free, it is one tap, and it is gone the moment it is taken. */
+  ripe: (n: number) => n === 1
+    ? 'A bed in 洞天 the cave is ripe. Take it, and put something else in.'
+    : `${n} beds in 洞天 the cave are ripe. Take them, and put something else in.`,
   freePoints: (n: number) =>
     `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 

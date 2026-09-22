@@ -33,14 +33,26 @@ export function num(n: number): string {
 }
 
 export function duration(seconds: number): string {
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
-  if (seconds < 86_400) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.round((seconds % 3600) / 60);
+  /**
+   * 進 Round to the smaller unit first, then carry.
+   *
+   * Rounding each part on its own lets the remainder overflow its unit, and it does:
+   * four hours less a few seconds came out of 洞天 the cave as "3h 60min", and a day
+   * less a few minutes reads as "1d 24h" the same way. The bug is as old as the
+   * function and nothing had ever landed on the wrong side of a boundary before.
+   */
+  const s = Math.max(0, seconds);
+  const secs = Math.round(s);
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.round(s / 60);
+  if (mins < 60) return `${mins} min`;
+  const totalHours = Math.round(mins / 60);
+  if (mins < 1440) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
     return m ? `${h}h ${m}min` : `${h}h`;
   }
-  const d = Math.floor(seconds / 86_400);
-  const h = Math.round((seconds % 86_400) / 3600);
+  const d = Math.floor(totalHours / 24);
+  const h = totalHours % 24;
   return h ? `${d}d ${h}h` : `${d}d`;
 }

@@ -1235,6 +1235,61 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .awaken, .awaken .acard { animation: none; }
 }
 
+/* ── 洞天 three beds, and the ring that is the growing ──────────────────────
+   The ring is a conic gradient rather than a bar because a bed is a cycle and comes
+   round, and because three of them in a row read as a place rather than as a list. */
+.cavesay { margin: 0 0 10px; font-size: 12.5px; line-height: 1.55; }
+.cave { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.bed { text-align: center; padding: 12px 6px 11px; border-radius: 12px;
+       background: var(--panel); border: 1px solid var(--line); }
+.bed[data-ripe] { border-color: var(--gold); box-shadow: 0 0 26px -12px var(--gold);
+                  animation: ripe 2.6s ease-in-out infinite; }
+@keyframes ripe { 50% { box-shadow: 0 0 30px -8px var(--gold); } }
+.bed[data-empty] { border-style: dashed; }
+.bed .ring { position: relative; display: block; width: 56px; height: 56px; margin: 0 auto 8px; }
+.bed .ring i { position: absolute; inset: 0; border-radius: 99px;
+               background: conic-gradient(var(--cyan) var(--a), rgba(37,42,92,.55) 0); }
+.bed[data-ripe] .ring i { background: conic-gradient(var(--gold) 360deg, var(--gold) 0); }
+.bed[data-empty] .ring i { background: rgba(37,42,92,.35); }
+.bed .ring i::after { content: ''; position: absolute; inset: 4px; border-radius: 99px;
+                      background: var(--panel); }
+.bed .ring em { position: absolute; inset: 0; display: grid; place-items: center;
+                color: var(--cyan); }
+.bed[data-ripe] .ring em { color: var(--gold); }
+.bed[data-empty] .ring em { color: var(--line); }
+.bed .ring svg { display: block; }
+.bed > b { display: block; font-size: 15px; font-weight: 400; color: var(--cyan); }
+.bed[data-ripe] > b { color: var(--gold); }
+.bed[data-empty] > b { color: var(--faint); }
+.bed > i { display: block; font-style: normal; font-size: 11px; color: var(--faint);
+           line-height: 1.35; margin-top: 1px; }
+.bed .when { display: block; margin-top: 8px; font-family: Rajdhani, sans-serif;
+             font-weight: 600; font-size: 12px; color: var(--text); }
+.bed .act.small { margin-top: 8px; padding: 7px 4px; font-size: 11.5px; width: 100%; }
+.bed .act.small.ghost { background: none; color: var(--faint); border: 1px solid var(--line); }
+
+/* 種 The list of what can go in a bed, opened by the empty one that asked. */
+.seeds { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.seed { display: flex; gap: 12px; align-items: center; text-align: left; font: inherit;
+        cursor: pointer; color: var(--text); background: var(--panel);
+        border: 1px solid var(--line); border-radius: 11px; padding: 11px 13px; }
+.seed:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
+.seed:disabled { opacity: .45; cursor: default; }
+.seed .s { flex: none; color: var(--cyan); }
+.seed .s svg { display: block; }
+.seed .nm { flex: 1; min-width: 0; }
+.seed .nm b { font-size: 16px; font-weight: 400; color: var(--cyan); }
+.seed .nm em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
+               font-size: 13.5px; }
+.seed .nm i { display: block; font-style: normal; margin-top: 3px; font-size: 11.5px;
+              color: var(--faint); line-height: 1.5; }
+.seed .price { flex: none; text-align: right; }
+.seed .price b { display: block; font-family: Rajdhani, sans-serif; font-weight: 600;
+                 font-size: 14px; color: var(--gold); }
+.seed .price i { display: block; font-style: normal; font-size: 10.5px; color: var(--faint); }
+.cavelaw { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .bed[data-ripe] { animation: none; } }
+
 /* ── 緣 somebody on the road ────────────────────────────────────────────────
    It sits in the flow of 修 rather than over it, because it is not an interruption.
    Walking on is free and the card never blocks anything behind it. */

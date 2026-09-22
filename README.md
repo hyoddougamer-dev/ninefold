@@ -68,6 +68,9 @@ It reads and prints. It never writes anything and it never asks the network.
 | `npm run actions` | press every verb the game has, and check it did something |
 | `npm run tips` | open every 註 character on every screen, and check the note lands on the screen and nothing paints over it |
 | `npm run early` | 早 count the waiting in the first three realms: how long between one thing to press and the next |
+| 悟道 `src/data/awakening.ts` | the three cards at each breakthrough |
+| 緣 `src/data/meetings.ts` | the people on the road |
+| 洞天 `src/data/herbs.ts` | what grows in the cave |
 | `npm run read -- save.json` | read somebody's run out of the save they sent you |
 | `npm run bible` | write `bible.html` |
 | `npm run overview` · `catalogue` · `arts` · `gear-system` | printed tables, for reading a system on its own |

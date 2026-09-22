@@ -84,7 +84,7 @@
  */
 
 export type System =
-  | 'hunt' | 'gear' | 'arts' | 'cores' | 'fuse' | 'tree' | 'keystones' | 'tower'
+  | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'tree' | 'keystones' | 'tower'
   | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
 
 export interface SystemInfo {
@@ -113,6 +113,11 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // more. It pays power and fortune and never the qi rate, so the standing rule holds.
   { key: 'refine', han: '煉器', name: 'Refining', realm: 2,
     gives: 'Material makes a piece you already wear better, for ever. It is the one thing material buys that has no ceiling.' },
+  // 洞天 A place you own, and the only thing in the game that grows while the app is
+  // shut. It is worked from both ends by hand, so it pays for opening the app rather
+  // than for owning it. See data/herbs.ts.
+  { key: 'cave', han: '洞天', name: 'The Cave', realm: 2,
+    gives: 'Three beds. Plant 材 material and it ripens into 氣 qi over real hours, and a ripe bed waits for you for ever.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
   { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,

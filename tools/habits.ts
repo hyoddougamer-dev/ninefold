@@ -22,6 +22,7 @@ import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import { affinity, canUnlock, focusBonus } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
+import { BEDS, canPlant, harvestAll, plant, plantable } from '../src/sim/cave.ts';
 import { AWAKENINGS, due as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { rollDrop } from '../src/sim/drops.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
@@ -295,6 +296,23 @@ export function play(h: Habit, maxDays = 400): Run {
       const d = drive(s, b, n, ++seed);
       s = d.state;
       fights += n;
+    }
+
+    /**
+     * 洞天 The cave, worked the way a visit works it: take whatever is ripe, then fill
+     * the empty beds with the longest herb this cultivator can afford.
+     *
+     * 長 The longest on purpose, and it is the worst case for the economy rather than
+     * the best play: a twelve-hour herb is the best rate in the cave and the least
+     * forgiving to somebody who is not there, so a harness that always plants it is
+     * measuring the most a cave can ever be worth to each habit.
+     */
+    if (isOpen(s.realm, 'cave')) {
+      s = harvestAll(s);
+      for (let i = 0; i < BEDS; i++) {
+        const want = [...plantable(s)].reverse().find((h) => canPlant(s, i, h.key));
+        if (want) s = plant(s, i, want.key);
+      }
     }
 
     // 拆 And on a visit, the junk goes. A cultivator who picks gear up is a cultivator
