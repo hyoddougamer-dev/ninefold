@@ -85,6 +85,8 @@ function limitOf(s: State): number {
 interface Homecoming {
   readonly seconds: number;
   readonly qi: number;
+  /** 階 How much of the gathered qi the ladder took on the way, which is never a loss. */
+  readonly climbed: number;
   readonly layers: number;
   readonly realms: number;
 }
@@ -195,7 +197,7 @@ export function App() {
 
     if (r.secondsAway > 120) {
       setHome({
-        seconds: r.secondsAway, qi: r.qiEarned,
+        seconds: r.secondsAway, qi: r.qiEarned, climbed: r.qiClimbed,
         layers: r.layersOpened, realms: r.realmsClimbed,
       });
     }
@@ -440,21 +442,43 @@ export function App() {
     haptics.win();
   }, []);
 
-  /** Breaking through is the one moment the game stops for. */
-  const climb = useCallback((next: State) => {
-    if (next.realm !== state.realm) {
+  /**
+   * 手 Everything 修 the screen does, applied to the state the app is holding now.
+   *
+   * It used to take a finished state: the screen computed `buy(state, u)` from the props
+   * of its last render and this put it over whatever the clock had done since. The bar
+   * survived that, because every second of it is re-derived from the stamp in the save,
+   * but anything else that landed inside the same fifth of a second did not. Now the
+   * screen hands over the change and the change is applied to the current state, which
+   * is the pattern every other handler in this file already used.
+   */
+  const climb = useCallback((make: (s: State) => State) => {
+    setState((s) => make(s));
+    sfx.buy();
+    haptics.tap();
+  }, []);
+
+  /**
+   * 突破 And the breakthrough is watched rather than announced.
+   *
+   * The realm is in the save, so the one moment the game stops for is read off the save
+   * changing rather than off the tap that changed it. That is what lets the tap above
+   * be a plain function of the state with nothing else riding on it.
+   */
+  const lastRealm = useRef(0);
+  useEffect(() => {
+    if (!ready) return;
+    if (lastRealm.current === 0) { lastRealm.current = state.realm; return; }
+    if (state.realm > lastRealm.current) {
       sfx.breakthrough();
       haptics.breakthrough();
-      setBloom(next.realm);
+      setBloom(state.realm);
       // A realm that handed something over waits to be read. One that only changed the
       // light does not. 1.4 seconds is right for a colour and wrong for three cards.
-      if (opensIn(next.realm).length === 0) setTimeout(() => setBloom(null), 1400);
-    } else {
-      sfx.buy();
-      haptics.tap();
+      if (opensIn(state.realm).length === 0) setTimeout(() => setBloom(null), 1400);
     }
-    setState(next);
-  }, [state.realm]);
+    lastRealm.current = state.realm;
+  }, [state.realm, ready]);
 
   const toggleMute = useCallback(() => {
     const next = cycleSound();
@@ -887,6 +911,13 @@ export function App() {
             <dt>{RETURN.power}</dt>
             <dd>{num(power(state))}</dd>
           </dl>
+          {/* 階 Said out loud, because the bar is lower than they left it and the qi
+              that is missing from it is standing in the rungs above. */}
+          {home.climbed > 0 && (
+            <p className="faint" style={{ margin: '2px 0 0', fontSize: 12.5 }}>
+              {RETURN.spent(num(home.climbed))}
+            </p>
+          )}
           <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>
             續 <span>Continue</span>
           </button>

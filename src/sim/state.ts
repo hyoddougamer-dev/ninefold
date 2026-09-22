@@ -3,14 +3,14 @@ import {
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
-  OPENING_PURSE,
+  FLOOR_LOOT, FLOOR_LOOT_GROWTH, FOCUS_MAX, OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 import {
-  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus,
+  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
-import { CHEST_LIMIT } from './chest.ts';
+import { chestLimit } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import { valid as validAwakened } from './awaken.ts';
 import { validateSequence, validateStance } from './arts.ts';
@@ -592,33 +592,49 @@ export function validate(raw: unknown, now: number): State {
     if (it && TEMPLATE_BY_KEY[it.template].slot === slot) worn[slot] = it;
   }
 
+  /**
+   * 藏 The chest is capped at the limit **this cultivator actually has**, and for the
+   * whole of the game's life it was capped at the flat forty instead.
+   *
+   * 運 The Fortune branch, 囊 the pouch nodes, a 藏 line on a piece of gear and 悟道 a
+   * card all add slots, and the game fills them: measured, a finished cultivator holds
+   * between 58 and 90 pieces. Every one of them past the fortieth was deleted on every
+   * load, which is every time the app was closed, because a save is rewritten on unload
+   * and validated on the way back in. Found by 氣查 the audit, which round-trips a real
+   * run through this function rather than reading it.
+   *
+   * It is the same bug 失 the levels had, in the same function, for the same reason: a
+   * cap written twice, and the copy in here was the older one.
+   */
+  const unlocked = validateUnlocked(o.unlocked);
+  const awakened = [...validAwakened(Array.isArray(o.awakened) ? o.awakened.filter(
+    (x: unknown): x is string => typeof x === 'string') : [])];
+  const slots = chestLimit(unlocked,
+    wornTotals(worn, (x) => affinity(unlocked, x)).capacity, awakened);
+
   const chest: Item[] = [];
   for (const raw of Array.isArray(o.chest) ? o.chest : []) {
-    if (chest.length >= CHEST_LIMIT) break;
+    if (chest.length >= slots) break;
     const it = item(raw, used);
     if (it) chest.push(it);
   }
 
-  // The ceiling: the whole ladder, every plausible upgrade, times the elapsed time.
   const elapsed = Math.max(0, now - startedAt);
-  const top = levelCap(9);
-  const qiCeiling = 1.02 ** LAYERS * UPGRADE_INFO.method.gain ** top
-    * UPGRADE_INFO.pills.gain ** top * 1e4 * elapsed + 1e6;
 
-  return {
+  const out: State = {
     v: 1,
     startedAt,
     at: clamp(num(o.at, now), startedAt, now),
     realm,
     layer,
-    qi: clamp(num(o.qi, 0), 0, qiCeiling),
-    materials: clamp(num(o.materials, 0), 0, 1e12),
+    qi: Math.max(0, num(o.qi, 0)),
+    materials: Math.max(0, num(o.materials, 0)),
     wardenFell: o.wardenFell === true,
     levels,
     killed,
     worn,
     chest,
-    unlocked: validateUnlocked(o.unlocked),
+    unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached
     // and the arts from the wardens put down. So a hand-edited save cannot put 龍威 in
     // the first slot at realm 1 and walk over every warden in the game.
@@ -636,8 +652,7 @@ export function validate(raw: unknown, now: number): State {
     // 悟道 A forged list could otherwise claim every card in the game, or claim the
     // ninth realm's card in the second. Each entry has to be a card that exists, from
     // the trio that entry's turn actually offers. See sim/awaken.ts.
-    awakened: [...validAwakened(Array.isArray(o.awakened) ? o.awakened.filter(
-      (x: unknown): x is string => typeof x === 'string') : [])],
+    awakened,
     // 緣 A key that names nobody is not a meeting, and nobody is met twice. The points
     // are capped at what every meeting in the game could ever hand over, so a forged
     // save cannot claim a tree's worth of them.
@@ -662,5 +677,60 @@ export function validate(raw: unknown, now: number): State {
       .filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 32)
       .filter((x, i, all) => all.indexOf(x) === i)
       .slice(0, 32),
+  };
+
+  /**
+   * 頂 And the one field that has to be measured against the cultivator itself: the qi.
+   *
+   * The ceiling exists because an earlier build shipped without any, and a hand-edited
+   * heirloom multiplied the qi rate by 196,502x and passed every check. So nothing may
+   * hold more qi than it could have gathered in the wall-clock time since the run began.
+   *
+   * 量 What that number is has to be read off **this cultivator**, and for a long time
+   * it was a guess: a typed formula with a factor of ten thousand in it that knew about
+   * the two rate upgrades and nothing else. It did not know about 雷印 the marks, and a
+   * mark multiplies the rate by 1.728. Measured by 氣查 the audit, a save at forty marks
+   * held 78.8 quintillion qi and came back holding 5.26, which is 93% of the endgame
+   * deleted on every load, and 雷池 the pool, which is two days of that cultivator's own
+   * gathering, sat a hundred million times above what this function would allow them to
+   * be standing on. The Dragon could never have been called again.
+   *
+   * Now it is derived. `rate` already knows everything that touches the rate, because
+   * every one of those fields was validated above and none of them can be forged past
+   * its own cap. The rate only ever grows, so today's rate across the whole run is
+   * already an over-estimate of every second of it, and 入定 at its deepest is the most
+   * any of those seconds could have been worth.
+   */
+  const gathered = rate(out) * FOCUS_MAX * elapsed;
+  // What a cultivator is allowed to be standing on having spent nothing: the rung under
+  // their feet, and at the summit 雷池 the pool, which the ladder has no way to take.
+  const standing = tribulationPool(out) + ladderAt(Math.min(LAYERS - 1, layersOpened(out)));
+  // 塔 拆 泉 And the lumps, which are not gathered: a tower floor, a melted chest, a
+  // spring, a ripe bed. Ten times over is generous, and still eight orders of magnitude
+  // under the number this replaced.
+  const qiCeiling = (gathered + standing) * 10 + 1e6;
+
+  /**
+   * 材 And the same for the material, which had the same kind of number on it: a flat
+   * trillion, typed once and never measured.
+   *
+   * 塔 The tower is the whole material economy and it has no top, so the pile a real
+   * cultivator holds has no fixed size either. Measured by the audit, a save at forty
+   * marks held 3.23e29 材 and came back holding a trillion, which is every material the
+   * endgame ever earned deleted on every load.
+   *
+   * So it is read off the tower, which is where the material comes from and which *is*
+   * capped, at three thousand floors. A floor pays once and the floors grow
+   * geometrically, so the highest floor cleared is worth more than every floor under it
+   * put together, and ten thousand times that is a generous ceiling that still moves
+   * with the cultivator rather than standing still while they climb past it.
+   */
+  const floorsWorth = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** Math.max(0, out.tower - 1);
+  const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
+
+  return {
+    ...out,
+    qi: Math.min(out.qi, qiCeiling),
+    materials: Math.min(out.materials, matCeiling),
   };
 }

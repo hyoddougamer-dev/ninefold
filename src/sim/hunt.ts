@@ -113,6 +113,19 @@ export interface Drive {
 export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fortune = {}): Drive {
   const kills = Math.max(1, Math.floor(n));
   const qiSpent = driveCost(s, kills);
+  /**
+   * 守 A drive is paid for before it happens, and this is where that is enforced rather
+   * than only on the button.
+   *
+   * It used to subtract the price with `Math.max(0, …)` around it, which does not refuse
+   * a drive that cannot be paid for: it takes **everything the cultivator has** and runs
+   * the drive anyway. The screen gates it, so nobody has met it, and a price that can
+   * empty a pocket has no business being one call away from a tap. Found by 氣查 the
+   * audit of the qi.
+   */
+  if (!canAffordDrive(s, b, kills)) {
+    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [] };
+  }
   const before = s.killed[b.key] ?? 0;
 
   let material = 0;
@@ -133,7 +146,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   return {
     state: {
       ...s,
-      qi: Math.max(0, s.qi - qiSpent),
+      qi: s.qi - qiSpent,
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
     },

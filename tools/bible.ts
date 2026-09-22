@@ -482,6 +482,9 @@ const SYSTEMS: readonly System[] = [
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
     line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.` },
 
+  { han: '氣查', name: 'The audit of the qi', status: 'done', at: 'audit',
+    line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
+
   { han: '轉世', name: 'Rebirth', status: 'planned',
     line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
 ];
@@ -1699,6 +1702,7 @@ const page = `<meta charset="utf-8">
       <a href="#top"><b>劫</b> The top</a>
       <a href="#stele"><b>碑</b> The stele</a>
       <a href="#save"><b>存</b> The save</a>
+      <a href="#audit"><b>氣查</b> The audit of the qi</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
@@ -3384,6 +3388,80 @@ const page = `<meta charset="utf-8">
       arts from the wardens put down, so an edited save cannot put 龍威 in the first slot at
       realm 1 and walk over every warden in the game. Levels are clamped to the realm's
       cap, because the cap is what holds the curve up.</div>
+    <p class="t">Every one of those caps has to be the <b>same</b> cap the game itself
+      sells against, and three times now it has not been. See 氣查 below.</p>
+  </section>
+
+  <section class="sec" id="audit">
+    <h2><span class="h">氣查</span> The audit of the qi</h2>
+    <p class="t">Bruno, for the third time in this project's life: <i>"sinto que existem
+      bugs e opções que resetam ou tiram qi quando utilizadas."</i> Twice before he was
+      right, and both times the fault was found by hand after the fact. So the third time
+      it was built into the repository instead: <code>npm run qi</code> walks every path
+      the qi can take and asks four different questions about it.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">出入</b> <em>Every verb pays what it says</em>
+        <i>Each action in the game is applied to a real cultivator and the qi that moved
+        is compared against the price the screen quotes for it. A button that takes more
+        than it says is the complaint, exactly.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">梯</b> <em>The ladder conserves</em>
+        <i>Across any absence, the qi gathered is either standing in the bar or was spent
+        on a rung. There is no third place for it to be, and a lump landing on a cheap
+        rung keeps its remainder.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">存</b> <em>A save survives being read back</em>
+        <i>The state is round-tripped through <code>validate</code> at the end of every
+        habit and at forty crossings. A field that comes back different is a field the
+        game deletes every time the app is closed.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">鐘</b> <em>The clock cannot rob you</em>
+        <i>A phone whose clock jumps backwards, a phone set before the day the run began,
+        a day away: none of them may take qi.</i></span></div>
+    </div>
+
+    <h3>What it found on the first run</h3>
+    <p class="t">Four things, and three of them were the same bug wearing different
+      clothes: <b>a cap written twice, where the copy in the validator was the older
+      one</b>. That is the same fault 失 the levels had, in the same function.</p>
+    <table class="tbl"><thead><tr><th>What</th><th>What it did</th><th>Now</th></tr></thead>
+      <tbody>
+      <tr><td><b class="cjk">藏</b> the chest</td>
+        <td>Capped at the flat 40 in the validator while 運 the branch, a 藏 line on a
+          piece of gear and 悟道 a card all hand out more. Measured, a finished cultivator
+          holds 58 to 90 pieces. Every one past the fortieth was deleted on every
+          load.</td>
+        <td>Capped at the limit that cultivator actually has.</td></tr>
+      <tr><td><b class="cjk">頂</b> the ceiling on qi</td>
+        <td>A typed formula that knew about the two rate upgrades and not about 雷印 a
+          mark, which multiplies the rate by 1.728. At forty marks a save held 78.8
+          quintillion qi and came back holding 5.26. 雷池 The pool sat a hundred million
+          times above what the save was allowed to stand on, so the Dragon could never
+          have been called again.</td>
+        <td>Read off the cultivator's own rate, which already knows everything that
+          touches it.</td></tr>
+      <tr><td><b class="cjk">材</b> the ceiling on material</td>
+        <td>A flat trillion. The tower is the whole material economy and it has no top: a
+          save at forty marks held 3.23e29 材 and came back holding a trillion.</td>
+        <td>Read off 塔 the tower, which is where the material comes from and which is
+          capped at three thousand floors.</td></tr>
+      <tr><td><b class="cjk">圍</b> a drive</td>
+        <td><code>Math.max(0, qi - cost)</code>: a drive nobody could afford took
+          <b>everything they had</b> and ran anyway. A test was guarding it, and the test
+          was called "never goes below nothing".</td>
+        <td>Refused outright. Nothing taken, nothing killed.</td></tr>
+    </tbody></table>
+
+    <h3>歸 And the one that was not a bug at all, which is the one he was seeing</h3>
+    <p class="t">A layer opens the instant its price is met and the qi is taken. So a
+      cultivator who closes the app with a nearly full bar comes back to a bar that is
+      nearly empty and a rung further up. <b>The number they have been watching all day is
+      smaller than when they left.</b> Nothing was taken. It is standing in the rung.</p>
+    <p class="t">The homecoming card was making it worse rather than explaining it. It
+      reported <code>after.qi - before.qi</code>, floored at zero, so the cultivator above
+      was told they had gathered <b>nothing</b>. Measured on a real save, nine hours away:
+      205M gathered, one layer opened, and 425M went into the climb. The card said
+      <code>0</code>.</p>
+    <div class="rule"><b>So the return counts the rungs in.</b> What the hours gathered is
+      the qi in the bar plus every rung it opened on the way, and the card says where it
+      went in as many words. The ladder did not change by a single qi.</div>
   </section>
 
   <section class="sec" id="rules">

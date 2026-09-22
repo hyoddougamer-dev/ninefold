@@ -1,6 +1,7 @@
 import { newState, validate, type State } from './state.ts';
 import { OPENING_PURSE } from './balance.ts';
-import { advance } from './time.ts';
+import { advance, layerCost } from './time.ts';
+import { LAYERS_PER_REALM } from './balance.ts';
 
 const KEY = 'ninefold.save.v1';
 /**
@@ -24,7 +25,20 @@ const BACKUP = 'ninefold.save.backup';
 export interface Return {
   readonly state: State;
   readonly secondsAway: number;
+  /**
+   * 氣 What the hours away actually gathered, rungs included.
+   *
+   * It used to be `after.qi - before.qi`, floored at zero, and that is the number the
+   * 歸 card put on the screen. A cultivator who left with a nearly full bar and came
+   * back to four rungs opened came back to **less qi than they left with**, and the card
+   * told them they had gathered nothing. Everything was working: the ladder takes the qi
+   * the instant it can afford a rung, which is the deepest rule in the game. The report
+   * of it was the lie, and it is the shape of the complaint that has come back three
+   * times now: *"o meu qi resetar"*.
+   */
   readonly qiEarned: number;
+  /** 階 How much of that went straight into the climb rather than into the bar. */
+  readonly qiClimbed: number;
   readonly layersOpened: number;
   readonly realmsClimbed: number;
 }
@@ -41,6 +55,25 @@ function read(key: string): unknown {
 /** How far up a state is, so two of them can be compared without trusting either. */
 function depth(s: State): number {
   return (s.realm - 1) * 9 + s.layer;
+}
+
+/**
+ * 階 What the rungs opened between two states cost, at the prices the ladder quotes.
+ *
+ * This is the missing half of the return: qi that is no longer in the bar is not qi that
+ * went missing, it is qi standing in the layers it bought.
+ */
+function rungsBetween(before: State, after: State): number {
+  let total = 0;
+  let realm = before.realm;
+  let layer = before.layer;
+  for (let guard = 0; guard < 200; guard++) {
+    if (realm > after.realm || (realm === after.realm && layer >= after.layer)) break;
+    const cost = layerCost(realm, layer, before.unlocked);
+    if (Number.isFinite(cost)) total += cost;
+    if (++layer >= LAYERS_PER_REALM) { layer = 0; realm += 1; }
+  }
+  return total;
 }
 
 export function load(now: number): Return {
@@ -65,10 +98,12 @@ export function load(now: number): Return {
 
   const layersOf = (s: State) => (s.realm - 1) * 9 + s.layer;
 
+  const climbed = rungsBetween(before, after);
   return {
     state: after,
     secondsAway,
-    qiEarned: Math.max(0, after.qi - before.qi),
+    qiEarned: Math.max(0, after.qi - before.qi + climbed),
+    qiClimbed: climbed,
     layersOpened: Math.max(0, layersOf(after) - layersOf(before)),
     realmsClimbed: Math.max(0, after.realm - before.realm),
   };

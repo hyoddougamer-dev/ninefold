@@ -34,7 +34,18 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   satOut: boolean;
   /** 階 True for half a second after a rung opens, so the bar can say so. */
   opened: boolean;
-  set: (s: State) => void;
+  /**
+   * 手 A change is handed over as a **function of the state**, never as a finished one.
+   *
+   * A screen holds the state its last render was given. The clock moves the real one
+   * every fifth of a second, so a button that hands back `buy(state, u)` is handing back
+   * a state assembled from a copy that is already behind, and the app would put it over
+   * whatever had happened since. Everything the bar does is re-derived from the stamp in
+   * the save, so that never cost qi, but a kill or a harvest that landed in the same
+   * fifth of a second was thrown away by the next tap. Handing over the *change* instead
+   * of the *result* closes it for good.
+   */
+  set: (make: (s: State) => State) => void;
   onFight: () => void;
   /** 示 Where the advice points, when it points anywhere. */
   onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear') => void;
@@ -110,7 +121,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           {/* 退 A way out. It is one key in the save, so it stays shut across a reload,
               and the ? panel puts it back. Nothing in a game should be unclosable. */}
           <button className="guidex" aria-label={GUIDE.close}
-            onClick={() => set({ ...state, seen: [...state.seen, DISMISSED] })}>✕</button>
+            onClick={() => set((s) => ({ ...s, seen: [...s.seen, DISMISSED] }))}>✕</button>
         </div>
       )}
 
@@ -259,7 +270,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {ready && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" data-coach="breakthrough" onClick={() => set(breakThrough(state))}>
+          <button className="act" data-coach="breakthrough" onClick={() => set((s) => breakThrough(s))}>
             突破 <span>Break through</span>
           </button>
         </div>
@@ -267,7 +278,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {crossing && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" onClick={() => set(crossTribulation(state, dragon))}>
+          <button className="act" onClick={() => set((s) => crossTribulation(s, dragon))}>
             渡劫 <span>Cross the tribulation</span>
           </button>
         </div>
@@ -375,7 +386,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           return (
             /* 指 Named so 引 the guide can put an arrow on this exact box. */
             <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
-              disabled={!canBuy(state, u)} onClick={() => set(buy(state, u))}>
+              disabled={!canBuy(state, u)} onClick={() => set((s) => buy(s, u))}>
               <span className="ic"><Svg html={icon(i.icon, 26)} /></span>
               {/* 譯 The English name leads and the characters follow it, rather than the
                   other way round. A player who does not read Chinese was being sold four
@@ -441,7 +452,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           </div>
           <p>{CULTIVATE.condense}</p>
           <button className="act" disabled={!canCondense(state)}
-                  onClick={() => set(condense(state))}>
+                  onClick={() => set((s) => condense(s))}>
             凝 <span>Condense a core</span>
           </button>
           <button className="tip" onClick={() => onGo('hunt')}>

@@ -23,7 +23,8 @@
     "tips": "node tools/tips.mjs",
     "han": "tsx tools/han.ts",
     "early": "tsx tools/early.ts",
-    "read": "tsx tools/read.ts"
+    "read": "tsx tools/read.ts",
+    "qi": "tsx tools/qi.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

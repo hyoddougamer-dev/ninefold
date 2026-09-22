@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { exportSave, importSave, keepSpare, load, save, saveFileName, wipe } from '../save.ts';
-import { newState, power, validate, type State } from '../state.ts';
+import { newState, power, tribulationPool, validate, type State } from '../state.ts';
+import { chestLimit } from '../chest.ts';
 import { advance, rate } from '../time.ts';
 
 const T0 = 1_700_000_000;
@@ -34,6 +35,29 @@ describe('存 the save', () => {
     expect(after.realm).toBe(5);
     expect(after.layer).toBe(3);
     expect(after.materials).toBe(40);
+  });
+
+  /**
+   * 歸 The homecoming has to add up, and for the whole of the game's life it did not.
+   *
+   * A layer opens the instant its price is met, so a cultivator who closes the app with
+   * a nearly full bar comes back to a nearly empty one with a rung more behind them, and
+   * the card said "0 qi gathered" at them. Nothing was ever taken; the report was the
+   * lie, and it is the shape of *"o meu qi resetar"*, said three times.
+   */
+  it('reports the qi the hours gathered, rungs included, and says where it went', () => {
+    const rung = 900;                                  // the first rung of the first realm
+    const before: State = { ...newState(T0), qi: rung * 0.95, at: T0 };
+    save(before);
+    // Long enough to gather nine tenths of a rung: one opens, and the bar ends lower.
+    const away = Math.round((rung * 0.9) / rate(before));
+    const back = load(T0 + away);
+
+    expect(back.state.layer).toBe(1);                  // a rung opened
+    expect(back.state.qi).toBeLessThan(before.qi);     // and the bar is lower than it was
+    expect(back.qiEarned).toBeGreaterThan(rung * 0.85); // and the card still says so
+    expect(back.qiClimbed).toBeGreaterThan(0);
+    expect(back.qiEarned).toBeCloseTo(back.state.qi - before.qi + back.qiClimbed, 4);
   });
 
   it('falls back to the spare when the main copy is gone', () => {
@@ -103,6 +127,50 @@ describe('存 the save', () => {
     }
     // An empty save is refused too, or a mispaste silently wipes a real one.
     expect(importSave(exportSave(newState(T0)), T0).state).toBeNull();
+  });
+
+  /**
+   * 藏 The chest was capped at the flat forty in `validate` while the game itself hands
+   * out slots for 運 the Fortune branch, a 藏 line on a piece of gear and 悟道 a card.
+   * Measured by 氣查 the audit: a finished cultivator holds between 58 and 90 pieces, and
+   * every one past the fortieth was deleted on every single load.
+   */
+  it('keeps every piece the cultivator has room for, not the first forty', () => {
+    // 囊 The Pouch, and the chain that reaches it: +8 places on top of the forty.
+    const roomy = ['root', 'gleaning', 'keeneye', 'pouch'];
+    const many = Array.from({ length: 60 }, (_, i) => ({
+      id: `p${i}`, template: 'sword2', rarity: 'common' as const,
+      rolls: [{ affix: 'power' as const, value: 4 }],
+    }));
+    const s: State = { ...newState(T0), realm: 6, unlocked: roomy, chest: many, at: T0 };
+    const back = validate(JSON.parse(JSON.stringify(s)), T0);
+    expect(back.chest.length).toBeGreaterThan(40);
+    expect(back.chest.length).toBe(Math.min(many.length,
+      chestLimit(back.unlocked, 0, back.awakened)));
+  });
+
+  /**
+   * 頂 And the ceilings on qi and 材 are read off the cultivator rather than typed.
+   *
+   * The old qi ceiling knew about the two rate upgrades and nothing else, so it did not
+   * know about 雷印 a mark, which multiplies the rate by 1.728. At forty marks a save
+   * held 78.8 quintillion qi and came back holding 5.26: 93% of the endgame deleted on
+   * every load, and 雷池 the pool a hundred million times above what a cultivator was
+   * allowed to be standing on, so the Dragon could never have been called again.
+   */
+  it('lets a cultivator keep the qi and the material their own climb can produce', () => {
+    const deepest: State = {
+      ...newState(T0 - 200 * 86_400), at: T0, startedAt: T0 - 200 * 86_400,
+      realm: 9, layer: 8, tribulation: 40, tower: 400,
+      levels: { technique: 54, method: 54, pills: 54, cores: 54 },
+    };
+    const held = tribulationPool(deepest) * 1.5;
+    const back = validate(JSON.parse(JSON.stringify({ ...deepest, qi: held, materials: 1e20 })), T0);
+    expect(back.qi).toBe(held);
+    expect(back.materials).toBe(1e20);
+    // And it is still a ceiling: a forged pile is still refused.
+    const forged = validate(JSON.parse(JSON.stringify({ ...deepest, qi: held * 1e12 })), T0);
+    expect(forged.qi).toBeLessThan(held * 1e12);
   });
 
   it('will not let an imported save claim what it never earned', () => {

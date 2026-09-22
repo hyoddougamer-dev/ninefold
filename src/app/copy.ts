@@ -984,6 +984,20 @@ export const BESTIARY = {
 export const RETURN = {
   away: (span: string) => `You were away ${span}.`,
   qi: 'qi gathered',
+  /**
+   * 階 Where the gathered qi went, when it did not stay in the bar.
+   *
+   * A layer opens the instant its price is met and the qi is taken, so a cultivator who
+   * leaves with a nearly full bar comes back to a bar that is nearly empty again and a
+   * rung or two further up. The number they had been watching is *smaller* than when
+   * they left. Nothing was taken, and until this line the screen never said so.
+   *
+   * 詞 It says "went into the climb" and not "of it went into the climb", because a rung
+   * is paid with whatever is in the bar: some of it was gathered while they were away
+   * and some of it was already standing there. The first draft said "of it" and read as
+   * an arithmetic error on the same card, 425M of 205M.
+   */
+  spent: (qi: string) => `${qi} went into the climb while you were away`,
   layers: 'layers opened',
   realms: 'realms climbed',
   power: 'power now',

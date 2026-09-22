@@ -85,7 +85,17 @@ describe('圍 the drive', () => {
     expect(driven.state.killed[rat.key]).toBe(byHand.killed[rat.key]);
   });
 
-  it('spends the qi it says it spends, and never goes below nothing', () => {
+  /**
+   * 守 A drive that cannot be paid for does nothing at all, and this test used to assert
+   * the opposite.
+   *
+   * It read *"never goes below nothing"*, and what it was guarding was
+   * `Math.max(0, qi - cost)`: a drive nobody could afford took **everything they had**
+   * and ran anyway. The screen gates the button, so no player has met it, and a price
+   * that can empty a pocket has no business being one tap away from an unguarded call.
+   * Found by 氣查 the audit of the qi.
+   */
+  it('spends the qi it says it spends, and refuses outright when it cannot be paid', () => {
     const rat = commonsOf(1)[0];
     const s = hunter(2);
     const cost = driveCost(s, 200);
@@ -95,7 +105,10 @@ describe('圍 the drive', () => {
 
     const poor = { ...s, qi: 1 };
     expect(canAffordDrive(poor, rat, 200)).toBe(false);
-    expect(drive(poor, rat, 200, 7).state.qi).toBe(0);
+    const refused = drive(poor, rat, 200, 7);
+    expect(refused.state.qi).toBe(1);                 // the qi is untouched
+    expect(refused.kills).toBe(0);                    // and nothing happened
+    expect(refused.state.killed[rat.key] ?? 0).toBe(poor.killed[rat.key] ?? 0);
   });
 
   /**
