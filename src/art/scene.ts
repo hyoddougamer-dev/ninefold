@@ -60,7 +60,16 @@ function motes(realm: number, colour: string): string {
   return out;
 }
 
-export function arenaScene(realm: number): string {
+/**
+ * 景 The place a fight happens in.
+ *
+ * 畫 When the realm has a painting, the drawn sky and the two drawn ridges are left out
+ * and the painting stands behind instead: the geometric mountains beside a painted
+ * creature read as two games at once. What stays either way is the part the fight needs
+ * rather than the part that is scenery: 塵 the motes, the haze over the ground, the floor
+ * both fighters stand on, and the lit edge of it.
+ */
+export function arenaScene(realm: number, painted = false): string {
   const r = realmOf(realm);
   const uid = `s${r.n}`;
   const far = mix(r.colour, '#0D0B08', 0.78);
@@ -83,10 +92,10 @@ export function arenaScene(realm: number): string {
         <stop offset="1" stop-color="${r.colour}" stop-opacity="0"/>
       </linearGradient>
     </defs>
-    <rect width="${W}" height="${FLOOR}" fill="url(#sky${uid})"/>
+    ${painted ? '' : `<rect width="${W}" height="${FLOOR}" fill="url(#sky${uid})"/>`}
     ${motes(r.n, r.colour)}
-    <polygon points="${ridge(r.n * 7 + 1, W, 150, 7)}" fill="${far}" transform="translate(0 ${FLOOR - 206})"/>
-    <polygon points="${ridge(r.n * 23 + 5, W, 122, 6)}" fill="${near}" transform="translate(0 ${FLOOR - 122})"/>
+    ${painted ? '' : `<polygon points="${ridge(r.n * 7 + 1, W, 150, 7)}" fill="${far}" transform="translate(0 ${FLOOR - 206})"/>
+    <polygon points="${ridge(r.n * 23 + 5, W, 122, 6)}" fill="${near}" transform="translate(0 ${FLOOR - 122})"/>`}
     <rect y="${FLOOR - 28}" width="${W}" height="28" fill="url(#haze${uid})"/>
     <rect y="${FLOOR}" width="${W}" height="${H - FLOOR}" fill="#0D0B08"/>
     <rect y="${FLOOR - 2}" width="${W}" height="2" fill="url(#edge${uid})"/>

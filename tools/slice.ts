@@ -34,6 +34,9 @@ const HUNT = 0.3;
 const EDGE = 0.22;
 /** 牌 How much of the plate the picture's circle keeps: `clip-path: circle(42%)`, so 0.84. */
 const CIRCLE = 0.84;
+/** 剪 The longest side a cut-out creature is written at. It stands in a scene, not in a
+    46px disc, so it is given more room than 牌 the plate would ever need. */
+const CUT_MAX = 720;
 /** 獸 A creature is square and small on screen. 境 a realm is a wide card background. */
 const OUT = { beast: { w: 512, h: 512 }, realm: { w: 768, h: 432 } } as const;
 
@@ -175,6 +178,100 @@ function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; 
   };
 }
 
+
+/**
+ * 剪 The same panel again, with the paper taken off it.
+ *
+ * 牌 The plate keeps its paper: at 46 pixels a pale disc with a painting on it reads as a
+ * page out of a bestiary, which is what it is. 鬥 The arena does not. Blown up to fill a
+ * scene, that same disc reads as a sticker: Bruno, on the first one in the game,
+ * *"está um badge ampliado e mal cortado circular."* A creature standing in a place has
+ * no disc behind it and no ring around it, so it needs the paper gone.
+ *
+ * 量 Keying aged paper is not a threshold, because the paper is not one colour and an ink
+ * wash does not end, it thins. So each pixel is scored on two things at once: how much
+ * darker it is than the paper, and how far its colour leans off the paper's own lean.
+ * A soft ramp between the two ends of that score is the alpha, which leaves a wash
+ * half-there rather than cutting it off square. A median pass afterwards takes out the
+ * grain the paper itself scores on, which is a speck at a time and never a shape.
+ */
+async function cutout(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
+  const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h, channels: ch } = info;
+
+  // 紙 The paper, read off the panel's own border, where a subject is not supposed to be.
+  const edge: number[][] = [[], [], []];
+  const band = Math.max(3, Math.round(Math.min(w, h) * 0.035));
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (x > band && x < w - band && y > band && y < h - band) continue;
+      const i = (y * w + x) * ch;
+      edge[0].push(data[i]); edge[1].push(data[i + 1]); edge[2].push(data[i + 2]);
+    }
+  }
+  const mid = (a: number[]) => { a.sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
+  const pr = mid(edge[0]), pg = mid(edge[1]), pb = mid(edge[2]);
+  const pl = 0.299 * pr + 0.587 * pg + 0.114 * pb;
+  const prg = pr - pg, pgb = pg - pb;
+
+  const LO = 15;
+  const HI = 44;
+  const alpha = Buffer.alloc(w * h);
+  for (let i = 0, j = 0; j < w * h; i += ch, j++) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const l = 0.299 * r + 0.587 * g + 0.114 * b;
+    const d = Math.max(0, pl - l) + Math.abs(r - g - prg) * 0.8 + Math.abs(g - b - pgb) * 0.8;
+    const t = (d - LO) / (HI - LO);
+    alpha[j] = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
+  }
+  // 生 Raw in, raw out, and one channel out. An encoded buffer read back as raw comes out
+  // as scan lines, and sharp promotes a one-channel raw input to three on the way through
+  // a blur, so without the colourspace the mask is three times the size it should be.
+  const mask = await sharp(alpha, { raw: { width: w, height: h, channels: 1 } })
+    .median(3).blur(0.7).toColourspace('b-w').raw().toBuffer();
+  if (mask.length !== w * h) throw new Error(`mask is ${mask.length} bytes for a ${w} by ${h} panel`);
+
+  // 框 The box the creature actually occupies, so the file is the creature and not the
+  // panel it happened to be drawn in.
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (mask[y * w + x] > 26) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null;
+  const pad = 2;
+  const crop = {
+    left: Math.max(0, x0 - pad), top: Math.max(0, y0 - pad),
+    width: Math.min(w, x1 + pad + 1) - Math.max(0, x0 - pad),
+    height: Math.min(h, y1 + pad + 1) - Math.max(0, y0 - pad),
+  };
+  const long = Math.max(crop.width, crop.height);
+  const scale = long > CUT_MAX ? CUT_MAX / long : 1;
+
+  // 合 The four channels are assembled by hand and handed to sharp once. joinChannel over
+  // an encoded base was where the scan lines came from: two buffers, two ideas about
+  // where a row ends, and every other line of the creature dropped.
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0, j = 0; j < w * h; i += ch, j++) {
+    rgba[j * 4] = data[i];
+    rgba[j * 4 + 1] = data[i + 1];
+    rgba[j * 4 + 2] = data[i + 2];
+    rgba[j * 4 + 3] = mask[j];
+  }
+  await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+    .extract(crop)
+    .resize(Math.round(crop.width * scale), Math.round(crop.height * scale))
+    .webp({ quality: 86, alphaQuality: 90 })
+    .toFile(out);
+  return crop;
+}
+
 async function cut(sheet: Sheet, file: string) {
   const g = await grey(file);
   const px = profile(g, 'x');
@@ -199,6 +296,11 @@ async function cut(sheet: Sheet, file: string) {
     const box = { left: x0 + ix, top: y0 + iy, width: x1 - x0 - ix * 2, height: y1 - y0 - iy * 2 };
     const size = OUT[sheet.kind];
     const out = `${dir}/${c.key}.webp`;
+
+    if (sheet.kind === 'beast') {
+      mkdirSync('public/art/cut', { recursive: true });
+      await cutout(file, box, `public/art/cut/${c.key}.webp`);
+    }
 
     if (sheet.kind === 'realm') {
       await sharp(file).extract(box).resize(size.w, size.h, { fit: 'cover' }).webp({ quality: 82 }).toFile(out);

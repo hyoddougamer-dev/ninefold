@@ -10,6 +10,7 @@ import { ART_BY_KEY } from '../../data/arts.ts';
 import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
+import { pictureOf } from '../../data/pictures.ts';
 import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
 import { lootTaken } from '../../sim/trials.ts';
@@ -112,6 +113,8 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
   const f = frameAt(outcome, beat);
   const r = realmOf(realm);
   const br = realmOf(beast.realm);
+  const cut = pictureOf('cut', beast.key);
+  const sky = pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const say = over ? verdictLine(outcome.won, !!beast.warden) : blowLine(f.striker, f.round);
   /**
@@ -131,7 +134,10 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
   return (
     <div className="arena" data-over={over} data-by={f.striker} data-heavy={!over && f.heavy}>
       <div className="stage">
-        <div className="scene"><Svg html={arenaScene(beast.realm)} /></div>
+        {/* 畫 The realm's own landscape, behind the fight, where there is one. The drawn
+            sky and ridges stand down for it: see art/scene.ts. */}
+        {sky && <img className="skyline" src={sky} alt="" aria-hidden="true" />}
+        <div className="scene"><Svg html={arenaScene(beast.realm, !!sky)} /></div>
 
         {/* 訣 The art firing. It is the payoff for the whole sequence screen, so it gets
             the top of the stage to itself rather than a line among the numbers. */}
@@ -166,18 +172,28 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
 
           <div className="fighter foe" data-hit={hit === 'beast'} data-strike={!over && f.striker === 'beast'}>
             {/**
-              * 牌 The beast gets what the cultivator already had: a frame, a glow of its
-              * own realm, and a painting inside it when there is one.
+              * 剪 The creature, standing in the place, with the paper keyed off it.
               *
               * For the whole of this game's life one side of every fight was a drawing
-              * with an aura and the other side was a flat silhouette at 94 pixels. That
-              * asymmetry is on the screen a player looks at more than any other, and the
-              * frame closes it without a single new file. See ui/Plate.tsx.
+              * with an aura and the other side was a flat silhouette at 94 pixels. 牌 the
+              * plate closed that, and then went too far the other way: at full size a
+              * painting on a paper disc inside a ring is a sticker, and Bruno said so the
+              * first time he saw one, *"está um badge ampliado e mal cortado circular."*
+              * A circle is right at 46 pixels in a list. It is wrong here.
+              *
+              * So here the beast is the beast: no disc, no ring, no circle to clip its
+              * claws, standing on the same floor line as the cultivator. Where the cut-out
+              * is missing it falls back to the plate, which falls back to the silhouette,
+              * so nothing is ever half-drawn.
               */}
-            <span className="art">
-              <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={br.colour}
-                     tier={beast.realm >= 9 ? 3 : beast.warden ? 2 : 1} size={94}
-                     alt={beast.name} />
+            <span className="art" data-cut={!!cut} data-warden={!!beast.warden}>
+              {cut
+                ? <img className="beastcut" src={cut} alt={beast.name} />
+                : (
+                  <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={br.colour}
+                         tier={beast.realm >= 9 ? 3 : beast.warden ? 2 : 1} size={94}
+                         alt={beast.name} />
+                )}
             </span>
             {hit === 'beast' && (
               <span className="dmg" key={`b${beat}`}>−{num(f.damage)}</span>

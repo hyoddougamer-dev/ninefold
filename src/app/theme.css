@@ -527,6 +527,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    the fighters shrink to specks at the bottom of a wall. */
 .stage { position: relative; flex: none; height: min(52vh, 400px); overflow: hidden; }
 .scene { position: absolute; inset: 0; }
+/* 畫 The realm's painting, filling the stage above the floor line, dimmed so a lit
+   cultivator and a painted creature both still read against it. The floor is the bottom
+   12.7% of the stage and the scene draws it, so the painting stops there. */
+.skyline { position: absolute; left: 0; right: 0; top: 0; bottom: 12.7%; width: 100%;
+           height: auto; min-height: 87.3%; object-fit: cover; object-position: center 62%;
+           opacity: .62; filter: saturate(.85) brightness(.66); }
 .scene svg { display: block; width: 100%; height: 100%; }
 
 /* Both fighters stand on the floor line, which the scene puts 12.7% up from its foot.
@@ -542,6 +548,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .you .art { width: 136px; height: 136px; }
 .foe .art { width: 94px; height: 94px; margin-bottom: 18px;
             filter: drop-shadow(0 3px 10px rgba(0,0,0,.75)); }
+/* 剪 A creature with no paper around it needs no square to sit in: it is given a height
+   and keeps its own width, so a crab stays wide and a crane stays tall. The floor line is
+   the bottom of the picture, which is where the animal's feet were painted. */
+.foe .art[data-cut='true'] { width: auto; height: 124px; margin-bottom: 4px;
+                             filter: drop-shadow(0 6px 14px rgba(0,0,0,.6)); }
+.foe .beastcut { display: block; height: 124px; width: auto; max-width: 146px;
+                 object-fit: contain; object-position: bottom; }
+/* 王 A warden is the fight a realm is remembered for, so it stands taller than the
+   cultivator. A common does not: it was drawn on the same sheet at the same size, and
+   left at one height a giant crab ended up bigger than the person fighting it. */
+.foe .art[data-cut='true'][data-warden='true'] { height: 158px; }
+.foe .art[data-warden='true'] .beastcut { height: 158px; max-width: 182px; }
 
 .fighter[data-hit='true'] .art { animation: shake .26s ease-out; }
 /* The flash is the colour of whoever *threw* the blow, not of whoever wears it. */
@@ -557,9 +575,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @keyframes lungeL { 0%,100% { transform: translateX(0); } 35% { transform: translateX(-18px) scale(1.05); } }
 
 /* 息 The beast breathes while it waits, so it is never a sticker on a wall. */
-.foe .art svg { animation: breath 2.6s ease-in-out infinite; }
+.foe .art svg, .foe .beastcut { animation: breath 2.6s ease-in-out infinite;
+                                transform-origin: 50% 100%; }
 .foe[data-strike='true'] .art svg, .foe[data-hit='true'] .art svg,
-.arena[data-over='true'] .foe .art svg { animation: none; }
+.arena[data-over='true'] .foe .art svg,
+.foe[data-strike='true'] .beastcut, .foe[data-hit='true'] .beastcut,
+.arena[data-over='true'] .foe .beastcut { animation: none; }
 /* 息 The beast breathing. It was called `breathe`, and so was the tree node's glow two
    hundred lines further down: the later definition won and the beast stopped moving
    and started fading instead. Two animations, two names. */
@@ -1262,6 +1283,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    circle, which is what stops a square photograph reading as a sticker. */
 .plate { position: relative; display: inline-grid; place-items: center; flex: none; }
 .plate .ring, .plate .sil, .plate .pic { position: absolute; inset: 0; display: block; }
+/* 剪 A cut-out creature is contained inside the ring rather than clipped by it, so the
+   widest thing on it survives. 68% is the square that fits inside the ring's own circle
+   with the stroke still showing round it. */
+.plate .cut { position: absolute; inset: 16%; width: 68%; height: 68%;
+              object-fit: contain; object-position: center; display: block; }
 .plate .ring svg, .plate .sil svg { display: block; width: 100%; height: 100%; }
 /* 融 The painting is clipped to the frame's own circle, so a square file reads as a
    thing in a frame rather than as a sticker. It keeps its own colours: blending it into

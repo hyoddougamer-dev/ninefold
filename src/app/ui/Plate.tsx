@@ -26,16 +26,25 @@ export function Plate({ kind, subject, icon, colour, tier = 1, size = 96, alt }:
   size?: number;
   alt: string;
 }) {
+  // 剪 The cut-out first, where there is one. The squared painting had to be clipped to a
+  // circle to sit in the frame, and a circle clips whatever is widest: on 巨蟹 the giant
+  // crab it took both claws off. A creature with the paper keyed off it is *contained*
+  // inside the ring instead, so nothing is ever cut, and the same file is what stands in
+  // 鬥 the arena. The squared painting is still the fallback, and 印 the seal is still
+  // the fallback for that.
+  const cut = kind === 'beast' ? pictureOf('cut', subject) : null;
   const src = pictureOf(kind, subject);
   return (
     <span className="plate" style={{ width: size, height: size, ['--hue' as string]: colour }}>
       <Svg className="ring" html={plateFrame(colour, { tier, size })} />
-      {src
-        ? (
-          <img className="pic" src={src} alt={alt} width={size} height={size}
-               loading="lazy" decoding="async" />
-        )
-        : <Svg className="sil" html={plateIcon(icon, colour, { size })} />}
+      {cut
+        ? <img className="cut" src={cut} alt={alt} loading="lazy" decoding="async" />
+        : src
+          ? (
+            <img className="pic" src={src} alt={alt} width={size} height={size}
+                 loading="lazy" decoding="async" />
+          )
+          : <Svg className="sil" html={plateIcon(icon, colour, { size })} />}
     </span>
   );
 }

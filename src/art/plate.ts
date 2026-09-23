@@ -42,7 +42,10 @@ export function plateFrame(colour: string, opts: PlateOptions = {}): string {
     <defs><radialGradient id="g${uid}"><stop offset=".3" stop-color="${colour}" stop-opacity=".26"/>
       <stop offset="1" stop-color="${colour}" stop-opacity="0"/></radialGradient></defs>
     <circle cx="50" cy="50" r="50" fill="url(#g${uid})"/>
-    <circle cx="50" cy="50" r="38" fill="${mix(colour, '#0D0B08', 0.55)}"/>
+    <!-- 紙 The disc is paper, not shadow. An ink creature with its own paper keyed off it
+         has to be read against something, and against near-black it is a smudge. It was
+         a dark disc for as long as the thing inside it was a bright silhouette. -->
+    <circle cx="50" cy="50" r="38" fill="${mix(colour, '#E4D8C0', 0.86)}"/>
     <circle cx="50" cy="50" r="47" fill="none" stroke="${colour}" stroke-opacity=".5" stroke-width="1.2"/>
     ${orbit}${spokes}${corona}
   </svg>`;

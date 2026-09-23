@@ -38,7 +38,8 @@ const WAS = {
 const SCREENS = [
   ['cultivate', '修', 'Cultivate', 'The screen the game is mostly looked at on.'],
   ['hunt', '狩', 'Hunt', 'Thirty-six paintings land here. It was thirty-six silhouettes.'],
-  ['arena', '鬥', 'The fight', 'The painting was already shown here, against a palette that fought it.'],
+  ['arena', '鬥', 'The fight',
+   'Three changes, and the first one was a mistake of mine. The beast wore 牌 the plate here, and at full size a painting on a paper disc inside a ring is a sticker: Bruno, <i>"está um badge ampliado e mal cortado circular."</i> So the creature now stands in the place with the paper keyed off it, the circle that was clipping the crab\'s claws is gone, and the realm\'s own landscape is behind instead of the drawn ridges.'],
   ['trials', '塔', 'Trials', 'The tower now climbs through the realm ramp: jade at the foot, cinnabar at the top.'],
   ['gear', '器', 'Gear', 'The rarities are minerals now: plain stone, jade, old bronze, gold leaf, cinnabar.'],
   ['dao', '道', 'The path', 'Three branches: a blade, a spirit, and luck.'],

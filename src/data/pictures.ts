@@ -14,13 +14,18 @@
  */
 
 /** A painted thing, by the key it is known by in its own table. */
-export type Painted = 'beast' | 'realm' | 'heaven';
+export type Painted = 'beast' | 'realm' | 'heaven' | 'cut';
 
 /**
  * The keys that have a file, by kind. Written by the tool, never by hand.
  *
  * A file is `public/art/<kind>/<key>.webp`, 512 by 512 for a creature and 768 by 432
  * for a realm or a heaven. See tools/pictures.ts for the sizes and why they are those.
+ *
+ * 剪 `cut` is the same creature with the paper keyed off it, at its own shape rather than
+ * squared. 牌 the plate wears the paper, because at 46 pixels a pale disc with a painting
+ * on it is a page out of a bestiary. 鬥 the arena wears the cut-out, because at full size
+ * that same disc is a sticker.
  */
 export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
   beast: [
@@ -73,6 +78,44 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     '9',
   ],
   heaven: [],
+  cut: [
+    'ape',
+    'bat',
+    'beetle',
+    'boar',
+    'centipede',
+    'crab',
+    'crane',
+    'direwolf',
+    'dragon',
+    'fox',
+    'frog',
+    'gargoyle',
+    'goblin',
+    'golem',
+    'harpy',
+    'hound',
+    'jellyfish',
+    'jiao',
+    'lizard',
+    'mantis',
+    'minotaur',
+    'ogre',
+    'owl',
+    'rat',
+    'raven',
+    'scorpion',
+    'serpent',
+    'skeleton',
+    'squid',
+    'tiger',
+    'turtle',
+    'unicorn',
+    'vulture',
+    'wolf',
+    'worm',
+    'wraith',
+  ],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */
