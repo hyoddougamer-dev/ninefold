@@ -63,7 +63,7 @@ export const FAMILIES: readonly Family[] = [
     prefix: 'card-', seen: '悟道 the sheet at every breakthrough',
     sheet: '悟甲 and 悟乙, two sheets of twelve' },
   { han: '訣', name: 'arts', count: ARTS.length, kind: 'emblem', prefix: 'art-',
-    seen: '勢 the loadout', sheet: '訣, one sheet of nine' },
+    seen: '勢 the loadout and 道 the path tab', sheet: '訣, one sheet of nine' },
   // 誤 This family was listed as a pictogram and it is not one. A stance is a chip with
   // its character on it and no symbol at all, which the sheet only found out when it
   // asked STANCES for an icon and there was none. An audit can over-count as easily as

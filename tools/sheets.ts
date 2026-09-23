@@ -717,22 +717,20 @@ const page = `<meta charset="utf-8">
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>Eight sheets are done</b>: 36 creatures, 9 places, the cultivator
-      twice and the ten encounters, 73 paintings. <b>Seven more close the game.</b> 缺 the
-      table below is what is left, read out of the game's own tables rather than guessed
-      at, and every row of it now has a prompt further down.</p>
+    <p class="t"><b>All fourteen sheets are done.</b> 134 paintings: 45 creatures, 9
+      realms, 9 heavens, the cultivator twice, the ten encounters and the 43 emblems.
+      缺 the table below is read out of the game's own tables, and the only rows left
+      without a tick are the two that should not have one.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
         <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
         <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
     </table>
-    <div class="rule"><b>境外 The nine Dragons are the one to do next.</b> Above the ninth
-      realm the climb does not stop, it changes animal, and they are named because the
-      alternative was measured and it is grim: forty crossings against one beast called
-      龍. They were about to repeat that in a new way, because all nine were showing the
-      ninth realm's painting: a heaven's Dragon is built out of that dragon and keeps its
-      key, which is what the kill record counts by. They file under their own keys now.</div>
+    <div class="rule"><b>Nothing is left to generate.</b> Fourteen sheets, one credit
+      each, against the fifty-four separate pictures this started as. The prompts stay
+      here because a sheet that has to be redone, or a creature added to the game later,
+      is one credit and this page is where it is asked for.</div>
     <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
       The aura grows with the climb, it breathes on a pulse the code owns and it is read
       off the save, so it stays drawn and the painting stands inside it. Asking a model for
