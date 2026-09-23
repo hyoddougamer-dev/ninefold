@@ -318,8 +318,13 @@ export function cutStrip(s: Sheet): string {
   #cuts .ct { margin:0; text-align:center; }
   #cuts .ctp { position:relative; display:inline-grid; place-items:center;
                width:132px; height:132px; }
-  #cuts .ctp img { width:132px; height:132px; display:block;
-                   clip-path:circle(41% at 50% 50%); }
+  /* 紙 The paper disc the game's own 牌 plate puts behind a creature. Without it this
+     page lied: every cut-out looked like it had dark wedges in its corners, which was
+     the page's background showing through, not anything wrong with the cut. */
+  #cuts .ctp::before { content:''; position:absolute; inset:5%; border-radius:50%;
+                       background:#E4D8C0; opacity:.86; }
+  #cuts .ctp img { position:absolute; inset:16%; width:68%; height:68%; display:block;
+                   object-fit:contain; }
   #cuts .ctr { position:absolute; inset:0; }
   #cuts .ctr svg { width:100%; height:100%; display:block; }
   #cuts figcaption { margin-top:7px; }

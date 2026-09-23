@@ -84,20 +84,38 @@ function profile(g: { data: Buffer; w: number; h: number }, axis: 'x' | 'y'): Fl
  *
  * Returns n + 1 cuts, so cell i runs from cuts[i] to cuts[i + 1].
  *
- * 誤 The outer frame used to be found first, by walking in from the edge looking for the
- * first dark line, and the inner rules were then divided between the two. On 獸丙 that
- * walk found the demon ogre's shoulder a hundred and fifty pixels in, took it for the
- * left rule, and every one of the twelve panels came out straddling a real one: two
- * halves of two different creatures, in a circle, twelve times.
+ * 誤 Twice wrong before this. First the outer frame was walked in from the edge and 獸丙
+ * gave up the demon ogre's shoulder as its left rule. Then every boundary was simply
+ * the darkest line near where it was expected, and 獸王 gave up the dragon's body: that
+ * sheet is inked edge to edge, so a column through a warden is darker than the hairline
+ * ruled between two of them.
  *
- * 齊 So no boundary is special any more. A ruled page is very nearly regular, which makes
- * the even division a good guess for **all** of them, edges included, and each guess is
- * then pulled to the darkest line near it: a wide window for an inner rule, a narrow one
- * at the ends, where a rule has much less room to move. A creature cannot win that
- * contest, because it darkens its column for one row out of three while a rule darkens
- * it from top to bottom.
+ * 細 A rule is not the darkest thing on the page. It is the **thinnest**. So each line is
+ * scored on how much darker it is than the paper a little way to either side of it: a
+ * ruled hairline stands out against its own neighbourhood by a wide margin, and the
+ * middle of a creature does not, because the creature is dark there too. Absolute
+ * darkness is what a creature wins; local contrast is what only a rule wins.
+ *
+ * With no rule at all the best contrast is nothing and every cut falls back to the even
+ * division, which is what a page with no rules deserves.
  */
 function boundaries(p: Float64Array, n: number, span: number): number[] {
+  /** How far to either side the neighbourhood reaches, skipping the rule's own width. */
+  const NEAR = 22;
+  const SKIP = 3;
+  const contrast = (i: number) => {
+    let sum = 0;
+    let count = 0;
+    for (let d = SKIP; d <= NEAR; d++) {
+      for (const x of [i - d, i + d]) {
+        if (x < 0 || x >= span) continue;
+        sum += p[x];
+        count++;
+      }
+    }
+    return count === 0 ? 0 : sum / count - p[i];
+  };
+
   const cell = span / n;
   const cuts: number[] = [];
   for (let i = 0; i <= n; i++) {
@@ -106,14 +124,13 @@ function boundaries(p: Float64Array, n: number, span: number): number[] {
     const lo = Math.max(0, Math.round(nominal - reach));
     const hi = Math.min(span - 1, Math.round(nominal + reach));
     let best = Math.round(Math.min(span - 1, nominal));
-    let low = Infinity;
+    let high = -Infinity;
     for (let x = lo; x <= hi; x++) {
-      // 心 A tie goes to the guess: a sheet with no rule at all should cut where it was
-      // asked to rather than wherever the paper happened to be a shade darker.
-      const score = p[x] + Math.abs(x - nominal) * 0.02;
-      if (score < low) { low = score; best = x; }
+      // 心 A tie goes to the guess, and a page with no rules cuts where it was asked to.
+      const score = contrast(x) - Math.abs(x - nominal) * 0.02;
+      if (score > high) { high = score; best = x; }
     }
-    cuts.push(best);
+    cuts.push(high > 3 ? best : Math.round(Math.min(span - 1, nominal)));
   }
   return cuts;
 }
@@ -195,6 +212,48 @@ function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; 
  * half-there rather than cutting it off square. A median pass afterwards takes out the
  * grain the paper itself scores on, which is a speck at a time and never a shape.
  */
+/**
+ * 暈 The cultivator, with the paper kept and its edges dissolved.
+ *
+ * 面 Keying him is not a tuning problem, it is impossible: in an ink portrait **the skin
+ * is the paper**. Face and ground are the same colour by construction, so every key that
+ * removed the ground removed the face with it and left a hole with hair floating over it.
+ * Three attempts at the threshold all failed the same way and they were always going to.
+ *
+ * So the paper stays and the edges are let go instead: an ellipse fitted to the panel,
+ * opaque over the figure and falling to nothing before the rule. On the dark ground,
+ * inside 光 the aura the game draws behind him, that reads as a painting the lamp is
+ * finding rather than a card someone put down.
+ */
+async function vignette(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
+  const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h, channels: ch } = info;
+  const rgba = Buffer.alloc(w * h * 4);
+  /** Where the ellipse is still solid, and where it has finished fading. */
+  const SOLID = 0.7;
+  const GONE = 1.02;
+  for (let y = 0; y < h; y++) {
+    const ny = (y / (h - 1)) * 2 - 1;
+    for (let x = 0; x < w; x++) {
+      const nx = (x / (w - 1)) * 2 - 1;
+      const r = Math.sqrt(nx * nx + ny * ny);
+      const t = (GONE - r) / (GONE - SOLID);
+      const a = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+      const i = (y * w + x) * ch;
+      const j = (y * w + x) * 4;
+      rgba[j] = data[i];
+      rgba[j + 1] = data[i + 1];
+      rgba[j + 2] = data[i + 2];
+      rgba[j + 3] = Math.round(a * 255);
+    }
+  }
+  const scale = Math.max(w, h) > CUT_MAX ? CUT_MAX / Math.max(w, h) : 1;
+  await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+    .resize(Math.round(w * scale), Math.round(h * scale))
+    .webp({ quality: 88, alphaQuality: 92 })
+    .toFile(out);
+}
+
 async function cutout(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
   const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels: ch } = info;
@@ -214,16 +273,98 @@ async function cutout(file: string, box: { left: number; top: number; width: num
   const pl = 0.299 * pr + 0.587 * pg + 0.114 * pb;
   const prg = pr - pg, pgb = pg - pb;
 
-  const LO = 15;
-  const HI = 44;
-  const alpha = Buffer.alloc(w * h);
+  // 差 How far each pixel is from the paper: darker than it, or leaning off its colour.
+  const far = Buffer.alloc(w * h);
   for (let i = 0, j = 0; j < w * h; i += ch, j++) {
     const r = data[i], g = data[i + 1], b = data[i + 2];
     const l = 0.299 * r + 0.587 * g + 0.114 * b;
     const d = Math.max(0, pl - l) + Math.abs(r - g - prg) * 0.8 + Math.abs(g - b - pgb) * 0.8;
-    const t = (d - LO) / (HI - LO);
+    far[j] = d > 255 ? 255 : Math.round(d);
+  }
+
+  /**
+   * 身 The neighbourhood, so a pale patch inside a figure is not mistaken for paper.
+   *
+   * 誤 The first key looked at each pixel on its own. That is right for a creature, which
+   * is painted dark against bare paper, and wrong for 修 the cultivator, whose robe is a
+   * wash a shade or two off the paper it is on. The nine cultivators came back moth
+   * eaten: every pale fold of the robe keyed out, the face left as a blot, and the ninth,
+   * which is meant to be barely there, keyed out almost entirely.
+   *
+   * A blurred copy of the same measurement answers "is there a painting *around here*".
+   * Inside the robe it is well above nothing even where the pixel itself is nearly paper.
+   * On bare paper it is nothing, because nothing is near. Adding it back lets the wash
+   * survive while the paper still goes.
+   */
+  const near = await sharp(far, { raw: { width: w, height: h, channels: 1 } })
+    .blur(6).toColourspace('b-w').raw().toBuffer();
+
+  /**
+   * 淡 How strongly this panel is painted at all, so the key can be as gentle as the
+   * painting is faint.
+   *
+   * 九 The ninth cultivator is *meant* to be barely there: half of them is left as bare
+   * paper on purpose. A key tuned for a dragon shreds that into blotches. Scaling the
+   * two ends of the ramp by the panel's own strongest ink keeps a faint painting faint
+   * instead of destroying it, and leaves a dark one exactly where it was.
+   */
+  const sorted = Array.from(far).sort((a, b) => a - b);
+  const strongest = sorted[Math.floor(sorted.length * 0.99)];
+  const gentle = Math.max(0.34, Math.min(1, strongest / 110));
+  const LO = 26 * gentle;
+  const HI = 62 * gentle;
+
+  const alpha = Buffer.alloc(w * h);
+  for (let j = 0; j < w * h; j++) {
+    // 或 The larger of the two, not the sum. A creature painted dark on bare paper passes
+    // on its own pixel and owes the neighbourhood nothing; a wash that is barely off the
+    // paper passes on the neighbourhood alone. Summing them let the paper *around* a
+    // figure creep over the line and every cultivator came back wearing a ragged halo.
+    const score = Math.max(far[j], near[j] * 2.2);
+    const t = (score - LO) / (HI - LO);
     alpha[j] = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
   }
+  /**
+   * 孔 Fill the holes the key punched in the middle of a pale creature.
+   *
+   * 誤 獸王 the wardens are painted in mist and bone white, and the key ate the middle out
+   * of nearly all nine: the fox's chest, the crane's body and the tiger's face all came
+   * back as black holes with an outline around them. A pale interior is paper by every
+   * measurement there is, and it is not paper, it is the animal.
+   *
+   * 圍 What tells them apart is not colour but enclosure. Real paper reaches the edge of
+   * the panel; a hole does not. So the transparent regions are walked, any that touches
+   * the border is left alone, and any that does not is filled back in. A region is only
+   * filled if it is small next to the panel, so a genuine gap the animal happens to close
+   * round, between a wing and a body, is left as the gap it is.
+   */
+  {
+    const solid = (j: number) => alpha[j] > 40;
+    const seen = new Uint8Array(w * h);
+    const stack: number[] = [];
+    for (let j = 0; j < w * h; j++) {
+      if (seen[j] || solid(j)) continue;
+      const region: number[] = [];
+      let touchesEdge = false;
+      stack.push(j);
+      seen[j] = 1;
+      while (stack.length) {
+        const k = stack.pop()!;
+        region.push(k);
+        const x = k % w;
+        const y = (k - x) / w;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touchesEdge = true;
+        if (x > 0 && !seen[k - 1] && !solid(k - 1)) { seen[k - 1] = 1; stack.push(k - 1); }
+        if (x < w - 1 && !seen[k + 1] && !solid(k + 1)) { seen[k + 1] = 1; stack.push(k + 1); }
+        if (y > 0 && !seen[k - w] && !solid(k - w)) { seen[k - w] = 1; stack.push(k - w); }
+        if (y < h - 1 && !seen[k + w] && !solid(k + w)) { seen[k + w] = 1; stack.push(k + w); }
+      }
+      if (!touchesEdge && region.length < w * h * 0.25) {
+        for (const k of region) alpha[k] = 255;
+      }
+    }
+  }
+
   // 生 Raw in, raw out, and one channel out. An encoded buffer read back as raw comes out
   // as scan lines, and sharp promotes a one-channel raw input to three on the way through
   // a blur, so without the colourspace the mask is three times the size it should be.
@@ -305,7 +446,7 @@ async function cut(sheet: Sheet, file: string) {
     // 修 The cultivator is only ever wanted with the paper off: he stands inside an aura
     // the game draws, never on a disc, so there is no squared version to keep.
     if (sheet.kind === 'self') {
-      await cutout(file, box, out);
+      await vignette(file, box, out);
       written.push(out);
       continue;
     }

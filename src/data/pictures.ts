@@ -121,7 +121,26 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     'worm',
     'wraith',
   ],
-  self: [],
+  self: [
+    'man-1',
+    'man-2',
+    'man-3',
+    'man-4',
+    'man-5',
+    'man-6',
+    'man-7',
+    'man-8',
+    'man-9',
+    'woman-1',
+    'woman-2',
+    'woman-3',
+    'woman-4',
+    'woman-5',
+    'woman-6',
+    'woman-7',
+    'woman-8',
+    'woman-9',
+  ],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */

@@ -34,6 +34,7 @@ function cultivator(realm) {
       id: `c${i}`, template: `${['sword', 'robe', 'plainring', 'sandals'][i % 4]}${Math.max(2, realm - (i % 3))}`,
       rarity: ['common', 'spirit', 'mystic', 'earth'][i % 4], rolls: [{ affix: 'power', value: 5 + i }],
     })),
+    self: 'woman',
     stance: 'swift', sequence: realm >= 3 ? ['crane'] : [], tribulation: 0, tribulationAt: 0,
     tower: realm >= 5 ? realm * 10 : 0, brewed: { body: 0, bane: 0, fortune: 0 },
     // 悟 Every awakening the realm owes, already taken, so the card that asks for one is
