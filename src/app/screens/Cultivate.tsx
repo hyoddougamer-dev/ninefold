@@ -1,4 +1,5 @@
 import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
@@ -226,7 +227,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           </h2>
           <div className="card">
             <div className="row">
-              <Plate kind="beast" subject={w.key} icon={w.icon} colour={r.colour}
+              <Plate kind="beast" subject={plateOf(w)} icon={w.icon} colour={r.colour}
                 tier={2} size={52} alt={w.name} />
               <span style={{ flex: 1 }}>
                 <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>{w.han}</b>

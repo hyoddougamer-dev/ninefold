@@ -1,4 +1,5 @@
 import { LINES, PILL_LINES } from '../../data/alchemy.ts';
+import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
@@ -62,7 +63,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
       </span>
       <div className="card" style={{ borderColor: r.colour }}>
         <div className="row">
-          <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+          <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={r.colour}
             tier={floor % 9 === 0 ? 2 : 1} size={52} alt={beast.name} />
           <span style={{ flex: 1 }}>
             <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>

@@ -23,7 +23,7 @@
  * Run with `npm run pictures`.
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { BEASTS } from '../src/data/bestiary.ts';
+import { BEASTS, HEAVEN_PLATES } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
@@ -35,10 +35,12 @@ const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self', 'm
 
 /** What each kind is allowed to be named, so a stray file cannot enter the game. */
 const KEYS: Record<Painted, readonly string[]> = {
-  beast: BEASTS.map((b) => b.key),
+  // 境外 The nine heavens' Dragons file their paintings beside the bestiary's, because
+  // they are fought the same way and shown in the same frame. They are not beasts.
+  beast: [...BEASTS.map((b) => b.key), ...HEAVEN_PLATES],
   realm: REALMS.map((r) => String(r.n)),
   heaven: HEAVENS.map((h) => String(h.n)),
-  cut: BEASTS.map((b) => b.key),
+  cut: [...BEASTS.map((b) => b.key), ...HEAVEN_PLATES],
   self: FIGURES.flatMap((f) => REALMS.map((r) => figureKey(f.key, r.n))),
   meet: MEETINGS.map((m) => m.key),
 };

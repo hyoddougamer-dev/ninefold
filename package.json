@@ -33,7 +33,8 @@
     "sheets": "tsx tools/sheets.ts",
     "slice": "tsx tools/slice.ts",
     "screens": "node tools/shot-screens.mjs",
-    "repaint": "tsx tools/repaint.ts"
+    "repaint": "tsx tools/repaint.ts",
+    "artgaps": "tsx tools/artgaps.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

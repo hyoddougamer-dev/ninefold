@@ -1,4 +1,5 @@
 import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
+import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
@@ -113,8 +114,18 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
   const f = frameAt(outcome, beat);
   const r = realmOf(realm);
   const br = realmOf(beast.realm);
-  const cut = pictureOf('cut', beast.key);
-  const sky = pictureOf('realm', String(beast.realm));
+  const cut = pictureOf('cut', plateOf(beast));
+  /**
+   * 畫 The place this fight happens in.
+   *
+   * 境外 Above the ninth realm it is the heaven's own, not the ninth realm's. The audit
+   * found nine heaven backdrops declared in 畫 the picture list with nothing on any
+   * screen asking for them, which is the quiet kind of gap: the slot existed, the files
+   * would have been made, and they would have hung there unseen.
+   */
+  const aboveSummit = beast.plate?.startsWith('heaven-') ? beast.plate.slice(7) : null;
+  const sky = (aboveSummit && pictureOf('heaven', aboveSummit))
+    ?? pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const say = over ? verdictLine(outcome.won, !!beast.warden) : blowLine(f.striker, f.round);
   /**
@@ -190,7 +201,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
               {cut
                 ? <img className="beastcut" src={cut} alt={beast.name} />
                 : (
-                  <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={br.colour}
+                  <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={br.colour}
                          tier={beast.realm >= 9 ? 3 : beast.warden ? 2 : 1} size={94}
                          alt={beast.name} />
                 )}

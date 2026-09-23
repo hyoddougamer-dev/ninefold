@@ -45,6 +45,16 @@ export interface Beast {
   readonly icon: string;
   /** Wardens bar the breakthrough; commons are free hunting. */
   readonly warden?: true;
+  /**
+   * 牌 The key this creature's painting is filed under, when it is not its own.
+   *
+   * 境外 A heaven's Dragon is built by `currentWarden` out of the ninth realm's dragon
+   * with a different name and a different character on it, and it keeps that dragon's
+   * `key` on purpose, because the key is what the kill record is counted by. Which meant
+   * all nine of them showed the same painting: forty crossings against one picture, which
+   * is the exact thing the named Dragons were introduced to stop.
+   */
+  readonly plate?: string;
 }
 
 /** 層 Where in a realm its three commons walk out. See Beast.layer for the measurement. */
@@ -146,3 +156,16 @@ export function huntable(realm: number, layer = LAYERS_PER_REALM - 1): readonly 
 export function comingIn(realm: number, layer: number): readonly Beast[] {
   return commonsOf(realm).filter((x) => x.layer > layer).sort((a, c) => a.layer - c.layer);
 }
+
+/** 牌 Which painting to look for, which is the creature's own key unless it says otherwise. */
+export const plateOf = (b: Beast) => b.plate ?? b.key;
+
+/**
+ * 境外 The keys the nine heavens' Dragons file their paintings under.
+ *
+ * They are not in BEASTS and must not be: nothing hunts them, nothing counts them, and a
+ * bestiary with forty entries in it would be a lie. They exist so 畫 the picture list can
+ * hold a painting for each of them.
+ */
+export const HEAVEN_PLATES: readonly string[] =
+  Array.from({ length: 9 }, (_, i) => `heaven-${i + 1}`);

@@ -453,7 +453,7 @@ export function currentWarden(s: State): Beast {
   if (s.realm === 9 && heaven) {
     const dragon = wardenOf(9);
     return { ...dragon, han: heaven.dragon.han, name: heaven.dragon.name,
-             icon: heaven.dragon.icon };
+             icon: heaven.dragon.icon, plate: `heaven-${heaven.n}` };
   }
   return wardenOf(s.realm);
 }

@@ -69,9 +69,9 @@
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>Seven sheets are done and they painted almost the whole game</b>: 36
-      creatures, 9 places and the cultivator twice, 63 paintings. What is left is 緣 the
-      ten encounters and 境外 the nine heavens.</p>
+    <p class="t"><b>Eight sheets are done</b>: 36 creatures, 9 places, the cultivator
+      twice and the ten encounters, 73 paintings. 缺 the table below is what is left, read
+      out of the game's own tables rather than guessed at.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       <tr><td><b class="cjk">獸王</b> The nine wardens</td>
@@ -82,7 +82,11 @@
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/self-man.png</code></td></tr><tr><td><b class="cjk">緣</b> The ten encounters</td>
         <td>10 panels</td><td>4 by 3</td>
-        <td><code>ink-sheets/meetings.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
+        <td><code>ink-sheets/meetings.png</code></td></tr><tr><td><b class="cjk">境外</b> The nine Dragons of the heavens</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/heavens.png</code></td></tr><tr><td><b class="cjk">天</b> The nine heavens, as places</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/skies.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/beasts-a.png</code></td></tr><tr><td><b class="cjk">獸乙</b> The commons of the middle three realms</td>
         <td>9 panels</td><td>3 by 3</td>
@@ -92,19 +96,84 @@
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/realms.png</code></td></tr>
     </table>
-    <div class="rule"><b>緣 The encounters are the one to do next.</b> They are the cards
-      the game raises on its own screen while you are sitting there, and each one is still
-      carrying a pictogram in place of a picture: a raven for a crow that has followed you
-      a mile, a cauldron for an abandoned furnace. They are the one moment an idle game
-      stops for.
-      <b>This sheet is the only one that is not square.</b> Every encounter is a thing
-      lying in a road or a person standing in one, and a scene wants width, so it is four
-      across and three down and the last two panels are asked for empty.</div>
+    <div class="rule"><b>境外 The nine Dragons are the one to do next.</b> Above the ninth
+      realm the climb does not stop, it changes animal, and they are named because the
+      alternative was measured and it is grim: forty crossings against one beast called
+      龍. They were about to repeat that in a new way, because all nine were showing the
+      ninth realm's painting: a heaven's Dragon is built out of that dragon and keeps its
+      key, which is what the kill record counts by. They file under their own keys now.</div>
     <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
       The aura grows with the climb, it breathes on a pulse the code owns and it is read
       off the save, so it stays drawn and the painting stands inside it. Asking a model for
       a glow nine times would give nine different glows and the ladder would stop reading
       as a ladder.</div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">缺</span> What is still a pictogram</h2>
+    <p class="t">Read from the game's own tables by <code>npm run artgaps</code>, so a
+      family that gains a member is counted the next time it runs. <b>A tick is a family
+      the game no longer draws as a symbol.</b></p>
+    <table>
+      <tr><th></th><th>What</th><th>Painted</th><th>Where it is seen</th><th>What it would take</th></tr>
+      <tr><td>✓</td>
+          <td><b class="cjk">獸</b> creatures</td>
+          <td><code>36 of 36</code></td>
+          <td>狩 the hunt list, 錄 the bestiary, 塔 a tower floor, 鬥 the arena</td>
+          <td>done</td></tr><tr><td></td>
+          <td><b class="cjk">龍</b> the heavens' Dragons</td>
+          <td><code>0 of 9</code></td>
+          <td>鬥 the arena and 修 the card, above the ninth realm</td>
+          <td>the prompt above</td></tr><tr><td>✓</td>
+          <td><b class="cjk">境</b> realms</td>
+          <td><code>9 of 9</code></td>
+          <td>境 the realm card, and behind 鬥 the arena</td>
+          <td>done</td></tr><tr><td>✓</td>
+          <td><b class="cjk">修</b> the cultivator</td>
+          <td><code>18 of 18</code></td>
+          <td>every screen with a portrait on it</td>
+          <td>done</td></tr><tr><td>✓</td>
+          <td><b class="cjk">緣</b> encounters</td>
+          <td><code>10 of 10</code></td>
+          <td>修 the card that stops the game</td>
+          <td>done</td></tr><tr><td></td>
+          <td><b class="cjk">境外</b> heaven backdrops</td>
+          <td><code>0 of 9</code></td>
+          <td>鬥 behind a fight above the ninth realm</td>
+          <td>the prompt above</td></tr><tr><td></td>
+          <td><b class="cjk">悟道</b> awakening cards</td>
+          <td><code>0 of 24</code></td>
+          <td>悟道 the sheet at every breakthrough</td>
+          <td>3 sheets of nine</td></tr><tr><td></td>
+          <td><b class="cjk">訣</b> arts and stances</td>
+          <td><code>0 of 18</code></td>
+          <td>勢 the loadout, and 道 the path tab</td>
+          <td>2 sheets of nine</td></tr><tr><td></td>
+          <td><b class="cjk">器</b> gear templates</td>
+          <td><code>0 of 486</code></td>
+          <td>器 the gear screen, every chest row, every drop</td>
+          <td>drawn by the game from the template and the rarity, and it already reads</td></tr><tr><td></td>
+          <td><b class="cjk">草</b> herbs</td>
+          <td><code>0 of 3</code></td>
+          <td>洞天 the cave beds</td>
+          <td>3 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td><b class="cjk">丹</b> pill lines</td>
+          <td><code>0 of 3</code></td>
+          <td>爐 the furnace</td>
+          <td>3 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td><b class="cjk">秘境</b> secret realm rooms</td>
+          <td><code>0 of 4</code></td>
+          <td>秘境 the vault</td>
+          <td>4 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td><b class="cjk">道</b> technique nodes</td>
+          <td><code>0 of 28</code></td>
+          <td>道 the path tree</td>
+          <td>none: they are dots on a tree at 30px and a painting would not survive it</td></tr>
+    </table>
+    <div class="rule"><b>器 The gear is the one that should stay drawn.</b> There are 486
+      templates and they are built by the game out of a shape, a realm and a rarity, so
+      they already read at a glance and no two are the same. A sheet could not cover them
+      and would make them worse.</div>
   </section>
 
   <section class="sec">
@@ -334,6 +403,104 @@ hundred years ago. No text, no letters and no characters anywhere.
 
 Again, and this matters more than anything else in this prompt: 12
 panels, 4 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">境外</span> The nine Dragons of the heavens</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
+      <code>ink-sheets/heavens.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">蒼龍</span>
+      <i>Azure Dragon</i><code>beast/heaven-1.webp</code></div><div class="shcell"><b>2</b><span class="cjk">金龍</span>
+      <i>Golden Dragon</i><code>beast/heaven-2.webp</code></div><div class="shcell"><b>3</b><span class="cjk">九嬰</span>
+      <i>Nine-Headed Hydra</i><code>beast/heaven-3.webp</code></div><div class="shcell"><b>4</b><span class="cjk">雙龍</span>
+      <i>Twin Dragons</i><code>beast/heaven-4.webp</code></div><div class="shcell"><b>5</b><span class="cjk">應龍</span>
+      <i>Winged Dragon</i><code>beast/heaven-5.webp</code></div><div class="shcell"><b>6</b><span class="cjk">燭龍</span>
+      <i>Torch Dragon</i><code>beast/heaven-6.webp</code></div><div class="shcell"><b>7</b><span class="cjk">星君</span>
+      <i>Star Lord</i><code>beast/heaven-7.webp</code></div><div class="shcell"><b>8</b><span class="cjk">混沌</span>
+      <i>Chaos</i><code>beast/heaven-8.webp</code></div><div class="shcell"><b>9</b><span class="cjk">鴻蒙</span>
+      <i>The Uncarved</i><code>beast/heaven-9.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese bestiary album, ruled
+into a grid of 3 columns by 3 rows, 9 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+9 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: an azure dragon coiled in cloud, seen from the front, its head lowered towards the viewer. Its one pigment is imperial violet.
+  Row 1, panel 2: a golden dragon, heavier and older than the first, scales catching what light there is. Its one pigment is dusk violet.
+  Row 1, panel 3: a nine-headed hydra, the necks rising together out of one body. Its one pigment is faded plum.
+  Row 2, panel 1: two dragons twined round each other, coming as one thing. Its one pigment is old rose.
+  Row 2, panel 2: a winged dragon in the air, nothing beneath it, its feet long since off the ground. Its one pigment is pale amber.
+  Row 2, panel 3: a torch dragon whose open eyes are daylight, a lantern in its throat. Its one pigment is gold leaf.
+  Row 3, panel 1: a star lord: a robed figure with a dragon's head, older than most of what it fights. Its one pigment is pale gold.
+  Row 3, panel 2: primordial chaos: a vast coiled thing with no face and no need of one. Its one pigment is bone white.
+  Row 3, panel 3: the uncarved block: a shape that is barely a dragon at all, half of it left as bare paper. Its one pigment is almost nothing but paper.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">天</span> The nine heavens, as places</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
+      <code>ink-sheets/skies.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">真仙</span>
+      <i>True Immortal</i><code>heaven/1.webp</code></div><div class="shcell"><b>2</b><span class="cjk">金仙</span>
+      <i>Golden Immortal</i><code>heaven/2.webp</code></div><div class="shcell"><b>3</b><span class="cjk">太乙</span>
+      <i>Supreme Unity</i><code>heaven/3.webp</code></div><div class="shcell"><b>4</b><span class="cjk">大羅</span>
+      <i>Grand Veil</i><code>heaven/4.webp</code></div><div class="shcell"><b>5</b><span class="cjk">准聖</span>
+      <i>Quasi-Sage</i><code>heaven/5.webp</code></div><div class="shcell"><b>6</b><span class="cjk">聖人</span>
+      <i>Sage</i><code>heaven/6.webp</code></div><div class="shcell"><b>7</b><span class="cjk">道祖</span>
+      <i>Dao Ancestor</i><code>heaven/7.webp</code></div><div class="shcell"><b>8</b><span class="cjk">混元</span>
+      <i>Primordial Unity</i><code>heaven/8.webp</code></div><div class="shcell"><b>9</b><span class="cjk">鴻蒙</span>
+      <i>The Uncarved</i><code>heaven/9.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese bestiary album, ruled
+into a grid of 3 columns by 3 rows, 9 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+9 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one sky seen from above the weather, with no ground in it at all and a great deal of empty paper. These are not landscapes: there are no mountains in the foreground and nothing to stand on. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: cloud from above, with the tops of the highest peaks breaking through it far below. Its one pigment is imperial violet.
+  Row 1, panel 2: a sea of cloud lit from underneath, nothing solid anywhere in the picture. Its one pigment is dusk violet.
+  Row 1, panel 3: the last mountain, alone, with nothing around it in any direction. Its one pigment is faded plum.
+  Row 2, panel 1: a vast empty sky with a single distant gate standing in it on nothing. Its one pigment is old rose.
+  Row 2, panel 2: stars coming through a thinning sky, the ground long gone. Its one pigment is pale amber.
+  Row 2, panel 3: an enormous slow sun low over an unbroken plain of cloud. Its one pigment is gold leaf.
+  Row 3, panel 1: the night side: constellations, and the curve of something very large below them. Its one pigment is pale gold.
+  Row 3, panel 2: almost nothing: a wash of pale mist with one faint horizon in it. Its one pigment is bone white.
+  Row 3, panel 3: bare paper with the ghost of a horizon, as close to empty as a painting gets. Its one pigment is almost nothing but paper.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
     <h2><span class="h cjk">獸甲</span> The commons of the first three realms</h2>

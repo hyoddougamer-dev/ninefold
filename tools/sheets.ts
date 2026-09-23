@@ -29,6 +29,8 @@ import { pathToFileURL } from 'node:url';
 import { BEASTS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
+import { HEAVENS } from '../src/data/heavens.ts';
+import { FAMILIES, paintedIn } from './artgaps.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
 import { mix } from '../src/art/aura.ts';
 import { MATERIALS, enso, inkOf } from './ink.ts';
@@ -46,7 +48,7 @@ export interface Sheet {
   readonly key: string;
   readonly han: string;
   readonly title: string;
-  readonly kind: 'beast' | 'realm' | 'self' | 'meet';
+  readonly kind: 'beast' | 'realm' | 'self' | 'meet' | 'heaven';
   readonly cols: number;
   readonly rows: number;
   /** Reading order: left to right, then down. */
@@ -197,10 +199,100 @@ function meetSheet(): Sheet {
   };
 }
 
+/**
+ * 境外 The nine Dragons of the heavens.
+ *
+ * 龍 Above the ninth realm the climb does not stop, it changes animal: every third
+ * crossing puts a new Dragon in front of the cultivator, and they are named because the
+ * alternative was measured and it is grim, forty crossings against one beast called 龍.
+ *
+ * 誤 Painted, they were about to repeat the same mistake in a new way. `currentWarden`
+ * builds a heaven's Dragon out of the ninth realm's dragon with a different name on it
+ * and keeps its key, because the key is what the kill record counts by, so all nine of
+ * them were showing the ninth realm's painting. They file under their own keys now.
+ *
+ * 白 And they leave the pigment ladder. The realms end at imperial violet and the
+ * heavens climb from there through gold leaf to bone white, so these nine go the other
+ * way from everything else in the game: paler, thinner, less there, until the last one
+ * is almost the paper it is painted on.
+ */
+const HEAVEN_SCENE = [
+  'an azure dragon coiled in cloud, seen from the front, its head lowered towards the viewer',
+  'a golden dragon, heavier and older than the first, scales catching what light there is',
+  'a nine-headed hydra, the necks rising together out of one body',
+  'two dragons twined round each other, coming as one thing',
+  'a winged dragon in the air, nothing beneath it, its feet long since off the ground',
+  'a torch dragon whose open eyes are daylight, a lantern in its throat',
+  'a star lord: a robed figure with a dragon\'s head, older than most of what it fights',
+  'primordial chaos: a vast coiled thing with no face and no need of one',
+  'the uncarved block: a shape that is barely a dragon at all, half of it left as bare paper',
+];
+
+function heavenSheet(): Sheet {
+  return {
+    key: 'heavens',
+    han: '境外',
+    title: 'The nine Dragons of the heavens',
+    kind: 'beast',
+    cols: 3,
+    rows: 3,
+    realms: [9, 9, 9],
+    cells: HEAVENS.map((h, i) => ({
+      key: `heaven-${h.n}`,
+      han: h.dragon.han,
+      name: h.dragon.name,
+      subject: HEAVEN_SCENE[i],
+    })),
+  };
+}
+
+/**
+ * 境外 The nine heavens as places.
+ *
+ * 棄 They had a slot and no screen: nine backdrops declared in 畫 the picture list that
+ * nothing was looking at, found by 缺 the audit rather than by anybody noticing. 鬥 the
+ * arena reads them now, so a fight above the ninth realm happens in the heaven it is
+ * being fought in rather than in the ninth realm again.
+ *
+ * 高 They are not landscapes the way a realm is. A realm is mountains and mist seen from
+ * a height; a heaven is what is left when the mountains are below the weather.
+ */
+const SKY_SCENE = [
+  'cloud from above, with the tops of the highest peaks breaking through it far below',
+  'a sea of cloud lit from underneath, nothing solid anywhere in the picture',
+  'the last mountain, alone, with nothing around it in any direction',
+  'a vast empty sky with a single distant gate standing in it on nothing',
+  'stars coming through a thinning sky, the ground long gone',
+  'an enormous slow sun low over an unbroken plain of cloud',
+  'the night side: constellations, and the curve of something very large below them',
+  'almost nothing: a wash of pale mist with one faint horizon in it',
+  'bare paper with the ghost of a horizon, as close to empty as a painting gets',
+];
+
+function skySheet(): Sheet {
+  return {
+    key: 'skies',
+    han: '天',
+    title: 'The nine heavens, as places',
+    kind: 'heaven',
+    cols: 3,
+    rows: 3,
+    realms: [9, 9, 9],
+    cells: HEAVENS.map((h, i) => ({
+      key: String(h.n),
+      han: h.han,
+      name: h.name,
+      subject: SKY_SCENE[i],
+    })),
+  };
+}
+
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
   ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
   meetSheet(),
+  heavenSheet(),
+  skySheet(),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -226,6 +318,10 @@ export const sheetOf = (key: string) => SHEETS.find((s) => s.key === key);
 /** 甲乙丙 The cell a person points at, named the way the sheet prompt names it. */
 export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) + 1}, column ${(i % s.cols) + 1}`;
 
+/** 境外 What the nine heavens are painted in: out of violet, through gold, to bone. */
+const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old rose',
+  'pale amber', 'gold leaf', 'pale gold', 'bone white', 'almost nothing but paper'];
+
 /**
  * 詞 The prompt for one sheet.
  *
@@ -240,15 +336,18 @@ export function sheetPrompt(s: Sheet): string {
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
     : s.kind === 'self'
     ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine and they do not age: what changes is their standing and how solidly they are there, from an ordinary villager in panel one to something barely painted in panel nine. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
+    : s.kind === 'heaven'
+    ? 'Each panel holds one sky seen from above the weather, with no ground in it at all and a great deal of empty paper. These are not landscapes: there are no mountains in the foreground and nothing to stand on.'
     : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {
       const n = s.kind === 'beast' || s.kind === 'meet' ? s.realms[Math.floor(i / s.cols)] : i + 1;
-      const pig = inkOf(s.kind === 'meet' ? s.realms[i] : n);
+      const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
+        : inkOf(s.kind === 'meet' ? s.realms[i] : n).stuff;
       const whose = s.kind === 'self' ? 'The one pigment on the robe is'
         : s.kind === 'meet' ? 'The one pigment in the scene is'
         : 'Its one pigment is';
-      return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. ${whose} ${pig.stuff}.`;
+      return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. ${whose} ${pig}.`;
     })
     .join('\n');
   const album = s.kind === 'self' ? 'album of portraits'
@@ -480,28 +579,49 @@ const page = `<meta charset="utf-8">
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>Seven sheets are done and they painted almost the whole game</b>: 36
-      creatures, 9 places and the cultivator twice, 63 paintings. What is left is 緣 the
-      ten encounters and 境外 the nine heavens.</p>
+    <p class="t"><b>Eight sheets are done</b>: 36 creatures, 9 places, the cultivator
+      twice and the ten encounters, 73 paintings. 缺 the table below is what is left, read
+      out of the game's own tables rather than guessed at.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
         <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
         <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
     </table>
-    <div class="rule"><b>緣 The encounters are the one to do next.</b> They are the cards
-      the game raises on its own screen while you are sitting there, and each one is still
-      carrying a pictogram in place of a picture: a raven for a crow that has followed you
-      a mile, a cauldron for an abandoned furnace. They are the one moment an idle game
-      stops for.
-      <b>This sheet is the only one that is not square.</b> Every encounter is a thing
-      lying in a road or a person standing in one, and a scene wants width, so it is four
-      across and three down and the last two panels are asked for empty.</div>
+    <div class="rule"><b>境外 The nine Dragons are the one to do next.</b> Above the ninth
+      realm the climb does not stop, it changes animal, and they are named because the
+      alternative was measured and it is grim: forty crossings against one beast called
+      龍. They were about to repeat that in a new way, because all nine were showing the
+      ninth realm's painting: a heaven's Dragon is built out of that dragon and keeps its
+      key, which is what the kill record counts by. They file under their own keys now.</div>
     <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
       The aura grows with the climb, it breathes on a pulse the code owns and it is read
       off the save, so it stays drawn and the painting stands inside it. Asking a model for
       a glow nine times would give nine different glows and the ladder would stop reading
       as a ladder.</div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="h">缺</span> What is still a pictogram</h2>
+    <p class="t">Read from the game's own tables by <code>npm run artgaps</code>, so a
+      family that gains a member is counted the next time it runs. <b>A tick is a family
+      the game no longer draws as a symbol.</b></p>
+    <table>
+      <tr><th></th><th>What</th><th>Painted</th><th>Where it is seen</th><th>What it would take</th></tr>
+      ${FAMILIES.map((f) => {
+        const have = paintedIn(f);
+        const done = !!f.kind && have >= f.count;
+        return `<tr><td>${done ? '✓' : ''}</td>
+          <td><b class="cjk">${f.han}</b> ${f.name}</td>
+          <td><code>${have} of ${f.count}</code></td>
+          <td>${f.seen}</td>
+          <td>${done ? 'done' : f.sheet ?? 'the prompt above'}</td></tr>`;
+      }).join('')}
+    </table>
+    <div class="rule"><b>器 The gear is the one that should stay drawn.</b> There are 486
+      templates and they are built by the game out of a shape, a realm and a rarity, so
+      they already read at a glance and no two are the same. A sheet could not cover them
+      and would make them worse.</div>
   </section>
 
   <section class="sec">

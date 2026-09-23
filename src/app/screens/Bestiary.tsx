@@ -1,4 +1,4 @@
-import { BEASTS } from '../../data/bestiary.ts';
+import { BEASTS, plateOf } from '../../data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import type { State } from '../../sim/state.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
@@ -49,7 +49,7 @@ export function Bestiary({ state }: { state: State }) {
                 const marks = marksOf(kills);
                 return (
                   <div key={b.key} className="card3" data-seen={found}>
-                    <Plate kind="beast" subject={b.key} icon={b.icon} colour={realmOf(b.realm).colour}
+                    <Plate kind="beast" subject={plateOf(b)} icon={b.icon} colour={realmOf(b.realm).colour}
                       tier={b.warden ? 2 : 1} size={46} alt={b.name} />
                     <b style={{ color: found ? r.colour : 'var(--faint)' }}>{found ? b.han : '？'}</b>
                     <i>{found ? `${kills} killed` : b.warden ? 'warden' : '—'}</i>

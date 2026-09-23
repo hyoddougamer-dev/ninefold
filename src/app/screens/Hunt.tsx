@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BEASTS, comingIn, huntable } from '../../data/bestiary.ts';
+import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
@@ -146,7 +146,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
                   hunt list is the screen they are for. Where a file is missing the
                   frame keeps the silhouette, so this is safe for the nine heavens and
                   for anything painted later. */}
-              <Plate kind="beast" subject={b.key} icon={b.icon} colour={r.colour}
+              <Plate kind="beast" subject={plateOf(b)} icon={b.icon} colour={r.colour}
                 tier={b.warden ? 2 : 1} size={46} alt={b.name} />
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
@@ -204,7 +204,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
             const r = realmOf(b.realm);
             return (
               <div key={b.key} className="row">
-                <Plate kind="beast" subject={b.key} icon={b.icon} colour={r.colour}
+                <Plate kind="beast" subject={plateOf(b)} icon={b.icon} colour={r.colour}
                   tier={b.warden ? 2 : 1} size={46} alt={b.name} />
                 <span className="bname">
                   <b style={{ color: r.colour }}>{b.han}</b>

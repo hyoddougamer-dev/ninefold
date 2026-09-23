@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from './Plate.tsx';
 import type { Beast } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -41,7 +42,7 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
     return (
       <div className="drivesheet">
         <div className="head">
-          <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+          <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={r.colour}
             tier={2} size={46} alt={beast.name} />
           <span>
             <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>
@@ -85,7 +86,7 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
   return (
     <div className="drivesheet">
       <div className="head">
-        <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+        <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={r.colour}
           tier={2} size={46} alt={beast.name} />
         <span>
           <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>

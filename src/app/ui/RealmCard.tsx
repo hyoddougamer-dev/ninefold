@@ -1,4 +1,5 @@
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
+import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { currentWarden } from '../../sim/combat.ts';
@@ -64,7 +65,7 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
 
       <h3>{REALMCARD.wardenHead}</h3>
       <div className="row">
-        <Plate kind="beast" subject={w.key} icon={w.icon} colour={r.colour}
+        <Plate kind="beast" subject={plateOf(w)} icon={w.icon} colour={r.colour}
           tier={2} size={46} alt={w.name} />
         <span style={{ flex: 1, minWidth: 0 }}>
           <b className="cjk" style={{ color: r.colour, display: 'block', fontSize: 16 }}>{w.han}</b>
