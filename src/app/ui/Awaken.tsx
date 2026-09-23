@@ -1,7 +1,6 @@
 import { due } from '../../sim/awaken.ts';
+import { Emblem } from './Emblem.tsx';
 import { realm as realmOf } from '../../data/realms.ts';
-import { icon } from '../../art/icon.ts';
-import { Svg } from './Svg.tsx';
 import { AWAKEN } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -41,7 +40,7 @@ export function Awaken({ state, onTake, onClose }: {
       <div className="cards">
         {trio.map((c) => (
           <button key={c.key} className="acard" onClick={() => onTake(c.key)}>
-            <span className="s"><Svg html={icon(c.icon, 30)} /></span>
+            <span className="s"><Emblem family="card" subject={c.key} icon={c.icon} size={30} alt={c.name} /></span>
             <span className="nm">
               <b className="cjk">{c.han}</b>
               <em>{c.name}</em>

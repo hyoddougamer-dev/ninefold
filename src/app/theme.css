@@ -1783,3 +1783,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .whom .pick em { font-style: normal; font-size: 12px; color: var(--faint); }
 .whom .later { margin: 22px auto 0; background: none; border: 0; color: var(--faint);
                font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+/* ── 符 an emblem in a row ─────────────────────────────────────────────── */
+
+/* It stands exactly where the pictogram stood, so a row that used one is the row it
+   always was. See ui/Emblem.tsx. */
+.emblem { display: block; object-fit: contain; border-radius: 4px; }

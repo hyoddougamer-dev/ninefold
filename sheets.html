@@ -70,8 +70,9 @@
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
     <p class="t"><b>Eight sheets are done</b>: 36 creatures, 9 places, the cultivator
-      twice and the ten encounters, 73 paintings. 缺 the table below is what is left, read
-      out of the game's own tables rather than guessed at.</p>
+      twice and the ten encounters, 73 paintings. <b>Seven more close the game.</b> 缺 the
+      table below is what is left, read out of the game's own tables rather than guessed
+      at, and every row of it now has a prompt further down.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       <tr><td><b class="cjk">獸王</b> The nine wardens</td>
@@ -86,7 +87,15 @@
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/heavens.png</code></td></tr><tr><td><b class="cjk">天</b> The nine heavens, as places</td>
         <td>9 panels</td><td>3 by 3</td>
-        <td><code>ink-sheets/skies.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
+        <td><code>ink-sheets/skies.png</code></td></tr><tr><td><b class="cjk">訣</b> The nine arts</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/arts.png</code></td></tr><tr><td><b class="cjk">悟甲</b> Awakening cards, the first twelve</td>
+        <td>12 panels</td><td>4 by 3</td>
+        <td><code>ink-sheets/awaken-a.png</code></td></tr><tr><td><b class="cjk">悟乙</b> Awakening cards, the last twelve</td>
+        <td>12 panels</td><td>4 by 3</td>
+        <td><code>ink-sheets/awaken-b.png</code></td></tr><tr><td><b class="cjk">雜</b> Herbs, pills and the rooms of the vault</td>
+        <td>10 panels</td><td>4 by 3</td>
+        <td><code>ink-sheets/sundries.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/beasts-a.png</code></td></tr><tr><td><b class="cjk">獸乙</b> The commons of the middle three realms</td>
         <td>9 panels</td><td>3 by 3</td>
@@ -142,13 +151,17 @@
           <td>鬥 behind a fight above the ninth realm</td>
           <td>the prompt above</td></tr><tr><td></td>
           <td><b class="cjk">悟道</b> awakening cards</td>
-          <td><code>0 of 24</code></td>
+          <td><code>12 of 24</code></td>
           <td>悟道 the sheet at every breakthrough</td>
-          <td>3 sheets of nine</td></tr><tr><td></td>
-          <td><b class="cjk">訣</b> arts and stances</td>
-          <td><code>0 of 18</code></td>
-          <td>勢 the loadout, and 道 the path tab</td>
-          <td>2 sheets of nine</td></tr><tr><td></td>
+          <td>悟甲 and 悟乙, two sheets of twelve</td></tr><tr><td></td>
+          <td><b class="cjk">訣</b> arts</td>
+          <td><code>0 of 9</code></td>
+          <td>勢 the loadout</td>
+          <td>訣, one sheet of nine</td></tr><tr><td></td>
+          <td><b class="cjk">勢</b> stances</td>
+          <td><code>0 of 9</code></td>
+          <td>勢 the loadout, as a character chip</td>
+          <td>none: a stance is not drawn as a symbol, it is a character and a name</td></tr><tr><td></td>
           <td><b class="cjk">器</b> gear templates</td>
           <td><code>0 of 486</code></td>
           <td>器 the gear screen, every chest row, every drop</td>
@@ -156,15 +169,15 @@
           <td><b class="cjk">草</b> herbs</td>
           <td><code>0 of 3</code></td>
           <td>洞天 the cave beds</td>
-          <td>3 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td>雜, shared with the pills and the rooms</td></tr><tr><td></td>
           <td><b class="cjk">丹</b> pill lines</td>
           <td><code>0 of 3</code></td>
           <td>爐 the furnace</td>
-          <td>3 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td>雜, shared with the herbs and the rooms</td></tr><tr><td></td>
           <td><b class="cjk">秘境</b> secret realm rooms</td>
           <td><code>0 of 4</code></td>
-          <td>秘境 the vault</td>
-          <td>4 panels, so it rides in the spare corner of another sheet</td></tr><tr><td></td>
+          <td>秘境 the vault, and its doorway on 狩</td>
+          <td>雜, shared with the herbs and the pills</td></tr><tr><td></td>
           <td><b class="cjk">道</b> technique nodes</td>
           <td><code>0 of 28</code></td>
           <td>道 the path tree</td>
@@ -501,6 +514,219 @@ hundred years ago. No text, no letters and no characters anywhere.
 
 Again, and this matters more than anything else in this prompt: 9
 panels, 3 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">訣</span> The nine arts</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
+      <code>ink-sheets/arts.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">狐影</span>
+      <i>Fox Shadow</i><code>emblem/art-fox.webp</code></div><div class="shcell"><b>2</b><span class="cjk">猿臂</span>
+      <i>Ape Arm</i><code>emblem/art-ape.webp</code></div><div class="shcell"><b>3</b><span class="cjk">鶴唳</span>
+      <i>Crane Cry</i><code>emblem/art-crane.webp</code></div><div class="shcell"><b>4</b><span class="cjk">虎嘯</span>
+      <i>Tiger Roar</i><code>emblem/art-tiger.webp</code></div><div class="shcell"><b>5</b><span class="cjk">龜息</span>
+      <i>Turtle Breath</i><code>emblem/art-turtle.webp</code></div><div class="shcell"><b>6</b><span class="cjk">傀儡</span>
+      <i>Puppet Thread</i><code>emblem/art-puppet.webp</code></div><div class="shcell"><b>7</b><span class="cjk">狼噬</span>
+      <i>Wolf Bite</i><code>emblem/art-wolf.webp</code></div><div class="shcell"><b>8</b><span class="cjk">蛟騰</span>
+      <i>Serpent Rise</i><code>emblem/art-serpent.webp</code></div><div class="shcell"><b>9</b><span class="cjk">龍威</span>
+      <i>Dragon Might</i><code>emblem/art-dragon.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese album of emblems, ruled
+into a grid of 3 columns by 3 rows, 9 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+9 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: a fox's shadow thrown long across the ground, the fox itself out of frame. Its one pigment is jade.
+  Row 1, panel 2: a long ape arm reaching down out of the top of the panel. Its one pigment is celadon.
+  Row 1, panel 3: a crane with its head thrown back, calling. Its one pigment is old bronze.
+  Row 2, panel 1: a tiger's open mouth, roaring, seen close. Its one pigment is gold leaf.
+  Row 2, panel 2: a turtle drawn into its shell, perfectly still. Its one pigment is amber.
+  Row 2, panel 3: a wooden puppet hanging from crossed control strings. Its one pigment is copper.
+  Row 3, panel 1: a wolf's head low and biting, teeth closed on nothing. Its one pigment is cinnabar.
+  Row 3, panel 2: a serpent rising out of water, half of it still under. Its one pigment is plum.
+  Row 3, panel 3: a dragon's head in cloud, only the head showing. Its one pigment is imperial violet.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">悟甲</span> Awakening cards, the first twelve</h2>
+    <p class="t">12 panels, 4 across and 3 down. Saved as
+      <code>ink-sheets/awaken-a.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">血食</span>
+      <i>Blood Feast</i><code>emblem/card-feast.webp</code></div><div class="shcell"><b>2</b><span class="cjk">負笈</span>
+      <i>The Pack</i><code>emblem/card-pack.webp</code></div><div class="shcell"><b>3</b><span class="cjk">頓悟</span>
+      <i>Sudden Insight</i><code>emblem/card-insight.webp</code></div><div class="shcell"><b>4</b><span class="cjk">貪狼</span>
+      <i>Greedy Wolf</i><code>emblem/card-wolf.webp</code></div><div class="shcell"><b>5</b><span class="cjk">火候</span>
+      <i>Heat Control</i><code>emblem/card-heat.webp</code></div><div class="shcell"><b>6</b><span class="cjk">遍野</span>
+      <i>Everywhere</i><code>emblem/card-everywhere.webp</code></div><div class="shcell"><b>7</b><span class="cjk">屠戮</span>
+      <i>Slaughter</i><code>emblem/card-slaughter.webp</code></div><div class="shcell"><b>8</b><span class="cjk">福星</span>
+      <i>Lucky Star</i><code>emblem/card-luckystar.webp</code></div><div class="shcell"><b>9</b><span class="cjk">廣袖</span>
+      <i>Wide Sleeves</i><code>emblem/card-sleeves.webp</code></div><div class="shcell"><b>10</b><span class="cjk">靈臺</span>
+      <i>Spirit Platform</i><code>emblem/card-platform.webp</code></div><div class="shcell"><b>11</b><span class="cjk">洞察</span>
+      <i>Insight</i><code>emblem/card-discern.webp</code></div><div class="shcell"><b>12</b><span class="cjk">點石</span>
+      <i>Stone to Gold</i><code>emblem/card-stonegold.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese album of emblems, ruled
+into a grid of 4 columns by 3 rows, 12 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+12 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: a stone offering bowl filled to the brim with dark blood. Its one pigment is jade.
+  Row 1, panel 2: a scholar's travelling case, its lid open and full. Its one pigment is celadon.
+  Row 1, panel 3: a single lit candle in a dark window, the moment it catches. Its one pigment is old bronze.
+  Row 1, panel 4: a wolf sitting beside a heap of coins, guarding them. Its one pigment is gold leaf.
+  Row 2, panel 1: a bellows and a pair of iron tongs laid crossed on a forge. Its one pigment is amber.
+  Row 2, panel 2: a wide plain with tracks of many animals crossing it. Its one pigment is copper.
+  Row 2, panel 3: a butcher's cleaver standing in a block, alone. Its one pigment is cinnabar.
+  Row 2, panel 4: one bright star low over a roof line. Its one pigment is plum.
+  Row 3, panel 1: a pair of very wide empty sleeves, hanging. Its one pigment is imperial violet.
+  Row 3, panel 2: a small stone terrace with nothing on it, swept clean. Its one pigment is imperial violet.
+  Row 3, panel 3: a single wide-open eye, painted like a seal. Its one pigment is imperial violet.
+  Row 3, panel 4: a plain rock with one corner turned to gold. Its one pigment is imperial violet.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 12
+panels, 4 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">悟乙</span> Awakening cards, the last twelve</h2>
+    <p class="t">12 panels, 4 across and 3 down. Saved as
+      <code>ink-sheets/awaken-b.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">聚寶</span>
+      <i>Treasure Gathering</i><code>emblem/card-hoard.webp</code></div><div class="shcell"><b>2</b><span class="cjk">薪火</span>
+      <i>Kindling</i><code>emblem/card-kindling.webp</code></div><div class="shcell"><b>3</b><span class="cjk">天工</span>
+      <i>Heaven's Craft</i><code>emblem/card-heavencraft.webp</code></div><div class="shcell"><b>4</b><span class="cjk">承露</span>
+      <i>Catching Dew</i><code>emblem/card-dew.webp</code></div><div class="shcell"><b>5</b><span class="cjk">萬藏</span>
+      <i>Ten Thousand Stores</i><code>emblem/card-tenthousand.webp</code></div><div class="shcell"><b>6</b><span class="cjk">燎原</span>
+      <i>Wildfire</i><code>emblem/card-wildfire.webp</code></div><div class="shcell"><b>7</b><span class="cjk">饕餮</span>
+      <i>Taotie</i><code>emblem/card-taotie.webp</code></div><div class="shcell"><b>8</b><span class="cjk">明察</span>
+      <i>Clear Seeing</i><code>emblem/card-seeclear.webp</code></div><div class="shcell"><b>9</b><span class="cjk">爐火</span>
+      <i>Furnace Fire</i><code>emblem/card-furnacefire.webp</code></div><div class="shcell"><b>10</b><span class="cjk">一念</span>
+      <i>One Thought</i><code>emblem/card-onethought.webp</code></div><div class="shcell"><b>11</b><span class="cjk">通天</span>
+      <i>Reaching Heaven</i><code>emblem/card-heavenward.webp</code></div><div class="shcell"><b>12</b><span class="cjk">鯨吞</span>
+      <i>The Whale Swallows</i><code>emblem/card-whale.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese album of emblems, ruled
+into a grid of 4 columns by 3 rows, 12 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+12 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: a heaped pile of spirit stones spilling out of a jar. Its one pigment is jade.
+  Row 1, panel 2: a bundle of dry sticks with one end just catching. Its one pigment is celadon.
+  Row 1, panel 3: a carpenter's square and a plumb line, laid together. Its one pigment is old bronze.
+  Row 1, panel 4: a shallow bronze dish holding a night's worth of dew. Its one pigment is gold leaf.
+  Row 2, panel 1: a wall of small storehouse drawers, all of them shut. Its one pigment is amber.
+  Row 2, panel 2: a grass fire running along a ridge line at night. Its one pigment is copper.
+  Row 2, panel 3: the taotie mask from an old bronze vessel, front on. Its one pigment is cinnabar.
+  Row 2, panel 4: still water in a stone basin with the moon in it. Its one pigment is plum.
+  Row 3, panel 1: an open furnace mouth with the fire high in it. Its one pigment is imperial violet.
+  Row 3, panel 2: a single ink dot on an otherwise empty page. Its one pigment is imperial violet.
+  Row 3, panel 3: a stone stair going up into cloud and not coming back. Its one pigment is imperial violet.
+  Row 3, panel 4: an enormous whale mouth breaking water, swallowing. Its one pigment is imperial violet.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 12
+panels, 4 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">雜</span> Herbs, pills and the rooms of the vault</h2>
+    <p class="t">10 panels, 4 across and 3 down. Saved as
+      <code>ink-sheets/sundries.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">青苔</span>
+      <i>Spirit Moss</i><code>emblem/herb-moss.webp</code></div><div class="shcell"><b>2</b><span class="cjk">月華蘭</span>
+      <i>Moonlight Orchid</i><code>emblem/herb-orchid.webp</code></div><div class="shcell"><b>3</b><span class="cjk">龍血草</span>
+      <i>Dragonblood Grass</i><code>emblem/herb-dragonblood.webp</code></div><div class="shcell"><b>4</b><span class="cjk">煉體</span>
+      <i>Body Tempering</i><code>emblem/pill-body.webp</code></div><div class="shcell"><b>5</b><span class="cjk">破煞</span>
+      <i>Bane Breaking</i><code>emblem/pill-bane.webp</code></div><div class="shcell"><b>6</b><span class="cjk">聚寶</span>
+      <i>Treasure Gathering</i><code>emblem/pill-fortune.webp</code></div><div class="shcell"><b>7</b><span class="cjk">獸</span>
+      <i>Something in the dark</i><code>emblem/room-beast.webp</code></div><div class="shcell"><b>8</b><span class="cjk">泉</span>
+      <i>A spring that has not been drunk</i><code>emblem/room-spring.webp</code></div><div class="shcell"><b>9</b><span class="cjk">龕</span>
+      <i>A shrine, long cold</i><code>emblem/room-shrine.webp</code></div><div class="shcell"><b>10</b><span class="cjk">爐</span>
+      <i>A brazier with something left in it</i><code>emblem/room-brazier.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese album of emblems, ruled
+into a grid of 4 columns by 3 rows, 12 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+12 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: a patch of pale spirit moss on wet stone. Its one pigment is jade.
+  Row 1, panel 2: a single white orchid open at night. Its one pigment is celadon.
+  Row 1, panel 3: a low red-stemmed grass with dark sap at the break. Its one pigment is old bronze.
+  Row 1, panel 4: three dark pills in a shallow dish, heavy and plain. Its one pigment is gold leaf.
+  Row 2, panel 1: three pale pills in a shallow dish, faintly smoking. Its one pigment is amber.
+  Row 2, panel 2: three golden pills in a shallow dish. Its one pigment is copper.
+  Row 2, panel 3: two eyes in a dark doorway and nothing else visible. Its one pigment is cinnabar.
+  Row 2, panel 4: a small clear spring welling up in a stone floor. Its one pigment is plum.
+  Row 3, panel 1: a small niche shrine with a cold incense cup in it. Its one pigment is imperial violet.
+  Row 3, panel 2: a low bronze brazier with a little ash still in it. Its one pigment is imperial violet.
+
+The last 2 panels of the grid are left as bare paper,
+ruled like the others with nothing drawn inside.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 12
+panels, 4 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
     <h2><span class="h cjk">獸甲</span> The commons of the first three realms</h2>

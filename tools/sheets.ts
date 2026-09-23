@@ -30,6 +30,11 @@ import { BEASTS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
+import { ARTS } from '../src/data/arts.ts';
+import { ALL_CARDS } from '../src/data/awakening.ts';
+import { HERBS } from '../src/data/herbs.ts';
+import { PILL_LINES } from '../src/data/alchemy.ts';
+import { ROOM_INFO } from '../src/data/secret.ts';
 import { FAMILIES, paintedIn } from './artgaps.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
 import { mix } from '../src/art/aura.ts';
@@ -48,7 +53,7 @@ export interface Sheet {
   readonly key: string;
   readonly han: string;
   readonly title: string;
-  readonly kind: 'beast' | 'realm' | 'self' | 'meet' | 'heaven';
+  readonly kind: 'beast' | 'realm' | 'self' | 'meet' | 'heaven' | 'emblem';
   readonly cols: number;
   readonly rows: number;
   /** Reading order: left to right, then down. */
@@ -287,12 +292,130 @@ function skySheet(): Sheet {
   };
 }
 
+/**
+ * 符 The emblem sheets: everything the game still draws as a symbol.
+ *
+ * 缺 the audit lists them by family and this is what it costs to close it. They are shown
+ * at 20 to 30 pixels in a row, so they are not scenes: each one is a single object, an
+ * emblem, painted as a thing a brush could put on paper in ten strokes. A scene at 24
+ * pixels is a smudge.
+ *
+ * 紙 They keep their paper, like 緣 the encounters and unlike a creature, because they sit
+ * in a card rather than standing in a place.
+ */
+const EMBLEM: Record<string, readonly [string, string][]> = {
+  // 訣 The nine arts: each one is a creature's move, so each one is that creature's mark.
+  arts: [
+    ['art-fox', 'a fox\'s shadow thrown long across the ground, the fox itself out of frame'],
+    ['art-ape', 'a long ape arm reaching down out of the top of the panel'],
+    ['art-crane', 'a crane with its head thrown back, calling'],
+    ['art-tiger', "a tiger's open mouth, roaring, seen close"],
+    ['art-turtle', 'a turtle drawn into its shell, perfectly still'],
+    ['art-puppet', 'a wooden puppet hanging from crossed control strings'],
+    ['art-wolf', "a wolf's head low and biting, teeth closed on nothing"],
+    ['art-serpent', 'a serpent rising out of water, half of it still under'],
+    ['art-dragon', "a dragon's head in cloud, only the head showing"],
+  ],
+  // 悟道 The cards taken at a breakthrough. Each is a fortune, so each is its own omen.
+  'awaken-a': [
+    ['card-feast', 'a stone offering bowl filled to the brim with dark blood'],
+    ['card-pack', 'a scholar\'s travelling case, its lid open and full'],
+    ['card-insight', 'a single lit candle in a dark window, the moment it catches'],
+    ['card-wolf', 'a wolf sitting beside a heap of coins, guarding them'],
+    ['card-heat', 'a bellows and a pair of iron tongs laid crossed on a forge'],
+    ['card-everywhere', 'a wide plain with tracks of many animals crossing it'],
+    ['card-slaughter', 'a butcher\'s cleaver standing in a block, alone'],
+    ['card-luckystar', 'one bright star low over a roof line'],
+    ['card-sleeves', 'a pair of very wide empty sleeves, hanging'],
+    ['card-platform', 'a small stone terrace with nothing on it, swept clean'],
+    ['card-discern', 'a single wide-open eye, painted like a seal'],
+    ['card-stonegold', 'a plain rock with one corner turned to gold'],
+  ],
+  'awaken-b': [
+    ['card-hoard', 'a heaped pile of spirit stones spilling out of a jar'],
+    ['card-kindling', 'a bundle of dry sticks with one end just catching'],
+    ['card-heavencraft', 'a carpenter\'s square and a plumb line, laid together'],
+    ['card-dew', 'a shallow bronze dish holding a night\'s worth of dew'],
+    ['card-tenthousand', 'a wall of small storehouse drawers, all of them shut'],
+    ['card-wildfire', 'a grass fire running along a ridge line at night'],
+    ['card-taotie', 'the taotie mask from an old bronze vessel, front on'],
+    ['card-seeclear', 'still water in a stone basin with the moon in it'],
+    ['card-furnacefire', 'an open furnace mouth with the fire high in it'],
+    ['card-onethought', 'a single ink dot on an otherwise empty page'],
+    ['card-heavenward', 'a stone stair going up into cloud and not coming back'],
+    ['card-whale', 'an enormous whale mouth breaking water, swallowing'],
+  ],
+  // 草 丹 秘境 Three families too small for a sheet each, so they share one.
+  sundries: [
+    ['herb-moss', 'a patch of pale spirit moss on wet stone'],
+    ['herb-orchid', 'a single white orchid open at night'],
+    ['herb-dragonblood', 'a low red-stemmed grass with dark sap at the break'],
+    ['pill-body', 'three dark pills in a shallow dish, heavy and plain'],
+    ['pill-bane', 'three pale pills in a shallow dish, faintly smoking'],
+    ['pill-fortune', 'three golden pills in a shallow dish'],
+    ['room-beast', 'two eyes in a dark doorway and nothing else visible'],
+    ['room-spring', 'a small clear spring welling up in a stone floor'],
+    ['room-shrine', 'a small niche shrine with a cold incense cup in it'],
+    ['room-brazier', 'a low bronze brazier with a little ash still in it'],
+  ],
+};
+
+interface EmblemSheet {
+  readonly key: keyof typeof EMBLEM;
+  readonly han: string;
+  readonly title: string;
+  readonly cols: number;
+  readonly rows: number;
+  /** What each one is, for the panel list: an art, a stance, a card, a herb. */
+  readonly what: string;
+  readonly names: ReadonlyMap<string, readonly [string, string]>;
+}
+
+/**
+ * 名 Every emblem key is prefixed by its family, because they collide: 狼噬 Wolf Bite is
+ * an art and 貪狼 Greedy Wolf is an awakening card, and both are keyed `wolf`.
+ */
+const nameMap = (prefix: string, xs: readonly { key: string; han: string; name: string }[]) =>
+  new Map(xs.map((x) => [`${prefix}-${x.key}`, [x.han, x.name] as const]));
+
+const EMBLEM_SHEETS: readonly EmblemSheet[] = [
+  { key: 'arts', han: '訣', title: 'The nine arts', cols: 3, rows: 3,
+    what: 'an art', names: nameMap('art', ARTS) },
+  { key: 'awaken-a', han: '悟甲', title: 'Awakening cards, the first twelve', cols: 4, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'awaken-b', han: '悟乙', title: 'Awakening cards, the last twelve', cols: 4, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'sundries', han: '雜', title: 'Herbs, pills and the rooms of the vault', cols: 4, rows: 3,
+    what: 'a thing', names: new Map([
+      ...HERBS.map((h) => [`herb-${h.key}`, [h.han, h.name] as const] as const),
+      ...Object.entries(PILL_LINES).map(([k, v]) => [`pill-${k}`, [v.han, v.name] as const] as const),
+      ...Object.entries(ROOM_INFO).map(([k, v]) => [`room-${k}`, [v.han, v.name] as const] as const),
+    ]) },
+];
+
+function emblemSheet(e: EmblemSheet): Sheet {
+  return {
+    key: e.key,
+    han: e.han,
+    title: e.title,
+    kind: 'emblem',
+    cols: e.cols,
+    rows: e.rows,
+    realms: [1, 1, 1],
+    cells: EMBLEM[e.key].map(([key, subject]) => {
+      const named = e.names.get(key);
+      return { key, han: named?.[0] ?? key, name: named?.[1] ?? key, subject };
+    }),
+  };
+}
+
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
   ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
   meetSheet(),
   heavenSheet(),
   skySheet(),
+  ...EMBLEM_SHEETS.map(emblemSheet),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -330,7 +453,9 @@ const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old ros
  * grid, the identical ground in every panel, and the subject kept inside its own panel.
  */
 export function sheetPrompt(s: Sheet): string {
-  const shape = s.kind === 'meet'
+  const shape = s.kind === 'emblem'
+    ? 'Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page.'
+    : s.kind === 'meet'
     ? 'Each panel holds one small scene, wider than it is tall, seen from a few paces away with plenty of bare paper around it. No frame inside the panel, nothing behind the subject but the road, the ground or the mist it is standing in.'
     : s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
@@ -344,13 +469,15 @@ export function sheetPrompt(s: Sheet): string {
       const n = s.kind === 'beast' || s.kind === 'meet' ? s.realms[Math.floor(i / s.cols)] : i + 1;
       const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
         : inkOf(s.kind === 'meet' ? s.realms[i] : n).stuff;
-      const whose = s.kind === 'self' ? 'The one pigment on the robe is'
+      const whose = s.kind === 'emblem' ? 'Its one pigment is'
+        : s.kind === 'self' ? 'The one pigment on the robe is'
         : s.kind === 'meet' ? 'The one pigment in the scene is'
         : 'Its one pigment is';
       return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. ${whose} ${pig}.`;
     })
     .join('\n');
-  const album = s.kind === 'self' ? 'album of portraits'
+  const album = s.kind === 'emblem' ? 'album of emblems'
+    : s.kind === 'self' ? 'album of portraits'
     : s.kind === 'meet' ? 'album of scenes from a traveller\'s notebook'
     : 'bestiary album';
   const panels = s.cols * s.rows;
@@ -378,6 +505,15 @@ panels, ${s.cols} across and ${s.rows} down, thin ink rules between them, the sa
 in every panel, and no letters or characters anywhere on the page.`;
 }
 
+/** 符 Which pictogram each emblem stands in for, for 樣 the fabricated leaf. */
+const EMBLEM_ICON = new Map<string, string>([
+  ...ARTS.map((a) => [`art-${a.key}`, a.icon] as const),
+  ...ALL_CARDS.map((c) => [`card-${c.key}`, c.icon] as const),
+  ...HERBS.map((h) => [`herb-${h.key}`, h.icon] as const),
+  ...Object.entries(PILL_LINES).map(([k, v]) => [`pill-${k}`, v.icon] as const),
+  ...Object.entries(ROOM_INFO).map(([k, v]) => [`room-${k}`, v.icon] as const),
+]);
+
 /* ── 樣 the demonstration leaf ───────────────────────────────────────────── */
 
 /**
@@ -403,7 +539,9 @@ function demoLeaf(s: Sheet): string {
       const wobble = 0.86 + (seed % 5) * 0.045;
       // 修 A self sheet has no beast to look up: the stand-in is the game's own seated
       // figure, which is the pictogram the painting is there to replace.
-      const body = s.kind === 'self'
+      const body = s.kind === 'emblem'
+        ? ICONS[EMBLEM_ICON.get(c.key) ?? ''] ?? ''
+        : s.kind === 'self'
         ? ICONS.meditation ?? ''
         : s.kind === 'meet'
           ? ICONS[MEETINGS.find((m) => m.key === c.key)?.icon ?? ''] ?? ''
@@ -580,8 +718,9 @@ const page = `<meta charset="utf-8">
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
     <p class="t"><b>Eight sheets are done</b>: 36 creatures, 9 places, the cultivator
-      twice and the ten encounters, 73 paintings. 缺 the table below is what is left, read
-      out of the game's own tables rather than guessed at.</p>
+      twice and the ten encounters, 73 paintings. <b>Seven more close the game.</b> 缺 the
+      table below is what is left, read out of the game's own tables rather than guessed
+      at, and every row of it now has a prompt further down.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>

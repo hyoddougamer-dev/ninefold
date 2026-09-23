@@ -14,7 +14,7 @@
  */
 
 /** A painted thing, by the key it is known by in its own table. */
-export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self' | 'meet';
+export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self' | 'meet' | 'emblem';
 
 /**
  * The keys that have a file, by kind. Written by the tool, never by hand.
@@ -26,6 +26,12 @@ export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self' | 'meet';
  * cut the same way as `cut`. It
  * stands inside the aura rather than replacing it: the rings, motes and halos are read
  * off the save and breathe on a pulse, and no painting can carry that.
+ *
+ * 符 `emblem` is everything the game draws as a symbol in a row: an art, a stance, an
+ * awakening card, a herb, a pill line, a room of the vault. They are shown at twenty to
+ * thirty pixels, so each is one object on paper rather than a scene, and each key is
+ * prefixed by its family because they collide: 狼噬 Wolf Bite is an art and 貪狼 Greedy
+ * Wolf is a card, and both are keyed `wolf`.
  *
  * 緣 `meet` is an encounter, one wide scene each, keeping its paper: it is a page out of
  * a traveller's notebook and it is shown as one, in a band across the top of the card.
@@ -156,6 +162,7 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     'stele',
     'swordsman',
   ],
+  emblem: [],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */

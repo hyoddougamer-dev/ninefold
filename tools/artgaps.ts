@@ -39,23 +39,11 @@ export interface Family {
   readonly count: number;
   /** The painted kind that covers it, or null while it is still a pictogram. */
   readonly kind: Painted | null;
+  /** 名 Which slice of a shared kind is this family's, when several share one. */
+  readonly prefix?: string;
   readonly seen: string;
   /** What a sheet for it would be, when it does not have one. */
   readonly sheet?: string;
-}
-
-/**
- * 張 What it would cost to paint a family of this size, in sheets.
- *
- * Nine to a page is what every sheet so far has been, and anything under six is not worth
- * a credit of its own: it rides in the spare panels of somebody else's page, which the
- * cutter already handles, because a sheet cuts only the panels it names.
- */
-function sheetFor(n: number): string {
-  if (n > 40) return 'too many to paint, and they are drawn by the game already';
-  if (n < 6) return `${n} panels, so it rides in the spare corner of another sheet`;
-  const sheets = Math.ceil(n / 9);
-  return `${sheets} ${sheets === 1 ? 'sheet' : 'sheets'} of nine`;
 }
 
 export const FAMILIES: readonly Family[] = [
@@ -71,21 +59,28 @@ export const FAMILIES: readonly Family[] = [
     seen: '修 the card that stops the game' },
   { han: '境外', name: 'heaven backdrops', count: HEAVENS.length, kind: 'heaven',
     seen: '鬥 behind a fight above the ninth realm' },
-  { han: '悟道', name: 'awakening cards', count: ALL_CARDS.length, kind: null,
-    seen: '悟道 the sheet at every breakthrough',
-    sheet: sheetFor(ALL_CARDS.length) },
-  { han: '訣', name: 'arts and stances', count: ARTS.length + STANCES.length, kind: null,
-    seen: '勢 the loadout, and 道 the path tab',
-    sheet: sheetFor(ARTS.length + STANCES.length) },
+  { han: '悟道', name: 'awakening cards', count: ALL_CARDS.length, kind: 'emblem',
+    prefix: 'card-', seen: '悟道 the sheet at every breakthrough',
+    sheet: '悟甲 and 悟乙, two sheets of twelve' },
+  { han: '訣', name: 'arts', count: ARTS.length, kind: 'emblem', prefix: 'art-',
+    seen: '勢 the loadout', sheet: '訣, one sheet of nine' },
+  // 誤 This family was listed as a pictogram and it is not one. A stance is a chip with
+  // its character on it and no symbol at all, which the sheet only found out when it
+  // asked STANCES for an icon and there was none. An audit can over-count as easily as
+  // it can under-count, and the over-count is the one that gets a credit spent.
+  { han: '勢', name: 'stances', count: STANCES.length, kind: null,
+    seen: '勢 the loadout, as a character chip',
+    sheet: 'none: a stance is not drawn as a symbol, it is a character and a name' },
   { han: '器', name: 'gear templates', count: GEAR.length, kind: null,
     seen: '器 the gear screen, every chest row, every drop',
     sheet: 'drawn by the game from the template and the rarity, and it already reads' },
-  { han: '草', name: 'herbs', count: HERBS.length, kind: null,
-    seen: '洞天 the cave beds', sheet: sheetFor(HERBS.length) },
-  { han: '丹', name: 'pill lines', count: Object.keys(PILL_LINES).length, kind: null,
-    seen: '爐 the furnace', sheet: sheetFor(Object.keys(PILL_LINES).length) },
-  { han: '秘境', name: 'secret realm rooms', count: Object.keys(ROOM_INFO).length, kind: null,
-    seen: '秘境 the vault', sheet: sheetFor(Object.keys(ROOM_INFO).length) },
+  { han: '草', name: 'herbs', count: HERBS.length, kind: 'emblem', prefix: 'herb-',
+seen: '洞天 the cave beds', sheet: '雜, shared with the pills and the rooms' },
+  { han: '丹', name: 'pill lines', count: Object.keys(PILL_LINES).length, kind: 'emblem',
+    prefix: 'pill-', seen: '爐 the furnace', sheet: '雜, shared with the herbs and the rooms' },
+  { han: '秘境', name: 'secret realm rooms', count: Object.keys(ROOM_INFO).length, kind: 'emblem',
+    prefix: 'room-', seen: '秘境 the vault, and its doorway on 狩',
+    sheet: '雜, shared with the herbs and the pills' },
   { han: '道', name: 'technique nodes', count: ALL_NODES.length, kind: null,
     seen: '道 the path tree',
     sheet: 'none: they are dots on a tree at 30px and a painting would not survive it' },
@@ -95,7 +90,8 @@ export const FAMILIES: readonly Family[] = [
 export function paintedIn(f: Family): number {
   if (!f.kind) return 0;
   const all = PICTURES[f.kind];
-  const mine = f.han === '龍' ? all.filter((k) => k.startsWith('heaven-'))
+  const mine = f.prefix ? all.filter((k) => k.startsWith(f.prefix!))
+    : f.han === '龍' ? all.filter((k) => k.startsWith('heaven-'))
     : f.han === '獸' ? all.filter((k) => !k.startsWith('heaven-'))
     : all;
   return Math.min(mine.length, f.count);

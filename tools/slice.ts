@@ -45,6 +45,9 @@ const OUT = {
   // at cut time would throw four fifths of the painting away in the file, where nothing
   // can get it back. The file keeps the scene; the card decides the window.
   self: { w: 512, h: 512 }, meet: { w: 640, h: 856 }, heaven: { w: 768, h: 432 },
+  // 符 An emblem is shown at twenty to thirty pixels in a row, so 320 is already twice
+  // what the densest screen can use, and it keeps its paper like 緣 the encounters do.
+  emblem: { w: 320, h: 320 },
 } as const;
 
 /** Greyscale rows, so a column can be asked how much it varies from top to bottom. */
@@ -458,7 +461,8 @@ async function cut(sheet: Sheet, file: string) {
       continue;
     }
 
-    if (sheet.kind === 'realm' || sheet.kind === 'meet' || sheet.kind === 'heaven') {
+    if (sheet.kind === 'realm' || sheet.kind === 'meet' || sheet.kind === 'heaven'
+        || sheet.kind === 'emblem') {
       await sharp(file).extract(box).resize(size.w, size.h, { fit: 'cover' }).webp({ quality: 82 }).toFile(out);
       written.push(out);
       continue;

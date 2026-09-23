@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Emblem } from './Emblem.tsx';
 import {
   BEDS, canPlant, grown, harvestValue, herbOf, isRipe, leftOn, plantable, seedCost,
   type Herb,
@@ -50,7 +51,9 @@ export function Cave({ state, onPlant, onHarvest }: {
               data-empty={!herb || undefined}>
               <span className="ring" style={{ ['--a' as string]: `${Math.round(at * 360)}deg` }}>
                 <i />
-                <em><Svg html={icon(herb?.icon ?? 'incense', 26)} /></em>
+                <em>{herb
+                  ? <Emblem family="herb" subject={herb.key} icon={herb.icon} size={26} alt={herb.name} />
+                  : <Svg html={icon('incense', 26)} />}</em>
               </span>
               <b className="cjk">{herb ? herb.han : '空'}</b>
               <i>{herb ? herb.name : CAVE.empty}</i>
@@ -83,7 +86,7 @@ export function Cave({ state, onPlant, onHarvest }: {
           {herbs.map((h) => (
             <button key={h.key} className="seed" disabled={!canPlant(state, picking, h.key)}
               onClick={() => { onPlant(picking, h.key); setPicking(null); }}>
-              <span className="s"><Svg html={icon(h.icon, 24)} /></span>
+              <span className="s"><Emblem family="herb" subject={h.key} icon={h.icon} size={24} alt={h.name} /></span>
               <span className="nm">
                 <b className="cjk">{h.han}</b> <em>{h.name}</em>
                 <i>{h.says}</i>

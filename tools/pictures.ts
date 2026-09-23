@@ -12,7 +12,8 @@
  *     public/art/heaven/<n>.webp      768 x 432   the same, above the ninth realm
  *     public/art/cut/<key>.webp       up to 720   the creature with the paper keyed off
  *     public/art/self/<who>-<n>.webp  up to 720   that cultivator at that realm, the same way
- *     public/art/meet/<key>.webp      768 x 432   an encounter, a wide scene keeping its paper
+ *     public/art/meet/<key>.webp      640 x 856   an encounter, a scene keeping its paper
+ *     public/art/emblem/<key>.webp    320 square   one object on paper, shown small in a row
  *
  * 量 Why those sizes. A creature is drawn inside a circle at 94 to 140 pixels on a
  * phone, so 512 is twice what the densest screen needs and it survives being looked at
@@ -28,10 +29,15 @@ import { REALMS } from '../src/data/realms.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
+import { ARTS } from '../src/data/arts.ts';
+import { ALL_CARDS } from '../src/data/awakening.ts';
+import { HERBS } from '../src/data/herbs.ts';
+import { PILL_LINES } from '../src/data/alchemy.ts';
+import { ROOM_INFO } from '../src/data/secret.ts';
 import type { Painted } from '../src/data/pictures.ts';
 
 const ROOT = 'public/art';
-const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self', 'meet'];
+const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self', 'meet', 'emblem'];
 
 /** What each kind is allowed to be named, so a stray file cannot enter the game. */
 const KEYS: Record<Painted, readonly string[]> = {
@@ -43,9 +49,17 @@ const KEYS: Record<Painted, readonly string[]> = {
   cut: [...BEASTS.map((b) => b.key), ...HEAVEN_PLATES],
   self: FIGURES.flatMap((f) => REALMS.map((r) => figureKey(f.key, r.n))),
   meet: MEETINGS.map((m) => m.key),
+  emblem: [
+    ...ARTS.map((a) => `art-${a.key}`),
+    ...ALL_CARDS.map((c) => `card-${c.key}`),
+    ...HERBS.map((h) => `herb-${h.key}`),
+    ...Object.keys(PILL_LINES).map((k) => `pill-${k}`),
+    ...Object.keys(ROOM_INFO).map((k) => `room-${k}`),
+  ],
 };
 
-const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [], self: [], meet: [] };
+const found: Record<Painted, string[]> =
+  { beast: [], realm: [], heaven: [], cut: [], self: [], meet: [], emblem: [] };
 const strays: string[] = [];
 
 for (const kind of KINDS) {
@@ -71,7 +85,8 @@ const next = src.replace(
   + `  heaven: ${list(found.heaven)},\n`
   + `  cut: ${list(found.cut)},\n`
   + `  self: ${list(found.self)},\n`
-  + `  meet: ${list(found.meet)},\n};`,
+  + `  meet: ${list(found.meet)},\n`
+  + `  emblem: ${list(found.emblem)},\n};`,
 );
 writeFileSync('src/data/pictures.ts', next);
 

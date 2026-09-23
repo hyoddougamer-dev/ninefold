@@ -1,4 +1,5 @@
 import { LINES, PILL_LINES } from '../../data/alchemy.ts';
+import { Emblem } from '../ui/Emblem.tsx';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
@@ -10,7 +11,6 @@ import { floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
 import { furnace, tower } from '../../art/trials.ts';
-import { icon } from '../../art/icon.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
@@ -126,7 +126,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
           const short = state.materials < cost.materials;
           return (
             <button key={line} className="pill" disabled={!affordable} onClick={() => onBrew(line)}>
-              <span className="ic"><Svg html={icon(info.icon, 24)} /></span>
+              <span className="ic"><Emblem family="pill" subject={line} icon={info.icon} size={24} alt={info.name} /></span>
               <span className="pname">
                 <b className="cjk">{pill.han}</b>
                 <i>{pill.name}</i>

@@ -1,10 +1,9 @@
 import { ART_BY_KEY, SEQUENCE_SLOTS, type Art } from '../../data/arts.ts';
+import { Emblem } from './Emblem.tsx';
 import { realm as realmOf } from '../../data/realms.ts';
 import { artsHeld, stanceChoices } from '../../sim/arts.ts';
 import type { State } from '../../sim/state.ts';
-import { icon } from '../../art/icon.ts';
 import { LOADOUT } from '../copy.ts';
-import { Svg } from './Svg.tsx';
 
 /**
  * 勢訣 The stance and the sequence.
@@ -83,7 +82,7 @@ export function Loadout({ state, onStance, onSequence }: {
                   <span className="n">{i + 1}</span>
                   {art ? (
                     <>
-                      <span className="ic"><Svg html={icon(art.icon, 22)} /></span>
+                      <span className="ic"><Emblem family="art" subject={art.key} icon={art.icon} size={22} alt={art.name} /></span>
                       <span className="nm"><b className="cjk">{art.han}</b><i>{art.text}</i></span>
                     </>
                   ) : (
@@ -101,7 +100,7 @@ export function Loadout({ state, onStance, onSequence }: {
                 <button key={a.key} className="pick" disabled={placed.length >= SEQUENCE_SLOTS}
                         style={{ ['--hue' as string]: realmOf(a.realm).colour }}
                         onClick={() => add(a)} title={a.text}>
-                  <span className="ic"><Svg html={icon(a.icon, 20)} /></span>
+                  <span className="ic"><Emblem family="art" subject={a.key} icon={a.icon} size={20} alt={a.name} /></span>
                   <b className="cjk">{a.han}</b>
                 </button>
               ))}
