@@ -108,6 +108,17 @@ Each of these cost real time once. They are written down so they cost it once.
   `npm run smoke` was the one that said so out loud, because it asserts that a tap
   lands. **Any harness that counts things should assert the count has a floor**, which
   `han.ts` now does.
+- **A percentage padding resolves against the container's width, never its height.**
+  鬥 the arena drew its floor at 12.7% of the stage's *height* in the SVG and stood its
+  fighters on `padding-bottom: 12.7%`, which is of the *width*. At 400 by 400 those agreed
+  by accident, and the arena had only ever been looked at there. On a 320px phone both
+  fighters stood ten pixels under the ground. Name the height in a custom property and
+  `calc()` off it.
+- **A grid item will not shrink below its content unless it is told to.** `min-width: 0`.
+  Without it a 132px painting in a 116px half did not overflow its cell, it *widened the
+  column*, pushed the row past the stage and hung the beast off the side of the screen.
+  This is the bug Bruno photographed, and `npm run arena` exists because of it: **look at
+  a screen at 320 as well as at 400**, because nothing in the build was opening it there.
 - **Read the harness by name, never by position.** `RUNS[0]`, `const [waiter, , , active]
   = runs`. Adding one cultivator to `HABITS` silently made every assertion and every
   sentence on the bible page about somebody else. Use `runs.find(r => r.habit.name === …)`.

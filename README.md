@@ -145,6 +145,7 @@ for a ruled album leaf of twelve panels, with a map of which panel is which crea
 
     npm run sheets                                  the prompts
     npm run artgaps                                 what is still a pictogram
+    npm run arena                                   every fight, at four phone widths
     npm run slice -- beasts-a ink-sheets/beasts-a.png   cut the sheet it gave back
 
 The sheets are `wardens`, `self-woman`, `self-man`, `beasts-a`, `beasts-b`, `beasts-c`

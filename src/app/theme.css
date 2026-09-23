@@ -525,7 +525,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    let the hunt list show through, which read as a dialog over a list.
    Its height is capped: given the whole screen the skyline stretches into spikes and
    the fighters shrink to specks at the bottom of a wall. */
-.stage { position: relative; flex: none; height: min(52vh, 400px); overflow: hidden; }
+/* 高 The stage's height is named, because 鬥 the floor both fighters stand on is a
+   fraction of it and CSS resolves a percentage padding against the container's *width*.
+   At 400 by 400 those agreed by accident and the arena was only ever looked at there. On
+   a 320px phone the padding came out 40px and the floor was drawn at 51, so both fighters
+   stood ten pixels under the ground they were painted on. */
+.stage { --stage-h: min(52vh, 400px);
+         position: relative; flex: none; height: var(--stage-h); overflow: hidden; }
 .scene { position: absolute; inset: 0; }
 /* 畫 The realm's painting, filling the stage above the floor line, dimmed so a lit
    cultivator and a painted creature both still read against it. The floor is the bottom
@@ -538,9 +544,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* Both fighters stand on the floor line, which the scene puts 12.7% up from its foot.
    They need different offsets because the drawings sit differently in their boxes: the
    cultivator's crossed legs end a fifth of the way up theirs, the beast fills its own. */
-.duel { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 74px 1fr;
-        align-items: end; padding: 0 6px 12.7%; }
-.fighter { position: relative; display: grid; place-items: center; }
+/* 闊 The gap between them gives way before they do: 74 pixels is a quarter of a 320px
+   phone, and that quarter was coming out of the fighters. */
+.duel { position: absolute; inset: 0; display: grid;
+        grid-template-columns: 1fr clamp(20px, 11vw, 74px) 1fr;
+        align-items: end; padding: 0 6px calc(.127 * var(--stage-h)); }
+/* 塞 min-width: 0, and it is the whole bug Bruno photographed.
+   A grid item will not shrink below its content by default, so a 132px painting in a
+   116px half did not overflow its cell: it *widened* the column, pushed the whole row
+   past the stage, and hung the beast off the right of the screen. 巨蟹 the giant crab
+   went 92 pixels off at 320 wide. Nothing in the build could see it, because nothing had
+   ever opened the arena at anything but 400. 鬥查 npm run arena does now. */
+.fighter { position: relative; display: grid; place-items: center; min-width: 0; }
 /* The flash hangs off .art, so .art has to be the thing it measures itself against:
    anchored on .fighter it covered the whole grid cell instead of the body. */
 .fighter .art { display: block; position: relative; }
@@ -554,22 +569,28 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    暈 The floating is the portrait's own shape. 修 the painting is placed inside the aura
    at 16% from the top and 70% tall, so the bottom seventh of the box is glow and nothing
    else. The box is pushed down by exactly that much, which puts her seat on the line. */
-.you .art { --dead: .11; width: 200px; height: 200px;
-            margin-bottom: calc(-1 * var(--dead) * 200px); }
+/* 量 Sized against the half it has, never past it. 200 is what it wants; 100% is what it
+   is allowed. The negative margin is the same eleventh of the box that is glow and
+   nothing else, so it goes on scaling with the box: 修 the painting sits inside the aura
+   at 16% from the top and 70% tall, so the bottom fourteen per cent is glow. */
+.you .art { --fig: min(200px, 100%); --dead: .14;
+            width: var(--fig); aspect-ratio: 1 / 1; height: auto;
+            margin-bottom: calc(-1 * var(--dead) * var(--fig)); }
 .foe .art { width: 94px; height: 94px; margin-bottom: 18px;
             filter: drop-shadow(0 3px 10px rgba(0,0,0,.75)); }
 /* 剪 A creature with no paper around it needs no square to sit in: it is given a height
    and keeps its own width, so a crab stays wide and a crane stays tall. The bottom of the
    picture is where the animal's feet were painted, so it goes on the floor. */
-.foe .art[data-cut='true'] { width: auto; height: 112px; margin-bottom: 0;
+.foe .art[data-cut='true'] { width: 100%; height: auto; margin-bottom: 0;
                              filter: drop-shadow(0 6px 14px rgba(0,0,0,.6)); }
-.foe .beastcut { display: block; height: 112px; width: auto; max-width: 132px;
-                 object-fit: contain; object-position: bottom; }
+/* 收 Capped on both axes and allowed to pick whichever runs out first, so a crab that is
+   wide and a crane that is tall are both whole, at every width. */
+.foe .beastcut { display: block; margin: 0 auto; width: auto; height: auto;
+                 max-width: 100%; max-height: clamp(84px, 32vw, 118px); }
 /* 王 A warden is the fight a realm is remembered for, so it stands over the cultivator.
    A common stands level with her: it was drawn on the same sheet at the same size, and
    left at one height a giant crab ended up bigger than the person fighting it. */
-.foe .art[data-cut='true'][data-warden='true'] { height: 150px; }
-.foe .art[data-warden='true'] .beastcut { height: 150px; max-width: 170px; }
+.foe .art[data-warden='true'] .beastcut { max-height: clamp(108px, 42vw, 156px); }
 
 .fighter[data-hit='true'] .art { animation: shake .26s ease-out; }
 /* The flash is the colour of whoever *threw* the blow, not of whoever wears it. */
