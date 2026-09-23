@@ -1788,7 +1788,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* It stands exactly where the pictogram stood, so a row that used one is the row it
    always was. See ui/Emblem.tsx. */
-.emblem { display: block; object-fit: contain; border-radius: 4px; }
+.emblem { display: block; object-fit: contain; }
 
 /* ── 動 motion, in ink ─────────────────────────────────────────────────── */
 

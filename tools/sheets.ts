@@ -598,11 +598,14 @@ export function cutStrip(s: Sheet): string {
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
       const pig = inkOf(n);
+      // 圓 An emblem is already a round stamp, so it gets no ring: a ring round a ring is
+      // the proof page inventing a frame the game does not put there.
+      const ringed = s.kind !== 'emblem';
       const tier = s.kind === 'beast' && c.key === wardenOf(n).key ? 2 : 0;
       return `<figure class="ct">
-        <span class="ctp">
+        <span class="ctp" data-ring="${ringed}">
           <img src="public/art/${s.kind === 'beast' ? 'cut' : s.kind}/${c.key}.webp" alt="">
-          <span class="ctr">${enso(pig.colour, tier, 132, i + 1)}</span>
+          ${ringed ? `<span class="ctr">${enso(pig.colour, tier, 132, i + 1)}</span>` : ''}
         </span>
         <figcaption><b class="cjk">${c.han}</b><i>${c.name}</i></figcaption>
       </figure>`;
@@ -622,8 +625,9 @@ export function cutStrip(s: Sheet): string {
   /* 紙 The paper disc the game's own 牌 plate puts behind a creature. Without it this
      page lied: every cut-out looked like it had dark wedges in its corners, which was
      the page's background showing through, not anything wrong with the cut. */
-  #cuts .ctp::before { content:''; position:absolute; inset:5%; border-radius:50%;
-                       background:#E4D8C0; opacity:.86; }
+  #cuts .ctp[data-ring="true"]::before { content:''; position:absolute; inset:5%;
+                       border-radius:50%; background:#E4D8C0; opacity:.86; }
+  #cuts .ctp[data-ring="false"] img { inset:2%; width:96%; height:96%; }
   #cuts .ctp img { position:absolute; inset:16%; width:68%; height:68%; display:block;
                    object-fit:contain; }
   #cuts .ctr { position:absolute; inset:0; }

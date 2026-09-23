@@ -42,13 +42,26 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
   const uid = `r${r.n}`;
   const breath = 1 + Math.sin(pulse * Math.PI * 2) * 0.015;
 
+  const painted = who ? pictureOf('self', figureKey(who, r.n)) : null;
+  /**
+   * 淡 How much of the aura to draw once there is a painting inside it.
+   *
+   * 圖 It was tuned when the middle of this picture was a bright white pictogram that had
+   * to compete with it. By the seventh realm it is two halos, beams, icicles and motes
+   * in full cinnabar, and against a painted cultivator it simply ate her: the screenshot
+   * is a red disc with somebody faintly inside it. The aura's job is to say how far up
+   * the climb you are, and it still does that at half strength, because what it is
+   * measured against is itself one realm ago.
+   */
+  const soft = painted ? 0.5 : 1;
+
   const layers = r.aura.map((name: string, i: number) => {
     const body = ICONS[name];
     if (!body) return '';
     const scale = (2.05 - i * 0.26) * breath;
     const side = S * scale;
     const off = (S - side) / 2;
-    const op = (0.13 + 0.07 * i + 0.1 * t) * (focus ? 0.55 : 1);
+    const op = (0.13 + 0.07 * i + 0.1 * t) * (focus ? 0.55 : 1) * soft;
     return `<g transform="translate(${off.toFixed(1)} ${off.toFixed(1)}) scale(${(side / 512).toFixed(4)})" fill="${r.colour}" opacity="${op.toFixed(2)}">${body}</g>`;
   }).join('');
 
@@ -56,7 +69,7 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
   // about the head it sits behind rather than about the middle of the picture.
   const halos = r.halos === 0 ? '' : `<g class="halo" style="transform-origin:${S / 2}px ${(S * 0.42).toFixed(1)}px">${
     Array.from({ length: r.halos }, (_, i) =>
-      `<circle cx="${S / 2}" cy="${S * 0.42}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${(0.75 - i * 0.2).toFixed(2)}" stroke-dasharray="${i % 2 ? '5 9' : '0'}"/>`,
+      `<circle cx="${S / 2}" cy="${S * 0.42}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${((0.75 - i * 0.2) * (soft + 0.2)).toFixed(2)}" stroke-dasharray="${i % 2 ? '5 9' : '0'}"/>`,
     ).join('')}</g>`;
 
   const core = mix(r.colour, '#FFFFFF', 0.25 + 0.6 * t);
@@ -81,7 +94,6 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
    * around it still comes from here. A realm with no file keeps the pictogram, which is
    * what every realm looked like before.
    */
-  const painted = who ? pictureOf('self', figureKey(who, r.n)) : null;
   const body = painted
     ? `<image href="${painted}" x="${(S * 0.19).toFixed(1)}" y="${(S * 0.16).toFixed(1)}"
          width="${(S * 0.62).toFixed(1)}" height="${(S * 0.7).toFixed(1)}"
@@ -91,7 +103,7 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" height="100%" role="img" aria-label="${r.name}, realm ${r.n}">
     <defs>
       <radialGradient id="g${uid}">
-        <stop offset="0" stop-color="${r.colour}" stop-opacity="${((0.1 + 0.42 * t) * (focus ? 0.5 : 1)).toFixed(2)}"/>
+        <stop offset="0" stop-color="${r.colour}" stop-opacity="${((0.1 + 0.42 * t) * (focus ? 0.5 : 1) * soft).toFixed(2)}"/>
         <stop offset="1" stop-color="${r.colour}" stop-opacity="0"/>
       </radialGradient>
       <radialGradient id="m${uid}">

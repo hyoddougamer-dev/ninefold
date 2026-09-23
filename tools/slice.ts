@@ -423,6 +423,29 @@ async function cutout(file: string, box: { left: number; top: number; width: num
   return crop;
 }
 
+/**
+ * 圓 A square of paper made into a round stamp, with the edge feathered so it is a wash
+ * rather than a cut-out.
+ */
+function disc(square: Buffer, side: number) {
+  const r = side / 2;
+  const edge = Math.max(2, Math.round(side * 0.012));
+  // 明 The mask has to carry its shape in its *alpha*: `dest-in` reads the overlay's
+  // alpha channel, and a one-channel buffer has none, so a greyscale mask is read as
+  // fully opaque everywhere and does nothing at all.
+  const mask = Buffer.alloc(side * side * 4);
+  for (let y = 0; y < side; y++) {
+    for (let x = 0; x < side; x++) {
+      const d = Math.hypot(x + 0.5 - r, y + 0.5 - r);
+      const t = (r - d) / edge;
+      mask[(y * side + x) * 4 + 3] = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
+    }
+  }
+  return sharp(square).ensureAlpha().composite([
+    { input: mask, raw: { width: side, height: side, channels: 4 }, blend: 'dest-in' },
+  ]);
+}
+
 async function cut(sheet: Sheet, file: string) {
   const g = await grey(file);
   const px = profile(g, 'x');
@@ -463,7 +486,16 @@ async function cut(sheet: Sheet, file: string) {
 
     if (sheet.kind === 'realm' || sheet.kind === 'meet' || sheet.kind === 'heaven'
         || sheet.kind === 'emblem') {
-      await sharp(file).extract(box).resize(size.w, size.h, { fit: 'cover' }).webp({ quality: 82 }).toFile(out);
+      const flat = await sharp(file).extract(box).resize(size.w, size.h, { fit: 'cover' }).toBuffer();
+      // 圓 An emblem is a round stamp, not a square of paper.
+      //
+      // Bruno, looking at ten of them: *"quadrados dentro de círculos parece-me mal."* He
+      // was looking at the proof page, but the game does it too: 洞天 the cave bed puts
+      // its herb inside a ring that shows how far along the bed is, and a square of paper
+      // with four corners inside a circle is exactly as bad as it sounds. Round from the
+      // cut, and nothing can ever put a corner inside a circle again. See discOf.
+      await (sheet.kind === 'emblem' ? disc(flat, size.w) : sharp(flat))
+        .webp({ quality: 82 }).toFile(out);
       written.push(out);
       continue;
     }
