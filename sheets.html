@@ -72,12 +72,14 @@
       bestiary.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
-      <tr><td><b class="cjk">獸甲</b> Creatures, the first three realms</td>
-        <td>12 panels</td><td>4 by 3</td>
-        <td><code>ink-sheets/beasts-a.png</code></td></tr><tr><td><b class="cjk">獸乙</b> Creatures, the middle three realms</td>
-        <td>12 panels</td><td>4 by 3</td>
-        <td><code>ink-sheets/beasts-b.png</code></td></tr><tr><td><b class="cjk">獸丙</b> Creatures, the last three realms</td>
-        <td>12 panels</td><td>4 by 3</td>
+      <tr><td><b class="cjk">獸王</b> The nine wardens</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/wardens.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/beasts-a.png</code></td></tr><tr><td><b class="cjk">獸乙</b> The commons of the middle three realms</td>
+        <td>9 panels</td><td>3 by 3</td>
+        <td><code>ink-sheets/beasts-b.png</code></td></tr><tr><td><b class="cjk">獸丙</b> The commons of the last three realms</td>
+        <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/beasts-c.png</code></td></tr><tr><td><b class="cjk">境</b> The nine realms</td>
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/realms.png</code></td></tr>
@@ -112,30 +114,76 @@
   </section>
 
   <section class="sec">
-    <h2><span class="h cjk">獸甲</span> Creatures, the first three realms</h2>
-    <p class="t">12 panels, 4 across and 3 down. Saved as
-      <code>ink-sheets/beasts-a.png</code>.</p>
-    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
-  <div class="shcell"><b>1</b><span class="cjk">山鼠</span>
-      <i>Mountain Rat</i><code>beast/rat.webp</code></div><div class="shcell"><b>2</b><span class="cjk">野犬</span>
-      <i>Wild Hound</i><code>beast/hound.webp</code></div><div class="shcell"><b>3</b><span class="cjk">澤蛙</span>
-      <i>Marsh Frog</i><code>beast/frog.webp</code></div><div class="shcell"><b>4</b><span class="cjk">妖狐</span>
-      <i>Spirit Fox</i><code>beast/fox.webp</code></div><div class="shcell"><b>5</b><span class="cjk">青蛇</span>
-      <i>Green Serpent</i><code>beast/serpent.webp</code></div><div class="shcell"><b>6</b><span class="cjk">螳螂</span>
-      <i>Praying Mantis</i><code>beast/mantis.webp</code></div><div class="shcell"><b>7</b><span class="cjk">血蝠</span>
-      <i>Blood Bat</i><code>beast/bat.webp</code></div><div class="shcell"><b>8</b><span class="cjk">石猿</span>
-      <i>Stone Ape</i><code>beast/ape.webp</code></div><div class="shcell"><b>9</b><span class="cjk">鐵甲</span>
-      <i>Iron Beetle</i><code>beast/beetle.webp</code></div><div class="shcell"><b>10</b><span class="cjk">夜梟</span>
-      <i>Night Owl</i><code>beast/owl.webp</code></div><div class="shcell"><b>11</b><span class="cjk">血鴉</span>
-      <i>Blood Raven</i><code>beast/raven.webp</code></div><div class="shcell"><b>12</b><span class="cjk">仙鶴</span>
-      <i>Immortal Crane</i><code>beast/crane.webp</code></div>
+    <h2><span class="h cjk">獸王</span> The nine wardens</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
+      <code>ink-sheets/wardens.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">妖狐</span>
+      <i>Spirit Fox</i><code>beast/fox.webp</code></div><div class="shcell"><b>2</b><span class="cjk">石猿</span>
+      <i>Stone Ape</i><code>beast/ape.webp</code></div><div class="shcell"><b>3</b><span class="cjk">仙鶴</span>
+      <i>Immortal Crane</i><code>beast/crane.webp</code></div><div class="shcell"><b>4</b><span class="cjk">雷虎</span>
+      <i>Thunder Tiger</i><code>beast/tiger.webp</code></div><div class="shcell"><b>5</b><span class="cjk">玄武</span>
+      <i>Black Turtle</i><code>beast/turtle.webp</code></div><div class="shcell"><b>6</b><span class="cjk">石傀</span>
+      <i>Stone Puppet</i><code>beast/golem.webp</code></div><div class="shcell"><b>7</b><span class="cjk">魔狼</span>
+      <i>Demon Wolf</i><code>beast/direwolf.webp</code></div><div class="shcell"><b>8</b><span class="cjk">蛟</span>
+      <i>Serpent Dragon</i><code>beast/jiao.webp</code></div><div class="shcell"><b>9</b><span class="cjk">龍</span>
+      <i>Dragon</i><code>beast/dragon.webp</code></div>
 </div>
     <h3>詞 The prompt</h3>
     <pre>One single square image: a page from an old Chinese bestiary album, ruled
-into a grid of 4 columns by 3 rows, 12 panels in all.
+into a grid of 3 columns by 3 rows, 9 panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
-12 equal rectangular panels with a narrow margin of bare paper
+9 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: spirit fox, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is jade.
+  Row 1, panel 2: stone ape, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is jade.
+  Row 1, panel 3: immortal crane, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is jade.
+  Row 2, panel 1: thunder tiger, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is celadon.
+  Row 2, panel 2: black turtle, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is celadon.
+  Row 2, panel 3: stone puppet, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is celadon.
+  Row 3, panel 1: demon wolf, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is old bronze.
+  Row 3, panel 2: serpent dragon, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is old bronze.
+  Row 3, panel 3: dragon, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is old bronze.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">獸甲</span> The commons of the first three realms</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
+      <code>ink-sheets/beasts-a.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">山鼠</span>
+      <i>Mountain Rat</i><code>beast/rat.webp</code></div><div class="shcell"><b>2</b><span class="cjk">野犬</span>
+      <i>Wild Hound</i><code>beast/hound.webp</code></div><div class="shcell"><b>3</b><span class="cjk">澤蛙</span>
+      <i>Marsh Frog</i><code>beast/frog.webp</code></div><div class="shcell"><b>4</b><span class="cjk">青蛇</span>
+      <i>Green Serpent</i><code>beast/serpent.webp</code></div><div class="shcell"><b>5</b><span class="cjk">螳螂</span>
+      <i>Praying Mantis</i><code>beast/mantis.webp</code></div><div class="shcell"><b>6</b><span class="cjk">血蝠</span>
+      <i>Blood Bat</i><code>beast/bat.webp</code></div><div class="shcell"><b>7</b><span class="cjk">鐵甲</span>
+      <i>Iron Beetle</i><code>beast/beetle.webp</code></div><div class="shcell"><b>8</b><span class="cjk">夜梟</span>
+      <i>Night Owl</i><code>beast/owl.webp</code></div><div class="shcell"><b>9</b><span class="cjk">血鴉</span>
+      <i>Blood Raven</i><code>beast/raven.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese bestiary album, ruled
+into a grid of 3 columns by 3 rows, 9 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+9 equal rectangular panels with a narrow margin of bare paper
 around the outside. Every panel has exactly the same aged paper ground as
 every other one. Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel. Nothing crosses a rule: no tail, no wing and no
 mist leaves the panel it belongs to.
@@ -145,15 +193,12 @@ The panels, in reading order:
   Row 1, panel 1: mountain rat, alert, caught in the instant before it moves. Its one pigment is jade.
   Row 1, panel 2: wild hound, alert, caught in the instant before it moves. Its one pigment is jade.
   Row 1, panel 3: marsh frog, alert, caught in the instant before it moves. Its one pigment is jade.
-  Row 1, panel 4: spirit fox, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is jade.
   Row 2, panel 1: green serpent, alert, caught in the instant before it moves. Its one pigment is celadon.
   Row 2, panel 2: praying mantis, alert, caught in the instant before it moves. Its one pigment is celadon.
   Row 2, panel 3: blood bat, alert, caught in the instant before it moves. Its one pigment is celadon.
-  Row 2, panel 4: stone ape, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is celadon.
   Row 3, panel 1: iron beetle, alert, caught in the instant before it moves. Its one pigment is old bronze.
   Row 3, panel 2: night owl, alert, caught in the instant before it moves. Its one pigment is old bronze.
   Row 3, panel 3: blood raven, alert, caught in the instant before it moves. Its one pigment is old bronze.
-  Row 3, panel 4: immortal crane, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is old bronze.
 
 Style: classical Chinese ink painting on aged silk. Wet brush, visible
 strokes, ink bleeding into the fibre, large areas of empty paper. Muted
@@ -163,34 +208,31 @@ fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
 It should look like a plate from a bestiary somebody believed in six
 hundred years ago. No text, no letters and no characters anywhere.
 
-Again, and this matters more than anything else in this prompt: 12
-panels, 4 across and 3 down, thin ink rules between them, the same paper
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
-    <h2><span class="h cjk">獸乙</span> Creatures, the middle three realms</h2>
-    <p class="t">12 panels, 4 across and 3 down. Saved as
+    <h2><span class="h cjk">獸乙</span> The commons of the middle three realms</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
       <code>ink-sheets/beasts-b.png</code>.</p>
-    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
   <div class="shcell"><b>1</b><span class="cjk">鐵根彘</span>
       <i>Ironroot Boar</i><code>beast/boar.webp</code></div><div class="shcell"><b>2</b><span class="cjk">灰狼</span>
       <i>Grey Wolf</i><code>beast/wolf.webp</code></div><div class="shcell"><b>3</b><span class="cjk">山鷲</span>
-      <i>Ridge Vulture</i><code>beast/vulture.webp</code></div><div class="shcell"><b>4</b><span class="cjk">雷虎</span>
-      <i>Thunder Tiger</i><code>beast/tiger.webp</code></div><div class="shcell"><b>5</b><span class="cjk">巨蟹</span>
-      <i>Giant Crab</i><code>beast/crab.webp</code></div><div class="shcell"><b>6</b><span class="cjk">水母</span>
-      <i>Jellyfish</i><code>beast/jellyfish.webp</code></div><div class="shcell"><b>7</b><span class="cjk">岩蜥</span>
-      <i>Rock Lizard</i><code>beast/lizard.webp</code></div><div class="shcell"><b>8</b><span class="cjk">玄武</span>
-      <i>Black Turtle</i><code>beast/turtle.webp</code></div><div class="shcell"><b>9</b><span class="cjk">蜈蚣</span>
-      <i>Iron Centipede</i><code>beast/centipede.webp</code></div><div class="shcell"><b>10</b><span class="cjk">毒蠍</span>
-      <i>Venom Scorpion</i><code>beast/scorpion.webp</code></div><div class="shcell"><b>11</b><span class="cjk">屍蟲</span>
-      <i>Corpse Worm</i><code>beast/worm.webp</code></div><div class="shcell"><b>12</b><span class="cjk">石傀</span>
-      <i>Stone Puppet</i><code>beast/golem.webp</code></div>
+      <i>Ridge Vulture</i><code>beast/vulture.webp</code></div><div class="shcell"><b>4</b><span class="cjk">巨蟹</span>
+      <i>Giant Crab</i><code>beast/crab.webp</code></div><div class="shcell"><b>5</b><span class="cjk">水母</span>
+      <i>Jellyfish</i><code>beast/jellyfish.webp</code></div><div class="shcell"><b>6</b><span class="cjk">岩蜥</span>
+      <i>Rock Lizard</i><code>beast/lizard.webp</code></div><div class="shcell"><b>7</b><span class="cjk">蜈蚣</span>
+      <i>Iron Centipede</i><code>beast/centipede.webp</code></div><div class="shcell"><b>8</b><span class="cjk">毒蠍</span>
+      <i>Venom Scorpion</i><code>beast/scorpion.webp</code></div><div class="shcell"><b>9</b><span class="cjk">屍蟲</span>
+      <i>Corpse Worm</i><code>beast/worm.webp</code></div>
 </div>
     <h3>詞 The prompt</h3>
     <pre>One single square image: a page from an old Chinese bestiary album, ruled
-into a grid of 4 columns by 3 rows, 12 panels in all.
+into a grid of 3 columns by 3 rows, 9 panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
-12 equal rectangular panels with a narrow margin of bare paper
+9 equal rectangular panels with a narrow margin of bare paper
 around the outside. Every panel has exactly the same aged paper ground as
 every other one. Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel. Nothing crosses a rule: no tail, no wing and no
 mist leaves the panel it belongs to.
@@ -200,15 +242,12 @@ The panels, in reading order:
   Row 1, panel 1: ironroot boar, alert, caught in the instant before it moves. Its one pigment is gold leaf.
   Row 1, panel 2: grey wolf, alert, caught in the instant before it moves. Its one pigment is gold leaf.
   Row 1, panel 3: ridge vulture, alert, caught in the instant before it moves. Its one pigment is gold leaf.
-  Row 1, panel 4: thunder tiger, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is gold leaf.
   Row 2, panel 1: giant crab, alert, caught in the instant before it moves. Its one pigment is amber.
   Row 2, panel 2: jellyfish, alert, caught in the instant before it moves. Its one pigment is amber.
   Row 2, panel 3: rock lizard, alert, caught in the instant before it moves. Its one pigment is amber.
-  Row 2, panel 4: black turtle, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is amber.
   Row 3, panel 1: iron centipede, alert, caught in the instant before it moves. Its one pigment is copper.
   Row 3, panel 2: venom scorpion, alert, caught in the instant before it moves. Its one pigment is copper.
   Row 3, panel 3: corpse worm, alert, caught in the instant before it moves. Its one pigment is copper.
-  Row 3, panel 4: stone puppet, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is copper.
 
 Style: classical Chinese ink painting on aged silk. Wet brush, visible
 strokes, ink bleeding into the fibre, large areas of empty paper. Muted
@@ -218,34 +257,31 @@ fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
 It should look like a plate from a bestiary somebody believed in six
 hundred years ago. No text, no letters and no characters anywhere.
 
-Again, and this matters more than anything else in this prompt: 12
-panels, 4 across and 3 down, thin ink rules between them, the same paper
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
-    <h2><span class="h cjk">獸丙</span> Creatures, the last three realms</h2>
-    <p class="t">12 panels, 4 across and 3 down. Saved as
+    <h2><span class="h cjk">獸丙</span> The commons of the last three realms</h2>
+    <p class="t">9 panels, 3 across and 3 down. Saved as
       <code>ink-sheets/beasts-c.png</code>.</p>
-    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="shgrid" style="grid-template-columns:repeat(3,1fr)">
   <div class="shcell"><b>1</b><span class="cjk">魔猿</span>
       <i>Demon Ogre</i><code>beast/ogre.webp</code></div><div class="shcell"><b>2</b><span class="cjk">鬼面</span>
       <i>Ghost Face</i><code>beast/goblin.webp</code></div><div class="shcell"><b>3</b><span class="cjk">陰魂</span>
-      <i>Yin Wraith</i><code>beast/wraith.webp</code></div><div class="shcell"><b>4</b><span class="cjk">魔狼</span>
-      <i>Demon Wolf</i><code>beast/direwolf.webp</code></div><div class="shcell"><b>5</b><span class="cjk">骨將</span>
-      <i>Bone General</i><code>beast/skeleton.webp</code></div><div class="shcell"><b>6</b><span class="cjk">石鬼</span>
-      <i>Gargoyle</i><code>beast/gargoyle.webp</code></div><div class="shcell"><b>7</b><span class="cjk">牛魔</span>
-      <i>Bull Demon</i><code>beast/minotaur.webp</code></div><div class="shcell"><b>8</b><span class="cjk">蛟</span>
-      <i>Serpent Dragon</i><code>beast/jiao.webp</code></div><div class="shcell"><b>9</b><span class="cjk">羽妖</span>
-      <i>Harpy</i><code>beast/harpy.webp</code></div><div class="shcell"><b>10</b><span class="cjk">獨角</span>
-      <i>Unicorn</i><code>beast/unicorn.webp</code></div><div class="shcell"><b>11</b><span class="cjk">巨章</span>
-      <i>Colossal Squid</i><code>beast/squid.webp</code></div><div class="shcell"><b>12</b><span class="cjk">龍</span>
-      <i>Dragon</i><code>beast/dragon.webp</code></div>
+      <i>Yin Wraith</i><code>beast/wraith.webp</code></div><div class="shcell"><b>4</b><span class="cjk">骨將</span>
+      <i>Bone General</i><code>beast/skeleton.webp</code></div><div class="shcell"><b>5</b><span class="cjk">石鬼</span>
+      <i>Gargoyle</i><code>beast/gargoyle.webp</code></div><div class="shcell"><b>6</b><span class="cjk">牛魔</span>
+      <i>Bull Demon</i><code>beast/minotaur.webp</code></div><div class="shcell"><b>7</b><span class="cjk">羽妖</span>
+      <i>Harpy</i><code>beast/harpy.webp</code></div><div class="shcell"><b>8</b><span class="cjk">獨角</span>
+      <i>Unicorn</i><code>beast/unicorn.webp</code></div><div class="shcell"><b>9</b><span class="cjk">巨章</span>
+      <i>Colossal Squid</i><code>beast/squid.webp</code></div>
 </div>
     <h3>詞 The prompt</h3>
     <pre>One single square image: a page from an old Chinese bestiary album, ruled
-into a grid of 4 columns by 3 rows, 12 panels in all.
+into a grid of 3 columns by 3 rows, 9 panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
-12 equal rectangular panels with a narrow margin of bare paper
+9 equal rectangular panels with a narrow margin of bare paper
 around the outside. Every panel has exactly the same aged paper ground as
 every other one. Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel. Nothing crosses a rule: no tail, no wing and no
 mist leaves the panel it belongs to.
@@ -255,15 +291,12 @@ The panels, in reading order:
   Row 1, panel 1: demon ogre, alert, caught in the instant before it moves. Its one pigment is cinnabar.
   Row 1, panel 2: ghost face, alert, caught in the instant before it moves. Its one pigment is cinnabar.
   Row 1, panel 3: yin wraith, alert, caught in the instant before it moves. Its one pigment is cinnabar.
-  Row 1, panel 4: demon wolf, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is cinnabar.
   Row 2, panel 1: bone general, alert, caught in the instant before it moves. Its one pigment is plum.
   Row 2, panel 2: gargoyle, alert, caught in the instant before it moves. Its one pigment is plum.
   Row 2, panel 3: bull demon, alert, caught in the instant before it moves. Its one pigment is plum.
-  Row 2, panel 4: serpent dragon, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is plum.
   Row 3, panel 1: harpy, alert, caught in the instant before it moves. Its one pigment is imperial violet.
   Row 3, panel 2: unicorn, alert, caught in the instant before it moves. Its one pigment is imperial violet.
   Row 3, panel 3: colossal squid, alert, caught in the instant before it moves. Its one pigment is imperial violet.
-  Row 3, panel 4: dragon, the guardian of its realm, huge and still, seen from slightly below. Its one pigment is imperial violet.
 
 Style: classical Chinese ink painting on aged silk. Wet brush, visible
 strokes, ink bleeding into the fibre, large areas of empty paper. Muted
@@ -273,8 +306,8 @@ fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
 It should look like a plate from a bestiary somebody believed in six
 hundred years ago. No text, no letters and no characters anywhere.
 
-Again, and this matters more than anything else in this prompt: 12
-panels, 4 across and 3 down, thin ink rules between them, the same paper
+Again, and this matters more than anything else in this prompt: 9
+panels, 3 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
     <h2><span class="h cjk">境</span> The nine realms</h2>
@@ -299,7 +332,7 @@ into a grid of 3 columns by 3 rows, 9 panels in all.
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
 9 equal rectangular panels with a narrow margin of bare paper
 around the outside. Every panel has exactly the same aged paper ground as
-every other one. Each panel holds one wide landscape, seen from a great height, with the bottom of the panel almost empty. Nothing crosses a rule: no tail, no wing and no
+every other one. Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty. Nothing crosses a rule: no tail, no wing and no
 mist leaves the panel it belongs to.
 
 The panels, in reading order:
@@ -328,18 +361,35 @@ in every panel, and no letters or characters anywhere on the page.</pre>
   </section>
 
   <section class="sec">
+    <h2><span class="h">真</span> The first real sheet</h2>
+    <p class="t">獸甲 came back on the first try, twelve panels in the right order, and it
+      is the picture that settled the direction: <b>this is what the game should look
+      like.</b> It also found the one thing that was wrong with the plan.</p>
+    <img class="shot" src="sheet-beasts-a-proof.png" alt="The generated sheet with the measured cuts drawn on it">
+    <p class="t">The red lines are where 刀 the cutter decided the rules were, measured
+      off the picture rather than assumed. It got them wrong by ten pixels on the first
+      pass, because it was looking for a column that was <i>uniform</i> top to bottom, and
+      on a real sheet bare paper is uniform and a rule is one pixel wide. A rule is
+      <b>dark, edge to edge</b>. Measured that way the rule column reads 80 against 160
+      for its neighbours, and the cuts above land on it.</p>
+    <img class="shot" src="sheet-beasts-a-panels.png" alt="The twelve panels after cutting, in the game's frame">
+    <div class="rule"><b>And the panels are the wrong shape.</b> Twelve panels on a square
+      page means four columns by three rows, so every panel is half as tall again as it is
+      wide. 牌 the plate is a circle, so a square has to come out of that panel and a
+      quarter of its height is thrown away. Above, that quarter was the owl's head, the
+      raven's head and the crane's whole neck. No cleverness in the cutter fixes a panel
+      that is the wrong shape, so the grid is now <b>three by three</b> and the panels are
+      square. The sheets above are the new ones.</div>
+  </section>
+
+  <section class="sec">
     <h2><span class="h">樣</span> The demonstration leaf</h2>
     <p class="t">This is not a painting: it is the game's own icons inked onto paper and
       ruled into the same grid, drawn at exactly the size a model returns. <b>It exists so
-      the cutter could be proved before a credit was spent</b>, and it is the picture to
+      the cutter can be tested without spending a credit</b>, and it is the picture to
       attach to the prompt if the model takes one.</p>
-    <img class="shot" src="ink-sheets/demo.png" alt="A ruled album leaf of twelve inked creatures on paper">
-    <h3>證 And the same leaf, cut</h3>
-    <p class="t">The red lines are where 刀 the cutter decided the rules were, measured
-      off the picture rather than assumed. Every panel below it came out of the sheet
-      above it with no hand in between.</p>
-    <img class="shot" src="sheet-beasts-c-proof.png" alt="The same leaf with the measured cuts drawn on it">
-    <img class="shot" src="sheet-cut-strip.png" alt="The twelve panels after cutting, in the game's frame">
+    <img class="shot" src="ink-sheets/demo.png" alt="A ruled album leaf of nine inked creatures on paper">
+    <img class="shot" src="sheet-demo-panels.png" alt="The nine panels of the fabricated leaf after cutting">
   </section>
 
   <footer class="sec" style="color:var(--faint);font-size:13.5px">

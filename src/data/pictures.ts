@@ -23,7 +23,20 @@ export type Painted = 'beast' | 'realm' | 'heaven';
  * for a realm or a heaven. See tools/pictures.ts for the sizes and why they are those.
  */
 export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
-  beast: [],
+  beast: [
+    'ape',
+    'bat',
+    'beetle',
+    'crane',
+    'fox',
+    'frog',
+    'hound',
+    'mantis',
+    'owl',
+    'rat',
+    'raven',
+    'serpent',
+  ],
   realm: [],
   heaven: [],
 };

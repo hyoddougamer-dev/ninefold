@@ -13,6 +13,9 @@ const shot = async (page, sel, file) => {
   await p.locator(sel).screenshot({ path: file });
   console.log(file);
 };
-await shot('sheet-demo.html', '#leaf', 'ink-sheets/demo.png');
-await shot('sheet-cut.html', '#cuts', 'sheet-cut-strip.png');
+// With no argument, shoot both. With one, shoot only the cut panels, into that file,
+// which is how a real sheet's panels are kept beside the fabricated one's.
+const out = process.argv[2];
+if (!out) await shot('sheet-demo.html', '#leaf', 'ink-sheets/demo.png');
+await shot('sheet-cut.html', '#cuts', out ?? 'sheet-cut-strip.png');
 await b.close();

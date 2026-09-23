@@ -57,20 +57,43 @@ const warden = (n: number) =>
   `${wardenOf(n).name.toLowerCase()}, the guardian of its realm, huge and still, seen from slightly below`;
 const common = (b: { name: string }) => `${b.name.toLowerCase()}, alert, caught in the instant before it moves`;
 
-function beastSheet(key: string, han: string, title: string, realms: number[]): Sheet {
+/**
+ * 方 Nine panels, three by three, because the panel has to be square.
+ *
+ * 誤 The first layout asked for twelve panels in four columns by three rows, which on a
+ * square page makes every panel half as tall again as it is wide. 牌 the plate is a
+ * circle, so a square has to be cut out of that panel and a quarter of its height thrown
+ * away, and on the sheet that came back it was the owl's head, the raven's head and the
+ * crane's whole neck that went. No amount of cleverness in 刀 the cutter fixes a panel
+ * that is the wrong shape. Three by three makes it square, and the circle then crops a
+ * picture drawn for it.
+ *
+ * 組 Which also gives a better set. The nine wardens are one sheet on their own, and a
+ * warden is the fight a whole realm is remembered for, so that is the sheet to do first.
+ * The twenty-seven commons are three more, three realms to a sheet and a row each, so a
+ * row is one realm and one pigment.
+ */
+function wardenSheet(): Sheet {
+  const cells = REALMS.map((_, i) => {
+    const w = wardenOf(i + 1);
+    return { key: w.key, han: w.han, name: w.name, subject: warden(i + 1) };
+  });
+  return { key: 'wardens', han: '獸王', title: 'The nine wardens', kind: 'beast', cols: 3, rows: 3, cells, realms: [1, 2, 3, 4, 5, 6, 7, 8, 9] };
+}
+
+function commonSheet(key: string, han: string, title: string, realms: number[]): Sheet {
   const cells: Cell[] = [];
   for (const n of realms) {
     for (const b of commonsOf(n)) cells.push({ key: b.key, han: b.han, name: b.name, subject: common(b) });
-    const w = wardenOf(n);
-    cells.push({ key: w.key, han: w.han, name: w.name, subject: warden(n) });
   }
-  return { key, han, title, kind: 'beast', cols: 4, rows: realms.length, cells, realms };
+  return { key, han, title, kind: 'beast', cols: 3, rows: realms.length, cells, realms };
 }
 
 export const SHEETS: readonly Sheet[] = [
-  beastSheet('beasts-a', '獸甲', 'Creatures, the first three realms', [1, 2, 3]),
-  beastSheet('beasts-b', '獸乙', 'Creatures, the middle three realms', [4, 5, 6]),
-  beastSheet('beasts-c', '獸丙', 'Creatures, the last three realms', [7, 8, 9]),
+  wardenSheet(),
+  commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
+  commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
+  commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
   {
     key: 'realms',
     han: '境',
@@ -103,7 +126,7 @@ export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) 
 export function sheetPrompt(s: Sheet): string {
   const shape = s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
-    : 'Each panel holds one wide landscape, seen from a great height, with the bottom of the panel almost empty.';
+    : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
@@ -200,7 +223,7 @@ function demoLeaf(s: Sheet): string {
  * looks fine as a file and wrong inside 圓相 the ensō, where the circle crops it. So the
  * proof is the panels in the ring, at the size the game shows them.
  */
-function cutStrip(s: Sheet): string {
+export function cutStrip(s: Sheet): string {
   const cells = s.cells
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
@@ -365,18 +388,35 @@ const page = `<meta charset="utf-8">
   </section>`).join('')}
 
   <section class="sec">
+    <h2><span class="h">真</span> The first real sheet</h2>
+    <p class="t">獸甲 came back on the first try, twelve panels in the right order, and it
+      is the picture that settled the direction: <b>this is what the game should look
+      like.</b> It also found the one thing that was wrong with the plan.</p>
+    <img class="shot" src="sheet-beasts-a-proof.png" alt="The generated sheet with the measured cuts drawn on it">
+    <p class="t">The red lines are where 刀 the cutter decided the rules were, measured
+      off the picture rather than assumed. It got them wrong by ten pixels on the first
+      pass, because it was looking for a column that was <i>uniform</i> top to bottom, and
+      on a real sheet bare paper is uniform and a rule is one pixel wide. A rule is
+      <b>dark, edge to edge</b>. Measured that way the rule column reads 80 against 160
+      for its neighbours, and the cuts above land on it.</p>
+    <img class="shot" src="sheet-beasts-a-panels.png" alt="The twelve panels after cutting, in the game's frame">
+    <div class="rule"><b>And the panels are the wrong shape.</b> Twelve panels on a square
+      page means four columns by three rows, so every panel is half as tall again as it is
+      wide. 牌 the plate is a circle, so a square has to come out of that panel and a
+      quarter of its height is thrown away. Above, that quarter was the owl's head, the
+      raven's head and the crane's whole neck. No cleverness in the cutter fixes a panel
+      that is the wrong shape, so the grid is now <b>three by three</b> and the panels are
+      square. The sheets above are the new ones.</div>
+  </section>
+
+  <section class="sec">
     <h2><span class="h">樣</span> The demonstration leaf</h2>
     <p class="t">This is not a painting: it is the game's own icons inked onto paper and
       ruled into the same grid, drawn at exactly the size a model returns. <b>It exists so
-      the cutter could be proved before a credit was spent</b>, and it is the picture to
+      the cutter can be tested without spending a credit</b>, and it is the picture to
       attach to the prompt if the model takes one.</p>
-    <img class="shot" src="ink-sheets/demo.png" alt="A ruled album leaf of twelve inked creatures on paper">
-    <h3>證 And the same leaf, cut</h3>
-    <p class="t">The red lines are where 刀 the cutter decided the rules were, measured
-      off the picture rather than assumed. Every panel below it came out of the sheet
-      above it with no hand in between.</p>
-    <img class="shot" src="sheet-beasts-c-proof.png" alt="The same leaf with the measured cuts drawn on it">
-    <img class="shot" src="sheet-cut-strip.png" alt="The twelve panels after cutting, in the game's frame">
+    <img class="shot" src="ink-sheets/demo.png" alt="A ruled album leaf of nine inked creatures on paper">
+    <img class="shot" src="sheet-demo-panels.png" alt="The nine panels of the fabricated leaf after cutting">
   </section>
 
   <footer class="sec" style="color:var(--faint);font-size:13.5px">
@@ -389,9 +429,7 @@ const page = `<meta charset="utf-8">
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   writeFileSync('sheets.html', page);
-  writeFileSync('sheet-demo.html', demoLeaf(SHEETS[2]));
-  writeFileSync('sheet-cut.html', cutStrip(SHEETS[2]));
+  writeFileSync('sheet-demo.html', demoLeaf(sheetOf('beasts-c')!));
   console.log(`sheets.html · ${SHEETS.length} prompts · ${SHEETS.reduce((n, s) => n + s.cells.length, 0)} panels`);
-  console.log('sheet-demo.html · the fabricated leaf for ' + SHEETS[2].key);
-  console.log('sheet-cut.html · the panels it was cut into');
+  console.log('sheet-demo.html · the fabricated leaf for beasts-c');
 }

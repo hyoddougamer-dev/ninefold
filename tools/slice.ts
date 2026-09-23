@@ -23,7 +23,8 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import sharp from 'sharp';
-import { SHEETS, sheetOf, type Sheet } from './sheets.ts';
+import { BEASTS } from '../src/data/bestiary.ts';
+import { SHEETS, cutStrip, sheetOf, type Sheet } from './sheets.ts';
 
 /** How much of a cell to throw away on each side, to lose the rule line itself. */
 const INSET = 0.02;
@@ -42,31 +43,20 @@ async function grey(file: string) {
 }
 
 /**
- * The boundaries of one axis, measured. Returns cuts.length === n + 1, outer edges
- * included, so a cell i runs from cuts[i] to cuts[i + 1].
+ * 線 How dark and how flat every line across one axis is.
+ *
+ * 誤 This is the measurement the first cut got wrong, and it cost a whole sheet. It
+ * scored a gutter by how *uniform* a column was from top to bottom, reasoning that a
+ * ruled line is the same all the way down. It is, but so is any column of bare paper,
+ * and on a real sheet the paper is everywhere and the rule is one pixel wide. The
+ * detector picked flat paper eight pixels to the right of the rule, every time.
+ *
+ * What a rule actually is, is **dark, edge to edge**. Measured down the whole sheet that
+ * is unmistakable: on 獸甲 the rule column averaged 80 against 160 for its neighbours,
+ * while its deviation was no lower than theirs. So darkness leads and flatness only
+ * breaks ties, which keeps the fabricated leaf working too.
  */
-function boundaries(dev: Float64Array, n: number, span: number, from: number): number[] {
-  const cell = span / n;
-  const cuts = [from];
-  for (let i = 1; i < n; i++) {
-    const nominal = from + i * cell;
-    const lo = Math.max(from + 1, Math.round(nominal - cell * HUNT));
-    const hi = Math.min(from + span - 1, Math.round(nominal + cell * HUNT));
-    let best = Math.round(nominal);
-    let bestDev = Infinity;
-    for (let x = lo; x <= hi; x++) {
-      // 心 A tie goes to the middle: a sheet of flat paper should cut where it was asked to.
-      const score = dev[x] + Math.abs(x - nominal) * 0.01;
-      if (score < bestDev) { bestDev = score; best = x; }
-    }
-    cuts.push(best);
-  }
-  cuts.push(from + span);
-  return cuts;
-}
-
-/** Deviation along the other axis, for every column (axis 'x') or every row (axis 'y'). */
-function deviation(g: { data: Buffer; w: number; h: number }, axis: 'x' | 'y'): Float64Array {
+function profile(g: { data: Buffer; w: number; h: number }, axis: 'x' | 'y'): Float64Array {
   const n = axis === 'x' ? g.w : g.h;
   const m = axis === 'x' ? g.h : g.w;
   const out = new Float64Array(n);
@@ -79,68 +69,132 @@ function deviation(g: { data: Buffer; w: number; h: number }, axis: 'x' | 'y'): 
       sq += v * v;
     }
     const mean = sum / m;
-    out[i] = Math.sqrt(Math.max(0, sq / m - mean * mean));
+    out[i] = mean + Math.sqrt(Math.max(0, sq / m - mean * mean)) * 0.5;
   }
   return out;
 }
 
+/** The value a line has where there is nothing but paper, so a rule can be told from it. */
+function paperLevel(p: Float64Array): number {
+  const sorted = Array.from(p).sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length * 0.6)];
+}
+
 /**
- * 邊 The outer margin. The prompt asks for bare paper around the grid, and a model often
- * adds more of it, so the grid is found before it is divided: walk in from each edge
- * while the line is flat, and stop at the first line that has anything on it.
+ * 邊 The outer frame. The prompt asks for a margin of bare paper around the grid and a
+ * model often gives more of it, or none at all and rules the page edge to edge. Both are
+ * the same question: where is the first ruled line, coming in from this edge? Look for it
+ * in the outer eighth, and take the edge itself when nothing there is dark enough to be
+ * a rule.
  */
-function margins(dev: Float64Array, span: number): { from: number; span: number } {
-  let peak = 0;
-  for (let i = 0; i < span; i++) peak = Math.max(peak, dev[i]);
-  const live = peak * 0.12;
-  let a = 0;
-  let b = span - 1;
-  while (a < span / 4 && dev[a] < live) a++;
-  while (b > (span * 3) / 4 && dev[b] < live) b--;
+function frame(p: Float64Array, span: number): { from: number; span: number } {
+  const paper = paperLevel(p);
+  const dark = paper - 22;
+  const reach = Math.round(span * 0.12);
+  const pick = (lo: number, hi: number, fallback: number) => {
+    let best = fallback;
+    let low = Infinity;
+    for (let i = lo; i <= hi; i++) if (p[i] < low) { low = p[i]; best = i; }
+    return low < dark ? best : fallback;
+  };
+  const a = pick(0, reach, 0);
+  const b = pick(span - 1 - reach, span - 1, span - 1);
   return { from: a, span: b - a + 1 };
 }
 
-/** 墨 The box around everything in a panel that is darker than its paper. */
-function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; top: number; width: number; height: number }) {
-  let pale = 0;
-  let n = 0;
-  for (let y = box.top; y < box.top + box.height; y += 3) {
-    for (let x = box.left; x < box.left + box.width; x += 3) { pale = Math.max(pale, g.data[y * g.w + x]); n++; }
-  }
-  const dark = pale - 34;
-  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  for (let y = box.top; y < box.top + box.height; y++) {
-    for (let x = box.left; x < box.left + box.width; x++) {
-      if (g.data[y * g.w + x] < dark) {
-        if (x < x0) x0 = x;
-        if (x > x1) x1 = x;
-        if (y < y0) y0 = y;
-        if (y > y1) y1 = y;
-      }
+/**
+ * The boundaries of one axis, measured. Returns cuts.length === n + 1, outer edges
+ * included, so a cell i runs from cuts[i] to cuts[i + 1].
+ */
+function boundaries(p: Float64Array, n: number, span: number, from: number): number[] {
+  const cell = span / n;
+  const cuts = [from];
+  for (let i = 1; i < n; i++) {
+    const nominal = from + i * cell;
+    const lo = Math.max(from + 1, Math.round(nominal - cell * HUNT));
+    const hi = Math.min(from + span - 1, Math.round(nominal + cell * HUNT));
+    let best = Math.round(nominal);
+    let low = Infinity;
+    for (let x = lo; x <= hi; x++) {
+      // 心 A tie goes to the middle: a sheet with no rule at all should cut where it was
+      // asked to rather than wherever the paper happened to be a shade darker.
+      const score = p[x] + Math.abs(x - nominal) * 0.02;
+      if (score < low) { low = score; best = x; }
     }
+    cuts.push(best);
   }
-  // 空 An empty panel keeps its whole cell rather than collapsing to nothing.
-  if (!isFinite(x0)) return { ...box };
-  return { left: x0, top: y0, width: x1 - x0 + 1, height: y1 - y0 + 1 };
+  cuts.push(from + span);
+  return cuts;
 }
 
-/** The panel's own paper, sampled from its corners, for the margin to be extended with. */
-async function paperOf(file: string, box: { left: number; top: number; width: number; height: number }) {
-  const s = await sharp(file)
-    .extract({ left: box.left, top: box.top, width: Math.min(8, box.width), height: Math.min(8, box.height) })
-    .stats();
-  const ch = s.channels;
-  return { r: Math.round(ch[0].mean), g: Math.round((ch[1] ?? ch[0]).mean), b: Math.round((ch[2] ?? ch[0]).mean) };
+/**
+ * 墨 Where the painting actually is inside its panel.
+ *
+ * 誤 The first version took the box around every pixel darker than the palest one, which
+ * worked on 樣 the fabricated leaf, where a flat paper holds one clean silhouette, and
+ * failed completely on a real painting, where the aged paper is textured edge to edge.
+ * Every panel reported that its subject filled it, so every square was taken from the
+ * middle of a tall panel and the frog lost its feet and the crane lost its head.
+ *
+ * 量 So measure weight rather than extent. A pixel counts for how much darker than the
+ * bare paper it is, with a floor under it so the paper's own grain counts for nothing,
+ * and the box is the middle 94 per cent of that weight on each axis. Texture is spread
+ * thin and an animal is not, so the tails of the distribution are the paper and the body
+ * of it is the creature.
+ */
+function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; top: number; width: number; height: number }) {
+  const sample: number[] = [];
+  for (let y = box.top; y < box.top + box.height; y += 2) {
+    for (let x = box.left; x < box.left + box.width; x += 2) sample.push(g.data[y * g.w + x]);
+  }
+  sample.sort((a, b) => a - b);
+  // 紙 The bare paper, read off the pale end but not from the single palest pixel, which
+  // on a scanned-looking sheet is a speck rather than the ground.
+  const paper = sample[Math.floor(sample.length * 0.88)];
+  const floor = 14;
+  const cols = new Float64Array(box.width);
+  const rows = new Float64Array(box.height);
+  for (let y = 0; y < box.height; y++) {
+    for (let x = 0; x < box.width; x++) {
+      const w = Math.max(0, paper - g.data[(box.top + y) * g.w + box.left + x] - floor);
+      cols[x] += w;
+      rows[y] += w;
+    }
+  }
+  const span = (a: Float64Array, lose: number, loseEnd = lose) => {
+    let total = 0;
+    for (const v of a) total += v;
+    if (total <= 0) return { lo: 0, hi: a.length - 1 };
+    let acc = 0;
+    let lo = 0;
+    while (lo < a.length - 1 && acc + a[lo] < total * lose) acc += a[lo++];
+    acc = 0;
+    let hi = a.length - 1;
+    while (hi > lo && acc + a[hi] < total * loseEnd) acc += a[hi--];
+    return { lo, hi };
+  };
+  // 頸 The top of the vertical span is barely trimmed at all. A head is a small share of
+  // a creature's ink and a crane's neck is almost none of it, so a three per cent trim
+  // took the raven's head and the crane's whole neck. The bottom keeps its trim, because
+  // what is down there is the ground the animal is standing on.
+  const sx = span(cols, 0.03);
+  const sy = span(rows, 0.004, 0.05);
+  return {
+    left: box.left + sx.lo,
+    top: box.top + sy.lo,
+    width: sx.hi - sx.lo + 1,
+    height: sy.hi - sy.lo + 1,
+  };
 }
 
 async function cut(sheet: Sheet, file: string) {
   const g = await grey(file);
-  const devX = deviation(g, 'x');
-  const devY = deviation(g, 'y');
-  const mx = margins(devX, g.w);
-  const my = margins(devY, g.h);
-  const xs = boundaries(devX, sheet.cols, mx.span, mx.from);
-  const ys = boundaries(devY, sheet.rows, my.span, my.from);
+  const px = profile(g, 'x');
+  const py = profile(g, 'y');
+  const mx = frame(px, g.w);
+  const my = frame(py, g.h);
+  const xs = boundaries(px, sheet.cols, mx.span, mx.from);
+  const ys = boundaries(py, sheet.rows, my.span, my.from);
 
   const dir = `public/art/${sheet.kind}`;
   mkdirSync(dir, { recursive: true });
@@ -174,37 +228,32 @@ async function cut(sheet: Sheet, file: string) {
     // asked about. The greyscale is already in hand: take the box of everything darker
     // than the paper, square it about its own centre, and give it a margin.
     const ink = inkBox(g, box);
-    // 圓 The frame is a circle, so the square has to hold the subject's **diagonal**, not
-    // its longer side. The first cut used the longer side and every wide creature came
-    // back with its wings clipped off by 圓相 the ensō, which a look at the files would
-    // never have shown: they were perfect squares of a clipped animal.
-    const side = Math.round(Math.hypot(ink.width, ink.height) / CIRCLE);
-    const cx = ink.left + ink.width / 2;
-    const cy = ink.top + ink.height / 2;
+    // 圓 The frame is a circle, so the square wants the subject's **diagonal**, not its
+    // longer side. The first cut used the longer side and every wide creature came back
+    // with its wings clipped off by 圓相 the ensō, which a look at the files would never
+    // have shown: they were perfect squares of a clipped animal.
+    //
+    // 紙 But it never reaches outside the panel for that room. The version that did,
+    // padded the shortfall with a flat sample of the paper, and a real painting came back
+    // with a pale bar down each side where the invented paper met the painted paper. So
+    // the square is bounded by the panel's short side: at worst a whole painting is shown
+    // and the circle crops it, which is what a plate is for.
+    const short = Math.min(box.width, box.height);
+    const side = Math.round(Math.min(short, Math.max(short * 0.8, Math.hypot(ink.width, ink.height) / CIRCLE)));
+    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    // 首 Centred across, but hung from the top of the ink. A panel taller than it is wide
+    // has to lose a band, and a bestiary plate that loses the animal's head is worthless
+    // while one that loses the ground it stands on is not. Centring lost the owl's head,
+    // the raven's head and the crane's whole neck in one pass.
+    const head = ink.top - side * 0.04;
     const square = {
-      left: Math.round(cx - side / 2),
-      top: Math.round(cy - side / 2),
+      left: Math.round(clamp(ink.left + ink.width / 2 - side / 2, box.left, box.left + box.width - side)),
+      top: Math.round(clamp(head, box.top, box.top + box.height - side)),
       width: side,
       height: side,
     };
-    const bg = await paperOf(file, box);
-    // The square is allowed to want more room than the panel has, which is the usual case
-    // for a creature that fills its panel: extend with the panel's own paper.
-    const clip = {
-      left: Math.max(0, square.left),
-      top: Math.max(0, square.top),
-      width: Math.min(g.w, square.left + side) - Math.max(0, square.left),
-      height: Math.min(g.h, square.top + side) - Math.max(0, square.top),
-    };
     await sharp(file)
-      .extract(clip)
-      .extend({
-        left: Math.max(0, clip.left - square.left),
-        top: Math.max(0, clip.top - square.top),
-        right: Math.max(0, square.left + side - (clip.left + clip.width)),
-        bottom: Math.max(0, square.top + side - (clip.top + clip.height)),
-        background: bg,
-      })
+      .extract(square)
       .resize(size.w, size.h, { fit: 'fill' })
       .webp({ quality: 82 })
       .toFile(out);
@@ -236,10 +285,47 @@ async function proof(sheet: Sheet, file: string, r: Awaited<ReturnType<typeof cu
   return out;
 }
 
-const [key, file] = process.argv.slice(2);
-const sheet = key ? sheetOf(key) : undefined;
+/**
+ * 改 The grid and the panel order can both be overridden from the command line:
+ *
+ *     npm run slice -- beasts-a sheet.png --grid 4x3 --keys rat,hound,frog,fox,…
+ *
+ * 用 Which is what a sheet that came back wrong is for. A model that ruled the page four
+ * across instead of three, or drew the panels out of order, has not wasted a credit: the
+ * cutter is told the shape it is actually looking at, and the keys say which panel is
+ * which. It is also how a sheet generated against an older layout stays cuttable.
+ */
+const argv = process.argv.slice(2);
+const opt = (name: string) => {
+  const i = argv.indexOf(`--${name}`);
+  return i >= 0 ? argv[i + 1] : undefined;
+};
+const [key, file] = argv.filter((a, i) => !a.startsWith('--') && !argv[i - 1]?.startsWith('--'));
+let sheet = key ? sheetOf(key) : undefined;
+if (sheet) {
+  const grid = opt('grid');
+  const keys = opt('keys')?.split(',').map((k) => k.trim()).filter(Boolean);
+  if (grid || keys) {
+    const [cols, rows] = (grid ?? `${sheet.cols}x${sheet.rows}`).split('x').map(Number);
+    const named = keys ?? sheet.cells.map((c) => c.key);
+    const known = new Map(BEASTS.map((b) => [b.key, b]));
+    sheet = {
+      ...sheet,
+      cols,
+      rows,
+      cells: named.map((k) => {
+        const b = known.get(k);
+        return { key: k, han: b?.han ?? k, name: b?.name ?? k, subject: '' };
+      }),
+    };
+    if (sheet.cells.length !== cols * rows) {
+      console.log(`${cols} by ${rows} is ${cols * rows} panels but ${sheet.cells.length} keys were named`);
+      process.exit(1);
+    }
+  }
+}
 if (!sheet || !file) {
-  console.log('npm run slice -- <sheet> <image>\n\nsheets: ' + SHEETS.map((s) => `${s.key} (${s.cells.length})`).join(', '));
+  console.log('npm run slice -- <sheet> <image> [--grid 4x3] [--keys a,b,c]\n\nsheets: ' + SHEETS.map((s) => `${s.key} (${s.cols}x${s.rows})`).join(', '));
   process.exit(1);
 }
 if (!existsSync(file)) {
@@ -254,4 +340,7 @@ console.log(`  columns at ${r.xs.join(' ')}  (widths ${gaps.join(' ')})`);
 console.log(`  rows    at ${r.ys.join(' ')}`);
 console.log(`  wrote   ${r.written[0]} … ${r.written[r.written.length - 1]}`);
 console.log(`  proof   ${p}`);
-writeFileSync(`sheet-${sheet.key}-cuts.json`, JSON.stringify({ xs: r.xs, ys: r.ys }, null, 1));
+// 證 The panels in the ring they will be seen through, which is the only place a bad cut
+// shows. The proof belongs to the cut and not to the prompt page, so it is written here.
+writeFileSync('sheet-cut.html', cutStrip(sheet));
+console.log('  panels  sheet-cut.html');
