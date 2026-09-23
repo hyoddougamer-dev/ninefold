@@ -144,7 +144,18 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     'woman-8',
     'woman-9',
   ],
-  meet: [],
+  meet: [
+    'beggar',
+    'brokensword',
+    'crow',
+    'drunk',
+    'furnace',
+    'merchant',
+    'oldman',
+    'pool',
+    'stele',
+    'swordsman',
+  ],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */

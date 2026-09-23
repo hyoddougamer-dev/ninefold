@@ -1520,13 +1520,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .meet > .s { flex: none; color: var(--jade); }
 .meet .s svg { display: block; }
 .meet .body { flex: 1; min-width: 0; }
-/* 緣 A card with a scene painted for it stops being a row and becomes a page: the band
-   runs the full width across the top, bled to the card's own corners, and the text sits
-   under it. The card keeps its padding for the text by moving it off the card itself. */
-.meet[data-scene='true'] { display: block; padding: 0; overflow: hidden; }
-.meet[data-scene='true'] .body { padding: 12px 14px 14px; }
-.meet .scenery { display: block; width: 100%; height: 108px; object-fit: cover;
-                 object-position: center 46%; border-bottom: 1px solid var(--line); }
+/* 緣 A card with a scene painted for it becomes a page from a notebook: the plate at the
+   left, the entry beside it, and 擇 the two choices the full width underneath.
+   124 by 166 is exactly the shape the panel was painted in, so the picture is shown whole
+   and `cover` never has anything to crop. */
+.meet[data-scene='true'] { display: grid; grid-template-columns: 124px 1fr;
+                           gap: 4px 12px; align-items: start; }
+.meet[data-scene='true'] .picks { grid-column: 1 / -1; margin-top: 8px; }
+.meet .scenery { display: block; width: 124px; height: 166px; object-fit: cover;
+                 border-radius: 7px; border: 1px solid var(--line); }
 .meet b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15.5px;
           line-height: 1.3; }
 .meet b .cjk { color: var(--jade); font-weight: 400; margin-right: 6px; }

@@ -45,11 +45,28 @@ export function Meet({ state, meeting, onAnswer }: {
    *
    * 圖 An encounter is the one moment an idle game stops for, and it was carrying a 30px
    * pictogram: a raven for a crow that has followed you a mile, a cauldron for an
-   * abandoned furnace. Painted, it goes across the top of the card as a band, which is
-   * the shape those scenes were drawn in and the shape a page of a traveller's notebook
-   * has. With no painting the card is exactly what it was.
+   * abandoned furnace.
+   *
+   * 直 It stands beside the words rather than above them. The first try put it in a band
+   * across the top, which was the wrong shape: four panels across a square page makes a
+   * panel taller than it is wide, and the paintings are composed that way, with the
+   * subject low and sky above it. A band cropped the crow off its branch entirely and
+   * took the swordsman's head. So the picture keeps its own shape at the left, the name
+   * and the line sit next to it, and 擇 the two choices run the full width underneath,
+   * where they were before. With no painting the card is exactly what it was.
    */
   const scene = pictureOf('meet', meeting.key);
+  const picks = (
+    <div className="picks">
+      {meeting.picks.map((p, i) => (
+        <button key={p.label} className="pick" disabled={!canAnswer(state, p)}
+          onClick={() => onAnswer(i as 0 | 1)}>
+          <b>{p.label}</b>
+          <em>{line(p)}</em>
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div className="meet" data-scene={!!scene}>
@@ -59,16 +76,9 @@ export function Meet({ state, meeting, onAnswer }: {
       <div className="body">
         <b><span className="cjk">緣</span> {meeting.name}</b>
         <i>{meeting.line}</i>
-        <div className="picks">
-          {meeting.picks.map((p, i) => (
-            <button key={p.label} className="pick" disabled={!canAnswer(state, p)}
-              onClick={() => onAnswer(i as 0 | 1)}>
-              <b>{p.label}</b>
-              <em>{line(p)}</em>
-            </button>
-          ))}
-        </div>
+        {!scene && picks}
       </div>
+      {scene && picks}
     </div>
   );
 }

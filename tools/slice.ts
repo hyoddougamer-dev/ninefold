@@ -40,7 +40,11 @@ const CUT_MAX = 720;
 /** 獸 A creature is square and small on screen. 境 a realm is a wide card background. */
 const OUT = {
   beast: { w: 512, h: 512 }, realm: { w: 768, h: 432 },
-  self: { w: 512, h: 512 }, meet: { w: 768, h: 432 },
+  // 緣 An encounter keeps the shape it was painted in. Four across and three down on a
+  // square page makes a panel taller than it is wide, and squeezing that into a wide band
+  // at cut time would throw four fifths of the painting away in the file, where nothing
+  // can get it back. The file keeps the scene; the card decides the window.
+  self: { w: 512, h: 512 }, meet: { w: 640, h: 856 },
 } as const;
 
 /** Greyscale rows, so a column can be asked how much it varies from top to bottom. */
