@@ -52,9 +52,12 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
     return `<g transform="translate(${off.toFixed(1)} ${off.toFixed(1)}) scale(${(side / 512).toFixed(4)})" fill="${r.colour}" opacity="${op.toFixed(2)}">${body}</g>`;
   }).join('');
 
-  const halos = Array.from({ length: r.halos }, (_, i) =>
-    `<circle cx="${S / 2}" cy="${S * 0.42}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${(0.75 - i * 0.2).toFixed(2)}"/>`,
-  ).join('');
+  // 圓光 The halo is grouped and named so 動 the motion block can turn it, very slowly,
+  // about the head it sits behind rather than about the middle of the picture.
+  const halos = r.halos === 0 ? '' : `<g class="halo" style="transform-origin:${S / 2}px ${(S * 0.42).toFixed(1)}px">${
+    Array.from({ length: r.halos }, (_, i) =>
+      `<circle cx="${S / 2}" cy="${S * 0.42}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${(0.75 - i * 0.2).toFixed(2)}" stroke-dasharray="${i % 2 ? '5 9' : '0'}"/>`,
+    ).join('')}</g>`;
 
   const core = mix(r.colour, '#FFFFFF', 0.25 + 0.6 * t);
   const figure = ICONS.meditation ?? '';

@@ -1789,3 +1789,51 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* It stands exactly where the pictogram stood, so a row that used one is the row it
    always was. See ui/Emblem.tsx. */
 .emblem { display: block; object-fit: contain; border-radius: 4px; }
+
+/* ── 動 motion, in ink ─────────────────────────────────────────────────── */
+
+/* 墨 Bruno: *"tenta adicionar algumas animações e auras, brilhos etc .. conforme
+   aplicável para dar enfase."* Four of them, and every one obeys the same rule the
+   palette obeys: **nothing emits light**. A glow here is a lamp or the moon, an entrance
+   is ink meeting paper, and the only thing that moves fast is a blow landing.
+
+   止 Every one of them stands down for `prefers-reduced-motion`, at the foot of this
+   block, because a game somebody opens forty times a day is the wrong place to insist. */
+
+/* 滲 Ink meeting paper: a painting arrives by soaking in rather than sliding. It is the
+   one entrance that suits a brush, and it is used by everything that is a painting. */
+@keyframes soak {
+  from { opacity: 0; filter: blur(5px) saturate(.4); transform: scale(1.03); }
+  to   { opacity: 1; filter: blur(0) saturate(1); transform: scale(1); }
+}
+.meet .scenery, .emblem, .whom .face { animation: soak .5s ease-out both; }
+.meet .scenery { animation-duration: .7s; }
+
+/* 雲 The heavens drift. Above the ninth realm the backdrop is cloud and starfield with
+   no ground in it, so it is the one place where the scenery itself can move: ninety
+   seconds for one pass, which is slower than anybody will notice and exactly why it
+   works. A realm's mountains stay still, because mountains do. */
+@keyframes drift {
+  0%, 100% { transform: translate3d(-1.5%, 0, 0) scale(1.06); }
+  50%      { transform: translate3d(1.5%, -1%, 0) scale(1.06); }
+}
+.skyline[data-heaven='true'] { animation: drift 90s ease-in-out infinite; }
+
+/* 圓光 The halo turns. One turn every two minutes: at that speed it is not an animation,
+   it is the difference between a portrait and a photograph of one. */
+@keyframes halo { to { transform: rotate(360deg); } }
+.you .art .halo { animation: halo 120s linear infinite; }
+
+/* 入 The fight begins. Both of them arrive instead of appearing: she settles in from the
+   left, it comes in from the right, and the beast lands a beat later so the eye goes to
+   it. 退 Nothing moves on the way out, because a fight that is over is over. */
+@keyframes stepin  { from { opacity: 0; transform: translate3d(-14px, 0, 0); } }
+@keyframes stalkin { from { opacity: 0; transform: translate3d(22px, 0, 0); } }
+.arena:not([data-over='true']) .you .art { animation: stepin .45s ease-out both; }
+.arena:not([data-over='true']) .foe .art { animation: stalkin .5s .12s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .meet .scenery, .emblem, .whom .face,
+  .skyline[data-heaven='true'], .you .art .halo,
+  .arena .you .art, .arena .foe .art { animation: none; }
+}

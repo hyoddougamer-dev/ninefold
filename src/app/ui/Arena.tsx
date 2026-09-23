@@ -147,7 +147,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
       <div className="stage">
         {/* 畫 The realm's own landscape, behind the fight, where there is one. The drawn
             sky and ridges stand down for it: see art/scene.ts. */}
-        {sky && <img className="skyline" src={sky} alt="" aria-hidden="true" />}
+        {sky && <img className="skyline" data-heaven={!!aboveSummit} src={sky} alt="" aria-hidden="true" />}
         <div className="scene"><Svg html={arenaScene(beast.realm, !!sky)} /></div>
 
         {/* 訣 The art firing. It is the payoff for the whole sequence screen, so it gets
