@@ -14,13 +14,17 @@
  */
 
 /** A painted thing, by the key it is known by in its own table. */
-export type Painted = 'beast' | 'realm' | 'heaven' | 'cut';
+export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self';
 
 /**
  * The keys that have a file, by kind. Written by the tool, never by hand.
  *
  * A file is `public/art/<kind>/<key>.webp`, 512 by 512 for a creature and 768 by 432
  * for a realm or a heaven. See tools/pictures.ts for the sizes and why they are those.
+ *
+ * 修 `self` is the cultivator, one painting per realm, keyed the same way as `cut`. It
+ * stands inside the aura rather than replacing it: the rings, motes and halos are read
+ * off the save and breathe on a pulse, and no painting can carry that.
  *
  * 剪 `cut` is the same creature with the paper keyed off it, at its own shape rather than
  * squared. 牌 the plate wears the paper, because at 46 pixels a pale disc with a painting
@@ -116,6 +120,7 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     'worm',
     'wraith',
   ],
+  self: [],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */

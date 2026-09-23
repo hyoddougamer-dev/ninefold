@@ -1,4 +1,5 @@
 import { ICONS } from './icons.generated.ts';
+import { pictureOf } from '../data/pictures.ts';
 import { realm as realmOf } from '../data/realms.ts';
 
 /**
@@ -57,6 +58,26 @@ export function portrait({ realm, pulse = 0, focus = false }: PortraitOptions): 
   const fig = S * 0.46;
   const figOff = (S - fig) / 2;
 
+  /**
+   * 修 The cultivator, painted, when there is a painting of this realm's cultivator.
+   *
+   * 圖 Bruno, once the creatures were painted and he was not: *"continua estranho
+   * principalmente o cultivador, fora de enquadramento artístico."* He was the last
+   * pictogram on a screen full of brushwork.
+   *
+   * 光 The aura is not in the painting and must not be. It is the thing that grows with
+   * the climb, it breathes on a pulse the code owns, and it is read off the save. So the
+   * painting replaces only the figure at the middle of it, and every ring, mote and halo
+   * around it still comes from here. A realm with no file keeps the pictogram, which is
+   * what every realm looked like before.
+   */
+  const painted = pictureOf('self', String(r.n));
+  const body = painted
+    ? `<image href="${painted}" x="${(S * 0.19).toFixed(1)}" y="${(S * 0.16).toFixed(1)}"
+         width="${(S * 0.62).toFixed(1)}" height="${(S * 0.7).toFixed(1)}"
+         preserveAspectRatio="xMidYMax meet"/>`
+    : `<g filter="url(#b${uid})" transform="translate(${figOff.toFixed(1)} ${(figOff + S * 0.04).toFixed(1)}) scale(${(fig / 512).toFixed(4)})" fill="${core}">${figure}</g>`;
+
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" height="100%" role="img" aria-label="${r.name}, realm ${r.n}">
     <defs>
       <radialGradient id="g${uid}">
@@ -80,7 +101,7 @@ export function portrait({ realm, pulse = 0, focus = false }: PortraitOptions): 
          viewBox, and without the mask the icons show as hard cropped blocks instead of
          as glow. -->
     <g mask="url(#k${uid})">${layers}</g>
-    <g filter="url(#b${uid})" transform="translate(${figOff.toFixed(1)} ${(figOff + S * 0.04).toFixed(1)}) scale(${(fig / 512).toFixed(4)})" fill="${core}">${figure}</g>
+    ${body}
   </svg>`;
 }
 

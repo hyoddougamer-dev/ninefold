@@ -146,9 +146,12 @@ for a ruled album leaf of twelve panels, with a map of which panel is which crea
     npm run sheets                                  the prompts
     npm run slice -- beasts-a ink-sheets/beasts-a.png   cut the sheet it gave back
 
-`slice` measures where the rules actually landed rather than dividing the page by four,
+The sheets are `wardens`, `self`, `beasts-a`, `beasts-b`, `beasts-c` and `realms`, nine
+panels each. `slice` measures where the rules actually landed rather than dividing the page by four,
 cuts the panels, squares each one about its own subject and writes
-`public/art/beast/<key>.webp`. Then `npm run pictures` puts them in the game. It also
+`public/art/beast/<key>.webp`, plus `public/art/cut/<key>.webp` with the paper keyed off.
+牌 the plate wears the paper; 鬥 the arena wears the cut-out. 修 the cultivator is only
+ever cut out, into `public/art/self/<n>.webp`, and stands inside the aura the game draws. Then `npm run pictures` puts them in the game. It also
 writes `sheet-<name>-proof.png`, the sheet with every cut drawn on it, which is the only
 honest way to say the cut was right.
 

@@ -45,7 +45,7 @@ export interface Sheet {
   readonly key: string;
   readonly han: string;
   readonly title: string;
-  readonly kind: 'beast' | 'realm';
+  readonly kind: 'beast' | 'realm' | 'self';
   readonly cols: number;
   readonly rows: number;
   /** Reading order: left to right, then down. */
@@ -89,8 +89,48 @@ function commonSheet(key: string, han: string, title: string, realms: number[]):
   return { key, han, title, kind: 'beast', cols: 3, rows: realms.length, cells, realms };
 }
 
+/**
+ * 修 The cultivator, once per realm.
+ *
+ * 光 The aura is not asked for and must not be. It grows with the climb, it breathes on a
+ * pulse the code owns, and it is read off the save, so it stays drawn and the painting
+ * stands inside it. What changes from panel to panel is the person: what they are wearing
+ * by then, how old they are, how still. Asking a model for a glow nine times would get
+ * nine different glows and the ladder would stop reading as a ladder.
+ */
+const SELF = [
+  'a young person in plain rough hemp robes, newly begun, sitting cross-legged with their back straight and their hands in their lap',
+  'the same person, a little older, robes plain but no longer ragged, sitting very still',
+  'the same person in a clean layered robe with a sash, calm, eyes closed',
+  'the same person, now in their thirties, in a fine scholar\'s robe, long sleeves folded over the knees',
+  'the same person, older, in a heavy embroidered robe, hair pinned with a simple jade clasp',
+  'the same person, grey at the temples, in a long flowing robe with wide sleeves, utterly still',
+  'the same person, old now, in an austere dark robe, thin, weathered, sitting as if carved',
+  'the same person, very old, robes worn loose, hair long and white, barely present',
+  'the same person, ancient, almost a shape in the robe, eyes closed, the face hard to fix on',
+];
+
+function selfSheet(): Sheet {
+  return {
+    key: 'self',
+    han: '修',
+    title: 'The cultivator, one per realm',
+    kind: 'self',
+    cols: 3,
+    rows: 3,
+    realms: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    cells: REALMS.map((r, i) => ({
+      key: String(i + 1),
+      han: r.han,
+      name: r.name,
+      subject: SELF[i],
+    })),
+  };
+}
+
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
+  selfSheet(),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -126,15 +166,19 @@ export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) 
 export function sheetPrompt(s: Sheet): string {
   const shape = s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
-    : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
+    : s.kind === 'self'
+      ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine, ageing. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
+      : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
       const pig = inkOf(n);
-      return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. Its one pigment is ${pig.stuff}.`;
+      const whose = s.kind === 'self' ? 'The one pigment on the robe is' : 'Its one pigment is';
+      return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. ${whose} ${pig.stuff}.`;
     })
     .join('\n');
-  return `One single square image: a page from an old Chinese bestiary album, ruled
+  const album = s.kind === 'self' ? 'album of portraits' : 'bestiary album';
+  return `One single square image: a page from an old Chinese ${album}, ruled
 into a grid of ${s.cols} columns by ${s.rows} rows, ${s.cells.length} panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
@@ -175,7 +219,11 @@ function demoLeaf(s: Sheet): string {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
       const seed = (i * 37) % 11;
       const wobble = 0.86 + (seed % 5) * 0.045;
-      const body = ICONS[BEASTS.find((b) => b.key === c.key)?.icon ?? ''] ?? '';
+      // 修 A self sheet has no beast to look up: the stand-in is the game's own seated
+      // figure, which is the pictogram the painting is there to replace.
+      const body = s.kind === 'self'
+        ? ICONS.meditation ?? ''
+        : ICONS[BEASTS.find((b) => b.key === c.key)?.icon ?? ''] ?? '';
       const tone = mix(inkOf(n).colour, '#221C16', 0.55);
       // 圖 The icon library is drawn in a 512 box, so a panel is that box wobbled a
       // little about its own centre: a model never places two creatures identically and
@@ -228,10 +276,10 @@ export function cutStrip(s: Sheet): string {
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
       const pig = inkOf(n);
-      const tier = c.key === wardenOf(n).key ? 2 : 0;
+      const tier = s.kind === 'beast' && c.key === wardenOf(n).key ? 2 : 0;
       return `<figure class="ct">
         <span class="ctp">
-          <img src="public/art/${s.kind}/${c.key}.webp" alt="">
+          <img src="public/art/${s.kind === 'beast' ? 'cut' : s.kind}/${c.key}.webp" alt="">
           <span class="ctr">${enso(pig.colour, tier, 132, i + 1)}</span>
         </span>
         <figcaption><b class="cjk">${c.han}</b><i>${c.name}</i></figcaption>
@@ -338,17 +386,27 @@ const page = `<meta charset="utf-8">
   </header>
 
   <section class="sec">
-    <h2><span class="h">數</span> What four credits buy</h2>
+    <h2><span class="h">數</span> What a credit buys</h2>
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
-      nothing is lost by drawing twelve at a time, and three sheets is the whole
-      bestiary.</p>
+      nothing is lost by drawing nine at a time.</p>
+    <p class="t"><b>Four sheets have already been generated and they painted the whole
+      bestiary and all nine realms</b>: 36 creatures, 9 places. What is left is the
+      cultivator and the nine heavens.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
         <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
         <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
     </table>
+    <div class="rule"><b>修 The cultivator is the one to do next.</b> Once the creatures
+      were painted he was the last pictogram on a screen full of brushwork: Bruno,
+      <i>"continua estranho principalmente o cultivador, fora de enquadramento
+      artístico."</i> One sheet, nine panels, the same person ageing nine times.
+      <b>And the aura is deliberately not in it.</b> The aura grows with the climb, it
+      breathes on a pulse the code owns and it is read off the save, so it stays drawn and
+      the painting stands inside it. Asking a model for a glow nine times would give nine
+      different glows and the ladder would stop reading as a ladder.</div>
   </section>
 
   <section class="sec">
@@ -429,7 +487,7 @@ const page = `<meta charset="utf-8">
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   writeFileSync('sheets.html', page);
-  writeFileSync('sheet-demo.html', demoLeaf(sheetOf('beasts-c')!));
+  writeFileSync('sheet-demo.html', demoLeaf(sheetOf(process.argv[2] ?? '') ?? sheetOf('beasts-c')!));
   console.log(`sheets.html · ${SHEETS.length} prompts · ${SHEETS.reduce((n, s) => n + s.cells.length, 0)} panels`);
   console.log('sheet-demo.html · the fabricated leaf for beasts-c');
 }

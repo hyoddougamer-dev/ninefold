@@ -11,6 +11,7 @@
  *     public/art/realm/<n>.webp       768 x 432   a place, behind a card
  *     public/art/heaven/<n>.webp      768 x 432   the same, above the ninth realm
  *     public/art/cut/<key>.webp       up to 720   the creature with the paper keyed off
+ *     public/art/self/<n>.webp        up to 720   the cultivator of that realm, the same way
  *
  * 量 Why those sizes. A creature is drawn inside a circle at 94 to 140 pixels on a
  * phone, so 512 is twice what the densest screen needs and it survives being looked at
@@ -27,7 +28,7 @@ import { HEAVENS } from '../src/data/heavens.ts';
 import type { Painted } from '../src/data/pictures.ts';
 
 const ROOT = 'public/art';
-const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut'];
+const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self'];
 
 /** What each kind is allowed to be named, so a stray file cannot enter the game. */
 const KEYS: Record<Painted, readonly string[]> = {
@@ -35,9 +36,10 @@ const KEYS: Record<Painted, readonly string[]> = {
   realm: REALMS.map((r) => String(r.n)),
   heaven: HEAVENS.map((h) => String(h.n)),
   cut: BEASTS.map((b) => b.key),
+  self: REALMS.map((r) => String(r.n)),
 };
 
-const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [] };
+const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [], self: [] };
 const strays: string[] = [];
 
 for (const kind of KINDS) {
@@ -61,7 +63,8 @@ const next = src.replace(
   + `  beast: ${list(found.beast)},\n`
   + `  realm: ${list(found.realm)},\n`
   + `  heaven: ${list(found.heaven)},\n`
-  + `  cut: ${list(found.cut)},\n};`,
+  + `  cut: ${list(found.cut)},\n`
+  + `  self: ${list(found.self)},\n};`,
 );
 writeFileSync('src/data/pictures.ts', next);
 
