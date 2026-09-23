@@ -31,7 +31,9 @@
     "artprompts": "tsx tools/artprompts.ts",
     "ink": "tsx tools/ink.ts",
     "sheets": "tsx tools/sheets.ts",
-    "slice": "tsx tools/slice.ts"
+    "slice": "tsx tools/slice.ts",
+    "screens": "node tools/shot-screens.mjs",
+    "repaint": "tsx tools/repaint.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

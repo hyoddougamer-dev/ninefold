@@ -1,9 +1,8 @@
 import { BEASTS } from '../../data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import type { State } from '../../sim/state.ts';
-import { seal } from '../../art/aura.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
-import { Svg } from '../ui/Svg.tsx';
+import { Plate } from '../ui/Plate.tsx';
 import { MARK_INFO, knownIn, marksOf } from '../../sim/record.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
@@ -50,7 +49,8 @@ export function Bestiary({ state }: { state: State }) {
                 const marks = marksOf(kills);
                 return (
                   <div key={b.key} className="card3" data-seen={found}>
-                    <span className="seal"><Svg html={seal(b.icon, realmOf(b.realm).colour, !!b.warden)} /></span>
+                    <Plate kind="beast" subject={b.key} icon={b.icon} colour={realmOf(b.realm).colour}
+                      tier={b.warden ? 2 : 1} size={46} alt={b.name} />
                     <b style={{ color: found ? r.colour : 'var(--faint)' }}>{found ? b.han : '？'}</b>
                     <i>{found ? `${kills} killed` : b.warden ? 'warden' : '—'}</i>
                     <span className="marks">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plate } from './Plate.tsx';
 import type { Beast } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { DRIVE_SIZES, canAffordDrive, drive, driveCost, type Drive as Result } from '../../sim/hunt.ts';
@@ -8,7 +9,6 @@ import { MARK_INFO } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { RARITY_INFO, templateOf } from '../../data/gear.ts';
 import { gearTile } from '../../art/gear.ts';
-import { seal } from '../../art/aura.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
@@ -41,7 +41,8 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
     return (
       <div className="drivesheet">
         <div className="head">
-          <span className="seal"><Svg html={seal(beast.icon, r.colour, true)} /></span>
+          <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+            tier={2} size={46} alt={beast.name} />
           <span>
             <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>
             <i>{DRIVE.took(done.kills)}</i>
@@ -84,7 +85,8 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
   return (
     <div className="drivesheet">
       <div className="head">
-        <span className="seal"><Svg html={seal(beast.icon, r.colour, true)} /></span>
+        <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+          tier={2} size={46} alt={beast.name} />
         <span>
           <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>
           <i>{beast.name} · {DRIVE.pays(num(per))}</i>

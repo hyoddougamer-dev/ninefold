@@ -140,7 +140,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
 
-  const hue = (node: Node) => (node.key === ROOT.key ? '#E7EAFF' : PATH_INFO[node.path].colour);
+  const hue = (node: Node) => (node.key === ROOT.key ? '#EDE3D2' : PATH_INFO[node.path].colour);
 
   // 道 The tree opens two realms after the build does. The points are earned from the
   // first layer either way, so it arrives full rather than arriving empty.
@@ -228,7 +228,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
               <line
                 key={`${a.node.key}-${b.node.key}`}
                 x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                stroke={lit ? hue(b.node) : bridge ? '#FFCE6B' : '#252A5C'}
+                stroke={lit ? hue(b.node) : bridge ? '#D4AF56' : '#3A3226'}
                 strokeWidth={lit ? 2.2 : bridge ? 1.6 : 1.2}
                 strokeOpacity={dead ? 0.2 : bridge && !lit ? 0.6 : 1}
                 strokeDasharray={bridge ? '3 4' : b.node.keystone ? '5 4' : undefined}
@@ -248,20 +248,20 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                 {open && <circle cx={x} cy={y} r={R + 5} fill={colour} fillOpacity=".13" />}
                 <circle
                   cx={x} cy={y} r={R}
-                  fill={on ? colour : '#111433'} fillOpacity={on ? 0.24 : 1}
-                  stroke={on || open ? colour : '#252A5C'}
+                  fill={on ? colour : '#1E1A14'} fillOpacity={on ? 0.24 : 1}
+                  stroke={on || open ? colour : '#3A3226'}
                   strokeWidth={on ? 2.2 : open ? 1.7 : 1.1}
                   strokeDasharray={node.keystone ? '4 3' : undefined}
                   opacity={faded ? 0.4 : 1}
                 />
                 <text x={x} y={y + 5} textAnchor="middle" fontSize="14.5"
                       fontFamily="'Noto Serif SC', serif"
-                      fill={on ? colour : node.keystone ? '#FF5FC8' : '#E7EAFF'}
+                      fill={on ? colour : node.keystone ? '#D2604E' : '#EDE3D2'}
                       opacity={faded ? 0.45 : on ? 1 : 0.82}>{node.han}</text>
                 {!on && (
                   <text x={x + R} y={y - R + 7} textAnchor="middle" fontSize="10"
                         fontFamily="Rajdhani, sans-serif" fontWeight="700"
-                        fill={open ? '#FFCE6B' : '#7A80B8'}>{node.cost}</text>
+                        fill={open ? '#D4AF56' : '#9C907C'}>{node.cost}</text>
                 )}
                 {/* 譯 The name, under the character.
                     Bruno: "existe muita coisa que só tem nomes chineses e não se percebe
@@ -272,11 +272,11 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                 {wrap(node.name).map((row, i) => (
                   <text key={row} x={x} y={y + R + 12 + i * 9} textAnchor="middle" fontSize="8"
                         fontFamily="Archivo, sans-serif" letterSpacing=".02em"
-                        fill={on ? colour : '#8289C0'}
+                        fill={on ? colour : '#9C907C'}
                         opacity={faded ? 0.4 : on ? 0.95 : 0.8}>{row}</text>
                 ))}
                 {picked === node.key && (
-                  <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#E7EAFF"
+                  <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#EDE3D2"
                           strokeWidth="1" strokeOpacity=".7" />
                 )}
               </g>

@@ -8,8 +8,7 @@ import {
   MARK_INFO, marksOf, nextMark, recordMaterial, recordPower, recordTally,
 } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
-import { seal } from '../../art/aura.ts';
-import { Svg } from '../ui/Svg.tsx';
+import { Plate } from '../ui/Plate.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -143,7 +142,12 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
             <button key={b.key} className="beast" data-done={!next}
               data-coach={i === 0 ? 'beast-first' : undefined}
               onClick={() => onFight(b.key)}>
-              <span className="seal"><Svg html={seal(b.icon, r.colour)} /></span>
+              {/* 牌 The plate, not the seal: thirty-six paintings exist now, and the
+                  hunt list is the screen they are for. Where a file is missing the
+                  frame keeps the silhouette, so this is safe for the nine heavens and
+                  for anything painted later. */}
+              <Plate kind="beast" subject={b.key} icon={b.icon} colour={r.colour}
+                tier={b.warden ? 2 : 1} size={46} alt={b.name} />
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
                 <i>
@@ -200,7 +204,8 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
             const r = realmOf(b.realm);
             return (
               <div key={b.key} className="row">
-                <span className="seal"><Svg html={seal(b.icon, r.colour)} /></span>
+                <Plate kind="beast" subject={b.key} icon={b.icon} colour={r.colour}
+                  tier={b.warden ? 2 : 1} size={46} alt={b.name} />
                 <span className="bname">
                   <b style={{ color: r.colour }}>{b.han}</b>
                   <i>{b.name}</i>

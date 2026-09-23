@@ -63,15 +63,15 @@ function motes(realm: number, colour: string): string {
 export function arenaScene(realm: number): string {
   const r = realmOf(realm);
   const uid = `s${r.n}`;
-  const far = mix(r.colour, '#05060F', 0.78);
-  const near = mix(r.colour, '#05060F', 0.88);
+  const far = mix(r.colour, '#0D0B08', 0.78);
+  const near = mix(r.colour, '#0D0B08', 0.88);
 
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">
     <defs>
       <linearGradient id="sky${uid}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${mix(r.colour, '#05060F', 0.95)}"/>
-        <stop offset=".62" stop-color="${mix(r.colour, '#05060F', 0.7)}"/>
-        <stop offset=".86" stop-color="${mix(r.colour, '#05060F', 0.34)}"/>
+        <stop offset="0" stop-color="${mix(r.colour, '#0D0B08', 0.95)}"/>
+        <stop offset=".62" stop-color="${mix(r.colour, '#0D0B08', 0.7)}"/>
+        <stop offset=".86" stop-color="${mix(r.colour, '#0D0B08', 0.34)}"/>
       </linearGradient>
       <linearGradient id="haze${uid}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="${r.colour}" stop-opacity="0"/>
@@ -88,7 +88,7 @@ export function arenaScene(realm: number): string {
     <polygon points="${ridge(r.n * 7 + 1, W, 150, 7)}" fill="${far}" transform="translate(0 ${FLOOR - 206})"/>
     <polygon points="${ridge(r.n * 23 + 5, W, 122, 6)}" fill="${near}" transform="translate(0 ${FLOOR - 122})"/>
     <rect y="${FLOOR - 28}" width="${W}" height="28" fill="url(#haze${uid})"/>
-    <rect y="${FLOOR}" width="${W}" height="${H - FLOOR}" fill="#05060F"/>
+    <rect y="${FLOOR}" width="${W}" height="${H - FLOOR}" fill="#0D0B08"/>
     <rect y="${FLOOR - 2}" width="${W}" height="2" fill="url(#edge${uid})"/>
   </svg>`;
 }

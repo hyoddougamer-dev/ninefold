@@ -1,4 +1,5 @@
 import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { Plate } from '../ui/Plate.tsx';
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
@@ -225,9 +226,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           </h2>
           <div className="card">
             <div className="row">
-              <span className="seal" style={{ width: 52, height: 52, flex: 'none' }}>
-                <Svg html={seal(w.icon, r.colour, true)} />
-              </span>
+              <Plate kind="beast" subject={w.key} icon={w.icon} colour={r.colour}
+                tier={2} size={52} alt={w.name} />
               <span style={{ flex: 1 }}>
                 <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>{w.han}</b>
                 <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>{w.name}</i>
@@ -332,6 +332,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           </p>
           {coming2 && left2 !== null && (
             <div className="hnext">
+              {/* 境外 A heaven's creature is not in the bestiary and has no painting to find, so
+                  this one keeps 印 the seal. */}
               <span className="seal"><Svg html={seal(coming2.dragon.icon, coming2.colour)} /></span>
               <span>
                 <em>{CULTIVATE.nextHeaven(left2)}</em>

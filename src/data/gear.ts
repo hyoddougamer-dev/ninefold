@@ -43,11 +43,11 @@ export interface RarityInfo {
 }
 
 export const RARITY_INFO: Record<Rarity, RarityInfo> = {
-  common: { han: '凡', name: 'Common', colour: '#7A80B8', mult: 1,   glow: 0 },
-  spirit: { han: '靈', name: 'Spirit', colour: '#5FDCFF', mult: 1.6, glow: 1 },
-  mystic: { han: '玄', name: 'Mystic', colour: '#9B9BFF', mult: 2.5, glow: 2 },
-  earth:  { han: '地', name: 'Earth',  colour: '#FFCE6B', mult: 4,   glow: 3 },
-  heaven: { han: '天', name: 'Heaven', colour: '#FF5FC8', mult: 6.5, glow: 4 },
+  common: { han: '凡', name: 'Common', colour: '#9C907C', mult: 1,   glow: 0 },
+  spirit: { han: '靈', name: 'Spirit', colour: '#7FB495', mult: 1.6, glow: 1 },
+  mystic: { han: '玄', name: 'Mystic', colour: '#B2A566', mult: 2.5, glow: 2 },
+  earth:  { han: '地', name: 'Earth',  colour: '#D4AF56', mult: 4,   glow: 3 },
+  heaven: { han: '天', name: 'Heaven', colour: '#D2604E', mult: 6.5, glow: 4 },
 };
 
 /**

@@ -1,9 +1,11 @@
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
+import { Plate } from './Plate.tsx';
+import { pictureOf } from '../../data/pictures.ts';
 import { currentWarden } from '../../sim/combat.ts';
 import { type State } from '../../sim/state.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { opensIn } from '../../sim/unlocks.ts';
-import { portrait, seal } from '../../art/aura.ts';
+import { portrait } from '../../art/aura.ts';
 import { Svg } from './Svg.tsx';
 import { REALMCARD } from '../copy.ts';
 
@@ -33,10 +35,16 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
   const opened = opensIn(state.realm);
   const next = state.realm < REALMS.length ? realmOf(state.realm + 1) : null;
   const coming = next ? opensIn(next.n) : [];
+  const sky = pictureOf('realm', String(state.realm));
 
   return (
     <div className="realmcard">
+      {/* 境 The realm's own painting, behind the figure it is about. This is what the
+          nine landscapes were painted for: mountains across the middle and an empty
+          bottom, so the name can sit on it. A realm with no file keeps the bare
+          portrait, which is what every realm looked like before. */}
       <div className="crown">
+        {sky && <img className="sky" src={sky} alt="" aria-hidden="true" />}
         <Svg html={portrait({ realm: state.realm, pulse: 0 })} />
       </div>
 
@@ -56,9 +64,8 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
 
       <h3>{REALMCARD.wardenHead}</h3>
       <div className="row">
-        <span className="seal" style={{ width: 46, height: 46, flex: 'none' }}>
-          <Svg html={seal(w.icon, r.colour, true)} />
-        </span>
+        <Plate kind="beast" subject={w.key} icon={w.icon} colour={r.colour}
+          tier={2} size={46} alt={w.name} />
         <span style={{ flex: 1, minWidth: 0 }}>
           <b className="cjk" style={{ color: r.colour, display: 'block', fontSize: 16 }}>{w.han}</b>
           <i className="faint" style={{ fontStyle: 'normal', fontSize: 12.5 }}>{w.name}</i>

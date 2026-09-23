@@ -24,15 +24,15 @@ export const PATH_INFO: Record<Path, {
   han: string; name: string; colour: string; icon: string; blurb: string;
 }> = {
   sword: {
-    han: '劍', name: 'The Sword', colour: '#5FDCFF', icon: 'katana',
+    han: '劍', name: 'The Sword', colour: '#7FB495', icon: 'katana',
     blurb: 'Raw power, and the gear you swing or wear.',
   },
   spirit: {
-    han: '神', name: 'The Spirit', colour: '#B587FF', icon: 'meditation',
+    han: '神', name: 'The Spirit', colour: '#A077B8', icon: 'meditation',
     blurb: 'Gathering, and the gear you think with.',
   },
   fortune: {
-    han: '運', name: 'Fortune', colour: '#FFCE6B', icon: 'crystal-cluster',
+    han: '運', name: 'Fortune', colour: '#D4AF56', icon: 'crystal-cluster',
     blurb: 'What the beasts give up, and what you can carry.',
   },
 };

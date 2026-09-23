@@ -1,17 +1,27 @@
-/* 霓 The chosen direction: deep indigo, cyan and magenta. This commits to one world on
-   purpose. It is the game's art, not a stylesheet that follows the system theme. */
+/* 墨 The chosen direction: ink, aged paper, gold leaf and cinnabar. This commits to one
+   world on purpose. It is the game's art, not a stylesheet that follows the system theme.
+
+   紙 It used to be deep indigo, cyan and magenta, which is a science fiction palette
+   wearing Chinese characters. Beside the first real paintings, on aged paper in mineral
+   pigment, it read as neon and nothing else: Bruno, *"vamos ter de alterar a paleta no
+   geral para fazer sentido"*. So the ground is ink rather than midnight blue, the text is
+   paper rather than white, and the two accents are the two things that are actually put
+   on a Chinese painting: 金 gold leaf where the game is alive, and 硃 cinnabar where it is
+   rare or dangerous. Nothing here emits light. */
 
 :root {
-  --ground: #080A18;
-  --panel: #111433;
-  --panel2: #0D1029;
-  --line: #252A5C;
-  --cyan: #5FDCFF;
-  --magenta: #FF5FC8;
-  --text: #E7EAFF;
-  --faint: #7A80B8;
-  --locked: #2C3268;
-  --gold: #FFCE6B;
+  --ground: #14110D;
+  --panel: #1E1A14;
+  --panel2: #191510;
+  --line: #3A3226;
+  /* 玉 The alive colour, the one an active tab and a live number wear. Jade, not cyan. */
+  --jade: #7FB495;
+  /* 硃 The rare and the dangerous: a keystone, a heaven-rarity piece, the tribulation. */
+  --cinnabar: #D2604E;
+  --text: #EDE3D2;
+  --faint: #9C907C;
+  --locked: #3A3226;
+  --gold: #D4AF56;
   color-scheme: dark;
 }
 
@@ -44,13 +54,13 @@ body {
                display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
 .tabs .g { font-size: 19px; line-height: 1.1; }
 .tabs .l { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; }
-.tabs button[data-on='true'] { color: var(--cyan); }
+.tabs button[data-on='true'] { color: var(--jade); }
 /* 鎖 A tab the realm has not opened. Shown rather than hidden: you cannot look forward
    to a tab you have never seen, and looking forward is what a vertical game runs on. */
 .tabs button[data-shut='true'] { color: var(--line); }
 .tabs button[data-shut='true'] .l { color: var(--faint); opacity: .7; }
 
-.shut { position: absolute; inset: 0; z-index: 12; background: rgba(8,10,24,.96);
+.shut { position: absolute; inset: 0; z-index: 12; background: rgba(20,17,13,.96);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         gap: 10px; padding: 40px 28px; text-align: center; }
 .shut > b { font-size: 46px; font-weight: 400; line-height: 1; }
@@ -82,18 +92,18 @@ body {
           color: var(--faint); font-weight: 600; margin: 26px 0 10px; }
 
 .bar { height: 6px; border-radius: 99px; background: var(--locked); overflow: hidden; }
-.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--cyan);
+.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--jade);
              transition: width .25s linear; }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; }
 
 button.act { font: inherit; font-size: 16px; padding: 13px; border-radius: 8px; cursor: pointer;
-              background: var(--cyan); color: var(--ground); border: 0; width: 100%;
+              background: var(--jade); color: var(--ground); border: 0; width: 100%;
               font-family: 'Noto Serif SC', serif; box-shadow: 0 0 22px rgba(95,220,255,.22); }
 button.act span { font-family: Archivo, sans-serif; font-size: 12px; letter-spacing: .14em;
                    text-transform: uppercase; opacity: .7; margin-left: 8px; }
 button.act:disabled { background: var(--locked); color: var(--faint); box-shadow: none; cursor: default; }
-button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22px rgba(255,95,200,.25); }
+button.act[data-tone='magenta'] { background: var(--cinnabar); box-shadow: 0 0 22px rgba(255,95,200,.25); }
 
 /* ── cultivate ────────────────────────────────────────────────────────────── */
 
@@ -102,7 +112,7 @@ button.act[data-tone='magenta'] { background: var(--magenta); box-shadow: 0 0 22
 
 .qi { text-align: center; margin-top: 2px; }
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
-.qi .r { font-size: 13px; color: var(--cyan); }
+.qi .r { font-size: 13px; color: var(--jade); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
 /* ── 觸 What a tap feels like ────────────────────────────────────────────────
    Bruno: *"estética precisa de retoques mais impactantes e animações."* The arena
@@ -163,8 +173,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 錄 Inside the mark pips the character is already the affordance and the row is
    three of them in a row, so the underline would read as three dashes. */
 .marks .term { border-bottom: 0; color: inherit; }
-.term { background: none; border: 0; padding: 0; font: inherit; color: var(--cyan);
-        border-bottom: 1px dotted color-mix(in srgb, var(--cyan) 55%, transparent);
+.term { background: none; border: 0; padding: 0; font: inherit; color: var(--jade);
+        border-bottom: 1px dotted color-mix(in srgb, var(--jade) 55%, transparent);
         line-height: inherit; cursor: pointer; }
 .term[data-open] { color: var(--gold); border-bottom-color: var(--gold); }
 /* 色 A character told apart by its colour keeps it, and underlines in that colour.
@@ -179,10 +189,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .termtip { position: fixed; z-index: 45;
            font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
            max-width: min(300px, calc(100vw - 20px)); display: block;
-           background: var(--panel); border: 1px solid var(--cyan); border-radius: 11px;
+           background: var(--panel); border: 1px solid var(--jade); border-radius: 11px;
            padding: 11px 13px; box-shadow: 0 14px 40px -8px rgba(0,0,0,.95);
            animation: tipin .16s ease-out both; }
-.termtip b { font-size: 19px; font-weight: 400; color: var(--cyan); margin-right: 7px; }
+.termtip b { font-size: 19px; font-weight: 400; color: var(--jade); margin-right: 7px; }
 .termtip em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
               font-size: 15px; color: var(--text); }
 .termtip i { display: block; margin-top: 6px; font-style: normal; font-size: 12.5px;
@@ -220,7 +230,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                    border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; }
 .folded .foldbtn b { flex: none; font-size: 18px; font-weight: 400; color: var(--faint); }
 .folded .foldbtn i { flex: 1; font-style: normal; font-size: 14px; }
-.folded .foldbtn em { flex: none; font-style: normal; font-size: 12px; color: var(--cyan);
+.folded .foldbtn em { flex: none; font-style: normal; font-size: 12px; color: var(--jade);
                       letter-spacing: .04em; }
 .folded p { margin: 8px 2px 0; font-size: 12.5px; line-height: 1.5; }
 
@@ -313,7 +323,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 凝丹 The card that appears only when 材 material has run out. It is the answer to a
    dead end, so it carries the price, the button and the cheaper way, in that order. */
-.condense { margin-top: 14px; background: var(--panel); border: 1px solid var(--magenta);
+.condense { margin-top: 14px; background: var(--panel); border: 1px solid var(--cinnabar);
             border-radius: 12px; padding: 13px 14px; }
 /* Title on one line, price under it. Side by side they fight over a 400px phone and
    the title wraps under its own price, which is how the first screenshot read. */
@@ -322,12 +332,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* Scoped to the header: .tip lives inside this card too, and an unscoped `.condense b`
    was repainting its 狩 magenta and stretching it across two grid rows it is not in. */
 .condense .chead b { grid-row: span 2; align-self: center; font-size: 21px; font-weight: 400;
-                     color: var(--magenta); }
+                     color: var(--cinnabar); }
 .condense .chead em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
                       font-size: 15px; }
 .condense .chead span { font-size: 12px; color: var(--faint); }
 .condense p { margin: 7px 0 11px; font-size: 12.5px; color: var(--faint); line-height: 1.6; }
-.condense .act { background: var(--magenta); }
+.condense .act { background: var(--cinnabar); }
 .condense .act:disabled { background: var(--locked); color: var(--faint); }
 .condense .tip { margin-top: 10px; }
 
@@ -344,7 +354,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
        font: inherit; color: var(--text); cursor: pointer; }
 .upg:disabled { opacity: .45; cursor: default; }
 .upg > span:nth-child(2) { min-width: 0; flex: 1; }
-.upg .ic { flex: none; color: var(--cyan); display: grid; place-items: center; }
+.upg .ic { flex: none; color: var(--jade); display: grid; place-items: center; }
 .upg .ic svg { display: block; }
 /* The English name is the heading now, so it is set in the body face at a readable
    size and the characters ride after it, small. */
@@ -372,7 +382,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .pill .pname { min-width: 0; }
 .pill .pname b { display: block; font-size: 15.5px; font-weight: 500; }
 .pill .pname i { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
-.pill .pname em { display: block; font-style: normal; font-size: 10.5px; color: var(--cyan);
+.pill .pname em { display: block; font-style: normal; font-size: 10.5px; color: var(--jade);
                   margin-top: 2px; }
 .pill .price { margin-left: auto; text-align: right; flex: none; }
 .pill .price b { display: block; font-family: Rajdhani, sans-serif; font-size: 14px;
@@ -385,7 +395,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         font: inherit; color: var(--faint); cursor: pointer; }
 .fold .cjk { font-size: 15px; color: var(--text); }
 .fold .mono { margin-left: auto; font-size: 12px; }
-.fold[data-open="true"] { border-color: var(--cyan); color: var(--text); }
+.fold[data-open="true"] { border-color: var(--jade); color: var(--text); }
 
 /* ── beasts ─────────────────────────────────────────────────────────────── */
 
@@ -393,8 +403,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
          padding: 10px 12px; display: flex; gap: 11px; align-items: center; width: 100%;
          font: inherit; color: var(--text); text-align: left; cursor: pointer; }
 .beast:disabled { opacity: .4; cursor: default; }
+/* 牌 The hunt list wears 牌 the plate and 器 the fuse groups still wear 印 the seal, and
+   the row does not care which: both are a 46px square on the left. The plate brings its
+   own frame, so it needs no border here. */
 .beast .seal { flex: none; width: 46px; height: 46px; }
 .beast .seal svg { display: block; }
+.beast .plate { flex: none; }
 .beast .bname b { font-family: 'Noto Serif SC', serif; font-size: 16px; display: block; }
 .beast .bname i { font-style: normal; font-size: 11.5px; color: var(--faint); }
 .beast .odds { margin-left: auto; text-align: right; font-family: Rajdhani, sans-serif;
@@ -413,7 +427,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .marks { display: flex; align-items: center; gap: 4px; margin-top: 3px; }
 .marks em { font-style: normal; font-size: 11px; color: var(--line); line-height: 1;
             font-family: 'Noto Serif SC', serif; }
-.marks em[data-on="true"] { color: var(--cyan); }
+.marks em[data-on="true"] { color: var(--jade); }
 .marks i { font-style: normal; font-size: 10.5px; color: var(--faint); margin-left: 4px; }
 
 /* 錄 Three marks on the top row, and what they are paying you on the second. Five
@@ -423,9 +437,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .tally span { grid-column: span 2; background: var(--panel); border: 1px solid var(--line);
               border-radius: 10px; padding: 7px 4px 6px; text-align: center; }
 .tally .pay { grid-column: span 3; }
-.tally span[data-on="true"] { border-color: var(--cyan); }
+.tally span[data-on="true"] { border-color: var(--jade); }
 .tally b { display: block; font-size: 15px; color: var(--faint); line-height: 1.2; }
-.tally span[data-on="true"] b { color: var(--cyan); }
+.tally span[data-on="true"] b { color: var(--jade); }
 .tally em { display: block; font-style: normal; font-size: 14px; font-weight: 600; }
 .tally em i { font-style: normal; font-size: 10px; color: var(--faint); }
 .tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
@@ -475,16 +489,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .notice { position: absolute; left: 10px; right: 10px; z-index: 11;
           bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
           display: flex; gap: 12px; align-items: flex-start;
-          background: var(--panel); border: 1px solid var(--cyan); border-radius: 13px;
+          background: var(--panel); border: 1px solid var(--jade); border-radius: 13px;
           padding: 13px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.55);
           animation: arrive .28s ease both; }
-.notice > b { flex: none; font-size: 19px; font-weight: 400; color: var(--cyan); line-height: 1.25; }
+.notice > b { flex: none; font-size: 19px; font-weight: 400; color: var(--jade); line-height: 1.25; }
 .notice em { display: block; font-style: normal; font-family: Rajdhani, sans-serif;
              font-weight: 700; font-size: 16px; }
 .notice i { display: block; font-style: normal; font-size: 12.5px; color: var(--faint);
             line-height: 1.5; margin-top: 3px; }
 .notice button { flex: none; align-self: center; font: inherit; font-size: 12.5px;
-                 background: var(--cyan); color: #04121A; border: 0; border-radius: 9px;
+                 background: var(--jade); color: #14110D; border: 0; border-radius: 9px;
                  padding: 8px 12px; cursor: pointer; font-weight: 600; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
@@ -503,7 +517,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* ── 對 the arena: a fight in a place ───────────────────────────────────── */
 
-.arena { position: absolute; inset: 0; background: #05060F; z-index: 10;
+.arena { position: absolute; inset: 0; background: #0D0B08; z-index: 10;
          display: flex; flex-direction: column; justify-content: center;
          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
 
@@ -535,8 +549,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   content: ''; position: absolute; inset: 12%; border-radius: 50%; mix-blend-mode: screen;
   opacity: 0; animation: flash .3s ease-out; pointer-events: none;
 }
-.you[data-hit='true'] .art::after { background: var(--magenta); }
-.foe[data-hit='true'] .art::after { background: var(--cyan); }
+.you[data-hit='true'] .art::after { background: var(--cinnabar); }
+.foe[data-hit='true'] .art::after { background: var(--jade); }
 .you[data-strike='true'] .art { animation: lungeR .22s ease-out; }
 .foe[data-strike='true'] .art { animation: lungeL .22s ease-out; }
 @keyframes lungeR { 0%,100% { transform: translateX(0); } 35% { transform: translateX(18px) scale(1.05); } }
@@ -556,8 +570,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 擊 The mark thrown across the gap, in the colour of whoever threw it. */
 .gap { position: relative; height: 118px; margin-bottom: 18px; }
-.arena[data-by='player'] .gap { color: var(--cyan); }
-.arena[data-by='beast'] .gap { color: var(--magenta); }
+.arena[data-by='player'] .gap { color: var(--jade); }
+.arena[data-by='beast'] .gap { color: var(--cinnabar); }
 .clash i { position: absolute; left: -34px; right: -34px; top: 46%; height: 2px;
            background: linear-gradient(90deg, transparent, currentColor, transparent);
            animation: slash .3s ease-out forwards; }
@@ -574,8 +588,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
        font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 22px;
        text-shadow: 0 2px 12px #000; pointer-events: none;
        animation: rise .8s ease-out forwards; }
-.you .dmg { color: var(--magenta); }
-.foe .dmg { color: var(--cyan); }
+.you .dmg { color: var(--cinnabar); }
+.foe .dmg { color: var(--jade); }
 
 /* 命 The two lives, small and close to the feet. They are not the spectacle. */
 .feet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
@@ -589,9 +603,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .who .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden;
             display: flex; }
 .who.r .bar { justify-content: flex-end; }
-.who .bar i { display: block; height: 100%; border-radius: 99px; background: var(--cyan);
+.who .bar i { display: block; height: 100%; border-radius: 99px; background: var(--jade);
               transition: width .2s linear; }
-.who.r .bar i { background: var(--magenta); }
+.who.r .bar i { background: var(--cinnabar); }
 
 /* 話 One line on what just happened. A fight of pure numbers reads as arithmetic. */
 .saying { margin: 0; padding: 14px 18px 0; text-align: center;
@@ -608,7 +622,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* ── return ──────────────────────────────────────────────────────────────── */
 
-.back { position: absolute; inset: 0; background: rgba(8,10,24,.95); z-index: 11;
+.back { position: absolute; inset: 0; background: rgba(20,17,13,.95); z-index: 11;
          display: flex; flex-direction: column; justify-content: center; align-items: center;
          gap: 16px; padding: 30px 24px; text-align: center; }
 .back h2 { font-family: 'Noto Serif SC', serif; font-size: 24px; margin: 0; font-weight: 400; }
@@ -643,12 +657,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 突破 The moment. Everything else stops for three quarters of a second. */
 .bloom { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center;
-         pointer-events: none; background: rgba(8,10,24,.82);
+         pointer-events: none; background: rgba(20,17,13,.82);
          padding: calc(env(safe-area-inset-top, 0px) + 24px) 16px
                   calc(env(safe-area-inset-bottom, 0px) + 24px);
          overflow-y: auto; }
 /* A realm that handed something over is read, not glimpsed, so it waits for a tap. */
-.bloom[data-held='true'] { pointer-events: auto; background: rgba(8,10,24,.95); }
+.bloom[data-held='true'] { pointer-events: auto; background: rgba(20,17,13,.95); }
 .bloom .ring { position: absolute; width: 190px; height: 190px; border-radius: 50%;
                border: 2px solid currentColor; animation: bloom 1.1s ease-out forwards;
                z-index: 0; }
@@ -675,7 +689,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   background: var(--panel); border: 1px solid var(--line); color: var(--faint);
   cursor: pointer; display: grid; place-items: center;
 }
-.switches .mainswitch[data-on='true'] { color: var(--cyan); border-color: var(--cyan); }
+.switches .mainswitch[data-on='true'] { color: var(--jade); border-color: var(--jade); }
 
 /* The scrim is invisible and only there to catch the tap that shuts the list. It sits
    under the list and over everything else, so the game is never pressed by accident
@@ -691,7 +705,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                      font: inherit; color: var(--text); cursor: pointer; text-align: left; }
 .switchmenu button:hover { background: var(--panel); }
 .switchmenu button > b { flex: none; width: 22px; text-align: center; font-weight: 400;
-                         font-size: 16px; color: var(--cyan); }
+                         font-size: 16px; color: var(--jade); }
 .switchmenu button > span { font-size: 13.5px; }
 .switchmenu button[data-on='false'] > b { color: var(--faint); }
 
@@ -704,12 +718,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         padding: calc(env(safe-area-inset-top, 0px) + 30px) 22px
                  calc(env(safe-area-inset-bottom, 0px) + 30px); }
 .help h2 { font-family: 'Noto Serif SC', serif; font-size: 25px; margin: 0; font-weight: 400;
-           color: var(--cyan); }
+           color: var(--jade); }
 .help ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 15px; }
 .help li { display: flex; gap: 13px; align-items: flex-start; }
 .help li > span:first-child {
   flex: none; width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center;
-  background: var(--panel); border: 1px solid var(--line); color: var(--cyan);
+  background: var(--panel); border: 1px solid var(--line); color: var(--jade);
   font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15px;
 }
 .help li b { display: block; font-weight: 500; font-size: 16px; }
@@ -744,17 +758,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .guide .n { padding-right: 44px; }
 .guide:disabled { cursor: default; }
 .guide .n { font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
-            color: var(--cyan); }
+            color: var(--jade); }
 .guide b { font-weight: 500; font-size: 15.5px; }
-.guide b .cjk { color: var(--cyan); margin-right: 3px; }
+.guide b .cjk { color: var(--jade); margin-right: 3px; }
 .guide i { font-style: normal; font-size: 12.5px; color: var(--faint);
            line-height: 1.5; }
 .guide em { grid-row: 3; align-self: center; font-style: normal;
-            font-size: 21px; color: var(--cyan); padding-left: 8px; padding-right: 26px; }
+            font-size: 21px; color: var(--jade); padding-left: 8px; padding-right: 26px; }
 /* 圖 The picture of what the step is asking for. Rows 1 and 2 are under the floating
    存 ? 釋 碑 buttons, so it sits on the third with the chevron beside it. */
 .guide .art { grid-row: 3; align-self: center; justify-self: center;
-              color: var(--cyan); opacity: .85; padding-left: 12px; display: grid;
+              color: var(--jade); opacity: .85; padding-left: 12px; display: grid;
               place-items: center; }
 .guide .art svg { display: block; }
 /* 時 Waiting: the same card, quieter.
@@ -771,14 +785,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .guide .toward { display: block; height: 4px; border-radius: 99px; margin-top: 9px;
                  background: rgba(95,220,255,.2); overflow: hidden; }
 .guide .toward > span { display: block; height: 100%; border-radius: 99px;
-                        background: var(--cyan); transition: width .3s linear; }
+                        background: var(--jade); transition: width .3s linear; }
 
 /* ── 釋 the key: every character on the screen, and what it means ────────── */
 
 .key { gap: 22px; }
 .key section { display: flex; flex-direction: column; gap: 7px; }
 .key h3 { margin: 0; font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 17px;
-          color: var(--cyan); }
+          color: var(--jade); }
 .key section > p.faint { margin: 0; font-size: 12.5px; line-height: 1.45; }
 .keys { display: flex; flex-direction: column; gap: 1px; margin-top: 3px; }
 .keyrow { display: flex; gap: 12px; align-items: baseline; padding: 7px 0;
@@ -793,7 +807,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .keyrow i { display: block; font-style: normal; font-size: 12px; color: var(--faint);
             line-height: 1.45; margin-top: 1px; }
 /* 圖 The same icon the game draws, so the row is recognised rather than read. */
-.keyrow .art { margin-left: auto; flex: none; color: var(--cyan); display: grid;
+.keyrow .art { margin-left: auto; flex: none; color: var(--jade); display: grid;
                place-items: center; opacity: .8; align-self: center; padding-left: 12px; }
 .keyrow .art svg { display: block; }
 
@@ -818,7 +832,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
            display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .chestit svg { display: block; width: 100%; height: auto; }
 .pct { font-size: 10.5px; font-family: Rajdhani, sans-serif; font-weight: 600; }
-.pct em { font-style: normal; color: var(--cyan); }
+.pct em { font-style: normal; color: var(--jade); }
 
 .tabs { grid-template-columns: repeat(5, 1fr); }
 
@@ -828,7 +842,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .spoil span { text-align: left; }
 .spoil b { display: block; font-size: 17px; }
 .spoil i { font-style: normal; font-size: 12px; color: var(--faint); }
-.spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--magenta); margin-top: 3px; }
+.spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--cinnabar); margin-top: 3px; }
 
 /* 存 ? 碑 音 float over the top-right corner, so the first row of every screen keeps
    its reading clear of them, and the figure on that row never shrinks, because 力 1.38T
@@ -855,7 +869,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .halves button[data-on='true'] { background: var(--panel); color: var(--ink);
                                  box-shadow: inset 0 0 0 1px var(--line); }
 .halves b { font-size: 17px; font-weight: 400; line-height: 1; }
-.halves button[data-on='true'] b { color: var(--cyan); }
+.halves button[data-on='true'] b { color: var(--jade); }
 .halves em { font-style: normal; font-size: 12.5px; font-family: Rajdhani, sans-serif;
              font-weight: 700; letter-spacing: .04em; }
 /* 點 Points waiting to be spent, on the half that spends them. */
@@ -906,7 +920,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
        background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
        padding: 4px 9px; }
 .tot b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 15px;
-         color: var(--cyan); }
+         color: var(--jade); }
 .tot em { font-style: normal; font-size: 13px; color: var(--gold); font-weight: 600; }
 .tot i { font-style: normal; font-size: 10.5px; color: var(--faint); letter-spacing: .04em; }
 
@@ -961,7 +975,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   100% { opacity: .55; }
 }
 .dmg.miss { font-family: Archivo, sans-serif; font-weight: 600; font-size: 13px;
-            letter-spacing: .1em; text-transform: uppercase; color: var(--cyan); }
+            letter-spacing: .1em; text-transform: uppercase; color: var(--jade); }
 
 /* 勢訣 The loadout, above the tree. */
 .loadout { display: flex; flex-direction: column; }
@@ -976,7 +990,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         color: var(--text); cursor: pointer; }
 .slot:disabled { cursor: default; border-style: dashed; background: transparent; }
 .slot .n { flex: none; width: 21px; height: 21px; border-radius: 7px; display: grid;
-           place-items: center; background: var(--hue); color: #080A18;
+           place-items: center; background: var(--hue); color: #14110D;
            font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 12px; }
 .slot:disabled .n { background: var(--line); color: var(--faint); }
 .slot .ic { flex: none; color: var(--hue); display: grid; place-items: center; }
@@ -1002,14 +1016,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .saverow .act { flex: 1; }
 .act.ghost { background: transparent; border: 1px solid var(--line); color: var(--text);
              box-shadow: none; }
-.act.danger { background: transparent; border: 1px solid var(--magenta); color: var(--magenta);
+.act.danger { background: transparent; border: 1px solid var(--cinnabar); color: var(--cinnabar);
               box-shadow: none; }
 .paste { width: 100%; background: var(--panel2); border: 1px solid var(--line);
          border-radius: 10px; color: var(--text); font: 12px/1.5 ui-monospace, monospace;
          padding: 11px 13px; resize: vertical; }
-.paste:focus { outline: none; border-color: var(--cyan); }
-.good { margin: 0; font-size: 13px; color: var(--cyan); line-height: 1.5; }
-.bad { margin: 0; font-size: 13px; color: var(--magenta); line-height: 1.5; }
+.paste:focus { outline: none; border-color: var(--jade); }
+.good { margin: 0; font-size: 13px; color: var(--jade); line-height: 1.5; }
+.bad { margin: 0; font-size: 13px; color: var(--cinnabar); line-height: 1.5; }
 .help .says { color: var(--faint); font-size: 13.5px; margin: 0; line-height: 1.55; }
 .help .says.small { font-size: 12px; }
 
@@ -1017,14 +1031,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .newver { position: absolute; left: 12px; right: 12px; z-index: 14;
           bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
           display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-          background: var(--panel); border: 1px solid var(--cyan); border-radius: 12px;
+          background: var(--panel); border: 1px solid var(--jade); border-radius: 12px;
           box-shadow: 0 10px 30px rgba(0,0,0,.6); animation: lift .3s ease-out both; }
 .newver span { flex: 1; display: flex; align-items: baseline; gap: 8px; }
 .newver b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 18px;
-            color: var(--cyan); }
+            color: var(--jade); }
 .newver i { font-style: normal; font-size: 13px; }
 .newver button { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-                 background: var(--cyan); color: #06121a; border: none;
+                 background: var(--jade); color: #14110D; border: none;
                  border-radius: 8px; padding: 7px 14px; }
 .newver button.later { background: transparent; color: var(--faint); padding: 7px 4px; }
 
@@ -1057,7 +1071,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .fig { background: var(--panel2); border: 1px solid var(--line); border-radius: 11px;
        padding: 9px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .fig b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 13px;
-         color: var(--cyan); line-height: 1; }
+         color: var(--jade); line-height: 1; }
 .fig em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
           font-size: 19px; color: var(--gold); line-height: 1.15;
           overflow: hidden; text-overflow: ellipsis; }
@@ -1088,7 +1102,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* ── 塔 爐 雷池: the drawings the late systems now have ─────────────────── */
 
 .place { width: 100%; border: 1px solid var(--line); border-radius: 13px; overflow: hidden;
-         background: #05060F; display: block; }
+         background: #0D0B08; display: block; }
 .place svg { display: block; width: 100%; height: 100%; }
 .place[data-tall='true'] { aspect-ratio: 200 / 160; }
 .place[data-tall='false'] { aspect-ratio: 200 / 200; }
@@ -1147,7 +1161,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .coach { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
 .coach > span { position: absolute; }
 
-.coach .ring { border: 2px solid var(--cyan); border-radius: 13px;
+.coach .ring { border: 2px solid var(--jade); border-radius: 13px;
                box-shadow: 0 0 0 3px rgba(95,220,255,.14), 0 0 22px -4px rgba(95,220,255,.75);
                animation: coachRing 1.7s ease-in-out infinite; }
 @keyframes coachRing {
@@ -1160,7 +1174,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* On its own disc. The arrow sits ten pixels off the target, which on a busy screen is
    usually right on top of a heading: a bare glyph there reads as a smudge in the text
    rather than as a pointer. The disc gives it its own ground and its own edge. */
-.coach .point { color: var(--cyan); margin-left: -17px;
+.coach .point { color: var(--jade); margin-left: -17px;
                 width: 34px; height: 34px; display: grid; place-items: center;
                 border-radius: 99px; background: rgba(6,8,18,.92);
                 border: 1px solid rgba(95,220,255,.45);
@@ -1189,7 +1203,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                   display: grid; place-items: center; font-size: 11px;
                   font-family: Rajdhani, sans-serif; font-weight: 600;
                   color: var(--faint); border: 1px solid var(--line); }
-.realmname:hover .ask { color: var(--cyan); border-color: var(--cyan); }
+.realmname:hover .ask { color: var(--jade); border-color: var(--jade); }
 
 /* ── 悟道 the three cards at a breakthrough ─────────────────────────────────
    Above every other sheet, because it is the only one the game raises by itself and
@@ -1215,11 +1229,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .awaken .acard:nth-child(2) { animation-delay: .07s; }
 .awaken .acard:nth-child(3) { animation-delay: .14s; }
 @keyframes acardin { from { opacity: 0; transform: translateY(9px); } }
-.awaken .acard:active { transform: scale(.985); border-color: var(--cyan);
+.awaken .acard:active { transform: scale(.985); border-color: var(--jade);
                         background: rgba(24,28,54,.96); }
-.awaken .acard .s { grid-row: 1 / span 2; align-self: start; color: var(--cyan); }
+.awaken .acard .s { grid-row: 1 / span 2; align-self: start; color: var(--jade); }
 .awaken .acard .s svg { display: block; }
-.awaken .acard .nm b { font-size: 24px; font-weight: 400; color: var(--cyan); margin-right: 9px; }
+.awaken .acard .nm b { font-size: 24px; font-weight: 400; color: var(--jade); margin-right: 9px; }
 .awaken .acard .nm em { font-style: normal; font-family: Rajdhani, sans-serif;
                         font-weight: 700; font-size: 16px; }
 .awaken .acard i { grid-column: 2; font-style: normal; font-size: 12.5px; color: var(--faint);
@@ -1227,7 +1241,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .awaken .acard .take { grid-column: 2; margin-top: 11px; justify-self: start;
                        font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
                        font-family: Archivo, sans-serif; font-weight: 600;
-                       color: var(--cyan); }
+                       color: var(--jade); }
 .awaken .later { margin: 20px auto 0; background: none; border: 0; font: inherit;
                  font-size: 12.5px; color: var(--faint); cursor: pointer;
                  border-bottom: 1px dotted var(--line); padding: 2px 0; }
@@ -1268,7 +1282,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 譯 The character is the title and the name rides under it, which is the rule the
    whole game is written to: no character is ever the only place a thing is named. */
 .secret h2 { margin: 5px 0 0; font-size: 38px; font-weight: 400; line-height: 1;
-             color: var(--magenta); }
+             color: var(--cinnabar); }
 .secret h2 em { display: block; margin-top: 3px; font-style: normal; font-size: 13px;
                 font-family: Rajdhani, sans-serif; font-weight: 600; letter-spacing: .04em;
                 color: var(--faint); }
@@ -1281,9 +1295,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                       width: 38px; height: 38px; border-radius: 99px; padding: 8px;
                       background: var(--panel); border: 1px solid var(--line);
                       color: var(--line); }
-.secret .room[data-gate] > svg { color: color-mix(in srgb, var(--magenta) 45%, transparent);
-                                 border-color: color-mix(in srgb, var(--magenta) 30%, transparent); }
-.secret .room[data-done] > svg { color: var(--cyan); border-color: rgba(95,220,255,.45); }
+.secret .room[data-gate] > svg { color: color-mix(in srgb, var(--cinnabar) 45%, transparent);
+                                 border-color: color-mix(in srgb, var(--cinnabar) 30%, transparent); }
+.secret .room[data-done] > svg { color: var(--jade); border-color: rgba(95,220,255,.45); }
 .secret .room[data-here] > svg { color: var(--gold); border-color: var(--gold);
       box-shadow: 0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
 .secret .room .link { position: absolute; left: 50%; right: -50%; top: 50%; height: 2px;
@@ -1298,8 +1312,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .way { position: relative; display: block; width: 100%; text-align: left; font: inherit;
        cursor: pointer; color: var(--text); padding: 0; overflow: hidden;
        background: var(--panel); border: 1px solid var(--line); border-radius: 15px; }
-.way:active { transform: scale(.99); border-color: var(--cyan); }
-.way[data-fight] { border-color: color-mix(in srgb, var(--magenta) 45%, transparent); }
+.way:active { transform: scale(.99); border-color: var(--jade); }
+.way[data-fight] { border-color: color-mix(in srgb, var(--cinnabar) 45%, transparent); }
 /* 藝 .vault and not .scene: .scene is 境 the arena's backdrop, and it is
    position:absolute, so calling this one .scene laid the drawing under the card's own
    opaque body and the door came out looking exactly as it did before. */
@@ -1314,8 +1328,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                      transparent, var(--panel)); pointer-events: none; }
 .way b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 16px;
          line-height: 1.3; }
-.way b .cjk { color: var(--cyan); font-weight: 400; margin-right: 6px; }
-.way[data-fight] b .cjk { color: var(--magenta); }
+.way b .cjk { color: var(--jade); font-weight: 400; margin-right: 6px; }
+.way[data-fight] b .cjk { color: var(--cinnabar); }
 .way i { display: block; font-style: normal; margin-top: 4px; font-size: 12.5px;
          color: var(--faint); line-height: 1.55; }
 .way em { display: block; font-style: normal; margin-top: 7px; font-size: 12px;
@@ -1335,16 +1349,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         font: inherit; cursor: pointer; color: var(--text);
         background: var(--panel); border: 1px solid var(--line); border-radius: 13px;
         padding: 14px 15px; }
-.door:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
-.door[data-fight] { border-color: color-mix(in srgb, var(--magenta) 45%, transparent); }
-.door[data-fight] .s { color: var(--magenta); }
-.door .s { flex: none; color: var(--cyan); }
+.door:active:not(:disabled) { transform: scale(.99); border-color: var(--jade); }
+.door[data-fight] { border-color: color-mix(in srgb, var(--cinnabar) 45%, transparent); }
+.door[data-fight] .s { color: var(--cinnabar); }
+.door .s { flex: none; color: var(--jade); }
 .door .s svg { display: block; }
 .door .body { flex: 1; min-width: 0; }
 .door b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 16px;
           line-height: 1.3; }
-.door b .cjk { color: var(--cyan); font-weight: 400; margin-right: 6px; }
-.door[data-fight] b .cjk { color: var(--magenta); }
+.door b .cjk { color: var(--jade); font-weight: 400; margin-right: 6px; }
+.door[data-fight] b .cjk { color: var(--cinnabar); }
 .door i { display: block; font-style: normal; margin-top: 4px; font-size: 12.5px;
           color: var(--faint); line-height: 1.55; }
 .door em { display: block; font-style: normal; margin-top: 7px; font-size: 12px;
@@ -1394,8 +1408,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 門 The card on 狩 that says whether the door is open. */
 .door.open { align-items: center; margin-bottom: 12px; }
 .door.open:disabled { opacity: .55; cursor: default; }
-.door.open .s { color: var(--magenta); }
-.door.open > em { flex: none; margin: 0; color: var(--magenta); font-size: 18px; }
+.door.open .s { color: var(--cinnabar); }
+.door.open > em { flex: none; margin: 0; color: var(--cinnabar); font-size: 18px; }
 @media (prefers-reduced-motion: reduce) { .secret { animation: none; } }
 
 /* ── 洞天 three beds, and the ring that is the growing ──────────────────────
@@ -1411,17 +1425,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .bed[data-empty] { border-style: dashed; }
 .bed .ring { position: relative; display: block; width: 56px; height: 56px; margin: 0 auto 8px; }
 .bed .ring i { position: absolute; inset: 0; border-radius: 99px;
-               background: conic-gradient(var(--cyan) var(--a), rgba(37,42,92,.55) 0); }
+               background: conic-gradient(var(--jade) var(--a), rgba(37,42,92,.55) 0); }
 .bed[data-ripe] .ring i { background: conic-gradient(var(--gold) 360deg, var(--gold) 0); }
 .bed[data-empty] .ring i { background: rgba(37,42,92,.35); }
 .bed .ring i::after { content: ''; position: absolute; inset: 4px; border-radius: 99px;
                       background: var(--panel); }
 .bed .ring em { position: absolute; inset: 0; display: grid; place-items: center;
-                color: var(--cyan); }
+                color: var(--jade); }
 .bed[data-ripe] .ring em { color: var(--gold); }
 .bed[data-empty] .ring em { color: var(--line); }
 .bed .ring svg { display: block; }
-.bed > b { display: block; font-size: 15px; font-weight: 400; color: var(--cyan); }
+.bed > b { display: block; font-size: 15px; font-weight: 400; color: var(--jade); }
 .bed[data-ripe] > b { color: var(--gold); }
 .bed[data-empty] > b { color: var(--faint); }
 .bed > i { display: block; font-style: normal; font-size: 11px; color: var(--faint);
@@ -1439,12 +1453,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .seed { display: flex; gap: 12px; align-items: center; text-align: left; font: inherit;
         cursor: pointer; color: var(--text); background: var(--panel);
         border: 1px solid var(--line); border-radius: 11px; padding: 11px 13px; }
-.seed:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
+.seed:active:not(:disabled) { transform: scale(.99); border-color: var(--jade); }
 .seed:disabled { opacity: .45; cursor: default; }
-.seed .s { flex: none; color: var(--cyan); }
+.seed .s { flex: none; color: var(--jade); }
 .seed .s svg { display: block; }
 .seed .nm { flex: 1; min-width: 0; }
-.seed .nm b { font-size: 16px; font-weight: 400; color: var(--cyan); }
+.seed .nm b { font-size: 16px; font-weight: 400; color: var(--jade); }
 .seed .nm em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
                font-size: 13.5px; }
 .seed .nm i { display: block; font-style: normal; margin-top: 3px; font-size: 11.5px;
@@ -1464,22 +1478,22 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    It sits in the flow of 修 rather than over it, because it is not an interruption.
    Walking on is free and the card never blocks anything behind it. */
 .meet { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px;
-        background: var(--panel); border: 1px solid var(--cyan); border-radius: 13px;
+        background: var(--panel); border: 1px solid var(--jade); border-radius: 13px;
         padding: 13px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.45);
         animation: arrive .3s ease both; }
-.meet > .s { flex: none; color: var(--cyan); }
+.meet > .s { flex: none; color: var(--jade); }
 .meet .s svg { display: block; }
 .meet .body { flex: 1; min-width: 0; }
 .meet b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15.5px;
           line-height: 1.3; }
-.meet b .cjk { color: var(--cyan); font-weight: 400; margin-right: 6px; }
+.meet b .cjk { color: var(--jade); font-weight: 400; margin-right: 6px; }
 .meet > .body > i { display: block; font-style: normal; margin-top: 5px; font-size: 12.5px;
                     color: var(--faint); line-height: 1.55; }
 .meet .picks { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
 .meet .pick { text-align: left; font: inherit; cursor: pointer; color: var(--text);
               background: var(--ground); border: 1px solid var(--line); border-radius: 10px;
               padding: 9px 12px; }
-.meet .pick:active:not(:disabled) { transform: scale(.99); border-color: var(--cyan); }
+.meet .pick:active:not(:disabled) { transform: scale(.99); border-color: var(--jade); }
 .meet .pick:disabled { opacity: .4; cursor: default; }
 .meet .pick b { display: block; font-size: 13.5px; font-weight: 600; }
 .meet .pick em { display: block; font-style: normal; margin-top: 2px; font-size: 11.5px;
@@ -1504,8 +1518,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
              display: flex; flex-direction: column; }
 /* The realm's own portrait, large and quiet, so the page is recognisably about *this*
    realm before a word of it is read. */
-.realmcard .crown { display: grid; place-items: center; margin-bottom: 6px; opacity: .9; }
-.realmcard .crown svg { display: block; width: 132px; height: 132px; }
+.realmcard .crown { display: grid; place-items: center; margin-bottom: 6px; opacity: .9;
+                    position: relative; }
+.realmcard .crown svg { display: block; width: 132px; height: 132px; position: relative; }
+/* 境 The realm's painting, wider than the card and faded out at every edge, so it is the
+   air the figure sits in rather than a picture with a border round it. */
+.realmcard .crown .sky { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+                         width: 132%; height: 172px; object-fit: cover; opacity: .5;
+                         -webkit-mask-image: radial-gradient(120% 82% at 50% 42%, #000 32%, transparent 78%);
+                         mask-image: radial-gradient(120% 82% at 50% 42%, #000 32%, transparent 78%); }
 .realmcard h2 { margin: 0; font-size: 34px; font-weight: 400; line-height: 1.1; }
 .realmcard .sub { margin: 3px 0 0; font-size: 14px; color: var(--faint); }
 .realmcard .lead { margin: 12px 0 0; font-size: 13.5px; line-height: 1.6; }
@@ -1526,7 +1547,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                     flex-direction: column; gap: 12px; }
 .realmcard .gives li { display: flex; gap: 12px; align-items: baseline; }
 .realmcard .gives li > b { flex: none; min-width: 34px; font-weight: 400; font-size: 17px;
-                           color: var(--cyan); }
+                           color: var(--jade); }
 .realmcard .gives em { display: block; font-style: normal; font-size: 14px; }
 .realmcard .gives i { display: block; margin-top: 3px; font-style: normal; font-size: 12.5px;
                       line-height: 1.55; color: var(--faint); }
@@ -1540,7 +1561,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 見 The first kill is still a mark card, but it is the one that pays qi rather than
    material, so it borrows the qi colour to say so. */
-.verdict .mark[data-seen="true"] > b { color: var(--cyan); }
+.verdict .mark[data-seen="true"] > b { color: var(--jade); }
 .verdict .mark[data-seen="true"] { border-color: rgba(95,220,255,.35); }
 
 /* ── 圍 the drive: many kills, one tap, paid for in qi ───────────────────── */
@@ -1550,7 +1571,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .drivetag { flex: none; margin-left: 9px; width: 30px; height: 30px; border-radius: 9px;
             display: grid; place-items: center; cursor: pointer;
             color: var(--faint); border: 1px solid var(--line); background: var(--panel); }
-.drivetag:hover { color: var(--cyan); border-color: var(--cyan); }
+.drivetag:hover { color: var(--jade); border-color: var(--jade); }
 .drivetag svg { display: block; }
 
 .drivesheet { position: absolute; inset: 0; z-index: 13; background: var(--ground);
@@ -1570,7 +1591,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                     border: 1px solid var(--line); font: inherit; color: var(--text);
                     cursor: pointer; text-align: left; }
 .drivesheet .size:disabled { opacity: .42; cursor: default; }
-.drivesheet .size .n { flex: none; min-width: 42px; font-size: 21px; color: var(--cyan); }
+.drivesheet .size .n { flex: none; min-width: 42px; font-size: 21px; color: var(--jade); }
 .drivesheet .size .what { flex: 1; min-width: 0; }
 .drivesheet .size .what b { display: block; font-size: 14.5px; font-weight: 500; }
 .drivesheet .size .what i { display: block; margin-top: 2px; font-style: normal;
@@ -1645,7 +1666,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .line > b { flex: none; min-width: 26px; font-size: 18px; font-weight: 400;
                        color: var(--text); }
 .itemsheet .line .lab { flex: 1; min-width: 0; font-size: 13.5px; }
-.itemsheet .line .lab em { font-style: normal; font-size: 11px; color: var(--cyan);
+.itemsheet .line .lab em { font-style: normal; font-size: 11px; color: var(--jade);
                            margin-left: 7px; }
 /* 比 Both sides of the trade, always: losing 破 sunder is as much a fact as gaining 力. */
 .itemsheet .line .vs { flex: none; display: flex; align-items: baseline; gap: 7px;
@@ -1653,8 +1674,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .line .vs i { font-style: normal; color: var(--faint); }
 .itemsheet .line .vs em { font-style: normal; color: var(--faint); font-size: 12px; }
 .itemsheet .line .vs b { font-weight: 600; }
-.itemsheet .line[data-up="true"] .vs b { color: var(--cyan); }
-.itemsheet .line[data-down="true"] .vs b { color: var(--magenta); }
+.itemsheet .line[data-up="true"] .vs b { color: var(--jade); }
+.itemsheet .line[data-down="true"] .vs b { color: var(--cinnabar); }
 
 /* 果 The verdict. Two numbers from the sim, and no adjective. */
 .itemsheet .verdictbox { display: flex; gap: 9px; }
@@ -1665,8 +1686,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                        font-weight: 600; }
 .itemsheet .swing i { display: block; margin-top: 3px; font-style: normal; font-size: 10px;
                       letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
-.itemsheet .swing[data-sign="1"] em { color: var(--cyan); }
-.itemsheet .swing[data-sign="-1"] em { color: var(--magenta); }
+.itemsheet .swing[data-sign="1"] em { color: var(--jade); }
+.itemsheet .swing[data-sign="-1"] em { color: var(--cinnabar); }
 .itemsheet .swing[data-sign="0"] em { color: var(--faint); font-size: 13px; }
 
 .itemsheet .acts { margin-top: auto; display: flex; flex-direction: column; gap: 9px;

@@ -8,9 +8,9 @@ import { SEAL_LOOT, floorBeast, floorLoot, floorPower, lootBonus, seals } from '
 import { floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
-import { seal } from '../../art/aura.ts';
 import { furnace, tower } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
+import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
 import { TRIALS } from '../copy.ts';
@@ -62,9 +62,8 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
       </span>
       <div className="card" style={{ borderColor: r.colour }}>
         <div className="row">
-          <span className="seal" style={{ width: 52, height: 52, flex: 'none' }}>
-            <Svg html={seal(beast.icon, r.colour, floor % 9 === 0)} />
-          </span>
+          <Plate kind="beast" subject={beast.key} icon={beast.icon} colour={r.colour}
+            tier={floor % 9 === 0 ? 2 : 1} size={52} alt={beast.name} />
           <span style={{ flex: 1 }}>
             <b className="cjk" style={{ fontSize: 17, color: r.colour, display: 'block' }}>
               {TRIALS.floor(floor)}

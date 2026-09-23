@@ -94,8 +94,8 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
     const off = (S - inner) / 2;
     return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" aria-hidden="true">` +
       `<rect x=".8" y=".8" width="${S - 1.6}" height="${S - 1.6}" rx="9" fill="none" ` +
-      `stroke="#252A5C" stroke-width="1" stroke-dasharray="4 3"/>` +
-      (body ? `<g transform="translate(${f(off)} ${f(off)}) scale(${(inner / 512).toFixed(4)})" fill="#2C3268">${body}</g>` : '') +
+      `stroke="#3A3226" stroke-width="1" stroke-dasharray="4 3"/>` +
+      (body ? `<g transform="translate(${f(off)} ${f(off)}) scale(${(inner / 512).toFixed(4)})" fill="#3A3226">${body}</g>` : '') +
       `</svg>`;
   }
 

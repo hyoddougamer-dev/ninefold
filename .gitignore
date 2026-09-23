@@ -22,3 +22,6 @@ sheet-demo.html
 sheet-cut.html
 sheet-*-cuts.json
 shot-*.png
+shot-rep-*.png
+shots-before/
+repaint.html

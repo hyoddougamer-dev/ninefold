@@ -124,6 +124,19 @@ It reads and prints. It never writes anything and it never asks the network.
 | `tools/` | the harnesses the tests and the bible are both written from |
 | `tools/bible.ts` | generates `bible.html` |
 
+## 色 The palette
+
+墨 Ink, aged paper, gold leaf and cinnabar. Eight tokens in `src/app/theme.css` hold the
+chrome; the nine realms, the nine heavens and the five rarities carry their own ramps in
+`src/data/`. Nothing in the set emits light, which is the whole rule.
+
+    node tools/shot-screens.mjs shots-before   every screen, out of the real app
+    npm run repaint                            repaint.html, the pairs side by side
+
+`shot-screens.mjs` wants the preview running (`npm run build && npm run preview &`). It
+drives the same fabricated cultivator through all five tabs and the arena, so two folders
+shot at two commits can be put beside each other and the claim checked.
+
 ## 張 Getting the paintings, four credits at a time
 
 An image model gives back one square picture per credit, so the unit of work is a sheet

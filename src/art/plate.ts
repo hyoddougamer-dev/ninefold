@@ -42,7 +42,7 @@ export function plateFrame(colour: string, opts: PlateOptions = {}): string {
     <defs><radialGradient id="g${uid}"><stop offset=".3" stop-color="${colour}" stop-opacity=".26"/>
       <stop offset="1" stop-color="${colour}" stop-opacity="0"/></radialGradient></defs>
     <circle cx="50" cy="50" r="50" fill="url(#g${uid})"/>
-    <circle cx="50" cy="50" r="38" fill="${mix(colour, '#05060F', 0.55)}"/>
+    <circle cx="50" cy="50" r="38" fill="${mix(colour, '#0D0B08', 0.55)}"/>
     <circle cx="50" cy="50" r="47" fill="none" stroke="${colour}" stroke-opacity=".5" stroke-width="1.2"/>
     ${orbit}${spokes}${corona}
   </svg>`;

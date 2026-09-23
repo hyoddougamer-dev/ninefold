@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" preserveAspectRatio="none" width="100%" height="100%" aria-hidden="true">
+    <defs>
+      <linearGradient id="skys6" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#17110b"/>
+        <stop offset=".62" stop-color="#482d1c"/>
+        <stop offset=".86" stop-color="#8e5634"/>
+      </linearGradient>
+      <linearGradient id="hazes6" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#D07C4A" stop-opacity="0"/>
+        <stop offset="1" stop-color="#D07C4A" stop-opacity=".26"/>
+      </linearGradient>
+      <linearGradient id="edges6" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#D07C4A" stop-opacity="0"/>
+        <stop offset=".5" stop-color="#D07C4A" stop-opacity=".6"/>
+        <stop offset="1" stop-color="#D07C4A" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="320" height="262" fill="url(#skys6)"/>
+    <circle cx="298.4" cy="144.2" r="1.6" fill="#D07C4A" opacity="0.15"/><circle cx="7.4" cy="58.9" r="1.9" fill="#D07C4A" opacity="0.26"/><circle cx="290.1" cy="99.5" r="2.0" fill="#D07C4A" opacity="0.27"/><circle cx="98.5" cy="21.6" r="0.9" fill="#D07C4A" opacity="0.30"/><circle cx="0.1" cy="85.0" r="2.1" fill="#D07C4A" opacity="0.26"/><circle cx="236.8" cy="147.4" r="1.7" fill="#D07C4A" opacity="0.28"/><circle cx="96.4" cy="51.7" r="0.9" fill="#D07C4A" opacity="0.16"/><circle cx="152.6" cy="66.9" r="1.8" fill="#D07C4A" opacity="0.35"/><circle cx="196.2" cy="113.7" r="1.7" fill="#D07C4A" opacity="0.27"/><circle cx="82.0" cy="135.1" r="0.8" fill="#D07C4A" opacity="0.16"/><circle cx="303.1" cy="94.5" r="1.1" fill="#D07C4A" opacity="0.25"/><circle cx="234.8" cy="64.7" r="1.0" fill="#D07C4A" opacity="0.15"/><circle cx="14.6" cy="113.8" r="1.1" fill="#D07C4A" opacity="0.21"/><circle cx="275.9" cy="59.1" r="2.2" fill="#D07C4A" opacity="0.29"/><circle cx="306.3" cy="149.6" r="1.9" fill="#D07C4A" opacity="0.42"/><circle cx="311.9" cy="74.9" r="2.1" fill="#D07C4A" opacity="0.42"/><circle cx="184.4" cy="143.1" r="1.9" fill="#D07C4A" opacity="0.23"/><circle cx="165.9" cy="125.5" r="2.0" fill="#D07C4A" opacity="0.41"/>
+    <polygon points="0,150 0,39 46,1 91,63 137,104 183,11 229,89 274,90 320,2 320,150" fill="#382417" transform="translate(0 56)"/>
+    <polygon points="0,122 0,5 53,88 107,15 160,91 213,45 267,47 320,68 320,122" fill="#241910" transform="translate(0 140)"/>
+    <rect y="234" width="320" height="28" fill="url(#hazes6)"/>
+    <rect y="262" width="320" height="38" fill="#0D0B08"/>
+    <rect y="260" width="320" height="2" fill="url(#edges6)"/>
+  </svg>

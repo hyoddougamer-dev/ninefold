@@ -30,6 +30,8 @@ import { SHEETS, cutStrip, sheetOf, type Sheet } from './sheets.ts';
 const INSET = 0.02;
 /** How far either side of a nominal boundary to hunt for the real one, as a fraction of a cell. */
 const HUNT = 0.3;
+/** The same, for the two boundaries at the ends, where a rule has much less room to move. */
+const EDGE = 0.22;
 /** 牌 How much of the plate the picture's circle keeps: `clip-path: circle(42%)`, so 0.84. */
 const CIRCLE = 0.84;
 /** 獸 A creature is square and small on screen. 境 a realm is a wide card background. */
@@ -74,56 +76,42 @@ function profile(g: { data: Buffer; w: number; h: number }, axis: 'x' | 'y'): Fl
   return out;
 }
 
-/** The value a line has where there is nothing but paper, so a rule can be told from it. */
-function paperLevel(p: Float64Array): number {
-  const sorted = Array.from(p).sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length * 0.6)];
-}
-
 /**
- * 邊 The outer frame. The prompt asks for a margin of bare paper around the grid and a
- * model often gives more of it, or none at all and rules the page edge to edge. Both are
- * the same question: where is the first ruled line, coming in from this edge? Look for it
- * in the outer eighth, and take the edge itself when nothing there is dark enough to be
- * a rule.
+ * 界 Every boundary of one axis, outer edges included, measured off the picture.
+ *
+ * Returns n + 1 cuts, so cell i runs from cuts[i] to cuts[i + 1].
+ *
+ * 誤 The outer frame used to be found first, by walking in from the edge looking for the
+ * first dark line, and the inner rules were then divided between the two. On 獸丙 that
+ * walk found the demon ogre's shoulder a hundred and fifty pixels in, took it for the
+ * left rule, and every one of the twelve panels came out straddling a real one: two
+ * halves of two different creatures, in a circle, twelve times.
+ *
+ * 齊 So no boundary is special any more. A ruled page is very nearly regular, which makes
+ * the even division a good guess for **all** of them, edges included, and each guess is
+ * then pulled to the darkest line near it: a wide window for an inner rule, a narrow one
+ * at the ends, where a rule has much less room to move. A creature cannot win that
+ * contest, because it darkens its column for one row out of three while a rule darkens
+ * it from top to bottom.
  */
-function frame(p: Float64Array, span: number): { from: number; span: number } {
-  const paper = paperLevel(p);
-  const dark = paper - 22;
-  const reach = Math.round(span * 0.12);
-  const pick = (lo: number, hi: number, fallback: number) => {
-    let best = fallback;
-    let low = Infinity;
-    for (let i = lo; i <= hi; i++) if (p[i] < low) { low = p[i]; best = i; }
-    return low < dark ? best : fallback;
-  };
-  const a = pick(0, reach, 0);
-  const b = pick(span - 1 - reach, span - 1, span - 1);
-  return { from: a, span: b - a + 1 };
-}
-
-/**
- * The boundaries of one axis, measured. Returns cuts.length === n + 1, outer edges
- * included, so a cell i runs from cuts[i] to cuts[i + 1].
- */
-function boundaries(p: Float64Array, n: number, span: number, from: number): number[] {
+function boundaries(p: Float64Array, n: number, span: number): number[] {
   const cell = span / n;
-  const cuts = [from];
-  for (let i = 1; i < n; i++) {
-    const nominal = from + i * cell;
-    const lo = Math.max(from + 1, Math.round(nominal - cell * HUNT));
-    const hi = Math.min(from + span - 1, Math.round(nominal + cell * HUNT));
-    let best = Math.round(nominal);
+  const cuts: number[] = [];
+  for (let i = 0; i <= n; i++) {
+    const nominal = i * cell;
+    const reach = i === 0 || i === n ? cell * EDGE : cell * HUNT;
+    const lo = Math.max(0, Math.round(nominal - reach));
+    const hi = Math.min(span - 1, Math.round(nominal + reach));
+    let best = Math.round(Math.min(span - 1, nominal));
     let low = Infinity;
     for (let x = lo; x <= hi; x++) {
-      // 心 A tie goes to the middle: a sheet with no rule at all should cut where it was
+      // 心 A tie goes to the guess: a sheet with no rule at all should cut where it was
       // asked to rather than wherever the paper happened to be a shade darker.
       const score = p[x] + Math.abs(x - nominal) * 0.02;
       if (score < low) { low = score; best = x; }
     }
     cuts.push(best);
   }
-  cuts.push(from + span);
   return cuts;
 }
 
@@ -191,10 +179,8 @@ async function cut(sheet: Sheet, file: string) {
   const g = await grey(file);
   const px = profile(g, 'x');
   const py = profile(g, 'y');
-  const mx = frame(px, g.w);
-  const my = frame(py, g.h);
-  const xs = boundaries(px, sheet.cols, mx.span, mx.from);
-  const ys = boundaries(py, sheet.rows, my.span, my.from);
+  const xs = boundaries(px, sheet.cols, g.w);
+  const ys = boundaries(py, sheet.rows, g.h);
 
   const dir = `public/art/${sheet.kind}`;
   mkdirSync(dir, { recursive: true });

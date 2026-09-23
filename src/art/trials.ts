@@ -59,7 +59,7 @@ export function tower(best: number, pulse = 0): string {
     const eave = tierH * 0.26;
     out += `<g>
       <path d="M${(x - w * 0.11).toFixed(1)} ${(y + eave).toFixed(1)} L${(x + w * 0.09).toFixed(1)} ${y.toFixed(1)} H${(x + w * 0.91).toFixed(1)} L${(x + w * 1.11).toFixed(1)} ${(y + eave).toFixed(1)} Z" fill="${c}" opacity="${(o + 0.16).toFixed(2)}"/>
-      <rect x="${x.toFixed(1)}" y="${(y + eave).toFixed(1)}" width="${w.toFixed(1)}" height="${(tierH - eave).toFixed(1)}" fill="${mix(c, '#05060F', 0.62)}" opacity="0.95"/>
+      <rect x="${x.toFixed(1)}" y="${(y + eave).toFixed(1)}" width="${w.toFixed(1)}" height="${(tierH - eave).toFixed(1)}" fill="${mix(c, '#0D0B08', 0.62)}" opacity="0.95"/>
       <rect x="${(x + w * 0.42).toFixed(1)}" y="${(y + eave + tierH * 0.22).toFixed(1)}" width="${(w * 0.16).toFixed(1)}" height="${(tierH * 0.4).toFixed(1)}" fill="${c}" opacity="${(o + 0.3).toFixed(2)}"/>
     </g>`;
   }
@@ -76,8 +76,8 @@ export function tower(best: number, pulse = 0): string {
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="The tower, floor ${best}">
     <defs>
       <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${mix(top, '#05060F', 0.9)}"/>
-        <stop offset="1" stop-color="#05060F"/>
+        <stop offset="0" stop-color="${mix(top, '#0D0B08', 0.9)}"/>
+        <stop offset="1" stop-color="#0D0B08"/>
       </linearGradient>
       <radialGradient id="tglow"><stop offset="0" stop-color="${top}" stop-opacity=".34"/>
         <stop offset="1" stop-color="${top}" stop-opacity="0"/></radialGradient>
@@ -86,7 +86,7 @@ export function tower(best: number, pulse = 0): string {
     <circle cx="${W / 2}" cy="${(ty + 8).toFixed(1)}" r="${(52 * breath).toFixed(1)}" fill="url(#tglow)"/>
     ${hidden > 0 ? `<text x="${W / 2}" y="${(ty - 7).toFixed(1)}" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="11" fill="${top}" opacity=".7">+${hidden * FLOORS_PER_REALM} floors below</text>` : ''}
     <g transform="translate(0 0)">${out}</g>
-    <rect y="${ground}" width="${W}" height="${H - ground}" fill="#05060F"/>
+    <rect y="${ground}" width="${W}" height="${H - ground}" fill="#0D0B08"/>
     <rect y="${ground - 1}" width="${W}" height="1" fill="${colourAt(1)}" opacity=".35"/>
   </svg>`;
 }
@@ -107,7 +107,7 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
   // as the next ninety, which is also how they are priced.
   const heat = Math.min(1, Math.log10(1 + taken) / 2.7);
   const flick = 1 + Math.sin(pulse * Math.PI * 2) * 0.07;
-  const gold = '#FFCE6B';
+  const gold = '#D4AF56';
   const cx = W / 2;
   const belly = 118;
 
@@ -115,7 +115,7 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
     const t = (i - 2) / 2;
     const h = (14 + 30 * heat) * (1 - Math.abs(t) * 0.42) * (i % 2 ? flick : 2 - flick);
     const x = cx + t * 22;
-    return `<path d="M${x.toFixed(1)} ${belly + 36} q ${(-5 - 3 * heat).toFixed(1)} ${(-h * 0.55).toFixed(1)} 0 ${(-h).toFixed(1)} q ${(5 + 3 * heat).toFixed(1)} ${(h * 0.55).toFixed(1)} 0 ${h.toFixed(1)} Z" fill="${mix(gold, '#FF5FC8', 0.15 + 0.4 * t * t)}" opacity="${(0.32 + 0.5 * heat).toFixed(2)}"/>`;
+    return `<path d="M${x.toFixed(1)} ${belly + 36} q ${(-5 - 3 * heat).toFixed(1)} ${(-h * 0.55).toFixed(1)} 0 ${(-h).toFixed(1)} q ${(5 + 3 * heat).toFixed(1)} ${(h * 0.55).toFixed(1)} 0 ${h.toFixed(1)} Z" fill="${mix(gold, '#D2604E', 0.15 + 0.4 * t * t)}" opacity="${(0.32 + 0.5 * heat).toFixed(2)}"/>`;
   }).join('');
 
   const smoke = Array.from({ length: 3 }, (_, i) => {
@@ -128,22 +128,22 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
       <radialGradient id="fglow"><stop offset="0" stop-color="${gold}" stop-opacity="${(0.1 + 0.34 * heat).toFixed(2)}"/>
         <stop offset="1" stop-color="${gold}" stop-opacity="0"/></radialGradient>
       <linearGradient id="fbody" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${mix(r.colour, '#05060F', 0.45)}"/>
-        <stop offset="1" stop-color="${mix(gold, '#05060F', 0.7 - 0.25 * heat)}"/>
+        <stop offset="0" stop-color="${mix(r.colour, '#0D0B08', 0.45)}"/>
+        <stop offset="1" stop-color="${mix(gold, '#0D0B08', 0.7 - 0.25 * heat)}"/>
       </linearGradient>
     </defs>
     <circle cx="${cx}" cy="${belly}" r="86" fill="url(#fglow)"/>
     ${smoke}
     <!-- the lid, lifted a little: a sealed cauldron reads as a pot, not as a furnace -->
-    <path d="M${cx - 44} 78 h88 l-7 -9 h-74 Z" fill="${mix(r.colour, '#05060F', 0.35)}"/>
+    <path d="M${cx - 44} 78 h88 l-7 -9 h-74 Z" fill="${mix(r.colour, '#0D0B08', 0.35)}"/>
     <circle cx="${cx}" cy="66" r="5" fill="${r.colour}" opacity=".8"/>
     <!-- the belly -->
     <path d="M${cx - 48} 84 q0 58 48 58 q48 0 48 -58 Z" fill="url(#fbody)"/>
     <path d="M${cx - 48} 84 h96" stroke="${gold}" stroke-opacity="${(0.3 + 0.4 * heat).toFixed(2)}" stroke-width="2"/>
     <!-- the three legs, which is what makes a 鼎 a 鼎 -->
-    <path d="M${cx - 30} 140 l-6 22 M${cx + 30} 140 l6 22 M${cx} 143 v20" stroke="${mix(r.colour, '#05060F', 0.45)}" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M${cx - 30} 140 l-6 22 M${cx + 30} 140 l6 22 M${cx} 143 v20" stroke="${mix(r.colour, '#0D0B08', 0.45)}" stroke-width="7" stroke-linecap="round" fill="none"/>
     ${flames}
-    <rect y="${H - 14}" width="${W}" height="14" fill="#05060F"/>
+    <rect y="${H - 14}" width="${W}" height="14" fill="#0D0B08"/>
     <rect y="${H - 15}" width="${W}" height="1" fill="${gold}" opacity="${(0.2 + 0.4 * heat).toFixed(2)}"/>
   </svg>`;
 }
@@ -196,7 +196,7 @@ export function pool(filled: number, marks: number, pulse = 0): string {
     <circle cx="${W / 2}" cy="${rimY + 10}" r="${(70 + 10 * f).toFixed(1)}" fill="url(#pglow)"/>
     ${bolts}
     <!-- the basin: cut stone, not a bowl -->
-    <path d="M40 ${rimY} h120 l-14 ${deep} h-92 Z" fill="${mix(c, '#05060F', 0.82)}"/>
+    <path d="M40 ${rimY} h120 l-14 ${deep} h-92 Z" fill="${mix(c, '#0D0B08', 0.82)}"/>
     <g clip-path="url(#pbasin)">
       <rect x="30" y="${surface.toFixed(1)}" width="140" height="${deep + 4}" fill="url(#pwater)"/>
       ${f > 0.02 ? `<ellipse cx="${W / 2}" cy="${surface.toFixed(1)}" rx="66" ry="${(3 + 1.4 * breath).toFixed(1)}" fill="${mix(c, '#FFFFFF', 0.6)}" opacity=".7"/>` : ''}

@@ -31,11 +31,11 @@ const FLOOR = 104;
 
 /** The light a room is lit by: the thing behind the door, in one colour. */
 const LIGHT: Record<RoomKind | 'out', string> = {
-  spring: '#5FDCFF',
-  shrine: '#FFCE6B',
-  brazier: '#FF8A5B',
-  beast: '#FF5B7A',
-  out: '#E7EAFF',
+  spring: '#7FB495',
+  shrine: '#D4AF56',
+  brazier: '#D07C4A',
+  beast: '#D2604E',
+  out: '#EDE3D2',
 };
 
 /**
@@ -96,7 +96,7 @@ function shrine(c: string): string {
   const x = W / 2 - 15;
   return `<g>
     <path d="M${x} ${FLOOR - 6} L${x} ${FLOOR - 36} Q${W / 2} ${FLOOR - 52} ${x + 30} ${FLOOR - 36} L${x + 30} ${FLOOR - 6} Z"
-      fill="#05060F" stroke="${c}" stroke-opacity=".55"/>
+      fill="#0D0B08" stroke="${c}" stroke-opacity=".55"/>
     <circle cx="${W / 2}" cy="${FLOOR - 26}" r="9" fill="${c}" opacity=".18"/>
     <circle cx="${W / 2}" cy="${FLOOR - 26}" r="4.5" fill="${c}" opacity=".85"/>
     <rect x="${x - 7}" y="${FLOOR - 6}" width="44" height="6" rx="2" fill="${c}" opacity=".3"/>
@@ -109,7 +109,7 @@ function brazier(c: string): string {
   const top = FLOOR - 34;
   return `<g>
     <path d="M${cx - 20} ${top} L${cx + 20} ${top} L${cx + 13} ${top + 15} L${cx - 13} ${top + 15} Z"
-      fill="#0A0C1C" stroke="${c}" stroke-opacity=".6"/>
+      fill="#17140F" stroke="${c}" stroke-opacity=".6"/>
     <path d="M${cx - 12} ${top + 15} L${cx - 16} ${FLOOR - 2} M${cx + 12} ${top + 15} L${cx + 16} ${FLOOR - 2} M${cx} ${top + 15} L${cx} ${FLOOR - 2}"
       stroke="${c}" stroke-opacity=".45" stroke-width="2"/>
     <path d="M${cx} ${top - 22} Q${cx + 11} ${top - 8} ${cx + 7} ${top - 1} Q${cx} ${top - 6} ${cx - 7} ${top - 1} Q${cx - 11} ${top - 8} ${cx} ${top - 22} Z"
@@ -168,8 +168,8 @@ export function chamber({ kind, step, realm }: ChamberOptions): string {
   const r = realmOf(Math.max(1, Math.min(9, realm)));
   const uid = `k${kind}${step}${r.n}`;
   const lit = LIGHT[kind];
-  const wall = mix(r.colour, '#05060F', 0.62);
-  const deep = mix(r.colour, '#05060F', 0.9);
+  const wall = mix(r.colour, '#0D0B08', 0.62);
+  const deep = mix(r.colour, '#0D0B08', 0.9);
 
   const middle = kind === 'spring' ? spring(lit)
     : kind === 'shrine' ? shrine(lit)
