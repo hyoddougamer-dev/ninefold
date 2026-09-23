@@ -28,3 +28,6 @@ repaint.html
 shot-whom-*.png
 shot-dbg.png
 shots-arena/
+shots/
+# 搬 copies of public/art, made by npm run bible for publishing beside the page.
+bible-art/art/

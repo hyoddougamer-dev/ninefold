@@ -4,9 +4,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
 <style>
-  :root { --ground:#080A18; --panel:#111433; --panel2:#0C0F26; --line:#252A5C;
-          --cyan:#5FDCFF; --magenta:#FF5FC8; --text:#E7EAFF; --faint:#8289C0;
-          --gold:#FFCE6B; color-scheme:dark; }
+  /* 墨 The same eight the game wears. The bible was still in cyan and magenta on
+     blue-black long after the game stopped being, and it renders 境 the realms and 牌
+     the plates with the game's own functions, so half of every page was ink and the
+     other half was neon. A living document that shows the game in colours it does not
+     have is the exact thing this page exists not to be. */
+  :root { --ground:#14110D; --panel:#1E1A14; --panel2:#191510; --line:#3A3226;
+          --jade:#7FB495; --cinnabar:#D2604E; --text:#EDE3D2; --faint:#9C907C;
+          --gold:#D4AF56; color-scheme:dark; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--ground); color:var(--text);
          font:17px/1.65 Archivo, ui-sans-serif, system-ui, sans-serif; }
@@ -14,15 +19,15 @@
   .cjk { font-family:'Noto Serif SC',serif; }
   h1,h2,h3 { margin:0; font-weight:600; text-wrap:balance; }
   h1 { font-family:'Noto Serif SC',serif; font-size:clamp(40px,12vw,60px); font-weight:400;
-       color:var(--cyan); line-height:1; }
+       color:var(--jade); line-height:1; }
   h2 { font-family:Rajdhani,sans-serif; font-size:26px; display:flex; gap:11px;
        align-items:baseline; }
   h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:30px;
-          color:var(--cyan); }
+          color:var(--jade); }
   h3 { font-family:Rajdhani,sans-serif; font-size:14px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; margin-top:6px; }
   p { margin:0; }
-  a { color:var(--cyan); }
+  a { color:var(--jade); }
   .lead { font-size:19px; margin-top:14px; }
   .sec { margin-top:40px; border-top:1px solid var(--line); padding-top:22px;
          display:flex; flex-direction:column; gap:13px; }
@@ -55,7 +60,7 @@
   #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
 
   /* 閒 the ceiling column, where it is worth looking at. */
-  #idle td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #idle td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #idle td, #idle th { padding:5px 6px; font-size:13px; }
   #idle .card em { display:block; margin-bottom:2px; }
   #idle .card .t { font-size:13.5px; }
@@ -79,7 +84,7 @@
   /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
   #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
                overflow:hidden; min-width:120px; }
-  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
+  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--jade); }
   #clock td:last-child { width:45%; }
 
   /* ── 悟道 the trios, and 緣 the people on the road ────────────────────── */
@@ -91,18 +96,18 @@
   @media(min-width:640px){ #awaken .three { grid-template-columns:repeat(3,1fr); } }
   #awaken .ac { padding:12px 13px; border-radius:11px; background:var(--panel);
         border:1px solid var(--line); }
-  #awaken .ac .s { display:block; color:var(--cyan); margin-bottom:6px; }
-  #awaken .ac b { font-size:18px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #awaken .ac .s { display:block; color:var(--jade); margin-bottom:6px; }
+  #awaken .ac b { font-size:18px; font-weight:400; color:var(--jade); margin-right:7px; }
   #awaken .ac em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:13.5px; }
   #awaken .ac i { display:block; font-style:normal; margin-top:6px; font-size:12px;
         color:var(--faint); line-height:1.5; }
   #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
         line-height:1.5; }
-  #meet .meets td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #cave .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #secret .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+  #meet .meets td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #cave .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
         margin-right:5px; }
   /* 圖 the drawn rooms, scoped to this section so nothing else can wear them */
   #secret .vaults { display:grid; gap:10px; margin:14px 0 6px; }
@@ -111,7 +116,7 @@
   #secret .vault .art { display:block; height:120px; }
   #secret .vault .art svg { display:block; width:100%; height:100%; }
   #secret .vault figcaption { padding:10px 13px 12px; font-size:13.5px; }
-  #secret .vault figcaption b.cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #secret .vault figcaption b.cjk { color:var(--jade); font-weight:400; margin-right:5px; }
   #secret .vault figcaption em { display:block; margin-top:3px; font-style:normal;
                                  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
                                  color:var(--faint); }
@@ -122,24 +127,24 @@
   #secret .rm { flex:1; display:grid; place-items:center; gap:4px; padding:10px 4px;
         border-radius:11px; background:var(--panel); border:1px solid var(--line);
         color:var(--line); }
-  #secret .rm[data-gate] { color:var(--magenta);
-        border-color:color-mix(in srgb, var(--magenta) 35%, transparent); }
+  #secret .rm[data-gate] { color:var(--cinnabar);
+        border-color:color-mix(in srgb, var(--cinnabar) 35%, transparent); }
   #secret .rm em { font-style:normal; font-size:10.5px; color:var(--faint);
         font-family:Rajdhani,sans-serif; font-weight:700; }
-  #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+  #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
         margin-right:5px; }
 
   /* ── 提 the proposals: four content systems, drawn rather than described ── */
   #proposals h3 .built, #proposals h3 .todo { margin-left: 9px; padding:3px 9px; border-radius:99px;
         font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
         vertical-align:middle; }
-  #proposals h3 .built { color:#04121A; background:var(--cyan); }
+  #proposals h3 .built { color:#14110D; background:var(--jade); }
   #proposals h3 .todo { color:var(--faint); border:1px solid var(--line); }
   #proposals .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
                    padding:15px; margin:14px 0 0; }
   #proposals .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
   #proposals .law { display:inline-block; margin:10px 8px 0 0; padding:3px 9px; border-radius:99px;
-                    font-size:11.5px; color:var(--cyan); border:1px solid var(--line);
+                    font-size:11.5px; color:var(--jade); border:1px solid var(--line);
                     background:rgba(95,220,255,.06); }
   #proposals .cost { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
 
@@ -168,11 +173,11 @@
   #proposals .room > svg, #proposals .room > em { position:relative; z-index:1;
         display:grid; place-items:center; width:44px; height:44px; border-radius:99px;
         background:var(--panel); border:1px solid var(--line); color:var(--line); }
-  #proposals .room[data-done] > svg { color:var(--cyan); border-color:rgba(95,220,255,.45); }
+  #proposals .room[data-done] > svg { color:var(--jade); border-color:rgba(95,220,255,.45); }
   /* 此 Where you stand: the one room on the path that is a decision right now. */
   #proposals .room[data-here] > svg { color:var(--gold); border-color:var(--gold);
         box-shadow:0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
-  #proposals .room[data-last] > svg { color:var(--magenta); border-color:rgba(255,95,200,.5); }
+  #proposals .room[data-last] > svg { color:var(--cinnabar); border-color:rgba(255,95,200,.5); }
   #proposals .room .link { position:absolute; left:50%; right:-50%; top:50%; height:2px;
         background:var(--line); }
   #proposals .room[data-done] .link { background:linear-gradient(90deg,
@@ -181,8 +186,8 @@
   @media(min-width:560px){ #proposals .doors { grid-template-columns:1fr 1fr; } }
   #proposals .door { display:flex; gap:11px; align-items:flex-start; padding:11px 12px;
         border:1px solid var(--line); border-radius:11px; background:var(--panel); }
-  #proposals .door .s { flex:none; color:var(--cyan); }
-  #proposals .door b { font-size:17px; font-weight:400; color:var(--cyan); }
+  #proposals .door .s { flex:none; color:var(--jade); }
+  #proposals .door b { font-size:17px; font-weight:400; color:var(--jade); }
   #proposals .door em { font-style:normal; font-size:13px; color:var(--text); }
   #proposals .door i { display:block; font-style:normal; margin-top:4px; font-size:12px;
         color:var(--faint); line-height:1.5; }
@@ -194,9 +199,9 @@
         border:1px solid var(--line); }
   #proposals .awaken .card[data-on] { border-color:var(--gold);
         box-shadow:0 0 26px -12px var(--gold); }
-  #proposals .awaken .s { display:block; color:var(--cyan); margin-bottom:8px; }
+  #proposals .awaken .s { display:block; color:var(--jade); margin-bottom:8px; }
   #proposals .awaken .card[data-on] .s { color:var(--gold); }
-  #proposals .awaken b { font-size:19px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #proposals .awaken b { font-size:19px; font-weight:400; color:var(--jade); margin-right:7px; }
   #proposals .awaken .card[data-on] b { color:var(--gold); }
   #proposals .awaken em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:14px; }
@@ -205,15 +210,15 @@
 
   /* 緣 one small card, the way it would sit on a screen */
   #proposals .meet .card { display:flex; gap:12px; align-items:flex-start; padding:13px 14px;
-        border-radius:13px; background:var(--panel); border:1px solid var(--cyan); }
-  #proposals .meet .s { flex:none; color:var(--cyan); }
+        border-radius:13px; background:var(--panel); border:1px solid var(--jade); }
+  #proposals .meet .s { flex:none; color:var(--jade); }
   #proposals .meet b { display:block; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
-  #proposals .meet b .cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #proposals .meet b .cjk { color:var(--jade); font-weight:400; margin-right:5px; }
   #proposals .meet i { display:block; font-style:normal; margin-top:4px; font-size:12.5px;
         color:var(--faint); line-height:1.55; }
   #proposals .meet .picks { display:flex; gap:8px; margin-top:11px; }
   #proposals .meet .pick { padding:7px 13px; border-radius:9px; font-size:12.5px;
-        background:var(--cyan); color:#04121A; font-weight:600; }
+        background:var(--jade); color:#14110D; font-weight:600; }
   #proposals .meet .pick:last-child { background:none; color:var(--faint);
         border:1px solid var(--line); }
 
@@ -234,7 +239,7 @@
                 text-transform:uppercase; }
   #cores td, #cores th { padding:5px 6px; font-size:13px; }
   #cores .card em { display:block; margin-bottom:2px; }
-  #cores td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #cores td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
 
@@ -252,22 +257,22 @@
   #mockups .ladder .rung { flex:1; height:10px; border-radius:3px; background:var(--line);
                   overflow:hidden; }
   #mockups .ladder .rung i { display:block; height:100%; border-radius:2px; }
-  #mockups .ladder .warden { flex:none; width:17px; color:var(--cyan); }
+  #mockups .ladder .warden { flex:none; width:17px; color:var(--jade); }
   #mockups .ladder .warden svg { display:block; }
 
   /* 指 */
   #mockups .coach { display:flex; flex-direction:column; align-items:center; gap:8px; }
   #mockups .coach .arrow { width:34px; height:34px; display:grid; place-items:center;
                   border-radius:99px; background:rgba(6,8,18,.92);
-                  border:1px solid rgba(95,220,255,.45); color:var(--cyan);
+                  border:1px solid rgba(95,220,255,.45); color:var(--jade);
                   box-shadow:0 0 14px -3px rgba(95,220,255,.8); }
   #mockups .coach .arrow svg { display:block; }
   #mockups .upg, #cores .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
          padding:13px 14px; border-radius:11px; background:var(--panel);
          border:1px solid var(--line); }
-  #mockups .upg.ringed, #cores .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
+  #mockups .upg.ringed, #cores .upg.ringed { box-shadow:0 0 0 2px var(--jade), 0 0 0 5px rgba(95,220,255,.14),
                            0 0 22px -4px rgba(95,220,255,.75); }
-  #mockups .upg .ic, #cores .upg .ic { flex:none; width:26px; color:var(--cyan); }
+  #mockups .upg .ic, #cores .upg .ic { flex:none; width:26px; color:var(--jade); }
   #mockups .upg .ic svg, #cores .upg .ic svg { display:block; }
   #mockups .upg > span:nth-child(2), #cores .upg > span:nth-child(2) { flex:1; }
   #mockups .upg b, #cores .upg b { display:block; font-size:15px; font-weight:500; }
@@ -283,16 +288,16 @@
            border:1px solid rgba(95,220,255,.33); border-radius:12px; padding:13px 15px; }
   #mockups .gcard.waiting { background:var(--panel); border-color:var(--line); }
   #mockups .gcard .n { font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-              color:var(--cyan); font-family:Archivo,sans-serif; }
+              color:var(--jade); font-family:Archivo,sans-serif; }
   #mockups .gcard.waiting .n { color:var(--faint); }
   #mockups .gcard b { display:block; margin-top:4px; font-size:15.5px; font-weight:500; }
-  #mockups .gcard b .cjk { color:var(--cyan); margin-right:4px; }
+  #mockups .gcard b .cjk { color:var(--jade); margin-right:4px; }
   #mockups .gcard.waiting b .cjk { color:var(--faint); }
   #mockups .gcard i { display:block; margin-top:5px; font-style:normal; font-size:12.5px;
              color:var(--faint); line-height:1.5; }
   #mockups .gcard .bar { display:block; height:4px; border-radius:99px; margin-top:9px;
                 background:rgba(95,220,255,.2); overflow:hidden; }
-  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--cyan);
+  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--jade);
                   border-radius:99px; }
 
   /* 鑑 */
@@ -321,14 +326,14 @@
                       font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .sheet2 .line .vs i, #mockups .sheet2 .line .vs em { font-style:normal; color:var(--faint);
                                               font-weight:400; }
-  #mockups .sheet2 .line.up .vs b { color:var(--cyan); }
-  #mockups .sheet2 .line.down .vs b { color:var(--magenta); }
+  #mockups .sheet2 .line.up .vs b { color:var(--jade); }
+  #mockups .sheet2 .line.down .vs b { color:var(--cinnabar); }
   #mockups .sheet2 .verd { display:flex; gap:9px; margin-top:16px; }
   #mockups .sheet2 .sw { flex:1; background:var(--panel); border:1px solid var(--line);
                 border-radius:11px; padding:13px 10px; text-align:center; }
   #mockups .sheet2 .sw b { display:block; font-size:17px; font-weight:400; color:var(--faint); }
   #mockups .sheet2 .sw em { display:block; margin-top:3px; font-style:normal; font-size:17px;
-                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--cyan); }
+                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--jade); }
   #mockups .sheet2 .sw i { display:block; margin-top:3px; font-style:normal; font-size:10px;
                   letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
 
@@ -336,7 +341,7 @@
   #mockups .drive .size { display:flex; align-items:center; gap:13px; padding:13px 14px;
                  border-radius:11px; background:var(--panel); border:1px solid var(--line);
                  margin-bottom:8px; }
-  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--cyan);
+  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--jade);
                     font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .drive .size .what { flex:1; }
   #mockups .drive .size .what b { display:block; font-size:14.5px; font-weight:500; }
@@ -355,37 +360,37 @@
   #mockups .halfbar > span[data-on] { background:var(--panel); color:var(--ink);
               box-shadow:inset 0 0 0 1px var(--line); }
   #mockups .halfbar b { font-size:17px; font-weight:400; }
-  #mockups .halfbar > span[data-on] b { color:var(--cyan); }
+  #mockups .halfbar > span[data-on] b { color:var(--jade); }
   #mockups .halfbar em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
               font-size:13px; }
   #mockups .halfbar .pip { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
-              font-size:11px; color:#0A0C1C; background:var(--gold); border-radius:99px;
+              font-size:11px; color:#14110D; background:var(--gold); border-radius:99px;
               padding:3px 6px; }
   #mockups .tabbar { display:grid; grid-template-columns:repeat(5,1fr);
               background:var(--panel2); border:1px solid var(--line); border-radius:11px;
               padding:9px 0 11px; }
   #mockups .tabbar > span { display:flex; flex-direction:column; align-items:center; gap:3px;
               color:var(--faint); }
-  #mockups .tabbar > span[data-on] { color:var(--cyan); }
+  #mockups .tabbar > span[data-on] { color:var(--jade); }
   #mockups .tabbar b { position:relative; font-size:19px; font-weight:400; line-height:1.1; }
   #mockups .tabbar u { position:absolute; left:100%; bottom:55%; transform:translateX(-3px);
               text-decoration:none; font-family:Rajdhani,sans-serif; font-weight:700;
-              font-size:10px; line-height:1; color:#0A0C1C; background:var(--gold);
+              font-size:10px; line-height:1; color:#14110D; background:var(--gold);
               border-radius:99px; padding:2.5px 5px; }
   #mockups .tabbar i { font-style:normal; font-size:9.5px; letter-spacing:.16em;
               text-transform:uppercase; }
 
   /* 凝丹 the card that appears only when 材 runs out */
-  #mockups .mk.cond { border-color:var(--magenta); }
+  #mockups .mk.cond { border-color:var(--cinnabar); }
   #mockups .cond .chd { display:flex; align-items:center; gap:11px; }
-  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--magenta); }
+  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--cinnabar); }
   #mockups .cond .chd em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
               font-weight:700; font-size:16px; }
   #mockups .cond .chd i { font-style:normal; font-size:12.5px; color:var(--faint); }
   #mockups .cond .body { margin:9px 0 12px; font-size:13.5px; color:var(--faint);
               line-height:1.6; }
-  #mockups .cond .go { display:block; text-align:center; background:var(--magenta);
-              color:#0A0C1C; border-radius:8px; padding:12px; font-size:15px;
+  #mockups .cond .go { display:block; text-align:center; background:var(--cinnabar);
+              color:#14110D; border-radius:8px; padding:12px; font-size:15px;
               font-family:Rajdhani,sans-serif; font-weight:700; letter-spacing:.06em;
               text-transform:uppercase; }
   #mockups .cond .hint { display:flex; gap:11px; align-items:flex-start; margin-top:10px;
@@ -440,7 +445,7 @@
                   border:1px solid var(--line); border-radius:11px; }
   #mockups .corner .menu span { display:flex; align-items:center; gap:11px; padding:9px; }
   #mockups .corner .menu b { flex:none; width:22px; text-align:center; font-size:16px;
-                    font-weight:400; color:var(--cyan); }
+                    font-weight:400; color:var(--jade); }
   #mockups .corner .menu i { font-style:normal; font-size:13.5px; }
   #mockups .corner .cap { margin:12px 0 0; font-size:13px; color:var(--faint); }
 
@@ -450,7 +455,7 @@
            background:var(--panel2); border:1px solid var(--line); border-radius:10px;
            padding:9px 12px; color:var(--text); font-size:14px; }
   .toc a b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:18px;
-             color:var(--cyan); }
+             color:var(--jade); }
 
   .board { display:grid; gap:6px; }
   .srow { display:flex; gap:12px; align-items:flex-start; background:var(--panel2);
@@ -476,7 +481,7 @@
   th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
   td { border-top:1px solid var(--line); padding:7px 8px; }
-  td b { color:var(--hue,var(--cyan)); font-size:16px; font-weight:400; }
+  td b { color:var(--hue,var(--jade)); font-size:16px; font-weight:400; }
   td i { font-style:normal; color:var(--faint); }
   td.n { font-family:Rajdhani,sans-serif; font-weight:700; text-align:right;
          color:var(--gold); }
@@ -486,7 +491,7 @@
                            .cards.three { grid-template-columns:repeat(3,1fr); } }
   .card { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
           padding:12px 14px; }
-  .card > b { color:var(--hue,var(--cyan)); font-size:18px; font-weight:400; }
+  .card > b { color:var(--hue,var(--jade)); font-size:18px; font-weight:400; }
   .card em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
              font-size:16px; }
   .pills { display:flex; flex-wrap:wrap; gap:6px; }
@@ -510,9 +515,9 @@
   .row { display:flex; gap:11px; align-items:flex-start; background:var(--panel2);
          border:1px solid var(--line); border-left:3px solid var(--hue,var(--line));
          border-radius:10px; padding:9px 12px; }
-  .row .ic { flex:none; color:var(--hue,var(--cyan)); display:grid; place-items:center; }
+  .row .ic { flex:none; color:var(--hue,var(--jade)); display:grid; place-items:center; }
   .row .ic svg { display:block; }
-  .row b { font-size:17px; color:var(--hue,var(--cyan)); font-weight:400; }
+  .row b { font-size:17px; color:var(--hue,var(--jade)); font-weight:400; }
   .row em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
   .row i { font-style:normal; display:block; font-size:13px; color:var(--faint); }
   .row .body { flex:1; }
@@ -544,8 +549,8 @@
   .duel span { display:grid; place-items:center; }
   .duel .you { width:82px; height:82px; justify-self:center; }
   .duel .you svg { width:100%; height:100%; }
-  .duel .foe { color:#CC79FF; justify-self:center; margin-bottom:12px; }
-  .duel .mid { color:var(--cyan); font-size:19px; margin-bottom:30px;
+  .duel .foe { color:var(--cinnabar); justify-self:center; margin-bottom:12px; }
+  .duel .mid { color:var(--jade); font-size:19px; margin-bottom:30px;
                text-shadow:0 0 14px currentColor; }
 
   .lin { display:flex; flex-wrap:wrap; gap:8px 12px; }
@@ -563,22 +568,49 @@
                      margin-left:auto; }
   .items .lin { margin-top:10px; }
 
-  .rule { border-left:3px solid var(--cyan); background:var(--panel2);
+  .rule { border-left:3px solid var(--jade); background:var(--panel2);
           border-radius:0 10px 10px 0; padding:13px 16px; }
-  .rule b { color:var(--cyan); }
-  .warn { border-left:3px solid var(--magenta); background:var(--panel2);
+  .rule b { color:var(--jade); }
+  .warn { border-left:3px solid var(--cinnabar); background:var(--panel2);
           border-radius:0 10px 10px 0; padding:13px 16px; }
-  .warn b { color:var(--magenta); }
+  .warn b { color:var(--cinnabar); }
 
   .where { display:grid; gap:7px; }
   .where a { display:flex; gap:11px; align-items:flex-start; text-decoration:none;
              background:var(--panel2); border:1px solid var(--line); border-radius:11px;
              padding:12px 14px; color:var(--text); }
   .where a b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:21px;
-               color:var(--cyan); flex:none; }
+               color:var(--jade); flex:none; }
   .where a em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
                 font-size:16px; display:block; }
   .where a i { font-style:normal; font-size:13px; color:var(--faint); }
+
+  /* 畫 The paintings, shown as themselves. Every name here is scoped to #paint,
+     because .cell, .strip and .pair are exactly the names a second screen would want,
+     and a class shared between two screens has cost this repository a session twice. */
+  #paint .strip { display:grid; gap:10px; margin:12px 0 20px;
+                  grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); }
+  #paint .strip.wide { grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); }
+  #paint .strip.tall { grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); }
+  #paint .cell { display:block; text-align:center; min-width:0; }
+  #paint .cell .pic { display:block; width:100%; aspect-ratio:1/1; object-fit:cover;
+                      border-radius:8px; border:1px solid var(--line);
+                      background:var(--panel2); }
+  #paint .strip.wide .cell .pic { aspect-ratio:16/9; }
+  #paint .strip.tall .cell .pic { aspect-ratio:3/4; }
+  #paint .strip.alpha .cell .pic { object-fit:contain; }
+  #paint .cell .gap { opacity:.35; }
+  #paint .cell b { display:block; font-size:13px; margin-top:6px; line-height:1.2; }
+  #paint .cell i { display:block; font-style:normal; font-size:11px; line-height:1.3;
+                   color:var(--faint); }
+  #paint .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px;
+                 max-width:400px; margin:14px 0 20px; }
+  #paint .pair span { display:block; text-align:center; min-width:0; }
+  #paint .pair img { display:block; width:100%; aspect-ratio:1/1; object-fit:contain; }
+  #paint .pair .round img { border-radius:50%; background:var(--panel2);
+                            border:1px solid var(--line); object-fit:cover; }
+  #paint .pair em { display:block; font-style:normal; font-size:12.5px; margin-top:8px; }
+  #paint .pair i { display:block; font-style:normal; font-size:11.5px; color:var(--faint); }
 
   
   /* 圖外 A drawing that lives in a file beside this page.
@@ -607,6 +639,7 @@
       <a href="#resumo"><b>簡</b> Em português</a>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
+      <a href="#paint"><b>畫</b> The paintings</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -949,6 +982,609 @@
 </div>
   </section>
 
+  <section class="sec" id="paint">
+    <h2><span class="h">畫</span> The paintings</h2>
+    <p class="t">Every creature in the game was a silhouette inside a ring: one shape in
+      one colour out of a public icon set, on a blue-black ground. It read, and it read as
+      a placeholder. The first painting was dropped straight into that ring and Bruno said
+      exactly what it looked like: <i>"as imagens estão horríveis .. como podemos melhorar
+      isto, está um badge ampliado e mal cortado circular .. péssimo."</i> He was looking
+      at a square painting blown up inside a circle with the corners of the paper still in
+      it, which is the worst of both.</p>
+    <p class="t">This section is how the art is made now, and it is written down because
+      none of it is a one-off. 657 things in this game are drawn as a thing.
+      134 of them are painted. The rest arrive one sheet at a time, and the
+      game is playable at every point in between.</p>
+
+    <h3>色 The palette came first</h3>
+    <p class="t">The old ground was <code>#04121A</code> with cyan and magenta on it, which
+      is a science fiction palette wearing Chinese characters. Bruno, seeing it beside the
+      first paintings: <i>"demasiado neon."</i> Everything is now eight colours that exist
+      as ground minerals: ink, paper, jade, celadon, old bronze, gold leaf, cinnabar and
+      imperial violet. The nine realms walk that ramp in order. Green is the first
+      breath and the body, gold is the core, red is the furnace and the tribulation, and
+      violet is what is left after all of it. This page was repainted with them, because a
+      living document that shows the game in colours the game does not have is the one
+      thing it must not be.</p>
+
+    <h3>張 One sheet at a time</h3>
+    <p class="t">Bruno paints these with the free credits of an image model, which is a
+      few pictures a day: <i>"não consigo gerar tantas imagens com os créditos gratuitos
+      do gpt. consegues dar-me um prompt por batches e depois recortar as imagens e fazer
+      a tua magia?"</i> So nothing is ever asked for one picture at a time. A sheet is one
+      prompt that comes back as one image: a ruled grid with nine or twelve paintings
+      inside it, all in the same hand, the same ink and the same light.
+      <code>npm run sheets</code> writes the prompts out of the game's own tables, so a
+      creature that is renamed is renamed in its prompt and a creature that is added gets
+      a panel. Fourteen sheets cover everything painted so far.</p>
+    <table>
+      <tr><th>sheet</th><th style="text-align:right">grid</th>
+          <th style="text-align:right">panels</th><th style="text-align:right">in</th></tr>
+      <tr>
+    <td><b class="cjk">獸王</b> <i>The nine wardens</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">女修</b> <i>The cultivator, a woman</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">男修</b> <i>The cultivator, a man</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">緣</b> <i>The ten encounters</i></td>
+    <td class="n">4×3</td>
+    <td class="n">10</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">境外</b> <i>The nine Dragons of the heavens</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">天</b> <i>The nine heavens, as places</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">訣</b> <i>The nine arts</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">悟甲</b> <i>Awakening cards, the first twelve</i></td>
+    <td class="n">4×3</td>
+    <td class="n">12</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">悟乙</b> <i>Awakening cards, the last twelve</i></td>
+    <td class="n">4×3</td>
+    <td class="n">12</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">雜</b> <i>Herbs, pills and the rooms of the vault</i></td>
+    <td class="n">4×3</td>
+    <td class="n">10</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">獸甲</b> <i>The commons of the first three realms</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">獸乙</b> <i>The commons of the middle three realms</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">獸丙</b> <i>The commons of the last three realms</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">境</b> <i>The nine realms</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr>
+    </table>
+
+    <h3>剪 The cut</h3>
+    <p class="t">One file arrives and the game needs 134
+      of them, so <code>npm run slice</code> cuts the sheet up. The whole difficulty is
+      finding the rules, and it took three tries. The first cutter looked for the flattest
+      rows of pixels and settled on bare paper eight pixels off the line. The second looked
+      for the darkest rows, and a dark creature leaning on the edge of its panel is darker
+      than a pencil line. A rule is not the darkest thing on a page. It is the
+      <b>thinnest</b>: a row much darker than the paper three to twenty pixels either side
+      of it, and nothing else on a painted sheet is thin in that way. The third cutter
+      measures that contrast, hunts a third of a cell around where each rule ought to be,
+      and falls back to the nominal line when it finds nothing convincing. It has not been
+      wrong on a sheet since.</p>
+    <p class="t">A panel is then cut for the shape the screen wants. 牌 the plate keeps its
+      paper and is masked into a disc, because at 46 pixels a pale disc with a painting on
+      it reads as a page out of a bestiary. 鬥 the arena wears the same creature with the
+      paper keyed off it and the edge softened, because at full size that same disc is a
+      sticker. That is the picture Bruno was complaining about, and both halves of the
+      answer are one painting:</p>
+    <div class="pair">
+      <span class="round"><img src="bible-art/art/beast/tiger.webp" alt="The plate of the White Tiger">
+        <em>牌 the plate</em><i>46px, on the hunt list. Keeps its paper.</i></span>
+      <span><img src="bible-art/art/cut/tiger.webp" alt="The cut-out of the White Tiger">
+        <em>剪 the cut-out</em><i>Full size, in the arena. The paper is keyed off.</i></span>
+    </div>
+    <p class="t">Keying the paper off is the one step that cannot be done by darkness
+      either. Pale creatures came out full of holes: the inside of a white tiger is as
+      pale as the page it is on. A transparent region fully enclosed by the creature is
+      flooded back in. The cultivator cannot be keyed at all: skin painted in ink
+      <em>is</em> paper. Those are vignetted instead, which keeps the page and loses the
+      edge of it.</p>
+
+    <h3>修 Who the cultivator is</h3>
+    <p class="t">The first 修 sheet aged one man from a villager to a ghost, and Bruno
+      stopped it there. What he said: <i>"não acho certo o cultivador ficar velho apenas
+      porque sim e ser apenas male, tem que existir alguma lógica ou escolha."</i> Both
+      halves of that are
+      right. There are two figures, the game never picks for you, and nobody ages: it is
+      the same person in all nine, and what changes is their standing and how solidly they
+      are there. By the ninth they are barely painted at all. Until the question is asked
+      the screen draws 影 the figure it always drew, which is a shape and nobody in
+      particular, and the answer is a painting and a name. Nothing about the numbers reads
+      it.</p>
+    <div class="strip alpha">
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-1.webp" alt="A woman at Qi Refining" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">練氣</b>
+    <i>Qi Refining</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-2.webp" alt="A woman at Foundation" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">築基</b>
+    <i>Foundation</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-3.webp" alt="A woman at Golden Core" loading="lazy">
+    <b class="cjk" style="color:#B2A566">金丹</b>
+    <i>Golden Core</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-4.webp" alt="A woman at Nascent Soul" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">元嬰</b>
+    <i>Nascent Soul</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-5.webp" alt="A woman at Spirit Severing" loading="lazy">
+    <b class="cjk" style="color:#DFA555">化神</b>
+    <i>Spirit Severing</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-6.webp" alt="A woman at Void Refining" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">煉虛</b>
+    <i>Void Refining</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-7.webp" alt="A woman at Unity" loading="lazy">
+    <b class="cjk" style="color:#CB5347">合體</b>
+    <i>Unity</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-8.webp" alt="A woman at Great Vehicle" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">大乘</b>
+    <i>Great Vehicle</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/woman-9.webp" alt="A woman at Tribulation" loading="lazy">
+    <b class="cjk" style="color:#A077B8">渡劫</b>
+    <i>Tribulation</i></span></div>
+    <div class="strip alpha">
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-1.webp" alt="A man at Qi Refining" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">練氣</b>
+    <i>Qi Refining</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-2.webp" alt="A man at Foundation" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">築基</b>
+    <i>Foundation</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-3.webp" alt="A man at Golden Core" loading="lazy">
+    <b class="cjk" style="color:#B2A566">金丹</b>
+    <i>Golden Core</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-4.webp" alt="A man at Nascent Soul" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">元嬰</b>
+    <i>Nascent Soul</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-5.webp" alt="A man at Spirit Severing" loading="lazy">
+    <b class="cjk" style="color:#DFA555">化神</b>
+    <i>Spirit Severing</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-6.webp" alt="A man at Void Refining" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">煉虛</b>
+    <i>Void Refining</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-7.webp" alt="A man at Unity" loading="lazy">
+    <b class="cjk" style="color:#CB5347">合體</b>
+    <i>Unity</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-8.webp" alt="A man at Great Vehicle" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">大乘</b>
+    <i>Great Vehicle</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/self/man-9.webp" alt="A man at Tribulation" loading="lazy">
+    <b class="cjk" style="color:#A077B8">渡劫</b>
+    <i>Tribulation</i></span></div>
+    <p class="t">The aura is still the game's, drawn live and read off the save: rings,
+      motes, spokes and halos that no painting can carry, because they change while you
+      watch them. What did change is that a painted figure gets <b>half</b> the aura, and
+      the halo behind the head turns once every two minutes. At full strength the seventh
+      realm drowned the painting it was meant to be lighting.</p>
+
+    <h3>境 The nine realms</h3>
+    <p class="t">A landscape each, seen from a great height, the mountains across the
+      middle and the bottom of the panel almost empty, because the bottom of the panel is
+      where the fight happens. Each one is painted in its realm's own pigment.</p>
+    <div class="strip wide">
+  <span class="cell"><img class="pic" src="bible-art/art/realm/1.webp" alt="Qi Refining" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">練氣</b>
+    <i>Qi Refining · jade</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/2.webp" alt="Foundation" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">築基</b>
+    <i>Foundation · celadon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/3.webp" alt="Golden Core" loading="lazy">
+    <b class="cjk" style="color:#B2A566">金丹</b>
+    <i>Golden Core · old bronze</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/4.webp" alt="Nascent Soul" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">元嬰</b>
+    <i>Nascent Soul · gold leaf</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/5.webp" alt="Spirit Severing" loading="lazy">
+    <b class="cjk" style="color:#DFA555">化神</b>
+    <i>Spirit Severing · amber</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/6.webp" alt="Void Refining" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">煉虛</b>
+    <i>Void Refining · copper</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/7.webp" alt="Unity" loading="lazy">
+    <b class="cjk" style="color:#CB5347">合體</b>
+    <i>Unity · cinnabar</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/8.webp" alt="Great Vehicle" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">大乘</b>
+    <i>Great Vehicle · plum</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/realm/9.webp" alt="Tribulation" loading="lazy">
+    <b class="cjk" style="color:#A077B8">渡劫</b>
+    <i>Tribulation · imperial violet</i></span></div>
+
+    <h3>狩 The bestiary</h3>
+    <p class="t">36 of them, three commons and one warden to a realm, all
+      painted. They are the hunt list, the bestiary, the tower floors and the arena.</p>
+    <div class="strip">
+  <span class="cell"><img class="pic" src="bible-art/art/beast/rat.webp" alt="Mountain Rat" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">山鼠</b>
+    <i>Mountain Rat</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/hound.webp" alt="Wild Hound" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">野犬</b>
+    <i>Wild Hound</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/frog.webp" alt="Marsh Frog" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">澤蛙</b>
+    <i>Marsh Frog</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/fox.webp" alt="Spirit Fox" loading="lazy">
+    <b class="cjk" style="color:#6E9C84">妖狐</b>
+    <i>Spirit Fox · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/serpent.webp" alt="Green Serpent" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">青蛇</b>
+    <i>Green Serpent</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/mantis.webp" alt="Praying Mantis" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">螳螂</b>
+    <i>Praying Mantis</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/bat.webp" alt="Blood Bat" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">血蝠</b>
+    <i>Blood Bat</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/ape.webp" alt="Stone Ape" loading="lazy">
+    <b class="cjk" style="color:#86AE8C">石猿</b>
+    <i>Stone Ape · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/beetle.webp" alt="Iron Beetle" loading="lazy">
+    <b class="cjk" style="color:#B2A566">鐵甲</b>
+    <i>Iron Beetle</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/owl.webp" alt="Night Owl" loading="lazy">
+    <b class="cjk" style="color:#B2A566">夜梟</b>
+    <i>Night Owl</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/raven.webp" alt="Blood Raven" loading="lazy">
+    <b class="cjk" style="color:#B2A566">血鴉</b>
+    <i>Blood Raven</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/crane.webp" alt="Immortal Crane" loading="lazy">
+    <b class="cjk" style="color:#B2A566">仙鶴</b>
+    <i>Immortal Crane · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/boar.webp" alt="Ironroot Boar" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">鐵根彘</b>
+    <i>Ironroot Boar</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/wolf.webp" alt="Grey Wolf" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">灰狼</b>
+    <i>Grey Wolf</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/vulture.webp" alt="Ridge Vulture" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">山鷲</b>
+    <i>Ridge Vulture</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/tiger.webp" alt="Thunder Tiger" loading="lazy">
+    <b class="cjk" style="color:#D2B35B">雷虎</b>
+    <i>Thunder Tiger · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/crab.webp" alt="Giant Crab" loading="lazy">
+    <b class="cjk" style="color:#DFA555">巨蟹</b>
+    <i>Giant Crab</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/jellyfish.webp" alt="Jellyfish" loading="lazy">
+    <b class="cjk" style="color:#DFA555">水母</b>
+    <i>Jellyfish</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/lizard.webp" alt="Rock Lizard" loading="lazy">
+    <b class="cjk" style="color:#DFA555">岩蜥</b>
+    <i>Rock Lizard</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/turtle.webp" alt="Black Turtle" loading="lazy">
+    <b class="cjk" style="color:#DFA555">玄武</b>
+    <i>Black Turtle · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/centipede.webp" alt="Iron Centipede" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">蜈蚣</b>
+    <i>Iron Centipede</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/scorpion.webp" alt="Venom Scorpion" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">毒蠍</b>
+    <i>Venom Scorpion</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/worm.webp" alt="Corpse Worm" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">屍蟲</b>
+    <i>Corpse Worm</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/golem.webp" alt="Stone Puppet" loading="lazy">
+    <b class="cjk" style="color:#D07C4A">石傀</b>
+    <i>Stone Puppet · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/ogre.webp" alt="Demon Ogre" loading="lazy">
+    <b class="cjk" style="color:#CB5347">魔猿</b>
+    <i>Demon Ogre</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/goblin.webp" alt="Ghost Face" loading="lazy">
+    <b class="cjk" style="color:#CB5347">鬼面</b>
+    <i>Ghost Face</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/wraith.webp" alt="Yin Wraith" loading="lazy">
+    <b class="cjk" style="color:#CB5347">陰魂</b>
+    <i>Yin Wraith</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/direwolf.webp" alt="Demon Wolf" loading="lazy">
+    <b class="cjk" style="color:#CB5347">魔狼</b>
+    <i>Demon Wolf · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/skeleton.webp" alt="Bone General" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">骨將</b>
+    <i>Bone General</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/gargoyle.webp" alt="Gargoyle" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">石鬼</b>
+    <i>Gargoyle</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/minotaur.webp" alt="Bull Demon" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">牛魔</b>
+    <i>Bull Demon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/jiao.webp" alt="Serpent Dragon" loading="lazy">
+    <b class="cjk" style="color:#BE5B72">蛟</b>
+    <i>Serpent Dragon · warden</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/harpy.webp" alt="Harpy" loading="lazy">
+    <b class="cjk" style="color:#A077B8">羽妖</b>
+    <i>Harpy</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/unicorn.webp" alt="Unicorn" loading="lazy">
+    <b class="cjk" style="color:#A077B8">獨角</b>
+    <i>Unicorn</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/squid.webp" alt="Colossal Squid" loading="lazy">
+    <b class="cjk" style="color:#A077B8">巨章</b>
+    <i>Colossal Squid</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/dragon.webp" alt="Dragon" loading="lazy">
+    <b class="cjk" style="color:#A077B8">龍</b>
+    <i>Dragon · warden</i></span></div>
+
+    <h3>境外 The skies and their Dragons</h3>
+    <p class="t">Above the ninth realm there is no ground, so the backdrop is sky: cloud
+      and starfield with nothing to stand on, walking out of violet through gold to bone.
+      It is the one backdrop that moves, ninety seconds for a pass, slower than anybody
+      will notice. Each heaven has its own Dragon, and giving them paintings is what
+      stopped nine crossings looking like one animal fought nine times.</p>
+    <div class="strip wide">
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/1.webp" alt="True Immortal" loading="lazy">
+    <b class="cjk" style="color:#A077B8">真仙</b>
+    <i>True Immortal</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/2.webp" alt="Golden Immortal" loading="lazy">
+    <b class="cjk" style="color:#AE83AD">金仙</b>
+    <i>Golden Immortal</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/3.webp" alt="Supreme Unity" loading="lazy">
+    <b class="cjk" style="color:#BA909F">太乙</b>
+    <i>Supreme Unity</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/4.webp" alt="Grand Veil" loading="lazy">
+    <b class="cjk" style="color:#C59D8C">大羅</b>
+    <i>Grand Veil</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/5.webp" alt="Quasi-Sage" loading="lazy">
+    <b class="cjk" style="color:#CEAA77">准聖</b>
+    <i>Quasi-Sage</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/6.webp" alt="Sage" loading="lazy">
+    <b class="cjk" style="color:#D4AF56">聖人</b>
+    <i>Sage</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/7.webp" alt="Dao Ancestor" loading="lazy">
+    <b class="cjk" style="color:#DEC282">道祖</b>
+    <i>Dao Ancestor</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/8.webp" alt="Primordial Unity" loading="lazy">
+    <b class="cjk" style="color:#E9D8B4">混元</b>
+    <i>Primordial Unity</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/heaven/9.webp" alt="The Uncarved" loading="lazy">
+    <b class="cjk" style="color:#F5F0E4">鴻蒙</b>
+    <i>The Uncarved</i></span></div>
+    <div class="strip">
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-1.webp" alt="Azure Dragon" loading="lazy">
+    <b class="cjk" style="color:#A077B8">蒼龍</b>
+    <i>Azure Dragon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-2.webp" alt="Golden Dragon" loading="lazy">
+    <b class="cjk" style="color:#AE83AD">金龍</b>
+    <i>Golden Dragon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-3.webp" alt="Nine-Headed Hydra" loading="lazy">
+    <b class="cjk" style="color:#BA909F">九嬰</b>
+    <i>Nine-Headed Hydra</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-4.webp" alt="Twin Dragons" loading="lazy">
+    <b class="cjk" style="color:#C59D8C">雙龍</b>
+    <i>Twin Dragons</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-5.webp" alt="Winged Dragon" loading="lazy">
+    <b class="cjk" style="color:#CEAA77">應龍</b>
+    <i>Winged Dragon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-6.webp" alt="Torch Dragon" loading="lazy">
+    <b class="cjk" style="color:#D4AF56">燭龍</b>
+    <i>Torch Dragon</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-7.webp" alt="Star Lord" loading="lazy">
+    <b class="cjk" style="color:#DEC282">星君</b>
+    <i>Star Lord</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-8.webp" alt="Chaos" loading="lazy">
+    <b class="cjk" style="color:#E9D8B4">混沌</b>
+    <i>Chaos</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/beast/heaven-9.webp" alt="The Uncarved" loading="lazy">
+    <b class="cjk" style="color:#F5F0E4">鴻蒙</b>
+    <i>The Uncarved</i></span></div>
+
+    <h3>緣 The encounters</h3>
+    <p class="t">These keep their paper on purpose. An encounter is a page out of a
+      traveller's notebook and it is shown as one, in a band across the top of the card
+      that stops the game.</p>
+    <div class="strip tall">
+  <span class="cell"><img class="pic" src="bible-art/art/meet/oldman.webp" alt="An old man on the mountain road" loading="lazy">
+    <b class="cjk">老者</b>
+    <i>An old man on the mountain road</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/brokensword.webp" alt="A broken sword in the road" loading="lazy">
+    <b class="cjk">斷劍</b>
+    <i>A broken sword in the road</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/beggar.webp" alt="A child begging at a shrine" loading="lazy">
+    <b class="cjk">乞兒</b>
+    <i>A child begging at a shrine</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/merchant.webp" alt="A merchant with a covered cart" loading="lazy">
+    <b class="cjk">行商</b>
+    <i>A merchant with a covered cart</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/drunk.webp" alt="A drunk cultivator under a tree" loading="lazy">
+    <b class="cjk">醉道</b>
+    <i>A drunk cultivator under a tree</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/crow.webp" alt="A crow that will not leave" loading="lazy">
+    <b class="cjk">老鴉</b>
+    <i>A crow that will not leave</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/stele.webp" alt="A broken stele" loading="lazy">
+    <b class="cjk">殘碑</b>
+    <i>A broken stele</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/furnace.webp" alt="An abandoned furnace" loading="lazy">
+    <b class="cjk">棄爐</b>
+    <i>An abandoned furnace</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/swordsman.webp" alt="A swordsman who wants a bout" loading="lazy">
+    <b class="cjk">劍客</b>
+    <i>A swordsman who wants a bout</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/meet/pool.webp" alt="A pool with nothing living in it" loading="lazy">
+    <b class="cjk">靈池</b>
+    <i>A pool with nothing living in it</i></span></div>
+
+    <h3>符 The emblems</h3>
+    <p class="t">Everything the game draws as a symbol in a row: an art, an awakening card,
+      a herb, a line of pills, a room of the vault. 43 of them are
+      painted. They are shown at twenty to thirty pixels, so each is one object on bare
+      paper in as few strokes as it takes, rather than a scene nobody can see. They are
+      also the one family whose keys collide: 狼噬 Wolf Bite is an art and 貪狼 Greedy Wolf
+      is a card, both are keyed <code>wolf</code>, and every key carries its family in
+      front of it for that reason. Nine arts and four others:</p>
+    <div class="strip alpha">
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-fox.webp" alt="Fox Shadow" loading="lazy">
+    <b class="cjk">狐影</b>
+    <i>Fox Shadow</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-ape.webp" alt="Ape Arm" loading="lazy">
+    <b class="cjk">猿臂</b>
+    <i>Ape Arm</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-tiger.webp" alt="Tiger Roar" loading="lazy">
+    <b class="cjk">虎嘯</b>
+    <i>Tiger Roar</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-crane.webp" alt="Crane Cry" loading="lazy">
+    <b class="cjk">鶴唳</b>
+    <i>Crane Cry</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-wolf.webp" alt="Wolf Bite" loading="lazy">
+    <b class="cjk">狼噬</b>
+    <i>Wolf Bite</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-turtle.webp" alt="Turtle Breath" loading="lazy">
+    <b class="cjk">龜息</b>
+    <i>Turtle Breath</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-serpent.webp" alt="Serpent Rise" loading="lazy">
+    <b class="cjk">蛟騰</b>
+    <i>Serpent Rise</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-dragon.webp" alt="Dragon Might" loading="lazy">
+    <b class="cjk">龍威</b>
+    <i>Dragon Might</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/art-puppet.webp" alt="Puppet Thread" loading="lazy">
+    <b class="cjk">傀儡</b>
+    <i>Puppet Thread</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/herb-orchid.webp" alt="Moonlight Orchid" loading="lazy">
+    <b class="cjk">月華蘭</b>
+    <i>Moonlight Orchid</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/pill-fortune.webp" alt="Treasure Gathering" loading="lazy">
+    <b class="cjk">聚寶</b>
+    <i>Treasure Gathering</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/room-shrine.webp" alt="A shrine, long cold" loading="lazy">
+    <b class="cjk">龕</b>
+    <i>A shrine, long cold</i></span>
+  <span class="cell"><img class="pic" src="bible-art/art/emblem/card-taotie.webp" alt="Taotie" loading="lazy">
+    <b class="cjk">饕餮</b>
+    <i>Taotie</i></span></div>
+
+    <h3>動 What moves</h3>
+    <p class="t">Bruno: <i>"tenta adicionar algumas animações e auras, brilhos etc ..
+      conforme aplicável para dar enfase."</i> Four of them, and every one obeys the rule
+      the palette obeys: <b>nothing emits light</b>. A glow is a lamp or the moon.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">滲</b> <em>Ink meeting paper</em>
+        <i>A painting arrives by soaking in rather than sliding: half a second out of blur
+        and grey into itself. Used by every painting that appears on a card.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">雲</b> <em>The heavens drift</em>
+        <i>Ninety seconds for one pass, and only above the ninth realm. A realm's mountains
+        stay still, because mountains do.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">圓光</b> <em>The halo turns</em>
+        <i>One turn every two minutes. At that speed it is not an animation, it is the
+        difference between a portrait and a photograph of one.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">入</b> <em>The fight begins</em>
+        <i>She settles in from the left, the beast stalks in from the right a beat later so
+        the eye goes to it. Nothing moves on the way out, because a fight that is over is
+        over.</i></span></div>
+    </div>
+    <p class="t">All four stand down for <code>prefers-reduced-motion</code>. A game
+      somebody opens forty times a day is the wrong place to insist.</p>
+
+    <h3>缺 What is still a pictogram</h3>
+    <p class="t">Counted by <code>npm run artgaps</code>, which reads the game's own tables
+      rather than the folder, so a family that grows shows up here the day it grows.</p>
+    <table>
+      <tr><th>family</th><th style="text-align:right">painted</th><th>where it is, or what a sheet would be</th></tr>
+      <tr>
+    <td><b class="cjk">獸</b> <i>creatures</i></td>
+    <td class="n">36 of 36</td>
+    <td><i class="faint">狩 the hunt list, 錄 the bestiary, 塔 a tower floor, 鬥 the arena</i></td>
+  </tr><tr>
+    <td><b class="cjk">龍</b> <i>the heavens' Dragons</i></td>
+    <td class="n">9 of 9</td>
+    <td><i class="faint">鬥 the arena and 修 the card, above the ninth realm</i></td>
+  </tr><tr>
+    <td><b class="cjk">境</b> <i>realms</i></td>
+    <td class="n">9 of 9</td>
+    <td><i class="faint">境 the realm card, and behind 鬥 the arena</i></td>
+  </tr><tr>
+    <td><b class="cjk">修</b> <i>the cultivator</i></td>
+    <td class="n">18 of 18</td>
+    <td><i class="faint">every screen with a portrait on it</i></td>
+  </tr><tr>
+    <td><b class="cjk">緣</b> <i>encounters</i></td>
+    <td class="n">10 of 10</td>
+    <td><i class="faint">修 the card that stops the game</i></td>
+  </tr><tr>
+    <td><b class="cjk">境外</b> <i>heaven backdrops</i></td>
+    <td class="n">9 of 9</td>
+    <td><i class="faint">鬥 behind a fight above the ninth realm</i></td>
+  </tr><tr>
+    <td><b class="cjk">悟道</b> <i>awakening cards</i></td>
+    <td class="n">24 of 24</td>
+    <td><i class="faint">悟甲 and 悟乙, two sheets of twelve</i></td>
+  </tr><tr>
+    <td><b class="cjk">訣</b> <i>arts</i></td>
+    <td class="n">9 of 9</td>
+    <td><i class="faint">訣, one sheet of nine</i></td>
+  </tr><tr>
+    <td><b class="cjk">勢</b> <i>stances</i></td>
+    <td class="n">0 of 9</td>
+    <td><i class="faint">none: a stance is not drawn as a symbol, it is a character and a name</i></td>
+  </tr><tr>
+    <td><b class="cjk">器</b> <i>gear templates</i></td>
+    <td class="n">0 of 486</td>
+    <td><i class="faint">drawn by the game from the template and the rarity, and it already reads</i></td>
+  </tr><tr>
+    <td><b class="cjk">草</b> <i>herbs</i></td>
+    <td class="n">3 of 3</td>
+    <td><i class="faint">雜, shared with the pills and the rooms</i></td>
+  </tr><tr>
+    <td><b class="cjk">丹</b> <i>pill lines</i></td>
+    <td class="n">3 of 3</td>
+    <td><i class="faint">雜, shared with the herbs and the rooms</i></td>
+  </tr><tr>
+    <td><b class="cjk">秘境</b> <i>secret realm rooms</i></td>
+    <td class="n">4 of 4</td>
+    <td><i class="faint">雜, shared with the herbs and the pills</i></td>
+  </tr><tr>
+    <td><b class="cjk">道</b> <i>technique nodes</i></td>
+    <td class="n">0 of 28</td>
+    <td><i class="faint">none: they are dots on a tree at 30px and a painting would not survive it</i></td>
+  </tr>
+    </table>
+    <p class="t"><b>A missing picture is not a hole.</b> Everything paintable falls back to
+      印 the seal, which is the frame and the icon the game already ships, and the painting
+      takes the same box when it lands. So the art can arrive one file at a time over
+      months and the game is never half drawn: it is drawn one way until it is drawn a
+      better one. <code>npm run pictures</code> reads the folder and writes the list, so a
+      painting dropped in is in the game on the next build, and a painting nobody made
+      costs nothing at all.</p>
+  </section>
+
   <section class="sec" id="proposals">
     <h2><span class="h">提</span> Four systems that are not in the game</h2>
     <p class="t">Bruno, after a morning of the early game getting faster:</p>
@@ -987,7 +1623,7 @@
         <i>Dragonblood Grass</i>
         <span class="when">Ripe. Take it.</span>
       </div>
-      <div class="bed" style="--c:var(--cyan)">
+      <div class="bed" style="--c:var(--jade)">
         <span class="ring"><i style="--a:223deg"></i>
           <em><i class="pl" style="width:30px;height:30px;--pl:url(bible-art/acsga6e.svg)" aria-hidden="true"></i></em></span>
         <b class="cjk">月華蘭</b>
@@ -1530,161 +2166,161 @@
 
   <section class="sec" id="board">
     <h2><span class="h">狀</span> Where we are</h2>
-    <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--cyan)">成</b>
+    <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--jade)">成</b>
       closed means built, measured by a test, and written up below.
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
     <p class="t"><b>50 closed, 0 open, 1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
-    <div class="board"><div class="srow" style="--hue:var(--cyan)">
+    <div class="board"><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">階</b> <em><a href="#ladder">The ladder</a></em><i>Eighty-one rungs, each dearer than the last. 90 days to the top, measured against a cultivator who spends.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">上限</b> <em><a href="#cap">The realm cap</a></em><i>6 levels of each upgrade per realm. It is what stops the qi rate running away.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">氣</b> <em><a href="#qi">Qi and the four upgrades</a></em><i>Gathering, and the four things it buys. Every price rides the ladder.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">境</b> <em><a href="#realms">The nine realms</a></em><i>Nine names, nine colours, nine auras, and a breakthrough between each.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">狩</b> <em><a href="#beasts">Hunting and the bestiary</a></em><i>36 beasts, three commons and one warden to a realm. Free to fight, free to lose.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">戰</b> <em><a href="#combat">Combat</a></em><i>Settled in one go, played back two beats to a round. The odds are simulated, not curved.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">勢</b> <em><a href="#build">Stances and arts</a></em><i>Nine stances, nine arts, 3 slots in the sequence. The order matters.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">器</b> <em><a href="#gear">Gear and the nine sets</a></em><i>486 pieces, 5 ranks, 7 axes, and a named lineage for every realm.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">煉器</b> <em><a href="#refine">Refining</a></em><i>Material makes a worn piece better, for ever, with no top level. It is the only thing 材 could not buy before, and 材 was eight times over-supplied.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">道</b> <em><a href="#tree">The technique tree</a></em><i>One merged tree of 28 nodes costing 70 道 against about 44 a run. Nobody finishes it.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">開</b> <em><a href="#opens">What each realm opens</a></em><i>Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 61 days later.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 29 days of the climb.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">爐</b> <em><a href="#furnace">The Furnace</a></em><i>27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">碑</b> <em><a href="#stele">The stele</a></em><i>32 deeds across 7 tracks, every one of them derived from the save and worth nothing. A record, not a currency.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">劫</b> <em><a href="#top">The tribulation</a></em><i>A pool that refills in 2 days, a Dragon that grows 1.89x a crossing, and a mark worth 1.73x.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">存</b> <em><a href="#save">The save</a></em><i>One browser key, a spare copy, an export you can paste anywhere, and a validator that treats a save as input.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">包</b> <em><a href="#where">Page and APK</a></em><i>One codebase, published to GitHub Pages, wrapped once in an APK that never needs installing again.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">錄</b> <em><a href="#record">The record</a></em><i>Three marks on every beast at 1, 10, 100 kills. It is what makes a beast below your realm worth killing at all.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">示</b> <em><a href="#record">Telling a stuck player why</a></em><i>One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">音</b> <em>Sound</em><i>3 volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">新</b> <em><a href="#refine">Teaching each system</a></em><i>7 cards that arrive once, when the thing they explain first becomes true, and never block the game.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">引</b> <em><a href="#opens">The first session</a></em><i>5 numbered steps on 修, each finished by doing the thing and not by reading it. Nothing about it is stored, so it ends by itself and cannot come back.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">釋</b> <em><a href="#rules">The key to every character</a></em><i>One tap from every screen, read out of the same tables the game reads. No character is ever the only place a thing is named.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">圖鑑</b> <em><a href="#record">Finishing a realm of the bestiary</a></em><i>A realm whose four beasts are all 熟 Known pays 1 道, from the sixth realm. The one thing hunting never asked for: going back.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">梯</b> <em><a href="#mockups">Seeing the climb</a></em><i>Nine realms and nine rungs drawn as one object under the bar, with the warden lit at the end of them. "layer 3 of 9" and "realm 1 of 9" were two numbers at opposite ends of a screen and nothing ever said one was inside the other.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">指</b> <em><a href="#mockups">The pointing finger</a></em><i>The guide draws a ring and an arrow on the real button. The overlay takes no taps, so the ring is over the button and the button still works.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">時</b> <em><a href="#mockups">A step you cannot do yet</a></em><i>A step that is not possible yet is the *next* step, not the instruction: a quieter card, a bar showing how close, and something to do in the meantime.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">境</b> <em><a href="#mockups">What a realm is</a></em><i>A page reached from the realm's own name: what a realm is, what stands at the end of this one, what it opened, and what the next one is worth.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">見</b> <em><a href="#beasts">The first sight of a beast</a></em><i>Half a rung of qi the first time each beast falls, divided by the realm after that. 36 beasts, 36 payments in a lifetime, so it cannot be farmed and it is not a rate.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">圍</b> <em><a href="#mockups">The drive</a></em><i>10, 50, 200 kills in one tap on a beast you have 熟 Known, paid for in qi. The whole record goes from 3600 taps to 72.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">舊</b> <em><a href="#beasts">Old beasts worth going back for</a></em><i>A beast pays at least a quarter of what the weakest common of *your* realm pays. 山鼠 the rat went from 1 材 for ever to 109k at the ninth realm.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">鑑</b> <em><a href="#mockups">Reading a piece of gear</a></em><i>Tapping a piece opened nothing and wore it. It now opens a sheet: the rank named, every line, both sides of the trade, and the swing taken from the sim rather than from adding roll values up.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">誠</b> <em><a href="#combat">Honest odds</a></em><i>A fight that wins none of its sampled seeds says how far off it is rather than quoting the 2% floor. The first realm's three beasts read 2%, 2%, 2% and now read ×2.4, ×7.0, ×14.0.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">半</b> <em><a href="#mockups">Finding the tree</a></em><i>The 道 tab held a stance picker, nine sequence slots and an art pool before it held any tree, so the tree began fourteen hundred pixels below the fold. Two halves and a switch; the tree is the one that opens.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">點</b> <em><a href="#mockups">Points you have not spent</a></em><i>An unspent 道 point was money on the floor two taps and a scroll away. The count now rides the tab itself, so it is visible from every other screen in the game.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">收</b> <em><a href="#mockups">The corner, folded</a></em><i>Five bare characters floating over the corner became one button, and each arrives with its name in English when it opens.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">境外</b> <em><a href="#heavens">The heavens above the ninth realm</a></em><i>9 named heavens, one every 3 crossings, each with its own Dragon drawn and named and 6 more levels of 劍訣 and 妖丹 behind it. The endgame was forty crossings against one animal.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">拆</b> <em><a href="#salvage">Melting gear down</a></em><i>A full chest threw the worst piece on the floor and paid nothing for it. A piece now melts for a share of the first rung of **its own** realm, falling from 0.3 at the first to 0.04 at the ninth. One at a time, or everything at or below a rank in one tap.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">出</b> <em><a href="#clock">Beasts that walk out mid-realm</a></em><i>A realm's three commons arrive at layers 0, 4, 7 instead of all at the breakthrough. The eighth realm is 12 days long and used to hand over everything it had in the first minute of them.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">守</b> <em><a href="#idle">A warden that stays where it is put</a></em><i>It used to stand only while the bar was full, so buying the upgrades that beat it made it vanish and cost a whole rung of re-earning. It stands on the last rung now, for zero days off the climb.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">費</b> <em><a href="#idle">The warden is the ninth rung</a></em><i>Eight rungs of gathering fill a realm and the warden is the ninth: 突破 asks for nothing else, and the qi gathered on that last rung is no longer burned on the way out. Measured, it takes 3 to 16 days off the climb and the first realm goes from 48 hours to 24 for somebody who opens the app once a day.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">閒</b> <em><a href="#idle">Where a realm's qi goes</a></em><i>Measured rather than assumed: every realm lets you buy about 156% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls. The lightest cultivator stands at the first realm's ceiling for 50% of it.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 146, against a climb that used to run out on day 60.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">悟道</b> <em><a href="#awaken">A choice that makes you different</a></em><i>Three cards at every breakthrough and you keep one, 24 of them across eight choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">緣</b> <em><a href="#meet">Somebody on the road</a></em><i>10 meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is 9 道 against 70 for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">洞天</b> <em><a href="#cave">A place you own</a></em><i>3 beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. Every seed says what it ripens into and what that is an hour, so the one decision the beds exist for is made with the numbers visible.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">秘境</b> <em><a href="#secret">A run with an ending</a></em><i>7 rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.</i></span>
-  </div><div class="srow" style="--hue:var(--cyan)">
+  </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">氣查</b> <em><a href="#audit">The audit of the qi</a></em><i>npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.</i></span>
   </div><div class="srow" style="--hue:var(--faint)">
@@ -1979,67 +2615,67 @@
           <th style="text-align:right">open</th><th style="text-align:right">realm 9</th>
           <th style="text-align:right">力 at the end</th><th style="text-align:right">tower</th>
           <th style="text-align:right">fights</th></tr>
-      <tr style="--hue:var(--cyan)">
+      <tr style="--hue:var(--jade)">
     <td><b class="cjk">never fights</b><i style="display:block">Opens it once a day, buys what the qi affords, and never taps a beast.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--cyan)">day 128</td>
+    <td class="n" style="color:var(--jade)">day 128</td>
     <td class="n">39M</td>
     <td class="n">—</td>
     <td class="n">8</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">barely fights</b><i style="display:block">The same visit as the one above, and two beasts before putting it down.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--cyan)">day 99</td>
+    <td class="n" style="color:var(--jade)">day 99</td>
     <td class="n">57.3M</td>
     <td class="n">—</td>
     <td class="n">248</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
-    <td class="n" style="color:var(--cyan)">day 67</td>
+    <td class="n" style="color:var(--jade)">day 67</td>
     <td class="n">11.8B</td>
     <td class="n">109</td>
     <td class="n">933</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--cyan)">day 70</td>
+    <td class="n" style="color:var(--jade)">day 70</td>
     <td class="n">2.48B</td>
     <td class="n">—</td>
     <td class="n">758</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 45</td>
+    <td class="n" style="color:var(--jade)">day 45</td>
     <td class="n">21.4B</td>
     <td class="n">112</td>
     <td class="n">3,974</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
-    <td class="n" style="color:var(--cyan)">day 31</td>
+    <td class="n" style="color:var(--jade)">day 31</td>
     <td class="n">40.8B</td>
     <td class="n">115</td>
     <td class="n">12,379</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 46</td>
+    <td class="n" style="color:var(--jade)">day 46</td>
     <td class="n">22.1B</td>
     <td class="n">112</td>
     <td class="n">4,234</td>
-  </tr><tr style="--hue:var(--cyan)">
+  </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">walks 神</b><i style="display:block">The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--cyan)">day 45</td>
+    <td class="n" style="color:var(--jade)">day 45</td>
     <td class="n">6.28B</td>
     <td class="n">105</td>
     <td class="n">3,869</td>
@@ -3168,9 +3804,11 @@
 
   <section class="sec" id="realms">
     <h2><span class="h">境</span> The nine realms</h2>
-    <p class="t">Nine names out of cultivation fiction, nine colours walking from cyan to
-      magenta, and a drawing that gains something at every one. The warden of a realm bars
-      the breakthrough; beating it opens 突破, and pressing 突破 is what takes it.</p>
+    <p class="t">Nine names out of cultivation fiction, nine ground pigments walking from
+      jade through gold leaf and cinnabar to imperial violet, and a drawing that gains
+      something at every one. 畫 the paintings above show the landscape each one is. The
+      warden of a realm bars the breakthrough; beating it opens 突破, and pressing 突破 is
+      what takes it.</p>
     <div class="ladder">
   <div class="rung" style="--hue:#6E9C84">
     <span class="no">1</span>
@@ -3184,37 +3822,37 @@
   </div>
   <div class="rung" style="--hue:#B2A566">
     <span class="no">3</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1sa8p6f.svg" alt="Golden Core, realm 3"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1fuy5j3.svg" alt="Golden Core, realm 3"></span>
     <b class="cjk">金丹</b><i>Golden Core</i>
   </div>
   <div class="rung" style="--hue:#D2B35B">
     <span class="no">4</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aaur1tm.svg" alt="Nascent Soul, realm 4"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aznhs36.svg" alt="Nascent Soul, realm 4"></span>
     <b class="cjk">元嬰</b><i>Nascent Soul</i>
   </div>
   <div class="rung" style="--hue:#DFA555">
     <span class="no">5</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aqzb3tj.svg" alt="Spirit Severing, realm 5"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a170zfbz.svg" alt="Spirit Severing, realm 5"></span>
     <b class="cjk">化神</b><i>Spirit Severing</i>
   </div>
   <div class="rung" style="--hue:#D07C4A">
     <span class="no">6</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ayx3uyc.svg" alt="Void Refining, realm 6"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1mxgwvw.svg" alt="Void Refining, realm 6"></span>
     <b class="cjk">煉虛</b><i>Void Refining</i>
   </div>
   <div class="rung" style="--hue:#CB5347">
     <span class="no">7</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/az76gsw.svg" alt="Unity, realm 7"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ab3ydxz.svg" alt="Unity, realm 7"></span>
     <b class="cjk">合體</b><i>Unity</i>
   </div>
   <div class="rung" style="--hue:#BE5B72">
     <span class="no">8</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a3m4w5p.svg" alt="Great Vehicle, realm 8"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a13abuiy.svg" alt="Great Vehicle, realm 8"></span>
     <b class="cjk">大乘</b><i>Great Vehicle</i>
   </div>
   <div class="rung" style="--hue:#A077B8">
     <span class="no">9</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1cn8hds.svg" alt="Tribulation, realm 9"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aak1ino.svg" alt="Tribulation, realm 9"></span>
     <b class="cjk">渡劫</b><i>Tribulation</i>
   </div></div>
     <div class="cards three">
@@ -3518,7 +4156,7 @@
     <div class="stage">
       <span class="sc"><img class="pl" style="width:100%;height:100%" src="bible-art/a7i94ti.svg" alt="" aria-hidden="true"></span>
       <div class="duel">
-        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/a5qhe2h.svg" alt="Void Refining, realm 6"></span>
+        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/a1eofeep.svg" alt="Void Refining, realm 6"></span>
         <span class="mid cjk">對</span>
         <span class="foe"><i class="pl" style="width:64px;height:64px;--pl:url(bible-art/a1g87r9i.svg)" aria-hidden="true"></i></span>
       </div>
@@ -4244,25 +4882,25 @@
       deed is recomputed from numbers the save already carries and the validator already
       caps, so there is no flag to flip. A hand-edited save cannot claim a deed without
       claiming the whole run underneath it.</div>
-    <div class="card" style="--hue:var(--cyan)">
+    <div class="card" style="--hue:var(--jade)">
       <b class="cjk">階</b> <em>The climb</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">築基</b> <i>Foundation · Reach the second realm.</i></span><span><b style="color:var(--gold)">金丹</b> <i>Golden Core · Reach the third realm.</i></span><span><b style="color:var(--gold)">元嬰</b> <i>Nascent Soul · Reach the fourth realm.</i></span><span><b style="color:var(--gold)">化神</b> <i>Spirit Severing · Reach the fifth realm.</i></span><span><b style="color:var(--gold)">煉虛</b> <i>Void Refining · Reach the sixth realm.</i></span><span><b style="color:var(--gold)">合體</b> <i>Unity · Reach the seventh realm.</i></span><span><b style="color:var(--gold)">大乘</b> <i>Great Vehicle · Reach the eighth realm.</i></span><span><b style="color:var(--gold)">渡劫</b> <i>Tribulation · Reach the ninth realm.</i></span><span><b style="color:var(--gold)">階</b> <i>The whole mountain · Open every one of the eighty-one layers.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">狩</b> <em>The hunt</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">見</b> <i>Every beast seen · Kill one of every beast in the game, wardens included.</i></span><span><b style="color:var(--gold)">百獸</b> <i>A hundred beasts · A hundred kills.</i></span><span><b style="color:var(--gold)">萬獸</b> <i>Ten thousand beasts · Ten thousand kills. Nobody does this by accident.</i></span><span><b style="color:var(--gold)">通</b> <i>Mastery · Kill one beast 100 times for its 通 mark.</i></span><span><b style="color:var(--gold)">全通</b> <i>The finished record · Every 通 mark on every beast. The record closed.</i></span><span><b style="color:var(--gold)">妖</b> <i>Nine wardens · Put down the warden of every realm.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">塔</b> <em>The tower</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">登</b> <i>The first seal · Nine floors of 無盡塔, and the first 塔印 seal.</i></span><span><b style="color:var(--gold)">塔</b> <i>As high as the mountain · Floor eighty-one. The tower has now matched the whole climb.</i></span><span><b style="color:var(--gold)">越</b> <i>Past the mountain · Floor a hundred and fifty, where the realms ran out.</i></span><span><b style="color:var(--gold)">塔印</b> <i>Twenty seals · Twenty 塔印 seals, each one nine floors.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">爐</b> <em>The furnace</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">丹</b> <i>The first pill · Light the furnace.</i></span><span><b style="color:var(--gold)">百丹</b> <i>A hundred pills · A hundred pills brewed, on any of the three lines.</i></span><span><b style="color:var(--gold)">煉體</b> <i>Fifty temperings · Fifty 煉體 pills. The line the Dragon can feel.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">器</b> <em>The gear</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">天</b> <i>A Heaven piece · Wear a 天 piece, the rarest of the 5 ranks.</i></span><span><b style="color:var(--gold)">備</b> <i>Fully dressed · Something in all six slots at once.</i></span><span><b style="color:var(--gold)">相</b> <i>A whole lineage · Six pieces of one lineage, worn together.</i></span><span><b style="color:var(--gold)">煉器</b> <i>Ten refinings · Take one piece to 煉 10 and keep it.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">道</b> <em>The path</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">道</b> <i>Twenty points spent · Twenty 道 points into the tree.</i></span><span><b style="color:var(--gold)">捨</b> <i>A keystone taken · Take a keystone, and give up what it asks for.</i></span><span><b style="color:var(--gold)">三捨</b> <i>Every keystone · All three keystones at once, which costs more than it looks.</i></span></div>
-    </div><div class="card" style="--hue:var(--cyan)">
+    </div><div class="card" style="--hue:var(--jade)">
       <b class="cjk">劫</b> <em>The tribulation</em>
       <div class="lin" style="margin-top:8px"><span><b style="color:var(--gold)">雷印</b> <i>The first crossing · Fill 雷池 the pool, 2 days of your own gathering, and put the Dragon down.</i></span><span><b style="color:var(--gold)">十劫</b> <i>Ten marks · Ten crossings. The Dragon is ten times the one you first met, and worse.</i></span><span><b style="color:var(--gold)">四十劫</b> <i>Forty marks · Forty crossings, which is about four months of endgame.</i></span></div>
     </div>
@@ -4407,8 +5045,10 @@
   </section>
 
   <footer class="sec" style="color:var(--faint);font-size:13.5px">
-    <p>Generated from the game's own code by <code>npm run bible</code>. Icons from
-      game-icons.net under CC BY 3.0. When a system closes, move its row on the board and
-      write its section. That is the whole process.</p>
+    <p>Generated from the game's own code by <code>npm run bible</code>. The paintings
+      are the game's own files, copied in beside this page. The icons under them, which is
+      what every unpainted thing still wears, are from game-icons.net under CC BY 3.0.
+      When a system closes, move its row on the board and write its section. That is the
+      whole process.</p>
   </footer>
 </div>

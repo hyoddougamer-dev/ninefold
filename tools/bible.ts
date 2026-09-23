@@ -12,7 +12,7 @@
  *
  * Run with `npm run bible`.
  */
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
 import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
@@ -74,6 +74,10 @@ import { arenaScene } from '../src/art/scene.ts';
 import { gearTile } from '../src/art/gear.ts';
 import { chamber } from '../src/art/secret.ts';
 import { PLATE_CSS, liftArt, writePlates } from './lift.ts';
+import { PICTURES, pictureOf, type Painted } from '../src/data/pictures.ts';
+import { FIGURES, figureKey } from '../src/data/figures.ts';
+import { FAMILIES, paintedIn } from './artgaps.ts';
+import { SHEETS } from './sheets.ts';
 
 /**
  * 測 How many tests there are, counted rather than remembered.
@@ -496,7 +500,7 @@ const OPEN = SYSTEMS.filter((x) => x.status === 'open').length;
 const PLANNED = SYSTEMS.filter((x) => x.status === 'planned').length;
 
 const STATE = {
-  done: { han: '成', word: 'closed', tone: 'var(--cyan)' },
+  done: { han: '成', word: 'closed', tone: 'var(--jade)' },
   open: { han: '行', word: 'open', tone: 'var(--gold)' },
   planned: { han: '待', word: 'planned', tone: 'var(--faint)' },
 } as const;
@@ -536,7 +540,7 @@ const opensCards = OPENED.map((x) => `
 
 const habitRows = RUNS.map((r) => {
   const at9 = r.arrival[8];
-  const hue = at9 === undefined ? 'var(--magenta)' : 'var(--cyan)';
+  const hue = at9 === undefined ? 'var(--cinnabar)' : 'var(--jade)';
   return `<tr style="--hue:${hue}">
     <td><b class="cjk">${r.habit.name}</b><i style="display:block">${r.habit.who}</i></td>
     <td class="n">${r.habit.checks}x</td>
@@ -617,6 +621,89 @@ const beastNames = REALMS.map((r) => `
     <div class="lin">${[...commonsOf(r.n), wardenOf(r.n)].map((b) =>
       `<span><b style="color:${r.colour}">${b.han}</b> <i>${b.name}${b.warden ? ' · warden' : ''} · 力 ${num(beastPower(b))} · 材 ${num(loot(b))}</i></span>`).join('')}</div>
   </div>`).join('');
+
+/* ── 畫 The paintings ───────────────────────────────────────────────────── */
+
+/**
+ * 圖檔 One painting, pointed at where the bible keeps it.
+ *
+ * The game serves art/<kind>/<key>.webp out of its own public folder. The bible is one
+ * file and a folder beside it, so every painting it shows is copied into bible-art/art/
+ * at the end of this script, found by reading the finished page back rather than by a
+ * second list. A painting that leaves the page stops being published with it.
+ */
+function pic(kind: Painted, key: string, alt: string): string {
+  const src = pictureOf(kind, key);
+  return src
+    ? `<img class="pic" src="bible-art/${src}" alt="${alt}" loading="lazy">`
+    : `<span class="pic gap" aria-hidden="true"></span>`;
+}
+
+const paintCell = (img: string, han: string, name: string, hue?: string) => `
+  <span class="cell">${img}
+    <b class="cjk"${hue ? ` style="color:${hue}"` : ''}>${han}</b>
+    <i>${name}</i></span>`;
+
+const sheetCells = (key: string, kind: Painted, hue?: (i: number) => string) => {
+  const sheet = SHEETS.find((sh) => sh.key === key)!;
+  return sheet.cells.map((c, i) =>
+    paintCell(pic(kind, c.key, c.name), c.han, c.name, hue?.(i))).join('');
+};
+
+const figStrip = (who: string) => REALMS.map((r) => paintCell(
+  pic('self', figureKey(who, r.n), `${FIGURES.find((f) => f.key === who)!.name} at ${r.name}`),
+  r.han, r.name, r.colour)).join('');
+
+const realmPaint = REALMS.map((r) => paintCell(
+  pic('realm', String(r.n), r.name), r.han, `${r.name} · ${r.stuff}`, r.colour)).join('');
+
+const beastPaint = REALMS.flatMap((r) => [...commonsOf(r.n), wardenOf(r.n)].map((b) => paintCell(
+  pic('beast', b.key, b.name),
+  b.han, `${b.name}${b.warden ? ' · warden' : ''}`, r.colour))).join('');
+
+const skyPaint = HEAVENS.map((h) => paintCell(
+  pic('heaven', String(h.n), h.name), h.han, h.name, h.colour)).join('');
+
+const dragonPaint = HEAVENS.map((h) => paintCell(
+  pic('beast', `heaven-${h.n}`, h.dragon.name), h.dragon.han, h.dragon.name, h.colour)).join('');
+
+const meetPaint = sheetCells('meetings', 'meet');
+
+// 符 Nine arts and four sundries, which is enough to say what an emblem is. Every one
+// of them is in the game and on 張 the sheets page. Only these are shown here because a
+// published page may carry at most 255 files beside it, the drawings already take half
+// of that, and the arts are the family a player meets first.
+const EMBLEM_SHOWN = ['art-fox', 'art-ape', 'art-tiger', 'art-crane', 'art-wolf',
+  'art-turtle', 'art-serpent', 'art-dragon', 'art-puppet',
+  'herb-orchid', 'pill-fortune', 'room-shrine', 'card-taotie'];
+const emblemPaint = SHEETS.filter((sh) => sh.kind === 'emblem')
+  .flatMap((sh) => sh.cells)
+  .filter((c) => EMBLEM_SHOWN.includes(c.key))
+  .sort((a, b) => EMBLEM_SHOWN.indexOf(a.key) - EMBLEM_SHOWN.indexOf(b.key))
+  .map((c) => paintCell(pic('emblem', c.key, c.name), c.han, c.name))
+  .join('');
+
+const sheetRows = SHEETS.map((sh) => {
+  const have = sh.cells.filter((c) => PICTURES[sh.kind].includes(c.key)).length;
+  return `<tr>
+    <td><b class="cjk">${sh.han}</b> <i>${sh.title}</i></td>
+    <td class="n">${sh.cols}×${sh.rows}</td>
+    <td class="n">${sh.cells.length}</td>
+    <td class="n">${have === sh.cells.length ? '✓' : `${have}`}</td>
+  </tr>`;
+}).join('');
+
+const gapRows = FAMILIES.map((f) => {
+  const have = paintedIn(f);
+  return `<tr>
+    <td><b class="cjk">${f.han}</b> <i>${f.name}</i></td>
+    <td class="n">${have} of ${f.count}</td>
+    <td><i class="faint">${f.sheet ?? f.seen}</i></td>
+  </tr>`;
+}).join('');
+
+const PAINTED_ALL = FAMILIES.reduce((n, f) => n + paintedIn(f), 0);
+const DRAWN_ALL = FAMILIES.reduce((n, f) => n + f.count, 0);
 
 const stanceRows = STANCES.map((s) => `
   <div class="row" style="--hue:${realmOf(s.realm).colour}">
@@ -936,7 +1023,7 @@ const MOCK_MENU = `<div class="mk two">
 const MOCK_CAVE = (() => {
   const beds = [
     { han: '龍血草', name: 'Dragonblood Grass', ic: 'spiral-bloom', at: 1, say: 'Ripe. Take it.', hue: 'var(--gold)' },
-    { han: '月華蘭', name: 'Moonlight Orchid', ic: 'crystal-cluster', at: 0.62, say: 'Ripe in 2h 14m', hue: 'var(--cyan)' },
+    { han: '月華蘭', name: 'Moonlight Orchid', ic: 'crystal-cluster', at: 0.62, say: 'Ripe in 2h 14m', hue: 'var(--jade)' },
     { han: '', name: 'Empty bed', ic: 'incense', at: 0, say: 'Plant something', hue: 'var(--line)' },
   ];
   return `<div class="mk cave">
@@ -1071,9 +1158,14 @@ const page = `<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&family=Rajdhani:wght@600;700&display=swap">
 <style>
-  :root { --ground:#080A18; --panel:#111433; --panel2:#0C0F26; --line:#252A5C;
-          --cyan:#5FDCFF; --magenta:#FF5FC8; --text:#E7EAFF; --faint:#8289C0;
-          --gold:#FFCE6B; color-scheme:dark; }
+  /* 墨 The same eight the game wears. The bible was still in cyan and magenta on
+     blue-black long after the game stopped being, and it renders 境 the realms and 牌
+     the plates with the game's own functions, so half of every page was ink and the
+     other half was neon. A living document that shows the game in colours it does not
+     have is the exact thing this page exists not to be. */
+  :root { --ground:#14110D; --panel:#1E1A14; --panel2:#191510; --line:#3A3226;
+          --jade:#7FB495; --cinnabar:#D2604E; --text:#EDE3D2; --faint:#9C907C;
+          --gold:#D4AF56; color-scheme:dark; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--ground); color:var(--text);
          font:17px/1.65 Archivo, ui-sans-serif, system-ui, sans-serif; }
@@ -1081,15 +1173,15 @@ const page = `<meta charset="utf-8">
   .cjk { font-family:'Noto Serif SC',serif; }
   h1,h2,h3 { margin:0; font-weight:600; text-wrap:balance; }
   h1 { font-family:'Noto Serif SC',serif; font-size:clamp(40px,12vw,60px); font-weight:400;
-       color:var(--cyan); line-height:1; }
+       color:var(--jade); line-height:1; }
   h2 { font-family:Rajdhani,sans-serif; font-size:26px; display:flex; gap:11px;
        align-items:baseline; }
   h2 .h { font-family:'Noto Serif SC',serif; font-weight:400; font-size:30px;
-          color:var(--cyan); }
+          color:var(--jade); }
   h3 { font-family:Rajdhani,sans-serif; font-size:14px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; margin-top:6px; }
   p { margin:0; }
-  a { color:var(--cyan); }
+  a { color:var(--jade); }
   .lead { font-size:19px; margin-top:14px; }
   .sec { margin-top:40px; border-top:1px solid var(--line); padding-top:22px;
          display:flex; flex-direction:column; gap:13px; }
@@ -1122,7 +1214,7 @@ const page = `<meta charset="utf-8">
   #salvage td, #salvage th { padding:5px 6px; font-size:13px; }
 
   /* 閒 the ceiling column, where it is worth looking at. */
-  #idle td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #idle td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #idle td, #idle th { padding:5px 6px; font-size:13px; }
   #idle .card em { display:block; margin-bottom:2px; }
   #idle .card .t { font-size:13.5px; }
@@ -1146,7 +1238,7 @@ const page = `<meta charset="utf-8">
   /* 曆 the content clock's week bars. Scoped, like everything else on this page. */
   #clock .wk { display:block; height:8px; border-radius:99px; background:var(--line);
                overflow:hidden; min-width:120px; }
-  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--cyan); }
+  #clock .wk i { display:block; height:100%; border-radius:99px; background:var(--jade); }
   #clock td:last-child { width:45%; }
 
   /* ── 悟道 the trios, and 緣 the people on the road ────────────────────── */
@@ -1158,18 +1250,18 @@ const page = `<meta charset="utf-8">
   @media(min-width:640px){ #awaken .three { grid-template-columns:repeat(3,1fr); } }
   #awaken .ac { padding:12px 13px; border-radius:11px; background:var(--panel);
         border:1px solid var(--line); }
-  #awaken .ac .s { display:block; color:var(--cyan); margin-bottom:6px; }
-  #awaken .ac b { font-size:18px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #awaken .ac .s { display:block; color:var(--jade); margin-bottom:6px; }
+  #awaken .ac b { font-size:18px; font-weight:400; color:var(--jade); margin-right:7px; }
   #awaken .ac em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:13.5px; }
   #awaken .ac i { display:block; font-style:normal; margin-top:6px; font-size:12px;
         color:var(--faint); line-height:1.5; }
   #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
         line-height:1.5; }
-  #meet .meets td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #cave .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #secret .cavetbl td b.cjk { color:var(--cyan); font-weight:400; margin-right:4px; }
-  #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+  #meet .meets td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #cave .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
         margin-right:5px; }
   /* 圖 the drawn rooms, scoped to this section so nothing else can wear them */
   #secret .vaults { display:grid; gap:10px; margin:14px 0 6px; }
@@ -1178,7 +1270,7 @@ const page = `<meta charset="utf-8">
   #secret .vault .art { display:block; height:120px; }
   #secret .vault .art svg { display:block; width:100%; height:100%; }
   #secret .vault figcaption { padding:10px 13px 12px; font-size:13.5px; }
-  #secret .vault figcaption b.cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #secret .vault figcaption b.cjk { color:var(--jade); font-weight:400; margin-right:5px; }
   #secret .vault figcaption em { display:block; margin-top:3px; font-style:normal;
                                  font-size:11px; letter-spacing:.14em; text-transform:uppercase;
                                  color:var(--faint); }
@@ -1189,24 +1281,24 @@ const page = `<meta charset="utf-8">
   #secret .rm { flex:1; display:grid; place-items:center; gap:4px; padding:10px 4px;
         border-radius:11px; background:var(--panel); border:1px solid var(--line);
         color:var(--line); }
-  #secret .rm[data-gate] { color:var(--magenta);
-        border-color:color-mix(in srgb, var(--magenta) 35%, transparent); }
+  #secret .rm[data-gate] { color:var(--cinnabar);
+        border-color:color-mix(in srgb, var(--cinnabar) 35%, transparent); }
   #secret .rm em { font-style:normal; font-size:10.5px; color:var(--faint);
         font-family:Rajdhani,sans-serif; font-weight:700; }
-  #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--cyan);
+  #cave .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
         margin-right:5px; }
 
   /* ── 提 the proposals: four content systems, drawn rather than described ── */
   #proposals h3 .built, #proposals h3 .todo { margin-left: 9px; padding:3px 9px; border-radius:99px;
         font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
         vertical-align:middle; }
-  #proposals h3 .built { color:#04121A; background:var(--cyan); }
+  #proposals h3 .built { color:#14110D; background:var(--jade); }
   #proposals h3 .todo { color:var(--faint); border:1px solid var(--line); }
   #proposals .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px;
                    padding:15px; margin:14px 0 0; }
   #proposals .cap { margin:12px 0 0; font-size:13px; color:var(--faint); line-height:1.55; }
   #proposals .law { display:inline-block; margin:10px 8px 0 0; padding:3px 9px; border-radius:99px;
-                    font-size:11.5px; color:var(--cyan); border:1px solid var(--line);
+                    font-size:11.5px; color:var(--jade); border:1px solid var(--line);
                     background:rgba(95,220,255,.06); }
   #proposals .cost { font-family:Rajdhani,sans-serif; font-weight:700; color:var(--gold); }
 
@@ -1235,11 +1327,11 @@ const page = `<meta charset="utf-8">
   #proposals .room > svg, #proposals .room > em { position:relative; z-index:1;
         display:grid; place-items:center; width:44px; height:44px; border-radius:99px;
         background:var(--panel); border:1px solid var(--line); color:var(--line); }
-  #proposals .room[data-done] > svg { color:var(--cyan); border-color:rgba(95,220,255,.45); }
+  #proposals .room[data-done] > svg { color:var(--jade); border-color:rgba(95,220,255,.45); }
   /* 此 Where you stand: the one room on the path that is a decision right now. */
   #proposals .room[data-here] > svg { color:var(--gold); border-color:var(--gold);
         box-shadow:0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
-  #proposals .room[data-last] > svg { color:var(--magenta); border-color:rgba(255,95,200,.5); }
+  #proposals .room[data-last] > svg { color:var(--cinnabar); border-color:rgba(255,95,200,.5); }
   #proposals .room .link { position:absolute; left:50%; right:-50%; top:50%; height:2px;
         background:var(--line); }
   #proposals .room[data-done] .link { background:linear-gradient(90deg,
@@ -1248,8 +1340,8 @@ const page = `<meta charset="utf-8">
   @media(min-width:560px){ #proposals .doors { grid-template-columns:1fr 1fr; } }
   #proposals .door { display:flex; gap:11px; align-items:flex-start; padding:11px 12px;
         border:1px solid var(--line); border-radius:11px; background:var(--panel); }
-  #proposals .door .s { flex:none; color:var(--cyan); }
-  #proposals .door b { font-size:17px; font-weight:400; color:var(--cyan); }
+  #proposals .door .s { flex:none; color:var(--jade); }
+  #proposals .door b { font-size:17px; font-weight:400; color:var(--jade); }
   #proposals .door em { font-style:normal; font-size:13px; color:var(--text); }
   #proposals .door i { display:block; font-style:normal; margin-top:4px; font-size:12px;
         color:var(--faint); line-height:1.5; }
@@ -1261,9 +1353,9 @@ const page = `<meta charset="utf-8">
         border:1px solid var(--line); }
   #proposals .awaken .card[data-on] { border-color:var(--gold);
         box-shadow:0 0 26px -12px var(--gold); }
-  #proposals .awaken .s { display:block; color:var(--cyan); margin-bottom:8px; }
+  #proposals .awaken .s { display:block; color:var(--jade); margin-bottom:8px; }
   #proposals .awaken .card[data-on] .s { color:var(--gold); }
-  #proposals .awaken b { font-size:19px; font-weight:400; color:var(--cyan); margin-right:7px; }
+  #proposals .awaken b { font-size:19px; font-weight:400; color:var(--jade); margin-right:7px; }
   #proposals .awaken .card[data-on] b { color:var(--gold); }
   #proposals .awaken em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:14px; }
@@ -1272,15 +1364,15 @@ const page = `<meta charset="utf-8">
 
   /* 緣 one small card, the way it would sit on a screen */
   #proposals .meet .card { display:flex; gap:12px; align-items:flex-start; padding:13px 14px;
-        border-radius:13px; background:var(--panel); border:1px solid var(--cyan); }
-  #proposals .meet .s { flex:none; color:var(--cyan); }
+        border-radius:13px; background:var(--panel); border:1px solid var(--jade); }
+  #proposals .meet .s { flex:none; color:var(--jade); }
   #proposals .meet b { display:block; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
-  #proposals .meet b .cjk { color:var(--cyan); font-weight:400; margin-right:5px; }
+  #proposals .meet b .cjk { color:var(--jade); font-weight:400; margin-right:5px; }
   #proposals .meet i { display:block; font-style:normal; margin-top:4px; font-size:12.5px;
         color:var(--faint); line-height:1.55; }
   #proposals .meet .picks { display:flex; gap:8px; margin-top:11px; }
   #proposals .meet .pick { padding:7px 13px; border-radius:9px; font-size:12.5px;
-        background:var(--cyan); color:#04121A; font-weight:600; }
+        background:var(--jade); color:#14110D; font-weight:600; }
   #proposals .meet .pick:last-child { background:none; color:var(--faint);
         border:1px solid var(--line); }
 
@@ -1301,7 +1393,7 @@ const page = `<meta charset="utf-8">
                 text-transform:uppercase; }
   #cores td, #cores th { padding:5px 6px; font-size:13px; }
   #cores .card em { display:block; margin-bottom:2px; }
-  #cores td.hot { color:var(--magenta); font-family:Rajdhani,sans-serif; font-weight:700; }
+  #cores td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
 
@@ -1319,22 +1411,22 @@ const page = `<meta charset="utf-8">
   #mockups .ladder .rung { flex:1; height:10px; border-radius:3px; background:var(--line);
                   overflow:hidden; }
   #mockups .ladder .rung i { display:block; height:100%; border-radius:2px; }
-  #mockups .ladder .warden { flex:none; width:17px; color:var(--cyan); }
+  #mockups .ladder .warden { flex:none; width:17px; color:var(--jade); }
   #mockups .ladder .warden svg { display:block; }
 
   /* 指 */
   #mockups .coach { display:flex; flex-direction:column; align-items:center; gap:8px; }
   #mockups .coach .arrow { width:34px; height:34px; display:grid; place-items:center;
                   border-radius:99px; background:rgba(6,8,18,.92);
-                  border:1px solid rgba(95,220,255,.45); color:var(--cyan);
+                  border:1px solid rgba(95,220,255,.45); color:var(--jade);
                   box-shadow:0 0 14px -3px rgba(95,220,255,.8); }
   #mockups .coach .arrow svg { display:block; }
   #mockups .upg, #cores .upg { width:100%; max-width:360px; display:flex; align-items:center; gap:13px;
          padding:13px 14px; border-radius:11px; background:var(--panel);
          border:1px solid var(--line); }
-  #mockups .upg.ringed, #cores .upg.ringed { box-shadow:0 0 0 2px var(--cyan), 0 0 0 5px rgba(95,220,255,.14),
+  #mockups .upg.ringed, #cores .upg.ringed { box-shadow:0 0 0 2px var(--jade), 0 0 0 5px rgba(95,220,255,.14),
                            0 0 22px -4px rgba(95,220,255,.75); }
-  #mockups .upg .ic, #cores .upg .ic { flex:none; width:26px; color:var(--cyan); }
+  #mockups .upg .ic, #cores .upg .ic { flex:none; width:26px; color:var(--jade); }
   #mockups .upg .ic svg, #cores .upg .ic svg { display:block; }
   #mockups .upg > span:nth-child(2), #cores .upg > span:nth-child(2) { flex:1; }
   #mockups .upg b, #cores .upg b { display:block; font-size:15px; font-weight:500; }
@@ -1350,16 +1442,16 @@ const page = `<meta charset="utf-8">
            border:1px solid rgba(95,220,255,.33); border-radius:12px; padding:13px 15px; }
   #mockups .gcard.waiting { background:var(--panel); border-color:var(--line); }
   #mockups .gcard .n { font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-              color:var(--cyan); font-family:Archivo,sans-serif; }
+              color:var(--jade); font-family:Archivo,sans-serif; }
   #mockups .gcard.waiting .n { color:var(--faint); }
   #mockups .gcard b { display:block; margin-top:4px; font-size:15.5px; font-weight:500; }
-  #mockups .gcard b .cjk { color:var(--cyan); margin-right:4px; }
+  #mockups .gcard b .cjk { color:var(--jade); margin-right:4px; }
   #mockups .gcard.waiting b .cjk { color:var(--faint); }
   #mockups .gcard i { display:block; margin-top:5px; font-style:normal; font-size:12.5px;
              color:var(--faint); line-height:1.5; }
   #mockups .gcard .bar { display:block; height:4px; border-radius:99px; margin-top:9px;
                 background:rgba(95,220,255,.2); overflow:hidden; }
-  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--cyan);
+  #mockups .gcard .bar i { display:block; height:100%; margin:0; background:var(--jade);
                   border-radius:99px; }
 
   /* 鑑 */
@@ -1388,14 +1480,14 @@ const page = `<meta charset="utf-8">
                       font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .sheet2 .line .vs i, #mockups .sheet2 .line .vs em { font-style:normal; color:var(--faint);
                                               font-weight:400; }
-  #mockups .sheet2 .line.up .vs b { color:var(--cyan); }
-  #mockups .sheet2 .line.down .vs b { color:var(--magenta); }
+  #mockups .sheet2 .line.up .vs b { color:var(--jade); }
+  #mockups .sheet2 .line.down .vs b { color:var(--cinnabar); }
   #mockups .sheet2 .verd { display:flex; gap:9px; margin-top:16px; }
   #mockups .sheet2 .sw { flex:1; background:var(--panel); border:1px solid var(--line);
                 border-radius:11px; padding:13px 10px; text-align:center; }
   #mockups .sheet2 .sw b { display:block; font-size:17px; font-weight:400; color:var(--faint); }
   #mockups .sheet2 .sw em { display:block; margin-top:3px; font-style:normal; font-size:17px;
-                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--cyan); }
+                   font-family:Rajdhani,sans-serif; font-weight:700; color:var(--jade); }
   #mockups .sheet2 .sw i { display:block; margin-top:3px; font-style:normal; font-size:10px;
                   letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
 
@@ -1403,7 +1495,7 @@ const page = `<meta charset="utf-8">
   #mockups .drive .size { display:flex; align-items:center; gap:13px; padding:13px 14px;
                  border-radius:11px; background:var(--panel); border:1px solid var(--line);
                  margin-bottom:8px; }
-  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--cyan);
+  #mockups .drive .size .n { flex:none; min-width:44px; font-size:21px; color:var(--jade);
                     font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .drive .size .what { flex:1; }
   #mockups .drive .size .what b { display:block; font-size:14.5px; font-weight:500; }
@@ -1422,37 +1514,37 @@ const page = `<meta charset="utf-8">
   #mockups .halfbar > span[data-on] { background:var(--panel); color:var(--ink);
               box-shadow:inset 0 0 0 1px var(--line); }
   #mockups .halfbar b { font-size:17px; font-weight:400; }
-  #mockups .halfbar > span[data-on] b { color:var(--cyan); }
+  #mockups .halfbar > span[data-on] b { color:var(--jade); }
   #mockups .halfbar em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
               font-size:13px; }
   #mockups .halfbar .pip { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
-              font-size:11px; color:#0A0C1C; background:var(--gold); border-radius:99px;
+              font-size:11px; color:#14110D; background:var(--gold); border-radius:99px;
               padding:3px 6px; }
   #mockups .tabbar { display:grid; grid-template-columns:repeat(5,1fr);
               background:var(--panel2); border:1px solid var(--line); border-radius:11px;
               padding:9px 0 11px; }
   #mockups .tabbar > span { display:flex; flex-direction:column; align-items:center; gap:3px;
               color:var(--faint); }
-  #mockups .tabbar > span[data-on] { color:var(--cyan); }
+  #mockups .tabbar > span[data-on] { color:var(--jade); }
   #mockups .tabbar b { position:relative; font-size:19px; font-weight:400; line-height:1.1; }
   #mockups .tabbar u { position:absolute; left:100%; bottom:55%; transform:translateX(-3px);
               text-decoration:none; font-family:Rajdhani,sans-serif; font-weight:700;
-              font-size:10px; line-height:1; color:#0A0C1C; background:var(--gold);
+              font-size:10px; line-height:1; color:#14110D; background:var(--gold);
               border-radius:99px; padding:2.5px 5px; }
   #mockups .tabbar i { font-style:normal; font-size:9.5px; letter-spacing:.16em;
               text-transform:uppercase; }
 
   /* 凝丹 the card that appears only when 材 runs out */
-  #mockups .mk.cond { border-color:var(--magenta); }
+  #mockups .mk.cond { border-color:var(--cinnabar); }
   #mockups .cond .chd { display:flex; align-items:center; gap:11px; }
-  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--magenta); }
+  #mockups .cond .chd b { font-size:23px; font-weight:400; color:var(--cinnabar); }
   #mockups .cond .chd em { display:block; font-style:normal; font-family:Rajdhani,sans-serif;
               font-weight:700; font-size:16px; }
   #mockups .cond .chd i { font-style:normal; font-size:12.5px; color:var(--faint); }
   #mockups .cond .body { margin:9px 0 12px; font-size:13.5px; color:var(--faint);
               line-height:1.6; }
-  #mockups .cond .go { display:block; text-align:center; background:var(--magenta);
-              color:#0A0C1C; border-radius:8px; padding:12px; font-size:15px;
+  #mockups .cond .go { display:block; text-align:center; background:var(--cinnabar);
+              color:#14110D; border-radius:8px; padding:12px; font-size:15px;
               font-family:Rajdhani,sans-serif; font-weight:700; letter-spacing:.06em;
               text-transform:uppercase; }
   #mockups .cond .hint { display:flex; gap:11px; align-items:flex-start; margin-top:10px;
@@ -1507,7 +1599,7 @@ const page = `<meta charset="utf-8">
                   border:1px solid var(--line); border-radius:11px; }
   #mockups .corner .menu span { display:flex; align-items:center; gap:11px; padding:9px; }
   #mockups .corner .menu b { flex:none; width:22px; text-align:center; font-size:16px;
-                    font-weight:400; color:var(--cyan); }
+                    font-weight:400; color:var(--jade); }
   #mockups .corner .menu i { font-style:normal; font-size:13.5px; }
   #mockups .corner .cap { margin:12px 0 0; font-size:13px; color:var(--faint); }
 
@@ -1517,7 +1609,7 @@ const page = `<meta charset="utf-8">
            background:var(--panel2); border:1px solid var(--line); border-radius:10px;
            padding:9px 12px; color:var(--text); font-size:14px; }
   .toc a b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:18px;
-             color:var(--cyan); }
+             color:var(--jade); }
 
   .board { display:grid; gap:6px; }
   .srow { display:flex; gap:12px; align-items:flex-start; background:var(--panel2);
@@ -1543,7 +1635,7 @@ const page = `<meta charset="utf-8">
   th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
   td { border-top:1px solid var(--line); padding:7px 8px; }
-  td b { color:var(--hue,var(--cyan)); font-size:16px; font-weight:400; }
+  td b { color:var(--hue,var(--jade)); font-size:16px; font-weight:400; }
   td i { font-style:normal; color:var(--faint); }
   td.n { font-family:Rajdhani,sans-serif; font-weight:700; text-align:right;
          color:var(--gold); }
@@ -1553,7 +1645,7 @@ const page = `<meta charset="utf-8">
                            .cards.three { grid-template-columns:repeat(3,1fr); } }
   .card { background:var(--panel2); border:1px solid var(--line); border-radius:11px;
           padding:12px 14px; }
-  .card > b { color:var(--hue,var(--cyan)); font-size:18px; font-weight:400; }
+  .card > b { color:var(--hue,var(--jade)); font-size:18px; font-weight:400; }
   .card em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
              font-size:16px; }
   .pills { display:flex; flex-wrap:wrap; gap:6px; }
@@ -1577,9 +1669,9 @@ const page = `<meta charset="utf-8">
   .row { display:flex; gap:11px; align-items:flex-start; background:var(--panel2);
          border:1px solid var(--line); border-left:3px solid var(--hue,var(--line));
          border-radius:10px; padding:9px 12px; }
-  .row .ic { flex:none; color:var(--hue,var(--cyan)); display:grid; place-items:center; }
+  .row .ic { flex:none; color:var(--hue,var(--jade)); display:grid; place-items:center; }
   .row .ic svg { display:block; }
-  .row b { font-size:17px; color:var(--hue,var(--cyan)); font-weight:400; }
+  .row b { font-size:17px; color:var(--hue,var(--jade)); font-weight:400; }
   .row em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700; font-size:16px; }
   .row i { font-style:normal; display:block; font-size:13px; color:var(--faint); }
   .row .body { flex:1; }
@@ -1611,8 +1703,8 @@ const page = `<meta charset="utf-8">
   .duel span { display:grid; place-items:center; }
   .duel .you { width:82px; height:82px; justify-self:center; }
   .duel .you svg { width:100%; height:100%; }
-  .duel .foe { color:#CC79FF; justify-self:center; margin-bottom:12px; }
-  .duel .mid { color:var(--cyan); font-size:19px; margin-bottom:30px;
+  .duel .foe { color:var(--cinnabar); justify-self:center; margin-bottom:12px; }
+  .duel .mid { color:var(--jade); font-size:19px; margin-bottom:30px;
                text-shadow:0 0 14px currentColor; }
 
   .lin { display:flex; flex-wrap:wrap; gap:8px 12px; }
@@ -1630,22 +1722,49 @@ const page = `<meta charset="utf-8">
                      margin-left:auto; }
   .items .lin { margin-top:10px; }
 
-  .rule { border-left:3px solid var(--cyan); background:var(--panel2);
+  .rule { border-left:3px solid var(--jade); background:var(--panel2);
           border-radius:0 10px 10px 0; padding:13px 16px; }
-  .rule b { color:var(--cyan); }
-  .warn { border-left:3px solid var(--magenta); background:var(--panel2);
+  .rule b { color:var(--jade); }
+  .warn { border-left:3px solid var(--cinnabar); background:var(--panel2);
           border-radius:0 10px 10px 0; padding:13px 16px; }
-  .warn b { color:var(--magenta); }
+  .warn b { color:var(--cinnabar); }
 
   .where { display:grid; gap:7px; }
   .where a { display:flex; gap:11px; align-items:flex-start; text-decoration:none;
              background:var(--panel2); border:1px solid var(--line); border-radius:11px;
              padding:12px 14px; color:var(--text); }
   .where a b { font-family:'Noto Serif SC',serif; font-weight:400; font-size:21px;
-               color:var(--cyan); flex:none; }
+               color:var(--jade); flex:none; }
   .where a em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
                 font-size:16px; display:block; }
   .where a i { font-style:normal; font-size:13px; color:var(--faint); }
+
+  /* 畫 The paintings, shown as themselves. Every name here is scoped to #paint,
+     because .cell, .strip and .pair are exactly the names a second screen would want,
+     and a class shared between two screens has cost this repository a session twice. */
+  #paint .strip { display:grid; gap:10px; margin:12px 0 20px;
+                  grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); }
+  #paint .strip.wide { grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); }
+  #paint .strip.tall { grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); }
+  #paint .cell { display:block; text-align:center; min-width:0; }
+  #paint .cell .pic { display:block; width:100%; aspect-ratio:1/1; object-fit:cover;
+                      border-radius:8px; border:1px solid var(--line);
+                      background:var(--panel2); }
+  #paint .strip.wide .cell .pic { aspect-ratio:16/9; }
+  #paint .strip.tall .cell .pic { aspect-ratio:3/4; }
+  #paint .strip.alpha .cell .pic { object-fit:contain; }
+  #paint .cell .gap { opacity:.35; }
+  #paint .cell b { display:block; font-size:13px; margin-top:6px; line-height:1.2; }
+  #paint .cell i { display:block; font-style:normal; font-size:11px; line-height:1.3;
+                   color:var(--faint); }
+  #paint .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px;
+                 max-width:400px; margin:14px 0 20px; }
+  #paint .pair span { display:block; text-align:center; min-width:0; }
+  #paint .pair img { display:block; width:100%; aspect-ratio:1/1; object-fit:contain; }
+  #paint .pair .round img { border-radius:50%; background:var(--panel2);
+                            border:1px solid var(--line); object-fit:cover; }
+  #paint .pair em { display:block; font-style:normal; font-size:12.5px; margin-top:8px; }
+  #paint .pair i { display:block; font-style:normal; font-size:11.5px; color:var(--faint); }
 
   ${PLATE_CSS}
 </style>
@@ -1665,6 +1784,7 @@ const page = `<meta charset="utf-8">
       <a href="#resumo"><b>簡</b> Em português</a>
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
+      <a href="#paint"><b>畫</b> The paintings</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -1879,6 +1999,171 @@ const page = `<meta charset="utf-8">
       teaching characters is five unanswered questions at once. One button, and every row
       arrives with its name in English.</p>
     ${MOCK_MENU}
+  </section>
+
+  <section class="sec" id="paint">
+    <h2><span class="h">畫</span> The paintings</h2>
+    <p class="t">Every creature in the game was a silhouette inside a ring: one shape in
+      one colour out of a public icon set, on a blue-black ground. It read, and it read as
+      a placeholder. The first painting was dropped straight into that ring and Bruno said
+      exactly what it looked like: <i>"as imagens estão horríveis .. como podemos melhorar
+      isto, está um badge ampliado e mal cortado circular .. péssimo."</i> He was looking
+      at a square painting blown up inside a circle with the corners of the paper still in
+      it, which is the worst of both.</p>
+    <p class="t">This section is how the art is made now, and it is written down because
+      none of it is a one-off. ${DRAWN_ALL} things in this game are drawn as a thing.
+      ${PAINTED_ALL} of them are painted. The rest arrive one sheet at a time, and the
+      game is playable at every point in between.</p>
+
+    <h3>色 The palette came first</h3>
+    <p class="t">The old ground was <code>#04121A</code> with cyan and magenta on it, which
+      is a science fiction palette wearing Chinese characters. Bruno, seeing it beside the
+      first paintings: <i>"demasiado neon."</i> Everything is now eight colours that exist
+      as ground minerals: ink, paper, jade, celadon, old bronze, gold leaf, cinnabar and
+      imperial violet. The nine realms walk that ramp in order. Green is the first
+      breath and the body, gold is the core, red is the furnace and the tribulation, and
+      violet is what is left after all of it. This page was repainted with them, because a
+      living document that shows the game in colours the game does not have is the one
+      thing it must not be.</p>
+
+    <h3>張 One sheet at a time</h3>
+    <p class="t">Bruno paints these with the free credits of an image model, which is a
+      few pictures a day: <i>"não consigo gerar tantas imagens com os créditos gratuitos
+      do gpt. consegues dar-me um prompt por batches e depois recortar as imagens e fazer
+      a tua magia?"</i> So nothing is ever asked for one picture at a time. A sheet is one
+      prompt that comes back as one image: a ruled grid with nine or twelve paintings
+      inside it, all in the same hand, the same ink and the same light.
+      <code>npm run sheets</code> writes the prompts out of the game's own tables, so a
+      creature that is renamed is renamed in its prompt and a creature that is added gets
+      a panel. Fourteen sheets cover everything painted so far.</p>
+    <table>
+      <tr><th>sheet</th><th style="text-align:right">grid</th>
+          <th style="text-align:right">panels</th><th style="text-align:right">in</th></tr>
+      ${sheetRows}
+    </table>
+
+    <h3>剪 The cut</h3>
+    <p class="t">One file arrives and the game needs ${SHEETS.reduce((n, sh) => n + sh.cells.length, 0)}
+      of them, so <code>npm run slice</code> cuts the sheet up. The whole difficulty is
+      finding the rules, and it took three tries. The first cutter looked for the flattest
+      rows of pixels and settled on bare paper eight pixels off the line. The second looked
+      for the darkest rows, and a dark creature leaning on the edge of its panel is darker
+      than a pencil line. A rule is not the darkest thing on a page. It is the
+      <b>thinnest</b>: a row much darker than the paper three to twenty pixels either side
+      of it, and nothing else on a painted sheet is thin in that way. The third cutter
+      measures that contrast, hunts a third of a cell around where each rule ought to be,
+      and falls back to the nominal line when it finds nothing convincing. It has not been
+      wrong on a sheet since.</p>
+    <p class="t">A panel is then cut for the shape the screen wants. 牌 the plate keeps its
+      paper and is masked into a disc, because at 46 pixels a pale disc with a painting on
+      it reads as a page out of a bestiary. 鬥 the arena wears the same creature with the
+      paper keyed off it and the edge softened, because at full size that same disc is a
+      sticker. That is the picture Bruno was complaining about, and both halves of the
+      answer are one painting:</p>
+    <div class="pair">
+      <span class="round"><img src="bible-art/${pictureOf('beast', 'tiger')}" alt="The plate of the White Tiger">
+        <em>牌 the plate</em><i>46px, on the hunt list. Keeps its paper.</i></span>
+      <span><img src="bible-art/${pictureOf('cut', 'tiger')}" alt="The cut-out of the White Tiger">
+        <em>剪 the cut-out</em><i>Full size, in the arena. The paper is keyed off.</i></span>
+    </div>
+    <p class="t">Keying the paper off is the one step that cannot be done by darkness
+      either. Pale creatures came out full of holes: the inside of a white tiger is as
+      pale as the page it is on. A transparent region fully enclosed by the creature is
+      flooded back in. The cultivator cannot be keyed at all: skin painted in ink
+      <em>is</em> paper. Those are vignetted instead, which keeps the page and loses the
+      edge of it.</p>
+
+    <h3>修 Who the cultivator is</h3>
+    <p class="t">The first 修 sheet aged one man from a villager to a ghost, and Bruno
+      stopped it there. What he said: <i>"não acho certo o cultivador ficar velho apenas
+      porque sim e ser apenas male, tem que existir alguma lógica ou escolha."</i> Both
+      halves of that are
+      right. There are two figures, the game never picks for you, and nobody ages: it is
+      the same person in all nine, and what changes is their standing and how solidly they
+      are there. By the ninth they are barely painted at all. Until the question is asked
+      the screen draws 影 the figure it always drew, which is a shape and nobody in
+      particular, and the answer is a painting and a name. Nothing about the numbers reads
+      it.</p>
+    <div class="strip alpha">${figStrip('woman')}</div>
+    <div class="strip alpha">${figStrip('man')}</div>
+    <p class="t">The aura is still the game's, drawn live and read off the save: rings,
+      motes, spokes and halos that no painting can carry, because they change while you
+      watch them. What did change is that a painted figure gets <b>half</b> the aura, and
+      the halo behind the head turns once every two minutes. At full strength the seventh
+      realm drowned the painting it was meant to be lighting.</p>
+
+    <h3>境 The nine realms</h3>
+    <p class="t">A landscape each, seen from a great height, the mountains across the
+      middle and the bottom of the panel almost empty, because the bottom of the panel is
+      where the fight happens. Each one is painted in its realm's own pigment.</p>
+    <div class="strip wide">${realmPaint}</div>
+
+    <h3>狩 The bestiary</h3>
+    <p class="t">${BEASTS.length} of them, three commons and one warden to a realm, all
+      painted. They are the hunt list, the bestiary, the tower floors and the arena.</p>
+    <div class="strip">${beastPaint}</div>
+
+    <h3>境外 The skies and their Dragons</h3>
+    <p class="t">Above the ninth realm there is no ground, so the backdrop is sky: cloud
+      and starfield with nothing to stand on, walking out of violet through gold to bone.
+      It is the one backdrop that moves, ninety seconds for a pass, slower than anybody
+      will notice. Each heaven has its own Dragon, and giving them paintings is what
+      stopped nine crossings looking like one animal fought nine times.</p>
+    <div class="strip wide">${skyPaint}</div>
+    <div class="strip">${dragonPaint}</div>
+
+    <h3>緣 The encounters</h3>
+    <p class="t">These keep their paper on purpose. An encounter is a page out of a
+      traveller's notebook and it is shown as one, in a band across the top of the card
+      that stops the game.</p>
+    <div class="strip tall">${meetPaint}</div>
+
+    <h3>符 The emblems</h3>
+    <p class="t">Everything the game draws as a symbol in a row: an art, an awakening card,
+      a herb, a line of pills, a room of the vault. ${PICTURES.emblem.length} of them are
+      painted. They are shown at twenty to thirty pixels, so each is one object on bare
+      paper in as few strokes as it takes, rather than a scene nobody can see. They are
+      also the one family whose keys collide: 狼噬 Wolf Bite is an art and 貪狼 Greedy Wolf
+      is a card, both are keyed <code>wolf</code>, and every key carries its family in
+      front of it for that reason. Nine arts and four others:</p>
+    <div class="strip alpha">${emblemPaint}</div>
+
+    <h3>動 What moves</h3>
+    <p class="t">Bruno: <i>"tenta adicionar algumas animações e auras, brilhos etc ..
+      conforme aplicável para dar enfase."</i> Four of them, and every one obeys the rule
+      the palette obeys: <b>nothing emits light</b>. A glow is a lamp or the moon.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">滲</b> <em>Ink meeting paper</em>
+        <i>A painting arrives by soaking in rather than sliding: half a second out of blur
+        and grey into itself. Used by every painting that appears on a card.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">雲</b> <em>The heavens drift</em>
+        <i>Ninety seconds for one pass, and only above the ninth realm. A realm's mountains
+        stay still, because mountains do.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">圓光</b> <em>The halo turns</em>
+        <i>One turn every two minutes. At that speed it is not an animation, it is the
+        difference between a portrait and a photograph of one.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">入</b> <em>The fight begins</em>
+        <i>She settles in from the left, the beast stalks in from the right a beat later so
+        the eye goes to it. Nothing moves on the way out, because a fight that is over is
+        over.</i></span></div>
+    </div>
+    <p class="t">All four stand down for <code>prefers-reduced-motion</code>. A game
+      somebody opens forty times a day is the wrong place to insist.</p>
+
+    <h3>缺 What is still a pictogram</h3>
+    <p class="t">Counted by <code>npm run artgaps</code>, which reads the game's own tables
+      rather than the folder, so a family that grows shows up here the day it grows.</p>
+    <table>
+      <tr><th>family</th><th style="text-align:right">painted</th><th>where it is, or what a sheet would be</th></tr>
+      ${gapRows}
+    </table>
+    <p class="t"><b>A missing picture is not a hole.</b> Everything paintable falls back to
+      印 the seal, which is the frame and the icon the game already ships, and the painting
+      takes the same box when it lands. So the art can arrive one file at a time over
+      months and the game is never half drawn: it is drawn one way until it is drawn a
+      better one. <code>npm run pictures</code> reads the folder and writes the list, so a
+      painting dropped in is in the game on the next build, and a painting nobody made
+      costs nothing at all.</p>
   </section>
 
   <section class="sec" id="proposals">
@@ -2197,7 +2482,7 @@ const page = `<meta charset="utf-8">
 
   <section class="sec" id="board">
     <h2><span class="h">狀</span> Where we are</h2>
-    <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--cyan)">成</b>
+    <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--jade)">成</b>
       closed means built, measured by a test, and written up below.
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
@@ -2956,9 +3241,11 @@ const page = `<meta charset="utf-8">
 
   <section class="sec" id="realms">
     <h2><span class="h">境</span> The nine realms</h2>
-    <p class="t">Nine names out of cultivation fiction, nine colours walking from cyan to
-      magenta, and a drawing that gains something at every one. The warden of a realm bars
-      the breakthrough; beating it opens 突破, and pressing 突破 is what takes it.</p>
+    <p class="t">Nine names out of cultivation fiction, nine ground pigments walking from
+      jade through gold leaf and cinnabar to imperial violet, and a drawing that gains
+      something at every one. 畫 the paintings above show the landscape each one is. The
+      warden of a realm bars the breakthrough; beating it opens 突破, and pressing 突破 is
+      what takes it.</p>
     <div class="ladder">${realmRungs}</div>
     <div class="cards three">
       ${REALMS.map((r) => `<div class="card" style="--hue:${r.colour}">
@@ -3360,7 +3647,7 @@ const page = `<meta charset="utf-8">
       deed is recomputed from numbers the save already carries and the validator already
       caps, so there is no flag to flip. A hand-edited save cannot claim a deed without
       claiming the whole run underneath it.</div>
-    ${TRACKS.map((t) => `<div class="card" style="--hue:var(--cyan)">
+    ${TRACKS.map((t) => `<div class="card" style="--hue:var(--jade)">
       <b class="cjk">${t.han}</b> <em>${t.name}</em>
       <div class="lin" style="margin-top:8px">${deedsOn(t.key).map((d) =>
         `<span><b style="color:var(--gold)">${d.han}</b> <i>${d.name} · ${d.line}</i></span>`).join('')}</div>
@@ -3506,19 +3793,56 @@ const page = `<meta charset="utf-8">
   </section>
 
   <footer class="sec" style="color:var(--faint);font-size:13.5px">
-    <p>Generated from the game's own code by <code>npm run bible</code>. Icons from
-      game-icons.net under CC BY 3.0. When a system closes, move its row on the board and
-      write its section. That is the whole process.</p>
+    <p>Generated from the game's own code by <code>npm run bible</code>. The paintings
+      are the game's own files, copied in beside this page. The icons under them, which is
+      what every unpainted thing still wears, are from game-icons.net under CC BY 3.0.
+      When a system closes, move its row on the board and write its section. That is the
+      whole process.</p>
   </footer>
 </div>
 `;
+
+/**
+ * 搬 The paintings the page points at, copied in beside it.
+ *
+ * Two kinds of pointer, and both have to work. An <img> written by this file says
+ * bible-art/art/beast/tiger.webp, because it is read from the page. A drawing lifted
+ * into bible-art/ says art/beast/tiger.webp, because 修 the portrait wrote that href
+ * for the game and the file it now sits in is inside bible-art/ already. One folder
+ * satisfies both, so the paintings go to bible-art/art/<kind>/<key>.webp and neither
+ * pointer has to know about the other.
+ *
+ * 讀 Which paintings is read back off the finished page rather than listed here. A
+ * second list would be a second thing to forget.
+ */
+let COPIED = 0;
+function copyPaintings(out: { page: string; plates: Map<string, string> }): number {
+  const dir = 'bible-art/art';
+  rmSync(dir, { recursive: true, force: true });
+  const hay = out.page + [...out.plates.values()].join('');
+  const want = new Set([...hay.matchAll(/art\/([a-z]+)\/([a-z0-9-]+)\.webp/g)].map((m) => m[0]));
+  let bytes = 0;
+  for (const rel of [...want].sort()) {
+    const from = `public/${rel}`;
+    if (!existsSync(from)) throw new Error(`頁 the page points at ${rel} and there is no such painting`);
+    mkdirSync(`bible-art/${rel.slice(0, rel.lastIndexOf('/'))}`, { recursive: true });
+    const file = readFileSync(from);
+    writeFileSync(`bible-art/${rel}`, file);
+    bytes += file.length;
+  }
+  COPIED = want.size;
+  return bytes;
+}
 
 const lifted = liftArt(page, 'bible-art');
 writeFileSync('bible.html', lifted.page);
 const kb = Math.round(lifted.page.length / 1024);
 const artKb = Math.round(writePlates('bible-art', lifted.plates) / 1024);
+const picKb = Math.round(copyPaintings(lifted) / 1024);
 console.log(`bible.html · ${kb} KB · ${SYSTEMS.filter((s) => s.status === 'done').length} closed, ` +
   `${SYSTEMS.filter((s) => s.status === 'open').length} open, ` +
   `${SYSTEMS.filter((s) => s.status === 'planned').length} planned · ` +
   `${GEAR.length} items, ${LINES.length * 9} pills, ${BEASTS.length} beasts named in full`);
 console.log(`bible-art/ · ${lifted.plates.size} drawings · ${artKb} KB, lifted off the page`);
+console.log(`bible-art/art/ · ${COPIED} paintings · ${picKb} KB · ` +
+  `${lifted.plates.size + COPIED} files beside the page, of the 255 a publish allows`);
