@@ -64,7 +64,7 @@ function cultivator(realm) {
     sequence: realm >= 3 ? ['crane'] : [],
     tribulation: 0, tribulationAt: 0, tower: realm >= 5 ? realm * 10 : 0,
     brewed: { body: 0, bane: 0, fortune: 0 },
-    seen: ['guide'],
+    seen: ['guide', 'whom'],
   };
 }
 
@@ -92,10 +92,11 @@ async function open(page, state) {
 /**
  * 掩 Anything floating over the screen, sent away the way a player would send it.
  *
- * A brand new save opens on 引 How to play, and a notice card arrives whenever something
- * unlocks. Both cover the tab bar and eat the tap, so both are read and closed before
- * anything is asked of the screen underneath. This is what a first-run walk has to do,
- * not a workaround: the first thing a real player taps is 始 BEGIN.
+ * A brand new save opens on 引 How to play, then on 相 who is climbing, and a notice card
+ * arrives whenever something unlocks. All of them cover the tab bar and eat the tap, so
+ * all of them are read and answered before anything is asked of the screen underneath.
+ * This is what a first-run walk has to do, not a workaround: the first thing a real
+ * player taps is 始 BEGIN and the second is a face.
  */
 async function dismiss(page) {
   for (let i = 0; i < 24; i++) {
@@ -108,6 +109,12 @@ async function dismiss(page) {
     // never tap and never reached the sheet at all.
     const card = await page.$('.awaken .acard');
     if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
+    // 相 The one question the game asks before the climb starts. It is answered the way
+    // a player answers it, by picking, because a brand new save is covered by it until
+    // somebody does: the first fresh walk after it existed reported every tap on every
+    // tab swallowed, which is the harness being exactly right.
+    const who = await page.$('.whom .pick');
+    if (who) { await who.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
     const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim');
     if (!el) return;
     await el.click({ timeout: 4000 }).catch(() => {});

@@ -173,7 +173,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       <div className="portrait">
         {top
           ? <Svg html={poolArt(filled, state.tribulation, pulse)} />
-          : <Svg html={portrait({ realm: state.realm, pulse })} />}
+          : <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} />}
       </div>
 
       <div className="qi">

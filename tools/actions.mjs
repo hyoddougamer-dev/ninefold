@@ -58,7 +58,7 @@ function save(over = {}) {
     beds: [{ herb: null, at: 0 }, { herb: null, at: 0 }, { herb: null, at: 0 }], reaped: 0,
     // 秘境 Outside, with the door shut, so nothing walks into a run by accident.
     runStep: -1, runAt: at, runs: 0,
-    seen: ['guide', 'cap', 'cores', 'tower', 'gear', 'furnace', 'refine'],
+    seen: ['guide', 'whom', 'cap', 'cores', 'tower', 'gear', 'furnace', 'refine'],
     ...over,
   };
 }
@@ -217,7 +217,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
   const page = await open(save({
     realm: 1, layer: 1, qi: 400, materials: 2, tower: 0,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
-    killed: {}, seen: ['guide'],
+    killed: {}, seen: ['guide', 'whom'],
   }));
   await tab(page, '狩');
   const cards = await beastCards(page);

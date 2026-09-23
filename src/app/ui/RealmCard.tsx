@@ -45,7 +45,7 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
           portrait, which is what every realm looked like before. */}
       <div className="crown">
         {sky && <img className="sky" src={sky} alt="" aria-hidden="true" />}
-        <Svg html={portrait({ realm: state.realm, pulse: 0 })} />
+        <Svg html={portrait({ realm: state.realm, pulse: 0, who: state.self })} />
       </div>
 
       <h2 className="cjk" style={{ color: r.colour }}>{r.han}</h2>

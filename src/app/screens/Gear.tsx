@@ -91,7 +91,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <div className="wcore">
           <svg viewBox={`0 0 ${S} ${S}`} width="100%" height="100%">
             <g dangerouslySetInnerHTML={{
-              __html: portrait({ realm: state.realm, pulse })
+              __html: portrait({ realm: state.realm, pulse, who: state.self })
                 .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''),
             }} />
             <g dangerouslySetInnerHTML={{ __html: wornRim(best, S) }} />

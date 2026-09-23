@@ -638,6 +638,25 @@ export const ITEM = {
  * It says what the choice costs before it says what it gives, because the cost is the
  * point: two of these three are gone for good the moment one is taken.
  */
+/**
+ * 相 The one question the game asks before it starts.
+ *
+ * It is asked once, it changes no number, and it can be answered again at any time from
+ * the help sheet. The game never answers it by itself: until it is answered the screen
+ * draws 影 the shape, which is nobody in particular.
+ */
+export const FIGURE = {
+  over: 'Before the first breath',
+  title: '相',
+  sub: 'Who is climbing?',
+  lead: 'This is the face on every screen from here to the ninth realm. It changes nothing '
+    + 'about the climb and you can change it whenever you like.',
+  later: 'Not yet',
+  change: 'Who is climbing',
+  /** 釋 What the character means, for the key and the tooltip. */
+  what: 'Who you are. A face and a name, nothing the numbers read. Ask again from the help sheet at any time.',
+};
+
 export const AWAKEN = {
   over: 'A realm behind you',
   sub: (han: string, name: string) => `You stand in ${han} ${name}. Something settles.`,

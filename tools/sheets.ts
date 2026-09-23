@@ -90,47 +90,68 @@ function commonSheet(key: string, han: string, title: string, realms: number[]):
 }
 
 /**
- * 修 The cultivator, once per realm.
+ * 修 The cultivator, once per realm, once per figure.
  *
- * 光 The aura is not asked for and must not be. It grows with the climb, it breathes on a
- * pulse the code owns, and it is read off the save, so it stays drawn and the painting
- * stands inside it. What changes from panel to panel is the person: what they are wearing
- * by then, how old they are, how still. Asking a model for a glow nine times would get
- * nine different glows and the ladder would stop reading as a ladder.
+ * 誤 The first version of this brief had the cultivator *ageing* up the ladder, from a
+ * young person in hemp to somebody ancient. Bruno: *"não acho certo o cultivador ficar
+ * velho apenas porque sim."* He is right, and it is worse than arbitrary: it is
+ * backwards. In this genre cultivation is the thing that **stops** you ageing. A Golden
+ * Core cultivator holds the face they had when they formed it, for centuries.
+ *
+ * 遠 So the ladder is not age. It is distance from mortal. The first three realms are a
+ * person: rough cloth, then plain robes, then robes that were made for them. Somewhere
+ * around 金丹 the ageing stops and the face never changes again. From there what changes
+ * is presence: the stillness gets deeper, the brush gets thinner, the edges stop being
+ * certain, and by 渡劫 there is more robe than person and the paper is nearly winning.
+ * That is a better ladder to look at than wrinkles, and it ends where ink painting is
+ * strongest, which is at the edge of not being there.
+ *
+ * 光 The aura is not asked for and must not be. It grows with the climb, breathes on a
+ * pulse the code owns and is read off the save, so it stays drawn and the painting
+ * stands inside it. Nine separately generated glows would not be a ladder.
+ *
+ * 相 And there are two of these, because the game asks who is climbing and never answers
+ * for the player. See src/data/figures.ts.
  */
 const SELF = [
-  'a young person in plain rough hemp robes, newly begun, sitting cross-legged with their back straight and their hands in their lap',
-  'the same person, a little older, robes plain but no longer ragged, sitting very still',
-  'the same person in a clean layered robe with a sash, calm, eyes closed',
-  'the same person, now in their thirties, in a fine scholar\'s robe, long sleeves folded over the knees',
-  'the same person, older, in a heavy embroidered robe, hair pinned with a simple jade clasp',
-  'the same person, grey at the temples, in a long flowing robe with wide sleeves, utterly still',
-  'the same person, old now, in an austere dark robe, thin, weathered, sitting as if carved',
-  'the same person, very old, robes worn loose, hair long and white, barely present',
-  'the same person, ancient, almost a shape in the robe, eyes closed, the face hard to fix on',
+  'newly begun, in rough undyed hemp, plainly a villager who has decided something. Ordinary face, ordinary hands',
+  'the same person in plain disciple robes, worn but cared for, sitting properly for the first time',
+  'the same person in layered robes that were made for them, with a sash. From here their face will not change again',
+  'the same person, unchanged in the face, in a fine robe with long sleeves folded over the knees. Perfectly still',
+  'the same face, in a heavy robe with quiet embroidery, hair pinned with a plain jade clasp. Too still to read',
+  'the same face, in a long robe with wide sleeves that hangs as though there were a wind that is not there',
+  'the same face, in an austere robe, the outline of the shoulders no longer quite certain against the paper',
+  'the same face, in robes that seem larger than the person in them, painted with a thinner brush, more presence than body',
+  'barely a figure at all: the robe, the seated shape, the suggestion of a face, half of it left as bare paper',
 ];
 
-function selfSheet(): Sheet {
+/** 相 The two figures the sheet can be drawn for, and how each is asked for. */
+const WHO = [
+  ['self-woman', '女修', 'The cultivator, a woman', 'a woman'],
+  ['self-man', '男修', 'The cultivator, a man', 'a man'],
+] as const;
+
+function selfSheet(key: string, han: string, title: string, who: string): Sheet {
   return {
-    key: 'self',
-    han: '修',
-    title: 'The cultivator, one per realm',
+    key,
+    han,
+    title,
     kind: 'self',
     cols: 3,
     rows: 3,
     realms: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     cells: REALMS.map((r, i) => ({
-      key: String(i + 1),
+      key: `${key.slice(5)}-${i + 1}`,
       han: r.han,
       name: r.name,
-      subject: SELF[i],
+      subject: i === 0 ? `${who}, ${SELF[0]}` : SELF[i],
     })),
   };
 }
 
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
-  selfSheet(),
+  ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -167,7 +188,7 @@ export function sheetPrompt(s: Sheet): string {
   const shape = s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
     : s.kind === 'self'
-      ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine, ageing. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
+      ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine and they do not age: what changes is their standing and how solidly they are there, from an ordinary villager in panel one to something barely painted in panel nine. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
       : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {

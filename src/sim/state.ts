@@ -6,6 +6,7 @@ import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, FOCUS_MAX, OPENING_PURSE,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
+import { figureOf } from '../data/figures.ts';
 import {
   AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
@@ -92,6 +93,15 @@ export interface State {
   chest: Item[];
   /** 道 Technique nodes taken, in the order they were taken. */
   unlocked: string[];
+  /**
+   * 相 Who the cultivator is, or null while the game has not asked yet.
+   *
+   * 擇 It is a painting and a name and nothing else: no number in this file reads it,
+   * no harness measures it, and a save that carries null draws the shape the game has
+   * always drawn. It is stored rather than derived because it is the one fact about
+   * this cultivator that the climb cannot tell you. See data/figures.ts.
+   */
+  self: string | null;
   /** 勢 The stance you fight in, or none yet. */
   stance: string | null;
   /** 訣 The arts in the order they fire, at most SEQUENCE_SLOTS of them. */
@@ -274,6 +284,7 @@ export function newState(now: number): State {
     worn: {},
     chest: [],
     unlocked: [],
+    self: null,
     stance: null,
     sequence: [],
     tribulation: 0,
@@ -638,6 +649,9 @@ export function validate(raw: unknown, now: number): State {
     // Neither of these is owned in the save: the stances follow from the realm reached
     // and the arts from the wardens put down. So a hand-edited save cannot put 龍威 in
     // the first slot at realm 1 and walk over every warden in the game.
+    // 相 A forged figure is simply not one of the two, so it falls back to not having
+    // been asked, which every screen already draws.
+    self: figureOf(typeof o.self === 'string' ? o.self : null)?.key ?? null,
     stance: validateStance(o.stance, realm),
     sequence: validateSequence(o.sequence, killed),
     // Marks are only reachable at realm 9, and only one at a time.

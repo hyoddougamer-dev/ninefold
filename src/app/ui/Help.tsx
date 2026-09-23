@@ -1,4 +1,4 @@
-import { GUIDE, HELP } from '../copy.ts';
+import { FIGURE, GUIDE, HELP } from '../copy.ts';
 
 /**
  * 引 How to play, in four promises.
@@ -8,8 +8,10 @@ import { GUIDE, HELP } from '../copy.ts';
  * do it. What is left here is only what cannot be shown. That leaving costs nothing,
  * that staying pays, that losing is free, and where to look a character up.
  */
-export function Help({ onClose, onReopenGuide }: {
+export function Help({ onClose, onReopenGuide, onWhom }: {
   onClose: () => void;
+  /** 相 Ask again who is climbing. Always there, because the answer is never final. */
+  onWhom?: () => void;
   /** 引 Only there when the guide has been put away, which is the only time it means
    *  anything. A button offering to bring back something already on the screen is
    *  worse than no button. */
@@ -36,6 +38,11 @@ export function Help({ onClose, onReopenGuide }: {
             引 <span>{GUIDE.reopen}</span>
           </button>
         </div>
+      )}
+      {onWhom && (
+        <button className="act" onClick={onWhom}>
+          相 <span>{FIGURE.change}</span>
+        </button>
       )}
       <button className="act" style={{ marginTop: 'auto' }} onClick={onClose}>
         始 <span>{HELP.begin}</span>

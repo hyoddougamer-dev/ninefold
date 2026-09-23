@@ -154,7 +154,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
 
         <div className="duel">
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
-            <span className="art"><Svg html={portrait({ realm, pulse, focus: true })} /></span>
+            <span className="art"><Svg html={portrait({ realm, pulse, focus: true, who: state.self })} /></span>
             {hit === 'player' && (
               f.missed
                 ? <span className="dmg miss" key={`p${beat}`}>turned aside</span>

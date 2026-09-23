@@ -63,7 +63,7 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
       </div>
 
       <div className="stele">
-        <span className="who"><Svg html={portrait({ realm: state.realm, pulse })} /></span>
+        <span className="who"><Svg html={portrait({ realm: state.realm, pulse, who: state.self })} /></span>
         <span className="said">
           <b className="cjk" style={{ color: r.colour }}>{r.han}</b>
           <i>{CHRONICLE.standing(Math.floor(daysIn(state)) + 1, r.name)}</i>

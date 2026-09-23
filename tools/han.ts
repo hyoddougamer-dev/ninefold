@@ -113,7 +113,7 @@ function cultivator(realm: number) {
     met: [], metAt: at, metPoints: 0,
     beds: [{ herb: 'orchid', at: at - 7200 }, { herb: null, at: 0 }, { herb: null, at: 0 }],
     reaped: 3, runStep: -1, runAt: at, runs: 2,
-    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'salvage', 'fuse', 'refine',
+    seen: ['guide', 'whom', 'marks', 'reach', 'tree', 'stance', 'gear', 'salvage', 'fuse', 'refine',
       'cores', 'record', 'arts', 'tower', 'keystones', 'bestiary', 'cave', 'secret'],
   };
 }

@@ -61,7 +61,7 @@ function cultivator(realm) {
     tribulation: 0, tribulationAt: 0, tower: realm >= 5 ? realm * 10 : 0,
     brewed: { body: 0, bane: 0, fortune: 0 },
     // Every first-run card already read, so nothing floats over the screen being checked.
-    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage', 'fuse'],
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage', 'fuse', 'whom'],
   };
 }
 

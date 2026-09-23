@@ -11,7 +11,7 @@
  *     public/art/realm/<n>.webp       768 x 432   a place, behind a card
  *     public/art/heaven/<n>.webp      768 x 432   the same, above the ninth realm
  *     public/art/cut/<key>.webp       up to 720   the creature with the paper keyed off
- *     public/art/self/<n>.webp        up to 720   the cultivator of that realm, the same way
+ *     public/art/self/<who>-<n>.webp  up to 720   that cultivator at that realm, the same way
  *
  * 量 Why those sizes. A creature is drawn inside a circle at 94 to 140 pixels on a
  * phone, so 512 is twice what the densest screen needs and it survives being looked at
@@ -25,6 +25,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { BEASTS } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
+import { FIGURES, figureKey } from '../src/data/figures.ts';
 import type { Painted } from '../src/data/pictures.ts';
 
 const ROOT = 'public/art';
@@ -36,7 +37,7 @@ const KEYS: Record<Painted, readonly string[]> = {
   realm: REALMS.map((r) => String(r.n)),
   heaven: HEAVENS.map((h) => String(h.n)),
   cut: BEASTS.map((b) => b.key),
-  self: REALMS.map((r) => String(r.n)),
+  self: FIGURES.flatMap((f) => REALMS.map((r) => figureKey(f.key, r.n))),
 };
 
 const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [], self: [] };

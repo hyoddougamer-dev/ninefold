@@ -22,7 +22,8 @@ export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self';
  * A file is `public/art/<kind>/<key>.webp`, 512 by 512 for a creature and 768 by 432
  * for a realm or a heaven. See tools/pictures.ts for the sizes and why they are those.
  *
- * 修 `self` is the cultivator, one painting per realm, keyed the same way as `cut`. It
+ * 修 `self` is the cultivator, one painting per realm *per figure*, keyed `<who>-<n>` and
+ * cut the same way as `cut`. It
  * stands inside the aura rather than replacing it: the rings, motes and halos are read
  * off the save and breathe on a pulse, and no painting can carry that.
  *

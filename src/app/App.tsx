@@ -31,6 +31,8 @@ import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
 import { RealmCard } from './ui/RealmCard.tsx';
 import { Awaken } from './ui/Awaken.tsx';
+import { Figure } from './ui/Figure.tsx';
+import { WHOM } from '../data/figures.ts';
 import { due as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
@@ -118,6 +120,7 @@ export function App() {
    * one thing that has to be remembered: that the player put it aside for a minute.
    */
   const [awakenShut, setAwakenShut] = useState(false);
+  const [whom, setWhom] = useState(false);
   // 圍 The beast whose drive sheet is open, if any.
   const [driving, setDriving] = useState<Beast | null>(null);
   // 鑑 The piece being looked at, and whether it is the one on the body.
@@ -566,8 +569,11 @@ export function App() {
    *   reach, which is worse than pointing at nothing.
    */
   const step = guide(state);
+  // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
+  // otherwise draw its arrow and its ring straight over the sheet asking it.
+  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help;
   const covered = help || key || stele || saving || realmPage || menu || !!driving
-    || !!inspect || !!home || !!battle
+    || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
     ? step.at
@@ -791,6 +797,7 @@ export function App() {
       {help && (
         <Help
           onClose={() => { setHelp(false); sfx.tap(); }}
+          onWhom={() => { setWhom(true); setHelp(false); sfx.tap(); }}
           onReopenGuide={state.seen.includes(DISMISSED)
             ? () => {
               setState((s) => ({ ...s, seen: s.seen.filter((k) => k !== DISMISSED) }));
@@ -802,6 +809,34 @@ export function App() {
         />
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
+
+      {/* 相 Asked once, before anything else, and reopened from 助 the help sheet. It is
+          shown while the answer is null, so a save that has never been asked asks, and a
+          save that answered never sees it again unless it is sent for. */}
+      {/* 序 Never over 助 the help sheet, which opens by itself on a first run: the
+          screenshot of the two together had the help sheet's own ✕ floating over the
+          question, which reads as a way out of the question. It waits its turn. */}
+      {asking && (
+        <Figure
+          realm={state.realm}
+          chosen={state.self}
+          onPick={(who) => {
+            setState((s) => ({ ...s, self: who, seen: s.seen.includes(WHOM) ? s.seen : [...s.seen, WHOM] }));
+            setWhom(false);
+            sfx.mark();
+            haptics.tap();
+          }}
+          onClose={() => {
+            // 影 Not yet is an answer too: the *asking* is what is remembered, not the
+            // answer, so declining leaves 相 null and the shape on the screen and the
+            // question does not come back on every load. `self` could not carry that
+            // itself: validate() throws away anything that is not one of the two.
+            setState((s) => (s.seen.includes(WHOM) ? s : { ...s, seen: [...s.seen, WHOM] }));
+            setWhom(false);
+            sfx.tap();
+          }}
+        />
+      )}
 
       {/* 圍 A drive. The sim hands back the best piece that fell and leaves the chest
           alone on purpose: two hundred kills can roll forty pieces, and forty pieces
@@ -898,7 +933,7 @@ export function App() {
 
       {home && (
         <div className="back">
-          <Svg html={portrait({ realm: state.realm, pulse })} style={{ display: 'block', width: 150, height: 150 }} />
+          <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} style={{ display: 'block', width: 150, height: 150 }} />
           <h2 style={{ color: r.colour }}>歸</h2>
           <p className="faint" style={{ margin: 0, fontSize: 14 }}>
             {RETURN.away(duration(home.seconds))}

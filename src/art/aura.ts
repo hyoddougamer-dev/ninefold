@@ -1,5 +1,6 @@
 import { ICONS } from './icons.generated.ts';
 import { pictureOf } from '../data/pictures.ts';
+import { figureKey } from '../data/figures.ts';
 import { realm as realmOf } from '../data/realms.ts';
 
 /**
@@ -30,9 +31,11 @@ export interface PortraitOptions {
   readonly pulse?: number;
   /** Dims everything but the figure, for combat. */
   readonly focus?: boolean;
+  /** 相 Which figure the player chose, or null while the game has not asked. */
+  readonly who?: string | null;
 }
 
-export function portrait({ realm, pulse = 0, focus = false }: PortraitOptions): string {
+export function portrait({ realm, pulse = 0, focus = false, who = null }: PortraitOptions): string {
   const r = realmOf(realm);
   const t = (r.n - 1) / 8;
   const S = 200;
@@ -59,11 +62,15 @@ export function portrait({ realm, pulse = 0, focus = false }: PortraitOptions): 
   const figOff = (S - fig) / 2;
 
   /**
-   * 修 The cultivator, painted, when there is a painting of this realm's cultivator.
+   * 修 The cultivator, painted, when the player has said who they are and that figure has
+   * a painting of this realm.
    *
    * 圖 Bruno, once the creatures were painted and he was not: *"continua estranho
    * principalmente o cultivador, fora de enquadramento artístico."* He was the last
    * pictogram on a screen full of brushwork.
+   *
+   * 相 Until they are asked, `who` is null and the shape is drawn, which is nobody in
+   * particular and is what every screen has always shown. See data/figures.ts.
    *
    * 光 The aura is not in the painting and must not be. It is the thing that grows with
    * the climb, it breathes on a pulse the code owns, and it is read off the save. So the
@@ -71,7 +78,7 @@ export function portrait({ realm, pulse = 0, focus = false }: PortraitOptions): 
    * around it still comes from here. A realm with no file keeps the pictogram, which is
    * what every realm looked like before.
    */
-  const painted = pictureOf('self', String(r.n));
+  const painted = who ? pictureOf('self', figureKey(who, r.n)) : null;
   const body = painted
     ? `<image href="${painted}" x="${(S * 0.19).toFixed(1)}" y="${(S * 0.16).toFixed(1)}"
          width="${(S * 0.62).toFixed(1)}" height="${(S * 0.7).toFixed(1)}"

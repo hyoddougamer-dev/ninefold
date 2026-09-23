@@ -40,7 +40,7 @@ function cultivator(realm) {
     // not sitting over the screen being photographed.
     awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought']
       .slice(0, [0, 0, 2, 2, 4, 4, 6, 6, 8, 8][realm]),
-    seen: ['guide','marks','reach','tree','stance','gear','tower','keystones','bestiary','salvage','fuse'],
+    seen: ['guide','marks','reach','tree','stance','gear','tower','keystones','bestiary','salvage','fuse', 'whom'],
   };
 }
 
