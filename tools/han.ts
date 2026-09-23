@@ -269,4 +269,23 @@ if (alone.length) {
   console.log();
   process.exit(1);
 }
+/**
+ * 空 A walk that reached almost nothing passes, and that is the worst kind of green.
+ *
+ * 相 the question the game asks before the climb covers the whole screen until it is
+ * answered, and the fabricated cultivators here had not been asked. The walk reached
+ * twenty places instead of a hundred and one, found nothing wrong with any of them, and
+ * printed a tick. It was right about the twenty and blind to the rest.
+ *
+ * So the count is asserted, not just reported. The floor is deliberately far below the
+ * real number: it is there to catch a walk that saw nothing, not to be edited every time
+ * a screen gains a character.
+ */
+const FLOOR = 70;
+if (rows.length < FLOOR) {
+  console.log(`  ✗ only ${rows.length} places were reached, and there should be well over ${FLOOR}.`);
+  console.log('    Something is covering the screen this walk never got past, so this is a\n'
+    + '    broken walk rather than a clean sheet. Check what a fresh save opens on.\n');
+  process.exit(1);
+}
 console.log('  ✓ every character on every screen is named by the card it sits in.\n');

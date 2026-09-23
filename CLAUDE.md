@@ -100,6 +100,14 @@ Each of these cost real time once. They are written down so they cost it once.
 - **No backticks inside `tools/bible.ts` prose.** The whole page is one template
   literal, so a stray `` ` `` around a function name ends the string and the build fails
   with a parse error fifty lines away. Use `<code>`.
+- **A harness that reached nothing passes, and that is the worst kind of green.** 相 the
+  question the game asks before the climb covers the whole screen until it is answered,
+  and every fabricated cultivator in `tools/` had to be told it had been asked
+  (`seen: [… , 'whom']`). Before that, `npm run han` walked into the question, reached
+  twenty places instead of 101, found nothing wrong with any of them and printed a tick.
+  `npm run smoke` was the one that said so out loud, because it asserts that a tap
+  lands. **Any harness that counts things should assert the count has a floor**, which
+  `han.ts` now does.
 - **Read the harness by name, never by position.** `RUNS[0]`, `const [waiter, , , active]
   = runs`. Adding one cultivator to `HABITS` silently made every assertion and every
   sentence on the bible page about somebody else. Use `runs.find(r => r.habit.name === …)`.
