@@ -545,21 +545,31 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    anchored on .fighter it covered the whole grid cell instead of the body. */
 .fighter .art { display: block; position: relative; }
 .fighter .art svg { display: block; width: 100%; height: 100%; }
-.you .art { width: 136px; height: 136px; }
+/* 立 Both fighters stand on the same line and are measured against each other.
+   Bruno: *"da arena fica estranho a diferença de tamanho e alinhamentos entre os monstros
+   e o player."* Measured off the real screen, he was right twice: her painted body was
+   95px against the crab's 124, and she was floating nineteen pixels above the floor the
+   crab was standing on.
+
+   暈 The floating is the portrait's own shape. 修 the painting is placed inside the aura
+   at 16% from the top and 70% tall, so the bottom seventh of the box is glow and nothing
+   else. The box is pushed down by exactly that much, which puts her seat on the line. */
+.you .art { --dead: .11; width: 200px; height: 200px;
+            margin-bottom: calc(-1 * var(--dead) * 200px); }
 .foe .art { width: 94px; height: 94px; margin-bottom: 18px;
             filter: drop-shadow(0 3px 10px rgba(0,0,0,.75)); }
 /* 剪 A creature with no paper around it needs no square to sit in: it is given a height
-   and keeps its own width, so a crab stays wide and a crane stays tall. The floor line is
-   the bottom of the picture, which is where the animal's feet were painted. */
-.foe .art[data-cut='true'] { width: auto; height: 124px; margin-bottom: 4px;
+   and keeps its own width, so a crab stays wide and a crane stays tall. The bottom of the
+   picture is where the animal's feet were painted, so it goes on the floor. */
+.foe .art[data-cut='true'] { width: auto; height: 112px; margin-bottom: 0;
                              filter: drop-shadow(0 6px 14px rgba(0,0,0,.6)); }
-.foe .beastcut { display: block; height: 124px; width: auto; max-width: 146px;
+.foe .beastcut { display: block; height: 112px; width: auto; max-width: 132px;
                  object-fit: contain; object-position: bottom; }
-/* 王 A warden is the fight a realm is remembered for, so it stands taller than the
-   cultivator. A common does not: it was drawn on the same sheet at the same size, and
+/* 王 A warden is the fight a realm is remembered for, so it stands over the cultivator.
+   A common stands level with her: it was drawn on the same sheet at the same size, and
    left at one height a giant crab ended up bigger than the person fighting it. */
-.foe .art[data-cut='true'][data-warden='true'] { height: 158px; }
-.foe .art[data-warden='true'] .beastcut { height: 158px; max-width: 182px; }
+.foe .art[data-cut='true'][data-warden='true'] { height: 150px; }
+.foe .art[data-warden='true'] .beastcut { height: 150px; max-width: 170px; }
 
 .fighter[data-hit='true'] .art { animation: shake .26s ease-out; }
 /* The flash is the colour of whoever *threw* the blow, not of whoever wears it. */
@@ -1510,6 +1520,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .meet > .s { flex: none; color: var(--jade); }
 .meet .s svg { display: block; }
 .meet .body { flex: 1; min-width: 0; }
+/* 緣 A card with a scene painted for it stops being a row and becomes a page: the band
+   runs the full width across the top, bled to the card's own corners, and the text sits
+   under it. The card keeps its padding for the text by moving it off the card itself. */
+.meet[data-scene='true'] { display: block; padding: 0; overflow: hidden; }
+.meet[data-scene='true'] .body { padding: 12px 14px 14px; }
+.meet .scenery { display: block; width: 100%; height: 108px; object-fit: cover;
+                 object-position: center 46%; border-bottom: 1px solid var(--line); }
 .meet b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15.5px;
           line-height: 1.3; }
 .meet b .cjk { color: var(--jade); font-weight: 400; margin-right: 6px; }

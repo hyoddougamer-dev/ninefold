@@ -12,6 +12,7 @@
  *     public/art/heaven/<n>.webp      768 x 432   the same, above the ninth realm
  *     public/art/cut/<key>.webp       up to 720   the creature with the paper keyed off
  *     public/art/self/<who>-<n>.webp  up to 720   that cultivator at that realm, the same way
+ *     public/art/meet/<key>.webp      768 x 432   an encounter, a wide scene keeping its paper
  *
  * 量 Why those sizes. A creature is drawn inside a circle at 94 to 140 pixels on a
  * phone, so 512 is twice what the densest screen needs and it survives being looked at
@@ -26,10 +27,11 @@ import { BEASTS } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
+import { MEETINGS } from '../src/data/meetings.ts';
 import type { Painted } from '../src/data/pictures.ts';
 
 const ROOT = 'public/art';
-const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self'];
+const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self', 'meet'];
 
 /** What each kind is allowed to be named, so a stray file cannot enter the game. */
 const KEYS: Record<Painted, readonly string[]> = {
@@ -38,9 +40,10 @@ const KEYS: Record<Painted, readonly string[]> = {
   heaven: HEAVENS.map((h) => String(h.n)),
   cut: BEASTS.map((b) => b.key),
   self: FIGURES.flatMap((f) => REALMS.map((r) => figureKey(f.key, r.n))),
+  meet: MEETINGS.map((m) => m.key),
 };
 
-const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [], self: [] };
+const found: Record<Painted, string[]> = { beast: [], realm: [], heaven: [], cut: [], self: [], meet: [] };
 const strays: string[] = [];
 
 for (const kind of KINDS) {
@@ -65,7 +68,8 @@ const next = src.replace(
   + `  realm: ${list(found.realm)},\n`
   + `  heaven: ${list(found.heaven)},\n`
   + `  cut: ${list(found.cut)},\n`
-  + `  self: ${list(found.self)},\n};`,
+  + `  self: ${list(found.self)},\n`
+  + `  meet: ${list(found.meet)},\n};`,
 );
 writeFileSync('src/data/pictures.ts', next);
 

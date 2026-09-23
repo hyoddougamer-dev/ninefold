@@ -28,6 +28,7 @@ import { writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { BEASTS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
+import { MEETINGS } from '../src/data/meetings.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
 import { mix } from '../src/art/aura.ts';
 import { MATERIALS, enso, inkOf } from './ink.ts';
@@ -45,7 +46,7 @@ export interface Sheet {
   readonly key: string;
   readonly han: string;
   readonly title: string;
-  readonly kind: 'beast' | 'realm' | 'self';
+  readonly kind: 'beast' | 'realm' | 'self' | 'meet';
   readonly cols: number;
   readonly rows: number;
   /** Reading order: left to right, then down. */
@@ -149,9 +150,57 @@ function selfSheet(key: string, han: string, title: string, who: string): Sheet 
   };
 }
 
+/**
+ * 緣 The ten encounters, as ten scenes.
+ *
+ * 圖 They are the cards the game raises on its own screen while you are sitting there,
+ * and they each carry an icon standing in for a picture: a raven pictogram for a crow
+ * that has followed you a mile, a cauldron for an abandoned furnace. Painted, they are
+ * the moment an idle game actually stops for.
+ *
+ * 橫 Landscape panels, not square: every one of them is a thing lying in a road or a
+ * person standing in one, and a scene wants width. Four across and three down gives ten
+ * panels of that shape with two to spare, and the prompt asks for the last two to be left
+ * as bare paper rather than filled with something nobody asked for.
+ *
+ * 人 Nobody in these is the cultivator. They are the people the road puts in front of
+ * them, so nothing here has to match 相 the figure the player chose.
+ */
+const MEET_SCENE: Record<string, string> = {
+  oldman: 'an old man sitting at the side of a mountain road with a bundle beside him, seen from a little way off',
+  brokensword: 'a sword snapped just above the guard, lying in the dirt of a road, nobody in the picture',
+  beggar: 'a small child with an empty bowl sitting at the foot of a neglected roadside shrine',
+  merchant: 'a covered handcart halted on an empty road, its owner standing beside it',
+  drunk: 'a dishevelled man slumped asleep against a tree with a gourd fallen beside him',
+  crow: 'a single crow on a bare branch, something small held in its beak, the road below empty',
+  stele: 'a stone tablet broken in half standing in long grass, the carving on it worn away',
+  furnace: 'a big iron furnace abandoned in an empty courtyard, cold, its mouth dark',
+  swordsman: 'a swordsman standing in the middle of a road with his blade still sheathed, waiting',
+  pool: 'a still, clear pool of water among rocks with nothing living in it and mist above it',
+};
+
+function meetSheet(): Sheet {
+  return {
+    key: 'meetings',
+    han: '緣',
+    title: 'The ten encounters',
+    kind: 'meet',
+    cols: 4,
+    rows: 3,
+    realms: MEETINGS.map((m) => m.realm),
+    cells: MEETINGS.map((m) => ({
+      key: m.key,
+      han: m.han,
+      name: m.name,
+      subject: MEET_SCENE[m.key] ?? m.name.toLowerCase(),
+    })),
+  };
+}
+
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
   ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
+  meetSheet(),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -185,25 +234,33 @@ export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) 
  * grid, the identical ground in every panel, and the subject kept inside its own panel.
  */
 export function sheetPrompt(s: Sheet): string {
-  const shape = s.kind === 'beast'
+  const shape = s.kind === 'meet'
+    ? 'Each panel holds one small scene, wider than it is tall, seen from a few paces away with plenty of bare paper around it. No frame inside the panel, nothing behind the subject but the road, the ground or the mist it is standing in.'
+    : s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
     : s.kind === 'self'
-      ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine and they do not age: what changes is their standing and how solidly they are there, from an ordinary villager in panel one to something barely painted in panel nine. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
-      : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
+    ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine and they do not age: what changes is their standing and how solidly they are there, from an ordinary villager in panel one to something barely painted in panel nine. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
+    : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {
-      const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
-      const pig = inkOf(n);
-      const whose = s.kind === 'self' ? 'The one pigment on the robe is' : 'Its one pigment is';
+      const n = s.kind === 'beast' || s.kind === 'meet' ? s.realms[Math.floor(i / s.cols)] : i + 1;
+      const pig = inkOf(s.kind === 'meet' ? s.realms[i] : n);
+      const whose = s.kind === 'self' ? 'The one pigment on the robe is'
+        : s.kind === 'meet' ? 'The one pigment in the scene is'
+        : 'Its one pigment is';
       return `  Row ${Math.floor(i / s.cols) + 1}, panel ${(i % s.cols) + 1}: ${c.subject}. ${whose} ${pig.stuff}.`;
     })
     .join('\n');
-  const album = s.kind === 'self' ? 'album of portraits' : 'bestiary album';
+  const album = s.kind === 'self' ? 'album of portraits'
+    : s.kind === 'meet' ? 'album of scenes from a traveller\'s notebook'
+    : 'bestiary album';
+  const panels = s.cols * s.rows;
+  const spare = panels - s.cells.length;
   return `One single square image: a page from an old Chinese ${album}, ruled
-into a grid of ${s.cols} columns by ${s.rows} rows, ${s.cells.length} panels in all.
+into a grid of ${s.cols} columns by ${s.rows} rows, ${panels} panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
-${s.cells.length} equal rectangular panels with a narrow margin of bare paper
+${panels} equal rectangular panels with a narrow margin of bare paper
 around the outside. Every panel has exactly the same aged paper ground as
 every other one. ${shape} Nothing crosses a rule: no tail, no wing and no
 mist leaves the panel it belongs to.
@@ -211,10 +268,13 @@ mist leaves the panel it belongs to.
 The panels, in reading order:
 
 ${list}
-
+${spare > 0
+  ? `\nThe last ${spare === 1 ? 'panel' : `${spare} panels`} of the grid ${spare === 1 ? 'is' : 'are'} left as bare paper,
+ruled like the others with nothing drawn inside.\n`
+  : ''}
 ${MATERIALS}
 
-Again, and this matters more than anything else in this prompt: ${s.cells.length}
+Again, and this matters more than anything else in this prompt: ${panels}
 panels, ${s.cols} across and ${s.rows} down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.`;
 }
@@ -235,6 +295,8 @@ in every panel, and no letters or characters anywhere on the page.`;
 function demoLeaf(s: Sheet): string {
   const paper = '#E8DCC6';
   const rule = '#4A4038';
+  const blanks = Array.from({ length: s.cols * s.rows - s.cells.length },
+    () => '<div class="pn"></div>').join('');
   const panels = s.cells
     .map((c, i) => {
       const n = s.kind === 'beast' ? s.realms[Math.floor(i / s.cols)] : i + 1;
@@ -244,7 +306,9 @@ function demoLeaf(s: Sheet): string {
       // figure, which is the pictogram the painting is there to replace.
       const body = s.kind === 'self'
         ? ICONS.meditation ?? ''
-        : ICONS[BEASTS.find((b) => b.key === c.key)?.icon ?? ''] ?? '';
+        : s.kind === 'meet'
+          ? ICONS[MEETINGS.find((m) => m.key === c.key)?.icon ?? ''] ?? ''
+          : ICONS[BEASTS.find((b) => b.key === c.key)?.icon ?? ''] ?? '';
       const tone = mix(inkOf(n).colour, '#221C16', 0.55);
       // 圖 The icon library is drawn in a 512 box, so a panel is that box wobbled a
       // little about its own centre: a model never places two creatures identically and
@@ -281,7 +345,7 @@ function demoLeaf(s: Sheet): string {
       <feGaussianBlur stdDeviation="1.6"/>
     </filter>
   </defs></svg>
-  <div class="grid">${panels}</div>
+  <div class="grid">${panels}${blanks}</div>
 </div>`;
 }
 
@@ -416,23 +480,28 @@ const page = `<meta charset="utf-8">
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>Four sheets have already been generated and they painted the whole
-      bestiary and all nine realms</b>: 36 creatures, 9 places. What is left is the
-      cultivator and the nine heavens.</p>
+    <p class="t"><b>Seven sheets are done and they painted almost the whole game</b>: 36
+      creatures, 9 places and the cultivator twice, 63 paintings. What is left is 緣 the
+      ten encounters and 境外 the nine heavens.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
         <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
         <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
     </table>
-    <div class="rule"><b>修 The cultivator is the one to do next.</b> Once the creatures
-      were painted he was the last pictogram on a screen full of brushwork: Bruno,
-      <i>"continua estranho principalmente o cultivador, fora de enquadramento
-      artístico."</i> One sheet, nine panels, the same person ageing nine times.
-      <b>And the aura is deliberately not in it.</b> The aura grows with the climb, it
-      breathes on a pulse the code owns and it is read off the save, so it stays drawn and
-      the painting stands inside it. Asking a model for a glow nine times would give nine
-      different glows and the ladder would stop reading as a ladder.</div>
+    <div class="rule"><b>緣 The encounters are the one to do next.</b> They are the cards
+      the game raises on its own screen while you are sitting there, and each one is still
+      carrying a pictogram in place of a picture: a raven for a crow that has followed you
+      a mile, a cauldron for an abandoned furnace. They are the one moment an idle game
+      stops for.
+      <b>This sheet is the only one that is not square.</b> Every encounter is a thing
+      lying in a road or a person standing in one, and a scene wants width, so it is four
+      across and three down and the last two panels are asked for empty.</div>
+    <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
+      The aura grows with the climb, it breathes on a pulse the code owns and it is read
+      off the save, so it stays drawn and the painting stands inside it. Asking a model for
+      a glow nine times would give nine different glows and the ladder would stop reading
+      as a ladder.</div>
   </section>
 
   <section class="sec">

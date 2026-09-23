@@ -146,8 +146,9 @@ for a ruled album leaf of twelve panels, with a map of which panel is which crea
     npm run sheets                                  the prompts
     npm run slice -- beasts-a ink-sheets/beasts-a.png   cut the sheet it gave back
 
-The sheets are `wardens`, `self`, `beasts-a`, `beasts-b`, `beasts-c` and `realms`, nine
-panels each. `slice` measures where the rules actually landed rather than dividing the page by four,
+The sheets are `wardens`, `self-woman`, `self-man`, `beasts-a`, `beasts-b`, `beasts-c`
+and `realms`, nine square panels each, plus `meetings`, which is four across and three
+down because an encounter is a scene and a scene wants width. `slice` measures where the rules actually landed rather than dividing the page by four,
 cuts the panels, squares each one about its own subject and writes
 `public/art/beast/<key>.webp`, plus `public/art/cut/<key>.webp` with the paper keyed off.
 牌 the plate wears the paper; 鬥 the arena wears the cut-out. 修 the cultivator is only

@@ -69,9 +69,9 @@
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>Four sheets have already been generated and they painted the whole
-      bestiary and all nine realms</b>: 36 creatures, 9 places. What is left is the
-      cultivator and the nine heavens.</p>
+    <p class="t"><b>Seven sheets are done and they painted almost the whole game</b>: 36
+      creatures, 9 places and the cultivator twice, 63 paintings. What is left is 緣 the
+      ten encounters and 境外 the nine heavens.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       <tr><td><b class="cjk">獸王</b> The nine wardens</td>
@@ -80,7 +80,9 @@
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/self-woman.png</code></td></tr><tr><td><b class="cjk">男修</b> The cultivator, a man</td>
         <td>9 panels</td><td>3 by 3</td>
-        <td><code>ink-sheets/self-man.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
+        <td><code>ink-sheets/self-man.png</code></td></tr><tr><td><b class="cjk">緣</b> The ten encounters</td>
+        <td>10 panels</td><td>4 by 3</td>
+        <td><code>ink-sheets/meetings.png</code></td></tr><tr><td><b class="cjk">獸甲</b> The commons of the first three realms</td>
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/beasts-a.png</code></td></tr><tr><td><b class="cjk">獸乙</b> The commons of the middle three realms</td>
         <td>9 panels</td><td>3 by 3</td>
@@ -90,14 +92,19 @@
         <td>9 panels</td><td>3 by 3</td>
         <td><code>ink-sheets/realms.png</code></td></tr>
     </table>
-    <div class="rule"><b>修 The cultivator is the one to do next.</b> Once the creatures
-      were painted he was the last pictogram on a screen full of brushwork: Bruno,
-      <i>"continua estranho principalmente o cultivador, fora de enquadramento
-      artístico."</i> One sheet, nine panels, the same person ageing nine times.
-      <b>And the aura is deliberately not in it.</b> The aura grows with the climb, it
-      breathes on a pulse the code owns and it is read off the save, so it stays drawn and
-      the painting stands inside it. Asking a model for a glow nine times would give nine
-      different glows and the ladder would stop reading as a ladder.</div>
+    <div class="rule"><b>緣 The encounters are the one to do next.</b> They are the cards
+      the game raises on its own screen while you are sitting there, and each one is still
+      carrying a pictogram in place of a picture: a raven for a crow that has followed you
+      a mile, a cauldron for an abandoned furnace. They are the one moment an idle game
+      stops for.
+      <b>This sheet is the only one that is not square.</b> Every encounter is a thing
+      lying in a road or a person standing in one, and a scene wants width, so it is four
+      across and three down and the last two panels are asked for empty.</div>
+    <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
+      The aura grows with the climb, it breathes on a pulse the code owns and it is read
+      off the save, so it stays drawn and the painting stands inside it. Asking a model for
+      a glow nine times would give nine different glows and the ladder would stop reading
+      as a ladder.</div>
   </section>
 
   <section class="sec">
@@ -273,6 +280,60 @@ hundred years ago. No text, no letters and no characters anywhere.
 
 Again, and this matters more than anything else in this prompt: 9
 panels, 3 across and 3 down, thin ink rules between them, the same paper
+in every panel, and no letters or characters anywhere on the page.</pre>
+  </section><section class="sec">
+    <h2><span class="h cjk">緣</span> The ten encounters</h2>
+    <p class="t">10 panels, 4 across and 3 down. Saved as
+      <code>ink-sheets/meetings.png</code>.</p>
+    <div class="shgrid" style="grid-template-columns:repeat(4,1fr)">
+  <div class="shcell"><b>1</b><span class="cjk">老者</span>
+      <i>An old man on the mountain road</i><code>meet/oldman.webp</code></div><div class="shcell"><b>2</b><span class="cjk">斷劍</span>
+      <i>A broken sword in the road</i><code>meet/brokensword.webp</code></div><div class="shcell"><b>3</b><span class="cjk">乞兒</span>
+      <i>A child begging at a shrine</i><code>meet/beggar.webp</code></div><div class="shcell"><b>4</b><span class="cjk">行商</span>
+      <i>A merchant with a covered cart</i><code>meet/merchant.webp</code></div><div class="shcell"><b>5</b><span class="cjk">醉道</span>
+      <i>A drunk cultivator under a tree</i><code>meet/drunk.webp</code></div><div class="shcell"><b>6</b><span class="cjk">老鴉</span>
+      <i>A crow that will not leave</i><code>meet/crow.webp</code></div><div class="shcell"><b>7</b><span class="cjk">殘碑</span>
+      <i>A broken stele</i><code>meet/stele.webp</code></div><div class="shcell"><b>8</b><span class="cjk">棄爐</span>
+      <i>An abandoned furnace</i><code>meet/furnace.webp</code></div><div class="shcell"><b>9</b><span class="cjk">劍客</span>
+      <i>A swordsman who wants a bout</i><code>meet/swordsman.webp</code></div><div class="shcell"><b>10</b><span class="cjk">靈池</span>
+      <i>A pool with nothing living in it</i><code>meet/pool.webp</code></div>
+</div>
+    <h3>詞 The prompt</h3>
+    <pre>One single square image: a page from an old Chinese album of scenes from a traveller's notebook, ruled
+into a grid of 4 columns by 3 rows, 12 panels in all.
+
+Draw the grid: thin dry ink rules, edge to edge, dividing the page into
+12 equal rectangular panels with a narrow margin of bare paper
+around the outside. Every panel has exactly the same aged paper ground as
+every other one. Each panel holds one small scene, wider than it is tall, seen from a few paces away with plenty of bare paper around it. No frame inside the panel, nothing behind the subject but the road, the ground or the mist it is standing in. Nothing crosses a rule: no tail, no wing and no
+mist leaves the panel it belongs to.
+
+The panels, in reading order:
+
+  Row 1, panel 1: an old man sitting at the side of a mountain road with a bundle beside him, seen from a little way off. The one pigment in the scene is celadon.
+  Row 1, panel 2: a sword snapped just above the guard, lying in the dirt of a road, nobody in the picture. The one pigment in the scene is celadon.
+  Row 1, panel 3: a small child with an empty bowl sitting at the foot of a neglected roadside shrine. The one pigment in the scene is celadon.
+  Row 1, panel 4: a covered handcart halted on an empty road, its owner standing beside it. The one pigment in the scene is old bronze.
+  Row 2, panel 1: a dishevelled man slumped asleep against a tree with a gourd fallen beside him. The one pigment in the scene is old bronze.
+  Row 2, panel 2: a single crow on a bare branch, something small held in its beak, the road below empty. The one pigment in the scene is old bronze.
+  Row 2, panel 3: a stone tablet broken in half standing in long grass, the carving on it worn away. The one pigment in the scene is gold leaf.
+  Row 2, panel 4: a big iron furnace abandoned in an empty courtyard, cold, its mouth dark. The one pigment in the scene is gold leaf.
+  Row 3, panel 1: a swordsman standing in the middle of a road with his blade still sheathed, waiting. The one pigment in the scene is amber.
+  Row 3, panel 2: a still, clear pool of water among rocks with nothing living in it and mist above it. The one pigment in the scene is amber.
+
+The last 2 panels of the grid are left as bare paper,
+ruled like the others with nothing drawn inside.
+
+Style: classical Chinese ink painting on aged silk. Wet brush, visible
+strokes, ink bleeding into the fibre, large areas of empty paper. Muted
+mineral pigment only: jade green, gold leaf, cinnabar red, bone white,
+soot black. No neon, no glow, no rim light, no lens flare, no science
+fiction, no cyberpunk. Nothing emits light except a lantern or the moon.
+It should look like a plate from a bestiary somebody believed in six
+hundred years ago. No text, no letters and no characters anywhere.
+
+Again, and this matters more than anything else in this prompt: 12
+panels, 4 across and 3 down, thin ink rules between them, the same paper
 in every panel, and no letters or characters anywhere on the page.</pre>
   </section><section class="sec">
     <h2><span class="h cjk">獸甲</span> The commons of the first three realms</h2>

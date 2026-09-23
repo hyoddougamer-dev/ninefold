@@ -1,5 +1,6 @@
 import { canAnswer, giftOf, priceOf, type Meeting, type Pick } from '../../sim/meet.ts';
 import { icon } from '../../art/icon.ts';
+import { pictureOf } from '../../data/pictures.ts';
 import { num } from '../../sim/format.ts';
 import { Svg } from './Svg.tsx';
 import { MEET } from '../copy.ts';
@@ -39,9 +40,22 @@ export function Meet({ state, meeting, onAnswer }: {
     return bits.join(' · ');
   };
 
+  /**
+   * 緣 The scene, where there is one.
+   *
+   * 圖 An encounter is the one moment an idle game stops for, and it was carrying a 30px
+   * pictogram: a raven for a crow that has followed you a mile, a cauldron for an
+   * abandoned furnace. Painted, it goes across the top of the card as a band, which is
+   * the shape those scenes were drawn in and the shape a page of a traveller's notebook
+   * has. With no painting the card is exactly what it was.
+   */
+  const scene = pictureOf('meet', meeting.key);
+
   return (
-    <div className="meet">
-      <span className="s"><Svg html={icon(meeting.icon, 30)} /></span>
+    <div className="meet" data-scene={!!scene}>
+      {scene
+        ? <img className="scenery" src={scene} alt="" aria-hidden="true" />
+        : <span className="s"><Svg html={icon(meeting.icon, 30)} /></span>}
       <div className="body">
         <b><span className="cjk">緣</span> {meeting.name}</b>
         <i>{meeting.line}</i>

@@ -14,7 +14,7 @@
  */
 
 /** A painted thing, by the key it is known by in its own table. */
-export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self';
+export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self' | 'meet';
 
 /**
  * The keys that have a file, by kind. Written by the tool, never by hand.
@@ -26,6 +26,9 @@ export type Painted = 'beast' | 'realm' | 'heaven' | 'cut' | 'self';
  * cut the same way as `cut`. It
  * stands inside the aura rather than replacing it: the rings, motes and halos are read
  * off the save and breathe on a pulse, and no painting can carry that.
+ *
+ * 緣 `meet` is an encounter, one wide scene each, keeping its paper: it is a page out of
+ * a traveller's notebook and it is shown as one, in a band across the top of the card.
  *
  * 剪 `cut` is the same creature with the paper keyed off it, at its own shape rather than
  * squared. 牌 the plate wears the paper, because at 46 pixels a pale disc with a painting
@@ -141,6 +144,7 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
     'woman-8',
     'woman-9',
   ],
+  meet: [],
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */

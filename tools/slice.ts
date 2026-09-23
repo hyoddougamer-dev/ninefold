@@ -38,7 +38,10 @@ const CIRCLE = 0.84;
     46px disc, so it is given more room than 牌 the plate would ever need. */
 const CUT_MAX = 720;
 /** 獸 A creature is square and small on screen. 境 a realm is a wide card background. */
-const OUT = { beast: { w: 512, h: 512 }, realm: { w: 768, h: 432 }, self: { w: 512, h: 512 } } as const;
+const OUT = {
+  beast: { w: 512, h: 512 }, realm: { w: 768, h: 432 },
+  self: { w: 512, h: 512 }, meet: { w: 768, h: 432 },
+} as const;
 
 /** Greyscale rows, so a column can be asked how much it varies from top to bottom. */
 async function grey(file: string) {
@@ -451,7 +454,7 @@ async function cut(sheet: Sheet, file: string) {
       continue;
     }
 
-    if (sheet.kind === 'realm') {
+    if (sheet.kind === 'realm' || sheet.kind === 'meet') {
       await sharp(file).extract(box).resize(size.w, size.h, { fit: 'cover' }).webp({ quality: 82 }).toFile(out);
       written.push(out);
       continue;
