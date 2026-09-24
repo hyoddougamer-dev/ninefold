@@ -612,6 +612,25 @@
   #paint .pair em { display:block; font-style:normal; font-size:12.5px; margin-top:8px; }
   #paint .pair i { display:block; font-style:normal; font-size:11.5px; color:var(--faint); }
 
+  /* 問 The three questions: a bar in a table cell, and the row that is the top. */
+  #questions .wk { display:block; height:7px; border-radius:99px; background:var(--line);
+                   overflow:hidden; min-width:90px; }
+  #questions .wk i { display:block; height:100%; border-radius:99px; background:var(--jade); }
+  #questions table.live td:last-child { width:45%; }
+  #questions table.worth td, #questions table.worth th { padding:5px 6px; font-size:13px; }
+  #questions tr.last td { border-top:2px solid var(--gold); }
+  #questions .row em { display:block; }
+
+  /* 鬥 The arena, photographed before and drawn after, side by side. */
+  #paint .shots { display:grid; gap:12px; margin:14px 0 6px; }
+  @media(min-width:640px){ #paint .shots { grid-template-columns:1fr 1fr; } }
+  #paint .shots figure { margin:0; }
+  #paint .shots img { display:block; width:100%; border-radius:10px;
+                      border:1px solid var(--line); }
+  #paint .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint);
+                             line-height:1.5; }
+  #paint .shots b { color:var(--text); font-weight:600; }
+
   
   /* 圖外 A drawing that lives in a file beside this page.
      An <img class="pl"> keeps its own colours. An <i class="pl"> is a silhouette:
@@ -640,6 +659,7 @@
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#paint"><b>畫</b> The paintings</a>
+      <a href="#questions"><b>問</b> Three questions</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -749,21 +769,28 @@
 
     <h3>O que mudou na última noite</h3>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">氣</b> <em>O qi por segundo já não anda sozinho</em>
-        <i>São dois números: o teu ritmo fixo, e o 入定 que sobe até ×3 e acaba ao fim de
-        quinze minutos. Agora o fixo vem à frente e o outro diz-se pelo nome.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">待</b> <em>Um preço que não podes pagar diz quando podes</em>
-        <i>Ou <code>in 8 min</code>, ou <code>4 rungs up the climb</code>, porque a barra
-        gasta o teu qi antes de ele chegar tão alto, e há coisas que só abrem a subir.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">完</b> <em>As bestas acabadas dobram-se</em>
-        <i>No nono reino o ecrã da caça tinha 25 botões todos a dizer 98%, metade deles já
-        terminados. Passou de 26 cartões para 14.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">廣</b> <em>O 材 material nunca mais fica morto</em>
-        <i>Zero por cento em todos os nove reinos, mesmo para quem carrega no botão sem
-        parar. Antes eram 70% do sétimo reino.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">頻</b> <em>O save escrevia 5 vezes por segundo</em>
-        <i>Dizia de 4 em 4 segundos. Agora é mesmo de 4 em 4, o que dá bateria e fluidez no
+      <div class="row"><span class="body"><b class="cjk">鬥</b> <em>A arena deixou de ter uma moeda ao pé de um bicho</em>
+        <i>O cultivador era um disco de papel com brilho e metade do tamanho do monstro.
+        Agora os dois são recortados da mesma maneira, ficam do mesmo lado da mesma escala
+        e o chão já não é uma barra preta. Ver 畫 mais acima.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">墨</b> <em>A paleta estava pintada a meio</em>
+        <i>Oito sítios ainda pediam o ciano e o magenta que a paleta já não tem, e uma
+        propriedade que não existe não dá erro: herda. O 勝 da vitória e as
+        probabilidades da caça estavam a sair da cor do texto. Há agora um teste que
+        chumba se voltar a acontecer.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">動</b> <em>Quatro coisas passaram a mexer</em>
+        <i>Partículas de qi à volta do cultivador no ecrã principal. O nível salta quando se
+        compra, o 突破 abre com uma mancha de tinta, e a torre mostra os andares que ainda
+        não existem. Tudo isto pára sozinho para quem pede menos movimento no
         telemóvel.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">問</b> <em>As três perguntas têm resposta medida</em>
+        <i>Sim, há que fazer: 6 tipos de coisa e 31 toques por visita. O problema é outro,
+        e está em 問: <b>depois do dia 21 não chega nada de novo</b>. O equipamento vale
+        ×7.9 e é o terceiro maior. 爐 A fornalha nunca é usada.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">畫</b> <em>A bíblia mostra a arte</em>
+        <i>Uma secção nova com as folhas, o corte, as duas figuras nos nove reinos, as
+        bestas, os céus e os emblemas. São os ficheiros do jogo, não desenhos feitos para
+        a página.</i></span></div>
     </div>
 
     <h3>Está tudo funcional?</h3>
@@ -779,7 +806,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>264 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>266 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -1116,6 +1143,27 @@
         <em>牌 the plate</em><i>46px, on the hunt list. Keeps its paper.</i></span>
       <span><img src="bible-art/art/cut/tiger.webp" alt="The cut-out of the White Tiger">
         <em>剪 the cut-out</em><i>Full size, in the arena. The paper is keyed off.</i></span>
+    </div>
+    <h3>鬥 The arena, before and after</h3>
+    <p class="t">The left is Bruno's own phone at midnight, and the words that came with
+      it: <i>"a arena está péssima como podes ver e sem criatividade, cultivador menor que
+      os monstros ... Mas está feio."</i> The right is the same fight, at the same width,
+      from the built game. Both fighters are cut the same way now and sized against each
+      other rather than against the half they were given. The ground has no line in
+      it.</p>
+    <div class="shots">
+      <figure>
+        <img src="bible-art/shot/arena-before.webp" alt="The arena before: the cultivator inside a bright disc, half the size of the boar">
+        <figcaption><b>Before.</b> A coin with somebody in it, a boar twice her size, and
+          a black bar for a floor. She is 96 pixels of painting inside 190 pixels of
+          paper.</figcaption>
+      </figure>
+      <figure>
+        <img src="bible-art/shot/arena-after.webp" alt="The arena after: both fighters cut the same way, on the same ground">
+        <figcaption><b>After.</b> 滲 the same bleed on both, 圓光 the halo behind her head,
+          and the painting running down into the dark instead of stopping at a
+          rule.</figcaption>
+      </figure>
     </div>
     <p class="t">Keying the paper off is the one step that cannot be done by darkness
       either. Pale creatures came out full of holes: the inside of a white tiger is as
@@ -1583,6 +1631,277 @@
       better one. <code>npm run pictures</code> reads the folder and writes the list, so a
       painting dropped in is in the game on the next build, and a painting nobody made
       costs nothing at all.</p>
+  </section>
+
+  <section class="sec" id="questions">
+    <h2><span class="h">問</span> Three questions, answered with numbers</h2>
+    <p class="t">Bruno, at midnight, going to bed: <i>"um player ativo tem atividades
+      suficientes e não se aborrece rápido? Tem conteúdo relevante para fazermos rankings
+      etc? Sistema de equipamentos atual é relevante?"</i> Two of the three are
+      measurable, so they were measured rather than argued about. The harnesses that
+      answer them are <code>npm run busy</code> and <code>npm run worth</code>. The third
+      is a decision, and it is written down as one.</p>
+
+    <h3>忙 Is there enough to do?</h3>
+    <p class="t">A kind is a system with something to offer: hunting, the tower, the cave,
+      an upgrade that can be afforded. A tap is one separate action, so twenty beasts
+      within reach is one kind and twenty taps. Kinds are the number that matters, because
+      twenty of the same button is one decision made twenty times. A thin visit is two
+      kinds or fewer: open the app, press the one thing, close it.</p>
+    <table>
+      <tr><th>how they play</th><th style="text-align:right">visits</th>
+          <th style="text-align:right">kinds</th><th style="text-align:right">taps</th>
+          <th style="text-align:right">thin</th><th style="text-align:right">quiet</th></tr>
+      <tr>
+  <td><em>casual</em></td>
+  <td class="n">250</td>
+  <td class="n">7.6</td>
+  <td class="n">36</td>
+  <td class="n">1%</td>
+  <td class="n">18d</td>
+</tr><tr>
+  <td><em>active</em></td>
+  <td class="n">329</td>
+  <td class="n">6.1</td>
+  <td class="n">31</td>
+  <td class="n">1%</td>
+  <td class="n">12d</td>
+</tr><tr>
+  <td><em>every hour</em></td>
+  <td class="n">892</td>
+  <td class="n">4.5</td>
+  <td class="n">29</td>
+  <td class="n">0%</td>
+  <td class="n">8d</td>
+</tr>
+    </table>
+    <div class="rule"><b>Yes, and it is not close.</b> The active cultivator has
+      6.1 kinds of thing to do and 31
+      separate actions waiting on an average visit, and
+      1% of visits
+      are thin. Nothing in the first two months is a screen with one button on it.</div>
+    <p class="t">The honest half of the answer is the last column. <b>The problem is not
+      how much there is to do, it is that nothing new arrives after the third week.</b>
+      11 of the 15 systems are open inside the first four days, the
+      last of them on day 22, and everything after that is 雷池 the
+      tribulation, which is the ninth realm itself. The longest stretch with nothing new
+      named at all is
+      12 days, starting on day 22.
+      A player who is still there on day forty is doing the same fifteen things they were
+      doing on day twenty, faster.</p>
+    <table>
+      <tr><th>when</th><th>what opens</th></tr>
+      <tr>
+  <td class="n">day 0.2</td><td>realm 1</td></tr><tr>
+  <td class="n">day 0.2</td><td>狩 Hunting</td></tr><tr>
+  <td class="n">day 0.2</td><td>妖丹 Beast Cores</td></tr><tr>
+  <td class="n">day 0.2</td><td>錄 The Record</td></tr><tr>
+  <td class="n">day 0.8</td><td>realm 2</td></tr><tr>
+  <td class="n">day 0.8</td><td>器 Gear</td></tr><tr>
+  <td class="n">day 0.8</td><td>煉器 Refining</td></tr><tr>
+  <td class="n">day 0.8</td><td>洞天 The Cave</td></tr><tr>
+  <td class="n">day 0.8</td><td>勢 Stances and Arts</td></tr><tr>
+  <td class="n">day 0.8</td><td>道 The Path</td></tr><tr>
+  <td class="n">day 1.7</td><td>realm 3</td></tr><tr>
+  <td class="n">day 1.7</td><td>煉 Fusing</td></tr><tr>
+  <td class="n">day 1.7</td><td>秘境 The Secret Realm</td></tr><tr>
+  <td class="n">day 4.0</td><td>realm 4</td></tr><tr>
+  <td class="n">day 4.0</td><td>樞 The Keystones</td></tr><tr>
+  <td class="n">day 8.7</td><td>realm 5</td></tr><tr>
+  <td class="n">day 8.7</td><td>塔 The Endless Tower</td></tr><tr>
+  <td class="n">day 12.2</td><td>realm 6</td></tr><tr>
+  <td class="n">day 12.2</td><td>圖鑑 The Bestiary</td></tr><tr>
+  <td class="n">day 21.5</td><td>realm 7</td></tr><tr>
+  <td class="n">day 21.5</td><td>爐 The Furnace</td></tr><tr>
+  <td class="n">day 33.5</td><td>realm 8</td></tr><tr>
+  <td class="n">day 45.2</td><td>realm 9</td></tr><tr>
+  <td class="n">day 45.2</td><td>雷池 The Tribulation</td></tr>
+    </table>
+    <p class="t">And this is which systems are actually live, visit by visit, across the
+      whole climb of the active cultivator. A low number is not automatically wrong: 守 the
+      warden is meant to be rare and 突破 the breakthrough is meant to be nine moments. A
+      low number on something that cost a month to build is worth looking at.</p>
+    <table class="live"><tr>
+      <td><b class="cjk">修</b> <i>buy an upgrade</i></td>
+      <td class="n">25%</td>
+      <td><span class="wk"><i style="width:25%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">狩</b> <i>hunt a beast</i></td>
+      <td class="n">100%</td>
+      <td><span class="wk"><i style="width:100%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">圍</b> <i>drive a beast</i></td>
+      <td class="n">99%</td>
+      <td><span class="wk"><i style="width:99%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">守</b> <i>fight the warden</i></td>
+      <td class="n">2%</td>
+      <td><span class="wk"><i style="width:2%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">突破</b> <i>break through</i></td>
+      <td class="n">0%</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">凝丹</b> <i>condense a core</i></td>
+      <td class="n">0%</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">塔</b> <i>climb a floor</i></td>
+      <td class="n">32%</td>
+      <td><span class="wk"><i style="width:32%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">爐</b> <i>brew a pill</i></td>
+      <td class="n">61%</td>
+      <td><span class="wk"><i style="width:61%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">煉器</b> <i>refine a piece</i></td>
+      <td class="n">17%</td>
+      <td><span class="wk"><i style="width:17%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">道</b> <i>learn a node</i></td>
+      <td class="n">98%</td>
+      <td><span class="wk"><i style="width:98%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">洞天</b> <i>work the cave</i></td>
+      <td class="n">98%</td>
+      <td><span class="wk"><i style="width:98%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">秘境</b> <i>walk the vault</i></td>
+      <td class="n">49%</td>
+      <td><span class="wk"><i style="width:49%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">悟道</b> <i>take a card</i></td>
+      <td class="n">0%</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">器</b> <i>wear what fell</i></td>
+      <td class="n">32%</td>
+      <td><span class="wk"><i style="width:32%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">拆</b> <i>melt the junk</i></td>
+      <td class="n">0%</td>
+      <td><span class="wk"><i style="width:0%"></i></span></td>
+    </tr></table>
+    <div class="warn"><b>爐 The furnace is never used.</b> It reads 0% because an active
+      cultivator never needs it. The harness brews only when a warden is out of reach, and
+      an active cultivator is never more than a visit away from beating one. 值 below says
+      the same thing from the other end, where the pills a climb ends with multiply power
+      by exactly ×1.00. A system that opens in the seventh realm and is never the right
+      move is a system to cut or to change. It is the one place on this page where the
+      measurement says something is wrong.</div>
+    <p class="t">The three zeroes above it are a different thing and not a fault. 突破 the
+      breakthrough, 悟道 the card and 拆 the melt are counted at the <em>start</em> of a
+      visit, and the visit before them did them. They are never waiting for you, which
+      is what they should be.</p>
+
+    <h3>值 Is the gear system relevant?</h3>
+    <p class="t">Exactly answerable, because <code>power()</code> multiplies its terms:
+      take a cultivator the harness has played to the top, strip one source out of the
+      save, and divide. What comes back is what that source is carrying, with nothing to
+      argue about.</p>
+    <table class="worth">
+      <tr><th>at</th><th style="text-align:right">劍訣</th><th style="text-align:right">妖丹</th><th style="text-align:right">器</th><th style="text-align:right">道</th><th style="text-align:right">丹</th><th style="text-align:right">錄</th><th style="text-align:right">雷池</th></tr>
+      <tr>
+  <td><b class="cjk">練氣</b> <i>realm 1</i></td>
+  <td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">築基</b> <i>realm 2</i></td>
+  <td class="n">×4.02</td><td class="n">×1.36</td><td class="n">×1.10</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">金丹</b> <i>realm 3</i></td>
+  <td class="n">×8.91</td><td class="n">×1.85</td><td class="n">×1.84</td><td class="n">×1.98</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">元嬰</b> <i>realm 4</i></td>
+  <td class="n">×29</td><td class="n">×3.17</td><td class="n">×2.09</td><td class="n">×3.37</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">化神</b> <i>realm 5</i></td>
+  <td class="n">×97</td><td class="n">×14</td><td class="n">×2.33</td><td class="n">×3.45</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">煉虛</b> <i>realm 6</i></td>
+  <td class="n">×319</td><td class="n">×43</td><td class="n">×3.78</td><td class="n">×3.66</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">合體</b> <i>realm 7</i></td>
+  <td class="n">×1k</td><td class="n">×64</td><td class="n">×4.93</td><td class="n">×3.48</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.04</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">大乘</b> <i>realm 8</i></td>
+  <td class="n">×4k</td><td class="n">×149</td><td class="n">×5.61</td><td class="n">×3.51</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.08</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr>
+  <td><b class="cjk">渡劫</b> <i>realm 9</i></td>
+  <td class="n">×11k</td><td class="n">×174</td><td class="n">×7.23</td><td class="n">×3.62</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.12</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr><tr class="last">
+  <td><b class="cjk">渡劫</b> <i>the top</i></td>
+  <td class="n">×38k</td><td class="n">×255</td><td class="n">×7.89</td><td class="n">×3.62</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.16</td><td class="n" style="color:var(--faint)">×1.00</td>
+</tr>
+    </table>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">劍訣</b>
+          <em>technique levels ×38k</em><i>bought with qi, capped by the realm</i></span></div><div class="row"><span class="body"><b class="cjk">妖丹</b>
+          <em>beast cores ×255</em><i>bought with 材 material only</i></span></div><div class="row"><span class="body"><b class="cjk">器</b>
+          <em>the gear worn ×7.89</em><i>what falls off beasts, refined in 煉器</i></span></div><div class="row"><span class="body"><b class="cjk">道</b>
+          <em>the path tree ×3.62</em><i>points earned, never bought</i></span></div><div class="row"><span class="body"><b class="cjk">丹</b>
+          <em>pills brewed ×1.00</em><i>qi poured into 爐 the furnace</i></span></div><div class="row"><span class="body"><b class="cjk">錄</b>
+          <em>the record ×1.16</em><i>every beast ever killed, for ever</i></span></div><div class="row"><span class="body"><b class="cjk">雷池</b>
+          <em>tribulation marks ×1.00</em><i>crossings above the ninth realm</i></span></div>
+    </div>
+    <div class="rule"><b>器 Gear is relevant, and it is third.</b> It multiplies a finished
+      cultivator's power by 7.9, behind 劍訣
+      technique and 妖丹 cores and ahead of 道 the tree. It is also the only one of the
+      seven that arrives by luck rather than by being paid for. That is the argument for
+      keeping it: it is the reason two cultivators with the same numbers are not the same
+      cultivator. What it is <em>not</em> is a system a player thinks about, because the
+      chest already knows the answer: wear the better piece. The decision it could have and
+      does not is 親 affinity, which the tree pays for by slot and almost nobody would
+      notice.</div>
+
+    <h3>榜 Is there anything to rank?</h3>
+    <p class="t">There is plenty worth ranking. Days to the ninth realm, floors of 塔 the
+      tower, crossings of 雷池 the tribulation, how much of the bestiary is 通 Mastered, the
+      power at the top. Every one of them is a single number already in the save.</p>
+    <p class="t">The reason there is no leaderboard is not content, it is that
+      <b>九境 has no server and the save is a text file on the phone</b>. Anything a phone
+      sends can be written by the person holding it. A ranking built on numbers the save
+      reports is a ranking of who edited their save, and the first week of any leaderboard
+      is the week that proves it. There are three honest ways out, in order of cost:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">碑</b> <em>The stele, which already exists</em>
+        <i>A run's record, written for the player alone. No server, no cheating, no
+        comparison. It is what the game does today and it is the right default.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">局</b> <em>A season with a seed</em>
+        <i>Everybody plays the same seeded run for a fortnight and what is uploaded is the
+        <b>input</b>, not the score: the taps and their times. The server replays them
+        through <code>sim/</code>, which is pure by rule, and gets the same number or
+        throws the run away. This is the one design that works because of how this game is
+        already written, and it is a week of work and a small server.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">友</b> <em>Friends only, unverified</em>
+        <i>A code you paste to a friend. Nobody polices it, and nobody minds, because the
+        comparison is with somebody you know. Two days of work and no server at all.</i></span></div>
+    </div>
+    <p class="t"><b>The recommendation is 友 first and 局 only if the game finds an
+      audience.</b> A verified leaderboard on a game with no players is a server bill.</p>
+
+    <h3>續 What the measurement says to do next</h3>
+    <p class="t">Three things, in the order the numbers put them in. None of them is more
+      content for the sake of it: the first two are about a game that already has
+      everything in it by the third week.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">遲</b> <em>Hold two systems back</em>
+        <i>11 of the 15 arrive inside four days, five of them in the
+        second realm, which is one afternoon. Moving
+        秘境 the vault and 爐 the furnace up the climb costs nothing to build and buys two
+        arrivals in the month that currently has none.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">爐</b> <em>Give the furnace a job</em>
+        <i>It is the one system the measurement says is dead: 0% of visits, ×1.00 of a
+        finished cultivator's power. A pill is qi spent on power, and qi spent on the
+        ladder is also power, sooner. It needs to buy something the ladder cannot: a
+        consumable a warden actually wants, or a floor of 塔 the tower that will not open
+        without one.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">期</b> <em>One thing that changes on its own</em>
+        <i>Every system in this game is a staircase, and a staircase is finished the day
+        you see the top of it. The cheapest thing that is never finished is a rotation: a
+        beast the week pays double for, a room of 秘境 that moves, a herb that is only in
+        season. It is a day of work and it is the only kind of content that does not run
+        out.</i></span></div>
+    </div>
   </section>
 
   <section class="sec" id="proposals">
@@ -3822,37 +4141,37 @@
   </div>
   <div class="rung" style="--hue:#B2A566">
     <span class="no">3</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1fuy5j3.svg" alt="Golden Core, realm 3"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1dpylr5.svg" alt="Golden Core, realm 3"></span>
     <b class="cjk">金丹</b><i>Golden Core</i>
   </div>
   <div class="rung" style="--hue:#D2B35B">
     <span class="no">4</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aznhs36.svg" alt="Nascent Soul, realm 4"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ahtkx64.svg" alt="Nascent Soul, realm 4"></span>
     <b class="cjk">元嬰</b><i>Nascent Soul</i>
   </div>
   <div class="rung" style="--hue:#DFA555">
     <span class="no">5</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a170zfbz.svg" alt="Spirit Severing, realm 5"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/adcc1tt.svg" alt="Spirit Severing, realm 5"></span>
     <b class="cjk">化神</b><i>Spirit Severing</i>
   </div>
   <div class="rung" style="--hue:#D07C4A">
     <span class="no">6</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1mxgwvw.svg" alt="Void Refining, realm 6"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a23i7j6.svg" alt="Void Refining, realm 6"></span>
     <b class="cjk">煉虛</b><i>Void Refining</i>
   </div>
   <div class="rung" style="--hue:#CB5347">
     <span class="no">7</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ab3ydxz.svg" alt="Unity, realm 7"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1wvrtsn.svg" alt="Unity, realm 7"></span>
     <b class="cjk">合體</b><i>Unity</i>
   </div>
   <div class="rung" style="--hue:#BE5B72">
     <span class="no">8</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a13abuiy.svg" alt="Great Vehicle, realm 8"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a12a8one.svg" alt="Great Vehicle, realm 8"></span>
     <b class="cjk">大乘</b><i>Great Vehicle</i>
   </div>
   <div class="rung" style="--hue:#A077B8">
     <span class="no">9</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aak1ino.svg" alt="Tribulation, realm 9"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1sj5zxm.svg" alt="Tribulation, realm 9"></span>
     <b class="cjk">渡劫</b><i>Tribulation</i>
   </div></div>
     <div class="cards three">
@@ -4154,9 +4473,9 @@
   <section class="sec" id="combat">
     <h2><span class="h">戰</span> Combat</h2>
     <div class="stage">
-      <span class="sc"><img class="pl" style="width:100%;height:100%" src="bible-art/a7i94ti.svg" alt="" aria-hidden="true"></span>
+      <span class="sc"><img class="pl" style="width:100%;height:100%" src="bible-art/a14432iy.svg" alt="" aria-hidden="true"></span>
       <div class="duel">
-        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/a1eofeep.svg" alt="Void Refining, realm 6"></span>
+        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/are8sj3.svg" alt="Void Refining, realm 6"></span>
         <span class="mid cjk">對</span>
         <span class="foe"><i class="pl" style="width:64px;height:64px;--pl:url(bible-art/a1g87r9i.svg)" aria-hidden="true"></i></span>
       </div>

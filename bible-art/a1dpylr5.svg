@@ -16,7 +16,7 @@
       </filter>
     </defs>
     <circle cx="100" cy="100" r="100" fill="url(#gr3)"/>
-    <g class="halo" style="transform-origin:100px 84.0px"><circle cx="100" cy="84" r="34.5" fill="none" stroke="#B2A566" stroke-width="1.5" stroke-opacity="0.90" stroke-dasharray="0"/></g>
+    <g class="halo" style="transform-origin:100px 84.0px"><circle cx="100" cy="84.0" r="34.5" fill="none" stroke="#B2A566" stroke-width="1.5" stroke-opacity="0.90" stroke-dasharray="0"/></g>
     <!-- The aura is masked by a radial gradient: scaled to 2x it hits the edge of the
          viewBox, and without the mask the icons show as hard cropped blocks instead of
          as glow. -->

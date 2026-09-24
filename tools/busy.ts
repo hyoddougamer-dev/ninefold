@@ -95,11 +95,15 @@ export function watchHabit(name: string, maxDays = 120): readonly Visit[] {
   if (!habit) throw new Error(`忙 there is no habit called ${name}`);
   const visits: Visit[] = [];
   play(habit, maxDays, (day, s) => {
-    const open = KINDS.filter((k) => k.taps(s) > 0);
+    // 一 Counted once per kind. Asking each of them twice, once to know whether it is
+    // open and once for the total, doubles the cost of a walk that is already every
+    // visit of a four-month climb, and 頁 the bible waits for three of them.
+    const taps = KINDS.map((k) => k.taps(s));
     visits.push({
-      day, realm: s.realm, kinds: open.length,
-      taps: KINDS.reduce((n, k) => n + k.taps(s), 0),
-      open: open.map((k) => k.name),
+      day, realm: s.realm,
+      kinds: taps.filter((n) => n > 0).length,
+      taps: taps.reduce((n, v) => n + v, 0),
+      open: KINDS.filter((_, i) => taps[i] > 0).map((k) => k.name),
     });
   });
   return visits;

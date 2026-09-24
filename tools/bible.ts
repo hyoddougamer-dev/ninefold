@@ -78,6 +78,8 @@ import { PICTURES, pictureOf, type Painted } from '../src/data/pictures.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
 import { FAMILIES, paintedIn } from './artgaps.ts';
 import { SHEETS } from './sheets.ts';
+import { KINDS, report as busyReport } from './busy.ts';
+import { SOURCES, walk as worthWalk } from './worth.ts';
 
 /**
  * 測 How many tests there are, counted rather than remembered.
@@ -638,6 +640,65 @@ function pic(kind: Painted, key: string, alt: string): string {
     ? `<img class="pic" src="bible-art/${src}" alt="${alt}" loading="lazy">`
     : `<span class="pic gap" aria-hidden="true"></span>`;
 }
+
+/* ── 問 The three questions asked at midnight ──────────────────────────── */
+
+/**
+ * 忙 How much there is to do, and 值 what each system is worth.
+ *
+ * Both are full climbs, played here rather than remembered: three habits walked visit by
+ * visit for the first hundred and twenty days, and one walked to the top with every
+ * source of power stripped out of the save in turn. See tools/busy.ts and tools/worth.ts.
+ */
+const BUSY = ['casual', 'active', 'every hour'].map((n) => busyReport(n));
+const ACTIVE_BUSY = BUSY.find((b) => b.name === 'active')!;
+/**
+ * 開 The systems, told apart from the realms they arrive with.
+ *
+ * 雷池 the tribulation is on the list and it is the ninth realm itself, so "everything is
+ * open by day 45" is true and says the wrong thing. What the gap actually is, is between
+ * the last system a player can be surprised by and the end of the climb.
+ */
+const SYS_IN = ACTIVE_BUSY.arrived.filter((a) => !a.what.startsWith('realm'));
+const SYS_LAST = SYS_IN[SYS_IN.length - 2];
+const SYS_EARLY = SYS_IN.filter((a) => a.day < 5).length;
+
+const WORTH = worthWalk();
+const TOP_WORTH = WORTH[WORTH.length - 1];
+
+const busyRows = BUSY.map((b) => `<tr>
+  <td><em>${b.name}</em></td>
+  <td class="n">${b.visits.length}</td>
+  <td class="n">${b.mean.toFixed(1)}</td>
+  <td class="n">${b.taps.toFixed(0)}</td>
+  <td class="n">${((b.thin.length / b.visits.length) * 100).toFixed(0)}%</td>
+  <td class="n">${b.quiet.toFixed(0)}d</td>
+</tr>`).join('');
+
+const liveRows = (() => {
+  const counts = new Map<string, number>();
+  for (const v of ACTIVE_BUSY.visits) for (const k of v.open) counts.set(k, (counts.get(k) ?? 0) + 1);
+  return KINDS.map((k) => {
+    const share = ((counts.get(k.name) ?? 0) / ACTIVE_BUSY.visits.length) * 100;
+    return `<tr>
+      <td><b class="cjk">${k.han}</b> <i>${k.name}</i></td>
+      <td class="n">${share.toFixed(0)}%</td>
+      <td><span class="wk"><i style="width:${share.toFixed(0)}%"></i></span></td>
+    </tr>`;
+  }).join('');
+})();
+
+const arriveRows = ACTIVE_BUSY.arrived.map((a) => `<tr>
+  <td class="n">day ${a.day.toFixed(1)}</td><td>${a.what}</td></tr>`).join('');
+
+const worthRows = WORTH.map((w, i) => `<tr${i === WORTH.length - 1 ? ' class="last"' : ''}>
+  <td><b class="cjk">${realmOf(w.realm).han}</b> <i>${i === WORTH.length - 1 ? 'the top' : `realm ${w.realm}`}</i></td>
+  ${SOURCES.map((src) => {
+    const v = w.share[src.name];
+    const txt = v >= 1000 ? `×${(v / 1000).toFixed(0)}k` : v >= 10 ? `×${v.toFixed(0)}` : `×${v.toFixed(2)}`;
+    return `<td class="n"${v < 1.02 ? ' style="color:var(--faint)"' : ''}>${txt}</td>`;
+  }).join('')}
+</tr>`).join('');
 
 const paintCell = (img: string, han: string, name: string, hue?: string) => `
   <span class="cell">${img}
@@ -1766,6 +1827,25 @@ const page = `<meta charset="utf-8">
   #paint .pair em { display:block; font-style:normal; font-size:12.5px; margin-top:8px; }
   #paint .pair i { display:block; font-style:normal; font-size:11.5px; color:var(--faint); }
 
+  /* 問 The three questions: a bar in a table cell, and the row that is the top. */
+  #questions .wk { display:block; height:7px; border-radius:99px; background:var(--line);
+                   overflow:hidden; min-width:90px; }
+  #questions .wk i { display:block; height:100%; border-radius:99px; background:var(--jade); }
+  #questions table.live td:last-child { width:45%; }
+  #questions table.worth td, #questions table.worth th { padding:5px 6px; font-size:13px; }
+  #questions tr.last td { border-top:2px solid var(--gold); }
+  #questions .row em { display:block; }
+
+  /* 鬥 The arena, photographed before and drawn after, side by side. */
+  #paint .shots { display:grid; gap:12px; margin:14px 0 6px; }
+  @media(min-width:640px){ #paint .shots { grid-template-columns:1fr 1fr; } }
+  #paint .shots figure { margin:0; }
+  #paint .shots img { display:block; width:100%; border-radius:10px;
+                      border:1px solid var(--line); }
+  #paint .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint);
+                             line-height:1.5; }
+  #paint .shots b { color:var(--text); font-weight:600; }
+
   ${PLATE_CSS}
 </style>
 
@@ -1785,6 +1865,7 @@ const page = `<meta charset="utf-8">
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#paint"><b>畫</b> The paintings</a>
+      <a href="#questions"><b>問</b> Three questions</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
       <a href="#opens"><b>開</b> What each realm opens</a>
@@ -1873,21 +1954,28 @@ const page = `<meta charset="utf-8">
 
     <h3>O que mudou na \u00faltima noite</h3>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">\u6c23</b> <em>O qi por segundo j\u00e1 n\u00e3o anda sozinho</em>
-        <i>S\u00e3o dois n\u00fameros: o teu ritmo fixo, e o \u5165\u5b9a que sobe at\u00e9 \u00d73 e acaba ao fim de
-        quinze minutos. Agora o fixo vem \u00e0 frente e o outro diz-se pelo nome.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u5f85</b> <em>Um pre\u00e7o que n\u00e3o podes pagar diz quando podes</em>
-        <i>Ou <code>in 8 min</code>, ou <code>4 rungs up the climb</code>, porque a barra
-        gasta o teu qi antes de ele chegar t\u00e3o alto, e h\u00e1 coisas que s\u00f3 abrem a subir.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u5b8c</b> <em>As bestas acabadas dobram-se</em>
-        <i>No nono reino o ecr\u00e3 da ca\u00e7a tinha 25 bot\u00f5es todos a dizer 98%, metade deles j\u00e1
-        terminados. Passou de 26 cart\u00f5es para 14.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u5ee3</b> <em>O 材 material nunca mais fica morto</em>
-        <i>Zero por cento em todos os nove reinos, mesmo para quem carrega no bot\u00e3o sem
-        parar. Antes eram 70% do s\u00e9timo reino.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u983b</b> <em>O save escrevia 5 vezes por segundo</em>
-        <i>Dizia de 4 em 4 segundos. Agora \u00e9 mesmo de 4 em 4, o que d\u00e1 bateria e fluidez no
+      <div class="row"><span class="body"><b class="cjk">\u9b25</b> <em>A arena deixou de ter uma moeda ao p\u00e9 de um bicho</em>
+        <i>O cultivador era um disco de papel com brilho e metade do tamanho do monstro.
+        Agora os dois s\u00e3o recortados da mesma maneira, ficam do mesmo lado da mesma escala
+        e o ch\u00e3o j\u00e1 n\u00e3o \u00e9 uma barra preta. Ver \u756b mais acima.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u58a8</b> <em>A paleta estava pintada a meio</em>
+        <i>Oito s\u00edtios ainda pediam o ciano e o magenta que a paleta j\u00e1 n\u00e3o tem, e uma
+        propriedade que n\u00e3o existe n\u00e3o d\u00e1 erro: herda. O \u52dd da vit\u00f3ria e as
+        probabilidades da ca\u00e7a estavam a sair da cor do texto. H\u00e1 agora um teste que
+        chumba se voltar a acontecer.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u52d5</b> <em>Quatro coisas passaram a mexer</em>
+        <i>Part\u00edculas de qi \u00e0 volta do cultivador no ecr\u00e3 principal. O n\u00edvel salta quando se
+        compra, o \u7a81\u7834 abre com uma mancha de tinta, e a torre mostra os andares que ainda
+        n\u00e3o existem. Tudo isto p\u00e1ra sozinho para quem pede menos movimento no
         telem\u00f3vel.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u554f</b> <em>As tr\u00eas perguntas t\u00eam resposta medida</em>
+        <i>Sim, h\u00e1 que fazer: 6 tipos de coisa e 31 toques por visita. O problema \u00e9 outro,
+        e est\u00e1 em \u554f: <b>depois do dia 21 n\u00e3o chega nada de novo</b>. O equipamento vale
+        \u00d77.9 e \u00e9 o terceiro maior. \u7210 A fornalha nunca \u00e9 usada.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">\u756b</b> <em>A b\u00edblia mostra a arte</em>
+        <i>Uma sec\u00e7\u00e3o nova com as folhas, o corte, as duas figuras nos nove reinos, as
+        bestas, os c\u00e9us e os emblemas. S\u00e3o os ficheiros do jogo, n\u00e3o desenhos feitos para
+        a p\u00e1gina.</i></span></div>
     </div>
 
     <h3>Está tudo funcional?</h3>
@@ -2066,6 +2154,27 @@ const page = `<meta charset="utf-8">
       <span><img src="bible-art/${pictureOf('cut', 'tiger')}" alt="The cut-out of the White Tiger">
         <em>剪 the cut-out</em><i>Full size, in the arena. The paper is keyed off.</i></span>
     </div>
+    <h3>鬥 The arena, before and after</h3>
+    <p class="t">The left is Bruno's own phone at midnight, and the words that came with
+      it: <i>"a arena está péssima como podes ver e sem criatividade, cultivador menor que
+      os monstros ... Mas está feio."</i> The right is the same fight, at the same width,
+      from the built game. Both fighters are cut the same way now and sized against each
+      other rather than against the half they were given. The ground has no line in
+      it.</p>
+    <div class="shots">
+      <figure>
+        <img src="bible-art/shot/arena-before.webp" alt="The arena before: the cultivator inside a bright disc, half the size of the boar">
+        <figcaption><b>Before.</b> A coin with somebody in it, a boar twice her size, and
+          a black bar for a floor. She is 96 pixels of painting inside 190 pixels of
+          paper.</figcaption>
+      </figure>
+      <figure>
+        <img src="bible-art/shot/arena-after.webp" alt="The arena after: both fighters cut the same way, on the same ground">
+        <figcaption><b>After.</b> 滲 the same bleed on both, 圓光 the halo behind her head,
+          and the painting running down into the dark instead of stopping at a
+          rule.</figcaption>
+      </figure>
+    </div>
     <p class="t">Keying the paper off is the one step that cannot be done by darkness
       either. Pale creatures came out full of holes: the inside of a white tiger is as
       pale as the page it is on. A transparent region fully enclosed by the creature is
@@ -2164,6 +2273,140 @@ const page = `<meta charset="utf-8">
       better one. <code>npm run pictures</code> reads the folder and writes the list, so a
       painting dropped in is in the game on the next build, and a painting nobody made
       costs nothing at all.</p>
+  </section>
+
+  <section class="sec" id="questions">
+    <h2><span class="h">問</span> Three questions, answered with numbers</h2>
+    <p class="t">Bruno, at midnight, going to bed: <i>"um player ativo tem atividades
+      suficientes e não se aborrece rápido? Tem conteúdo relevante para fazermos rankings
+      etc? Sistema de equipamentos atual é relevante?"</i> Two of the three are
+      measurable, so they were measured rather than argued about. The harnesses that
+      answer them are <code>npm run busy</code> and <code>npm run worth</code>. The third
+      is a decision, and it is written down as one.</p>
+
+    <h3>忙 Is there enough to do?</h3>
+    <p class="t">A kind is a system with something to offer: hunting, the tower, the cave,
+      an upgrade that can be afforded. A tap is one separate action, so twenty beasts
+      within reach is one kind and twenty taps. Kinds are the number that matters, because
+      twenty of the same button is one decision made twenty times. A thin visit is two
+      kinds or fewer: open the app, press the one thing, close it.</p>
+    <table>
+      <tr><th>how they play</th><th style="text-align:right">visits</th>
+          <th style="text-align:right">kinds</th><th style="text-align:right">taps</th>
+          <th style="text-align:right">thin</th><th style="text-align:right">quiet</th></tr>
+      ${busyRows}
+    </table>
+    <div class="rule"><b>Yes, and it is not close.</b> The active cultivator has
+      ${ACTIVE_BUSY.mean.toFixed(1)} kinds of thing to do and ${ACTIVE_BUSY.taps.toFixed(0)}
+      separate actions waiting on an average visit, and
+      ${((ACTIVE_BUSY.thin.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% of visits
+      are thin. Nothing in the first two months is a screen with one button on it.</div>
+    <p class="t">The honest half of the answer is the last column. <b>The problem is not
+      how much there is to do, it is that nothing new arrives after the third week.</b>
+      ${SYS_EARLY} of the ${SYS_IN.length} systems are open inside the first four days, the
+      last of them on day ${SYS_LAST.day.toFixed(0)}, and everything after that is 雷池 the
+      tribulation, which is the ninth realm itself. The longest stretch with nothing new
+      named at all is
+      ${ACTIVE_BUSY.quiet.toFixed(0)} days, starting on day ${ACTIVE_BUSY.quietAt.toFixed(0)}.
+      A player who is still there on day forty is doing the same fifteen things they were
+      doing on day twenty, faster.</p>
+    <table>
+      <tr><th>when</th><th>what opens</th></tr>
+      ${arriveRows}
+    </table>
+    <p class="t">And this is which systems are actually live, visit by visit, across the
+      whole climb of the active cultivator. A low number is not automatically wrong: 守 the
+      warden is meant to be rare and 突破 the breakthrough is meant to be nine moments. A
+      low number on something that cost a month to build is worth looking at.</p>
+    <table class="live">${liveRows}</table>
+    <div class="warn"><b>爐 The furnace is never used.</b> It reads 0% because an active
+      cultivator never needs it. The harness brews only when a warden is out of reach, and
+      an active cultivator is never more than a visit away from beating one. 值 below says
+      the same thing from the other end, where the pills a climb ends with multiply power
+      by exactly ×1.00. A system that opens in the seventh realm and is never the right
+      move is a system to cut or to change. It is the one place on this page where the
+      measurement says something is wrong.</div>
+    <p class="t">The three zeroes above it are a different thing and not a fault. 突破 the
+      breakthrough, 悟道 the card and 拆 the melt are counted at the <em>start</em> of a
+      visit, and the visit before them did them. They are never waiting for you, which
+      is what they should be.</p>
+
+    <h3>值 Is the gear system relevant?</h3>
+    <p class="t">Exactly answerable, because <code>power()</code> multiplies its terms:
+      take a cultivator the harness has played to the top, strip one source out of the
+      save, and divide. What comes back is what that source is carrying, with nothing to
+      argue about.</p>
+    <table class="worth">
+      <tr><th>at</th>${SOURCES.map((x) => `<th style="text-align:right">${x.han}</th>`).join('')}</tr>
+      ${worthRows}
+    </table>
+    <div class="rows">
+      ${SOURCES.map((x) => {
+        const v = TOP_WORTH.share[x.name];
+        const txt = v >= 1000 ? `×${(v / 1000).toFixed(0)}k` : v >= 10 ? `×${v.toFixed(0)}` : `×${v.toFixed(2)}`;
+        return `<div class="row"><span class="body"><b class="cjk">${x.han}</b>
+          <em>${x.name} ${txt}</em><i>${x.note}</i></span></div>`;
+      }).join('')}
+    </div>
+    <div class="rule"><b>器 Gear is relevant, and it is third.</b> It multiplies a finished
+      cultivator's power by ${TOP_WORTH.share['the gear worn'].toFixed(1)}, behind 劍訣
+      technique and 妖丹 cores and ahead of 道 the tree. It is also the only one of the
+      seven that arrives by luck rather than by being paid for. That is the argument for
+      keeping it: it is the reason two cultivators with the same numbers are not the same
+      cultivator. What it is <em>not</em> is a system a player thinks about, because the
+      chest already knows the answer: wear the better piece. The decision it could have and
+      does not is 親 affinity, which the tree pays for by slot and almost nobody would
+      notice.</div>
+
+    <h3>榜 Is there anything to rank?</h3>
+    <p class="t">There is plenty worth ranking. Days to the ninth realm, floors of 塔 the
+      tower, crossings of 雷池 the tribulation, how much of the bestiary is 通 Mastered, the
+      power at the top. Every one of them is a single number already in the save.</p>
+    <p class="t">The reason there is no leaderboard is not content, it is that
+      <b>九境 has no server and the save is a text file on the phone</b>. Anything a phone
+      sends can be written by the person holding it. A ranking built on numbers the save
+      reports is a ranking of who edited their save, and the first week of any leaderboard
+      is the week that proves it. There are three honest ways out, in order of cost:</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">碑</b> <em>The stele, which already exists</em>
+        <i>A run's record, written for the player alone. No server, no cheating, no
+        comparison. It is what the game does today and it is the right default.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">局</b> <em>A season with a seed</em>
+        <i>Everybody plays the same seeded run for a fortnight and what is uploaded is the
+        <b>input</b>, not the score: the taps and their times. The server replays them
+        through <code>sim/</code>, which is pure by rule, and gets the same number or
+        throws the run away. This is the one design that works because of how this game is
+        already written, and it is a week of work and a small server.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">友</b> <em>Friends only, unverified</em>
+        <i>A code you paste to a friend. Nobody polices it, and nobody minds, because the
+        comparison is with somebody you know. Two days of work and no server at all.</i></span></div>
+    </div>
+    <p class="t"><b>The recommendation is 友 first and 局 only if the game finds an
+      audience.</b> A verified leaderboard on a game with no players is a server bill.</p>
+
+    <h3>續 What the measurement says to do next</h3>
+    <p class="t">Three things, in the order the numbers put them in. None of them is more
+      content for the sake of it: the first two are about a game that already has
+      everything in it by the third week.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">遲</b> <em>Hold two systems back</em>
+        <i>${SYS_EARLY} of the ${SYS_IN.length} arrive inside four days, five of them in the
+        second realm, which is one afternoon. Moving
+        秘境 the vault and 爐 the furnace up the climb costs nothing to build and buys two
+        arrivals in the month that currently has none.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">爐</b> <em>Give the furnace a job</em>
+        <i>It is the one system the measurement says is dead: 0% of visits, ×1.00 of a
+        finished cultivator's power. A pill is qi spent on power, and qi spent on the
+        ladder is also power, sooner. It needs to buy something the ladder cannot: a
+        consumable a warden actually wants, or a floor of 塔 the tower that will not open
+        without one.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">期</b> <em>One thing that changes on its own</em>
+        <i>Every system in this game is a staircase, and a staircase is finished the day
+        you see the top of it. The cheapest thing that is never finished is a rotation: a
+        beast the week pays double for, a room of 秘境 that moves, a herb that is only in
+        season. It is a day of work and it is the only kind of content that does not run
+        out.</i></span></div>
+    </div>
   </section>
 
   <section class="sec" id="proposals">
@@ -3819,11 +4062,21 @@ let COPIED = 0;
 function copyPaintings(out: { page: string; plates: Map<string, string> }): number {
   const dir = 'bible-art/art';
   rmSync(dir, { recursive: true, force: true });
-  const hay = out.page + [...out.plates.values()].join('');
-  const want = new Set([...hay.matchAll(/art\/([a-z]+)\/([a-z0-9-]+)\.webp/g)].map((m) => m[0]));
+  // 尋 Two pointers, found two ways. A page written here says bible-art/art/… or
+  // bible-art/shot/…; a drawing lifted into that folder says art/… because 修 the
+  // portrait wrote the href for the game. Looking for a bare "art/" in both was the bug:
+  // it matched the "art/" inside "bible-art/" and asked for public/art/shot/….
+  const want = new Set<string>();
+  for (const m of out.page.matchAll(/bible-art\/((?:art|shot)\/[a-z0-9-]+(?:\/[a-z0-9-]+)?\.webp)/g)) want.add(m[1]);
+  for (const svg of out.plates.values()) {
+    for (const m of svg.matchAll(/href="(art\/[a-z]+\/[a-z0-9-]+\.webp)"/g)) want.add(m[1]);
+  }
   let bytes = 0;
   for (const rel of [...want].sort()) {
-    const from = `public/${rel}`;
+    // 照 A screenshot of the real app is kept in bible-shots/ and published beside the
+    // page the same way a painting is. It is not in public/: the game does not ship
+    // pictures of itself.
+    const from = rel.startsWith('shot/') ? `bible-shots/${rel.slice(5)}` : `public/${rel}`;
     if (!existsSync(from)) throw new Error(`頁 the page points at ${rel} and there is no such painting`);
     mkdirSync(`bible-art/${rel.slice(0, rel.lastIndexOf('/'))}`, { recursive: true });
     const file = readFileSync(from);
@@ -3844,5 +4097,5 @@ console.log(`bible.html · ${kb} KB · ${SYSTEMS.filter((s) => s.status === 'don
   `${SYSTEMS.filter((s) => s.status === 'planned').length} planned · ` +
   `${GEAR.length} items, ${LINES.length * 9} pills, ${BEASTS.length} beasts named in full`);
 console.log(`bible-art/ · ${lifted.plates.size} drawings · ${artKb} KB, lifted off the page`);
-console.log(`bible-art/art/ · ${COPIED} paintings · ${picKb} KB · ` +
+console.log(`bible-art/art/ · ${COPIED} paintings and screenshots · ${picKb} KB · ` +
   `${lifted.plates.size + COPIED} files beside the page, of the 255 a publish allows`);

@@ -34,7 +34,11 @@ const WIDTHS = [320, 360, 400, 430];
  * one Bruno was looking at. Read by name so adding a beast cannot silently change them.
  */
 const CASES = [
-  { realm: 3, beast: 'raven', han: '血鴉', why: 'the one in the photograph' },
+  { realm: 3, beast: 'raven', han: '血鴉', why: 'the one in the first photograph' },
+  // 彘 The fight in the photograph Bruno sent at midnight: *"a arena está péssima ...
+  // cultivador menor que os monstros."* A boar is low and wide and she is seated, so it
+  // is the case where a difference in size reads hardest.
+  { realm: 4, beast: 'boar', han: '鐵根彘', why: 'the one in the second photograph' },
   { realm: 5, beast: 'crab', han: '巨蟹', why: 'the widest common' },
   { realm: 6, beast: 'centipede', han: '蜈蚣', why: 'long and low' },
   { realm: 9, beast: 'squid', han: '巨章', why: 'tall and wide at once' },
