@@ -37,7 +37,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
   // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
   const brings = effectiveBeastPower(state, beast, standing);
   const chance = odds(state, beast, standing);
-  const tone = chance > 0.66 ? 'var(--cyan)' : chance > 0.33 ? 'var(--gold)' : 'var(--magenta)';
+  const tone = chance > 0.66 ? 'var(--jade)' : chance > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
   const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
@@ -91,7 +91,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
           {TRIALS.hours(duration(TOWER_QI_HOURS * 3600))}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
-        <button className="act" data-tone="magenta" onClick={() => onFloor(floor)}>
+        <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>
           登 <span>{TRIALS.climb}</span>
         </button>
       </div>
@@ -135,7 +135,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
               <span className="price">
                 <b>{num(cost.qi)}</b>
                 <i className="faint tag">qi</i>
-                <b style={{ color: short ? 'var(--magenta)' : 'var(--gold)' }}>{num(cost.materials)}</b>
+                <b style={{ color: short ? 'var(--cinnabar)' : 'var(--gold)' }}>{num(cost.materials)}</b>
                 <i className="faint tag">材</i>
               </span>
             </button>

@@ -244,7 +244,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <b style={{ color: rar.colour }}>{tpl.han}</b>
                     <i>{tpl.name} · {g.count} in the chest</i>
                   </span>
-                  <span className="odds" style={{ color: 'var(--cyan)' }}>
+                  <span className="odds" style={{ color: 'var(--jade)' }}>
                     {FUSE_COUNT}→1<em>fuse</em>
                   </span>
                 </button>
@@ -258,7 +258,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         藏 Chest
         <span className="mono" style={{
           float: 'right',
-          color: state.chest.length >= limit ? 'var(--magenta)' : 'var(--faint)',
+          color: state.chest.length >= limit ? 'var(--cinnabar)' : 'var(--faint)',
         }}>
           {state.chest.length} / {limit}
         </span>

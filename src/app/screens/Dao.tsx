@@ -308,7 +308,7 @@ function Detail({ node, status, keystones, onLearn, onClose }: {
     <div className="ndetail" style={{ ['--hue' as string]: info.colour }}>
       <div className="row">
         <span>
-          <b className="cjk" style={{ fontSize: 21, color: node.keystone ? 'var(--magenta)' : info.colour }}>
+          <b className="cjk" style={{ fontSize: 21, color: node.keystone ? 'var(--cinnabar)' : info.colour }}>
             {node.han}
           </b>
           <em style={{ fontStyle: 'normal', marginLeft: 8, fontSize: 15 }}>{node.name}</em>

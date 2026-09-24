@@ -171,7 +171,13 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {/* 雷池 Once the ladder runs out the portrait gives the screen over to the pool:
           the basin fills with the qi, and the bolts only come down when it is full. It
           is the same bar, drawn as the place it actually is. */}
-      <div className="portrait">
+      {/* 塵 The motes behind her are drawn in the realm's colour and thicken as it
+          climbs, so the air on this screen says where you are the way the aura does.
+          --busy is that thickening: nothing at all in the first three realms. */}
+      <div className="portrait" style={{
+        ['--hue' as string]: r.colour,
+        ['--busy' as string]: Math.max(0, Math.min(1, (state.realm - 3) / 5)),
+      }}>
         {top
           ? <Svg html={poolArt(filled, state.tribulation, pulse)} />
           : <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} />}
@@ -248,7 +254,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             <p className="faint" style={{ margin: '11px 0 12px', fontSize: 12.5 }}>
               {top ? CULTIVATE.tribulation : CULTIVATE.warden}
             </p>
-            <button className="act" data-tone="magenta" data-coach="fight-warden" onClick={onFight}>
+            <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
               戰 <span>Fight</span>
             </button>
           </div>
@@ -401,7 +407,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                   never told, first, what any of them was. */}
               <span>
                 <b>{i.name} <span className="cjk faint">{i.han}</span></b>
-                <i>{i.effect} <span className="mono faint">· {CULTIVATE.cap(held, cap)}</span></i>
+                <i>{i.effect} <span className="mono faint lvl" key={held}>· {CULTIVATE.cap(held, cap)}</span></i>
               </span>
               <span className="price">
                 {maxed

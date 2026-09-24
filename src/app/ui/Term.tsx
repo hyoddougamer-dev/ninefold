@@ -63,7 +63,7 @@ export function Term({ han, sense, plain, children }: {
    *
    * A rank, a path and an affix are all *told apart by their colour*: 天 is gold because
    * it is the top rank, and the three paths of the tree are read off the legend by hue
-   * alone. Painting those cyan to say they are tappable would take the meaning out of
+   * alone. Painting those jade to say they are tappable would take the meaning out of
    * them to add an affordance, which is a bad trade. The dotted underline is enough.
    */
   plain?: boolean;

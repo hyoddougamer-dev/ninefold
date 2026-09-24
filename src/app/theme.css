@@ -99,16 +99,53 @@ body {
 
 button.act { font: inherit; font-size: 16px; padding: 13px; border-radius: 8px; cursor: pointer;
               background: var(--jade); color: var(--ground); border: 0; width: 100%;
-              font-family: 'Noto Serif SC', serif; box-shadow: 0 0 22px rgba(95,220,255,.22); }
+              font-family: 'Noto Serif SC', serif; box-shadow: 0 0 22px rgba(127,180,149,.22); }
 button.act span { font-family: Archivo, sans-serif; font-size: 12px; letter-spacing: .14em;
                    text-transform: uppercase; opacity: .7; margin-left: 8px; }
 button.act:disabled { background: var(--locked); color: var(--faint); box-shadow: none; cursor: default; }
-button.act[data-tone='magenta'] { background: var(--cinnabar); box-shadow: 0 0 22px rgba(255,95,200,.25); }
+button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 22px rgba(210,96,78,.25); }
 
 /* ── cultivate ────────────────────────────────────────────────────────────── */
 
-.portrait { display: block; width: 100%; aspect-ratio: 1; max-width: 260px; margin: 0 auto; }
-.portrait svg { display: block; width: 100%; height: 100%; }
+.portrait { display: block; position: relative; width: 100%; aspect-ratio: 1;
+            max-width: 260px; margin: 0 auto; }
+.portrait svg { display: block; position: relative; z-index: 1; width: 100%; height: 100%; }
+
+/* 塵 Motes of qi in the air around her, on the one screen the game is actually looked
+   at. 鬥 the arena has had them since it was drawn and this screen never did, so the
+   place a player spends every session was the stillest thing in the game.
+
+   兩 Two layers at different speeds, because one layer rising at one speed is a lift
+   going up. They are drawn in the realm's own colour, they get denser as it climbs (the
+   second layer only fades in from the fourth realm), and they are the same idea the
+   aura is: the air itself gets busier the higher you are. */
+.portrait::before, .portrait::after {
+  content: ''; position: absolute; inset: -4% -10%; z-index: 0; pointer-events: none;
+  background-repeat: repeat; background-size: 100% 150%;
+  animation: motes 34s linear infinite;
+}
+.portrait::before {
+  opacity: .55;
+  background-image:
+    radial-gradient(1.7px 1.7px at 14% 18%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.2px 1.2px at 68% 9%,  var(--hue) 45%, transparent 46%),
+    radial-gradient(2px 2px     at 85% 44%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.3px 1.3px at 33% 61%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.6px 1.6px at 92% 77%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.1px 1.1px at 8% 82%,  var(--hue) 45%, transparent 46%);
+}
+.portrait::after {
+  opacity: calc(.36 * var(--busy, 0)); animation-duration: 21s;
+  background-image:
+    radial-gradient(1.1px 1.1px at 47% 27%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.5px 1.5px at 22% 40%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1px 1px     at 77% 66%, var(--hue) 45%, transparent 46%),
+    radial-gradient(1.4px 1.4px at 58% 90%, var(--hue) 45%, transparent 46%);
+}
+@keyframes motes { from { background-position: 0 120%; } to { background-position: 0 -40%; } }
+@media (prefers-reduced-motion: reduce) {
+  .portrait::before, .portrait::after { animation: none; }
+}
 
 .qi { text-align: center; margin-top: 2px; }
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
@@ -214,7 +251,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
           backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
           box-shadow: 0 6px 20px -8px rgba(0,0,0,.8);
           animation: escapein .22s ease-out both; }
-.escape:active { transform: scale(.92); background: rgba(24,28,54,.96); }
+.escape:active { transform: scale(.92); background: rgba(30,26,20,.96); }
 @keyframes escapein { from { opacity: 0; transform: translateY(-6px) scale(.9); } }
 @media (prefers-reduced-motion: reduce) { .escape { animation: none; } }
 
@@ -330,7 +367,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .condense .chead { display: grid; grid-template-columns: auto 1fr; gap: 1px 9px;
                    align-items: baseline; }
 /* Scoped to the header: .tip lives inside this card too, and an unscoped `.condense b`
-   was repainting its 狩 magenta and stretching it across two grid rows it is not in. */
+   was repainting its 狩 cinnabar and stretching it across two grid rows it is not in. */
 .condense .chead b { grid-row: span 2; align-self: center; font-size: 21px; font-weight: 400;
                      color: var(--cinnabar); }
 .condense .chead em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700;
@@ -733,6 +770,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   100% { transform: translateY(0); opacity: 1; }
 }
 
+/* 級 The count answers when it is bought. Four boxes that change a number and nothing
+   else is a spreadsheet; the number leaning forward for a sixth of a second is the whole
+   difference, and it costs a remount. */
+@keyframes bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.22); color: var(--gold); }
+  100% { transform: scale(1); }
+}
+.upg .lvl { display: inline-block; animation: bump .34s ease-out; }
+@media (prefers-reduced-motion: reduce) { .upg .lvl { animation: none; } }
+
 /* 突破 The moment. Everything else stops for three quarters of a second. */
 .bloom { position: absolute; inset: 0; z-index: 12; display: grid; place-items: center;
          pointer-events: none; background: rgba(20,17,13,.82);
@@ -746,8 +794,30 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                z-index: 0; }
 .bloom .ring:nth-child(2) { animation-delay: .16s; }
 .bloom .ring:nth-child(3) { animation-delay: .32s; }
-.bloom .han { font-family: 'Noto Serif SC', serif; font-size: 58px; animation: lift .5s ease-out both;
+/* 墨 The wash under the rings: ink dropped in water, once, behind the character.
+   Three expanding circles on a flat ground is a radar sweep. What a breakthrough should
+   look like in this game is a brush loaded and put down. */
+.bloom .wash { position: absolute; width: 300px; height: 300px; border-radius: 50%;
+               z-index: 0; pointer-events: none;
+               background: radial-gradient(closest-side,
+                 color-mix(in srgb, currentColor 40%, transparent),
+                 color-mix(in srgb, currentColor 10%, transparent) 62%,
+                 transparent 72%);
+               animation: wash 1.5s cubic-bezier(.2,.7,.3,1) forwards; }
+@keyframes wash {
+  0% { transform: scale(.25); opacity: 0; filter: blur(2px); }
+  22% { opacity: 1; }
+  100% { transform: scale(1.9); opacity: 0; filter: blur(9px); }
+}
+/* 印 And the character lands like a seal pressed on the page rather than sliding up. */
+.bloom .han { font-family: 'Noto Serif SC', serif; font-size: 58px; animation: stamp .5s cubic-bezier(.16,.9,.28,1) both;
               text-shadow: 0 0 40px currentColor, 0 4px 18px #000; }
+@keyframes stamp {
+  0% { transform: scale(1.6); opacity: 0; filter: blur(6px); }
+  55% { opacity: 1; filter: blur(0); }
+  70% { transform: scale(.97); }
+  100% { transform: scale(1); opacity: 1; }
+}
 .bloom p { margin: 8px 0 0; font-size: 15px; color: var(--text); animation: lift .5s .12s ease-out both; }
 .bloom .mid { text-align: center; position: relative; z-index: 1; width: 100%;
               max-width: 360px; }
@@ -821,8 +891,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .guidex:hover { color: var(--text); }
 
 .guide { width: 100%; text-align: left; font: inherit; color: var(--text); cursor: pointer;
-         background: linear-gradient(180deg, rgba(95,220,255,.09), rgba(95,220,255,.03));
-         border: 1px solid rgba(95,220,255,.33); border-radius: 12px;
+         background: linear-gradient(180deg, rgba(127,180,149,.09), rgba(127,180,149,.03));
+         border: 1px solid rgba(127,180,149,.33); border-radius: 12px;
          padding: 12px 14px; margin: 0 0 14px; display: grid; gap: 4px 0;
          grid-template-columns: 1fr auto auto; align-items: start; }
 .guide .n, .guide b, .guide i { grid-column: 1; }
@@ -851,7 +921,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .guide .art svg { display: block; }
 /* 時 Waiting: the same card, quieter.
    It is not asking for anything yet, so it stops shouting: the border and the number
-   drop back to the body colour, and only the progress bar keeps the guide's cyan,
+   drop back to the body colour, and only the progress bar keeps the guide's jade,
    because the bar is the one part that is still saying something new every second. */
 .guide[data-waiting="true"] { background: var(--panel);
                               border-color: var(--line); }
@@ -861,7 +931,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 尺 The same bar the advice line uses, in the guide's own colour. */
 .guide .toward { display: block; height: 4px; border-radius: 99px; margin-top: 9px;
-                 background: rgba(95,220,255,.2); overflow: hidden; }
+                 background: rgba(127,180,149,.2); overflow: hidden; }
 .guide .toward > span { display: block; height: 100%; border-radius: 99px;
                         background: var(--jade); transition: width .3s linear; }
 
@@ -891,7 +961,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 @media (prefers-reduced-motion: reduce) {
   .side[data-hit='true'] .fig, .side[data-hit='true'] .fig::after,
-  .dmg, .verdict, .bloom .ring, .bloom .han, .bloom p { animation: none; }
+  .dmg, .verdict, .bloom .ring, .bloom .han, .bloom p, .bloom .wash { animation: none; }
   .bloom .ring { opacity: .3; }
 }
 
@@ -944,7 +1014,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .halves button { position: relative; font: inherit; background: none; border: 0;
                  border-radius: 8px; padding: 9px 6px; cursor: pointer; color: var(--faint);
                  display: flex; align-items: center; justify-content: center; gap: 7px; }
-.halves button[data-on='true'] { background: var(--panel); color: var(--ink);
+/* 誤 This said var(--ink), which the palette has never had: the selected half of the
+   switch was drawn in whatever colour it happened to inherit. An undefined custom
+   property does not fall back, it inherits, and nothing anywhere says so. See
+   __tests__/palette.test.ts. */
+.halves button[data-on='true'] { background: var(--panel); color: var(--text);
                                  box-shadow: inset 0 0 0 1px var(--line); }
 .halves b { font-size: 17px; font-weight: 400; line-height: 1; }
 .halves button[data-on='true'] b { color: var(--jade); }
@@ -1163,7 +1237,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .deed[data-got='true'] { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
 .deed > b { flex: none; font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 19px;
             color: var(--faint); line-height: 1.2; min-width: 2.6ch; }
-.deed[data-got='true'] > b { color: var(--gold); text-shadow: 0 0 12px rgba(255,206,107,.45); }
+.deed[data-got='true'] > b { color: var(--gold); text-shadow: 0 0 12px rgba(212,175,86,.45); }
 .deed .body { flex: 1; min-width: 0; }
 .deed .body em { font-style: normal; display: block; font-family: Rajdhani, sans-serif;
                  font-weight: 700; font-size: 15px; }
@@ -1240,11 +1314,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .coach > span { position: absolute; }
 
 .coach .ring { border: 2px solid var(--jade); border-radius: 13px;
-               box-shadow: 0 0 0 3px rgba(95,220,255,.14), 0 0 22px -4px rgba(95,220,255,.75);
+               box-shadow: 0 0 0 3px rgba(127,180,149,.14), 0 0 22px -4px rgba(127,180,149,.75);
                animation: coachRing 1.7s ease-in-out infinite; }
 @keyframes coachRing {
-  0%, 100% { opacity: .95; box-shadow: 0 0 0 3px rgba(95,220,255,.14), 0 0 22px -4px rgba(95,220,255,.75); }
-  50%      { opacity: .62; box-shadow: 0 0 0 7px rgba(95,220,255,.05), 0 0 26px -2px rgba(95,220,255,.45); }
+  0%, 100% { opacity: .95; box-shadow: 0 0 0 3px rgba(127,180,149,.14), 0 0 22px -4px rgba(127,180,149,.75); }
+  50%      { opacity: .62; box-shadow: 0 0 0 7px rgba(127,180,149,.05), 0 0 26px -2px rgba(127,180,149,.45); }
 }
 
 /* Above the target by preference: on a phone the thumb is below what it is about to
@@ -1254,9 +1328,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    rather than as a pointer. The disc gives it its own ground and its own edge. */
 .coach .point { color: var(--jade); margin-left: -17px;
                 width: 34px; height: 34px; display: grid; place-items: center;
-                border-radius: 99px; background: rgba(6,8,18,.92);
-                border: 1px solid rgba(95,220,255,.45);
-                box-shadow: 0 0 14px -3px rgba(95,220,255,.8);
+                border-radius: 99px; background: rgba(20,17,13,.92);
+                border: 1px solid rgba(127,180,149,.45);
+                box-shadow: 0 0 14px -3px rgba(127,180,149,.8);
                 animation: coachNudge 1.7s ease-in-out infinite; }
 .coach .point[data-above="true"]  { transform: translateY(-100%); }
 .coach .point[data-above="false"] { transform: rotate(180deg); }
@@ -1308,7 +1382,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .awaken .acard:nth-child(3) { animation-delay: .14s; }
 @keyframes acardin { from { opacity: 0; transform: translateY(9px); } }
 .awaken .acard:active { transform: scale(.985); border-color: var(--jade);
-                        background: rgba(24,28,54,.96); }
+                        background: rgba(30,26,20,.96); }
 .awaken .acard .s { grid-row: 1 / span 2; align-self: start; color: var(--jade); }
 .awaken .acard .s svg { display: block; }
 .awaken .acard .nm b { font-size: 24px; font-weight: 400; color: var(--jade); margin-right: 9px; }
@@ -1380,12 +1454,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                       color: var(--line); }
 .secret .room[data-gate] > svg { color: color-mix(in srgb, var(--cinnabar) 45%, transparent);
                                  border-color: color-mix(in srgb, var(--cinnabar) 30%, transparent); }
-.secret .room[data-done] > svg { color: var(--jade); border-color: rgba(95,220,255,.45); }
+.secret .room[data-done] > svg { color: var(--jade); border-color: rgba(127,180,149,.45); }
 .secret .room[data-here] > svg { color: var(--gold); border-color: var(--gold);
-      box-shadow: 0 0 0 4px rgba(255,206,107,.12), 0 0 20px -6px var(--gold); }
+      box-shadow: 0 0 0 4px rgba(212,175,86,.12), 0 0 20px -6px var(--gold); }
 .secret .room .link { position: absolute; left: 50%; right: -50%; top: 50%; height: 2px;
                       background: var(--line); }
-.secret .room[data-done] .link { background: rgba(95,220,255,.4); }
+.secret .room[data-done] .link { background: rgba(127,180,149,.4); }
 
 /* 途 A way on: the room it goes to, drawn, with the line about it laid over the floor.
    It is its own class and not .door, which is the card on 狩 that opens the run. The
@@ -1421,7 +1495,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 記 The running total, while the run is still being walked. */
 .secret .sofar { display: flex; align-items: baseline; justify-content: space-between;
                  gap: 10px; margin: 14px 0 0; padding: 10px 13px; border-radius: 11px;
-                 background: rgba(37,42,92,.28); border: 1px solid var(--line); }
+                 background: rgba(58,50,38,.28); border: 1px solid var(--line); }
 .secret .sofar span { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
                       color: var(--faint); font-family: Archivo, sans-serif; font-weight: 600; }
 .secret .sofar b { font-family: 'Roboto Mono', monospace; font-size: 12.5px; color: var(--gold);
@@ -1459,7 +1533,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    which is the rule this stylesheet already carries written down: never share a class
    between two screens. Caught in a screenshot, not in a test. */
 .runend { position: absolute; inset: 0; z-index: 14; display: grid; place-items: center;
-         padding: 20px 16px; background: rgba(5,6,15,.72);
+         padding: 20px 16px; background: rgba(10,9,6,.72);
          backdrop-filter: blur(3px); animation: arrive .2s ease both; overflow-y: auto; }
 .endcard { width: 100%; max-width: 360px; background: var(--panel); border: 1px solid var(--line);
          border-radius: 18px; overflow: hidden; padding-bottom: 16px; }
@@ -1508,9 +1582,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .bed[data-empty] { border-style: dashed; }
 .bed .ring { position: relative; display: block; width: 56px; height: 56px; margin: 0 auto 8px; }
 .bed .ring i { position: absolute; inset: 0; border-radius: 99px;
-               background: conic-gradient(var(--jade) var(--a), rgba(37,42,92,.55) 0); }
+               background: conic-gradient(var(--jade) var(--a), rgba(58,50,38,.55) 0); }
 .bed[data-ripe] .ring i { background: conic-gradient(var(--gold) 360deg, var(--gold) 0); }
-.bed[data-empty] .ring i { background: rgba(37,42,92,.35); }
+.bed[data-empty] .ring i { background: rgba(58,50,38,.35); }
 .bed .ring i::after { content: ''; position: absolute; inset: 4px; border-radius: 99px;
                       background: var(--panel); }
 .bed .ring em { position: absolute; inset: 0; display: grid; place-items: center;
@@ -1654,7 +1728,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 見 The first kill is still a mark card, but it is the one that pays qi rather than
    material, so it borrows the qi colour to say so. */
 .verdict .mark[data-seen="true"] > b { color: var(--jade); }
-.verdict .mark[data-seen="true"] { border-color: rgba(95,220,255,.35); }
+.verdict .mark[data-seen="true"] { border-color: rgba(127,180,149,.35); }
 
 /* ── 圍 the drive: many kills, one tap, paid for in qi ───────────────────── */
 

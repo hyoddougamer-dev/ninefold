@@ -73,6 +73,27 @@ export function tower(best: number, pulse = 0): string {
   out += `<rect x="${tx.toFixed(1)}" y="${(ty + tierH - rise).toFixed(1)}" width="${tw.toFixed(1)}" height="${rise.toFixed(1)}" fill="${top}" opacity="0.5"/>
     <rect x="${tx.toFixed(1)}" y="${(ty + eave).toFixed(1)}" width="${tw.toFixed(1)}" height="${(tierH - eave).toFixed(1)}" fill="none" stroke="${top}" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="3 3"/>`;
 
+  /**
+   * 無盡 The tiers that are not there yet, which is most of a tower called endless.
+   *
+   * 空 With no seals held the drawing was one dashed rectangle low in a tall empty box,
+   * and the first thing a player ever sees of 塔 the tower is that. The floors above are
+   * as real as the ones below: they are drawn as roofs in outline, fading upward, and
+   * they are what the climb is for. They carry no number and never will, because the
+   * tower does not end.
+   */
+  const ghosts = Array.from({ length: 4 }, (_, i) => {
+    const y = ty - (i + 1) * tierH;
+    if (y < 16) return '';
+    const w = tw * (1 - (shown + 1 + i) * 0.055);
+    const x = (W - w) / 2;
+    const o = 0.2 * (1 - i / 4) ** 1.6;
+    return `<path d="M${(x - w * 0.11).toFixed(1)} ${(y + eave).toFixed(1)} L${(x + w * 0.09).toFixed(1)} ${y.toFixed(1)} H${(x + w * 0.91).toFixed(1)} L${(x + w * 1.11).toFixed(1)} ${(y + eave).toFixed(1)}"
+      fill="none" stroke="${top}" stroke-opacity="${o.toFixed(3)}" stroke-width="1"/>
+      <path d="M${x.toFixed(1)} ${(y + eave).toFixed(1)} v${(tierH - eave).toFixed(1)} M${(x + w).toFixed(1)} ${(y + eave).toFixed(1)} v${(tierH - eave).toFixed(1)}"
+      stroke="${top}" stroke-opacity="${(o * 0.7).toFixed(3)}" stroke-width="1"/>`;
+  }).join('');
+
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="The tower, floor ${best}">
     <defs>
       <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1">
@@ -85,6 +106,7 @@ export function tower(best: number, pulse = 0): string {
     <rect width="${W}" height="${H}" fill="url(#tsky)"/>
     <circle cx="${W / 2}" cy="${(ty + 8).toFixed(1)}" r="${(52 * breath).toFixed(1)}" fill="url(#tglow)"/>
     ${hidden > 0 ? `<text x="${W / 2}" y="${(ty - 7).toFixed(1)}" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="11" fill="${top}" opacity=".7">+${hidden * FLOORS_PER_REALM} floors below</text>` : ''}
+    ${ghosts}
     <g transform="translate(0 0)">${out}</g>
     <rect y="${ground}" width="${W}" height="${H - ground}" fill="#0D0B08"/>
     <rect y="${ground - 1}" width="${W}" height="1" fill="${colourAt(1)}" opacity=".35"/>

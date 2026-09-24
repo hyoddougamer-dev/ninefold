@@ -36,9 +36,9 @@ import type { State } from '../../sim/state.ts';
  * as the cultivator's strike, then the beast's answer. Nothing about the outcome
  * changes; what changes is that you can see it happen.
  *
- * **Cyan is you and magenta is the beast, always.** Colour by realm is right for the
- * bestiary and wrong here: at the sixth realm a sixth-realm cultivator and a sixth-realm
- * beast are the same purple, and the two lives become one colour.
+ * **玉 jade is you and 硃 cinnabar is the beast, always.** Colour by realm is right for
+ * the bestiary and wrong here: at the sixth realm a sixth-realm cultivator and a
+ * sixth-realm beast are the same copper, and the two lives become one colour.
  */
 
 export const BEAT_MS = 175;
@@ -244,7 +244,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
 
       {over && (
         <div className="verdict">
-          <span className="han" style={{ color: outcome.won ? 'var(--cyan)' : 'var(--magenta)' }}>
+          <span className="han" style={{ color: outcome.won ? 'var(--jade)' : 'var(--cinnabar)' }}>
             {say.han}
           </span>
           <p>

@@ -132,7 +132,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           const c = Math.max(0.02, Math.min(0.98, raw));
           const gap = effectiveBeastPower(state, b) / Math.max(1e-9, power(state));
           const tone = raw <= 0 ? 'var(--faint)'
-            : c > 0.66 ? 'var(--cyan)' : c > 0.33 ? 'var(--gold)' : 'var(--magenta)';
+            : c > 0.66 ? 'var(--jade)' : c > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
           const kills = state.killed[b.key] ?? 0;
           const marks = marksOf(kills);
           const next = nextMark(kills);

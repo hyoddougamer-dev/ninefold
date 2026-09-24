@@ -748,6 +748,7 @@ export function App() {
       {bloom !== null && (
         <div className="bloom" data-held={opensIn(bloom).length > 0}
              style={{ color: realmOf(bloom).colour }}>
+          <span className="wash" />
           <span className="ring" /><span className="ring" /><span className="ring" />
           <div className="mid">
             <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
@@ -942,7 +943,7 @@ export function App() {
             <dt>{RETURN.qi}</dt>
             <dd style={{ color: r.colour }}>{num(home.qi)}</dd>
             {home.layers > 0 && (<><dt>{RETURN.layers}</dt><dd>{home.layers}</dd></>)}
-            {home.realms > 0 && (<><dt>{RETURN.realms}</dt><dd style={{ color: 'var(--magenta)' }}>{home.realms}</dd></>)}
+            {home.realms > 0 && (<><dt>{RETURN.realms}</dt><dd style={{ color: 'var(--cinnabar)' }}>{home.realms}</dd></>)}
             <dt>{RETURN.power}</dt>
             <dd>{num(power(state))}</dd>
           </dl>

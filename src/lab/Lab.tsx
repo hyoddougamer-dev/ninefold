@@ -156,7 +156,7 @@ export function Lab() {
         <div className="chips">
           {MATCH.map((m) => (
             <button key={m.k} className="chip wide" data-on={match === m.k}
-                    style={{ ['--hue' as string]: 'var(--cyan)' }}
+                    style={{ ['--hue' as string]: 'var(--jade)' }}
                     onClick={() => { setMatch(m.k); setBattle(null); }}>
               <b className="cjk">{m.han}</b>
               <i>{m.label}</i>
@@ -219,7 +219,7 @@ export function Lab() {
         </div>
 
         <div style={{ marginTop: 18, display: 'flex', gap: 10 }}>
-          <button className="act" data-tone="magenta" onClick={start}>
+          <button className="act" data-tone="cinnabar" onClick={start}>
             戰 <span>Fight</span>
           </button>
           <button className="act" style={{ maxWidth: 130 }}

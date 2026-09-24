@@ -34,7 +34,7 @@ export interface Heaven {
   readonly n: number;
   readonly han: string;
   readonly name: string;
-  /** Walks on past the ninth realm's magenta, into gold and then to white. */
+  /** Walks on past the ninth realm's imperial violet, into gold and then to bone. */
   readonly colour: string;
   /** What stands at the end of this heaven: 漢字, name, and the icon it is drawn with. */
   readonly dragon: { readonly han: string; readonly name: string; readonly icon: string };
