@@ -1906,6 +1906,7 @@ const page = `<meta charset="utf-8">
       <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#idle"><b>閒</b> Where the qi goes</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
+      <a href="#week"><b>期</b> The week</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
       <a href="#cap"><b>上限</b> The cap</a>
@@ -1979,30 +1980,27 @@ const page = `<meta charset="utf-8">
       joga com regularidade, o <b>último nome novo do jogo chega ao dia ${CLOCK_LAST}</b>.
       Três meses são o dia 91.</p>
 
-    <h3>O que mudou na \u00faltima noite</h3>
+    <h3>O que mudou na última noite</h3>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">\u9b25</b> <em>A arena deixou de ter uma moeda ao p\u00e9 de um bicho</em>
-        <i>O cultivador era um disco de papel com brilho e metade do tamanho do monstro.
-        Agora os dois s\u00e3o recortados da mesma maneira, ficam do mesmo lado da mesma escala
-        e o ch\u00e3o j\u00e1 n\u00e3o \u00e9 uma barra preta. Ver \u756b mais acima.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u58a8</b> <em>A paleta estava pintada a meio</em>
-        <i>Oito s\u00edtios ainda pediam o ciano e o magenta que a paleta j\u00e1 n\u00e3o tem, e uma
-        propriedade que n\u00e3o existe n\u00e3o d\u00e1 erro: herda. O \u52dd da vit\u00f3ria e as
-        probabilidades da ca\u00e7a estavam a sair da cor do texto. H\u00e1 agora um teste que
-        chumba se voltar a acontecer.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u52d5</b> <em>Quatro coisas passaram a mexer</em>
-        <i>Part\u00edculas de qi \u00e0 volta do cultivador no ecr\u00e3 principal. O n\u00edvel salta quando se
-        compra, o \u7a81\u7834 abre com uma mancha de tinta, e a torre mostra os andares que ainda
-        n\u00e3o existem. Tudo isto p\u00e1ra sozinho para quem pede menos movimento no
-        telem\u00f3vel.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u554f</b> <em>As tr\u00eas perguntas t\u00eam resposta medida</em>
-        <i>Sim, h\u00e1 que fazer: 6 tipos de coisa e 31 toques por visita. O problema \u00e9 outro,
-        e est\u00e1 em \u554f: <b>depois do dia 21 n\u00e3o chega nada de novo</b>. O equipamento vale
-        \u00d77.9 e \u00e9 o terceiro maior. \u7210 A fornalha nunca \u00e9 usada.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">\u756b</b> <em>A b\u00edblia mostra a arte</em>
-        <i>Uma sec\u00e7\u00e3o nova com as folhas, o corte, as duas figuras nos nove reinos, as
-        bestas, os c\u00e9us e os emblemas. S\u00e3o os ficheiros do jogo, n\u00e3o desenhos feitos para
-        a p\u00e1gina.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">期</b> <em>A semana passou a mudar sozinha</em>
+        <i>Três marcas que rodam à segunda-feira: uma besta que dá o dobro de 材, uma erva
+        da época e uma sala do 秘境 que paga a dobrar. Não há servidor. Quem nunca luta
+        acaba no mesmo dia, com ou sem elas.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">悟道</b> <em>Uma carta em cada céu</em>
+        <i>Nove tríades novas, ${ALL_CARDS.length} cartas e dezassete escolhas numa subida. Os
+        céus eram quarenta travessias sem uma única decisão.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">煉器</b> <em>O harness nunca refinava</em>
+        <i>O 材 acumulava sem destino e o Dragão era um passeio em 28 de 40 travessias. Foi
+        remedido: o pé do Dragão passou de 1.45 para ${TRIBULATION_FOOTING}.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">爐</b> <em>A fornalha era uma armadilha</em>
+        <i>Quem a usava durante a subida chegava ao topo 34 dias mais tarde. Passou para o
+        nono reino, onde é a resposta e não um custo.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">秘境</b> <em>O cofre ficou mais fundo</em>
+        <i>Onze salas a partir do sétimo reino. E os pontos 道 dos santuários deixaram de
+        ser apagados sempre que o jogo recarregava.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">階</b> <em>Quanto custa subir</em>
+        <i>O ecrã diz quanto qi falta para o degrau e para o reino, e quanto tempo isso
+        é.</i></span></div>
     </div>
 
     <h3>Está tudo funcional?</h3>
@@ -2328,15 +2326,16 @@ const page = `<meta charset="utf-8">
       separate actions waiting on an average visit, and
       ${((ACTIVE_BUSY.thin.length / ACTIVE_BUSY.visits.length) * 100).toFixed(0)}% of visits
       are thin. Nothing in the first two months is a screen with one button on it.</div>
-    <p class="t">The honest half of the answer is the last column. <b>The problem is not
-      how much there is to do, it is that nothing new arrives after the third week.</b>
-      ${SYS_EARLY} of the ${SYS_IN.length} systems are open inside the first four days, the
-      last of them on day ${SYS_LAST.day.toFixed(0)}, and everything after that is 雷池 the
-      tribulation, which is the ninth realm itself. The longest stretch with nothing new
-      named at all is
-      ${ACTIVE_BUSY.quiet.toFixed(0)} days, starting on day ${ACTIVE_BUSY.quietAt.toFixed(0)}.
-      A player who is still there on day forty is doing the same fifteen things they were
-      doing on day twenty, faster.</p>
+    <p class="t">The honest half of the answer was the last column. The first reading of
+      it said <b>the problem is not how much there is to do, it is that nothing new
+      arrives after the third week</b>, and it was right. Four things have changed it
+      since. A realm's arrivals are spread across its layers, and 秘境深 the deeper vault
+      arrives at the seventh realm. 爐 The furnace moved to the ninth, and 期 the week
+      turns every seven days for ever. ${SYS_EARLY} of the ${SYS_IN.length}
+      systems still open inside the first four days, the last on day
+      ${SYS_LAST.day.toFixed(0)}. The longest stretch with nothing new named is now
+      ${ACTIVE_BUSY.quiet.toFixed(0)} days, from day ${ACTIVE_BUSY.quietAt.toFixed(0)}, and
+      the nine heavens carry a card each after the summit.</p>
     <table>
       <tr><th>when</th><th>what opens</th></tr>
       ${arriveRows}
@@ -2346,13 +2345,13 @@ const page = `<meta charset="utf-8">
       warden is meant to be rare and 突破 the breakthrough is meant to be nine moments. A
       low number on something that cost a month to build is worth looking at.</p>
     <table class="live">${liveRows}</table>
-    <div class="warn"><b>爐 The furnace is never used.</b> It reads 0% because an active
-      cultivator never needs it. The harness brews only when a warden is out of reach, and
-      an active cultivator is never more than a visit away from beating one. 值 below says
-      the same thing from the other end, where the pills a climb ends with multiply power
-      by exactly ×1.00. A system that opens in the seventh realm and is never the right
-      move is a system to cut or to change. It is the one place on this page where the
-      measurement says something is wrong.</div>
+    <div class="rule"><b>爐 The furnace read 0%, and the reason was worse than idle.</b>
+      The first reading said nobody ever needed it, and that was the harness's own policy
+      talking: it brewed only when a warden was out of reach. Played by a cultivator who
+      brews toward the next tower floor, the furnace was a <b>trap</b>: 72 pills, seven
+      more floors, and the ninth realm on day 67 instead of 47. Thirty-four days of the
+      climb lost to the system that looked most like progress. It opens at the ninth realm
+      now, where pills are the answer to the Dragon rather than a tax on the ladder.</div>
     <p class="t">The three zeroes above it are a different thing and not a fault. 突破 the
       breakthrough, 悟道 the card and 拆 the melt are counted at the <em>start</em> of a
       visit, and the visit before them did them. They are never waiting for you, which
@@ -2411,28 +2410,31 @@ const page = `<meta charset="utf-8">
     <p class="t"><b>The recommendation is 友 first and 局 only if the game finds an
       audience.</b> A verified leaderboard on a game with no players is a server bill.</p>
 
-    <h3>續 What the measurement says to do next</h3>
-    <p class="t">Three things, in the order the numbers put them in. None of them is more
-      content for the sake of it: the first two are about a game that already has
-      everything in it by the third week.</p>
+    <h3>續 What the measurement said to do next, and all three are done</h3>
+    <p class="t">Three things, in the order the numbers put them in. None of them was more
+      content for the sake of it: the first two were about a game that already had
+      everything in it by the third week. Each row now says what was built.</p>
     <div class="rows">
       <div class="row"><span class="body"><b class="cjk">遲</b> <em>Hold two systems back</em>
         <i>${SYS_EARLY} of the ${SYS_IN.length} arrive inside four days, five of them in the
         second realm, which is one afternoon. Moving
         秘境 the vault and 爐 the furnace up the climb costs nothing to build and buys two
-        arrivals in the month that currently has none.</i></span></div>
+        arrivals in the month that currently has none. <b>Done:</b> 秘境深 the deeper vault
+        at the seventh realm, 爐 at the ninth, and a realm's own arrivals spread across its
+        layers.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">爐</b> <em>Give the furnace a job</em>
         <i>It is the one system the measurement says is dead: 0% of visits, ×1.00 of a
         finished cultivator's power. A pill is qi spent on power, and qi spent on the
         ladder is also power, sooner. It needs to buy something the ladder cannot: a
         consumable a warden actually wants, or a floor of 塔 the tower that will not open
-        without one.</i></span></div>
+        without one. <b>Done</b>, and the answer was the opposite of the question: it was
+        not dead but a trap, and it moved to the ninth realm.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">期</b> <em>One thing that changes on its own</em>
         <i>Every system in this game is a staircase, and a staircase is finished the day
         you see the top of it. The cheapest thing that is never finished is a rotation: a
         beast the week pays double for, a room of 秘境 that moves, a herb that is only in
         season. It is a day of work and it is the only kind of content that does not run
-        out.</i></span></div>
+        out. <b>Done</b>, exactly as written: <a href="#week">期 the week</a>.</i></span></div>
     </div>
   </section>
 
@@ -3930,7 +3932,7 @@ const page = `<meta charset="utf-8">
       ${(power(BREWER.state) / power(CLIMBER.state)).toFixed(1)}x stronger, on
       ${pillsTaken(BREWER.state.brewed)} pills.</p>
     <div class="rule"><b>爐底 The furnace starts one realm behind you, not at the foot of
-      the mountain.</b> It opens at the seventh realm, and its first pill used to be priced
+      the mountain.</b> It opens at the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][opensAt('furnace') - 1]} realm, and its first pill used to be priced
       for the first: 450 qi to somebody gathering 192k qi a second. Measured, an hour after
       it opened, tapping the buttons bought a hundred pills and 3.2x power. A system that
       opens late starts where the player is standing, one realm back, so the first pill is
@@ -3963,9 +3965,10 @@ const page = `<meta charset="utf-8">
     <div class="rule"><b>立 Where the Dragon plants its feet.</b> ${TRIBULATION_FOOTING}x
       the 力 it last faced, not 1.8x, because 力 is the sword and the shield at once and a
       multiplier on blows is worth about its square root in the ratio. The band is narrow,
-      and it was measured at forty crossings each. 1.20 gives 98% every time and no
-      decision. 1.45 gives three days and the high sixties. 1.60 runs away to sixty-day
-      crossings. 1.70 is a wall by the ninth mark.</div>
+      and it was measured at forty crossings each, twice. Without 煉器 refining in the
+      loop, 1.20 gave 98% every time and 1.45 the high sixties. With it, which is what a
+      real cultivator does, 1.45 is a walkover in 28 crossings of 40, 1.59 settles at 66%,
+      and 1.62 runs away to a mark of 32 days.</div>
     <p class="t">The rest is solved, not chosen. Three pills a crossing, a price that rises
       ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
       ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.</p>
