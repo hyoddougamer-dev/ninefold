@@ -24,7 +24,9 @@ import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points
 
 const R = 17;          // node radius
 const GAP = 82;        // vertical distance between tiers, with room for two lines of name
-const FORK = 21;       // how far a fork's two nodes sit from their column
+// 讀 21 put a fork's two nodes almost touching, and their names ran into each other:
+// "Heavy Plate" and "Forsake Armour" read as one line at a phone's width.
+const FORK = 30;       // how far a fork's two nodes sit from their column
 const COLS: Record<Path, number> = { sword: 62, spirit: 180, fortune: 298 };
 const W = 360;
 const TOP = 26;        // where the root sits
@@ -186,7 +188,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
         </span>
         <span className="mono" style={{ fontSize: 13 }}>
           <b style={{ color: free > 0 ? 'var(--gold)' : 'var(--faint)', fontSize: 19 }}>{free}</b>
-          <span className="faint"> free · {spent}/{earned}</span>
+          <span className="faint">{DAO.purse(spent, earned)}</span>
         </span>
       </div>
 
@@ -270,10 +272,12 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                     the English name only on the sheet you get after tapping one. A tree
                     you cannot read at a glance is a tree nobody plans a build on. */}
                 {wrap(node.name).map((row, i) => (
-                  <text key={row} x={x} y={y + R + 12 + i * 9} textAnchor="middle" fontSize="8"
-                        fontFamily="Archivo, sans-serif" letterSpacing=".02em"
-                        fill={on ? colour : '#9C907C'}
-                        opacity={faded ? 0.4 : on ? 0.95 : 0.8}>{row}</text>
+                  // 讀 8px at 40% was a name nobody could read on a phone, which is the
+                  // whole reason it is there. It is the size of the cost figure now.
+                  <text key={row} x={x} y={y + R + 12 + i * 10} textAnchor="middle" fontSize="9.5"
+                        fontFamily="Archivo, sans-serif"
+                        fill={on ? colour : '#B5A993'}
+                        opacity={faded ? 0.6 : 1}>{row}</text>
                 ))}
                 {picked === node.key && (
                   <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#EDE3D2"

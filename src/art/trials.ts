@@ -1,4 +1,4 @@
-import { mix } from './aura.ts';
+import { mix, portrait } from './aura.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { FLOORS_PER_REALM, seals } from '../sim/tower.ts';
 
@@ -171,59 +171,106 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
 }
 
 /**
- * 雷池 The thunder pool, and the marks already taken.
+ * 雷池 The thunder pool, and the cultivator sitting in the middle of it.
  *
- * A basin cut into stone, filling with light. `filled` is the qi against the pool, so
- * the drawing is the bar, and when it reaches one, the bolts come down and the Dragon
- * is standing. Every 雷印 already held is a ring around the rim, so a cultivator with
- * twelve marks is looking at twelve of them.
+ * 圖 It used to be the basin alone, a flat trapezoid in the portrait's box, and that was
+ * the worst trade on the whole screen: from the ninth realm's summit to the end of the
+ * first three months, the player's own figure, the one picture that had grown with them
+ * for fifty days, was taken off the screen and replaced by a shape. So she comes back,
+ * seated on a stone in the middle of the pool, and the pool is drawn round her.
+ *
+ * It is still the bar. `filled` is the qi against the pool: the water spreads out from
+ * the stone to the rim as it fills, the sky over her gathers as it fills, and only when
+ * it is full do the bolts come down. Every 雷印 already held is a ring along the bottom,
+ * so a cultivator with twelve marks is looking at twelve of them. `sky` is the colour of
+ * the heaven she stands in, so crossing into the next one changes the weather.
  */
-export function pool(filled: number, marks: number, pulse = 0): string {
+export function pool(
+  filled: number, marks: number, pulse = 0,
+  { who = null, sky }: { who?: string | null; sky?: string } = {},
+): string {
   const W = 200;
   // Square, because it takes 氣象 the portrait's own box on the cultivate screen and a
   // letterboxed drawing there reads as a picture pasted into a frame.
   const H = 200;
   const c = realmOf(9).colour;
+  const air = sky ?? c;
   const f = Math.max(0, Math.min(1, filled));
   const full = f >= 0.999;
   const breath = Math.sin(pulse * Math.PI * 2);
-  const rimY = 104;
-  const deep = 60;
-  const surface = rimY + (1 - f) * deep;
+  const cx = W / 2;
+  const py = 163;          // the middle of the pool
+  const rx = 90, ry = 22;  // its rim, seen from above and in front
 
-  // 雷 The bolts only come when the pool is full. Before that the sky is quiet, which is
-  // the whole difference between "wait" and "now".
-  const bolts = full ? Array.from({ length: 3 }, (_, i) => {
-    const x = W / 2 + (i - 1) * 34;
-    const j = 6 + i * 3;
-    return `<path d="M${x} 14 l${j} 28 l-${j * 0.7} 4 l${j * 0.9} 24 l-${j * 1.5} -9 l${j * 0.5} -7 Z"
-      fill="${c}" opacity="${(0.5 + 0.35 * Math.abs(breath)).toFixed(2)}"/>`;
-  }).join('') : '';
+  // 雲 The weather. Two bands of cloud that drift on the pulse and darken as the pool
+  // fills, so the sky says how close the Dragon is before any bolt does.
+  const clouds = [0, 1, 2].map((i) => {
+    const y = 20 + i * 13;
+    const drift = Math.sin((pulse + i * 0.33) * Math.PI * 2) * 6;
+    return `<ellipse cx="${(cx + (i - 1) * 42 + drift).toFixed(1)}" cy="${y}" rx="${56 - i * 6}" ry="${9 - i}"
+      fill="${mix(air, '#0D0B08', 0.55)}" opacity="${(0.18 + 0.5 * f).toFixed(2)}"/>`;
+  }).join('');
 
-  // Every mark is a ring on the rim. Past twelve they double up rather than crowd.
-  const rings = Array.from({ length: Math.min(12, marks) }, (_, i) =>
-    `<circle cx="${(22 + i * 14).toFixed(0)}" cy="${H - 13}" r="4" fill="none" stroke="${c}" stroke-opacity=".8" stroke-width="1.4"/>`,
+  // 雷 Before it is full, one flicker far off, fainter the emptier the pool. When it is
+  // full, three bolts strike the rim either side of her. Never her: the tribulation is a
+  // fight she chooses, not weather that happens to her.
+  const bolt = (x: number, j: number, top: number, bottom: number, op: number, w: number) => {
+    const mid = (top + bottom) / 2;
+    return `<path d="M${x} ${top} L${x + j} ${mid - 4} L${x - j * 0.5} ${mid} L${x + j * 0.7} ${bottom}"
+      fill="none" stroke="${mix(c, '#FFFFFF', 0.55)}" stroke-width="${w}" stroke-linecap="round"
+      stroke-linejoin="round" opacity="${op.toFixed(2)}"/>`;
+  };
+  const bolts = full
+    ? [[cx - 74, 7, 2.2], [cx + 70, -8, 2.2], [cx + 84, -4, 1.2]].map(([x, j, wd], i) =>
+      bolt(x, j, 18 + i * 6, py - 4, (0.55 + 0.4 * Math.abs(breath)) * (i === 2 ? 0.6 : 1), wd)).join('')
+    : f > 0.25 ? bolt(cx + 70, -6, 22, 58, (0.1 + 0.3 * f) * Math.max(0, breath), 1.1) : '';
+
+  // 池 The water, spreading from the stone to the rim.
+  const wrx = 30 + (rx - 34) * f;
+  const wry = 7 + (ry - 9) * f;
+
+  // 印 The marks, centred along the bottom. Past twelve they stop crowding.
+  const shown = Math.min(12, marks);
+  const rings = Array.from({ length: shown }, (_, i) =>
+    `<circle cx="${(cx + (i - (shown - 1) / 2) * 13).toFixed(1)}" cy="${H - 8}" r="3.6" fill="none" stroke="${c}" stroke-opacity=".85" stroke-width="1.3"/>`,
   ).join('');
+
+  // 修 Her, from the same function that draws her on every other realm, a little smaller
+  // so the pool has room. Her aura comes with her.
+  const figure = portrait({ realm: 9, pulse, who }).replace(
+    '<svg viewBox="0 0 200 200" width="100%" height="100%"',
+    '<svg viewBox="0 0 200 200" x="36" y="34" width="128" height="128"');
 
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="The thunder pool, ${Math.round(f * 100)}% full, ${marks} marks">
     <defs>
-      <linearGradient id="pwater" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${mix(c, '#FFFFFF', 0.45)}" stop-opacity=".95"/>
-        <stop offset="1" stop-color="${c}" stop-opacity=".35"/>
-      </linearGradient>
-      <radialGradient id="pglow"><stop offset="0" stop-color="${c}" stop-opacity="${(0.12 + 0.4 * f).toFixed(2)}"/>
+      <radialGradient id="psky" cx=".5" cy=".1" r=".75">
+        <stop offset="0" stop-color="${air}" stop-opacity="${(0.1 + 0.3 * f).toFixed(2)}"/>
+        <stop offset="1" stop-color="${air}" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="pwater">
+        <stop offset="0" stop-color="${mix(c, '#FFFFFF', 0.55)}" stop-opacity=".95"/>
+        <stop offset=".7" stop-color="${c}" stop-opacity=".55"/>
+        <stop offset="1" stop-color="${c}" stop-opacity=".2"/>
+      </radialGradient>
+      <filter id="pcloud" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+      <radialGradient id="pglow"><stop offset="0" stop-color="${c}" stop-opacity="${(0.1 + 0.4 * f).toFixed(2)}"/>
         <stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>
-      <clipPath id="pbasin"><path d="M40 ${rimY} h120 l-14 ${deep} h-92 Z"/></clipPath>
     </defs>
-    <circle cx="${W / 2}" cy="${rimY + 10}" r="${(70 + 10 * f).toFixed(1)}" fill="url(#pglow)"/>
+    <rect width="${W}" height="${H}" fill="url(#psky)"/>
+    <g filter="url(#pcloud)">${clouds}</g>
     ${bolts}
-    <!-- the basin: cut stone, not a bowl -->
-    <path d="M40 ${rimY} h120 l-14 ${deep} h-92 Z" fill="${mix(c, '#0D0B08', 0.82)}"/>
-    <g clip-path="url(#pbasin)">
-      <rect x="30" y="${surface.toFixed(1)}" width="140" height="${deep + 4}" fill="url(#pwater)"/>
-      ${f > 0.02 ? `<ellipse cx="${W / 2}" cy="${surface.toFixed(1)}" rx="66" ry="${(3 + 1.4 * breath).toFixed(1)}" fill="${mix(c, '#FFFFFF', 0.6)}" opacity=".7"/>` : ''}
-    </g>
-    <path d="M40 ${rimY} h120" stroke="${c}" stroke-opacity=".75" stroke-width="2"/>
+    <ellipse cx="${cx}" cy="${py}" rx="${rx + 14}" ry="${ry + 16}" fill="url(#pglow)"/>
+    <!-- the rim: cut stone, and the dark floor of an empty pool inside it -->
+    <ellipse cx="${cx}" cy="${py + 2}" rx="${rx}" ry="${ry}" fill="${mix(c, '#0D0B08', 0.86)}"
+      stroke="${mix(c, '#9C907C', 0.5)}" stroke-opacity=".55" stroke-width="1.6"/>
+    <ellipse cx="${cx}" cy="${py}" rx="${wrx.toFixed(1)}" ry="${wry.toFixed(1)}" fill="url(#pwater)"
+      opacity="${(0.35 + 0.6 * f).toFixed(2)}"/>
+    ${f > 0.05 ? `<ellipse cx="${cx}" cy="${py}" rx="${(wrx * (0.7 + 0.1 * breath)).toFixed(1)}" ry="${(wry * (0.7 + 0.1 * breath)).toFixed(1)}"
+      fill="none" stroke="${mix(c, '#FFFFFF', 0.7)}" stroke-opacity="${(0.25 + 0.3 * f).toFixed(2)}" stroke-width=".8"/>` : ''}
+    <!-- the stone she sits on -->
+    <ellipse cx="${cx}" cy="${py - 12}" rx="30" ry="7" fill="${mix(c, '#0D0B08', 0.7)}"
+      stroke="${mix(c, '#FFFFFF', 0.3)}" stroke-opacity=".35" stroke-width="1"/>
+    ${figure}
     ${rings}
   </svg>`;
 }

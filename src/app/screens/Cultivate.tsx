@@ -182,7 +182,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         ['--busy' as string]: Math.max(0, Math.min(1, (state.realm - 3) / 5)),
       }}>
         {top
-          ? <Svg html={poolArt(filled, state.tribulation, pulse)} />
+          ? <Svg html={poolArt(filled, state.tribulation, pulse, { who: state.self, sky: heaven?.colour })} />
           : <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} />}
       </div>
 
@@ -468,9 +468,15 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {/* 凝丹 The way out of the one dead end the game has.
           It appears only when 材 material has actually run out and a core is still to be
-          had, which is the moment it answers a question instead of asking one. */}
+          had, which is the moment it answers a question instead of asking one.
+
+          先 And never before the first kill. A new cultivator holds no material because
+          nothing has fallen yet, not because it ran out, and on the very first screen of
+          the game this card stood under the boxes in red saying "No material left" while
+          引 the guide was still on its first step. The guide's third step is the one that
+          teaches material, and it teaches it by hunting. */}
       {isOpen(state.realm, 'cores') && state.levels.cores < capOf(state, 'cores')
-        && !canBuy(state, 'cores') && (
+        && !canBuy(state, 'cores') && Object.values(state.killed).some((n) => n > 0) && (
         <div className="condense">
           <div className="chead">
             <b className="cjk"><Term han="凝丹" /></b>

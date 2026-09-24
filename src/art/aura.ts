@@ -42,7 +42,18 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
   const uid = `r${r.n}`;
   const breath = 1 + Math.sin(pulse * Math.PI * 2) * 0.015;
 
-  const painted = who ? pictureOf('self', figureKey(who, r.n)) : null;
+  /**
+   * 渡劫 The ninth, drawn as the eighth turning to light.
+   *
+   * 圖 The ninth painting lets the figure dissolve into the paper, and on the dark ground
+   * of the game every cut of it comes out as a head and two scraps: the tribulation realm
+   * looked like a torn page for as long as it had a painting. Until it is repainted, the
+   * ninth realm shows the eighth figure, whole, with 散 the dissolve below eating into it
+   * and a violet light coming up through the robe. It says what the realm is, a body
+   * being unmade, and it never looks like a broken file.
+   */
+  const dissolving = who !== null && r.n === 9;
+  const painted = who ? pictureOf('self', figureKey(who, dissolving ? 8 : r.n)) : null;
   /**
    * 淡 How much of the aura to draw once there is a painting inside it.
    *
@@ -104,10 +115,15 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
    * around it still comes from here. A realm with no file keeps the pictogram, which is
    * what every realm looked like before.
    */
-  const body = painted
+  const image = painted
     ? `<image href="${painted}" x="${(S * 0.11).toFixed(1)}" y="${(S * 0.11).toFixed(1)}"
          width="${(S * 0.78).toFixed(1)}" height="${(S * 0.79).toFixed(1)}"
          preserveAspectRatio="xMidYMax meet"/>`
+    : '';
+  const body = painted && dissolving
+    ? `<g filter="url(#dz${uid})" mask="url(#dm${uid})">${image}</g>`
+    : painted
+    ? image
     : `<g filter="url(#b${uid})" transform="translate(${figOff.toFixed(1)} ${(figOff + S * 0.04).toFixed(1)}) scale(${(fig / 512).toFixed(4)})" fill="${core}">${figure}</g>`;
 
   return `<svg viewBox="0 0 ${S} ${S}" width="100%" height="100%" role="img" aria-label="${r.name}, realm ${r.n}">
@@ -122,6 +138,25 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
         <stop offset="1" stop-color="#fff" stop-opacity="0"/>
       </radialGradient>
       <mask id="k${uid}"><rect width="${S}" height="${S}" fill="url(#m${uid})"/></mask>
+      ${dissolving ? `
+      <!-- 散 the dissolve: the figure lifted toward the realm's own light, with fractal
+           noise turning patches of her to white light, and the lap fading out below. -->
+      <filter id="dz${uid}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="3" seed="9" result="n"/>
+        <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 3.2 -1.75" result="spots"/>
+        <feComposite in="spots" in2="SourceAlpha" operator="in" result="inside"/>
+        <feFlood flood-color="#F4EAFF" result="white"/>
+        <feComposite in="white" in2="inside" operator="in" result="light"/>
+        <feGaussianBlur in="light" stdDeviation="2.2" result="glow"/>
+        <feColorMatrix in="SourceGraphic" type="matrix"
+          values=".72 .16 .1 0 .12  .12 .66 .1 0 .08  .2 .14 .72 0 .16  0 0 0 1 0" result="lit"/>
+        <feMerge><feMergeNode in="lit"/><feMergeNode in="glow"/></feMerge>
+      </filter>
+      <linearGradient id="dg${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset=".25" stop-color="#fff" stop-opacity="1"/>
+        <stop offset="1" stop-color="#fff" stop-opacity=".45"/>
+      </linearGradient>
+      <mask id="dm${uid}"><rect width="${S}" height="${S}" fill="url(#dg${uid})"/></mask>` : ''}
       <filter id="b${uid}" x="-60%" y="-60%" width="220%" height="220%">
         <feGaussianBlur stdDeviation="${(1.4 + 1.9 * t).toFixed(1)}" result="bl"/>
         <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>

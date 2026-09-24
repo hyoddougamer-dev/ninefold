@@ -13,7 +13,7 @@ import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
-import { DRIVE } from '../copy.ts';
+import { DRIVE, HUNT } from '../copy.ts';
 
 /**
  * 圍 The drive, on the screen.
@@ -128,10 +128,13 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
 /** The little 圍 button that opens it, on a beast's row. */
 export function DriveTag({ onOpen }: { onOpen: () => void }) {
   return (
-    <span className="drivetag" role="button" tabIndex={0}
+    <span className="drivetag" role="button" tabIndex={0} aria-label={`圍 ${HUNT.driveTag}`}
       onClick={(e) => { e.stopPropagation(); onOpen(); }}
       onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onOpen(); } }}>
       <Svg html={icon('barbed-spear', 15)} />
+      {/* 譯 An icon and nothing else was the one button on 狩 that did not say what it
+          was. It is the second thing a row can do, so the word is small. */}
+      <i>{HUNT.driveTag}</i>
     </span>
   );
 }

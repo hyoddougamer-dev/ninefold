@@ -261,7 +261,10 @@ function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; 
  * 淡 The ramp is scaled by the panel's own strongest ink, so the ninth cultivator, who is
  * meant to be barely there, is kept barely there instead of being wiped off.
  */
-async function bleed(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
+async function bleed(
+  file: string, box: { left: number; top: number; width: number; height: number }, out: string,
+  { ghost = false }: { ghost?: boolean } = {},
+) {
   const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels: ch } = info;
 
@@ -305,6 +308,75 @@ async function bleed(file: string, box: { left: number; top: number; width: numb
     alpha[j] = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
   }
 
+  // 洞 The paper inside her, which is her skin.
+  //
+  // 誤 The ramp is the ink, so anywhere inside the figure that is broad and pale went
+  // part-transparent, and the fringe darkening below turned that into a smudge. It was
+  // on the eighth realm's face in both figures: a dark mark from the eyes to the chin,
+  // which on the phone reads as a wound. Everything well inside the silhouette is the
+  // figure, whatever colour it is, so the silhouette is closed, its holes filled, and
+  // its core made opaque. Only the edge still dissolves along the ink.
+  const binary = async (src: Uint8Array | Buffer, radius: number, over: number) => {
+    const b = await sharp(Buffer.from(src), { raw: { width: w, height: h, channels: 1 } })
+      .blur(radius).toColourspace('b-w').raw().toBuffer();
+    const m = new Uint8Array(w * h);
+    for (let j = 0; j < w * h; j++) m[j] = b[j] > over ? 255 : 0;
+    return m;
+  };
+
+  // 影 And the ninth, who is meant to be barely there.
+  //
+  // 誤 The painting lets her dissolve into the paper on purpose: half her body is bare
+  // paper and a violet wash. Every cut that keeps only the ink kept three scraps of her,
+  // and that is what the tribulation realm showed for as long as it has had a painting.
+  // So the ninth keeps a ghost of the body as well: a seated figure's shape, found from
+  // where her head and her lap are, holding the paper at a little over half. She reads as
+  // somebody turning into light, which is the realm, rather than as a torn page.
+  // 光 How much of each pixel is the ghost, which is light and so is never dimmed.
+  const glow = new Float32Array(w * h);
+  if (ghost) {
+    // 霧 Not a body drawn for her: two tries at that came back as a slab and then a bell.
+    // Her own strokes, spread wide, so the mist is shaped exactly like what the painter
+    // left of her and fades out the way the painting does.
+    const mist = await sharp(Buffer.from(alpha), { raw: { width: w, height: h, channels: 1 } })
+      .blur(Math.max(20, Math.round(Math.min(w, h) * 0.07))).toColourspace('b-w').raw().toBuffer();
+    let peak = 1;
+    for (let j = 0; j < w * h; j++) if (mist[j] > peak) peak = mist[j];
+    for (let j = 0; j < w * h; j++) {
+      const m = Math.min(1, (mist[j] / peak) * 1.6);
+      const eased = m * m * (3 - 2 * m);
+      glow[j] = eased;
+      alpha[j] = Math.max(alpha[j], Math.round(eased * 0.55 * 255));
+    }
+  }
+
+  const solid = await binary(alpha, 5, 60);
+  // Flood the outside in from the border; whatever the flood cannot reach is a hole.
+  const outside = new Uint8Array(w * h);
+  const stack: number[] = [];
+  for (let x = 0; x < w; x++) { stack.push(x, (h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { stack.push(y * w, y * w + w - 1); }
+  while (stack.length) {
+    const j = stack.pop()!;
+    if (outside[j] || solid[j]) continue;
+    outside[j] = 1;
+    const x = j % w, y = (j - x) / w;
+    if (x > 0) stack.push(j - 1);
+    if (x < w - 1) stack.push(j + 1);
+    if (y > 0) stack.push(j - w);
+    if (y < h - 1) stack.push(j + w);
+  }
+  const filled = new Uint8Array(w * h);
+  for (let j = 0; j < w * h; j++) filled[j] = outside[j] ? 0 : 255;
+  // The core is what is at least a spread in from the filled edge, and it is opaque.
+  const core = await binary(filled, SPREAD, 250);
+  const coreSoft = await sharp(Buffer.from(core), { raw: { width: w, height: h, channels: 1 } })
+    .blur(3).toColourspace('b-w').raw().toBuffer();
+  const ghostCap = ghost ? 0.55 : 1;
+  for (let j = 0; j < w * h; j++) {
+    alpha[j] = Math.max(alpha[j], Math.round(coreSoft[j] * ghostCap));
+  }
+
   // 框 The figure's own box and a tenth of it for air, so the file is the person. The
   // disc it replaced was two thirds paper, which is why she read as half the size of the
   // creature opposite her while both files were the same number of pixels.
@@ -345,7 +417,7 @@ async function bleed(file: string, box: { left: number; top: number; width: numb
     // Straight alpha left a pale band of bare paper a dozen pixels wide all round her,
     // which against the dark ground is an outer glow: the coin again, with a soft edge.
     const a = alpha[j] / 255;
-    const k = DIM + (1 - DIM) * a * a;
+    const k = Math.max(DIM + (1 - DIM) * a * a, glow[j]);
     rgba[j * 4] = Math.round(data[i] * k);
     rgba[j * 4 + 1] = Math.round(data[i + 1] * k);
     rgba[j * 4 + 2] = Math.round(data[i + 2] * k);
@@ -582,7 +654,7 @@ async function cut(sheet: Sheet, file: string) {
     // 修 The cultivator is only ever wanted with the paper off: he stands inside an aura
     // the game draws, never on a disc, so there is no squared version to keep.
     if (sheet.kind === 'self') {
-      await bleed(file, box, out);
+      await bleed(file, box, out, { ghost: /-9$/.test(c.key) });
       written.push(out);
       continue;
     }

@@ -78,6 +78,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
    * what is done goes behind one line that says how many, and opens if you want it.
    */
   const open = sorted.filter((b) => nextMark(state.killed[b.key] ?? 0));
+  const beatable = sorted.filter((b) => oddsRaw(state, b) > 0).length;
   const done = sorted.filter((b) => !nextMark(state.killed[b.key] ?? 0));
   const list = showDone ? [...open, ...done] : open;
 
@@ -122,7 +123,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           a question that expires on Monday. Two different questions, two places. */}
       <QuarryBand state={state} onFight={onFight} />
 
-      <h2 className="heading">{HUNT.reach(sorted.length)}</h2>
+      <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
       <div className="stack">
         {list.map((b, i) => {
           const r = realmOf(b.realm);

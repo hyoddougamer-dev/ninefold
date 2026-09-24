@@ -118,8 +118,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
-          Your best piece is <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
-            <Term han={RARITY_INFO[best].han} plain /></span>. That is the rim you are wearing.
+          {GEAR.bestLead} <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
+            <Term han={RARITY_INFO[best].han} plain /></span> {RARITY_INFO[best].name} {GEAR.bestTail}
         </p>
       )}
 
@@ -153,7 +153,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <em>{GEAR.refineAt(level, Math.round(((1 + REFINE_GAIN) ** level - 1) * 100))}</em>
                   </span>
                   <span className="price">
-                    <b className={maxed ? 'cjk' : undefined}>{maxed ? '滿' : `+${num(price)}`}</b>
+                    {/* 價 A price, not a gain. It read "+12 material", which is what a
+                        reward looks like on every other screen of the game. */}
+                    <b className={maxed ? 'cjk' : undefined}>{maxed ? '滿' : num(price)}</b>
                     <i className="tag">{maxed ? CULTIVATE.fullWord : CULTIVATE.materialWord}</i>
                   </span>
                 </button>

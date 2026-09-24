@@ -110,6 +110,9 @@ button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 
 .portrait { display: block; position: relative; width: 100%; aspect-ratio: 1;
             max-width: 260px; margin: 0 auto; }
 .portrait svg { display: block; position: relative; z-index: 1; width: 100%; height: 100%; }
+/* 雷池 The pool nests her portrait inside its own drawing, and the rule above reached
+   into it and blew her up to the whole box. A nested svg keeps the size it was given. */
+.portrait svg svg { position: static; width: 64%; height: 64%; }
 
 /* 塵 Motes of qi in the air around her, on the one screen the game is actually looked
    at. 鬥 the arena has had them since it was drawn and this screen never did, so the
@@ -892,6 +895,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 退 The card and its close button, so the \u2715 can sit on the corner of the card
    without being a button inside a button. */
 .guidewrap { position: relative; }
+/* 角 The guide is the first thing on 修, and the Menu button sits in that corner at the
+   same height. The card ran under it, so its top-right was the button. It starts below
+   the corner instead. */
+.sheet > .guidewrap:first-child { margin-top: 32px; }
 .guidex { position: absolute; right: 6px; bottom: 6px; width: 30px; height: 30px;
           display: grid; place-items: center; border: 0; background: transparent;
           color: var(--faint); font-size: 13px; cursor: pointer; border-radius: 8px; }
@@ -1505,7 +1512,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                  background: rgba(58,50,38,.28); border: 1px solid var(--line); }
 .secret .sofar span { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
                       color: var(--faint); font-family: Archivo, sans-serif; font-weight: 600; }
-.secret .sofar b { font-family: 'Roboto Mono', monospace; font-size: 12.5px; color: var(--gold);
+.secret .sofar b { font-family: Rajdhani, sans-serif; font-size: 12.5px; color: var(--gold);
                    text-align: right; }
 
 .secret .doors { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
@@ -1557,7 +1564,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    this file with justify-content: space-between on it: the number went left and its
    unit went to the far edge of the card, with nothing in between. */
 .endcard .gain { display: flex; align-items: baseline; gap: 9px; margin: 0 0 7px; }
-.endcard .gain b { font-family: 'Roboto Mono', monospace; font-size: 17px; color: var(--gold); }
+.endcard .gain b { font-family: Rajdhani, sans-serif; font-size: 17px; color: var(--gold); }
 .endcard .gain i { font-style: normal; font-size: 12.5px; color: var(--faint); }
 .endcard .got { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 .endcard .piece { display: flex; flex-direction: column; align-items: center; width: 74px;
@@ -1605,11 +1612,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .bed > i { display: block; font-style: normal; font-size: 11px; color: var(--faint);
            line-height: 1.35; margin-top: 1px; }
 /* 明 What a growing bed will be worth, above when it is ready. */
-.bed .worth { display: block; margin-top: 7px; font-family: 'Roboto Mono', monospace;
+.bed .worth { display: block; margin-top: 7px; font-family: Rajdhani, sans-serif;
               font-size: 12px; color: var(--gold); }
 .bed .when { display: block; margin-top: 2px; font-family: Rajdhani, sans-serif;
              font-weight: 600; font-size: 11px; color: var(--faint); }
-.bed .act.small { margin-top: 8px; padding: 7px 4px; font-size: 11.5px; width: 100%; }
+.bed .act.small { margin-top: 8px; padding: 7px 4px; font-size: 11.5px; width: 100%;
+                 font-family: Archivo, sans-serif; }
 .bed .act.small.ghost { background: none; color: var(--faint); border: 1px solid var(--line); }
 
 /* 種 The list of what can go in a bed, opened by the empty one that asked. */
@@ -1630,7 +1638,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 換 What the bed gives back, under the herb's own line. Gold, because it is qi and
    everything that is qi in this game is gold. */
 .seed .nm u { display: block; margin-top: 4px; text-decoration: none; font-size: 11.5px;
-              font-family: 'Roboto Mono', monospace; color: var(--gold); }
+              font-family: Rajdhani, sans-serif; color: var(--gold); }
 .seed .price { flex: none; text-align: right; }
 .seed .price b { display: block; font-family: Rajdhani, sans-serif; font-weight: 600;
                  font-size: 14px; color: var(--gold); }
@@ -1670,7 +1678,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .meet .pick:disabled { opacity: .4; cursor: default; }
 .meet .pick b { display: block; font-size: 13.5px; font-weight: 600; }
 .meet .pick em { display: block; font-style: normal; margin-top: 2px; font-size: 11.5px;
-                 color: var(--faint); font-family: 'JetBrains Mono', ui-monospace, monospace; }
+                 color: var(--faint); font-family: Archivo, sans-serif; }
 @media (prefers-reduced-motion: reduce) { .meet { animation: none; } }
 
 /* 悟道 The card 修 keeps up while a choice is still owed. */
@@ -1763,11 +1771,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* The tag on a beast's row. Small and quiet: the row is still a fight, and this is the
    second thing you can do with it, not the first. */
-.drivetag { flex: none; margin-left: 9px; width: 30px; height: 30px; border-radius: 9px;
-            display: grid; place-items: center; cursor: pointer;
+.drivetag { flex: none; margin-left: 9px; width: 38px; min-height: 38px; border-radius: 9px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 1px; cursor: pointer; padding: 4px 0;
             color: var(--faint); border: 1px solid var(--line); background: var(--panel); }
 .drivetag:hover { color: var(--jade); border-color: var(--jade); }
 .drivetag svg { display: block; }
+.drivetag i { font-style: normal; font-family: Archivo, sans-serif; font-size: 8.5px;
+              letter-spacing: .1em; text-transform: uppercase; line-height: 1; }
 
 .drivesheet { position: absolute; inset: 0; z-index: 13; background: var(--ground);
               overflow-y: auto; display: flex; flex-direction: column;

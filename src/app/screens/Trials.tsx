@@ -124,6 +124,9 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
         {menu.map(({ line, pill, cost, held: taken, affordable }) => {
           const info = PILL_LINES[line];
           const short = state.materials < cost.materials;
+          // 缺 The qi half was never marked. At the summit every pill sat greyed out
+          // with both prices in the same gold, and nothing said which one was missing.
+          const shortQi = state.qi < cost.qi;
           return (
             <button key={line} className="pill" disabled={!affordable} onClick={() => onBrew(line)}>
               <span className="ic"><Emblem family="pill" subject={line} icon={info.icon} size={24} alt={info.name} /></span>
@@ -133,7 +136,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
                 <em>{info.effect} · {TRIALS.held(taken)}</em>
               </span>
               <span className="price">
-                <b>{num(cost.qi)}</b>
+                <b style={shortQi ? { color: 'var(--cinnabar)' } : undefined}>{num(cost.qi)}</b>
                 <i className="faint tag">qi</i>
                 <b style={{ color: short ? 'var(--cinnabar)' : 'var(--gold)' }}>{num(cost.materials)}</b>
                 <i className="faint tag">材</i>
@@ -145,6 +148,9 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
 
       {lit && menu.some((m) => state.materials < m.cost.materials) && (
         <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{TRIALS.needMaterial}</p>
+      )}
+      {lit && menu.some((m) => state.qi < m.cost.qi) && (
+        <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>{TRIALS.needQi}</p>
       )}
 
       {lit && (

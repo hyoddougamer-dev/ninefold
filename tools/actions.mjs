@@ -326,13 +326,26 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     },
     (a, b) => b.tower > a.tower || b.materials > a.materials || 'the floor changed nothing');
 
+  if (page.noise.length) fail('塔', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+  await page.close();
+}
+
+// ── 爐 a pill ─────────────────────────────────────────────────────────────
+// The furnace went to the ninth realm, and for a while this walk still opened it at the
+// seventh, found no pill to press and reported the furnace as broken. It stands where
+// the furnace is now, and says so if there is no button at all rather than guessing.
+{
+  const page = await open(save({ realm: 9, layer: 4, levels: { technique: 60, method: 60, pills: 60, cores: 60 } }));
+  await tab(page, '塔');
   await act(page, '爐 brewing a pill',
     async () => {
       const pill = await page.$('button.pill:not([disabled])');
-      if (pill) { await pill.click(); await page.waitForTimeout(600); }
+      if (!pill) throw new Error('no pill could be pressed at the ninth realm');
+      await pill.click();
+      await page.waitForTimeout(600);
     },
-    (a, b) => Object.keys(b.brewed).some((k) => b.brewed[k] > a.brewed[k]) || 'no pill was brewed');
-  if (page.noise.length) fail('塔爐', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
+    (a, b) => Object.keys(b.brewed).some((k) => (b.brewed[k] ?? 0) > (a.brewed[k] ?? 0)) || 'no pill was brewed');
+  if (page.noise.length) fail('爐', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }
 

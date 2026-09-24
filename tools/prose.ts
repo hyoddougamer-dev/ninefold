@@ -36,8 +36,8 @@ function harvest(value: unknown, out: string[] = []): string[] {
 const lines = [
   ...harvest(COPY),
   // Functions that take arguments cannot be harvested blind, so they are called here.
-  COPY.HUNT.reach(5),
-  COPY.GEAR.best('地'), COPY.GEAR.lines(2, 5), COPY.GEAR.drops(6), COPY.GEAR.setNeed(2),
+  COPY.HUNT.reach(5, 2),
+  COPY.GEAR.best('地', 'Earth'), COPY.GEAR.lines(2, 5), COPY.GEAR.drops(6), COPY.GEAR.setNeed(2),
   COPY.DAO.short(70, 42), COPY.DAO.taken(7, 28), COPY.DAO.closes('捨甲', 'Forsake Armour'),
   COPY.DAO.closed('重甲'), COPY.DAO.costs(3),
   COPY.BESTIARY.icons('lorc, delapouite'),

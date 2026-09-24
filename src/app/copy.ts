@@ -48,12 +48,14 @@ export const HELP = {
       'Up to three times as fast after a few minutes, for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
+    // 指 It said "the button beside this one" from before the corner folded into one
+    // Menu button. There has been no button beside it since, so it names the way there.
     ['釋 says what every character means',
-      'The button beside this one. Every symbol the game uses, named in English, on one page.'],
+      'Open ≡ Menu at the top right and pick "What the characters mean". Any character with a dotted line under it also says its name when you tap it.'],
   ] as const,
   opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
   hunt: '',
-  slow: '囊 You begin holding what your master left you. Spend it, or let it carry you up the first layer. That trade is the whole game.',
+  slow: '囊 Your master left you some qi. Spend it on upgrades, or let it fill the bar and open the first layer. Choosing between the two is the whole game.',
   begin: 'Begin',
 };
 
@@ -102,12 +104,20 @@ export const CULTIVATE = {
    * owed the player rather than leaving them to watch a price never arrive.
    */
   soon: (when: string) => `in ${when}`,
-  afterRungs: (n: number) => (n === 1 ? 'one rung up the climb' : `${n} rungs up the climb`),
-  overRung: 'More than this rung holds. The bar spends your qi before it gets that high, so this one opens by climbing.',
+  /**
+   * 詞 "Layer", never "rung".
+   *
+   * The ladder on this screen says "layer 4/9" and the sentences around it said "rung",
+   * so a new player met two words for one thing on the first screen of the game. The
+   * screen's word wins.
+   */
+  afterRungs: (n: number) => (n === 1 ? 'after the next layer' : `after ${n} more layers`),
+  overRung: 'Some prices are more than this layer\'s bar can hold. They come within reach as you open more layers.',
 
+  // 言 It ended "There is no rebirth yet", which is a note about the roadmap and not a
+  // fact about the game. A player reads "yet" as a promise.
   ceiling: (n: number, gain: string) =>
-    `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}. `
-    + 'There is no rebirth yet, so this is the ladder above the ladder.',
+    `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}.`,
 
   /**
    * 入定 Being there.
@@ -170,10 +180,10 @@ export const CULTIVATE = {
    * answer rather than a fifth box. The wording has to be honest about the exchange
    * rate. It is a bad deal, and saying so is what points at 狩 Hunt.
    */
-  condenseHead: 'No 材 material left',
+  condenseHead: 'Not enough 材 material',
   condense: 'You can force a 妖丹 out of raw qi instead. It works, and it is dear: '
     + 'this is qi that would have opened layers.',
-  condensePrice: (qi: string, rungs: string) => `${qi} qi · ${rungs} rungs of the climb`,
+  condensePrice: (qi: string, rungs: string) => `${qi} qi · the price of ${rungs} layers`,
   condenseHunt: 'A beast leaves material when it falls. That is the cheap way, and it is one tap away.',
   /** 境 How far this realm is out of. Nine is worth knowing on the first day. */
   ofNine: (n: number, of: number) => `realm ${n} of ${of}`,
@@ -228,8 +238,8 @@ export const REALMCARD = {
   layers: 'layers filled',
   day: 'days climbing',
   wardenHead: 'What stands at the end',
-  warden: 'It has the power of a cultivator who filled this realm and brought nothing else. '
-    + 'The levels get you to the door. Everything else opens it.',
+  warden: 'It is as strong as a cultivator who bought every level this realm holds. '
+    + 'Levels alone bring you level with it. Gear, the 道 path, your stance and your arts tip the fight.',
   gaveHead: 'What this realm opened',
   /** 來 What the realm has not handed over yet, and the layer that brings it. */
   comingHead: 'Still to come in this realm',
@@ -266,8 +276,8 @@ export const LADDER = {
   /** 短 Two short sentences where there was one long one. It is the first thing a new
    *  cultivator reads, and 境 and 層 beside it answer for themselves. */
   rule: (han: string, name: string) =>
-    `Your qi fills one rung. Eight fill ${han} ${name}, and its warden is the ninth.`,
-  ruleAfter: 'Beat it and the next realm opens, with your qi coming with you.',
+    `Your qi fills the bar, and a full bar opens a layer. At layer 9 the warden of ${han} ${name} comes out.`,
+  ruleAfter: 'Beat it and the next realm opens. Your qi comes with you.',
   /** Written on the row itself. Two rows of dashes with nothing naming them is a
    *  diagram of something, and the player is left to guess what. */
   /** 註 The character is drawn by the widget as a tappable 註 Term, so these carry the
@@ -311,11 +321,12 @@ export const TRIALS = {
 
   furnaceHead: '爐 The Furnace',
   furnaceShut: (han: string, name: string) =>
-    `The furnace is cold until ${han} ${name}. Qi has nowhere else to go after that, and `
-    + 'this is where it goes.',
+    `The furnace opens at ${han} ${name}. It turns qi and 材 material into pills that make you stronger for good.`,
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
   held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
   needMaterial: 'You need more 材 material. The tower pays it.',
+  /** 爐 The other half, which only the material half used to say. */
+  needQi: 'A price in red is more qi than you hold. Qi gathers on its own, so these come back within reach.',
   rule: 'No pill makes qi come faster. That is the one thing the furnace will not sell.',
 };
 
@@ -475,7 +486,7 @@ export const KEY = {
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
   sitting: 'Sitting with the app open deepens your gathering, up to three times. It ends after a quarter of an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
-  layerWord: 'One rung of the climb. Your qi fills it, then it opens by itself and the next one costs more.',
+  layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
   save: 'Your save, to copy out or paste back. It lives in this browser only.',
   stele: 'Everything you have done, counted: the deeds and the figures.',
@@ -540,7 +551,7 @@ export const GUIDE = {
     title: 'Beat the warden and break through',
     text: 'The realm is full and its warden is standing at the end of it. '
       + 'Beat it and \u7a81\u7834 opens.',
-    waiting: 'Eight rungs fill the realm, and its warden walks out at the end of them. '
+    waiting: 'Eight layers fill the realm, and its warden walks out at the ninth. '
       + 'Every box you buy opens them faster. The bar below is the whole realm.',
   },
 };
@@ -556,8 +567,19 @@ export const HUNT = {
   /** 誠 What the right-hand figure means when the fight cannot be won yet: not a
    *  percentage, but how many times your own power the beast is. It is the one number
    *  that tells three unwinnable fights apart. */
-  toReach: 'needed',
-  reach: (n: number) => `${n} beasts within reach`,
+  toReach: 'stronger',
+  /**
+   * 誠 How many beasts, and how many of them can be beaten now.
+   *
+   * It said "3 beasts within reach" on the first screen of the game, over three rows
+   * that each said the beast was two to fourteen times stronger. None of them was in
+   * reach. The count is every beast in the list; the second half is the honest one.
+   */
+  reach: (n: number, beatable: number) =>
+    beatable === n ? `${n} ${n === 1 ? 'beast' : 'beasts'} to hunt`
+      : `${n} ${n === 1 ? 'beast' : 'beasts'} to hunt · ${beatable} you can beat now`,
+  /** 圍 The word under the drive button, which was an icon and nothing else. */
+  driveTag: 'drive',
   /**
    * 完 The beasts with nothing left in them.
    *
@@ -851,7 +873,9 @@ export const SECRET = {
   again: (left: string) => `The door opens again in ${left}.`,
   back: 'Back',
   /** 釋 What the character means, for the key and the tooltip. */
-  what: 'Seven rooms and two ways on at each. Every other room is a pair of beasts a realm above you, and there is no way past them. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
+  // 數 It said "seven rooms", and the door at the summit says eleven. The count grows
+  // with the realm, so the sentence does not name one.
+  what: 'A row of rooms with two ways on at each. Every other room is a gate: two strong beasts, and you beat one to go on. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
 };
 
 export const GEAR = {
@@ -879,12 +903,16 @@ export const GEAR = {
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
   meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
-  best: (han: string) => `Your best piece is ${han}. That is the rim you are wearing.`,
+  /** The whole sentence, for 文 the prose check. The screen builds it from the two halves
+   *  around a tappable character. */
+  best: (han: string, name: string) => `Your best piece is ${han} ${name} rank, and the ring round your portrait shows it.`,
+  bestLead: 'Your best piece is',
+  bestTail: 'rank, and the ring round your portrait shows it.',
   fuse: '煉 Fuse: three make one',
   empty: 'Empty. Beasts drop gear, and wardens always do.',
   howTo: 'Tap a piece to wear it. Tap a worn slot to take it off.',
   lines: (spirit: number, heaven: number) =>
-    `靈 ${spirit} lines · 天 ${heaven}`,
+    `A 靈 piece carries ${spirit} lines and a 天 piece ${heaven}`,
   drops: (realm: number) => `beasts here drop up to realm ${realm}`,
   better: 'Worth more than what you are wearing',
   sets: 'Wear pieces of one realm together and the set pays you extra.',
@@ -927,7 +955,9 @@ export const DAO = {
   freePoints: (n: number) =>
     `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 
-  tree: 'All three branches grow from 起, and the gold bridges cross between them.',
+  tree: 'All three branches grow from 起, and the gold bridges cross between them. Tap a node to read it.',
+  /** 數 It read "6 free · 0/6", and nothing said what the second pair was. */
+  purse: (spent: number, earned: number) => ` to spend · ${spent} of ${earned} spent`,
   /** 短 The point is that you cannot have it all. It does not need a second sentence. */
   short: (cost: number, earned: number) =>
     `${cost} 道 to buy it all; a whole climb earns about ${earned}.`,
@@ -1068,7 +1098,7 @@ export const SAVE = {
 };
 
 export const LOADOUT = {
-  noStance: 'You have no stance yet. Reach realm 1 and 疾 Swift is yours.',
+  noStance: 'You hold no stance yet. The first one, 疾 Swift, comes when 勢 stances open.',
   pickStance: 'Pick one. It is always on, and it changes every round of every fight.',
   noArts: 'You hold no arts yet. Each warden you put down hands over its own.',
   emptySlot: 'empty, a wasted round',
