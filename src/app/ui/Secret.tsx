@@ -1,5 +1,5 @@
 import {
-  ROOMS, ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave,
+  ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave, roomsFor,
 } from '../../sim/secret.ts';
 import { beastPower, odds } from '../../sim/combat.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -44,21 +44,23 @@ export function Secret({ state, onOpen, onLeave }: {
   const step = state.runStep;
   const doors = doorsAt(state, step);
   const took = state.lastRun;
+  // 深 The path drawn is the path this cultivator walks. It grows at the seventh realm.
+  const rooms = roomsFor(state.realm);
 
   return (
     <div className="secret">
-      <p className="over">{SECRET.over(step + 1, ROOMS)}</p>
+      <p className="over">{SECRET.over(step + 1, rooms)}</p>
       <h2><span className="cjk">秘境</span> <em>{SECRET.head}</em></h2>
 
       {/* 路 The whole path, so the gates ahead are visible before they are walked. */}
       <div className="path">
-        {Array.from({ length: ROOMS }, (_, i) => (
+        {Array.from({ length: rooms }, (_, i) => (
           <span key={i} className="room"
             data-done={i < step || undefined}
             data-here={i === step || undefined}
             data-gate={isGate(i) || undefined}>
             <Svg html={icon(isGate(i) ? ROOM_INFO.beast.icon : 'wax-seal', 18)} />
-            {i < ROOMS - 1 && <i className="link" />}
+            {i < rooms - 1 && <i className="link" />}
           </span>
         ))}
       </div>
@@ -122,7 +124,8 @@ function tallyLine(took: State['lastRun']): string {
  */
 export function Tally({ state, onClose }: { state: State; onClose: () => void }) {
   const took = state.lastRun;
-  const whole = took.rooms >= ROOMS;
+  const rooms = roomsFor(state.realm);
+  const whole = took.rooms >= rooms;
   const left = doorIn(state);
 
   return (
@@ -133,7 +136,7 @@ export function Tally({ state, onClose }: { state: State; onClose: () => void })
         <p className="faint">{took.beaten ? SECRET.endBeatenSays : SECRET.endSays}</p>
 
         <p className="rooms">
-          <span>{SECRET.tallyRooms(took.rooms, ROOMS)}</span>
+          <span>{SECRET.tallyRooms(took.rooms, rooms)}</span>
           {took.gates > 0 && <span>{SECRET.tallyGates(took.gates)}</span>}
         </p>
 
@@ -172,12 +175,13 @@ export function Tally({ state, onClose }: { state: State; onClose: () => void })
 /** 門 The card on 狩 that says whether the door is open, and opens it. */
 export function Door({ state, onEnter }: { state: State; onEnter: () => void }) {
   const left = doorIn(state);
+  const rooms = roomsFor(state.realm);
   return (
     <button className="door open" disabled={left > 0} onClick={onEnter}>
       <span className="s"><Svg html={icon('crystal-shrine', 26)} /></span>
       <span className="body">
         <b><span className="cjk">秘境</span> {SECRET.head}</b>
-        <i>{left > 0 ? SECRET.shut(duration(left)) : SECRET.ready(ROOMS)}</i>
+        <i>{left > 0 ? SECRET.shut(duration(left)) : SECRET.ready(rooms)}</i>
       </span>
       {left === 0 && <em className="cjk">›</em>}
     </button>

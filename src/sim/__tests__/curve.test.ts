@@ -97,12 +97,28 @@ describe('the climb, for a cultivator who spends', () => {
       `${pillsTaken(brewer.state.brewed)} pills: ` +
       `${LINES.map((l) => `${l} ${brewer.state.brewed[l]}`).join(' · ')}`);
     console.log(`  and it costs them power ${num(power(climber.state))} → ${num(power(brewer.state))}\n`);
+    console.log(`  and finishing the ladder goes day ${climber.days.toFixed(1)} → ${brewer.days.toFixed(1)}\n`);
     expect(brewer.state.realm).toBe(9);
-    // Slower than the same cultivator who climbs and does not brew, because every pill
-    // is qi that did not open a layer, but never so much slower that the furnace is a
-    // trap, and never faster, which is what would be a bug.
-    expect(arrival).toBeGreaterThan(climber.arrival[8]);
-    expect(arrival).toBeLessThan(climber.arrival[8] * 2);
+    /**
+     * 爐 The furnace cannot touch the climb to the ninth realm at all, because that is
+     * where it opens. It used to open at the seventh and be the wrong move for the
+     * thirty-four days after that: measured, a cultivator brewing toward 塔 the tower
+     * reached the ninth realm on day 67 against 46.7, for seven extra floors. A system
+     * that punishes the player who explores it is worse than one that is not there.
+     *
+     * What it still costs is the *last* realm's ladder, and that is the trade it is for:
+     * qi brewed is qi that did not open a layer, and above the ladder there is nothing
+     * but the Dragon, which only power shortens.
+     */
+    expect(arrival).toBeCloseTo(climber.arrival[8], 5);
+    /**
+     * 衡 And finishing the ladder lands within a tenth either way, which is the whole
+     * assertion: the furnace may not run away with the curve and may not be a trap. It
+     * comes out very slightly *ahead* here, because a pill makes beasts read weaker and
+     * 塔 the tower is where a weaker beast turns into qi. That is the furnace paying for
+     * itself rather than the furnace being free: the qi went out and came back.
+     */
+    expect(Math.abs(brewer.days - climber.days)).toBeLessThan(climber.days * 0.1);
     expect(power(brewer.state)).toBeGreaterThan(power(climber.state));
     // 時 A whole 81-rung climb walked twice, and CI's runner is slower than a laptop:
     // it took 2.7s here and blew vitest's 5s default there, which stopped a deploy.

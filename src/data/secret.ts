@@ -56,6 +56,29 @@ export const ROOM_INFO: Readonly<Record<RoomKind, KindInfo>> = {
 /** How many rooms a run is. Seven is short enough to finish in one sitting. */
 export const ROOMS = 7;
 
+/**
+ * 深 秘境深處 The deeper vault, which is what the seventh realm hands over.
+ *
+ * 隙 Measured, every system in the game was open inside three weeks and nothing new
+ * arrived for the twenty-five days after that. The cheapest honest answer is not a new
+ * screen: it is a second gear on a system that already has one, because the screens,
+ * the rooms, the gates and the tally all exist. The path simply goes further.
+ *
+ * 關 Four more rooms, and two more gates with them, since a gate is every other room.
+ * They are the deepest rooms in the game, so 深 depthScale pays them the most, and the
+ * gate ramp already runs out of your own realm and into the one above: the deeper gates
+ * are the strongest things the realm above has. A cultivator who opens the door at the
+ * seventh realm and walks all eleven has done something a sixth-realm cultivator could
+ * not.
+ */
+export const DEEP_ROOMS = 11;
+
+/** The realm the path grows in. */
+export const DEEP_AT = 7;
+
+/** How long a run is for the cultivator walking it. */
+export const roomsFor = (realm: number) => (realm >= DEEP_AT ? DEEP_ROOMS : ROOMS);
+
 /** How long after a run before the door opens again, in seconds. */
 export const DOOR_GAP = 8 * 3600;
 
@@ -88,8 +111,8 @@ export function depthScale(step: number): number {
 /** 泉 A spring pays this many minutes of standing gathering, before depth. */
 export const SPRING_MINUTES = 4;
 
-/** 龕 A shrine pays one 道 point, and two in the last two rooms. */
-export const SHRINE_DEEP = ROOMS - 1;
+/** 龕 A shrine pays one 道 point, and two in the last room of whatever path you walk. */
+export const shrineDeep = (realm: number) => roomsFor(realm) - 1;
 
 /**
  * 記 What a run gave, kept so the end of it can say so.
@@ -134,7 +157,7 @@ export function validTake(raw: unknown, keys: (k: string) => boolean,
   const n = (x: unknown, hi: number) =>
     (typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(hi, Math.floor(x))) : 0);
   const list = Array.isArray(o.items) ? o.items : [];
-  const items = list.slice(0, ROOMS).flatMap((raw) => {
+  const items = list.slice(0, DEEP_ROOMS).flatMap((raw) => {
     const it = (raw ?? {}) as Record<string, unknown>;
     const template = typeof it.template === 'string' && keys(it.template) ? it.template : null;
     const rarity = typeof it.rarity === 'string' && rarities.includes(it.rarity)
@@ -142,7 +165,7 @@ export function validTake(raw: unknown, keys: (k: string) => boolean,
     return template && rarity ? [{ template, rarity }] : [];
   });
   return {
-    qi: n(o.qi, 1e18), dao: n(o.dao, ROOMS * 2), items,
-    rooms: n(o.rooms, ROOMS), gates: n(o.gates, ROOMS), beaten: o.beaten === true,
+    qi: n(o.qi, 1e18), dao: n(o.dao, DEEP_ROOMS * 2), items,
+    rooms: n(o.rooms, DEEP_ROOMS), gates: n(o.gates, DEEP_ROOMS), beaten: o.beaten === true,
   };
 }

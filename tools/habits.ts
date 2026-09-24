@@ -24,7 +24,7 @@ import { affinity, canUnlock, focusBonus } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, harvestAll, plant, plantable } from '../src/sim/cave.ts';
 import {
-  ROOMS, canEnter, doorsAt, enter as enterSecret, giftOf as secretGift,
+  canEnter, doorsAt, enter as enterSecret, giftOf as secretGift, roomsFor,
   inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../src/sim/secret.ts';
 import { AWAKENINGS, due as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
@@ -52,6 +52,19 @@ export interface Habit {
   readonly tower: boolean;
   readonly furnace: boolean;
   readonly build: boolean;
+  /**
+   * 爐 When they light the furnace, which turns out to be the whole question.
+   *
+   * 誤 For the whole of this harness's life there was one policy and it was never named:
+   * brew only when the warden is out of reach. Measured against that, 爐 the furnace is
+   * touched on 0% of visits and multiplies a finished cultivator's power by ×1.00, and
+   * the obvious reading is that the system is dead. That reading is about the policy and
+   * not about the game. A pill makes beasts read weaker, 塔 the tower is the one place
+   * during the climb where a beaten beast pays **qi**, and a floor is worth six hours of
+   * gathering. So there is a second policy the game plainly allows and nothing was
+   * playing: brew whenever it buys a floor.
+   */
+  readonly brews?: 'stuck' | 'tower';
   /**
    * 圍 Whether they buy drives with the qi they are not spending on the ladder.
    *
@@ -324,7 +337,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
      */
     if (canEnter(s)) {
       s = enterSecret(s);
-      for (let r = 0; r < ROOMS + 2 && insideSecret(s); r++) {
+      for (let r = 0; r < roomsFor(s.realm) + 2 && insideSecret(s); r++) {
         // 擇 The door with the better of the two on offer, read the way a player reads
         // it: a fight they are likely to win is worth more than a cache, and one they
         // are likely to lose is worth nothing at all.
@@ -400,9 +413,18 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     }
     // 爐 Pills when the warden is out of reach, and none once it is beatable: qi brewed
     // is qi that did not open a layer.
-    if (h.furnace) for (let g = 0; g < 400; g++) {
+    if (h.furnace && (h.brews ?? 'stuck') === 'stuck') for (let g = 0; g < 400; g++) {
       if (odds(s, wardenOf(s.realm)) > 0.6) break;
       const line = (['body', 'bane'] as const).find((l) => canBrew(s, l));
+      if (!line) break;
+      s = brew(s, line);
+    }
+    // 塔 The other policy: brew toward the floor that will not fall, because a floor is
+    // six hours of gathering and a pill is a share of one rung.
+    if (h.furnace && h.brews === 'tower') for (let g = 0; g < 400; g++) {
+      const f = standingFloor(s);
+      if (odds(s, floorBeast(f), floorPower(f)) > 0.65) break;
+      const line = (['bane', 'body'] as const).find((l) => canBrew(s, l));
       if (!line) break;
       s = brew(s, line);
     }

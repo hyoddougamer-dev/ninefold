@@ -23,7 +23,7 @@ import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
 import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
-  NO_TAKE, OPENS_AT as SECRET_OPENS_AT, ROOMS, validTake, type Take,
+  NO_TAKE, OPENS_AT as SECRET_OPENS_AT, roomsFor, validTake, type Take,
 } from '../data/secret.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
@@ -680,8 +680,10 @@ export function validate(raw: unknown, now: number): State {
     // 秘境 A step outside the seven rooms is outside, which is what an unknown number
     // means. The realm gates it too: a save cannot claim to be standing in a door the
     // second realm has never seen.
+    // 深 And the path this cultivator's own realm walks, not the deepest there is: a
+    // seventh-realm save may stand in room ten and a fifth-realm one may not.
     runStep: realm >= SECRET_OPENS_AT
-      ? clamp(Math.floor(num(o.runStep, -1)), -1, ROOMS - 1) : -1,
+      ? clamp(Math.floor(num(o.runStep, -1)), -1, roomsFor(realm) - 1) : -1,
     runAt: clamp(num(o.runAt, 0), 0, now),
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES),

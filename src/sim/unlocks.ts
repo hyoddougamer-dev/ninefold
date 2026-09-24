@@ -85,7 +85,7 @@
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
-  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation';
+  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep';
 
 export interface SystemInfo {
   readonly key: System;
@@ -127,7 +127,14 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // 秘境 A run with a beginning and an end, which nothing else in this game has. See
   // data/secret.ts for the gates, and why a gate beast pays nothing at all.
   { key: 'secret', han: '秘境', name: 'The Secret Realm', realm: 3,
-    gives: 'A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a pair of beasts a realm above you. Nothing is carried, so losing takes nothing back.' },
+    gives: 'A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a beast a realm above you. Nothing is carried, so losing takes nothing back.' },
+  /**
+   * 深 What the seventh realm hands over now that 爐 the furnace has gone to the ninth.
+   * The path grows rather than a screen being built: four more rooms, two more
+   * guardians, and they are the deepest rooms in the game, so they pay the most.
+   */
+  { key: 'deep', han: '秘境深', name: 'The Deeper Vault', realm: 7,
+    gives: 'The path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them.' },
   { key: 'tree', han: '道', name: 'The Path', realm: 2,
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
   { key: 'keystones', han: '樞', name: 'The Keystones', realm: 4,
@@ -138,8 +145,28 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'bestiary', han: '圖鑑', name: 'The Bestiary', realm: 6,
     gives: 'A realm whose four beasts you have all 熟 Known, ten kills of each, pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.' },
-  { key: 'furnace', han: '爐', name: 'The Furnace', realm: 7,
-    gives: 'Pills, bought with qi and material together, with no cap on any of it.' },
+  /**
+   * 爐 陷 The furnace opened at the seventh realm for a long time, and for thirty-four
+   * days of that it was a **trap**.
+   *
+   * 勤 the harness had one brewing policy and never named it: brew only when a warden is
+   * out of reach. Against that, 忙 busy read 0% of visits and 值 worth read ×1.00, and
+   * the obvious conclusion was that the system was dead. It was the wrong conclusion,
+   * and finding out cost one measurement: the game plainly allows a second policy, brew
+   * whatever buys the next floor of 塔 the tower, because the tower is the one place in
+   * the climb where a beaten beast pays qi. Played that way, the same cultivator brews
+   * 72 pills, takes **seven** more floors, and reaches the ninth realm on day 67 instead
+   * of day 46.7. The pills cost thirty-six rungs of ladder to buy power the ladder never
+   * asked for.
+   *
+   * A system that is the wrong move for thirty-four days is worse than a system that is
+   * not there: it punishes exactly the player who explores it. So it opens where it is
+   * the right move, which is the ninth realm, where 雷池 the pool is measured in days of
+   * gathering and power is the only thing that shortens a crossing. What the seventh
+   * realm hands over instead is 秘境深 the deeper vault.
+   */
+  { key: 'furnace', han: '爐', name: 'The Furnace', realm: 9,
+    gives: 'Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,
     gives: 'The last layers of the whole climb. When they run out the bar becomes the thunder pool, and a Dragon comes back heavier every time you put it down.' },
 ];

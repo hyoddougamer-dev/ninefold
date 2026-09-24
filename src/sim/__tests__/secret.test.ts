@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_GAP, OPENS_AT, ROOMS } from '../../data/secret.ts';
+import { DEEP_ROOMS, DOOR_GAP, OPENS_AT, ROOMS } from '../../data/secret.ts';
 import {
   beastAt, canEnter, doorIn, doorsAt, enter, giftOf, inside, isGate, leave, open,
 } from '../secret.ts';
+import { depthScale, roomsFor } from '../../data/secret.ts';
 import { newState, validate, type State } from '../state.ts';
 
 const T0 = 1_700_000_000;
@@ -130,8 +131,10 @@ describe('秘境 the secret realm', () => {
         items: [{ template: 'nosuchthing', rarity: 'divine' }, { template: 'sword3', rarity: 'earth' }] },
     }, T0 + 10 * DOOR_GAP);
     expect(forged.lastRun.qi).toBe(0);
-    expect(forged.lastRun.dao).toBeLessThanOrEqual(ROOMS * 2);
-    expect(forged.lastRun.rooms).toBe(ROOMS);
+    // 深 The tally's own caps are the deepest path in the game, because a tally is a
+    // record of a run that has already ended and the realm may have moved since.
+    expect(forged.lastRun.dao).toBeLessThanOrEqual(DEEP_ROOMS * 2);
+    expect(forged.lastRun.rooms).toBe(DEEP_ROOMS);
     expect(forged.lastRun.beaten).toBe(false);
     expect(forged.lastRun.items).toEqual([{ template: 'sword3', rarity: 'earth' }]);
   });
@@ -169,5 +172,45 @@ describe('秘境 the secret realm', () => {
     const wild = validate({ ...newState(T0), realm: 5, runStep: 99, runs: -3 }, T0);
     expect(wild.runStep).toBeLessThanOrEqual(ROOMS - 1);
     expect(wild.runs).toBe(0);
+  });
+});
+
+/**
+ * 深 秘境深處 The deeper vault, which is what the seventh realm hands over.
+ *
+ * 隙 It exists because of a measurement rather than a wish: every system in the game
+ * was open inside three weeks, and for the twenty-five days after that nothing new
+ * arrived at all. The cheapest honest answer was a second gear on a system that
+ * already had one.
+ */
+describe('深 the deeper vault', () => {
+  it('walks seven rooms below the seventh realm and eleven from it', () => {
+    expect(roomsFor(6)).toBe(ROOMS);
+    expect(roomsFor(7)).toBe(DEEP_ROOMS);
+    expect(roomsFor(9)).toBe(DEEP_ROOMS);
+  });
+
+  it('puts two more guardians on the longer path, because a gate is every other room', () => {
+    const gates = (n: number) => [...Array(n).keys()].filter(isGate).length;
+    expect(gates(ROOMS)).toBe(3);
+    expect(gates(DEEP_ROOMS)).toBe(5);
+  });
+
+  it('keeps a deep walker inside past the seventh room, and a shallow one out', () => {
+    const deep = { ...enter(walker({ realm: 7 })), runStep: 8 } as State;
+    expect(inside(deep)).toBe(true);
+    const shallow = { ...enter(walker({ realm: 5 })), runStep: 8 } as State;
+    expect(inside(shallow)).toBe(false);
+  });
+
+  it('pays the deepest room the most, because that is what a run is for', () => {
+    // 深 depthScale already rises with the step, so four more rooms are four richer
+    // ones rather than four more of the same.
+    expect(depthScale(DEEP_ROOMS - 1)).toBeGreaterThan(depthScale(ROOMS - 1));
+  });
+
+  it('refuses a fifth-realm save that claims to be standing in a deep room', () => {
+    const forged = validate({ ...newState(T0), realm: 5, runStep: 9 }, T0 + 10 * DOOR_GAP);
+    expect(forged.runStep).toBeLessThanOrEqual(ROOMS - 1);
   });
 });

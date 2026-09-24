@@ -1,6 +1,6 @@
 import {
-  DOOR_GAP, NO_TAKE, OPENS_AT, ROOMS, ROOM_INFO, SHRINE_DEEP, SPRING_MINUTES,
-  depthScale, type Room, type RoomKind, type Take,
+  DOOR_GAP, NO_TAKE, OPENS_AT, ROOM_INFO, ROOMS, SPRING_MINUTES,
+  depthScale, roomsFor, shrineDeep, type Room, type RoomKind, type Take,
 } from '../data/secret.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { beastPower, odds } from './combat.ts';
@@ -29,7 +29,7 @@ import type { State } from './state.ts';
  * after a reload, and the harness walks exactly what a player walks.
  */
 
-/** Where the walker is: -1 outside, otherwise the room they stand at, 0 to ROOMS-1. */
+/** Where the walker is: -1 outside, otherwise the room they stand at. See roomsFor. */
 export const OUTSIDE = -1;
 
 function hash(n: number): number {
@@ -114,7 +114,7 @@ export function doorOpen(s: State): boolean {
 }
 
 export function inside(s: State): boolean {
-  return s.runStep >= 0 && s.runStep < ROOMS;
+  return s.runStep >= 0 && s.runStep < roomsFor(s.realm);
 }
 
 export function canEnter(s: State): boolean {
@@ -172,7 +172,7 @@ export function giftOf(s: State, room: Room, step: number): {
     case 'spring':
       return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60)) };
     case 'shrine':
-      return { ...none, dao: step >= SHRINE_DEEP ? 2 : 1 };
+      return { ...none, dao: step >= shrineDeep(s.realm) ? 2 : 1 };
     case 'brazier':
       return { ...none, item: true };
     default:
@@ -252,9 +252,9 @@ export function open(s: State, which: 0 | 1, seed: number): State {
 
   out = { ...out, lastRun: add(out.lastRun, { rooms: 1 }) };
   const next = out.runStep + 1;
-  return next >= ROOMS ? leave(out) : { ...out, runStep: next };
+  return next >= roomsFor(out.realm) ? leave(out) : { ...out, runStep: next };
 }
 
 export {
-  DOOR_GAP, OPENS_AT, ROOMS, ROOM_INFO, depthScale, type Room, type RoomKind,
+  DOOR_GAP, OPENS_AT, ROOMS, ROOM_INFO, depthScale, roomsFor, type Room, type RoomKind,
 };
