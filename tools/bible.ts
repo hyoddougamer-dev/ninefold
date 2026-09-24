@@ -497,6 +497,9 @@ const SYSTEMS: readonly System[] = [
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
     line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.` },
 
+  { han: '期', name: 'The one thing that never runs out', status: 'done', at: 'week',
+    line: `Everything else in the game arrives once, the last of it around the seventh week. One mark rides the calendar instead: a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching, all three derived from the week and the save alone. No server, no clock to cheat, and it may never touch the qi rate. Measured, the cultivator who never fights finishes on the same day with it as without.` },
+
   { han: '氣查', name: 'The audit of the qi', status: 'done', at: 'audit',
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
@@ -1336,6 +1339,14 @@ const page = `<meta charset="utf-8">
   #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
         line-height:1.5; }
   #meet .meets td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #week .weeks { display:grid; gap:10px; margin:14px 0 6px; }
+  #week .weeks p { display:flex; gap:12px; margin:0; background:var(--panel2);
+                   border:1px solid var(--line); border-radius:11px; padding:12px 14px; }
+  #week .weeks b.cjk { flex:none; font-size:20px; font-weight:400; color:var(--gold);
+                       line-height:1.2; }
+  #week .weeks em { display:block; font-style:normal; font-weight:700; font-size:15px; }
+  #week .weeks i { display:block; font-style:normal; font-size:13.5px; color:var(--faint);
+                   margin-top:3px; line-height:1.6; }
   #cave .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
   #secret .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
   #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
@@ -2570,10 +2581,11 @@ const page = `<meta charset="utf-8">
       longest was the half with no build in it.</p>
     <p class="t">The same mechanism carries them: the trios continue in one list, the
       offer is the same subtraction, and nothing in <code>sim/awaken.ts</code> knows that
-      a heaven is different from a realm. Two of the realm cards' seven kinds are dead by
-      the first heaven, because 道 the tree is finished and 藏 the chest is large, so two
-      new kinds name what is alive up there: a pill asks less 材 material, and a floor of
-      塔 the tower pays more of it. Neither pays power. A pill is cheaper, not stronger.</p>
+      a heaven is different from a realm.</p>
+    <p class="t">Two of the realm cards' seven kinds are dead by the first heaven, because
+      道 the tree is finished and 藏 the chest is large. So two new kinds name what is
+      alive up there: a pill asks less 材 material, and a floor of 塔 the tower pays more
+      of it. Neither pays power. A pill is cheaper, not stronger.</p>
     <p class="t">量 What they are worth, measured, because it is not what a realm card is
       worth. Forty crossings played out on each way of leaning: <b>134 to 149 days</b>,
       and a seventh of the power between the widest two. That is the right answer, and
@@ -2587,12 +2599,12 @@ const page = `<meta charset="utf-8">
       brewed and <b>never once refined</b>, so 材 material only ever went up and ended at
       <b>2.2e29</b> with nowhere to go. 示 The advice line has always sent a capped
       cultivator to 煉器, and a real one arrives at the heavens refining every slot.</p>
-    <p class="t">With that one step added, a piece comes out at refine level <b>90</b>,
-      and the Dragon at its old footing was a walkover in <b>28 crossings of 40</b>, the
-      exact fault TRIBULATION_FOOTING exists to prevent. It was re-measured from 1.45 to
-      <b>1.59</b>, and the endgame now reads 144 days with a median crossing at 66%. The
-      same fault 爐 the furnace had, in the same harness: a spending policy nobody wrote
-      down, quietly deciding the answer.</p>
+    <p class="t">With that one step added, a piece comes out at refine level <b>90</b>.
+      The Dragon at its old footing was then a walkover in <b>28 crossings of 40</b>,
+      which is the exact fault TRIBULATION_FOOTING exists to prevent. It was re-measured
+      from 1.45 to <b>1.59</b>, and the endgame now reads 144 days with a median crossing
+      at 66%. The same fault 爐 the furnace had, in the same harness: a spending policy
+      nobody wrote down, quietly deciding the answer.</p>
 
     <div class="trios">${HEAVEN_TABLE}</div>
   </section>
@@ -2773,6 +2785,48 @@ const page = `<meta charset="utf-8">
       them; a ceiling walker gets all ${SECRET_ROOMS}.</p>
     <table class="tbl cavetbl"><thead><tr><th>Room</th><th>What is behind it</th></tr></thead>
       <tbody>${SECRET_ROOMS_TABLE}</tbody></table>
+  </section>
+
+  <section class="sec" id="week">
+    <h2><span class="h">期</span> The one thing that never runs out</h2>
+    <p class="t">忙 The harness that counts how much there is to do said the plainest
+      thing about a long idle game: <b>everything in it arrives once</b>. Forty-odd
+      arrivals, the last of them around the seventh week, and after that the game is the
+      same game every day for ever. The bestiary is read, the tree is spent, 秘境 walks
+      the same rooms. Nothing was ever different on a Tuesday.</p>
+    <p class="t">One mark now rides the calendar. It hands over no new content: it points
+      at content that is already there and says <i>that one, this week</i>.</p>
+    <div class="weeks">
+      <p><b class="cjk">獸</b><span><em>The week's quarry</em><i>One common beast, drawn
+        from what has walked out for this cultivator, worth <b>double 材 material</b> all
+        week. The first kill of the week pays a share of a rung of qi, once.</i></span></p>
+      <p><b class="cjk">草</b><span><em>The herb in season</em><i>A bed of it pays
+        <b>half again</b>. It is the only week the short herb beats the long one, which is
+        the one decision 洞天 the cave exists for.</i></span></p>
+      <p><b class="cjk">室</b><span><em>The blessed room</em><i>One reward room of 秘境
+        <b>pays double</b>, named on the door card before the run starts. Never a gate: a
+        gate pays nothing by design, and doubling nothing is a mark with nothing behind
+        it.</i></span></p>
+    </div>
+
+    <h3>純 Why there is no server and nothing to sync</h3>
+    <p class="t">All three are a pure function of the week number and the save, and the
+      week number is read off the same instant <code>validate</code> has already capped at
+      the real clock. So two cultivators who open the app on the same Tuesday are looking
+      at the same week. A phone with its clock wound forward gets a different week, not a
+      second helping of this one. The whole memory of it is <b>one number</b>
+      on the save: the week the once-a-week qi was last taken in. A week index rather than
+      an instant, on purpose, because a week index cannot be walked backwards.</p>
+
+    <h3>律 Why it may never touch the rate, and does not</h3>
+    <p class="t">A rotation is uncapped by construction: there is always a next week. So
+      every one of the three is a multiplier on something already capped <b>by hand</b>.
+      The quarry pays 材 material, which only falls off a beast somebody went and killed.
+      The season pays a bed, and there are three beds and they are planted with material.
+      The blessed room is one room of one run, and the door only opens once a day.</p>
+    <p class="t">量 Measured over a whole climb, before and after: the cultivator who
+      <b>never fights finishes on day 144 either way</b>, and the active one moves from 58
+      to 57. A rotation the idler cannot see is the entire point of it.</p>
   </section>
 
   <section class="sec" id="board">

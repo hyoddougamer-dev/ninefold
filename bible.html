@@ -105,6 +105,14 @@
   #meet .meets td i { display:block; font-style:normal; font-size:12px; color:var(--faint);
         line-height:1.5; }
   #meet .meets td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #week .weeks { display:grid; gap:10px; margin:14px 0 6px; }
+  #week .weeks p { display:flex; gap:12px; margin:0; background:var(--panel2);
+                   border:1px solid var(--line); border-radius:11px; padding:12px 14px; }
+  #week .weeks b.cjk { flex:none; font-size:20px; font-weight:400; color:var(--gold);
+                       line-height:1.2; }
+  #week .weeks em { display:block; font-style:normal; font-weight:700; font-size:15px; }
+  #week .weeks i { display:block; font-style:normal; font-size:13.5px; color:var(--faint);
+                   margin-top:3px; line-height:1.6; }
   #cave .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
   #secret .cavetbl td b.cjk { color:var(--jade); font-weight:400; margin-right:4px; }
   #secret .cavetbl td .s { display:inline-block; vertical-align:-4px; color:var(--jade);
@@ -723,7 +731,7 @@
     <h3>O que já lá está</h3>
     <div class="cards two">
       <div class="card"><em>Sistemas</em>
-        <p class="t" style="margin-top:6px"><b>50</b> fechados, <b>0</b> abertos,
+        <p class="t" style="margin-top:6px"><b>51</b> fechados, <b>0</b> abertos,
         <b>1</b> planeado. Um sistema só conta como fechado quando está construído,
         medido por um teste e escrito nesta página.</p></div>
       <div class="card"><em>Conteúdo</em>
@@ -742,17 +750,17 @@
         <td style="text-align:right">128 dias</td>
         <td style="text-align:right">144 dias</td></tr><tr><td style="white-space:nowrap">quase não luta<br>
         <i style="font-style:normal;opacity:.45;font-size:11px">barely fights</i></td>
-        <td style="text-align:right">99 dias</td>
-        <td style="text-align:right">120 dias</td></tr><tr><td style="white-space:nowrap">uma vez por dia<br>
+        <td style="text-align:right">95 dias</td>
+        <td style="text-align:right">116 dias</td></tr><tr><td style="white-space:nowrap">uma vez por dia<br>
         <i style="font-style:normal;opacity:.45;font-size:11px">once a day</i></td>
         <td style="text-align:right">70 dias</td>
-        <td style="text-align:right">83 dias</td></tr><tr><td style="white-space:nowrap">ocasional<br>
+        <td style="text-align:right">85 dias</td></tr><tr><td style="white-space:nowrap">ocasional<br>
         <i style="font-style:normal;opacity:.45;font-size:11px">casual</i></td>
-        <td style="text-align:right">69 dias</td>
+        <td style="text-align:right">70 dias</td>
         <td style="text-align:right">83 dias</td></tr><tr><td style="white-space:nowrap">ativo<br>
         <i style="font-style:normal;opacity:.45;font-size:11px">active</i></td>
-        <td style="text-align:right">47 dias</td>
-        <td style="text-align:right">58 dias</td></tr><tr><td style="white-space:nowrap">de hora a hora<br>
+        <td style="text-align:right">46 dias</td>
+        <td style="text-align:right">57 dias</td></tr><tr><td style="white-space:nowrap">de hora a hora<br>
         <i style="font-style:normal;opacity:.45;font-size:11px">every hour</i></td>
         <td style="text-align:right">33 dias</td>
         <td style="text-align:right">41 dias</td></tr><tr><td style="white-space:nowrap">usa o 圍 em tudo<br>
@@ -764,7 +772,7 @@
         <td style="text-align:right">55 dias</td></tr>
     </table>
     <p class="t">Depois disso abrem-se os nove céus, um a cada três travessias. Para quem
-      joga com regularidade, o <b>último nome novo do jogo chega ao dia 148</b>.
+      joga com regularidade, o <b>último nome novo do jogo chega ao dia 150</b>.
       Três meses são o dia 91.</p>
 
     <h3>O que mudou na última noite</h3>
@@ -806,7 +814,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>266 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>301 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -1019,7 +1027,7 @@
       at a square painting blown up inside a circle with the corners of the paper still in
       it, which is the worst of both.</p>
     <p class="t">This section is how the art is made now, and it is written down because
-      none of it is a one-off. 657 things in this game are drawn as a thing.
+      none of it is a one-off. 684 things in this game are drawn as a thing.
       134 of them are painted. The rest arrive one sheet at a time, and the
       game is playable at every point in between.</p>
 
@@ -1592,7 +1600,7 @@
     <td><i class="faint">鬥 behind a fight above the ninth realm</i></td>
   </tr><tr>
     <td><b class="cjk">悟道</b> <i>awakening cards</i></td>
-    <td class="n">24 of 24</td>
+    <td class="n">24 of 51</td>
     <td><i class="faint">悟甲 and 悟乙, two sheets of twelve</i></td>
   </tr><tr>
     <td><b class="cjk">訣</b> <i>arts</i></td>
@@ -1655,38 +1663,38 @@
       <tr>
   <td><em>casual</em></td>
   <td class="n">250</td>
-  <td class="n">7.6</td>
-  <td class="n">36</td>
-  <td class="n">1%</td>
-  <td class="n">17d</td>
+  <td class="n">8.3</td>
+  <td class="n">38</td>
+  <td class="n">0%</td>
+  <td class="n">19d</td>
 </tr><tr>
   <td><em>active</em></td>
-  <td class="n">346</td>
-  <td class="n">6.2</td>
+  <td class="n">344</td>
+  <td class="n">6.6</td>
   <td class="n">31</td>
   <td class="n">1%</td>
   <td class="n">12d</td>
 </tr><tr>
   <td><em>every hour</em></td>
-  <td class="n">979</td>
-  <td class="n">4.5</td>
-  <td class="n">29</td>
+  <td class="n">972</td>
+  <td class="n">4.7</td>
+  <td class="n">28</td>
   <td class="n">0%</td>
   <td class="n">9d</td>
 </tr>
     </table>
     <div class="rule"><b>Yes, and it is not close.</b> The active cultivator has
-      6.2 kinds of thing to do and 31
+      6.6 kinds of thing to do and 31
       separate actions waiting on an average visit, and
       1% of visits
       are thin. Nothing in the first two months is a screen with one button on it.</div>
     <p class="t">The honest half of the answer is the last column. <b>The problem is not
       how much there is to do, it is that nothing new arrives after the third week.</b>
-      11 of the 15 systems are open inside the first four days, the
-      last of them on day 22, and everything after that is 雷池 the
+      11 of the 16 systems are open inside the first four days, the
+      last of them on day 47, and everything after that is 雷池 the
       tribulation, which is the ninth realm itself. The longest stretch with nothing new
       named at all is
-      12 days, starting on day 35.
+      12 days, starting on day 34.
       A player who is still there on day forty is doing the same fifteen things they were
       doing on day twenty, faster.</p>
     <table>
@@ -1705,17 +1713,18 @@
   <td class="n">day 1.7</td><td>realm 3</td></tr><tr>
   <td class="n">day 1.7</td><td>煉 Fusing</td></tr><tr>
   <td class="n">day 1.7</td><td>秘境 The Secret Realm</td></tr><tr>
-  <td class="n">day 4.2</td><td>realm 4</td></tr><tr>
-  <td class="n">day 4.2</td><td>樞 The Keystones</td></tr><tr>
+  <td class="n">day 4.0</td><td>realm 4</td></tr><tr>
+  <td class="n">day 4.0</td><td>樞 The Keystones</td></tr><tr>
   <td class="n">day 9.0</td><td>realm 5</td></tr><tr>
   <td class="n">day 9.0</td><td>塔 The Endless Tower</td></tr><tr>
-  <td class="n">day 13.2</td><td>realm 6</td></tr><tr>
-  <td class="n">day 13.2</td><td>圖鑑 The Bestiary</td></tr><tr>
-  <td class="n">day 22.3</td><td>realm 7</td></tr><tr>
-  <td class="n">day 22.3</td><td>爐 The Furnace</td></tr><tr>
-  <td class="n">day 34.5</td><td>realm 8</td></tr><tr>
-  <td class="n">day 46.8</td><td>realm 9</td></tr><tr>
-  <td class="n">day 46.8</td><td>雷池 The Tribulation</td></tr>
+  <td class="n">day 12.5</td><td>realm 6</td></tr><tr>
+  <td class="n">day 12.5</td><td>圖鑑 The Bestiary</td></tr><tr>
+  <td class="n">day 22.7</td><td>realm 7</td></tr><tr>
+  <td class="n">day 22.7</td><td>秘境深 The Deeper Vault</td></tr><tr>
+  <td class="n">day 34.3</td><td>realm 8</td></tr><tr>
+  <td class="n">day 46.5</td><td>realm 9</td></tr><tr>
+  <td class="n">day 46.5</td><td>爐 The Furnace</td></tr><tr>
+  <td class="n">day 46.5</td><td>雷池 The Tribulation</td></tr>
     </table>
     <p class="t">And this is which systems are actually live, visit by visit, across the
       whole climb of the active cultivator. A low number is not automatically wrong: 守 the
@@ -1723,8 +1732,8 @@
       low number on something that cost a month to build is worth looking at.</p>
     <table class="live"><tr>
       <td><b class="cjk">修</b> <i>buy an upgrade</i></td>
-      <td class="n">28%</td>
-      <td><span class="wk"><i style="width:28%"></i></span></td>
+      <td class="n">27%</td>
+      <td><span class="wk"><i style="width:27%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">狩</b> <i>hunt a beast</i></td>
       <td class="n">100%</td>
@@ -1747,16 +1756,16 @@
       <td><span class="wk"><i style="width:0%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">塔</b> <i>climb a floor</i></td>
-      <td class="n">34%</td>
-      <td><span class="wk"><i style="width:34%"></i></span></td>
+      <td class="n">37%</td>
+      <td><span class="wk"><i style="width:37%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">爐</b> <i>brew a pill</i></td>
-      <td class="n">61%</td>
-      <td><span class="wk"><i style="width:61%"></i></span></td>
+      <td class="n">19%</td>
+      <td><span class="wk"><i style="width:19%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">煉器</b> <i>refine a piece</i></td>
-      <td class="n">15%</td>
-      <td><span class="wk"><i style="width:15%"></i></span></td>
+      <td class="n">16%</td>
+      <td><span class="wk"><i style="width:16%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">道</b> <i>learn a node</i></td>
       <td class="n">98%</td>
@@ -1775,12 +1784,16 @@
       <td><span class="wk"><i style="width:0%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">器</b> <i>wear what fell</i></td>
-      <td class="n">33%</td>
-      <td><span class="wk"><i style="width:33%"></i></span></td>
+      <td class="n">58%</td>
+      <td><span class="wk"><i style="width:58%"></i></span></td>
     </tr><tr>
       <td><b class="cjk">拆</b> <i>melt the junk</i></td>
       <td class="n">0%</td>
       <td><span class="wk"><i style="width:0%"></i></span></td>
+    </tr><tr>
+      <td><b class="cjk">期</b> <i>take the week</i></td>
+      <td class="n">55%</td>
+      <td><span class="wk"><i style="width:55%"></i></span></td>
     </tr></table>
     <div class="warn"><b>爐 The furnace is never used.</b> It reads 0% because an active
       cultivator never needs it. The harness brews only when a warden is out of reach, and
@@ -1806,45 +1819,45 @@
   <td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">築基</b> <i>realm 2</i></td>
-  <td class="n">×4.02</td><td class="n">×1.36</td><td class="n">×1.10</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×4.02</td><td class="n">×1.47</td><td class="n">×1.10</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">金丹</b> <i>realm 3</i></td>
-  <td class="n">×8.91</td><td class="n">×1.85</td><td class="n">×1.83</td><td class="n">×1.98</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×8.91</td><td class="n">×2.00</td><td class="n">×1.82</td><td class="n">×1.98</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">元嬰</b> <i>realm 4</i></td>
-  <td class="n">×29</td><td class="n">×3.43</td><td class="n">×2.28</td><td class="n">×3.41</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×29</td><td class="n">×3.17</td><td class="n">×2.25</td><td class="n">×3.42</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">化神</b> <i>realm 5</i></td>
-  <td class="n">×97</td><td class="n">×14</td><td class="n">×2.45</td><td class="n">×3.42</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×97</td><td class="n">×14</td><td class="n">×2.43</td><td class="n">×3.43</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">煉虛</b> <i>realm 6</i></td>
-  <td class="n">×390</td><td class="n">×51</td><td class="n">×5.10</td><td class="n">×3.73</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×319</td><td class="n">×51</td><td class="n">×5.12</td><td class="n">×3.73</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">合體</b> <i>realm 7</i></td>
-  <td class="n">×1k</td><td class="n">×64</td><td class="n">×6.06</td><td class="n">×3.68</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.04</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×1k</td><td class="n">×69</td><td class="n">×6.10</td><td class="n">×3.68</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.04</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">大乘</b> <i>realm 8</i></td>
-  <td class="n">×4k</td><td class="n">×101</td><td class="n">×7.16</td><td class="n">×3.64</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.08</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×4k</td><td class="n">×149</td><td class="n">×6.77</td><td class="n">×3.69</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.08</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr>
   <td><b class="cjk">渡劫</b> <i>realm 9</i></td>
-  <td class="n">×11k</td><td class="n">×161</td><td class="n">×7.88</td><td class="n">×3.66</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.12</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×11k</td><td class="n">×187</td><td class="n">×8.17</td><td class="n">×3.64</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.12</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr><tr class="last">
   <td><b class="cjk">渡劫</b> <i>the top</i></td>
-  <td class="n">×46k</td><td class="n">×255</td><td class="n">×8.66</td><td class="n">×3.67</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.16</td><td class="n" style="color:var(--faint)">×1.00</td>
+  <td class="n">×46k</td><td class="n">×255</td><td class="n">×8.92</td><td class="n">×3.62</td><td class="n" style="color:var(--faint)">×1.00</td><td class="n">×1.16</td><td class="n" style="color:var(--faint)">×1.00</td>
 </tr>
     </table>
     <div class="rows">
       <div class="row"><span class="body"><b class="cjk">劍訣</b>
           <em>technique levels ×46k</em><i>bought with qi, capped by the realm</i></span></div><div class="row"><span class="body"><b class="cjk">妖丹</b>
           <em>beast cores ×255</em><i>bought with 材 material only</i></span></div><div class="row"><span class="body"><b class="cjk">器</b>
-          <em>the gear worn ×8.66</em><i>what falls off beasts, refined in 煉器</i></span></div><div class="row"><span class="body"><b class="cjk">道</b>
-          <em>the path tree ×3.67</em><i>points earned, never bought</i></span></div><div class="row"><span class="body"><b class="cjk">丹</b>
+          <em>the gear worn ×8.92</em><i>what falls off beasts, refined in 煉器</i></span></div><div class="row"><span class="body"><b class="cjk">道</b>
+          <em>the path tree ×3.62</em><i>points earned, never bought</i></span></div><div class="row"><span class="body"><b class="cjk">丹</b>
           <em>pills brewed ×1.00</em><i>qi poured into 爐 the furnace</i></span></div><div class="row"><span class="body"><b class="cjk">錄</b>
           <em>the record ×1.16</em><i>every beast ever killed, for ever</i></span></div><div class="row"><span class="body"><b class="cjk">雷池</b>
           <em>tribulation marks ×1.00</em><i>crossings above the ninth realm</i></span></div>
     </div>
     <div class="rule"><b>器 Gear is relevant, and it is third.</b> It multiplies a finished
-      cultivator's power by 8.7, behind 劍訣
+      cultivator's power by 8.9, behind 劍訣
       technique and 妖丹 cores and ahead of 道 the tree. It is also the only one of the
       seven that arrives by luck rather than by being paid for. That is the argument for
       keeping it: it is the reason two cultivators with the same numbers are not the same
@@ -1885,7 +1898,7 @@
       everything in it by the third week.</p>
     <div class="rows">
       <div class="row"><span class="body"><b class="cjk">遲</b> <em>Hold two systems back</em>
-        <i>11 of the 15 arrive inside four days, five of them in the
+        <i>11 of the 16 arrive inside four days, five of them in the
         second realm, which is one afternoon. Moving
         秘境 the vault and 爐 the furnace up the climb costs nothing to build and buys two
         arrivals in the month that currently has none.</i></span></div>
@@ -2073,13 +2086,14 @@
 
   <section class="sec" id="awaken">
     <h2><span class="h">悟道</span> The three cards at a breakthrough</h2>
-    <p class="t">Eight breakthroughs, 24 cards, and you keep one of every
-      three. The other two close for good. 道 The tree is the nearest thing the game
+    <p class="t">Eight breakthroughs and nine heavens, 51 cards, and you
+      keep one of every three. The other two close for good. 道 The tree is the nearest thing the game
       already had and it is not the same: its points accumulate, so given enough days
       everybody owns most of it, which makes it a checklist. A card taken is two doors
       shut, and that is what makes a build.</p>
-    <p class="t">It is not fired, it is derived. What is owed is the realm minus one,
-      what is taken is the length of the list, and the difference is the offer. So it
+    <p class="t">It is not fired, it is derived. What is owed is the realm minus one plus
+      the heavens the marks have opened, what is taken is the length of the list, and the
+      difference is the offer. So it
       cannot be missed by a reload, cannot be lost by closing the app mid-choice, and a
       save hand-edited to skip one is simply asked again. The whole mechanism is one
       subtraction.</p>
@@ -2200,6 +2214,159 @@
       <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1tvv63q.svg)" aria-hidden="true"></i></span>
         <b class="cjk">鯨吞</b><em>The Whale Swallows</em>
         <i>Beasts give three fifths more 材 material.</i></div></div>
+  </div></div>
+
+    <h3>境外 And nine more, one at each heaven</h3>
+    <p class="t">忙 The harness counts what a cultivator has to decide, and the endgame
+      had nothing in that column at all. The ninth realm is reached around day 47, the
+      nine heavens run from about day 50 to day 140, and every crossing in them was the
+      same crossing at a bigger number. The realms hand over eight permanent choices
+      between them and the heavens handed over none, so the half of the game that lasts
+      longest was the half with no build in it.</p>
+    <p class="t">The same mechanism carries them: the trios continue in one list, the
+      offer is the same subtraction, and nothing in <code>sim/awaken.ts</code> knows that
+      a heaven is different from a realm.</p>
+    <p class="t">Two of the realm cards' seven kinds are dead by the first heaven, because
+      道 the tree is finished and 藏 the chest is large. So two new kinds name what is
+      alive up there: a pill asks less 材 material, and a floor of 塔 the tower pays more
+      of it. Neither pays power. A pill is cheaper, not stronger.</p>
+    <p class="t">量 What they are worth, measured, because it is not what a realm card is
+      worth. Forty crossings played out on each way of leaning: <b>134 to 149 days</b>,
+      and a seventh of the power between the widest two. That is the right answer, and
+      the reason is 雷池 the pool: the endgame's clock is written in days of your own
+      gathering, so <b>nothing a card pays can make a crossing come sooner</b>. A heaven
+      card is a build, not a speed-up, and it must never be sold as one.</p>
+
+    <h3>煉器 What writing them found, which was worse than what they fixed</h3>
+    <p class="t">Every card here read as worth nothing, and for a while that looked like
+      the cards being wrong. It was the harness. The endgame loop gathered, climbed and
+      brewed and <b>never once refined</b>, so 材 material only ever went up and ended at
+      <b>2.2e29</b> with nowhere to go. 示 The advice line has always sent a capped
+      cultivator to 煉器, and a real one arrives at the heavens refining every slot.</p>
+    <p class="t">With that one step added, a piece comes out at refine level <b>90</b>.
+      The Dragon at its old footing was then a walkover in <b>28 crossings of 40</b>,
+      which is the exact fault TRIBULATION_FOOTING exists to prevent. It was re-measured
+      from 1.45 to <b>1.59</b>, and the endgame now reads 144 days with a median crossing
+      at 66%. The same fault 爐 the furnace had, in the same harness: a spending policy
+      nobody wrote down, quietly deciding the answer.</p>
+
+    <div class="trios">
+  <div class="trio">
+    <span class="at">Entering 真仙 True Immortal</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adea1cs.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">丹方</b><em>The Pill Method</em>
+        <i>Every pill asks a little less 材 material, at every price.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adbovfq.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">登樓</b><em>The Long Stair</em>
+        <i>A floor of 塔 the tower pays more 材 material than it did.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/abpd3h9.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">巨口</b><em>The Maw</em>
+        <i>Beasts give a quarter more 材 material again.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 金仙 Golden Immortal</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1bbhy5i.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">九級</b><em>Nine Rungs</em>
+        <i>A floor of 塔 the tower pays better still.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adptgfq.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">祥瑞</b><em>Auspice</em>
+        <i>The rare end of the drop table, weighted far up.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qmhq2i.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">餘燼</b><em>Embers</em>
+        <i>Melting pays three fifths more qi.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 太乙 Supreme Unity</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a16c1ltj.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">武火</b><em>Fierce Fire</em>
+        <i>The furnace wastes less. Pills cost a tenth less 材 material.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/asj468o.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">荒塚</b><em>The Old Graves</em>
+        <i>Beasts give a third more 材 material.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1lc69du.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">冷鍛</b><em>Cold Forging</em>
+        <i>煉器 Refining costs a quarter less at every level.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 大羅 Grand Veil</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1gt9o05.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">破封</b><em>Seal Breaking</em>
+        <i>A floor of 塔 the tower pays nearly a fifth more 材 material.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/atnkm4s.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">蛻殼</b><em>The Shed Shell</em>
+        <i>Beasts drop something a great deal more often.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ax64tfq.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">隕星</b><em>Falling Star</em>
+        <i>The rare end of the table again, further up.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 准聖 Quasi-Sage</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1ir8vqk.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">文火</b><em>Gentle Fire</em>
+        <i>A slower fire and a smaller bill. Pills cost less 材 material still.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a5toj73.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">瀝盡</b><em>The Last Drop</em>
+        <i>Melting pays three quarters more qi.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a19rjofz.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">神餐</b><em>The God's Meal</em>
+        <i>Beasts give a third more 材 material again.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 聖人 Sage</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a18qad2p.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">天梯</b><em>The Sky Stair</em>
+        <i>A floor of 塔 the tower pays a fifth more 材 material again.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/at0uzxl.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">百鍊</b><em>A Hundred Temperings</em>
+        <i>煉器 Refining costs three tenths less at every level.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a147xkjp.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">府庫</b><em>The Storehouse</em>
+        <i>Sixteen more places in the chest.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 道祖 Dao Ancestor</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ag1jd9r.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">九轉</b><em>Nine Revolutions</em>
+        <i>The old nine-turn recipe. Pills cost less 材 material yet.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1d6ovvu.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">天祿</b><em>Heaven's Stipend</em>
+        <i>Beasts give two fifths more 材 material.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a12i9rpg.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">毫光</b><em>Fine Light</em>
+        <i>The rare end of the table, higher than the ninth realm ever went.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 混元 Primordial Unity</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a95gn7.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">無頂</b><em>No Summit</em>
+        <i>A floor of 塔 the tower pays a quarter more 材 material.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1ur94zm.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">銷山</b><em>Melting the Mountain</em>
+        <i>Melting pays nine tenths more qi.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a8hljgk.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">靈淬</b><em>Spirit Quenching</em>
+        <i>煉器 Refining costs a third less at every level.</i></div></div>
+  </div>
+  <div class="trio">
+    <span class="at">Entering 鴻蒙 The Uncarved</span>
+    <div class="three">
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a7d03it.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">無漏</b><em>Nothing Leaks</em>
+        <i>Nothing is wasted any more. Pills cost the least they ever will.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a73uhv5.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">普天</b><em>All Under Heaven</em>
+        <i>Beasts give half as much 材 material again.</i></div>
+      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qqohae.svg)" aria-hidden="true"></i></span>
+        <b class="cjk">步虛</b><em>Pacing the Void</em>
+        <i>A floor of 塔 the tower pays more than a quarter again.</i></div></div>
   </div></div>
   </section>
 
@@ -2483,6 +2650,48 @@
     <td>A piece of gear, rolled off this realm and lifted.</td></tr></tbody></table>
   </section>
 
+  <section class="sec" id="week">
+    <h2><span class="h">期</span> The one thing that never runs out</h2>
+    <p class="t">忙 The harness that counts how much there is to do said the plainest
+      thing about a long idle game: <b>everything in it arrives once</b>. Forty-odd
+      arrivals, the last of them around the seventh week, and after that the game is the
+      same game every day for ever. The bestiary is read, the tree is spent, 秘境 walks
+      the same rooms. Nothing was ever different on a Tuesday.</p>
+    <p class="t">One mark now rides the calendar. It hands over no new content: it points
+      at content that is already there and says <i>that one, this week</i>.</p>
+    <div class="weeks">
+      <p><b class="cjk">獸</b><span><em>The week's quarry</em><i>One common beast, drawn
+        from what has walked out for this cultivator, worth <b>double 材 material</b> all
+        week. The first kill of the week pays a share of a rung of qi, once.</i></span></p>
+      <p><b class="cjk">草</b><span><em>The herb in season</em><i>A bed of it pays
+        <b>half again</b>. It is the only week the short herb beats the long one, which is
+        the one decision 洞天 the cave exists for.</i></span></p>
+      <p><b class="cjk">室</b><span><em>The blessed room</em><i>One reward room of 秘境
+        <b>pays double</b>, named on the door card before the run starts. Never a gate: a
+        gate pays nothing by design, and doubling nothing is a mark with nothing behind
+        it.</i></span></p>
+    </div>
+
+    <h3>純 Why there is no server and nothing to sync</h3>
+    <p class="t">All three are a pure function of the week number and the save, and the
+      week number is read off the same instant <code>validate</code> has already capped at
+      the real clock. So two cultivators who open the app on the same Tuesday are looking
+      at the same week. A phone with its clock wound forward gets a different week, not a
+      second helping of this one. The whole memory of it is <b>one number</b>
+      on the save: the week the once-a-week qi was last taken in. A week index rather than
+      an instant, on purpose, because a week index cannot be walked backwards.</p>
+
+    <h3>律 Why it may never touch the rate, and does not</h3>
+    <p class="t">A rotation is uncapped by construction: there is always a next week. So
+      every one of the three is a multiplier on something already capped <b>by hand</b>.
+      The quarry pays 材 material, which only falls off a beast somebody went and killed.
+      The season pays a bed, and there are three beds and they are planted with material.
+      The blessed room is one room of one run, and the door only opens once a day.</p>
+    <p class="t">量 Measured over a whole climb, before and after: the cultivator who
+      <b>never fights finishes on day 144 either way</b>, and the active one moves from 58
+      to 57. A rotation the idler cannot see is the entire point of it.</p>
+  </section>
+
   <section class="sec" id="board">
     <h2><span class="h">狀</span> Where we are</h2>
     <p class="t">Three states and no fourth. <b class="cjk" style="color:var(--jade)">成</b>
@@ -2490,7 +2699,7 @@
       <b class="cjk" style="color:var(--gold)">行</b> open means it exists and is still
       moving. <b class="cjk">待</b> planned means agreed and not started. "Mostly done" is
       open.</p>
-    <p class="t"><b>50 closed, 0 open, 1 planned.</b> Counted from the
+    <p class="t"><b>51 closed, 0 open, 1 planned.</b> Counted from the
       board itself, so it cannot disagree with the rows under it.</p>
     <div class="board"><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
@@ -2530,7 +2739,7 @@
     <span class="body"><b class="cjk">勤</b> <em><a href="#habits">Playing versus waiting</a></em><i>A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, 58 days later.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 29 days of the climb.</i></span>
+    <span class="body"><b class="cjk">守貢</b> <em><a href="#wall">The wall, and why it is a slope</a></em><i>A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth 33 days of the climb.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">塔</b> <em><a href="#tower">The Endless Tower</a></em><i>One floor, one beast, no top. The material economy and 6 hours of gathering a floor.</i></span>
@@ -2626,10 +2835,10 @@
     <span class="body"><b class="cjk">閒</b> <em><a href="#idle">Where a realm's qi goes</a></em><i>Measured rather than assumed: every realm lets you buy about 156% of its own ladder, so no realm is short of things to spend on. What the first realms are short of is a warden that falls. The lightest cultivator stands at the first realm's ceiling for 50% of it.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 148, against a climb that used to run out on day 60.</i></span>
+    <span class="body"><b class="cjk">曆</b> <em><a href="#clock">Three months of content</a></em><i>Measured rather than hoped for: the last named thing now arrives on day 150, against a climb that used to run out on day 60.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">悟道</b> <em><a href="#awaken">A choice that makes you different</a></em><i>Three cards at every breakthrough and you keep one, 24 of them across eight choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.</i></span>
+    <span class="body"><b class="cjk">悟道</b> <em><a href="#awaken">A choice that makes you different</a></em><i>Three cards at every breakthrough and at every heaven, and you keep one: 51 of them across seventeen choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">緣</b> <em><a href="#meet">Somebody on the road</a></em><i>10 meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is 9 道 against 70 for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.</i></span>
@@ -2639,6 +2848,9 @@
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">秘境</b> <em><a href="#secret">A run with an ending</a></em><i>7 rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.</i></span>
+  </div><div class="srow" style="--hue:var(--jade)">
+    <span class="st"><b class="cjk">成</b><i>closed</i></span>
+    <span class="body"><b class="cjk">期</b> <em><a href="#week">The one thing that never runs out</a></em><i>Everything else in the game arrives once, the last of it around the seventh week. One mark rides the calendar instead: a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching, all three derived from the week and the save alone. No server, no clock to cheat, and it may never touch the qi rate. Measured, the cultivator who never fights finishes on the same day with it as without.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">氣查</b> <em><a href="#audit">The audit of the qi</a></em><i>npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.</i></span>
@@ -2741,7 +2953,7 @@
     <td><b class="cjk">合體</b> <i>Unity</i></td>
     <td><span class="cjk">險</span> <i>Reckless</i></td>
     <td><span class="cjk">狼噬</span> <i>Wolf Bite</i></td>
-    <td><b class="cjk" style="color:var(--gold)">爐</b> <em>The Furnace</em></td>
+    <td><b class="cjk" style="color:var(--gold)">秘境深</b> <em>The Deeper Vault</em></td>
   </tr><tr style="--hue:#BE5B72">
     <td><b class="cjk">大乘</b> <i>Great Vehicle</i></td>
     <td><span class="cjk">逆</span> <i>Reverse</i></td>
@@ -2751,7 +2963,7 @@
     <td><b class="cjk">渡劫</b> <i>Tribulation</i></td>
     <td><span class="cjk">鏡</span> <i>Mirror</i></td>
     <td><span class="cjk">龍威</span> <i>Dragon Might</i></td>
-    <td><b class="cjk" style="color:var(--gold)">雷池</b> <em>The Tribulation</em></td>
+    <td><b class="cjk" style="color:var(--gold)">爐</b> <em>The Furnace</em><br><b class="cjk" style="color:var(--gold)">雷池</b> <em>The Tribulation</em></td>
   </tr>
     </table>
     <p class="t">The first realm was deliberately bare, and that was an over-correction.
@@ -2814,7 +3026,13 @@
   <div class="row" style="--hue:#B2A566">
     <span class="body">
       <b class="cjk">秘境</b> <em>The Secret Realm</em>
-      <i>金丹 Golden Core, the third realm · A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a pair of beasts a realm above you. Nothing is carried, so losing takes nothing back.</i>
+      <i>金丹 Golden Core, the third realm · A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a beast a realm above you. Nothing is carried, so losing takes nothing back.</i>
+    </span>
+  </div>
+  <div class="row" style="--hue:#CB5347">
+    <span class="body">
+      <b class="cjk">秘境深</b> <em>The Deeper Vault</em>
+      <i>合體 Unity, the seventh realm · The path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them.</i>
     </span>
   </div>
   <div class="row" style="--hue:#86AE8C">
@@ -2847,10 +3065,10 @@
       <i>煉虛 Void Refining, the sixth realm · A realm whose four beasts you have all 熟 Known, ten kills of each, pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.</i>
     </span>
   </div>
-  <div class="row" style="--hue:#CB5347">
+  <div class="row" style="--hue:#A077B8">
     <span class="body">
       <b class="cjk">爐</b> <em>The Furnace</em>
-      <i>合體 Unity, the seventh realm · Pills, bought with qi and material together, with no cap on any of it.</i>
+      <i>渡劫 Tribulation, the ninth realm · Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.</i>
     </span>
   </div>
   <div class="row" style="--hue:#A077B8">
@@ -2946,58 +3164,58 @@
     <td><b class="cjk">barely fights</b><i style="display:block">The same visit as the one above, and two beasts before putting it down.</i></td>
     <td class="n">1x</td>
     <td class="n">0 min</td>
-    <td class="n" style="color:var(--jade)">day 99</td>
+    <td class="n" style="color:var(--jade)">day 95</td>
     <td class="n">57.3M</td>
     <td class="n">—</td>
-    <td class="n">248</td>
+    <td class="n">240</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">once a day</b><i style="display:block">One visit a day, but the visit counts: a few kills and whatever the tower will give up.</i></td>
     <td class="n">1x</td>
     <td class="n">2 min</td>
     <td class="n" style="color:var(--jade)">day 70</td>
-    <td class="n">7.45B</td>
-    <td class="n">106</td>
-    <td class="n">926</td>
+    <td class="n">10.1B</td>
+    <td class="n">108</td>
+    <td class="n">936</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">casual</b><i style="display:block">Three visits, some hunting, never opens the tower.</i></td>
     <td class="n">3x</td>
     <td class="n">5 min</td>
-    <td class="n" style="color:var(--jade)">day 69</td>
-    <td class="n">2.74B</td>
+    <td class="n" style="color:var(--jade)">day 70</td>
+    <td class="n">2.03B</td>
     <td class="n">—</td>
     <td class="n">758</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">active</b><i style="display:block">Six visits, ten minutes each, hunts, climbs and brews.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
-    <td class="n" style="color:var(--jade)">day 47</td>
-    <td class="n">28.7B</td>
+    <td class="n" style="color:var(--jade)">day 46</td>
+    <td class="n">29.5B</td>
     <td class="n">113</td>
-    <td class="n">4,157</td>
+    <td class="n">4,145</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">every hour</b><i style="display:block">Every waking hour. As played as this game can be played.</i></td>
     <td class="n">24x</td>
     <td class="n">15 min</td>
     <td class="n" style="color:var(--jade)">day 33</td>
-    <td class="n">35.4B</td>
-    <td class="n">114</td>
-    <td class="n">13,634</td>
+    <td class="n">42.3B</td>
+    <td class="n">115</td>
+    <td class="n">13,339</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">drives it all</b><i style="display:block">Plays like the active cultivator and pours every spare coin into 圍 drives.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
     <td class="n" style="color:var(--jade)">day 47</td>
-    <td class="n">31.8B</td>
-    <td class="n">114</td>
-    <td class="n">4,320</td>
+    <td class="n">22.6B</td>
+    <td class="n">112</td>
+    <td class="n">4,306</td>
   </tr><tr style="--hue:var(--jade)">
     <td><b class="cjk">walks 神</b><i style="display:block">The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.</i></td>
     <td class="n">6x</td>
     <td class="n">10 min</td>
     <td class="n" style="color:var(--jade)">day 45</td>
-    <td class="n">5.84B</td>
-    <td class="n">105</td>
-    <td class="n">3,893</td>
+    <td class="n">7.33B</td>
+    <td class="n">106</td>
+    <td class="n">3,968</td>
   </tr>
     </table>
     <p class="t">The top row is the whole point. That cultivator's qi is not the problem.
@@ -3077,7 +3295,7 @@
     <p class="t">This is the number that matters, and it is deliberately small. 勤 the
       harness grew a cultivator whose day is the waiter's day exactly, one visit with no
       tower, no gear and no furnace, <b>plus two beasts before putting the phone down</b>.
-      Two beasts a day is worth <b class="big">29 days</b> off the climb.</p>
+      Two beasts a day is worth <b class="big">33 days</b> off the climb.</p>
     <div class="rule"><b>And nothing was taken away.</b> The qi rate is untouched. Offline
       is untouched. Losing a fight still costs nothing, and the screen still says so. The
       only thing that changed is the price of a warden, paid in the one currency that has
@@ -3159,7 +3377,7 @@
     <div class="card"><em>And the melt over a whole realm's ladder</em>
       <table style="margin-top:8px"><tr><th>habit</th><th style="text-align:right">2</th>
         <th style="text-align:right">3</th><th style="text-align:right">4</th>
-        <th style="text-align:right">5</th><th style="text-align:right">6</th></tr><tr><td>once a day</td><td style="text-align:right">0.3%</td><td style="text-align:right">0.9%</td><td style="text-align:right">1.3%</td><td style="text-align:right">0.7%</td><td style="text-align:right">1.6%</td></tr><tr><td>casual</td><td style="text-align:right">0.5%</td><td style="text-align:right">1.6%</td><td style="text-align:right">2.6%</td><td style="text-align:right">2.9%</td><td style="text-align:right">3.1%</td></tr><tr><td>active</td><td style="text-align:right">2.6%</td><td style="text-align:right">5.3%</td><td style="text-align:right">8.1%</td><td style="text-align:right">4.5%</td><td style="text-align:right">8.6%</td></tr><tr><td>every hour</td><td style="text-align:right">11.8%</td><td style="text-align:right">17.8%</td><td style="text-align:right">32.2%</td><td style="text-align:right">14.8%</td><td style="text-align:right">36.0%</td></tr><tr><td>drives it all</td><td style="text-align:right">3.1%</td><td style="text-align:right">4.9%</td><td style="text-align:right">8.1%</td><td style="text-align:right">4.8%</td><td style="text-align:right">8.9%</td></tr><tr><td>walks 神</td><td style="text-align:right">2.1%</td><td style="text-align:right">5.3%</td><td style="text-align:right">7.2%</td><td style="text-align:right">4.1%</td><td style="text-align:right">8.9%</td></tr></table></div>
+        <th style="text-align:right">5</th><th style="text-align:right">6</th></tr><tr><td>once a day</td><td style="text-align:right">0.3%</td><td style="text-align:right">0.9%</td><td style="text-align:right">1.3%</td><td style="text-align:right">0.7%</td><td style="text-align:right">1.6%</td></tr><tr><td>casual</td><td style="text-align:right">0.5%</td><td style="text-align:right">1.6%</td><td style="text-align:right">2.8%</td><td style="text-align:right">2.7%</td><td style="text-align:right">3.3%</td></tr><tr><td>active</td><td style="text-align:right">2.6%</td><td style="text-align:right">4.9%</td><td style="text-align:right">8.3%</td><td style="text-align:right">3.8%</td><td style="text-align:right">9.5%</td></tr><tr><td>every hour</td><td style="text-align:right">9.7%</td><td style="text-align:right">18.8%</td><td style="text-align:right">30.0%</td><td style="text-align:right">15.5%</td><td style="text-align:right">34.1%</td></tr><tr><td>drives it all</td><td style="text-align:right">2.6%</td><td style="text-align:right">5.6%</td><td style="text-align:right">7.8%</td><td style="text-align:right">3.8%</td><td style="text-align:right">9.8%</td></tr><tr><td>walks 神</td><td style="text-align:right">2.1%</td><td style="text-align:right">5.3%</td><td style="text-align:right">7.8%</td><td style="text-align:right">3.8%</td><td style="text-align:right">9.1%</td></tr></table></div>
   </div>
     <div class="warn"><b>舊 煉 煉器 The three things it must never become.</b> It reads the
       <em>item's</em> realm and never the hunter's, so a second-realm 凡 pays a
@@ -3287,15 +3505,15 @@
         <td style="text-align:right">64%</td>
         <td style="text-align:right">34%</td>
         <td style="text-align:right" class="hot">34%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">40h</td>
-        <td style="text-align:right">47%</td>
-        <td style="text-align:right">6%</td>
-        <td style="text-align:right" class="hot">6%</td></tr><tr><td>金丹</td>
-        <td style="text-align:right">80h</td>
-        <td style="text-align:right">25%</td>
+        <td style="text-align:right">32h</td>
+        <td style="text-align:right">35%</td>
+        <td style="text-align:right">0%</td>
+        <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
+        <td style="text-align:right">96h</td>
+        <td style="text-align:right">37%</td>
         <td style="text-align:right">0%</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
-        <td style="text-align:right">216h</td>
+        <td style="text-align:right">208h</td>
         <td style="text-align:right">59%</td>
         <td style="text-align:right">0%</td>
         <td style="text-align:right">0%</td></tr><tr><td>化神</td>
@@ -3331,11 +3549,11 @@
         <td style="text-align:right">66%</td>
         <td style="text-align:right">21%</td>
         <td style="text-align:right" class="hot">21%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">28h</td>
-        <td style="text-align:right">35%</td>
+        <td style="text-align:right">24h</td>
+        <td style="text-align:right">18%</td>
         <td style="text-align:right">0%</td>
         <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
-        <td style="text-align:right">88h</td>
+        <td style="text-align:right">92h</td>
         <td style="text-align:right">55%</td>
         <td style="text-align:right">0%</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
@@ -3373,8 +3591,8 @@
       <tr><td>練氣</td>
         <td style="text-align:right">12h</td>
         <td style="text-align:right">46%</td>
-        <td style="text-align:right">14%</td>
-        <td style="text-align:right" class="hot">14%</td></tr><tr><td>築基</td>
+        <td style="text-align:right">15%</td>
+        <td style="text-align:right" class="hot">15%</td></tr><tr><td>築基</td>
         <td style="text-align:right">32h</td>
         <td style="text-align:right">31%</td>
         <td style="text-align:right">0%</td>
@@ -3679,17 +3897,17 @@
           <th style="text-align:right">材 spent</th>
           <th style="text-align:right">dead</th></tr>
       <tr><td>練氣</td>
-        <td style="text-align:right">8</td>
+        <td style="text-align:right">16</td>
         <td style="text-align:right">0</td>
         <td style="text-align:right">0%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">60</td>
+        <td style="text-align:right">96</td>
         <td style="text-align:right">32</td>
         <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
         <td style="text-align:right">644</td>
-        <td style="text-align:right">390</td>
+        <td style="text-align:right">539</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
         <td style="text-align:right">6018</td>
-        <td style="text-align:right">4258</td>
+        <td style="text-align:right">4109</td>
         <td style="text-align:right">0%</td></tr><tr><td>化神</td>
         <td style="text-align:right">56.7k</td>
         <td style="text-align:right">46.9k</td>
@@ -3701,17 +3919,17 @@
           <th style="text-align:right">材 spent</th>
           <th style="text-align:right">dead</th></tr>
       <tr><td>練氣</td>
-        <td style="text-align:right">12</td>
-        <td style="text-align:right">3</td>
+        <td style="text-align:right">24</td>
+        <td style="text-align:right">8</td>
         <td style="text-align:right">0%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">99</td>
-        <td style="text-align:right">62</td>
+        <td style="text-align:right">150</td>
+        <td style="text-align:right">82</td>
         <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
-        <td style="text-align:right">975</td>
-        <td style="text-align:right">707</td>
+        <td style="text-align:right">1119</td>
+        <td style="text-align:right">953</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
-        <td style="text-align:right">13.8k</td>
-        <td style="text-align:right">10.7k</td>
+        <td style="text-align:right">13.7k</td>
+        <td style="text-align:right">10.5k</td>
         <td style="text-align:right">0%</td></tr><tr><td>化神</td>
         <td style="text-align:right">110k</td>
         <td style="text-align:right">82.6k</td>
@@ -3723,17 +3941,17 @@
           <th style="text-align:right">材 spent</th>
           <th style="text-align:right">dead</th></tr>
       <tr><td>練氣</td>
-        <td style="text-align:right">36</td>
-        <td style="text-align:right">22</td>
+        <td style="text-align:right">60</td>
+        <td style="text-align:right">32</td>
         <td style="text-align:right">0%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">264</td>
-        <td style="text-align:right">208</td>
+        <td style="text-align:right">360</td>
+        <td style="text-align:right">198</td>
         <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
-        <td style="text-align:right">4630</td>
-        <td style="text-align:right">3237</td>
+        <td style="text-align:right">4690</td>
+        <td style="text-align:right">4450</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
         <td style="text-align:right">57.9k</td>
-        <td style="text-align:right">48.1k</td>
+        <td style="text-align:right">46.9k</td>
         <td style="text-align:right">0%</td></tr><tr><td>化神</td>
         <td style="text-align:right">402k</td>
         <td style="text-align:right">370k</td>
@@ -3745,14 +3963,14 @@
           <th style="text-align:right">材 spent</th>
           <th style="text-align:right">dead</th></tr>
       <tr><td>練氣</td>
-        <td style="text-align:right">300</td>
-        <td style="text-align:right">169</td>
+        <td style="text-align:right">540</td>
+        <td style="text-align:right">230</td>
         <td style="text-align:right">0%</td></tr><tr><td>築基</td>
-        <td style="text-align:right">3360</td>
-        <td style="text-align:right">2399</td>
+        <td style="text-align:right">5150</td>
+        <td style="text-align:right">3237</td>
         <td style="text-align:right">0%</td></tr><tr><td>金丹</td>
         <td style="text-align:right">48k</td>
-        <td style="text-align:right">35.7k</td>
+        <td style="text-align:right">34.8k</td>
         <td style="text-align:right">0%</td></tr><tr><td>元嬰</td>
         <td style="text-align:right">586k</td>
         <td style="text-align:right">531k</td>
@@ -3799,7 +4017,7 @@
     <div class="hrow">
       <span class="hic" style="color:#A077B8"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/a1exllb.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">真仙</b> <em>True Immortal</em>
-        <i class="faint">蒼龍 Azure Dragon · from mark 1 · about day 62</i></span>
+        <i class="faint">蒼龍 Azure Dragon · from mark 1 · about day 61</i></span>
     </div>
     <p class="hg">The first name above the ninth realm. Nobody who knew you is still alive.</p>
     <p class="hr" style="color:#A077B8">＋6 levels of 劍訣 and 妖丹</p>
@@ -3817,7 +4035,7 @@
     <div class="hrow">
       <span class="hic" style="color:#BA909F"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/ap6a4ns.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">太乙</b> <em>Supreme Unity</em>
-        <i class="faint">九嬰 Nine-Headed Hydra · from mark 7 · about day 82</i></span>
+        <i class="faint">九嬰 Nine-Headed Hydra · from mark 7 · about day 81</i></span>
     </div>
     <p class="hg">One body, nine heads. Cutting one off has never once helped.</p>
     <p class="hr" style="color:#BA909F">＋6 levels of 劍訣 and 妖丹</p>
@@ -3826,7 +4044,7 @@
     <div class="hrow">
       <span class="hic" style="color:#C59D8C"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/aodnjum.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">大羅</b> <em>Grand Veil</em>
-        <i class="faint">雙龍 Twin Dragons · from mark 10 · about day 93</i></span>
+        <i class="faint">雙龍 Twin Dragons · from mark 10 · about day 92</i></span>
     </div>
     <p class="hg">Two of them now, and they come together. Neither is the real one.</p>
     <p class="hr" style="color:#C59D8C">＋6 levels of 劍訣 and 妖丹</p>
@@ -3835,7 +4053,7 @@
     <div class="hrow">
       <span class="hic" style="color:#CEAA77"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/a1el7mbo.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">准聖</b> <em>Quasi-Sage</em>
-        <i class="faint">應龍 Winged Dragon · from mark 13 · about day 104</i></span>
+        <i class="faint">應龍 Winged Dragon · from mark 13 · about day 103</i></span>
     </div>
     <p class="hg">It stopped touching the ground somewhere below you, and never came back down.</p>
     <p class="hr" style="color:#CEAA77">＋6 levels of 劍訣 and 妖丹</p>
@@ -3844,7 +4062,7 @@
     <div class="hrow">
       <span class="hic" style="color:#D4AF56"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/ajfsuj7.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">聖人</b> <em>Sage</em>
-        <i class="faint">燭龍 Torch Dragon · from mark 16 · about day 115</i></span>
+        <i class="faint">燭龍 Torch Dragon · from mark 16 · about day 114</i></span>
     </div>
     <p class="hg">The one whose eyes opening is daylight, and whose breath is the winter.</p>
     <p class="hr" style="color:#D4AF56">＋6 levels of 劍訣 and 妖丹</p>
@@ -3853,7 +4071,7 @@
     <div class="hrow">
       <span class="hic" style="color:#DEC282"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/ajeyg7c.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">道祖</b> <em>Dao Ancestor</em>
-        <i class="faint">星君 Star Lord · from mark 19 · about day 126</i></span>
+        <i class="faint">星君 Star Lord · from mark 19 · about day 125</i></span>
     </div>
     <p class="hg">You are older now than most of what you fight, and it shows in the fighting.</p>
     <p class="hr" style="color:#DEC282">＋6 levels of 劍訣 and 妖丹</p>
@@ -3862,7 +4080,7 @@
     <div class="hrow">
       <span class="hic" style="color:#E9D8B4"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/a1uj82xh.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">混元</b> <em>Primordial Unity</em>
-        <i class="faint">混沌 Chaos · from mark 22 · about day 137</i></span>
+        <i class="faint">混沌 Chaos · from mark 22 · about day 136</i></span>
     </div>
     <p class="hg">It has no face. It has never needed one.</p>
     <p class="hr" style="color:#E9D8B4">＋6 levels of 劍訣 and 妖丹</p>
@@ -3871,7 +4089,7 @@
     <div class="hrow">
       <span class="hic" style="color:#F5F0E4"><i class="pl" style="width:34px;height:34px;--pl:url(bible-art/a1t7ywz.svg)" aria-hidden="true"></i></span>
       <span><b class="cjk">鴻蒙</b> <em>The Uncarved</em>
-        <i class="faint">鴻蒙 The Uncarved · from mark 25 · about day 148</i></span>
+        <i class="faint">鴻蒙 The Uncarved · from mark 25 · about day 150</i></span>
     </div>
     <p class="hg">The block before anyone took a knife to it. There is no tenth name.</p>
     <p class="hr" style="color:#F5F0E4">＋6 levels of 劍訣 and 妖丹</p>
@@ -3916,22 +4134,22 @@
     <table>
       <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
       <tr><td>week 1<span class="faint"> · day 0–6</span></td>
-      <td style="text-align:right">35</td>
+      <td style="text-align:right">36</td>
       <td><span class="wk"><i style="width:100%"></i></span></td></tr><tr><td>week 2<span class="faint"> · day 7–13</span></td>
-      <td style="text-align:right">14</td>
-      <td><span class="wk"><i style="width:40%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
+      <td style="text-align:right">13</td>
+      <td><span class="wk"><i style="width:36%"></i></span></td></tr><tr><td>week 3<span class="faint"> · day 14–20</span></td>
       <td style="text-align:right">3</td>
-      <td><span class="wk"><i style="width:9%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
+      <td><span class="wk"><i style="width:8%"></i></span></td></tr><tr><td>week 4<span class="faint"> · day 21–27</span></td>
       <td style="text-align:right">6</td>
       <td><span class="wk"><i style="width:17%"></i></span></td></tr><tr><td>week 5<span class="faint"> · day 28–34</span></td>
       <td style="text-align:right">6</td>
       <td><span class="wk"><i style="width:17%"></i></span></td></tr><tr><td>week 6<span class="faint"> · day 35–41</span></td>
       <td style="text-align:right">2</td>
       <td><span class="wk"><i style="width:6%"></i></span></td></tr><tr><td>week 7<span class="faint"> · day 42–48</span></td>
-      <td style="text-align:right">6</td>
-      <td><span class="wk"><i style="width:17%"></i></span></td></tr><tr><td>week 8<span class="faint"> · day 49–55</span></td>
+      <td style="text-align:right">7</td>
+      <td><span class="wk"><i style="width:19%"></i></span></td></tr><tr><td>week 8<span class="faint"> · day 49–55</span></td>
       <td style="text-align:right">3</td>
-      <td><span class="wk"><i style="width:9%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
+      <td><span class="wk"><i style="width:8%"></i></span></td></tr><tr><td>week 9<span class="faint"> · day 56–62</span></td>
       <td style="text-align:right">4</td>
       <td><span class="wk"><i style="width:11%"></i></span></td></tr><tr><td>week 10<span class="faint"> · day 63–69</span></td>
       <td style="text-align:right">—</td>
@@ -3978,14 +4196,14 @@
         the exception and keeps all three, because its beasts are already spaced by
         difficulty and there is nothing else in it to look at.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">境外</b> <em>And the summit is no longer the end of the content</em>
-        <i>The climb finishes on day 58; the first heaven opens on day
-        62 and the ninth on day 148. 劫 the tribulation still
+        <i>The climb finishes on day 57; the first heaven opens on day
+        61 and the ninth on day 150. 劫 the tribulation still
         runs for ever, but for 9 heavens it is running <b>toward</b>
         something with a name.</i></span></div>
     </div>
     <div class="rule"><b>Three months was the ask, and it is met with room to spare.</b>
       Thirteen weeks is day 91; the last named thing in the game now arrives on day
-      148. Everything in this table is read off the same two harnesses the rest
+      150. Everything in this table is read off the same two harnesses the rest
       of the page is written from, so it moves when the game moves.</div>
   </section>
 
@@ -5006,10 +5224,10 @@
     <table>
       <tr><th>branch</th><th style="text-align:right">realm 9 on day</th></tr>
       <tr><td><b class="cjk">—</b> <i>no tree at all</i></td>
-        <td class="n">94.3</td></tr><tr><td><b class="cjk">劍</b> <i>The Sword</i></td>
-        <td class="n">92.3</td></tr><tr><td><b class="cjk">神</b> <i>The Spirit</i></td>
-        <td class="n">83.2</td></tr><tr><td><b class="cjk">運</b> <i>Fortune</i></td>
-        <td class="n">87.3</td></tr>
+        <td class="n">92.8</td></tr><tr><td><b class="cjk">劍</b> <i>The Sword</i></td>
+        <td class="n">85.0</td></tr><tr><td><b class="cjk">神</b> <i>The Spirit</i></td>
+        <td class="n">81.7</td></tr><tr><td><b class="cjk">運</b> <i>Fortune</i></td>
+        <td class="n">85.7</td></tr>
     </table>
     <div class="warn"><b>神 once cut the game to a third, and nothing could see it.</b>
       劍 and 神 were written with the same numbers, 15, 20, 30, 45, 80, one on power and
@@ -5118,12 +5336,12 @@
     <table>
       <tr><th>pill</th><th style="text-align:right">qi</th><th style="text-align:right">材</th></tr>
       <tr><td><b class="cjk">pill 1</b></td>
-    <td class="n">1.13B</td><td class="n">51.2k</td></tr><tr><td><b class="cjk">pill 21</b></td>
-    <td class="n">155B</td><td class="n">1.96M</td></tr><tr><td><b class="cjk">pill 41</b></td>
-    <td class="n">9.65T</td><td class="n">75.3M</td></tr><tr><td><b class="cjk">pill 61</b></td>
-    <td class="n">370T</td><td class="n">2.89B</td></tr><tr><td><b class="cjk">pill 81</b></td>
-    <td class="n">14.2Qa</td><td class="n">111B</td></tr><tr><td><b class="cjk">pill 121</b></td>
-    <td class="n">20.8Qn</td><td class="n">163T</td></tr>
+    <td class="n">99.3B</td><td class="n">1.36M</td></tr><tr><td><b class="cjk">pill 21</b></td>
+    <td class="n">6.7T</td><td class="n">52.3M</td></tr><tr><td><b class="cjk">pill 41</b></td>
+    <td class="n">257T</td><td class="n">2B</td></tr><tr><td><b class="cjk">pill 61</b></td>
+    <td class="n">9.85Qa</td><td class="n">76.8B</td></tr><tr><td><b class="cjk">pill 81</b></td>
+    <td class="n">377Qa</td><td class="n">2.94T</td></tr><tr><td><b class="cjk">pill 121</b></td>
+    <td class="n">555Qn</td><td class="n">4.33Qa</td></tr>
     </table>
     <p class="t">One 煉體丹 is +3% power for ever. One 破煞丹 takes
       1.5% off every beast and never takes it below 40% of
@@ -5133,9 +5351,9 @@
     <p class="t">Brewing everything, all the way up, is a real choice and a real cost.
       Measured against the same cultivator climbing the same tower and brewing nothing, it
       takes them from day 92.8 to day
-      94.3 and leaves them
-      2.2x stronger, on
-      52 pills.</p>
+      92.8 and leaves them
+      1.2x stronger, on
+      9 pills.</p>
     <div class="rule"><b>爐底 The furnace starts one realm behind you, not at the foot of
       the mountain.</b> It opens at the seventh realm, and its first pill used to be priced
       for the first: 450 qi to somebody gathering 192k qi a second. Measured, an hour after
@@ -5167,7 +5385,7 @@
       Dragon used to be anchored below all of it, and the build covered the gap for free.
       Measured over twenty-four crossings, the odds never once fell under 90%, and 煉體,
       the one pill a Dragon can feel, was never worth brewing. Two days, tap, win, for ever.</p>
-    <div class="rule"><b>立 Where the Dragon plants its feet.</b> 1.45x
+    <div class="rule"><b>立 Where the Dragon plants its feet.</b> 1.59x
       the 力 it last faced, not 1.8x, because 力 is the sword and the shield at once and a
       multiplier on blows is worth about its square root in the ratio. The band is narrow,
       and it was measured at forty crossings each. 1.20 gives 98% every time and no
@@ -5177,12 +5395,12 @@
       1.2x a pill and a pill worth 3% give a mark of
       1.728x and a Dragon of 1.89x.</p>
     <p class="t">Measured, played out crossing by crossing: <b>40 marks
-      in 137 days</b>, 3 to
-      5 days each, ending on tower floor 334
-      with 447 pills brewed. The margin a good run arrives
+      in 149 days</b>, 3 to
+      5 days each, ending on tower floor 343
+      with 397 pills brewed. The margin a good run arrives
       with buys the first crossings at
       98%; the odds then walk down and settle
-      at 68%, and the furnace
+      at 59%, and the furnace
       is what holds them there.</p>
   </section>
 
