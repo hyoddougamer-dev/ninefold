@@ -65,7 +65,9 @@ import { salvageValue, salvageWorth, salvageable } from '../src/sim/salvage.ts';
 import { BASE_DROP_CHANCE, rollDrop } from '../src/sim/drops.ts';
 import { compare, linesOf, swing } from '../src/sim/inspect.ts';
 import { SYSTEMS as OPENED, opensAt, opensIn } from '../src/sim/unlocks.ts';
-import { REFINE_DEPTH, REFINE_GAIN, refineCost, refineFactor, refineSpent } from '../src/sim/refine.ts';
+import {
+  REFINE_DEPTH, REFINE_GAIN, REFINE_LIMIT, refineCost, refineFactor, refineSpent,
+} from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
 
 import { num } from '../src/sim/format.ts';
@@ -3840,6 +3842,35 @@ const page = `<meta charset="utf-8">
       properly manages inside one visit. Losing the 天 that just dropped because forty 凡
       got there first is the game wasting the player's time where they cannot even see it.
       Now the worst piece goes instead, and the arena says which.</div>
+
+    <h3>頂 "No top level" was false, and it was holding up a wall</h3>
+    <p class="t">The paragraph above said there is no top level, and the code had one:
+      99, with a comment saying nothing reachable came near it. Once 煉器 was in the
+      endgame harness it did. A cultivator who refines comes out of forty crossings at
+      level 90 on every slot, and eight crossings later every slot is at 99. Then the
+      material has nowhere to go and the power stops growing with the tower, while the
+      Dragon, which is footed on a cultivator who refines, keeps growing.</p>
+    <table>
+      <tr><th>crossing</th><th style="text-align:right">with the limit at 99</th>
+          <th style="text-align:right">with no limit</th></tr>
+      <tr><td>50</td><td class="n">7 days</td><td class="n">4 days</td></tr>
+      <tr><td>55</td><td class="n">16 days</td><td class="n">7 days</td></tr>
+      <tr><td>60</td><td class="n">38 days</td><td class="n">6 days</td></tr>
+      <tr><td>70</td><td class="n">227 days</td><td class="n">7 days</td></tr>
+      <tr><td>74 on</td><td class="n"><b>never</b></td><td class="n">7 to 10 days</td></tr>
+    </table>
+    <div class="rule"><b>So the limit is gone, and what it guarded is read off the save.</b>
+      ${REFINE_LIMIT} is now an arithmetic guard and nothing else. What stops a hand-edited
+      save claiming a sword worth fifty thousand of itself is the material ceiling
+      <code>validate</code> already reads off 塔 the tower: a level whose price is past
+      it is a level nobody paid for. It climbs one level for every four floors, which is
+      the same four floors a level costs, and a real endgame round-trips with every level
+      intact. <code>longhaul.test.ts</code> plays eighty crossings on every run.</div>
+    <div class="warn"><b>界 And where it still slopes.</b> Past eighty crossings, a little
+      over a year of play, the marks lengthen again: a fortnight from about the
+      hundredth, 32 days at the hundred and twentieth. A slope rather than a cliff, and
+      it is the next thing to look at, written here so that nobody meets it by
+      surprise.</div>
 
     <h3>新 And every system introduces itself, once</h3>
     <p class="t">示 the advice line answers <em>why am I stuck</em>. These answer the other

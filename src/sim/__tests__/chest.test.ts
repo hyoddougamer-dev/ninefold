@@ -230,3 +230,44 @@ describe('落 what the beasts actually give', () => {
     console.log(`\n  ${kills} kills filled a ${CHEST_LIMIT}-slot chest: ${ranks.join(' · ')}\n`);
   });
 });
+
+/**
+ * 換 A swap can leave the chest over a limit that just fell, and a reload must not punish
+ * it.
+ *
+ * `equip` never raises the count, but taking off a piece with a 藏 line lowers the limit
+ * under a full chest. 氣查 the audit found the result on a real run: the active
+ * cultivator's finished climb held 62 pieces and came back holding 59, and the three it
+ * lost were the newest, because the loop kept the first of the list.
+ */
+describe('換 a chest over a limit that just fell', () => {
+  const T0 = 1_700_000_000;
+  const mantle = GEAR.find((g) => g.slot === 'robe' && g.affix === 'capacity' && g.realm === 9)!;
+  const robe = GEAR.find((g) => g.slot === 'robe' && g.affix !== 'capacity' && g.realm === 9)!;
+  const roomy: Item = { id: 'roomy', template: mantle.key, rarity: 'heaven',
+    rolls: [{ affix: 'capacity', value: 120 }], refine: 20 };
+
+  it('keeps every piece after the 藏 piece comes off', () => {
+    const base = { ...newState(T0), realm: 9 };
+    const worn = { robe: roomy };
+    const filler = Array.from({ length: CHEST_LIMIT + 5 }, (_, i) => mk(robe.key, 'common', i));
+    const before = validate({ ...base, worn, chest: filler }, T0 + 60);
+    expect(before.chest.length).toBe(filler.length);
+
+    // 換 Put a plain robe on. The count stays, the limit falls under it.
+    const swapped = equip(before.worn, before.chest, before.chest[0], 'robe');
+    expect(swapped.chest.length).toBe(filler.length);
+    const back = validate({ ...before, worn: swapped.worn, chest: swapped.chest }, T0 + 60);
+    expect(back.chest.length).toBe(filler.length);
+    expect(back.chest.some((x) => x.id === 'roomy')).toBe(true);
+  });
+
+  it('still bounds a forged chest, and throws the worst away rather than the newest', () => {
+    const base = { ...newState(T0), realm: 9 };
+    const junk = Array.from({ length: 500 }, (_, i) => mk(robe.key, 'common', i));
+    const best = mk(robe.key, 'heaven', 999);
+    const back = validate({ ...base, chest: [...junk, best] }, T0 + 60);
+    expect(back.chest.length).toBe(CHEST_LIMIT);
+    expect(back.chest.some((x) => x.id === best.id)).toBe(true);
+  });
+});

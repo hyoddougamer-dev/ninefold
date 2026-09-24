@@ -11,13 +11,15 @@ import {
   AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
-import { chestLimit } from './chest.ts';
+import { chestLimit, itemWorth } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
-import { owed as cardsOwed, valid as validAwakened } from './awaken.ts';
+import {
+  owed as cardsOwed, refineFactor as cardRefineFactor, valid as validAwakened,
+} from './awaken.ts';
 import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
 import { recordPower, realmsKnown } from './record.ts';
-import { clampRefine } from './refine.ts';
+import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
@@ -535,6 +537,14 @@ export function breakThrough(s: State): State {
  * what closes that hole: nothing may hold more qi than the fastest conceivable
  * cultivator could have gathered in the wall-clock time since the run began.
  */
+/**
+ * How many pieces of a chest `validate` will read at all, before any limit is applied.
+ *
+ * Not a rule of the game: the real limit is worked out from the save, and this is only
+ * the most work a forged save of a million pieces is allowed to cost on the way in.
+ */
+const CHEST_READ_LIMIT = 10_000;
+
 export function validate(raw: unknown, now: number): State {
   const o = (raw ?? {}) as Record<string, unknown>;
   if (o.v !== 1) return newState(now);
@@ -646,12 +656,40 @@ export function validate(raw: unknown, now: number): State {
   const slots = chestLimit(unlocked,
     wornTotals(worn, (x) => affinity(unlocked, x)).capacity, awakened);
 
-  const chest: Item[] = [];
+  /**
+   * 換 And a chest can be over that limit honestly, once, which the cap used to punish.
+   *
+   * `equip` swaps a piece for the one in its slot, so the count never rises and the
+   * function says equipping can never overflow. The count cannot, but the *limit* can
+   * fall: take off a ring with a 藏 line and put on one without, and the chest is now
+   * holding more than it is allowed to. Nothing happened on the screen. On the next load
+   * this loop kept the first pieces in the list and threw away the rest, which is the
+   * newest ones, so the pieces a cultivator had just picked up were the ones deleted.
+   * 氣查 the audit found it: the active cultivator's finished climb held 62 and came
+   * back holding 59.
+   *
+   * The only way over the limit is a 藏 piece that is now in the chest, so the chest is
+   * allowed the room its own pieces carry on top of the limit. A forged save is still
+   * bounded, by the pieces it holds rather than by a number it chose. And if anything
+   * does have to go, it is the worst, which is the rule a full chest already keeps.
+   */
+  const carried: Item[] = [];
   for (const raw of Array.isArray(o.chest) ? o.chest : []) {
-    if (chest.length >= slots) break;
+    if (carried.length >= CHEST_READ_LIMIT) break;
     const it = item(raw, used);
-    if (it) chest.push(it);
+    if (it) carried.push(it);
   }
+  const roomCarried = carried.reduce((n, it) => n + wornTotals(
+    { [TEMPLATE_BY_KEY[it.template].slot]: it } as Worn, (x) => affinity(unlocked, x),
+  ).capacity, 0);
+  const allowance = Math.max(slots, Math.floor(slots + roomCarried));
+  const chest: Item[] = carried.length <= allowance ? carried
+    : carried
+      .map((it, i) => ({ it, i, worth: itemWorth(it) }))
+      .sort((a, b) => b.worth - a.worth || a.i - b.i)
+      .slice(0, allowance)
+      .sort((a, b) => a.i - b.i)
+      .map((x) => x.it);
 
   const elapsed = Math.max(0, now - startedAt);
 
@@ -775,9 +813,29 @@ export function validate(raw: unknown, now: number): State {
   const floorsWorth = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** Math.max(0, out.tower - 1);
   const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
 
+  /**
+   * 煉 And a piece cannot be refined past what that much material could have paid for.
+   * The flat limit this replaced was 99, and a real cultivator reaches it: see
+   * REFINE_LIMIT. Clamping here rather than in `item` is what lets the ceiling read the
+   * tower, which is not known yet when the gear is read.
+   */
+  // 悟道 The discount cards make a level cheaper, so a real cultivator holding them has
+  // paid for levels the full price would put past this ceiling. The ceiling is read at
+  // the price they actually paid, or the save that earned them would lose them.
+  const refineCap = refineCeiling(matCeiling / cardRefineFactor(out.awakened));
+  const capped = (it: Item): Item => {
+    if (!it.refine || it.refine <= refineCap) return it;
+    const { refine: _was, ...rest } = it;
+    return refineCap > 0 ? { ...rest, refine: refineCap } : rest;
+  };
+  const cappedWorn: Worn = {};
+  for (const slot of SLOTS) if (out.worn[slot]) cappedWorn[slot] = capped(out.worn[slot]!);
+
   return {
     ...out,
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
+    worn: cappedWorn,
+    chest: out.chest.map(capped),
   };
 }

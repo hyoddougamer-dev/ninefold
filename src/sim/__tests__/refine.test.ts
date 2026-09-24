@@ -4,7 +4,7 @@ import {
   type Item, type Slot, type Worn,
 } from '../../data/gear.ts';
 import {
-  REFINE_GAIN, REFINE_LIMIT, clampRefine, refineCost, refineFactor, refineSpent,
+  REFINE_GAIN, REFINE_LIMIT, clampRefine, refineCeiling, refineCost, refineFactor, refineSpent,
 } from '../refine.ts';
 import { canRefine, refine, refinePrice } from '../trials.ts';
 import { newState, power, rate, validate, type State } from '../state.ts';
@@ -12,6 +12,8 @@ import { levelCap } from '../balance.ts';
 import { floorLoot } from '../tower.ts';
 import { itemWorth } from '../chest.ts';
 import { num } from '../format.ts';
+import { FLOOR_LOOT, FLOOR_LOOT_GROWTH } from '../balance.ts';
+import { playEndgame } from '../../../tools/endgame.ts';
 
 const T0 = 1_700_000_000;
 
@@ -119,7 +121,41 @@ describe('煉器 refining', () => {
         },
       },
     };
-    expect(validate(forged, T0 + 10).worn.weapon?.refine).toBe(REFINE_LIMIT);
+    // 頂 Not to the arithmetic guard any more, but to what this save could have paid
+    // for: a cultivator ten seconds old, with no tower, holds a piece at a level in the
+    // teens at most, not one worth a hundred thousand of itself.
+    const back = validate(forged, T0 + 10).worn.weapon?.refine ?? 0;
+    expect(back).toBeLessThan(20);
+    expect(back).toBeLessThan(REFINE_LIMIT);
     expect(RARITY_INFO.heaven.mult).toBeGreaterThan(0);
   });
+
+  /**
+   * 頂 The ceiling rides the tower, one level for every four floors, which is the same
+   * four floors a level costs. So the deeper the save, the deeper the piece may be.
+   */
+  it('lets the ceiling climb with the tower', () => {
+    const at = (floor: number) =>
+      refineCeiling(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** Math.max(0, floor - 1) * 1e4);
+    expect(at(343)).toBeGreaterThan(at(90));
+    expect(at(3000)).toBeGreaterThan(at(343) + 600);
+    expect(at(3000)).toBeLessThanOrEqual(REFINE_LIMIT);
+    expect(refineCeiling(0)).toBe(0);
+    expect(refineCeiling(Number.NaN)).toBe(0);
+  });
+
+  /**
+   * 存 And a save that really did the refining keeps every level of it. This is the
+   * whole risk of a derived ceiling: a number too tight deletes a real cultivator's
+   * work on every load, which is what 氣查 the audit found three caps doing already.
+   * Forty crossings on the lean that refines hardest, round-tripped.
+   */
+  it('never takes a level from a cultivator who really paid for it', () => {
+    const g = playEndgame(40, 'refine');
+    const back = validate(JSON.parse(JSON.stringify(g.end)), g.end.at);
+    for (const slot of SLOTS) {
+      expect(back.worn[slot]?.refine).toBe(g.end.worn[slot]?.refine);
+    }
+    expect(Math.max(...SLOTS.map((x) => g.end.worn[x]?.refine ?? 0))).toBeGreaterThan(90);
+  }, 60_000);
 });
