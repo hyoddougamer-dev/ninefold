@@ -10,6 +10,9 @@ import { RARITY_INFO, TEMPLATE_BY_KEY, type Rarity } from '../../data/gear.ts';
 import { Svg } from './Svg.tsx';
 import { SECRET } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
+import { isBlessed, blessedStep, weekLeft } from '../../sim/week.ts';
+import { WeekTag } from './Week.tsx';
+import { WEEK } from '../copy.ts';
 
 /**
  * 秘境 The seven rooms, and the two ways on at each of them.
@@ -58,7 +61,11 @@ export function Secret({ state, onOpen, onLeave }: {
           <span key={i} className="room"
             data-done={i < step || undefined}
             data-here={i === step || undefined}
-            data-gate={isGate(i) || undefined}>
+            data-gate={isGate(i) || undefined}
+            /* 期 The week's blessed room, marked on the path before it is reached. A
+               walker looks at the path to decide whether the next gate is worth trying,
+               and a doubled room three steps on is the whole of that decision. */
+            data-week={isBlessed(state, i) || undefined}>
             <Svg html={icon(isGate(i) ? ROOM_INFO.beast.icon : 'wax-seal', 18)} />
             {i < rooms - 1 && <i className="link" />}
           </span>
@@ -85,6 +92,16 @@ export function Secret({ state, onOpen, onLeave }: {
                   ? SECRET.beast(num(beastPower(gift.fight)), chance, gift.fight.realm > state.realm)
                   : info.says}</i>
                 {bits.length > 0 && <em className="mono">{bits.join(' · ')}</em>}
+                {/* 期 And on the door itself, where the doubled number is already being
+                    quoted: giftOf applies the blessing, so the line above is the truth
+                    and this says why it is larger than it was last week.
+                    爐 Never on a brazier. A blessed room doubles a number, and what a
+                    brazier gives is a piece of gear, which has no number to double. The
+                    first version marked it anyway and the chip was a claim the room
+                    could not pay: two doors, one of them honestly doubled, and the
+                    choice between them is the point. */}
+                {isBlessed(state, step) && (gift.qi > 0 || gift.dao > 0)
+                  && <WeekTag left={weekLeft(state)} />}
               </span>
             </button>
           );
@@ -182,6 +199,9 @@ export function Door({ state, onEnter }: { state: State; onEnter: () => void }) 
       <span className="body">
         <b><span className="cjk">秘境</span> {SECRET.head}</b>
         <i>{left > 0 ? SECRET.shut(duration(left)) : SECRET.ready(rooms)}</i>
+        {/* 期 Which room the week has blessed, said on the card outside the door. It is
+            what makes the week worth checking on a day the walker was not going to go. */}
+        <u className="mono">{WEEK.blessed(blessedStep(state) + 1, rooms)}</u>
       </span>
       {left === 0 && <em className="cjk">›</em>}
     </button>

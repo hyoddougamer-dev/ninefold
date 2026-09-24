@@ -457,6 +457,7 @@ export const KEY = {
   pathsHead: '三 The three paths of the tree',
   pathsBlurb: 'Every node in 道 the tree belongs to one of them, and the colour on the node is the path.',
   meeting: 'Somebody on the road, every few hours. One choice, and walking on is always free. Nothing is taken that you did not offer.',
+  week: 'A mark that moves every Monday. A beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching. It never touches the rate you gather at.',
   systemsHead: '開 The systems, and the realm that opens each',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
@@ -716,6 +717,46 @@ export const MEET = {
  * holds, and it says out loud that nothing is lost by being late, because that is the
  * promise that makes a twelve-hour herb a decision instead of a risk.
  */
+/**
+ * 期 The week, and the three marks it leaves on three screens.
+ *
+ * 譯 Each of them leads with a character and says the English beside it, because no
+ * character is ever the only place a thing is named. They all say how long is left,
+ * because a mark that expires and does not say when is a mark a player learns to
+ * distrust.
+ *
+ * And every one of them says what it pays in the unit the screen it stands on already
+ * uses: material on 狩 the hunt, qi in 洞天 the cave, a door in 秘境 the vault.
+ */
+export const WEEK = {
+  han: '期',
+  /** The banner at the top of 狩 the hunt. */
+  quarryHead: '本週之獸 The week\u2019s quarry',
+  quarry: (name: string) => `${name}, worth double 材 material all week.`,
+  /** 首 The once-a-week qi, while it is still owed. */
+  bounty: (qi: string) => `first kill pays ${qi} qi`,
+  bountyTaken: 'the week\u2019s qi is taken',
+  /** How long is left, where the sentence around it has already named the week. */
+  left: (when: string) => `${when} left`,
+  /**
+   * 譯 And the same countdown on the chip, which names the week itself.
+   *
+   * The chip is one character and a time, and 譯 the harness was right to fail it: on 狩
+   * a hunt row, 期 with "6d 12h left" beside it is a character with no English anywhere
+   * near it. Every other place the mark appears sits inside a card that has already said
+   * the word, and this one does not, so it says it.
+   */
+  tagLeft: (when: string) => `${when} left of the week`,
+  /** The tag on the quarry\u2019s own row, and on the herb, and on the door. */
+  tag: '期',
+  /** 草 The mark in the cave. */
+  season: (name: string) => `${name} is in season: a bed of it pays half again.`,
+  /** 室 The mark in the vault. */
+  blessed: (n: number, of: number) => `Room ${n} of ${of} pays double this week.`,
+  /** 示 The line the advice gives when the week is pointing at something worth doing. */
+  advise: (name: string) => `${name} is this week\u2019s quarry: double material, and the first kill pays qi.`,
+};
+
 export const CAVE = {
   head: '洞天 The cave',
   says: 'Three beds. 材 Material goes into the ground and comes up as 氣 qi, on its own, while the app is shut.',

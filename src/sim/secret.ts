@@ -13,6 +13,8 @@ import { affinity } from './dao.ts';
 import { wornTotals } from '../data/gear.ts';
 import { salvageValue } from './salvage.ts';
 import { salvageBonus } from './awaken.ts';
+import { isBlessed } from './week.ts';
+import { BLESSED_ROOM } from './balance.ts';
 import type { State } from './state.ts';
 
 /**
@@ -167,12 +169,17 @@ export function giftOf(s: State, room: Room, step: number): {
   qi: number; materials: number; dao: number; item: boolean; fight: Beast | null;
 } {
   const deep = depthScale(step);
+  // 期 The week's blessed room doubles whatever stands behind its doors. It is applied
+  // here rather than at the point of payment so that 秘境 the screen's own line, which
+  // reads this function to say what a door gives before it is opened, cannot promise one
+  // number and pay another. 關 A gate is never blessed: see blessedStep.
+  const week = isBlessed(s, step) ? BLESSED_ROOM : 1;
   const none = { qi: 0, materials: 0, dao: 0, item: false, fight: null as Beast | null };
   switch (room.kind) {
     case 'spring':
-      return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60)) };
+      return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week)) };
     case 'shrine':
-      return { ...none, dao: step >= shrineDeep(s.realm) ? 2 : 1 };
+      return { ...none, dao: (step >= shrineDeep(s.realm) ? 2 : 1) * week };
     case 'brazier':
       return { ...none, item: true };
     default:

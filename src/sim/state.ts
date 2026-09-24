@@ -19,11 +19,13 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine } from './refine.ts';
 import { isOpen } from './unlocks.ts';
+import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
 import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
-  NO_TAKE, OPENS_AT as SECRET_OPENS_AT, roomsFor, validTake, type Take,
+  DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
+  type Take,
 } from '../data/secret.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
@@ -162,6 +164,15 @@ export interface State {
    * was opened, and this is only the sum of what was already paid. See data/secret.ts.
    */
   lastRun: Take;
+  /**
+   * 期 The week the quarry's once-a-week qi was last taken in, or -1 for never.
+   *
+   * 一 One number is the whole memory of the rotation, and everything else about a week
+   * is derived from `at`: which beast, which herb, which room, how long is left. A week
+   * index rather than an instant on purpose, because a week index cannot be walked
+   * backwards by a phone's clock into a second payment. See sim/week.ts.
+   */
+  quarryWeek: number;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -295,6 +306,7 @@ export function newState(now: number): State {
     met: [], metAt: 0, metPoints: 0,
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
+    quarryWeek: -1,
     seen: [],
   };
 }
@@ -672,7 +684,11 @@ export function validate(raw: unknown, now: number): State {
     // save cannot claim a tree's worth of them.
     met: validMet(o.met),
     metAt: clamp(num(o.metAt, 0), 0, now),
-    metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0, MEET_POINT_CEILING),
+    // 道 And the bank they land in is not only theirs: 秘境 the vault's shrines pay into
+    // it too, so the ceiling has to allow for every walk the clock could have allowed.
+    // See RUN_DAO_CEILING for the measurement that made this necessary.
+    metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0,
+      MEET_POINT_CEILING + Math.ceil(elapsed / DOOR_GAP) * RUN_DAO_CEILING),
     // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
@@ -687,6 +703,10 @@ export function validate(raw: unknown, now: number): State {
     runAt: clamp(num(o.runAt, 0), 0, now),
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES),
+    // 期 A week the cultivator has not lived through yet is not a week they took the
+    // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is
+    // what any save written before the rotation existed comes back as.
+    quarryWeek: clamp(Math.floor(num(o.quarryWeek, -1)), -1, weekOf(clamp(num(o.at, now), startedAt, now))),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

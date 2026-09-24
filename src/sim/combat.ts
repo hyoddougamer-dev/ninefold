@@ -1,7 +1,7 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
-  OLD_BEAST_FLOOR, SEEN_BOUNTY, WARDEN_TRIBUTE, ladderBetween,
+  OLD_BEAST_FLOOR, QUARRY_BOUNTY, QUARRY_LOOT, SEEN_BOUNTY, WARDEN_TRIBUTE, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
@@ -9,6 +9,7 @@ import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
 import { pillBane } from './furnace.ts';
 import { lootTaken } from './trials.ts';
+import { isQuarry, quarryOwed, weekOf } from './week.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -326,13 +327,29 @@ export function loot(b: Beast): number {
  */
 export function takeKill(s: State, b: Beast): State {
   const kills = s.killed[b.key] ?? 0;
+  // 期 The week's quarry pays its qi on the first one of the week, whether or not this
+  // is the first ever. Both can land on the same kill, and should: the week pointed at
+  // something the player had never been to look at, which is the best week it can have.
+  const week = isQuarry(s, b) && quarryOwed(s);
   return {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
-    qi: s.qi + (kills === 0 ? seenBounty(b) : 0),
+    qi: s.qi + (kills === 0 ? seenBounty(b) : 0) + (week ? quarryBounty(b) : 0),
     materials: s.materials + lootTaken(s, lootFrom(s, b)),
     killed: { ...s.killed, [b.key]: kills + 1 },
+    quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
   };
+}
+
+/**
+ * 首 What the first kill of the week's quarry pays, once, that week.
+ *
+ * Built on 見 the first-sight bounty rather than beside it, so the two can never drift
+ * apart and a player reading "a fifth of a first sight" is reading the truth. A warden
+ * is never the quarry, so the zero seenBounty returns for one cannot leak in here.
+ */
+export function quarryBounty(b: Beast): number {
+  return Math.max(1, Math.round(seenBounty(b) * QUARRY_BOUNTY));
 }
 
 /**
@@ -378,7 +395,11 @@ export function lootFrom(s: State, b: Beast): number {
   if (b.warden) return Math.max(1, Math.round(own * WARDEN_TRIBUTE));
   const mine = (Math.max(1, Math.min(9, s.realm)) - 1) * LAYERS_PER_REALM + 3;
   const floor = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (mine - 1) * HUNT_SHARE * OLD_BEAST_FLOOR;
-  return Math.max(own, Math.round(floor));
+  // 期 The week's quarry, doubled here rather than at the point of payment, so that every
+  // screen quoting a beast's material quotes the doubled number without knowing about the
+  // week at all: 狩 the hunt row, 圍 the drive, and the line under 鬥 the arena.
+  const week = isQuarry(s, b) ? QUARRY_LOOT : 1;
+  return Math.max(own, Math.round(floor)) * week;
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */

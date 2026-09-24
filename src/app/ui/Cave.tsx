@@ -10,6 +10,8 @@ import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
 import { CAVE } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
+import { isSeason, weekLeft } from '../../sim/week.ts';
+import { WeekTag } from './Week.tsx';
 
 /**
  * 洞天 Three beds, and the only thing in the game that grows while the app is shut.
@@ -90,6 +92,10 @@ export function Cave({ state, onPlant, onHarvest }: {
               <span className="nm">
                 <b className="cjk">{h.han}</b> <em>{h.name}</em>
                 <i>{h.says}</i>
+                {/* 期 The herb in season, on the row where the choice is made. The
+                    multiplier is already inside the two numbers below it, so the chip
+                    is saying why they moved rather than adding a number of its own. */}
+                {isSeason(state, h) && <WeekTag left={weekLeft(state)} />}
                 {/* 換 The whole exchange on one line: material in, qi out, and the rate,
                     which is the only number that settles a short herb against a long
                     one. It was not on the screen at all until Bruno asked what kind of

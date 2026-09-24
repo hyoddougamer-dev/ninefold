@@ -3,6 +3,8 @@ import { commonsOf } from '../data/bestiary.ts';
 import { loot } from './combat.ts';
 import { rate } from './time.ts';
 import { isOpen } from './unlocks.ts';
+import { isSeason } from './week.ts';
+import { SEASON_HARVEST } from './balance.ts';
 import type { State } from './state.ts';
 
 /**
@@ -35,9 +37,16 @@ export function seedCost(s: State, h: Herb): number {
   return Math.max(1, Math.ceil(h.costBeasts * beastPay(s)));
 }
 
-/** What a ripe bed pays, as a whole number of qi. */
+/**
+ * What a ripe bed pays, as a whole number of qi.
+ *
+ * 期 A bed of the herb in season pays half again. It is a multiplier on a payment and
+ * never on the rate, and the cave is capped three ways over: three beds, planted by
+ * hand, with material that only falls off a beast. See sim/week.ts.
+ */
 export function harvestValue(s: State, h: Herb): number {
-  return Math.max(1, Math.round(h.paysMinutes * perMinute(s)));
+  const week = isSeason(s, h) ? SEASON_HARVEST : 1;
+  return Math.max(1, Math.round(h.paysMinutes * perMinute(s) * week));
 }
 
 /** The herbs this realm can plant. */

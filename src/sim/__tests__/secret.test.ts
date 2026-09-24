@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEEP_ROOMS, DOOR_GAP, OPENS_AT, ROOMS } from '../../data/secret.ts';
+import { DEEP_ROOMS, DOOR_GAP, OPENS_AT, ROOMS, RUN_DAO_CEILING } from '../../data/secret.ts';
+import { MEET_POINT_CEILING } from '../../data/meetings.ts';
 import {
   beastAt, canEnter, doorIn, doorsAt, enter, giftOf, inside, isGate, leave, open,
 } from '../secret.ts';
@@ -212,5 +213,23 @@ describe('深 the deeper vault', () => {
   it('refuses a fifth-realm save that claims to be standing in a deep room', () => {
     const forged = validate({ ...newState(T0), realm: 5, runStep: 9 }, T0 + 10 * DOOR_GAP);
     expect(forged.runStep).toBeLessThanOrEqual(ROOMS - 1);
+  });
+
+  /**
+   * 道 The shrines pay into the same bank 緣 the meetings do, and `validate` capped that
+   * bank at what the meetings alone could ever hand over: nine. So from about the fourth
+   * walk on, every 道 point a shrine had ever paid was deleted on the next load, silently,
+   * for ever. A save carrying forty came back holding nine.
+   */
+  it('keeps the 道 the shrines paid, rather than clipping it to the meetings’ own nine', () => {
+    const now = T0 + 90 * 86400;
+    const walked = validate({ ...newState(T0), at: now, realm: 7, metPoints: 40 }, now);
+    expect(walked.metPoints).toBe(40);
+    // 頂 And it is still a ceiling: it rides how many walks the wall clock could allow,
+    // so a one-day-old save cannot come back holding a tree's worth of them.
+    const forged = validate(
+      { ...newState(now - 86400), at: now, realm: 7, metPoints: 4000 }, now,
+    );
+    expect(forged.metPoints).toBeLessThan(MEET_POINT_CEILING + 4 * RUN_DAO_CEILING);
   });
 });

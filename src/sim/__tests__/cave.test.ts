@@ -6,6 +6,21 @@ import {
 } from '../cave.ts';
 import { newState, validate, type State } from '../state.ts';
 import { duration } from '../format.ts';
+import { WEEK, isSeason } from '../week.ts';
+import { rate } from '../time.ts';
+
+/** 期 A week whose season names nothing, so the cave can be read at its standing shape. */
+function offSeason(s: State): State {
+  for (let w = 0; w < 40; w++) {
+    const x = { ...s, at: s.at + w * WEEK };
+    if (HERBS.every((h) => !isSeason(x, h))) return x;
+  }
+  // Every week names one, so read the one that names the shortest: it is the only herb
+  // whose blessing cannot invert the ordering, because nothing is shorter than it.
+  return [...Array(40).keys()].map((w) => ({ ...s, at: s.at + w * WEEK }))
+    .find((x) => isSeason(x, HERBS[HERBS.length - 1]))!;
+}
+
 
 const T0 = 1_700_000_000;
 const HOUR = 3600;
@@ -127,7 +142,9 @@ describe('洞天 the cave', () => {
    * screen starts lying and this test is what catches it.
    */
   it('pays a better rate the longer the herb, which is what the seed list says', () => {
-    const s = digger({ realm: 9 });
+    // 期 Read off the week that blesses nothing this cave can plant, because the season
+    // is allowed to break this ordering and the test below is the one that says so.
+    const s = offSeason(digger({ realm: 9 }));
     const rates = HERBS.map((h) => ({
       hours: h.hours, perHour: harvestValue(s, h) / h.hours, cost: seedCost(s, h),
     }));
@@ -136,6 +153,27 @@ describe('洞天 the cave', () => {
       expect(byTime[i].perHour).toBeGreaterThan(byTime[i - 1].perHour);
       expect(byTime[i].cost).toBeGreaterThan(byTime[i - 1].cost);
     }
+  });
+
+  /**
+   * 期 And the week is allowed to turn that ordering over, on purpose.
+   *
+   * The ordering above is the cave's standing shape, and a standing shape is exactly the
+   * thing a rotation exists to disturb. A week that names 青苔 the moss makes two hours
+   * the best rate in the cave, which is the only week a player who is there three times
+   * a day has a reason to look at the seed list again. It lasts a week and it costs the
+   * idler nothing, because a bed is planted and taken by hand at both ends.
+   */
+  it('lets the herb in season beat the long one, for the week it is in season', () => {
+    const s = digger({ realm: 9 });
+    const weeks = [...Array(40).keys()].map((w) => ({ ...s, at: s.at + w * WEEK }));
+    const short = weeks.find((x) => isSeason(x, HERBS[0]));
+    expect(short).toBeDefined();
+    const best = HERBS[HERBS.length - 1];
+    expect(harvestValue(short!, HERBS[0]) / HERBS[0].hours)
+      .toBeGreaterThan(harvestValue(short!, best) / best.hours);
+    // 律 And never by raising the rate: the season multiplies one payment and nothing else.
+    for (const x of weeks) expect(rate(x)).toBe(rate(s));
   });
 
   /** 時 And the value is settled when it is taken, which is what the screen says. */

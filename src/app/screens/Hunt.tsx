@@ -16,6 +16,8 @@ import { HUNT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
+import { QuarryBand, WeekTag } from '../ui/Week.tsx';
+import { isQuarry, weekLeft } from '../../sim/week.ts';
 
 /**
  * 狩 Free hunting.
@@ -115,6 +117,11 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
         </span>
       </div>
 
+      {/* 期 The week's quarry, above the list rather than inside it. The sort below is
+          about what still has a mark to earn, which is a permanent question, and this is
+          a question that expires on Monday. Two different questions, two places. */}
+      <QuarryBand state={state} onFight={onFight} />
+
       <h2 className="heading">{HUNT.reach(sorted.length)}</h2>
       <div className="stack">
         {list.map((b, i) => {
@@ -153,6 +160,9 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
                 <i>
                   {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
                 </i>
+                {/* 期 And the same chip on the row, because the band at the top is not
+                    where somebody scrolling a list of twenty-five is looking. */}
+                {isQuarry(state, b) && <WeekTag left={weekLeft(state)} />}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming
                     the same thing twice on the same line. */}

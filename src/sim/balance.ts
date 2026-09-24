@@ -603,3 +603,46 @@ export const MARK_DAYS = 2;
 export const TRIBULATION_GAIN = 0.728;
 /** No single mark may take longer than this, or the endgame is a wall, not a ladder. */
 export const MAX_MARK_DAYS = 14;
+
+/**
+ * 期 The week, and what it moves.
+ *
+ * Measured, this repository's own 忙 harness said the plainest thing about a long idle
+ * game: everything in it arrives once. Twenty systems, forty-odd arrivals, and after the
+ * last one the game is the same game every day for ever. The bestiary is read, the tree
+ * is spent, the vault walks the same rooms. Nothing is *different on Tuesday*.
+ *
+ * So one mark rides the calendar. It is derived from the week alone, with the save as
+ * the only other input, which means there is no server to run, no clock to cheat (the
+ * week is read off the same validated instant everything else is), and nothing to
+ * remember between weeks except the single bounty below.
+ *
+ * 律 What it is allowed to be. It may never raise the qi rate, because nothing uncapped
+ * may, and it is uncapped by construction: there is always another week. So every one of
+ * the three is a multiplier on something already capped by hand. The quarry pays 材
+ * material, which only falls off a beast somebody went and killed. The season pays a bed,
+ * and there are three beds and they are planted with material. The blessed room is one
+ * room of one run, and the door only opens once a day.
+ *
+ * A cultivator who never opens the app gets nothing from any of the three, in any week,
+ * for ever. That is the point of it.
+ */
+
+/** 獸 What the week's quarry pays in 材 material, against its own usual number. */
+export const QUARRY_LOOT = 2;
+
+/**
+ * 首 What the first kill of the week's quarry pays in qi, as a share of the rung beside
+ * it. It rides the same ladder 見 the first-sight bounty does, for the same reason: a
+ * share of a rung means something to somebody watching a bar, and a flat number does not.
+ *
+ * Once a week, so fifty-two of them a year against the thirty-six 見 pays in a lifetime.
+ * It is a fifth of what a first sight is worth for that reason.
+ */
+export const QUARRY_BOUNTY = 0.1;
+
+/** 草 What a bed of the herb in season pays, against its own usual harvest. */
+export const SEASON_HARVEST = 1.5;
+
+/** 室 What the blessed room of 秘境 the vault pays, against what that door usually gives. */
+export const BLESSED_ROOM = 2;

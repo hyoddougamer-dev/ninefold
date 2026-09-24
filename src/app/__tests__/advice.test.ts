@@ -4,6 +4,7 @@ import { LAYERS_PER_REALM, focusAt, levelCap } from '../../sim/balance.ts';
 import { buy, canBuy, newState, type State, type Upgrade } from '../../sim/state.ts';
 import { advance } from '../../sim/time.ts';
 import { REALMS } from '../../data/realms.ts';
+import { weekOf } from '../../sim/week.ts';
 
 /**
  * 示 The line that says what to do next, and the promise that it is always saying
@@ -142,10 +143,16 @@ describe('道 unspent points come before everything', () => {
       stance: 'swift', sequence: ['crane'], awakened: ['feast', 'wolf'],
     } as unknown as State;
 
+    // 期 With the week's qi still owed, the hunt it sends them on is the week's own,
+    // which is the same tab and a better beast. The generic line is what is left after.
+    const week = advice({ ...base, materials: 40 })!;
+    expect(week.han).toBe('期');
+    expect(week.tab).toBe('hunt');
     // Too little to matter: the line leaves it alone and sends them hunting.
-    expect(advice({ ...base, materials: 40 })!.han).toBe('狩');
+    const took = { ...base, materials: 40, quarryWeek: weekOf(base.at) } as State;
+    expect(advice(took)!.han).toBe('狩');
     // Enough for real levels: it names the piece and how many.
-    const rich = advice({ ...base, materials: 2296 })!;
+    const rich = advice({ ...base, materials: 2296, quarryWeek: weekOf(base.at) } as State)!;
     expect(rich.han).toBe('煉器');
     expect(rich.tab).toBe('gear');
     expect(rich.text).toMatch(/\d+ levels/);

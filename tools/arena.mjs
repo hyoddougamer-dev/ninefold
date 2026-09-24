@@ -114,6 +114,15 @@ for (const width of WIDTHS) {
     // about somebody else. It fails now instead.
     const row = await page.$(`button.beast:has-text("${c.han}")`);
     if (!row) { fail(`${width}/${c.beast}`, `${c.han} is not in the hunt list for realm ${c.realm}`); await page.close(); continue; }
+    /**
+     * 捲 Scrolled to first, because a mouse click is in viewport coordinates and a row
+     * below the fold has none that land on it. 期 The week's band at the top of the hunt
+     * pushed the list down by about ninety pixels and two of the six cases stopped
+     * opening the arena at every width, which read as "the arena never opened" rather
+     * than as "the tap missed".
+     */
+    await row.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(250);
     const box = await row.boundingBox();
     await page.mouse.click(box.x + box.width - 10, box.y + box.height / 2);
     await page.waitForTimeout(1100);

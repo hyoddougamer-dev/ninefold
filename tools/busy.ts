@@ -40,6 +40,7 @@ import { due as awakeningDue } from '../src/sim/awaken.ts';
 import { salvageable } from '../src/sim/salvage.ts';
 import { SLOTS, templateOf, type Slot } from '../src/data/gear.ts';
 import { itemWorth } from '../src/sim/chest.ts';
+import { WEEK, quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { HABITS, play } from './habits.ts';
 
 /** 事 One system, and what it has to offer right now. */
@@ -79,6 +80,19 @@ export const KINDS: readonly Kind[] = [
       return !worn || itemWorth(i) > itemWorth(worn);
     }).length },
   { han: '拆', name: 'melt the junk', taps: (s) => (isOpen(s.realm, 'gear') ? Math.min(1, salvageable(s.chest, 'spirit').length) : 0) },
+  /**
+   * 期 The week's quarry, which is the only row on this table that comes back.
+   *
+   * Every other kind here is a system that opened once and will keep offering the same
+   * thing for ever. This one is owed on Monday, spent on the first kill of the week and
+   * then silent until the next Monday, which is why it is counted as one tap and not as
+   * a hunt: the beast is already counted under 狩, and what the week adds is the reason
+   * to go and pick that one.
+   */
+  { han: '期', name: 'take the week', taps: (s) => {
+      const q = quarryOf(s);
+      return q && quarryOwed(s) && odds(s, q) > 0.6 ? 1 : 0;
+    } },
 ];
 
 /** 訪 One visit, counted. */
@@ -169,7 +183,13 @@ if (process.argv[1]?.endsWith('busy.ts')) {
   const r = report('active');
   console.log('  開 when a new system arrives, for the active cultivator\n');
   for (const a of r.arrived) console.log(`     day ${pad(a.day.toFixed(1), 6)} ${a.what}`);
-  console.log(`\n  and then ${r.tail.toFixed(0)} days with nothing new named at all.\n`);
+  console.log(`\n  and then ${r.tail.toFixed(0)} days with nothing new named at all.`);
+  /**
+   * 期 Which is the finding this whole harness was written to produce, and the one thing
+   * that answers it. Every arrival above happens once. The week happens again.
+   */
+  console.log(`  期 the week turns every ${(WEEK / 86_400).toFixed(0)} days, for ever, so ` +
+    'from here on the longest stretch with nothing new in it is a week.\n');
 
   // 分 Which systems are actually live, visit by visit, across the whole climb.
   const counts = new Map<string, number>();

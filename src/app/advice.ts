@@ -13,7 +13,7 @@ import { beastPower } from '../sim/combat.ts';
 import { MARK_INFO, nextMark } from '../sim/record.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
-import { ADVICE } from './copy.ts';
+import { ADVICE, WEEK } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
 import { due as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
@@ -23,6 +23,7 @@ import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
 import { clampRefine, refineCost } from '../sim/refine.ts';
 import { SLOTS, templateOf } from '../data/gear.ts';
+import { quarryOf, quarryOwed } from '../sim/week.ts';
 
 /**
  * 示 One line telling the player the most useful thing they could do next.
@@ -132,6 +133,7 @@ export function advice(s: State): Advice | null {
   const waiting = pointsWaiting(s);
   if (waiting > 0) return { han: '道', text: ADVICE.freePoints(waiting), tab: 'dao' };
 
+
   if (blocked) {
     const cap = capOf(s, 'technique');
     // Never point at a door the realm has not opened yet.
@@ -177,6 +179,24 @@ export function advice(s: State): Advice | null {
   if (atTribulation(s) && !s.wardenFell && odds(s, warden) < DRAGON_COMFORT && canBrew(s, 'body')) {
     const text = ADVICE.brewForDragon(bodyPill(s), Math.round(odds(s, warden) * 100));
     return { han: '爐', text, tab: 'trials' };
+  }
+
+  /**
+   * 期 The week's quarry, while the once-a-week qi is still owed.
+   *
+   * It is the only thing this function ever says that has a deadline. A card, a door, a
+   * ripe bed and a point all wait for ever; this one is gone on Monday, and a line that
+   * says so only after it is gone is a line nobody trusts a second time.
+   *
+   * 塞 It is under the whole blocked branch all the same. Somebody who cannot put the
+   * warden down has one real problem and it is not what day of the week it is, and the
+   * branch above is the only place in the game that says what that problem is. It is
+   * also silent on a quarry that cannot be won, for the same reason STUCK exists: a line
+   * pointing at a fight the reader loses is worse than no line.
+   */
+  const quarry = quarryOf(s);
+  if (quarry && quarryOwed(s) && odds(s, quarry) >= STUCK) {
+    return { han: '期', text: WEEK.advise(`${quarry.han} ${quarry.name}`), tab: 'hunt' };
   }
 
   // Nothing is blocking. Is there something plainly worth doing?

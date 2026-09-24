@@ -137,6 +137,7 @@ export const GROUPS: readonly Group[] = [
       { han: '緣', name: 'A meeting', note: KEY.meeting },
       { han: '洞天', name: 'The cave', note: CAVE.what },
       { han: '秘境', name: 'The secret realm', note: SECRET.what },
+      { han: '期', name: 'The week', note: KEY.week },
     ],
   },
 ];

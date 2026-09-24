@@ -169,3 +169,20 @@ export function validTake(raw: unknown, keys: (k: string) => boolean,
     rooms: n(o.rooms, DEEP_ROOMS), gates: n(o.gates, DEEP_ROOMS), beaten: o.beaten === true,
   };
 }
+
+/**
+ * 道 The most 道 a single walk of the vault could possibly pay.
+ *
+ * It exists because `validate` has to cap 道 points and the cap it had was the meetings'
+ * own ceiling, nine, which was right when 緣 the meetings were the only thing paying
+ * them. 秘境 The vault's shrines pay into the same bank, so from about the fourth walk
+ * onwards every point a shrine ever handed over was deleted on the next load. Measured:
+ * a save carrying forty came back holding nine.
+ *
+ * So the cap is derived instead, from how many walks the wall-clock could have allowed,
+ * and this is the per-walk bound. Every reward room a shrine, every one of them deep,
+ * and 期 the week's blessing on top of one of them: an over-estimate on purpose, because
+ * a cap on a currency that can only ever be spent on a tree of fixed size is there to
+ * stop a forged heirloom, not to be tight.
+ */
+export const RUN_DAO_CEILING = Math.ceil(DEEP_ROOMS / 2) * 2 * 2;

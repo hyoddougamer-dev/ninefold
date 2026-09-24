@@ -1966,3 +1966,71 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .skyline[data-heaven='true'], .you .art .halo,
   .arena .you .art, .arena .foe .art { animation: none; }
 }
+
+/* ── 期 the week ─────────────────────────────────────────────────────────
+   The rotation's two shapes: the band at the top of 狩 that names the quarry, and the
+   chip that marks the thing the week is pointing at wherever a list already holds it.
+
+   類 The chip is one class on three screens on purpose, the way .beast is one row on
+   two. It makes the same claim in all three places and a player should not have to
+   learn it twice. Restyle .wtag and look at 狩 the hunt, 洞天 the cave and 秘境 the
+   vault. Everything else here is scoped to the band, which exists once. */
+
+.wtag { flex: none; display: inline-flex; align-items: center; gap: 6px;
+        border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+        background: color-mix(in srgb, var(--gold) 12%, transparent);
+        border-radius: 8px; padding: 1px 7px; margin-top: 4px; }
+.wtag b { font-size: 12.5px; font-weight: 400; color: var(--gold); line-height: 1.5; }
+.wtag i { font-style: normal; font-size: 10px; letter-spacing: .04em; color: var(--faint); }
+
+/* 草 In 洞天 the seed row the chip sits on its own line under the herb's sentence, so
+   it never squeezes the price on the right. */
+.cave .seed .wtag { display: inline-flex; margin-top: 5px; }
+/* 狩 On a hunt row it goes under the name, above the marks, on a line of its own.
+   窄 At 320 the row's sentence wraps, and an inline chip after an inline <i> ran on from
+   the end of it: the row read "材 3320 期 6d 12h left" as one sentence. The <i> is a
+   block now, which is what the <b> above it already was. */
+.beast .bname i { display: block; }
+.beast .bname .wtag { display: inline-flex; margin: 4px 0 1px; }
+
+/* 室 On the vault's path the blessed room is named under the seal rather than ringed.
+   量 A ring was the first version and it was invisible: every room on that path wears a
+   pale seal or a beast that fills its own circle edge to edge, so a border and a colour
+   on the svg are painted over by the art inside it. Even 此 the gold ring on the room
+   the walker is standing in barely reads. A character below the seal is on the panel
+   itself, where nothing is drawn, and it says which mark it is. */
+.secret .path { padding-bottom: 13px; }
+.secret .room[data-week] > svg {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212,175,86,.14), 0 0 18px -5px var(--gold);
+}
+.secret .room[data-week]::after {
+  content: '期'; position: absolute; top: 100%; left: 50%; margin-top: -3px;
+  transform: translateX(-50%); z-index: 2;
+  font-family: 'Noto Serif SC', 'Songti SC', serif; font-size: 12px; line-height: 1;
+  color: var(--gold);
+}
+
+/* 門 The line on the door card outside, which is a third kind of thing on that card. */
+.door .body u { display: block; text-decoration: none; margin-top: 5px; font-size: 11.5px;
+                color: var(--gold); opacity: .85; }
+
+/* 本週之獸 The band. It is a button and it fights the quarry. */
+.weekband { display: flex; gap: 11px; align-items: center; width: 100%; text-align: left;
+            font: inherit; color: var(--text); cursor: pointer; margin: 14px 0 2px;
+            border-radius: 12px; padding: 11px 12px;
+            border: 1px solid color-mix(in srgb, var(--gold) 42%, transparent);
+            background:
+              radial-gradient(120% 140% at 0% 0%,
+                color-mix(in srgb, var(--hue, var(--gold)) 16%, transparent), transparent 62%),
+              color-mix(in srgb, var(--gold) 7%, var(--panel)); }
+.weekband:active { transform: scale(.99); }
+.weekband .plate { flex: none; }
+.weekband .wsay { flex: 1; min-width: 0; }
+.weekband .wsay b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700;
+                    font-size: 14px; letter-spacing: .02em; color: var(--gold); }
+.weekband .wsay i { display: block; font-style: normal; margin-top: 2px; font-size: 12.5px;
+                    line-height: 1.5; }
+.weekband .wsay u { display: block; text-decoration: none; margin-top: 4px; font-size: 11.5px;
+                    color: var(--faint); }
+.weekband .wsay u i { font-style: normal; }
