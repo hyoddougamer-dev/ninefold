@@ -163,7 +163,7 @@ export interface Run {
 function takeDrop(s: State, beast: Beast, seed: number): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
-  const item = rollDrop(beast, s.realm, seed, fortuneOf(s));
+  const item = rollDrop(beast, s.realm, seed, fortuneOf(s), s.layer);
   if (!item) return s;
 
   const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);

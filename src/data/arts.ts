@@ -21,6 +21,8 @@
  * the same build.
  */
 
+import { LAYERS_PER_REALM } from '../sim/balance.ts';
+
 export type StanceKey =
   | 'swift' | 'guard' | 'fierce' | 'entangle' | 'endure'
   | 'steady' | 'reckless' | 'reverse' | 'mirror';
@@ -69,9 +71,23 @@ export const STANCES: readonly Stance[] = [
 export const STANCE_BY_KEY: Readonly<Record<string, Stance>> =
   Object.fromEntries(STANCES.map((s) => [s.key, s]));
 
-/** The stances a cultivator of this realm may stand in. */
-export function stancesFor(realm: number): readonly Stance[] {
-  return STANCES.filter((s) => s.realm <= realm);
+/**
+ * 層 Where in its realm a stance walks out.
+ *
+ * 隙 Measured, a realm hands over everything it has in its first minute: the name, the
+ * first common, the warden's art, the stance and a whole lineage of gear, and then runs
+ * for twelve days with one beast every five. The commons were already spread across
+ * layers 0, 4 and 7 for exactly this reason; the stance was not. It stands at the
+ * second layer now, which is the first gap in a realm with nothing else in it.
+ *
+ * 取 Nothing is taken away by this. A stance held is held for ever, and the realm below
+ * you gave you its own. What moves is when the *new* one arrives.
+ */
+export const STANCE_LAYER = 2;
+
+/** The stances a cultivator standing here may stand in. */
+export function stancesFor(realm: number, layer = LAYERS_PER_REALM): readonly Stance[] {
+  return STANCES.filter((s) => s.realm < realm || (s.realm === realm && layer >= STANCE_LAYER));
 }
 
 export interface Art {

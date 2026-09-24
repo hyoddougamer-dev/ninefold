@@ -328,7 +328,7 @@ export function App() {
         // can wear anything, so a piece falling there would go into a chest the player
         // cannot open, off a screen that cannot explain it.
         drop: floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, fortuneOf(state)),
+          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
       };
     });
   }, [state]);

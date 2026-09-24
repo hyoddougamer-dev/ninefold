@@ -652,7 +652,7 @@ export function validate(raw: unknown, now: number): State {
     // 相 A forged figure is simply not one of the two, so it falls back to not having
     // been asked, which every screen already draws.
     self: figureOf(typeof o.self === 'string' ? o.self : null)?.key ?? null,
-    stance: validateStance(o.stance, realm),
+    stance: validateStance(o.stance, realm, layer),
     sequence: validateSequence(o.sequence, killed),
     // Marks are only reachable at realm 9, and only one at a time.
     // Capped at three hundred so the multipliers stay inside a double: a mark is

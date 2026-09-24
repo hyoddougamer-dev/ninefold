@@ -149,6 +149,13 @@ button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 
 
 .qi { text-align: center; margin-top: 2px; }
 .qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
+/* 階 The price of the rung the bar is filling, under the bar.
+   It is the one number an idle game cannot be read without, and it was nowhere: the
+   bar moved, the rate was on the screen, and what the bar was *for* was not. Tapping
+   it opens 境 the realm card, which says the same thing for the whole realm. */
+.pace { margin: 6px 0 0; font-size: 12px; color: var(--faint); text-align: center;
+        cursor: pointer; background: none; border: 0; width: 100%; }
+
 .qi .r { font-size: 13px; color: var(--jade); }
 /* 入定 Something gained by staying, so it arrives rather than being always there. */
 /* ── 觸 What a tap feels like ────────────────────────────────────────────────
@@ -1717,6 +1724,28 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .realmcard .gives em { display: block; font-style: normal; font-size: 14px; }
 .realmcard .gives i { display: block; margin-top: 3px; font-style: normal; font-size: 12.5px;
                       line-height: 1.55; color: var(--faint); }
+
+/* 來 What the realm has not handed over yet. One row each, with the layer that brings
+   it on the right, so a realm reads as four arrivals rather than one lump. */
+.realmcard .soon { list-style: none; margin: 0; padding: 0; display: flex;
+                   flex-direction: column; gap: 8px; }
+.realmcard .soon li { display: flex; gap: 11px; align-items: center;
+                      background: var(--panel2); border: 1px dashed var(--line);
+                      border-radius: 10px; padding: 9px 12px; }
+.realmcard .soon li > b { flex: none; min-width: 30px; font-weight: 400; font-size: 17px; }
+.realmcard .soon li > span { flex: 1; min-width: 0; }
+.realmcard .soon em { display: block; font-style: normal; font-size: 13.5px; }
+.realmcard .soon i { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
+.realmcard .soon u { flex: none; text-decoration: none; font-size: 11.5px; color: var(--faint); }
+/* 守 The one at the end of the realm is the fight it is remembered for, not a footnote. */
+.realmcard .soon li[data-kind='warden'] { border-style: solid; border-color: var(--line); }
+.realmcard .soon li[data-kind='warden'] > b { color: var(--cinnabar); }
+
+/* 階 Two prices side by side, and they are wide numbers, so they get more room than the
+   three facts above them. */
+.realmcard .facts.pace2 > span { padding: 12px 8px; }
+.realmcard .facts.pace2 b { font-size: 17px; }
+.realmcard p.small { font-size: 11.5px; opacity: .85; }
 
 /* The hook. A vertical game has to keep saying what the next realm is worth. */
 .realmcard .nextup { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }

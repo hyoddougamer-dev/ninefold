@@ -9,6 +9,9 @@ import { opensIn } from '../../sim/unlocks.ts';
 import { portrait } from '../../art/aura.ts';
 import { Svg } from './Svg.tsx';
 import { REALMCARD } from '../copy.ts';
+import { arriving } from '../../sim/arriving.ts';
+import { pace } from '../../sim/pace.ts';
+import { duration, num } from '../../sim/format.ts';
 
 /**
  * 境 What a realm is, on one page.
@@ -37,6 +40,8 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
   const next = state.realm < REALMS.length ? realmOf(state.realm + 1) : null;
   const coming = next ? opensIn(next.n) : [];
   const sky = pictureOf('realm', String(state.realm));
+  const soon = arriving(state.realm, state.layer);
+  const p = pace(state);
 
   return (
     <div className="realmcard">
@@ -87,6 +92,46 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
           </ul>
         </>
       )}
+
+      {/* 來 What this realm still owes you, and the layer that brings it.
+          A realm used to hand over everything in its first minute and then run for
+          twelve days on one beast every five. Its commons, its stance and its lineage
+          are spread across the layers now, and a thing that waits has to be shown
+          waiting or it is a surprise rather than an arrival. */}
+      {soon.length > 0 && (
+        <>
+          <h3>{REALMCARD.comingHead}</h3>
+          <ul className="soon">
+            {soon.map((a) => (
+              <li key={`${a.kind}-${a.key}`} data-kind={a.kind}>
+                <b className="cjk" style={{ color: r.colour }}>{a.han}</b>
+                <span><em>{a.name}</em><i>{REALMCARD.comingKind[a.kind]}</i></span>
+                <u className="mono">{REALMCARD.comingAt(a.layer + 1)}</u>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* 階 And what the climb actually asks for, which is the number Bruno went looking
+          for: how much qi a layer is, how much the whole realm is, and how long that is
+          at the rate this cultivator gathers at. */}
+      <h3>{REALMCARD.paceHead}</h3>
+      <div className="facts pace2">
+        <span>
+          <b className="mono">{num(p.rung)}</b>
+          <i>{REALMCARD.paceRung}</i>
+        </span>
+        <span>
+          <b className="mono">{num(p.realm)}</b>
+          <i>{REALMCARD.paceRealm}</i>
+        </span>
+      </div>
+      <p className="faint">{REALMCARD.paceAt(duration(p.realmSeconds))}</p>
+      {next && p.times !== null && (
+        <p className="faint">{REALMCARD.paceNext(next.han, next.name, p.times.toFixed(0))}</p>
+      )}
+      <p className="faint small">{REALMCARD.paceNote}</p>
 
       {next && (
         <>

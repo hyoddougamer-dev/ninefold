@@ -1,3 +1,5 @@
+import { LAYERS_PER_REALM } from '../sim/balance.ts';
+
 /**
  * 器 Gear.
  *
@@ -383,8 +385,22 @@ export function templateOf(item: Item): GearTemplate {
 }
 
 /** Gear that can drop in a realm: anything whose own realm has been reached. */
-export function droppableIn(realm: number): readonly GearTemplate[] {
-  return GEAR.filter((g) => g.realm <= realm);
+/**
+ * 層 Where in its realm a lineage starts falling.
+ *
+ * 隙 The same argument the commons and 勢 the stance make: a realm used to hand over its
+ * whole loot table in the first minute of twelve days. It also put a power spike exactly
+ * where the climb means you to be weak, since a realm is entered at about a fifth of what
+ * it will ask for. 龍骸 Dragonwake starts dropping halfway up the eighth realm now, and a
+ * lineage starting to drop is an event rather than a footnote.
+ *
+ * 舊 Only the newest lineage waits. Everything below it falls from the first second, and a
+ * beast of a realm already passed drops its own realm's gear exactly as it always did.
+ */
+export const LINEAGE_LAYER = 5;
+
+export function droppableIn(realm: number, layer = LAYERS_PER_REALM): readonly GearTemplate[] {
+  return GEAR.filter((g) => g.realm < realm || (g.realm === realm && layer >= LINEAGE_LAYER));
 }
 
 export function archetypesOf(slot: Slot): readonly Archetype[] {

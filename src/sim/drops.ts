@@ -1,5 +1,6 @@
 import type { Beast } from '../data/bestiary.ts';
 import { isOpen } from './unlocks.ts';
+import { LAYERS_PER_REALM } from './balance.ts';
 import {
   AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, baseValue, droppableIn,
   roundValue, type Affix, type GearTemplate, type Item, type Rarity, type Roll,
@@ -116,13 +117,19 @@ export function rollSecondaries(
 
 export function rollDrop(
   beast: Beast, realm: number, seed: number, fortune: Fortune = {},
+  layer = LAYERS_PER_REALM,
 ): Item | null {
   if (!dropsYet(realm)) return null;
   const d = dice(seed);
   if (d() > dropChance(beast, fortune.chance ?? 0, fortune.always ?? false)) return null;
 
   // Only gear the cultivator could plausibly find: the beast's realm, capped by theirs.
-  const pool = droppableIn(Math.min(beast.realm, realm));
+  // 層 And the newest lineage waits until part way up the realm, which is the layer gate
+  // in droppableIn. It only bites on a beast of your own realm or above: an old beast
+  // drops its own realm's gear, which has been falling for as long as you have been past
+  // it. Left off, the call means the whole realm, which is what a catalogue wants.
+  const at = Math.min(beast.realm, realm);
+  const pool = droppableIn(at, at === realm ? layer : LAYERS_PER_REALM);
   if (pool.length === 0) return null;
   const template: GearTemplate = pool[Math.floor(d() * pool.length) % pool.length];
 

@@ -231,10 +231,35 @@ export const REALMCARD = {
   warden: 'It has the power of a cultivator who filled this realm and brought nothing else. '
     + 'The levels get you to the door. Everything else opens it.',
   gaveHead: 'What this realm opened',
+  /** 來 What the realm has not handed over yet, and the layer that brings it. */
+  comingHead: 'Still to come in this realm',
+  comingAt: (layer: number) => `layer ${layer}`,
+  comingKind: {
+    beast: 'walks out',
+    stance: 'a stance to fight in',
+    gear: 'starts dropping',
+    warden: 'stands at the end',
+  } as const,
+  /** 階 What the climb asks for, which the screen never used to say at all. */
+  paceHead: 'What the climb costs from here',
+  paceRung: 'this layer',
+  paceRealm: 'the nine of them',
+  paceNext: (han: string, name: string, times: string) =>
+    `${han} ${name} asks for about ${times} times this realm.`,
+  paceAt: (time: string) => `about ${time} at the rate you gather at now`,
+  paceNote: 'Counted at your standing rate, so 入定 sitting with it gets you there sooner. '
+    + 'Every level and every layer makes the rate higher, so the real wait is shorter '
+    + 'than the number above.',
   nextHead: 'What the next one is worth',
   opens: (list: string) => `Opens ${list}.`,
   opensNothing: 'Opens no new system. It is the top of the climb.',
   back: 'Back',
+};
+
+export const PACE = {
+  /** 階 One line under the bar: what this rung asks for and how long that is. */
+  rung: (qi: string, time: string) => `${qi} qi this layer · about ${time}`,
+  rungLeft: (qi: string, time: string) => `${qi} qi to go · about ${time}`,
 };
 
 export const LADDER = {

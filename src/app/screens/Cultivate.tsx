@@ -21,8 +21,9 @@ import { Term } from '../ui/Term.tsx';
 import { Meet } from '../ui/Meet.tsx';
 import { Cave } from '../ui/Cave.tsx';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE } from '../copy.ts';
 import { advice } from '../advice.ts';
+import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 
@@ -90,6 +91,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const wardenRaw = oddsRaw(state, w);
   const wardenGap = dragon / Math.max(1e-9, power(state));
   const tip = advice(state);
+  // 階 What a rung and a realm ask for, read off the same ladder the game climbs.
+  const p = pace(state);
   // 引 The first session, one step at a time. It is computed, never stored, so it ends
   // by itself and cannot come back.
   const step = guide(state);
@@ -214,6 +217,19 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </span>
         <span className="mono" style={{ color: 'var(--gold)' }}><Term han="材" /> {num(state.materials)}</span>
       </div>
+
+      {/* 階 What the bar is actually filling, which the screen never said.
+          Bruno: *"é necessário os players perceberem quanto qi é necessário por
+          layer/realm aprox."* A bar with no price on it cannot be read: the player
+          cannot tell a ten-minute rung from a two-day one, so the whole shape of the
+          climb has to be guessed at. It rides the standing rate on purpose, the same
+          way 待 the price countdowns do: sitting gets you there sooner, and that is the
+          only direction this is allowed to be wrong in. */}
+      {!top && (
+        <p className="pace mono" onClick={onRealm}>
+          {PACE.rungLeft(num(p.rungLeft), duration(p.rungSeconds))}
+        </p>
+      )}
 
       {/* 梯 The bar above is one rung. This is the other eight, the realm they sit in,
           and the warden at the end of them. Bruno had read "layer 3 / 9" and "realm 1 of

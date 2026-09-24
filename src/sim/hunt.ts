@@ -133,7 +133,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   let best: Item | null = null;
   for (let i = 0; i < kills; i++) {
     material += lootTaken(s, lootFrom(s, b));
-    const item = rollDrop(b, s.realm, (seed + i * 2654435761) >>> 0, fortune);
+    const item = rollDrop(b, s.realm, (seed + i * 2654435761) >>> 0, fortune, s.layer);
     if (!item) continue;
     dropsRolled++;
     if (!best || itemWorth(item) > itemWorth(best)) best = item;

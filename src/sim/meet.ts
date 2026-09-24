@@ -127,7 +127,8 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
     const commons = commonsOf(Math.max(1, Math.min(9, out.realm)));
     const beast = commons[commons.length - 1] ?? commons[0];
     const item = beast
-      ? rollDrop(beast, out.realm, seed, { chance: 1, luck: p.outcome.luck, always: true })
+      ? rollDrop(beast, out.realm, seed, { chance: 1, luck: p.outcome.luck, always: true },
+        out.layer)
       : null;
     if (item) {
       const limit = chestLimit(out.unlocked,

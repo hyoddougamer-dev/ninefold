@@ -15,12 +15,13 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { BEASTS, WARDENS, commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { REALMS, realm as realmOf } from '../src/data/realms.ts';
-import { ARTS, SEQUENCE_SLOTS, STANCES } from '../src/data/arts.ts';
+import { ARTS, SEQUENCE_SLOTS, STANCES, STANCE_LAYER } from '../src/data/arts.ts';
 import { LINES, PILL_GRADES, PILL_LINES } from '../src/data/alchemy.ts';
 import { HEAVENS, MARKS_PER_HEAVEN, heavenAt, heavensOpened, marksToNext, nextHeaven } from '../src/data/heavens.ts';
 import { COMMON_LAYERS, comingIn } from '../src/data/bestiary.ts';
 import {
-  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, RARITIES, RARITY_INFO, REALM_SETS, SECONDARIES,
+  AFFIXES, AFFIX_INFO, ARCHETYPES, GEAR, LINEAGE_LAYER, RARITIES, RARITY_INFO,
+  REALM_SETS, SECONDARIES,
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
@@ -190,11 +191,18 @@ const CLOCK = (() => {
   const met: number[] = [];
   const add = (d: number) => { if (Number.isFinite(d)) met.push(d); };
   for (const sys of OPENED) add(at(sys.realm));
-  // 出 Beasts walk out at a layer now, which is the whole point of the change below.
+  // 出 Beasts walk out at a layer, which is the whole point of the change below.
   for (const b of BEASTS) add(atLayer(b.realm, b.layer));
-  for (const st of STANCES) add(at(st.realm));
-  for (const a of ARTS) add(at(a.realm));
-  for (const rs of REALM_SETS) add(at(rs.realm));
+  // 勢 器 And so, now, do the stance and the lineage. See STANCE_LAYER, LINEAGE_LAYER.
+  for (const st of STANCES) add(atLayer(st.realm, STANCE_LAYER));
+  for (const rs of REALM_SETS) add(rs.realm === 1 ? at(2) : atLayer(rs.realm, LINEAGE_LAYER));
+  /**
+   * 訣 誤 An art is the warden's own, so it is held the moment that warden falls, which
+   * is the *last* layer of its realm. This table counted it at the realm's arrival, a
+   * whole realm early, which put all nine of them in the week they were furthest from.
+   * Week one read 37 and it was never 37.
+   */
+  for (const a of ARTS) add(atLayer(a.realm, LAYERS_PER_REALM - 1));
 
   /**
    * 境外 And the heavens, which arrive after the summit and are the only reason this

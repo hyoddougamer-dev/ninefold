@@ -20,7 +20,7 @@ export function Loadout({ state, onStance, onSequence }: {
   onStance: (key: string | null) => void;
   onSequence: (keys: string[]) => void;
 }) {
-  const stances = stanceChoices(state.realm);
+  const stances = stanceChoices(state.realm, state.layer);
   const held = artsHeld(state.killed);
   const placed = state.sequence;
   const spare = held.filter((a) => !placed.includes(a.key));
@@ -50,8 +50,8 @@ export function Loadout({ state, onStance, onSequence }: {
           </div>
           {state.stance && (
             <p className="stancetext">
-              {stanceChoices(state.realm).find((s) => s.key === state.stance)?.text}
-              <em>{stanceChoices(state.realm).find((s) => s.key === state.stance)?.wants}</em>
+              {stances.find((s) => s.key === state.stance)?.text}
+              <em>{stances.find((s) => s.key === state.stance)?.wants}</em>
             </p>
           )}
           {!state.stance && <p className="faint small">{LOADOUT.pickStance}</p>}

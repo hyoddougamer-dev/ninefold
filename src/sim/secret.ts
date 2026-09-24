@@ -226,7 +226,8 @@ export function open(s: State, which: 0 | 1, seed: number): State {
     const from = pool[pool.length - 1] ?? pool[0];
     const item = from
       ? rollDrop(from, out.realm, seed ^ 0x51ed2701,
-        { ...fortuneOf(out), chance: 1, always: true, luck: (fortuneOf(out).luck ?? 1) + 1.5 })
+        { ...fortuneOf(out), chance: 1, always: true, luck: (fortuneOf(out).luck ?? 1) + 1.5 },
+        out.layer)
       : null;
     if (item) {
       const limit = chestLimit(out.unlocked,

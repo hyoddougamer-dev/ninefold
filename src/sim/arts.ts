@@ -1,7 +1,8 @@
 import {
-  ART_BY_KEY, ARTS, SEQUENCE_SLOTS, STANCE_BY_KEY, WARDEN_ART,
+  ART_BY_KEY, ARTS, SEQUENCE_SLOTS, STANCE_BY_KEY, STANCE_LAYER, WARDEN_ART,
   stancesFor, type Art, type Stance,
 } from '../data/arts.ts';
+import { LAYERS_PER_REALM } from './balance.ts';
 
 /**
  * What a cultivator may use, and what they have chosen.
@@ -14,6 +15,8 @@ import {
 
 export interface Loadout {
   readonly realm: number;
+  /** 層 Where in the realm they stand, because a stance walks out part way up it. */
+  readonly layer?: number;
   readonly killed: Readonly<Record<string, number>>;
   readonly stance: string | null;
   readonly sequence: readonly string[];
@@ -28,8 +31,12 @@ export function artsHeld(killed: Readonly<Record<string, number>>): readonly Art
 export function stanceOf(l: Loadout): Stance | null {
   if (!l.stance) return null;
   const s = STANCE_BY_KEY[l.stance];
-  return s && s.realm <= l.realm ? s : null;
+  return s && held(s, l.realm, l.layer) ? s : null;
 }
+
+/** 層 Reached the realm below it, or far enough up its own. See STANCE_LAYER. */
+const held = (s: Stance, realm: number, layer = LAYERS_PER_REALM) =>
+  s.realm < realm || (s.realm === realm && layer >= STANCE_LAYER);
 
 /**
  * The sequence as it will actually run: always SEQUENCE_SLOTS long, with an empty slot
@@ -66,13 +73,13 @@ export function validateSequence(raw: unknown, killed: Readonly<Record<string, n
     .filter((a): a is Art => a !== null).map((a) => a.key);
 }
 
-export function validateStance(raw: unknown, realm: number): string | null {
+export function validateStance(raw: unknown, realm: number, layer?: number): string | null {
   if (typeof raw !== 'string') return null;
   const s = STANCE_BY_KEY[raw];
-  return s && s.realm <= realm ? s.key : null;
+  return s && held(s, realm, layer) ? s.key : null;
 }
 
 /** Every stance this cultivator could stand in, for the screen that lists them. */
-export function stanceChoices(realm: number): readonly Stance[] {
-  return stancesFor(realm);
+export function stanceChoices(realm: number, layer?: number): readonly Stance[] {
+  return stancesFor(realm, layer);
 }
