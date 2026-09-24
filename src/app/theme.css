@@ -536,8 +536,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 畫 The realm's painting, filling the stage above the floor line, dimmed so a lit
    cultivator and a painted creature both still read against it. The floor is the bottom
    12.7% of the stage and the scene draws it, so the painting stops there. */
-.skyline { position: absolute; left: 0; right: 0; top: 0; bottom: 12.7%; width: 100%;
-           height: auto; min-height: 87.3%; object-fit: cover; object-position: center 62%;
+.skyline { position: absolute; inset: 0; width: 100%;
+           height: 100%; object-fit: cover; object-position: center 72%;
            opacity: .62; filter: saturate(.85) brightness(.66); }
 .scene svg { display: block; width: 100%; height: 100%; }
 
@@ -546,16 +546,23 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    cultivator's crossed legs end a fifth of the way up theirs, the beast fills its own. */
 /* 闊 The gap between them gives way before they do: 74 pixels is a quarter of a 320px
    phone, and that quarter was coming out of the fighters. */
-.duel { position: absolute; inset: 0; display: grid;
-        grid-template-columns: 1fr clamp(20px, 11vw, 74px) 1fr;
-        align-items: end; padding: 0 6px calc(.127 * var(--stage-h)); }
+/* 近 A row rather than two halves.
+   As a grid of 1fr gutter 1fr each fighter was centred in its own half, which at 360
+   wide left 117 pixels of empty floor between them: two paintings hung on a wall rather
+   than a fight. Worse, the half was also the *cap* on how big either of them could be,
+   so the cultivator came out 122 pixels tall on a 400 pixel stage however large the
+   painting was. A row lets each of them be its own size, stand next to the other, and
+   give the middle up first when the phone is narrow. */
+.duel { position: absolute; inset: 0; display: flex; align-items: flex-end;
+        justify-content: center; padding: 0 6px calc(.127 * var(--stage-h)); }
 /* 塞 min-width: 0, and it is the whole bug Bruno photographed.
    A grid item will not shrink below its content by default, so a 132px painting in a
    116px half did not overflow its cell: it *widened* the column, pushed the whole row
    past the stage, and hung the beast off the right of the screen. 巨蟹 the giant crab
    went 92 pixels off at 320 wide. Nothing in the build could see it, because nothing had
    ever opened the arena at anything but 400. 鬥查 npm run arena does now. */
-.fighter { position: relative; display: grid; place-items: center; min-width: 0; }
+.fighter { position: relative; display: grid; place-items: center; min-width: 0;
+           flex: 0 1 auto; }
 /* The flash hangs off .art, so .art has to be the thing it measures itself against:
    anchored on .fighter it covered the whole grid cell instead of the body. */
 .fighter .art { display: block; position: relative; }
@@ -573,7 +580,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    is allowed. The negative margin is the same eleventh of the box that is glow and
    nothing else, so it goes on scaling with the box: 修 the painting sits inside the aura
    at 16% from the top and 70% tall, so the bottom fourteen per cent is glow. */
-.you .art { --fig: min(200px, 100%); --dead: .14;
+.you .art { --fig: clamp(130px, 44vw, 232px); --dead: .10;
             width: var(--fig); aspect-ratio: 1 / 1; height: auto;
             margin-bottom: calc(-1 * var(--dead) * var(--fig)); }
 .foe .art { width: 94px; height: 94px; margin-bottom: 18px;
@@ -586,11 +593,29 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 收 Capped on both axes and allowed to pick whichever runs out first, so a crab that is
    wide and a crane that is tall are both whole, at every width. */
 .foe .beastcut { display: block; margin: 0 auto; width: auto; height: auto;
-                 max-width: 100%; max-height: clamp(84px, 32vw, 118px); }
+                 max-width: 42vw; max-height: clamp(100px, 38vw, 148px); }
 /* 王 A warden is the fight a realm is remembered for, so it stands over the cultivator.
    A common stands level with her: it was drawn on the same sheet at the same size, and
    left at one height a giant crab ended up bigger than the person fighting it. */
-.foe .art[data-warden='true'] .beastcut { max-height: clamp(108px, 42vw, 156px); }
+.foe .art[data-warden='true'] .beastcut { max-height: clamp(130px, 50vw, 190px); }
+
+/* 影 A shadow where each of them meets the ground.
+   Without one both fighters are stuck on: the beast's claws and her knees end, and the
+   floor begins, with nothing in between. It is an ink shadow rather than a cast one,
+   wide and soft and directly under them, because nothing in these paintings has a light
+   source and inventing one would light the whole scene wrong. */
+.fighter .art::before {
+  content: ''; position: absolute; left: 50%; translate: -50% 0;
+  width: 104%; height: 26px; border-radius: 50%; pointer-events: none;
+  /* 霧 Two washes, not one. The dark alone was invisible, because the ground it falls on
+     is already almost black: a shadow needs something to be darker *than*. So a breath of
+     pale vapour goes down first, wider than they are, and the contact is dark inside it. */
+  background: radial-gradient(closest-side, rgba(6,5,4,.85), rgba(6,5,4,0) 62%),
+              radial-gradient(closest-side, rgba(226,214,190,.13), rgba(226,214,190,0));
+}
+.you .art::before { bottom: calc(var(--dead) * var(--fig) - 5px); width: 74%; }
+.foe .art::before { bottom: -5px; }
+.arena[data-over='true'] .fighter .art::before { opacity: .5; }
 
 .fighter[data-hit='true'] .art { animation: shake .26s ease-out; }
 /* The flash is the colour of whoever *threw* the blow, not of whoever wears it. */
@@ -621,7 +646,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .arena[data-heavy='true'] .stage { animation: shake .24s ease-out; }
 
 /* 擊 The mark thrown across the gap, in the colour of whoever threw it. */
-.gap { position: relative; height: 118px; margin-bottom: 18px; }
+.gap { position: relative; height: 118px; margin-bottom: 18px;
+       flex: 0 0 clamp(16px, 7vw, 56px); }
 .arena[data-by='player'] .gap { color: var(--jade); }
 .arena[data-by='beast'] .gap { color: var(--cinnabar); }
 .clash i { position: absolute; left: -34px; right: -34px; top: 46%; height: 2px;

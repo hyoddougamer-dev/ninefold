@@ -131,8 +131,8 @@ for (const width of WIDTHS) {
     if (m.foe.r > m.stage.r - 1) fail(where, `the beast runs ${Math.round(m.foe.r - m.stage.r)}px off the right edge`);
     if (m.foe.l < m.stage.l + 1) fail(where, `the beast runs ${Math.round(m.stage.l - m.foe.l)}px off the left edge`);
     if (m.you.l < m.stage.l - 1) fail(where, 'the cultivator runs off the left edge');
-    // 立 On the same line. The portrait's painting ends 14% above its own box.
-    const youFoot = m.you.b - m.you.h * 0.14;
+    // 立 On the same line. 滲 the cut put the figure's seat a tenth above its own box.
+    const youFoot = m.you.b - m.you.h * 0.10;
     if (Math.abs(youFoot - m.floor) > 8) fail(where, `the cultivator stands ${Math.round(youFoot - m.floor)}px off the floor`);
     if (Math.abs(m.foe.b - m.floor) > 8) fail(where, `the beast stands ${Math.round(m.foe.b - m.floor)}px off the floor`);
     // 隔 Not touching.

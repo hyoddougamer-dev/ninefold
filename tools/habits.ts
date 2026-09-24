@@ -211,7 +211,17 @@ function spendTree(s: State, branch: Path | undefined): State {
 }
 
 
-export function play(h: Habit, maxDays = 400): Run {
+/**
+ * 看 A visit, handed out as it begins, before anything on it has been done.
+ *
+ * 忙 tools/busy.ts asks a different question of the same walk: not how long the climb
+ * takes, but how much there is to do on the way up it. The alternative was a second
+ * simulation that plays *almost* the same way, which would answer about a cultivator
+ * this game does not have. So there is one walk and it is watched.
+ */
+export type Watcher = (day: number, s: State) => void;
+
+export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   let s = newState(T0);
   let t = T0;
   const tick = DAY / h.checks;
@@ -230,6 +240,8 @@ export function play(h: Habit, maxDays = 400): Run {
     }
     t += tick;
     s = advance(s, t);
+
+    watch?.((t - T0) / DAY, s);
 
     s = spendTree(s, h.branch);
 

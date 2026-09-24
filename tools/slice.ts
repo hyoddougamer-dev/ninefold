@@ -37,6 +37,12 @@ const CIRCLE = 0.84;
 /** 剪 The longest side a cut-out creature is written at. It stands in a scene, not in a
     46px disc, so it is given more room than 牌 the plate would ever need. */
 const CUT_MAX = 720;
+/** 滲 How far the paper is kept around the last stroke of 修 the cultivator, in pixels. */
+const SPREAD = 9;
+/** 暗 How much light the fringe keeps where it is fully transparent. */
+const DIM = 0.42;
+/** 緣 The same, for a creature's keyed rim, which is a narrower band. */
+const RIM = 0.55;
 /** 獸 A creature is square and small on screen. 境 a realm is a wide card background. */
 const OUT = {
   beast: { w: 512, h: 512 }, realm: { w: 768, h: 432 },
@@ -235,33 +241,124 @@ function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; 
  * inside 光 the aura the game draws behind him, that reads as a painting the lamp is
  * finding rather than a card someone put down.
  */
-async function vignette(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
+/**
+ * 滲 The cultivator's edge, which is not an edge.
+ *
+ * 誤 Two things were tried first and both are visible in Bruno's photographs. 剪 the key
+ * that works on a creature shreds her: the seventh came back with her face as a blot and
+ * the ninth, which is half bare paper on purpose, came back as three scraps. So she was
+ * cut as a circle of paper faded at the rim, and at full size on a dark ground that is a
+ * glowing coin with somebody inside it: *"está um badge ampliado e mal cortado
+ * circular."* A circle is the one shape a brush never puts round a person.
+ *
+ * 法 What ends a brush painting is the ink running out. So the alpha here is the ink
+ * itself, blurred wide: where there is paint anywhere nearby the paper stays, and it
+ * fades along the figure's own silhouette rather than along a circle, a dozen pixels out
+ * from the last stroke. The fringe loses light as it loses opacity, because paper that
+ * merely turns transparent still ends in a pale rim against a dark ground, and a pale rim
+ * is the coin again.
+ *
+ * 淡 The ramp is scaled by the panel's own strongest ink, so the ninth cultivator, who is
+ * meant to be barely there, is kept barely there instead of being wiped off.
+ */
+async function bleed(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
   const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels: ch } = info;
-  const rgba = Buffer.alloc(w * h * 4);
-  /** Where the ellipse is still solid, and where it has finished fading. */
-  const SOLID = 0.7;
-  const GONE = 1.02;
+
+  // 紙 The paper, read off the border where the figure is not.
+  const edge: number[][] = [[], [], []];
+  const band = Math.max(3, Math.round(Math.min(w, h) * 0.035));
   for (let y = 0; y < h; y++) {
-    const ny = (y / (h - 1)) * 2 - 1;
     for (let x = 0; x < w; x++) {
-      const nx = (x / (w - 1)) * 2 - 1;
-      const r = Math.sqrt(nx * nx + ny * ny);
-      const t = (GONE - r) / (GONE - SOLID);
-      const a = t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+      if (x > band && x < w - band && y > band && y < h - band) continue;
       const i = (y * w + x) * ch;
-      const j = (y * w + x) * 4;
-      rgba[j] = data[i];
-      rgba[j + 1] = data[i + 1];
-      rgba[j + 2] = data[i + 2];
-      rgba[j + 3] = Math.round(a * 255);
+      edge[0].push(data[i]); edge[1].push(data[i + 1]); edge[2].push(data[i + 2]);
     }
   }
-  const scale = Math.max(w, h) > CUT_MAX ? CUT_MAX / Math.max(w, h) : 1;
+  const mid = (a: number[]) => { a.sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
+  const pr = mid(edge[0]), pg = mid(edge[1]), pb = mid(edge[2]);
+  const pl = 0.299 * pr + 0.587 * pg + 0.114 * pb;
+  const prg = pr - pg, pgb = pg - pb;
+
+  const ink = Buffer.alloc(w * h);
+  for (let i = 0, j = 0; j < w * h; i += ch, j++) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const l = 0.299 * r + 0.587 * g + 0.114 * b;
+    const d = Math.max(0, pl - l) + Math.abs(r - g - prg) * 0.8 + Math.abs(g - b - pgb) * 0.8;
+    ink[j] = d > 255 ? 255 : Math.round(d);
+  }
+
+  const soft = await sharp(ink, { raw: { width: w, height: h, channels: 1 } })
+    .blur(SPREAD).toColourspace('b-w').raw().toBuffer();
+  if (soft.length !== w * h) throw new Error(`the spread is ${soft.length} bytes for a ${w} by ${h} panel`);
+
+  const sorted = Array.from(ink).sort((a, b) => a - b);
+  const gentle = Math.max(0.3, Math.min(1, sorted[Math.floor(sorted.length * 0.99)] / 110));
+  // 底 A floor under the ramp. Scaled all the way down for a faint panel, the low end
+  // lands in the paper's own noise and the whole leaf comes back faintly opaque, which is
+  // a pale rectangle round the figure rather than a figure. 渡劫 the ninth was exactly
+  // that on the stage: a violet smear inside a box.
+  const lo = Math.max(3.5, 5 * gentle), hi = Math.max(13, 22 * gentle);
+  const alpha = Buffer.alloc(w * h);
+  for (let j = 0; j < w * h; j++) {
+    const t = (soft[j] - lo) / (hi - lo);
+    alpha[j] = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
+  }
+
+  // 框 The figure's own box and a tenth of it for air, so the file is the person. The
+  // disc it replaced was two thirds paper, which is why she read as half the size of the
+  // creature opposite her while both files were the same number of pixels.
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (ink[y * w + x] > 30 * gentle) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) throw new Error('nothing is painted in this panel');
+  const mx = Math.round((x1 - x0) * 0.1), my = Math.round((y1 - y0) * 0.1);
+  const crop = {
+    left: Math.max(0, x0 - mx), top: Math.max(0, y0 - my),
+    width: Math.min(w, x1 + mx + 1) - Math.max(0, x0 - mx),
+    height: Math.min(h, y1 + my + 1) - Math.max(0, y0 - my),
+  };
+
+  // 邊 And whatever the ramp decides, the file's own border is empty.
+  // Nothing may reach the edge of the crop: an alpha that is still 30 there is a visible
+  // rectangle hanging in the air, and it costs one multiply to make that impossible.
+  const fade = Math.max(3, Math.round(Math.min(crop.width, crop.height) * 0.05));
+  const border = (x: number, y: number) => {
+    const d = Math.min(x - crop.left, crop.left + crop.width - 1 - x,
+                       y - crop.top, crop.top + crop.height - 1 - y);
+    const t = d / fade;
+    return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+  };
+
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0, j = 0; j < w * h; i += ch, j++) {
+    alpha[j] = Math.round(alpha[j] * border(j % w, Math.floor(j / w)));
+    // 方 Squared, because the fringe has to lose light faster than it loses opacity.
+    // Straight alpha left a pale band of bare paper a dozen pixels wide all round her,
+    // which against the dark ground is an outer glow: the coin again, with a soft edge.
+    const a = alpha[j] / 255;
+    const k = DIM + (1 - DIM) * a * a;
+    rgba[j * 4] = Math.round(data[i] * k);
+    rgba[j * 4 + 1] = Math.round(data[i + 1] * k);
+    rgba[j * 4 + 2] = Math.round(data[i + 2] * k);
+    rgba[j * 4 + 3] = alpha[j];
+  }
+  const long = Math.max(crop.width, crop.height);
+  const scale = long > CUT_MAX ? CUT_MAX / long : 1;
   await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
-    .resize(Math.round(w * scale), Math.round(h * scale))
+    .extract(crop)
+    .resize(Math.round(crop.width * scale), Math.round(crop.height * scale))
     .webp({ quality: 88, alphaQuality: 92 })
     .toFile(out);
+  return crop;
 }
 
 async function cutout(file: string, box: { left: number; top: number; width: number; height: number }, out: string) {
@@ -410,9 +507,15 @@ async function cutout(file: string, box: { left: number; top: number; width: num
   // where a row ends, and every other line of the creature dropped.
   const rgba = Buffer.alloc(w * h * 4);
   for (let i = 0, j = 0; j < w * h; i += ch, j++) {
-    rgba[j * 4] = data[i];
-    rgba[j * 4 + 1] = data[i + 1];
-    rgba[j * 4 + 2] = data[i + 2];
+    // 緣 The half-transparent rim loses light as well, the same way 滲 the cultivator's
+    // does. Every pixel the key was unsure about is paper, and paper at half opacity on
+    // a dark stage is a white line drawn round the animal. 獸王 the wardens are painted
+    // in mist and bone and wore it like a sticker's die-cut edge.
+    const a = mask[j] / 255;
+    const k = RIM + (1 - RIM) * a * a;
+    rgba[j * 4] = Math.round(data[i] * k);
+    rgba[j * 4 + 1] = Math.round(data[i + 1] * k);
+    rgba[j * 4 + 2] = Math.round(data[i + 2] * k);
     rgba[j * 4 + 3] = mask[j];
   }
   await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
@@ -479,7 +582,7 @@ async function cut(sheet: Sheet, file: string) {
     // 修 The cultivator is only ever wanted with the paper off: he stands inside an aura
     // the game draws, never on a disc, so there is no squared version to keep.
     if (sheet.kind === 'self') {
-      await vignette(file, box, out);
+      await bleed(file, box, out);
       written.push(out);
       continue;
     }

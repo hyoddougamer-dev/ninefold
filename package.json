@@ -35,7 +35,9 @@
     "screens": "node tools/shot-screens.mjs",
     "repaint": "tsx tools/repaint.ts",
     "artgaps": "tsx tools/artgaps.ts",
-    "arena": "node tools/arena.mjs"
+    "arena": "node tools/arena.mjs",
+    "busy": "tsx tools/busy.ts",
+    "worth": "tsx tools/worth.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

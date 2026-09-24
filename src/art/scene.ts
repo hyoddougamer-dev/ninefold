@@ -86,6 +86,15 @@ export function arenaScene(realm: number, painted = false): string {
         <stop offset="0" stop-color="${r.colour}" stop-opacity="0"/>
         <stop offset="1" stop-color="${r.colour}" stop-opacity=".26"/>
       </linearGradient>
+      <linearGradient id="floor${uid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0A0906" stop-opacity="0"/>
+        <stop offset=".42" stop-color="#0A0906" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#0A0906" stop-opacity=".94"/>
+      </linearGradient>
+      <radialGradient id="mist${uid}">
+        <stop offset="0" stop-color="${mix(r.colour, '#FFFFFF', 0.4)}" stop-opacity=".18"/>
+        <stop offset="1" stop-color="${r.colour}" stop-opacity="0"/>
+      </radialGradient>
       <linearGradient id="edge${uid}" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="${r.colour}" stop-opacity="0"/>
         <stop offset=".5" stop-color="${r.colour}" stop-opacity=".6"/>
@@ -97,7 +106,16 @@ export function arenaScene(realm: number, painted = false): string {
     ${painted ? '' : `<polygon points="${ridge(r.n * 7 + 1, W, 150, 7)}" fill="${far}" transform="translate(0 ${FLOOR - 206})"/>
     <polygon points="${ridge(r.n * 23 + 5, W, 122, 6)}" fill="${near}" transform="translate(0 ${FLOOR - 122})"/>`}
     <rect y="${FLOOR - 28}" width="${W}" height="28" fill="url(#haze${uid})"/>
-    <rect y="${FLOOR}" width="${W}" height="${H - FLOOR}" fill="#0D0B08"/>
-    <rect y="${FLOOR - 2}" width="${W}" height="2" fill="url(#edge${uid})"/>
+    <!-- 地 The ground, and there is no line in it.
+         It used to be a flat black bar with a lit rule along the top, which on a painted
+         backdrop is a stage front: the one thing on the screen saying the picture stopped
+         here. What a brush does instead is run out. So the painting goes on to the bottom
+         of the stage and the dark comes up to meet it, and the only thing at the line
+         they stand on is 霧 a smear of mist. -->
+    ${painted
+      ? `<rect y="${FLOOR - 40}" width="${W}" height="${H - FLOOR + 40}" fill="url(#floor${uid})"/>`
+      : `<rect y="${FLOOR}" width="${W}" height="${H - FLOOR}" fill="#0D0B08"/>
+         <rect y="${FLOOR - 2}" width="${W}" height="2" fill="url(#edge${uid})"/>`}
+    <ellipse cx="${W / 2}" cy="${FLOOR}" rx="${W * 0.5}" ry="11" fill="url(#mist${uid})"/>
   </svg>`;
 }

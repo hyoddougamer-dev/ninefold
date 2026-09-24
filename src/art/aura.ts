@@ -67,9 +67,19 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
 
   // 圓光 The halo is grouped and named so 動 the motion block can turn it, very slowly,
   // about the head it sits behind rather than about the middle of the picture.
-  const halos = r.halos === 0 ? '' : `<g class="halo" style="transform-origin:${S / 2}px ${(S * 0.42).toFixed(1)}px">${
+  /**
+   * 頭 Where the head is, which is not where it was.
+   *
+   * 圓光 A halo behind the chest is a plate, not a halo. The drawn figure sits low in its
+   * box and the painting used to as well, because the file was a disc of paper two thirds
+   * of which was not the person. 滲 the cut ends that: the file is now the figure, so she
+   * stands taller in the same box and her head is a quarter of the way down it instead of
+   * nearly half.
+   */
+  const head = painted ? S * 0.27 : S * 0.42;
+  const halos = r.halos === 0 ? '' : `<g class="halo" style="transform-origin:${S / 2}px ${head.toFixed(1)}px">${
     Array.from({ length: r.halos }, (_, i) =>
-      `<circle cx="${S / 2}" cy="${S * 0.42}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${((0.75 - i * 0.2) * (soft + 0.2)).toFixed(2)}" stroke-dasharray="${i % 2 ? '5 9' : '0'}"/>`,
+      `<circle cx="${S / 2}" cy="${head.toFixed(1)}" r="${(S * (0.17 + i * 0.09) * breath).toFixed(1)}" fill="none" stroke="${r.colour}" stroke-width="${(1.5 - i * 0.4).toFixed(1)}" stroke-opacity="${((0.75 - i * 0.2) * (soft + 0.2)).toFixed(2)}" stroke-dasharray="${i % 2 ? '5 9' : '0'}"/>`,
     ).join('')}</g>`;
 
   const core = mix(r.colour, '#FFFFFF', 0.25 + 0.6 * t);
@@ -95,8 +105,8 @@ export function portrait({ realm, pulse = 0, focus = false, who = null }: Portra
    * what every realm looked like before.
    */
   const body = painted
-    ? `<image href="${painted}" x="${(S * 0.19).toFixed(1)}" y="${(S * 0.16).toFixed(1)}"
-         width="${(S * 0.62).toFixed(1)}" height="${(S * 0.7).toFixed(1)}"
+    ? `<image href="${painted}" x="${(S * 0.11).toFixed(1)}" y="${(S * 0.11).toFixed(1)}"
+         width="${(S * 0.78).toFixed(1)}" height="${(S * 0.79).toFixed(1)}"
          preserveAspectRatio="xMidYMax meet"/>`
     : `<g filter="url(#b${uid})" transform="translate(${figOff.toFixed(1)} ${(figOff + S * 0.04).toFixed(1)}) scale(${(fig / 512).toFixed(4)})" fill="${core}">${figure}</g>`;
 
