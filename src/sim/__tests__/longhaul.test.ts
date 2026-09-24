@@ -15,8 +15,9 @@ import { playEndgame } from '../../../tools/endgame.ts';
  * 界 What it holds, and what it does not, written down so neither is a surprise. The
  * rule is held for eighty crossings, which is a little over a year of play. Measured
  * past that, a crossing passes a fortnight from about the hundredth, around a year and
- * three quarters in, and reads 32 days at the hundred and twentieth. That horizon is
- * the next thing to look at, and it is a slope rather than the cliff this replaced.
+ * three quarters in, and reads 32 days at the hundred and twentieth. A slope rather
+ * than the cliff this replaced, and parked on purpose: the ask is three months of
+ * content with room for expansions, and an expansion is what will change this endgame.
  *
  * It lives in its own file because eighty crossings are the slowest single thing the
  * suite plays, and a file is what vitest runs beside the others.

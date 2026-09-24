@@ -231,10 +231,17 @@ const CLOCK = (() => {
     const n = byWeek.get(w) ?? 0;
     const bar = Math.round((n / peak) * 100);
     const mark = w === 12 ? '<span class="faint"> ← three months</span>' : '';
+    // 期 The week turns every seven days from the first, so every row has one. It is a
+    // column of its own rather than a number added to the count: a new quarry is the
+    // same beasts pointed at differently, and folding it into "new things" would make
+    // this table flatter than the game is.
     return `<tr><td>week ${w + 1}<span class="faint"> · day ${w * 7}–${w * 7 + 6}</span>${mark}</td>
       <td style="text-align:right">${n || '—'}</td>
+      <td style="text-align:center" class="cjk">期</td>
       <td><span class="wk"><i style="width:${bar}%"></i></span></td></tr>`;
   }).join('');
+  /** 期 The weeks inside the first three months with nothing new named in them. */
+  const quiet = Array.from({ length: 13 }, (_, w) => w).filter((w) => !byWeek.get(w));
   return {
     rows, run,
     r4: Math.round(at(4)),
@@ -243,6 +250,7 @@ const CLOCK = (() => {
     done: Math.round(run.days),
     name: run.habit.name,
     firstHeaven: Math.round(heavenDay[0] ?? 0),
+    quiet: quiet.map((w) => w + 1),
     heavenDays: heavenDay.map((d) => Math.round(d)),
   };
 })();
@@ -253,6 +261,7 @@ const CLOCK_LAST = CLOCK.last;
 const CLOCK_DONE = CLOCK.done;
 const ACTIVE_NAME = CLOCK.name;
 const CLOCK_FIRST_HEAVEN = CLOCK.firstHeaven;
+const CLOCK_QUIET = CLOCK.quiet;
 
 /** 閒 Where a realm's qi goes, and how long the bar stands still. */
 const IDLE = walkAll();
@@ -1980,7 +1989,8 @@ const page = `<meta charset="utf-8">
     </table>
     <p class="t">Depois disso abrem-se os nove céus, um a cada três travessias. Para quem
       joga com regularidade, o <b>último nome novo do jogo chega ao dia ${CLOCK_LAST}</b>.
-      Três meses são o dia 91.</p>
+      Três meses são o dia 91. Nas semanas entre um céu e o seguinte o 期 muda na mesma,
+      todas as segundas-feiras.</p>
 
     <h3>O que mudou na última noite</h3>
     <div class="rows">
@@ -3502,7 +3512,8 @@ const page = `<meta charset="utf-8">
       stance, an art or a lineage of gear, against the days the ${ACTIVE_NAME} cultivator
       actually reaches each realm:</p>
     <table>
-      <tr><th>week</th><th style="text-align:right">new things</th><th>&nbsp;</th></tr>
+      <tr><th>week</th><th style="text-align:right">new things</th>
+          <th style="text-align:center">the week</th><th>&nbsp;</th></tr>
       ${CLOCK_ROWS}
     </table>
     <p class="t">The first reading of this table had three uncomfortable answers in it,
@@ -3529,6 +3540,14 @@ const page = `<meta charset="utf-8">
       Thirteen weeks is day 91; the last named thing in the game now arrives on day
       ${CLOCK_LAST}. Everything in this table is read off the same two harnesses the rest
       of the page is written from, so it moves when the game moves.</div>
+    <p class="t">期 And the weeks in between. Inside the thirteen,
+      ${CLOCK_QUIET.length === 0 ? 'every week names something new'
+        : `${CLOCK_QUIET.length === 1 ? 'week' : 'weeks'} ${CLOCK_QUIET.join(' and ')}
+      ${CLOCK_QUIET.length === 1 ? 'names' : 'name'} nothing new, because a heaven comes
+      every ten or eleven days and a week is seven`}. That is what 期 the week is for: a
+      quarry, a herb and a room of 秘境 that turn every Monday whether anything arrives or
+      not. It is on purpose that nothing more was added to fill them. Content held back is
+      content an expansion can bring.</p>
   </section>
 
   <section class="sec" id="ladder">
@@ -3868,9 +3887,10 @@ const page = `<meta charset="utf-8">
       intact. <code>longhaul.test.ts</code> plays eighty crossings on every run.</div>
     <div class="warn"><b>界 And where it still slopes.</b> Past eighty crossings, a little
       over a year of play, the marks lengthen again: a fortnight from about the
-      hundredth, 32 days at the hundred and twentieth. A slope rather than a cliff, and
-      it is the next thing to look at, written here so that nobody meets it by
-      surprise.</div>
+      hundredth, 32 days at the hundred and twentieth. A slope rather than a cliff. It is
+      left there on purpose for now. The ask is three months of content with room for
+      expansions, and this starts more than a year in, inside the endgame an expansion
+      will change.</div>
 
     <h3>新 And every system introduces itself, once</h3>
     <p class="t">示 the advice line answers <em>why am I stuck</em>. These answer the other
