@@ -58,6 +58,18 @@ export function floorQi(s: State, floor = standingFloor(s)): number {
  * because a floor falls once: there is nothing here to farm, and the next floor is
  * always harder than the last.
  */
+/**
+ * 材 What a floor pays in material to *this* cultivator: the table, the heavens' 塔 cards,
+ * the seals, the record and every card that touches material.
+ *
+ * 誤 Two screens used to work it out for themselves, as the table times the seals, and
+ * both said less than the save was credited: the tower card's "pays" line before the
+ * climb, and the arena's verdict after it. One function, read by all three.
+ */
+export function floorMaterial(s: State, floor: number): number {
+  return lootTaken(s, floorLoot(floor) * towerBonus(s.awakened));
+}
+
 export function clearFloor(s: State, floor: number): State {
   if (!towerOpen(s) || floor !== standingFloor(s)) return s;
   return {
@@ -68,7 +80,7 @@ export function clearFloor(s: State, floor: number): State {
     // they pay only to somebody climbing. It is applied to the base rather than to the
     // result, so the record and the seals still compound on top of it the way they do
     // for every other kill. See towerBonus in sim/awaken.ts.
-    materials: s.materials + lootTaken(s, floorLoot(floor) * towerBonus(s.awakened)),
+    materials: s.materials + floorMaterial(s, floor),
   };
 }
 

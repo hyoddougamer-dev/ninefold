@@ -12,10 +12,10 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { floorLoot, lootBonus } from '../../sim/tower.ts';
 import { ARENA } from '../copy.ts';
-import { lootTaken } from '../../sim/trials.ts';
-import { lootFrom, seenBounty } from '../../sim/combat.ts';
+import { floorMaterial, lootTaken } from '../../sim/trials.ts';
+import { isQuarry, quarryOwed } from '../../sim/week.ts';
+import { lootFrom, quarryBounty, seenBounty } from '../../sim/combat.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -141,9 +141,17 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
     ? { index: marksOf(before + 1) - 1 }
     : null;
   const arts = f.arts.map((k) => ART_BY_KEY[k]).filter(Boolean);
+  /**
+   * 期 The week's first kill of its quarry pays qi, and the arena never said so: the
+   * number moved and nothing on the screen said why. It is asked of the state before the
+   * kill, like everything else here.
+   */
+  const weekly = outcome.won && battle.floor === undefined && isQuarry(state, beast) && quarryOwed(state)
+    ? quarryBounty(beast) : 0;
 
   return (
-    <div className="arena" data-over={over} data-by={f.striker} data-heavy={!over && f.heavy}>
+    <div className="arena" data-over={over} data-won={over && outcome.won} data-lost={over && !outcome.won}
+         data-by={f.striker} data-heavy={!over && f.heavy}>
       <div className="stage">
         {/* 畫 The realm's own landscape, behind the fight, where there is one. The drawn
             sky and ridges stand down for it: see art/scene.ts. */}
@@ -166,9 +174,12 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
         <div className="duel">
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
             <span className="art"><Svg html={portrait({ realm, pulse, focus: true, who: state.self })} /></span>
+            {/* 勝 A ring of her own light going out from her when it is over and she won. */}
+            {over && outcome.won && <span className="victory" aria-hidden="true"><i /><i /></span>}
+            {hit === 'player' && !f.missed && <Sparks key={`sp${beat}`} />}
             {hit === 'player' && (
               f.missed
-                ? <span className="dmg miss" key={`p${beat}`}>turned aside</span>
+                ? <span className="dmg miss" key={`p${beat}`}>{ARENA.missed}</span>
                 : <span className="dmg" key={`p${beat}`}>−{num(f.damage)}</span>
             )}
           </div>
@@ -206,6 +217,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
                          alt={beast.name} />
                 )}
             </span>
+            {hit === 'beast' && <Sparks key={`sb${beat}`} />}
             {hit === 'beast' && (
               <span className="dmg" key={`b${beat}`}>−{num(f.damage)}</span>
             )}
@@ -247,15 +259,23 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
           <span className="han" style={{ color: outcome.won ? 'var(--jade)' : 'var(--cinnabar)' }}>
             {say.han}
           </span>
-          <p>
-            {say.text}
-            {outcome.won && battle.floor !== undefined && (
-              ` · +${num(floorLoot(battle.floor) * lootBonus(battle.floor - 1))} 材`
-              + (battle.qi ? ` · +${num(battle.qi)} qi` : '')
-            )}
-            {outcome.won && battle.floor === undefined
-              && ` · +${num(lootTaken(state, lootFrom(state, beast)))} 材`}
-          </p>
+          <p>{say.text}</p>
+          {/* 得 What it paid, as things you can see arrive rather than the tail of a
+              sentence. 材 is the same number the save is credited, from the same function. */}
+          {outcome.won && (
+            <div className="gains">
+              <span className="gain" style={{ animationDelay: '.25s' }}>
+                +{num(battle.floor !== undefined
+                  ? floorMaterial(state, battle.floor)
+                  : lootTaken(state, lootFrom(state, beast)))} <b className="cjk">材</b>
+              </span>
+              {(battle.qi ?? 0) + bounty + weekly > 0 && (
+                <span className="gain qi" style={{ animationDelay: '.4s' }}>
+                  +{num((battle.qi ?? 0) + bounty + weekly)} <b>qi</b>
+                </span>
+              )}
+            </div>
+          )}
 
           {/* 熟 A mark earned is the most valuable thing a kill can do in the first hour
               and the arena used to let it pass in silence. It is permanent, it is the
@@ -276,6 +296,15 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
                     ? ARENA.firstSight(num(bounty), beast.han)
                     : ARENA.earned(beast.han, MARK_INFO[earned.index].pays)}
                 </i>
+              </span>
+            </p>
+          )}
+          {weekly > 0 && (
+            <p className="mark" data-week="true">
+              <b className="cjk">期</b>
+              <span>
+                <em>{ARENA.weekHead}</em>
+                <i>{ARENA.week(num(weekly))}</i>
               </span>
             </p>
           )}
@@ -301,10 +330,25 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
           )}
           <button className="act" onClick={onClose}>
             {outcome.won ? '收' : '退'}{' '}
-            <span>{outcome.won ? 'Collect' : 'Withdraw'}</span>
+            <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
           </button>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * 墨 Ink thrown off a blow where it lands: six drops on six headings, each its own
+ * distance. It is remounted by its key on every beat, so every hit throws its own.
+ */
+function Sparks() {
+  return (
+    <span className="sparks" aria-hidden="true">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <i key={i} style={{ ['--a' as string]: `${i * 60 + (i % 2 ? 18 : -12)}deg`,
+                            ['--d' as string]: `${26 + (i * 7) % 20}px` }} />
+      ))}
+    </span>
   );
 }

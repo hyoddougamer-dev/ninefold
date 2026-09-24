@@ -1147,6 +1147,12 @@ export const ARENA = {
     `+${qi} qi for the first ${han} you ever killed, once and never again. `
     + 'Every beast in the game pays this the first time it falls.',
   chestFull: 'Chest is full. This one is lost.',
+  /** 期 The week's quarry, the first kill of the week. */
+  weekHead: 'The week\u2019s quarry',
+  week: (qi: string) => `+${qi} qi for the first one this week. Every one this week pays double 材 material.`,
+  missed: 'turned aside',
+  collect: 'Collect',
+  withdraw: 'Withdraw',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in
    *  silence is one the player never learns to go looking for. */
   earned: (han: string, pays: string) => `${han} · ${pays}, for good`,

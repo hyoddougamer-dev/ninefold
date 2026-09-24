@@ -6,8 +6,8 @@ import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
 import { TOWER_QI_HOURS } from '../../sim/balance.ts';
-import { SEAL_LOOT, floorBeast, floorLoot, floorPower, lootBonus, seals } from '../../sim/tower.ts';
-import { floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
+import { SEAL_LOOT, floorBeast, floorPower, seals } from '../../sim/tower.ts';
+import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
 import { furnace, tower } from '../../art/trials.ts';
@@ -82,7 +82,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
           <span className="faint">{TRIALS.best(state.tower)}</span>
           <span className="mono" style={{ color: 'var(--gold)' }}>
             {TRIALS.pays(
-              num(Math.round(floorLoot(floor) * lootBonus(state.tower))),
+              num(floorMaterial(state, floor)),
               num(floorQi(state, floor)),
             )}
           </span>

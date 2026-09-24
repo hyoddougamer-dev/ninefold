@@ -670,8 +670,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   content: ''; position: absolute; inset: 12%; border-radius: 50%; mix-blend-mode: screen;
   opacity: 0; animation: flash .3s ease-out; pointer-events: none;
 }
-.you[data-hit='true'] .art::after { background: var(--cinnabar); }
-.foe[data-hit='true'] .art::after { background: var(--jade); }
+/* 暈 A glow, not a disc. It was a flat circle with a hard rim, which over a painted
+   figure is a red sticker slapped on her for a fifth of a second. */
+.you[data-hit='true'] .art::after { background: radial-gradient(closest-side, var(--cinnabar), transparent); }
+.foe[data-hit='true'] .art::after { background: radial-gradient(closest-side, var(--jade), transparent); }
 .you[data-strike='true'] .art { animation: lungeR .22s ease-out; }
 .foe[data-strike='true'] .art { animation: lungeL .22s ease-out; }
 @keyframes lungeR { 0%,100% { transform: translateX(0); } 35% { transform: translateX(18px) scale(1.05); } }
@@ -715,6 +717,54 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
        animation: rise .8s ease-out forwards; }
 .you .dmg { color: var(--cinnabar); }
 .foe .dmg { color: var(--jade); }
+
+/* 墨 Ink off a blow. Six drops from the middle of whoever took it, each on its own
+   heading, in the colour of whoever threw it. */
+.sparks { position: absolute; left: 50%; top: 42%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.sparks i { position: absolute; width: 5px; height: 5px; margin: -2.5px; border-radius: 50%;
+            background: currentColor; box-shadow: 0 0 8px currentColor;
+            animation: spark .42s cubic-bezier(.2,.8,.3,1) forwards; }
+.you .sparks { color: var(--cinnabar); }
+.foe .sparks { color: var(--jade); }
+.arena[data-heavy='true'] .sparks i { width: 7px; height: 7px; margin: -3.5px; }
+@keyframes spark {
+  0% { transform: rotate(var(--a)) translateX(0) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--a)) translateX(var(--d)) scale(.3); opacity: 0; }
+}
+/* 重 A heavy blow says so in the number too, not only in the shake. */
+.arena[data-heavy='true'] .dmg { font-size: 30px; }
+
+/* 敗 The end of it, drawn. "It will not rise again" over a beast still standing was the
+   sentence and the picture disagreeing. The loser goes to ink: grey, sinking, fading. */
+.arena[data-won='true'] .foe .art { animation: fallen 1s .1s ease-in forwards; }
+.arena[data-lost='true'] .you .art { animation: spent .9s .1s ease-out forwards; }
+@keyframes fallen {
+  0% { transform: translateY(0); filter: none; opacity: 1; }
+  100% { transform: translateY(10px) scaleY(.94); filter: grayscale(1) brightness(.45) blur(1.5px); opacity: .35; }
+}
+@keyframes spent {
+  100% { transform: translateY(4px); filter: grayscale(.7) brightness(.6); opacity: .7; }
+}
+/* 勝 Her own light, going out in two rings when she wins. */
+.victory { position: absolute; left: 50%; top: 45%; width: 0; height: 0; pointer-events: none; }
+.victory i { position: absolute; width: 150px; height: 150px; margin: -75px; border-radius: 50%;
+             border: 2px solid var(--jade); box-shadow: 0 0 24px var(--jade), inset 0 0 18px var(--jade);
+             opacity: 0; animation: bloom 1.2s .15s ease-out forwards; }
+.victory i + i { animation-delay: .38s; }
+/* 得 What it paid, arriving one after the other. */
+.gains { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.gain { font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 20px; color: var(--gold);
+        padding: 3px 13px; border-radius: 99px; background: color-mix(in srgb, var(--gold) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+        animation: gainin .45s cubic-bezier(.2,.9,.3,1.3) both; }
+.gain b { font-weight: 400; font-size: 15px; }
+.gain.qi { color: var(--jade); background: color-mix(in srgb, var(--jade) 12%, transparent);
+           border-color: color-mix(in srgb, var(--jade) 45%, transparent); }
+@keyframes gainin { from { opacity: 0; transform: translateY(8px) scale(.8); } }
+@media (prefers-reduced-motion: reduce) {
+  .sparks, .victory { display: none; }
+  .arena[data-won='true'] .foe .art, .arena[data-lost='true'] .you .art, .gain { animation: none; }
+}
 
 /* 命 The two lives, small and close to the feet. They are not the spectacle. */
 .feet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
@@ -764,7 +814,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   60% { transform: translateX(-3px); }
   80% { transform: translateX(2px); }
 }
-@keyframes flash { 0% { opacity: .5; } 100% { opacity: 0; } }
+@keyframes flash { 0% { opacity: .75; } 100% { opacity: 0; } }
 @keyframes rise {
   0% { transform: translate(-50%, 0); opacity: 0; }
   18% { opacity: 1; }

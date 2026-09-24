@@ -7,6 +7,7 @@ import { newState, type State } from '../state.ts';
 import { ladderBetween } from '../balance.ts';
 import { layersOpened } from '../time.ts';
 import { num } from '../format.ts';
+import { isQuarry } from '../week.ts';
 
 const T0 = 1_700_000_000;
 
@@ -83,6 +84,28 @@ describe('圍 the drive', () => {
     const driven = drive(hunter(3), rat, n, 99);
     expect(driven.material).toBe(byHand.materials - before);
     expect(driven.state.killed[rat.key]).toBe(byHand.killed[rat.key]);
+  });
+
+  /**
+   * 錄 期 The two places the promise above was broken, each only when it mattered: a
+   * drive across the hundredth kill paid the 熟 rate for kills made after 通, and a drive
+   * that was the week's first kill of its quarry never paid the week's qi.
+   */
+  it('pays what the taps would have paid across a mark, and the week\'s qi on the quarry', () => {
+    const s0 = hunter(3);
+    let quarries = 0;
+    for (const b of [1, 2, 3].flatMap((r) => commonsOf(r))) {
+      if (isQuarry(s0, b)) quarries++;
+      const s: State = { ...s0, killed: { ...s0.killed, [b.key]: 60 } };
+      let byHand = s;
+      for (let i = 0; i < 200; i++) byHand = takeKill(byHand, b);
+      const driven = drive(s, b, 200, 5);
+      expect(driven.material).toBe(byHand.materials - s.materials);
+      expect(driven.state.qi + driven.qiSpent).toBe(byHand.qi);
+      expect(driven.state.quarryWeek).toBe(byHand.quarryWeek);
+    }
+    // 空 A test that met no quarry measured half of what it says it does.
+    expect(quarries).toBeGreaterThan(0);
   });
 
   /**

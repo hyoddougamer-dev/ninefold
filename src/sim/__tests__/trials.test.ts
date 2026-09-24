@@ -9,7 +9,7 @@ import {
 import {
   PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
 } from '../furnace.ts';
-import { brew, canBrew, clearFloor, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
+import { brew, canBrew, clearFloor, floorMaterial, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
 import { isOpen, opensAt } from '../unlocks.ts';
 import { newState, power, validate, type State } from '../state.ts';
 import { num } from '../format.ts';
@@ -70,6 +70,24 @@ describe('塔 the Endless Tower', () => {
     expect(won.tower).toBe(13);
     expect(won.materials).toBeGreaterThan(s.materials);
     expect(clearFloor(won, 13)).toBe(won);
+  });
+
+  /**
+   * 材 The tower card and the arena both quoted the table times the seals, and the save
+   * was credited the record and the cards on top. A cultivator with mastered beasts and a
+   * heaven's 塔 card was told a floor paid a fraction of what it did.
+   */
+  it('quotes exactly what the save is credited, record and cards counted', () => {
+    const s: State = {
+      ...atCap(9), tower: 47,
+      killed: { rat: 100, hound: 100, frog: 100, serpent: 12 },
+      awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought', 'longstair'],
+    };
+    const won = clearFloor(s, 48);
+    expect(won.tower).toBe(48);
+    expect(won.materials - s.materials).toBe(floorMaterial(s, 48));
+    // And it is more than the table and the seals alone, or this test proves nothing.
+    expect(floorMaterial(s, 48)).toBeGreaterThan(floorLoot(48) * 1.15 ** 5);
   });
 
   it('pays in materials and in seals, and never in qi per second', () => {

@@ -1,7 +1,8 @@
 import type { Beast } from '../data/bestiary.ts';
 import { DRIVE_QI, ladderBetween } from './balance.ts';
 import { layersOpened } from './time.ts';
-import { lootFrom } from './combat.ts';
+import { lootFrom, quarryBounty } from './combat.ts';
+import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import { MARKS, marksOf } from './record.ts';
 import { lootTaken } from './trials.ts';
 import { isOpen } from './unlocks.ts';
@@ -132,7 +133,11 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   let dropsRolled = 0;
   let best: Item | null = null;
   for (let i = 0; i < kills; i++) {
-    material += lootTaken(s, lootFrom(s, b));
+    // 錄 Read at the count this kill is made at, not the count the drive began at. A
+    // drive of two hundred that crosses 通 at the hundredth kill pays the mastered rate
+    // for the other hundred, because tapping them would have.
+    const now = { ...s, killed: { ...s.killed, [b.key]: before + i } };
+    material += lootTaken(now, lootFrom(now, b));
     const item = rollDrop(b, s.realm, (seed + i * 2654435761) >>> 0, fortune, s.layer);
     if (!item) continue;
     dropsRolled++;
@@ -142,13 +147,18 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   const after = before + kills;
   const earned: number[] = [];
   for (let m = marksOf(before); m < marksOf(after); m++) earned.push(m);
+  // 期 And the week's first kill of its quarry pays its qi here too. A drive that was
+  // the week's first contact with the quarry used to swallow it: tapped, that first
+  // kill pays; driven, it paid nothing and the week still said it was owed.
+  const week = isQuarry(s, b) && quarryOwed(s);
 
   return {
     state: {
       ...s,
-      qi: s.qi - qiSpent,
+      qi: s.qi - qiSpent + (week ? quarryBounty(b) : 0),
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
+      quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
     },
     material, qiSpent, kills, dropsRolled, best, earned,
   };
