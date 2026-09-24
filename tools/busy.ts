@@ -36,11 +36,16 @@ import { canUnlock } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, plantable, ripeCount } from '../src/sim/cave.ts';
 import { canEnter } from '../src/sim/secret.ts';
-import { due as awakeningDue } from '../src/sim/awaken.ts';
+import { cardDue as awakeningDue } from '../src/sim/awaken.ts';
 import { salvageable } from '../src/sim/salvage.ts';
 import { SLOTS, templateOf, type Slot } from '../src/data/gear.ts';
 import { itemWorth } from '../src/sim/chest.ts';
 import { WEEK, quarryOf, quarryOwed } from '../src/sim/week.ts';
+import { HEAVENS, MARKS_PER_HEAVEN } from '../src/data/heavens.ts';
+import { playEndgame } from './endgame.ts';
+
+/** 悟道 One card at each heaven, which is what the nine of them now owe. */
+const CARDS_PER_HEAVEN = 1;
 import { HABITS, play } from './habits.ts';
 
 /** 事 One system, and what it has to offer right now. */
@@ -73,7 +78,7 @@ export const KINDS: readonly Kind[] = [
   { han: '洞天', name: 'work the cave', taps: (s) => (isOpen(s.realm, 'cave')
       ? ripeCount(s) + [...Array(BEDS).keys()].filter((i) => plantable(s).some((h) => canPlant(s, i, h.key))).length : 0) },
   { han: '秘境', name: 'walk the vault', taps: (s) => (canEnter(s) ? 1 : 0) },
-  { han: '悟道', name: 'take a card', taps: (s) => (awakeningDue(s.realm, s.awakened) ? 1 : 0) },
+  { han: '悟道', name: 'take a card', taps: (s) => (awakeningDue(s) ? 1 : 0) },
   { han: '器', name: 'wear what fell', taps: (s) => s.chest.filter((i) => {
       const slot = templateOf(i).slot as Slot;
       const worn = s.worn[slot];
@@ -183,13 +188,39 @@ if (process.argv[1]?.endsWith('busy.ts')) {
   const r = report('active');
   console.log('  開 when a new system arrives, for the active cultivator\n');
   for (const a of r.arrived) console.log(`     day ${pad(a.day.toFixed(1), 6)} ${a.what}`);
-  console.log(`\n  and then ${r.tail.toFixed(0)} days with nothing new named at all.`);
+  console.log(`\n  and then ${r.tail.toFixed(0)} days to the summit with nothing new named.`);
   /**
    * 期 Which is the finding this whole harness was written to produce, and the one thing
    * that answers it. Every arrival above happens once. The week happens again.
    */
   console.log(`  期 the week turns every ${(WEEK / 86_400).toFixed(0)} days, for ever, so ` +
     'from here on the longest stretch with nothing new in it is a week.\n');
+
+  /**
+   * 境外 And what the ninth realm is not the end of.
+   *
+   * 量 This table is the reason the heavens now owe 悟道 cards. The arrivals above stop
+   * at the summit because `habits.ts` stops there, and for a long while so did every
+   * reading of this game: the last named thing at day 46 and then nothing. The heavens
+   * were already there, and they were nine crossings with no decision in any of them.
+   */
+  const last = r.arrived[r.arrived.length - 1]?.day ?? 0;
+  const game = playEndgame(MARKS_PER_HEAVEN * HEAVENS.length);
+  const rows: string[] = [];
+  let day = last;
+  for (let i = 0; i < game.days.length; i++) {
+    day += game.days[i];
+    const name = game.heavens[i];
+    const heaven = HEAVENS.find((x) => x.han === name);
+    // 印 Only the crossing that opens a heaven is an arrival; the two between are not.
+    if (heaven && (i === 0 || game.heavens[i - 1] !== name)) {
+      rows.push(`     day ${pad(day.toFixed(1), 6)} ${heaven.han} ${heaven.name}`
+        + `  ·  ${CARDS_PER_HEAVEN} card of three`);
+    }
+  }
+  console.log(`  境外 and then the heavens, for the same cultivator:\n\n${rows.join('\n')}`);
+  console.log(`\n  ${HEAVENS.length} heavens from day ${last.toFixed(0)} to day ` +
+    `${day.toFixed(0)}, and ${HEAVENS.length} more 悟道 cards in them.\n`);
 
   // 分 Which systems are actually live, visit by visit, across the whole climb.
   const counts = new Map<string, number>();

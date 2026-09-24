@@ -567,10 +567,32 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  *     1.60   runs away: 6, 8, 11, 15, 22, 30, 43, 62 days
  *     1.70   a wall by the ninth mark, and never crossed again
  *
- * 1.45 is the middle of what holds. `tribulation.test.ts` plays forty crossings out and
- * prints them, so moving this is never quiet.
+ * 煉器 And then the whole band moved, because the harness those readings came from was
+ * not playing the game. It gathered, climbed 塔 the tower and brewed, and it never once
+ * refined, so a cultivator drowning in 材 material converted none of it into power. 示
+ * The advice line has always sent a capped cultivator to 煉器, and a real one arrives at
+ * the heavens refining every slot. With that one step added to the loop every reading
+ * above is wrong, and the Dragon at 1.45 is a walkover: **28 of 40 crossings over 90%,
+ * median 98%**, which is the exact fault this constant was introduced to fix. It is the
+ * same fault 爐 the furnace had, in the same harness: a spending policy nobody wrote
+ * down, deciding the answer.
+ *
+ * Measured again, on a cultivator who refines:
+ *
+ *     1.45   122 days, 28 of 40 walkovers, median 98%
+ *     1.55   132 days, 13 of 40 walkovers, median 78%
+ *     1.58   136 days,  8 of 40 walkovers, median 68%
+ *     1.59   144 days,  5 of 40 walkovers, median 66%
+ *     1.60   154 days,  3 of 40 walkovers, median 66%, one mark of 9 days
+ *     1.62   301 days, one mark of 32 days: running away
+ *     1.65   1001 days, one of 158: gone
+ *
+ * 1.59 is the middle of what holds now, and it lands on the same 66-68% the first
+ * measurement was aiming at, with the walkovers well clear of the quarter this file's
+ * test refuses to go past. `tribulation.test.ts` plays forty crossings out and prints
+ * them, so moving this is never quiet.
  */
-export const TRIBULATION_FOOTING = 1.45;
+export const TRIBULATION_FOOTING = 1.59;
 
 /**
  * 雷池 How many days of gathering the thunder pool holds.

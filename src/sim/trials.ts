@@ -5,7 +5,7 @@ import { TOWER_QI_HOURS } from './balance.ts';
 import { recordMaterial } from './record.ts';
 import { power, rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
-import { materialBonus, refineFactor } from './awaken.ts';
+import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
 
@@ -64,8 +64,17 @@ export function clearFloor(s: State, floor: number): State {
     ...s,
     tower: floor,
     qi: s.qi + floorQi(s, floor),
-    materials: s.materials + lootTaken(s, floorLoot(floor)),
+    // 悟道 境外 The heavens' 塔 cards multiply the floor's own loot and nothing else, so
+    // they pay only to somebody climbing. It is applied to the base rather than to the
+    // result, so the record and the seals still compound on top of it the way they do
+    // for every other kill. See towerBonus in sim/awaken.ts.
+    materials: s.materials + lootTaken(s, floorLoot(floor) * towerBonus(s.awakened)),
   };
+}
+
+/** 丹 What the next pill of a line costs *this* cultivator, thrift cards counted. */
+export function pillPrice(s: State, line: Line): { qi: number; materials: number } {
+  return pillCost(s.brewed, line, pillFactor(s.awakened));
 }
 
 /**
@@ -83,13 +92,13 @@ export function lootTaken(s: State, base: number): number {
 
 export function canBrew(s: State, line: Line): boolean {
   if (!isOpen(s.realm, 'furnace')) return false;
-  const cost = pillCost(s.brewed, line);
+  const cost = pillPrice(s, line);
   return s.qi >= cost.qi && s.materials >= cost.materials;
 }
 
 export function brew(s: State, line: Line): State {
   if (!canBrew(s, line)) return s;
-  const cost = pillCost(s.brewed, line);
+  const cost = pillPrice(s, line);
   return {
     ...s,
     qi: s.qi - cost.qi,
@@ -137,7 +146,7 @@ export function furnaceMenu(s: State) {
   return LINES.map((line) => ({
     line,
     pill: pillOf(line, s.realm),
-    cost: pillCost(s.brewed, line),
+    cost: pillPrice(s, line),
     held: s.brewed[line],
     affordable: canBrew(s, line),
   }));

@@ -47,7 +47,11 @@ export type Effect =
   /** 藏 More room in the chest. */
   | { kind: 'chest'; slots: number }
   /** 道 Points, handed over once and for good. */
-  | { kind: 'dao'; points: number };
+  | { kind: 'dao'; points: number }
+  /** 丹 Every pill asks less 材 material. See HEAVEN_CARDS for why the endgame needed it. */
+  | { kind: 'pill'; percent: number }
+  /** 塔 A floor of the Endless Tower pays more 材 material. */
+  | { kind: 'tower'; percent: number };
 
 export interface Card {
   /** Stored in the save, so it never changes once it has shipped. */
@@ -162,8 +166,173 @@ export const AWAKENINGS: readonly (readonly Card[])[] = [
   ],
 ];
 
+
+/**
+ * 境外 And nine more, one at each heaven.
+ *
+ * 量 The measurement that asked for these. 忙 The harness counts what a cultivator has
+ * to decide, and the endgame had nothing in that column at all: the ninth realm is
+ * reached around day 47, the nine heavens run from about day 50 to day 138, and every
+ * one of those crossings was the same crossing at a bigger number. Forty of them. The
+ * realms hand over eight permanent choices between them and the heavens handed over
+ * none, so the half of the game that lasts longest was the half with no build in it.
+ *
+ * 同 They are the same mechanism, not a second one. `owed` simply counts heavens as well
+ * as realms, the trios continue in one list, and 悟道 the same screen asks the same
+ * question. Nothing in sim/awaken.ts knows that a heaven is different from a realm.
+ *
+ * 律 What they are allowed to pay, which took one more look than the realm cards did.
+ *
+ * The realm cards pay material, drops, luck, melting, refining, chest room and 道 points.
+ * Two of those are dead by the first heaven: the tree is finished and the chest is large.
+ * What is alive at the top is 爐 the furnace and 塔 the tower, so two new kinds name them:
+ * a pill costs less 材 material, and a floor of the tower pays more of it.
+ *
+ * 力 Neither pays power, which is still the line that may not be crossed. A pill is
+ * cheaper, not stronger, and a floor pays more material, not more of anything else. Both
+ * are the exact shape 煉器 refining already has: a discount on a thing a player has to go
+ * and do. A cultivator who never opens the app brews nothing and climbs nothing, so every
+ * one of these nine is worth zero to them, which is the deal the rest of the game offers.
+ *
+ * 量 And what they are worth, measured, because it is not what a realm card is worth and
+ * saying otherwise would be the page lying. Forty crossings played out on each lean:
+ *
+ *     lean       days   refine levels   力
+ *     none        144        532        1.66e29
+ *     丹 pill     149        541        1.69e29
+ *     塔 tower    134        539        1.69e29
+ *     材 material 146        547        1.81e29
+ *     煉器 refine 139        559        1.89e29
+ *
+ * A seventh of the power between the widest two, and a day count that wanders about a
+ * tenth either way on the loop's own thresholds rather than on the cards. That is the
+ * answer and it is the right one, because 雷池 the pool is the endgame's clock and the
+ * pool is written in days of your own gathering: **nothing a card pays can make a
+ * crossing come sooner, by construction.** A heaven card is not a speed-up and must not
+ * be sold as one. It is what your cultivator turns out to be over the eleven weeks the
+ * heavens last, and `tribulation.test.ts` plays every lean out so that a card table which
+ * ever does run away says so out loud.
+ *
+ * 飽 Writing them also named something no harness had ever looked at. The endgame loop
+ * gathered, climbed and brewed and **never once refined**, so 材 material only went up
+ * and ended at 2.2e29 with nowhere to go, and every card here read as worth nothing
+ * because in that harness it was. 示 The advice line has always sent a capped cultivator
+ * to 煉器, and a real one arrives at the heavens refining every slot. With that one step
+ * added, a piece comes out at refine level 90, the Dragon at its old footing was a
+ * walkover in 28 crossings of 40, and TRIBULATION_FOOTING had to be re-measured from
+ * 1.45 to 1.59. The same fault 爐 the furnace had, in the same harness: a spending policy
+ * nobody wrote down, quietly deciding the answer.
+ */
+export const HEAVEN_CARDS: readonly (readonly Card[])[] = [
+  [
+    { key: 'formula', han: '丹方', name: 'The Pill Method', icon: 'tied-scroll',
+      effect: { kind: 'pill', percent: 0.08 },
+      says: 'Every pill asks a little less 材 material, at every price.' },
+    { key: 'longstair', han: '登樓', name: 'The Long Stair', icon: 'crenel-crown',
+      effect: { kind: 'tower', percent: 0.12 },
+      says: 'A floor of 塔 the tower pays more 材 material than it did.' },
+    { key: 'maw', han: '巨口', name: 'The Maw', icon: 'sea-serpent',
+      effect: { kind: 'material', percent: 0.25 },
+      says: 'Beasts give a quarter more 材 material again.' },
+  ],
+  [
+    { key: 'ninerungs', han: '九級', name: 'Nine Rungs', icon: 'ancient-sword',
+      effect: { kind: 'tower', percent: 0.15 },
+      says: 'A floor of 塔 the tower pays better still.' },
+    { key: 'auspice', han: '祥瑞', name: 'Auspice', icon: 'star-medal',
+      effect: { kind: 'luck', weight: 2.2 },
+      says: 'The rare end of the drop table, weighted far up.' },
+    { key: 'ashes', han: '餘燼', name: 'Embers', icon: 'fire-gem',
+      effect: { kind: 'salvage', percent: 0.60 },
+      says: 'Melting pays three fifths more qi.' },
+  ],
+  [
+    { key: 'quickfire', han: '武火', name: 'Fierce Fire', icon: 'energy-breath',
+      effect: { kind: 'pill', percent: 0.10 },
+      says: 'The furnace wastes less. Pills cost a tenth less 材 material.' },
+    { key: 'graveyard', han: '荒塚', name: 'The Old Graves', icon: 'skeleton',
+      effect: { kind: 'material', percent: 0.30 },
+      says: 'Beasts give a third more 材 material.' },
+    { key: 'coldforge', han: '冷鍛', name: 'Cold Forging', icon: 'frozen-ring',
+      effect: { kind: 'refine', percent: 0.25 },
+      says: '煉器 Refining costs a quarter less at every level.' },
+  ],
+  [
+    { key: 'sealbreaker', han: '破封', name: 'Seal Breaking', icon: 'hook-swords',
+      effect: { kind: 'tower', percent: 0.18 },
+      says: 'A floor of 塔 the tower pays nearly a fifth more 材 material.' },
+    { key: 'shedding', han: '蛻殼', name: 'The Shed Shell', icon: 'scarab-beetle',
+      effect: { kind: 'drop', percent: 0.15 },
+      says: 'Beasts drop something a great deal more often.' },
+    { key: 'starfall', han: '隕星', name: 'Falling Star', icon: 'ringed-planet',
+      effect: { kind: 'luck', weight: 2.6 },
+      says: 'The rare end of the table again, further up.' },
+  ],
+  [
+    { key: 'slowfire', han: '文火', name: 'Gentle Fire', icon: 'incense',
+      effect: { kind: 'pill', percent: 0.12 },
+      says: 'A slower fire and a smaller bill. Pills cost less 材 material still.' },
+    { key: 'lastdrop', han: '瀝盡', name: 'The Last Drop', icon: 'round-potion',
+      effect: { kind: 'salvage', percent: 0.75 },
+      says: 'Melting pays three quarters more qi.' },
+    { key: 'godmaw', han: '神餐', name: "The God's Meal", icon: 'minotaur',
+      effect: { kind: 'material', percent: 0.35 },
+      says: 'Beasts give a third more 材 material again.' },
+  ],
+  [
+    { key: 'skystair', han: '天梯', name: 'The Sky Stair', icon: 'lightning-helix',
+      effect: { kind: 'tower', percent: 0.21 },
+      says: 'A floor of 塔 the tower pays a fifth more 材 material again.' },
+    { key: 'tempering', han: '百鍊', name: 'A Hundred Temperings', icon: 'katana',
+      effect: { kind: 'refine', percent: 0.30 },
+      says: '煉器 Refining costs three tenths less at every level.' },
+    { key: 'storehouse', han: '府庫', name: 'The Storehouse', icon: 'chest-armor',
+      effect: { kind: 'chest', slots: 16 },
+      says: 'Sixteen more places in the chest.' },
+  ],
+  [
+    { key: 'ninereturns', han: '九轉', name: 'Nine Revolutions', icon: 'swirl-ring',
+      effect: { kind: 'pill', percent: 0.14 },
+      says: 'The old nine-turn recipe. Pills cost less 材 material yet.' },
+    { key: 'heavenshare', han: '天祿', name: "Heaven's Stipend", icon: 'laurels',
+      effect: { kind: 'material', percent: 0.40 },
+      says: 'Beasts give two fifths more 材 material.' },
+    { key: 'purelight', han: '毫光', name: 'Fine Light', icon: 'beams-aura',
+      effect: { kind: 'luck', weight: 3.0 },
+      says: 'The rare end of the table, higher than the ninth realm ever went.' },
+  ],
+  [
+    { key: 'topless', han: '無頂', name: 'No Summit', icon: 'galaxy',
+      effect: { kind: 'tower', percent: 0.24 },
+      says: 'A floor of 塔 the tower pays a quarter more 材 material.' },
+    { key: 'meltmountain', han: '銷山', name: 'Melting the Mountain', icon: 'rolling-energy',
+      effect: { kind: 'salvage', percent: 0.90 },
+      says: 'Melting pays nine tenths more qi.' },
+    { key: 'spiritforge', han: '靈淬', name: 'Spirit Quenching', icon: 'emerald',
+      effect: { kind: 'refine', percent: 0.35 },
+      says: '煉器 Refining costs a third less at every level.' },
+  ],
+  [
+    // 名 Not 樸 "The Uncarved Block": 鴻蒙 the ninth heaven is already called The
+    // Uncarved, and a card and the place it is handed out in sharing a name is the
+    // screen saying one word about two things.
+    { key: 'uncarved', han: '無漏', name: 'Nothing Leaks', icon: 'cosmic-egg',
+      effect: { kind: 'pill', percent: 0.16 },
+      says: 'Nothing is wasted any more. Pills cost the least they ever will.' },
+    { key: 'allunder', han: '普天', name: 'All Under Heaven', icon: 'orb-wand',
+      effect: { kind: 'material', percent: 0.50 },
+      says: 'Beasts give half as much 材 material again.' },
+    { key: 'endlessstair', han: '步虛', name: 'Pacing the Void', icon: 'crystal-cluster',
+      effect: { kind: 'tower', percent: 0.27 },
+      says: 'A floor of 塔 the tower pays more than a quarter again.' },
+  ],
+];
+
+/** Every trio that will ever be offered: the eight realms, then the nine heavens. */
+export const TRIOS: readonly (readonly Card[])[] = [...AWAKENINGS, ...HEAVEN_CARDS];
+
 /** Every card that exists, flat. */
-export const ALL_CARDS: readonly Card[] = AWAKENINGS.flat();
+export const ALL_CARDS: readonly Card[] = TRIOS.flat();
 
 const BY_KEY: Readonly<Record<string, Card>> =
   Object.fromEntries(ALL_CARDS.map((c) => [c.key, c]));

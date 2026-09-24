@@ -685,6 +685,13 @@ export const FIGURE = {
 
 export const AWAKEN = {
   over: 'A realm behind you',
+  /**
+   * 境外 And the same screen above the ninth realm, where what is behind you is a heaven
+   * rather than a realm. It is the one sentence on the card that knows the difference,
+   * because the cultivator standing in 聖人 has not been in a realm for seven weeks and
+   * a card telling them they stand in 化神 would be the screen forgetting where they are.
+   */
+  overHeaven: 'A heaven behind you',
   sub: (han: string, name: string) => `You stand in ${han} ${name}. Something settles.`,
   lead: 'Take one of the three. The other two close, and what you take is yours for the rest of the climb.',
   take: 'Take this one',
@@ -692,7 +699,7 @@ export const AWAKEN = {
   /** 修 The card the home screen keeps up until the choice is made. */
   waiting: 'A breakthrough is owed you a 悟道. Three cards, and one of them is yours.',
   /** 釋 What the character means, for the key and the tooltip. */
-  what: 'Three cards at every breakthrough, and you keep one. Taking it closes the other two. Eight choices across a climb, so no two cultivators end up the same.',
+  what: 'Three cards at every breakthrough and at every heaven, and you keep one. Taking it closes the other two. Seventeen choices across a climb, so no two cultivators end up the same.',
 };
 
 /**

@@ -1,4 +1,5 @@
-import { AWAKENINGS, ALL_CARDS, cardOf, type Card } from '../data/awakening.ts';
+import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS, cardOf, type Card } from '../data/awakening.ts';
+import { heavensOpened } from '../data/heavens.ts';
 
 /**
  * 悟道 What a breakthrough owes you, and what the cards you took are worth.
@@ -16,9 +17,25 @@ import { AWAKENINGS, ALL_CARDS, cardOf, type Card } from '../data/awakening.ts';
  * again. The whole mechanism is one subtraction.
  */
 
-/** How many choices this realm owes, taken or not. Reaching realm 2 owes the first. */
-export function owed(realm: number): number {
-  return Math.max(0, Math.min(AWAKENINGS.length, realm - 1));
+/**
+ * How many choices are owed, taken or not. Reaching realm 2 owes the first.
+ *
+ * 境外 And a heaven owes one as well, on exactly the same subtraction. The realms owe
+ * `realm - 1`, which tops out at eight, and every heaven the marks have opened owes one
+ * more, which tops out at nine. Seventeen choices over a climb, and the same sentence
+ * covers both halves of it: *what is owed is where you have got to, what is taken is the
+ * length of the list, and the difference is the offer.*
+ *
+ * The marks are optional so that every caller that only knows a realm still reads true:
+ * below the ninth there are no marks to count and the answer has not changed.
+ */
+export function owed(realm: number, marks = 0): number {
+  const realms = Math.max(0, Math.min(AWAKENINGS.length, realm - 1));
+  // 序 A heaven cannot owe a card while a realm still does, because the trios are one
+  // list in order: the realms' eight come first and nothing skips ahead of them.
+  const heavens = realms < AWAKENINGS.length ? 0
+    : Math.min(HEAVEN_CARDS.length, heavensOpened(marks));
+  return realms + heavens;
 }
 
 /**
@@ -28,9 +45,11 @@ export function owed(realm: number): number {
  * cultivator who somehow arrives at the fifth realm owing three choices is offered them
  * one at a time, in order, and never skips a card.
  */
-export function due(realm: number, awakened: readonly string[]): readonly Card[] | null {
+export function due(
+  realm: number, awakened: readonly string[], marks = 0,
+): readonly Card[] | null {
   const taken = valid(awakened).length;
-  return taken < owed(realm) ? AWAKENINGS[taken] : null;
+  return taken < owed(realm, marks) ? TRIOS[taken] : null;
 }
 
 /**
@@ -43,13 +62,26 @@ export function due(realm: number, awakened: readonly string[]): readonly Card[]
 export function valid(raw: readonly string[]): readonly string[] {
   const out: string[] = [];
   for (const key of raw) {
-    if (out.length >= AWAKENINGS.length) break;
+    if (out.length >= TRIOS.length) break;
     const card = cardOf(key);
     if (!card) continue;
-    if (!AWAKENINGS[out.length].some((c) => c.key === card.key)) continue;
+    if (!TRIOS[out.length].some((c) => c.key === card.key)) continue;
     out.push(card.key);
   }
   return out;
+}
+
+/**
+ * 卡 The trio this cultivator is owed, read straight off the save.
+ *
+ * 境外 It exists so that no caller has to remember that a heaven owes a card too. Every
+ * screen and every harness asked `due(realm, awakened)` and would have gone on asking it
+ * for ever, and the nine heavens' cards would simply never have been offered to anybody.
+ */
+export function cardDue(s: {
+  realm: number; awakened: readonly string[]; tribulation: number;
+}): readonly Card[] | null {
+  return due(s.realm, s.awakened, s.tribulation);
 }
 
 /** The cards actually held, as cards. */
@@ -58,8 +90,10 @@ export function held(awakened: readonly string[]): readonly Card[] {
 }
 
 /** Take one of the three on offer. Anything else is refused and changes nothing. */
-export function take(realm: number, awakened: readonly string[], key: string): readonly string[] {
-  const trio = due(realm, awakened);
+export function take(
+  realm: number, awakened: readonly string[], key: string, marks = 0,
+): readonly string[] {
+  const trio = due(realm, awakened, marks);
   if (!trio || !trio.some((c) => c.key === key)) return valid(awakened);
   return [...valid(awakened), key];
 }
@@ -114,5 +148,22 @@ export function daoPoints(awakened: readonly string[]): number {
   return sum(awakened, 'dao', 'points');
 }
 
+/**
+ * 丹 What a pill costs in 材 material, multiplied.
+ *
+ * Clamped the same way 煉器 refining is and for the same reason: the furnace is the one
+ * thing the endgame is built on, and a free pill would be a different endgame. Every
+ * heaven's thrift card taken together comes to three fifths off, so the clamp is a guard
+ * rather than a ceiling anybody meets.
+ */
+export function pillFactor(awakened: readonly string[]): number {
+  return Math.max(0.3, 1 - sum(awakened, 'pill', 'percent'));
+}
+
+/** 塔 What a floor of the Endless Tower pays in 材 material, multiplied. */
+export function towerBonus(awakened: readonly string[]): number {
+  return 1 + sum(awakened, 'tower', 'percent');
+}
+
 /** Every card, for the key and the bible. */
-export { ALL_CARDS, AWAKENINGS, cardOf, type Card };
+export { ALL_CARDS, AWAKENINGS, HEAVEN_CARDS, TRIOS, cardOf, type Card };

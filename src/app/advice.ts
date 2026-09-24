@@ -15,7 +15,7 @@ import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
 import { ADVICE, WEEK } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
-import { due as awakeningDue } from '../sim/awaken.ts';
+import { cardDue as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
 import { canEnter as canEnterSecret } from '../sim/secret.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -115,7 +115,7 @@ export function advice(s: State): Advice | null {
    * It is free, it is permanent, and it is the only thing in the game the player cannot
    * get later by climbing: the offer waits, but nothing else happens until it is taken.
    */
-  if (awakeningDue(s.realm, s.awakened)) return { han: '悟道', text: ADVICE.awaken };
+  if (awakeningDue(s)) return { han: '悟道', text: ADVICE.awaken };
 
   /**
    * 洞天 A ripe bed, which costs nothing and is gone the moment it is taken.

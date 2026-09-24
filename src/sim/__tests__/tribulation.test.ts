@@ -13,7 +13,8 @@ import { rate } from '../time.ts';
 import { LINES } from '../../data/alchemy.ts';
 import { pillsTaken } from '../furnace.ts';
 import { seals } from '../tower.ts';
-import { playEndgame as play } from '../../../tools/endgame.ts';
+import { playEndgame as play, type Lean } from '../../../tools/endgame.ts';
+import { SLOTS } from '../../data/gear.ts';
 
 const T0 = 1_700_000_000;
 const DRAGON = wardenOf(9);
@@ -153,4 +154,55 @@ describe('渡劫 the ladder above the ladder', () => {
     // At least one power pill a crossing, or the furnace is not in the loop at all.
     expect(end.brewed.body).toBeGreaterThan(days.length);
   }, 30_000);
+
+  /**
+   * 悟道 境外 The nine heavens each owe a card, and no one lean may run away with them.
+   *
+   * 量 This is the assertion the heavens' cards were written against, and the number it
+   * prints is the honest thing to say about them. The endgame's clock is 雷池 the pool,
+   * and the pool is written in *days of your own gathering*, so nothing a card pays can
+   * make a crossing come sooner. A heaven card is a build, not a speed-up, and the
+   * spread below is what a build is worth: a handful of days across forty crossings, and
+   * about a fifth of the power between the widest two.
+   *
+   * If a lean ever does run away, this is what says so, and the fix is the card table
+   * rather than the clock.
+   */
+  it('lets a heaven card make a build, and never a shortcut', () => {
+    const leans: Lean[] = ['none', 'pill', 'tower', 'material', 'luck', 'refine', 'salvage'];
+    const runs = leans.map((lean) => {
+      const g = play(40, lean);
+      const levels = SLOTS.reduce((n, x) => n + (g.end.worn[x]?.refine ?? 0), 0);
+      return { lean, days: g.days.reduce((a, b) => a + b, 0), floor: g.end.tower, levels,
+        power: power(g.end), cards: g.end.awakened.length };
+    });
+    console.log('\n  悟道 境外 forty crossings, once for each way of leaning:\n' +
+      runs.map((r) => `    ${r.lean.padEnd(9)} ${String(r.days).padStart(4)} days` +
+        `   tower ${String(r.floor).padStart(3)}   ${String(r.levels).padStart(4)} refine levels` +
+        `   力 ${r.power.toExponential(2)}`).join('\n') + '\n');
+
+    // 卡 Every lean but 'none' actually took all nine, or this measures nothing.
+    for (const r of runs.filter((x) => x.lean !== 'none')) expect(r.cards).toBe(17);
+    expect(runs.find((r) => r.lean === 'none')!.cards).toBe(8);
+
+    /**
+     * 逃 No lean runs away with the endgame, which is the whole assertion.
+     *
+     * 亂 The band is wide on purpose and the day count is the reason. This loop decides
+     * every day on thresholds (climb the next floor at 60%, face the Dragon at 55%), and
+     * `odds` reads forty-one seeded fights, so a card worth a per cent early moves which
+     * floor falls on which day and the totals wander by about a tenth either way with
+     * nothing behind it. Leaning 拆 comes out *slower* than taking no card at all, which
+     * cannot be true and is exactly the size of the noise: 拆 melting pays qi for gear,
+     * 塔 the tower drops none, and this loop never hunts, so those nine cards are worth
+     * nothing here and the difference is the dice.
+     *
+     * 力 The power is the clean signal, and it is the one a card is actually for.
+     */
+    const days = runs.map((r) => r.days);
+    expect(Math.max(...days) / Math.min(...days)).toBeLessThan(1.4);
+    const powers = runs.map((r) => r.power);
+    expect(Math.max(...powers) / Math.min(...powers)).toBeGreaterThan(1.05);
+    expect(Math.max(...powers) / Math.min(...powers)).toBeLessThan(2);
+  }, 60_000);
 });

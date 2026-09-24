@@ -76,12 +76,21 @@ export function brewed(raw: unknown): Brewed {
   return out;
 }
 
-/** What the next pill of a line costs, in qi and in materials. */
-export function pillCost(held: Brewed, line: Line): { qi: number; materials: number } {
+/**
+ * What the next pill of a line costs, in qi and in materials.
+ *
+ * 悟道 `factor` is what the heavens' thrift cards have made of the material half of that
+ * price, and it is only ever the material half: a cheaper pill is a cheaper pill, and
+ * the qi half rides the ladder, which is the clock. It is rounded up, so no number of
+ * discounts can ever make a pill free. See pillFactor in sim/awaken.ts.
+ */
+export function pillCost(
+  held: Brewed, line: Line, factor = 1,
+): { qi: number; materials: number } {
   const n = held[line] + PILL_RUNG;
   return {
     qi: Math.ceil(PILL_SHARE * ladderOpen(n)),
-    materials: Math.ceil(PILL_MATERIALS * PILL_MATERIAL_STEP ** n),
+    materials: Math.max(1, Math.ceil(PILL_MATERIALS * PILL_MATERIAL_STEP ** n * factor)),
   };
 }
 

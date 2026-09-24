@@ -1,6 +1,7 @@
-import { due } from '../../sim/awaken.ts';
+import { AWAKENINGS, cardDue, held } from '../../sim/awaken.ts';
 import { Emblem } from './Emblem.tsx';
 import { realm as realmOf } from '../../data/realms.ts';
+import { heavenAt } from '../../data/heavens.ts';
 import { AWAKEN } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -26,13 +27,22 @@ export function Awaken({ state, onTake, onClose }: {
   onTake: (key: string) => void;
   onClose: () => void;
 }) {
-  const trio = due(state.realm, state.awakened);
+  const trio = cardDue(state);
   if (!trio) return null;
-  const r = realmOf(state.realm);
+  /**
+   * 境外 Which place the card belongs to, which stops being a realm at the ninth.
+   *
+   * The nine heavens carry nine of the seventeen trios, and a cultivator taking one of
+   * them has been out of the realms for weeks. The colour comes from the same place, so
+   * the card walks up through the heavens' own gold the way every other screen does.
+   */
+  const heaven = held(state.awakened).length >= AWAKENINGS.length
+    ? heavenAt(state.tribulation) : null;
+  const r = heaven ?? realmOf(state.realm);
 
   return (
     <div className="awaken">
-      <p className="over">{AWAKEN.over}</p>
+      <p className="over">{heaven ? AWAKEN.overHeaven : AWAKEN.over}</p>
       <h2 className="cjk" style={{ color: r.colour }}>悟道</h2>
       <p className="sub">{AWAKEN.sub(r.han, r.name)}</p>
       <p className="lead">{AWAKEN.lead}</p>

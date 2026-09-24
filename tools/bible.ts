@@ -25,7 +25,7 @@ import {
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { AWAKENINGS, ALL_CARDS } from '../src/data/awakening.ts';
+import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS } from '../src/data/awakening.ts';
 import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
@@ -489,7 +489,7 @@ const SYSTEMS: readonly System[] = [
 
   // 提 The four content systems, in the order they were built.
   { han: '悟道', name: 'A choice that makes you different', status: 'done', at: 'awaken',
-    line: `Three cards at every breakthrough and you keep one, ${ALL_CARDS.length} of them across eight choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.` },
+    line: `Three cards at every breakthrough and at every heaven, and you keep one: ${ALL_CARDS.length} of them across seventeen choices. 道 The tree accumulates, so everybody ends up owning most of it; a card taken is two doors shut. No card pays power, because power is the axis the wall is built on.` },
   { han: '緣', name: 'Somebody on the road', status: 'done', at: 'meet',
     line: `${MEETINGS.length} meetings, one choice each and two named outcomes. Not economy: everything they could ever pay together is ${MEET_POINT_CEILING} 道 against ${TOTAL_COST} for the tree, and half the answers are nothing at all. Nine realms and a Dragon, and until this nothing in it had ever spoken.` },
   { han: '洞天', name: 'A place you own', status: 'done', at: 'cave',
@@ -1160,15 +1160,23 @@ const MOCK_MEET = `<div class="mk meet">
   </div>
 </div>`;
 
-/** 悟道 Every trio, as the game offers them. */
-const AWAKEN_TABLE = AWAKENINGS.map((trio, i) => `
+/** 悟道 Every trio, as the game offers them: the eight realms, then the nine heavens. */
+const trioBlock = (trio: typeof AWAKENINGS[number], at: string) => `
   <div class="trio">
-    <span class="at">Reaching ${realmOf(i + 2).han} ${realmOf(i + 2).name}</span>
+    <span class="at">${at}</span>
     <div class="three">${trio.map((c) => `
       <div class="ac"><span class="s">${icon(c.icon, 24)}</span>
         <b class="cjk">${c.han}</b><em>${c.name}</em>
         <i>${c.says}</i></div>`).join('')}</div>
-  </div>`).join('');
+  </div>`;
+
+const AWAKEN_TABLE = AWAKENINGS
+  .map((trio, i) => trioBlock(trio, `Reaching ${realmOf(i + 2).han} ${realmOf(i + 2).name}`))
+  .join('');
+
+const HEAVEN_TABLE = HEAVENS
+  .map((h, i) => trioBlock(HEAVEN_CARDS[i], `Entering ${h.han} ${h.name}`))
+  .join('');
 
 /** 緣 Everybody on the road, and what the two answers do. */
 const MEET_TABLE = MEETINGS.map((m) => `
@@ -2527,13 +2535,14 @@ const page = `<meta charset="utf-8">
 
   <section class="sec" id="awaken">
     <h2><span class="h">悟道</span> The three cards at a breakthrough</h2>
-    <p class="t">Eight breakthroughs, ${ALL_CARDS.length} cards, and you keep one of every
-      three. The other two close for good. 道 The tree is the nearest thing the game
+    <p class="t">Eight breakthroughs and nine heavens, ${ALL_CARDS.length} cards, and you
+      keep one of every three. The other two close for good. 道 The tree is the nearest thing the game
       already had and it is not the same: its points accumulate, so given enough days
       everybody owns most of it, which makes it a checklist. A card taken is two doors
       shut, and that is what makes a build.</p>
-    <p class="t">It is not fired, it is derived. What is owed is the realm minus one,
-      what is taken is the length of the list, and the difference is the offer. So it
+    <p class="t">It is not fired, it is derived. What is owed is the realm minus one plus
+      the heavens the marks have opened, what is taken is the length of the list, and the
+      difference is the offer. So it
       cannot be missed by a reload, cannot be lost by closing the app mid-choice, and a
       save hand-edited to skip one is simply asked again. The whole mechanism is one
       subtraction.</p>
@@ -2551,6 +2560,41 @@ const page = `<meta charset="utf-8">
       the game offers. The wall now reads <b>1.79x</b> against a rule of 1.5.</p>
 
     <div class="trios">${AWAKEN_TABLE}</div>
+
+    <h3>境外 And nine more, one at each heaven</h3>
+    <p class="t">忙 The harness counts what a cultivator has to decide, and the endgame
+      had nothing in that column at all. The ninth realm is reached around day 47, the
+      nine heavens run from about day 50 to day 140, and every crossing in them was the
+      same crossing at a bigger number. The realms hand over eight permanent choices
+      between them and the heavens handed over none, so the half of the game that lasts
+      longest was the half with no build in it.</p>
+    <p class="t">The same mechanism carries them: the trios continue in one list, the
+      offer is the same subtraction, and nothing in <code>sim/awaken.ts</code> knows that
+      a heaven is different from a realm. Two of the realm cards' seven kinds are dead by
+      the first heaven, because 道 the tree is finished and 藏 the chest is large, so two
+      new kinds name what is alive up there: a pill asks less 材 material, and a floor of
+      塔 the tower pays more of it. Neither pays power. A pill is cheaper, not stronger.</p>
+    <p class="t">量 What they are worth, measured, because it is not what a realm card is
+      worth. Forty crossings played out on each way of leaning: <b>134 to 149 days</b>,
+      and a seventh of the power between the widest two. That is the right answer, and
+      the reason is 雷池 the pool: the endgame's clock is written in days of your own
+      gathering, so <b>nothing a card pays can make a crossing come sooner</b>. A heaven
+      card is a build, not a speed-up, and it must never be sold as one.</p>
+
+    <h3>煉器 What writing them found, which was worse than what they fixed</h3>
+    <p class="t">Every card here read as worth nothing, and for a while that looked like
+      the cards being wrong. It was the harness. The endgame loop gathered, climbed and
+      brewed and <b>never once refined</b>, so 材 material only ever went up and ended at
+      <b>2.2e29</b> with nowhere to go. 示 The advice line has always sent a capped
+      cultivator to 煉器, and a real one arrives at the heavens refining every slot.</p>
+    <p class="t">With that one step added, a piece comes out at refine level <b>90</b>,
+      and the Dragon at its old footing was a walkover in <b>28 crossings of 40</b>, the
+      exact fault TRIBULATION_FOOTING exists to prevent. It was re-measured from 1.45 to
+      <b>1.59</b>, and the endgame now reads 144 days with a median crossing at 66%. The
+      same fault 爐 the furnace had, in the same harness: a spending policy nobody wrote
+      down, quietly deciding the answer.</p>
+
+    <div class="trios">${HEAVEN_TABLE}</div>
   </section>
 
   <section class="sec" id="meet">

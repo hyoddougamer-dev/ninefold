@@ -13,7 +13,7 @@ import {
 } from '../data/gear.ts';
 import { chestLimit } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
-import { valid as validAwakened } from './awaken.ts';
+import { owed as cardsOwed, valid as validAwakened } from './awaken.ts';
 import { validateSequence, validateStance } from './arts.ts';
 import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furnace.ts';
 import { recordPower, realmsKnown } from './record.ts';
@@ -630,8 +630,19 @@ export function validate(raw: unknown, now: number): State {
    * cap written twice, and the copy in here was the older one.
    */
   const unlocked = validateUnlocked(o.unlocked);
+  /**
+   * 悟道 Each entry has to be a real card from the trio its own turn offers, and there
+   * may be no more of them than the cultivator has actually been offered.
+   *
+   * 境外 The second half of that used to be missing, and the heavens are what made it
+   * matter: `valid` checks the *order* of the list and nothing else, so a second-realm
+   * save claiming every realm card passed, and once nine more trios existed behind the
+   * marks it could claim those too. Seventeen permanent cards on a cultivator who has
+   * crossed nothing. The offer is a subtraction, so the cap is the same subtraction.
+   */
   const awakened = [...validAwakened(Array.isArray(o.awakened) ? o.awakened.filter(
-    (x: unknown): x is string => typeof x === 'string') : [])];
+    (x: unknown): x is string => typeof x === 'string') : [])]
+    .slice(0, cardsOwed(realm, tribulation));
   const slots = chestLimit(unlocked,
     wornTotals(worn, (x) => affinity(unlocked, x)).capacity, awakened);
 

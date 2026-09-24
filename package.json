@@ -34,6 +34,7 @@
     "slice": "tsx tools/slice.ts",
     "screens": "node tools/shot-screens.mjs",
     "week": "node tools/shot-week.mjs",
+    "heaven": "node tools/shot-heaven.mjs",
     "repaint": "tsx tools/repaint.ts",
     "artgaps": "tsx tools/artgaps.ts",
     "arena": "node tools/arena.mjs",

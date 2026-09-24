@@ -33,7 +33,7 @@ import { RealmCard } from './ui/RealmCard.tsx';
 import { Awaken } from './ui/Awaken.tsx';
 import { Figure } from './ui/Figure.tsx';
 import { WHOM } from '../data/figures.ts';
-import { due as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
+import { cardDue as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
@@ -147,7 +147,7 @@ export function App() {
       line of advice reads the same number. See sim/points.ts. */
   const free = freeOf(state);
   /** 悟道 Whether a breakthrough still owes this cultivator a card. Derived, always. */
-  const owesCard = awakeningDue(state.realm, state.awakened) !== null;
+  const owesCard = awakeningDue(state) !== null;
   /** 緣 Who is on the road, if anybody. Derived from the save, so it cannot be lost. */
   const meeting = meetingDue(state);
   const loaded = useRef(false);
@@ -906,7 +906,7 @@ export function App() {
         <Awaken
           state={state}
           onTake={(key) => {
-            setState((s) => ({ ...s, awakened: [...takeAwakening(s.realm, s.awakened, key)] }));
+            setState((s) => ({ ...s, awakened: [...takeAwakening(s.realm, s.awakened, key, s.tribulation)] }));
             setAwakenShut(false);
             sfx.awaken();
           }}

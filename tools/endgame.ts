@@ -12,8 +12,9 @@ import {
   buy, canBuy, canCross, crossTribulation, tribulationPool, type State,
 } from '../src/sim/state.ts';
 import { rate } from '../src/sim/time.ts';
-import { pillCost } from '../src/sim/furnace.ts';
-import { brew, canBrew, clearFloor, standingFloor } from '../src/sim/trials.ts';
+import { brew, canBrew, canRefine, clearFloor, pillPrice, refine, standingFloor } from '../src/sim/trials.ts';
+import { SLOTS } from '../src/data/gear.ts';
+import { cardDue, take as takeCard } from '../src/sim/awaken.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { heavenAt } from '../src/data/heavens.ts';
 import { HABITS, play as playHabit } from './habits.ts';
@@ -86,8 +87,30 @@ export interface Endgame {
  * thing that feeds the furnace. Take any one of the four away and the ladder becomes a
  * wall, which is exactly what it was before the tower and the furnace existed.
  */
-export function playEndgame(marks: number): Endgame {
-  let s = arrived();
+/**
+ * 悟道 Which way this cultivator leans when a heaven offers three cards.
+ *
+ * 境外 The nine heavens each owe one, and a harness that never took them would be
+ * measuring a game nobody plays. It is a parameter rather than a constant because the
+ * whole point of a card is that two cultivators end up different, and the only way to
+ * know whether one lean runs away with the endgame is to play all of them.
+ */
+export type Lean = 'pill' | 'tower' | 'material' | 'luck' | 'refine' | 'salvage' | 'none';
+
+/** Take whatever is owed, leaning the way this cultivator leans. */
+function takeOwed(s: State, lean: Lean): State {
+  let out = s;
+  for (let i = 0; i < 20; i++) {
+    const trio = cardDue(out);
+    if (!trio || lean === 'none') break;
+    const want = trio.find((c) => c.effect.kind === lean) ?? trio[0];
+    out = { ...out, awakened: [...takeCard(out.realm, out.awakened, want.key, out.tribulation)] };
+  }
+  return out;
+}
+
+export function playEndgame(marks: number, lean: Lean = 'pill'): Endgame {
+  let s = takeOwed(arrived(), lean);
   const days: number[] = [];
   const floors: number[] = [];
   const chances: number[] = [];
@@ -117,6 +140,25 @@ export function playEndgame(marks: number): Endgame {
         if (!u) break;
         s = buy(s, u);
       }
+      /**
+       * 煉器 And then the material, which had nowhere to go in this harness at all.
+       *
+       * 量 It was found by the heavens' cards and it is the same fault 爐 the furnace
+       * had: a policy the harness never wrote down, hiding a whole system. The loop
+       * gathered, climbed and brewed, and never refined, so 材 material only ever went
+       * up. Measured at forty marks it ended on **2.2e29**, which is not a cultivator
+       * with plenty, it is a currency with no sink in it, and every card that pays
+       * material read as worth exactly nothing because in this harness it was.
+       *
+       * A real cultivator refines: it is where 示 the advice line sends them the moment
+       * the capped upgrades are full, and it is the only sink the game has left at the
+       * top. So the loop does what the player does, and the measurement is of the game.
+       */
+      for (let i = 0; i < 4000; i++) {
+        const slot = SLOTS.find((x) => s.worn[x] && canRefine(s, x));
+        if (!slot) break;
+        s = refine(s, slot);
+      }
       const short = odds(s, currentWarden(s)) <= WILLING;
       for (let i = 0; i < 4000; i++) {
         if (short) {
@@ -126,7 +168,7 @@ export function playEndgame(marks: number): Endgame {
         }
         const spare = s.qi - tribulationPool(s);
         const line = (['bane', 'fortune'] as const)
-          .find((l) => canBrew(s, l) && pillCost(s.brewed, l).qi <= spare);
+          .find((l) => canBrew(s, l) && pillPrice(s, l).qi <= spare);
         if (!line) break;
         s = brew(s, line);
       }
@@ -136,6 +178,8 @@ export function playEndgame(marks: number): Endgame {
     chances.push(odds(s, currentWarden(s)));
     s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, currentWarden(s)));
     heavens.push(heavenAt(s.tribulation)?.han ?? '');
+    // 悟道 A heaven owes a card, and the card is taken the moment the crossing opens it.
+    s = takeOwed(s, lean);
   }
   return { days, floors, chances, heavens, end: s };
 }

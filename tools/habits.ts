@@ -27,7 +27,7 @@ import {
   canEnter, doorsAt, enter as enterSecret, giftOf as secretGift, roomsFor,
   inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../src/sim/secret.ts';
-import { AWAKENINGS, due as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
+import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { rollDrop } from '../src/sim/drops.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageBonus } from '../src/sim/awaken.ts';
@@ -291,11 +291,11 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
      * cultivator leans towards, and the first of the three if the trio holds none of it.
      * It is a loop rather than one call because a save can owe more than one.
      */
-    for (let i = 0; i < AWAKENINGS.length && !NO_CARDS; i++) {
-      const trio = awakeningDue(s.realm, s.awakened);
+    for (let i = 0; i < TRIOS.length && !NO_CARDS; i++) {
+      const trio = awakeningDue(s);
       if (!trio) break;
       const want = trio.find((c) => c.effect.kind === (h.cards ?? 'salvage')) ?? trio[0];
-      s = { ...s, awakened: [...takeAwakening(s.realm, s.awakened, want.key)] };
+      s = { ...s, awakened: [...takeAwakening(s.realm, s.awakened, want.key, s.tribulation)] };
     }
     while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
     while (layerDay.length <= layersOpened(s)) layerDay.push((t - T0) / DAY);
