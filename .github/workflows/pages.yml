@@ -39,6 +39,14 @@ jobs:
       # old one, because the old one is what everybody already has cached.
       - run: npm test
       - run: npm run build
+      # 測 The testers' APK, beside the game, so it downloads from the game's own address.
+      # The release link redirects to a signed storage URL, and a browser inside another
+      # app (a chat, a mail client) tends to stop there with nothing downloaded. A plain
+      # file on this site does not. If there is no release yet, the page goes out without it.
+      - name: Put the testers' APK beside the game
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download testers -p ninefold.apk -D dist || echo "No testers release yet."
       # Pages has to be switched on once, by hand, in Settings -> Pages -> Source:
       # GitHub Actions. The action cannot do it: `enablement: true` was tried and the
       # workflow token came back "Resource not accessible by integration", because

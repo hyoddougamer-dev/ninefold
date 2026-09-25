@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>九境 Ninefold · Testar</title>
+<meta name="theme-color" content="#14110D">
+<style>
+  :root { color-scheme: dark; --ground:#14110D; --panel:#1E1A14; --line:#3A3226; --text:#EDE3D2;
+          --faint:#9C907C; --jade:#7FB495; --gold:#D4AF56; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--text);
+         font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 32px 18px 56px; display: flex; flex-direction: column; gap: 22px; }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; }
+  h1 span { color: var(--jade); margin-right: 8px; font-family: 'Noto Serif SC', 'Songti SC', serif; font-weight: 400; }
+  p { margin: 0; color: var(--faint); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+            display: flex; flex-direction: column; gap: 12px; }
+  h2 { margin: 0; font-size: 19px; }
+  ol { margin: 0; padding-left: 20px; color: var(--faint); display: flex; flex-direction: column; gap: 6px; }
+  ol b, p b { color: var(--text); }
+  a.btn { display: block; text-align: center; padding: 14px; border-radius: 10px; font-weight: 700;
+          text-decoration: none; background: var(--jade); color: var(--ground); font-size: 17px; }
+  a.btn.alt { background: none; color: var(--jade); border: 1px solid var(--jade); }
+  .note { font-size: 14px; border-left: 2px solid var(--gold); padding-left: 12px; }
+  code { color: var(--text); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1><span>九境</span>Testar o Ninefold</h1>
+    <p>Um jogo idle de cultivo. O qi junta-se sozinho, mesmo com o telemóvel fechado.</p>
+  </header>
+
+  <section>
+    <h2>Android</h2>
+    <a class="btn" href="../ninefold.apk" download>Descarregar o APK</a>
+    <ol>
+      <li>Abre esta página no <b>Chrome</b> (não dentro do WhatsApp, do Messenger ou de outra app: esses browsers não descarregam ficheiros).</li>
+      <li>Carrega em <b>Descarregar o APK</b> e depois em <b>Abrir</b> quando o download acabar.</li>
+      <li>Se o Android perguntar, deixa o Chrome <b>instalar apps desconhecidas</b>.</li>
+    </ol>
+    <p class="note">O jogo dentro da app atualiza-se sozinho. Só é preciso voltar aqui se te pedirmos.</p>
+  </section>
+
+  <section>
+    <h2>iPhone</h2>
+    <ol>
+      <li>Abre <b>hyoddougamer-dev.github.io/ninefold</b> no <b>Safari</b>.</li>
+      <li>Carrega em <b>Partilhar</b> e depois em <b>Adicionar ao ecrã principal</b>.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Computador</h2>
+    <a class="btn alt" href="../">Jogar no browser</a>
+    <p>No Chrome ou no Edge, o ícone <b>Instalar</b> na barra de endereço põe o jogo numa janela própria.</p>
+  </section>
+
+  <section>
+    <h2>O teu progresso</h2>
+    <p>O progresso fica <b>no aparelho e no browser</b> onde jogas: a app, o Chrome e o PC são jogos separados. Para o levar para outro lado, abre o <b>Menu</b>, <b>Copy the save</b>, e no outro lado <b>Restore from a copy</b>.</p>
+    <p>Se desinstalares a app, o progresso vai com ela. Copia-o antes.</p>
+  </section>
+</main>
+</body>
+</html>

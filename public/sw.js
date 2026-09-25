@@ -70,6 +70,10 @@ self.addEventListener('fetch', (event) => {
   // Only GETs, and only our own origin. A font from Google is the browser's business.
   if (request.method !== 'GET') return;
   if (new URL(request.url).origin !== self.location.origin) return;
+  // 測 The testers' APK is a download, not a page. Answered from here it would be kept in
+  // the cache (twelve megabytes nobody needs twice) and a phone's download manager would
+  // be handed a response it did not ask for. The browser gets it straight.
+  if (new URL(request.url).pathname.endsWith('.apk')) return;
 
   event.respondWith((async () => {
     try {
