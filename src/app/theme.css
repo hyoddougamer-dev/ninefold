@@ -186,7 +186,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* 換 And the sheet arrives rather than appearing. Keyed on the tab in App, so every
    switch replays it: 120ms, a hair of upward travel, nothing a thumb has to wait for. */
-.sheet > * { animation: sheetin .13s ease-out both; }
+.sheet > *, .sheet > :is(.c-hero, .c-side, .g-hero, .g-side) > * { animation: sheetin .13s ease-out both; }
 @keyframes sheetin { from { opacity: 0; transform: translateY(5px); } }
 
 /* 階 A rung opening is the one moment the bar has to be looked at, and it used to pass
@@ -1060,9 +1060,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    its reading clear of them, and the figure on that row never shrinks, because 力 1.38T
    lost its T to a long "CULTIVATE · DAY 526" beside it, which is flex doing what flex
    does. The long side truncates instead. */
-.sheet > .row:first-child { padding-right: 140px; }
-.sheet > .row:first-child > :last-child { flex: none; white-space: nowrap; }
-.sheet > .row:first-child > :first-child { min-width: 0; overflow: hidden;
+/* The same row inside the wrapper the wide layout splits a screen with (桌, at the end). */
+.sheet > .row:first-child, .sheet > :is(.c-hero, .g-hero):first-child > .row:first-child { padding-right: 140px; }
+:is(.sheet, .c-hero, .g-hero) > .row:first-child > :last-child { flex: none; white-space: nowrap; }
+:is(.sheet, .c-hero, .g-hero) > .row:first-child > :first-child { min-width: 0; overflow: hidden;
                                            text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
@@ -2097,3 +2098,86 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .weekband .wsay u { display: block; text-decoration: none; margin-top: 4px; font-size: 11.5px;
                     color: var(--faint); }
 .weekband .wsay u i { font-style: normal; }
+
+/* ── 桌 the computer ─────────────────────────────────────────────────────
+
+   Bruno, on a monitor: *"no pc é suposto ser pc friendly e não igual ao mobile ... devem
+   ser 2 versões."* It was the phone's 480px column in the middle of a black window. From
+   1100px the same screens are laid out for a wide one: the tabs become a menu down the
+   left with the game's name over it, the realm the cultivator stands in is painted across
+   the whole window, the cultivate screen splits into what you are (left, and it stays
+   put) and what you do (right), gear splits the same way, the hunt is a grid, and every
+   panel that covers a phone opens as a window over the game instead. Nothing below
+   1100px changes. */
+
+.backdrop { display: none; }
+.c-hero, .c-side, .g-hero, .g-side { display: contents; }
+
+@media (min-width: 1100px) {
+  body { background: #0D0B08; }
+  .backdrop { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+              background-size: cover; background-position: center 62%;
+              opacity: .3; filter: saturate(.8) brightness(.72); }
+  .backdrop::after { content: ''; position: absolute; inset: 0;
+                     background: radial-gradient(ellipse at 58% 40%, transparent 0, rgba(13,11,8,.55) 55%, #0D0B08 100%); }
+
+  .app { max-width: 1320px; display: grid; grid-template-columns: 236px minmax(0, 1fr);
+         grid-template-rows: minmax(0, 1fr); z-index: 1; }
+  .app > .sheet { grid-column: 2; grid-row: 1; padding: 38px 52px 56px; }
+
+  /* 門 The tabs, as a menu down the left. */
+  .app > nav.tabs { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 4px;
+                    border-top: 0; border-right: 1px solid var(--line); padding: 30px 14px;
+                    background: rgba(20, 17, 13, .78); backdrop-filter: blur(6px); }
+  .app > nav.tabs::before { content: '九境\A NINEFOLD'; white-space: pre; display: block;
+                            padding: 0 12px 26px; font: 400 36px/1.1 'Noto Serif SC', serif;
+                            color: var(--jade); letter-spacing: .02em; }
+  .app > nav.tabs button { flex-direction: row; justify-content: flex-start; gap: 14px;
+                           padding: 12px 14px; border-radius: 10px; text-align: left; }
+  .app > nav.tabs button[data-on='true'] { background: rgba(127, 180, 149, .1); }
+  .app > nav.tabs button:hover:not([data-on='true']) { background: rgba(237, 227, 210, .04); }
+  .app > nav.tabs .g { font-size: 22px; }
+  .app > nav.tabs .l { font-size: 12.5px; letter-spacing: .14em; }
+  /* The unspent 道 count sits at the end of the row here, where it cannot land on the name. */
+  .app > nav.tabs button { position: relative; }
+  .app > nav.tabs .g { position: static; }
+  .app > nav.tabs .owed { left: auto; right: 14px; bottom: auto; top: 50%; transform: translateY(-50%);
+                          font-size: 11.5px; padding: 3px 7px; }
+
+  /* 修 What you are on the left, what you do on the right. */
+  .sheet[data-screen='cultivate'] { display: grid; column-gap: 56px; align-items: start;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+        grid-template-rows: auto 1fr; grid-template-areas: 'hero guide' 'hero side'; }
+  .sheet[data-screen='cultivate'] > .guidewrap { grid-area: guide; margin-top: 0; }
+  .c-hero { display: block; grid-area: hero; position: sticky; top: 0; min-width: 0; }
+  .c-side { display: block; grid-area: side; min-width: 0; }
+  .c-hero .portrait { max-width: 400px; }
+  .app .sheet > :is(.c-hero, .g-hero) > .row:first-child { padding-right: 0; }
+
+  /* 器 The same split: the figure and its six pieces stay, the chest scrolls beside them. */
+  .sheet[data-screen='gear'] { display: grid; column-gap: 56px; align-items: start;
+        grid-template-columns: minmax(0, .95fr) minmax(0, 1fr); }
+  .sheet[data-screen='gear'] > :not(.g-hero, .g-side) { grid-column: 1 / -1; }
+  .g-hero { display: block; grid-column: 1; position: sticky; top: 0; min-width: 0; }
+  .g-side { display: block; grid-column: 2; min-width: 0; }
+  .g-hero .wheel { max-width: 480px; margin-inline: auto; }
+
+  /* 狩 The hunt as a grid of cards rather than one long column. */
+  .sheet[data-screen='hunt'] .stack { display: grid; gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+
+  /* 道 塔 A readable measure, not a line across a whole monitor. It is the sheet's
+     padding that narrows, because half the children carry a margin of their own. */
+  .sheet[data-screen='dao'], .sheet[data-screen='trials'] {
+    padding-inline: max(52px, calc((100% - 720px) / 2)); }
+  /* The tree is drawn in its own units and would grow its labels with the window. */
+  .sheet[data-screen='dao'] .treesvg { display: block; max-width: 600px; margin-inline: auto; }
+
+  /* 窗 Everything that covers a phone opens as a window over the game, which stays in
+     view dimmed behind it. The shadow is the dimming, so nothing else is needed. */
+  .arena, .help, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
+    left: 0; right: 0; top: 28px; bottom: 28px; margin-inline: auto; width: min(620px, 100%);
+    border: 1px solid var(--line); border-radius: 16px; overflow: hidden auto;
+    box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .66), 0 30px 80px rgba(0, 0, 0, .6); }
+  .arena { width: min(560px, 100%); overflow: hidden; }
+}

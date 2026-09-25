@@ -58,6 +58,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
 
   return (
     <>
+      {/* 桌 On a wide screen the figure stays on the left and the chest scrolls on the
+          right. On a phone both wrappers are display: contents and change nothing. */}
+      <div className="g-hero">
       <div className="row">
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           器 Gear
@@ -122,7 +125,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             <Term han={RARITY_INFO[best].han} plain /></span> {RARITY_INFO[best].name} {GEAR.bestTail}
         </p>
       )}
+      </div>
 
+      <div className="g-side">
       {/* 煉器 Where material goes. Everything else it buys is capped; this is not. */}
       {isOpen(state.realm, 'refine') && SLOTS.some((slot) => state.worn[slot]) && (
         <>
@@ -333,6 +338,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         {GEAR.howTo}<br />
         {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)} · {GEAR.drops(state.realm)}
       </p>
+      </div>
     </>
   );
 }

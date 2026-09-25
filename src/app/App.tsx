@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { pictureOf } from '../data/pictures.ts';
+import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden, fight, takeKill } from '../sim/combat.ts';
@@ -584,8 +586,15 @@ export function App() {
     [],
   );
 
+  // 桌 On a computer the whole window is the realm the cultivator stands in: its own
+  // painting, dimmed, behind everything. A phone never draws it (see .backdrop).
+  const heavenNow = state.realm === 9 ? heavenAt(state.tribulation) : null;
+  const backdrop = (heavenNow && pictureOf('heaven', String(heavenNow.n)))
+    ?? pictureOf('realm', String(state.realm));
+
   return (
     <div className="app">
+      {backdrop && <div className="backdrop" aria-hidden="true" style={{ backgroundImage: `url(${backdrop})` }} />}
       {/* 屏 The screen names itself in the DOM. A locked tab takes the tap and changes
           nothing, and 註 the tooltip harness was walking the previous screen a second
           time and reporting its characters under the wrong tab's name. */}

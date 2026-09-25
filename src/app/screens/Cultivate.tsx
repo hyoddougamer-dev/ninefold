@@ -130,6 +130,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </div>
       )}
 
+      {/* 桌 Two columns on a computer, one on a phone. On a phone these two wrappers are
+          display: contents and the screen is exactly what it was; on a wide screen the
+          cultivator, the number and the ladder stand on the left and stay there, and what
+          you do with them runs down the right. See .c-hero in theme.css. */}
+      <div className="c-hero">
       <div className="row">
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           修 Cultivate · day {day}
@@ -241,7 +246,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {state.realm === 9 && !top && (
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{CULTIVATE.lastLayers(LAYERS - 1 - layersOpened(state))}</p>
       )}
+      </div>
 
+      <div className="c-side">
       {standing && (
         <>
           <h2 className="heading">
@@ -497,6 +504,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           </button>
         </div>
       )}
+      </div>
     </>
   );
 }
