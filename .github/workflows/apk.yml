@@ -1,13 +1,23 @@
-# Builds the Android APK. Run it by hand, from the Actions tab.
+# Builds the Android APK and puts it where testers can download it.
 #
 # It is deliberately *not* on every push. The APK is a shell around the hosted page and
-# has no game inside it, so it only needs rebuilding when the shell itself changes —
+# has no game inside it, so it only needs rebuilding when the shell itself changes:
 # the icon, the name, the URL it points at. Everything else reaches the phone through
-# Pages, which is the point.
+# Pages, which is the point. It also runs when the shell's own files change.
+#
+# 測 The build is published to the release tagged `testers`, replacing the file there,
+# so the download link never changes:
+#   https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk
 name: apk
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [capacitor.config.json, android-test/**, public/icon-*.png, .github/workflows/apk.yml]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -47,6 +57,13 @@ jobs:
             (Settings -> Pages -> Source: GitHub Actions) or the installed app will be blank."
           fi
 
+      # 測 One key for every test build, so each one installs over the last. See
+      # android-test/README.md for why it is in the open and why it is only for testing.
+      - name: Use the testers' signing key
+        run: |
+          mkdir -p ~/.android
+          cp android-test/debug.keystore ~/.android/debug.keystore
+
       - name: Build the debug APK
         run: ./gradlew assembleDebug --no-daemon
         working-directory: android
@@ -58,3 +75,15 @@ jobs:
           name: ninefold-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # The same file on a public release, which needs no GitHub account to download.
+      - name: Publish to the testers release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk ninefold.apk
+          if ! gh release view testers >/dev/null 2>&1; then
+            gh release create testers --prerelease --title "九境 Ninefold, test build" \
+              --notes "Test build for testers. Install ninefold.apk and allow installs from unknown sources. The game inside updates by itself; this file only changes when the app shell does."
+          fi
+          gh release upload testers ninefold.apk --clobber
