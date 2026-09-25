@@ -51,7 +51,7 @@ export const HELP = {
     // 指 It said "the button beside this one" from before the corner folded into one
     // Menu button. There has been no button beside it since, so it names the way there.
     ['釋 says what every character means',
-      'Open ≡ Menu at the top right and pick "What the characters mean". Any character with a dotted line under it also says its name when you tap it.'],
+      'Open ≡ Menu and pick "What the characters mean". Any character with a dotted line under it also says its name when you tap it.'],
   ] as const,
   opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
   hunt: '',

@@ -2102,82 +2102,121 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* ── 桌 the computer ─────────────────────────────────────────────────────
 
    Bruno, on a monitor: *"no pc é suposto ser pc friendly e não igual ao mobile ... devem
-   ser 2 versões."* It was the phone's 480px column in the middle of a black window. From
-   1100px the same screens are laid out for a wide one: the tabs become a menu down the
-   left with the game's name over it, the realm the cultivator stands in is painted across
-   the whole window, the cultivate screen splits into what you are (left, and it stays
-   put) and what you do (right), gear splits the same way, the hunt is a grid, and every
-   panel that covers a phone opens as a window over the game instead. Nothing below
-   1100px changes. */
+   ser 2 versões."* And then, of the first attempt, which was the phone's layout in a
+   1320px box in the middle of a 1900px window: *"deve ser fullscreen e a ui tem que estar
+   muito mais alinhada e em conta com a janela."*
+
+   So from 1100px the game takes the whole window, the way a game on a computer does:
+   - a rail down the left edge, the game's name at the top, the tabs, and Menu at the foot;
+   - on 修 and 器, a stage and a dock. The cultivator stands on the stage in front of the
+     realm's painting, and the things to do sit in a panel docked to the right edge that
+     scrolls on its own, so the figure never scrolls away from what is being bought;
+   - 狩 fills the width with a grid of beast cards, as many across as the window holds;
+   - 道 and 塔 keep a readable column, and the tree stops growing its labels with it;
+   - every panel that covers a phone opens as a window over the game, dimmed behind it.
+   Nothing below 1100px changes. */
 
 .backdrop { display: none; }
 .c-hero, .c-side, .g-hero, .g-side { display: contents; }
 
 @media (min-width: 1100px) {
+  :root { --rail: 248px; --dock: clamp(400px, 30vw, 540px); }
   body { background: #0D0B08; }
+
+  /* 景 The realm's painting behind everything, clearest on the stage. */
   .backdrop { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-              background-size: cover; background-position: center 62%;
-              opacity: .3; filter: saturate(.8) brightness(.72); }
+              background-size: cover; background-position: center 60%;
+              opacity: .42; filter: saturate(.85) brightness(.75); }
   .backdrop::after { content: ''; position: absolute; inset: 0;
-                     background: radial-gradient(ellipse at 58% 40%, transparent 0, rgba(13,11,8,.55) 55%, #0D0B08 100%); }
+    background: radial-gradient(ellipse 60% 75% at 42% 45%, transparent 0, rgba(13,11,8,.5) 60%, #0D0B08 100%); }
 
-  .app { max-width: 1320px; display: grid; grid-template-columns: 236px minmax(0, 1fr);
-         grid-template-rows: minmax(0, 1fr); z-index: 1; }
-  .app > .sheet { grid-column: 2; grid-row: 1; padding: 38px 52px 56px; }
+  .app { max-width: none; width: 100%; margin: 0; display: grid; z-index: 1;
+         grid-template-columns: var(--rail) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .app > .sheet { grid-column: 2; grid-row: 1; padding: 36px 48px 56px;
+                  scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  /* Menu lives in the rail here, so no first row has to leave room for it. */
+  .app .sheet > .row:first-child,
+  .app .sheet > :is(.c-hero, .g-hero) > .row:first-child { padding-right: 0; }
 
-  /* 門 The tabs, as a menu down the left. */
+  /* 門 The rail: the name, the tabs, and Menu at the foot. */
   .app > nav.tabs { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 4px;
-                    border-top: 0; border-right: 1px solid var(--line); padding: 30px 14px;
-                    background: rgba(20, 17, 13, .78); backdrop-filter: blur(6px); }
+                    border-top: 0; border-right: 1px solid var(--line); padding: 30px 14px 90px;
+                    background: rgba(20, 17, 13, .86); backdrop-filter: blur(6px); }
   .app > nav.tabs::before { content: '九境\A NINEFOLD'; white-space: pre; display: block;
-                            padding: 0 12px 26px; font: 400 36px/1.1 'Noto Serif SC', serif;
+                            padding: 0 12px 28px; font: 400 34px/1.12 'Noto Serif SC', serif;
                             color: var(--jade); letter-spacing: .02em; }
   .app > nav.tabs button { flex-direction: row; justify-content: flex-start; gap: 14px;
-                           padding: 12px 14px; border-radius: 10px; text-align: left; }
-  .app > nav.tabs button[data-on='true'] { background: rgba(127, 180, 149, .1); }
+                           padding: 12px 14px; border-radius: 10px; text-align: left; position: relative; }
+  .app > nav.tabs button[data-on='true'] { background: rgba(127, 180, 149, .1);
+                                           box-shadow: inset 3px 0 0 var(--jade); }
   .app > nav.tabs button:hover:not([data-on='true']) { background: rgba(237, 227, 210, .04); }
-  .app > nav.tabs .g { font-size: 22px; }
+  .app > nav.tabs .g { font-size: 22px; position: static; }
   .app > nav.tabs .l { font-size: 12.5px; letter-spacing: .14em; }
-  /* The unspent 道 count sits at the end of the row here, where it cannot land on the name. */
-  .app > nav.tabs button { position: relative; }
-  .app > nav.tabs .g { position: static; }
+  /* The unspent 道 count sits at the end of the row, where it cannot land on the name. */
   .app > nav.tabs .owed { left: auto; right: 14px; bottom: auto; top: 50%; transform: translateY(-50%);
                           font-size: 11.5px; padding: 3px 7px; }
 
-  /* 修 What you are on the left, what you do on the right. */
-  .sheet[data-screen='cultivate'] { display: grid; column-gap: 56px; align-items: start;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-        grid-template-rows: auto 1fr; grid-template-areas: 'hero guide' 'hero side'; }
-  .sheet[data-screen='cultivate'] > .guidewrap { grid-area: guide; margin-top: 0; }
-  .c-hero { display: block; grid-area: hero; position: sticky; top: 0; min-width: 0; }
-  .c-side { display: block; grid-area: side; min-width: 0; }
-  .c-hero .portrait { max-width: 400px; }
-  .app .sheet > :is(.c-hero, .g-hero) > .row:first-child { padding-right: 0; }
+  .app > .switches { top: auto; right: auto; left: 14px; bottom: 22px; width: calc(var(--rail) - 29px); }
+  .app > .switches .mainswitch { width: 100%; height: 46px; display: flex; align-items: center;
+        gap: 14px; padding: 0 14px; border-radius: 10px; font-size: 20px;
+        background: transparent; border-color: var(--line); }
+  .app > .switches .mainswitch::after { content: attr(aria-label); font-size: 12.5px;
+        letter-spacing: .14em; text-transform: uppercase; }
+  .app > .switches .switchmenu { top: auto; bottom: 54px; left: 0; right: auto; width: 100%; }
 
-  /* 器 The same split: the figure and its six pieces stay, the chest scrolls beside them. */
-  .sheet[data-screen='gear'] { display: grid; column-gap: 56px; align-items: start;
-        grid-template-columns: minmax(0, .95fr) minmax(0, 1fr); }
-  .sheet[data-screen='gear'] > :not(.g-hero, .g-side) { grid-column: 1 / -1; }
-  .g-hero { display: block; grid-column: 1; position: sticky; top: 0; min-width: 0; }
-  .g-side { display: block; grid-column: 2; min-width: 0; }
-  .g-hero .wheel { max-width: 480px; margin-inline: auto; }
+  /* 修 器 The stage and the dock. The sheet stops scrolling; each side scrolls itself. */
+  .sheet:is([data-screen='cultivate'], [data-screen='gear']) {
+    overflow: hidden; padding: 0; position: relative; display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--dock); grid-template-rows: auto minmax(0, 1fr); }
+  .app > .sheet:is([data-screen='cultivate'], [data-screen='gear']) { padding: 0; }
+  .sheet:is([data-screen='cultivate'], [data-screen='gear'])::before {
+    content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: var(--dock);
+    background: rgba(20, 17, 13, .84); border-left: 1px solid var(--line); backdrop-filter: blur(6px); }
 
-  /* 狩 The hunt as a grid of cards rather than one long column. */
+  .c-hero, .g-hero { display: block; grid-column: 1; grid-row: 1 / -1; min-width: 0; min-height: 0;
+                     overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+                     padding: 36px max(48px, calc((100% - 660px) / 2)) 40px; }
+  .c-side, .g-side { display: block; grid-column: 2; grid-row: 2; min-width: 0; min-height: 0;
+                     overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+                     padding: 32px 30px 48px; }
+  .sheet[data-screen='cultivate'] > .guidewrap { grid-column: 2; grid-row: 1; margin: 30px 30px 0; }
+  /* Inside a grid cell the card's own margin no longer collapses away, so the close
+     button measured from the bottom landed on the border; and the arrow art ran under it. */
+  .sheet[data-screen='cultivate'] > .guidewrap .guide { margin-bottom: 0; padding-right: 40px; }
+  .sheet[data-screen='cultivate'] > .guidewrap ~ .c-side { padding-top: 22px; }
+
+  /* The figure is sized off the window's height, so the stage fits without scrolling. */
+  .c-hero .portrait { max-width: min(460px, 48vh); }
+  .g-hero .wheel { max-width: min(560px, 62vh); }
+
+  /* 狩 As many beast cards across as the window holds. */
   .sheet[data-screen='hunt'] .stack { display: grid; gap: 10px;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+  /* The record reads across in one line: seen, known, mastered, and what they pay. */
+  .sheet[data-screen='hunt'] .tally { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .sheet[data-screen='hunt'] .tally span { grid-column: auto; }
 
-  /* 道 塔 A readable measure, not a line across a whole monitor. It is the sheet's
-     padding that narrows, because half the children carry a margin of their own. */
-  .sheet[data-screen='dao'], .sheet[data-screen='trials'] {
-    padding-inline: max(52px, calc((100% - 720px) / 2)); }
+  /* 道 塔 A readable measure, not a line across a whole monitor. It is the sheet's padding
+     that narrows, because half the children carry a margin of their own. */
+  .app > .sheet:is([data-screen='dao'], [data-screen='trials']) {
+    padding-inline: max(48px, calc((100% - 780px) / 2)); }
   /* The tree is drawn in its own units and would grow its labels with the window. */
-  .sheet[data-screen='dao'] .treesvg { display: block; max-width: 600px; margin-inline: auto; }
+  .sheet[data-screen='dao'] .treesvg { display: block; max-width: 620px; margin-inline: auto; }
 
   /* 窗 Everything that covers a phone opens as a window over the game, which stays in
      view dimmed behind it. The shadow is the dimming, so nothing else is needed. */
-  .arena, .help, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
-    left: 0; right: 0; top: 28px; bottom: 28px; margin-inline: auto; width: min(620px, 100%);
+  .arena, .help, .whom, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
+    left: 0; right: 0; top: 32px; bottom: 32px; margin-inline: auto; width: min(640px, 100%);
     border: 1px solid var(--line); border-radius: 16px; overflow: hidden auto;
-    box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .66), 0 30px 80px rgba(0, 0, 0, .6); }
-  .arena { width: min(560px, 100%); overflow: hidden; }
+    box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .7), 0 30px 80px rgba(0, 0, 0, .6); }
+  .arena { width: min(580px, 100%); overflow: hidden; }
+  /* A reading window is as tall as what it says and sits in the middle of the screen,
+     rather than stretching to the window's height with a hole above its button. */
+  .help, .whom { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px); }
+  .whom { padding-block: 44px; }
+  /* 出口 The way out sits beside the window it closes, not in the far corner of a
+     monitor, two thirds of a screen away from what it belongs to. */
+  .escape { top: 32px; right: calc(50% - 320px - 62px); }
+  .escape:hover { border-color: var(--faint); }
+  .whom .face { width: 150px; height: 150px; }
 }
