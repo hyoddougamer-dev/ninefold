@@ -373,6 +373,26 @@ async function bleed(
   const coreSoft = await sharp(Buffer.from(core), { raw: { width: w, height: h, channels: 1 } })
     .blur(3).toColourspace('b-w').raw().toBuffer();
   const ghostCap = ghost ? 0.55 : 1;
+
+  // 紙 The paper round her, taken off.
+  //
+  // Bruno, in 2026-09: *"sinto que está um pouco out of place."* The ramp above is the ink
+  // *spread* by nine pixels, so it reaches nine pixels out over bare paper, and that paper
+  // came along at nearly full opacity: a pale rim all the way round every figure, which on
+  // the game's dark ground is a sticker's white border. Outside the core, a pixel now keeps
+  // only as much opacity as it has ink of its own, read with a light blur so the edge is
+  // smooth and a fleck of paper grain outside her does not survive as a speck. The ink
+  // line of her outline stays; the paper beyond it goes. The ghost keeps its mist.
+  if (!ghost) {
+    const sharpInk = await sharp(ink, { raw: { width: w, height: h, channels: 1 } })
+      .blur(2.4).toColourspace('b-w').raw().toBuffer();
+    const tlo = Math.max(7, 11 * gentle), thi = Math.max(22, 38 * gentle);
+    for (let j = 0; j < w * h; j++) {
+      const t = (sharpInk[j] - tlo) / (thi - tlo);
+      const own = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
+      if (own < alpha[j]) alpha[j] = own;
+    }
+  }
   for (let j = 0; j < w * h; j++) {
     alpha[j] = Math.max(alpha[j], Math.round(coreSoft[j] * ghostCap));
   }
@@ -520,6 +540,7 @@ async function cutout(file: string, box: { left: number; top: number; width: num
   {
     const solid = (j: number) => alpha[j] > 40;
     const seen = new Uint8Array(w * h);
+    const patched = new Uint8Array(w * h);
     const stack: number[] = [];
     for (let j = 0; j < w * h; j++) {
       if (seen[j] || solid(j)) continue;
@@ -539,8 +560,50 @@ async function cutout(file: string, box: { left: number; top: number; width: num
         if (y < h - 1 && !seen[k + w] && !solid(k + w)) { seen[k + w] = 1; stack.push(k + w); }
       }
       if (!touchesEdge && region.length < w * h * 0.25) {
-        for (const k of region) alpha[k] = 255;
+        for (const k of region) { alpha[k] = 255; patched[k] = 255; }
       }
+    }
+    // 環 And the ring round each patch. The pixels between a filled hole and the solid
+    // animal were half keyed, so a pale chest came back framed in a thin dark line where
+    // the ground showed through: a patch sewn on rather than the animal's own belly.
+    const ring = await sharp(Buffer.from(patched), { raw: { width: w, height: h, channels: 1 } })
+      .blur(2.5).toColourspace('b-w').raw().toBuffer();
+    for (let j = 0; j < w * h; j++) if (ring[j] > 8) alpha[j] = 255;
+  }
+
+  /**
+   * 紙 The rim of paper round the outside, taken off.
+   *
+   * The neighbourhood term above is what keeps a pale wash, and it also reaches six
+   * pixels out over bare paper, so every creature stood in a pale border: on the game's
+   * dark ground, a sticker. Only the band next to the real outside is trimmed, to what
+   * each pixel carries of its own ink; a hole filled in the middle of a pale animal is
+   * not next to the outside, and is left exactly as it was.
+   */
+  {
+    const out = new Uint8Array(w * h);
+    const stack: number[] = [];
+    for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
+    for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
+    while (stack.length) {
+      const j = stack.pop()!;
+      if (out[j] || alpha[j] > 40) continue;
+      out[j] = 255;
+      const x = j % w, y = (j - x) / w;
+      if (x > 0) stack.push(j - 1);
+      if (x < w - 1) stack.push(j + 1);
+      if (y > 0) stack.push(j - w);
+      if (y < h - 1) stack.push(j + w);
+    }
+    const band = await sharp(Buffer.from(out), { raw: { width: w, height: h, channels: 1 } })
+      .blur(5).toColourspace('b-w').raw().toBuffer();
+    const own = await sharp(far, { raw: { width: w, height: h, channels: 1 } })
+      .blur(2.4).toColourspace('b-w').raw().toBuffer();
+    for (let j = 0; j < w * h; j++) {
+      if (band[j] < 12) continue;
+      const t = (own[j] - LO) / (HI - LO);
+      const keep = t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * t * (3 - 2 * t) * 255);
+      if (keep < alpha[j]) alpha[j] = keep;
     }
   }
 
