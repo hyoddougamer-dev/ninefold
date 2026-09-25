@@ -131,8 +131,8 @@ const SELF = [
   'the same face, in an austere robe, the outline of the shoulders no longer quite certain against the paper',
   'the same face, in robes that seem larger than the person in them, painted with a thinner brush, more presence than body',
   // 渡劫 It asked for "half of it left as bare paper", and got it: a head and two scraps
-  // that no cut can turn back into a person on a dark screen. The game draws the eighth
-  // figure dissolving until this panel is painted again, so ask for the whole of her.
+  // that no cut can turn back into a person on a dark screen. It asks for the whole of
+  // her, and ninthSheet asks for this panel alone, with the eighth as the reference.
   'the same face and the same seated figure, whole and complete, in pale violet robes painted lighter than before, the hems of the robe thinning into faint mist while the face, the hands and the seated shape stay clearly drawn',
 ];
 

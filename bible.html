@@ -792,8 +792,11 @@
         <i>No topo, o retrato dava lugar a um trapézio liso. Agora ela está sentada no meio do
         lago de trovão, que enche à volta dela.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>A nona pintura estava rasgada</em>
-        <i>Recortada, era uma cabeça e dois farrapos. O nono reino mostra a oitava figura a
-        desfazer-se em luz até a pintura ser refeita.</i></span></div>
+        <i>Recortada, era uma cabeça e dois farrapos. Foi repintada inteira, nas duas figuras,
+        com a oitava como referência para a cara.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">悟道</b> <em>As cartas dos céus estão pintadas</em>
+        <i>As 27 cartas que eram pictogramas, três céus por folha, cada linha na
+        cor do seu céu. As 51 cartas do jogo estão todas pintadas.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">鬥</b> <em>A arena acaba o combate</em>
         <i>A besta vencida cai em tinta, cada golpe atira tinta, a vitória tem anéis de luz e
         o que se ganhou aparece em fichas.</i></span></div>
@@ -1051,17 +1054,16 @@
       first-kill qi on the quarry and kept paying the 熟 rate after 通 landed mid-drive. Both
       have tests that fail on the old code.</p>
 
-    <h3>畫 What the art still needs</h3>
+    <h3>畫 The art the audit asked for, and got</h3>
     <div class="rows">
       <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>The ninth cultivator, both figures</em>
-        <i>The panel was asked for "half of it left as bare paper", and on a dark screen that
-        cuts to a head and two scraps. The game draws the eighth figure dissolving into
-        light until it is repainted, and the prompt in tools/sheets.ts now asks for the
-        whole of her.</i></span></div>
+        <i>The panel had been asked for "half of it left as bare paper", and on a dark screen
+        that cut to a head and two scraps. It was asked again on a leaf of its own, with the
+        eighth attached for the face, and came back whole.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">悟道</b> <em>The 27 heaven cards</em>
-        <i>The eight realms' 24 cards are painted. The heavens' are drawn
-        as pictograms, which read, and are the one family of cards that looks unfinished next
-        to the others.</i></span></div>
+        <i>They were pictograms beside the realms' 24 painted cards. Three
+        sheets, three heavens to a sheet and one heaven to a row, each row in its heaven's own
+        pigment. All 51 cards in the game are painted now.</i></span></div>
     </div>
     <p class="t">Everything else a player sees is painted or drawn from the save. That is
       36 creatures, 9 Dragons, 9 realms, 9 heavens, 18 cultivators, 10
@@ -1080,7 +1082,7 @@
       it, which is the worst of both.</p>
     <p class="t">This section is how the art is made now, and it is written down because
       none of it is a one-off. 684 things in this game are drawn as a thing.
-      134 of them are painted. The rest arrive one sheet at a time, and the
+      161 of them are painted. The rest arrive one sheet at a time, and the
       game is playable at every point in between.</p>
 
     <h3>色 The palette came first</h3>
@@ -1123,6 +1125,16 @@
     <td class="n">9</td>
     <td class="n">✓</td>
   </tr><tr>
+    <td><b class="cjk">女修</b> <i>The cultivator, a woman, the ninth alone</i></td>
+    <td class="n">1×1</td>
+    <td class="n">1</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">男修</b> <i>The cultivator, a man, the ninth alone</i></td>
+    <td class="n">1×1</td>
+    <td class="n">1</td>
+    <td class="n">✓</td>
+  </tr><tr>
     <td><b class="cjk">緣</b> <i>The ten encounters</i></td>
     <td class="n">4×3</td>
     <td class="n">10</td>
@@ -1153,6 +1165,21 @@
     <td class="n">12</td>
     <td class="n">✓</td>
   </tr><tr>
+    <td><b class="cjk">悟丙</b> <i>Heaven cards, the first three heavens</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">悟丁</b> <i>Heaven cards, the middle three heavens</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
+    <td><b class="cjk">悟戊</b> <i>Heaven cards, the last three heavens</i></td>
+    <td class="n">3×3</td>
+    <td class="n">9</td>
+    <td class="n">✓</td>
+  </tr><tr>
     <td><b class="cjk">雜</b> <i>Herbs, pills and the rooms of the vault</i></td>
     <td class="n">4×3</td>
     <td class="n">10</td>
@@ -1181,7 +1208,7 @@
     </table>
 
     <h3>剪 The cut</h3>
-    <p class="t">One file arrives and the game needs 134
+    <p class="t">One file arrives and the game needs 163
       of them, so <code>npm run slice</code> cuts the sheet up. The whole difficulty is
       finding the rules, and it took three tries. The first cutter looked for the flattest
       rows of pixels and settled on bare paper eight pixels off the line. The second looked
@@ -1552,7 +1579,7 @@
 
     <h3>符 The emblems</h3>
     <p class="t">Everything the game draws as a symbol in a row: an art, an awakening card,
-      a herb, a line of pills, a room of the vault. 43 of them are
+      a herb, a line of pills, a room of the vault. 70 of them are
       painted. They are shown at twenty to thirty pixels, so each is one object on bare
       paper in as few strokes as it takes, rather than a scene nobody can see. They are
       also the one family whose keys collide: 狼噬 Wolf Bite is an art and 貪狼 Greedy Wolf
@@ -1652,7 +1679,7 @@
     <td><i class="faint">鬥 behind a fight above the ninth realm</i></td>
   </tr><tr>
     <td><b class="cjk">悟道</b> <i>awakening cards</i></td>
-    <td class="n">24 of 51</td>
+    <td class="n">51 of 51</td>
     <td><i class="faint">悟甲 and 悟乙, two sheets of twelve</i></td>
   </tr><tr>
     <td><b class="cjk">訣</b> <i>arts</i></td>
@@ -4438,47 +4465,47 @@
     <div class="ladder">
   <div class="rung" style="--hue:#6E9C84">
     <span class="no">1</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a16ti936.svg" alt="Qi Refining, realm 1"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/avs1cbs.svg" alt="Qi Refining, realm 1"></span>
     <b class="cjk">練氣</b><i>Qi Refining</i>
   </div>
   <div class="rung" style="--hue:#86AE8C">
     <span class="no">2</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ahzdnhg.svg" alt="Foundation, realm 2"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a121pofi.svg" alt="Foundation, realm 2"></span>
     <b class="cjk">築基</b><i>Foundation</i>
   </div>
   <div class="rung" style="--hue:#B2A566">
     <span class="no">3</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/agqud8r.svg" alt="Golden Core, realm 3"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1dpylr5.svg" alt="Golden Core, realm 3"></span>
     <b class="cjk">金丹</b><i>Golden Core</i>
   </div>
   <div class="rung" style="--hue:#D2B35B">
     <span class="no">4</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1kuoehy.svg" alt="Nascent Soul, realm 4"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ahtkx64.svg" alt="Nascent Soul, realm 4"></span>
     <b class="cjk">元嬰</b><i>Nascent Soul</i>
   </div>
   <div class="rung" style="--hue:#DFA555">
     <span class="no">5</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/ag4icp7.svg" alt="Spirit Severing, realm 5"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/adcc1tt.svg" alt="Spirit Severing, realm 5"></span>
     <b class="cjk">化神</b><i>Spirit Severing</i>
   </div>
   <div class="rung" style="--hue:#D07C4A">
     <span class="no">6</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a73j3s8.svg" alt="Void Refining, realm 6"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a23i7j6.svg" alt="Void Refining, realm 6"></span>
     <b class="cjk">煉虛</b><i>Void Refining</i>
   </div>
   <div class="rung" style="--hue:#CB5347">
     <span class="no">7</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/aw0m4e5.svg" alt="Unity, realm 7"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1wvrtsn.svg" alt="Unity, realm 7"></span>
     <b class="cjk">合體</b><i>Unity</i>
   </div>
   <div class="rung" style="--hue:#BE5B72">
     <span class="no">8</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a4b67z4.svg" alt="Great Vehicle, realm 8"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a12a8one.svg" alt="Great Vehicle, realm 8"></span>
     <b class="cjk">大乘</b><i>Great Vehicle</i>
   </div>
   <div class="rung" style="--hue:#A077B8">
     <span class="no">9</span>
-    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1fsitpc.svg" alt="Tribulation, realm 9"></span>
+    <span class="fig"><img class="pl" style="width:100%;height:100%" src="bible-art/a1sj5zxm.svg" alt="Tribulation, realm 9"></span>
     <b class="cjk">渡劫</b><i>Tribulation</i>
   </div></div>
     <div class="cards three">
@@ -4782,7 +4809,7 @@
     <div class="stage">
       <span class="sc"><img class="pl" style="width:100%;height:100%" src="bible-art/a14432iy.svg" alt="" aria-hidden="true"></span>
       <div class="duel">
-        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/a1cvozl1.svg" alt="Void Refining, realm 6"></span>
+        <span class="you"><img class="pl" style="width:100%;height:100%" src="bible-art/are8sj3.svg" alt="Void Refining, realm 6"></span>
         <span class="mid cjk">對</span>
         <span class="foe"><i class="pl" style="width:64px;height:64px;--pl:url(bible-art/a1g87r9i.svg)" aria-hidden="true"></i></span>
       </div>

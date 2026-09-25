@@ -2028,8 +2028,11 @@ const page = `<meta charset="utf-8">
         <i>No topo, o retrato dava lugar a um trapézio liso. Agora ela está sentada no meio do
         lago de trovão, que enche à volta dela.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>A nona pintura estava rasgada</em>
-        <i>Recortada, era uma cabeça e dois farrapos. O nono reino mostra a oitava figura a
-        desfazer-se em luz até a pintura ser refeita.</i></span></div>
+        <i>Recortada, era uma cabeça e dois farrapos. Foi repintada inteira, nas duas figuras,
+        com a oitava como referência para a cara.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">悟道</b> <em>As cartas dos céus estão pintadas</em>
+        <i>As ${HEAVEN_CARDS.length * 3} cartas que eram pictogramas, três céus por folha, cada linha na
+        cor do seu céu. As ${ALL_CARDS.length} cartas do jogo estão todas pintadas.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">鬥</b> <em>A arena acaba o combate</em>
         <i>A besta vencida cai em tinta, cada golpe atira tinta, a vitória tem anéis de luz e
         o que se ganhou aparece em fichas.</i></span></div>
@@ -2181,17 +2184,16 @@ const page = `<meta charset="utf-8">
       first-kill qi on the quarry and kept paying the 熟 rate after 通 landed mid-drive. Both
       have tests that fail on the old code.</p>
 
-    <h3>畫 What the art still needs</h3>
+    <h3>畫 The art the audit asked for, and got</h3>
     <div class="rows">
       <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>The ninth cultivator, both figures</em>
-        <i>The panel was asked for "half of it left as bare paper", and on a dark screen that
-        cuts to a head and two scraps. The game draws the eighth figure dissolving into
-        light until it is repainted, and the prompt in tools/sheets.ts now asks for the
-        whole of her.</i></span></div>
+        <i>The panel had been asked for "half of it left as bare paper", and on a dark screen
+        that cut to a head and two scraps. It was asked again on a leaf of its own, with the
+        eighth attached for the face, and came back whole.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">悟道</b> <em>The ${HEAVEN_CARDS.length * 3} heaven cards</em>
-        <i>The eight realms' ${AWAKENINGS.length * 3} cards are painted. The heavens' are drawn
-        as pictograms, which read, and are the one family of cards that looks unfinished next
-        to the others.</i></span></div>
+        <i>They were pictograms beside the realms' ${AWAKENINGS.length * 3} painted cards. Three
+        sheets, three heavens to a sheet and one heaven to a row, each row in its heaven's own
+        pigment. All ${ALL_CARDS.length} cards in the game are painted now.</i></span></div>
     </div>
     <p class="t">Everything else a player sees is painted or drawn from the save. That is
       ${BEASTS.length} creatures, 9 Dragons, 9 realms, 9 heavens, 18 cultivators, 10
