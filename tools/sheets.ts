@@ -405,6 +405,14 @@ const EMBLEM: Record<string, readonly [string, string][]> = {
     ['card-allunder', 'a pale jade disc with a round hole in the middle'],
     ['card-endlessstair', 'a line of footprints walking off the edge of a cliff onto empty air'],
   ],
+  // 鴻蒙 The ninth heaven's three again, on a strip of their own. Painted in its own
+  // pigment, "almost nothing but paper", they came back true to the prompt and too faint
+  // to read in a thirty-pixel disc: a pale egg and a pale ring on pale paper.
+  'awaken-e9': [
+    ['card-uncarved', 'a smooth uncarved stone, egg-shaped, without a single mark'],
+    ['card-allunder', 'a jade disc with a round hole in the middle, seen face on'],
+    ['card-endlessstair', 'a line of footprints walking off the edge of a cliff onto empty air'],
+  ],
   // 草 丹 秘境 Three families too small for a sheet each, so they share one.
   sundries: [
     ['herb-moss', 'a patch of pale spirit moss on wet stone'],
@@ -450,6 +458,8 @@ const EMBLEM_SHEETS: readonly EmblemSheet[] = [
   { key: 'awaken-d', han: '悟丁', title: 'Heaven cards, the middle three heavens', cols: 3, rows: 3,
     what: 'a card', names: nameMap('card', ALL_CARDS) },
   { key: 'awaken-e', han: '悟戊', title: 'Heaven cards, the last three heavens', cols: 3, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'awaken-e9', han: '悟己', title: 'Heaven cards, the ninth heaven again', cols: 3, rows: 1,
     what: 'a card', names: nameMap('card', ALL_CARDS) },
   { key: 'sundries', han: '雜', title: 'Herbs, pills and the rooms of the vault', cols: 4, rows: 3,
     what: 'a thing', names: new Map([
@@ -512,6 +522,12 @@ export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) 
 const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old rose',
   'pale amber', 'gold leaf', 'pale gold', 'bone white', 'almost nothing but paper'];
 
+/**
+ * 鴻蒙 The ninth heaven's cards, asked for again with ink in them. Its own pigment is the
+ * palest of the nine on purpose, and at the size a card is shown it read as nothing.
+ */
+const NINTH_HEAVEN_INK = 'soot black ink for every outline and shadow, firm and dark, with a wash of bone white inside the shape';
+
 /** Which heaven the first row of each heaven-card sheet belongs to, counted from nought. */
 const HEAVEN_CARD_SHEETS: Record<string, number> = { 'awaken-c': 0, 'awaken-d': 3, 'awaken-e': 6 };
 
@@ -543,6 +559,7 @@ export function sheetPrompt(s: Sheet): string {
       // 境外 A heaven card is painted in its heaven's pigment, one heaven to a row.
       const heavenRow = HEAVEN_CARD_SHEETS[s.key];
       const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
+        : s.key === 'awaken-e9' ? NINTH_HEAVEN_INK
         : heavenRow !== undefined ? HEAVEN_PIGMENT[heavenRow + Math.floor(i / s.cols)]
         : inkOf(s.kind === 'meet' ? s.realms[i] : n).stuff;
       const whose = s.kind === 'emblem' ? 'Its one pigment is'
@@ -573,7 +590,7 @@ one thin ink rule around it, the whole figure inside it, and no letters or
 characters anywhere on the page.`;
   }
   return `One single square image: a page from an old Chinese ${album}, ruled
-into a grid of ${s.cols} columns by ${s.rows} rows, ${panels} panels in all.
+into a grid of ${s.cols} columns by ${s.rows} ${s.rows === 1 ? 'row' : 'rows'}, ${panels} panels in all.
 
 Draw the grid: thin dry ink rules, edge to edge, dividing the page into
 ${panels} equal rectangular panels with a narrow margin of bare paper
