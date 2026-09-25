@@ -161,6 +161,27 @@ function selfSheet(key: string, han: string, title: string, who: string): Sheet 
 }
 
 /**
+ * 渡劫 The ninth portrait on its own, one panel, for a figure whose first eight are good.
+ *
+ * Asking the whole sheet again would repaint the eight that work and change the person
+ * in them. So this asks for the ninth alone, with the eighth attached as the reference
+ * for the face, and it is cut by the same cutter into the same file the game reads.
+ */
+function ninthSheet(key: string, han: string, title: string, who: string): Sheet {
+  const r = REALMS[8];
+  return {
+    key: `${key}-9`,
+    han,
+    title: `${title}, the ninth alone`,
+    kind: 'self',
+    cols: 1,
+    rows: 1,
+    realms: [9],
+    cells: [{ key: `${key.slice(5)}-9`, han: r.han, name: r.name, subject: `${who}, ${SELF[8]}` }],
+  };
+}
+
+/**
  * 緣 The ten encounters, as ten scenes.
  *
  * 圖 They are the cards the game raises on its own screen while you are sitting there,
@@ -348,6 +369,42 @@ const EMBLEM: Record<string, readonly [string, string][]> = {
     ['card-heavenward', 'a stone stair going up into cloud and not coming back'],
     ['card-whale', 'an enormous whale mouth breaking water, swallowing'],
   ],
+  // 境外 The heavens' cards, three sheets of three heavens, one heaven to a row. They
+  // were the one family of cards still drawn as pictograms: the eight realms' twenty-four
+  // are painted and these twenty-seven are what a player chooses between for two months.
+  'awaken-c': [
+    ['card-formula', 'a folded paper of a pill recipe tied shut with a cord'],
+    ['card-longstair', 'the roof of a tall narrow tower, storey above storey, seen from below'],
+    ['card-maw', 'the open mouth of a sea serpent rising out of a wave'],
+    ['card-ninerungs', 'a plain wooden ladder of nine rungs, standing on nothing'],
+    ['card-auspice', 'one curling auspicious cloud, the old scroll-shaped kind'],
+    ['card-ashes', 'a small heap of grey ash with a few embers still red in it'],
+    ['card-quickfire', 'a small cauldron with a tall fierce flame under it'],
+    ['card-graveyard', 'a weathered grave marker leaning in long grass'],
+    ['card-coldforge', 'an iron ring rimed with frost, lying on an anvil'],
+  ],
+  'awaken-d': [
+    ['card-sealbreaker', 'a paper talisman seal torn cleanly in two'],
+    ['card-shedding', 'an empty cicada shell still clinging to a twig'],
+    ['card-starfall', 'a single falling star with a long tail'],
+    ['card-slowfire', 'one stick of incense with a thin line of smoke going straight up'],
+    ['card-lastdrop', 'a gourd tipped on its side with one last drop falling from its lip'],
+    ['card-godmaw', 'a bronze ritual food vessel heaped with offerings'],
+    ['card-skystair', 'a stair of cloud steps rising up and out of the panel'],
+    ['card-tempering', 'a sword blade laid flat, folded steel showing as fine lines along it'],
+    ['card-storehouse', 'a heavy iron-bound chest with its lid shut'],
+  ],
+  'awaken-e': [
+    ['card-ninereturns', 'a thread of smoke turning in a spiral, nine turns'],
+    ['card-heavenshare', 'a string of old round coins with square holes, tied with a cord'],
+    ['card-purelight', 'a single hair-thin line falling straight down from a small cloud'],
+    ['card-topless', 'a pagoda whose upper storeys fade away into blank paper'],
+    ['card-meltmountain', 'a small mountain melting like wax into a pool at its foot'],
+    ['card-spiritforge', 'a blade plunged into a bucket of water, steam rising'],
+    ['card-uncarved', 'a smooth uncarved stone, egg-shaped, without a single mark'],
+    ['card-allunder', 'a pale jade disc with a round hole in the middle'],
+    ['card-endlessstair', 'a line of footprints walking off the edge of a cliff onto empty air'],
+  ],
   // 草 丹 秘境 Three families too small for a sheet each, so they share one.
   sundries: [
     ['herb-moss', 'a patch of pale spirit moss on wet stone'],
@@ -388,6 +445,12 @@ const EMBLEM_SHEETS: readonly EmblemSheet[] = [
     what: 'a card', names: nameMap('card', ALL_CARDS) },
   { key: 'awaken-b', han: '悟乙', title: 'Awakening cards, the last twelve', cols: 4, rows: 3,
     what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'awaken-c', han: '悟丙', title: 'Heaven cards, the first three heavens', cols: 3, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'awaken-d', han: '悟丁', title: 'Heaven cards, the middle three heavens', cols: 3, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
+  { key: 'awaken-e', han: '悟戊', title: 'Heaven cards, the last three heavens', cols: 3, rows: 3,
+    what: 'a card', names: nameMap('card', ALL_CARDS) },
   { key: 'sundries', han: '雜', title: 'Herbs, pills and the rooms of the vault', cols: 4, rows: 3,
     what: 'a thing', names: new Map([
       ...HERBS.map((h) => [`herb-${h.key}`, [h.han, h.name] as const] as const),
@@ -415,6 +478,7 @@ function emblemSheet(e: EmblemSheet): Sheet {
 export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
   ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
+  ...WHO.map(([key, han, title, who]) => ninthSheet(key, han, title, who)),
   meetSheet(),
   heavenSheet(),
   skySheet(),
@@ -448,6 +512,9 @@ export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) 
 const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old rose',
   'pale amber', 'gold leaf', 'pale gold', 'bone white', 'almost nothing but paper'];
 
+/** Which heaven the first row of each heaven-card sheet belongs to, counted from nought. */
+const HEAVEN_CARD_SHEETS: Record<string, number> = { 'awaken-c': 0, 'awaken-d': 3, 'awaken-e': 6 };
+
 /**
  * 詞 The prompt for one sheet.
  *
@@ -462,6 +529,8 @@ export function sheetPrompt(s: Sheet): string {
     ? 'Each panel holds one small scene, wider than it is tall, seen from a few paces away with plenty of bare paper around it. No frame inside the panel, nothing behind the subject but the road, the ground or the mist it is standing in.'
     : s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
+    : s.kind === 'self' && s.cells.length === 1
+    ? 'The panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside the panel with bare paper above the head and below the knees. It is the same person as in the attached reference image: the same face, the same hair, the same pose and the same size on the page. Only the robe and how solidly they are there have changed. The whole figure is drawn, face, hands and seated shape; nothing of them is left out as bare paper. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
     : s.kind === 'self'
     ? 'Each panel holds one seated figure, seen from the front, sitting cross-legged in meditation, centred, the whole figure inside its own panel with bare paper above the head and below the knees. It is the same person in all nine and they do not age: what changes is their standing and how solidly they are there, from an ordinary villager in panel one to something barely painted in panel nine. No aura, no glow, no halo and no light around them: that part is drawn by the game and must not be in the painting. Nothing behind them but bare paper.'
     : s.kind === 'heaven'
@@ -469,8 +538,12 @@ export function sheetPrompt(s: Sheet): string {
     : 'Each panel holds one landscape seen from a great height, its mountains across the middle of the panel and the bottom of the panel almost empty.';
   const list = s.cells
     .map((c, i) => {
-      const n = s.kind === 'beast' || s.kind === 'meet' ? s.realms[Math.floor(i / s.cols)] : i + 1;
+      const n = s.kind === 'beast' || s.kind === 'meet' ? s.realms[Math.floor(i / s.cols)]
+        : s.kind === 'self' ? s.realms[i] : i + 1;
+      // 境外 A heaven card is painted in its heaven's pigment, one heaven to a row.
+      const heavenRow = HEAVEN_CARD_SHEETS[s.key];
       const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
+        : heavenRow !== undefined ? HEAVEN_PIGMENT[heavenRow + Math.floor(i / s.cols)]
         : inkOf(s.kind === 'meet' ? s.realms[i] : n).stuff;
       const whose = s.kind === 'emblem' ? 'Its one pigment is'
         : s.kind === 'self' ? 'The one pigment on the robe is'
@@ -485,6 +558,20 @@ export function sheetPrompt(s: Sheet): string {
     : 'bestiary album';
   const panels = s.cols * s.rows;
   const spare = panels - s.cells.length;
+  // 一 A leaf of one panel is a single plate, not a grid of one, and says so.
+  if (panels === 1) {
+    return `One single square image: one plate from an old Chinese ${album}, a single
+panel with a thin dry ink rule around it and a narrow margin of bare paper
+outside the rule. ${shape}
+
+The plate: ${s.cells[0].subject}. The one pigment on the robe is ${inkOf(s.realms[0]).stuff}.
+
+${MATERIALS}
+
+Again, and this matters more than anything else in this prompt: one panel,
+one thin ink rule around it, the whole figure inside it, and no letters or
+characters anywhere on the page.`;
+  }
   return `One single square image: a page from an old Chinese ${album}, ruled
 into a grid of ${s.cols} columns by ${s.rows} rows, ${panels} panels in all.
 

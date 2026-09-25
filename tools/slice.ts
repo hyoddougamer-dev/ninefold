@@ -654,7 +654,9 @@ async function cut(sheet: Sheet, file: string) {
     // 修 The cultivator is only ever wanted with the paper off: he stands inside an aura
     // the game draws, never on a disc, so there is no squared version to keep.
     if (sheet.kind === 'self') {
-      await bleed(file, box, out, { ghost: /-9$/.test(c.key) });
+      // 影 The ghost is for the old ninth panel only, which is half bare paper. A ninth
+      // painted whole on its own leaf is cut like the other eight.
+      await bleed(file, box, out, { ghost: /-9$/.test(c.key) && sheet.cells.length > 1 });
       written.push(out);
       continue;
     }
