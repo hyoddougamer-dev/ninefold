@@ -265,8 +265,13 @@ export const PICTURES: Readonly<Record<Painted, readonly string[]>> = {
 };
 
 /** Where a picture lives, if it exists. Null is the normal answer for now. */
+/** 版 Filled in by the build (vite.config.ts); absent under the tools, which read files. */
+declare const __ART_HASH__: Record<string, string> | undefined;
+
 export function pictureOf(kind: Painted, key: string): string | null {
-  return PICTURES[kind].includes(key) ? `art/${kind}/${key}.webp` : null;
+  if (!PICTURES[kind].includes(key)) return null;
+  const v = typeof __ART_HASH__ === 'undefined' ? undefined : __ART_HASH__[`${kind}/${key}`];
+  return v ? `art/${kind}/${key}.webp?v=${v}` : `art/${kind}/${key}.webp`;
 }
 
 /** How much of the set is painted, for the tool and for 頁 the bible to report. */

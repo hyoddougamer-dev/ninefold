@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { exportSave, importSave, keepSpare, load, save, saveFileName, wipe } from '../save.ts';
+import { exportSave, importSave, keepSpare, load, rearm, save, saveFileName, wipe } from '../save.ts';
 import { newState, power, tribulationPool, validate, type State } from '../state.ts';
 import { chestLimit } from '../chest.ts';
 import { advance, rate } from '../time.ts';
@@ -192,6 +192,17 @@ describe('存 the save', () => {
     keepSpare(deep(5, 5));
     wipe();
     expect(load(T0).state.realm).toBe(1);
+    rearm();
+  });
+
+  it('滅 after a wipe the page cannot write the save back on its way out', () => {
+    save(deep(5, 5));
+    wipe();
+    // What pagehide does as the reload begins.
+    save(deep(5, 5));
+    keepSpare(deep(5, 5));
+    expect(load(T0).state.realm).toBe(1);
+    rearm();
   });
 });
 

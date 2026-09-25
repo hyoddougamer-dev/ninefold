@@ -776,6 +776,68 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .arena[data-won='true'] .foe .art, .arena[data-lost='true'] .you .art, .gain { animation: none; }
 }
 
+/* ── 勁 the arena, with the blows drawn ──────────────────────────────────── */
+
+/* 入 They come in from the sides, and the place settles in behind them. */
+.duel .fighter.you { animation: enterL .55s cubic-bezier(.2, .8, .25, 1) both; }
+.duel .fighter.foe { animation: enterR .55s .08s cubic-bezier(.2, .8, .25, 1) both; }
+@keyframes enterL { from { transform: translateX(-60px); opacity: 0; } }
+@keyframes enterR { from { transform: translateX(60px) scale(1.06); opacity: 0; } }
+.arena .skyline { animation: settle-in 2.2s ease-out both; }
+@keyframes settle-in { from { transform: scale(1.08); } }
+
+/* 斬 The stroke across whoever took the blow. */
+.fighter .cut { position: absolute; left: 50%; top: 42%; width: 78%; aspect-ratio: 1; translate: -50% -50%;
+                overflow: visible; pointer-events: none; z-index: 3; }
+.fighter .cut path { fill: none; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100;
+                     animation: cutdraw .32s cubic-bezier(.3, .8, .3, 1) forwards; }
+.fighter .cut[data-kind='ink'] path { stroke: #F4EAD2; stroke-width: 5;
+  filter: drop-shadow(0 0 6px var(--jade)) drop-shadow(0 0 2px #fff); }
+.fighter .cut[data-kind='claw'] path { stroke: var(--cinnabar); stroke-width: 3.2;
+  filter: drop-shadow(0 0 5px var(--cinnabar)); }
+.fighter .cut[data-heavy='true'] path { stroke-width: 7.5; }
+.fighter .cut[data-kind='claw'][data-heavy='true'] path { stroke-width: 4.6; }
+@keyframes cutdraw {
+  0% { stroke-dashoffset: 100; opacity: 1; }
+  45% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* 白 A blow lands as a flash of white on the body that took it. */
+.foe[data-hit='true'] .beastcut, .foe[data-hit='true'] .art svg { animation: whitehit .24s ease-out; }
+.you[data-hit='true'] .art svg { animation: whitehit .24s ease-out; }
+@keyframes whitehit { 0% { filter: brightness(2) saturate(.4); } 100% { filter: none; } }
+
+/* 數 The number pops before it floats. */
+.dmg { animation: rise-pop .85s cubic-bezier(.2, .8, .3, 1) forwards; }
+@keyframes rise-pop {
+  0% { transform: translate(-50%, 6px) scale(.5); opacity: 0; }
+  16% { transform: translate(-50%, -6px) scale(1.25); opacity: 1; }
+  30% { transform: translate(-50%, -10px) scale(1); }
+  100% { transform: translate(-50%, -52px) scale(.95); opacity: 0; }
+}
+
+/* 灰 Ink lifting off a beast that fell. */
+.ashes { position: absolute; left: 50%; bottom: 18%; width: 70%; height: 0; translate: -50% 0;
+         pointer-events: none; z-index: 2; }
+.ashes i { position: absolute; left: calc(50% + var(--x)); bottom: 0; width: 5px; height: 5px; border-radius: 50%;
+           background: #2A241B; box-shadow: 0 0 6px rgba(237, 227, 210, .35); opacity: 0;
+           animation: ash 1.6s ease-out forwards; }
+@keyframes ash {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  15% { opacity: .9; }
+  100% { transform: translate(var(--dx), -120px) scale(.3); opacity: 0; }
+}
+
+/* 印 The verdict comes down like a seal. */
+.verdict .han { animation: stamp .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .duel .fighter.you, .duel .fighter.foe, .arena .skyline, .fighter .cut, .ashes, .verdict .han { animation: none; }
+  .fighter .cut, .ashes { display: none; }
+  .dmg { animation: rise .8s ease-out forwards; }
+}
+
 /* 命 The two lives, small and close to the feet. They are not the spectacle. */
 .feet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
         padding: 14px 18px 0; }
@@ -2181,6 +2243,54 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .weekband .wsay u { display: block; text-decoration: none; margin-top: 4px; font-size: 11.5px;
                     color: var(--faint); }
 .weekband .wsay u i { font-style: normal; }
+
+/* ── 勁 juice: ripples, rising numbers, ink bursts ─────────────────────────
+
+   One layer over everything (see juice.ts), outside every screen so no transform traps
+   it. Everything here is transform and opacity, so it costs the compositor and not the
+   page. */
+#juice { position: fixed; inset: 0; pointer-events: none; z-index: 80; overflow: hidden; }
+#juice .jr { position: absolute; width: 16px; height: 16px; margin: -8px; border-radius: 50%;
+             border: 1.5px solid rgba(237, 227, 210, .55); background: rgba(237, 227, 210, .08);
+             animation: jring .55s cubic-bezier(.2, .7, .3, 1) forwards; }
+@keyframes jring { from { transform: scale(.4); opacity: 1; } to { transform: scale(4.2); opacity: 0; } }
+
+#juice .jf { position: absolute; translate: -50% -50%; white-space: nowrap;
+             font: 700 19px/1 Rajdhani, sans-serif; letter-spacing: .02em;
+             text-shadow: 0 2px 10px rgba(0,0,0,.9), 0 0 16px currentColor;
+             animation: jfloat 1.15s cubic-bezier(.15, .8, .3, 1) forwards; }
+#juice .jf.still { animation: jfade 1.1s ease-out forwards; }
+@keyframes jfloat {
+  0% { transform: translateY(8px) scale(.6); opacity: 0; }
+  18% { transform: translateY(-6px) scale(1.12); opacity: 1; }
+  30% { transform: translateY(-10px) scale(1); }
+  100% { transform: translateY(-64px) scale(.96); opacity: 0; }
+}
+@keyframes jfade { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+
+#juice .jb { position: absolute; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%;
+             background: currentColor; box-shadow: 0 0 10px currentColor;
+             animation: jspray .75s cubic-bezier(.15, .75, .3, 1) forwards; }
+@keyframes jspray {
+  0% { transform: rotate(var(--a)) translateX(0) scale(var(--s)); opacity: 1; }
+  70% { opacity: .9; }
+  100% { transform: rotate(var(--a)) translateX(var(--d)) translateY(14px) scale(.2); opacity: 0; }
+}
+#juice .jbloom { position: absolute; width: 220px; height: 220px; margin: -110px; border-radius: 50%;
+                 border: 2px solid currentColor;
+                 box-shadow: 0 0 40px currentColor, inset 0 0 30px currentColor;
+                 animation: jbloom 1.1s cubic-bezier(.1, .7, .3, 1) forwards; }
+@keyframes jbloom { from { transform: scale(.15); opacity: .95; } to { transform: scale(3.2); opacity: 0; } }
+
+#juice .gold { color: var(--gold); }
+#juice .jade { color: var(--jade); }
+#juice .cinnabar { color: var(--cinnabar); }
+#juice .violet { color: #B79CE0; }
+
+/* 按 A card that was just bought settles into place instead of simply changing. */
+.upg[data-bought='true'] { animation: bought .42s cubic-bezier(.2, .9, .3, 1.4); }
+@keyframes bought { 0% { transform: scale(.96); } 45% { transform: scale(1.025); box-shadow: 0 0 0 1px var(--gold), 0 0 26px -4px var(--gold); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .upg[data-bought='true'] { animation: none; } }
 
 /* ── 桌 the computer ─────────────────────────────────────────────────────
 

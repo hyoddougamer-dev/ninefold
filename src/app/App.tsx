@@ -29,6 +29,7 @@ import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Prologue } from './ui/Prologue.tsx';
+import { armJuice, burst, centreOf, float } from './juice.ts';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
@@ -51,7 +52,7 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
-import { RETURN, TABS_COPY } from './copy.ts';
+import { JUICE, RETURN, TABS_COPY } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
@@ -263,6 +264,14 @@ export function App() {
           // rather than by the animation, so a second rung inside half a second (which
           // a melt can do) replays it instead of being swallowed.
           setOpened(true);
+          // 勁 And the bar that filled throws its light, with the layer's number over it.
+          const n = next.layer;
+          window.setTimeout(() => {
+            const at = centreOf(document.querySelector('.bar[data-opened]'));
+            if (!at) return;
+            burst('jade', at, 16, 90);
+            if (n > 0) float(JUICE.layer(n), 'jade', at);
+          }, 0);
           window.clearTimeout(openedTimer.current);
           openedTimer.current = window.setTimeout(() => setOpened(false), 540);
         }
@@ -436,6 +445,7 @@ export function App() {
     setState((s) => {
       const next = refine(s, slot);
       if (next === s) return s;
+      float(JUICE.refined, 'gold'); burst('gold', null, 10, 56);
       sfx.buy();
       haptics.strike();
       return next;
@@ -446,6 +456,7 @@ export function App() {
     setState((s) => {
       const next = fuse(s.chest, template, rarity as Item['rarity'], fuseQuality(s.unlocked));
       if (!next.made) return s;
+      float(JUICE.fused, 'gold'); burst('gold', null, 16, 80);
       return { ...s, chest: [...next.chest] };
     });
     sfx.breakthrough();
@@ -506,6 +517,7 @@ export function App() {
   /** 拆 And the bulk form: everything at or below a rank, in one tap. */
   const onSalvageAll = useCallback((upTo: Rarity) => {
     setState((s) => salvageUpTo(s, upTo));
+    burst('jade', null, 14, 70);
     sfx.buy();
     haptics.strike();
   }, []);
@@ -514,6 +526,7 @@ export function App() {
     setState((s) => {
       const free = freeOf(s);
       if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
+      float(JUICE.learned, 'jade'); burst('jade', null, 14, 70);
       return { ...s, unlocked: [...s.unlocked, key] };
     });
     sfx.buy();
@@ -523,6 +536,8 @@ export function App() {
   // A new version of the page is a new version of the game. Nobody installs anything
   // again; they are told, and they choose when.
   useEffect(() => { watchForUpdates(() => setFresh(true)); }, []);
+  // 勁 One listener for the whole game: a ripple under every press.
+  useEffect(() => { armJuice(); }, []);
 
   const onStance = useCallback((key: string | null) => {
     setState((s) => ({ ...s, stance: key }));

@@ -13,6 +13,7 @@ import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { ARENA } from '../copy.ts';
+import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
 import { lootFrom, quarryBounty, seenBounty } from '../../sim/combat.ts';
@@ -181,6 +182,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
             {/* 勝 A ring of her own light going out from her when it is over and she won. */}
             {over && outcome.won && <span className="victory" aria-hidden="true"><i /><i /></span>}
             {hit === 'player' && !f.missed && <Sparks key={`sp${beat}`} />}
+            {hit === 'player' && !f.missed && <Cut kind="claw" heavy={f.heavy} key={`cp${beat}`} />}
             {hit === 'player' && (
               f.missed
                 ? <span className="dmg miss" key={`p${beat}`}>{ARENA.missed}</span>
@@ -222,6 +224,8 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
                 )}
             </span>
             {hit === 'beast' && <Sparks key={`sb${beat}`} />}
+            {hit === 'beast' && <Cut kind="ink" heavy={f.heavy} key={`cb${beat}`} />}
+            {over && outcome.won && <Ashes />}
             {hit === 'beast' && (
               <span className="dmg" key={`b${beat}`}>−{num(f.damage)}</span>
             )}
@@ -332,13 +336,60 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
               </span>
             </div>
           )}
-          <button className="act" onClick={onClose}>
+          <button className="act" onClick={() => {
+            // 勁 What was won rises off the button that takes it.
+            if (outcome.won) {
+              const mat = battle.floor !== undefined
+                ? floorMaterial(state, battle.floor) : lootTaken(state, lootFrom(state, beast));
+              float(`+${num(mat)} 材`, 'gold');
+              const qi = (battle.qi ?? 0) + bounty + weekly;
+              if (qi > 0) setTimeout(() => float(`+${num(qi)} qi`, 'jade'), 160);
+              burst('gold', null, 12, 64);
+            }
+            onClose();
+          }}>
             {outcome.won ? '收' : '退'}{' '}
             <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
           </button>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * 斬 The blow itself, drawn across whoever took it.
+ *
+ * Sparks and a number were the whole of a hit, which is the aftermath without the
+ * stroke. Her blow is one brush stroke across the beast; the beast's is three claw
+ * marks across her. Both are drawn on, not faded in, and gone in a third of a second.
+ */
+function Cut({ kind, heavy }: { kind: 'ink' | 'claw'; heavy: boolean }) {
+  return (
+    <svg className="cut" data-kind={kind} data-heavy={heavy} viewBox="0 0 100 100" aria-hidden="true">
+      {kind === 'ink'
+        ? <path d="M12 78 Q 46 50 90 18" pathLength={100} />
+        : [0, 1, 2].map((i) => (
+          <path key={i} d={`M${30 + i * 16} 16 Q ${36 + i * 16} 50 ${26 + i * 16} 86`} pathLength={100}
+                style={{ animationDelay: `${i * 30}ms` }} />
+        ))}
+    </svg>
+  );
+}
+
+/**
+ * 灰 What is left of a beast that fell: ink lifting off it into the air, slowly, the
+ * way the paintings let a figure dissolve at its edges.
+ */
+function Ashes() {
+  return (
+    <span className="ashes" aria-hidden="true">
+      {Array.from({ length: 14 }, (_, i) => (
+        <i key={i} style={{ ['--x' as string]: `${((i * 37) % 100) - 50}%`,
+                            ['--dx' as string]: `${((i * 23) % 40) - 20}px`,
+                            animationDelay: `${120 + (i * 70) % 700}ms` }} />
+      ))}
+    </span>
   );
 }
 

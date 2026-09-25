@@ -89,6 +89,14 @@ export const PROLOGUE = {
   page: (n: number, of: number) => `Page ${n} of ${of}`,
 };
 
+/** 勁 The words that rise from a press. Short: they are read in the second they are up. */
+export const JUICE = {
+  layer: (n: number) => `層 layer ${n}`,
+  refined: '煉 refined',
+  fused: '合 fused',
+  learned: '道 learned',
+};
+
 export const TABS_COPY = {
   /** 鎖 A tab this cultivator has not reached, named by the realm's number. */
   opensAt: (realm: number) => `realm ${realm}`,

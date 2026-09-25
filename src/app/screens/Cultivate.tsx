@@ -26,6 +26,8 @@ import { advice } from '../advice.ts';
 import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
+import { useRef, useState } from 'react';
+import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
   owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest }: {
@@ -66,6 +68,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   onPlant: (which: number, key: string) => void;
   onHarvest: (which: number) => void;
 }) {
+  // 勁 Which box was just bought, for the half second it settles.
+  const [bought, setBought] = useState<string | null>(null);
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const r = realmOf(state.realm);
   const w = currentWarden(state);
   const dragon = effectiveBeastPower(state, w);
@@ -300,7 +305,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {ready && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" data-coach="breakthrough" onClick={() => set((s) => breakThrough(s))}>
+          <button className="act" data-coach="breakthrough" onClick={() => {
+            set((s) => breakThrough(s));
+            bloom('gold'); burst('gold', null, 22, 150);
+          }}>
             突破 <span>Break through</span>
           </button>
         </div>
@@ -308,7 +316,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {crossing && (
         <div style={{ marginTop: 16 }}>
-          <button className="act" onClick={() => set((s) => crossTribulation(s, dragon))}>
+          <button className="act" onClick={() => {
+            set((s) => crossTribulation(s, dragon));
+            bloom('violet'); burst('violet', null, 22, 150);
+          }}>
             渡劫 <span>Cross the tribulation</span>
           </button>
           {/* 價 The one button left in the game that took qi without saying so. */}
@@ -422,7 +433,17 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           return (
             /* 指 Named so 引 the guide can put an arrow on this exact box. */
             <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
-              disabled={!canBuy(state, u)} onClick={() => set((s) => buy(s, u))}>
+              data-bought={bought === u}
+              disabled={!canBuy(state, u)} onClick={() => {
+                set((s) => buy(s, u));
+                // 勁 What was bought rises from the finger that bought it.
+                const tone = i.affects === 'power' ? 'gold' : 'jade';
+                float(i.effect, tone);
+                burst(tone, null, 10, 56);
+                setBought(u);
+                if (settle.current) clearTimeout(settle.current);
+                settle.current = setTimeout(() => setBought(null), 450);
+              }}>
               <span className="ic"><Svg html={icon(i.icon, 26)} /></span>
               {/* 譯 The English name leads and the characters follow it, rather than the
                   other way round. A player who does not read Chinese was being sold four

@@ -109,7 +109,19 @@ export function load(now: number): Return {
   };
 }
 
+/**
+ * 滅 Set by wipe(), and never unset: the page is about to reload.
+ *
+ * 誤 Bruno: *"quando faço erase a save para começar do 0 não funciona."* The app writes
+ * its save on pagehide and on every hide of the tab, which is what keeps a closed phone
+ * from losing the last minute. So wipe() cleared the storage, the reload fired pagehide,
+ * and the page wrote the whole state straight back. After a wipe nothing may be written
+ * by this page again; the next page load starts from nothing, which is the point.
+ */
+let wiped = false;
+
 export function save(s: State): void {
+  if (wiped) return;
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
@@ -119,12 +131,17 @@ export function save(s: State): void {
 
 /** Kept apart from `save`: the spare is written once, on a load that came back whole. */
 export function keepSpare(s: State): void {
+  if (wiped) return;
   try {
     localStorage.setItem(BACKUP, JSON.stringify(s));
   } catch { /* same */ }
 }
 
+/** Only the tests call this: a page that wiped reloads, and a test file does not. */
+export function rearm(): void { wiped = false; }
+
 export function wipe(): void {
+  wiped = true;
   try {
     localStorage.removeItem(KEY);
     localStorage.removeItem(BACKUP);

@@ -20,7 +20,9 @@
  * The save is not in here. It lives in localStorage and this worker never touches it.
  */
 
-const CACHE = 'ninefold-v1';
+// v2: paintings carry a content hash in their address now, so the old cache is full of
+// addresses nothing will ask for again. A new name clears it once.
+const CACHE = 'ninefold-v2';
 
 self.addEventListener('install', (event) => {
   // Take over at once rather than waiting for every old tab to close.
