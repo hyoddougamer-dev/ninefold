@@ -97,6 +97,9 @@
   #awaken .ac { padding:12px 13px; border-radius:11px; background:var(--panel);
         border:1px solid var(--line); }
   #awaken .ac .s { display:block; color:var(--jade); margin-bottom:6px; }
+  #awaken .ac .pc { display:block; width:52px; height:52px; border-radius:50%; margin-bottom:8px;
+        background-image:url(bible-art/shot/cards.webp); background-size:156px auto;
+        background-repeat:no-repeat; box-shadow:0 0 0 1px var(--line); }
   #awaken .ac b { font-size:18px; font-weight:400; color:var(--jade); margin-right:7px; }
   #awaken .ac em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:13.5px; }
@@ -1063,7 +1066,9 @@
       <div class="row"><span class="body"><b class="cjk">悟道</b> <em>The 27 heaven cards</em>
         <i>They were pictograms beside the realms' 24 painted cards. Three
         sheets, three heavens to a sheet and one heaven to a row, each row in its heaven's own
-        pigment. All 51 cards in the game are painted now.</i></span></div>
+        pigment. The ninth heaven's three came back too pale to read in a card's small disc
+        and were asked again in firm ink. All 51 cards in the game are
+        painted now, and 悟道 below shows every one of them.</i></span></div>
     </div>
     <p class="t">Everything else a player sees is painted or drawn from the save. That is
       36 creatures, 9 Dragons, 9 realms, 9 heavens, 18 cultivators, 10
@@ -1180,6 +1185,11 @@
     <td class="n">9</td>
     <td class="n">✓</td>
   </tr><tr>
+    <td><b class="cjk">悟己</b> <i>Heaven cards, the ninth heaven again</i></td>
+    <td class="n">3×1</td>
+    <td class="n">3</td>
+    <td class="n">✓</td>
+  </tr><tr>
     <td><b class="cjk">雜</b> <i>Herbs, pills and the rooms of the vault</i></td>
     <td class="n">4×3</td>
     <td class="n">10</td>
@@ -1208,7 +1218,7 @@
     </table>
 
     <h3>剪 The cut</h3>
-    <p class="t">One file arrives and the game needs 163
+    <p class="t">One file arrives and the game needs 166
       of them, so <code>npm run slice</code> cuts the sheet up. The whole difficulty is
       finding the rules, and it took three tries. The first cutter looked for the flattest
       rows of pixels and settled on bare paper eight pixels off the line. The second looked
@@ -2197,104 +2207,128 @@
   <div class="trio">
     <span class="at">Reaching 築基 Foundation</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1mj427e.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Blood Feast"
+        style="background-position:-0px -0px"></span>
         <b class="cjk">血食</b><em>Blood Feast</em>
         <i>Every beast gives a quarter more 材 material, for the rest of the climb.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1gt36kc.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Pack"
+        style="background-position:-52px -0px"></span>
         <b class="cjk">負笈</b><em>The Pack</em>
         <i>Six more places in the chest. Fewer pieces thrown away unlooked at.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qoicmu.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Sudden Insight"
+        style="background-position:-104px -0px"></span>
         <b class="cjk">頓悟</b><em>Sudden Insight</em>
         <i>Two 道 points, now. The tree is where a climb becomes a build.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 金丹 Golden Core</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/atnerqv.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Greedy Wolf"
+        style="background-position:-0px -52px"></span>
         <b class="cjk">貪狼</b><em>Greedy Wolf</em>
         <i>Melting gives half as much qi again. What you throw away pays better.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ap7b2av.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Heat Control"
+        style="background-position:-52px -52px"></span>
         <b class="cjk">火候</b><em>Heat Control</em>
         <i>煉器 Refining costs a fifth less, at every level, for ever.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a3p577h.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Everywhere"
+        style="background-position:-104px -52px"></span>
         <b class="cjk">遍野</b><em>Everywhere</em>
         <i>Beasts drop something far more often.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 元嬰 Nascent Soul</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1q2lr2e.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Slaughter"
+        style="background-position:-0px -104px"></span>
         <b class="cjk">屠戮</b><em>Slaughter</em>
         <i>Beasts give a third more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/av5hdhk.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Lucky Star"
+        style="background-position:-52px -104px"></span>
         <b class="cjk">福星</b><em>Lucky Star</em>
         <i>What falls comes off the rare end of the table far more often.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/aty9afl.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Wide Sleeves"
+        style="background-position:-104px -104px"></span>
         <b class="cjk">廣袖</b><em>Wide Sleeves</em>
         <i>Eight more places in the chest.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 化神 Spirit Severing</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1lgvu4i.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Spirit Platform"
+        style="background-position:-0px -156px"></span>
         <b class="cjk">靈臺</b><em>Spirit Platform</em>
         <i>Three 道 points, now.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1duhq7b.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Insight"
+        style="background-position:-52px -156px"></span>
         <b class="cjk">洞察</b><em>Insight</em>
         <i>Beasts drop something more often again.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ah8s5tv.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Stone to Gold"
+        style="background-position:-104px -156px"></span>
         <b class="cjk">點石</b><em>Stone to Gold</em>
         <i>Melting gives seven tenths more qi.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 煉虛 Void Refining</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a16k4oxg.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Treasure Gathering"
+        style="background-position:-0px -208px"></span>
         <b class="cjk">聚寶</b><em>Treasure Gathering</em>
         <i>Beasts give two fifths more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1b55msf.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Kindling"
+        style="background-position:-52px -208px"></span>
         <b class="cjk">薪火</b><em>Kindling</em>
         <i>煉器 Refining costs a quarter less at every level.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qe3a4v.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Heaven's Craft"
+        style="background-position:-104px -208px"></span>
         <b class="cjk">天工</b><em>Heaven's Craft</em>
         <i>What falls comes off the rare end of the table more often still.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 合體 Unity</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a5toj73.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Catching Dew"
+        style="background-position:-0px -260px"></span>
         <b class="cjk">承露</b><em>Catching Dew</em>
         <i>Four 道 points, now.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1cu9gj0.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Ten Thousand Stores"
+        style="background-position:-52px -260px"></span>
         <b class="cjk">萬藏</b><em>Ten Thousand Stores</em>
         <i>Twelve more places in the chest.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ae1bzwz.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Wildfire"
+        style="background-position:-104px -260px"></span>
         <b class="cjk">燎原</b><em>Wildfire</em>
         <i>Melting gives nine tenths more qi.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 大乘 Great Vehicle</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1obpztb.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Taotie"
+        style="background-position:-0px -312px"></span>
         <b class="cjk">饕餮</b><em>Taotie</em>
         <i>Beasts give half as much 材 material again.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ankqpc2.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Clear Seeing"
+        style="background-position:-52px -312px"></span>
         <b class="cjk">明察</b><em>Clear Seeing</em>
         <i>Beasts drop something more often still.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1ir8vqk.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Furnace Fire"
+        style="background-position:-104px -312px"></span>
         <b class="cjk">爐火</b><em>Furnace Fire</em>
         <i>煉器 Refining costs three tenths less at every level.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 渡劫 Tribulation</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1r6kmi4.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="One Thought"
+        style="background-position:-0px -364px"></span>
         <b class="cjk">一念</b><em>One Thought</em>
         <i>Five 道 points, now. The last of them.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/av5hdhk.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Reaching Heaven"
+        style="background-position:-52px -364px"></span>
         <b class="cjk">通天</b><em>Reaching Heaven</em>
         <i>The rare end of the table, as far up as it goes.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1tvv63q.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Whale Swallows"
+        style="background-position:-104px -364px"></span>
         <b class="cjk">鯨吞</b><em>The Whale Swallows</em>
         <i>Beasts give three fifths more 材 material.</i></div></div>
   </div></div>
@@ -2337,117 +2371,144 @@
   <div class="trio">
     <span class="at">Entering 真仙 True Immortal</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adea1cs.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Pill Method"
+        style="background-position:-0px -416px"></span>
         <b class="cjk">丹方</b><em>The Pill Method</em>
         <i>Every pill asks a little less 材 material, at every price.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adbovfq.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Long Stair"
+        style="background-position:-52px -416px"></span>
         <b class="cjk">登樓</b><em>The Long Stair</em>
         <i>A floor of 塔 the tower pays more 材 material than it did.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/abpd3h9.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Maw"
+        style="background-position:-104px -416px"></span>
         <b class="cjk">巨口</b><em>The Maw</em>
         <i>Beasts give a quarter more 材 material again.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 金仙 Golden Immortal</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1bbhy5i.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Nine Rungs"
+        style="background-position:-0px -468px"></span>
         <b class="cjk">九級</b><em>Nine Rungs</em>
         <i>A floor of 塔 the tower pays better still.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/adptgfq.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Auspice"
+        style="background-position:-52px -468px"></span>
         <b class="cjk">祥瑞</b><em>Auspice</em>
         <i>The rare end of the drop table, weighted far up.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qmhq2i.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Embers"
+        style="background-position:-104px -468px"></span>
         <b class="cjk">餘燼</b><em>Embers</em>
         <i>Melting pays three fifths more qi.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 太乙 Supreme Unity</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a16c1ltj.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Fierce Fire"
+        style="background-position:-0px -520px"></span>
         <b class="cjk">武火</b><em>Fierce Fire</em>
         <i>The furnace wastes less. Pills cost a tenth less 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/asj468o.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Old Graves"
+        style="background-position:-52px -520px"></span>
         <b class="cjk">荒塚</b><em>The Old Graves</em>
         <i>Beasts give a third more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1lc69du.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Cold Forging"
+        style="background-position:-104px -520px"></span>
         <b class="cjk">冷鍛</b><em>Cold Forging</em>
         <i>煉器 Refining costs a quarter less at every level.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 大羅 Grand Veil</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1gt9o05.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Seal Breaking"
+        style="background-position:-0px -572px"></span>
         <b class="cjk">破封</b><em>Seal Breaking</em>
         <i>A floor of 塔 the tower pays nearly a fifth more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/atnkm4s.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Shed Shell"
+        style="background-position:-52px -572px"></span>
         <b class="cjk">蛻殼</b><em>The Shed Shell</em>
         <i>Beasts drop something a great deal more often.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ax64tfq.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Falling Star"
+        style="background-position:-104px -572px"></span>
         <b class="cjk">隕星</b><em>Falling Star</em>
         <i>The rare end of the table again, further up.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 准聖 Quasi-Sage</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1ir8vqk.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Gentle Fire"
+        style="background-position:-0px -624px"></span>
         <b class="cjk">文火</b><em>Gentle Fire</em>
         <i>A slower fire and a smaller bill. Pills cost less 材 material still.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a5toj73.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Last Drop"
+        style="background-position:-52px -624px"></span>
         <b class="cjk">瀝盡</b><em>The Last Drop</em>
         <i>Melting pays three quarters more qi.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a19rjofz.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The God's Meal"
+        style="background-position:-104px -624px"></span>
         <b class="cjk">神餐</b><em>The God's Meal</em>
         <i>Beasts give a third more 材 material again.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 聖人 Sage</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a18qad2p.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Sky Stair"
+        style="background-position:-0px -676px"></span>
         <b class="cjk">天梯</b><em>The Sky Stair</em>
         <i>A floor of 塔 the tower pays a fifth more 材 material again.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/at0uzxl.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="A Hundred Temperings"
+        style="background-position:-52px -676px"></span>
         <b class="cjk">百鍊</b><em>A Hundred Temperings</em>
         <i>煉器 Refining costs three tenths less at every level.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a147xkjp.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="The Storehouse"
+        style="background-position:-104px -676px"></span>
         <b class="cjk">府庫</b><em>The Storehouse</em>
         <i>Sixteen more places in the chest.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 道祖 Dao Ancestor</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/ag1jd9r.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Nine Revolutions"
+        style="background-position:-0px -728px"></span>
         <b class="cjk">九轉</b><em>Nine Revolutions</em>
         <i>The old nine-turn recipe. Pills cost less 材 material yet.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1d6ovvu.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Heaven's Stipend"
+        style="background-position:-52px -728px"></span>
         <b class="cjk">天祿</b><em>Heaven's Stipend</em>
         <i>Beasts give two fifths more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a12i9rpg.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Fine Light"
+        style="background-position:-104px -728px"></span>
         <b class="cjk">毫光</b><em>Fine Light</em>
         <i>The rare end of the table, higher than the ninth realm ever went.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 混元 Primordial Unity</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a95gn7.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="No Summit"
+        style="background-position:-0px -780px"></span>
         <b class="cjk">無頂</b><em>No Summit</em>
         <i>A floor of 塔 the tower pays a quarter more 材 material.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1ur94zm.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Melting the Mountain"
+        style="background-position:-52px -780px"></span>
         <b class="cjk">銷山</b><em>Melting the Mountain</em>
         <i>Melting pays nine tenths more qi.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a8hljgk.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Spirit Quenching"
+        style="background-position:-104px -780px"></span>
         <b class="cjk">靈淬</b><em>Spirit Quenching</em>
         <i>煉器 Refining costs a third less at every level.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 鴻蒙 The Uncarved</span>
     <div class="three">
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a7d03it.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Nothing Leaks"
+        style="background-position:-0px -832px"></span>
         <b class="cjk">無漏</b><em>Nothing Leaks</em>
         <i>Nothing is wasted any more. Pills cost the least they ever will.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a73uhv5.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="All Under Heaven"
+        style="background-position:-52px -832px"></span>
         <b class="cjk">普天</b><em>All Under Heaven</em>
         <i>Beasts give half as much 材 material again.</i></div>
-      <div class="ac"><span class="s"><i class="pl" style="width:24px;height:24px;--pl:url(bible-art/a1qqohae.svg)" aria-hidden="true"></i></span>
+      <div class="ac"><span class="pc" role="img" aria-label="Pacing the Void"
+        style="background-position:-104px -832px"></span>
         <b class="cjk">步虛</b><em>Pacing the Void</em>
         <i>A floor of 塔 the tower pays more than a quarter again.</i></div></div>
   </div></div>

@@ -25,7 +25,8 @@ import {
   SET_STEPS, SLOTS, SLOT_INFO, archetypesOf, templateOf, type Affix, type Item,
 } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
-import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS } from '../src/data/awakening.ts';
+import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakening.ts';
+import sharp from 'sharp';
 import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
@@ -1195,22 +1196,49 @@ const MOCK_MEET = `<div class="mk meet">
   </div>
 </div>`;
 
+/**
+ * 悟道 All fifty-one cards, painted, in one picture.
+ *
+ * 張 A published page may carry 255 files beside it and this one already carries 251,
+ * so fifty-one paintings cannot go up as fifty-one files. They go up as one: a strip of
+ * three across and seventeen down, one trio to a row in the order the game offers them,
+ * and each card on the page shows its own square of it. It is built here from the same
+ * files the game reads, so a card repainted is a card this page shows repainted.
+ */
+const CARD_CELL = 96;
+await (async () => {
+  const tiles = TRIOS.flatMap((trio, row) => trio.map((c, col) => ({
+    input: `public/art/emblem/card-${c.key}.webp`, row, col,
+  })));
+  const missing = tiles.filter((t) => !existsSync(t.input));
+  if (missing.length) throw new Error(`悟道 no painting for ${missing.map((t) => t.input).join(', ')}`);
+  const parts = await Promise.all(tiles.map(async (t) => ({
+    input: await sharp(t.input).resize(CARD_CELL, CARD_CELL, { fit: 'cover' }).toBuffer(),
+    left: t.col * CARD_CELL, top: t.row * CARD_CELL,
+  })));
+  mkdirSync('bible-shots', { recursive: true });
+  await sharp({ create: { width: 3 * CARD_CELL, height: TRIOS.length * CARD_CELL, channels: 4,
+    background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+    .composite(parts).webp({ quality: 82, alphaQuality: 90 }).toFile('bible-shots/cards.webp');
+})();
+
 /** 悟道 Every trio, as the game offers them: the eight realms, then the nine heavens. */
-const trioBlock = (trio: typeof AWAKENINGS[number], at: string) => `
+const trioBlock = (trio: typeof AWAKENINGS[number], at: string, row: number) => `
   <div class="trio">
     <span class="at">${at}</span>
-    <div class="three">${trio.map((c) => `
-      <div class="ac"><span class="s">${icon(c.icon, 24)}</span>
+    <div class="three">${trio.map((c, col) => `
+      <div class="ac"><span class="pc" role="img" aria-label="${c.name}"
+        style="background-position:-${col * 52}px -${row * 52}px"></span>
         <b class="cjk">${c.han}</b><em>${c.name}</em>
         <i>${c.says}</i></div>`).join('')}</div>
   </div>`;
 
 const AWAKEN_TABLE = AWAKENINGS
-  .map((trio, i) => trioBlock(trio, `Reaching ${realmOf(i + 2).han} ${realmOf(i + 2).name}`))
+  .map((trio, i) => trioBlock(trio, `Reaching ${realmOf(i + 2).han} ${realmOf(i + 2).name}`, i))
   .join('');
 
 const HEAVEN_TABLE = HEAVENS
-  .map((h, i) => trioBlock(HEAVEN_CARDS[i], `Entering ${h.han} ${h.name}`))
+  .map((h, i) => trioBlock(HEAVEN_CARDS[i], `Entering ${h.han} ${h.name}`, AWAKENINGS.length + i))
   .join('');
 
 /** 緣 Everybody on the road, and what the two answers do. */
@@ -1363,6 +1391,9 @@ const page = `<meta charset="utf-8">
   #awaken .ac { padding:12px 13px; border-radius:11px; background:var(--panel);
         border:1px solid var(--line); }
   #awaken .ac .s { display:block; color:var(--jade); margin-bottom:6px; }
+  #awaken .ac .pc { display:block; width:52px; height:52px; border-radius:50%; margin-bottom:8px;
+        background-image:url(bible-art/shot/cards.webp); background-size:156px auto;
+        background-repeat:no-repeat; box-shadow:0 0 0 1px var(--line); }
   #awaken .ac b { font-size:18px; font-weight:400; color:var(--jade); margin-right:7px; }
   #awaken .ac em { font-style:normal; font-family:Rajdhani,sans-serif; font-weight:700;
         font-size:13.5px; }
@@ -2193,7 +2224,9 @@ const page = `<meta charset="utf-8">
       <div class="row"><span class="body"><b class="cjk">悟道</b> <em>The ${HEAVEN_CARDS.length * 3} heaven cards</em>
         <i>They were pictograms beside the realms' ${AWAKENINGS.length * 3} painted cards. Three
         sheets, three heavens to a sheet and one heaven to a row, each row in its heaven's own
-        pigment. All ${ALL_CARDS.length} cards in the game are painted now.</i></span></div>
+        pigment. The ninth heaven's three came back too pale to read in a card's small disc
+        and were asked again in firm ink. All ${ALL_CARDS.length} cards in the game are
+        painted now, and 悟道 below shows every one of them.</i></span></div>
     </div>
     <p class="t">Everything else a player sees is painted or drawn from the save. That is
       ${BEASTS.length} creatures, 9 Dragons, 9 realms, 9 heavens, 18 cultivators, 10
