@@ -10,6 +10,7 @@
         <stop offset="1" stop-color="#fff" stop-opacity="0"/>
       </radialGradient>
       <mask id="kr3"><rect width="200" height="200" fill="url(#mr3)"/></mask>
+      
       <filter id="br3" x="-60%" y="-60%" width="220%" height="220%">
         <feGaussianBlur stdDeviation="1.9" result="bl"/>
         <feMerge><feMergeNode in="bl"/><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge>

@@ -1637,6 +1637,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    The ring is a conic gradient rather than a bar because a bed is a cycle and comes
    round, and because three of them in a row read as a place rather than as a list. */
 .cavesay { margin: 0 0 10px; font-size: 12.5px; line-height: 1.55; }
+.cavesea { color: var(--gold); }
+.cavesea .term { color: var(--gold); }
 .cave { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .bed { text-align: center; padding: 12px 6px 11px; border-radius: 12px;
        background: var(--panel); border: 1px solid var(--line); }

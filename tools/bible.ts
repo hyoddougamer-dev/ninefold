@@ -31,6 +31,7 @@ import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
 import { UPGRADES, UPGRADE_INFO, condenseCost, heavenStep, newState, power, upgradeCost, type State } from '../src/sim/state.ts';
+import { floorMaterial } from '../src/sim/trials.ts';
 import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS, LAYER_BONUS,
@@ -994,18 +995,38 @@ const MOCK_HALVES = (() => {
 })();
 
 // 凝丹 The card that appears only when 材 material has run out, at the real price.
+/**
+ * 塔 What the tower card used to quote against what the floor pays, at the summit the
+ * audit photographed: the table times the seals, against floorMaterial, which is the
+ * number the save is credited and the one the card and the arena now read.
+ */
+const TOWER = (() => {
+  const s: State = {
+    ...newState(0), realm: 9, layer: 8, tower: 150, wardenFell: true,
+    killed: { rat: 12, hound: 11, frog: 10, serpent: 3, mantis: 2, bat: 1, beetle: 2, owl: 1,
+              raven: 1, boar: 2, wolf: 1, vulture: 1, crab: 1, fox: 1, ape: 1, crane: 1, tiger: 1 },
+    awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought',
+               'formula', 'ninerungs', 'quickfire', 'sealbreaker', 'slowfire', 'skystair',
+               'ninereturns', 'topless', 'uncarved'],
+  };
+  const quoted = floorLoot(151) * (1 + SEAL_LOOT * Math.floor(150 / FLOORS_PER_REALM));
+  const paid = floorMaterial(s, 151);
+  return { quoted, paid, share: `${Math.round((quoted / paid) * 100)}%` };
+})();
+
 const MOCK_CONDENSE = (() => {
   const s5: State = { ...newState(0), realm: 5, layer: 8 };
   return `<div class="mk cond">
-    <div class="chd"><b class="cjk">凝丹</b><span><em>No 材 material left</em>
-      <i>${num(condenseCost(s5))} qi · ${CORE_QI_RUNGS} rungs of the climb</i></span></div>
+    <div class="chd"><b class="cjk">凝丹</b><span><em>Not enough 材 material</em>
+      <i>${num(condenseCost(s5))} qi · the price of ${CORE_QI_RUNGS} layers</i></span></div>
     <p class="body">You can force a 妖丹 out of raw qi instead. It works, and it is dear:
       this is qi that would have opened layers.</p>
     <span class="go">凝 Condense a core</span>
     <span class="hint"><b class="cjk">狩</b> A beast leaves material when it falls. That
       is the cheap way, and it is one tap away.</span>
     <p class="cap">At the fifth realm's ceiling. The price is condenseCost() and the card
-      is drawn only while canBuy(cores) is false. It is an answer, not a fifth box.</p>
+      is drawn only while canBuy(cores) is false. It never shows before the first kill: a
+      new cultivator has no material because nothing has fallen yet, not because it ran out.</p>
   </div>`;
 })();
 
@@ -1903,6 +1924,7 @@ const page = `<meta charset="utf-8">
       <a href="#board"><b>狀</b> Where we are</a>
       <a href="#mockups"><b>樣</b> What it looks like</a>
       <a href="#paint"><b>畫</b> The paintings</a>
+      <a href="#newplayer"><b>審</b> Read as a new player</a>
       <a href="#questions"><b>問</b> Three questions</a>
       <a href="#where"><b>包</b> Where to play</a>
       <a href="#loop"><b>環</b> How it is played</a>
@@ -1992,27 +2014,25 @@ const page = `<meta charset="utf-8">
       Três meses são o dia 91. Nas semanas entre um céu e o seguinte o 期 muda na mesma,
       todas as segundas-feiras.</p>
 
-    <h3>O que mudou na última noite</h3>
+    <h3>O que mudou com a auditoria</h3>
     <div class="rows">
-      <div class="row"><span class="body"><b class="cjk">期</b> <em>A semana passou a mudar sozinha</em>
-        <i>Três marcas que rodam à segunda-feira: uma besta que dá o dobro de 材, uma erva
-        da época e uma sala do 秘境 que paga a dobrar. Não há servidor. Quem nunca luta
-        acaba no mesmo dia, com ou sem elas.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">悟道</b> <em>Uma carta em cada céu</em>
-        <i>Nove tríades novas, ${ALL_CARDS.length} cartas e dezassete escolhas numa subida. Os
-        céus eram quarenta travessias sem uma única decisão.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">煉器</b> <em>O harness nunca refinava</em>
-        <i>O 材 acumulava sem destino e o Dragão era um passeio em 28 de 40 travessias. Foi
-        remedido: o pé do Dragão passou de 1.45 para ${TRIBULATION_FOOTING}.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">爐</b> <em>A fornalha era uma armadilha</em>
-        <i>Quem a usava durante a subida chegava ao topo 34 dias mais tarde. Passou para o
-        nono reino, onde é a resposta e não um custo.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">秘境</b> <em>O cofre ficou mais fundo</em>
-        <i>Onze salas a partir do sétimo reino. E os pontos 道 dos santuários deixaram de
-        ser apagados sempre que o jogo recarregava.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">階</b> <em>Quanto custa subir</em>
-        <i>O ecrã diz quanto qi falta para o degrau e para o reino, e quanto tempo isso
-        é.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">審</b> <em>Lido como um jogador novo</em>
+        <i>Cada ecrã, do primeiro minuto ao topo. Um cartão vermelho a dizer "sem material"
+        no primeiro minuto, "3 bestas ao alcance" quando nenhuma se podia vencer, "degrau"
+        num sítio e "camada" no outro. Tudo corrigido, e os números que o texto diz passaram
+        a ser testados contra o jogo.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塔</b> <em>Recompensas mal ditas</em>
+        <i>No topo, a torre mostrava ${TOWER.share} do material que pagava. O 圍 não pagava
+        o qi da presa da semana, e a arena não dizia quando esse qi chegava.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">雷池</b> <em>A cultivadora volta ao topo</em>
+        <i>No topo, o retrato dava lugar a um trapézio liso. Agora ela está sentada no meio do
+        lago de trovão, que enche à volta dela.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>A nona pintura estava rasgada</em>
+        <i>Recortada, era uma cabeça e dois farrapos. O nono reino mostra a oitava figura a
+        desfazer-se em luz até a pintura ser refeita.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">鬥</b> <em>A arena acaba o combate</em>
+        <i>A besta vencida cai em tinta, cada golpe atira tinta, a vitória tem anéis de luz e
+        o que se ganhou aparece em fichas.</i></span></div>
     </div>
 
     <h3>Está tudo funcional?</h3>
@@ -2124,6 +2144,59 @@ const page = `<meta charset="utf-8">
       teaching characters is five unanswered questions at once. One button, and every row
       arrives with its name in English.</p>
     ${MOCK_MENU}
+  </section>
+
+  <section class="sec" id="newplayer">
+    <h2><span class="h">審</span> Read as a new player</h2>
+    <p class="t">Every screen, from a brand new save to the ninth heaven, read by somebody
+      who has never seen the game, at 400 and at 320 wide. The harnesses were all green
+      before it started, which is the point of doing it: none of what follows was a thing
+      any of them could see.</p>
+    <table>
+      <tr><th>where</th><th>what a new player read</th><th>what it says now</th></tr>
+      <tr><td>修, minute one</td><td>A red card under the boxes: <i>No 材 material left</i>, before anything had ever been killed</td><td>Nothing, until the first kill. Then <i>Not enough 材 material</i></td></tr>
+      <tr><td>狩, minute one</td><td><i>3 beasts within reach</i>, over three rows that each said ×2.4, ×7 and ×14 <i>needed</i></td><td><i>3 beasts to hunt · 0 you can beat now</i>, and ×2.4 <i>stronger</i></td></tr>
+      <tr><td>修, the ladder</td><td>The widget said <i>layer 4/9</i>, the sentence beside it said <i>rung</i></td><td><i>layer</i>, everywhere the player reads it</td></tr>
+      <tr><td>引 the help</td><td><i>The button beside this one</i>, and there has been no button beside it since the menu folded</td><td>Where the Menu is, and that a dotted character answers a tap</td></tr>
+      <tr><td>器 refining</td><td><i>+12 material</i> on a price</td><td><i>12 material</i></td></tr>
+      <tr><td>器 the chest</td><td><i>靈 2 lines · 天 5</i></td><td><i>A 靈 piece carries 2 lines and a 天 piece 5</i></td></tr>
+      <tr><td>道 the tree</td><td><i>6 free · 0/6</i>, and names at 8px and 40%</td><td><i>6 to spend · 0 of 6 spent</i>, names at 9.5px, forks further apart</td></tr>
+      <tr><td>秘境 the key</td><td><i>Seven rooms</i>, with eleven on the door at the summit</td><td>A row of rooms, no count</td></tr>
+      <tr><td>爐 at the summit</td><td>Every pill greyed, both prices in gold, nothing saying which was short</td><td>A qi price in red, and a line saying so</td></tr>
+      <tr><td>洞天 the cave</td><td>The week's herb only as a chip inside the seed list, saying <i>3d left</i></td><td><i>青苔 Spirit Moss is in season: a bed of it pays half again</i>, over the beds</td></tr>
+      <tr><td>緣, 秘境, 洞天</td><td>Two monospace fonts the page never loads, so the phone's own</td><td>The game's own fonts</td></tr>
+    </table>
+    <div class="rule"><b>實 And the numbers the prose says are tested now.</b> Eight hundred qi,
+      +8% a core, three rats, ten kills, a quarter of an hour, two days, seventeen choices.
+      Each sentence that names a number is held to the constant it names. The day the
+      number moves, the sentence fails a test instead of lying on a phone.</div>
+
+    <h3>塔 圍 Two rewards paid in silence</h3>
+    <p class="t">The tower card and the arena worked out a floor's material for themselves,
+      as the table times the seals, and the save was credited the record and the cards on
+      top. At the summit the audit photographed, the card quoted <b>${num(TOWER.quoted)}</b>
+      材 for a floor that paid <b>${num(TOWER.paid)}</b>: ${TOWER.share} of it.
+      <code>floorMaterial</code> is the one function all three read now. And 圍 the drive,
+      which promises to pay exactly what the taps would have, swallowed the week's
+      first-kill qi on the quarry and kept paying the 熟 rate after 通 landed mid-drive. Both
+      have tests that fail on the old code.</p>
+
+    <h3>畫 What the art still needs</h3>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">渡劫</b> <em>The ninth cultivator, both figures</em>
+        <i>The panel was asked for "half of it left as bare paper", and on a dark screen that
+        cuts to a head and two scraps. The game draws the eighth figure dissolving into
+        light until it is repainted, and the prompt in tools/sheets.ts now asks for the
+        whole of her.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">悟道</b> <em>The ${HEAVEN_CARDS.length * 3} heaven cards</em>
+        <i>The eight realms' ${AWAKENINGS.length * 3} cards are painted. The heavens' are drawn
+        as pictograms, which read, and are the one family of cards that looks unfinished next
+        to the others.</i></span></div>
+    </div>
+    <p class="t">Everything else a player sees is painted or drawn from the save. That is
+      ${BEASTS.length} creatures, 9 Dragons, 9 realms, 9 heavens, 18 cultivators, 10
+      encounters and 9 arts, with the herbs, the pills and the rooms. The stances, the gear and the tree's nodes are
+      characters and frames on purpose.</p>
   </section>
 
   <section class="sec" id="paint">
@@ -3331,7 +3404,7 @@ const page = `<meta charset="utf-8">
       playing it wrong.</p>
     <div class="rule"><b>So every price that cannot be paid now says which of the two it
       is.</b> <code>in 40m</code> when the rung you are on can hold it and gathering will
-      do; <code>4 rungs up the climb</code> when it cannot, with one line underneath
+      do; <code>after 4 more layers</code> when it cannot, with one line underneath
       saying why. Read off the real sixth realm: 5.95B one rung up, 12.5B four rungs up,
       8.22B two rungs up. The screen went from three dead prices to three answers, and
       the economy did not move by a single qi.</div>

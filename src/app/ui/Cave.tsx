@@ -8,9 +8,9 @@ import { duration, num } from '../../sim/format.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
-import { CAVE } from '../copy.ts';
+import { CAVE, WEEK } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
-import { isSeason, weekLeft } from '../../sim/week.ts';
+import { isSeason, seasonOf, weekLeft } from '../../sim/week.ts';
 import { WeekTag } from './Week.tsx';
 
 /**
@@ -37,11 +37,20 @@ export function Cave({ state, onPlant, onHarvest }: {
   /** Which bed has its herb list open, if any. It is a screen's worth of state, not a save's. */
   const [picking, setPicking] = useState<number | null>(null);
   const herbs = plantable(state);
+  const season = (() => { const h = seasonOf(state); return h && herbs.includes(h) ? h : null; })();
 
   return (
     <>
       <h2 className="heading">{CAVE.head}</h2>
       <p className="faint cavesay">{CAVE.says}</p>
+      {/* 期 Which herb the week favours, said where the beds are. It was only a chip that
+          read "3d left" inside the seed list, which says when and not what, and the
+          sentence that says what had been written and never put on a screen. */}
+      {season && (
+        <p className="faint cavesay cavesea">
+          <Term han="期" /> {WEEK.season(`${season.han} ${season.name}`)} {WEEK.left(duration(weekLeft(state)))}.
+        </p>
+      )}
       <div className="cave">
         {Array.from({ length: BEDS }, (_, i) => {
           const bed = state.beds[i];

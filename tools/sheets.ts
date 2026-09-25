@@ -130,7 +130,10 @@ const SELF = [
   'the same face, in a long robe with wide sleeves that hangs as though there were a wind that is not there',
   'the same face, in an austere robe, the outline of the shoulders no longer quite certain against the paper',
   'the same face, in robes that seem larger than the person in them, painted with a thinner brush, more presence than body',
-  'barely a figure at all: the robe, the seated shape, the suggestion of a face, half of it left as bare paper',
+  // 渡劫 It asked for "half of it left as bare paper", and got it: a head and two scraps
+  // that no cut can turn back into a person on a dark screen. The game draws the eighth
+  // figure dissolving until this panel is painted again, so ask for the whole of her.
+  'the same face and the same seated figure, whole and complete, in pale violet robes painted lighter than before, the hems of the robe thinning into faint mist while the face, the hands and the seated shape stay clearly drawn',
 ];
 
 /** 相 The two figures the sheet can be drawn for, and how each is asked for. */

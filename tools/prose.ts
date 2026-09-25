@@ -128,5 +128,7 @@ if (html) {
   console.log(`頁 the bible: ${lines.length} sentences a reader meets.\n`);
   console.log(`  em-dash as a beat: ${dashes.length} (${Math.round(100 * dashes.length / lines.length)}%)`);
   console.log(`  a sentence over 180 characters: ${long.length}`);
+  // 指 Name them, or the count is a number somebody has to go and find the sentences for.
+  for (const x of long) console.log(`     ${x.length}  ${x.slice(0, 150)}…`);
   console.log(`  longest: ${[...lines].sort((a, b) => b.length - a.length)[0]?.slice(0, 160) ?? ''}\n`);
 }

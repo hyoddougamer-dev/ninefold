@@ -267,8 +267,6 @@ export const REALMCARD = {
 };
 
 export const PACE = {
-  /** 階 One line under the bar: what this rung asks for and how long that is. */
-  rung: (qi: string, time: string) => `${qi} qi this layer · about ${time}`,
   rungLeft: (qi: string, time: string) => `${qi} qi to go · about ${time}`,
 };
 
@@ -735,8 +733,6 @@ export const MEET = {
   costs: (what: string) => `costs ${what}`,
   something: 'something falls out of it',
   nothing: 'nothing happens',
-  /** What the line says after an answer, over the outcome the meeting wrote. */
-  went: 'They go on down the road.',
 };
 
 /**
@@ -758,7 +754,6 @@ export const MEET = {
  * uses: material on 狩 the hunt, qi in 洞天 the cave, a door in 秘境 the vault.
  */
 export const WEEK = {
-  han: '期',
   /** The banner at the top of 狩 the hunt. */
   quarryHead: '本週之獸 The week\u2019s quarry',
   quarry: (name: string) => `${name}, worth double 材 material all week.`,
@@ -941,17 +936,6 @@ export const DAO = {
   halfTree: 'Techniques',
   halfBuild: 'Stance & Arts',
   /** 點 What the dot on the 道 tab means, for the tooltip and the screen reader. */
-  /**
-   * 悟道 Above even the points, because a card is the one thing the climb will not hand
-   * over later. The offer waits for ever and nothing else moves until it is taken.
-   */
-  awaken: 'A breakthrough owes you a 悟道. Three cards, and taking one closes the other two.',
-  /** 秘境 A door standing open. It waits, so this is a reminder and not a deadline. */
-  doorOpen: 'The door to 秘境 is open, in 狩 Hunt. It waits for you.',
-  /** 洞天 A ripe bed is free, it is one tap, and it is gone the moment it is taken. */
-  ripe: (n: number) => n === 1
-    ? 'A bed in 洞天 the cave is ripe. Take it, and put something else in.'
-    : `${n} beds in 洞天 the cave are ripe. Take them, and put something else in.`,
   freePoints: (n: number) =>
     `${n} 道 ${n === 1 ? 'point' : 'points'} to spend`,
 
