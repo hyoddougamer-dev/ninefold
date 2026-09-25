@@ -78,7 +78,18 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
    * what is done goes behind one line that says how many, and opens if you want it.
    */
   const open = sorted.filter((b) => nextMark(state.killed[b.key] ?? 0));
-  const beatable = sorted.filter((b) => oddsRaw(state, b) > 0).length;
+  /**
+   * 算 Each beast's odds, once. oddsRaw fights forty-one times to answer, and the count in
+   * the heading and the figure on every row both need it: asked twice, the hunt screen
+   * took half a second to open on a phone with a slow processor.
+   */
+  // Keyed on what a fight reads, not on the whole state: the qi moves every second and
+  // does not change a single fight, so keying on it redid the work once a second.
+  const raws = useMemo(() => new Map(sorted.map((b) => [b.key, oddsRaw(state, b)])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sorted, state.realm, state.layer, state.levels, state.stance, state.sequence, state.worn,
+     state.awakened, state.unlocked, state.brewed, state.tribulation]);
+  const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
   const done = sorted.filter((b) => !nextMark(state.killed[b.key] ?? 0));
   const list = showDone ? [...open, ...done] : open;
 
@@ -136,7 +147,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
            * same 2%, on the one screen whose entire job is choosing between them. A beast
            * that wins none of its sampled fights now says how far off it is instead.
            */
-          const raw = oddsRaw(state, b);
+          const raw = raws.get(b.key) ?? oddsRaw(state, b);
           const c = Math.max(0.02, Math.min(0.98, raw));
           const gap = effectiveBeastPower(state, b) / Math.max(1e-9, power(state));
           const tone = raw <= 0 ? 'var(--faint)'
