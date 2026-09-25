@@ -28,6 +28,7 @@ import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
+import { Prologue } from './ui/Prologue.tsx';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
@@ -103,6 +104,8 @@ export function App() {
   const [pulse, setPulse] = useState(0);
   const [ready, setReady] = useState(false);
   const [help, setHelp] = useState(false);
+  // 序 The prologue, which a brand new save opens on in place of the help sheet.
+  const [prologue, setPrologue] = useState(false);
   // 釋 The key: what every character on the screen means.
   const [key, setKey] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
@@ -196,7 +199,9 @@ export function App() {
     // asks save.ts for what "has not begun" means rather than keeping its own idea of
     // it: the old one was "qi under five", which 囊 the opening purse made false, and
     // the help silently stopped appearing for new players.
-    if (r.secondsAway === 0 && untouched(r.state)) setHelp(true);
+    // 序 It opens on the prologue now, which hands over to 相 and then the guide; the
+    // help sheet is what the Menu opens.
+    if (r.secondsAway === 0 && untouched(r.state)) setPrologue(true);
     // The load came back whole, so this is a state worth keeping a spare of.
     keepSpare(r.state);
 
@@ -573,8 +578,8 @@ export function App() {
   const step = guide(state);
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
-  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help;
-  const covered = help || key || stele || saving || realmPage || menu || !!driving
+  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue;
+  const covered = help || prologue || key || stele || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
@@ -804,6 +809,9 @@ export function App() {
         </div>
       )}
 
+      {prologue && (
+        <Prologue sky={pictureOf('realm', '1')} onDone={() => { setPrologue(false); sfx.tap(); }} />
+      )}
       {help && (
         <Help
           onClose={() => { setHelp(false); sfx.tap(); }}
@@ -829,6 +837,7 @@ export function App() {
       {asking && (
         <Figure
           realm={state.realm}
+          sky={pictureOf('realm', String(state.realm))}
           chosen={state.self}
           onPick={(who) => {
             setState((s) => ({ ...s, self: who, seen: s.seen.includes(WHOM) ? s.seen : [...s.seen, WHOM] }));

@@ -115,7 +115,7 @@ async function dismiss(page) {
     // tab swallowed, which is the harness being exactly right.
     const who = await page.$('.whom .pick');
     if (who) { await who.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
-    const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim');
+    const el = await page.$('.prologue button.act, .help button.act, .help .xclose, .notice button, .scrim');
     if (!el) return;
     await el.click({ timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(250);

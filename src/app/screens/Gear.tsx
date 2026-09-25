@@ -317,7 +317,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             const better = swing(state, item).better;
             return (
               <button key={item.id} className="chestit" onClick={() => onInspect(item, false)}
-                      aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}`}>
+                      // 譯 The figure under the tile is its main line, and a screen reader is
+                      // told which: "力 5" alone is a character and a number.
+                      aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
+                        ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}`}>
                 <Svg html={gearTile(item, { size: 56, spin: pulse })} />
                 <span className="pct mono" style={{ color: rar.colour }}>
                   {primary && <>

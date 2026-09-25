@@ -22,14 +22,17 @@ import { FIGURE } from '../copy.ts';
  * Each choice is drawn with the game's own portrait at the realm the player is standing
  * in, so what is being chosen is the thing that will actually be on the screen.
  */
-export function Figure({ realm, chosen, onPick, onClose }: {
+export function Figure({ realm, sky, chosen, onPick, onClose }: {
   realm: number;
+  /** 畫 The realm's painting behind the question, as on the prologue before it. */
+  sky?: string | null;
   chosen: string | null;
   onPick: (key: string) => void;
   onClose: () => void;
 }) {
   return (
     <div className="whom">
+      {sky && <div className="wsky" aria-hidden="true" style={{ backgroundImage: `url(${sky})` }} />}
       <p className="over">{FIGURE.over}</p>
       <h2 className="cjk">{FIGURE.title}</h2>
       <p className="sub">{FIGURE.sub}</p>

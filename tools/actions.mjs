@@ -95,7 +95,7 @@ async function open(state, { keepCards = false } = {}) {
     // never tap and never reached the sheet at all.
     const card = keepCards ? null : await page.$('.awaken .acard');
     if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
-    const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim');
+    const el = await page.$('.prologue button.act, .help button.act, .help .xclose, .notice button, .scrim');
     if (!el) break;
     await el.click({ timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(220);

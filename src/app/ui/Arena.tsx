@@ -152,6 +152,10 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
   return (
     <div className="arena" data-over={over} data-won={over && outcome.won} data-lost={over && !outcome.won}
          data-by={f.striker} data-heavy={!over && f.heavy}>
+      {/* 景 The same painting, soft and dark, behind the whole arena. The stage used to
+          be a strip of landscape between two bands of flat black, which on a computer
+          screen read as a letterbox rather than a place. */}
+      {sky && <div className="asky" aria-hidden="true" style={{ backgroundImage: `url(${sky})` }} />}
       <div className="stage">
         {/* 畫 The realm's own landscape, behind the fight, where there is one. The drawn
             sky and ridges stand down for it: see art/scene.ts. */}

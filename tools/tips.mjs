@@ -179,7 +179,7 @@ async function clear(page) {
     // never tap and never reached the sheet at all.
     const card = await page.$('.awaken .acard');
     if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
-    const el = await page.$('.help button.act, .notice button, .scrim, .shut');
+    const el = await page.$('.prologue button.act, .help button.act, .notice button, .scrim, .shut');
     if (!el) return;
     await el.click({ timeout: 3000 }).catch(() => {});
     await page.waitForTimeout(200);

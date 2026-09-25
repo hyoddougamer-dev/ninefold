@@ -18,17 +18,17 @@ export function Help({ onClose, onReopenGuide, onWhom }: {
   onReopenGuide?: () => void;
 }) {
   return (
-    <div className="help">
+    <div className="help howto">
       <h2>{HELP.title}</h2>
       <ol>
         {HELP.steps.map(([title, line], i) => (
           <li key={title}>
-            <span>{i + 1}</span>
+            <span className="cjk">{HELP.seals[i]}</span>
             <span><b>{title}</b><i>{line}</i></span>
           </li>
         ))}
       </ol>
-      {[HELP.opens, HELP.hunt, HELP.slow].filter(Boolean).map((line) => (
+      {[HELP.opens, HELP.hunt].filter(Boolean).map((line) => (
         <p key={line} className="faint" style={{ fontSize: 13.5, margin: 0 }}>{line}</p>
       ))}
       {onReopenGuide && (

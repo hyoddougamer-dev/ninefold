@@ -53,10 +53,40 @@ export const HELP = {
     ['釋 says what every character means',
       'Open ≡ Menu and pick "What the characters mean". Any character with a dotted line under it also says its name when you tap it.'],
   ] as const,
+  /** 印 The seal beside each promise, in order. Each title says what its character means. */
+  seals: ['氣', '坐', '敗', '釋'] as const,
   opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
   hunt: '',
   slow: '囊 Your master left you some qi. Spend it on upgrades, or let it fill the bar and open the first layer. Choosing between the two is the whole game.',
+  begin: 'Back to the climb',
+};
+
+/**
+ * 序 The prologue: what a brand new player sees before anything else.
+ *
+ * Bruno: *"o início do how to play é péssimo."* It opened on four numbered paragraphs
+ * of rules over a black screen. Now the first thing is the game's name over the first
+ * realm's painting and one sentence of what this is, then the whole climb in three
+ * pictures, then who is climbing, then the game with 引 the guide pointing at the first
+ * thing to press. Nothing here is a rule the guide will not teach by doing.
+ */
+export const PROLOGUE = {
+  name: 'Ninefold',
+  line: 'Nine realms stand between a mortal and the sky. You sit at the foot of the first.',
   begin: 'Begin',
+  howOver: 'The climb',
+  howTitle: 'How the climb works',
+  rows: [
+    ['氣', 'Qi gathers on its own',
+      'Even with the game shut, all night. Come back and it is waiting for you.'],
+    ['層', 'Fill the bar to open a layer',
+      'Nine layers make a realm. Or spend the qi to grow stronger instead: choosing is the game.'],
+    ['狩', 'Hunt, and lose nothing',
+      'Beasts drop 材 material for what qi cannot buy. A lost fight costs nothing at all.'],
+  ] as const,
+  next: 'Next',
+  /** Read by a screen reader on the dots under the pages. */
+  page: (n: number, of: number) => `Page ${n} of ${of}`,
 };
 
 export const TABS_COPY = {

@@ -568,6 +568,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
          display: flex; flex-direction: column; justify-content: center;
          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); }
 
+/* 景 The realm behind everything, blurred and dark, so the space above and below the
+   stage is the same place rather than black. The stage's own painting fades into it at
+   the top instead of starting on a hard line. */
+.arena { overflow: hidden; }
+.arena > .asky { position: absolute; inset: -30px; background-size: cover; background-position: center 55%;
+                 opacity: .42; filter: blur(14px) saturate(.8) brightness(.55); }
+.arena > :not(.asky) { position: relative; }
+.arena .skyline { -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%);
+                  mask-image: linear-gradient(180deg, transparent 0, #000 22%); }
+
 /* The stage holds the realm behind the fight. It is opaque on purpose: the old window
    let the hunt list show through, which read as a dialog over a list.
    Its height is capped: given the whole screen the skyline stretches into spikes and
@@ -936,6 +946,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 }
 .help li b { display: block; font-weight: 500; font-size: 16px; }
 .help li i { font-style: normal; font-size: 13.5px; color: var(--faint); }
+/* 引 How to play, from the Menu: each promise a card with its seal, as the prologue has
+   them, instead of a numbered list of paragraphs. */
+.howto ol { gap: 10px; }
+.howto li { align-items: center; gap: 14px; padding: 13px 14px; background: var(--panel);
+            border: 1px solid var(--line); border-radius: 13px; }
+.howto li > span:first-child { width: 44px; height: 44px; border-radius: 50%; font: 400 22px/1 'Noto Serif SC', serif;
+                               color: var(--gold); background: rgba(212, 175, 86, .08);
+                               border: 1px solid rgba(212, 175, 86, .45); }
+.howto li i { display: block; margin-top: 3px; line-height: 1.5; }
 
 /* ── 引 the guide: the first session, one numbered step at a time ─────────── */
 
@@ -1977,6 +1996,70 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .whom .later { margin: 22px auto 0; background: none; border: 0; color: var(--faint);
                font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
 
+/* 畫 The question sits over the realm's painting, as the prologue before it does, so the
+   first three screens of the game are one place rather than a title and two forms. */
+.whom { overflow: hidden; }
+.whom > :not(.wsky) { position: relative; }
+.whom .wsky { position: absolute; inset: 0; background-size: cover; background-position: center 40%;
+              opacity: .5; filter: saturate(.85) brightness(.7); }
+.whom .wsky::after { content: ''; position: absolute; inset: 0;
+                     background: linear-gradient(180deg, rgba(13,11,8,.35), rgba(13,11,8,.85) 70%, #0D0B08); }
+.whom .pick { background: rgba(30, 26, 20, .82); backdrop-filter: blur(4px); }
+.whom .pick:hover { border-color: var(--faint); }
+
+/* ── 序 the prologue ───────────────────────────────────────────────────── */
+
+/* Its own block. It is shaped like .whom and .help and shares nothing with either. */
+.prologue { position: absolute; inset: 0; z-index: 14; background: #0D0B08; overflow: hidden;
+            display: flex; flex-direction: column; text-align: center;
+            padding: calc(env(safe-area-inset-top, 0px) + 28px) 24px
+                     calc(env(safe-area-inset-bottom, 0px) + 24px); }
+.prologue .psky { position: absolute; inset: 0; background-size: cover; background-position: center 45%;
+                  opacity: .82; filter: saturate(.9) brightness(.8);
+                  animation: pskyin 2.4s ease-out both; }
+.prologue .psky::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(13,11,8,.1) 0, rgba(13,11,8,.2) 38%, rgba(13,11,8,.9) 78%, #0D0B08 100%); }
+.prologue[data-page='1'] .psky { opacity: .4; filter: saturate(.8) brightness(.6); transition: opacity .6s, filter .6s; }
+@keyframes pskyin { from { opacity: 0; transform: scale(1.06); } }
+
+.prologue .ptitle, .prologue .phow, .prologue .pfoot { position: relative; width: 100%; max-width: 520px;
+                                                        margin-inline: auto; }
+.prologue .ptitle { margin-top: auto; animation: pin .9s .3s ease-out both; }
+.prologue h1 { margin: 0; font-size: 76px; font-weight: 400; line-height: 1; color: #F1E6CF;
+               letter-spacing: .06em; text-shadow: 0 4px 30px rgba(0,0,0,.7), 0 0 60px rgba(212,175,86,.25); }
+.prologue .pname { margin: 12px 0 0; font: 400 19px/1 'Noto Serif SC', serif; letter-spacing: .5em;
+                   text-transform: uppercase; color: var(--gold); padding-left: .5em; }
+.prologue .pline { margin: 26px auto 0; max-width: 30ch; font-size: 15.5px; line-height: 1.6; color: var(--text);
+                   text-shadow: 0 2px 12px rgba(0,0,0,.9); }
+
+.prologue .phow { margin-top: auto; text-align: left; animation: pin .5s ease-out both; }
+.prologue .pover { margin: 0; font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+                   color: var(--faint); text-align: center; }
+.prologue .phow h2 { margin: 6px 0 22px; font: 400 26px/1.2 'Noto Serif SC', serif; color: var(--jade);
+                     text-align: center; }
+.prologue .phow ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.prologue .phow li { display: flex; gap: 15px; align-items: center; padding: 14px 16px;
+                     background: rgba(30, 26, 20, .78); border: 1px solid var(--line); border-radius: 14px;
+                     backdrop-filter: blur(4px); animation: pin .5s ease-out both; }
+.prologue .phow li:nth-child(2) { animation-delay: .12s; }
+.prologue .phow li:nth-child(3) { animation-delay: .24s; }
+.prologue .pseal { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+                   font-size: 26px; color: var(--gold); background: rgba(212, 175, 86, .08);
+                   border: 1px solid rgba(212, 175, 86, .45); box-shadow: 0 0 18px rgba(212, 175, 86, .12); }
+.prologue .phow b { display: block; font-weight: 500; font-size: 16px; color: var(--text); }
+.prologue .phow i { display: block; margin-top: 3px; font-style: normal; font-size: 13.5px; line-height: 1.5;
+                    color: var(--faint); }
+
+.prologue .pfoot { margin-top: 30px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.prologue .pfoot .act { width: 100%; }
+.prologue .pdots { display: flex; gap: 8px; }
+.prologue .pdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background .3s, width .3s; }
+.prologue .pdots i[data-on='true'] { background: var(--gold); width: 22px; border-radius: 99px; }
+@keyframes pin { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+  .prologue .psky, .prologue .ptitle, .prologue .phow, .prologue .phow li { animation: none; }
+}
+
 /* ── 符 an emblem in a row ─────────────────────────────────────────────── */
 
 /* It stands exactly where the pictogram stood, so a row that used one is the row it
@@ -2210,6 +2293,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
     border: 1px solid var(--line); border-radius: 16px; overflow: hidden auto;
     box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .7), 0 30px 80px rgba(0, 0, 0, .6); }
   .arena { width: min(580px, 100%); overflow: hidden; }
+  /* 鬥 As tall as the fight and its verdict, in the middle of the screen. Stretched to the
+     window's height it was a strip of landscape between two slabs of black. */
+  .arena { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px);
+           padding-top: 18px; justify-content: flex-start;
+           /* Tall enough for the verdict from the first blow, so the window does not
+              grow under the player when the fight ends. */
+           min-height: min(700px, calc(100% - 64px)); }
   /* A reading window is as tall as what it says and sits in the middle of the screen,
      rather than stretching to the window's height with a hole above its button. */
   .help, .whom { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px); }
@@ -2219,4 +2309,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .escape { top: 32px; right: calc(50% - 320px - 62px); }
   .escape:hover { border-color: var(--faint); }
   .whom .face { width: 150px; height: 150px; }
+  .prologue h1 { font-size: 112px; }
+  .prologue .pname { font-size: 22px; }
+  .prologue .pline { font-size: 17px; }
 }

@@ -228,7 +228,7 @@ async function walk(realm: number) {
   for (let i = 0; i < 24; i++) {
     const card = await page.$('.awaken .acard');
     if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(200); continue; }
-    const el = await page.$('.help button.act, .help .xclose, .notice button, .scrim, .shut');
+    const el = await page.$('.prologue button.act, .help button.act, .help .xclose, .notice button, .scrim, .shut');
     if (!el) break;
     await el.click({ timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(200);
