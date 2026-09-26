@@ -2,9 +2,10 @@
  * 入 The Supabase auth settings the game needs, as the JSON the Management API takes.
  * Run by .github/workflows/supabase.yml, which sends it with the access token.
  *
- * Guests are allowed (anonymous sign-ins), links come back to the game, and every
- * sign-in email carries a six-digit code beside the link: inside the installed app a
- * link opens the phone's browser rather than the game, so the code is what is typed.
+ * Guests are allowed (anonymous sign-ins) and links come back to the game. The `mail`
+ * half would put a six-digit code beside the link, because inside the installed app a
+ * link opens the phone's browser rather than the game. Supabase refuses it on the free
+ * plan without a mail server of our own, so until there is one the email is a link only.
  */
 const SITE = process.env.SITE ?? 'https://hyoddougamer-dev.github.io/ninefold/';
 
