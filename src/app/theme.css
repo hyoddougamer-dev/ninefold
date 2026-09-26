@@ -2380,6 +2380,31 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 #juice .cinnabar { color: var(--cinnabar); }
 #juice .violet { color: #B79CE0; }
 
+/* 指 A mouse gets an answer before the click. On a phone there is no hover, and a hover
+   rule there sticks to whatever was last tapped, so all of this waits for a pointer
+   that can actually hover. */
+@media (hover: hover) and (pointer: fine) {
+  .act:not(:disabled), .upg:not(:disabled), .beast:not(:disabled), .chestit, .orb, .pill:not(:disabled),
+  .tabs button, .switchmenu button { cursor: pointer; }
+  .act:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 0 0 1px rgba(237,227,210,.12), 0 6px 22px -10px currentColor; }
+  .act.ghost:hover:not(:disabled) { border-color: var(--faint); filter: none; }
+  .upg, .beast, .chestit, .orb { transition: transform .15s ease-out, border-color .15s, box-shadow .15s; }
+  .upg:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(212,175,86,.55);
+                              box-shadow: 0 8px 24px -14px rgba(212,175,86,.7); }
+  .beast:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(127,180,149,.5);
+                                box-shadow: 0 8px 24px -14px rgba(127,180,149,.7); }
+  .chestit:hover, .orb:hover { transform: translateY(-2px) scale(1.04); }
+}
+
+/* 息 She breathes. A scale of a fraction of a percent every six seconds, on the
+   compositor, so the figure the game is looked at through is never a still picture. */
+/* On the wrapper, not the drawing: the drawing is replaced five times a second as the
+   aura turns, and an animation on it would start over every time. */
+.c-hero .portrait > span { display: block; width: 100%; height: 100%; position: relative; z-index: 1;
+                           animation: sitbreath 6.5s ease-in-out infinite; transform-origin: 50% 80%; will-change: transform; }
+@keyframes sitbreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012) translateY(-0.4%); } }
+@media (prefers-reduced-motion: reduce) { .c-hero .portrait > span { animation: none; } }
+
 /* 按 A card that was just bought settles into place instead of simply changing. */
 .upg[data-bought='true'] { animation: bought .42s cubic-bezier(.2, .9, .3, 1.4); }
 @keyframes bought { 0% { transform: scale(.96); } 45% { transform: scale(1.025); box-shadow: 0 0 0 1px var(--gold), 0 0 26px -4px var(--gold); } 100% { transform: scale(1); } }
