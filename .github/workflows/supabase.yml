@@ -1,0 +1,103 @@
+# 榜 The ranked server: schema, the sync function, auth settings, and a live attack on
+# the result. Runs when the server's code or the sim it runs changes, or by hand.
+#
+# Needs two repository secrets, set once in GitHub → Settings → Secrets → Actions:
+#   SUPABASE_ACCESS_TOKEN  a personal access token from supabase.com/dashboard/account/tokens
+#   SUPABASE_DB_PASSWORD   the database password chosen when the project was made
+# Without them the run tests everything it can and says what is missing.
+name: supabase
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['supabase/**', 'src/sim/**', 'src/data/**', 'tools/ranked.ts', '.github/workflows/supabase.yml']
+
+concurrency: { group: supabase, cancel-in-progress: false }
+
+env:
+  PROJECT_REF: yqppvmuwlhibswbbvjzz
+  SUPABASE_URL: https://yqppvmuwlhibswbbvjzz.supabase.co
+  SITE: https://hyoddougamer-dev.github.io/ninefold/
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+
+      - name: The anti-cheat, the sync and the schema, tested before anything ships
+        run: npx vitest run src/sim/__tests__/verify.test.ts src/sim/__tests__/sync.test.ts src/sim/__tests__/schema.test.ts
+
+      - name: Bundle the sync core and the sim it runs into one file
+        run: npx esbuild supabase/functions/sync/core.ts --bundle --format=esm --platform=neutral --target=es2022 --outfile=supabase/functions/sync/core.bundle.js
+
+      - name: Secrets present?
+        id: keys
+        env:
+          TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PASS: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$PASS" ]; then
+            echo "::warning::SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD are not set. Tested, not deployed."
+            echo "go=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: supabase/setup-cli@v1
+        if: steps.keys.outputs.go == 'yes'
+        with: { version: latest }
+
+      - name: Link the project
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Push the schema
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: yes | supabase db push --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Deploy the sync function
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy sync --project-ref "$PROJECT_REF" --use-api
+
+      - name: Auth settings (guests allowed, links come back to the game)
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          curl -sS -f -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+            -d "{\"external_anonymous_users_enabled\": true, \"site_url\": \"$SITE\", \"uri_allow_list\": \"$SITE**,http://localhost:4173/**\"}" \
+            -o /dev/null && echo "auth configured"
+
+      - name: The public key, read from the project (never stored here)
+        if: steps.keys.outputs.go == 'yes'
+        id: anon
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          KEY=$(curl -sS -f "https://api.supabase.com/v1/projects/$PROJECT_REF/api-keys" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | node -e '
+              const k = JSON.parse(require("fs").readFileSync(0, "utf8"));
+              const pub = k.find((x) => x.type === "publishable") ?? k.find((x) => x.name === "anon");
+              process.stdout.write(pub ? pub.api_key : "");')
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Attack the live server
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_KEY: ${{ steps.anon.outputs.key }}
+        run: npx tsx tools/ranked.ts

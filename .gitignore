@@ -32,3 +32,5 @@ shots/
 # 搬 copies of public/art, made by npm run bible for publishing beside the page.
 bible-art/art/
 bible-art/shot/
+supabase/functions/sync/core.bundle.js
+supabase/.temp

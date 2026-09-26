@@ -1,0 +1,7 @@
+# 榜 The Supabase project behind the ranked boards. Deployed by .github/workflows/supabase.yml.
+project_id = "yqppvmuwlhibswbbvjzz"
+
+[functions.sync]
+# The platform checks the caller's JWT before the function runs; the function then asks
+# who that is, and a save is only ever written for that player.
+verify_jwt = true
