@@ -79,7 +79,8 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
           <p className="rnote small">
             <b>{RANKS.titlesHead}</b> {RANKS.titles}
           </p>
-          <Account who={who} me={me} onSignOut={onSignOut} onRenamed={(m) => setMe(m)} />
+          <Account who={who} me={me} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
+                   onLinked={async () => { const w = await cloud.who(); if (w) onEnter(w, ''); }} />
         </>
       ) : (
         <Join onEnter={onEnter} />
@@ -146,22 +147,29 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
       }}>
         信 <span>{RANKS.sendLink}</span>
       </button>
-      {sent ? <p className="rstatus" data-tone="good">{RANKS.linkSent(sent)}</p>
-        : <p className="rnote small">{RANKS.linkNote}</p>}
+      {sent ? (
+        <>
+          <p className="rstatus" data-tone="good">{RANKS.linkSent(sent)}</p>
+          <Code email={sent} guest={false} onIn={(w) => onEnter(w, name.trim())} />
+        </>
+      ) : <p className="rnote small">{RANKS.linkNote}</p>}
       {error && <p className="rstatus" data-tone="bad">{error}</p>}
       <a className="rlink" href="privacy/" target="_blank" rel="noopener">{RANKS.privacy}</a>
     </div>
   );
 }
 
-function Account({ who, me, onSignOut, onRenamed }: {
+function Account({ who, me, onSignOut, onRenamed, onLinked }: {
   who: Who; me: Mine | null; onSignOut: () => void; onRenamed: (m: Mine) => void;
+  /** A guest confirmed an email: the same account, now on every device. */
+  onLinked: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(me?.name ?? '');
   const [email, setEmail] = useState('');
   const [note, setNote] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null);
   const [sure, setSure] = useState(false);
+  const [linking, setLinking] = useState<string | null>(null);
   useEffect(() => { if (me) setName(me.name); }, [me]);
 
   return (
@@ -192,13 +200,14 @@ function Account({ who, me, onSignOut, onRenamed }: {
           <div className="rrow">
             <input type="email" value={email} placeholder={RANKS.emailPrompt} inputMode="email" onChange={(e) => setEmail(e.target.value)} />
             <button className="act small" disabled={!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())} onClick={async () => {
-              try { await cloud.sendLink(email.trim(), true); setNote({ tone: 'good', text: RANKS.linkSent(email.trim()) }); }
+              try { await cloud.sendLink(email.trim(), true); setLinking(email.trim()); setNote({ tone: 'good', text: RANKS.linkSent(email.trim()) }); }
               catch { setNote({ tone: 'bad', text: RANKS.offline }); }
             }}>信 {RANKS.send}</button>
           </div>
         </>
       )}
       {note && <p className="rstatus" data-tone={note.tone}>{note.text}</p>}
+      {linking && who.guest && <Code email={linking} guest onIn={() => { setLinking(null); setNote(null); onLinked(); }} />}
       <div className="rrow">
         <button className="act ghost small" onClick={onSignOut}>{RANKS.signOut}</button>
         <a className="rlink" href="privacy/" target="_blank" rel="noopener">{RANKS.privacy}</a>
@@ -216,6 +225,30 @@ function Account({ who, me, onSignOut, onRenamed }: {
       ) : (
         <button className="rdel" onClick={() => setSure(true)}>{RANKS.delete}</button>
       )}
+    </div>
+  );
+}
+
+/** 碼 The six digits from the email, for when the link would open somewhere else. */
+function Code({ email, guest, onIn }: { email: string; guest: boolean; onIn: (w: Who) => void }) {
+  const [code, setCode] = useState('');
+  const [bad, setBad] = useState(false);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="rcode">
+      <label>
+        <span>{RANKS.codePrompt}</span>
+        <div className="rrow">
+          <input inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={code}
+                 onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setBad(false); }} />
+          <button className="act small" disabled={code.length < 6 || busy} onClick={async () => {
+            setBusy(true);
+            try { onIn(await cloud.enterCode(email, code, guest)); } catch { setBad(true); }
+            setBusy(false);
+          }}>{RANKS.codeGo}</button>
+        </div>
+      </label>
+      {bad && <p className="rstatus" data-tone="bad">{RANKS.codeBad}</p>}
     </div>
   );
 }

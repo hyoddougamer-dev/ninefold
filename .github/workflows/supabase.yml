@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['supabase/**', 'src/sim/**', 'src/data/**', 'tools/ranked.ts', '.github/workflows/supabase.yml']
+    paths: ['supabase/**', 'src/sim/**', 'src/data/**', 'tools/ranked.ts', 'tools/auth-config.mjs', '.github/workflows/supabase.yml']
 
 concurrency: { group: supabase, cancel-in-progress: false }
 
@@ -72,15 +72,15 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy sync --project-ref "$PROJECT_REF" --use-api
 
-      - name: Auth settings (guests allowed, links come back to the game)
+      - name: Auth settings (guests allowed, links come back to the game, codes in the email)
         if: steps.keys.outputs.go == 'yes'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          node tools/auth-config.mjs > /tmp/auth.json
           curl -sS -f -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
-            -d "{\"external_anonymous_users_enabled\": true, \"site_url\": \"$SITE\", \"uri_allow_list\": \"$SITE**,http://localhost:4173/**\"}" \
-            -o /dev/null && echo "auth configured"
+            --data @/tmp/auth.json -o /dev/null && echo "auth configured"
 
       - name: The public key, read from the project (never stored here)
         if: steps.keys.outputs.go == 'yes'

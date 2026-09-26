@@ -104,8 +104,14 @@ export async function sync(store: Store, id: string, raw: unknown, now: number, 
   const v = verify(before, after, seconds);
   await store.log(id, v, now);
 
+  // 存 The cloud copy only ever moves forward. A new device's empty save, or an older
+  // copy restored on purpose, must never overwrite a cultivator further along: that is
+  // the copy another device would sign in to find.
+  const ahead = (x: State) => layersOpened(x) + x.tribulation;
+  let kept: State | null = null;
+  try { kept = saved ? validate(saved.latest, now) : null; } catch { kept = null; }
   const next: Saved = {
-    latest: after,
+    latest: kept && ahead(kept) > ahead(after) ? saved!.latest : after,
     verified: v.ok ? after : saved?.verified ?? null,
     verifiedAt: v.ok ? now : saved?.verifiedAt ?? null,
     lastSync: now,

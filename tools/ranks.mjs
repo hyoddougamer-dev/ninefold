@@ -46,6 +46,7 @@ function server(page, { cloud = null, email = null } = {}) {
       case '/auth/v1/signup': return reply(200, session(USER));
       case '/auth/v1/user': return reply(200, user);
       case '/auth/v1/otp': return reply(200, {});
+      case '/auth/v1/verify': return reply(200, session({ ...USER, email: email ?? 'bruno@example.com', is_anonymous: false }));
       case '/auth/v1/logout': return route.fulfill({ status: 204, headers: CORS });
       case '/functions/v1/sync':
         if (body?.action === 'pull') return reply(200, { save: cloud, at: new Date().toISOString() });
@@ -144,6 +145,37 @@ console.log('\na new device');
   const realm = await page.evaluate(() => JSON.parse(localStorage.getItem('ninefold.save.v1') ?? '{}').realm);
   check(realm === 5, 'continuing from the cloud brings the cultivator here', String(realm));
   check(!(await page.evaluate(() => location.hash)).includes('access_token'), 'and the link is taken out of the address');
+  await page.close();
+}
+
+// 碼 The same, by the six digits, the way it goes inside the installed app.
+console.log('\na new device, by the code in the email');
+{
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  const now = Math.floor(Date.now() / 1000);
+  const cloud = { v: 1, at: now - 60, startedAt: now - 30 * 86400, realm: 4, layer: 6, qi: 5e6, materials: 900,
+    wardenFell: false, levels: { technique: 18, method: 18, pills: 16, cores: 18 }, killed: { rat: 40, hound: 30 },
+    self: 'man', seen: ['guide', 'whom'] };
+  const seen = server(page, { cloud, email: 'bruno@example.com' });
+  await fresh(page);
+  await page.goto(BASE);
+  await page.waitForSelector('.prologue');
+  await page.click('.prologue .phave');
+  await page.waitForSelector('.ranks .rjoin');
+  await page.fill('.ranks .rjoin input[type=email]', 'bruno@example.com');
+  await page.locator('.ranks .rjoin button.act.ghost').click();
+  await page.waitForSelector('.ranks .rcode input', { timeout: 5000 }).catch(() => {});
+  check(await page.locator('.ranks .rcode input').isVisible(), 'after the email is sent, the game asks for its code');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/code.png` });
+  await page.fill('.ranks .rcode input', '123456');
+  await page.locator('.ranks .rcode button').click();
+  await page.waitForSelector('.cloudpick', { timeout: 8000 }).catch(() => {});
+  check(await page.locator('.cloudpick').isVisible(), 'the code signs in, and the cloud cultivator is offered');
+  check(seen.syncs.length === 0, 'nothing was synced before the choice, so the cloud copy is untouched', String(seen.syncs.length));
+  await page.locator('.cloudpick button.act').first().click();
+  await page.waitForTimeout(600);
+  const realm = await page.evaluate(() => JSON.parse(localStorage.getItem('ninefold.save.v1') ?? '{}').realm);
+  check(realm === 4, 'and continuing brings it here', String(realm));
   await page.close();
 }
 

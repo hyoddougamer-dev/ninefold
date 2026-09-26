@@ -76,6 +76,19 @@ export async function sendLink(email: string, guest: boolean): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/**
+ * 碼 The six digits in the same email, for when the link would open in the wrong place:
+ * inside the installed app a link opens the phone's browser, not the game, so the code
+ * is typed where the game is. A guest adding an email confirms it the same way.
+ */
+export async function enterCode(email: string, code: string, guest: boolean): Promise<Who> {
+  const c = await client();
+  const { data, error } = await c.auth.verifyOtp({ email, token: code.trim(), type: guest ? 'email_change' : 'email' });
+  if (error || !data.user) throw new Error(error?.message ?? 'no user');
+  remember(true);
+  return { id: data.user.id, email: data.user.email ?? email, guest: false };
+}
+
 /** 刪 Delete the account and everything the server holds; the game on this device stays. */
 export async function deleteMe(): Promise<boolean> {
   const c = await client();

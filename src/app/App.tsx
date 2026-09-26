@@ -897,7 +897,21 @@ export function App() {
           who={who}
           synced={synced}
           syncedAt={syncedAt}
-          onEnter={(w, name) => { setWho(w); void push(name); sfx.mark(); }}
+          onEnter={async (w, name) => {
+            setWho(w); sfx.mark();
+            // 雲 An email account may already hold a cultivator from another device: look
+            // before offering this one, and ask if the cloud's is further along.
+            if (!w.guest) {
+              const got = await cloud.pull().catch(() => null);
+              const there = got?.save ? importSave(JSON.stringify(got.save), now()).state : null;
+              if (there && layersOpened(there) + there.tribulation > layersOpened(latest.current) + latest.current.tribulation) {
+                setRanks(false);
+                setCloudPick({ there, here: latest.current });
+                return;
+              }
+            }
+            void push(name || undefined);
+          }}
           onSignOut={() => { void cloud.signOut(); setWho(null); setSynced(null); sfx.tap(); }}
           onClose={() => { setRanks(false); sfx.tap(); }}
         />

@@ -97,6 +97,15 @@ describe('同步 the ranked sync', () => {
     expect(r.status).toBe(403);
   });
 
+  it('a new device’s empty save never overwrites a cultivator further along in the cloud', async () => {
+    const m = memory();
+    const far = shots[shots.length - 1].s;
+    await sync(m.store, 'u6', far, far.at + 10);
+    const empty = { ...shots[0].s, at: far.at + 100 };
+    await sync(m.store, 'u6', empty, far.at + 100);
+    expect((m.saves.get('u6')!.latest as State).realm).toBe(far.realm);
+  });
+
   it('junk is not a save', async () => {
     const m = memory();
     // validate() makes a cultivator of nearly anything; what it cannot read is refused.
