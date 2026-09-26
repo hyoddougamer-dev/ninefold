@@ -1156,12 +1156,29 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
        padding: 0; cursor: pointer; line-height: 0; }
 .orb svg { display: block; }
 
-.chest { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.chestit { background: none; border: 0; padding: 0; cursor: pointer;
-           display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.chest { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px 8px; }
+.chestit { position: relative; background: none; border: 0; padding: 0; cursor: pointer;
+           display: flex; flex-direction: column; align-items: center; }
 .chestit svg { display: block; width: 100%; height: auto; }
-.pct { font-size: 10.5px; font-family: Rajdhani, sans-serif; font-weight: 600; }
-.pct em { font-style: normal; color: var(--jade); }
+/* ▲ The one mark a tile carries: better than what is worn in that place. It was a 9px
+   triangle after a number; now it is the thing the eye finds first. */
+.chestit .upmark { position: absolute; top: -5px; right: -4px; width: 19px; height: 19px;
+                   border-radius: 50%; background: var(--jade); color: #0F1510;
+                   font-size: 10px; line-height: 19px; text-align: center;
+                   box-shadow: 0 0 0 2px var(--ground), 0 0 12px rgba(127,180,149,.7); }
+.chestit[data-better='true'] svg { filter: drop-shadow(0 0 5px rgba(127,180,149,.45)); }
+.chestlegend { font-size: 12px; margin: 10px 0 0; }
+.chestlegend b { color: var(--jade); }
+/* 篩 Filters: every place on the body that has something in the chest. */
+.chestfilter { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+               padding: 2px 2px 4px; margin: 0 -2px 10px; }
+.chestfilter::-webkit-scrollbar { display: none; }
+.chestfilter button { flex: none; background: none; border: 1px solid var(--line); border-radius: 99px;
+                      padding: 3px 10px; font: inherit; font-size: 12.5px; color: var(--faint);
+                      cursor: pointer; display: flex; gap: 5px; align-items: baseline; }
+.chestfilter button i { font-style: normal; font-size: 11px; opacity: .8; }
+.chestfilter button[aria-pressed='true'] { border-color: var(--text); color: var(--text); }
+.chestfilter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
 
 .tabs { grid-template-columns: repeat(6, 1fr); }
 /* 榜 Six tabs on a 320px phone: the labels give up a little spacing to fit. */
@@ -1256,15 +1273,32 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .tnode[data-status='open'] circle:first-child { animation: none; }
 }
 
-/* What the body adds up to, axis by axis. Chips, so six of them still fit a phone. */
-.totals { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; }
-.tot { display: inline-flex; align-items: baseline; gap: 5px;
-       background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-       padding: 4px 9px; }
-.tot b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 15px;
-         color: var(--jade); }
-.tot em { font-style: normal; font-size: 13px; color: var(--gold); font-weight: 600; }
-.tot i { font-style: normal; font-size: 10.5px; color: var(--faint); letter-spacing: .04em; }
+/* 總 What everything worn does: two numbers from the sim, each with a sentence. The
+   character behind each number is the same one its label carries, drawn big and faint. */
+.lift { display: grid; grid-template-columns: 1fr 1fr; margin: 8px 0 2px; }
+.lift > div { position: relative; min-width: 0; padding: 4px 4px 2px 10px; overflow: hidden; }
+.lift > div + div { border-left: 1px solid var(--line); }
+.lift .lghost { position: absolute; right: 0; top: -8px; font-size: 60px; line-height: 1;
+                opacity: .1; pointer-events: none; }
+.lift b { display: block; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 34px;
+          line-height: 1; }
+.lift b small { font-size: 21px; font-weight: 600; margin-right: 1px; }
+.lift .ll { display: block; font-size: 13px; margin-top: 4px; }
+.lift .ll .cjk { color: var(--faint); }
+.lift .ls { display: block; font-size: 11.5px; color: var(--faint); line-height: 1.35; margin-top: 2px; }
+.lift .lp b, .lift .lp .lghost { color: var(--gold); }
+.lift .lq b, .lift .lq .lghost { color: var(--jade); }
+
+.othereff summary { list-style: none; cursor: pointer; font-size: 12.5px; color: var(--faint);
+                    padding: 4px 10px; }
+.othereff summary::-webkit-details-marker { display: none; }
+.othereff summary::after { content: ' \25BE'; }
+.othereff[open] summary::after { content: ' \25B4'; }
+.othereff .oe { display: grid; gap: 3px; padding: 2px 10px 4px; }
+.othereff .oe div { display: flex; gap: 9px; align-items: baseline; font-size: 13px; }
+.othereff .oe .cjk { width: 18px; color: var(--faint); }
+.othereff .oe em { margin-left: auto; font-style: normal; font-family: Rajdhani, sans-serif;
+                   font-weight: 600; font-size: 14px; }
 
 /* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */
 .setrow { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
@@ -2026,6 +2060,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .head em { display: block; margin-top: 5px; font-style: normal; font-size: 12px;
                       color: var(--faint); }
 .itemsheet .head em .dot { margin: 0 6px; opacity: .5; }
+.itemsheet .head em + em { margin-top: 2px; }
 
 /* 階 The five-step ladder, drawn, with the one it is on lit. The frame and the glow on
    the tile were carrying the whole rank system by themselves. */
@@ -2062,21 +2097,47 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .line[data-up="true"] .vs b { color: var(--jade); }
 .itemsheet .line[data-down="true"] .vs b { color: var(--cinnabar); }
 
-/* 果 The verdict. Two numbers from the sim, and no adjective. */
-.itemsheet .verdictbox { display: flex; gap: 9px; }
-.itemsheet .swing { flex: 1; background: var(--panel); border: 1px solid var(--line);
-                    border-radius: 11px; padding: 13px 10px; text-align: center; }
-.itemsheet .swing > b { display: block; font-size: 17px; font-weight: 400; color: var(--faint); }
-.itemsheet .swing em { display: block; margin-top: 3px; font-style: normal; font-size: 17px;
-                       font-weight: 600; }
-.itemsheet .swing i { display: block; margin-top: 3px; font-style: normal; font-size: 10px;
-                      letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
-.itemsheet .swing[data-sign="1"] em { color: var(--jade); }
-.itemsheet .swing[data-sign="-1"] em { color: var(--cinnabar); }
-.itemsheet .swing[data-sign="0"] em { color: var(--faint); font-size: 13px; }
+/* 判 The verdict, first and in words. The tint says which of the four it is before a
+   word of it is read: jade an upgrade, gold a trade, and nothing bright for the rest. */
+.itemsheet .verdict { border-radius: 12px; padding: 13px 15px; text-align: left; }
+.itemsheet .verdict[data-k="up"] { background: linear-gradient(100deg, rgba(127,180,149,.2), rgba(127,180,149,.04)); }
+.itemsheet .verdict[data-k="trade"] { background: linear-gradient(100deg, rgba(212,175,86,.16), rgba(212,175,86,.03)); }
+.itemsheet .verdict[data-k="same"],
+.itemsheet .verdict[data-k="down"],
+.itemsheet .verdict[data-k="worn"] { background: linear-gradient(100deg, rgba(156,144,124,.14), rgba(156,144,124,.03)); }
+.itemsheet .verdict h4 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2;
+                         display: flex; gap: 9px; align-items: center; }
+.itemsheet .verdict[data-k="up"] h4 { color: var(--jade); }
+.itemsheet .verdict[data-k="trade"] h4 { color: var(--gold); }
+.itemsheet .verdict[data-k="same"] h4, .itemsheet .verdict[data-k="down"] h4 { color: var(--faint); }
+.itemsheet .verdict .vg { font-size: 22px; line-height: 1; }
+.itemsheet .vrows { display: grid; gap: 4px; margin-top: 9px; }
+.itemsheet .vrow { display: flex; align-items: baseline; gap: 9px; font-size: 15px; }
+.itemsheet .vrow .cjk { width: 18px; color: var(--faint); }
+.itemsheet .vrow b { font-weight: 600; }
+.itemsheet .vrow[data-dir="up"] b { color: var(--jade); }
+.itemsheet .vrow[data-dir="down"] b { color: var(--cinnabar); }
+.itemsheet .vrow[data-dir="same"] b { color: var(--faint); font-weight: 400; }
+.itemsheet .vrow em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--faint); }
+.itemsheet .verdict p { margin: 8px 0 0; font-size: 13px; color: var(--faint); }
 
-.itemsheet .acts { margin-top: auto; display: flex; flex-direction: column; gap: 9px;
-                   padding-top: 14px; }
+/* 印 The rank as a seal, on the line under the name. */
+.itemsheet .iseal { display: inline-grid; place-items: center; width: 19px; height: 19px;
+                    margin-right: 6px; border-radius: 3px; background: var(--c); color: #150F0A;
+                    font-size: 12px; font-weight: 600; transform: rotate(-4deg); vertical-align: -3px; }
+
+.itemsheet .acts { display: flex; flex-direction: column; gap: 9px; }
+
+/* 細 The working, folded. */
+.itemsheet .idetail { border-top: 1px solid var(--line); }
+.itemsheet .idetail summary { list-style: none; cursor: pointer; padding: 12px 0 4px;
+                              font-size: 13px; color: var(--faint); }
+.itemsheet .idetail summary::-webkit-details-marker { display: none; }
+.itemsheet .idetail summary::after { content: ' \25BE'; }
+.itemsheet .idetail[open] summary::after { content: ' \25B4'; }
+.itemsheet .idetail > * + * { margin-top: 10px; }
+.itemsheet .line .lab .cap { display: block; font-style: normal; font-size: 11.5px;
+                             color: var(--faint); margin-top: 2px; line-height: 1.35; }
 
 /* ── 相 who is climbing ────────────────────────────────────────────────── */
 

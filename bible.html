@@ -708,6 +708,7 @@
       <a href="#audit"><b>氣查</b> The audit of the qi</a>
       <a href="#ranked"><b>榜</b> The rankings, and why they can be trusted</a>
       <a href="#testers"><b>測</b> What the first testers said</a>
+      <a href="#words"><b>判</b> The gear screen in words</a>
       <a href="#noite"><b>夜</b> A noite de 26 de setembro, em imagens</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
@@ -822,7 +823,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>346 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>352 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -5899,6 +5900,49 @@
       <img src="bible-art/shot/rankstab.webp" alt="The rankings tab with the player's place on it, on a phone and on the desktop rail">
       <figcaption><b>Phone and PC.</b> 榜 Ranks with #4 on it. On the PC the guide's arrow
         now points at a rail tab from its right, where it used to sit on the word above.</figcaption>
+    </figure></div>
+  </section>
+
+  <section class="sec" id="words">
+    <h2><span class="h">判</span> The gear screen says it in words</h2>
+    <p class="t">Bruno, on the gear audit: <i>"sinto que tem muito texto matemático que pode
+      confundir players"</i>. Eight proposals went to him as a working mockup, and he chose
+      the first three. Every picture below is the compiled game with the same realm 6
+      cultivator, before and after.</p>
+
+    <h3>總 Two numbers that are true</h3>
+    <p class="t">The top of the screen was seven chips adding the lines up. The 氣 one read
+      +333.9% on a body whose gear lifted the qi rate by a fifth, because the sum is taken
+      before the ceiling bends it. Now it is <code>gearLift()</code>: the body against itself
+      with nothing on, from <code>power()</code> and <code>rate()</code>. ×5.1 power and ×1.23
+      qi, a sentence each, and the rest folded under "Other effects".</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/gear-top.webp" alt="The top of the gear screen before, seven percentage chips, and after, two large multipliers with a sentence each">
+      <figcaption><b>Before and after, 400 wide.</b> The ring is unchanged, and has its
+        portrait back: it had gone blank when the aura became layers.</figcaption>
+    </figure></div>
+
+    <h3>判 The sheet opens on the answer</h3>
+    <p class="t">A piece now opens on one of four words from <code>verdictOf()</code>: an
+      upgrade, a trade, the same, or weaker. Under it, power and qi each move by a word
+      from <code>sizeOf()</code> (a little, clearly, a lot, hugely), with the percentage small
+      beside it. The five rows of lines are folded under "Every effect, in detail", and the
+      qi row there says why it reads bigger than it is. A worn piece reads against the same
+      place left empty, so it says what it is doing for you.</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/gear-sheet.webp" alt="The item sheet before, five rows of percentages, and after, an upgrade and a weaker piece each opening on a word">
+      <figcaption><b>The Starfall Horned Helm before and after, and a weaker fan.</b> A
+        piece that is worse offers "Wear it anyway", in outline rather than in jade.</figcaption>
+    </figure></div>
+
+    <h3>▲ The chest leads with what is better</h3>
+    <p class="t">Tiles carry no number now. A piece better than what is worn in its place
+      has a jade ▲ on its corner. The upgrades come first, the biggest first, then the rarest.
+      A row of filters narrows it to one place on the body or to the upgrades alone.</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/gear-chest.webp" alt="The chest filtered to the four upgrades, and the whole chest sorted with the upgrades first">
+      <figcaption><b>"▲ Better" and "All".</b> Four of twenty-four pieces are upgrades, and
+        they are the first row.</figcaption>
     </figure></div>
   </section>
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compare, ifBare, ifWorn, linesOf, swing } from '../inspect.ts';
+import { compare, gearLift, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, wornSwing } from '../inspect.ts';
 import { RARITIES, SECONDARIES, templateOf, type Item, type Rarity } from '../../data/gear.ts';
 import { newState, power, type State } from '../state.ts';
 import { rate } from '../time.ts';
@@ -114,5 +114,68 @@ describe('鑑 what a piece would do', () => {
     const m = swing(s, it);
     expect(m.power).toBeCloseTo(power(ifWorn(s, it)) / power(s), 9);
     expect(m.rate).toBeCloseTo(rate(ifWorn(s, it)) / rate(s), 9);
+  });
+});
+
+/**
+ * 判 The word the sheet opens on, and the two numbers the gear screen opens on.
+ *
+ * Both replace a percentage a player had to interpret. They are only worth having if
+ * they cannot say something the sim does not do.
+ */
+describe('判 the verdict in a word', () => {
+  const w = (power: number, rate: number, better: boolean) => ({ power, rate, better });
+
+  it('names the four outcomes', () => {
+    expect(verdictOf(w(1.04, 1, true))).toBe('up');
+    expect(verdictOf(w(1.04, 0.99, false))).toBe('trade');
+    expect(verdictOf(w(0.97, 1.01, false))).toBe('trade');
+    expect(verdictOf(w(1, 1, false))).toBe('same');
+    expect(verdictOf(w(0.9, 1, false))).toBe('down');
+  });
+
+  it('agrees with the sim on a real piece', () => {
+    const weak = piece('w', 'sword5', 'common', [{ affix: 'power', value: 2 }]);
+    const strong = piece('s', 'sword5', 'heaven', [{ affix: 'power', value: 60 }]);
+    const s = hero({ weapon: weak });
+    expect(verdictOf(swing(s, strong))).toBe('up');
+    expect(verdictOf(swing(hero({ weapon: strong }), weak))).toBe('down');
+    expect(verdictOf(swing(s, weak))).toBe('same');
+  });
+
+  it('sizes a change by where a player would feel it', () => {
+    expect(sizeOf(1)).toBe('none');
+    expect(sizeOf(1.002)).toBe('little');
+    expect(sizeOf(1.05)).toBe('clear');
+    expect(sizeOf(0.95)).toBe('clear');
+    expect(sizeOf(1.2)).toBe('lot');
+    expect(sizeOf(3)).toBe('huge');
+  });
+});
+
+describe('總 what the whole body does', () => {
+  it('is exactly one with nothing on', () => {
+    const l = gearLift(hero());
+    expect(l.power).toBe(1);
+    expect(l.rate).toBe(1);
+  });
+
+  it('is the sim, not the sum of the lines', () => {
+    // 頂 A body whose qi lines add up to +300% does not earn four times the qi: gear's
+    // share of the rate bends toward a ceiling. The old screen printed the sum.
+    const robe = piece('r', 'robe1', 'heaven', [{ affix: 'rate', value: 300 }]);
+    const s = hero({ robe });
+    const l = gearLift(s);
+    expect(l.rate).toBeGreaterThan(1);
+    expect(l.rate).toBeLessThan(4);
+    expect(l.rate).toBeCloseTo(rate(s) / rate({ ...s, worn: {} }), 9);
+  });
+
+  it('reads a worn piece against the same body without it', () => {
+    const sword = piece('a', 'sword5', 'mystic', [{ affix: 'power', value: 20 }]);
+    const s = hero({ weapon: sword });
+    const m = wornSwing(s, sword);
+    expect(m.power).toBeGreaterThan(1);
+    expect(m.power).toBeCloseTo(power(s) / power(ifBare(s, sword)), 9);
   });
 });

@@ -820,7 +820,7 @@ export const ITEM = {
 
   what: 'What it gives',
   against: (name: string) => `Against the ${name} you are wearing`,
-  fromRealm: (n: number) => `realm ${n} make`,
+  fromSet: (set: string, n: number) => `${set} set, realm ${n}`,
   lines: (n: number) => (n === 1 ? '1 line' : `${n} lines`),
   refined: (level: number, gain: number, per: number) =>
     `\u7149 Refined ${level} ${level === 1 ? 'time' : 'times'}. Every line on it is `
@@ -830,8 +830,42 @@ export const ITEM = {
     if (Math.abs(pct) < 0.05) return 'no change';
     return `${pct > 0 ? '+' : ''}${Math.round(pct * 10) / 10}%`;
   },
+  /**
+   * 判 The first thing the sheet says, before any number. Bruno chose this on the 器
+   * mockup: *"1, 2 e 3"*. The percentages are still there, folded, for anyone who wants
+   * to check the word against them.
+   */
+  verdict: {
+    up: 'An upgrade',
+    trade: 'A trade',
+    same: 'The same as yours',
+    down: 'Weaker than yours',
+    worn: 'What it does for you',
+  } as Record<'up' | 'trade' | 'same' | 'down' | 'worn', string>,
+  size: {
+    none: 'no change',
+    little: 'a little',
+    clear: 'clearly',
+    lot: 'a lot',
+    huge: 'hugely',
+  } as Record<'none' | 'little' | 'clear' | 'lot' | 'huge', string>,
+  power: 'Power',
+  qi: 'Qi',
+  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null) => {
+    if (!name) return 'Nothing is worn there yet, so all of it is gain.';
+    if (v === 'up') return `Better than the ${name} you wear.`;
+    if (v === 'trade') return `It gains on one side and loses on the other, against the ${name} you wear.`;
+    if (v === 'same') return `It does what the ${name} you wear already does.`;
+    return `The ${name} you wear is better.`;
+  },
+  wornSays: 'Against the same place left empty.',
+  detail: 'Every effect, in detail',
+  /** 頂 Why the 氣 line reads bigger than what it does. */
+  qiCeiling: 'Qi from gear bends toward a ceiling, so this adds less than it reads.',
+  rankOf: 'Its rank, of five',
   wear: 'Wear it',
   swap: 'Wear it instead',
+  anyway: 'Wear it anyway',
   takeOff: 'Take it off',
   close: 'Back',
 };
@@ -1032,8 +1066,33 @@ export const SECRET = {
 };
 
 export const GEAR = {
-  /** 數 One line is a line, and the screen read "1 lines worn" until somebody looked. */
-  linesWorn: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'} worn`,
+  /**
+   * 總 The two numbers at the top of the screen.
+   *
+   * It used to be seven chips adding the lines up, and the 氣 one read +333.9% on a body
+   * whose gear lifted qi by a fifth. These say what the sim does with everything worn.
+   */
+  powerFrom: 'Power from your gear',
+  qiFrom: 'Qi from your gear',
+  powerSays: (x: number) => (x >= 1.95
+    ? `You hit about ${Math.round(x)} times as hard.`
+    : `You hit ${Math.round((x - 1) * 100)}% harder.`),
+  qiSays: 'Qi from gear has a ceiling. Power has none.',
+  nothingWorn: 'Nothing worn yet. Beasts drop gear, and what you wear makes you hit harder.',
+  otherEffects: 'Other effects of your gear',
+  /** 譯 The rest of the axes, each with its English beside it. */
+  other: {
+    luck: 'Rarer drops',
+    find: 'Beasts drop more often',
+    sunder: 'Beasts are weaker',
+    capacity: 'Chest places',
+    refine: 'Fusion quality',
+  } as Record<string, string>,
+  /** 篩 The chest's filters. */
+  all: 'All',
+  betterOnly: 'Better',
+  /** ▲ What the mark on a tile means, said once under the grid. */
+  legend: 'better than what you wear in that place, and shown first.',
   /**
    * 拆 Melting gear down.
    *
@@ -1063,10 +1122,8 @@ export const GEAR = {
   bestTail: 'rank, and the ring round your portrait shows it.',
   fuse: '煉 Fuse: three make one',
   empty: 'Empty. Beasts drop gear, and wardens always do.',
-  howTo: 'Tap a piece to wear it. Tap a worn slot to take it off.',
-  lines: (spirit: number, heaven: number) =>
-    `A 靈 piece carries ${spirit} lines and a 天 piece ${heaven}`,
-  drops: (realm: number) => `beasts here drop up to realm ${realm}`,
+  howTo: 'Tap a piece to see what it would do. Tap a worn one to take it off.',
+  drops: (realm: number) => `Beasts here drop gear up to realm ${realm}.`,
   better: 'Worth more than what you are wearing',
   sets: 'Wear pieces of one realm together and the set pays you extra.',
 

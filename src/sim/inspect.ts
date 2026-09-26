@@ -93,3 +93,67 @@ export function linesOf(r: Rarity): number {
 
 /** The piece's own primary line, which is the one the chest tile shows. */
 export { primaryOf };
+
+/**
+ * 判 What the sheet says first, in a word.
+ *
+ * Bruno: *"sinto que tem muito texto matemático que pode confundir players"*. The sheet
+ * opened on five rows of percentages, and the line that read 氣 41.3% changed the qi rate
+ * by 0.2%, because gear's qi bends toward a ceiling. A player cannot be expected to
+ * know that. So the answer comes first, as a word, and the table is there for anyone who
+ * wants to check it.
+ *
+ *   up     raises one of power and qi and lowers neither
+ *   trade  raises one and lowers the other
+ *   same   moves neither
+ *   down   lowers something and raises nothing
+ */
+export type Verdict = 'up' | 'trade' | 'same' | 'down';
+
+export function verdictOf(w: Swing): Verdict {
+  const up = (x: number) => x > 1 + 1e-9;
+  const down = (x: number) => x < 1 - 1e-9;
+  if (w.better) return 'up';
+  if ((up(w.power) && down(w.rate)) || (down(w.power) && up(w.rate))) return 'trade';
+  if (!down(w.power) && !down(w.rate)) return 'same';
+  return 'down';
+}
+
+/**
+ * 量 How big a change is, in a word rather than a percentage.
+ *
+ * The edges are where a player would start to feel it: under 2% nobody notices a fight
+ * go differently, a quarter is a different game.
+ */
+export type Size = 'none' | 'little' | 'clear' | 'lot' | 'huge';
+
+export const SIZE_EDGES: readonly [Size, number][] = [
+  ['little', 0.02], ['clear', 0.08], ['lot', 0.25], ['huge', Infinity],
+];
+
+export function sizeOf(x: number): Size {
+  const d = Math.abs(x - 1);
+  if (d < 5e-4) return 'none';
+  return SIZE_EDGES.find(([, edge]) => d < edge)![0];
+}
+
+/**
+ * 總 What everything worn does, as two multipliers: the whole body against the same
+ * cultivator with nothing on.
+ *
+ * The top of the gear screen used to add the lines up: 氣 +333.9% for a body whose gear
+ * lifted qi by a fifth, because the sum is taken before the ceiling. These two numbers
+ * come from `power()` and `rate()`, so they are what the game actually does.
+ */
+export function gearLift(s: State): { power: number; rate: number } {
+  const bare = { ...s, worn: {} };
+  return {
+    power: power(s) / Math.max(1e-12, power(bare)),
+    rate: rateOf(s) / Math.max(1e-12, rateOf(bare)),
+  };
+}
+
+/** What a worn piece is doing for you: the body with it, against the body without it. */
+export function wornSwing(s: State, item: Item): Swing {
+  return swing(ifBare(s, item), item);
+}

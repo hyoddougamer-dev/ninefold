@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import {
-  AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, SET_STEPS, SLOTS, SLOT_INFO,
+  AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
   activeSets, primaryOf, templateOf, wornRarity, wornTotals,
   type Affix, type Item, type Rarity, type Slot,
 } from '../../data/gear.ts';
@@ -16,7 +17,7 @@ import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR } from '../copy.ts';
-import { swing } from '../../sim/inspect.ts';
+import { gearLift, swing } from '../../sim/inspect.ts';
 import { salvageWorth, salvageable } from '../../sim/salvage.ts';
 import { salvageBonus } from '../../sim/awaken.ts';
 import { buysWith } from '../../sim/time.ts';
@@ -52,7 +53,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const groups = isOpen(state.realm, 'fuse') ? fusable(state.chest) : [];
   const limit = chestLimit(state.unlocked, totals.capacity, state.awakened);
   const S = 200;
-  const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
+  // 總 What everything worn does, from the sim: the body against itself with nothing on.
+  const lift = gearLift(state);
+  const worn = SLOTS.some((slot) => state.worn[slot]);
+  // 篩 The chest's filter lives here: it is a way of looking, not a fact about the save.
+  const [only, setOnly] = useState<'all' | 'better' | Slot>('all');
   // 拆 What the melt would take, so the button can say so before it is pressed.
   const melting = salvageable(state.chest, upTo);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
@@ -69,28 +74,47 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           器 Gear
         </span>
-        <span className="mono faint" style={{ fontSize: 12 }}>
-          {GEAR.linesWorn(shown.length)}
-        </span>
       </div>
 
-      {shown.length > 0 && (
-        <div className="totals">
-          {shown.map((a) => (
-            <span key={a} className="tot">
-              {/* 軸 The seven axes are the whole of what a piece gives, and the tally
-                  at the top of the screen was the one place they were named with
-                  nothing saying what any of them was. */}
-              <b className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></b>
-              <em className="mono">
-                {AFFIX_INFO[a].unit === '%'
-                  ? `+${Math.round(totals[a] * 10) / 10}%`
-                  : `+${Math.floor(totals[a])}`}
-              </em>
-              <i>{AFFIX_INFO[a].label}</i>
-            </span>
-          ))}
+      {/* 總 Two numbers that are true, where seven that were sums used to be. Chosen on
+          the 器 mockup. The 氣 chip read +333.9% on a body whose gear lifted qi by a
+          fifth, because the lines were added before the ceiling bent them. */}
+      {worn ? (
+        <div className="lift">
+          <div className="lp">
+            <span className="lghost cjk" aria-hidden="true">力</span>
+            <b className="mono"><small>×</small>{lift.power >= 10 ? Math.round(lift.power) : lift.power.toFixed(1)}</b>
+            <span className="ll"><span className="cjk">力</span> {GEAR.powerFrom}</span>
+            <span className="ls">{GEAR.powerSays(lift.power)}</span>
+          </div>
+          <div className="lq">
+            <span className="lghost cjk" aria-hidden="true">氣</span>
+            <b className="mono"><small>×</small>{lift.rate.toFixed(2)}</b>
+            <span className="ll"><span className="cjk">氣</span> {GEAR.qiFrom}</span>
+            <span className="ls">{GEAR.qiSays}</span>
+          </div>
         </div>
+      ) : (
+        <p className="faint" style={{ fontSize: 13, margin: '4px 0 0' }}>{GEAR.nothingWorn}</p>
+      )}
+
+      {worn && (
+        <details className="othereff">
+          <summary>{GEAR.otherEffects}</summary>
+          <div className="oe">
+            {(['luck', 'find', 'sunder', 'capacity', 'refine'] as const).filter((a) => totals[a] > 0).map((a) => (
+              <div key={a}>
+                <span className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></span>
+                <span>{GEAR.other[a]}</span>
+                <em className="mono">
+                  {a === 'luck' || a === 'find' ? `×${(1 + totals[a] / 100).toFixed(2)}`
+                    : a === 'sunder' ? `−${Math.round(totals[a] * 10) / 10}%`
+                      : AFFIX_INFO[a].unit === '%' ? `+${Math.round(totals[a] * 10) / 10}%` : `+${Math.floor(totals[a])}`}
+                </em>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
 
       <div className="wheel">
@@ -308,43 +332,66 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
 
       {state.chest.length === 0 ? (
         <p className="faint" style={{ fontSize: 13, margin: 0 }}>{GEAR.empty}</p>
-      ) : (
-        <div className="chest">
-          {state.chest.map((item, index) => {
-            const tpl = templateOf(item);
-            const rar = RARITY_INFO[item.rarity];
-            const primary = primaryOf(item);
-            // 鑑 "Better" is what the sim says happens to 力 and 氣 when you put it on.
-            // It used to be the sum of the raw roll values, which answers nothing: a
-            // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
-            // so four small lines could out-triangle a piece that doubles your power.
-            const better = swing(state, item).better;
-            return (
-              <button key={item.id} className="chestit" onClick={() => onInspect(item, false)}
-                      data-coach={index === 0 ? 'chest-first' : undefined}
-                      // 譯 The figure under the tile is its main line, and a screen reader is
-                      // told which: "力 5" alone is a character and a number.
-                      aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
-                        ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}`}>
-                <Svg html={gearTile(item, { size: 56, spin: pulse })} />
-                <span className="pct mono" style={{ color: rar.colour }}>
-                  {primary && <>
-                    <span className="cjk">{AFFIX_INFO[primary.affix].han}</span>
-                    {Math.round(primary.value * 10) / 10}
-                  </>}
-                  {item.rolls.length > 1 && <span className="faint"> +{item.rolls.length - 1}</span>}
-                  {better && <em title={GEAR.better}> ▲</em>}
-                </span>
+      ) : (() => {
+        // 鑑 "Better" is what the sim says happens to 力 and 氣 when you put it on.
+        // It used to be the sum of the raw roll values, which answers nothing: a
+        // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
+        // so four small lines could out-triangle a piece that doubles your power.
+        const read = state.chest.map((item) => ({ item, move: swing(state, item) }));
+        // 序 Upgrades first, the biggest first; then the rarest. A chest of forty is
+        // read from the top, so the top is where the news goes.
+        read.sort((a, b) => (Number(b.move.better) - Number(a.move.better))
+          || (a.move.better ? b.move.power - a.move.power : 0)
+          || (RARITIES.indexOf(b.item.rarity) - RARITIES.indexOf(a.item.rarity))
+          || (templateOf(b.item).realm - templateOf(a.item).realm));
+        const ups = read.filter((r) => r.move.better).length;
+        const pick = only === 'better' ? read.filter((r) => r.move.better)
+          : only === 'all' ? read : read.filter((r) => templateOf(r.item).slot === only);
+        const bySlot = (slot: Slot) => read.filter((r) => templateOf(r.item).slot === slot).length;
+        return (
+          <>
+            <div className="chestfilter" role="group" aria-label={GEAR.all}>
+              <button type="button" aria-pressed={only === 'all'} onClick={() => setOnly('all')}>
+                {GEAR.all} <i className="mono">{read.length}</i>
               </button>
-            );
-          })}
-        </div>
-      )}
+              {ups > 0 && (
+                <button type="button" className="ups" aria-pressed={only === 'better'} onClick={() => setOnly('better')}>
+                  ▲ {GEAR.betterOnly} <i className="mono">{ups}</i>
+                </button>
+              )}
+              {SLOTS.filter((slot) => bySlot(slot) > 0).map((slot) => (
+                <button key={slot} type="button" aria-pressed={only === slot} onClick={() => setOnly(slot)}>
+                  <span className="cjk">{SLOT_INFO[slot].han}</span> {SLOT_INFO[slot].name} <i className="mono">{bySlot(slot)}</i>
+                </button>
+              ))}
+            </div>
+            <div className="chest">
+              {pick.map(({ item, move }, index) => {
+                const tpl = templateOf(item);
+                const primary = primaryOf(item);
+                return (
+                  <button key={item.id} className="chestit" data-better={move.better}
+                          onClick={() => onInspect(item, false)}
+                          data-coach={index === 0 ? 'chest-first' : undefined}
+                          // 譯 The tile carries no number now, so the screen reader is told
+                          // what the eye is shown: the name, the rank, and whether it is better.
+                          aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
+                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}`}>
+                    <Svg html={gearTile(item, { size: 56, spin: pulse })} />
+                    {move.better && <span className="upmark" aria-hidden="true">▲</span>}
+                  </button>
+                );
+              })}
+            </div>
+            {ups > 0 && <p className="faint chestlegend"><b>▲</b> {GEAR.legend}</p>}
+          </>
+        );
+      })()}
 
       <p className="faint" style={{ fontSize: 12, marginTop: 12, lineHeight: 1.7 }}>
         <Term han="拆" /> {GEAR.melting}<br />
         {GEAR.howTo}<br />
-        {GEAR.lines(SECONDARIES.spirit + 1, SECONDARIES.heaven + 1)} · {GEAR.drops(state.realm)}
+        {GEAR.drops(state.realm)}
       </p>
       </div>
     </>

@@ -273,6 +273,11 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
 
   await act(page, '拆 melting the chest down',
     async () => {
+      // 序 The chest is sorted now, upgrades first, so which piece the walk wore and
+      // which three it fused depend on the rolls. Reaching up to 天 makes the melt
+      // cover whatever is left, so the check does not lean on the order.
+      const top = await page.$('.melting .rk:last-of-type');
+      if (top) { await top.click(); await page.waitForTimeout(200); }
       const melt = await page.$('button.melt');
       if (melt) { await melt.click(); await page.waitForTimeout(500); }
     },
