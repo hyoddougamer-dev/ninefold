@@ -698,7 +698,7 @@ export const FATE_TOP_WARDEN = 4;
  * 職 The classes: how many pieces wake a school, and what each one does.
  *
  * Three pieces of one school wake it, five bring it to its full. Two schools at three
- * each are one of the ten named classes, which pays both schools' first step and a perk
+ * each are one of the fifteen named classes, which pays both schools' first step and a perk
  * of its own. Every perk below touches a system of its own, so no two classes are the
  * same class under different words, and none of them may raise the qi rate: that is the
  * economic law, so the Qi school pays in cheaper upgrades rather than in more qi.
@@ -717,10 +717,12 @@ export const QI_UPGRADES: readonly [number, number] = [0.92, 0.85];
 export const FORTUNE_BOND: readonly [number, number] = [9, 8];
 /** 器 What a refine level costs. */
 export const ARTIFICER_REFINE: readonly [number, number] = [0.88, 0.78];
+/** 法 What an art strikes for, when it fires in the sequence. */
+export const ARTS_STRIKE: readonly [number, number] = [1.15, 1.30];
 /** 運 體 器 Their own lines count this much more on the body. */
 export const CLASS_AMP: readonly [number, number] = [1.5, 2];
 
-/** 合 The ten pair perks. */
+/** 合 The first ten pair perks. The five the sixth school makes are below them. */
 export const PAIR_TOWER = 0.90;        // 劍仙 the tower's floors count this much of themselves
 export const PAIR_DRIVE = 0.75;        // 俠客 what a drive costs
 export const PAIR_WARDEN = 0.88;       // 武神 a warden counts this much of itself
@@ -731,6 +733,12 @@ export const PAIR_PILLS = 0.85;        // 丹師 what a pill costs
 export const PAIR_DROP = 0.08;         // 獵王 added to a beast's chance of leaving a piece
 export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
 export const PAIR_CHEST = 10;          // 甲匠 places in the chest
+/** 法 The five pairs the sixth school makes. */
+export const PAIR_FORM = 1;            // 劍聖 the lowest your form can roll, against its middle
+export const PAIR_TOWER_QI = 1.25;     // 天師 qi from a tower floor
+export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
+export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
+export const PAIR_HERBS = 1.3;         // 陣師 what a ripe bed pays
 
 /**
  * 運拾破煉 The four lines that did nothing.
@@ -754,6 +762,12 @@ export const LUCK_BEND = 0.5;
 export const FIND_TOP = 0.25;
 export const SUNDER_BEND = 0.15;
 export const FUSE_BEND = 0.25;
+/**
+ * 法 The eighth line. An art that fires strikes 1 + ART_BEND · ln(1 + A) harder, and
+ * 龜息 heals that much more. It only ever touches the round an art is on, so an empty
+ * sequence gets nothing from it, and it never reaches power() or the qi rate.
+ */
+export const ART_BEND = 0.4;
 
 /** 草 What a bed of the herb in season pays, against its own usual harvest. */
 export const SEASON_HARVEST = 1.5;

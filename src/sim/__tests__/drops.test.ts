@@ -120,11 +120,23 @@ describe('物 what each beast leaves', () => {
     }
   });
 
-  it('leaves every one of the fifty-four shapes somewhere, and names only real ones', () => {
+  it('leaves every one of the shapes somewhere, and names only real ones', () => {
     const left = new Set(BEASTS.flatMap((b) => b.leaves));
     for (const a of ARCHETYPES) expect(left.has(a.key), a.key).toBe(true);
     for (const k of left) expect(ARCHETYPES.some((a) => a.key === k), k).toBe(true);
     for (const b of BEASTS) expect(b.leaves).toHaveLength(3);
+  });
+
+  /**
+   * 獵 A warden is fought once. Six shapes used to be left only by wardens, so each could
+   * be found by hunting exactly once in a whole climb, and 杖 the staff, the one weapon
+   * of 法 the Arts school, was one of them: 陣師 the Formation Master was out of reach.
+   * Every shape has a common beast now, so anything can be hunted for.
+   */
+  it('lets every shape be hunted for, from a beast that is not a warden', () => {
+    for (const a of ARCHETYPES) {
+      expect(BEASTS.some((b) => !b.warden && b.leaves.includes(a.key)), a.key).toBe(true);
+    }
   });
 
   it('drops only those shapes from a kill, and says who left it', () => {

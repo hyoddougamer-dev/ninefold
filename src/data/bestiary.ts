@@ -84,7 +84,7 @@ const w = (key: string, han: string, name: string, realm: number, icon: string,
 export const BEASTS: readonly Beast[] = [
   // 1 練氣: animals. Nothing supernatural yet.
   b('rat',       '山鼠', 'Mountain Rat',   1, 'rat', 0, ['band', 'sandals', 'plainring']),
-  b('hound',     '野犬', 'Wild Hound',     1, 'hound', 1, ['saber', 'vest', 'leather']),
+  b('hound',     '野犬', 'Wild Hound',     1, 'hound', 1, ['saber', 'robe', 'leather']),
   b('frog',      '澤蛙', 'Marsh Frog',     1, 'frog', 2, ['beads', 'topaz', 'laurel']),
   w('fox',       '妖狐', 'Spirit Fox',     1, 'fox-head', ['fan', 'robe', 'charm']),
 
@@ -95,20 +95,20 @@ export const BEASTS: readonly Beast[] = [
   w('ape',       '石猿', 'Stone Ape',      2, 'monkey', ['horned', 'furboots', 'pendant']),
 
   // 3 金丹: wings and carapaces.
-  b('beetle',    '鐵甲', 'Iron Beetle',    3, 'scarab-beetle', 0, ['lamellar', 'ironboots', 'visor']),
-  b('owl',       '夜梟', 'Night Owl',      3, 'owl', 1, ['scroll', 'ritual', 'spiralring']),
+  b('beetle',    '鐵甲', 'Iron Beetle',    3, 'scarab-beetle', 0, ['lamellar', 'bare', 'visor']),
+  b('owl',       '夜梟', 'Night Owl',      3, 'owl', 1, ['medal', 'ritual', 'spiralring']),
   b('raven',     '血鴉', 'Blood Raven',    3, 'raven', 2, ['scythe', 'mantle', 'flamering']),
   w('crane',     '仙鶴', 'Immortal Crane', 3, 'heron', ['sword', 'bare', 'medal']),
 
   // 4 元嬰: properly large beasts.
-  b('boar',      '鐵根彘', 'Ironroot Boar', 4, 'boar-tusks', 0, ['plate', 'greaves', 'bonecharm']),
+  b('boar',      '鐵根彘', 'Ironroot Boar', 4, 'boar-tusks', 0, ['plate', 'greaves', 'pendant']),
   b('wolf',      '灰狼', 'Grey Wolf',      4, 'wolf-head', 1, ['hooks', 'furboots', 'frostring']),
   b('vulture',   '山鷲', 'Ridge Vulture',  4, 'vulture', 2, ['pauldrons', 'bonecrown', 'amethyst']),
   w('tiger',     '雷虎', 'Thunder Tiger',  4, 'tiger-head', ['trident', 'diadem', 'pendant']),
 
   // 5 化神: spirits of water and clay.
   b('crab',      '巨蟹', 'Giant Crab',     5, 'crab', 0, ['crescent', 'lamellar', 'greaves']),
-  b('jellyfish', '水母', 'Jellyfish',      5, 'jellyfish', 1, ['kimono', 'spiralring', 'beads']),
+  b('jellyfish', '水母', 'Jellyfish',      5, 'jellyfish', 1, ['kimono', 'staff', 'beads']),
   b('lizard',    '岩蜥', 'Rock Lizard',    5, 'gecko', 2, ['tabi', 'topaz', 'pin']),
   w('turtle',    '玄武', 'Black Turtle',   5, 'turtle', ['staff', 'ritual', 'wand']),
 
@@ -126,7 +126,7 @@ export const BEASTS: readonly Beast[] = [
 
   // 8 大乘: the greater demons.
   b('skeleton',  '骨將', 'Bone General',   8, 'skeleton', 0, ['sword', 'pauldrons', 'bonecharm']),
-  b('gargoyle',  '石鬼', 'Gargoyle',       8, 'gargoyle', 1, ['visor', 'orb', 'ironboots']),
+  b('gargoyle',  '石鬼', 'Gargoyle',       8, 'gargoyle', 1, ['dragonhead', 'orb', 'ironboots']),
   b('minotaur',  '牛魔', 'Bull Demon',     8, 'minotaur', 2, ['trident', 'greaves', 'flamering']),
   w('jiao',      '蛟',   'Serpent Dragon', 8, 'sea-serpent', ['dragonhead', 'mantle', 'pendant']),
 

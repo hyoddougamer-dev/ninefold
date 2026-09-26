@@ -33,6 +33,8 @@ export interface TileOptions {
 }
 
 function frame(S: number, colour: string, glow: number, spin: number, uid: string): string {
+  // A still picture (the bible, the catalogue) may ask for a turn; the game never does.
+  const rot = (t: number) => (t ? ` transform="rotate(${f(t * 360)} ${S / 2} ${S / 2})"` : '');
   const r = 9;
   let o = '';
 
@@ -57,27 +59,32 @@ function frame(S: number, colour: string, glow: number, spin: number, uid: strin
 
   // 地 a broken ring, turning slowly behind the object.
   if (glow >= 3) {
-    o += `<circle cx="${S / 2}" cy="${S / 2}" r="${f(S * 0.41)}" fill="none" stroke="${colour}" ` +
-      `stroke-width="1" stroke-opacity=".55" stroke-dasharray="${f(S * 0.1)} ${f(S * 0.07)}" ` +
-      `transform="rotate(${f(spin * 360)} ${S / 2} ${S / 2})"/>`;
+    // 轉 The turn is the stylesheet's (.gspin), not the markup's. Written into the markup
+    // it changed on every tick, and a chest of sixty Earth pieces rewrote half a megabyte
+    // of SVG five times a second: forty per cent of the main thread, on a desktop.
+    o += `<g class="gspin"${rot(spin)}><circle cx="${S / 2}" cy="${S / 2}" r="${f(S * 0.41)}" fill="none" stroke="${colour}" ` +
+      `stroke-width="1" stroke-opacity=".55" stroke-dasharray="${f(S * 0.1)} ${f(S * 0.07)}"/></g>`;
   }
 
   // 天 a corona, and motes drifting inside the frame.
   if (glow >= 4) {
+    o += `<g class="gspin"${rot(spin)}>`;
     for (let i = 0; i < 12; i++) {
-      const a = (i / 12) * Math.PI * 2 + spin * Math.PI * 2;
+      const a = (i / 12) * Math.PI * 2;
       const r0 = S * 0.44;
       const r1 = S * (i % 2 ? 0.5 : 0.54);
       o += `<line x1="${f(S / 2 + Math.cos(a) * r0)}" y1="${f(S / 2 + Math.sin(a) * r0)}" ` +
         `x2="${f(S / 2 + Math.cos(a) * r1)}" y2="${f(S / 2 + Math.sin(a) * r1)}" ` +
         `stroke="${colour}" stroke-width="${i % 2 ? 0.8 : 1.3}" stroke-opacity="${i % 2 ? 0.35 : 0.6}"/>`;
     }
+    o += `</g><g class="gspin gback"${rot(-2 * spin)}>`;
     for (let i = 0; i < 5; i++) {
-      const a = (i / 5) * Math.PI * 2 - spin * Math.PI * 4;
+      const a = (i / 5) * Math.PI * 2;
       const rad = S * 0.3;
       o += `<circle cx="${f(S / 2 + Math.cos(a) * rad)}" cy="${f(S / 2 + Math.sin(a) * rad * 0.8)}" ` +
         `r="${f(S * 0.022)}" fill="${colour}" fill-opacity=".8"/>`;
     }
+    o += '</g>';
   }
 
   return o;

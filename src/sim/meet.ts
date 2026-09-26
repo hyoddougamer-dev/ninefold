@@ -1,4 +1,5 @@
 import { MEETINGS, meetingOf, type Meeting, type Outcome, type Pick } from '../data/meetings.ts';
+import { classMeet } from './schools.ts';
 import { rate } from './time.ts';
 import { loot } from './combat.ts';
 import { commonsOf } from '../data/bestiary.ts';
@@ -86,8 +87,9 @@ export function canAnswer(s: State, p: Pick): boolean {
 /** What an answer gives, as whole numbers, for the line that says so before it is pressed. */
 export function giftOf(s: State, o: Outcome): { qi: number; materials: number; dao: number } {
   switch (o.kind) {
-    case 'qi': return { qi: Math.round(o.minutes * perMinute(s)), materials: 0, dao: 0 };
-    case 'material': return { qi: 0, materials: Math.round(o.share * beastPay(s)), dao: 0 };
+    // 卜師 The Diviner is paid half again, in qi or in material. Never in 道.
+    case 'qi': return { qi: Math.round(o.minutes * perMinute(s) * classMeet(s)), materials: 0, dao: 0 };
+    case 'material': return { qi: 0, materials: Math.round(o.share * beastPay(s) * classMeet(s)), dao: 0 };
     case 'dao': return { qi: 0, materials: 0, dao: o.points };
     default: return { qi: 0, materials: 0, dao: 0 };
   }

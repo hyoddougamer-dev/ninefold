@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { LINES, PILL_LINES } from '../../data/alchemy.ts';
+import { fightDeps } from '../memo.ts';
 import { Emblem } from '../ui/Emblem.tsx';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -36,7 +38,8 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
   const standing = floorPower(floor);
   // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
   const brings = effectiveBeastPower(state, beast, standing);
-  const chance = odds(state, beast, standing);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const chance = useMemo(() => odds(state, beast, standing), [floor, ...fightDeps(state)]);
   const tone = chance > 0.66 ? 'var(--jade)' : chance > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
   const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
   const menu = furnaceMenu(state);

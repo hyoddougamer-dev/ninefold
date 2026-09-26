@@ -1,9 +1,13 @@
+import { useMemo } from 'react';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, refinedBy, schoolOf, templateOf,
   type Affix, type Calling, type Item,
 } from '../../data/gear.ts';
+import { fightDeps } from '../memo.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
-import { compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, wornSwing, type Swing } from '../../sim/inspect.ts';
+import {
+  compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, verdictWithFight, wornSwing, type Swing,
+} from '../../sim/inspect.ts';
 import { nearestTrial, trialOdds } from '../../sim/reach.ts';
 import { BEASTS } from '../../data/bestiary.ts';
 import { REFINE_PER_LEVEL } from '../../data/gear.ts';
@@ -59,11 +63,22 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   // 判 A chest piece is read against what is worn; a worn piece against the same place
   // left empty, which is what it is doing for you right now.
   const move: Swing = wearing ? wornSwing(state, item) : swing(state, item);
-  const verdict = verdictOf(move);
   const refine = Math.floor(item.refine ?? 0);
-  const trial = nearestTrial(state);
-  const oddsBefore = trial ? trialOdds(wearing ? ifBare(state, item) : state, trial) : 0;
-  const oddsAfter = trial ? trialOdds(wearing ? state : ifWorn(state, item), trial) : 0;
+  // 算 The nearest fight is every beast's odds, so it is worked out when a fight could
+  // have changed and not on every tick of the clock.
+  const { trial, oddsBefore, oddsAfter } = useMemo(() => {
+    const t = nearestTrial(state);
+    return {
+      trial: t,
+      oddsBefore: t ? trialOdds(wearing ? ifBare(state, item) : state, t) : 0,
+      oddsAfter: t ? trialOdds(wearing ? state : ifWorn(state, item), t) : 0,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item, wearing, ...fightDeps(state)]);
+  const byNumbers = verdictOf(move);
+  const verdict = trial ? verdictWithFight(byNumbers, oddsBefore, oddsAfter) : byNumbers;
+  // Which of the two spoke: the sentence under the verdict says why.
+  const fightSpoke = verdict !== byNumbers;
   const pct = (x: number) => `${Math.round(Math.max(0, Math.min(1, x)) * 100)}%`;
   const leftBy = ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
   const says = item.rolls.map((r) => r.affix).filter((a) => a in ITEM.axisSays);
@@ -124,7 +139,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
           {row('力', ITEM.power, move.power)}
           {row('氣', ITEM.qi, move.rate)}
         </div>
-        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass)}</p>
+        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fightSpoke)}</p>
       </div>
 
       {/* 戰 The same piece as odds in the nearest fight that is not yet sure. */}

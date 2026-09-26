@@ -10,7 +10,7 @@ import { BEASTS } from '../data/bestiary.ts';
 const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
-  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus, wornTotals,
+  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
 import { chestLimit, itemWorth } from './chest.ts';
@@ -23,7 +23,7 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
-import { classPower, classUpgrades } from './schools.ts';
+import { bodyTotals, classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
@@ -433,7 +433,8 @@ export function rateBonus(s: State): number {
   // 頂 Gear and the tree are the two uncapped things that touch the qi rate, and together
   // they bend toward a ceiling: see UNCAPPED_RATE_CEILING for the twenty-day game they
   // made. The capped upgrades and 雷印 the marks are outside it on purpose.
-  const uncapped = setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).rate
+  // 備 bodyTotals is read once per body and tree, and this is asked thousands of times.
+  const uncapped = (1 + bodyTotals(s).rate / 100)
     * rateMultiplier(s.unlocked);
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
@@ -446,7 +447,7 @@ export function power(s: State): number {
   const ladder = (s.realm - 1) * LAYERS_PER_REALM + s.layer + 1;
   return ladder * UPGRADE_INFO.technique.gain ** s.levels.technique
     * UPGRADE_INFO.cores.gain ** s.levels.cores
-    * setBonus(s.worn, (slot) => affinity(s.unlocked, slot)).power
+    * (1 + bodyTotals(s).power / 100)
     * powerMultiplier(s.unlocked)
     * pillPower(s.brewed)
     * (isOpen(s.realm, 'record') ? recordPower(s.killed) : 1)

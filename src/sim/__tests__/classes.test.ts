@@ -6,8 +6,9 @@ import { MAX_MARK_DAYS, SCHOOL_FULL, SCHOOL_WAKES } from '../balance.ts';
 import {
   classBond, classDrive, classMaterial, classMelt, classPills, classPower, classRefine,
   classTower, classUpgrades, classWarden, gearFind, gearFuse, gearLuck, gearSunder,
+  classArts, classForm, classHerbs, classMeet, classMend, classTowerQi, gearArt,
 } from '../schools.ts';
-import { effectiveBeastPower } from '../combat.ts';
+import { effectiveBeastPower, fight } from '../combat.ts';
 import { costsClass, ifWorn, swing, verdictOf, wornSwing } from '../inspect.ts';
 import { newState, type State } from '../state.ts';
 import { BUILDS, playClass, playPlain } from '../../../tools/classes.ts';
@@ -31,7 +32,7 @@ describe('職 which class a body is', () => {
   });
 
   it('names one class for every two schools', () => {
-    expect(PAIRS).toHaveLength(10);
+    expect(PAIRS).toHaveLength((SCHOOLS.length * (SCHOOLS.length - 1)) / 2);
     for (const a of SCHOOLS) for (const b of SCHOOLS) if (a !== b) expect(pairOf(a, b), `${a}+${b}`).toBeTruthy();
   });
 
@@ -89,6 +90,32 @@ describe('職 what each class does', () => {
     }
   });
 
+  it('pays the sixth school and its five pairs', () => {
+    expect(classArts(pure('arts'))).toBeGreaterThan(classArts(none));
+    const checks: [string, (s: State) => number, 'down' | 'up'][] = [
+      ['swordsaint', classForm, 'up'], ['celestial', classTowerQi, 'up'], ['diviner', classMeet, 'up'],
+      ['arhat', classMend, 'up'], ['formation', classHerbs, 'up'],
+    ];
+    for (const [key, f] of checks) {
+      const p = PAIRS.find((x) => x.key === key)!;
+      const s = pairBody(p.a, p.b);
+      expect(callingOf(s.worn).pair?.key, key).toBe(key);
+      expect(f(s), key).toBeGreaterThan(f(none));
+    }
+  });
+
+  it('makes an art strike harder in the fight itself, and only an art', () => {
+    const tiger = BEASTS.find((b) => b.key === 'tiger')!;
+    const base = { ...at({}), realm: 5, killed: { fox: 1, ape: 1, crane: 1, tiger: 1 }, sequence: ['ape', 'tiger', 'crane'] } as State;
+    const lined = { ...base, worn: { ring: { id: 'r', template: 'flamering6', rarity: 'earth', rolls: [{ affix: 'art', value: 200 }] } } } as State;
+    const dealt = (s: State) => fight(s, tiger, 7).rounds.reduce((a, r) => a + r.playerDamage, 0) / fight(s, tiger, 7).rounds.length;
+    expect(gearArt(lined)).toBeGreaterThan(1);
+    expect(dealt(lined)).toBeGreaterThan(dealt(base) * 1.1);
+    // An empty sequence has no art to strike with, so the line does nothing at all.
+    const bare = { ...lined, sequence: [] } as State;
+    expect(fight(bare, tiger, 7).rounds[0].playerDamage).toBeCloseTo(fight({ ...bare, worn: {} }, tiger, 7).rounds[0].playerDamage, 6);
+  });
+
   it('reads the four lines that did nothing, and bends them', () => {
     const lined = (affix: 'luck' | 'find' | 'sunder' | 'refine', value: number): State => at({
       ring: { id: 'r', template: 'plainring6', rarity: 'earth', rolls: [{ affix, value }] },
@@ -100,6 +127,13 @@ describe('職 what each class does', () => {
     // Bent: a hundred times the line is nowhere near a hundred times the effect.
     expect(gearLuck(lined('luck', 10000))).toBeLessThan(4);
     expect(gearFind(lined('find', 10000))).toBeLessThan(0.26);
+  });
+
+  it('never lets the 法 line touch the Dragon of the tribulation either', () => {
+    const dragon = BEASTS.find((b) => b.key === 'dragon')!;
+    const s = { ...at({}), realm: 9, killed: { fox: 1, ape: 1, tiger: 1 }, sequence: ['ape', 'tiger', 'fox'] } as State;
+    const lined = { ...s, worn: { ring: { id: 'r', template: 'flamering9', rarity: 'heaven', rolls: [{ affix: 'art', value: 120 }] } } } as State;
+    expect(fight(lined, dragon, 3).rounds[0].playerDamage).toBeCloseTo(fight(s, dragon, 3).rounds[0].playerDamage, 6);
   });
 
   it('never lets 破 touch the Dragon', () => {
@@ -137,7 +171,7 @@ describe('職 the sheet never calls a piece that costs the class an upgrade', ()
  * 量 Every class played, through the climb and forty crossings. The answer the classes
  * were built to: each one a different way up, none of them a wall and none a shortcut.
  */
-describe('職 fifteen classes, played out', () => {
+describe('職 every class, played out', () => {
   let plain = 0;
   const rows: string[] = [];
   it('plays the plain cultivator for the yardstick', async () => {
@@ -161,6 +195,6 @@ describe('職 fifteen classes, played out', () => {
   }
   it('prints the table', () => {
     console.log(`\n  職 every class, played by the active cultivator (plain: realm 9 on day ${plain.toFixed(1)}):\n${rows.join('\n')}\n`);
-    expect(rows).toHaveLength(15);
+    expect(rows).toHaveLength(BUILDS.length);
   });
 });

@@ -82,8 +82,18 @@ export function canUnlock(
 
 // ── what a bought tree does ──────────────────────────────────────────────────
 
+/**
+ * 備 The tree's effects, read once per tree. A save's `unlocked` is replaced rather than
+ * changed whenever a node is bought, so the array itself is the key, and the fights that
+ * ask for affinity six times a blow stop rebuilding the same list.
+ */
+const EFFECTS = new WeakMap<readonly string[], readonly Effect[]>();
 function effects(unlocked: readonly string[]): readonly Effect[] {
-  return unlocked.flatMap((k) => NODE_BY_KEY[k]?.effects ?? []);
+  const known = EFFECTS.get(unlocked);
+  if (known) return known;
+  const out = unlocked.flatMap((k) => NODE_BY_KEY[k]?.effects ?? []);
+  EFFECTS.set(unlocked, out);
+  return out;
 }
 
 function sum(unlocked: readonly string[], kind: Effect['kind'], field: 'percent' | 'slots'): number {

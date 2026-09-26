@@ -237,7 +237,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
         line-height: inherit; cursor: pointer; }
 .term[data-open] { color: var(--gold); border-bottom-color: var(--gold); }
 /* 色 A character told apart by its colour keeps it, and underlines in that colour.
-   階 the five ranks, 三 the three paths and 軸 the seven axes are all read by hue. */
+   階 the five ranks, 三 the three paths and 軸 the eight axes are all read by hue. */
 .term[data-plain] { color: inherit; border-bottom-color: currentColor; opacity: 1; }
 .term[data-plain][data-open] { color: inherit; border-bottom-style: solid; }
 /* 置 No translate anywhere on this box. It is placed by its own measured edges from
@@ -2755,3 +2755,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .qa-rise { opacity: .7; }
   .qa-bolt { opacity: 0; }
 }
+
+/* 轉 A gear tile's ring, corona and motes turn here rather than in the markup, once
+   every ten seconds, as the tick used to turn them. See art/gear.ts. */
+.gspin { transform-box: view-box; transform-origin: 50% 50%; animation: gspin 10s linear infinite; }
+.gspin.gback { animation: gspinback 5s linear infinite; }
+@keyframes gspin { to { transform: rotate(360deg); } }
+@keyframes gspinback { to { transform: rotate(-360deg); } }
+@media (prefers-reduced-motion: reduce) { .gspin, .gspin.gback { animation: none; } }

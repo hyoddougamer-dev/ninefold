@@ -8,7 +8,7 @@ import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
 import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
-import { classMaterial, classPills, classRefine } from './schools.ts';
+import { classMaterial, classPills, classRefine, classTowerQi } from './schools.ts';
 
 /**
  * 塔, 爐 and 煉器: everything that has no ceiling.
@@ -48,7 +48,8 @@ export function towerOpen(s: State): boolean {
 export function floorQi(s: State, floor = standingFloor(s)): number {
   const mine = power(s);
   const standing = mine > 0 ? Math.min(1, floorPower(floor) / mine) : 1;
-  return rate(s) * 3600 * TOWER_QI_HOURS * standing;
+  // 天師 The Celestial Master is paid half again for a floor. A payment, never the rate.
+  return rate(s) * 3600 * TOWER_QI_HOURS * standing * classTowerQi(s);
 }
 
 /**

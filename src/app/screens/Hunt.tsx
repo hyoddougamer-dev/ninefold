@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
@@ -94,8 +95,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
   // does not change a single fight, so keying on it redid the work once a second.
   const raws = useMemo(() => new Map(sorted.map((b) => [b.key, oddsRaw(state, b)])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sorted, state.realm, state.layer, state.levels, state.stance, state.sequence, state.worn,
-     state.awakened, state.unlocked, state.brewed, state.tribulation]);
+    [sorted, ...fightDeps(state)]);
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
   const done = sorted.filter((b) => !nextMark(state.killed[b.key] ?? 0));
   const list = showDone ? [...open, ...done] : open;

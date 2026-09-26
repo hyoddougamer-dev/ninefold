@@ -318,7 +318,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
           )}
           {outcome.won && battle.drop && (
             <div className="spoil">
-              <Svg html={gearTile(battle.drop, { size: 62, spin: pulse })} />
+              <Svg html={gearTile(battle.drop, { size: 62 })} />
               <span>
                 <b className="cjk" style={{ color: RARITY_INFO[battle.drop.rarity].colour }}>
                   {templateOf(battle.drop).han}

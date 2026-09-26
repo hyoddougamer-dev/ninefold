@@ -65,10 +65,10 @@ export const RARITY_INFO: Record<Rarity, RarityInfo> = {
  * path found every weapon useless, so the whole slot was dead to them. Now every piece
  * carries a primary and, from 靈 up, rolled secondaries, so any slot can serve any path.
  */
-export type Affix = 'power' | 'rate' | 'luck' | 'find' | 'capacity' | 'sunder' | 'refine';
+export type Affix = 'power' | 'rate' | 'luck' | 'find' | 'capacity' | 'sunder' | 'refine' | 'art';
 
 export const AFFIXES: readonly Affix[] =
-  ['power', 'rate', 'luck', 'find', 'capacity', 'sunder', 'refine'];
+  ['power', 'rate', 'luck', 'find', 'capacity', 'sunder', 'refine', 'art'];
 
 export interface AffixInfo {
   readonly han: string;
@@ -94,6 +94,8 @@ export const AFFIX_INFO: Record<Affix, AffixInfo> = {
   capacity: { han: '藏', label: 'chest slots',  unit: 'flat', scale: 0.08, weight: 8 },
   sunder:   { han: '破', label: 'beasts weaker', unit: '%',   scale: 0.18, weight: 8 },
   refine:   { han: '煉', label: 'fusion quality', unit: '%',  scale: 0.3,  weight: 6 },
+  // 法 The eighth line, the sixth school's: what the arts in a sequence strike for.
+  art:      { han: '法', label: 'arts stronger', unit: '%',   scale: 0.6,  weight: 8 },
 };
 
 /** How many rolls a rank carries: one primary, plus these many secondaries. */
@@ -158,14 +160,14 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('hooks',    '雙鉤', 'Twin Hooks','weapon', 'hook-swords',   'sunder'),
   a('spear',    '槍', 'Spear',      'weapon', 'barbed-spear',   'power'),
   a('fan',      '扇', 'Fan',        'weapon', 'handheld-fan',   'rate'),
-  a('staff',    '杖', 'Staff',      'weapon', 'wizard-staff',   'rate'),
+  a('staff',    '杖', 'Staff',      'weapon', 'wizard-staff',   'art'),
   a('trident',  '戟', 'Trident',    'weapon', 'trident',        'power'),
   a('scythe',   '鐮', 'Scythe',     'weapon', 'scythe',         'luck'),
 
   // 袍 the body
   a('robe',     '袍', 'Robe',       'robe', 'robe',           'rate'),
   a('vest',     '甲', 'Vest',       'robe', 'leather-vest',   'power'),
-  a('kimono',   '道衣', 'Kimono',   'robe', 'kimono',         'rate'),
+  a('kimono',   '道衣', 'Kimono',   'robe', 'kimono',         'art'),
   a('cloak',    '氅', 'Cloak',      'robe', 'cloak',          'luck'),
   a('lamellar', '鱗', 'Lamellar',   'robe', 'lamellar',       'power'),
   a('plate',    '鎧', 'Breastplate','robe', 'chest-armor',    'power'),
@@ -181,7 +183,7 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('bonecrown','骨冠', 'Bone Crown','crown', 'crenel-crown', 'refine'),
   a('visor',    '面', 'Visor',      'crown', 'visored-helm',  'power'),
   a('diadem',   '帝冠', 'Diadem',   'crown', 'imperial-crown','rate'),
-  a('ritual',   '法冠', 'Ritual Crown','crown','pope-crown',  'refine'),
+  a('ritual',   '法冠', 'Ritual Crown','crown','pope-crown',  'art'),
   a('dragonhead','龍首','Dragon Head','crown','dragon-head',  'power'),
 
   // 靴 the feet
@@ -193,12 +195,12 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('greaves',  '脛甲', 'Greaves',  'boots', 'greaves',       'power'),
   a('ironboots','鐵靴', 'Iron Boots','boots','metal-boot',    'sunder'),
   a('furboots', '裘靴', 'Fur Boots','boots', 'fur-boot',      'capacity'),
-  a('windfoot', '風足', 'Wind Foot','boots', 'wingfoot',      'rate'),
+  a('windfoot', '風足', 'Wind Foot','boots', 'wingfoot',      'art'),
 
   // 珮 the pocket
   a('charm',    '符', 'Charm',      'talisman', 'wax-seal',       'rate'),
   a('bonecharm','骨佩', 'Bone Charm','talisman','tribal-pendant', 'sunder'),
-  a('beads',    '珠', 'Beads',      'talisman', 'prayer-beads',   'rate'),
+  a('beads',    '珠', 'Beads',      'talisman', 'prayer-beads',   'art'),
   a('scroll',   '卷', 'Scroll',     'talisman', 'tied-scroll',    'refine'),
   a('pendant',  '珮', 'Pendant',    'talisman', 'gem-pendant',    'power'),
   a('medal',    '章', 'Medal',      'talisman', 'star-medal',     'luck'),
@@ -211,7 +213,7 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('topaz',    '黃玉', 'Topaz',    'ring', 'topaz',          'rate'),
   a('amethyst', '紫晶', 'Amethyst', 'ring', 'amethyst',       'luck'),
   a('emerald',  '翠戒', 'Emerald',  'ring', 'emerald',        'find'),
-  a('flamering','炎戒', 'Flame Ring','ring','fire-ring',      'power'),
+  a('flamering','炎戒', 'Flame Ring','ring','fire-ring',      'art'),
   a('frostring','霜戒', 'Frost Ring','ring','frozen-ring',    'sunder'),
   a('powerring','力戒', 'Power Ring','ring','power-ring',     'power'),
   a('spiralring','渦戒','Spiral Ring','ring','swirl-ring',    'refine'),
@@ -529,7 +531,9 @@ export interface Calling {
 }
 
 export function schoolOf(item: Item): School {
-  return schoolOfAxis(templateOf(item).affix);
+  // The line it leads with, as the player reads it on the sheet. A piece found before a
+  // shape changed its axis still leads with what it rolled, and belongs where it reads.
+  return schoolOfAxis(primaryOf(item)?.affix ?? templateOf(item).affix);
 }
 
 /**

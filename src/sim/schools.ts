@@ -1,8 +1,9 @@
 import { callingOf, schoolTier, wornTotals, type Calling, type GearTotals } from '../data/gear.ts';
 import type { Pair, School } from '../data/schools.ts';
 import {
-  ARTIFICER_REFINE, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
+  ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
   PAIR_DRIVE, PAIR_DROP, PAIR_MATERIAL, PAIR_MELT, PAIR_PILLS, PAIR_SPRING, PAIR_TOWER,
+  PAIR_FORM, PAIR_HERBS, PAIR_MEET, PAIR_MEND, PAIR_TOWER_QI,
   PAIR_WARDEN, QI_UPGRADES, SUNDER_BEND, SWORD_POWER,
 } from './balance.ts';
 import { affinity } from './dao.ts';
@@ -45,7 +46,7 @@ const pairIs = (s: Body, key: Pair) => {
 };
 const step = (t: 0 | 1 | 2, by: readonly [number, number], none = 1) => (t === 0 ? none : by[t - 1]);
 
-// ── the five schools ──────────────────────────────────────────────────────────
+// ── the six schools ───────────────────────────────────────────────────────────
 
 /** 劍 Power, as a multiplier. */
 export function classPower(s: Body): number { return step(tierOf(s, 'sword'), SWORD_POWER); }
@@ -56,7 +57,10 @@ export function classBond(s: Body): number { return step(tierOf(s, 'fortune'), F
 /** 器 What a refine level costs, as a multiplier. */
 export function classRefine(s: Body): number { return step(tierOf(s, 'artificer'), ARTIFICER_REFINE); }
 
-// ── the ten pairs ─────────────────────────────────────────────────────────────
+/** 法 What an art strikes for when it fires, as a multiplier. */
+export function classArts(s: Body): number { return step(tierOf(s, 'arts'), ARTS_STRIKE); }
+
+// ── the fifteen pairs ─────────────────────────────────────────────────────────────
 
 export function classTower(s: Body): number { return pairIs(s, 'swordimmortal') ? PAIR_TOWER : 1; }
 export function classDrive(s: Body): number { return pairIs(s, 'wanderer') ? PAIR_DRIVE : 1; }
@@ -67,6 +71,13 @@ export function classBounty(s: Body): number { return pairIs(s, 'vajra') ? PAIR_
 export function classPills(s: Body): number { return pairIs(s, 'alchemist') ? PAIR_PILLS : 1; }
 export function classDrop(s: Body): number { return pairIs(s, 'huntking') ? PAIR_DROP : 0; }
 export function classMelt(s: Body): number { return pairIs(s, 'treasuresmith') ? PAIR_MELT : 1; }
+/** 劍聖 The lowest a fight's form can roll for this body, against its middle; 0 is no floor. */
+export function classForm(s: Body): number { return pairIs(s, 'swordsaint') ? PAIR_FORM : 0; }
+export function classTowerQi(s: Body): number { return pairIs(s, 'celestial') ? PAIR_TOWER_QI : 1; }
+export function classMeet(s: Body): number { return pairIs(s, 'diviner') ? PAIR_MEET : 1; }
+/** 羅漢 Health recovered every round, as a share of the whole. */
+export function classMend(s: Body): number { return pairIs(s, 'arhat') ? PAIR_MEND : 0; }
+export function classHerbs(s: Body): number { return pairIs(s, 'formation') ? PAIR_HERBS : 1; }
 
 // ── 運拾破煉 the four lines, bent ──────────────────────────────────────────────
 
@@ -82,6 +93,10 @@ export function gearFind(s: Body): number {
 /** 破 How much of itself a beast counts against this body. Never the Dragon. */
 export function gearSunder(s: Body): number {
   return 1 / (1 + SUNDER_BEND * Math.log1p(Math.max(0, bodyTotals(s).sunder) / 100));
+}
+/** 法 What an art strikes for, from the body's arts line. */
+export function gearArt(s: Body): number {
+  return 1 + ART_BEND * Math.log1p(Math.max(0, bodyTotals(s).art) / 100);
 }
 /** 煉 How much of its quality a fusion keeps. */
 export function gearFuse(s: Body): number {

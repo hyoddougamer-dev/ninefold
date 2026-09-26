@@ -599,7 +599,7 @@ export const KEY = {
   rank: (mult: number) => `x${mult} on every line`,
 
   axesHead: '軸 What gear can give',
-  axesBlurb: 'Seven axes. A piece always grants a percentage, so an old piece stays good.',
+  axesBlurb: 'Eight axes. A piece always grants a percentage, so an old piece stays good.',
 
   slotsHead: '位 The six places you wear it',
   slotsBlurb: 'One piece each. Wear several of one realm and the lineage pays on top.',
@@ -858,8 +858,10 @@ export const ITEM = {
   } as Record<'none' | 'little' | 'clear' | 'lot' | 'huge', string>,
   power: 'Power',
   qi: 'Qi',
-  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null, classGoes = false) => {
+  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null, classGoes = false, fight = false) => {
     if (!name) return 'Nothing is worn there yet, so all of it is gain.';
+    if (fight && (v === 'up' || v === 'trade') && !classGoes) return `It wins the fight below more often than the ${name} you wear.`;
+    if (fight) return `It loses the fight below more often than the ${name} you wear.`;
     if (v === 'trade' && classGoes) return `Stronger than the ${name} you wear, but it changes your class.`;
     if (v === 'up') return `Better than the ${name} you wear.`;
     if (v === 'trade') return `It gains on one side and loses on the other, against the ${name} you wear.`;
@@ -888,6 +890,11 @@ export const ITEM = {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
     rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
     capacity: 'More places in the chest.',
+    luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
+    find: 'Beasts leave a piece more often, up to a quarter more and never past it.',
+    sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
+    refine: 'A fusion keeps more of its quality.',
+    art: 'The arts in your sequence strike harder when they fire. Nothing else.',
   } as Record<string, string>,
   wear: 'Wear it',
   swap: 'Wear it instead',
@@ -1113,7 +1120,10 @@ export const GEAR = {
     sunder: 'Beasts are weaker',
     capacity: 'Chest places',
     refine: 'Fusion quality',
+    art: 'Arts strike harder',
   } as Record<string, string>,
+  /** 拾 A drop chance is added in points, so it reads as points. */
+  points: (x: number) => `+${Math.round(x * 10) / 10} pts`,
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',
@@ -1187,6 +1197,7 @@ export const CLASS = {
     fortune: (w: number, f: number, amp: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
     artificer: (w: number, f: number, amp: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
+    arts: (w: number, f: number) => `The arts in your sequence strike ${pct(w)} harder, or ${pct(f)} at the full.`,
   },
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
   schoolAt: {
@@ -1195,8 +1206,9 @@ export const CLASS = {
     fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
     body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
     artificer: (x: number, amp: number) => `Refining costs ${pct(x)} less. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
+    arts: (x: number) => `The arts in your sequence strike ${pct(x)} harder.`,
   },
-  /** 合 What each of the ten pairs adds to its two schools' first steps. */
+  /** 合 What each of the fifteen pairs adds to its two schools' first steps. */
   pair: {
     swordimmortal: (x: number) => `The tower's floors count ${pct(x)} weaker.`,
     wanderer: (x: number) => `Drives cost ${pct(x)} less.`,
@@ -1208,16 +1220,21 @@ export const CLASS = {
     huntking: (x: number) => `Beasts leave a piece ${Math.round(x * 100)} points more often.`,
     treasuresmith: (x: number) => `Melting pays ${pct(x)} more qi.`,
     armourer: (x: number) => `The chest holds ${x} more.`,
+    swordsaint: () => 'Your form in a fight never rolls below its middle.',
+    celestial: (x: number) => `Tower floors pay ${pct(x)} more qi.`,
+    diviner: (x: number) => `Meetings on the road pay ${pct(x)} more.`,
+    arhat: (x: number) => `You recover ${Math.round(x * 100)}% of your health every round of a fight.`,
+    formation: (x: number) => `Ripe beds in the cave pay ${pct(x)} more qi.`,
   } as Record<string, (x: number) => string>,
   /** 鑑 On the item sheet. */
-  pieceOf: (school: string) => `A ${school} piece.`,
+  pieceOf: (school: string) => `${/^[AEIOU]/.test(school) ? 'An' : 'A'} ${school} piece.`,
   becomes: (name: string) => `Wearing it makes you a ${name}.`,
   loses: (name: string) => `Wearing it ends your ${name}.`,
   instead: (will: string, was: string) => `Wearing it makes you a ${will} instead of a ${was}.`,
   toItsFull: (school: string) => `Wearing it brings your ${school} school to its full.`,
   offItsFull: (school: string) => `Wearing it takes your ${school} school off its full.`,
   keyHead: '職 Classes',
-  keyBlurb: 'Every piece belongs to a school by the line it leads with. Three pieces of one school wake it, five bring it to its full, and three of each of two schools make one of ten named classes.',
+  keyBlurb: 'Every piece belongs to a school by the line it leads with. Three pieces of one school wake it, five bring it to its full, and three of each of two schools make one of fifteen named classes.',
 };
 
 export const DAO = {

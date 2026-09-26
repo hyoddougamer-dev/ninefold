@@ -10,7 +10,9 @@ import { sequenceOf, stanceOf } from './arts.ts';
 import { pillBane } from './furnace.ts';
 import { lootTaken } from './trials.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
-import { classBounty, classTower, classWarden, gearSunder } from './schools.ts';
+import {
+  classArts, classBounty, classForm, classMend, classTower, classWarden, gearArt, gearSunder,
+} from './schools.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -212,11 +214,55 @@ export const FORM = 0.2;
  * than taking it late.
  */
 export function fight(s: State, b: Beast, seed: number, standing?: number): Outcome {
-  const stance = stanceOf(s);
-  const sequence = sequenceOf(s);
+  return run(setup(s, b, standing), seed, true);
+}
+
+/**
+ * 備 Everything a fight reads off the cultivator and the beast before the first blow.
+ *
+ * None of it changes between two fights of the same pair, and 算 the odds are forty-one
+ * of them. Worked out inside every fight, `power()` alone was more than half of all the
+ * time the measuring harnesses spend; worked out once, the odds of every beast on the
+ * hunt screen come thirty times sooner, and the fights themselves are the same fights.
+ */
+interface Setup {
+  readonly stance: ReturnType<typeof stanceOf>;
+  readonly sequence: ReturnType<typeof sequenceOf>;
+  readonly pp: number;
+  readonly bp0: number;
+  readonly formFloor: number;
+  readonly artStrike: number;
+  readonly mend: number;
+  readonly playerPower: number;
+}
+
+function setup(s: State, b: Beast, standing?: number): Setup {
   const pp = power(s);
-  // A tower floor brings its own power; everywhere else the beast brings its own.
-  const bp0 = standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing);
+  // 法 What an art strikes for: the arts line on the body, and the Arts school's step.
+  // The line has no hold on 劫 the tribulation, for the reason 破 has none: the Dragon is
+  // anchored to the power that faced it, so anything that wins fights outside power()
+  // would turn every crossing into a walkover. Measured: with the line on the Dragon,
+  // 37 of 40 crossings came in over 90%. The school's own step still counts, because a
+  // class is a choice and is bounded.
+  const tribulation = standing === undefined && b.key === 'dragon' && s.realm === 9;
+  return {
+    stance: stanceOf(s),
+    sequence: sequenceOf(s),
+    pp,
+    // A tower floor brings its own power; everywhere else the beast brings its own.
+    bp0: standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing),
+    // 劍聖 The Sword Saint's form never rolls below its middle.
+    formFloor: classForm(s),
+    artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
+    // 羅漢 The Arhat mends a little every round, as 續 Endure does.
+    mend: classMend(s),
+    playerPower: pp,
+  };
+}
+
+/** One fight from a setup. `record` keeps the rounds for the screen; the odds need only who won. */
+function run(u: Setup, seed: number, record: boolean): Outcome {
+  const { stance, sequence, pp, bp0, artStrike, mend } = u;
 
   let beastPower = bp0;      // 纏 and 鶴唳 shave this as the fight runs
   let ph = pp * 10;
@@ -226,7 +272,8 @@ export function fight(s: State, b: Beast, seed: number, standing?: number): Outc
   let took = 0;              // what the beast dealt last round, for 傀儡 and 鏡
 
   const d = dice(seed);
-  const myForm = 1 - FORM + d() * FORM * 2;
+  // The dice are still read under a form floor, so every other roll lands where it would have.
+  const myForm = Math.max(1 - FORM + d() * FORM * 2, u.formFloor);
   const itsForm = 1 - FORM + d() * FORM * 2;
   beastPower *= itsForm;
 
@@ -265,12 +312,13 @@ export function fight(s: State, b: Beast, seed: number, standing?: number): Outc
           case 'ape': blow *= 1.6; break;
           case 'crane': beastPower *= 0.9; break;
           case 'tiger': blow *= 2; break;
-          case 'turtle': healed += ph0 * 0.12; break;
+          case 'turtle': healed += ph0 * 0.12 * artStrike; break;
           case 'puppet': blow += took * 0.25; break;
           case 'wolf': blow *= 1 + 0.12 * i; break;
           case 'serpent': if (ph / ph0 < 0.5) blow *= 3; break;
           case 'dragon': blow *= 1.35; missed = true; break;
         }
+        blow *= artStrike;
       }
 
       mine += blow;
@@ -278,6 +326,7 @@ export function fight(s: State, b: Beast, seed: number, standing?: number): Outc
 
     if (stance?.key === 'entangle') beastPower *= 0.92;
     if (stance?.key === 'endure') healed += ph0 * 0.06;
+    healed += ph0 * mend;
 
     bh -= mine;
 
@@ -288,7 +337,7 @@ export function fight(s: State, b: Beast, seed: number, standing?: number): Outc
 
     ph = Math.min(ph0, ph - theirs + healed);
 
-    rounds.push({
+    if (record) rounds.push({
       playerHealth: Math.max(0, ph / ph0),
       beastHealth: Math.max(0, bh / bh0),
       playerDamage: mine,
@@ -444,8 +493,9 @@ export function odds(s: State, b: Beast, standing?: number): number {
  */
 export function oddsRaw(s: State, b: Beast, standing?: number): number {
   let won = 0;
+  const u = setup(s, b, standing);
   for (let i = 0; i < SAMPLES; i++) {
-    if (fight(s, b, (i * 2654435761) >>> 0, standing).won) won++;
+    if (run(u, (i * 2654435761) >>> 0, false).won) won++;
   }
   return won / SAMPLES;
 }

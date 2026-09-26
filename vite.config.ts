@@ -48,11 +48,25 @@ const noCrossOrigin = {
 export default defineConfig({
   plugins: [react(), noCrossOrigin],
   define: { __ART_HASH__: JSON.stringify(artHashes()), __BUILD__: JSON.stringify(buildId()) },
-  // Relativo, porque o mesmo build é servido por um host web e de dentro do APK.
+  // Relative, because the same build is served from a web host and from inside the APK.
   base: './',
   build: {
     target: 'es2020',
-    // Duas entradas: o jogo, e o banco de ensaios da arena.
-    rollupOptions: { input: { main: 'index.html', lab: 'arena-lab.html' } },
+    rollupOptions: {
+      // Two entries: the game, and the arena's test bench.
+      input: { main: 'index.html', lab: 'arena-lab.html' },
+      output: {
+        /**
+         * 包 The icons and React in chunks of their own. Together they were two thirds of
+         * one 772 KB file, and neither changes when the game does, so a player's update
+         * downloads the game and keeps the rest it already has.
+         */
+        manualChunks(id: string) {
+          if (id.includes('icons.generated')) return 'icons';
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
+          return undefined;
+        },
+      },
+    },
   },
 });

@@ -58,7 +58,7 @@ import { playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../src/data/schools.ts';
 import { pairSays, schoolSaysAt } from '../src/app/classes.ts';
-import { FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
+import { ART_BEND, FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
@@ -140,6 +140,19 @@ const ENDGAME = playEndgame(40);
 // 職 Every class played by the active cultivator, the same runs classes.test.ts bounds.
 const CLASS_PLAIN = playPlain();
 const CLASS_RUNS = BUILDS.map((b) => playClass(b));
+const classCalled = (b: string | null) => {
+  const p = PAIRS.find((x) => x.key === b);
+  return p ? `${p.han} ${p.name}` : `${SCHOOL_INFO[b as keyof typeof SCHOOL_INFO].han} ${SCHOOL_INFO[b as keyof typeof SCHOOL_INFO].name}`;
+};
+/** 量 The sentence under the table, read off the table so it can never disagree with it. */
+const CLASS_SAYS = (() => {
+  const fast = [...CLASS_RUNS].sort((a, b) => a.realm9 - b.realm9)[0];
+  const slow = [...CLASS_RUNS].sort((a, b) => b.realm9 - a.realm9)[0];
+  const least = [...CLASS_RUNS].sort((a, b) => a.held - b.held)[0];
+  return `The fastest up is the ${classCalled(fast.build)}, on day ${fast.realm9.toFixed(0)}, and the slowest the `
+    + `${classCalled(slow.build)}, on day ${slow.realm9.toFixed(0)}. The hardest to put together is the `
+    + `${classCalled(least.build)}, worn on ${Math.round(least.held * 100)}% of the days.`;
+})();
 const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
 /**
@@ -4449,12 +4462,16 @@ const page = `<meta charset="utf-8">
     <p class="t">Bruno, on the gear: <i>"talvez explorar o facto de existir classes
       especificas com base no equipamento"</i>, and, asked how far to take it, <i>"avança com
       tudo a fundo"</i>. There is no menu and no pick. Every shape of gear belongs to one of
-      five schools by the line it leads with. Three pieces of a school wake it, five bring it
-      to its full, and three of each of two schools make one of ten named classes. Changing
-      class is changing clothes, and it costs nothing, as everything in this game costs
-      nothing to take back.</p>
+      ${SCHOOLS.length} schools by the line it leads with. Three pieces of a school wake it, five
+      bring it to its full, and three of each of two schools make one of ${PAIRS.length} named
+      classes. Changing class is changing clothes, and it costs nothing, as everything in this
+      game costs nothing to take back.</p>
+    <p class="t">The sixth school came a night later, when Bruno said <i>"avança com a sexta
+      escola"</i>. 法 Arts is the school of technique: where the Sword makes every blow
+      heavier, Arts makes the arts a warden leaves in your sequence strike harder. It brought
+      an eighth line, 法 arts stronger, and five more pairs.</p>
 
-    <h3>五 Five schools</h3>
+    <h3>派 The schools</h3>
     <table>
       <tr><th>school</th><th>leads with</th><th>three pieces</th><th>five pieces</th></tr>
       ${SCHOOLS.map((sc) => { const x = SCHOOL_INFO[sc]; return `<tr>
@@ -4463,7 +4480,7 @@ const page = `<meta charset="utf-8">
         <td>${schoolSaysAt(sc, 1)}</td><td>${schoolSaysAt(sc, 2)}</td></tr>`; }).join('')}
     </table>
 
-    <h3>十 Ten classes of two schools</h3>
+    <h3>合 The classes of two schools</h3>
     <p class="t">A pair wakes both of its schools and adds a perk of its own, each on a
       different system, so no two of them are one class in two names.</p>
     <table>
@@ -4488,6 +4505,7 @@ const page = `<meta charset="utf-8">
       <tr><td>拾 drop chance</td><td>a beast leaves a piece up to ${Math.round(FIND_TOP * 100)} points more often, and never more</td></tr>
       <tr><td>破 beasts weaker</td><td>a beast counts 1 / (1 + ${SUNDER_BEND}·ln(1 + L)) of itself, and never the Dragon</td></tr>
       <tr><td>煉 fusion quality</td><td>a fusion keeps ×(1 + ${FUSE_BEND}·ln(1 + L)) of its quality</td></tr>
+      <tr><td>法 arts stronger</td><td>an art that fires strikes ×(1 + ${ART_BEND}·ln(1 + L)), and 龜息 heals that much more. The eighth line, new with the Arts school</td></tr>
     </table>
     <p class="t">破 leaves the Dragon alone because the Dragon is what the endgame is
       measured against: a cultivator who stacked it would cross the heavens on a number
@@ -4512,9 +4530,7 @@ const page = `<meta charset="utf-8">
         <td style="text-align:right">${Math.max(...r.crossings)} days</td></tr>`; }).join('')}
     </table>
     <p class="t">"Worn" is the share of days the body actually wore the class, because a
-      class needs the drops to fall. The Qi Cultivator climbs fastest, since its upgrades
-      cost less, and the Sword Cultivator hits hardest. A pair is harder to hold than a
-      school: the Wanderer is worn on fewer than half the days, and still arrives on time.</p>
+      class needs the drops to fall. ${CLASS_SAYS}</p>
 
     <h3>圖 On the screen</h3>
     <p class="t">Under the ring on 器, the class, what it gives at the step it is at, how far
@@ -4534,6 +4550,12 @@ const page = `<meta charset="utf-8">
       <img src="bible-art/shot/classes-320.webp" alt="The same three class ribbons on a 320 pixel phone">
       <figcaption><b>At 320.</b> The school counts wrap under the name, and the step sits on a
         line of its own.</figcaption>
+    </figure></div>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/classes-arts.webp" alt="The Arts school at its full with the real effect of its arts line, and three of its pairs: Celestial Master, Arhat and Formation Master">
+      <figcaption><b>法 The sixth school in the game, at 400 wide.</b> "Other effects" now shows
+        what each line really does, bent as the sim bends it: the raw sum used to read ×3.00
+        for a body whose drops were ×1.55 rarer.</figcaption>
     </figure></div>
   </section>
 

@@ -147,6 +147,30 @@ export function verdictOf(w: Swing): Verdict {
 }
 
 /**
+ * 戰 The verdict, with the nearest fight in it.
+ *
+ * Power and qi are two of the eight lines. A 法 arts piece or a 破 sunder piece can lower
+ * power and still win the fight the sheet shows below it, and the sheet used to open on
+ * "Weaker than yours" above odds that went from 40% to 70%. The fight is the thing the
+ * power is for, so when it disagrees with the two numbers it gets a say: a piece that
+ * wins that fight more often is never called weaker, and one that loses it more often is
+ * never called an upgrade.
+ *
+ * A point either way is noise from the seeded fights, so it has to move by more.
+ */
+export const FIGHT_SAYS = 0.01;
+
+export function verdictWithFight(v: Verdict, before: number, after: number): Verdict {
+  const up = after > before + FIGHT_SAYS;
+  const down = after < before - FIGHT_SAYS;
+  if (v === 'down' && up) return 'trade';
+  if (v === 'same' && up) return 'up';
+  if (v === 'same' && down) return 'down';
+  if (v === 'up' && down) return 'trade';
+  return v;
+}
+
+/**
  * 量 How big a change is, in a word rather than a percentage.
  *
  * The edges are where a player would start to feel it: under 2% nobody notices a fight

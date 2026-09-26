@@ -1,4 +1,5 @@
 import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
@@ -26,7 +27,7 @@ import { advice } from '../advice.ts';
 import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
@@ -95,7 +96,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
 
-  const wardenRaw = oddsRaw(state, w);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const wardenRaw = useMemo(() => oddsRaw(state, w), [w, ...fightDeps(state)]);
   const wardenGap = dragon / Math.max(1e-9, power(state));
   const tip = advice(state);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.

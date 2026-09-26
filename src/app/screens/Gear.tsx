@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { fightDeps } from '../memo.ts';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
   activeSets, primaryOf, templateOf, wornRarity, wornTotals,
@@ -19,6 +20,7 @@ import { Calling } from '../ui/Calling.tsx';
 import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR } from '../copy.ts';
 import { gearLift, swing } from '../../sim/inspect.ts';
+import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
 import { meltFactor, salvageWorth, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
@@ -48,6 +50,12 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onRefine: (slot: Slot) => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
+  // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
+  const chestRead = useMemo(() => state.chest.map((item) => {
+    const m = swing(state, item);
+    return { item, move: { ...m, better: m.better && !m.costsClass } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [state.chest, ...fightDeps(state)]);
   const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
   // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
@@ -103,14 +111,20 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <details className="othereff">
           <summary>{GEAR.otherEffects}</summary>
           <div className="oe">
-            {(['luck', 'find', 'sunder', 'capacity', 'refine'] as const).filter((a) => totals[a] > 0).map((a) => (
+            {/* 實 What each line actually does, read from the same bent functions the
+                sim plays by. It used to print the raw sum as if it were the effect:
+                運 +200% read ×3.00 on a body whose drops were ×1.55 rarer. */}
+            {(['luck', 'find', 'sunder', 'art', 'capacity', 'refine'] as const).filter((a) => totals[a] > 0).map((a) => (
               <div key={a}>
                 <span className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></span>
                 <span>{GEAR.other[a]}</span>
                 <em className="mono">
-                  {a === 'luck' || a === 'find' ? `×${(1 + totals[a] / 100).toFixed(2)}`
-                    : a === 'sunder' ? `−${Math.round(totals[a] * 10) / 10}%`
-                      : AFFIX_INFO[a].unit === '%' ? `+${Math.round(totals[a] * 10) / 10}%` : `+${Math.floor(totals[a])}`}
+                  {a === 'luck' ? `×${gearLuck(state).toFixed(2)}`
+                    : a === 'find' ? GEAR.points(gearFind(state) * 100)
+                      : a === 'sunder' ? `−${Math.round((1 - gearSunder(state)) * 1000) / 10}%`
+                        : a === 'art' ? `×${gearArt(state).toFixed(2)}`
+                          : a === 'refine' ? `×${gearFuse(state).toFixed(2)}`
+                            : `+${Math.floor(totals[a])}`}
                 </em>
               </div>
             ))}
@@ -142,7 +156,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               onClick={() => item && onInspect(item, true)}
               aria-label={item ? `${templateOf(item).name}` : `${SLOT_INFO[slot].name}, empty`}
             >
-              <Svg html={gearTile(item, { size: 54, slot, spin: pulse })} />
+              <Svg html={gearTile(item, { size: 54, slot })} />
             </button>
           );
         })}
@@ -343,10 +357,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         // so four small lines could out-triangle a piece that doubles your power.
         // 職 A piece that costs the class is not marked ▲, because the sheet will not call it
         // an upgrade either.
-        const read = state.chest.map((item) => {
-          const m = swing(state, item);
-          return { item, move: { ...m, better: m.better && !m.costsClass } };
-        });
+        const read = [...chestRead];
         // 序 Upgrades first, the biggest first; then the rarest. A chest of forty is
         // read from the top, so the top is where the news goes.
         read.sort((a, b) => (Number(b.move.better) - Number(a.move.better))
@@ -386,7 +397,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                           // what the eye is shown: the name, the rank, and whether it is better.
                           aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
                             ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}`}>
-                    <Svg html={gearTile(item, { size: 56, spin: pulse })} />
+                    <Svg html={gearTile(item, { size: 56 })} />
                     {move.better && <span className="upmark" aria-hidden="true">▲</span>}
                   </button>
                 );

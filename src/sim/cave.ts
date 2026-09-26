@@ -1,4 +1,5 @@
 import { BEDS, EMPTY, HERBS, herbOf, type Bed, type Herb } from '../data/herbs.ts';
+import { classHerbs } from './schools.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { loot } from './combat.ts';
 import { rate } from './time.ts';
@@ -46,7 +47,8 @@ export function seedCost(s: State, h: Herb): number {
  */
 export function harvestValue(s: State, h: Herb): number {
   const week = isSeason(s, h) ? SEASON_HARVEST : 1;
-  return Math.max(1, Math.round(h.paysMinutes * perMinute(s) * week));
+  // 陣師 The Formation Master's beds pay more. A payment on a harvest, never the rate.
+  return Math.max(1, Math.round(h.paysMinutes * perMinute(s) * week * classHerbs(s)));
 }
 
 /** The herbs this realm can plant. */

@@ -1,14 +1,18 @@
 import type { Affix } from './gear.ts';
 
 /**
- * 職 The five schools, and the ten classes two of them make together.
+ * 職 The six schools, and the fifteen classes two of them make together.
  *
  * Bruno: *"explorar o facto de existir classes especificas com base no equipamento"*,
  * and then, on how far to take it, *"avança com tudo a fundo"*. The answer he chose was
  * ArcheAge's idea at this game's size: no menu and no fixed pick. Every shape of gear
  * belongs to a school by the line it leads with, and wearing three pieces of one school
  * wakes it. Five pieces of one school is that school at its full; three and three of two
- * schools is one of ten named classes with a perk of its own.
+ * schools is one of fifteen named classes with a perk of its own.
+ *
+ * 法 The sixth school came after the first five, when Bruno said *"avança com a sexta
+ * escola"*. It is the school of technique rather than strength: the arts a warden leaves
+ * in your sequence strike harder, where the Sword makes every blow heavier.
  *
  * So a drop is also a question about who you are becoming, and changing class is
  * changing clothes, which costs nothing, as everything in this game costs nothing to
@@ -17,9 +21,9 @@ import type { Affix } from './gear.ts';
  * The perks' sizes live in sim/balance.ts and what they do in sim/schools.ts. This file
  * is only the names. What each one says to the player is in app/copy.ts.
  */
-export type School = 'sword' | 'qi' | 'fortune' | 'body' | 'artificer';
+export type School = 'sword' | 'qi' | 'fortune' | 'body' | 'artificer' | 'arts';
 
-export const SCHOOLS: readonly School[] = ['sword', 'qi', 'fortune', 'body', 'artificer'];
+export const SCHOOLS: readonly School[] = ['sword', 'qi', 'fortune', 'body', 'artificer', 'arts'];
 
 export interface SchoolInfo {
   /** The one character on the seal. */
@@ -40,6 +44,7 @@ export const SCHOOL_INFO: Record<School, SchoolInfo> = {
   fortune:   { seal: '運', han: '運修', name: 'Fortune Seeker', short: 'Fortune', colour: '#D4AF56', axes: ['luck', 'find'] },
   body:      { seal: '體', han: '體修', name: 'Body Cultivator', short: 'Body', colour: '#B2A566', axes: ['sunder'] },
   artificer: { seal: '器', han: '器修', name: 'Artificer', short: 'Artificer', colour: '#A077B8', axes: ['refine', 'capacity'] },
+  arts:      { seal: '法', han: '法修', name: 'Arts Cultivator', short: 'Arts', colour: '#6FA3C8', axes: ['art'] },
 };
 
 /** Which school a line belongs to. Every one of the seven belongs to exactly one. */
@@ -49,7 +54,8 @@ export function schoolOfAxis(a: Affix): School {
 
 export type Pair =
   | 'swordimmortal' | 'wanderer' | 'wargod' | 'swordsmith' | 'seeker'
-  | 'vajra' | 'alchemist' | 'huntking' | 'treasuresmith' | 'armourer';
+  | 'vajra' | 'alchemist' | 'huntking' | 'treasuresmith' | 'armourer'
+  | 'swordsaint' | 'celestial' | 'diviner' | 'arhat' | 'formation';
 
 export interface PairInfo {
   readonly key: Pair;
@@ -60,7 +66,7 @@ export interface PairInfo {
 }
 
 /**
- * 合 Ten classes, one for every two schools. Each has a perk no school has, on a system
+ * 合 Fifteen classes, one for every two schools. Each has a perk no school has, on a system
  * of its own, so no two of them are the same class wearing different words.
  */
 export const PAIRS: readonly PairInfo[] = [
@@ -74,6 +80,12 @@ export const PAIRS: readonly PairInfo[] = [
   { key: 'huntking', a: 'fortune', b: 'body', han: '獵王', name: 'Hunt King' },
   { key: 'treasuresmith', a: 'fortune', b: 'artificer', han: '寶匠', name: 'Treasure Smith' },
   { key: 'armourer', a: 'body', b: 'artificer', han: '甲匠', name: 'Armourer' },
+  // 法 The sixth school, with each of the other five.
+  { key: 'swordsaint', a: 'sword', b: 'arts', han: '劍聖', name: 'Sword Saint' },
+  { key: 'celestial', a: 'qi', b: 'arts', han: '天師', name: 'Celestial Master' },
+  { key: 'diviner', a: 'fortune', b: 'arts', han: '卜師', name: 'Diviner' },
+  { key: 'arhat', a: 'body', b: 'arts', han: '羅漢', name: 'Arhat' },
+  { key: 'formation', a: 'artificer', b: 'arts', han: '陣師', name: 'Formation Master' },
 ];
 
 export function pairOf(x: School, y: School): PairInfo | undefined {
