@@ -2410,9 +2410,9 @@ const page = `<meta charset="utf-8">
         difference between a portrait and a photograph of one. It only really turns since
         the portrait stopped being rebuilt five times a second, which restarted it every 200ms.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">氣</b> <em>The aura is drawn, one thing a realm</em>
-        <i>Threads of qi, a formation circle under the seat, the golden core, orbiting motes,
-        the spirit body, brush rays, flying swords, the eight trigrams and the tribulation's
-        lightning, added in that order from the first realm to the ninth. It replaced four
+        <i>One thing is added each realm, from the first to the ninth. Threads of qi, a
+        formation circle under the seat, the golden core and orbiting motes. Then the spirit
+        body, brush rays, flying swords, the eight trigrams and the tribulation's lightning. It replaced four
         clip-art glyphs blurred behind the painting. Each moving part is its own layer, so the
         graphics chip turns it and the ninth realm costs a third of what it did.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">入</b> <em>The fight begins</em>
