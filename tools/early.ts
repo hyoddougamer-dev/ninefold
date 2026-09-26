@@ -38,11 +38,12 @@ import { isOpen, systemInfo, SYSTEMS } from '../src/sim/unlocks.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
 import { affinity, canUnlock } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
-import { rollDrop } from '../src/sim/drops.ts';
+import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageBonus } from '../src/sim/awaken.ts';
 import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
+import { swing } from '../src/sim/inspect.ts';
 import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
 import { canRefine, refine, refinePrice } from '../src/sim/trials.ts';
 import { advice } from '../src/app/advice.ts';
@@ -122,7 +123,7 @@ function betterInChest(s: State): number {
   for (const item of s.chest) {
     const slot = templateOf(item).slot as Slot;
     const worn = s.worn[slot];
-    if (!worn || itemWorth(item) > itemWorth(worn)) n++;
+    if (!worn || swing(s, item).better) n++;
   }
   return n;
 }
@@ -130,7 +131,9 @@ function betterInChest(s: State): number {
 function takeDrop(s: State, beast: Beast, seed: number): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
-  const item = rollDrop(beast, s.realm, seed, fortuneOf(s), s.layer);
+  // 緣 The same two calls the app makes: the bar decides the drop, then moves.
+  const item = dropFor(s, beast, seed, fortuneOf(s), s.layer);
+  s = noteFate(s, beast, item);
   if (!item) return s;
   const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
   const kept = addToChest(s.chest, item, limit);
@@ -139,7 +142,7 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   if (kept.dropped?.id === item.id) return out;
   const slot = templateOf(item).slot as Slot;
   const worn = out.worn[slot];
-  if (!worn || itemWorth(item) > itemWorth(worn)) {
+  if (!worn || swing(out, item).better) {
     const after = equip(out.worn, out.chest, item, slot);
     out = { ...out, worn: after.worn, chest: [...after.chest] };
   }

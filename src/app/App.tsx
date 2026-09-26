@@ -16,7 +16,7 @@ import { focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
-import { rollDrop } from '../sim/drops.ts';
+import { dropFor, noteFate } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { marksOf } from '../sim/record.ts';
@@ -411,8 +411,11 @@ export function App() {
         // 狩 And nothing drops before 器 opens. The first realm hunts a realm before it
         // can wear anything, so a piece falling there would go into a chest the player
         // cannot open, off a screen that cannot explain it.
+        //
+        // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
+        // the bar, and closeFight moves it.
         drop: floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : rollDrop(beast, state.realm, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
+          : dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
       };
     });
   }, [state]);
@@ -482,7 +485,7 @@ export function App() {
         // 收 The count, the material and 見 the first-sight bounty all come from the
         // sim, so the harnesses that measure this game see exactly what the player gets.
         // The chest is the app's, because the drop above was rolled with the app's seed.
-        return { ...takeKill(s, beast), chest: kept ? [...kept.chest] : s.chest };
+        return { ...noteFate(takeKill(s, beast), beast, drop), chest: kept ? [...kept.chest] : s.chest };
       });
     }
     setBattle(null);

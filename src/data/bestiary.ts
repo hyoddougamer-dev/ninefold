@@ -56,73 +56,85 @@ export interface Beast {
    * is the exact thing the named Dragons were introduced to stop.
    */
   readonly plate?: string;
+  /**
+   * 物 The three shapes of gear this beast leaves, by archetype key.
+   *
+   * Bruno: *"está tudo muito random ... deve ser lógico, não 100% rng."* Any beast used to
+   * drop any of the fifty-four shapes, so there was no reason to hunt one beast over
+   * another for a piece and no way to go looking for a sword. Now each beast leaves what
+   * it is: a plated centipede leaves armour and boots, a grave worm what the dead were
+   * buried with. Each realm's four beasts cover all six places on the body between them,
+   * and every shape is left by somebody: `drops.test.ts` holds both.
+   */
+  readonly leaves: readonly string[];
 }
 
 /** 層 Where in a realm its three commons walk out. See Beast.layer for the measurement. */
 export const COMMON_LAYERS = [0, 4, 7] as const;
 
 const b = (key: string, han: string, name: string, realm: number, icon: string,
-           nth: 0 | 1 | 2): Beast =>
-  ({ key, han, name, realm, layer: realm === 1 ? 0 : COMMON_LAYERS[nth], icon });
+           nth: 0 | 1 | 2, leaves: readonly string[]): Beast =>
+  ({ key, han, name, realm, layer: realm === 1 ? 0 : COMMON_LAYERS[nth], icon, leaves });
 
 /** A warden stands at the ceiling, which is the last layer and never anywhere else. */
-const w = (key: string, han: string, name: string, realm: number, icon: string): Beast =>
-  ({ key, han, name, realm, layer: LAYERS_PER_REALM - 1, icon, warden: true });
+const w = (key: string, han: string, name: string, realm: number, icon: string,
+           leaves: readonly string[]): Beast =>
+  ({ key, han, name, realm, layer: LAYERS_PER_REALM - 1, icon, warden: true, leaves });
 
 export const BEASTS: readonly Beast[] = [
   // 1 練氣: animals. Nothing supernatural yet.
-  b('rat',       '山鼠', 'Mountain Rat',   1, 'rat', 0),
-  b('hound',     '野犬', 'Wild Hound',     1, 'hound', 1),
-  b('frog',      '澤蛙', 'Marsh Frog',     1, 'frog', 2),
-  w('fox',       '妖狐', 'Spirit Fox',     1, 'fox-head'),
+  b('rat',       '山鼠', 'Mountain Rat',   1, 'rat', 0, ['band', 'sandals', 'plainring']),
+  b('hound',     '野犬', 'Wild Hound',     1, 'hound', 1, ['saber', 'vest', 'leather']),
+  b('frog',      '澤蛙', 'Marsh Frog',     1, 'frog', 2, ['beads', 'topaz', 'laurel']),
+  w('fox',       '妖狐', 'Spirit Fox',     1, 'fox-head', ['fan', 'robe', 'charm']),
 
   // 2 築基: the first things with qi inside them.
-  b('serpent',   '青蛇', 'Green Serpent',  2, 'snake', 0),
-  b('mantis',    '螳螂', 'Praying Mantis', 2, 'praying-mantis', 1),
-  b('bat',       '血蝠', 'Blood Bat',      2, 'bat', 2),
-  w('ape',       '石猿', 'Stone Ape',      2, 'monkey'),
+  b('serpent',   '青蛇', 'Green Serpent',  2, 'snake', 0, ['spear', 'cloak', 'emerald']),
+  b('mantis',    '螳螂', 'Praying Mantis', 2, 'praying-mantis', 1, ['crescent', 'walkers', 'pin']),
+  b('bat',       '血蝠', 'Blood Bat',      2, 'bat', 2, ['wings', 'amethyst', 'bonecharm']),
+  w('ape',       '石猿', 'Stone Ape',      2, 'monkey', ['horned', 'furboots', 'pendant']),
 
   // 3 金丹: wings and carapaces.
-  b('beetle',    '鐵甲', 'Iron Beetle',    3, 'scarab-beetle', 0),
-  b('owl',       '夜梟', 'Night Owl',      3, 'owl', 1),
-  b('raven',     '血鴉', 'Blood Raven',    3, 'raven', 2),
-  w('crane',     '仙鶴', 'Immortal Crane', 3, 'heron'),
+  b('beetle',    '鐵甲', 'Iron Beetle',    3, 'scarab-beetle', 0, ['lamellar', 'ironboots', 'visor']),
+  b('owl',       '夜梟', 'Night Owl',      3, 'owl', 1, ['scroll', 'ritual', 'spiralring']),
+  b('raven',     '血鴉', 'Blood Raven',    3, 'raven', 2, ['scythe', 'mantle', 'flamering']),
+  w('crane',     '仙鶴', 'Immortal Crane', 3, 'heron', ['sword', 'bare', 'medal']),
 
   // 4 元嬰: properly large beasts.
-  b('boar',      '鐵根彘', 'Ironroot Boar', 4, 'boar-tusks', 0),
-  b('wolf',      '灰狼', 'Grey Wolf',      4, 'wolf-head', 1),
-  b('vulture',   '山鷲', 'Ridge Vulture',  4, 'vulture', 2),
-  w('tiger',     '雷虎', 'Thunder Tiger',  4, 'tiger-head'),
+  b('boar',      '鐵根彘', 'Ironroot Boar', 4, 'boar-tusks', 0, ['plate', 'greaves', 'bonecharm']),
+  b('wolf',      '灰狼', 'Grey Wolf',      4, 'wolf-head', 1, ['hooks', 'furboots', 'frostring']),
+  b('vulture',   '山鷲', 'Ridge Vulture',  4, 'vulture', 2, ['pauldrons', 'bonecrown', 'amethyst']),
+  w('tiger',     '雷虎', 'Thunder Tiger',  4, 'tiger-head', ['trident', 'diadem', 'pendant']),
 
   // 5 化神: spirits of water and clay.
-  b('crab',      '巨蟹', 'Giant Crab',     5, 'crab', 0),
-  b('jellyfish', '水母', 'Jellyfish',      5, 'jellyfish', 1),
-  b('lizard',    '岩蜥', 'Rock Lizard',    5, 'gecko', 2),
-  w('turtle',    '玄武', 'Black Turtle',   5, 'turtle'),
+  b('crab',      '巨蟹', 'Giant Crab',     5, 'crab', 0, ['crescent', 'lamellar', 'greaves']),
+  b('jellyfish', '水母', 'Jellyfish',      5, 'jellyfish', 1, ['kimono', 'spiralring', 'beads']),
+  b('lizard',    '岩蜥', 'Rock Lizard',    5, 'gecko', 2, ['tabi', 'topaz', 'pin']),
+  w('turtle',    '玄武', 'Black Turtle',   5, 'turtle', ['staff', 'ritual', 'wand']),
 
   // 6 煉虛: what crawls where qi rots.
-  b('centipede', '蜈蚣', 'Iron Centipede', 6, 'centipede', 0),
-  b('scorpion',  '毒蠍', 'Venom Scorpion', 6, 'scorpion', 1),
-  b('worm',      '屍蟲', 'Corpse Worm',    6, 'earth-worm', 2),
-  w('golem',     '石傀', 'Stone Puppet',   6, 'golem-head'),
+  b('centipede', '蜈蚣', 'Iron Centipede', 6, 'centipede', 0, ['lamellar', 'ironboots', 'hooks']),
+  b('scorpion',  '毒蠍', 'Venom Scorpion', 6, 'scorpion', 1, ['scythe', 'crescent', 'emerald']),
+  b('worm',      '屍蟲', 'Corpse Worm',    6, 'earth-worm', 2, ['bonecharm', 'censer', 'scroll']),
+  w('golem',     '石傀', 'Stone Puppet',   6, 'golem-head', ['visor', 'plate', 'horned']),
 
   // 7 合體: the demonic arrives.
-  b('ogre',      '魔猿', 'Demon Ogre',     7, 'ogre', 0),
-  b('goblin',    '鬼面', 'Ghost Face',     7, 'goblin-head', 1),
-  b('wraith',    '陰魂', 'Yin Wraith',     7, 'floating-ghost', 2),
-  w('direwolf',  '魔狼', 'Demon Wolf',     7, 'direwolf'),
+  b('ogre',      '魔猿', 'Demon Ogre',     7, 'ogre', 0, ['spear', 'vest', 'powerring']),
+  b('goblin',    '鬼面', 'Ghost Face',     7, 'goblin-head', 1, ['horned', 'charm', 'walkers']),
+  b('wraith',    '陰魂', 'Yin Wraith',     7, 'floating-ghost', 2, ['cloak', 'censer', 'frostring']),
+  w('direwolf',  '魔狼', 'Demon Wolf',     7, 'direwolf', ['saber', 'windfoot', 'bonecrown']),
 
   // 8 大乘: the greater demons.
-  b('skeleton',  '骨將', 'Bone General',   8, 'skeleton', 0),
-  b('gargoyle',  '石鬼', 'Gargoyle',       8, 'gargoyle', 1),
-  b('minotaur',  '牛魔', 'Bull Demon',     8, 'minotaur', 2),
-  w('jiao',      '蛟',   'Serpent Dragon', 8, 'sea-serpent'),
+  b('skeleton',  '骨將', 'Bone General',   8, 'skeleton', 0, ['sword', 'pauldrons', 'bonecharm']),
+  b('gargoyle',  '石鬼', 'Gargoyle',       8, 'gargoyle', 1, ['visor', 'orb', 'ironboots']),
+  b('minotaur',  '牛魔', 'Bull Demon',     8, 'minotaur', 2, ['trident', 'greaves', 'flamering']),
+  w('jiao',      '蛟',   'Serpent Dragon', 8, 'sea-serpent', ['dragonhead', 'mantle', 'pendant']),
 
   // 9 渡劫: what only exists near heaven.
-  b('harpy',     '羽妖', 'Harpy',          9, 'harpy', 0),
-  b('unicorn',   '獨角', 'Unicorn',        9, 'unicorn', 1),
-  b('squid',     '巨章', 'Colossal Squid', 9, 'giant-squid', 2),
-  w('dragon',    '龍',   'Dragon',         9, 'spiked-dragon-head'),
+  b('harpy',     '羽妖', 'Harpy',          9, 'harpy', 0, ['wings', 'windfoot', 'fan']),
+  b('unicorn',   '獨角', 'Unicorn',        9, 'unicorn', 1, ['diadem', 'starring', 'wand']),
+  b('squid',     '巨章', 'Colossal Squid', 9, 'giant-squid', 2, ['kimono', 'spiralring', 'orb']),
+  w('dragon',    '龍',   'Dragon',         9, 'spiked-dragon-head', ['spear', 'dragonhead', 'pendant']),
 ];
 
 export const WARDENS: readonly Beast[] =

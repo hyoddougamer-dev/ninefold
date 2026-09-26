@@ -86,6 +86,16 @@ export interface Fortune {
   readonly luck?: number;
   /** 造化 Creation: every beast drops something. */
   readonly always?: boolean;
+  /**
+   * 物 Any shape at all, rather than the three the beast leaves. For the things that are
+   * not a kill: a room in the secret realm, a meeting on the road. They borrow a beast
+   * for its realm and its rank table, not for what it carries.
+   */
+  readonly anyShape?: boolean;
+  /** 源 Where the piece says it came from, when that is not the beast. */
+  readonly source?: string;
+  /** 緣 The least rank this drop may be, as an index into RARITIES. See sim/fate.ts. */
+  readonly floor?: number;
 }
 
 /**
@@ -129,11 +139,16 @@ export function rollDrop(
   // drops its own realm's gear, which has been falling for as long as you have been past
   // it. Left off, the call means the whole realm, which is what a catalogue wants.
   const at = Math.min(beast.realm, realm);
-  const pool = droppableIn(at, at === realm ? layer : LAYERS_PER_REALM);
+  const every = droppableIn(at, at === realm ? layer : LAYERS_PER_REALM);
+  // 物 A kill leaves the shapes this beast carries, in any lineage it could have met.
+  const own = fortune.anyShape ? every : every.filter((g) => beast.leaves.includes(g.archetype));
+  const pool = own.length > 0 ? own : every;
   if (pool.length === 0) return null;
   const template: GearTemplate = pool[Math.floor(d() * pool.length) % pool.length];
 
-  const rarity = pickRarity(beast, d(), fortune.luck ?? 1);
+  const rolled = pickRarity(beast, d(), fortune.luck ?? 1);
+  const rarity = RARITIES[Math.max(RARITIES.indexOf(rolled),
+    Math.min(RARITIES.length - 1, Math.floor(fortune.floor ?? 0)))];
   const swing = 1 - VARIANCE + d() * VARIANCE * 2;
   const primary: Roll = {
     affix: template.affix,
@@ -145,6 +160,7 @@ export function rollDrop(
     template: template.key,
     rarity,
     rolls: [primary, ...rollSecondaries(template, rarity, d)],
+    from: fortune.source ?? beast.key,
   };
 }
 

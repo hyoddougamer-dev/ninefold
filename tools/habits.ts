@@ -28,11 +28,12 @@ import {
   inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../src/sim/secret.ts';
 import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
-import { rollDrop } from '../src/sim/drops.ts';
+import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageBonus } from '../src/sim/awaken.ts';
 import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
+import { swing } from '../src/sim/inspect.ts';
 import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 
@@ -176,7 +177,9 @@ export interface Run {
 function takeDrop(s: State, beast: Beast, seed: number): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
-  const item = rollDrop(beast, s.realm, seed, fortuneOf(s), s.layer);
+  // 緣 The same two calls the app makes: the bar decides the drop, then moves.
+  const item = dropFor(s, beast, seed, fortuneOf(s), s.layer);
+  s = noteFate(s, beast, item);
   if (!item) return s;
 
   const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
@@ -192,7 +195,11 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
 
   const slot = templateOf(item).slot as Slot;
   const worn = out.worn[slot];
-  if (!worn || itemWorth(item) > itemWorth(worn)) {
+  // 鑑 Wear it when the game would mark it ▲: the sim says it raises power or qi and
+  // lowers neither, read with 承 the levels it would take from the piece it replaces.
+  // itemWorth was a rank-and-realm guess, and once the levels travel it would happily
+  // swap a refined sword of power for a fan of qi one rank higher.
+  if (!worn || swing(out, item).better) {
     const after = equip(out.worn, out.chest, item, slot);
     out = { ...out, worn: after.worn, chest: [...after.chest] };
   }

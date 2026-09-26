@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { commonsOf, wardenOf } from '../../data/bestiary.ts';
+import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
-  RARITIES, RARITY_INFO, SECONDARIES, SLOTS, baseValue, setBonus, templateOf, wornRarity,
+  ARCHETYPES, RARITIES, RARITY_INFO, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, baseValue, setBonus, templateOf, wornRarity,
   type Item, type Worn,
 } from '../../data/gear.ts';
 import { dropChance, rarityOdds, rollDrop } from '../drops.ts';
@@ -107,3 +107,43 @@ function templatesFor(slot: string) {
 import { GEAR } from '../../data/gear.ts';
 const GEAR_FOR_SLOT: Record<string, typeof GEAR[number][]> = {};
 for (const g of GEAR) (GEAR_FOR_SLOT[g.slot] ??= []).push(g);
+
+/**
+ * 物 Each beast leaves what it is. Bruno: *"deve ser lógico, não 100% rng."*
+ */
+describe('物 what each beast leaves', () => {
+  it('covers every place on the body in every realm', () => {
+    for (let r = 1; r <= 9; r++) {
+      const slots = new Set(BEASTS.filter((b) => b.realm === r)
+        .flatMap((b) => b.leaves.map((a) => ARCHETYPES.find((x) => x.key === a)!.slot)));
+      expect([...slots].sort(), `realm ${r}`).toEqual([...SLOTS].sort());
+    }
+  });
+
+  it('leaves every one of the fifty-four shapes somewhere, and names only real ones', () => {
+    const left = new Set(BEASTS.flatMap((b) => b.leaves));
+    for (const a of ARCHETYPES) expect(left.has(a.key), a.key).toBe(true);
+    for (const k of left) expect(ARCHETYPES.some((a) => a.key === k), k).toBe(true);
+    for (const b of BEASTS) expect(b.leaves).toHaveLength(3);
+  });
+
+  it('drops only those shapes from a kill, and says who left it', () => {
+    const b = BEASTS.find((x) => x.key === 'centipede')!;
+    for (let seed = 1; seed < 400; seed++) {
+      const it = rollDrop(b, 6, seed, { always: true });
+      if (!it) continue;
+      expect(b.leaves).toContain(TEMPLATE_BY_KEY[it.template].archetype);
+      expect(it.from).toBe('centipede');
+    }
+  });
+
+  it('lets a room or a meeting give any shape', () => {
+    const b = BEASTS.find((x) => x.key === 'centipede')!;
+    const shapes = new Set<string>();
+    for (let seed = 1; seed < 800; seed++) {
+      const it = rollDrop(b, 6, seed, { always: true, anyShape: true, source: 'secret' });
+      if (it) { shapes.add(TEMPLATE_BY_KEY[it.template].archetype); expect(it.from).toBe('secret'); }
+    }
+    expect(shapes.size).toBeGreaterThan(20);
+  });
+});

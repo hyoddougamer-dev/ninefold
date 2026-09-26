@@ -3,6 +3,7 @@ import {
   type Affix, type Item, type Rarity,
 } from '../data/gear.ts';
 import { power, rate as rateOf, type State } from './state.ts';
+import { carryRefine } from './chest.ts';
 
 /**
  * 鑑 Reading a piece, and reading it against the one you are wearing.
@@ -22,9 +23,13 @@ import { power, rate as rateOf, type State } from './state.ts';
  * refine and the tree. Nothing here re-implements any of that.
  */
 
-/** The save as it would be with this piece worn. Nothing else moves. */
+/**
+ * The save as it would be with this piece worn. Nothing else moves, except what putting
+ * it on moves: 承 the refining levels of the piece it replaces come with the place.
+ */
 export function ifWorn(s: State, item: Item): State {
-  return { ...s, worn: { ...s.worn, [templateOf(item).slot]: item } };
+  const slot = templateOf(item).slot;
+  return { ...s, worn: { ...s.worn, [slot]: carryRefine(item, s.worn[slot]).on } };
 }
 
 /** The save as it would be with that slot empty. */

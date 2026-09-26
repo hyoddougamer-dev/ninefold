@@ -73,17 +73,45 @@ export function removeFromChest(chest: readonly Item[], id: string): readonly It
 }
 
 /**
+ * 承 What refining does when a piece is put on over another: the levels go with the
+ * place on the body, not with the metal.
+ *
+ * Bruno chose this from the drop proposal. Measured before it, an active cultivator
+ * picked up 158 pieces between the sixth realm and the ninth and wore three, and the
+ * chest held no upgrade at all in the seventh, eighth or ninth: the old piece, refined
+ * twenty times, was worth twice itself, and no fresh drop could catch it. With the
+ * levels carried, the same chests held 8, 14 and 14.
+ *
+ * The two pieces trade levels rather than copy them: the one going on takes the higher
+ * of the two counts and the one coming off keeps the lower. Nothing is made and nothing
+ * is lost, so swapping back puts everything where it was, and two pieces can never
+ * both hold the levels that were paid for once.
+ */
+export function carryRefine(item: Item, previous: Item | undefined): { on: Item; off: Item | undefined } {
+  if (!previous) return { on: item, off: previous };
+  const a = Math.floor(item.refine ?? 0);
+  const b = Math.floor(previous.refine ?? 0);
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  const withLevel = (x: Item, n: number): Item => {
+    const { refine: _was, ...rest } = x;
+    return n > 0 ? { ...rest, refine: n } : rest;
+  };
+  return { on: withLevel(item, hi), off: withLevel(previous, lo) };
+}
+
+/**
  * Equipping swaps: whatever was in the slot goes back to the chest, and since the new
- * item just left it, the count never rises, so equipping can never overflow.
+ * item just left it, the count never rises, so equipping can never overflow. 承 The
+ * refining levels trade places on the way: see carryRefine.
  */
 export function equip(worn: Worn, chest: readonly Item[], item: Item, slot: Slot): {
   worn: Worn; chest: readonly Item[];
 } {
-  const previous = worn[slot];
+  const { on, off } = carryRefine(item, worn[slot]);
   const without = removeFromChest(chest, item.id);
   return {
-    worn: { ...worn, [slot]: item },
-    chest: previous ? [...without, previous] : without,
+    worn: { ...worn, [slot]: on },
+    chest: off ? [...without, off] : without,
   };
 }
 

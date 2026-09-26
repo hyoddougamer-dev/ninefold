@@ -333,6 +333,11 @@ export interface Item {
   readonly rolls: readonly Roll[];
   /** 煉 How many times it has been refined. Every line on it is multiplied by this. */
   readonly refine?: number;
+  /**
+   * 源 Who left it: a beast's key, or `secret` or `road` for the rooms and the meetings.
+   * Only ever read to say so on the item sheet, never by a number.
+   */
+  readonly from?: string;
 }
 
 /**

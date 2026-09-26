@@ -4,8 +4,10 @@ import {
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, FOCUS_MAX, OPENING_PURSE,
+  FATE_FULL,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
+const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
   AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, setBonus, wornTotals,
@@ -175,6 +177,11 @@ export interface State {
    * backwards by a phone's clock into a second payment. See sim/week.ts.
    */
   quarryWeek: number;
+  /**
+   * 緣 The bond with each beast hunted since gear opened: wins toward a certain drop,
+   * and the best rank (an index into RARITIES) that beast has ever left. See FATE_FULL.
+   */
+  fate: Record<string, { n: number; best: number }>;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -309,6 +316,7 @@ export function newState(now: number): State {
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
     quarryWeek: -1,
+    fate: {},
     seen: [],
   };
 }
@@ -613,8 +621,12 @@ export function validate(raw: unknown, now: number): State {
     // number nothing reachable comes near, so a hand-edited save cannot claim a sword
     // worth fifty thousand of itself.
     const refine = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
-    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine }
-      : { id, template: tpl.key, rarity, rolls };
+    // 源 Who left it is a word on the sheet and nothing else, so it is kept only when it
+    // names something real: a beast, or one of the two places that are not a kill.
+    const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road')
+      ? { from: o.from } : {};
+    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from }
+      : { id, template: tpl.key, rarity, rolls, ...from };
   };
 
   const used = new Set<string>();
@@ -756,6 +768,17 @@ export function validate(raw: unknown, now: number): State {
     // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is
     // what any save written before the rotation existed comes back as.
     quarryWeek: clamp(Math.floor(num(o.quarryWeek, -1)), -1, weekOf(clamp(num(o.at, now), startedAt, now))),
+    // 緣 Only beasts that exist, a bar that is never already full (a full bar is spent by
+    // the kill that fills it), and a best rank that is a rank.
+    fate: Object.fromEntries(Object.entries((o.fate ?? {}) as Record<string, unknown>)
+      .filter(([k]) => BEAST_KEYS.has(k))
+      .map(([k, v]) => {
+        const f = (v ?? {}) as Record<string, unknown>;
+        return [k, {
+          n: clamp(Math.floor(num(f.n, 0)), 0, FATE_FULL - 1),
+          best: clamp(Math.floor(num(f.best, -1)), -1, RARITIES.length - 1),
+        }];
+      })),
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

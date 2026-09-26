@@ -7,7 +7,7 @@ import { MARKS, marksOf } from './record.ts';
 import { lootTaken } from './trials.ts';
 import { isOpen } from './unlocks.ts';
 import type { State } from './state.ts';
-import { rollDrop } from './drops.ts';
+import { dropFor, noteFate } from './fate.ts';
 import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
@@ -132,13 +132,17 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   let material = 0;
   let dropsRolled = 0;
   let best: Item | null = null;
+  // 緣 The bar fills kill by kill inside a drive exactly as it would tapped, so a drive
+  // of twenty crosses two full bars and both of their certain pieces are rolled.
+  let bond: State = s;
   for (let i = 0; i < kills; i++) {
     // 錄 Read at the count this kill is made at, not the count the drive began at. A
     // drive of two hundred that crosses 通 at the hundredth kill pays the mastered rate
     // for the other hundred, because tapping them would have.
     const now = { ...s, killed: { ...s.killed, [b.key]: before + i } };
     material += lootTaken(now, lootFrom(now, b));
-    const item = rollDrop(b, s.realm, (seed + i * 2654435761) >>> 0, fortune, s.layer);
+    const item = dropFor(bond, b, (seed + i * 2654435761) >>> 0, fortune, s.layer);
+    bond = noteFate(bond, b, item);
     if (!item) continue;
     dropsRolled++;
     if (!best || itemWorth(item) > itemWorth(best)) best = item;
@@ -158,6 +162,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
       qi: s.qi - qiSpent + (week ? quarryBounty(b) : 0),
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
+      fate: bond.fate,
       quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
     },
     material, qiSpent, kills, dropsRolled, best, earned,

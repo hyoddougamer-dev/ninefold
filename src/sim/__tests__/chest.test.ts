@@ -271,3 +271,39 @@ describe('換 a chest over a limit that just fell', () => {
     expect(back.chest.some((x) => x.id === best.id)).toBe(true);
   });
 });
+
+/**
+ * 承 The levels go with the place on the body. Bruno chose it: before it, an active
+ * cultivator's chest held no upgrade at all from the seventh realm on, because the old
+ * refined piece was worth twice any fresh one.
+ */
+describe('承 refining follows the piece you put on', () => {
+  const at = (id: string, template: string, refine = 0): Item =>
+    ({ id, template, rarity: 'mystic', rolls: [{ affix: 'power', value: 10 }], ...(refine ? { refine } : {}) });
+
+  it('hands the levels to the new piece and leaves the old one bare', () => {
+    const old = at('old', 'sword3', 18);
+    const fresh = at('new', 'sword6');
+    const after = equip({ weapon: old }, [fresh], fresh, 'weapon');
+    expect(after.worn.weapon?.id).toBe('new');
+    expect(after.worn.weapon?.refine).toBe(18);
+    expect(after.chest.find((x) => x.id === 'old')?.refine).toBeUndefined();
+  });
+
+  it('trades rather than copies, so swapping back puts everything where it was', () => {
+    const a = at('a', 'sword3', 18);
+    const b = at('b', 'sword6', 5);
+    const one = equip({ weapon: a }, [b], b, 'weapon');
+    const two = equip(one.worn, one.chest, one.chest.find((x) => x.id === 'a')!, 'weapon');
+    const total = (xs: (Item | undefined)[]) => xs.reduce((n, x) => n + (x?.refine ?? 0), 0);
+    expect(total([one.worn.weapon, ...one.chest])).toBe(23);
+    expect(two.worn.weapon?.id).toBe('a');
+    expect(two.worn.weapon?.refine).toBe(18);
+    expect(two.chest.find((x) => x.id === 'b')?.refine).toBe(5);
+  });
+
+  it('puts nothing on a piece going into an empty place', () => {
+    const fresh = at('new', 'sword6');
+    expect(equip({}, [fresh], fresh, 'weapon').worn.weapon?.refine).toBeUndefined();
+  });
+});

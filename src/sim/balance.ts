@@ -591,8 +591,22 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  * measurement was aiming at, with the walkovers well clear of the quarter this file's
  * test refuses to go past. `tribulation.test.ts` plays forty crossings out and prints
  * them, so moving this is never quiet.
+ *
+ * 承 And the band moved again, by one step, when the gear started to matter. Two
+ * things changed at once: refining now follows the place on the body, and the harness
+ * wears what the game marks ▲ rather than guessing by rank and realm. A cultivator
+ * arrives at the Dragon about a third stronger, the first crossing anchors to that, and
+ * at 1.59 the eighty crossings ran away: 854 days, one mark of 45. Measured on the
+ * finished drop rules:
+ *
+ *     1.59   854 days, longest 45: running away
+ *     1.58   338 days, longest 9
+ *     1.57   252 days, longest 5
+ *
+ * 1.58 is the one step, and it keeps the old shape: the reading before the change was
+ * 396 days, longest 10.
  */
-export const TRIBULATION_FOOTING = 1.59;
+export const TRIBULATION_FOOTING = 1.58;
 
 /**
  * 雷池 How many days of gathering the thunder pool holds.
@@ -662,6 +676,23 @@ export const QUARRY_LOOT = 2;
  * It is a fifth of what a first sight is worth for that reason.
  */
 export const QUARRY_BOUNTY = 0.1;
+
+/**
+ * 緣 The bond with one beast: how many wins fill it, and what a full one promises.
+ *
+ * Bruno chose it from the drop proposal: *"não 100% rng"*. Every win over a beast
+ * fills its bar by one. When it is full, that win leaves a piece for certain, and at
+ * least one rank above the best that beast has ever given, starting from 玄 Mystic.
+ * The bar then starts again. Bad luck has an end, and the hunt row shows how far off.
+ *
+ * A common beast's promise stops at 地 Earth; a warden's reaches 天 Heaven, so the
+ * rarest rank still comes from the fights that bar a realm.
+ */
+export const FATE_FULL = 10;
+/** Index into RARITIES: the least a full bar promises, and the most a common's can. */
+export const FATE_FLOOR = 2;
+export const FATE_TOP_COMMON = 3;
+export const FATE_TOP_WARDEN = 4;
 
 /** 草 What a bed of the herb in season pays, against its own usual harvest. */
 export const SEASON_HARVEST = 1.5;
