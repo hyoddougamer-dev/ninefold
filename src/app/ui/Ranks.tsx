@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RANKS } from '../copy.ts';
+import { callingLabel } from '../classes.ts';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
 import * as cloud from '../../net/cloud.ts';
 
@@ -66,6 +67,7 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
                         <span className="rw">
                           <b>{r.name}{r.me && <em> · {RANKS.you}</em>}</b>
                           {r.title && <i><span className="cjk">{r.title}</span> {RANKS.titleNames[r.title] ?? ''}</i>}
+                          <Called calling={r.calling} />
                         </span>
                         <span className="rv">
                           {tab === 'climb' ? RANKS.climbCell(r.climb, r.marks)
@@ -269,5 +271,16 @@ export function CloudPick({ there, here, onTake, onKeep }: {
       <button className="act ghost" onClick={onKeep}>留 <span>{RANKS.cloudKeep}</span></button>
       <p className="rnote small">{RANKS.cloudNote}</p>
     </div>
+  );
+}
+
+/** 職 The class the verified save was wearing, as a small line under the name. */
+function Called({ calling }: { calling?: string | null }) {
+  const c = callingLabel(calling);
+  if (!c) return null;
+  return (
+    <span className="rcall" style={{ ['--c' as string]: c.colour }}>
+      <span className="cjk">{c.han}</span> {c.name}
+    </span>
   );
 }

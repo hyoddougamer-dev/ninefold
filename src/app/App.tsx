@@ -17,6 +17,7 @@ import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
+import { gearFuse } from '../sim/schools.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { marksOf } from '../sim/record.ts';
@@ -525,7 +526,7 @@ export function App() {
 
   const onFuse = useCallback((template: string, rarity: string) => {
     setState((s) => {
-      const next = fuse(s.chest, template, rarity as Item['rarity'], fuseQuality(s.unlocked));
+      const next = fuse(s.chest, template, rarity as Item['rarity'], fuseQuality(s.unlocked) * gearFuse(s));
       if (!next.made) return s;
       float(JUICE.fused, 'gold'); burst('gold', null, 16, 80);
       return { ...s, chest: [...next.chest] };

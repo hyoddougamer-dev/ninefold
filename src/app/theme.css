@@ -1317,6 +1317,31 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .othereff .oe em { margin-left: auto; font-style: normal; font-family: Rajdhani, sans-serif;
                    font-weight: 600; font-size: 14px; }
 
+/* 職 The class under the ring. Its own block: .calling and its children are drawn by
+   this one component and nothing else shares the names. */
+.calling { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start;
+           margin: 12px 0 2px; padding: 11px 12px; border-radius: 12px;
+           background: linear-gradient(100deg, color-mix(in srgb, var(--hue) 20%, transparent), transparent 85%); }
+.calling[data-kind="none"] { background: none; border: 1px dashed var(--line); }
+.calling .cseal { min-width: 44px; height: 44px; padding: 0 6px; border-radius: 6px; display: grid; place-items: center;
+                  background: var(--hue); color: #150F0A; font-size: 22px; line-height: 1; transform: rotate(-4deg); }
+.calling[data-kind="pair"] .cseal { font-size: 17px; }
+.calling[data-kind="none"] .cseal { background: var(--panel); color: var(--faint); }
+.calling .cbody { display: grid; gap: 4px; min-width: 0; }
+.calling .cbody > b { font-size: 15.5px; font-weight: 600; }
+.calling .cbody > b .cjk { font-weight: 400; color: var(--hue); }
+.calling[data-kind="none"] .cbody > b { color: var(--faint); font-weight: 500; font-size: 13px; }
+.calling .cbody > b i { display: block; font-style: normal; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+                        color: var(--hue); margin-top: 1px; font-weight: 600; }
+.calling[data-kind="none"] .cbody > b i { display: block; margin: 2px 0 0; letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 12.5px; color: var(--faint); }
+.calling .cgives { font-size: 12.5px; color: var(--text); }
+.calling .cschools { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
+.calling .cschools em { font-style: normal; font-size: 11.5px; color: var(--faint); }
+.calling .cschools em .cjk { color: var(--c); }
+.calling .cschools em b { color: var(--text); font-weight: 600; }
+.calling .cschools em[data-on="true"] { color: var(--text); }
+.calling .cnext { font-size: 11.5px; color: var(--faint); }
+
 /* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */
 .setrow { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
           border-left: 2px solid var(--hue); padding: 9px 11px;
@@ -2164,6 +2189,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                      padding: 1px 0 1px 12px; }
 .itemsheet .origin b { color: var(--text); font-weight: 500; display: block; }
 .itemsheet .origin q { font-style: italic; }
+.itemsheet .ischool { display: grid; gap: 2px; font-size: 13px; border-left: 2px solid var(--c);
+                      padding: 1px 0 1px 12px; }
+.itemsheet .ischool b { font-weight: 500; }
+.itemsheet .ischool b .cjk { color: var(--c); font-weight: 400; }
+.itemsheet .ischool span { color: var(--faint); font-size: 12.5px; }
 .itemsheet .says { display: grid; gap: 5px; font-size: 12.5px; color: var(--faint); }
 .itemsheet .says div { display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
 
@@ -2432,6 +2462,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .ranks .rw b { font-weight: 500; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ranks .rw b em { font-style: normal; color: var(--jade); font-size: 12px; }
 .ranks .rw i { font-style: normal; font-size: 12px; color: var(--gold); }
+.ranks .rw .rcall { font-size: 11.5px; color: var(--faint); display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ranks .rw .rcall::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
+.ranks .rw .rcall .cjk { color: var(--c); }
 .ranks .rv { font: 600 13px/1.2 Rajdhani, sans-serif; color: var(--text); text-align: right; white-space: nowrap; }
 .ranks .rjoin, .ranks .raccount { display: flex; flex-direction: column; gap: 10px; padding: 14px;
                                   border: 1px solid var(--line); border-radius: 13px; background: var(--panel); }

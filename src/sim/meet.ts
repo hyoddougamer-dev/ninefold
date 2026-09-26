@@ -3,11 +3,11 @@ import { rate } from './time.ts';
 import { loot } from './combat.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { rollDrop } from './drops.ts';
+import { meltFactor } from './salvage.ts';
 import { addToChest, chestLimit } from './chest.ts';
 import { affinity } from './dao.ts';
 import { wornTotals } from '../data/gear.ts';
 import { salvageValue } from './salvage.ts';
-import { salvageBonus } from './awaken.ts';
 import type { State } from './state.ts';
 
 /**
@@ -137,7 +137,7 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
       out = { ...out, chest: [...kept.chest] };
       // 拆 Whatever the chest turned away is melted rather than lost, the same as a drop.
       if (kept.dropped) {
-        out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(out.awakened)) };
+        out = { ...out, qi: out.qi + salvageValue(kept.dropped, meltFactor(out)) };
       }
     }
   }

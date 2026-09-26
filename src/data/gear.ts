@@ -1,4 +1,5 @@
-import { LAYERS_PER_REALM } from '../sim/balance.ts';
+import { CLASS_AMP, LAYERS_PER_REALM, PAIR_CHEST, SCHOOL_FULL, SCHOOL_WAKES } from '../sim/balance.ts';
+import { SCHOOLS, SCHOOL_INFO, pairOf, schoolOfAxis, type PairInfo, type School } from './schools.ts';
 import { ERA_ICONS, eraOf } from './gearIcons.ts';
 
 /**
@@ -176,7 +177,7 @@ export const ARCHETYPES: readonly Archetype[] = [
   a('band',     '巾', 'Band',       'crown', 'bandana',       'rate'),
   a('laurel',   '桂', 'Laurel',     'crown', 'laurels',       'luck'),
   a('pin',      '簪', 'Hairpin',    'crown', 'jewel-crown',   'rate'),
-  a('horned',   '角', 'Horned Helm','crown', 'horned-helm',   'power'),
+  a('horned',   '角', 'Horned Helm','crown', 'horned-helm',   'sunder'),
   a('bonecrown','骨冠', 'Bone Crown','crown', 'crenel-crown', 'refine'),
   a('visor',    '面', 'Visor',      'crown', 'visored-helm',  'power'),
   a('diadem',   '帝冠', 'Diadem',   'crown', 'imperial-crown','rate'),
@@ -196,7 +197,7 @@ export const ARCHETYPES: readonly Archetype[] = [
 
   // 珮 the pocket
   a('charm',    '符', 'Charm',      'talisman', 'wax-seal',       'rate'),
-  a('bonecharm','骨佩', 'Bone Charm','talisman','tribal-pendant', 'power'),
+  a('bonecharm','骨佩', 'Bone Charm','talisman','tribal-pendant', 'sunder'),
   a('beads',    '珠', 'Beads',      'talisman', 'prayer-beads',   'rate'),
   a('scroll',   '卷', 'Scroll',     'talisman', 'tied-scroll',    'refine'),
   a('pendant',  '珮', 'Pendant',    'talisman', 'gem-pendant',    'power'),
@@ -507,14 +508,88 @@ export function setTotals(worn: Worn): GearTotals {
   return totals;
 }
 
-/** The pieces' own lines plus whatever the lineages pay: what the player actually has. */
+/**
+ * 職 The class a body is wearing, read off the lines its pieces lead with.
+ *
+ *   none   no school has three pieces
+ *   pure   one school has three or four (its first step) or five or six (its full)
+ *   pair   two schools have three each: one of the ten named classes
+ *
+ * Derived, never stored: changing clothes is changing class. See data/schools.ts.
+ */
+export interface Calling {
+  readonly kind: 'none' | 'pure' | 'pair';
+  /** The school, for a pure class. */
+  readonly school?: School;
+  /** 1 at the first step, 2 at the full. A pair is at 1 in both of its schools. */
+  readonly tier: 0 | 1 | 2;
+  readonly pair?: PairInfo;
+  /** Pieces worn toward each school, whether or not it has woken. */
+  readonly counts: Readonly<Record<School, number>>;
+}
+
+export function schoolOf(item: Item): School {
+  return schoolOfAxis(templateOf(item).affix);
+}
+
+/**
+ * Read once per body. A worn set is never changed in place (every change makes a new
+ * object), so the object itself is the key, and a harness asking the same body a
+ * thousand questions a visit reads it once.
+ */
+const CALLINGS = new WeakMap<Worn, Calling>();
+
+export function callingOf(worn: Worn): Calling {
+  const known = CALLINGS.get(worn);
+  if (known) return known;
+  const c = readCalling(worn);
+  CALLINGS.set(worn, c);
+  return c;
+}
+
+function readCalling(worn: Worn): Calling {
+  const counts = Object.fromEntries(SCHOOLS.map((x) => [x, 0])) as Record<School, number>;
+  for (const slot of SLOTS) {
+    const it = worn[slot];
+    if (it && TEMPLATE_BY_KEY[it.template]) counts[schoolOf(it)] += 1;
+  }
+  const ranked = [...SCHOOLS].sort((x, y) => counts[y] - counts[x] || SCHOOLS.indexOf(x) - SCHOOLS.indexOf(y));
+  const [top, next] = ranked;
+  if (counts[top] >= SCHOOL_FULL) return { kind: 'pure', school: top, tier: 2, counts };
+  if (counts[top] >= SCHOOL_WAKES && counts[next] >= SCHOOL_WAKES) {
+    return { kind: 'pair', tier: 1, pair: pairOf(top, next), counts };
+  }
+  if (counts[top] >= SCHOOL_WAKES) return { kind: 'pure', school: top, tier: 1, counts };
+  return { kind: 'none', tier: 0, counts };
+}
+
+/** How far a school has woken on this body: 0, its first step, or its full. */
+export function schoolTier(c: Calling, school: School): 0 | 1 | 2 {
+  if (c.kind === 'pure' && c.school === school) return c.tier;
+  if (c.kind === 'pair' && c.pair && (c.pair.a === school || c.pair.b === school)) return 1;
+  return 0;
+}
+
+/**
+ * The pieces' own lines plus whatever the lineages pay, and then what the class does to
+ * them: 運 體 器 count their own lines for more, and 甲匠 the Armourer carries more.
+ * What the player actually has.
+ */
 export function wornTotals(
   worn: Worn,
   affinityOf: (slot: Slot) => number = () => 1,
 ): GearTotals {
   const gear = gearTotals(worn, affinityOf);
   const sets = setTotals(worn);
-  return Object.fromEntries(AFFIXES.map((a) => [a, gear[a] + sets[a]])) as GearTotals;
+  const out = Object.fromEntries(AFFIXES.map((a) => [a, gear[a] + sets[a]])) as GearTotals;
+  const c = callingOf(worn);
+  for (const school of ['fortune', 'body', 'artificer'] as const) {
+    const t = schoolTier(c, school);
+    if (t === 0) continue;
+    for (const a of SCHOOL_INFO[school].axes) out[a] *= CLASS_AMP[t - 1];
+  }
+  if (c.kind === 'pair' && c.pair?.key === 'armourer') out.capacity += PAIR_CHEST;
+  return out;
 }
 
 /** The two multipliers the rest of the sim asks for most often. */

@@ -1,8 +1,9 @@
 import type { Beast } from '../data/bestiary.ts';
 import { RARITIES, type Item } from '../data/gear.ts';
-import { FATE_FLOOR, FATE_FULL, FATE_TOP_COMMON, FATE_TOP_WARDEN, LAYERS_PER_REALM } from './balance.ts';
+import { FATE_FLOOR, FATE_TOP_COMMON, FATE_TOP_WARDEN, LAYERS_PER_REALM } from './balance.ts';
 import { rollDrop, type Fortune } from './drops.ts';
 import { isOpen } from './unlocks.ts';
+import { classBond } from './schools.ts';
 import type { State } from './state.ts';
 
 /**
@@ -24,7 +25,12 @@ export function fateOf(s: State, key: string): { n: number; best: number } {
 
 /** Does the next win over this beast fill the bar? */
 export function fateDue(s: State, b: Beast): boolean {
-  return fateOf(s, b.key).n + 1 >= FATE_FULL;
+  return fateOf(s, b.key).n + 1 >= fateFull(s);
+}
+
+/** 運 How many wins fill a bond on this body: fewer for a Fortune Seeker. */
+export function fateFull(s: State): number {
+  return classBond(s);
 }
 
 /** What a full bar promises from this beast: an index into RARITIES. */
@@ -51,7 +57,7 @@ export function dropFor(
 export function noteFate(s: State, b: Beast, drop: Item | null): State {
   if (!isOpen(s.realm, 'gear')) return s;
   const f = fateOf(s, b.key);
-  const due = f.n + 1 >= FATE_FULL;
+  const due = f.n + 1 >= fateFull(s);
   const got = drop ? RARITIES.indexOf(drop.rarity) : -1;
   return {
     ...s,

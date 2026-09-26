@@ -2,6 +2,7 @@ import { LAYERS_PER_REALM, ladderAt, salvageShare } from './balance.ts';
 import { RARITIES, RARITY_INFO, templateOf, type Item, type Rarity } from '../data/gear.ts';
 import { salvageBonus } from './awaken.ts';
 import type { State } from './state.ts';
+import { classMelt } from './schools.ts';
 
 /**
  * 拆 Breaking a piece down.
@@ -11,6 +12,14 @@ import type { State } from './state.ts';
  * never the cultivator's, why the share falls as the realms rise, and why 煉器 refining
  * is left out of it.
  */
+/**
+ * 拆 What melting pays on this body: the cards that lift it, and 寶匠 the Treasure
+ * Smith. One function, so the button, the sheet and the sim can never quote apart.
+ */
+export function meltFactor(s: Pick<State, 'awakened' | 'worn' | 'unlocked'>): number {
+  return salvageBonus(s.awakened) * classMelt(s);
+}
+
 export function salvageValue(item: Item, factor = 1): number {
   // A save is input, and a hand-edited one can name a template that does not exist.
   // An unknown piece is worth the first realm's junk, never a crash.
@@ -46,7 +55,7 @@ export function salvage(s: State, ids: readonly string[]): State {
   if (going.length === 0) return s;
   return {
     ...s,
-    qi: s.qi + salvageWorth(going, salvageBonus(s.awakened)),
+    qi: s.qi + salvageWorth(going, meltFactor(s)),
     chest: s.chest.filter((x) => !wanted.has(x.id)),
   };
 }

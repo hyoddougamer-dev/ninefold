@@ -7,7 +7,9 @@ import { SYSTEMS } from '../sim/unlocks.ts';
 import { FATE_FULL } from '../sim/balance.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
-import { AWAKEN, CAVE, FIGURE, KEY, SECRET } from './copy.ts';
+import { AWAKEN, CAVE, CLASS, FIGURE, KEY, SECRET } from './copy.ts';
+import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../data/schools.ts';
+import { pairSays, schoolSays } from './classes.ts';
 
 /**
  * 釋 Every character the game uses, and what it means, assembled once.
@@ -92,6 +94,15 @@ export const GROUPS: readonly Group[] = [
       han: RARITY_INFO[r].han, name: RARITY_INFO[r].name,
       colour: RARITY_INFO[r].colour, note: KEY.rank(RARITY_INFO[r].mult),
     })),
+  },
+  {
+    title: CLASS.keyHead, blurb: CLASS.keyBlurb,
+    rows: [
+      ...SCHOOLS.map((sc) => ({ han: SCHOOL_INFO[sc].han, name: SCHOOL_INFO[sc].name, colour: SCHOOL_INFO[sc].colour,
+        note: schoolSays(sc) })),
+      ...PAIRS.map((p) => ({ han: p.han, name: p.name,
+        note: `${SCHOOL_INFO[p.a].short} and ${SCHOOL_INFO[p.b].short}. ${pairSays(p.key)}` })),
+    ],
   },
   {
     title: KEY.axesHead, blurb: KEY.axesBlurb, sense: 'axis',

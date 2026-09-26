@@ -4,6 +4,7 @@ import {
 } from '../data/gear.ts';
 import { power, rate as rateOf, type State } from './state.ts';
 import { carryRefine } from './chest.ts';
+import { callingKey } from './schools.ts';
 
 /**
  * 鑑 Reading a piece, and reading it against the one you are wearing.
@@ -46,6 +47,27 @@ export interface Swing {
   readonly rate: number;
   /** True when it is worth wearing: it raises one and lowers neither. */
   readonly better: boolean;
+  /**
+   * 職 True when putting it on ends the class you wear, or takes a school off its full.
+   *
+   * A class's perk is not in power or qi. A Sword Immortal's tower floors count weaker,
+   * and a piece that adds 8% power while ending that can lose the very fight it looked
+   * like it would win. So the sheet may not call such a piece an upgrade. `better` is
+   * left as the two numbers say, because it is what the measuring cultivators wear by.
+   */
+  readonly costsClass?: boolean;
+}
+
+/** Whether wearing this piece ends the class, or steps a school down from its full. */
+export function costsClass(s: State, item: Item): boolean {
+  const was = callingKey(s);
+  if (!was) return false;
+  const will = callingKey(ifWorn(s, item));
+  if (will === was) return false;
+  // The same school going up to its full is a gain, not a cost.
+  const [a, t] = was.split(':');
+  const [b, u] = (will ?? '').split(':');
+  return !(t && u && a === b && Number(u) > Number(t));
 }
 
 /**
@@ -62,7 +84,7 @@ export function swing(s: State, item: Item): Swing {
   // A hair of tolerance: floating point should never make an identical piece look worse.
   const up = (x: number) => x > 1 + 1e-9;
   const down = (x: number) => x < 1 - 1e-9;
-  return { power: p, rate: r, better: (up(p) || up(r)) && !down(p) && !down(r) };
+  return { power: p, rate: r, better: (up(p) || up(r)) && !down(p) && !down(r), costsClass: costsClass(s, item) };
 }
 
 export interface LineDelta {
@@ -108,8 +130,8 @@ export { primaryOf };
  * know that. So the answer comes first, as a word, and the table is there for anyone who
  * wants to check it.
  *
- *   up     raises one of power and qi and lowers neither
- *   trade  raises one and lowers the other
+ *   up     raises one of power and qi and lowers neither, and keeps your class
+ *   trade  raises one and lowers the other, or raises them at the cost of your class
  *   same   moves neither
  *   down   lowers something and raises nothing
  */
@@ -118,7 +140,7 @@ export type Verdict = 'up' | 'trade' | 'same' | 'down';
 export function verdictOf(w: Swing): Verdict {
   const up = (x: number) => x > 1 + 1e-9;
   const down = (x: number) => x < 1 - 1e-9;
-  if (w.better) return 'up';
+  if (w.better) return w.costsClass ? 'trade' : 'up';
   if ((up(w.power) && down(w.rate)) || (down(w.power) && up(w.rate))) return 'trade';
   if (!down(w.power) && !down(w.rate)) return 'same';
   return 'down';
@@ -160,5 +182,6 @@ export function gearLift(s: State): { power: number; rate: number } {
 
 /** What a worn piece is doing for you: the body with it, against the body without it. */
 export function wornSwing(s: State, item: Item): Swing {
-  return swing(ifBare(s, item), item);
+  // Already on: it is holding the class up, not costing it.
+  return { ...swing(ifBare(s, item), item), costsClass: false };
 }

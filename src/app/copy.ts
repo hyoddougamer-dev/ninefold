@@ -858,8 +858,9 @@ export const ITEM = {
   } as Record<'none' | 'little' | 'clear' | 'lot' | 'huge', string>,
   power: 'Power',
   qi: 'Qi',
-  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null) => {
+  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null, classGoes = false) => {
     if (!name) return 'Nothing is worn there yet, so all of it is gain.';
+    if (v === 'trade' && classGoes) return `Stronger than the ${name} you wear, but it changes your class.`;
     if (v === 'up') return `Better than the ${name} you wear.`;
     if (v === 'trade') return `It gains on one side and loses on the other, against the ${name} you wear.`;
     if (v === 'same') return `It does what the ${name} you wear already does.`;
@@ -1164,6 +1165,59 @@ export const GEAR = {
   refineAt: (level: number, pct: number) =>
     (level === 0 ? 'not refined yet' : `煉 ${level} · every line on it +${pct}%`),
   setNeed: (n: number) => `${n} more ${n === 1 ? 'piece' : 'pieces'} of this realm`,
+};
+
+/**
+ * 職 The classes, in the player's words. What each one *does* is in sim/schools.ts and
+ * its sizes in sim/balance.ts; these sentences are read off those numbers so they cannot
+ * drift apart. See data/schools.ts for why a class comes from what you wear.
+ */
+const pct = (x: number) => `${Math.round(Math.abs(1 - x) * 100)}%`;
+export const CLASS = {
+  head: 'Class',
+  none: 'No class yet. Wear three pieces of one school to wake it.',
+  step: (tier: number) => (tier >= 2 ? 'at its full' : 'awake'),
+  toFull: (n: number, school: string) => `${n} more ${school} ${n === 1 ? 'piece' : 'pieces'} for the full`,
+  toWake: (n: number, school: string) => `${n} more ${school} ${n === 1 ? 'piece' : 'pieces'} wakes it`,
+  pairOf: (a: string, b: string, gives: string) => `And ${a} and ${b} are both awake: ${gives}`,
+  /** 列 What each school gives, at its first step and at its full. */
+  school: {
+    sword: (w: number, f: number) => `Power +${pct(w)}, or +${pct(f)} at the full.`,
+    qi: (w: number, f: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full.`,
+    fortune: (w: number, f: number, amp: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}. A bond fills in ${w} wins, or ${f} at the full.`,
+    body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
+    artificer: (w: number, f: number, amp: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
+  },
+  /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
+  schoolAt: {
+    sword: (x: number) => `Power +${pct(x)}.`,
+    qi: (x: number) => `The four upgrades cost ${pct(x)} less.`,
+    fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
+    body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
+    artificer: (x: number, amp: number) => `Refining costs ${pct(x)} less. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
+  },
+  /** 合 What each of the ten pairs adds to its two schools' first steps. */
+  pair: {
+    swordimmortal: (x: number) => `The tower's floors count ${pct(x)} weaker.`,
+    wanderer: (x: number) => `Drives cost ${pct(x)} less.`,
+    wargod: (x: number) => `Wardens count ${pct(x)} weaker.`,
+    swordsmith: (x: number) => `${pct(x)} more 材 material from kills and floors.`,
+    seeker: (x: number) => `Springs in the secret realm give ${pct(x)} more qi.`,
+    vajra: (x: number) => `First sights and the week's quarry pay ${pct(x)} more qi.`,
+    alchemist: (x: number) => `Pills cost ${pct(x)} less.`,
+    huntking: (x: number) => `Beasts leave a piece ${Math.round(x * 100)} points more often.`,
+    treasuresmith: (x: number) => `Melting pays ${pct(x)} more qi.`,
+    armourer: (x: number) => `The chest holds ${x} more.`,
+  } as Record<string, (x: number) => string>,
+  /** 鑑 On the item sheet. */
+  pieceOf: (school: string) => `A ${school} piece.`,
+  becomes: (name: string) => `Wearing it makes you a ${name}.`,
+  loses: (name: string) => `Wearing it ends your ${name}.`,
+  instead: (will: string, was: string) => `Wearing it makes you a ${will} instead of a ${was}.`,
+  toItsFull: (school: string) => `Wearing it brings your ${school} school to its full.`,
+  offItsFull: (school: string) => `Wearing it takes your ${school} school off its full.`,
+  keyHead: '職 Classes',
+  keyBlurb: 'Every piece belongs to a school by the line it leads with. Three pieces of one school wake it, five bring it to its full, and three of each of two schools make one of ten named classes.',
 };
 
 export const DAO = {

@@ -23,6 +23,7 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
+import { classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
@@ -367,12 +368,13 @@ export function atCap(s: State, u: Upgrade): boolean {
 export function upgradeCost(s: State, u: Upgrade): number {
   const i = UPGRADE_INFO[u];
   const level = s.levels[u];
-  if (i.currency === 'material') return Math.ceil(i.share * CORE_STEP ** level);
+  if (i.currency === 'material') return Math.ceil(i.share * CORE_STEP ** level * classUpgrades(s));
   // The rung this level belongs to: LEVELS_PER_REALM levels span LAYERS_PER_REALM rungs.
   // Past the eighty-first it is `ladderOpen` rather than `ladderBetween`, which is the
   // same rule the furnace already climbs by: the mountain ends, the price does not.
   const rung = ((level + 1) * LAYERS_PER_REALM) / LEVELS_PER_REALM - 1;
-  return Math.ceil(i.share * ladderOpen(rung));
+  // 職 氣 The Qi school pays in cheaper upgrades, because it may not pay in more qi.
+  return Math.ceil(i.share * ladderOpen(rung) * classUpgrades(s));
 }
 
 export function canBuy(s: State, u: Upgrade): boolean {
@@ -451,7 +453,9 @@ export function power(s: State): number {
     // 悟道 No card multiplies this, and that is the measurement rather than an
     // oversight: power is the axis the wall between idle and active is built on. See
     // data/awakening.ts.
-    * markBonus(s.tribulation);
+    * markBonus(s.tribulation)
+    // 職 劍 The Sword school: the one class perk on power itself. See sim/schools.ts.
+    * classPower(s);
 }
 
 /** The realm is full and only the warden is left? */

@@ -40,6 +40,9 @@ check(first.status === 200 && first.json?.ranked === true, 'a new save syncs and
 
 const board = await call('/rest/v1/rpc/board', { kind: 'climb', lim: 10 }, token);
 check(board.status === 200 && Array.isArray(board.json) && board.json.some((r: any) => r.me), 'the board shows the player', board.status);
+check(Array.isArray(board.json) && board.json.every((r: any) => 'calling' in r)
+  && board.json.find((r: any) => r.me)?.calling === null,
+  'every row carries the class its save wears, and a new save that wears nothing has none', board.json?.find?.((r: any) => r.me));
 
 const named = await call('/rest/v1/rpc/set_name', { new_name: `Tester ${now % 100000}` }, token);
 check(named.status === 200, 'a player can name themselves', named);

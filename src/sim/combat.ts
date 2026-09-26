@@ -10,6 +10,7 @@ import { sequenceOf, stanceOf } from './arts.ts';
 import { pillBane } from './furnace.ts';
 import { lootTaken } from './trials.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
+import { classBounty, classTower, classWarden, gearSunder } from './schools.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -341,7 +342,8 @@ export function takeKill(s: State, b: Beast): State {
   return {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
-    qi: s.qi + (kills === 0 ? seenBounty(b) : 0) + (week ? quarryBounty(b) : 0),
+    // 金剛 The Vajra's first sights and quarries pay more.
+    qi: s.qi + Math.round(((kills === 0 ? seenBounty(b) : 0) + (week ? quarryBounty(b) : 0)) * classBounty(s)),
     materials: s.materials + lootTaken(s, lootFrom(s, b)),
     killed: { ...s.killed, [b.key]: kills + 1 },
     quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
@@ -465,7 +467,10 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
     // you swallow once rather than a ladder you climb.
     return tribulationPower(s, base);
   }
-  return base * beastWeakness(s.unlocked) * pillBane(s.brewed);
+  // 破 The body's sunder line, bent; 劍仙 the tower's floors; 武神 the wardens.
+  const tower = standing !== undefined ? classTower(s) : 1;
+  const warden = standing === undefined && b.warden ? classWarden(s) : 1;
+  return base * beastWeakness(s.unlocked) * pillBane(s.brewed) * gearSunder(s) * tower * warden;
 }
 
 /**

@@ -30,11 +30,12 @@ import {
 import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
-import { salvageBonus } from '../src/sim/awaken.ts';
-import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
+import { meltFactor, salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
-import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
+import { RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, wornTotals, type Item, type Slot } from '../src/data/gear.ts';
+import { PAIRS, type Pair, type School } from '../src/data/schools.ts';
+import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 
 const T0 = 1_700_000_000;
@@ -84,6 +85,15 @@ export interface Habit {
    * permanent choices across a climb.
    */
   readonly cards?: 'material' | 'salvage' | 'dao';
+  /**
+   * 職 The class they are building, if any: a school, or one of the ten pairs.
+   *
+   * Without it a cultivator wears what the game marks ▲ and ends up in whatever class
+   * that happens to make. With it they wear pieces of their schools over pieces of
+   * others, and never take one off to make room for a stranger, which is what somebody
+   * building a class does. `classes.test.ts` plays all fifteen.
+   */
+  readonly calling?: School | Pair;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -174,7 +184,7 @@ export interface Run {
  * **keep the better piece.** `itemWorth` is the same rough comparison the chest itself
  * uses when it is full, so nothing here knows more than the game does.
  */
-function takeDrop(s: State, beast: Beast, seed: number): State {
+function takeDrop(s: State, beast: Beast, seed: number, build?: School | Pair): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
   // 緣 The same two calls the app makes: the bar decides the drop, then moves.
@@ -190,7 +200,7 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
    * the whole of what salvage changes for somebody playing normally. The harness has to
    * do it or the qi it pays is invisible to every curve on the page.
    */
-  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(s.awakened)) };
+  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, meltFactor(s)) };
   if (kept.dropped?.id === item.id) return out;    // the chest kept something better
 
   const slot = templateOf(item).slot as Slot;
@@ -199,11 +209,96 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   // lowers neither, read with 承 the levels it would take from the piece it replaces.
   // itemWorth was a rank-and-realm guess, and once the levels travel it would happily
   // swap a refined sword of power for a fan of qi one rank higher.
-  if (!worn || swing(out, item).better) {
+  if (!worn || wears(out, item, worn, build)) {
     const after = equip(out.worn, out.chest, item, slot);
     out = { ...out, worn: after.worn, chest: [...after.chest] };
   }
   return out;
+}
+
+/**
+ * 職 Put the build together from everything owned: for each place on the body the best
+ * piece of each wanted school and the best stranger, and of every way of choosing among
+ * them the one that meets the build with the most gear. Refining levels travel with the
+ * place (承), so a piece is judged by its rank and its realm alone.
+ */
+function arrange(s: State, build: School | Pair): State {
+  const want = quotas(build);
+  const schools = Object.keys(want) as School[];
+  const owned = [...s.chest, ...SLOTS.map((x) => s.worn[x]).filter((x): x is Item => !!x)];
+  const worth = (it: Item) => RARITY_INFO[it.rarity].mult * templateOf(it).realm;
+  // Per place: the best piece of each wanted school, then the best stranger. Index k in
+  // 0..schools.length-1 is a school, and schools.length is "anything else".
+  const opts = SLOTS.map((slot) => {
+    const best: (Item | undefined)[] = new Array(schools.length + 1).fill(undefined);
+    for (const it of owned) {
+      if (templateOf(it).slot !== slot) continue;
+      const k = schools.indexOf(schoolOf(it));
+      const at = k < 0 ? schools.length : k;
+      if (!best[at] || worth(it) > worth(best[at]!)) best[at] = it;
+    }
+    return best;
+  });
+  const pick: number[] = new Array(SLOTS.length).fill(-1);
+  const chosen: number[] = new Array(SLOTS.length).fill(-1);
+  const counts = new Array(schools.length).fill(0);
+  let bestScore = -1;
+  const walk = (i: number, score: number) => {
+    if (i === SLOTS.length) {
+      let met = 0;
+      for (let k = 0; k < schools.length; k++) met += Math.min(counts[k], want[schools[k]] ?? 0);
+      const total = met * 1e9 + score;
+      if (total > bestScore) { bestScore = total; for (let j = 0; j < pick.length; j++) chosen[j] = pick[j]; }
+      return;
+    }
+    let any = false;
+    for (let k = 0; k <= schools.length; k++) {
+      const it = opts[i][k];
+      if (!it) continue;
+      any = true;
+      pick[i] = k;
+      if (k < schools.length) counts[k]++;
+      walk(i + 1, score + worth(it));
+      if (k < schools.length) counts[k]--;
+    }
+    if (!any) { pick[i] = -1; walk(i + 1, score); }
+  };
+  walk(0, 0);
+  let out = s;
+  chosen.forEach((k, i) => {
+    const item = k >= 0 ? opts[i][k] : undefined;
+    const slot = SLOTS[i];
+    if (item && out.worn[slot]?.id !== item.id && out.chest.some((c) => c.id === item.id)) {
+      const after = equip(out.worn, out.chest, item, slot);
+      out = { ...out, worn: after.worn, chest: [...after.chest] };
+    }
+  });
+  return out;
+}
+
+/** 職 How many of each school a build wants on the body. */
+function quotas(build: School | Pair): Partial<Record<School, number>> {
+  const pair = PAIRS.find((p) => p.key === build);
+  return pair ? { [pair.a]: SCHOOL_WAKES, [pair.b]: SCHOOL_WAKES } : { [build as School]: SLOTS.length };
+}
+
+/**
+ * 職 Whether to put this piece on over that one. With no build it is the ▲ and nothing
+ * else. With one, a piece of a wanted school goes on over a stranger while its school is
+ * short, a stranger never goes on over a wanted piece, and between two of the same kind
+ * the ▲ decides.
+ */
+function wears(s: State, item: Item, worn: Item, build: School | Pair | undefined): boolean {
+  const better = swing(s, item).better;
+  if (!build) return better;
+  const want = quotas(build);
+  const mine = schoolOf(item), theirs = schoolOf(worn);
+  const counts = callingOf(s.worn).counts;
+  const wanted = (x: School) => want[x] !== undefined;
+  if (wanted(mine) && !wanted(theirs)) return counts[mine] < (want[mine] ?? 0);
+  if (!wanted(mine) && wanted(theirs)) return false;
+  if (wanted(mine) && wanted(theirs) && mine !== theirs) return false;
+  return better;
 }
 
 /**
@@ -248,6 +343,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   const arrival = [0];
   const layerDay = [0];
   let fights = 0;
+  let arrangedOn = -1;
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = 991;
 
@@ -307,11 +403,19 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
     while (layerDay.length <= layersOpened(s)) layerDay.push((t - T0) / DAY);
 
+    // 職 Somebody building a class looks at the whole chest once a visit, not only at
+    // what just fell: a Wanderer holding a Fortune ring and no Sword talisman moves the
+    // Fortune line elsewhere to make room. See arrange().
+    if (h.gear && h.calling && Math.floor((t - T0) / DAY) !== arrangedOn) {
+      s = arrange(s, h.calling);
+      arrangedOn = Math.floor((t - T0) / DAY);
+    }
+
     for (let i = 0; i < h.hunts; i++) {
       const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
       if (!b) break;
       s = takeKill(s, b);
-      if (h.gear) s = takeDrop(s, b, ++seed);
+      if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       fights++;
     }
 

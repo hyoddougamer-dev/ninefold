@@ -149,6 +149,8 @@ export interface Row {
   readonly gain: number;
   readonly title: string | null;
   readonly me: boolean;
+  /** 職 The class the verified save wears: "sword:2", a pair's key, or null. */
+  readonly calling?: string | null;
 }
 
 export async function board(kind: Board): Promise<readonly Row[]> {

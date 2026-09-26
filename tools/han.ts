@@ -28,6 +28,7 @@ import { MEETINGS } from '../src/data/meetings.ts';
 import { ROOM_INFO } from '../src/data/secret.ts';
 import { REALM_SETS, TEMPLATE_BY_KEY } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO } from '../src/data/techniques.ts';
+import { PAIRS, SCHOOL_INFO } from '../src/data/schools.ts';
 
 /**
  * 名 Every character the game shows, and the English name it is supposed to carry.
@@ -70,6 +71,10 @@ for (const x of REALM_SETS) put(x.han.slice(0, 1), x.name);
 for (const t of Object.values(TEMPLATE_BY_KEY)) put(t.han, t.name);
 for (const n of ALL_NODES) put(n.han, n.name);
 for (const p of Object.values(PATH_INFO)) put(p.han, p.name);
+// 職 A school's seal stands for the school (器 on a class chip is the Artificer), and the
+// classes are named by their own tables like everything else.
+for (const x of Object.values(SCHOOL_INFO)) { put(x.seal, x.short); put(x.han, x.name); }
+for (const x of PAIRS) put(x.han, x.name);
 
 /**
  * 外 The names that live in copy rather than in a table.

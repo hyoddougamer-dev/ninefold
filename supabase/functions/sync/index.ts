@@ -59,7 +59,7 @@ function store(): Store {
       return {
         climb: data.climb, marks: data.marks, tower: data.tower,
         climbedAt: sec(data.climbed_at)!, towerAt: sec(data.tower_at)!,
-        week: data.week, weekFrom: data.week_from,
+        week: data.week, weekFrom: data.week_from, calling: data.calling ?? null,
       };
     },
     async writeProfile(id, p) {
@@ -77,6 +77,7 @@ function store(): Store {
       const { error } = await db.from('standings').upsert({
         user_id: id, climb: s.climb, marks: s.marks, tower: s.tower,
         climbed_at: iso(s.climbedAt), tower_at: iso(s.towerAt), week: s.week, week_from: s.weekFrom,
+        calling: s.calling ?? null,
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;

@@ -56,9 +56,9 @@ function server(page, { cloud = null, email = null } = {}) {
       case '/rest/v1/rpc/board': {
         const kind = body?.kind;
         const rows = [
-          { rank: 1, name: '雲中君', climb: 62, marks: 0, tower: 88, gain: 14, title: '天下第一', me: false },
-          { rank: 2, name: 'Mistwalker', climb: 51, marks: 0, tower: 40, gain: 11, title: '期首', me: false },
-          { rank: 3, name: 'Old Pine', climb: 44, marks: 0, tower: 31, gain: 9, title: null, me: false },
+          { rank: 1, name: '雲中君', climb: 62, marks: 0, tower: 88, gain: 14, title: '天下第一', me: false, calling: 'swordimmortal' },
+          { rank: 2, name: 'Mistwalker', climb: 51, marks: 0, tower: 40, gain: 11, title: '期首', me: false, calling: 'qi:2' },
+          { rank: 3, name: 'Old Pine', climb: 44, marks: 0, tower: 31, gain: 9, title: null, me: false, calling: 'sorcerer:9' },
           { rank: 4, name: seen.names.at(-1) ?? '修士 0B5E', climb: 3, marks: 0, tower: 0, gain: 3, title: null, me: true },
         ];
         return reply(200, kind === 'tower' ? rows.filter((r) => r.tower > 0) : rows);
@@ -114,6 +114,11 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check(seen.names.includes('Bruno'), 'and the name', seen.names.join(','));
   await page.waitForTimeout(400);
   check(await page.locator('.ranks .rstatus[data-tone="good"]').isVisible(), 'the status says the climb is ranked');
+  check(await page.locator('.ranks .rlist .rcall').count() === 2,
+    'each row names the class its save wears, and a class the game does not know shows nothing',
+    await page.locator('.ranks .rlist .rcall').allTextContents());
+  check((await page.locator('.ranks .rlist li').first().locator('.rcall').textContent()) === '劍仙 Sword Immortal',
+    'in English beside the characters', await page.locator('.ranks .rlist .rcall').first().textContent());
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
   await page.locator('.ranks .rtabs button', { hasText: 'Tower' }).click();
   await page.waitForTimeout(400);

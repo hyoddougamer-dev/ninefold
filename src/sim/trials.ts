@@ -8,6 +8,7 @@ import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
 import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
+import { classMaterial, classPills, classRefine } from './schools.ts';
 
 /**
  * 塔, 爐 and 煉器: everything that has no ceiling.
@@ -86,7 +87,10 @@ export function clearFloor(s: State, floor: number): State {
 
 /** 丹 What the next pill of a line costs *this* cultivator, thrift cards counted. */
 export function pillPrice(s: State, line: Line): { qi: number; materials: number } {
-  return pillCost(s.brewed, line, pillFactor(s.awakened));
+  // 職 丹師 The Alchemist brews cheaper, in qi and in material alike.
+  const c = pillCost(s.brewed, line, pillFactor(s.awakened));
+  const k = classPills(s);
+  return k === 1 ? c : { qi: Math.ceil(c.qi * k), materials: Math.max(1, Math.ceil(c.materials * k)) };
 }
 
 /**
@@ -99,7 +103,7 @@ export function lootTaken(s: State, base: number): number {
   const record = isOpen(s.realm, 'record') ? recordMaterial(s.killed) : 1;
   // 悟道 Every card that pays material pays it here, which is the one place all of it
   // passes through, hunting and 塔 the tower alike.
-  return Math.max(1, Math.round(base * lootBonus(s.tower) * record * materialBonus(s.awakened)));
+  return Math.max(1, Math.round(base * lootBonus(s.tower) * record * materialBonus(s.awakened) * classMaterial(s)));
 }
 
 export function canBrew(s: State, line: Line): boolean {
@@ -131,7 +135,7 @@ export function refinePrice(s: State, slot: Slot): number | null {
   if (!item) return null;
   // 悟道 火候 and 薪火 make every level cheaper, for ever. Rounded up, so a discount
   // can never make a level free however many of them are taken.
-  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened)));
+  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened) * classRefine(s)));
 }
 
 export function canRefine(s: State, slot: Slot): boolean {

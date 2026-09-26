@@ -55,6 +55,10 @@ import { HABITS, play, playAll } from './habits.ts';
 import { verify, BURST, BURST_CAP, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
 import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
+import { BUILDS, playClass, playPlain } from './classes.ts';
+import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../src/data/schools.ts';
+import { pairSays, schoolSaysAt } from '../src/app/classes.ts';
+import { FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
@@ -133,6 +137,9 @@ const BREWER = climb(6, true, true);             // and pours everything into th
 /** 道 The same cultivator down each branch of the tree: the measurement that was missing. */
 const BY_BRANCH = BRANCHES.map((b) => ({ b, day: climb(6, true, true, true, b).arrival[8] }));
 const ENDGAME = playEndgame(40);
+// 職 Every class played by the active cultivator, the same runs classes.test.ts bounds.
+const CLASS_PLAIN = playPlain();
+const CLASS_RUNS = BUILDS.map((b) => playClass(b));
 const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
 /**
@@ -1947,6 +1954,11 @@ const page = `<meta charset="utf-8">
   #words .shots img, #drops .shots img { display:block; width:100%; height:auto; border-radius:10px; }
   #words .shots figcaption, #drops .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint); }
   #drops .icongrid { display:grid; gap:6px; margin:14px 0 6px; overflow-x:auto; }
+  #classes .shots figure { margin:14px 0 6px; }
+  #classes .shots img { display:block; width:100%; height:auto; border-radius:10px; }
+  #classes .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint); }
+  #classes .cseal { font-family:var(--cjk, serif); font-size:17px; }
+  #classes td.cfast { color:var(--jade); }
   #drops .icongrid div { display:flex; gap:6px; }
   #drops .icongrid svg { flex:none; width:48px; height:48px; }
 
@@ -2008,6 +2020,7 @@ const page = `<meta charset="utf-8">
       <a href="#testers"><b>測</b> What the first testers said</a>
       <a href="#words"><b>判</b> The gear screen in words</a>
       <a href="#drops"><b>掉</b> Drops with a logic</a>
+      <a href="#classes"><b>職</b> Classes from what you wear</a>
       <a href="#noite"><b>夜</b> A noite de 26 de setembro, em imagens</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
@@ -4428,6 +4441,99 @@ const page = `<meta charset="utf-8">
       <img src="bible-art/shot/rankstab.webp" alt="The rankings tab with the player's place on it, on a phone and on the desktop rail">
       <figcaption><b>Phone and PC.</b> 榜 Ranks with #4 on it. On the PC the guide's arrow
         now points at a rail tab from its right, where it used to sit on the word above.</figcaption>
+    </figure></div>
+  </section>
+
+  <section class="sec" id="classes">
+    <h2><span class="h">職</span> Classes from what you wear</h2>
+    <p class="t">Bruno, on the gear: <i>"talvez explorar o facto de existir classes
+      especificas com base no equipamento"</i>, and, asked how far to take it, <i>"avança com
+      tudo a fundo"</i>. There is no menu and no pick. Every shape of gear belongs to one of
+      five schools by the line it leads with. Three pieces of a school wake it, five bring it
+      to its full, and three of each of two schools make one of ten named classes. Changing
+      class is changing clothes, and it costs nothing, as everything in this game costs
+      nothing to take back.</p>
+
+    <h3>五 Five schools</h3>
+    <table>
+      <tr><th>school</th><th>leads with</th><th>three pieces</th><th>five pieces</th></tr>
+      ${SCHOOLS.map((sc) => { const x = SCHOOL_INFO[sc]; return `<tr>
+        <td><span class="cseal" style="color:${x.colour}">${x.han}</span> ${x.name}</td>
+        <td>${x.axes.map((a) => `${AFFIX_INFO[a].han} ${AFFIX_INFO[a].label}`).join(', ')}</td>
+        <td>${schoolSaysAt(sc, 1)}</td><td>${schoolSaysAt(sc, 2)}</td></tr>`; }).join('')}
+    </table>
+
+    <h3>十 Ten classes of two schools</h3>
+    <p class="t">A pair wakes both of its schools and adds a perk of its own, each on a
+      different system, so no two of them are one class in two names.</p>
+    <table>
+      <tr><th>class</th><th>of</th><th>its own perk</th></tr>
+      ${PAIRS.map((p) => `<tr>
+        <td><span class="cseal" style="color:${SCHOOL_INFO[p.a].colour}">${p.han}</span> ${p.name}</td>
+        <td>${SCHOOL_INFO[p.a].short} and ${SCHOOL_INFO[p.b].short}</td>
+        <td>${pairSays(p.key)}</td></tr>`).join('')}
+    </table>
+    <p class="t">Horned helms and bone charms now lead with 破 beasts weaker instead of
+      power, so the Body school has pieces in five places on the body, like every other.</p>
+
+    <h3>活 Four lines that did nothing now do</h3>
+    <p class="t">Measured while building this: four of the seven lines a piece can carry
+      were read by nothing in the sim. 運 rarer gear, 拾 drop chance, 破 beasts weaker and
+      煉 fusion quality could be stacked as high as anyone liked and no number moved. They
+      now work for everyone, and each one bends, so no stack of them runs away and none of
+      them touches the qi rate:</p>
+    <table>
+      <tr><th>line</th><th>what a total of L does</th></tr>
+      <tr><td>運 rarer gear</td><td>the rare end of a drop weighs ×(1 + ${LUCK_BEND}·ln(1 + L))</td></tr>
+      <tr><td>拾 drop chance</td><td>a beast leaves a piece up to ${Math.round(FIND_TOP * 100)} points more often, and never more</td></tr>
+      <tr><td>破 beasts weaker</td><td>a beast counts 1 / (1 + ${SUNDER_BEND}·ln(1 + L)) of itself, and never the Dragon</td></tr>
+      <tr><td>煉 fusion quality</td><td>a fusion keeps ×(1 + ${FUSE_BEND}·ln(1 + L)) of its quality</td></tr>
+    </table>
+    <p class="t">破 leaves the Dragon alone because the Dragon is what the endgame is
+      measured against: a cultivator who stacked it would cross the heavens on a number
+      nobody tuned.</p>
+
+    <h3>量 Every class played out</h3>
+    <p class="t">The active cultivator, told to become each class and wear for it, against
+      the same cultivator wearing whatever is strongest, who opens realm 9 on day
+      ${CLASS_PLAIN.toFixed(0)}. The tests fail if any class is more than 15% slower, more than
+      20% faster, or takes longer than a fortnight over any of forty crossings past the
+      summit.</p>
+    <table>
+      <tr><th>class</th><th style="text-align:right">realm 9</th><th style="text-align:right">worn</th>
+          <th style="text-align:right">40 marks</th><th style="text-align:right">worst</th></tr>
+      ${CLASS_RUNS.map((r) => { const pair = PAIRS.find((p) => p.key === r.build);
+        const x = pair ? { han: pair.han, name: pair.name, colour: SCHOOL_INFO[pair.a].colour } : SCHOOL_INFO[r.build as keyof typeof SCHOOL_INFO];
+        const best = Math.min(...CLASS_RUNS.map((q) => q.realm9));
+        return `<tr><td><span class="cseal" style="color:${x.colour}">${x.han}</span> ${x.name}</td>
+        <td style="text-align:right"${r.realm9 === best ? ' class="cfast"' : ''}>day ${r.realm9.toFixed(0)}</td>
+        <td style="text-align:right">${Math.round(r.held * 100)}%</td>
+        <td style="text-align:right">${r.crossings.reduce((a, d) => a + d, 0)} days</td>
+        <td style="text-align:right">${Math.max(...r.crossings)} days</td></tr>`; }).join('')}
+    </table>
+    <p class="t">"Worn" is the share of days the body actually wore the class, because a
+      class needs the drops to fall. The Qi Cultivator climbs fastest, since its upgrades
+      cost less, and the Sword Cultivator hits hardest. A pair is harder to hold than a
+      school: the Wanderer is worn on fewer than half the days, and still arrives on time.</p>
+
+    <h3>圖 On the screen</h3>
+    <p class="t">Under the ring on 器, the class, what it gives at the step it is at, how far
+      each school has come, and what the next piece would do. The item sheet names a piece's
+      school and says when wearing it changes the class. A piece that ends the class you wear
+      is never called an upgrade and loses its ▲ in the chest, even when its power is higher,
+      because a class's perk is not in the power number. The rankings show the class beside
+      each name, read by the server from the save it verified, never sent by the game.</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/classes.webp" alt="Three class ribbons: a Sword Cultivator at its full, a Sword Immortal, and no class yet; the item sheet reading A trade because the helm ends the Sword Immortal; the rankings with a class under two names">
+      <figcaption><b>At 400 wide.</b> The horned helm adds 8% power and would take the tower's
+        next floor from 5% to nothing, because it ends the Sword Immortal whose floors count
+        weaker. The sheet says so. On the board, a class the game does not know shows
+        nothing.</figcaption>
+    </figure></div>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/classes-320.webp" alt="The same three class ribbons on a 320 pixel phone">
+      <figcaption><b>At 320.</b> The school counts wrap under the name, and the step sits on a
+        line of its own.</figcaption>
     </figure></div>
   </section>
 

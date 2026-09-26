@@ -14,6 +14,7 @@
 import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
 import { weekOf } from '../../../src/sim/week.ts';
+import { callingKey } from '../../../src/sim/schools.ts';
 
 /** 限 One sync every this many seconds per player. The phone syncs every few minutes. */
 export const MIN_GAP = 20;
@@ -30,6 +31,8 @@ export interface Standing {
   climb: number; marks: number; tower: number;
   climbedAt: number; towerAt: number;
   week: number; weekFrom: number;
+  /** 職 The class the verified save wears, as sim/schools.ts callingKey says it. */
+  calling?: string | null;
 }
 export interface Profile { name: string; strikes: number; suspect: boolean; banned: boolean }
 
@@ -144,6 +147,7 @@ export async function sync(store: Store, id: string, raw: unknown, now: number, 
       week,
       // The week is counted from where the last verified save stood when it began.
       weekFrom: fresh ? (old ? old.climb + old.marks : climb + marks) : old!.weekFrom,
+      calling: callingKey(after),
     };
     await store.writeStanding(id, standing);
   }

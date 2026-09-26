@@ -11,6 +11,7 @@ import { dropFor, noteFate } from './fate.ts';
 import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
+import { classBounty, classDrive } from './schools.ts';
 
 /**
  * 圍 The drive: one tap, many kills, paid for in qi.
@@ -82,7 +83,8 @@ export function canDrive(s: State, b: Beast): boolean {
  * on the mountain, which is the only sentence about the price a player has to hold.
  */
 export function driveCost(s: State, n: number): number {
-  return Math.ceil(n * DRIVE_QI * ladderBetween(layersOpened(s)));
+  // 俠客 The Wanderer drives for less.
+  return Math.ceil(n * DRIVE_QI * ladderBetween(layersOpened(s)) * classDrive(s));
 }
 
 export function canAffordDrive(s: State, b: Beast, n: number): boolean {
@@ -159,7 +161,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   return {
     state: {
       ...s,
-      qi: s.qi - qiSpent + (week ? quarryBounty(b) : 0),
+      qi: s.qi - qiSpent + (week ? Math.round(quarryBounty(b) * classBounty(s)) : 0),
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
       fate: bond.fate,

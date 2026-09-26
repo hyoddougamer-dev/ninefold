@@ -15,11 +15,12 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
+import { Calling } from '../ui/Calling.tsx';
 import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR } from '../copy.ts';
 import { gearLift, swing } from '../../sim/inspect.ts';
-import { salvageWorth, salvageable } from '../../sim/salvage.ts';
-import { salvageBonus } from '../../sim/awaken.ts';
+import { meltFactor, salvageWorth, salvageable } from '../../sim/salvage.ts';
+
 import { buysWith } from '../../sim/time.ts';
 
 /**
@@ -62,7 +63,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const melting = salvageable(state.chest, upTo);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
   // quoted less than landed, up to nine tenths less with every melt card taken.
-  const meltWorth = salvageWorth(melting, salvageBonus(state.awakened));
+  const meltWorth = salvageWorth(melting, meltFactor(state));
   const opening = buysWith(state, meltWorth);
 
   return (
@@ -146,6 +147,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           );
         })}
       </div>
+
+      {/* 職 The class the body wears: read off it, never stored. */}
+      <Calling worn={state.worn} />
 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
@@ -337,7 +341,12 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         // It used to be the sum of the raw roll values, which answers nothing: a
         // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
         // so four small lines could out-triangle a piece that doubles your power.
-        const read = state.chest.map((item) => ({ item, move: swing(state, item) }));
+        // 職 A piece that costs the class is not marked ▲, because the sheet will not call it
+        // an upgrade either.
+        const read = state.chest.map((item) => {
+          const m = swing(state, item);
+          return { item, move: { ...m, better: m.better && !m.costsClass } };
+        });
         // 序 Upgrades first, the biggest first; then the rarest. A chest of forty is
         // read from the top, so the top is where the news goes.
         read.sort((a, b) => (Number(b.move.better) - Number(a.move.better))

@@ -12,10 +12,11 @@ import { addToChest, chestLimit } from './chest.ts';
 import { affinity } from './dao.ts';
 import { wornTotals } from '../data/gear.ts';
 import { salvageValue } from './salvage.ts';
-import { salvageBonus } from './awaken.ts';
 import { isBlessed } from './week.ts';
 import { BLESSED_ROOM } from './balance.ts';
 import type { State } from './state.ts';
+import { classSpring } from './schools.ts';
+import { meltFactor } from './salvage.ts';
 
 /**
  * 秘境 Walking the seven rooms.
@@ -177,7 +178,8 @@ export function giftOf(s: State, room: Room, step: number): {
   const none = { qi: 0, materials: 0, dao: 0, item: false, fight: null as Beast | null };
   switch (room.kind) {
     case 'spring':
-      return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week)) };
+      // 尋仙 The Immortal Seeker drinks deeper.
+      return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week * classSpring(s))) };
     case 'shrine':
       return { ...none, dao: (step >= shrineDeep(s.realm) ? 2 : 1) * week };
     case 'brazier':
@@ -252,7 +254,7 @@ export function open(s: State, which: 0 | 1, seed: number): State {
          * comes back is part of what the run gave. Saying "a piece of gear" and not
          * counting the qi it turned into would be the tally lying about a room.
          */
-        const back = salvageValue(kept.dropped, salvageBonus(out.awakened));
+        const back = salvageValue(kept.dropped, meltFactor(out));
         out = { ...out, qi: out.qi + back, lastRun: add(out.lastRun, { qi: back }) };
       }
     }

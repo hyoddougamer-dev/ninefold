@@ -1,7 +1,8 @@
 import {
-  AFFIX_INFO, RARITIES, RARITY_INFO, SLOT_INFO, realmSet, refinedBy, templateOf,
-  type Affix, type Item,
+  AFFIX_INFO, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, refinedBy, schoolOf, templateOf,
+  type Affix, type Calling, type Item,
 } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
 import { compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, wornSwing, type Swing } from '../../sim/inspect.ts';
 import { nearestTrial, trialOdds } from '../../sim/reach.ts';
 import { BEASTS } from '../../data/bestiary.ts';
@@ -10,9 +11,8 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
-import { ITEM } from '../copy.ts';
-import { salvageValue } from '../../sim/salvage.ts';
-import { salvageBonus } from '../../sim/awaken.ts';
+import { CLASS, ITEM } from '../copy.ts';
+import { meltFactor, salvageValue } from '../../sim/salvage.ts';
 import { num } from '../../sim/format.ts';
 
 /**
@@ -67,6 +67,20 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   const pct = (x: number) => `${Math.round(Math.max(0, Math.min(1, x)) * 100)}%`;
   const leftBy = ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
   const says = item.rolls.map((r) => r.affix).filter((a) => a in ITEM.axisSays);
+  // 職 The class now, and the class with this piece on: the same function both times.
+  const school = schoolOf(item);
+  const nameOf = (c: Calling) => (c.kind === 'pure' && c.school ? SCHOOL_INFO[c.school].name
+    : c.kind === 'pair' && c.pair ? c.pair.name : null);
+  const now = callingOf(state.worn);
+  const then = wearing ? now : callingOf(ifWorn(state, item).worn);
+  const was = nameOf(now);
+  const will = nameOf(then);
+  const step = now.kind === 'pure' && then.kind === 'pure' && now.school === then.school && now.school
+    && now.tier !== then.tier ? SCHOOL_INFO[now.school].short : null;
+  const shift = step ? (then.tier > now.tier ? CLASS.toItsFull(step) : CLASS.offItsFull(step))
+    : was === will ? null
+      : will && was ? CLASS.instead(will, was)
+        : will ? CLASS.becomes(will) : was ? CLASS.loses(was) : null;
 
   const show = (a: Affix, v: number) =>
     (AFFIX_INFO[a].unit === '%' ? `${Math.round(v * 10) / 10}%` : `${Math.floor(v)}`);
@@ -110,7 +124,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
           {row('力', ITEM.power, move.power)}
           {row('氣', ITEM.qi, move.rate)}
         </div>
-        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null)}</p>
+        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass)}</p>
       </div>
 
       {/* 戰 The same piece as odds in the nearest fight that is not yet sure. */}
@@ -130,6 +144,12 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
       <div className="origin">
         {leftBy && <b>{leftBy}</b>}
         <q>{realmSet(tpl.realm).lore}</q>
+      </div>
+
+      {/* 職 Which school the piece is, and whether putting it on changes the class. */}
+      <div className="ischool" style={{ ['--c' as string]: SCHOOL_INFO[school].colour }}>
+        <b><span className="cjk">{SCHOOL_INFO[school].seal}</span> {CLASS.pieceOf(SCHOOL_INFO[school].short)}</b>
+        {shift && <span>{shift}</span>}
       </div>
 
       {/* 解 The lines that move a number, each in a sentence. */}
@@ -211,7 +231,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>
           <i>{ITEM.salvage}</i>
-          <em className="mono">{num(salvageValue(item, salvageBonus(state.awakened)))}<span>qi</span></em>
+          <em className="mono">{num(salvageValue(item, meltFactor(state)))}<span>qi</span></em>
         </button>
       )}
     </div>

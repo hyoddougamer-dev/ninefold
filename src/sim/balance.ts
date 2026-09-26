@@ -694,6 +694,67 @@ export const FATE_FLOOR = 2;
 export const FATE_TOP_COMMON = 3;
 export const FATE_TOP_WARDEN = 4;
 
+/**
+ * 職 The classes: how many pieces wake a school, and what each one does.
+ *
+ * Three pieces of one school wake it, five bring it to its full. Two schools at three
+ * each are one of the ten named classes, which pays both schools' first step and a perk
+ * of its own. Every perk below touches a system of its own, so no two classes are the
+ * same class under different words, and none of them may raise the qi rate: that is the
+ * economic law, so the Qi school pays in cheaper upgrades rather than in more qi.
+ *
+ * `classes.test.ts` plays every class through the climb and the long haul and prints
+ * what each one is worth, so moving any of these is never quiet.
+ */
+export const SCHOOL_WAKES = 3;
+export const SCHOOL_FULL = 5;
+
+/** 劍 Power, at the first step and at the full. */
+export const SWORD_POWER: readonly [number, number] = [1.10, 1.20];
+/** 氣 What the four 修 upgrades cost. */
+export const QI_UPGRADES: readonly [number, number] = [0.92, 0.85];
+/** 運 How many wins fill a bond. The line amplification is CLASS_AMP. */
+export const FORTUNE_BOND: readonly [number, number] = [9, 8];
+/** 器 What a refine level costs. */
+export const ARTIFICER_REFINE: readonly [number, number] = [0.88, 0.78];
+/** 運 體 器 Their own lines count this much more on the body. */
+export const CLASS_AMP: readonly [number, number] = [1.5, 2];
+
+/** 合 The ten pair perks. */
+export const PAIR_TOWER = 0.90;        // 劍仙 the tower's floors count this much of themselves
+export const PAIR_DRIVE = 0.75;        // 俠客 what a drive costs
+export const PAIR_WARDEN = 0.88;       // 武神 a warden counts this much of itself
+export const PAIR_MATERIAL = 1.15;     // 鑄劍師 材 from kills and floors
+export const PAIR_SPRING = 1.5;        // 尋仙 qi from a spring in the secret realm
+export const PAIR_BOUNTY = 1.5;        // 金剛 見 first sights and 期 the week's quarry
+export const PAIR_PILLS = 0.85;        // 丹師 what a pill costs
+export const PAIR_DROP = 0.08;         // 獵王 added to a beast's chance of leaving a piece
+export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
+export const PAIR_CHEST = 10;          // 甲匠 places in the chest
+
+/**
+ * 運拾破煉 The four lines that did nothing.
+ *
+ * Found while drawing the classes: of the seven lines a piece can carry, only 力, 氣
+ * and 藏 were ever read. 運 rarer drops, 拾 drop chance, 破 beasts weaker and 煉 fusion
+ * quality were printed on every sheet and read by nothing. They are read now, for
+ * everyone, and each one bends, because refining multiplies every line by up to seventy
+ * times at the top and a straight line would hand out a Heaven piece a kill.
+ *
+ *   運 luck      the rare end of the drop table, times 1 + LUCK_BEND · ln(1 + L)
+ *   拾 find      a beast's chance of a drop, plus FIND_TOP · (1 − 1 / (1 + F))
+ *   破 sunder    a beast counts 1 / (1 + SUNDER_BEND · ln(1 + S)) of itself
+ *   煉 refine    fusion keeps 1 + FUSE_BEND · ln(1 + R) of its quality
+ *
+ * with each line's total as a fraction (+46.9% is 0.469). 破 has no hold on the Dragon
+ * above the ninth realm, the same rule 破甲 on the tree keeps: it is lightning, not a
+ * beast.
+ */
+export const LUCK_BEND = 0.5;
+export const FIND_TOP = 0.25;
+export const SUNDER_BEND = 0.15;
+export const FUSE_BEND = 0.25;
+
 /** 草 What a bed of the herb in season pays, against its own usual harvest. */
 export const SEASON_HARVEST = 1.5;
 
