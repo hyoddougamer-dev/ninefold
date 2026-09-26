@@ -39,8 +39,9 @@ export function Loadout({ state, onStance, onSequence }: {
       ) : (
         <>
           <div className="chips">
-            {stances.map((s) => (
+            {stances.map((s, i) => (
               <button key={s.key} className="chip" data-on={state.stance === s.key}
+                      data-coach={i === 0 ? 'stance-first' : undefined}
                       style={{ ['--hue' as string]: realmOf(s.realm).colour }}
                       onClick={() => onStance(state.stance === s.key ? null : s.key)}>
                 <b className="cjk">{s.han}</b>

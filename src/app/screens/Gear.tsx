@@ -306,7 +306,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <p className="faint" style={{ fontSize: 13, margin: 0 }}>{GEAR.empty}</p>
       ) : (
         <div className="chest">
-          {state.chest.map((item) => {
+          {state.chest.map((item, index) => {
             const tpl = templateOf(item);
             const rar = RARITY_INFO[item.rarity];
             const primary = primaryOf(item);
@@ -317,6 +317,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             const better = swing(state, item).better;
             return (
               <button key={item.id} className="chestit" onClick={() => onInspect(item, false)}
+                      data-coach={index === 0 ? 'chest-first' : undefined}
                       // 譯 The figure under the tile is its main line, and a screen reader is
                       // told which: "力 5" alone is a character and a number.
                       aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary

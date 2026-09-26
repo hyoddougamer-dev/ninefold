@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STEPS, guide } from '../guide.ts';
+import { SECOND, STEPS, guide } from '../guide.ts';
 import { buy, newState, type State } from '../../sim/state.ts';
 import { MARKS } from '../../sim/record.ts';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
@@ -56,6 +56,10 @@ describe('引 the first session, one step at a time', () => {
       (x) => ({ ...x, levels: { ...x.levels, cores: 1 } }),
       (x) => ({ ...x, killed: { rat: MARKS[1] } }),
       (x) => ({ ...x, realm: 2 }),
+      // 二 The second realm's three.
+      (x) => ({ ...x, worn: { weapon: { id: 'w', template: 'sword2', rarity: 'common', rolls: [] } } } as State),
+      (x) => ({ ...x, unlocked: ['root'] }),
+      (x) => ({ ...x, stance: 'swift' }),
     ];
     for (const step of doIt) {
       const g = guide(s);
@@ -64,7 +68,7 @@ describe('引 the first session, one step at a time', () => {
       s = step(s);
     }
     console.log(`\n  引 the first session, in order: ${order.join(' → ')} → done\n`);
-    expect(order).toEqual(STEPS.map((x) => x.key));
+    expect(order).toEqual([...STEPS, ...SECOND].map((x) => x.key));
     // And once the last one is done it is gone, and 示 the advice line takes over.
     expect(guide(s)).toBeNull();
   });
@@ -96,6 +100,8 @@ describe('引 the first session, one step at a time', () => {
     const veteran: State = {
       ...newState(T0), realm: 6, killed: { rat: 400 },
       levels: { technique: 20, method: 20, pills: 20, cores: 20 },
+      worn: { weapon: { id: 'w', template: 'sword5', rarity: 'mystic', rolls: [] } } as State['worn'],
+      unlocked: ['root', 'edge'], stance: 'swift',
     };
     expect(guide(veteran)).toBeNull();
   });

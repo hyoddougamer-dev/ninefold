@@ -673,6 +673,23 @@ export const GUIDE = {
     waiting: 'Nothing in reach is worth killing yet. Buy power, and the beasts come back '
       + 'into range.',
   },
+  /** 二 The second realm opens three systems at once; the guide walks one at a time. */
+  chapter: (n: number, of: number) => `Realm 2 \u00b7 step ${n} of ${of}`,
+  chapterNext: (n: number, of: number) => `Realm 2 \u00b7 next ${n} of ${of}`,
+  wear: {
+    title: 'Put on what fell',
+    text: '\u5668 Gear falls off beasts from the second realm. Tap the piece in your chest to wear it.',
+    waiting: 'Beasts from this realm drop gear, about one kill in five. Hunt, and the first piece goes on.',
+  },
+  path: {
+    title: 'Take your first \u9053 node',
+    text: 'Every three layers pay a \u9053 point. Open \u9053 the Path, pick a node that is lit, and learn it.',
+    waiting: 'Every three layers you open pay a \u9053 point. The first one is close.',
+  },
+  stance: {
+    title: 'Choose how you fight',
+    text: '\u52e2 A stance changes every fight you take. Open \u9053 the Path, then Stance & Arts, and pick one.',
+  },
   climb: {
     title: 'Beat the warden and break through',
     text: 'The realm is full and its warden is standing at the end of it. '

@@ -156,11 +156,13 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       {tree && (
         <div className="halves" role="tablist">
           <button role="tab" aria-selected={showing === 'tree'} data-on={showing === 'tree'}
+                  data-coach={showing === 'tree' ? undefined : 'dao-tree'}
                   onClick={() => setHalf('tree')}>
             <b className="cjk">道</b><em>{DAO.halfTree}</em>
             {free > 0 && <i className="pip">{free}</i>}
           </button>
           <button role="tab" aria-selected={showing === 'build'} data-on={showing === 'build'}
+                  data-coach={showing === 'build' ? undefined : 'dao-build'}
                   onClick={() => setHalf('build')}>
             <b className="cjk">勢</b><em>{DAO.halfBuild}</em>
           </button>
@@ -240,12 +242,15 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
 
           {PLACED.map(({ node, x, y }) => {
             const status = statusOf(node, state.unlocked, free, keys);
+            // 指 The first node that can be learned right now, for 引 the guide's ring.
+            const first = status === 'open' && PLACED.find((p) => statusOf(p.node, state.unlocked, free, keys) === 'open')?.node.key === node.key;
             const on = status === 'have';
             const open = status === 'open';
             const colour = hue(node);
             const faded = status === 'locked' || status === 'shut';
             return (
               <g key={node.key} className="tnode" data-status={status}
+                 data-coach={first ? 'dao-open' : undefined}
                  onClick={() => setPicked(node.key)} style={{ cursor: 'pointer' }}>
                 {open && <circle cx={x} cy={y} r={R + 5} fill={colour} fillOpacity=".13" />}
                 <circle
@@ -337,7 +342,7 @@ function Detail({ node, status, keystones, onLearn, onClose }: {
         <span className="mono faint" style={{ fontSize: 12.5 }}>
           {status === 'have' ? DAO.learned : DAO.costs(node.cost)}
         </span>
-        <button className="act" style={{ width: 'auto', padding: '9px 20px', fontSize: 15 }}
+        <button className="act" data-coach={status === 'open' ? 'dao-unlock' : undefined} style={{ width: 'auto', padding: '9px 20px', fontSize: 15 }}
                 disabled={status !== 'open'} onClick={onLearn}>
           {status === 'have' ? '已' : '習'}{' '}
           <span>{status === 'have' ? 'Learned' : status === 'poor' ? 'Not enough' : status === 'shut' ? 'Closed' : status === 'locked' ? 'Locked' : 'Learn'}</span>

@@ -10,6 +10,7 @@ import { commonsOf, wardenOf } from '../data/bestiary.ts';
 import { beastPower, oddsRaw } from '../sim/combat.ts';
 import { isOpen } from '../sim/unlocks.ts';
 import { GUIDE } from './copy.ts';
+import { freePoints } from '../sim/points.ts';
 
 /**
  * 引 The first session, one step at a time.
@@ -188,6 +189,41 @@ export const STEPS: readonly Step[] = [
  * skipped: the steps behind it are not marked done, and if the warden wins the guide
  * goes straight back to where it was.
  */
+/**
+ * 二 The second chapter: the three things the second realm opens at once.
+ *
+ * Bruno: *"tutorial lacking."* The first chapter ended at the first breakthrough, and on
+ * the other side of it gear, the 道 path and the stances all opened at the same moment,
+ * each with a notice and nobody pointing at anything. So the guide carries on through
+ * them, one at a time, with the same ring and arrow, and each step is finished by doing
+ * it. A target may name alternatives (a|b): the ring goes to the first one on the
+ * screen, so it can lead from the Path tab's half to the stance inside it.
+ */
+export const SECOND: readonly Step[] = [
+  {
+    key: 'wear', han: '器', title: GUIDE.wear.title, text: GUIDE.wear.text, tab: 'gear',
+    art: 'chest-armor',
+    ready: (s) => s.chest.length > 0,
+    waiting: { text: GUIDE.wear.waiting, tab: 'hunt', at: () => 'beast-first' },
+    at: () => 'chest-first',
+    done: (s) => Object.values(s.worn).some(Boolean),
+  },
+  {
+    key: 'path', han: '道', title: GUIDE.path.title, text: GUIDE.path.text, tab: 'dao',
+    art: 'yin-yang',
+    ready: (s) => freePoints(s) > 0,
+    waiting: { text: GUIDE.path.waiting, at: (s) => nowBuyable(s) },
+    at: () => 'dao-unlock|dao-open|dao-tree',
+    done: (s) => s.unlocked.length > 0,
+  },
+  {
+    key: 'stance', han: '勢', title: GUIDE.stance.title, text: GUIDE.stance.text, tab: 'dao',
+    art: 'hook-swords',
+    at: () => 'stance-first|dao-build',
+    done: (s) => s.stance !== null,
+  },
+];
+
 export interface Guiding {
   readonly step: Step;
   readonly n: number;
@@ -200,6 +236,8 @@ export interface Guiding {
   readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
   /** The line to read, which is the waiting line while it is waiting. */
   readonly text: string;
+  /** 1 for the first realm's five, 2 for the second realm's three. */
+  readonly chapter: 1 | 2;
 }
 
 export function guide(s: State): Guiding | null {
@@ -208,7 +246,20 @@ export function guide(s: State): Guiding | null {
   if (s.seen.includes(DISMISSED)) return null;
 
   const i = STEPS.findIndex((x) => !x.done(s));
-  if (i < 0) return null;
+  if (i < 0) {
+    // 二 Past the first breakthrough: the second realm's three, once they are open.
+    if (!isOpen(s.realm, 'gear')) return null;
+    const k = SECOND.findIndex((x) => !x.done(s));
+    if (k < 0) return null;
+    const step = SECOND[k];
+    const ready = step.ready ? step.ready(s) : true;
+    return {
+      step, n: k + 1, of: SECOND.length, ready, chapter: 2,
+      at: (ready ? step.at?.(s) : step.waiting?.at?.(s)) ?? null,
+      tab: ready ? step.tab : step.waiting?.tab,
+      text: ready ? step.text : step.waiting?.text ?? step.text,
+    };
+  }
   const last = STEPS.length - 1;
   const n = canFightWarden(s) && !STEPS[last].done(s) ? last : i;
   const step = STEPS[n];
@@ -219,6 +270,7 @@ export function guide(s: State): Guiding | null {
     step,
     n: n + 1,
     of: STEPS.length,
+    chapter: 1,
     ready,
     at,
     tab: ready ? step.tab : step.waiting?.tab,

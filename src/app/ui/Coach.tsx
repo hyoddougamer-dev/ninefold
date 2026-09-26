@@ -38,7 +38,16 @@ export function Coach({ at }: { at: string | null }) {
     let raf = 0;
     let bring = 0;
     let brought = false;
-    const find = () => document.querySelector<HTMLElement>(`[data-coach="${CSS.escape(at)}"]`);
+    // 二 A target may name alternatives, a|b: the first one actually on the screen wins,
+    // so the ring can lead from a tab's half to the thing inside it.
+    const find = () => {
+      for (const one of at.split('|')) {
+        const el = document.querySelector<HTMLElement>(`[data-coach="${CSS.escape(one)}"]`);
+        const r = el?.getBoundingClientRect();
+        if (el && r && r.width > 0 && r.height > 0) return el;
+      }
+      return null;
+    };
 
     const tick = () => {
       const el = find();

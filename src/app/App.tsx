@@ -658,9 +658,12 @@ export function App() {
   const covered = help || prologue || ranks || !!cloudPick || key || stele || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
-  const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
-    ? step.at
-    : null;
+  // 指 On the step's own screen the ring goes on the thing to press. Anywhere else it
+  // goes on the tab that leads there: "go and kill the rat" used to point at nothing at
+  // all until the player guessed which tab the rat was on.
+  const coachAt = !step || covered ? null
+    : (step.tab ?? 'cultivate') === tab ? step.at
+      : `tab-${step.tab ?? 'cultivate'}`;
 
   const byKey = useMemo(
     () => Object.fromEntries(BEASTS.map((b) => [b.key, b])) as Record<string, Beast>,
@@ -772,6 +775,7 @@ export function App() {
               key={t.key}
               data-on={tab === t.key}
               data-shut={shut}
+              data-coach={`tab-${t.key}`}
               onClick={() => (shut ? setLocked(t.needs) : setTab(t.key))}
             >
               {/* A locked tab keeps its own character and swaps its name for the realm

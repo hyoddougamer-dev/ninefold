@@ -114,7 +114,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           <button className="guide" data-waiting={!step.ready} disabled={!step.tab}
             onClick={() => step.tab && onGo(step.tab)}>
             <span className="n mono">
-              {step.ready ? GUIDE.step(step.n, step.of) : GUIDE.next(step.n, step.of)}
+              {step.chapter === 2
+                ? (step.ready ? GUIDE.chapter(step.n, step.of) : GUIDE.chapterNext(step.n, step.of))
+                : (step.ready ? GUIDE.step(step.n, step.of) : GUIDE.next(step.n, step.of))}
             </span>
             <b><span className="cjk">{step.step.han}</span> {step.step.title}</b>
             <i>
