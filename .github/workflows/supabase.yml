@@ -107,6 +107,23 @@ jobs:
           echo "::add-mask::$KEY"
           echo "key=$KEY" >> "$GITHUB_OUTPUT"
 
+      # 待 The auth service takes the new settings a little while after the PATCH says 200.
+      # The first live run attacked it two seconds later and was told guests were off.
+      - name: Wait for the auth settings to take
+        if: steps.keys.outputs.go == 'yes'
+        env:
+          SUPABASE_KEY: ${{ steps.anon.outputs.key }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sS "$SUPABASE_URL/auth/v1/settings" -H "apikey: $SUPABASE_KEY" | grep -q '"anonymous_users":true'; then
+              echo "guests are on"; exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Anonymous sign-ins still off after three minutes."
+          curl -sS "$SUPABASE_URL/auth/v1/settings" -H "apikey: $SUPABASE_KEY" | head -c 600
+          exit 1
+
       - name: Attack the live server
         if: steps.keys.outputs.go == 'yes'
         env:
