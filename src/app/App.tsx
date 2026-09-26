@@ -29,6 +29,7 @@ import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Prologue } from './ui/Prologue.tsx';
+import { CountUp } from './ui/CountUp.tsx';
 import { CloudPick, Ranks } from './ui/Ranks.tsx';
 import * as cloud from '../net/cloud.ts';
 import { layersOpened } from '../sim/state.ts';
@@ -1077,15 +1078,17 @@ export function App() {
 
       {home && (
         <div className="back">
-          <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} style={{ display: 'block', width: 150, height: 150 }} />
+          {/* 勁 The qi the hours gathered comes back in as light, and the numbers count up
+              to what they are rather than simply being there. */}
+          <Svg className="backfig" html={portrait({ realm: state.realm, pulse, who: state.self })} style={{ display: 'block', width: 150, height: 150 }} />
           <h2 style={{ color: r.colour }}>歸</h2>
           <p className="faint" style={{ margin: 0, fontSize: 14 }}>
             {RETURN.away(duration(home.seconds))}
           </p>
           <dl>
             <dt>{RETURN.qi}</dt>
-            <dd style={{ color: r.colour }}>{num(home.qi)}</dd>
-            {home.layers > 0 && (<><dt>{RETURN.layers}</dt><dd>{home.layers}</dd></>)}
+            <dd style={{ color: r.colour }}><CountUp to={home.qi} delay={250} /></dd>
+            {home.layers > 0 && (<><dt>{RETURN.layers}</dt><dd><CountUp to={home.layers} ms={900} delay={450} /></dd></>)}
             {home.realms > 0 && (<><dt>{RETURN.realms}</dt><dd style={{ color: 'var(--cinnabar)' }}>{home.realms}</dd></>)}
             <dt>{RETURN.power}</dt>
             <dd>{num(power(state))}</dd>

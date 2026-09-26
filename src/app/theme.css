@@ -886,6 +886,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
          gap: 16px; padding: 30px 24px; text-align: center; }
 .back h2 { font-family: 'Noto Serif SC', serif; font-size: 24px; margin: 0; font-weight: 400; }
 .back dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 7px 22px; font-size: 15px; }
+/* 勁 Coming back is a small event: the figure rises into its light, the lines of what
+   happened arrive one after another. */
+.back .backfig { animation: backfig .9s cubic-bezier(.2, .8, .3, 1) both; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--jade) 45%, transparent)); }
+@keyframes backfig { from { opacity: 0; transform: translateY(12px) scale(.94); filter: drop-shadow(0 0 0 transparent) brightness(1.6); } }
+.back h2 { animation: stamp .5s .2s cubic-bezier(.2, .9, .3, 1.2) both; }
+.back dl > * { animation: gainin .4s cubic-bezier(.2, .9, .3, 1.3) both; }
+.back dl > :nth-child(n+3) { animation-delay: .35s; }
+.back dl > :nth-child(n+5) { animation-delay: .5s; }
+.back dl > :nth-child(n+7) { animation-delay: .65s; }
+.back dd { font-family: Rajdhani, sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .back .backfig, .back h2, .back dl > * { animation: none; } }
 .back dt { color: var(--faint); text-align: right; }
 .back dd { margin: 0; text-align: left; font-family: Rajdhani, sans-serif; font-weight: 600; }
 
