@@ -10,6 +10,7 @@ import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
 import { ITEM } from '../copy.ts';
 import { salvageValue } from '../../sim/salvage.ts';
+import { salvageBonus } from '../../sim/awaken.ts';
 import { num } from '../../sim/format.ts';
 
 /**
@@ -152,7 +153,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>
           <i>{ITEM.salvage}</i>
-          <em className="mono">{num(salvageValue(item))}<span>qi</span></em>
+          <em className="mono">{num(salvageValue(item, salvageBonus(state.awakened)))}<span>qi</span></em>
         </button>
       )}
     </div>

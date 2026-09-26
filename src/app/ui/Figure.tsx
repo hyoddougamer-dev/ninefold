@@ -1,5 +1,5 @@
 import { FIGURES } from '../../data/figures.ts';
-import { portrait } from '../../art/aura.ts';
+import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from './Svg.tsx';
 import { FIGURE } from '../copy.ts';
 
@@ -42,7 +42,7 @@ export function Figure({ realm, sky, chosen, onPick, onClose }: {
         {FIGURES.map((f) => (
           <button key={f.key} className="pick" data-on={chosen === f.key}
             onClick={() => onPick(f.key)}>
-            <span className="face"><Svg html={portrait({ realm, pulse: 0, who: f.key })} /></span>
+            <span className="face"><Svg html={portraitLayers({ realm, pulse: 0, who: f.key })} /></span>
             <b className="cjk">{f.han}</b>
             <em>{f.name}</em>
           </button>

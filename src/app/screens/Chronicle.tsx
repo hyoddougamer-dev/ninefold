@@ -11,7 +11,7 @@ import { daoSpent } from '../../sim/dao.ts';
 import { BEASTS } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { num } from '../../sim/format.ts';
-import { portrait } from '../../art/aura.ts';
+import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { CHRONICLE } from '../copy.ts';
 
@@ -63,7 +63,7 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
       </div>
 
       <div className="stele">
-        <span className="who"><Svg html={portrait({ realm: state.realm, pulse, who: state.self })} /></span>
+        <span className="who"><Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} /></span>
         <span className="said">
           <b className="cjk" style={{ color: r.colour }}>{r.han}</b>
           <i>{CHRONICLE.standing(Math.floor(daysIn(state)) + 1, r.name)}</i>

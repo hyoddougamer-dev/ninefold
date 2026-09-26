@@ -34,3 +34,6 @@ bible-art/art/
 bible-art/shot/
 supabase/functions/sync/core.bundle.js
 supabase/.temp
+
+# npm run sounds writes every cue here to listen to; it is output, not source.
+sounds/

@@ -2407,7 +2407,14 @@ const page = `<meta charset="utf-8">
         stay still, because mountains do.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">圓光</b> <em>The halo turns</em>
         <i>One turn every two minutes. At that speed it is not an animation, it is the
-        difference between a portrait and a photograph of one.</i></span></div>
+        difference between a portrait and a photograph of one. It only really turns since
+        the portrait stopped being rebuilt five times a second, which restarted it every 200ms.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">氣</b> <em>The aura is drawn, one thing a realm</em>
+        <i>Threads of qi, a formation circle under the seat, the golden core, orbiting motes,
+        the spirit body, brush rays, flying swords, the eight trigrams and the tribulation's
+        lightning, added in that order from the first realm to the ninth. It replaced four
+        clip-art glyphs blurred behind the painting. Each moving part is its own layer, so the
+        graphics chip turns it and the ninth realm costs a third of what it did.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">入</b> <em>The fight begins</em>
         <i>She settles in from the left, the beast stalks in from the right a beat later so
         the eye goes to it. Nothing moves on the way out, because a fight that is over is

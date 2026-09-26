@@ -4,7 +4,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
 import { num } from '../../sim/format.ts';
-import { portrait } from '../../art/aura.ts';
+import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
 import { gearTile } from '../../art/gear.ts';
 import { ART_BY_KEY } from '../../data/arts.ts';
@@ -178,7 +178,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
 
         <div className="duel">
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
-            <span className="art"><Svg html={portrait({ realm, pulse, focus: true, who: state.self })} /></span>
+            <span className="art"><Svg html={portraitLayers({ realm, pulse, focus: true, who: state.self })} /></span>
             {/* 勝 A ring of her own light going out from her when it is over and she won. */}
             {over && outcome.won && <span className="victory" aria-hidden="true"><i /><i /></span>}
             {hit === 'player' && !f.missed && <Sparks key={`sp${beat}`} />}

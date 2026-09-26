@@ -12,7 +12,7 @@ import { duration, num } from '../../sim/format.ts';
 import { affordableIn, ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { HEAVENS, heavenAt, marksToNext, nextHeaven } from '../../data/heavens.ts';
-import { portrait, seal } from '../../art/aura.ts';
+import { portraitLayers, seal } from '../../art/aura.ts';
 import { pool as poolArt } from '../../art/trials.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
@@ -201,7 +201,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       }}>
         {top
           ? <Svg html={poolArt(filled, state.tribulation, pulse, { who: state.self, sky: heaven?.colour })} />
-          : <Svg html={portrait({ realm: state.realm, pulse, who: state.self })} />}
+          : <Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} />}
       </div>
 
       <div className="qi">

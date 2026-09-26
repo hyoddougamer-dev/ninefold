@@ -29,7 +29,10 @@ export interface Realm {
   readonly colour: string;
   /** What the pigment is, so the page and the prompts can name it in English. */
   readonly stuff: string;
-  /** Aura icons stacked behind the figure, outermost first. */
+  /**
+   * Aura icons, from the first portrait. 氣 art/aura.ts draws the aura itself now and no
+   * longer reads these; the art sheet and the icon generator still list them.
+   */
   readonly aura: readonly string[];
   /** Rings drawn behind the head. A halo reads better drawn than as an icon. */
   readonly halos: number;
@@ -38,23 +41,23 @@ export interface Realm {
 
 export const REALMS: readonly Realm[] = [
   { n: 1, han: '練氣', name: 'Qi Refining',    colour: '#6E9C84', stuff: 'jade', aura: [], halos: 0,
-    gains: 'No aura yet. Only your breath.' },
+    gains: 'Threads of qi rise off you as you breathe.' },
   { n: 2, han: '築基', name: 'Foundation',     colour: '#86AE8C', stuff: 'celadon', aura: ['aura'], halos: 0,
-    gains: 'A faint glow, steady.' },
+    gains: '陣 A formation circle turns beneath you.' },
   { n: 3, han: '金丹', name: 'Golden Core',    colour: '#B2A566', stuff: 'old bronze', aura: ['aura'], halos: 1,
-    gains: '圓光 a halo behind your head.' },
+    gains: '丹 Your golden core lights, and 圓光 a halo rises behind your head.' },
   { n: 4, han: '元嬰', name: 'Nascent Soul',   colour: '#D2B35B', stuff: 'gold leaf', aura: ['aura', 'sparkles'], halos: 1,
-    gains: '塵 motes of qi in the air.' },
+    gains: '塵 Motes of qi circle you.' },
   { n: 5, han: '化神', name: 'Spirit Severing', colour: '#DFA555', stuff: 'amber', aura: ['rear-aura', 'sparkles'], halos: 1,
-    gains: 'Your aura takes shape behind you.' },
+    gains: '法相 Your spirit body stands behind you.' },
   { n: 6, han: '煉虛', name: 'Void Refining',  colour: '#D07C4A', stuff: 'copper', aura: ['beams-aura', 'rear-aura', 'sparkles'], halos: 1,
-    gains: '芒 spokes of light from where you sit.' },
+    gains: '芒 Rays of light from behind your head.' },
   { n: 7, han: '合體', name: 'Unity',          colour: '#CB5347', stuff: 'cinnabar', aura: ['beams-aura', 'icicles-aura', 'sparkles'], halos: 2,
-    gains: 'A second halo. Blades of qi circle you.' },
+    gains: '劍 Flying swords circle you, and a second halo.' },
   { n: 8, han: '大乘', name: 'Great Vehicle',  colour: '#BE5B72', stuff: 'plum', aura: ['rolling-energy', 'beams-aura', 'rear-aura', 'sparkles'], halos: 2,
-    gains: 'The energy starts turning by itself.' },
+    gains: '卦 The eight trigrams turn around you.' },
   { n: 9, han: '渡劫', name: 'Tribulation',    colour: '#A077B8', stuff: 'imperial violet', aura: ['lightning-helix', 'rolling-energy', 'beams-aura', 'sparkles'], halos: 3,
-    gains: '九雷 the nine bolts. The top of the climb.' },
+    gains: '雷 The tribulation\'s lightning. The top of the climb.' },
 ];
 
 export function realm(n: number): Realm {

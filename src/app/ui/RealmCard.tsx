@@ -6,7 +6,7 @@ import { currentWarden } from '../../sim/combat.ts';
 import { type State } from '../../sim/state.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { opensIn } from '../../sim/unlocks.ts';
-import { portrait } from '../../art/aura.ts';
+import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from './Svg.tsx';
 import { REALMCARD } from '../copy.ts';
 import { arriving } from '../../sim/arriving.ts';
@@ -51,7 +51,7 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
           portrait, which is what every realm looked like before. */}
       <div className="crown">
         {sky && <img className="sky" src={sky} alt="" aria-hidden="true" />}
-        <Svg html={portrait({ realm: state.realm, pulse: 0, who: state.self })} />
+        <Svg html={portraitLayers({ realm: state.realm, pulse: 0, who: state.self })} />
       </div>
 
       <h2 className="cjk" style={{ color: r.colour }}>{r.han}</h2>

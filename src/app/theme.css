@@ -2575,3 +2575,49 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .prologue .pname { font-size: 22px; }
   .prologue .pline { font-size: 17px; }
 }
+
+/* ───────────────────────────────────────────────────── 氣 the drawn aura ──
+   art/aura.ts portraitLayers(): the still picture, and each moving part of the aura as its
+   own layer on top of it. Only whole layers move, and only by turning, drifting, swelling
+   or fading, which is the motion a browser hands to the graphics chip: the pictures
+   themselves are painted once. Slow on purpose: this is the screen a player leaves open. */
+.qa-stack { position: relative; display: block; width: 100%; height: 100%; }
+.qa-stack > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+.qa-layer { will-change: transform, opacity; pointer-events: none; }
+.qa-halo { animation: qa-turn 120s linear infinite; }
+.qa-spin-slow { animation: qa-turn 140s linear infinite; }
+.qa-spin-back { animation: qa-turn 90s linear infinite reverse; }
+.qa-orbit { animation: qa-turn 36s linear infinite; }
+.qa-orbit-back { animation: qa-turn 52s linear infinite reverse; }
+.qa-swords { animation: qa-turn 22s linear infinite; }
+@keyframes qa-turn { to { transform: rotate(360deg); } }
+.qa-rise { animation: qa-rise 6.4s ease-in-out infinite; }
+@keyframes qa-rise {
+  0% { transform: translateY(6%); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-16%); opacity: 0; }
+}
+.qa-core { animation: qa-core 3.6s ease-in-out infinite; }
+@keyframes qa-core { 0%, 100% { transform: scale(.86); opacity: .75; } 50% { transform: scale(1.12); opacity: 1; } }
+.qa-ghost { animation: qa-ghost 7s ease-in-out infinite; }
+@keyframes qa-ghost { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+/* 陣 The formation circle lies on the ground: drawn flat, laid down by the layer's own
+   slant, and turned inside it. All three are one transform, so it stays one layer. */
+.qa-formation { transform-origin: 50% 50%; transform: translateY(40.5%) scaleY(.22);
+                animation: qa-formation 48s linear infinite; }
+@keyframes qa-formation {
+  from { transform: translateY(40.5%) scaleY(.22) rotate(0deg); }
+  to { transform: translateY(40.5%) scaleY(.22) rotate(360deg); }
+}
+.qa-bolt { opacity: 0; animation: qa-bolt 4.6s steps(1, end) infinite; }
+@keyframes qa-bolt {
+  0%, 61%, 66%, 70%, 100% { opacity: 0; }
+  62%, 64% { opacity: .9; }
+  68% { opacity: .5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qa-layer { animation: none !important; }
+  .qa-formation { transform: translateY(40.5%) scaleY(.22); }
+  .qa-rise { opacity: .7; }
+  .qa-bolt { opacity: 0; }
+}

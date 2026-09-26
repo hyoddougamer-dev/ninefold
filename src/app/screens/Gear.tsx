@@ -11,13 +11,14 @@ import { num } from '../../sim/format.ts';
 import { affinity } from '../../sim/dao.ts';
 import type { State } from '../../sim/state.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { portrait } from '../../art/aura.ts';
+import { portraitLayers } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR } from '../copy.ts';
 import { swing } from '../../sim/inspect.ts';
 import { salvageWorth, salvageable } from '../../sim/salvage.ts';
+import { salvageBonus } from '../../sim/awaken.ts';
 import { buysWith } from '../../sim/time.ts';
 
 /**
@@ -54,7 +55,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const shown = AFFIXES.filter((a) => (AFFIX_INFO[a].unit === 'flat' ? Math.floor(totals[a]) : totals[a]) > 0);
   // 拆 What the melt would take, so the button can say so before it is pressed.
   const melting = salvageable(state.chest, upTo);
-  const opening = buysWith(state, salvageWorth(melting));
+  // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
+  // quoted less than landed, up to nine tenths less with every melt card taken.
+  const meltWorth = salvageWorth(melting, salvageBonus(state.awakened));
+  const opening = buysWith(state, meltWorth);
 
   return (
     <>
@@ -94,7 +98,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <div className="wcore">
           <svg viewBox={`0 0 ${S} ${S}`} width="100%" height="100%">
             <g dangerouslySetInnerHTML={{
-              __html: portrait({ realm: state.realm, pulse, who: state.self })
+              __html: portraitLayers({ realm: state.realm, pulse, who: state.self })
                 .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''),
             }} />
             <g dangerouslySetInnerHTML={{ __html: wornRim(best, S) }} />
@@ -297,7 +301,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                   standing on makes the big number fall, and the button says so first. */}
               <span className="goes">{opening.rungs > 0 ? GEAR.opens(opening.rungs) : GEAR.banks}</span>
             </i>
-            <em className="mono">{num(salvageWorth(melting))}<span>qi</span></em>
+            <em className="mono">{num(meltWorth)}<span>qi</span></em>
           </button>
         </div>
       )}

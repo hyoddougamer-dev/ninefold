@@ -13,7 +13,7 @@ import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
 import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
-import { portrait } from '../art/aura.ts';
+import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { rollDrop } from '../sim/drops.ts';
@@ -1094,7 +1094,7 @@ export function App() {
         <div className="back">
           {/* 勁 The qi the hours gathered comes back in as light, and the numbers count up
               to what they are rather than simply being there. */}
-          <Svg className="backfig" html={portrait({ realm: state.realm, pulse, who: state.self })} style={{ display: 'block', width: 150, height: 150 }} />
+          <Svg className="backfig" html={portraitLayers({ realm: state.realm, pulse, who: state.self })} style={{ display: 'block', width: 150, height: 150 }} />
           <h2 style={{ color: r.colour }}>歸</h2>
           <p className="faint" style={{ margin: 0, fontSize: 14 }}>
             {RETURN.away(duration(home.seconds))}
