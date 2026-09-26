@@ -66,6 +66,8 @@ check(gone.status < 300, 'a player can delete themselves', gone);
 const after = await call('/rest/v1/rpc/board', { kind: 'climb', lim: 100 }, KEY);
 check(after.status === 200 && Array.isArray(after.json) && !after.json.some((r: any) => r.name === `Tester ${now % 100000}`),
   'and is gone from the board', after.status);
+check(Array.isArray(after.json) && !after.json.some((r: any) => /^Tester? \d{1,5}$/.test(r.name)),
+  'no test player is left on the public board', after.json?.filter?.((r: any) => /^Tester? \d{1,5}$/.test(r.name)));
 
 console.log(failed ? `\n${failed} failed` : '\n榜 the ranked server holds.');
 process.exit(failed ? 1 : 0);
