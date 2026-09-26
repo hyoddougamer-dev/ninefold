@@ -162,6 +162,29 @@ export const RANKS = {
   towerCell: (n: number) => `floor ${n}`,
   haveOne: 'I already have a cultivator',
   back: 'Back to the climb',
+  delete: 'Delete my ranked account',
+  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched.',
+  deleteYes: 'Delete it',
+  deleteNo: 'Keep it',
+  privacy: 'Privacy',
+};
+
+/**
+ * 崩 What a crash says, instead of a white page. It is the one screen that has to work
+ * when nothing else does, so it says the only two things that matter: the save is safe,
+ * and here is how to take a copy of it before trying again.
+ */
+export const CRASH = {
+  title: 'Something broke',
+  body: 'The game hit an error it could not recover from. Your save is safe on this device.',
+  reload: 'Open the game again',
+  copy: 'Copy my save first',
+  copied: 'Copied. Keep it somewhere safe.',
+};
+
+/** 版 Which build this is, at the foot of the Menu, for a tester reporting a bug. */
+export const BUILD = {
+  label: (id: string) => `Build ${id}`,
 };
 
 export const TABS_COPY = {

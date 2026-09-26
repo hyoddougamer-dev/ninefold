@@ -99,9 +99,24 @@ describe('榜 the ranked schema', () => {
     expect((m.rows[0] as any).value).toBeGreaterThan(0);
   });
 
+  it('a player can delete themselves, and only themselves', async () => {
+    await expect(as(null, `select delete_me()`)).rejects.toThrow(/permission denied|not signed in/);
+    await db.exec(`insert into sync_log (user_id, ok) values ('${B}', true)`);
+    await as(B, `select delete_me()`);
+    const left = await db.query(`select
+      (select count(*) from auth.users where id = '${B}') as u,
+      (select count(*) from profiles where id = '${B}') as p,
+      (select count(*) from standings where user_id = '${B}') as s,
+      (select count(*) from sync_log where user_id = '${B}') as l,
+      (select count(*) from auth.users) as everyone`);
+    const r = left.rows[0] as any;
+    expect([Number(r.u), Number(r.p), Number(r.s), Number(r.l)]).toEqual([0, 0, 0, 0]);
+    expect(Number(r.everyone)).toBe(2);
+  });
+
   it('where I stand, for the signed-in player only', async () => {
-    const r = await as(B, `select my_standing() as s`);
-    expect((r.rows[0] as any).s.name).toBe('Beta');
+    const r = await as(A, `select my_standing() as s`);
+    expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
     const none = await as(null, `select my_standing() as s`);
     expect((none.rows[0] as any)?.s ?? null).toBe(null);
   });

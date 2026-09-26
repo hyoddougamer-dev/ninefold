@@ -76,6 +76,16 @@ export async function sendLink(email: string, guest: boolean): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** 刪 Delete the account and everything the server holds; the game on this device stays. */
+export async function deleteMe(): Promise<boolean> {
+  const c = await client();
+  const { error } = await c.rpc('delete_me');
+  if (error) return false;
+  await c.auth.signOut().catch(() => {});
+  remember(false);
+  return true;
+}
+
 export async function signOut(): Promise<void> {
   const c = await client();
   await c.auth.signOut();

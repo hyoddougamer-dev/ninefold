@@ -149,6 +149,7 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
       {sent ? <p className="rstatus" data-tone="good">{RANKS.linkSent(sent)}</p>
         : <p className="rnote small">{RANKS.linkNote}</p>}
       {error && <p className="rstatus" data-tone="bad">{error}</p>}
+      <a className="rlink" href="privacy/" target="_blank" rel="noopener">{RANKS.privacy}</a>
     </div>
   );
 }
@@ -160,6 +161,7 @@ function Account({ who, me, onSignOut, onRenamed }: {
   const [name, setName] = useState(me?.name ?? '');
   const [email, setEmail] = useState('');
   const [note, setNote] = useState<{ tone: 'good' | 'bad'; text: string } | null>(null);
+  const [sure, setSure] = useState(false);
   useEffect(() => { if (me) setName(me.name); }, [me]);
 
   return (
@@ -197,7 +199,23 @@ function Account({ who, me, onSignOut, onRenamed }: {
         </>
       )}
       {note && <p className="rstatus" data-tone={note.tone}>{note.text}</p>}
-      <button className="act ghost small" onClick={onSignOut}>{RANKS.signOut}</button>
+      <div className="rrow">
+        <button className="act ghost small" onClick={onSignOut}>{RANKS.signOut}</button>
+        <a className="rlink" href="privacy/" target="_blank" rel="noopener">{RANKS.privacy}</a>
+      </div>
+      {sure ? (
+        <div className="rsure">
+          <p className="rnote small">{RANKS.deleteSure}</p>
+          <div className="rrow">
+            <button className="act danger small" onClick={async () => {
+              if (await cloud.deleteMe()) onSignOut(); else setNote({ tone: 'bad', text: RANKS.offline });
+            }}>{RANKS.deleteYes}</button>
+            <button className="act ghost small" onClick={() => setSure(false)}>{RANKS.deleteNo}</button>
+          </div>
+        </div>
+      ) : (
+        <button className="rdel" onClick={() => setSure(true)}>{RANKS.delete}</button>
+      )}
     </div>
   );
 }

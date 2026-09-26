@@ -56,7 +56,10 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
-import { JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
+import { BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
+
+/** 版 Filled in by the build (vite.config.ts). */
+declare const __BUILD__: string;
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
@@ -749,6 +752,7 @@ export function App() {
             <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0}>
               <b>{LEVELS[sound].icon}</b><span>{LEVELS[sound].label}</span>
             </button>
+            <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
           </div>
         )}
       </div>

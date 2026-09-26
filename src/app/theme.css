@@ -988,6 +988,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                          font-size: 16px; color: var(--jade); }
 .switchmenu button > span { font-size: 13.5px; }
 .switchmenu button[data-on='false'] > b { color: var(--faint); }
+/* 版 Which build, for a tester's bug report. Quiet: nobody else needs it. */
+.switchmenu .build { display: block; padding: 6px 9px 3px; font: 500 10.5px/1.2 Rajdhani, sans-serif;
+                     letter-spacing: .06em; color: var(--faint); opacity: .7; }
+
+/* ── 崩 the crash screen ─────────────────────────────────────────────────── */
+.crash { position: fixed; inset: 0; z-index: 90; background: var(--ground); color: var(--text);
+         display: flex; flex-direction: column; justify-content: center; gap: 12px;
+         padding: 30px 24px; text-align: center; max-width: 520px; margin: 0 auto; }
+.crash > b { font-size: 52px; font-weight: 400; color: var(--cinnabar); line-height: 1; }
+.crash h2 { margin: 0; font-weight: 500; font-size: 21px; }
+.crash p { margin: 0 0 6px; color: var(--faint); font-size: 14.5px; line-height: 1.55; }
+.crash code { margin-top: 10px; font-size: 11px; color: var(--faint); opacity: .7; word-break: break-word; }
 
 /* ── help ───────────────────────────────────────────────────────────────── */
 
@@ -2292,6 +2304,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .ranks .ror::before, .ranks .ror::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .ranks .rrow { display: flex; gap: 8px; align-items: center; }
 .ranks .rname { flex: 1; font-size: 17px; font-weight: 500; }
+.ranks .rlink { color: var(--faint); font-size: 12.5px; text-underline-offset: 3px; }
+.ranks .rlink:hover { color: var(--text); }
+.ranks .rdel { align-self: flex-start; background: none; border: 0; padding: 2px 0; font: inherit; font-size: 12.5px;
+               color: var(--cinnabar); opacity: .8; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ranks .rsure { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px;
+                border: 1px solid rgba(210,96,78,.5); }
 .ranks .act.small { width: auto; padding: 8px 14px; font: 500 13px/1.2 Archivo, ui-sans-serif, system-ui, sans-serif;
                      letter-spacing: .02em; flex: none; }
 

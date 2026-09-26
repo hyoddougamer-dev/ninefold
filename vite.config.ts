@@ -2,6 +2,14 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+
+/** 版 Which build this is: the commit and the day, for a tester reporting a bug. */
+function buildId(): string {
+  let sha = 'dev';
+  try { sha = execSync('git rev-parse --short HEAD').toString().trim(); } catch { /* not a checkout */ }
+  return `${new Date().toISOString().slice(0, 10)} · ${sha}`;
+}
 
 /**
  * 版 A short hash of every painting, so its address changes when its pixels do.
@@ -39,7 +47,7 @@ const noCrossOrigin = {
 
 export default defineConfig({
   plugins: [react(), noCrossOrigin],
-  define: { __ART_HASH__: JSON.stringify(artHashes()) },
+  define: { __ART_HASH__: JSON.stringify(artHashes()), __BUILD__: JSON.stringify(buildId()) },
   // Relativo, porque o mesmo build é servido por um host web e de dentro do APK.
   base: './',
   build: {
