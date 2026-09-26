@@ -109,7 +109,11 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           shape. It says when it opens again rather than going away, because it waits. */}
       {isOpen(state.realm, 'secret') && <Door state={state} onEnter={onSecret} />}
 
-      <div className="tally">
+      {/* 直 The record is the page's second question, and a new cultivator has not asked
+          its first one yet. Bruno: *"é preciso ser mais intuitivo."* Before the first
+          kill it was three zeroes and two ×1.00 standing between the player and the rat
+          the guide points at. It arrives with the first thing it has to count. */}
+      {tally[0] > 0 && <div className="tally">
         {MARK_INFO.map((m, i) => (
           <span key={m.han} data-on={tally[i] > 0}>
             <b className="cjk">{m.han}</b>
@@ -127,7 +131,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           <b className="mono">×{recordPower(state.killed).toFixed(2)}</b>
           <i>{HUNT.paysPower}</i>
         </span>
-      </div>
+      </div>}
 
       {/* 期 The week's quarry, above the list rather than inside it. The sort below is
           about what still has a mark to earn, which is a permanent question, and this is

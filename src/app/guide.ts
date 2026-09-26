@@ -124,25 +124,30 @@ const killsOf = (s: State) => Object.values(s.killed);
 
 export const STEPS: readonly Step[] = [
   {
-    // 初 First, because it is the one thing a new cultivator can do that is not a shop.
-    // Bruno: "não conseguem fazer nada até terem power suficiente para os primeiros
-    // monstros." The rat stands below a fresh cultivator now (FIRST_STEPS), so the
-    // game opens on a fight that is won, and the qi its first sight pays goes straight
-    // into the step after. The waiting half stays for a save that somehow cannot win it.
-    key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
-    art: FIRST[0].icon,
-    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
-    waiting: { text: GUIDE.kill.waiting, at: (s) => nowBuyable(s) },
-    at: () => 'beast-first',
-    done: (s) => killsOf(s).some((n) => n > 0),
-  },
-  {
     key: 'buy', han: '買', title: GUIDE.buy.title, text: GUIDE.buy.text,
     art: UPGRADE_INFO.technique.icon,
     // Whichever box the purse can actually reach, not a box chosen in advance. The
     // arrow must never land on something that is greyed out.
     at: (s) => nowBuyable(s),
     done: (s) => UPGRADES.some((u) => s.levels[u] > 0),
+  },
+  {
+    // 初 Bruno: "não conseguem fazer nada até terem power suficiente para os primeiros
+    // monstros." The rat stands below a fresh cultivator now (FIRST_STEPS), so this step
+    // is ready the moment the first one is done. The waiting half stays for a save that
+    // somehow cannot win it.
+    //
+    // 序 It was tried first, before the purchase, and walked in the real game it stuck:
+    // the rat's first sight pays about 1,500 qi, which on top of the 800 in hand opens
+    // a layer by itself, and the player arrives at "spend your qi" holding 180 with
+    // nothing on the screen they can afford. The purse is spent on a choice first, and
+    // the bounty is what climbs the ladder.
+    key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
+    art: FIRST[0].icon,
+    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
+    waiting: { text: GUIDE.kill.waiting, at: (s) => nowBuyable(s) },
+    at: () => 'beast-first',
+    done: (s) => killsOf(s).some((n) => n > 0),
   },
   {
     key: 'core', han: '妖丹', title: GUIDE.core.title, text: GUIDE.core.text,

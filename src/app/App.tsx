@@ -324,6 +324,7 @@ export function App() {
   const [syncedAt, setSyncedAt] = useState<number | null>(null);
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
   const [title, setTitle] = useState<string | null>(null);
+  const [place, setPlace] = useState<number | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
     if (pushing.current) return;
@@ -333,6 +334,7 @@ export function App() {
       if (!('error' in r)) {
         setSynced(r); setSyncedAt(Date.now() / 1000);
         cloud.mine().then((m) => setTitle(m?.title ?? null)).catch(() => {});
+        cloud.place().then(setPlace).catch(() => {});
       }
     } catch { /* offline: the next one will do */ }
     pushing.current = false;
@@ -752,7 +754,6 @@ export function App() {
               ['?', MENU.help, () => setHelp(true)],
               ['釋', MENU.key, () => setKey(true)],
               ['碑', MENU.stele, () => setStele(true)],
-              ['榜', RANKS.menu, () => setRanks(true)],
             ] as const).map(([han, label, go]) => (
               <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
                 <b className="cjk">{han}</b><span>{label}</span>
@@ -798,6 +799,19 @@ export function App() {
             </button>
           );
         })}
+        {/* 榜 The rankings are a tab, not a line in the corner menu. Bruno: *"os rankings
+            devem aparecer como destaque e não escondido no menu."* It opens the same
+            panel the menu did, it is never locked, and once the player is on the board
+            it carries their place, the way 道 carries its unspent points. */}
+        <button className="ranktab" data-on={ranks} data-coach="tab-ranks"
+          aria-label={place ? RANKS.tabPlace(place) : RANKS.tab}
+          onClick={() => { setRanks(true); sfx.tap(); }}>
+          <span className="g cjk">
+            榜
+            {place !== null && <i className="owed rankplace">#{place}</i>}
+          </span>
+          <span className="l">{RANKS.tab}</span>
+        </button>
       </nav>
 
       {locked && (

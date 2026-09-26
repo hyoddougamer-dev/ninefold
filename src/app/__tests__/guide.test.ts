@@ -22,7 +22,7 @@ describe('引 the first session, one step at a time', () => {
     expect(g).not.toBeNull();
     expect(g!.n).toBe(1);
     expect(g!.of).toBe(STEPS.length);
-    expect(g!.step.key).toBe('kill');
+    expect(g!.step.key).toBe('buy');
   });
 
   /**
@@ -34,8 +34,8 @@ describe('引 the first session, one step at a time', () => {
   it('never goes backwards, because nothing it asks for can be undone', () => {
     const rich: State = { ...newState(T0), qi: 1e12, materials: 1e12 };
     const after = [
-      { ...rich, killed: { rat: 1 } },                            // a beast killed
       buy(rich, 'technique'),                                     // a level bought
+      { ...rich, killed: { rat: 1 } },                            // a beast killed
       { ...rich, levels: { ...rich.levels, cores: 1 } },          // a core bought
       { ...rich, killed: { rat: MARKS[1] } },                     // a mark earned
       { ...rich, realm: 2 },                                      // a realm climbed
@@ -51,8 +51,8 @@ describe('引 the first session, one step at a time', () => {
     let s: State = { ...newState(T0), qi: 1e12, materials: 1e12 };
     const order: string[] = [];
     const doIt: ((x: State) => State)[] = [
-      (x) => ({ ...x, killed: { rat: 1 } }),
       (x) => buy(x, 'technique'),
+      (x) => ({ ...x, killed: { rat: 1 } }),
       (x) => ({ ...x, levels: { ...x.levels, cores: 1 } }),
       (x) => ({ ...x, killed: { rat: MARKS[1] } }),
       (x) => ({ ...x, realm: 2 }),

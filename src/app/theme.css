@@ -1162,7 +1162,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .pct { font-size: 10.5px; font-family: Rajdhani, sans-serif; font-weight: 600; }
 .pct em { font-style: normal; color: var(--jade); }
 
-.tabs { grid-template-columns: repeat(5, 1fr); }
+.tabs { grid-template-columns: repeat(6, 1fr); }
+/* 榜 Six tabs on a 320px phone: the labels give up a little spacing to fit. */
+.tabs .l { letter-spacing: .1em; white-space: nowrap; }
+@media (max-width: 360px) { .tabs .l { font-size: 8.5px; letter-spacing: .04em; } }
+/* 榜 The rankings tab is gold, so it reads as a place to go rather than one more screen,
+   and its badge is the player's place on the Heaven List. */
+.tabs .ranktab .g { color: var(--gold); }
+.tabs .ranktab[data-on='true'] .g, .tabs .ranktab[data-on='true'] .l { color: var(--gold); }
+.tabs .owed.rankplace { background: var(--gold); letter-spacing: 0; }
 
 .spoil { display: flex; align-items: center; gap: 12px; justify-content: center;
          margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
@@ -1515,6 +1523,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                 animation: coachNudge 1.7s ease-in-out infinite; }
 .coach .point[data-above="true"]  { transform: translateY(-100%); }
 .coach .point[data-above="false"] { transform: rotate(180deg); }
+.coach .point[data-side="true"]   { margin-left: 0; transform: translateY(-50%) rotate(90deg); }
 .coach .point svg { display: block; }
 @keyframes coachNudge {
   0%, 100% { opacity: 1; }
@@ -2485,6 +2494,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   /* The unspent 道 count sits at the end of the row, where it cannot land on the name. */
   .app > nav.tabs .owed { left: auto; right: 14px; bottom: auto; top: 50%; transform: translateY(-50%);
                           font-size: 11.5px; padding: 3px 7px; }
+  /* 榜 On the rail the rankings stand apart from the five screens, under a rule. */
+  .app > nav.tabs .ranktab { margin-top: 14px; }
+  .app > nav.tabs .ranktab::before { content: ''; position: absolute; left: 14px; right: 14px;
+                                     top: -9px; border-top: 1px solid var(--line); }
+  .app > nav.tabs .ranktab[data-on='true'] { background: rgba(212, 175, 86, .1);
+                                             box-shadow: inset 3px 0 0 var(--gold); }
 
   .app > .switches { top: auto; right: auto; left: 14px; bottom: 22px; width: calc(var(--rail) - 29px); }
   .app > .switches .mainswitch { width: 100%; height: 46px; display: flex; align-items: center;

@@ -81,7 +81,13 @@ export function Coach({ at }: { at: string | null }) {
   // The arrow goes wherever there is room. Above the target by preference, because a
   // thumb on a phone is usually below what it is about to press and would cover it.
   const above = box.top > 86;
-  const y = above ? box.top - 10 : box.bottom + 10;
+
+  // 側 On the PC the tabs are a rail down the left, one row under another, and an arrow
+  // above a row lands on the name of the row above it: pointing at 狩 Hunt, it sat on
+  // the word CULTIVATE. A short target at the left edge of a wide screen is pointed at
+  // from its right instead, where the rail has nothing in it.
+  const side = window.innerWidth >= 1100 && box.height < 70 && box.right < window.innerWidth * 0.3;
+  const y = side ? box.top + box.height / 2 : above ? box.top - 10 : box.bottom + 10;
 
   // 避 And across, away from the words.
   //
@@ -91,7 +97,7 @@ export function Coach({ at }: { at: string | null }) {
   // line, so the right-hand end of a wide target is reliably empty. Narrow targets keep
   // the centre, where there is nothing to miss.
   const wide = box.width > window.innerWidth * 0.55;
-  const x = wide ? box.right - 26 : box.left + box.width / 2;
+  const x = side ? box.right + 12 : wide ? box.right - 26 : box.left + box.width / 2;
 
   return (
     <div className="coach" aria-hidden="true">
@@ -99,7 +105,7 @@ export function Coach({ at }: { at: string | null }) {
         left: box.left - 5, top: box.top - 5,
         width: box.width + 10, height: box.height + 10,
       }} />
-      <span className="point" data-above={above}
+      <span className="point" data-above={above} data-side={side}
         style={{ left: x, top: y }}>
         <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
           <path d="M12 3 L12 19 M5.5 12.5 L12 19.5 L18.5 12.5"

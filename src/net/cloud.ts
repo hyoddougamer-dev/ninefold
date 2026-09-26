@@ -158,6 +158,19 @@ export async function board(kind: Board): Promise<readonly Row[]> {
   return (data ?? []) as Row[];
 }
 
+/**
+ * 位 Where the signed-in player stands on 天榜 the Heaven List, or null if nowhere yet.
+ * The board always returns the caller's own row beside the top ones, so one row of limit
+ * is enough to learn a place anywhere on it.
+ */
+export async function place(): Promise<number | null> {
+  const c = await client();
+  const { data, error } = await c.rpc('board', { kind: 'climb', lim: 1 });
+  if (error) return null;
+  const me = ((data ?? []) as Row[]).find((r) => r.me);
+  return me ? Number(me.rank) : null;
+}
+
 export interface Mine {
   readonly name: string;
   readonly suspect: boolean;

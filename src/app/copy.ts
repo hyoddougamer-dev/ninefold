@@ -108,6 +108,9 @@ export const JUICE = {
 export const RANKS = {
   title: '榜 Rankings',
   menu: 'Rankings',
+  /** 榜 The tab on the bar. Short, because six of them share a 320px phone. */
+  tab: 'Ranks',
+  tabPlace: (n: number) => `Rankings, you are number ${n} on the Heaven List`,
   boards: {
     climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit.' },
     week: { han: '期榜', name: 'This Week', what: 'Layers climbed since Monday. Everybody starts the week level.' },
@@ -657,17 +660,17 @@ export const GUIDE = {
    * `waiting` line is what the card says instead: never "you cannot do this yet" on its
    * own, always "you cannot do this yet, and here is the thing that gets you there".
    */
+  buy: {
+    title: 'Spend what you were given',
+    text: 'You start holding 800 qi. Buy the box the arrow points at. '
+      + 'Qi you spend stops filling the bar, and that trade is the whole game.',
+  },
   kill: {
     title: 'Win your first fight',
     text: 'Press the rat the arrow points at. You are stronger than it already, '
       + 'the first kill of every beast pays qi, and losing never costs anything.',
     waiting: '\u5c71\u9f20 the rat is still stronger than you, and the hunt screen says by how '
       + 'much. Buy power and the gap closes.',
-  },
-  buy: {
-    title: 'Spend your qi',
-    text: 'You hold the 800 qi you started with and what the rat paid. Buy the box the '
-      + 'arrow points at. Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   core: {
     title: 'Spend what the beast left',

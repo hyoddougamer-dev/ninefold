@@ -81,9 +81,9 @@ async function fresh(page) {
   await page.unroute('**/assets/*.js');
 }
 
+// 榜 The rankings are a tab on the bar now, not a line in the corner menu.
 async function openRanks(page) {
-  await page.click('.mainswitch');
-  await page.locator('.switchmenu button', { hasText: 'Rankings' }).click();
+  await page.click('nav.tabs button.ranktab');
   await page.waitForSelector('.ranks');
 }
 
@@ -125,6 +125,13 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check(await page.locator('.wears').isVisible(), 'the title the boards gave is worn on 修, in English too',
     await page.locator('.wears').textContent().catch(() => 'none'));
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-title.png` });
+  await page.waitForSelector('nav.tabs .ranktab .rankplace', { timeout: 4000 }).catch(() => {});
+  check((await page.locator('nav.tabs .ranktab .rankplace').textContent().catch(() => '')) === '#4',
+    'the rankings tab carries the player\'s place', await page.locator('nav.tabs .ranktab').textContent().catch(() => 'none'));
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-tab.png` });
+  check(!/Rankings/.test(await (async () => { await page.click('.mainswitch'); await page.waitForTimeout(300);
+    const t = (await page.textContent('.switchmenu').catch(() => '')) ?? ''; await page.click('.mainswitch'); return t; })()),
+    'and the corner menu no longer hides them');
   check(errors.length === 0, 'no errors on the page', errors.join(' | '));
   await page.close();
 }
