@@ -68,8 +68,9 @@ export function Ladder({ state }: { state: State }) {
         <span className="rungs">
           {Array.from({ length: LAYERS_PER_REALM }, (_, i) => (
             <span key={i} className="rung" data-here={i === opened}>
+              {/* 速 A scale, not a width: see .ladder .rung > i. */}
               <i style={{
-                width: i < opened ? '100%' : i === opened ? `${Math.min(1, here) * 100}%` : '0%',
+                transform: `scaleX(${i < opened ? 1 : i === opened ? Math.min(1, here) : 0})`,
                 background: r.colour,
               }} />
             </span>

@@ -121,7 +121,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               {step.text}
               {step.step.toward && (
                 <span className="toward">
-                  <span style={{ width: `${Math.round(Math.min(1, step.step.toward(state)) * 100)}%` }} />
+                  <span style={{ transform: `scaleX(${Math.min(1, step.step.toward(state))})` }} />
                 </span>
               )}
             </i>
@@ -217,7 +217,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       </div>
 
       <div className="bar" data-opened={opened || undefined} style={{ margin: '14px 0 6px' }}>
-        <i style={{ width: `${filled * 100}%`, background: r.colour }} />
+        <i className="fill" style={{ transform: `scaleX(${filled})`, background: r.colour }} />
       </div>
       <div className="row" style={{ fontSize: 12 }}>
         <span className="faint">
@@ -342,7 +342,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             {/* 尺 The same fact as a bar. It moves on every level and every layer. */}
             {tip.toward !== undefined && (
               <span className="toward">
-                <span style={{ width: `${Math.round(tip.toward * 100)}%` }} />
+                <span style={{ transform: `scaleX(${Math.min(1, tip.toward)})` }} />
               </span>
             )}
           </i>

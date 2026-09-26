@@ -94,6 +94,12 @@ body {
 .bar { height: 6px; border-radius: 99px; background: var(--locked); overflow: hidden; }
 .bar > i { display: block; height: 100%; border-radius: 99px; background: var(--jade);
              transition: width .25s linear; }
+/* 速 The qi bar moves every fifth of a second, so it scales rather than resizing.
+   A width that changes five times a second under a quarter-second transition is always
+   mid-transition, and every frame of it laid the whole screen out again: 60 layouts a
+   second on a screen nobody was touching, measured at 18% of a slowed phone's CPU. A
+   scale is the compositor's alone. The same for every bar that follows the clock. */
+.bar > i.fill { width: 100%; transform-origin: 0 50%; transition: transform .25s linear; }
 
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; }
 
@@ -122,9 +128,15 @@ button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 
    going up. They are drawn in the realm's own colour, they get denser as it climbs (the
    second layer only fades in from the fourth realm), and they are the same idea the
    aura is: the air itself gets busier the higher you are. */
+/* 速 They rise by transform, not by background-position. Moving the background
+   repainted two full layers of gradients every frame, 7% of a slowed phone's CPU on a
+   screen at rest. Now each layer is two tiles tall and slides up by one, which the
+   compositor does alone; the portrait clips what hangs below. */
+.portrait { overflow: clip; overflow-clip-margin: 10%; }
 .portrait::before, .portrait::after {
-  content: ''; position: absolute; inset: -4% -10%; z-index: 0; pointer-events: none;
-  background-repeat: repeat; background-size: 100% 150%;
+  content: ''; position: absolute; left: -10%; right: -10%; top: -4%; height: 216%;
+  z-index: 0; pointer-events: none; will-change: transform;
+  background-repeat: repeat; background-size: 100% 50%;
   animation: motes 34s linear infinite;
 }
 .portrait::before {
@@ -145,7 +157,7 @@ button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 
     radial-gradient(1px 1px     at 77% 66%, var(--hue) 45%, transparent 46%),
     radial-gradient(1.4px 1.4px at 58% 90%, var(--hue) 45%, transparent 46%);
 }
-@keyframes motes { from { background-position: 0 120%; } to { background-position: 0 -40%; } }
+@keyframes motes { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @media (prefers-reduced-motion: reduce) {
   .portrait::before, .portrait::after { animation: none; }
 }
@@ -303,8 +315,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 尺 How close you are to the thing the line is about. */
 .tip .toward { display: block; height: 4px; border-radius: 99px; margin-top: 8px;
                background: color-mix(in srgb, var(--gold) 22%, transparent); overflow: hidden; }
-.tip .toward > span { display: block; height: 100%; border-radius: 99px;
-                      background: var(--gold); transition: width .3s linear; }
+.tip .toward > span { display: block; height: 100%; border-radius: 99px; width: 100%;
+                      background: var(--gold); transform-origin: 0 50%; transition: transform .3s linear; }
 
 /* 境外 The card above the ninth realm: where you stand, and what is next. */
 .heaven { margin-top: 16px; background: var(--panel); border: 1px solid var(--hue);
@@ -1089,8 +1101,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 尺 The same bar the advice line uses, in the guide's own colour. */
 .guide .toward { display: block; height: 4px; border-radius: 99px; margin-top: 9px;
                  background: rgba(127,180,149,.2); overflow: hidden; }
-.guide .toward > span { display: block; height: 100%; border-radius: 99px;
-                        background: var(--jade); transition: width .3s linear; }
+.guide .toward > span { display: block; height: 100%; border-radius: 99px; width: 100%;
+                        background: var(--jade); transform-origin: 0 50%; transition: transform .3s linear; }
 
 /* ── 釋 the key: every character on the screen, and what it means ────────── */
 
@@ -1444,8 +1456,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* The rung being paid for is the one the bar above is filling, so it is marked: a
    player can put their finger on the two and see they are the same thing. */
 .ladder .rung[data-here="true"] { box-shadow: 0 0 0 1px var(--line-strong, var(--line)); }
-.ladder .rung > i { display: block; height: 100%; border-radius: 2px;
-                    transition: width .3s linear; }
+.ladder .rung > i { display: block; height: 100%; border-radius: 2px; width: 100%;
+                    transform-origin: 0 50%; transition: transform .3s linear; }
 
 /* 妖 The warden. Dark until the ninth rung is paid for, lit the moment it is actually
    standing in front of you, and struck through once it has fallen. */
