@@ -322,13 +322,17 @@ export function App() {
   const [synced, setSynced] = useState<cloud.Synced | null>(null);
   const [syncedAt, setSyncedAt] = useState<number | null>(null);
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
+  const [title, setTitle] = useState<string | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
     if (pushing.current) return;
     pushing.current = true;
     try {
       const r = await cloud.sync(latest.current, name);
-      if (!('error' in r)) { setSynced(r); setSyncedAt(Date.now() / 1000); }
+      if (!('error' in r)) {
+        setSynced(r); setSyncedAt(Date.now() / 1000);
+        cloud.mine().then((m) => setTitle(m?.title ?? null)).catch(() => {});
+      }
     } catch { /* offline: the next one will do */ }
     pushing.current = false;
   }, []);
@@ -686,6 +690,7 @@ export function App() {
         {tab === 'cultivate' && (
           <Cultivate
             state={state}
+            title={who ? title : null}
             pulse={pulse}
             focus={focus}
             satOut={satOut}

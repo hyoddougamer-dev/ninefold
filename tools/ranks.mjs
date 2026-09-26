@@ -64,7 +64,7 @@ function server(page, { cloud = null, email = null } = {}) {
         return reply(200, kind === 'tower' ? rows.filter((r) => r.tower > 0) : rows);
       }
       case '/rest/v1/rpc/my_standing':
-        return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: null });
+        return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首' });
       case '/rest/v1/rpc/set_name': return reply(200, body?.new_name?.trim());
       default: return reply(404, { error: url.pathname });
     }
@@ -119,6 +119,12 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   await page.waitForTimeout(400);
   check(await page.locator('.ranks .rlist li').count() === 3, 'the tower board leaves off who has no floor');
   check(await page.evaluate(() => localStorage.getItem('ninefold.ranked')) === '1', 'the device remembers it signed in');
+  await page.keyboard.press('Escape');
+  await page.locator('.ranks button.act', { hasText: 'Back to the climb' }).click().catch(() => {});
+  await page.waitForSelector('.wears', { timeout: 4000 }).catch(() => {});
+  check(await page.locator('.wears').isVisible(), 'the title the boards gave is worn on 修, in English too',
+    await page.locator('.wears').textContent().catch(() => 'none'));
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-title.png` });
   check(errors.length === 0, 'no errors on the page', errors.join(' | '));
   await page.close();
 }

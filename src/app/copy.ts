@@ -164,6 +164,13 @@ export const RANKS = {
   gainCell: (n: number) => `+${n} layers`,
   towerCell: (n: number) => `floor ${n}`,
   haveOne: 'I already have a cultivator',
+  /** 譯 Every title in English beside its characters, on the board and on 修. */
+  titleNames: {
+    '天下第一': 'First Under Heaven',
+    '期首': 'First of the Week',
+    '期十': 'Top Ten of the Week',
+    '期百': 'Top Hundred of the Week',
+  } as Record<string, string>,
   back: 'Back to the climb',
   delete: 'Delete my ranked account',
   deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched.',

@@ -65,7 +65,7 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
                         <span className="rn">{r.rank}</span>
                         <span className="rw">
                           <b>{r.name}{r.me && <em> · {RANKS.you}</em>}</b>
-                          {r.title && <i className="cjk">{r.title}</i>}
+                          {r.title && <i><span className="cjk">{r.title}</span> {RANKS.titleNames[r.title] ?? ''}</i>}
                         </span>
                         <span className="rv">
                           {tab === 'climb' ? RANKS.climbCell(r.climb, r.marks)

@@ -21,7 +21,7 @@ import { Term } from '../ui/Term.tsx';
 import { Meet } from '../ui/Meet.tsx';
 import { Cave } from '../ui/Cave.tsx';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, RANKS } from '../copy.ts';
 import { advice } from '../advice.ts';
 import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide } from '../guide.ts';
@@ -30,8 +30,10 @@ import { useRef, useState } from 'react';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest }: {
+  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest, title }: {
   state: State;
+  /** 冠 The title the rankings gave this player, if any. */
+  title?: string | null;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
@@ -161,6 +163,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         }}>{heaven?.han ?? r.han}</h1>
         <span className="ask" aria-hidden="true">?</span>
       </button>
+      {/* 冠 A title earned on the boards, worn where the player looks every visit. */}
+      {title && (
+        <span className="wears"><b className="cjk">{title}</b> {RANKS.titleNames[title] ?? ''}</span>
+      )}
       <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
         {/* 梯 The layer number used to live here, and now lives on the ladder below
             with the eight other rungs around it. One number in one place. */}

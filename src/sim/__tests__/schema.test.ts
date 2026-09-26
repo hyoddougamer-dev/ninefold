@@ -117,6 +117,8 @@ describe('榜 the ranked schema', () => {
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
+    // Alpha is the only honest cultivator left on the Heaven List, so wears its crown.
+    expect((r.rows[0] as any).s.title).toBe('天下第一');
     const none = await as(null, `select my_standing() as s`);
     expect((none.rows[0] as any)?.s ?? null).toBe(null);
   });
