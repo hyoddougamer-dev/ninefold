@@ -16,7 +16,19 @@ type Profile = { name: string; strikes: number; suspect: boolean; banned: boolea
 type Store = any;
 
 const url = Deno.env.get('SUPABASE_URL')!;
-const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+// 鑰 The new secret key when the project has one, the legacy service role otherwise. The
+// legacy JWT keys are meant to be switched off (one was pasted into a chat), and a
+// function that only knew SUPABASE_SERVICE_ROLE_KEY would stop the day they were.
+function secretKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}') as Record<string, string>;
+    const k = keys.default ?? Object.values(keys)[0];
+    if (k) return k;
+  } catch { /* not set, or not JSON: fall through */ }
+  return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+}
+const service = secretKey();
 const db = createClient(url, service, { auth: { persistSession: false } });
 
 const CORS = {
