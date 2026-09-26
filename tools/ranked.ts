@@ -59,5 +59,13 @@ check(refused.status === 200 && refused.json?.ranked === false, 'an edited save 
 const tooSoon = await call('/functions/v1/sync', { save: fresh }, token);
 check(tooSoon.status === 429, 'syncing again at once is refused', tooSoon.status);
 
+// 去 And the test player leaves, or every deploy would put another Tester on the public
+// boards for real players to read. It is the same button a player presses to leave.
+const gone = await call('/rest/v1/rpc/delete_me', {}, token);
+check(gone.status < 300, 'a player can delete themselves', gone);
+const after = await call('/rest/v1/rpc/board', { kind: 'climb', lim: 100 }, KEY);
+check(after.status === 200 && Array.isArray(after.json) && !after.json.some((r: any) => r.name === `Tester ${now % 100000}`),
+  'and is gone from the board', after.status);
+
 console.log(failed ? `\n${failed} failed` : '\n榜 the ranked server holds.');
 process.exit(failed ? 1 : 0);
