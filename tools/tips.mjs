@@ -148,7 +148,11 @@ async function walk(realm) {
       await t.click({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(220);
       const r = await page.evaluate(LOOK);
-      if (!r) { fail(where, 'tapped and nothing opened'); continue; }
+      if (!r) {
+        fail(where, 'tapped and nothing opened');
+        await page.screenshot({ path: `/tmp/tip-none-${realm}-${name}-${i}.png` });
+        continue;
+      }
       opened++;
       if (r.l < 0 || r.t < 0 || r.l + r.w > r.vw || r.t + r.h > r.vh) {
         fail(where, `off the screen at ${r.l},${r.t} ${r.w}x${r.h} in ${r.vw}x${r.vh}`);

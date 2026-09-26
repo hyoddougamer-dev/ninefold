@@ -582,6 +582,9 @@ export const KEY = {
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
+  /** 緣 The bond, for the key and the tooltip. */
+  bond: (full: number) => `Every win over a beast fills its bond. The ${full}th win leaves a piece for certain, `
+    + 'a rank above the best that beast has given you, and the bond starts again.',
 
   fightHead: '戰 Fighting',
   fightBlurb: 'The whole fight is settled the moment you press. Losing costs nothing, ever.',
@@ -772,6 +775,10 @@ export const HUNT = {
   toward: (kills: number, at: number, name: string) =>
     (kills === 0 ? `not yet hunted · ${at} for ${name}` : `${kills} / ${at} toward ${name}`),
   mastered: 'every mark earned',
+  /** 物 What a beast leaves, said once on its row. */
+  leaves: 'Leaves',
+  /** 緣 The bond on the row: how far, and what the full one promises. */
+  bond: (n: number, full: number, rank: string) => `${n} / ${full} · then a piece for certain, ${rank} or better`,
   /**
    * 短 Eleven words where there were seventy-one.
    *
@@ -863,6 +870,24 @@ export const ITEM = {
   /** 頂 Why the 氣 line reads bigger than what it does. */
   qiCeiling: 'Qi from gear bends toward a ceiling, so this adds less than it reads.',
   rankOf: 'Its rank, of five',
+  /** 戰 What the piece changes in a fight, said as odds rather than as a percentage. */
+  fight: 'In a fight',
+  fightAgainst: (name: string, floor?: number) => (floor !== undefined
+    ? `The tower's floor ${floor}, the next one up:`
+    : `Against the ${name}, the nearest fight you are not sure of:`),
+  withWithout: 'without it, and with it',
+  /** 源 Who left it, and where its metal comes from. */
+  leftBy: (from: string | undefined, beast: string | null) => {
+    if (from === 'secret') return 'Found in the secret realm.';
+    if (from === 'road') return 'A gift from someone met on the road.';
+    return beast ? `Left by the ${beast}.` : null;
+  },
+  /** 解 What each line that moves a number does, in a sentence. */
+  axisSays: {
+    power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
+    rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
+    capacity: 'More places in the chest.',
+  } as Record<string, string>,
   wear: 'Wear it',
   swap: 'Wear it instead',
   anyway: 'Wear it anyway',

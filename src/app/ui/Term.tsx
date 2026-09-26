@@ -82,14 +82,22 @@ export function Term({ han, sense, plain, children }: {
     if (!from) return;
     const shut = () => { setFrom(null); setAt(null); };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') shut(); };
-    window.addEventListener('scroll', shut, true);
+    // 捲 A scroll closes the note only when it takes the character somewhere. Measured by
+    // 註 the tip harness, tapping 緣 on a tall hunt row nudged the list by one pixel (the
+    // browser keeping the tapped control in view), and a one-pixel scroll closed the
+    // note in the same breath it opened, so the tap looked like it did nothing.
+    const onScroll = () => {
+      const r = ref.current?.getBoundingClientRect();
+      if (!r || Math.abs(r.top - from.top) > 4 || Math.abs(r.left - from.left) > 4) shut();
+    };
+    window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', shut);
     window.addEventListener('keydown', onKey);
     const id = window.setTimeout(() => document.addEventListener('pointerdown', shut), 0);
     return () => {
       window.clearTimeout(id);
       document.removeEventListener('pointerdown', shut);
-      window.removeEventListener('scroll', shut, true);
+      window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', shut);
       window.removeEventListener('keydown', onKey);
     };

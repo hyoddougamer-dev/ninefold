@@ -64,6 +64,9 @@ for (const c of ALL_CARDS) put(c.han, c.name);
 for (const m of MEETINGS) put(m.han, m.name);
 for (const k of Object.values(ROOM_INFO)) put(k.han, k.name);
 for (const x of REALM_SETS) put(x.han, x.name);
+// 系 A tile's lower-left corner is the lineage's first character standing for the whole
+// lineage, so 凡 there is Mortal Iron, not the Common rank that shares its character.
+for (const x of REALM_SETS) put(x.han.slice(0, 1), x.name);
 for (const t of Object.values(TEMPLATE_BY_KEY)) put(t.han, t.name);
 for (const n of ALL_NODES) put(n.han, n.name);
 for (const p of Object.values(PATH_INFO)) put(p.han, p.name);

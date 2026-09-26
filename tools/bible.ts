@@ -1943,6 +1943,12 @@ const page = `<meta charset="utf-8">
   #paint .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint);
                              line-height:1.5; }
   #paint .shots b { color:var(--text); font-weight:600; }
+  #words .shots figure, #drops .shots figure { margin:14px 0 6px; }
+  #words .shots img, #drops .shots img { display:block; width:100%; height:auto; border-radius:10px; }
+  #words .shots figcaption, #drops .shots figcaption { margin-top:8px; font-size:13px; color:var(--faint); }
+  #drops .icongrid { display:grid; gap:6px; margin:14px 0 6px; overflow-x:auto; }
+  #drops .icongrid div { display:flex; gap:6px; }
+  #drops .icongrid svg { flex:none; width:48px; height:48px; }
 
   ${PLATE_CSS}
 </style>
@@ -2001,6 +2007,7 @@ const page = `<meta charset="utf-8">
       <a href="#ranked"><b>榜</b> The rankings, and why they can be trusted</a>
       <a href="#testers"><b>測</b> What the first testers said</a>
       <a href="#words"><b>判</b> The gear screen in words</a>
+      <a href="#drops"><b>掉</b> Drops with a logic</a>
       <a href="#noite"><b>夜</b> A noite de 26 de setembro, em imagens</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
@@ -4422,6 +4429,59 @@ const page = `<meta charset="utf-8">
       <figcaption><b>Phone and PC.</b> 榜 Ranks with #4 on it. On the PC the guide's arrow
         now points at a rail tab from its right, where it used to sit on the word above.</figcaption>
     </figure></div>
+  </section>
+
+  <section class="sec" id="drops">
+    <h2><span class="h">掉</span> Drops with a logic, and every piece its own look</h2>
+    <p class="t">Bruno, after the gear screen: <i>"está tudo muito random e devia existir
+      certos realms, etc, onde deveriam dropar coisas mais raras e deve ser lógico, não 100%
+      rng"</i>, and <i>"cada item deve ter o seu icone e ser diferente"</i>. He chose five of
+      seven proposals from a mockup. Measured before any of it, an active cultivator picked up
+      158 pieces between the sixth realm and the ninth and wore three.</p>
+
+    <h3>承 Refining follows the place on the body</h3>
+    <p class="t">Putting a piece on over another trades their refining levels: the new piece
+      takes the higher count and the old one keeps the lower, so nothing is made or lost. It
+      was the reason no fresh drop could ever be worth wearing late in the climb: the old
+      piece, refined twenty times, was worth twice itself. The same cultivator now wears
+      eleven. The endgame's footing moved one step to hold, 1.59 to 1.58, because a
+      cultivator now arrives at the Dragon about a third stronger.</p>
+
+    <h3>物 Each beast leaves what it is</h3>
+    <p class="t">Every beast carries three shapes of gear, chosen by what it is: the plated
+      centipede leaves armour and boots, the grave worm what the dead were buried with. Each
+      realm's four beasts cover all six places on the body, and every one of the fifty-four
+      shapes is left by somebody. The hunt row shows the three, drawn as they would fall.</p>
+
+    <h3>緣 A bond that ends bad luck</h3>
+    <p class="t">Every win over a beast fills its bond. The tenth leaves a piece for certain,
+      a rank above the best that beast has given, from Mystic up to Earth for a common beast
+      and Heaven for a warden. The bar is on the row, with what it promises.</p>
+
+    <h3>戰 The sheet says what a piece does in a fight</h3>
+    <p class="t">Under the verdict, the odds against the nearest fight you are not sure of,
+      without the piece and with it. When everything in reach is sure, it is the tower's
+      next floor. Then who left it and the line its lineage has always had, and a sentence
+      for each line that moves a number.</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/drops.webp" alt="The hunt row with the three shapes a beast leaves and its bond bar, the chest in the new materials, and the item sheet with fight odds and where the piece came from">
+      <figcaption><b>Hunt, chest and sheet, at 400 wide.</b> The Starfall Horned Helm now reads
+        +15.9% power, because it would take the eighteen levels of the visor it replaces.</figcaption>
+    </figure></div>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/drops-320.webp" alt="The same hunt row and sheet on a 320 pixel phone">
+      <figcaption><b>At 320.</b> What a beast leaves and its bond run under the whole row, so
+        the odds keep their place beside the name.</figcaption>
+    </figure></div>
+
+    <h3>形 No two of the 486 pieces alike</h3>
+    <p class="t">Every shape has three drawings, mortal for realms one to three, spirit for
+      four to six and immortal for seven to nine, 162 drawings from game-icons.net and none
+      of them used twice. Each piece is painted in its lineage's material, from village iron
+      to an immortal's husk, with the one mark that material carries. The rank stays in the
+      frame, where it always was. Below, five shapes across the nine realms, all Mystic.</p>
+    <div class="icongrid">${['sword', 'horned', 'trident', 'orb', 'plainring'].map((a) =>
+      `<div>${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((r) => gearTile({ id: 'b', template: `${a}${r}`, rarity: 'mystic', rolls: [] }, { size: 48 })).join('')}</div>`).join('')}</div>
   </section>
 
   <section class="sec" id="words">

@@ -4,6 +4,7 @@ import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '..
 import { STANCES } from '../data/arts.ts';
 import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
+import { FATE_FULL } from '../sim/balance.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
 import { AWAKEN, CAVE, FIGURE, KEY, SECRET } from './copy.ts';
@@ -70,7 +71,10 @@ export const GROUPS: readonly Group[] = [
   },
   {
     title: KEY.marksHead, blurb: KEY.marksBlurb,
-    rows: MARK_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.mark(MARKS[i], m.pays) })),
+    rows: [
+      ...MARK_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.mark(MARKS[i], m.pays) })),
+      { han: '緣', name: 'Bond', note: KEY.bond(FATE_FULL) },
+    ],
   },
   {
     title: KEY.fightHead, blurb: KEY.fightBlurb,

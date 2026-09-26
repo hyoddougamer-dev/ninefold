@@ -1,4 +1,5 @@
 import { LAYERS_PER_REALM } from '../sim/balance.ts';
+import { ERA_ICONS, eraOf } from './gearIcons.ts';
 
 /**
  * 器 Gear.
@@ -311,7 +312,8 @@ export const GEAR: readonly GearTemplate[] = ARCHETYPES.flatMap((arch) =>
     han: `${rs.han}${arch.han}`,
     name: `${rs.word} ${arch.name}`,
     slot: arch.slot,
-    icon: arch.icon,
+    // 形 The drawing grows with the era; see data/gearIcons.ts.
+    icon: ERA_ICONS[arch.key]?.[eraOf(rs.realm)] ?? arch.icon,
     realm: rs.realm,
     affix: arch.affix,
     archetype: arch.key,

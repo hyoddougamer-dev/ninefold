@@ -18,6 +18,11 @@ import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
 import { isQuarry, weekLeft } from '../../sim/week.ts';
+import { ARCHETYPES, RARITIES, RARITY_INFO } from '../../data/gear.ts';
+import { gearTile } from '../../art/gear.ts';
+import { Svg } from '../ui/Svg.tsx';
+import { fateOf, fatePromise } from '../../sim/fate.ts';
+import { FATE_FULL } from '../../sim/balance.ts';
 
 /**
  * 狩 Free hunting.
@@ -43,6 +48,8 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
   const tally = recordTally(state.killed);
+  // 器 Nothing falls before gear opens, so the row says nothing about it either.
+  const gearOpen = isOpen(state.realm, 'gear');
 
   /**
    * 錄 The order is the point of this screen.
@@ -201,6 +208,36 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
               {/* 圍 Ten wins earn the right to stop tapping. The tag sits inside the
                   row but swallows its own click, so the row still fights once. */}
               {canDrive(state, b) && <DriveTag onOpen={() => onDrive(b.key)} />}
+              {/* 行 Under the row, across its whole width: the name column is too narrow at
+                  320 to hold three pieces and a bar beside the odds. */}
+                {/* 物 What this beast leaves, drawn as it would fall to you now: its
+                  lineage is the older of its realm and yours. */}
+              {gearOpen && (
+                <span className="bleaves">
+                  <i>{HUNT.leaves}</i>
+                  {b.leaves.map((a) => {
+                    const arch = ARCHETYPES.find((x) => x.key === a);
+                    return arch ? (
+                      <em key={a} title={arch.name}>
+                        <Svg html={gearTile({ id: 'l', template: `${a}${Math.min(b.realm, state.realm)}`,
+                          rarity: RARITIES[fatePromise(state, b)], rolls: [] }, { size: 26 })} />
+                        <span>{arch.name}</span>
+                      </em>
+                    ) : null;
+                  })}
+                </span>
+              )}
+              {/* 緣 The bond: how many wins to a certain piece, and what it promises. */}
+              {gearOpen && (() => {
+                const f = fateOf(state, b.key);
+                return (
+                  <span className="bfate">
+                    <b className="cjk"><Term han="緣" /></b>
+                    <span className="bar"><i style={{ width: `${(f.n / FATE_FULL) * 100}%` }} /></span>
+                    <i>{HUNT.bond(f.n, FATE_FULL, RARITY_INFO[RARITIES[fatePromise(state, b)]].name)}</i>
+                  </span>
+                );
+              })()}
             </button>
           );
         })}
