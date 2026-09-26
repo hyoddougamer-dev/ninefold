@@ -38,6 +38,26 @@ jobs:
       # The build is not published if the suite is red. A broken page is worse than an
       # old one, because the old one is what everybody already has cached.
       - run: npm test
+      # 榜 The ranked server's public key, read from the project at build time so that a
+      # key rotated in the Supabase dashboard is picked up on the next build without
+      # anybody editing a file. Without the token the game falls back to the key in
+      # src/net/config.ts. The key is public by design; the token that reads it is not,
+      # and stays a secret.
+      - name: The ranked server's public key
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ]; then
+            KEY=$(curl -sS -f "https://api.supabase.com/v1/projects/yqppvmuwlhibswbbvjzz/api-keys" \
+              -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | node -e '
+                const k = JSON.parse(require("fs").readFileSync(0, "utf8"));
+                const pub = k.find((x) => x.type === "publishable") ?? k.find((x) => x.name === "anon");
+                process.stdout.write(pub ? pub.api_key : "");') || KEY=""
+            if [ -n "$KEY" ]; then
+              echo "VITE_SUPABASE_KEY=$KEY" >> "$GITHUB_ENV"
+              echo "key read from the project"
+            fi
+          fi
       - run: npm run build
       # 測 The testers' APK, beside the game, so it downloads from the game's own address.
       # The release link redirects to a signed storage URL, and a browser inside another

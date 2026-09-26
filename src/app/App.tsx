@@ -29,6 +29,10 @@ import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Prologue } from './ui/Prologue.tsx';
+import { CloudPick, Ranks } from './ui/Ranks.tsx';
+import * as cloud from '../net/cloud.ts';
+import { layersOpened } from '../sim/state.ts';
+import { importSave } from '../sim/save.ts';
 import { armJuice, burst, centreOf, float } from './juice.ts';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
@@ -52,7 +56,7 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
-import { JUICE, RETURN, TABS_COPY } from './copy.ts';
+import { JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
@@ -202,7 +206,8 @@ export function App() {
     // the help silently stopped appearing for new players.
     // 序 It opens on the prologue now, which hands over to 相 and then the guide; the
     // help sheet is what the Menu opens.
-    if (r.secondsAway === 0 && untouched(r.state)) setPrologue(true);
+    // 雲 Somebody arriving from a sign-in link has a cultivator already: no prologue.
+    if (r.secondsAway === 0 && untouched(r.state) && !cloud.returningFromLink()) setPrologue(true);
     // The load came back whole, so this is a state worth keeping a spare of.
     keepSpare(r.state);
 
@@ -304,6 +309,59 @@ export function App() {
    */
   const latest = useRef(state);
   latest.current = state;
+
+  // ── 榜 The ranked server ────────────────────────────────────────────────
+  // A player who has signed in is synced when the game opens, every five minutes, and
+  // whenever the app is put away. Nothing here waits on the network to play: a sync that
+  // fails is a sync that did not happen, and the game goes on exactly as it was.
+  const [ranks, setRanks] = useState(false);
+  const [who, setWho] = useState<cloud.Who | null>(null);
+  const [synced, setSynced] = useState<cloud.Synced | null>(null);
+  const [syncedAt, setSyncedAt] = useState<number | null>(null);
+  const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
+  const pushing = useRef(false);
+  const push = useCallback(async (name?: string) => {
+    if (pushing.current) return;
+    pushing.current = true;
+    try {
+      const r = await cloud.sync(latest.current, name);
+      if (!('error' in r)) { setSynced(r); setSyncedAt(Date.now() / 1000); }
+    } catch { /* offline: the next one will do */ }
+    pushing.current = false;
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
+    // Read before anything else runs: the library takes the link out of the address as
+    // soon as it has read it, and after that there is no telling it was ever there.
+    const fromLink = cloud.returningFromLink();
+    if (!cloud.remembered() && !fromLink) return;
+    let live = true;
+    (async () => {
+      const w = await cloud.who().catch(() => null);
+      if (!live || !w) return;
+      setWho(w);
+      // 雲 Arriving from an email link on a device that may not be the one the cultivator
+      // grew up on: if the cloud holds one further along, ask which goes on.
+      if (fromLink && !w.guest) {
+        const got = await cloud.pull().catch(() => null);
+        const there = got?.save ? importSave(JSON.stringify(got.save), now()).state : null;
+        history.replaceState(null, '', location.pathname);
+        if (there && layersOpened(there) + there.tribulation > layersOpened(latest.current) + latest.current.tribulation) {
+          setCloudPick({ there, here: latest.current });
+          return;
+        }
+      }
+      void push();
+    })();
+    return () => { live = false; };
+  }, [ready, push]);
+  useEffect(() => {
+    if (!who) return;
+    const id = setInterval(() => { void push(); }, 5 * 60 * 1000);
+    const away = () => { if (document.visibilityState === 'hidden') void push(); };
+    document.addEventListener('visibilitychange', away);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', away); };
+  }, [who, push]);
   useEffect(() => {
     if (!ready) return;
     const id = setInterval(() => save(latest.current), 4000);
@@ -593,8 +651,8 @@ export function App() {
   const step = guide(state);
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
-  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue;
-  const covered = help || prologue || key || stele || saving || realmPage || menu || !!driving
+  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
+  const covered = help || prologue || ranks || !!cloudPick || key || stele || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   const coachAt = step && !covered && (step.tab ?? 'cultivate') === tab
@@ -682,6 +740,7 @@ export function App() {
               ['?', MENU.help, () => setHelp(true)],
               ['釋', MENU.key, () => setKey(true)],
               ['碑', MENU.stele, () => setStele(true)],
+              ['榜', RANKS.menu, () => setRanks(true)],
             ] as const).map(([han, label, go]) => (
               <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
                 <b className="cjk">{han}</b><span>{label}</span>
@@ -757,6 +816,7 @@ export function App() {
         const out = saving ? () => { setSaving(false); sfx.tap(); }
           : key ? () => { setKey(false); sfx.tap(); }
           : help ? () => { setHelp(false); sfx.tap(); }
+          : ranks ? () => { setRanks(false); sfx.tap(); }
           : inspect ? () => { setInspect(null); sfx.tap(); }
           : driving ? () => { setDriving(null); sfx.tap(); }
           : realmPage ? () => { setRealmPage(false); sfx.tap(); }
@@ -824,8 +884,31 @@ export function App() {
         </div>
       )}
 
-      {prologue && (
-        <Prologue sky={pictureOf('realm', '1')} onDone={() => { setPrologue(false); sfx.tap(); }} />
+      {ranks && (
+        <Ranks
+          who={who}
+          synced={synced}
+          syncedAt={syncedAt}
+          onEnter={(w, name) => { setWho(w); void push(name); sfx.mark(); }}
+          onSignOut={() => { void cloud.signOut(); setWho(null); setSynced(null); sfx.tap(); }}
+          onClose={() => { setRanks(false); sfx.tap(); }}
+        />
+      )}
+      {cloudPick && (
+        <CloudPick
+          there={RANKS.where(cloudPick.there.realm, cloudPick.there.layer)}
+          here={RANKS.where(cloudPick.here.realm, cloudPick.here.layer)}
+          onTake={() => {
+            keepSpare(cloudPick.here);
+            setState(cloudPick.there); save(cloudPick.there);
+            setCloudPick(null); void push(); sfx.mark();
+          }}
+          onKeep={() => { keepSpare(cloudPick.there); setCloudPick(null); void push(); sfx.tap(); }}
+        />
+      )}
+            {prologue && (
+        <Prologue sky={pictureOf('realm', '1')} onDone={() => { setPrologue(false); sfx.tap(); }}
+          onHaveOne={() => { setPrologue(false); setRanks(true); sfx.tap(); }} />
       )}
       {help && (
         <Help

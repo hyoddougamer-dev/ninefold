@@ -2244,6 +2244,69 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                     color: var(--faint); }
 .weekband .wsay u i { font-style: normal; }
 
+/* ── 榜 the rankings, and the sign-in ─────────────────────────────────────── */
+
+/* It is a .help sheet for its frame (so the phone, the desktop window and the ✕ all
+   treat it as one) and everything inside is its own: nothing here is shared. */
+.ranks { gap: 14px; }
+.ranks .rstatus { margin: 0; font-size: 13px; line-height: 1.5; padding: 9px 12px; border-radius: 10px;
+                  border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+.ranks .rstatus[data-tone='good'] { border-color: rgba(127,180,149,.45); color: var(--jade); }
+.ranks .rstatus[data-tone='wait'] { border-color: rgba(212,175,86,.4); color: var(--gold); }
+.ranks .rstatus[data-tone='bad'] { border-color: rgba(210,96,78,.5); color: var(--cinnabar); }
+.ranks .rtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ranks .rtabs button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px;
+                       border-radius: 11px; border: 1px solid var(--line); background: var(--panel);
+                       color: var(--faint); font: inherit; cursor: pointer; }
+.ranks .rtabs button b { font: 400 19px/1.1 'Noto Serif SC', serif; }
+.ranks .rtabs button span { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; }
+.ranks .rtabs button[data-on='true'] { color: var(--gold); border-color: rgba(212,175,86,.6);
+                                       background: rgba(212,175,86,.07); }
+.ranks .rwhat, .ranks .rnote { margin: 0; font-size: 13px; color: var(--faint); line-height: 1.55; }
+.ranks .rnote.small { font-size: 12px; }
+.ranks .rnote b { color: var(--text); font-weight: 500; }
+.ranks .rlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.ranks .rlist li { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+                   padding: 9px 12px; border-radius: 10px; background: var(--panel); border: 1px solid transparent;
+                   animation: rowin .3s ease-out both; }
+.ranks .rlist li:nth-child(n+2) { animation-delay: .03s; }
+.ranks .rlist li:nth-child(n+4) { animation-delay: .06s; }
+@keyframes rowin { from { opacity: 0; transform: translateY(4px); } }
+.ranks .rlist li[data-me='true'] { border-color: var(--jade); background: rgba(127,180,149,.08); }
+.ranks .rn { font: 700 18px/1 Rajdhani, sans-serif; color: var(--faint); text-align: center; }
+.ranks .rlist li[data-top='true'] .rn { color: var(--gold); text-shadow: 0 0 12px rgba(212,175,86,.45); }
+.ranks .rw { display: flex; flex-direction: column; min-width: 0; }
+.ranks .rw b { font-weight: 500; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranks .rw b em { font-style: normal; color: var(--jade); font-size: 12px; }
+.ranks .rw i { font-style: normal; font-size: 12px; color: var(--gold); }
+.ranks .rv { font: 600 13px/1.2 Rajdhani, sans-serif; color: var(--text); text-align: right; white-space: nowrap; }
+.ranks .rjoin, .ranks .raccount { display: flex; flex-direction: column; gap: 10px; padding: 14px;
+                                  border: 1px solid var(--line); border-radius: 13px; background: var(--panel); }
+.ranks .rhead { font-weight: 500; font-size: 16px; }
+.ranks .rhead.small { font-size: 14px; }
+.ranks label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--faint); }
+.ranks input { font: inherit; font-size: 15px; color: var(--text); background: var(--ground);
+               border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; min-width: 0; flex: 1; }
+.ranks input:focus { outline: none; border-color: var(--jade); }
+.ranks .ror { display: flex; align-items: center; gap: 10px; margin: 2px 0; color: var(--faint); font-size: 12px; }
+.ranks .ror::before, .ranks .ror::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.ranks .rrow { display: flex; gap: 8px; align-items: center; }
+.ranks .rname { flex: 1; font-size: 17px; font-weight: 500; }
+.ranks .act.small { width: auto; padding: 8px 14px; font: 500 13px/1.2 Archivo, ui-sans-serif, system-ui, sans-serif;
+                     letter-spacing: .02em; flex: none; }
+
+/* 雲 Two cultivators, one question. */
+.cloudpick { position: absolute; inset: 0; z-index: 15; background: var(--ground); display: flex;
+             flex-direction: column; justify-content: center; gap: 12px; padding: 30px 24px; text-align: center; }
+.cloudpick > b { font-size: 46px; font-weight: 400; color: var(--jade); line-height: 1; }
+.cloudpick h2 { margin: 0; font-weight: 500; font-size: 20px; }
+.cloudpick p { margin: 0; color: var(--faint); font-size: 14px; line-height: 1.55; }
+
+/* 序 The quiet way in for somebody who already has a cultivator. */
+.prologue .phave { background: none; border: 0; color: var(--faint); font: inherit; font-size: 13.5px;
+                   text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 4px; }
+.prologue .phave:hover { color: var(--text); }
+
 /* ── 勁 juice: ripples, rising numbers, ink bursts ─────────────────────────
 
    One layer over everything (see juice.ts), outside every screen so no transform traps
@@ -2398,7 +2461,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
   /* 窗 Everything that covers a phone opens as a window over the game, which stays in
      view dimmed behind it. The shadow is the dimming, so nothing else is needed. */
-  .arena, .help, .whom, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
+  .arena, .help, .whom, .cloudpick, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
     left: 0; right: 0; top: 32px; bottom: 32px; margin-inline: auto; width: min(640px, 100%);
     border: 1px solid var(--line); border-radius: 16px; overflow: hidden auto;
     box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .7), 0 30px 80px rgba(0, 0, 0, .6); }
@@ -2412,7 +2475,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
            min-height: min(700px, calc(100% - 64px)); }
   /* A reading window is as tall as what it says and sits in the middle of the screen,
      rather than stretching to the window's height with a hole above its button. */
-  .help, .whom { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px); }
+  .help, .whom, .cloudpick { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px); }
   .whom { padding-block: 44px; }
   /* 出口 The way out sits beside the window it closes, not in the far corner of a
      monitor, two thirds of a screen away from what it belongs to. */

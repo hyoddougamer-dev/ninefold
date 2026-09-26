@@ -97,6 +97,73 @@ export const JUICE = {
   learned: '道 learned',
 };
 
+/**
+ * 榜 The rankings, and the one sign-in the game asks for.
+ *
+ * It asks for as little as it can: a name, and then either nothing (a guest, on this
+ * device) or an email (the same cultivator on every device). No password, ever: the link
+ * in the email is the password. And it says, before anything is asked, why the boards
+ * can be trusted, because a board full of cheaters is worse than no board.
+ */
+export const RANKS = {
+  title: '榜 Rankings',
+  menu: 'Rankings',
+  boards: {
+    climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit.' },
+    week: { han: '期榜', name: 'This Week', what: 'Layers climbed since Monday. Everybody starts the week level.' },
+    tower: { han: '塔榜', name: 'The Tower', what: 'The highest floor of the Endless Tower.' },
+  },
+  joinHead: 'Join the rankings',
+  joinWhy: 'Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up. Nothing about your own game changes.',
+  namePrompt: 'The name the boards show',
+  guest: 'Enter as a guest',
+  guestNote: 'Ranked on this device. Add an email later to keep it on every device.',
+  or: 'or',
+  emailPrompt: 'Your email',
+  sendLink: 'Send me a sign-in link',
+  send: 'Send',
+  linkNote: 'For a cultivator you already have on another device, or to keep this one everywhere. No password: the link is the key.',
+  linkSent: (email: string) => `A link is on its way to ${email}. Open it on this device.`,
+  keepHead: 'Keep this cultivator everywhere',
+  keepNote: 'Add an email and the same cultivator opens on any device you sign in on.',
+  signedAs: (email: string) => `Signed in as ${email}`,
+  guestAs: 'Playing as a guest on this device',
+  signOut: 'Sign out',
+  rename: 'Change name',
+  save: 'Save',
+  you: 'you',
+  empty: 'Nobody here yet. The first to climb is the first on the board.',
+  loading: 'Reading the boards…',
+  offline: 'The boards cannot be reached right now. Your game goes on as it was.',
+  status: {
+    verified: (ago: string) => `Your climb is ranked, checked ${ago} ago.`,
+    waiting: (h: string) => `Your climb is ahead of real time by ${h}. It will be ranked as the hours pass.`,
+    behind: 'This device has an older copy than the one ranked. Nothing is lost.',
+    refused: 'Something in this save could not have happened. It is not ranked.',
+    suspect: 'Your climb is faster than anybody honest was measured to go, so it is held for review.',
+    never: 'Not synced yet.',
+  },
+  nameErrors: {
+    taken: 'That name is taken.',
+    length: 'Two to twenty letters.',
+    characters: 'Letters, numbers and spaces only.',
+    offline: 'That could not be saved just now.',
+  },
+  titlesHead: '冠 Titles',
+  titles: 'The first on the Heaven List wears 天下第一 First Under Heaven. The week\'s top 1, 10 and 100 wear 期首, 期十 or 期百 for the week after.',
+  cloudHead: 'A cultivator in the cloud',
+  cloudFound: (there: string, here: string) => `The cloud holds a cultivator at ${there}. This device has one at ${here}.`,
+  cloudTake: 'Continue from the cloud',
+  cloudKeep: 'Keep this one',
+  cloudNote: 'The one not chosen is kept as the spare copy, so it can still be restored from the Menu.',
+  where: (realm: number, layer: number) => `realm ${realm}, layer ${layer}`,
+  climbCell: (climb: number, marks: number) => marks > 0 ? `summit · 雷 ${marks}` : `realm ${Math.floor(climb / 9) + 1} · ${climb % 9}/9`,
+  gainCell: (n: number) => `+${n} layers`,
+  towerCell: (n: number) => `floor ${n}`,
+  haveOne: 'I already have a cultivator',
+  back: 'Back to the climb',
+};
+
 export const TABS_COPY = {
   /** 鎖 A tab this cultivator has not reached, named by the realm's number. */
   opensAt: (realm: number) => `realm ${realm}`,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PROLOGUE } from '../copy.ts';
+import { PROLOGUE, RANKS } from '../copy.ts';
 
 /**
  * 序 The prologue: the game's name, then the whole climb in three pictures.
@@ -10,7 +10,12 @@ import { PROLOGUE } from '../copy.ts';
  * A save that has begun never sees it again, because it opens on the same test that
  * opened the help sheet (save.ts untouched).
  */
-export function Prologue({ sky, onDone }: { sky: string | null; onDone: () => void }) {
+export function Prologue({ sky, onDone, onHaveOne }: {
+  sky: string | null;
+  onDone: () => void;
+  /** 雲 For somebody arriving on a new device: straight to signing in. */
+  onHaveOne?: () => void;
+}) {
   const [page, setPage] = useState(0);
   const pages = 2;
   return (
@@ -43,6 +48,9 @@ export function Prologue({ sky, onDone }: { sky: string | null; onDone: () => vo
         <button className="act" onClick={() => (page + 1 < pages ? setPage(page + 1) : onDone())}>
           {page === 0 ? <>始 <span>{PROLOGUE.begin}</span></> : <>進 <span>{PROLOGUE.next}</span></>}
         </button>
+        {page === 0 && onHaveOne && (
+          <button className="phave" onClick={onHaveOne}>{RANKS.haveOne}</button>
+        )}
       </div>
     </div>
   );
