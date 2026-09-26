@@ -17,15 +17,22 @@ const mail = (lead) => `
   <p style="margin:0"><a href="{{ .ConfirmationURL }}" style="color:#7FB495">Sign in to Ninefold</a></p>
 </div>`;
 
-process.stdout.write(JSON.stringify({
+// `core` is what the game cannot sign anybody in without; `mail` is the wording of the
+// emails. The workflow sends them apart, so a refused template never holds up a guest.
+const core = {
   external_anonymous_users_enabled: true,
   site_url: SITE,
   uri_allow_list: `${SITE}**,http://localhost:4173/**`,
   mailer_otp_length: 6,
+};
+const mailer = {
   mailer_subjects_magic_link: 'Your Ninefold sign-in code',
   mailer_templates_magic_link_content: mail('Your code to sign in:'),
   mailer_subjects_confirmation: 'Your Ninefold sign-in code',
   mailer_templates_confirmation_content: mail('Your code to sign in:'),
   mailer_subjects_email_change: 'Keep your Ninefold cultivator everywhere',
   mailer_templates_email_change_content: mail('Your code to add this email to your cultivator:'),
-}));
+};
+
+const part = process.argv[2];
+process.stdout.write(JSON.stringify(part === 'core' ? core : part === 'mail' ? mailer : { ...core, ...mailer }));

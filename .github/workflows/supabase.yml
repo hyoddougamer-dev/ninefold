@@ -76,11 +76,22 @@ jobs:
         if: steps.keys.outputs.go == 'yes'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        # Two calls, because the API refuses a whole PATCH for one field it will not take
+        # (the email templates can be locked on a project without its own mail server),
+        # and guests and links must not wait on the email's wording. The API's own
+        # answer is printed either way, since a bare 400 says nothing.
         run: |
-          node tools/auth-config.mjs > /tmp/auth.json
-          curl -sS -f -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
-            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
-            --data @/tmp/auth.json -o /dev/null && echo "auth configured"
+          patch() {
+            code=$(curl -sS -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
+              -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+              --data @"$1" -o /tmp/answer.json -w '%{http_code}')
+            echo "$1 → $code"
+            [ "$code" -lt 300 ] || { head -c 600 /tmp/answer.json; echo; return 1; }
+          }
+          node tools/auth-config.mjs core > /tmp/core.json
+          node tools/auth-config.mjs mail > /tmp/mail.json
+          patch /tmp/core.json
+          patch /tmp/mail.json || echo "::warning::The email templates were refused; sign-in emails carry the link only."
 
       - name: The public key, read from the project (never stored here)
         if: steps.keys.outputs.go == 'yes'
