@@ -137,6 +137,24 @@ Each of these cost real time once. They are written down so they cost it once.
   new one was published instead. Keep the page's weight in mind: if it ever has to be
   republished over itself, the drawings are what make that impossible.
 
+## 榜 The ranked server (Supabase, live since 2026-09-26)
+
+- Project `yqppvmuwlhibswbbvjzz`. **This sandbox cannot reach supabase.co** (the proxy
+  answers 403), so nothing is done against it from here. Everything goes through
+  `.github/workflows/supabase.yml`: migrations, the `sync` function, auth settings, then
+  `tools/ranked.ts` attacking the live server. It runs on a push that touches
+  `supabase/**`, the sim, or the workflow, and by hand with `workflow_dispatch`.
+- Secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are set in GitHub. The legacy
+  JWT keys are **off**: the game uses the publishable key, the function the new secret
+  key (`SUPABASE_SECRET_KEYS`). Never put a secret key in the repo or ask for one in chat.
+- Supabase refuses custom email templates on the free plan without its own SMTP, so the
+  sign-in email is a link with no code. Inside the APK that link opens the browser, so
+  testers there play as guests.
+- Auth settings take a few seconds to apply after the PATCH says 200; the workflow waits
+  for `/auth/v1/settings` before attacking.
+- Deleting real rows on the live database is refused by the safety check unless Bruno asks
+  for it by name and the migration is scoped to exactly what he asked for.
+
 ## Git
 
 Develop on `claude/idle-fantasy-mobile-game-nzn90r`; Bruno has also authorised pushing

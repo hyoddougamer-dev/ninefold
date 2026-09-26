@@ -5818,11 +5818,33 @@
       name on 修.</p>
     <div class="shots"><figure>
       <img src="bible-art/shot/ranks.webp" alt="The rankings: joining as a guest, the Heaven List with the player marked, and a new device asking which cultivator goes on">
-      <figcaption><b>Join, the board, a new device.</b> A name and a guest, or an email with a
-        six-digit code (the link opens the phone's browser inside the app, so the code is
-        typed where the game is). On a new device the cloud's cultivator is offered before
+      <figcaption><b>Join, the board, a new device.</b> A name and a guest, or an email and
+        the link it carries. On a new device the cloud's cultivator is offered before
         anything is synced.</figcaption>
     </figure></div>
+
+    <h3>活 Live, and attacked on every deploy</h3>
+    <p class="t">The server went live on 26 September 2026. Every deploy ends by attacking it
+      with nothing but the public key a phone has: a guest signs up, syncs, lands on the
+      board and names itself. It then fails to write a standing directly and fails to read
+      anybody's save. A save with a week of qi in thirty seconds is not ranked, and a second
+      sync straight after is refused. Last, the test player deletes itself and the board is
+      checked for leftovers.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">鑰</b> <em>The old keys are off</em>
+        <i>A secret key was pasted into a chat on the way here, so the legacy JWT keys were
+        switched off the same day. The game uses the publishable key and the function uses
+        the new secret key, and the attack passed again with the old ones gone.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">信</b> <em>No code in the email, yet</em>
+        <i>Supabase refuses custom email templates on the free plan without a mail server of
+        its own. So the sign-in email carries the link only, and the screen no longer
+        promises a code. Inside the APK a link opens the browser rather than the game, so
+        testers there play as guests until a mail server is set up.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">待</b> <em>A 200 is not the setting</em>
+        <i>The first live run switched guests on and attacked two seconds later, and was told
+        guests were off. The auth service takes a moment to apply what it accepted, so the
+        deploy now waits until the project itself says guests are on.</i></span></div>
+    </div>
   </section>
 
   <section class="sec" id="noite">
