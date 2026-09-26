@@ -165,6 +165,12 @@ async function walk(label, state) {
     if (text.trim().length < 40) fail(`${label}/${name}`, `rendered almost nothing (${text.trim().length} characters)`);
     const junk = text.match(/NaN|undefined|Infinity|\[object/);
     if (junk) fail(`${label}/${name}`, `shows "${junk[0]}" to the player`);
+    // 像 A portrait that is on the page and draws nothing. The layered one is HTML, and
+    // put inside an <svg> it has no box at all: the gear ring shipped with an empty
+    // middle and every check above still passed, because the text was all there.
+    const blank = await page.$$eval('.sheet .qa-stack', (xs) =>
+      xs.filter((x) => { const r = x.getBoundingClientRect(); return r.width < 8 || r.height < 8; }).length);
+    if (blank) fail(`${label}/${name}`, `${blank} portrait${blank === 1 ? '' : 's'} with no size, drawn as nothing`);
   }
 
   // 收 The corner, and every panel behind it. A tab may itself have raised a sheet, so

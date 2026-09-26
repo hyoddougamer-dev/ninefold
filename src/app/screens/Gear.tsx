@@ -95,12 +95,12 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
 
       <div className="wheel">
         <div className="wring" />
+        {/* 層 The portrait is a stack of HTML-wrapped layers now, so it cannot sit
+            inside an <svg> the way the one-piece picture did: a <span> in SVG draws
+            nothing, and the ring had an empty middle. The rim goes over it on its own. */}
         <div className="wcore">
-          <svg viewBox={`0 0 ${S} ${S}`} width="100%" height="100%">
-            <g dangerouslySetInnerHTML={{
-              __html: portraitLayers({ realm: state.realm, pulse, who: state.self })
-                .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''),
-            }} />
+          <Svg className="wface" html={portraitLayers({ realm: state.realm, pulse, who: state.self })} />
+          <svg className="wrim" viewBox={`0 0 ${S} ${S}`} aria-hidden="true">
             <g dangerouslySetInnerHTML={{ __html: wornRim(best, S) }} />
           </svg>
         </div>

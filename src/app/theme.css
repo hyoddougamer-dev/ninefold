@@ -1149,7 +1149,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 .wheel { position: relative; aspect-ratio: 1; width: 100%; max-width: 320px; margin: 6px auto 4px; }
 .wheel .wcore { position: absolute; inset: 22%; }
-.wheel .wcore svg { display: block; width: 100%; height: 100%; }
+.wheel .wcore .wface { position: absolute; inset: 0; display: block; }
+.wheel .wcore .wrim { position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 .wheel .wring { position: absolute; inset: 12%; border-radius: 50%; border: 1px dashed var(--line); }
 .orb { position: absolute; transform: translate(-50%, -50%); background: none; border: 0;
        padding: 0; cursor: pointer; line-height: 0; }
