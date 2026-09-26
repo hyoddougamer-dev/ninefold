@@ -112,16 +112,23 @@ const STEPS = [0.45, 0.62, 0.84];
  * So the first realm's three commons are placed where the player actually stands while
  * climbing it. Measured, at this spacing:
  *
- *     山鼠 the rat     力  2.4    winnable at 12 minutes
- *     野犬 the hound   力  7.0    at 1.6 hours
+ *     山鼠 the rat     力  0.7    98% from the first second
+ *     野犬 the hound   力  4.0    at about 45 minutes
  *     澤蛙 the frog    力 14.0    at 3.5 hours
  *     妖狐 the fox     力 29.7    at the cap, as every warden is
  *
- * Four fights across the first realm, the first of them inside the first sitting. The
- * warden is untouched: a warden is always a cultivator who has filled the realm's cap,
- * and that is the one number in the realm that should not move.
+ * 初 The rat used to stand at 2.4, winnable at twelve minutes. Bruno, having watched
+ * testers start: *"não conseguem fazer nada até terem power suficiente para os
+ * primeiros monstros."* Twelve minutes is a long time to be told no by the only button
+ * that is not a shop. A fresh cultivator stands at 力 1, so the rat is a won fight from
+ * the first tap and its first sight pays the qi the first purchase is made with.
+ *
+ * 久 The frog is not moved, and that was measured rather than chosen. The endgame is
+ * sensitive to it in steps: at 0.35 of the reference the eightieth crossing's longest
+ * mark stretched from 10 days to 14, and at 0.40 to 0.62 to 27. At 0.70 it is exactly
+ * what it was. The rat and the hound move nothing past the first realm.
  */
-const FIRST_STEPS = [0.12, 0.35, 0.70];
+const FIRST_STEPS = [0.035, 0.20, 0.70];
 
 /**
  * 守 What a warden asks for, as a multiple of its realm's reference.

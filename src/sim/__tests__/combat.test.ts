@@ -158,8 +158,10 @@ describe('戰 the beasts', () => {
     console.log(`\n  初 the first realm's own ladder: ${commonsOf(1).map((c) =>
       `${c.han} 力 ${beastPower(c).toFixed(1)} at ${((won[c.key] ?? Infinity) / 60).toFixed(0)} min`).join(' · ')}\n`);
 
-    // The first fight lands inside a first sitting, not two hours later.
-    expect(rat).toBeLessThan(30 * 60);
+    // The first fight is there from the first minute, not two hours later, and the
+    // second inside the first sitting.
+    expect(rat).toBeLessThanOrEqual(2 * 60);
+    expect(hound).toBeLessThan(60 * 60);
     // And the other two are spread, so the realm keeps asking something new.
     expect(hound).toBeGreaterThan(rat * 2);
     expect(frog).toBeGreaterThan(hound * 1.5);
@@ -258,31 +260,36 @@ describe('誠 out of reach is not two per cent', () => {
     expect(oddsRaw(s, frog)).toBe(0);
   });
 
-  it('tells the first realm’s three beasts apart while all three are unwinnable', () => {
+  it('opens on a fight that can be won, and tells the two after it apart', () => {
     const s = newState(T0);
+    const [rat, hound, frog] = commonsOf(1);
     const gaps = commonsOf(1).map((b) => beastPower(b) / power(s));
 
-    // Every one of them is out of reach at minute zero: that is the ramp working.
-    for (const b of commonsOf(1)) expect(oddsRaw(s, b)).toBe(0);
-    // And the screen can still say which is closest, because these are three numbers.
-    expect(new Set(gaps.map((g) => g.toFixed(1))).size).toBe(3);
-    expect(gaps[0]).toBeLessThan(gaps[1]);
+    // 初 Bruno: "não conseguem fazer nada até terem power suficiente para os primeiros
+    // monstros." The rat is a fight a new cultivator wins in the first second.
+    expect(odds(s, rat)).toBeGreaterThan(0.9);
+    // The two after it are out of reach at minute zero: that is the ramp working.
+    expect(oddsRaw(s, hound)).toBe(0);
+    expect(oddsRaw(s, frog)).toBe(0);
+    // And the screen can still say which is closer, because these are two numbers.
     expect(gaps[1]).toBeLessThan(gaps[2]);
+    expect(gaps[1].toFixed(1)).not.toBe(gaps[2].toFixed(1));
     // eslint-disable-next-line no-console
     console.log(`\n  誠 the first realm at minute zero, as the screen now reads it:`);
     commonsOf(1).forEach((b, i) => {
       // eslint-disable-next-line no-console
-      console.log(`    ${b.han} ${b.name.padEnd(14)} ×${gaps[i].toFixed(1)} needed`);
+      console.log(`    ${b.han} ${b.name.padEnd(14)} ${oddsRaw(s, b) > 0 ? `${Math.round(odds(s, b) * 100)}%` : `×${gaps[i].toFixed(1)} needed`}`);
     });
   });
 
   it('goes back to quoting odds the moment the fight can be won', () => {
     let s = newState(T0);
-    const rat = commonsOf(1)[0];
-    // The twelve minutes the ramp is written for, bought rather than waited out.
-    for (let i = 0; i < 4; i++) s = buy({ ...s, qi: 1e9 }, 'technique');
-    expect(oddsRaw(s, rat)).toBeGreaterThan(0);
-    expect(odds(s, rat)).toBeGreaterThan(0.02);
+    const hound = commonsOf(1)[1];
+    expect(oddsRaw(s, hound)).toBe(0);
+    // The three quarters of an hour the ramp is written for, bought rather than waited out.
+    s = { ...s, levels: { ...s.levels, technique: 6, cores: 6 } };
+    expect(oddsRaw(s, hound)).toBeGreaterThan(0);
+    expect(odds(s, hound)).toBeGreaterThan(0.02);
   });
 });
 

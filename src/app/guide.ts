@@ -1,5 +1,5 @@
 import {
-  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, power, upgradeCost,
+  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, upgradeCost,
   wardenStands,
   type State,
 } from '../sim/state.ts';
@@ -7,7 +7,7 @@ import { MARKS } from '../sim/record.ts';
 import { LAYERS_PER_REALM } from '../sim/balance.ts';
 import { progress } from '../sim/time.ts';
 import { commonsOf, wardenOf } from '../data/bestiary.ts';
-import { beastPower, oddsRaw } from '../sim/combat.ts';
+import { oddsRaw } from '../sim/combat.ts';
 import { isOpen } from '../sim/unlocks.ts';
 import { GUIDE } from './copy.ts';
 import { freePoints } from '../sim/points.ts';
@@ -76,8 +76,9 @@ export interface Step {
    * Bruno, after playing the arrow version: *"as coisas ficam stuck e nao saem e devem
    * aparecer na altura que os players tiverem prestes a desbloquear esse acontecimento."*
    *
-   * He had found the hole. The second step says "go and kill the rat" from the first
-   * second of the game, and the rat is not winnable for about twelve minutes. So for
+   * He had found the hole. The second step said "go and kill the rat" from the first
+   * second of the game, and the rat was not winnable for about twelve minutes (it is now,
+   * from the first second, and that step comes first: see FIRST_STEPS). So for
    * twelve minutes the card asked for something impossible and the ring pulsed on a
    * fight that could not be won: a tutorial that has stopped teaching and is now just
    * in the way.
@@ -123,24 +124,25 @@ const killsOf = (s: State) => Object.values(s.killed);
 
 export const STEPS: readonly Step[] = [
   {
+    // 初 First, because it is the one thing a new cultivator can do that is not a shop.
+    // Bruno: "não conseguem fazer nada até terem power suficiente para os primeiros
+    // monstros." The rat stands below a fresh cultivator now (FIRST_STEPS), so the
+    // game opens on a fight that is won, and the qi its first sight pays goes straight
+    // into the step after. The waiting half stays for a save that somehow cannot win it.
+    key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
+    art: FIRST[0].icon,
+    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
+    waiting: { text: GUIDE.kill.waiting, at: (s) => nowBuyable(s) },
+    at: () => 'beast-first',
+    done: (s) => killsOf(s).some((n) => n > 0),
+  },
+  {
     key: 'buy', han: '買', title: GUIDE.buy.title, text: GUIDE.buy.text,
     art: UPGRADE_INFO.technique.icon,
     // Whichever box the purse can actually reach, not a box chosen in advance. The
     // arrow must never land on something that is greyed out.
     at: (s) => nowBuyable(s),
     done: (s) => UPGRADES.some((u) => s.levels[u] > 0),
-  },
-  {
-    key: 'kill', han: '狩', title: GUIDE.kill.title, text: GUIDE.kill.text, tab: 'hunt',
-    art: FIRST[0].icon,
-    toward: (s) => Math.max(0, Math.min(1, power(s) / beastPower(FIRST[0]))),
-    // 時 Not until the fight can be won. The rat is about twelve minutes away at the
-    // start, and for those twelve minutes this step was pointing a pulsing ring at a
-    // fight with no winning seed in it.
-    ready: (s) => oddsRaw(s, FIRST[0]) > 0,
-    waiting: { text: GUIDE.kill.waiting, at: (s) => nowBuyable(s) },
-    at: () => 'beast-first',
-    done: (s) => killsOf(s).some((n) => n > 0),
   },
   {
     key: 'core', han: '妖丹', title: GUIDE.core.title, text: GUIDE.core.text,

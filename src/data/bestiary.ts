@@ -37,7 +37,8 @@ export interface Beast {
    *
    * 初 The first realm is the exception and keeps all three from the first second. Its
    * beasts are already spaced by *difficulty* rather than by layer: the rat is winnable
-   * at twelve minutes, the hound at 1.6 hours, the frog at 3.5 (see FIRST_STEPS), and a
+   * from the first second, the hound at about 45 minutes, the frog at 3.5 hours (see
+   * FIRST_STEPS), and a
    * layer gate on top of that would hide a beast the player could already have beaten.
    * There is also nothing else in the first realm to look at.
    */

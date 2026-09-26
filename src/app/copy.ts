@@ -652,22 +652,22 @@ export const GUIDE = {
    * the stretch before it can be done at all.
    *
    * Bruno: *"as coisas ficam stuck e nao saem e devem aparecer na altura que os players
-   * tiverem prestes a desbloquear esse acontecimento."* The rat is twelve minutes away
+   * tiverem prestes a desbloquear esse acontecimento."* The rat was twelve minutes away
    * at the start of the game, and for twelve minutes the card asked for it anyway. The
    * `waiting` line is what the card says instead: never "you cannot do this yet" on its
    * own, always "you cannot do this yet, and here is the thing that gets you there".
    */
-  buy: {
-    title: 'Spend what you were given',
-    text: 'You start holding 800 qi. Buy the box the arrow points at. '
-      + 'Qi you spend stops filling the bar, and that trade is the whole game.',
-  },
   kill: {
-    title: 'Go and kill something',
-    text: 'Press the beast the arrow points at. '
-      + 'The odds are honest, and losing costs you nothing at all.',
+    title: 'Win your first fight',
+    text: 'Press the rat the arrow points at. You are stronger than it already, '
+      + 'the first kill of every beast pays qi, and losing never costs anything.',
     waiting: '\u5c71\u9f20 the rat is still stronger than you, and the hunt screen says by how '
-      + 'much. Buy power and the gap closes. The bar below is how close you are.',
+      + 'much. Buy power and the gap closes.',
+  },
+  buy: {
+    title: 'Spend your qi',
+    text: 'You hold the 800 qi you started with and what the rat paid. Buy the box the '
+      + 'arrow points at. Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   core: {
     title: 'Spend what the beast left',
@@ -1151,9 +1151,9 @@ export const NOTICE = {
       + 'because it is bought with 材 material you went and killed something for.',
   },
   cores: {
-    // 名 Not "Go and kill something": that is the title of 引 the guide's second step,
-    // word for word, and two different cards with one name is the fastest way to make a
-    // player think the game is repeating itself. This one is about the currency.
+    // 名 Not the title of 引 the guide's fight step, which it once was word for word:
+    // two different cards with one name is the fastest way to make a player think the
+    // game is repeating itself. This one is about the currency.
     title: '材 Material is the other currency',
     text: '妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',

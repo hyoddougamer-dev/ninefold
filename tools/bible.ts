@@ -921,17 +921,20 @@ const MOCK_COACH = `<div class="mk coach">
   </div>
 </div>`;
 
-// 時 The same guide step in both of its states.
+// 時 The same guide step in both of its states. Read by name, never by position: the
+// fight moved to the front of the guide and the step that was second is not any more.
+const CORE_STEP = STEPS.find((x) => x.key === 'core')!;
+const CORE_N = STEPS.indexOf(CORE_STEP) + 1;
 const MOCK_GUIDE = `<div class="mk two">
   <div class="gcard">
-    <span class="n">Step 2 of ${STEPS.length}</span>
-    <b><span class="cjk">狩</span> ${STEPS[1].title}</b>
-    <i>${STEPS[1].text}</i>
+    <span class="n">Step ${CORE_N} of ${STEPS.length}</span>
+    <b><span class="cjk">${CORE_STEP.han}</span> ${CORE_STEP.title}</b>
+    <i>${CORE_STEP.text}</i>
   </div>
   <div class="gcard waiting">
-    <span class="n">Next · 2 of ${STEPS.length}</span>
-    <b><span class="cjk">狩</span> ${STEPS[1].title}</b>
-    <i>${STEPS[1].waiting?.text ?? ''}<span class="bar"><i style="width:44%"></i></span></i>
+    <span class="n">Next · ${CORE_N} of ${STEPS.length}</span>
+    <b><span class="cjk">${CORE_STEP.han}</span> ${CORE_STEP.title}</b>
+    <i>${CORE_STEP.waiting?.text ?? ''}<span class="bar"><i style="width:44%"></i></span></i>
   </div>
 </div>`;
 
@@ -2125,11 +2128,12 @@ const page = `<meta charset="utf-8">
     ${MOCK_COACH}
 
     <h3>時 A step you cannot do yet</h3>
-    <p class="t">The second step asked for a kill that is not winnable for the first few
+    <p class="t">The second step asked for a kill that was not winnable for the first few
       minutes of the game, and asked for it anyway: a ring pulsing on a fight with no
       winning seed in it. A step that is not possible is now the <b>next</b> step: the
       same step, a quieter card, a bar showing how close, and a line handing over
-      something to do in the meantime.</p>
+      something to do in the meantime. The rat is won from the first tap now, so the
+      example below is the core step, which waits on 材 material in the same way.</p>
     ${MOCK_GUIDE}
 
     <h3>鑑 Reading a piece of gear</h3>
@@ -3882,11 +3886,20 @@ const page = `<meta charset="utf-8">
       the first there is a bar and three boxes. At the standard spacing the first fight a
       player could win arrived <b>two hours and six minutes</b> in, and the true odds
       before it were not small. They were 0.0%, flat, the whole way. Combat there was a
-      step, not a ramp. So the first realm's three commons stand at
-      ${[0.12, 0.35, 0.70].map((x) => pc(x)).join(', ')} instead, and were measured back:
-      ${commonsOf(1).map((c) => `${c.han} 力 ${beastPower(c).toFixed(1)}`).join(', ')},
-      winnable at <b>12 minutes</b>, <b>1.7 hours</b> and <b>3.6 hours</b>. The warden
-      does not move: a warden is always a filled realm cap.</div>
+      step, not a ramp. So the first realm's three commons were moved down to 12%, 35% and
+      70% of the reference, winnable at <b>12 minutes</b>, <b>1.7 hours</b> and <b>3.6
+      hours</b>. The warden does not move: a warden is always a filled realm cap.</div>
+    <div class="rule"><b>初 And twelve minutes was still too long.</b> Bruno, having watched
+      testers start: <i>"não conseguem fazer nada até terem power suficiente para os
+      primeiros monstros."</i> The one button that is not a shop said no for the first twelve
+      minutes. So the rat now stands below a fresh cultivator, and the three read
+      ${commonsOf(1).map((c) => `${c.han} 力 ${beastPower(c).toFixed(1)}`).join(', ')}:
+      the rat is won from the first tap, the hound at about <b>45 minutes</b> and the frog at
+      <b>3.5 hours</b>. 引 The guide opens on that fight now, and its first sight pays the qi
+      the first purchase is made with. The frog was left where it was on purpose: the
+      endgame is sensitive to it in steps, and anything from 35% to 62% stretched the
+      eightieth crossing's longest mark past a fortnight. At 70% it is exactly what it
+      was.</div>
   </section>
 
   <section class="sec" id="build">
