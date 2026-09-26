@@ -51,7 +51,8 @@ import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 import { layersOpened } from '../src/sim/time.ts';
 import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
-import { playAll } from './habits.ts';
+import { HABITS, play, playAll } from './habits.ts';
+import { verify, BURST, BURST_CAP, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
 import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
 import { allowedShare, walkAll } from './idle.ts';
@@ -1292,6 +1293,9 @@ const SECRET_ROOMS_TABLE = (['spring', 'shrine', 'brazier'] as const).map((k) =>
     <b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</td>
     <td>${ROOM_INFO[k].says}</td></tr>`).join('');
 
+const PACE = paceTable();
+const PACE_MAX = [0, 1, 2, 3].map((i) => Math.max(...PACE.map((r) => r.cells[i])));
+
 const page = `<meta charset="utf-8">
 <title>九境 Ninefold · the Bible</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1782,6 +1786,7 @@ const page = `<meta charset="utf-8">
   table { border-collapse:collapse; width:100%; font-size:14px; display:block;
           overflow-x:auto; }
   @media(min-width:560px){ table { display:table; } }
+  #ranked td.hi { color:var(--gold); font-weight:600; }
   table tr { display:table; width:100%; table-layout:fixed; }
   th { text-align:left; font-family:Rajdhani,sans-serif; font-size:12px; color:var(--faint);
        letter-spacing:.1em; text-transform:uppercase; padding:0 8px 6px; font-weight:700; }
@@ -1990,6 +1995,8 @@ const page = `<meta charset="utf-8">
       <a href="#stele"><b>碑</b> The stele</a>
       <a href="#save"><b>存</b> The save</a>
       <a href="#audit"><b>氣查</b> The audit of the qi</a>
+      <a href="#ranked"><b>榜</b> The rankings, and why they can be trusted</a>
+      <a href="#noite"><b>夜</b> A noite de 26 de setembro, em imagens</a>
       <a href="#rules"><b>律</b> The rules</a>
     </div>
   </header>
@@ -4264,6 +4271,136 @@ const page = `<meta charset="utf-8">
       it.</b> The line under the button now reads the price off the pool itself.</p>
   </section>
 
+  <section class="sec" id="ranked">
+    <h2><span class="h">榜</span> The rankings, and why they can be trusted</h2>
+    <p class="t">Bruno, before any of it was built: <i>"trabalha o anti cheat, deve ser forte,
+      não queremos cheaters."</i> The game is played on the phone and the sim runs there,
+      so everything in a save is something the phone says. And a phone can be told
+      anything: its clock moved on a week, its storage edited to the ninth realm, its code
+      changed. The one thing it cannot move is <b>the server's clock</b>. So a ranked save
+      is never believed. It is bounded.</p>
+    <div class="rows">
+      <div class="row"><span class="body"><b class="cjk">驗</b> <em>Bounded by real time</em>
+        <i>The server keeps the last save it accepted and the moment it accepted it. A new
+        one is accepted only if every gain between the two fits inside the seconds that
+        really passed. Each layer is paid at the best rate anybody could have had standing
+        on it: upgrades capped by that realm, gear no earlier than its realm, 入定 at its
+        deepest. On top: a burst of ${BURST} times the gap, never more than ${BURST_CAP / 3600} hours,
+        for the payments that arrive all at once, and ${Math.round((SLACK - 1) * 100)}% for rounding.
+        The same file, <code>sim/verify.ts</code>, runs in the tests and on the server.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">待</b> <em>Too fast is "not yet", never "no"</em>
+        <i>A save ahead of real time is not refused for ever: the server keeps measuring
+        from the last save it accepted, so the gap grows until it pays. A clock moved on a
+        week earns a ranking a week later, which is when it would have been honest.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">罰</b> <em>Impossible is a strike</em>
+        <i>A warden or a tower floor this build cannot beat. Gear from a realm not reached.
+        道 spent that was not earned. A start date changed. More fights than a hand can
+        take (one every ${MIN_FIGHT_SECONDS} seconds) that the qi could not have bought as drives.
+        Three strikes and the player is off the boards.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">疑</b> <em>Faster than anybody honest is held for review</em>
+        <i>Possible, but faster over a day than ${SUSPECT_DAY} needed seconds per real second, or over
+        a week than ${SUSPECT_WEEK}. Both are above the fastest the harness's own cultivators
+        ever went (the table below). Kept off the boards until a person looks.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">門</b> <em>One door in</em>
+        <i>Every table has row level security and no policy that lets a player write. A
+        player can read the boards, read where they stand, choose a name and delete their
+        account. Everything ranked goes through one function, which holds the service role
+        on the server and nowhere else. Tested in a real Postgres: every direct read or
+        write is refused.</i></span></div>
+    </div>
+
+    <h3>The fastest honest pace, measured for this page</h3>
+    <p class="t">Every habit walked 120 days, and the fastest it ever went over each window,
+      in seconds needed at the best rate per second that passed. A long window is slow
+      because nobody sits at the deepest 入定 all day; a single visit is fast because a
+      tower floor pays six hours at once. The thresholds sit above the fastest row.</p>
+    <table class="tbl"><thead><tr><th>Cultivator</th><th>a visit</th><th>6 hours</th><th>a day</th><th>a week</th></tr></thead>
+      <tbody>
+        ${PACE.map((r) => `<tr><td>${r.name}</td>${r.cells.map((c, i) => `<td${c === PACE_MAX[i] ? ' class="hi"' : ''}>${c.toFixed(2)}</td>`).join('')}</tr>`).join('')}
+        <tr><td><b>flagged above</b></td><td>&nbsp;</td><td>&nbsp;</td><td><b>${SUSPECT_DAY}</b></td><td><b>${SUSPECT_WEEK}</b></td></tr>
+      </tbody>
+    </table>
+    <p class="t">What the tests hold it to, on every run: the eight cultivators walked 90
+      days through a simulated server get no strike and no flag. Their ranking is never
+      more than hours behind their phone. And every edit a player can make is refused or
+      flagged: the clock, qi, levels, realms, a million rats, the tower, a ninth-realm
+      sword. So is a save claiming to predate the game. A
+      restored older copy is never a strike.</p>
+
+    <h3>The boards, and what they give</h3>
+    <p class="t">Three boards: 天榜 the Heaven List (the furthest climb, thunder marks past the
+      summit), 期榜 this week (layers since Monday, so everybody starts the week level), and
+      塔榜 the tower. The rewards are titles, never numbers. The first on the Heaven List
+      wears 天下第一 First Under Heaven for as long as they are first. A week's top 1, 10
+      and 100 wear 期首, 期十 or 期百 for the week after. The title is worn under the realm's
+      name on 修.</p>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/ranks.webp" alt="The rankings: joining as a guest, the Heaven List with the player marked, and a new device asking which cultivator goes on">
+      <figcaption><b>Join, the board, a new device.</b> A name and a guest, or an email with a
+        six-digit code (the link opens the phone's browser inside the app, so the code is
+        typed where the game is). On a new device the cloud's cultivator is offered before
+        anything is synced.</figcaption>
+    </figure></div>
+  </section>
+
+  <section class="sec" id="noite">
+    <h2><span class="h">夜</span> A noite de 26 de setembro, em imagens</h2>
+    <p class="t">O que o Bruno pediu antes de ir dormir: <i>"precisamos de melhorias urgentes
+      no jogo antes de pedir testers"</i>. O tutorial, o início, o login, mais sumo, a
+      arena, e o anti-batota. Tudo
+      abaixo é do jogo compilado, capturado com o Playwright.</p>
+
+    <h3>序 O início</h3>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/prologue.webp" alt="The prologue: title over the first realm's painting, the climb in three cards, who is climbing, the game with the guide, and how to play as cards">
+      <figcaption>O nome sobre a pintura do primeiro reino, a subida em três cartões, quem
+        sobe, e o jogo com o guia. O "How to play" do Menu passou a cartões com selo.</figcaption>
+    </figure></div>
+
+    <h3>引 O guia continua no segundo reino</h3>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/guide2.webp" alt="The guide's second chapter: the ring on the gear tab, then on the first chest piece, the first learnable node, and the stance half">
+      <figcaption>Vestir a primeira peça, aprender o primeiro nó 道, escolher uma postura.
+        O anel aponta primeiro para o separador e depois para a coisa lá dentro.</figcaption>
+    </figure></div>
+
+    <h3>紙 A arte sem moldura de papel</h3>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/recut.webp" alt="Before and after: figures with a pale paper rim and patched chests, then clean cut-outs, and the arena before and after">
+      <figcaption>As 18 figuras e os 36 animais recortados de novo. O lobo, a rã, a raposa
+        e a grou já não têm o peito remendado. A arena passou a ser pintada até às bordas.</figcaption>
+    </figure></div>
+
+    <h3>勁 Sumo na arena</h3>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/arena-fx.webp" alt="A fight frame by frame: entrance, an ink slash across the frog, white hit flashes, claw marks on the cultivator, the verdict">
+      <figcaption>Entrada pelos lados, um traço de pincel sobre o animal, três garras sobre
+        o cultivador, clarão branco no impacto. Números que saltam, o animal a desfazer-se
+        em tinta, o veredicto como um selo. Fora da arena: ondas ao tocar, ganhos que sobem
+        do dedo, faíscas ao comprar.</figcaption>
+    </figure></div>
+
+    <h3>桌 O computador</h3>
+    <div class="shots"><figure>
+      <img src="bible-art/shot/pc.webp" alt="The desktop layout before and after: a centred phone column, then a full-window rail, stage and dock">
+      <figcaption>Ecrã inteiro: menu à esquerda, o cultivador ao centro sobre a pintura do
+        reino, as ações num painel à direita.</figcaption>
+    </figure></div>
+
+    <h3>歸 Voltar ao jogo, e o que uma release precisa</h3>
+    <div class="shots">
+      <figure>
+        <img src="bible-art/shot/back.webp" alt="The welcome-back card counting up the qi gathered">
+        <figcaption>O qi que as horas juntaram conta até ao valor.</figcaption>
+      </figure>
+      <figure>
+        <img src="bible-art/shot/release.webp" alt="The crash screen, the build number in the Menu, and the privacy page">
+        <figcaption>Um ecrã de erro em vez de branco, a versão no Menu, a página de
+          privacidade, e apagar a conta.</figcaption>
+      </figure>
+    </div>
+  </section>
+
   <section class="sec" id="rules">
     <h2><span class="h">律</span> The rules the game is built on</h2>
     <div class="rows">
@@ -4327,6 +4464,32 @@ const page = `<meta charset="utf-8">
  * second list would be a second thing to forget.
  */
 let COPIED = 0;
+/**
+ * 驗 The anti-cheat's own measurement, taken fresh for the page: every habit walked 120
+ * days, and the fastest pace each one ever reached over a visit, six hours, a day and a
+ * week, in needed seconds per real second at the best rate the game allows. The
+ * thresholds in sim/verify.ts sit above the fastest of these, and the page shows both.
+ */
+function paceTable(): { name: string; cells: number[] }[] {
+  const out: { name: string; cells: number[] }[] = [];
+  for (const h of HABITS) {
+    const shots: { d: number; s: State }[] = [];
+    play(h, 120, (d, s) => shots.push({ d, s: structuredClone(s) }));
+    const gaps = [1, Math.max(1, Math.round(h.checks / 4)), h.checks, h.checks * 7];
+    out.push({
+      name: h.name,
+      cells: gaps.map((g) => {
+        let m = 0;
+        for (let i = g; i < shots.length; i++) {
+          m = Math.max(m, verify(shots[i - g].s, shots[i].s, (shots[i].d - shots[i - g].d) * 86_400).pace);
+        }
+        return m;
+      }),
+    });
+  }
+  return out;
+}
+
 function copyPaintings(out: { page: string; plates: Map<string, string> }): number {
   const dir = 'bible-art/art';
   rmSync(dir, { recursive: true, force: true });
