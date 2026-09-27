@@ -1107,23 +1107,6 @@ export const SEAL_LOOT = 0.15;
 
 /** 錄 Kills that earn each mark: 見 Seen, 熟 Known, 通 Mastered. */
 export const MARKS: readonly number[] = [1, 10, 100];
-
-/**
- * 靈獸 A spirit companion: one beast this cultivator has 通 mastered, fighting beside them.
- * A beast of the realm being climbed strikes every round for this share of the
- * cultivator's own blow, and each realm it stands behind them takes COMPANION_FADE off
- * it. So the companion is worth changing as the climb goes on, it can never be worth more
- * than this share, and the number on the card is one a player can read.
- *
- * 量 It was first read off the beast's own power against the cultivator's, and measured
- * on a real save that came to 0% for every beast in the game: a cultivator at 29.2M
- * power meets the sixth realm's commons at 129k, because the commons are tuned against
- * the realm's floor and a climbing cultivator is far past it. The realm is what a player
- * can see, so the realm is what it reads.
- */
-export const COMPANION_BLOW = 0.15;
-/** 靈獸 What a companion keeps of its strike for every realm it stands behind the cultivator. */
-export const COMPANION_FADE = 0.7;
 /** What one 熟 mark adds to everything that drops material. */
 export const KNOWN_MATERIAL = 0.02;
 /** What one 通 mark adds to power. */
@@ -1190,7 +1173,7 @@ export const SECLUSION = 8 * 3600;
 /**
  * 心魔 The heart demon stands at this multiple of the cultivator's own 力, and nothing
  * thins it: no sunder, no bane, no blood method. It is what you are, without what you
- * know. So stance, arts, companion and class win it and raw power alone struggles,
+ * know. So stance, arts and class win it and raw power alone struggles,
  * because power is the one thing it has as much of as you do.
  *
  * 量 Read off the fight, the share of demons that fall at each multiple:

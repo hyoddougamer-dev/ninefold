@@ -8,7 +8,7 @@ import { power, type State } from './state.ts';
  *
  * 關 A cultivator shuts the door. Eight hours later the demon comes, and the demon is
  * them: the same 力 and a fifth more, standing across the arena in their own shape, darkened. What it does
- * not have is anything they *know*: no stance, no arts, no companion, no class. So it is
+ * not have is anything they *know*: no stance, no arts, no class. So it is
  * the one fight in the game where power alone is not enough to be quick, because power
  * is the one thing the demon has as much of. See DEMON_EDGE for what each build meets.
  *

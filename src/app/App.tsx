@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fuseIn, limitFor, stash } from '../sim/stash.ts';
-import { bond as bondCompanion } from '../sim/companion.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -728,7 +727,6 @@ export function App() {
             onFight={(key) => startFight(byKey[key])}
             onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
-            onBond={(key) => { setState((s) => bondCompanion(s, key)); sfx.buy(); }}
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}

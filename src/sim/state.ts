@@ -29,7 +29,6 @@ import { bodyTotals, classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
-import { validCompanion } from './companion.ts';
 import { EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
@@ -116,11 +115,6 @@ export interface State {
   self: string | null;
   /** 勢 The stance you fight in, or none yet. */
   stance: string | null;
-  /**
-   * 靈獸 The beast fighting beside this cultivator, by key, or none. Only a common beast
-   * they have 通 mastered, which validate() checks against the kills. See sim/companion.ts.
-   */
-  companion: string | null;
   /**
    * 閉關 The instant the door was shut, or 0 while it is open, and 心魔 how many heart
    * demons have fallen. Everything else about seclusion is derived from these and `at`.
@@ -329,7 +323,6 @@ export function newState(now: number): State {
     chest: [],
     unlocked: [],
     self: null,
-    companion: null,
     secludedAt: 0, demons: 0,
     stance: null,
     sequence: [],
@@ -787,7 +780,6 @@ export function validate(raw: unknown, now: number): State {
     // been asked, which every screen already draws.
     self: figureOf(typeof o.self === 'string' ? o.self : null)?.key ?? null,
     stance: validateStance(o.stance, realm, layer),
-    companion: validCompanion(o.companion, killed),
     // 心魔 A demon takes a night behind a shut door, so a save cannot claim more of them
     // than the nights it has lived, nor any before the fourth realm opened the door.
     // A door shut before the cultivator existed, or tomorrow, was never shut.

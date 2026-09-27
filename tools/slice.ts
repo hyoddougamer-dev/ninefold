@@ -397,13 +397,40 @@ async function bleed(
     alpha[j] = Math.max(alpha[j], Math.round(coreSoft[j] * ghostCap));
   }
 
+  // 屑 Specks. A pale creature scales the whole ramp down, and at that scale a fleck in the
+  // paper's own grain passes as ink: 天八 painted again came back with a crumb of paper
+  // under the knot and a box stretched to reach it. Whatever is not joined to the
+  // creature and is under a twelfth of its size is paper, and goes. The ghost is left alone,
+  // because the ghost is scraps on purpose.
+  if (!ghost) {
+    const label = new Int32Array(w * h).fill(-1);
+    const sizes: number[] = [];
+    const stack: number[] = [];
+    for (let j = 0; j < w * h; j++) {
+      if (label[j] >= 0 || alpha[j] <= 20) continue;
+      const id = sizes.length;
+      let n = 0;
+      label[j] = id; stack.push(j);
+      while (stack.length) {
+        const k = stack.pop()!;
+        n++;
+        const x = k % w, y = (k - x) / w;
+        const near = [x > 0 ? k - 1 : -1, x < w - 1 ? k + 1 : -1, y > 0 ? k - w : -1, y < h - 1 ? k + w : -1];
+        for (const q of near) if (q >= 0 && label[q] < 0 && alpha[q] > 20) { label[q] = id; stack.push(q); }
+      }
+      sizes.push(n);
+    }
+    const biggest = Math.max(0, ...sizes);
+    for (let j = 0; j < w * h; j++) if (label[j] >= 0 && sizes[label[j]] < biggest * 0.08) alpha[j] = 0;
+  }
+
   // 框 The figure's own box and a tenth of it for air, so the file is the person. The
   // disc it replaced was two thirds paper, which is why she read as half the size of the
   // creature opposite her while both files were the same number of pixels.
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (ink[y * w + x] > 30 * gentle) {
+      if (ink[y * w + x] > 30 * gentle && alpha[y * w + x] > 20) {
         if (x < x0) x0 = x;
         if (x > x1) x1 = x;
         if (y < y0) y0 = y;
@@ -701,8 +728,8 @@ function disc(square: Buffer, side: number) {
  * which the ink alone cuts cleanly. Every other one is coiled in its own cloud.
  */
 const OPEN_SKY = new Set(['heaven-5', 'heaven-7']);
-/** 燭 The torch dragon is painted dark and gold on bare paper, and the creature key cuts it clean. */
-const INKED = new Set(['heaven-6']);
+/** 又 The Dragons painted again on heavens-b, which that leaf now owns. */
+const REPAINTED = new Set(sheetOf('heavens-b')?.cells.map((c) => c.key) ?? []);
 /**
  * 雲 A common painted the same way, filling the panel with its mane, whose
  * creature key came back as a slab of paper the shape of the panel. Found by laying all
@@ -723,6 +750,9 @@ async function cut(sheet: Sheet, file: string) {
 
   for (let i = 0; i < sheet.cells.length; i++) {
     const c = sheet.cells[i];
+    // 又 A panel painted again on a later leaf belongs to that leaf. Cutting the first
+    // leaf again must not write the old painting back over the new one.
+    if (sheet.key === 'heavens' && REPAINTED.has(c.key)) continue;
     const col = i % sheet.cols;
     const row = Math.floor(i / sheet.cols);
     const x0 = xs[col];
@@ -751,7 +781,7 @@ async function cut(sheet: Sheet, file: string) {
       // cut the same way with nothing to let go but the ink's own edge.
       if (sheet.key === 'heavens-b') {
         await bleed(file, box, `public/art/cut/${c.key}.webp`);
-      } else if ((sheet.key === 'heavens' && !INKED.has(c.key)) || CLOUDED.has(c.key)) {
+      } else if (sheet.key === 'heavens' || CLOUDED.has(c.key)) {
         await bleed(file, box, `public/art/cut/${c.key}.webp`,
           { ghost: c.key === 'heaven-9', mist: !OPEN_SKY.has(c.key) });
       } else {

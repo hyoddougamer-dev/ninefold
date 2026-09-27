@@ -16,8 +16,7 @@ import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import {
   classArts, classBounty, classForm, classMend, classTower, classWarden, gearArt, gearSunder,
 } from './schools.ts';
-import { BOON_BLOOD, BOON_LOTUS, COMPANION_BLOW, COMPANION_FADE } from './balance.ts';
-import { companionOf } from './companion.ts';
+import { BOON_BLOOD, BOON_LOTUS } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 
@@ -91,8 +90,6 @@ export interface Round {
   readonly playerHealth: number;   // 0..1
   readonly beastHealth: number;    // 0..1
   readonly playerDamage: number;
-  /** 靈獸 What the companion dealt this round, 0 with none. */
-  readonly petDamage: number;
   readonly beastDamage: number;
   /** 訣 The arts that fired this round, in the order the sequence ran them. */
   readonly arts: readonly string[];
@@ -160,18 +157,6 @@ interface Setup {
   readonly artStrike: number;
   readonly mend: number;
   readonly playerPower: number;
-  /** 靈獸 What the companion strikes for each round, before its own roll: 0 with none. */
-  readonly pet: number;
-}
-
-/**
- * 靈獸 The share of the cultivator's blow the companion strikes for: COMPANION_BLOW for a
- * beast of their own realm, and COMPANION_FADE of it again for every realm it is behind.
- */
-export function companionShare(s: State, _pp?: number): number {
-  const b = companionOf(s);
-  if (!b) return 0;
-  return COMPANION_BLOW * COMPANION_FADE ** Math.max(0, s.realm - b.realm);
 }
 
 function setup(s: State, b: Beast, standing?: number): Setup {
@@ -196,7 +181,6 @@ function setup(s: State, b: Beast, standing?: number): Setup {
     // 蓮 And the lotus seed from the monk on the road, for somebody who walked kindly.
     mend: classMend(s) + (hasBoon(s, 'lotus') ? BOON_LOTUS : 0),
     playerPower: pp,
-    pet: pp * companionShare(s, pp),
   };
 }
 
@@ -270,10 +254,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
     if (stance?.key === 'endure') healed += ph0 * STANCE_NUMBERS.endure;
     healed += ph0 * mend;
 
-    // 靈獸 The companion strikes after you. Its die is only read when there is one, so a
-    // cultivator with no companion fights exactly the fight they always fought.
-    const petHit = u.pet > 0 ? u.pet * blowRoll(d) : 0;
-    bh -= mine + petHit;
+    bh -= mine;
 
     let theirs = missed ? 0 : beastPower * blowRoll(d);
     if (stance?.key === 'guard') theirs *= STANCE_NUMBERS.guardTaken;
@@ -286,7 +267,6 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
       playerHealth: Math.max(0, ph / ph0),
       beastHealth: Math.max(0, bh / bh0),
       playerDamage: mine,
-      petDamage: petHit,
       beastDamage: theirs,
       arts: fired,
       missed,

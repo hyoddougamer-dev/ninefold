@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { COMPANION_BLOW, COMPANION_FADE, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION } from '../src/sim/balance.ts';
+import { DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -3892,37 +3892,12 @@ const page = `<meta charset="utf-8">
       going back is no longer charity.</div>
   </section>
 
-  <section class="sec" id="companion">
-    <h2><span class="h">靈獸</span> A spirit companion</h2>
-    <p class="t">A hundred wins over one beast is 通 mastery, and until now mastery paid two
-      per cent and was a number on the record. Now the beast follows you. Bond any common
-      beast you have mastered and it fights beside you in every fight: the hunt, the tower,
-      the vault and the Dragon.</p>
-    <p class="t">It strikes every round for <b>${Math.round(COMPANION_BLOW * 100)}% of your
-      blow</b> if it is a beast of the realm you are in, and ${Math.round(COMPANION_FADE * 100)}%
-      of that again for every realm it stands behind you. The rat that followed you out of
-      the first realm is a pet by the fourth, so the companion is worth changing as the climb
-      goes on, and changing it is free. A warden is never one: it is fought once.</p>
-    <p class="t">量 It was first read off the beast's own power against yours. Measured on a
-      real save, that came to 0% for every beast in the game: the commons are tuned against a
-      realm's floor, and a climbing cultivator is far past it. So it reads the realm,
-      which a player can see. Against a warden standing a fifth above you, a
-      companion of your own realm takes the odds from 7% to 22%. The climb itself does not
-      move: it is paced by qi, not by power, and the harness that keeps the best companion
-      arrives at the summit on the same day as the one that keeps none. And a cultivator
-      with no companion reads no extra die, so every fight they fight is the fight it was.</p>
-    <figure class="shots">
-      <img src="bible-art/shot/companion.webp" alt="The companion card on the hunt, open, and the companion striking beside the cultivator in the arena">
-      <figcaption>The real game. Left, on 狩 the hunt at 320: who fights beside you, and what each beast you could bond instead would strike for. Right, in the arena: the companion stands at her side as its own painted cut-out, leaps on its strike, and what it dealt rises over it.</figcaption>
-    </figure>
-  </section>
-
   <section class="sec" id="seclusion">
     <h2><span class="h">閉關</span> Seclusion, and 心魔 the heart demon</h2>
     <p class="t">From the fourth realm a cultivator can shut the door. ${SECLUSION / 3600} hours
       later their heart demon comes: themselves, the same shape standing across the arena
       turned to face them and darkened, at <b>${DEMON_EDGE}× their own power</b> and with
-      none of what they know. No stance, no arts, no companion, no class. Put it down and it
+      none of what they know. No stance, no arts, no class. Put it down and it
       hands over ${DEMON_DAO} 道 point. Lose and nothing is lost: it draws back and comes again
       in ${DEMON_RETURN / 60} minutes.</p>
     <p class="t">It is the one fight in the game where power alone is not the answer,
@@ -3948,7 +3923,7 @@ const page = `<meta charset="utf-8">
       first, and now so does the harness.</p>
     <figure class="shots">
       <img src="bible-art/shot/seclusion.webp" alt="The seclusion card with a demon waiting, the fight against the darkened self in the arena, and the card counting down behind a shut door">
-      <figcaption>The real game. Left, on 修 at 320: the demon is waiting, with the odds and what it pays. Middle, in the arena: the cultivator and the companion against their own shape in crimson. Right: the door shut, five hours to go.</figcaption>
+      <figcaption>The real game. Left, on 修 at 320: the demon is waiting, with the odds and what it pays. Middle, in the arena: the cultivator against their own shape in crimson. Right: the door shut, five hours to go.</figcaption>
     </figure>
   </section>
 
@@ -3961,19 +3936,25 @@ const page = `<meta charset="utf-8">
       full of holes, and 天九, painted half bare on purpose, as four scraps.</p>
     <p class="t">They are cut now the way the cultivator is: the paper kept, the edge let go
       along the ink, and the cloud dissolving on a wide oval rather than stopping at a line. The
-      unicorn's mane went the same way. The torch dragon was already clean and is left as it
-      was. Top row before, bottom row after.</p>
+      unicorn's mane went the same way. Top row before, bottom row after.</p>
     <figure class="shots">
       <img src="bible-art/shot/dragons-recut.webp" alt="Nine cut-outs before and after: slabs of paper with holes above, clouds dissolving into the dark below">
-      <figcaption>The eighth and ninth are better and still not right: one is a square of cloud
-        and the other is mostly paper, because that is what was painted. A leaf of three
-        (heavens-b in <code>npm run sheets</code>) asks for the sixth, eighth and ninth again,
-        whole and outlined with bare paper all round, so the cutter has an edge to find.</figcaption>
+      <figcaption>Top row the first cut, bottom row the second.</figcaption>
     </figure>
-    <p class="t">Two smaller things came out of the same look. The companion stood at her side
-      on a round paper disc, the badge the arena stopped using for beasts; it is its own
-      painted cut-out now. And beating a Dragon above the summit said "the breakthrough is
-      open", the warden's line; it says the crossing is yours.</p>
+    <p class="t">The eighth and the ninth could not be cut right from that leaf at all: one
+      is a square of cloud and the other is mostly paper, because that is what was painted.
+      So they were painted again with the torch dragon beside them, on a leaf of three (heavens-b in
+      <code>npm run sheets</code>) that asks for each creature whole, outlined, with bare paper
+      all round and no cloud reaching the rule. That leaf now owns those three: cutting the
+      first leaf again skips them, so the old paintings cannot come back over the new.</p>
+    <figure class="shots">
+      <img src="bible-art/shot/dragons-again.webp" alt="The three Dragons painted again: the torch dragon with its lantern, the knot of chaos, and the pale uncarved dragon, each cut clean on the dark">
+      <figcaption>燭龍, 混沌 and 鴻蒙 in the real arena, painted again and cut. A speck of paper grain under the
+        knot came along with the first cut, so the cutter now drops anything not joined to the
+        creature and under a twelfth of its size.</figcaption>
+    </figure>
+    <p class="t">And beating a Dragon above the summit said "the breakthrough is open", the
+      warden's line. It says the crossing is yours.</p>
   </section>
 
   <section class="sec" id="record">

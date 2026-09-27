@@ -14,8 +14,7 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, COMPANION, SECLUSION } from '../copy.ts';
-import { companionOf } from '../../sim/companion.ts';
+import { ARENA, SECLUSION } from '../copy.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
@@ -94,8 +93,6 @@ export function frameAt(o: Outcome, beat: number) {
     playerHealth: player ? before.playerHealth : here.playerHealth,
     beastHealth: here.beastHealth,
     damage: player ? here.playerDamage : here.beastDamage,
-    /** 靈獸 The companion's strike, on the cultivator's beat. */
-    pet: player ? here.petDamage : 0,
     // An art belongs to the cultivator's beat. On the beast's beat there is nothing to
     // announce, or the name of the art would hang over the blow that answered it.
     arts: player ? here.arts : [],
@@ -124,7 +121,6 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   const r = realmOf(realm);
   const br = realmOf(beast.realm);
   const cut = pictureOf('cut', plateOf(beast));
-  const pet = companionOf(state);
   /**
    * 畫 The place this fight happens in.
    *
@@ -193,23 +189,6 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
         <div className="duel">
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
             <span className="art"><Svg html={portraitLayers({ realm, pulse, focus: true, who: state.self })} /></span>
-            {/* 靈獸 The companion, small at the cultivator's side, leaping on its own strike. */}
-            {pet && (
-              <span className="pet" data-strike={!over && f.striker === 'player' && f.pet > 0}>
-                {/* 剪 The same cut-out the beast stands in when it is the one being fought,
-                    turned to face the same way she does. A disc here was the badge the
-                    arena stopped using for beasts, back at a quarter of the size. */}
-                {pictureOf('cut', plateOf(pet))
-                  ? <img className="petcut" src={pictureOf('cut', plateOf(pet))!} alt={pet.name} />
-                  : pictureOf('beast', plateOf(pet))
-                  ? <img src={pictureOf('beast', plateOf(pet))!} alt={pet.name} />
-                  : <Plate kind="beast" subject={plateOf(pet)} icon={pet.icon} colour={realmOf(pet.realm).colour}
-                      tier={1} size={40} alt={pet.name} />}
-                {!over && f.striker === 'player' && f.pet > 0 && (
-                  <span className="pdmg" key={`pet${beat}`}>{COMPANION.hit(num(f.pet))}</span>
-                )}
-              </span>
-            )}
             {/* 勝 A ring of her own light going out from her when it is over and she won. */}
             {over && outcome.won && <span className="victory" aria-hidden="true"><i /><i /></span>}
             {hit === 'player' && !f.missed && <Sparks key={`sp${beat}`} />}
