@@ -309,6 +309,38 @@ function heavenSheet(): Sheet {
 }
 
 /**
+ * 境外 Three of the Dragons again, painted to be cut.
+ *
+ * 雲 The first leaf coiled the sixth, eighth and ninth in cloud to the rule, and a cloud
+ * painted on paper is paper with a few lines on it: no key can find where the Dragon
+ * ends. The eighth came back as a square slab of cloud and the ninth, which was asked
+ * for "half of it left as bare paper", as four scraps. So these three are asked for the
+ * other way round: the whole creature, firmly outlined, with bare paper all round it and
+ * no cloud reaching the rule. The ninth keeps its pallor in the wash, not in the line.
+ */
+const HEAVEN_AGAIN: readonly [number, string][] = [
+  [6, 'a torch dragon whose open eyes are daylight, a lantern glowing in its throat, its whole coiled body inside the panel with bare paper all round it'],
+  [8, 'primordial chaos: one vast coiled body with no face and no need of one, a single knot of scales drawn whole in the middle of the panel with bare paper all round it, and no cloud around it at all'],
+  [9, 'the uncarved block: a long pale dragon barely finished, its whole outline drawn in firm dark ink so that its shape is clear, the inside left almost as pale as the paper, bare paper all round it'],
+];
+
+function heavenAgainSheet(): Sheet {
+  return {
+    key: 'heavens-b',
+    han: '境外又',
+    title: 'Three Dragons of the heavens, painted again to be cut',
+    kind: 'beast',
+    cols: 3,
+    rows: 1,
+    realms: [9],
+    cells: HEAVEN_AGAIN.map(([n, subject]) => {
+      const h = HEAVENS[n - 1];
+      return { key: `heaven-${n}`, han: h.dragon.han, name: h.dragon.name, subject };
+    }),
+  };
+}
+
+/**
  * 境外 The nine heavens as places.
  *
  * 棄 They had a slot and no screen: nine backdrops declared in 畫 the picture list that
@@ -524,6 +556,7 @@ export const SHEETS: readonly Sheet[] = [
   ...WHO.map(([key, han, title, who]) => ninthSheet(key, han, title, who)),
   ...meetSheets(),
   heavenSheet(),
+  heavenAgainSheet(),
   skySheet(),
   ...EMBLEM_SHEETS.map(emblemSheet),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
@@ -576,6 +609,8 @@ export function sheetPrompt(s: Sheet): string {
     ? 'Each panel holds one object on bare paper, centred, and nothing else: no scene, no ground, no background. These are shown very small, so each one is a single thing drawn in as few strokes as it takes, the way a brush would put an emblem on a page.'
     : s.kind === 'meet'
     ? 'Each panel holds one small scene, wider than it is tall, seen from a few paces away with plenty of bare paper around it. No frame inside the panel, nothing behind the subject but the road, the ground or the mist it is standing in.'
+    : s.key === 'heavens-b'
+    ? 'Each panel holds one creature, centred, facing the viewer, the whole of it drawn, with a clear margin of bare paper between it and the rule on every side. No cloud, mist or smoke fills the panel: the paper around the creature is empty.'
     : s.kind === 'beast'
     ? 'Each panel holds one creature, centred, facing the viewer, head and body, filling most of its own panel.'
     : s.kind === 'self' && s.cells.length === 1
@@ -592,6 +627,7 @@ export function sheetPrompt(s: Sheet): string {
       // 境外 A heaven card is painted in its heaven's pigment, one heaven to a row.
       const heavenRow = HEAVEN_CARD_SHEETS[s.key];
       const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
+        : s.key === 'heavens-b' ? (HEAVEN_AGAIN[i][0] === 9 ? NINTH_HEAVEN_INK : HEAVEN_PIGMENT[HEAVEN_AGAIN[i][0] - 1])
         : s.key === 'awaken-e9' ? NINTH_HEAVEN_INK
         : heavenRow !== undefined ? HEAVEN_PIGMENT[heavenRow + Math.floor(i / s.cols)]
         : inkOf(s.kind === 'meet' ? s.realms[i] : n).stuff;

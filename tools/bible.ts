@@ -3913,7 +3913,7 @@ const page = `<meta charset="utf-8">
       with no companion reads no extra die, so every fight they fight is the fight it was.</p>
     <figure class="shots">
       <img src="bible-art/shot/companion.webp" alt="The companion card on the hunt, open, and the companion striking beside the cultivator in the arena">
-      <figcaption>The real game. Left, on 狩 the hunt at 320: who fights beside you, and what each beast you could bond instead would strike for. Right, in the arena: the companion leaps on its own strike, and what it dealt rises over it.</figcaption>
+      <figcaption>The real game. Left, on 狩 the hunt at 320: who fights beside you, and what each beast you could bond instead would strike for. Right, in the arena: the companion stands at her side as its own painted cut-out, leaps on its strike, and what it dealt rises over it.</figcaption>
     </figure>
   </section>
 
@@ -3950,6 +3950,30 @@ const page = `<meta charset="utf-8">
       <img src="bible-art/shot/seclusion.webp" alt="The seclusion card with a demon waiting, the fight against the darkened self in the arena, and the card counting down behind a shut door">
       <figcaption>The real game. Left, on 修 at 320: the demon is waiting, with the odds and what it pays. Middle, in the arena: the cultivator and the companion against their own shape in crimson. Right: the door shut, five hours to go.</figcaption>
     </figure>
+  </section>
+
+  <section class="sec" id="recut">
+    <h2><span class="h">剪</span> The Dragons, cut again</h2>
+    <p class="t">Asked whether the art holds together everywhere, every cut-out in the game was
+      laid side by side on the arena's own dark. Most stand as they should. Eight did not.
+      The Dragons of the heavens are painted coiled in their own cloud, and a cloud painted on
+      paper is paper with a few lines on it. The creature key came back with a slab of paper
+      full of holes, and 天九, painted half bare on purpose, as four scraps.</p>
+    <p class="t">They are cut now the way the cultivator is: the paper kept, the edge let go
+      along the ink, and the cloud dissolving on a wide oval rather than stopping at a line. The
+      unicorn's mane went the same way. The torch dragon was already clean and is left as it
+      was. Top row before, bottom row after.</p>
+    <figure class="shots">
+      <img src="bible-art/shot/dragons-recut.webp" alt="Nine cut-outs before and after: slabs of paper with holes above, clouds dissolving into the dark below">
+      <figcaption>The eighth and ninth are better and still not right: one is a square of cloud
+        and the other is mostly paper, because that is what was painted. A leaf of three
+        (heavens-b in <code>npm run sheets</code>) asks for the sixth, eighth and ninth again,
+        whole and outlined with bare paper all round, so the cutter has an edge to find.</figcaption>
+    </figure>
+    <p class="t">Two smaller things came out of the same look. The companion stood at her side
+      on a round paper disc, the badge the arena stopped using for beasts; it is its own
+      painted cut-out now. And beating a Dragon above the summit said "the breakthrough is
+      open", the warden's line; it says the crossing is yours.</p>
   </section>
 
   <section class="sec" id="record">

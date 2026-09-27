@@ -43,8 +43,11 @@ export function blowLine(striker: 'player' | 'beast', round: number): Blow {
 }
 
 /** The last word, once it is over. */
-export function verdictLine(won: boolean, warden: boolean): Blow {
+export function verdictLine(won: boolean, warden: boolean, tribulation = false): Blow {
   if (!won) return { han: '再來', text: 'Nothing was lost. Come back stronger.' };
+  // 渡劫 Above the summit the Dragon is a warden by its table and nothing opens behind
+  // it: it is a crossing, and the arena was telling the player a breakthrough had opened.
+  if (tribulation) return { han: '渡劫', text: 'The Dragon is down. The crossing is yours.' };
   return warden
     ? { han: '境破', text: 'The warden is down. The breakthrough is open.' }
     : { han: '勝', text: 'It will not rise again.' };

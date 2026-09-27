@@ -263,7 +263,7 @@ function inkBox(g: { data: Buffer; w: number; h: number }, box: { left: number; 
  */
 async function bleed(
   file: string, box: { left: number; top: number; width: number; height: number }, out: string,
-  { ghost = false }: { ghost?: boolean } = {},
+  { ghost = false, mist = false }: { ghost?: boolean; mist?: boolean } = {},
 ) {
   const { data, info } = await sharp(file).extract(box).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h, channels: ch } = info;
@@ -430,9 +430,21 @@ async function bleed(
     return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
   };
 
+  // 霧 A creature painted inside its own cloud fills the panel to the rule, so the ink
+  // reaches every edge and the cut is the panel: a slab of paper with a dragon in it.
+  // With `mist` the cloud is let go instead, on an oval fitted to the painting: whole in
+  // the middle, gone well before the corners, with nothing like a rim anywhere on it.
+  const cx = crop.left + crop.width / 2, cy = crop.top + crop.height / 2;
+  const oval = (x: number, y: number) => {
+    if (!mist) return 1;
+    const d = Math.hypot((x - cx) / (crop.width / 2), (y - cy) / (crop.height / 2));
+    const t = (1.3 - d) / (1.3 - 0.72);
+    return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
+  };
+
   const rgba = Buffer.alloc(w * h * 4);
   for (let i = 0, j = 0; j < w * h; i += ch, j++) {
-    alpha[j] = Math.round(alpha[j] * border(j % w, Math.floor(j / w)));
+    alpha[j] = Math.round(alpha[j] * border(j % w, Math.floor(j / w)) * oval(j % w, Math.floor(j / w)));
     // 方 Squared, because the fringe has to lose light faster than it loses opacity.
     // Straight alpha left a pale band of bare paper a dozen pixels wide all round her,
     // which against the dark ground is an outer glow: the coin again, with a soft edge.
@@ -684,6 +696,20 @@ function disc(square: Buffer, side: number) {
   ]);
 }
 
+/**
+ * 空 The Dragons painted with open paper round them, a wing span or a standing figure,
+ * which the ink alone cuts cleanly. Every other one is coiled in its own cloud.
+ */
+const OPEN_SKY = new Set(['heaven-5', 'heaven-7']);
+/** 燭 The torch dragon is painted dark and gold on bare paper, and the creature key cuts it clean. */
+const INKED = new Set(['heaven-6']);
+/**
+ * 雲 A common painted the same way, filling the panel with its mane, whose
+ * creature key came back as a slab of paper the shape of the panel. Found by laying all
+ * forty-five cut-outs side by side on the stage's own dark.
+ */
+const CLOUDED = new Set(['unicorn']);
+
 async function cut(sheet: Sheet, file: string) {
   const g = await grey(file);
   const px = profile(g, 'x');
@@ -714,7 +740,23 @@ async function cut(sheet: Sheet, file: string) {
 
     if (sheet.kind === 'beast') {
       mkdirSync('public/art/cut', { recursive: true });
-      await cutout(file, box, `public/art/cut/${c.key}.webp`);
+      // 雲 The Dragons of the heavens are painted coiled in cloud, and the cloud is paper
+      // with a few lines on it. The creature key reads the cloud as creature wherever it is
+      // closed and as paper wherever it is not, so the first cut came back as a round slab
+      // of paper with holes in it, and 天九, half bare paper on purpose, as four scraps.
+      // They are cut the way the cultivator is instead: the paper kept, the edge let go
+      // along the ink, and the ninth held together by the ghost of its own strokes. The
+      // ones coiled in cloud are let go on an oval as well (see `mist`).
+      // 又 The Dragons painted again to be cut have bare paper round them, so they are
+      // cut the same way with nothing to let go but the ink's own edge.
+      if (sheet.key === 'heavens-b') {
+        await bleed(file, box, `public/art/cut/${c.key}.webp`);
+      } else if ((sheet.key === 'heavens' && !INKED.has(c.key)) || CLOUDED.has(c.key)) {
+        await bleed(file, box, `public/art/cut/${c.key}.webp`,
+          { ghost: c.key === 'heaven-9', mist: !OPEN_SKY.has(c.key) });
+      } else {
+        await cutout(file, box, `public/art/cut/${c.key}.webp`);
+      }
     }
 
     // 修 The cultivator is only ever wanted with the paper off: he stands inside an aura

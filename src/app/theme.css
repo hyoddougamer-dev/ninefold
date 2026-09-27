@@ -1966,6 +1966,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .compan em { display: block; font-style: normal; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
 .compan i { display: block; font-style: normal; font-size: 12px; color: var(--faint); line-height: 1.4; margin-top: 2px; }
 .compan .crow > .act { flex: none; width: auto; padding-inline: 14px; margin: 0; }
+/* 窄 At 360 and under, the button beside the text left it a column three words wide and
+   the line about the companion ran to six lines. It goes under the text there, lined up
+   with it rather than with the painting. */
+@media (max-width: 400px) {
+  .compan .crow { flex-wrap: wrap; row-gap: 8px; }
+  .compan .crow > span:not(.plate) { flex-basis: calc(100% - 58px); }
+  .compan .crow > .act { margin-left: 58px; }
+}
 .compan .cpick { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .compan .cone { display: flex; gap: 10px; align-items: center; text-align: left; font: inherit; color: var(--text);
   background: var(--ground); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; cursor: pointer; }
@@ -1978,6 +1986,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .duel .fighter.you .pet[data-strike='true'] { transform: translate(34%, -18%) scale(1.12); }
 .duel .fighter.you .pet img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
   border: 1.5px solid var(--jade); background: #e9dcc2; }
+/* 剪 The painted cut-out: no disc, no rim, feet on the floor. The box is
+   sized by width and the picture keeps its own shape inside it, as .beastcut does.
+   Painted from the front, like every beast across the arena, so it is not mirrored. */
+.duel .fighter.you .pet:has(.petcut) { width: clamp(52px, 17vw, 78px); height: auto; bottom: 4%; left: -8%;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.6)) drop-shadow(0 0 6px rgba(127,180,149,.35)); }
+.duel .fighter.you .pet img.petcut { width: 100%; height: auto; max-height: clamp(48px, 16vw, 76px);
+  object-fit: contain; border: 0; border-radius: 0; background: none; }
 .duel .fighter.you .pdmg { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
   white-space: nowrap; font: 700 13px Rajdhani, sans-serif; color: var(--jade);
   text-shadow: 0 1px 3px rgba(0,0,0,.8); animation: petrise .8s ease-out both; }

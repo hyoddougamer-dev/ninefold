@@ -138,7 +138,8 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
     ?? pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const say = over
-    ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden))
+    ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
+        realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
     : blowLine(f.striker, f.round);
   /** 心魔 A beast of the world, which is what a kill, a bounty and the week are paid for. */
   const worldly = battle.floor === undefined && !battle.demon;
@@ -195,7 +196,12 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
             {/* 靈獸 The companion, small at the cultivator's side, leaping on its own strike. */}
             {pet && (
               <span className="pet" data-strike={!over && f.striker === 'player' && f.pet > 0}>
-                {pictureOf('beast', plateOf(pet))
+                {/* 剪 The same cut-out the beast stands in when it is the one being fought,
+                    turned to face the same way she does. A disc here was the badge the
+                    arena stopped using for beasts, back at a quarter of the size. */}
+                {pictureOf('cut', plateOf(pet))
+                  ? <img className="petcut" src={pictureOf('cut', plateOf(pet))!} alt={pet.name} />
+                  : pictureOf('beast', plateOf(pet))
                   ? <img src={pictureOf('beast', plateOf(pet))!} alt={pet.name} />
                   : <Plate kind="beast" subject={plateOf(pet)} icon={pet.icon} colour={realmOf(pet.realm).colour}
                       tier={1} size={40} alt={pet.name} />}
