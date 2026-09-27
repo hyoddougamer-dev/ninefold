@@ -2763,3 +2763,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @keyframes gspin { to { transform: rotate(360deg); } }
 @keyframes gspinback { to { transform: rotate(-360deg); } }
 @media (prefers-reduced-motion: reduce) { .gspin, .gspin.gback { animation: none; } }
+
+/* 焰 The furnace's flames and 雷池 the pool's clouds move here, not in the markup: the
+   tick used to redraw both whole five times a second. See art/trials.ts. */
+.tflame { transform-box: fill-box; transform-origin: 50% 100%; animation: tflame 1.6s ease-in-out infinite alternate; }
+.tflame.b { animation-delay: -.8s; }
+@keyframes tflame { from { transform: scaleY(.93); } to { transform: scaleY(1.07); } }
+.tcloud { animation: tcloud 10s ease-in-out infinite alternate; }
+.tcloud.c1 { animation-delay: -3.3s; }
+.tcloud.c2 { animation-delay: -6.6s; }
+@keyframes tcloud { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .tflame, .tcloud { animation: none; } }

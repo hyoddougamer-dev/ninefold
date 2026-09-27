@@ -137,7 +137,9 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
     const t = (i - 2) / 2;
     const h = (14 + 30 * heat) * (1 - Math.abs(t) * 0.42) * (i % 2 ? flick : 2 - flick);
     const x = cx + t * 22;
-    return `<path d="M${x.toFixed(1)} ${belly + 36} q ${(-5 - 3 * heat).toFixed(1)} ${(-h * 0.55).toFixed(1)} 0 ${(-h).toFixed(1)} q ${(5 + 3 * heat).toFixed(1)} ${(h * 0.55).toFixed(1)} 0 ${h.toFixed(1)} Z" fill="${mix(gold, '#D2604E', 0.15 + 0.4 * t * t)}" opacity="${(0.32 + 0.5 * heat).toFixed(2)}"/>`;
+    // 焰 The flicker is the stylesheet's (.tflame), so the game does not rewrite the
+    // furnace five times a second; a still picture passes a pulse and gets it drawn in.
+    return `<path class="tflame ${i % 2 ? 'a' : 'b'}" d="M${x.toFixed(1)} ${belly + 36} q ${(-5 - 3 * heat).toFixed(1)} ${(-h * 0.55).toFixed(1)} 0 ${(-h).toFixed(1)} q ${(5 + 3 * heat).toFixed(1)} ${(h * 0.55).toFixed(1)} 0 ${h.toFixed(1)} Z" fill="${mix(gold, '#D2604E', 0.15 + 0.4 * t * t)}" opacity="${(0.32 + 0.5 * heat).toFixed(2)}"/>`;
   }).join('');
 
   const smoke = Array.from({ length: 3 }, (_, i) => {
@@ -207,7 +209,7 @@ export function pool(
   const clouds = [0, 1, 2].map((i) => {
     const y = 20 + i * 13;
     const drift = Math.sin((pulse + i * 0.33) * Math.PI * 2) * 6;
-    return `<ellipse cx="${(cx + (i - 1) * 42 + drift).toFixed(1)}" cy="${y}" rx="${56 - i * 6}" ry="${9 - i}"
+    return `<ellipse class="tcloud c${i}" cx="${(cx + (i - 1) * 42 + drift).toFixed(1)}" cy="${y}" rx="${56 - i * 6}" ry="${9 - i}"
       fill="${mix(air, '#0D0B08', 0.55)}" opacity="${(0.18 + 0.5 * f).toFixed(2)}"/>`;
   }).join('');
 

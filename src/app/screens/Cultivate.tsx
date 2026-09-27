@@ -202,7 +202,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         ['--busy' as string]: Math.max(0, Math.min(1, (state.realm - 3) / 5)),
       }}>
         {top
-          ? <Svg html={poolArt(filled, state.tribulation, pulse, { who: state.self, sky: heaven?.colour })} />
+          ? <Svg html={poolArt(Math.round(filled * 200) / 200, state.tribulation, 0.125, { who: state.self, sky: heaven?.colour })} />
           : <Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} />}
       </div>
 

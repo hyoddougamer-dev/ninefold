@@ -726,7 +726,7 @@ export function App() {
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
           />
         )}
-        {tab === 'trials' && <Trials state={state} pulse={pulse} onFloor={climbTower} onBrew={onBrew} />}
+        {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}

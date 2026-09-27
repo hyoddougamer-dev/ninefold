@@ -7,6 +7,7 @@
  * silhouette on a black square; the square is stripped here, and colour is left to CSS.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { roundSvg } from './svgnum.ts';
 import { execSync } from 'node:child_process';
 import { BEASTS } from '../src/data/bestiary.ts';
 import { GEAR, SLOT_INFO, SLOTS } from '../src/data/gear.ts';
@@ -43,7 +44,7 @@ const entries = NAMES.map((name) => {
     .replace(/fill="#fff"/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  return { name, author, body };
+  return { name, author, body: roundSvg(body) };
 });
 
 const authors = [...new Set(entries.map((e) => e.author))].sort();

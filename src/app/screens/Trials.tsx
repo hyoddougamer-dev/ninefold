@@ -26,9 +26,8 @@ import { TRIALS } from '../copy.ts';
  * touches the qi rate, which is the rule the whole economy stands on, and the screen
  * says so at the bottom rather than leaving the player to work it out.
  */
-export function Trials({ state, pulse, onFloor, onBrew }: {
+export function Trials({ state, onFloor, onBrew }: {
   state: State;
-  pulse: number;
   onFloor: (floor: number) => void;
   onBrew: (line: (typeof LINES)[number]) => void;
 }) {
@@ -62,7 +61,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
       {/* 塔 The tower drawn as far up as it has been climbed: one tier to a 塔印 seal,
           so the silhouette is the progress and not an illustration beside it. */}
       <span className="place" data-tall="true">
-        <Svg html={tower(state.tower, pulse)} />
+        <Svg html={tower(state.tower)} />
       </span>
       <div className="card" style={{ borderColor: r.colour }}>
         <div className="row">
@@ -115,7 +114,7 @@ export function Trials({ state, pulse, onFloor, onBrew }: {
           {/* 爐 The fire reads what has been brewed, so a furnace lit an hour ago is a
               candle and one that has taken four hundred pills is a forge. */}
           <span className="place" data-tall="false">
-            <Svg html={furnace(state.realm, pillsTaken(state.brewed), pulse)} />
+            <Svg html={furnace(state.realm, pillsTaken(state.brewed))} />
           </span>
           <div className="row" style={{ marginBottom: 8 }}>
             <span className="faint" style={{ fontSize: 12.5 }}>{TRIALS.furnace}</span>
