@@ -12,6 +12,8 @@ import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
 import { classDrive } from './schools.ts';
+import { BOON_TOKEN } from './balance.ts';
+import { hasBoon } from '../data/meetings.ts';
 
 /**
  * 圍 The drive: one tap, many kills, paid for in qi.
@@ -84,7 +86,9 @@ export function canDrive(s: State, b: Beast): boolean {
  */
 export function driveCost(s: State, n: number): number {
   // 俠客 The Wanderer drives for less.
-  return Math.ceil(n * DRIVE_QI * ladderBetween(layersOpened(s)) * classDrive(s));
+  // 商印 The merchant's token from the road: a better price, for good.
+  return Math.ceil(n * DRIVE_QI * ladderBetween(layersOpened(s)) * classDrive(s)
+    * (hasBoon(s, 'token') ? BOON_TOKEN : 1));
 }
 
 export function canAffordDrive(s: State, b: Beast, n: number): boolean {

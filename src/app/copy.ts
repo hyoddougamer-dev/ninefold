@@ -446,7 +446,7 @@ export const CHRONICLE = {
   day: 'day', realm: 'realm', rungs: 'layers opened', power: 'power', rate: 'gathering',
   kills: 'beasts killed', seen: 'beasts met', mastered: '通 mastered', wardens: 'wardens down',
   floor: 'best floor', seals: '塔印 seals', pills: 'pills brewed', refine: 'deepest 煉器',
-  dao: '道 spent', marks: '雷印 marks',
+  dao: '道 spent', marks: '雷印 marks', met: 'people met',
   rule: 'A deed pays nothing at all. It is a record of what this cultivator did, and the record is the reward.',
   counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
     + 'no list of what you have earned, so there is nothing to forge.',
@@ -965,6 +965,44 @@ export const MEET = {
   costs: (what: string) => `costs ${what}`,
   something: 'something falls out of it',
   nothing: 'nothing happens',
+  /** 緣 A boon on the button: what stays, in words. */
+  stays: (what: string) => `stays with you: ${what}`,
+  /** 歸 Somebody coming back, and what they remember. */
+  remembers: (name: string, said: string) => `歸 Back from the road: ${name}. You chose “${said}”.`,
+  /** 心 Somebody who only finds one kind of heart. */
+  drawn: (kind: 'kind' | 'hard') => (kind === 'kind'
+    ? '心 Found you because of how kindly you have walked.'
+    : '心 Found you because of how hard you have walked.'),
+};
+
+/**
+ * 緣 The road, on 碑 the stele: the heart, the things that stay, and everybody met.
+ *
+ * 心 The heart is shown as a scale and never as a score. The buttons never say which way
+ * an answer leans, so a player finds out who they have been by reading this page, not by
+ * aiming for a number.
+ */
+export const ROAD = {
+  head: '緣 The road',
+  heart: '心 The heart',
+  kind: '仁 Kind',
+  hard: '狠 Hard',
+  path: {
+    kind: 'You walk the kind road. The people who find the kind have started to find you.',
+    hard: 'You walk the hard road. The people who find the hard have started to find you.',
+    even: 'Your heart has not settled yet. Neither road has noticed you.',
+  },
+  boonsHead: '留 What stayed with you',
+  noBoons: 'Nothing yet. Five people on the road leave something that stays.',
+  metHead: (n: number, of: number) => `遇 Everybody met · ${n} of ${of}`,
+  none: 'Nobody yet. The road starts at the second realm.',
+  youChose: (label: string) => `You chose “${label}”.`,
+  toCome: (n: number) => (n === 1
+    ? '歸 One of them may yet come back.'
+    : `歸 ${n} of them may yet come back.`),
+  older: 'Met before the road kept answers.',
+  all: (n: number) => `Show all ${n}`,
+  fewer: 'Show only the latest',
 };
 
 /**

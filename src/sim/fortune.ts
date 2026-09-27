@@ -4,6 +4,8 @@ import { pillFortune } from './furnace.ts';
 import type { Fortune } from './drops.ts';
 import type { State } from './state.ts';
 import { classDrop, gearFind, gearLuck } from './schools.ts';
+import { BOON_FAMILIAR } from './balance.ts';
+import { hasBoon } from '../data/meetings.ts';
 
 /**
  * 運 Everything that bends what falls off a beast, added up in one place.
@@ -26,7 +28,9 @@ import { classDrop, gearFind, gearLuck } from './schools.ts';
 export function fortuneOf(s: State): Fortune {
   // 運拾 The body's own two lines, bent, and 獵王 the Hunt King's extra chance.
   return {
-    chance: dropChanceBonus(s.unlocked) + dropBonus(s.awakened) + gearFind(s) + classDrop(s),
+    // 鴉 And the two crows from the road.
+    chance: dropChanceBonus(s.unlocked) + dropBonus(s.awakened) + gearFind(s) + classDrop(s)
+      + (hasBoon(s, 'familiar') ? BOON_FAMILIAR : 0),
     luck: (rarityLuck(s.unlocked) * pillFortune(s.brewed) + luckBonus(s.awakened)) * gearLuck(s),
     always: alwaysDrops(s.unlocked),
   };

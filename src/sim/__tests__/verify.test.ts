@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { playEndgame } from '../../../tools/endgame.ts';
+import { rate } from '../time.ts';
 import { anchorFloor, firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
 import { RUN_DAO_CEILING } from '../../data/secret.ts';
 import { validate } from '../state.ts';
@@ -235,7 +236,10 @@ describe('驗 every edit a player can make fails', () => {
   });
 
   it('qi edited', () => {
-    const v = verify(a, { ...later, qi: later.qi * 50 + 1e9 }, honestGap);
+    // A month of this cultivator's own gathering, claimed in six hours. It was "fifty
+    // times the qi plus a billion", which stopped being a lie the day the fixture landed
+    // on a save that had just spent its qi on a breakthrough.
+    const v = verify(a, { ...later, qi: later.qi * 50 + rate(later) * 30 * DAY }, honestGap);
     expect(v.ok).toBe(false);
     expect(v.why).toContain('too-fast');
   });

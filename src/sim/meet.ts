@@ -1,4 +1,5 @@
-import { MEETINGS, meetingOf, type Meeting, type Outcome, type Pick } from '../data/meetings.ts';
+import { MEETINGS, boonsOf, heartOf, meetingOf, roadOpen, type Boon, type Meeting, type Outcome, type Pick } from '../data/meetings.ts';
+import { HEART_PATH } from './balance.ts';
 import { stash } from './stash.ts';
 import { classMeet } from './schools.ts';
 import { rate } from './time.ts';
@@ -47,9 +48,39 @@ export function meetingDue(s: State): Meeting | null {
   if (s.realm < MEETS_FROM) return null;
   const since = s.at - (s.metAt || s.startedAt);
   if (since < MEET_GAP) return null;
-  const left = MEETINGS.filter((m) => m.realm <= s.realm && !s.met.includes(m.key));
+  const left = MEETINGS.filter((m) => !s.met.includes(m.key) && roadOpen(m, s.realm, s.tribulation, s.met, s.chose));
   if (!left.length) return null;
-  return left[pick(s.startedAt + s.met.length * 7919) % left.length];
+  // 歸 Somebody coming back comes first. A return is the road answering you, and making
+  // it wait behind a stranger would bury the one meeting that is about what you did.
+  const back = left.filter((m) => m.after);
+  const from = back.length ? back : left;
+  return from[pick(s.startedAt + s.met.length * 7919) % from.length];
+}
+
+/** 心 Where this cultivator's heart leans: kind above zero, hard below. */
+export function heart(s: State): number {
+  return heartOf(s.met, s.chose);
+}
+
+/** 心 The path the heart walks, once it has leaned far enough to be one. */
+export function pathOf(s: State): 'kind' | 'hard' | 'even' {
+  const h = heart(s);
+  return h >= HEART_PATH ? 'kind' : h <= -HEART_PATH ? 'hard' : 'even';
+}
+
+/** 緣 The things the road has left that stay. */
+export function boons(s: { readonly met: readonly string[]; readonly chose: Readonly<Record<string, 0 | 1>> }): ReadonlySet<Boon> {
+  return boonsOf(s.met, s.chose);
+}
+
+/**
+ * 歸 How many people met so far may still come back, which the road page says without
+ * saying who: a meeting that follows one of the answers already given, and has not
+ * happened yet.
+ */
+export function stillToCome(s: State): number {
+  return MEETINGS.filter((m) => m.after && !s.met.includes(m.key)
+    && s.chose[m.after.key] === m.after.pick).length;
 }
 
 /**
@@ -106,7 +137,7 @@ export function giftOf(s: State, o: Outcome): { qi: number; materials: number; d
  */
 export function answer(s: State, key: string, which: 0 | 1, seed: number): State {
   const m = meetingOf(key);
-  if (!m || s.met.includes(key)) return s;
+  if (!m || s.met.includes(key) || !roadOpen(m, s.realm, s.tribulation, s.met, s.chose)) return s;
   const p = m.picks[which];
   if (!canAnswer(s, p)) return s;
 
@@ -118,6 +149,7 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
     materials: Math.max(0, s.materials - cost.materials) + gift.materials,
     met: [...s.met, key],
     metAt: s.at,
+    chose: { ...s.chose, [key]: which },
   };
 
   // 道 Points from a meeting are earned like any other, so they are stored as what they
@@ -139,4 +171,4 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
   return out;
 }
 
-export { MEETINGS, meetingOf, type Meeting, type Pick };
+export { MEETINGS, meetingOf, type Boon, type Meeting, type Pick };

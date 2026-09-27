@@ -333,7 +333,9 @@ function meetOnce(s: State, seed: number): State {
     const p = m.picks[i];
     if (!canAnswer(s, p)) return -Infinity;
     const g = giftOf(s, p.outcome);
-    return g.qi - priceOf(s, p).qi + g.dao * hour + (p.outcome.kind === 'item' ? 2 * hour : 0);
+    // 緣 A boon stays for good, so the harness takes one whenever it is offered.
+    return g.qi - priceOf(s, p).qi + g.dao * hour + (p.outcome.kind === 'item' ? 2 * hour : 0)
+      + (p.outcome.kind === 'boon' ? 8 * hour : 0);
   };
   const which: 0 | 1 = worth(1) > worth(0) ? 1 : 0;
   return answer(s, m.key, which, seed);

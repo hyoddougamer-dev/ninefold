@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   DEEDS, TRACKS, closest, daysIn, deedsOn, doneBy, killCount, mastered, seenBeasts,
   tally, wardensFelled, bestRefine,
@@ -13,7 +14,10 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { CHRONICLE } from '../copy.ts';
+import { CHRONICLE, ROAD } from '../copy.ts';
+import { BOON_INFO, MEETINGS, meetingOf } from '../../data/meetings.ts';
+import { boons, heart, pathOf, stillToCome } from '../../sim/meet.ts';
+import { HEART_PATH } from '../../sim/balance.ts';
 
 /**
  * 碑 The stele: everything this cultivator has done, on one page.
@@ -49,6 +53,7 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
     { han: '煉器', label: CHRONICLE.refine, value: `${bestRefine(state)}` },
     { han: '道', label: CHRONICLE.dao, value: `${daoSpent(state.unlocked)}` },
     { han: '雷印', label: CHRONICLE.marks, value: `${state.tribulation}` },
+    { han: '緣', label: CHRONICLE.met, value: `${state.met.length} / ${MEETINGS.length}` },
   ];
 
   return (
@@ -86,6 +91,8 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
           </span>
         ))}
       </div>
+
+      <Road state={state} />
 
       {TRACKS.map((t) => {
         const deeds = deedsOn(t.key);
@@ -130,5 +137,81 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
         {CHRONICLE.counted(DEEDS.length)}
       </p>
     </>
+  );
+}
+
+/**
+ * 緣 The road, as this cultivator has walked it: where the heart leans, what stayed, and
+ * everybody met with the answer they were given.
+ *
+ * 心 The scale runs from 狠 hard on the left to 仁 kind on the right, with the two marks
+ * where a path begins. It is drawn and not numbered: the buttons never said which way
+ * an answer leaned, and a number here would turn the road into a score to aim at.
+ */
+const ROAD_FIRST = 6;
+
+function Road({ state }: { state: State }) {
+  const h = heart(state);
+  const path = pathOf(state);
+  const span = HEART_PATH * 3;
+  const at = (x: number) => `${50 + (Math.max(-span, Math.min(span, x)) / span) * 50}%`;
+  const kept = [...boons(state)];
+  const back = stillToCome(state);
+  // 遇 The newest few, and the rest behind one tap: by the ninth heaven it is thirty.
+  const [all, setAll] = useState(false);
+  const shown = [...state.met].reverse().slice(0, all ? undefined : ROAD_FIRST);
+  return (
+    <div className="road">
+      <h2 className="heading">{ROAD.head}</h2>
+      <div className="rheart" data-path={path}>
+        <b className="rlabel">{ROAD.heart}</b>
+        <span className="rscale" aria-hidden="true">
+          <i className="rgate" style={{ left: at(-HEART_PATH) }} />
+          <i className="rgate" style={{ left: at(HEART_PATH) }} />
+          <i className="rdot" style={{ left: at(h) }} />
+        </span>
+        <span className="rends"><em>{ROAD.hard}</em><em>{ROAD.kind}</em></span>
+        <p>{ROAD.path[path]}</p>
+      </div>
+
+      <b className="rsub">{ROAD.boonsHead}</b>
+      {kept.length === 0 ? <p className="rnone">{ROAD.noBoons}</p> : (
+        <div className="rboons">
+          {kept.map((k) => (
+            <span key={k} className="rboon">
+              <b className="cjk">{BOON_INFO[k].han}</b>
+              <em>{BOON_INFO[k].name}</em>
+              <i>{BOON_INFO[k].what}</i>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <b className="rsub">{ROAD.metHead(state.met.length, MEETINGS.length)}</b>
+      {state.met.length === 0 ? <p className="rnone">{ROAD.none}</p> : (
+        <ol className="rmet">
+          {shown.map((k) => {
+            const m = meetingOf(k);
+            if (!m) return null;
+            const c = state.chose[k];
+            return (
+              <li key={k}>
+                <b className="cjk">{m.han}</b>
+                <span>
+                  <em>{m.name}</em>
+                  <i>{c === undefined ? ROAD.older : ROAD.youChose(m.picks[c].label)}</i>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {state.met.length > ROAD_FIRST && (
+        <button className="act ghost small rmore" onClick={() => setAll((x) => !x)}>
+          遇 <span>{all ? ROAD.fewer : ROAD.all(state.met.length)}</span>
+        </button>
+      )}
+      {back > 0 && <p className="rback">{ROAD.toCome(back)}</p>}
+    </div>
   );
 }

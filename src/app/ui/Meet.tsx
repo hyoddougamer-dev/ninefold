@@ -4,6 +4,7 @@ import { pictureOf } from '../../data/pictures.ts';
 import { num } from '../../sim/format.ts';
 import { Svg } from './Svg.tsx';
 import { MEET } from '../copy.ts';
+import { BOON_INFO, meetingOf } from '../../data/meetings.ts';
 import type { State } from '../../sim/state.ts';
 
 /**
@@ -36,6 +37,7 @@ export function Meet({ state, meeting, onAnswer }: {
     if (gift.materials) bits.push(`+材 ${num(gift.materials)}`);
     if (gift.dao) bits.push(`+${gift.dao} 道`);
     if (p.outcome.kind === 'item') bits.push(MEET.something);
+    if (p.outcome.kind === 'boon') bits.push(MEET.stays(BOON_INFO[p.outcome.boon].what));
     if (p.outcome.kind === 'nothing') bits.push(MEET.nothing);
     return bits.join(' · ');
   };
@@ -56,6 +58,12 @@ export function Meet({ state, meeting, onAnswer }: {
    * where they were before. With no painting the card is exactly what it was.
    */
   const scene = pictureOf('meet', meeting.key);
+  // 歸 Somebody coming back says so, and says what they remember, because the whole point
+  // of a return is that the road noticed. 心 And somebody drawn by the heart says that too.
+  const first = meeting.after ? meetingOf(meeting.after.key) : undefined;
+  const why = first && meeting.after
+    ? MEET.remembers(first.name.replace(/^An? /, 'the '), first.picks[meeting.after.pick].label)
+    : meeting.heart ? MEET.drawn(meeting.heart > 0 ? 'kind' : 'hard') : null;
   const picks = (
     <div className="picks">
       {meeting.picks.map((p, i) => (
@@ -76,6 +84,7 @@ export function Meet({ state, meeting, onAnswer }: {
       <div className="body">
         <b><span className="cjk">緣</span> {meeting.name}</b>
         <i>{meeting.line}</i>
+        {why && <em className="mback">{why}</em>}
         {!scene && picks}
       </div>
       {scene && picks}

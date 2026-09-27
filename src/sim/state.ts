@@ -28,12 +28,13 @@ import { isOpen } from './unlocks.ts';
 import { bodyTotals, classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
-import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
+import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
 import { EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
+import { BOON_SWORDSOUL } from './balance.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -143,6 +144,13 @@ export interface State {
   met: string[];
   metAt: number;
   metPoints: number;
+  /**
+   * 緣 Which answer each meeting was given, by key. The road remembers it: some people
+   * only come back to somebody who answered them one way, the 心 heart is added up from
+   * it, and the things that stay (boons) are read from it. Older saves have none, and
+   * lose nothing by it: their meetings stay met.
+   */
+  chose: Record<string, 0 | 1>;
   /**
    * 洞天 The three beds. A key and the instant it was planted, and everything else
    * about a bed is derived from those two: how far along it is, whether it is ripe, how
@@ -314,7 +322,7 @@ export function newState(now: number): State {
     tower: 0,
     brewed: { ...NO_PILLS },
     awakened: [],
-    met: [], metAt: 0, metPoints: 0,
+    met: [], metAt: 0, metPoints: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
     quarryWeek: -1,
@@ -457,7 +465,9 @@ export function power(s: State): number {
     // data/awakening.ts.
     * markBonus(s.tribulation)
     // 職 劍 The Sword school: the one class perk on power itself. See sim/schools.ts.
-    * classPower(s);
+    * classPower(s)
+    // 劍魂 A sword soul from the road: a keepsake, given once. See data/meetings.ts.
+    * (hasBoon(s, 'swordsoul') ? BOON_SWORDSOUL : 1);
 }
 
 /** The realm is full and only the warden is left? */
@@ -772,7 +782,7 @@ export function validate(raw: unknown, now: number): State {
     // 緣 A key that names nobody is not a meeting, and nobody is met twice. The points
     // are capped at what every meeting in the game could ever hand over, so a forged
     // save cannot claim a tree's worth of them.
-    met: validMet(o.met),
+    ...validRoad(o.met, o.chose, realm, tribulation),
     metAt: clamp(num(o.metAt, 0), 0, now),
     // 道 And the bank they land in is not only theirs: 秘境 the vault's shrines pay into
     // it too, so the ceiling has to allow for every walk the clock could have allowed.

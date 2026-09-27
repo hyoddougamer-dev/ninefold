@@ -38,6 +38,7 @@ import { beastPower, oddsRaw } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
+import { MEET_GAP } from './balance.ts';
 import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
 import { driveCost } from './hunt.ts';
@@ -105,6 +106,7 @@ export type Why =
   | 'gear'           // a piece from a realm not reached
   | 'dao'            // more 道 spent than earned
   | 'anchor'         // the Dragon's anchor shrank: edited to make the next crossing easy
+  | 'road'           // an answer given on the road was changed afterwards, to take a boon
   | 'shape';         // another run of the game than the one verified (startedAt); never a strike
 
 export interface Verdict {
@@ -313,6 +315,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // strikes: a month played offline and synced on the first day is honest, only early.
   if (after.metPoints - before.metPoints > metCeiling(before, after, dt) && !why.includes('too-fast')) {
     why.push('too-fast');
+  }
+  // 緣 Somebody on the road arrives MEET_GAP after the last at the soonest, so more new
+  // meetings than the time allows waits. And an answer, once given, is given: one that
+  // changed between two saves was edited, to take a boon the other answer did not give.
+  const newlyMet = after.met.filter((k) => !before.met.includes(k)).length;
+  if (newlyMet > Math.floor(Math.max(0, dt) / MEET_GAP) + 1 && !why.includes('too-fast')) why.push('too-fast');
+  if (Object.entries(before.chose).some(([k, c]) => after.met.includes(k) && after.chose[k] !== undefined && after.chose[k] !== c)) {
+    why.push('road');
   }
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever

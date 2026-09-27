@@ -4,7 +4,7 @@ import { MARKS_PER_HEAVEN } from '../../data/heavens.ts';
 import { ALL_NODES } from '../../data/techniques.ts';
 import { cardDue, due, held, owed, pillFactor, take, towerBonus, valid } from '../awaken.ts';
 import { newState, power, validate, type State } from '../state.ts';
-import { MEETINGS, validMet } from '../../data/meetings.ts';
+import { MEETINGS, MEET_POINT_CEILING, validMet } from '../../data/meetings.ts';
 import { answer, canAnswer, giftOf, meetingDue, priceOf, MEET_GAP } from '../meet.ts';
 import { freePoints } from '../points.ts';
 
@@ -241,8 +241,14 @@ describe('緣 somebody on the road', () => {
   it('throws away a forged list of people met', () => {
     expect(validMet(['nobody', 'oldman', 'oldman'])).toEqual(['oldman']);
     expect(validMet('not a list')).toEqual([]);
-    const s = validate({ ...newState(T0), met: ['oldman', 'oldman', 'nope'], metPoints: 1e9 }, T0);
+    const s = validate({ ...newState(T0), realm: 2, met: ['oldman', 'oldman', 'nope'], metPoints: 1e9 }, T0);
     expect(s.met).toEqual(['oldman']);
-    expect(s.metPoints).toBeLessThanOrEqual(9);
+    expect(s.metPoints).toBeLessThanOrEqual(MEET_POINT_CEILING);
+    // 緣 And nobody from a realm not reached, and no return without its first meeting.
+    const early = validate({ ...newState(T0), realm: 2, met: ['oldman', 'hermit'], chose: { oldman: 0, hermit: 1 } }, T0);
+    expect(early.met).toEqual(['oldman']);
+    expect(early.chose).toEqual({ oldman: 0 });
+    const back = validate({ ...newState(T0), realm: 6, met: ['beggar', 'keeper'], chose: { beggar: 0 } }, T0);
+    expect(back.met).toEqual(['beggar']);
   });
 });

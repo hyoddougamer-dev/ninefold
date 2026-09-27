@@ -1138,6 +1138,30 @@ export const DRIVE_SIZES = [10, 50, 200] as const;
 /** 緣 How long after one meeting before the next can arrive, in seconds. */
 export const MEET_GAP = 3 * 3600;
 
+/**
+ * 心 How far the heart has to lean before the road notices. Every answer leans kind,
+ * hard or neither, and past this many either way a cultivator walks a path: the monk
+ * only finds the kind, the demonic cultivator only the hard. Three is two or three
+ * meetings answered the same way, which is a habit rather than an accident.
+ */
+export const HEART_PATH = 3;
+
+/**
+ * 緣 The five things a meeting can leave that stay. Each is given once in a lifetime,
+ * by one meeting, so every one of them is finite, and none of them touches the qi rate.
+ * They are kept small on purpose: a boon is a keepsake that helps, not a build.
+ */
+/** 鴉 Two crows: added to a beast's chance of leaving a piece. */
+export const BOON_FAMILIAR = 0.03;
+/** 劍魂 A sword soul: power, multiplied. */
+export const BOON_SWORDSOUL = 1.03;
+/** 商印 The merchant's token: what a drive costs, multiplied. */
+export const BOON_TOKEN = 0.9;
+/** 蓮 A lotus seed: health mended every round of a fight, as a share of the whole. */
+export const BOON_LOTUS = 0.02;
+/** 血 A blood method: what a beast counts for, multiplied. Never the Dragon above the ninth realm. */
+export const BOON_BLOOD = 0.96;
+
 /** 秘境 How many rooms a run is. Seven is short enough to finish in one sitting. */
 export const ROOMS = 7;
 

@@ -16,6 +16,8 @@ import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import {
   classArts, classBounty, classForm, classMend, classTower, classWarden, gearArt, gearSunder,
 } from './schools.ts';
+import { BOON_BLOOD, BOON_LOTUS } from './balance.ts';
+import { hasBoon } from '../data/meetings.ts';
 
 /**
  * 戰 Automatic combat, watched.
@@ -175,7 +177,8 @@ function setup(s: State, b: Beast, standing?: number): Setup {
     formFloor: classForm(s),
     artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
     // 羅漢 The Arhat mends a little every round, as 續 Endure does.
-    mend: classMend(s),
+    // 蓮 And the lotus seed from the monk on the road, for somebody who walked kindly.
+    mend: classMend(s) + (hasBoon(s, 'lotus') ? BOON_LOTUS : 0),
     playerPower: pp,
   };
 }
@@ -475,7 +478,10 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
   // 破 The body's sunder line, bent; 劍仙 the tower's floors; 武神 the wardens.
   const tower = standing !== undefined ? classTower(s) : 1;
   const warden = standing === undefined && b.warden ? classWarden(s) : 1;
-  return base * beastWeakness(s.unlocked) * pillBane(s.brewed) * gearSunder(s) * tower * warden;
+  // 血 The blood method from the road, for somebody who walked hard. The Dragon is
+  // returned above, before this line, so it never reaches the tribulation.
+  const blood = hasBoon(s, 'blood') ? BOON_BLOOD : 1;
+  return base * beastWeakness(s.unlocked) * pillBane(s.brewed) * gearSunder(s) * tower * warden * blood;
 }
 
 /**

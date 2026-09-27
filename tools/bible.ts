@@ -27,7 +27,9 @@ import {
 import { ALL_NODES, PATH_INFO, PATHS, TOTAL_COST, nodesOf } from '../src/data/techniques.ts';
 import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakening.ts';
 import sharp from 'sharp';
-import { MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
+import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
+import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
+import { HEART_PATH, MEET_GAP } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -1267,17 +1269,42 @@ const HEAVEN_TABLE = HEAVENS
   .join('');
 
 /** 緣 Everybody on the road, and what the two answers do. */
-const MEET_TABLE = MEETINGS.map((m) => `
-  <tr><td><b class="cjk">${m.han}</b> ${m.name}</td>
-    <td class="n">${m.realm}</td>
+const MEET_TABLE = MEETINGS.map((m) => {
+  // 緣起 Where it stands on the road: its realm, the marks above the summit, and what it follows.
+  const first = m.after ? MEETINGS.find((x) => x.key === m.after!.key) : undefined;
+  const when = [
+    m.marks ? `${m.realm}, ${m.marks} 雷印` : `${m.realm}`,
+  ].join('');
+  const gate = first ? `<em class="faint">歸 comes back to whoever chose “${first.picks[m.after!.pick].label}” for ${first.han}</em>`
+    : m.heart ? `<em class="faint">心 only for a ${m.heart > 0 ? 'kind' : 'hard'} heart</em>` : '';
+  return `
+  <tr><td><b class="cjk">${m.han}</b> ${m.name}${gate ? `<br>${gate}` : ''}</td>
+    <td class="n">${when}</td>
     <td>${m.picks.map((p) => {
       const cost = p.costMaterial ? `材 ${p.costMaterial} beasts` : p.costQi ? `${p.costQi} min of qi` : 'free';
       const got = p.outcome.kind === 'qi' ? `${p.outcome.minutes} min of qi`
         : p.outcome.kind === 'material' ? `材 ${p.outcome.share} beasts`
         : p.outcome.kind === 'dao' ? `${p.outcome.points} 道`
-        : p.outcome.kind === 'item' ? 'a piece of gear' : 'nothing';
-      return `<i>${p.label}: ${cost} \u2192 ${got}</i>`;
-    }).join('')}</td></tr>`).join('');
+        : p.outcome.kind === 'item' ? 'a piece of gear'
+        : p.outcome.kind === 'boon' ? `留 ${BOON_INFO[p.outcome.boon].name}` : 'nothing';
+      const lean = p.heart === 1 ? ' · 仁' : p.heart === -1 ? ' · 狠' : '';
+      return `<i>${p.label}: ${cost} \u2192 ${got}${lean}</i>`;
+    }).join('')}</td></tr>`;
+}).join('');
+
+/** 緣起 The road walked twice, kindly and hard, for the section that says who each meets. */
+function walkRoad(want: 1 | -1): State {
+  let s: State = { ...newState(1_700_000_000), realm: 9, layer: 8, tribulation: 30, qi: 1e40, materials: 1e30, at: 1_700_000_000 + 10 * 86_400 };
+  for (let i = 0; i < MEETINGS.length + 5; i++) {
+    s = { ...s, at: s.at + MEET_GAP };
+    const m = meetingDue(s);
+    if (!m) break;
+    s = answerMeeting(s, m.key, m.picks[1].heart === want ? 1 : 0, i + 1);
+  }
+  return s;
+}
+const ROAD_KIND = walkRoad(1);
+const ROAD_HARD = walkRoad(-1);
 
 /** 洞天 The three herbs, priced and paid as the game prices and pays them. */
 const CAVE_TABLE = HERBS.map((h) => `
@@ -2806,6 +2833,42 @@ const page = `<meta charset="utf-8">
       own standing gathering</b>. A share of the rung was tried first and it is the
       wrong scale. A rung is a whole layer and grows exponentially, so six tenths of one
       read as 23.8M qi at the fourth realm to somebody holding two hundred thousand.</p>
+
+    <h3>緣起 The road remembers</h3>
+    <p class="t">Bruno, on 27 September: <i>"Avança com mais encontros na estrada e mais
+      inovação, coisas diferentes."</i> The road had ten people on it and they were gone by
+      the fifth realm. It has <b>${MEETINGS.length}</b> now, on every realm and above the
+      summit, and three things make it a road rather than a list.</p>
+    <p class="t"><b>歸 People come back.</b> ${MEETINGS.filter((m) => m.after).length} of them
+      only appear to somebody who answered an earlier meeting one particular way, and they say
+      so on the card. The child you fed at the shrine comes back in a sect's robe. The keeper
+      of the shrine you swept comes back asking for what was under the dust. A return comes
+      before any stranger, because it is the one meeting that is about what you did.</p>
+    <p class="t"><b>心 The heart leans.</b> Every answer leans kind, hard or neither, and the
+      button never says which. Past ${HEART_PATH} either way the road notices: the monk only
+      finds the kind, the demonic cultivator only the hard. Walked kindly, the harness meets
+      ${ROAD_KIND.met.length} people; walked hard, ${ROAD_HARD.met.length}; and neither walk
+      meets the other's.</p>
+    <p class="t"><b>留 Some things stay.</b> Five answers leave a keepsake for good. Each is
+      given once in a lifetime and none of them touches the qi rate, so the economic law
+      holds:</p>
+    <table class="tbl">
+      <thead><tr><th>What stays</th><th>What it does</th></tr></thead>
+      <tbody>${(Object.keys(BOON_INFO) as (keyof typeof BOON_INFO)[]).map((k) => `<tr>
+        <td><b class="cjk">${BOON_INFO[k].han}</b> ${BOON_INFO[k].name}</td><td>${BOON_INFO[k].what}</td></tr>`).join('')}</tbody>
+    </table>
+    <p class="t"><b>律 And the wall still holds.</b> The first draft gave three of the new
+      meetings 材 material. The cultivator who never fights then reached the summit on day 110
+      instead of 127, because material is the one thing that cultivator cannot get. Those three
+      pay qi now: material still only falls off something you killed.</p>
+    <figure class="shots">
+      <img src="bible-art/shot/road-cards.webp" alt="Two encounter cards: a return that says what it remembers, and the monk who only finds a kind heart">
+      <figcaption>The real card at 360. 歸 A return says who it is and what you chose. 心 The monk says why he found you. 留 A button that leaves something says what stays.</figcaption>
+    </figure>
+    <figure class="shots">
+      <img src="bible-art/shot/road-stele.webp" alt="The road on the stele, walked kind and walked hard">
+      <figcaption>碑 The stele's new page, walked kindly (left) and hard (right): the heart as a scale with no number on it, what stayed, and everybody met with the answer they were given.</figcaption>
+    </figure>
 
     <table class="tbl meets">
       <thead><tr><th>Who</th><th class="n">From realm</th><th>The two answers</th></tr></thead>

@@ -36,6 +36,7 @@ import { HERBS } from '../src/data/herbs.ts';
 import { PILL_LINES } from '../src/data/alchemy.ts';
 import { ROOM_INFO } from '../src/data/secret.ts';
 import { FAMILIES, paintedIn } from './artgaps.ts';
+import { pictureOf } from '../src/data/pictures.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
 import { mix } from '../src/art/aura.ts';
 import { MATERIALS, enso, inkOf } from './ink.ts';
@@ -208,24 +209,56 @@ const MEET_SCENE: Record<string, string> = {
   furnace: 'a big iron furnace abandoned in an empty courtyard, cold, its mouth dark',
   swordsman: 'a swordsman standing in the middle of a road with his blade still sheathed, waiting',
   pool: 'a still, clear pool of water among rocks with nothing living in it and mist above it',
+  // 緣起 The road remembers (27 September).
+  ferryman: 'an old ferryman standing in a flat boat at a wide river crossing, pole in hand, waiting',
+  tomb: 'the stone door of a hillside tomb standing open, its seal broken outward, darkness inside',
+  orchard: 'a small peach orchard heavy with ripe fruit under a pale winter sky, nobody in it',
+  disciple: 'a young woman in a plain sect robe standing on a road, holding a small wrapped bundle',
+  keeper: 'an old shrine keeper holding a stick of incense before a small swept shrine',
+  crows: 'two crows side by side on a low branch above an empty road, one leaning toward the other',
+  monk: 'a barefoot monk walking along a dusty road, a staff over his shoulder, smiling',
+  swordsoul: 'a broken sword standing upright in the earth with a faint ghost of a swordsman beside it',
+  smith: 'a grey-haired smith at an open-air anvil, looking down the road, hammer resting',
+  demon: 'a cultivator in a dark hooded robe leaning against a dead tree, grinning, eyes shadowed',
+  tradesman: 'a prosperous merchant with a laden covered cart and two mules, holding out a small seal',
+  bridge: 'the broken stone piers of a fallen bridge over a gorge, an old toll-keeper seated at one end',
+  rematch: 'a swordsman standing in snow on a mountain road, blade drawn, waiting with a smile',
+  sober: 'a tall cultivator standing straight and clear-eyed on a road, holding out his hand for a gourd',
+  teacher: 'an old master seated under the same tree as before, sober, a cup of wine beside him',
+  mirror: 'a tall bronze mirror standing alone in deep snow, its surface catching grey light',
+  hermit: 'a hermit sitting outside a tiny hut at the foot of a vast mountain peak, a book on his knee',
+  rival: 'a woman cultivator climbing a steep stone path far below, seen from above, the peak between',
+  immortal: 'a relaxed old immortal lounging on a drifting cloud, one sandal dangling',
+  weaver: 'a celestial woman at a loom made of cloud, weaving light into cloth',
+  oldmanagain: 'an old man sitting cross-legged on a small cloud with a wrapped object in his lap',
+  thunderchild: 'a small child made of crackling lightning standing on a storm cloud, curious',
 };
 
-function meetSheet(): Sheet {
-  return {
-    key: 'meetings',
-    han: '緣',
-    title: 'The ten encounters',
-    kind: 'meet',
+/**
+ * 緣 The encounters, twelve panels to a sheet. The first sheet stays the ten it always
+ * was (those are painted, and slice.ts cuts a sheet by its order), and every meeting
+ * added after them fills the next sheet along.
+ */
+function meetSheets(): readonly Sheet[] {
+  const FIRST = 10;
+  const groups = [MEETINGS.slice(0, FIRST)];
+  for (let i = FIRST; i < MEETINGS.length; i += 12) groups.push(MEETINGS.slice(i, i + 12));
+  const names = ['', '乙', '丙', '丁', '戊'];
+  return groups.map((g, n) => ({
+    key: n === 0 ? 'meetings' : `meetings-${'abcde'[n]}`,
+    han: `緣${names[n]}`,
+    title: n === 0 ? 'The ten encounters' : `The road remembers, ${n === 1 ? 'first' : n === 2 ? 'second' : 'third'} sheet`,
+    kind: 'meet' as const,
     cols: 4,
     rows: 3,
-    realms: MEETINGS.map((m) => m.realm),
-    cells: MEETINGS.map((m) => ({
+    realms: g.map((m) => m.realm),
+    cells: g.map((m) => ({
       key: m.key,
       han: m.han,
       name: m.name,
       subject: MEET_SCENE[m.key] ?? m.name.toLowerCase(),
     })),
-  };
+  }));
 }
 
 /**
@@ -489,7 +522,7 @@ export const SHEETS: readonly Sheet[] = [
   wardenSheet(),
   ...WHO.map(([key, han, title, who]) => selfSheet(key, han, title, who)),
   ...WHO.map(([key, han, title, who]) => ninthSheet(key, han, title, who)),
-  meetSheet(),
+  ...meetSheets(),
   heavenSheet(),
   skySheet(),
   ...EMBLEM_SHEETS.map(emblemSheet),
@@ -514,6 +547,9 @@ export const SHEETS: readonly Sheet[] = [
 ];
 
 export const sheetOf = (key: string) => SHEETS.find((s) => s.key === key);
+
+/** 缺 The encounter sheets with a panel the game has no painting for yet. */
+const WAITING = SHEETS.filter((s) => s.kind === 'meet' && s.cells.some((c) => !pictureOf('meet', c.key)));
 
 /** 境外 What the nine heavens are painted in: out of violet, through gold, to bone. */
 const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old rose',
@@ -825,20 +861,19 @@ const page = `<meta charset="utf-8">
     <p class="t">A creature is shown at about 120 pixels inside 牌 the plate. A panel of a
       1024 sheet is 256. <b>The detail was never going to survive the frame</b>, so
       nothing is lost by drawing nine at a time.</p>
-    <p class="t"><b>All fourteen sheets are done.</b> 134 paintings: 45 creatures, 9
-      realms, 9 heavens, the cultivator twice, the ten encounters and the 43 emblems.
-      缺 the table below is read out of the game's own tables, and the only rows left
-      without a tick are the two that should not have one.</p>
+    <p class="t">${WAITING.length
+      ? `<b>${WAITING.length} of ${SHEETS.length} sheets wait to be painted:</b> ${WAITING.map((s) => `${s.han} ${s.title}`).join(', ')}. Their prompts are above.`
+      : '<b>Every sheet is done.</b>'}
+      缺 the table below is read out of the game's own tables.</p>
     <table>
       <tr><th>Sheet</th><th>Holds</th><th>Grid</th><th>Save it as</th></tr>
       ${SHEETS.map((s) => `<tr><td><b class="cjk">${s.han}</b> ${s.title}</td>
         <td>${s.cells.length} panels</td><td>${s.cols} by ${s.rows}</td>
         <td><code>ink-sheets/${s.key}.png</code></td></tr>`).join('')}
     </table>
-    <div class="rule"><b>Nothing is left to generate.</b> Fourteen sheets, one credit
-      each, against the fifty-four separate pictures this started as. The prompts stay
-      here because a sheet that has to be redone, or a creature added to the game later,
-      is one credit and this page is where it is asked for.</div>
+    <div class="rule"><b>One credit a sheet.</b> The prompts stay here because a sheet
+      that has to be redone, or a creature added to the game later, is one credit and this
+      page is where it is asked for.</div>
     <div class="rule"><b>And 修 the cultivator's aura is deliberately not in his sheet.</b>
       The aura grows with the climb, it breathes on a pulse the code owns and it is read
       off the save, so it stays drawn and the painting stands inside it. Asking a model for
