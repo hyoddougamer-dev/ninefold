@@ -85,7 +85,7 @@ export const BEASTS: readonly Beast[] = [
   // 1 練氣: animals. Nothing supernatural yet.
   b('rat',       '山鼠', 'Mountain Rat',   1, 'rat', 0, ['band', 'sandals', 'plainring']),
   b('hound',     '野犬', 'Wild Hound',     1, 'hound', 1, ['saber', 'robe', 'leather']),
-  b('frog',      '澤蛙', 'Marsh Frog',     1, 'frog', 2, ['beads', 'topaz', 'laurel']),
+  b('frog',      '澤蛙', 'Marsh Frog',     1, 'frog', 2, ['fan', 'topaz', 'laurel']),
   w('fox',       '妖狐', 'Spirit Fox',     1, 'fox-head', ['fan', 'robe', 'charm']),
 
   // 2 築基: the first things with qi inside them.

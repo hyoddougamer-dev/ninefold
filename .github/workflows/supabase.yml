@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['supabase/**', 'src/sim/**', 'src/data/**', 'tools/ranked.ts', 'tools/auth-config.mjs', '.github/workflows/supabase.yml']
+    paths: ['supabase/**', 'src/sim/**', 'src/data/**', 'src/net/names.ts', 'tools/ranked.ts', 'tools/auth-config.mjs', '.github/workflows/supabase.yml']
 
 concurrency: { group: supabase, cancel-in-progress: false }
 

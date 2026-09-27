@@ -198,7 +198,8 @@ export async function rename(name: string): Promise<{ name: string } | { error: 
   const { data, error } = await c.rpc('set_name', { new_name: name });
   if (error) {
     const m = error.message;
-    return { error: /taken/.test(m) ? 'taken' : /length/.test(m) ? 'length' : /characters/.test(m) ? 'characters' : 'offline' };
+    return { error: /taken/.test(m) ? 'taken' : /length/.test(m) ? 'length' : /characters/.test(m) ? 'characters'
+      : /reserved/.test(m) ? 'reserved' : 'offline' };
   }
   return { name: data as string };
 }

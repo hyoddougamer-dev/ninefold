@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RANKS } from '../copy.ts';
 import { callingLabel } from '../classes.ts';
+import { cleanName } from '../../net/names.ts';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
 import * as cloud from '../../net/cloud.ts';
 
@@ -118,7 +119,11 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const okName = name.trim().length >= 2 && name.trim().length <= 20;
+  // 名 The server's own rule, so a name it would refuse is refused here, in words, rather
+  // than quietly swapped for a 修士 name on the first sync.
+  const clean = cleanName(name);
+  const okName = clean !== null;
+  const nameNote = name.trim().length >= 2 && !okName ? RANKS.nameRule : null;
   const okMail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
 
   return (
@@ -129,9 +134,10 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
         <span>{RANKS.namePrompt}</span>
         <input value={name} maxLength={20} autoComplete="nickname" onChange={(e) => setName(e.target.value)} />
       </label>
+      {nameNote && <p className="rnote small" data-tone="bad">{nameNote}</p>}
       <button className="act" disabled={!okName || busy} onClick={async () => {
         setBusy(true); setError(null);
-        try { onEnter(await cloud.enterAsGuest(), name.trim()); } catch { setError(RANKS.offline); }
+        try { onEnter(await cloud.enterAsGuest(), clean ?? name.trim()); } catch { setError(RANKS.offline); }
         setBusy(false);
       }}>
         入 <span>{RANKS.guest}</span>
@@ -152,7 +158,7 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
       {sent ? (
         <>
           <p className="rstatus" data-tone="good">{RANKS.linkSent(sent)}</p>
-          <Code email={sent} guest={false} onIn={(w) => onEnter(w, name.trim())} />
+          <Code email={sent} guest={false} onIn={(w) => onEnter(w, clean ?? name.trim())} />
         </>
       ) : <p className="rnote small">{RANKS.linkNote}</p>}
       {error && <p className="rstatus" data-tone="bad">{error}</p>}

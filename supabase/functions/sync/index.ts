@@ -9,7 +9,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // reach outside its own folder.
 // @ts-ignore: generated at deploy time
 import { sync } from './core.bundle.js';
-type Saved = { latest: unknown; verified: unknown; verifiedAt: number | null; lastSync: number };
+type Anchor = { state: unknown; at: number };
+type Saved = { latest: unknown; verified: unknown; verifiedAt: number | null; lastSync: number; day?: Anchor | null; week?: Anchor | null };
 type Standing = { climb: number; marks: number; tower: number; climbedAt: number; towerAt: number; week: number; weekFrom: number };
 type Profile = { name: string; strikes: number; suspect: boolean; banned: boolean };
 // deno-lint-ignore no-explicit-any
@@ -44,14 +45,30 @@ const sec = (t: string | null) => (t ? Date.parse(t) / 1000 : null);
 
 function store(): Store {
   return {
+    // 限 One statement in the database, so two syncs at once cannot both take the turn.
+    async claim(id: string, _now: number, gap: number) {
+      const { data, error } = await db.rpc('claim_sync', { uid: id, gap_seconds: gap });
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+    async mark(id: string, strike: boolean, suspect: boolean, ban: number) {
+      const { data, error } = await db.rpc('mark_player', { uid: id, strike, flag: suspect, ban });
+      if (error) throw error;
+      return data as Profile;
+    },
     async profile(id) {
       const { data } = await db.from('profiles').select('name, strikes, suspect, banned').eq('id', id).maybeSingle();
       return (data as Profile | null) ?? null;
     },
     async saved(id) {
-      const { data } = await db.from('saves').select('latest, verified, verified_at, last_sync').eq('user_id', id).maybeSingle();
+      const { data } = await db.from('saves')
+        .select('latest, verified, verified_at, last_sync, day_state, day_at, week_state, week_at').eq('user_id', id).maybeSingle();
       if (!data) return null;
-      return { latest: data.latest, verified: data.verified, verifiedAt: sec(data.verified_at), lastSync: sec(data.last_sync)! };
+      const anchor = (state: unknown, at: string | null) => (state && at ? { state, at: sec(at)! } : null);
+      return {
+        latest: data.latest, verified: data.verified, verifiedAt: sec(data.verified_at), lastSync: sec(data.last_sync)!,
+        day: anchor(data.day_state, data.day_at), week: anchor(data.week_state, data.week_at),
+      };
     },
     async standing(id) {
       const { data } = await db.from('standings').select('*').eq('user_id', id).maybeSingle();
@@ -70,6 +87,8 @@ function store(): Store {
       const { error } = await db.from('saves').upsert({
         user_id: id, latest: s.latest, latest_at: iso(s.lastSync), verified: s.verified,
         verified_at: s.verifiedAt === null ? null : iso(s.verifiedAt), last_sync: iso(s.lastSync),
+        day_state: s.day?.state ?? null, day_at: s.day ? iso(s.day.at) : null,
+        week_state: s.week?.state ?? null, week_at: s.week ? iso(s.week.at) : null,
       });
       if (error) throw error;
     },
@@ -115,7 +134,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const r = await sync(store(), id, body.save, Math.floor(Date.now() / 1000), body.name);
+    // 初 When the account was made, by the server's own record: a first sync may not claim
+    // more than a few days of play from before it (see PRE_JOIN_CREDIT in sim/verify.ts).
+    const joined = Math.floor(Date.parse(who.user.created_at) / 1000);
+    const now = Math.floor(Date.now() / 1000);
+    const r = await sync(store(), id, body.save, now, body.name, Number.isFinite(joined) ? joined : now);
     return json(r.status, r.body);
   } catch (e) {
     console.error(e);

@@ -213,7 +213,7 @@ describe('爐 the Furnace', () => {
 
   it('will not let a save claim a tower it never climbed or pills it never brewed', () => {
     const forged = {
-      ...newState(T0), v: 1, realm: 5,
+      ...newState(T0), v: 1, realm: 9,
       tower: 1e9, brewed: { body: 1e9, bane: -4, fortune: 'lots' },
     };
     const held = validate(forged, T0 + 10);
@@ -222,5 +222,7 @@ describe('爐 the Furnace', () => {
     expect(held.brewed.bane).toBe(0);
     expect(held.brewed.fortune).toBe(0);
     expect(pillsTaken(held.brewed)).toBeGreaterThan(0);
+    // 爐 And before the furnace exists there are no pills at all, whatever the save says.
+    expect(pillsTaken(validate({ ...forged, realm: 5 }, T0 + 10).brewed)).toBe(0);
   });
 });

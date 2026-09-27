@@ -38,6 +38,8 @@ import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
 import { driveCost } from './hunt.ts';
 import { floorBeast, floorPower } from './tower.ts';
+import { pillCost } from './furnace.ts';
+import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
 import { templateOf, type Item } from '../data/gear.ts';
 
@@ -46,6 +48,28 @@ import { templateOf, type Item } from '../data/gear.ts';
  * here at the earliest: the day this repository's first commit was made.
  */
 export const GAME_EPOCH = Date.UTC(2026, 0, 18) / 1000;
+
+/**
+ * 初 How much play from before the account existed a first sync may be credited with.
+ *
+ * The first version believed the save's own `startedAt`, and a guest signed up a second
+ * ago could send a save that said it began the day the game did and take first place on
+ * its first sync, verified and not even flagged. The server knows when the account was
+ * made. A save may claim three days of play from before that, which covers the tester who
+ * plays a weekend before joining; anything beyond waits, as a clock moved on does, until
+ * real time has caught up with it. Nothing is lost by waiting.
+ */
+export const PRE_JOIN_CREDIT = 3 * 86_400;
+
+/**
+ * 初 And what a first sync may claim of that time: no burst on top, and no more than this
+ * share of it at the best rate there is. The budget is the fastest *possible* player, and
+ * the harness's own active cultivator needs about a third of it, so three days at the
+ * full budget held twenty days of honest play. A first sync is the one moment there is
+ * nothing on the server to compare with, so it is held to a pace the fastest honest
+ * cultivator measured (SUSPECT_WEEK) could keep; anything more waits and counts later.
+ */
+export const FIRST_PACE = 0.55;
 
 /** 餘 Room for rounding and for a rate that dipped mid-interval (a piece taken off). */
 export const SLACK = 1.15;
@@ -76,7 +100,7 @@ export type Why =
   | 'tower'          // a floor this build cannot beat
   | 'gear'           // a piece from a realm not reached
   | 'dao'            // more 道 spent than earned
-  | 'shape';         // something that can never change, changed (startedAt)
+  | 'shape';         // another run of the game than the one verified (startedAt); never a strike
 
 export interface Verdict {
   readonly ok: boolean;
@@ -125,6 +149,21 @@ function rateOn(s: State, n: number): number {
   return rate({ ...probe, levels, worn });
 }
 
+/**
+ * 丹 The qi the pills brewed between two saves cost. Summed pill by pill, because every
+ * pill costs more than the last; a forged thousand comes to more qi than a lifetime.
+ */
+function pillsBetween(a: State, b: State): number {
+  let q = 0;
+  for (const line of LINES) {
+    for (let n = a.brewed[line]; n < b.brewed[line]; n++) {
+      q += pillCost({ ...b.brewed, [line]: n }, line).qi;
+      if (!Number.isFinite(q)) return q;
+    }
+  }
+  return q;
+}
+
 /** Every piece the save holds must come from a realm the cultivator has stood in. */
 function gearFits(s: State): boolean {
   const all = [...Object.values(s.worn), ...s.chest].filter(Boolean) as Item[];
@@ -136,7 +175,7 @@ function gearFits(s: State): boolean {
  * offered, `seconds` the server time between them. For a first sync, pass
  * `firstSync(after, now)` as `before`.
  */
-export function verify(before: State, after: State, seconds: number): Verdict {
+export function verify(before: State, after: State, seconds: number, first = false): Verdict {
   const why: Why[] = [];
   const dt = Math.max(0, seconds);
 
@@ -178,9 +217,18 @@ export function verify(before: State, after: State, seconds: number): Verdict {
   // What is spent or held at the end is paid at the end's own rate, the fastest there was.
   const spentAtEnd = after.qi
     + levelsBetween(before, after)
-    + Math.max(0, after.tribulation - before.tribulation) * Math.min(rate(before), rate(after)) * 86_400 * MARK_DAYS
+    + pillsBetween(before, after)
     + (drove > 0 ? driveCost(before, Math.ceil(drove)) : 0);
   need += Math.max(0, spentAtEnd - pocket) / rEnd;
+  // 雷 A thunder mark is 雷池 the pool filled: MARK_DAYS of the cultivator's own gathering,
+  // however deep the 入定. It used to be charged as qi and divided by the rate at the end,
+  // which already counted every new mark's multiplier, so the more marks were forged the
+  // cheaper each one got: 300 at once verified in thirty seconds. It is time, so it is
+  // counted as time.
+  const newMarks = Math.max(0, after.tribulation - before.tribulation);
+  need += newMarks * MARK_DAYS * 86_400 / focus;
+  // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
+  need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
   // 得 One-off payments (a tower floor is six hours of qi at once, a meeting two) arrive in
   // bursts, so a short gap can hold more than its own seconds. They are allowed for as a
@@ -188,7 +236,7 @@ export function verify(before: State, after: State, seconds: number): Verdict {
   // burst bigger than that is not refused for ever, only until real time catches up: the
   // server keeps measuring from the last save it accepted, so the gap grows until it
   // pays. What cannot happen is a long gap going faster than the fastest honest one.
-  const have = dt + Math.min(dt * BURST, BURST_CAP);
+  const have = first ? dt * FIRST_PACE : dt + Math.min(dt * BURST, BURST_CAP);
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 
@@ -201,6 +249,11 @@ export function verify(before: State, after: State, seconds: number): Verdict {
   for (let r = before.realm; r < after.realm; r++) {
     const w = wardenOf(r);
     if (oddsRaw({ ...after, realm: r, layer: 8 }, w) <= 0) { why.push('warden'); break; }
+  }
+  // 劫 Every mark is a Dragon beaten, and the last one has to be beatable by this build.
+  if (newMarks > 0) {
+    const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
+    if (oddsRaw(faced, wardenOf(9)) <= 0) why.push('warden');
   }
   // 塔 And the highest floor claimed has to be one this build can take.
   if (after.tower > before.tower && after.tower > 0) {
@@ -218,16 +271,20 @@ export function verify(before: State, after: State, seconds: number): Verdict {
   const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && pace > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
-  const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast');
+  // 'shape' is another run: a second device, a wiped save, the local copy kept over the
+  // cloud's. It used to be a strike, and an honest player on two phones was banned in a
+  // quarter of an hour.
+  const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
   return { ok: why.length === 0, why, used, strike, suspect, pace };
 }
 
 /**
  * 初 What a first sync is measured from: a cultivator who began when the save says they
- * did, but never before the game existed and never in the future.
+ * did, but never before the game existed, never in the future, and never more than
+ * PRE_JOIN_CREDIT before the account was made.
  */
-export function firstSync(after: State, now: number): { before: State; seconds: number } {
-  const start = Math.max(GAME_EPOCH, Math.min(now, after.startedAt));
+export function firstSync(after: State, now: number, joinedAt = now): { before: State; seconds: number; first: true } {
+  const start = Math.max(GAME_EPOCH, Math.min(now, after.startedAt), Math.min(now, joinedAt) - PRE_JOIN_CREDIT);
   const before = { ...newState(start), startedAt: after.startedAt };
-  return { before, seconds: now - start };
+  return { before, seconds: now - start, first: true };
 }

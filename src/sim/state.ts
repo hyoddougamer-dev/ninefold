@@ -4,13 +4,13 @@ import {
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, FOCUS_MAX, OPENING_PURSE,
-  FATE_FULL,
+  FATE_FULL, FUSE_TOP,
 } from './balance.ts';
 import { BEASTS } from '../data/bestiary.ts';
 const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
-  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, wornTotals,
+  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
 import { chestLimit, itemWorth } from './chest.ts';
@@ -591,10 +591,19 @@ export function validate(raw: unknown, now: number): State {
     UPGRADES.map((u) => [u, clamp(Math.floor(num(rawLevels[u], 0)), 0, capFor(u))]),
   ) as Record<Upgrade, number>;
 
+  const towerClaim = clamp(Math.floor(num(o.tower, 0)), 0, 3000);
+  const reach = towerClaim > 81 ? 9 : Math.max(realm + 1, Math.ceil(towerClaim / 9));
   const rawKilled = (o.killed ?? {}) as Record<string, unknown>;
   const killed: Record<string, number> = {};
   for (const [k, v] of Object.entries(rawKilled)) {
-    if (!BEASTS.some((x) => x.key === k)) continue;   // a beast that does not exist is not a kill
+    const beast = BEASTS.find((x) => x.key === k);
+    if (!beast) continue;                              // a beast that does not exist is not a kill
+    // 境 Nor one from beyond anywhere this cultivator could have fought: their own realm,
+    // the realm above (秘境 the vault's doors), and the realms of the tower's floors they
+    // claim (a floor is a fight with its beast, and the tower's claim is verified on its
+    // own). A dragon in a realm-three save would hand over its art and its 道 points
+    // without the fight ever happening.
+    if (beast.realm > reach) continue;
     const n = Math.floor(num(v, 0));
     if (n > 0) killed[k] = n;
   }
@@ -619,7 +628,11 @@ export function validate(raw: unknown, now: number): State {
       const affix = AFFIXES.includes(r.affix as Affix) ? (r.affix as Affix) : null;
       if (!affix || seenAffix.has(affix)) continue;
       seenAffix.add(affix);
-      rolls.push({ affix, value: clamp(num(r.value, 0), 0, 120) });
+      // 限 Each line is capped at what its own rank and realm could ever make, a primary at
+      // the fusion ceiling of its base and a secondary at the same of its 60%. A flat 120
+      // let six realm-one pieces carry fifteen times the power of any honest set.
+      const top = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : 0.6) * FUSE_TOP * 1.001;
+      rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
     // 煉 Refining is levels on the piece, paid for in material. It is capped here at a
@@ -739,8 +752,10 @@ export function validate(raw: unknown, now: number): State {
     tribulationAt: realm === 9 ? Math.max(0, num(o.tribulationAt, 0)) : 0,
     // The tower is climbed one floor at a time and every floor is a fight, so a save
     // claiming floor nine thousand is claiming nine thousand fights that never happened.
-    tower: clamp(Math.floor(num(o.tower, 0)), 0, 3000),
-    brewed: validBrewed(o.brewed),
+    tower: towerClaim,
+    // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
+    // enough to claim five hundred floors of the tower in thirty seconds.
+    brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },
     // 悟道 A forged list could otherwise claim every card in the game, or claim the
     // ninth realm's card in the second. Each entry has to be a card that exists, from
     // the trio that entry's turn actually offers. See sim/awaken.ts.

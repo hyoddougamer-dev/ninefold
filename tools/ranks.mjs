@@ -106,6 +106,10 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check(await page.locator('.ranks .rjoin').isVisible(), 'a player who is not signed in is asked to join');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-join.png` });
   check(await page.locator('.ranks .rjoin button.act').first().isDisabled(), 'no name, no entry');
+  // 名 A title is not a name: the join screen says so before the server has to.
+  await page.fill('.ranks .rjoin input:not([type=email])', '天下第一');
+  check(await page.locator('.ranks .rjoin [data-tone="bad"]').isVisible()
+    && await page.locator('.ranks .rjoin button.act').first().isDisabled(), 'a title typed as a name is refused, in words');
   await page.fill('.ranks .rjoin input:not([type=email])', 'Bruno');
   await page.locator('.ranks .rjoin button.act').first().click();
   await page.waitForSelector('.ranks .rlist li[data-me="true"]', { timeout: 8000 }).catch(() => {});

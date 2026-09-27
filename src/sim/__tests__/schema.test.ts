@@ -29,7 +29,7 @@ async function as(id: string | null, sql: string, params: unknown[] = []) {
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(`
-    create role anon nologin; create role authenticated nologin;
+    create role anon nologin; create role authenticated nologin; create role service_role nologin;
     create schema auth;
     create table auth.users (id uuid primary key);
     create function auth.uid() returns uuid language sql stable as
@@ -74,8 +74,41 @@ describe('榜 the ranked schema', () => {
     await expect(as(A, `select set_name('x')`)).rejects.toThrow(/name length/);
     await expect(as(A, `select set_name('beta')`)).rejects.toThrow(/name taken/);
     await expect(as(A, `select set_name('<script>')`)).rejects.toThrow(/name characters/);
-    expect(((await as(A, `select set_name('修士 Alpha') as n`)).rows[0] as any).n).toBe('修士 Alpha');
+    expect(((await as(A, `select set_name('雲中君') as n`)).rows[0] as any).n).toBe('雲中君');
     await expect(as(null, `select set_name('Nobody')`)).rejects.toThrow(/not signed in/);
+  });
+
+  it('keeps the titles, the 修士 names and the look-alikes out of the names', async () => {
+    await expect(as(A, `select set_name('天下第一')`)).rejects.toThrow(/name reserved/);
+    await expect(as(A, `select set_name('期首 Alpha')`)).rejects.toThrow(/name reserved/);
+    await expect(as(A, `select set_name('修士 Alpha')`)).rejects.toThrow(/name reserved/);
+    await expect(as(A, `select set_name('Вeta')`)).rejects.toThrow(/name characters/);
+    // Full-width letters fold into the name they look like, which is Beta's.
+    await expect(as(A, `select set_name('ｂｅｔａ')`)).rejects.toThrow(/name taken/);
+    expect(((await as(A, `select set_name(E'Al\u200Bpha') as n`)).rows[0] as any).n).toBe('Al pha');
+    // The tests below were written to the name A carried before these rules; a default name
+    // is still the server's to give, just not a player's to choose.
+    await db.exec(`update profiles set name = '修士 Alpha' where id = '${A}'`);
+  });
+
+  it('takes a sync turn in one statement, and only the server may', async () => {
+    await expect(as(A, `select claim_sync('${A}', 20)`)).rejects.toThrow(/permission denied/);
+    await db.exec('set role service_role');
+    try {
+      const first = await db.query(`select claim_sync('${A}', 20) as w`);
+      const second = await db.query(`select claim_sync('${A}', 20) as w`);
+      expect((first.rows[0] as any).w).toBe(0);
+      expect((second.rows[0] as any).w).toBeGreaterThan(0);
+      const m = await db.query(`select mark_player('${B}', true, false, 3) as p`);
+      expect((m.rows[0] as any).p.strikes).toBe(1);
+      await db.query(`select mark_player('${B}', true, false, 3)`);
+      const banned = await db.query(`select mark_player('${B}', true, true, 3) as p`);
+      expect((banned.rows[0] as any).p).toMatchObject({ strikes: 3, suspect: true, banned: true });
+    } finally {
+      await db.exec('reset role');
+      await db.exec(`update profiles set strikes = 0, suspect = false, banned = false where id = '${B}'`);
+    }
+    await expect(as(B, `select mark_player('${B}', false, false, 3)`)).rejects.toThrow(/permission denied/);
   });
 
   it('no player can read or write a table directly', async () => {

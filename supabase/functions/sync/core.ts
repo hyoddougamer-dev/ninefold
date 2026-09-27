@@ -13,7 +13,7 @@
  */
 import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
-import { weekOf } from '../../../src/sim/week.ts';
+import { WEEK, weekOf } from '../../../src/sim/week.ts';
 import { callingKey } from '../../../src/sim/schools.ts';
 
 /** 限 One sync every this many seconds per player. The phone syncs every few minutes. */
@@ -21,11 +21,21 @@ export const MIN_GAP = 20;
 /** 罰 Impossibilities before a player is kept off the boards for good. */
 export const STRIKES_TO_BAN = 3;
 
+/** A verified save held back as the start of a longer window. */
+export interface Anchor { state: unknown; at: number }
+
 export interface Saved {
   latest: unknown;
   verified: unknown | null;
   verifiedAt: number | null; // seconds
   lastSync: number;          // seconds
+  /**
+   * 窗 The last save verified a day or two ago, and a week or two ago. Every sync is also
+   * checked against these, so a cheater who syncs every five minutes cannot collect a
+   * burst allowance on each one: over a whole day the allowance is spent once.
+   */
+  day?: Anchor | null;
+  week?: Anchor | null;
 }
 export interface Standing {
   climb: number; marks: number; tower: number;
@@ -37,10 +47,19 @@ export interface Standing {
 export interface Profile { name: string; strikes: number; suspect: boolean; banned: boolean }
 
 export interface Store {
+  /**
+   * 限 Take this player's turn, atomically: 0 if it is theirs (and it is now taken), or
+   * the seconds left to wait. Done in one statement in the database, because two syncs
+   * sent at once used to both read the old time and both go through.
+   */
+  claim(id: string, now: number, gap: number): Promise<number>;
   profile(id: string): Promise<Profile | null>;
   saved(id: string): Promise<Saved | null>;
   standing(id: string): Promise<Standing | null>;
+  /** Create the profile; throws if the name is taken. */
   writeProfile(id: string, p: Profile): Promise<void>;
+  /** 罰 Add a strike and a flag in one statement, and return the profile as it now is. */
+  mark(id: string, strike: boolean, suspect: boolean, ban: number): Promise<Profile>;
   writeSaved(id: string, s: Saved): Promise<void>;
   writeStanding(id: string, s: Standing): Promise<void>;
   log(id: string, v: Verdict | null, now: number): Promise<void>;
@@ -63,16 +82,45 @@ export type Reply =
       behindHours: number;
     } };
 
-/** A fallback name until the player picks one: 修士 and four letters of their id. */
+/**
+ * A fallback name until the player picks one: 修士 and eight letters of their id. Four
+ * letters were sixteen bits, and two players sharing them (about one in three hundred
+ * signs-ups) hit the unique index and could never sync again.
+ */
 export function defaultName(id: string): string {
-  return `修士 ${id.replace(/-/g, '').slice(0, 4).toUpperCase()}`;
+  return `修士 ${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 }
 
-export async function sync(store: Store, id: string, raw: unknown, now: number, name?: string): Promise<Reply> {
+export { TITLES, cleanName } from '../../../src/net/names.ts';
+import { cleanName } from '../../../src/net/names.ts';
+
+/**
+ * 週 Where this week's gain is counted from, the first time a save verifies in it.
+ *
+ * It was where the last verified save stood, so a player who stayed away from the server
+ * for three weeks and synced on a Monday morning had three weeks of climbing count as this
+ * week's, and topped 期榜 the week board with it. The gain since the last verified save is
+ * shared out by time: only the part of it made since the week began counts as this week's.
+ */
+export function weekStart(old: Standing | null, total: number, lastAt: number | null, now: number): number {
+  if (!old) return total;
+  const had = old.climb + old.marks;
+  if (lastAt === null || total <= had || now <= lastAt) return had;
+  const began = weekOf(now) * WEEK - 3 * 86_400;
+  const share = Math.max(0, Math.min(1, (now - Math.max(began, lastAt)) / (now - lastAt)));
+  return Math.round(total - (total - had) * share);
+}
+
+/** 窗 How old an anchor may grow before it is moved up to the present. */
+export const DAY_WINDOW = 2 * 86_400;
+export const WEEK_WINDOW = 14 * 86_400;
+
+export async function sync(
+  store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt = now,
+): Promise<Reply> {
+  const wait = await store.claim(id, now, MIN_GAP);
+  if (wait > 0) return { status: 429, body: { error: 'too-soon', wait: Math.ceil(wait) } };
   const saved = await store.saved(id);
-  if (saved && now - saved.lastSync < MIN_GAP) {
-    return { status: 429, body: { error: 'too-soon', wait: Math.ceil(MIN_GAP - (now - saved.lastSync)) } };
-  }
 
   let after: State;
   try {
@@ -86,8 +134,16 @@ export async function sync(store: Store, id: string, raw: unknown, now: number, 
 
   let profile = await store.profile(id);
   if (!profile) {
-    profile = { name: name && name.trim().length >= 2 ? name.trim().slice(0, 20) : defaultName(id), strikes: 0, suspect: false, banned: false };
-    await store.writeProfile(id, profile);
+    const fresh = { strikes: 0, suspect: false, banned: false };
+    const wanted = cleanName(name);
+    try {
+      profile = { name: wanted ?? defaultName(id), ...fresh };
+      await store.writeProfile(id, profile);
+    } catch {
+      // Taken: the default name is the account's own and cannot be.
+      profile = { name: defaultName(id), ...fresh };
+      await store.writeProfile(id, profile);
+    }
   }
   if (profile.banned) return { status: 403, body: { error: 'banned' } };
 
@@ -95,41 +151,58 @@ export async function sync(store: Store, id: string, raw: unknown, now: number, 
   const week = weekOf(now);
   if ((await store.lastClosed()) < week - 1) await store.closeWeek(week - 1);
 
-  // 驗 Against the last save that verified, or a fresh start.
+  // 驗 Against the last save that verified, or a fresh start. A save of another run (a
+  // wiped phone, a second device, the local copy kept over the cloud's) that has got
+  // further is a run of its own, measured from its start like a first sync; one that has
+  // not is behind, and neither is ever a strike.
+  const ahead = (x: State) => layersOpened(x) + x.tribulation;
   let before: State;
   let seconds: number;
-  if (saved?.verified && saved.verifiedAt !== null) {
-    before = validate(saved.verified, now);
+  let first = false;
+  let newRun = false;
+  const prev = saved?.verified && saved.verifiedAt !== null ? validate(saved.verified, now) : null;
+  if (prev && saved?.verifiedAt != null && (prev.startedAt === after.startedAt || ahead(after) <= ahead(prev))) {
+    before = prev;
     seconds = now - saved.verifiedAt;
   } else {
-    ({ before, seconds } = firstSync(after, now));
+    ({ before, seconds, first } = firstSync(after, now, joinedAt));
+    newRun = prev !== null;
   }
-  const v = verify(before, after, seconds);
+  let v = verify(before, after, seconds, first);
+
+  // 窗 And against the day and the week behind it, where there is one from this run.
+  let suspect = v.suspect;
+  if (v.ok && !newRun) {
+    for (const w of [saved?.day, saved?.week]) {
+      if (!w) continue;
+      const from = validate(w.state, now);
+      if (from.startedAt !== after.startedAt) continue;
+      const wv = verify(from, after, now - w.at);
+      suspect = suspect || wv.suspect;
+      if (!wv.ok && wv.why.includes('too-fast')) v = { ...v, ok: false, why: [...v.why, 'too-fast'], used: Math.max(v.used, wv.used) };
+    }
+  }
+  v = { ...v, suspect };
   await store.log(id, v, now);
 
   // 存 The cloud copy only ever moves forward. A new device's empty save, or an older
   // copy restored on purpose, must never overwrite a cultivator further along: that is
   // the copy another device would sign in to find.
-  const ahead = (x: State) => layersOpened(x) + x.tribulation;
   let kept: State | null = null;
   try { kept = saved ? validate(saved.latest, now) : null; } catch { kept = null; }
+  const roll = (a: Anchor | null | undefined, span: number): Anchor | null =>
+    (v.ok && (newRun || !a || now - a.at > span) ? { state: after, at: now } : a ?? null);
   const next: Saved = {
     latest: kept && ahead(kept) > ahead(after) ? saved!.latest : after,
     verified: v.ok ? after : saved?.verified ?? null,
     verifiedAt: v.ok ? now : saved?.verifiedAt ?? null,
     lastSync: now,
+    day: roll(saved?.day, DAY_WINDOW),
+    week: roll(saved?.week, WEEK_WINDOW),
   };
   await store.writeSaved(id, next);
 
-  if (v.strike || v.suspect) {
-    profile = {
-      ...profile,
-      strikes: profile.strikes + (v.strike ? 1 : 0),
-      suspect: profile.suspect || v.suspect,
-    };
-    profile = { ...profile, banned: profile.strikes >= STRIKES_TO_BAN };
-    await store.writeProfile(id, profile);
-  }
+  if (v.strike || v.suspect) profile = await store.mark(id, v.strike, v.suspect, STRIKES_TO_BAN);
 
   let standing = await store.standing(id);
   if (v.ok) {
@@ -145,8 +218,7 @@ export async function sync(store: Store, id: string, raw: unknown, now: number, 
       climbedAt: rose ? now : old!.climbedAt,
       towerAt: !old || after.tower > old.tower ? now : old.towerAt,
       week,
-      // The week is counted from where the last verified save stood when it began.
-      weekFrom: fresh ? (old ? old.climb + old.marks : climb + marks) : old!.weekFrom,
+      weekFrom: fresh ? weekStart(old, climb + marks, saved?.verifiedAt ?? null, now) : old!.weekFrom,
       calling: callingKey(after),
     };
     await store.writeStanding(id, standing);

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { firstSync, verify, GAME_EPOCH } from '../verify.ts';
+import { playEndgame } from '../../../tools/endgame.ts';
+import { firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
+import { validate } from '../state.ts';
+import { fuse } from '../chest.ts';
+import { FUSE_TOP } from '../balance.ts';
+import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
 import { newState, type State } from '../state.ts';
 
@@ -72,8 +77,22 @@ describe('驗 the first sync is measured from when the save began', () => {
     // The harness starts in 2023; move the whole save to begin at the epoch.
     const shift = GAME_EPOCH - at.s.startedAt;
     const s = { ...at.s, startedAt: at.s.startedAt + shift, at: at.s.at + shift };
-    const { before, seconds } = firstSync(s, s.at);
-    expect(verify(before, s, seconds).ok).toBe(true);
+    // An account made the day the save began: all of that month is its own.
+    const { before, seconds, first } = firstSync(s, s.at, s.startedAt);
+    expect(verify(before, s, seconds, first).ok).toBe(true);
+  });
+
+  it('a guest signed up a second ago cannot bring a month with them, and waits instead', () => {
+    const shots = WALKED.get('active')!;
+    const at = shots.find((x) => x.day >= 30)!;
+    const shift = GAME_EPOCH - at.s.startedAt;
+    const s = { ...at.s, startedAt: at.s.startedAt + shift, at: at.s.at + shift };
+    const { before, seconds, first } = firstSync(s, s.at, s.at);
+    expect(seconds).toBeLessThanOrEqual(PRE_JOIN_CREDIT);
+    const v = verify(before, s, seconds, first);
+    expect(v.ok).toBe(false);
+    expect(v.why).toContain('too-fast');
+    expect(v.strike).toBe(false);
   });
 
   it('a save that claims to have begun before the game existed gets no more time for it', () => {
@@ -81,9 +100,65 @@ describe('驗 the first sync is measured from when the save began', () => {
     const late = shots[shots.length - 1].s;
     const now = GAME_EPOCH + 2 * DAY;
     const s = { ...late, startedAt: GAME_EPOCH - 400 * DAY, at: now };
-    const { before, seconds } = firstSync(s, now);
+    const { before, seconds, first } = firstSync(s, now, GAME_EPOCH);
     expect(seconds).toBe(now - GAME_EPOCH);
-    expect(verify(before, s, seconds).ok).toBe(false);
+    expect(verify(before, s, seconds, first).ok).toBe(false);
+  });
+});
+
+describe('盾 what 驗 the audit found, closed', () => {
+  // A summit save with real marks on it, from the endgame harness.
+  const top = playEndgame(3).end;
+
+  it('three hundred thunder marks forged onto a summit save are not thirty seconds of work', () => {
+    const forged = { ...top, tribulation: top.tribulation + 300, at: top.at + 30 };
+    expect(verify(top, forged, 30).ok).toBe(false);
+    // And five more is not somehow harder than three hundred: time is time.
+    const five = verify(top, { ...top, tribulation: top.tribulation + 5, at: top.at + 30 }, 30);
+    expect(five.ok).toBe(false);
+  });
+
+  it('pills before the furnace exist are not kept', () => {
+    const early = WALKED.get('active')!.map((x) => x.s).find((x) => x.realm === 5)!;
+    const v = validate({ ...early, brewed: { body: 3000, bane: 3000, fortune: 3000 } }, early.at);
+    expect(v.brewed).toEqual({ body: 0, bane: 0, fortune: 0 });
+  });
+
+  it('a warden of a realm not reached is not a kill, so it hands over no art and no 道', () => {
+    const early = WALKED.get('active')!.map((x) => x.s).find((x) => x.realm === 3)!;
+    const v = validate({ ...early, tower: 0, killed: { ...early.killed, dragon: 1, jiao: 1, direwolf: 1 } }, early.at);
+    expect(v.killed.dragon).toBeUndefined();
+    expect(v.killed.jiao).toBeUndefined();
+    // The tower's floors are fights with the beasts of their realms, so a claimed floor
+    // keeps its kills; the claim itself is what verify() holds to the build.
+    expect(validate({ ...early, tower: 40, killed: { jiao: 1 } }, early.at).killed.jiao).toBeUndefined();
+    expect(validate({ ...early, tower: 60, killed: { direwolf: 1 } }, early.at).killed.direwolf).toBe(1);
+  });
+
+  it('a line is capped at what its own rank and realm could make', () => {
+    const early = WALKED.get('active')!.map((x) => x.s).find((x) => x.realm === 1)!;
+    const forged = { ...early, chest: [{ id: 'f', template: 'sword1', rarity: 'heaven', rolls: [
+      { affix: 'power', value: 120 }, { affix: 'rate', value: 120 }] }] };
+    const it = validate(forged, early.at).chest[0];
+    const tpl = TEMPLATE_BY_KEY.sword1;
+    expect(it.rolls[0].value).toBeLessThanOrEqual(baseValue(tpl, 'heaven', 'power') * FUSE_TOP * 1.001);
+    expect(it.rolls[1].value).toBeLessThanOrEqual(baseValue(tpl, 'heaven', 'rate') * 0.6 * FUSE_TOP * 1.001);
+  });
+
+  it('a fusion never compounds past its ceiling, however good the hands', () => {
+    const three = [0, 1, 2].map((i) => ({ id: `c${i}`, template: 'sword5', rarity: 'common' as const,
+      rolls: [{ affix: 'power' as const, value: baseValue(TEMPLATE_BY_KEY.sword5, 'common', 'power') * 1.15 }] }));
+    const made = fuse(three, 'sword5', 'common', 3).made!;
+    expect(made.rolls[0].value).toBeLessThanOrEqual(baseValue(TEMPLATE_BY_KEY.sword5, 'spirit', 'power') * FUSE_TOP * 1.001);
+  });
+
+  it('another run of the game (a second phone, a wiped save) is never a strike', () => {
+    const shots = WALKED.get('active')!;
+    const a = shots.find((x) => x.day >= 20)!.s;
+    const other = { ...shots[3].s, startedAt: a.startedAt + 999, at: a.at + 600 };
+    const v = verify(a, other, 600);
+    expect(v.ok).toBe(false);
+    expect(v.strike).toBe(false);
   });
 });
 
@@ -160,7 +235,7 @@ describe('驗 every edit a player can make fails', () => {
 
   it('a brand new save verifies against itself', () => {
     const s = newState(GAME_EPOCH + DAY);
-    const { before, seconds } = firstSync(s, s.at + 60);
-    expect(verify(before, advance(s, s.at + 60), seconds).ok).toBe(true);
+    const { before, seconds, first } = firstSync(s, s.at + 60);
+    expect(verify(before, advance(s, s.at + 60), seconds, first).ok).toBe(true);
   });
 });

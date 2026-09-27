@@ -33,8 +33,8 @@ import { fortuneOf } from '../src/sim/fortune.ts';
 import { meltFactor, salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
 import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
-import { RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, wornTotals, type Item, type Slot } from '../src/data/gear.ts';
-import { PAIRS, type Pair, type School } from '../src/data/schools.ts';
+import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, wornTotals, type Item, type Slot } from '../src/data/gear.ts';
+import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 
@@ -151,6 +151,8 @@ export const HABITS: readonly Habit[] = [
 const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
 
 const ARTS_BY_REALM: Record<string, number> = { crane: 3, tiger: 4, wolf: 7 };
+/** Which warden leaves each of those arts. */
+const ART_WARDEN: Record<string, string> = { crane: 'crane', tiger: 'tiger', wolf: 'direwolf' };
 
 export interface Run {
   readonly habit: Habit;
@@ -276,6 +278,26 @@ function arrange(s: State, build: School | Pair): State {
   return out;
 }
 
+/**
+ * 獵 Which beast to hunt: the strongest one that is safe. With a class in mind, the safe
+ * one whose three shapes are most of the schools the body is still short of, which is
+ * what a player after a class does; a harness that always hunted the strongest beast
+ * could never put together a class whose shapes that beast does not leave.
+ */
+function quarryFor(s: State, build: School | Pair | undefined): Beast | undefined {
+  const safe = [...huntable(s.realm, s.layer)].reverse().filter((x) => odds(s, x) > 0.7);
+  if (!build || safe.length < 2) return safe[0];
+  const want = quotas(build);
+  const counts = callingOf(s.worn).counts;
+  const short = (b: Beast) => b.leaves.filter((k) => {
+    const a = ARCHETYPES.find((x) => x.key === k);
+    if (!a) return false;
+    const sc = schoolOfAxis(a.affix);
+    return (want[sc] ?? 0) > counts[sc];
+  }).length;
+  return safe.reduce((best, b) => (short(b) > short(best) ? b : best), safe[0]);
+}
+
 /** 職 How many of each school a build wants on the body. */
 function quotas(build: School | Pair): Partial<Record<School, number>> {
   const pair = PAIRS.find((p) => p.key === build);
@@ -367,7 +389,11 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
         ...s,
         stance: stance?.key ?? null,
         sequence: Object.keys(ARTS_BY_REALM).filter((k) => ARTS_BY_REALM[k] <= s.realm),
-        killed: { ...s.killed, crane: 1, tiger: 1, direwolf: 1 },
+        // 誠 Only the arts of realms reached. This used to mark all three wardens killed
+        // from the first day, which also paid their 道 points two realms early: the
+        // harness was the one save validate() now refuses (found by the audit's fix).
+        killed: { ...s.killed, ...Object.fromEntries(Object.entries(ART_WARDEN)
+          .filter(([art]) => ARTS_BY_REALM[art] <= s.realm).map(([, w]) => [w, Math.max(1, s.killed[w] ?? 0)])) },
       };
     }
 
@@ -412,7 +438,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     }
 
     for (let i = 0; i < h.hunts; i++) {
-      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
+      const b = quarryFor(s, h.calling);
       if (!b) break;
       s = takeKill(s, b);
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);

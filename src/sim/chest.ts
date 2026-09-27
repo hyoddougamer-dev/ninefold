@@ -2,6 +2,7 @@ import {
   RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
+import { FUSE_TOP } from './balance.ts';
 import { SECONDARIES } from '../data/gear.ts';
 import { chestCap, extraChestSlots } from './dao.ts';
 import { chestSlots } from './awaken.ts';
@@ -169,9 +170,9 @@ export function fuse(
   // Quality carries across: the average of what went in, measured against its own rank's
   // base, so three lucky pieces make a better one than three unlucky ones.
   const base = baseValue(tpl, rarity, tpl.affix);
-  const rolled = (base > 0
+  const rolled = Math.min(FUSE_TOP, (base > 0
     ? eaten.reduce((sum, x) => sum + (x.rolls[0]?.value ?? 0), 0) / FUSE_COUNT / base
-    : 1) * quality;                            // 巧手 Deft Hands lifts this
+    : 1) * quality);                           // 巧手 Deft Hands lifts this; FUSE_TOP caps it
 
   // And so does the flavour: the new piece's extra lines are the ones that turned up
   // most often in the three that were melted, so a set of luck pieces fuses into a luck

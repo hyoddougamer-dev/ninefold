@@ -52,7 +52,7 @@ import { layersOpened } from '../src/sim/time.ts';
 import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
-import { verify, BURST, BURST_CAP, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
+import { verify, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
 import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
@@ -4421,6 +4421,40 @@ const page = `<meta charset="utf-8">
         guests were off. The auth service takes a moment to apply what it accepted, so the
         deploy now waits until the project itself says guests are on.</i></span></div>
     </div>
+
+    <h3>盾 The audit, and what it closed</h3>
+    <p class="t">On the night of 26 September the anti-cheat was attacked on purpose, with
+      scripts that ran the real sync against an in-memory database. Ten holes were found.
+      Every one of them now has a test that tries it, in <code>verify.test.ts</code>,
+      <code>sync.test.ts</code> or the Postgres schema test, and the ones that can be tried
+      against the live server are in the deploy's attack too.</p>
+    <table>
+      <tr><th>what a cheater could do</th><th>what stops it now</th></tr>
+      <tr><td>Sign up as a guest and send a save that says it began the day the game did: first place, verified, on the first sync</td>
+        <td>The server knows when the account was made. A first sync may claim ${PRE_JOIN_CREDIT / 86_400} days from before that, at no more than ${Math.round(FIRST_PACE * 100)}% of the best possible pace; the rest waits for real time</td></tr>
+      <tr><td>Forge three hundred thunder marks: each new mark was charged in qi at a rate that already counted every forged mark, so more was cheaper</td>
+        <td>A mark is ${MARK_DAYS} days of gathering, charged as time, and the last Dragon has to be one the build can beat</td></tr>
+      <tr><td>Be banned for playing on a second phone, or for keeping the phone's copy over the cloud's</td>
+        <td>Another run of the game is never a strike: behind is behind, and ahead is measured as a run of its own</td></tr>
+      <tr><td>Brew three thousand pills before the furnace exists, and take five hundred tower floors in thirty seconds</td>
+        <td>No pills before the furnace; new pills cost their qi in the budget; every floor costs a fight's time</td></tr>
+      <tr><td>Carry six realm-one pieces with every line at 120, fifteen times any honest set</td>
+        <td>Every line is capped at what its own rank and realm can make. A fusion is capped too: it used to compound, and four fusions made a piece seventy times its base</td></tr>
+      <tr><td>Claim the Dragon killed from the third realm, for its art and its 道 points</td>
+        <td>A kill counts only from a realm the cultivator could have fought in: their own, the one above (the vault), and the tower's claimed floors</td></tr>
+      <tr><td>Run the clock three times as fast and sync every five minutes, collecting a burst allowance each time</td>
+        <td>Every sync is also measured against the save verified a day and a week behind it, and a pace no honest cultivator keeps over a week is flagged</td></tr>
+      <tr><td>Send ten syncs at once: all ten went through, and one strike counted for ten impossibilities</td>
+        <td>The turn to sync and the strike are each one statement in the database</td></tr>
+      <tr><td>Wear 天下第一 as a name, or hide an invisible letter or a Cyrillic look-alike in one</td>
+        <td>One rule for names on the phone, in the sync and in the database: folded, no invisible or foreign look-alike letters, no titles, no 修士</td></tr>
+      <tr><td>Stay away three weeks and sync on a Monday to top the week board</td>
+        <td>Gain since the last verified save is shared out by time, and only this week's share counts</td></tr>
+    </table>
+    <p class="t">The harness was caught too. The measuring cultivators had been marking three
+      wardens killed from the first day, to model a build with arts, which also paid them 道
+      points two realms early. It was the one save the new rules refused, and it now earns
+      its arts where a player does.</p>
   </section>
 
   <section class="sec" id="testers">

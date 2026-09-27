@@ -149,10 +149,13 @@ export const RANKS = {
     suspect: 'Your climb is faster than anybody honest was measured to go, so it is held for review.',
     never: 'Not synced yet.',
   },
+  /** 名 Under the name box, when what is typed is not a name the boards can show. */
+  nameRule: 'Letters, numbers and CJK only, and not a title or a 修士 name.',
   nameErrors: {
     taken: 'That name is taken.',
     length: 'Two to twenty letters.',
     characters: 'Letters, numbers and spaces only.',
+    reserved: 'The titles and the 修士 names are not for taking.',
     offline: 'That could not be saved just now.',
   },
   titlesHead: '冠 Titles',

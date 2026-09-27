@@ -769,6 +769,17 @@ export const FUSE_BEND = 0.25;
  */
 export const ART_BEND = 0.4;
 
+/**
+ * 融 The most a fused piece may be worth against its own rank's base.
+ *
+ * A fusion keeps the average quality of the three it ate, times what 巧手 and the 煉
+ * line add. Fused again, it kept that quality *and* multiplied it again: four fusions
+ * from 凡 to 天 with a good fusion line came out about seventy times a Heaven piece.
+ * Found by 驗 the audit, as a number no drop can make. A fused piece is capped here, which
+ * is still well above anything a drop can roll (1 + VARIANCE).
+ */
+export const FUSE_TOP = 1.5;
+
 /** 草 What a bed of the herb in season pays, against its own usual harvest. */
 export const SEASON_HARVEST = 1.5;
 

@@ -23,7 +23,9 @@ const mail = (lead) => `
 const core = {
   external_anonymous_users_enabled: true,
   site_url: SITE,
-  uri_allow_list: `${SITE}**,http://localhost:4173/**`,
+  // 盾 Only the game's own address. A local preview had a place on this list, and a
+  // sign-in link has no business landing anywhere a published game is not.
+  uri_allow_list: `${SITE}**`,
   mailer_otp_length: 6,
 };
 const mailer = {

@@ -62,6 +62,28 @@ check(refused.status === 200 && refused.json?.ranked === false, 'an edited save 
 const tooSoon = await call('/functions/v1/sync', { save: fresh }, token);
 check(tooSoon.status === 429, 'syncing again at once is refused', tooSoon.status);
 
+// 盾 What the audit found, tried against the live server.
+const titled = await call('/rest/v1/rpc/set_name', { new_name: '天下第一' }, token);
+check(titled.status >= 400, 'nobody may name themselves after a title', titled.status);
+const cyrillic = await call('/rest/v1/rpc/set_name', { new_name: 'Вruno' }, token);
+check(cyrillic.status >= 400, 'a look-alike letter from another alphabet is not a name', cyrillic.status);
+
+await new Promise((r) => setTimeout(r, 22_000));
+const racing = await Promise.all([0, 1, 2, 3, 4].map(() => call('/functions/v1/sync', { save: fresh }, token)));
+check(racing.filter((r) => r.status === 200).length === 1, 'five syncs sent at once are one sync', racing.map((r) => r.status));
+
+// A second guest, signed up this second, with a save that says it began weeks ago.
+const other = await call('/auth/v1/signup', {});
+const otherToken: string = other.json?.access_token;
+const weeks = advance(newState(now - 30 * 86_400), now);
+const forged = await call('/functions/v1/sync', { save: weeks, name: '天下第一' }, otherToken);
+check(forged.status === 200 && forged.json?.ranked === false && forged.json?.state === 'waiting',
+  'a guest signed up now cannot bring a month of play to their first sync', forged.json);
+const otherMe = await call('/rest/v1/rpc/my_standing', {}, otherToken);
+check(otherMe.status === 200 && otherMe.json?.name !== '天下第一' && /^修士 /.test(otherMe.json?.name ?? ''),
+  'and a title sent as a name on the first sync becomes a plain 修士 name', otherMe.json?.name);
+await call('/rest/v1/rpc/delete_me', {}, otherToken);
+
 // 去 And the test player leaves, or every deploy would put another Tester on the public
 // boards for real players to read. It is the same button a player presses to leave.
 const gone = await call('/rest/v1/rpc/delete_me', {}, token);
