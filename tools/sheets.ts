@@ -515,9 +515,6 @@ export const SHEETS: readonly Sheet[] = [
 
 export const sheetOf = (key: string) => SHEETS.find((s) => s.key === key);
 
-/** 甲乙丙 The cell a person points at, named the way the sheet prompt names it. */
-export const cellLabel = (s: Sheet, i: number) => `row ${Math.floor(i / s.cols) + 1}, column ${(i % s.cols) + 1}`;
-
 /** 境外 What the nine heavens are painted in: out of violet, through gold, to bone. */
 const HEAVEN_PIGMENT = ['imperial violet', 'dusk violet', 'faded plum', 'old rose',
   'pale amber', 'gold leaf', 'pale gold', 'bone white', 'almost nothing but paper'];

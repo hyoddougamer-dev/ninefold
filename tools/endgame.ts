@@ -17,7 +17,7 @@ import { SLOTS } from '../src/data/gear.ts';
 import { cardDue, take as takeCard } from '../src/sim/awaken.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { heavenAt } from '../src/data/heavens.ts';
-import { HABITS, play as playHabit, type Habit } from './habits.ts';
+import { HABITS, play as playHabit } from './habits.ts';
 
 /**
  * 境外 What stands there is no longer one animal.
@@ -63,11 +63,6 @@ export function arrived(): State {
     ARRIVED = { ...s, killed: { ...s.killed, ...ALL_WARDENS } };
   }
   return ARRIVED;
-}
-
-/** 職 The same arrival for a cultivator who played a different habit, a class build. */
-export function arrivedAs(h: Habit): State {
-  return arrivalOf(playHabit(h).state);
 }
 
 /** A played cultivator made ready for the Dragon, for a caller who already has the run. */

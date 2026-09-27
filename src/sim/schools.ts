@@ -1,4 +1,4 @@
-import { callingOf, schoolTier, wornTotals, type Calling, type GearTotals } from '../data/gear.ts';
+import { callingOf, schoolTier, wornTotals, type GearTotals } from '../data/gear.ts';
 import type { Pair, School } from '../data/schools.ts';
 import {
   ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
@@ -19,10 +19,6 @@ import type { State } from './state.ts';
  */
 
 type Body = Pick<State, 'worn' | 'unlocked'>;
-
-export function callingOfState(s: Body): Calling {
-  return callingOf(s.worn);
-}
 
 /**
  * Every line on the body, affinity and class included. Read once per body and tree: both
