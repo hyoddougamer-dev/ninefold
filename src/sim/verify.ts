@@ -100,6 +100,7 @@ export type Why =
   | 'tower'          // a floor this build cannot beat
   | 'gear'           // a piece from a realm not reached
   | 'dao'            // more 道 spent than earned
+  | 'anchor'         // the Dragon's anchor shrank: edited to make the next crossing easy
   | 'shape';         // another run of the game than the one verified (startedAt); never a strike
 
 export interface Verdict {
@@ -261,6 +262,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
     if (power(after) > 0 && floorPower(f) / power(after) > 4) why.push('tower');
     else if (oddsRaw(after, floorBeast(f), floorPower(f)) <= 0) why.push('tower');
   }
+
+  // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to
+  // make every Dragon after it easier.
+  if (after.tribulation >= before.tribulation && after.tribulationAt < before.tribulationAt * 0.999) why.push('anchor');
 
   if (!gearFits(after)) why.push('gear');
   if (freePoints(after) < 0) why.push('dao');

@@ -1,7 +1,7 @@
 import type { Beast } from '../data/bestiary.ts';
 import { DRIVE_QI, ladderBetween } from './balance.ts';
 import { layersOpened } from './time.ts';
-import { lootFrom, quarryBounty } from './combat.ts';
+import { lootFrom, quarryPaid } from './combat.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import { MARKS, marksOf } from './record.ts';
 import { lootTaken } from './trials.ts';
@@ -11,7 +11,7 @@ import { dropFor, noteFate } from './fate.ts';
 import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
-import { classBounty, classDrive } from './schools.ts';
+import { classDrive } from './schools.ts';
 
 /**
  * 圍 The drive: one tap, many kills, paid for in qi.
@@ -161,7 +161,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
   return {
     state: {
       ...s,
-      qi: s.qi - qiSpent + (week ? Math.round(quarryBounty(b) * classBounty(s)) : 0),
+      qi: s.qi - qiSpent + (week ? quarryPaid(s, b) : 0),
       materials: s.materials + material,
       killed: { ...s.killed, [b.key]: after },
       fate: bond.fate,

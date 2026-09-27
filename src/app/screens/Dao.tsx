@@ -279,9 +279,11 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                 {wrap(node.name).map((row, i) => (
                   // 讀 8px at 40% was a name nobody could read on a phone, which is the
                   // whole reason it is there. It is the size of the cost figure now.
+                  // 暈 A halo in the canvas's own colour, drawn under the letters, so a
+                  // branch line running behind a name no longer cuts through it.
                   <text key={row} x={x} y={y + R + 12 + i * 10} textAnchor="middle" fontSize="9.5"
                         fontFamily="Archivo, sans-serif"
-                        fill={on ? colour : '#B5A993'}
+                        fill={on ? colour : '#B5A993'} className="thalo"
                         opacity={faded ? 0.6 : 1}>{row}</text>
                 ))}
                 {picked === node.key && (

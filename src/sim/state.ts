@@ -604,7 +604,8 @@ export function validate(raw: unknown, now: number): State {
     // own). A dragon in a realm-three save would hand over its art and its 道 points
     // without the fight ever happening.
     if (beast.realm > reach) continue;
-    const n = Math.floor(num(v, 0));
+    // A count is a count of fights, and no cultivator fights a hundred million times.
+    const n = Math.min(1e8, Math.floor(num(v, 0)));
     if (n > 0) killed[k] = n;
   }
 
@@ -731,7 +732,11 @@ export function validate(raw: unknown, now: number): State {
     layer,
     qi: Math.max(0, num(o.qi, 0)),
     materials: Math.max(0, num(o.materials, 0)),
-    wardenFell: o.wardenFell === true,
+    // 守 Below the summit a fallen warden is also a kill of it, so a save cannot say the
+    // warden fell and skip the fight. At the summit the Dragon falls once a crossing and
+    // the count cannot tell which crossing, so there the flag is kept as it is.
+    wardenFell: o.wardenFell === true
+      && (realm === 9 || (killed[BEASTS.find((b) => b.warden && b.realm === realm)?.key ?? ''] ?? 0) > 0),
     levels,
     killed,
     worn,
@@ -749,6 +754,8 @@ export function validate(raw: unknown, now: number): State {
     // Capped at three hundred so the multipliers stay inside a double: a mark is
     // worth 4.3x and 4.3^300 is already a number with a hundred and ninety digits.
     tribulation,
+    // 劫 The anchor only ever grows; a ranked save whose anchor shrank is refused by
+    // verify(), since forged to 0 it would put every later Dragon back at its floor.
     tribulationAt: realm === 9 ? Math.max(0, num(o.tribulationAt, 0)) : 0,
     // The tower is climbed one floor at a time and every floor is a fight, so a save
     // claiming floor nine thousand is claiming nine thousand fights that never happened.

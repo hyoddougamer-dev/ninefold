@@ -27,7 +27,7 @@ import { BEASTS, type Beast } from '../data/bestiary.ts';
 export const MARKS: readonly number[] = [1, 10, 100];
 
 export const MARK_INFO: readonly { han: string; name: string; pays: string }[] = [
-  { han: '見', name: 'Seen', pays: 'the record fills in' },
+  { han: '見', name: 'Seen', pays: 'a first sight pays qi, and the record fills in' },
   { han: '熟', name: 'Known', pays: '+2% 材 material' },
   { han: '通', name: 'Mastered', pays: '+2% power' },
 ];
@@ -96,9 +96,15 @@ export function realmsKnown(killed: Killed): number {
   return n;
 }
 
-/** A realm's four, and how many of them are 熟 Known. */
+/**
+ * A realm's commons, and how many of them are 熟 Known.
+ *
+ * 守 Commons only. The realm's warden is fought once, so asking for ten kills of it made
+ * the bestiary impossible to finish in every realm but the ninth, where the Dragon comes
+ * back each crossing: the screen promised 道 points no player could ever collect.
+ */
 export function knownIn(killed: Killed, realm: number): { done: number; of: number } {
-  const of = BEASTS.filter((b) => b.realm === realm);
+  const of = BEASTS.filter((b) => b.realm === realm && !b.warden);
   return { done: of.filter((b) => (killed[b.key] ?? 0) >= MARKS[1]).length, of: of.length };
 }
 

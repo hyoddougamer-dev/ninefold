@@ -31,7 +31,7 @@ export function Bestiary({ state }: { state: State }) {
             <h2 className="heading" style={{ color: reached ? r.colour : undefined, opacity: reached ? 1 : 0.5 }}>
               <span className="cjk" style={{ fontSize: 14 }}>{r.han}</span>
               <span style={{ marginLeft: 8 }}>{r.name}</span>
-              {/* 圖鑑 A realm is *finished* when all four of its beasts are 熟 Known, and
+              {/* 圖鑑 A realm is *finished* when every common beast in it is 熟 Known, and
                   that pays a 道 point. Without this line the reward is invisible, and an
                   invisible reward is worse than none: it asks for the one thing hunting
                   never asked for, which is going back, and nothing would say so. */}

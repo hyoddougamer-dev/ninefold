@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -15,16 +16,16 @@ import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
-import { addToChest, chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
+import { chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
 import { gearFuse } from '../sim/schools.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
-import { affinity, canUnlock, dropsRankUp, fuseQuality } from '../sim/dao.ts';
+import { affinity, canUnlock, fuseQuality } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { RARITIES, wornTotals } from '../data/gear.ts';
+import { wornTotals } from '../data/gear.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -474,19 +475,14 @@ export function App() {
       setState((s) => clearFloor(s, floor));
     } else if (outcome.won) {
       setState((s) => {
-        // 空囊 Empty Pouch lifts every drop a rank on its way into the chest.
-        const lifted = drop && dropsRankUp(s.unlocked)
-          ? { ...drop, rarity: RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(drop.rarity) + 1)] }
-          : drop;
-        const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
         // 錄 A mark earned is rare enough to be worth hearing.
         const kills = s.killed[beast.key] ?? 0;
         const before = marksOf(kills);
         if (marksOf(kills + 1) > before) sfx.mark();
-        // 收 The count, the material and 見 the first-sight bounty all come from the
-        // sim, so the harnesses that measure this game see exactly what the player gets.
-        // The chest is the app's, because the drop above was rolled with the app's seed.
-        return { ...noteFate(takeKill(s, beast), beast, drop), chest: kept ? [...kept.chest] : s.chest };
+        // 收 The count, the material, 見 the first-sight bounty and where the piece goes
+        // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
+        // that measure this game see exactly what the player gets.
+        return stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
       });
     }
     setBattle(null);
@@ -861,7 +857,8 @@ export function App() {
           battle={battle}
           state={state}
           pulse={pulse}
-          chestFull={state.chest.length >= limitOf(state)}
+          overflow={battle.outcome.won && battle.drop && state.chest.length >= limitOf(state)
+            ? stash(state, battle.drop) : null}
           onClose={closeFight}
         />
       )}
@@ -1011,13 +1008,7 @@ export function App() {
           beast={driving}
           seed={Math.floor(Math.random() * 0xffffffff)}
           onTake={(result) => {
-            setState((s) => {
-              const lifted = result.best && dropsRankUp(s.unlocked)
-                ? { ...result.best, rarity: RARITIES[Math.min(RARITIES.length - 1, RARITIES.indexOf(result.best.rarity) + 1)] }
-                : result.best;
-              const kept = lifted ? addToChest(s.chest, lifted, limitOf(s)) : null;
-              return { ...result.state, chest: kept ? [...kept.chest] : s.chest };
-            });
+            setState(() => stash(result.state, result.best).state);
             sfx.mark();
             haptics.tap();
           }}

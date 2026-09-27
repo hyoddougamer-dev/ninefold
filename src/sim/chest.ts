@@ -28,7 +28,7 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
 /**
  * 值 How good a piece is, roughly, for deciding which of two to keep.
  *
- * Rank, realm and refining, not the roll values, because seven axes on different scales
+ * Rank, realm and refining, not the roll values, because eight axes on different scales
  * cannot be added together into a number that means anything. This is only ever used to
  * answer "is the thing that just dropped better than the worst thing in the chest", and
  * for that it is right far more often than it is wrong.

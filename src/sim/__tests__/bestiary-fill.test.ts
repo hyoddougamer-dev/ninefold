@@ -29,7 +29,8 @@ const realmsIn = [...new Set(BEASTS.map((b) => b.realm))];
 describe('圖鑑 finishing a realm of the bestiary', () => {
   it('asks for every beast of a realm, not only the ones worth killing', () => {
     const killed: Record<string, number> = {};
-    const first = BEASTS.filter((b) => b.realm === 1);
+    // 守 The warden is fought once, so it is never asked for.
+    const first = BEASTS.filter((b) => b.realm === 1 && !b.warden);
     // The strongest three, hunted hard. This is what playing normally produces.
     for (const b of first.slice(1)) killed[b.key] = 500;
     expect(knownIn(killed, 1).done).toBe(first.length - 1);
@@ -55,19 +56,26 @@ describe('圖鑑 finishing a realm of the bestiary', () => {
    * cultivator in the harness plays without knowing 圖鑑 exists, and none of them
    * stumbles into it, which is the point. It has to be gone after on purpose.
    */
-  it('is never finished by accident, however much somebody hunts', () => {
+  /**
+   * 守 It used to ask for ten kills of each realm's warden too, and a warden is fought
+   * once, so no realm below the ninth could ever be finished: this test "passed" because
+   * nobody could. It asks for the commons now, which a cultivator who hunts meets as they
+   * arrive, and it is the hunting that fills it: a cultivator who never fights never does.
+   */
+  it('is filled by hunting, and never by not hunting', () => {
     const rows = playAll().map((run) => {
       const k = run.state.killed;
       const kills = Object.values(k).reduce((a, b) => a + b, 0);
       const near = Math.max(...realmsIn.map((r) => knownIn(k, r).done));
       return { name: run.habit.name, kills, filled: realmsKnown(k), near };
     });
-    console.log('\n  圖鑑 nobody finishes a realm without meaning to:');
+    console.log('\n  圖鑑 the realms each cultivator filled by hunting:');
     for (const r of rows) {
       console.log(`    ${r.name.padEnd(13)} ${String(r.kills).padStart(6)} kills · ` +
-        `${r.filled} realms filled · best realm ${r.near}/4 熟`);
+        `${r.filled} realms filled · best realm ${r.near}/3 熟`);
     }
     console.log('');
-    for (const r of rows) expect(r.filled).toBe(0);
+    expect(rows.find((r) => r.name === 'never fights')!.filled).toBe(0);
+    expect(rows.find((r) => r.name === 'active')!.filled).toBeGreaterThan(0);
   }, 120_000);
 });

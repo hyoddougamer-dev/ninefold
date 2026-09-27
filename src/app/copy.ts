@@ -45,7 +45,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes, for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -82,7 +82,7 @@ export const PROLOGUE = {
     ['層', 'Fill the bar to open a layer',
       'Nine layers make a realm. Or spend the qi to grow stronger instead: choosing is the game.'],
     ['狩', 'Hunt, and lose nothing',
-      'Beasts drop 材 material for what qi cannot buy. A lost fight costs nothing at all.'],
+      'Beasts drop 材 material, the other currency. A lost fight costs nothing at all.'],
   ] as const,
   next: 'Next',
   /** Read by a screen reader on the dots under the pages. */
@@ -459,7 +459,7 @@ export const TRIALS = {
   climb: 'Climb',
   pays: (mats: string, qi: string) => `pays ${mats} 材 · ${qi} qi`,
   /** The qi a floor pays, said in the unit that means something: your own time. */
-  hours: (span: string) => `A floor pays ${span} of your own gathering, once. This is the one place where fighting moves the bar.`,
+  hours: (span: string) => `A floor pays ${span} of your own gathering, once: the biggest thing a fight ever puts into the bar.`,
 
   furnaceHead: '爐 The Furnace',
   furnaceShut: (han: string, name: string) =>
@@ -519,7 +519,7 @@ export const ADVICE = {
   needMaterial: (short: number) =>
     `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
     + `You are ${short.toLocaleString('en-GB')} short. Material comes from hunting.`,
-  buyCores: (han: string) => `You can afford another ${han}. Cores are the one upgrade qi cannot buy, and a warden asks for them.`,
+  buyCores: (han: string) => `You can afford another ${han}. Cores are the one upgrade priced in 材 material, and a warden asks for them.`,
   buyTechnique: 'You can afford another 劍訣. Buy it and try the warden again.',
   waitTechnique: (cost: number) =>
     `The next 劍訣 costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
@@ -602,7 +602,7 @@ export const KEY = {
   rank: (mult: number) => `x${mult} on every line`,
 
   axesHead: '軸 What gear can give',
-  axesBlurb: 'Eight axes. A piece always grants a percentage, so an old piece stays good.',
+  axesBlurb: 'Eight axes. Every line but 藏 is a percentage, so an old piece stays good.',
 
   slotsHead: '位 The six places you wear it',
   slotsBlurb: 'One piece each. Wear several of one realm and the lineage pays on top.',
@@ -629,7 +629,7 @@ export const KEY = {
   melt: 'Break a piece down into qi. Worth a share of a layer of the realm it was made in.',
   drive: 'Buy many kills of a beast you already know, instead of tapping for each one.',
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
-  sitting: 'Sitting with the app open deepens your gathering, up to three times. It ends after a quarter of an hour.',
+  sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after a quarter of an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
   layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
@@ -680,7 +680,7 @@ export const GUIDE = {
   },
   core: {
     title: 'Spend what the beast left',
-    text: '\u6750 Material buys \u5996\u4e39 Beast Cores, the one upgrade qi cannot. '
+    text: '\u6750 Material buys \u5996\u4e39 Beast Cores, the one upgrade priced in material. '
       + '+8% power, for good.',
     waiting: '\u5996\u4e39 costs 3 \u6750 material, and material only falls off things you kill. '
       + 'Three rats pay for the first one.',
@@ -861,10 +861,11 @@ export const ITEM = {
   } as Record<'none' | 'little' | 'clear' | 'lot' | 'huge', string>,
   power: 'Power',
   qi: 'Qi',
-  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null, classGoes = false, fight = false) => {
+  versus: (v: 'up' | 'trade' | 'same' | 'down', name: string | null, classGoes = false,
+    fight: 'wins' | 'loses' | null = null) => {
     if (!name) return 'Nothing is worn there yet, so all of it is gain.';
-    if (fight && (v === 'up' || v === 'trade') && !classGoes) return `It wins the fight below more often than the ${name} you wear.`;
-    if (fight) return `It loses the fight below more often than the ${name} you wear.`;
+    if (fight === 'wins') return `It wins the fight below more often than the ${name} you wear.`;
+    if (fight === 'loses') return `It loses the fight below more often than the ${name} you wear.`;
     if (v === 'trade' && classGoes) return `Stronger than the ${name} you wear, but it changes your class.`;
     if (v === 'up') return `Better than the ${name} you wear.`;
     if (v === 'trade') return `It gains on one side and loses on the other, against the ${name} you wear.`;
@@ -894,10 +895,10 @@ export const ITEM = {
     rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
-    find: 'Beasts leave a piece more often, up to a quarter more and never past it.',
+    find: 'Beasts leave a piece more often, by up to 25 points and never past it.',
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
-    art: 'The arts in your sequence strike harder when they fire. Nothing else.',
+    art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
   } as Record<string, string>,
   wear: 'Wear it',
   swap: 'Wear it instead',
@@ -945,7 +946,7 @@ export const AWAKEN = {
   take: 'Take this one',
   later: 'Decide later',
   /** 修 The card the home screen keeps up until the choice is made. */
-  waiting: 'A breakthrough is owed you a 悟道. Three cards, and one of them is yours.',
+  waiting: 'A 悟道 awakening is owed you. Three cards, and one of them is yours.',
   /** 釋 What the character means, for the key and the tooltip. */
   what: 'Three cards at every breakthrough and at every heaven, and you keep one. Taking it closes the other two. Seventeen choices across a climb, so no two cultivators end up the same.',
 };
@@ -1041,7 +1042,7 @@ export const CAVE = {
    * it is taken. A breakthrough while it grows makes it worth more, and nothing makes
    * it worth less. Saying so turns a number that seems to wobble into a rule.
    */
-  settles: 'A bed pays at the rate you gather at when you take it. A breakthrough while it grows makes it worth more, and nothing makes it worth less.',
+  settles: 'A bed pays at the rate you gather at when you take it, so a breakthrough while it grows makes it worth more. The season it was sown in stays with it.',
   law: 'A ripe bed waits for you for ever. Nothing here rots and nothing is lost by being late.',
   /** 釋 What the character means, for the key and the tooltip. */
   what: 'Three beds you own. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. The only thing a long wait costs is the bed it stands in.',
@@ -1197,9 +1198,9 @@ export const CLASS = {
   school: {
     sword: (w: number, f: number) => `Power +${pct(w)}, or +${pct(f)} at the full.`,
     qi: (w: number, f: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full.`,
-    fortune: (w: number, f: number, amp: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}. A bond fills in ${w} wins, or ${f} at the full.`,
+    fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
-    artificer: (w: number, f: number, amp: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
+    artificer: (w: number, f: number, amp: number, full: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}, or ×${full} at the full.`,
     arts: (w: number, f: number) => `The arts in your sequence strike ${pct(w)} harder, or ${pct(f)} at the full.`,
   },
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
@@ -1314,7 +1315,7 @@ export const NOTICE = {
     // two different cards with one name is the fastest way to make a player think the
     // game is repeating itself. This one is about the currency.
     title: '材 Material is the other currency',
-    text: '妖丹 is the one upgrade qi cannot buy: it costs 材 material, and material only '
+    text: '妖丹 is the one upgrade priced in 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
   tower: {
@@ -1377,6 +1378,8 @@ export const SAVE = {
   reached: 'reached',
   gear: 'gear',
   why: 'Your save lives in this browser, on this phone. There is no account. Clear the browser data and it is gone. Keep a copy somewhere you will find it again.',
+  /** 雲 The same, for a cultivator signed in to the rankings: there is a cloud copy. */
+  whyCloud: 'Your save lives on this phone, and a copy is kept in the cloud while you are signed in to the rankings. A file of your own is still the one copy nobody else holds.',
   copy: 'Copy the save',
   copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things.',
   copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
@@ -1404,8 +1407,8 @@ export const LOADOUT = {
 };
 
 export const BESTIARY = {
-  /** 圖鑑 What finishing a realm's four is worth, said where the four are listed. */
-  pays: (n: number) => `${n} 道 when all four are 熟 Known`,
+  /** 圖鑑 What finishing a realm's beasts is worth, said where they are listed. */
+  pays: (n: number) => `${n} 道 when every beast of the realm, its warden aside, is 熟 Known`,
   credits: 'Art credits',
   icons: (authors: string) =>
     `Icons from game-icons.net, Creative Commons BY 3.0. Authors: ${authors}.`,
@@ -1443,8 +1446,10 @@ export const ARENA = {
    */
   firstSight: (qi: string, han: string) =>
     `+${qi} qi for the first ${han} you ever killed, once and never again. `
-    + 'Every beast in the game pays this the first time it falls.',
-  chestFull: 'Chest is full. This one is lost.',
+    + 'Every beast but a warden pays this the first time it falls.',
+  /** 藏 A full chest keeps the better piece and melts the other into qi. Never lost. */
+  chestFullNew: (qi: string) => `The chest is full and holds better. This one melts into ${qi} qi.`,
+  chestFullOld: (name: string, qi: string) => `The chest is full, so your weakest piece, the ${name}, melts into ${qi} qi to make room.`,
   /** 期 The week's quarry, the first kill of the week. */
   weekHead: 'The week\u2019s quarry',
   week: (qi: string) => `+${qi} qi for the first one this week. Every one this week pays double 材 material.`,

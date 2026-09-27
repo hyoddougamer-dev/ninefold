@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compare, gearLift, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, wornSwing } from '../inspect.ts';
+import { compare, gearLift, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, wornSwing, verdictByLines } from '../inspect.ts';
 import { RARITIES, SECONDARIES, templateOf, type Item, type Rarity } from '../../data/gear.ts';
 import { newState, power, type State } from '../state.ts';
 import { rate } from '../time.ts';
@@ -177,5 +177,22 @@ describe('總 what the whole body does', () => {
     const m = wornSwing(s, sword);
     expect(m.power).toBeGreaterThan(1);
     expect(m.power).toBeCloseTo(power(s) / power(ifBare(s, sword)), 9);
+  });
+});
+
+describe('比 the verdict hears all eight lines', () => {
+  it('calls a luckier ring an upgrade, not the same, when power and qi do not move', () => {
+    const worn = { id: 'w', template: 'amethyst6', rarity: 'earth' as const, rolls: [{ affix: 'luck' as const, value: 10 }] };
+    const found = { id: 'f', template: 'amethyst6', rarity: 'earth' as const,
+      rolls: [{ affix: 'luck' as const, value: 40 }, { affix: 'find' as const, value: 5 }] };
+    expect(verdictByLines('same', compare(found, worn))).toBe('up');
+    expect(verdictByLines('same', compare(worn, found))).toBe('down');
+    expect(verdictByLines('same', compare(worn, worn))).toBe('same');
+    // Power and qi still speak first.
+    expect(verdictByLines('down', compare(found, worn))).toBe('down');
+  });
+
+  it('never calls a change the rows print as "no change" an upgrade', () => {
+    expect(verdictOf({ power: 1, rate: 1.00005, better: true })).toBe('same');
   });
 });

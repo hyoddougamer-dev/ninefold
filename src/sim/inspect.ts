@@ -138,12 +138,27 @@ export { primaryOf };
 export type Verdict = 'up' | 'trade' | 'same' | 'down';
 
 export function verdictOf(w: Swing): Verdict {
-  const up = (x: number) => x > 1 + 1e-9;
-  const down = (x: number) => x < 1 - 1e-9;
-  if (w.better) return w.costsClass ? 'trade' : 'up';
+  // 量 The same edge the rows under it use (sizeOf): a change they print as "no change"
+  // is no change here either, or the sheet read "An upgrade" over two rows of nothing.
+  const up = (x: number) => sizeOf(x) !== 'none' && x > 1;
+  const down = (x: number) => sizeOf(x) !== 'none' && x < 1;
+  if (!up(w.power) && !up(w.rate) && !down(w.power) && !down(w.rate)) return 'same';
+  if ((up(w.power) || up(w.rate)) && !down(w.power) && !down(w.rate)) return w.costsClass ? 'trade' : 'up';
   if ((up(w.power) && down(w.rate)) || (down(w.power) && up(w.rate))) return 'trade';
   if (!down(w.power) && !down(w.rate)) return 'same';
   return 'down';
+}
+
+/**
+ * 比 When power and qi do not move, the other six lines decide. An amethyst with four
+ * times the 運 of the one worn used to read "The same as yours", because only two of
+ * the eight lines were ever asked.
+ */
+export function verdictByLines(v: Verdict, lines: readonly LineDelta[]): Verdict {
+  if (v !== 'same') return v;
+  const more = lines.some((d) => d.affix !== 'power' && d.affix !== 'rate' && d.theirs > d.mine * 1.001);
+  const less = lines.some((d) => d.affix !== 'power' && d.affix !== 'rate' && d.theirs < d.mine * 0.999);
+  return more && less ? 'trade' : more ? 'up' : less ? 'down' : 'same';
 }
 
 /**

@@ -1,0 +1,50 @@
+import { RARITIES, templateOf, type Item } from '../data/gear.ts';
+import { addToChest, chestLimit } from './chest.ts';
+import { dropsRankUp } from './dao.ts';
+import { meltFactor, salvageValue } from './salvage.ts';
+import { bodyTotals } from './schools.ts';
+import type { State } from './state.ts';
+
+/**
+ * 藏 Where a piece goes when it is found: the one way, for the game and the harnesses.
+ *
+ * It was written four times. The harness, a meeting and 秘境 the vault each melted what a
+ * full chest turned away into qi; the game's own kill and drive threw it on the floor,
+ * so the curves counted qi no player was ever paid. And 空囊 Empty Pouch lifted a drop a
+ * rank only in the game, so the harness measured a tree node that did nothing. One
+ * function now, called from all of them.
+ */
+
+/** How many pieces this cultivator's chest holds. */
+export function limitFor(s: State): number {
+  return chestLimit(s.unlocked, bodyTotals(s).capacity, s.awakened);
+}
+
+/** 空囊 A drop a rank higher, when the tree says so. */
+export function lifted(s: State, item: Item): Item {
+  if (!dropsRankUp(s.unlocked)) return item;
+  const i = Math.min(RARITIES.length - 1, RARITIES.indexOf(item.rarity) + 1);
+  return { ...item, rarity: RARITIES[i] };
+}
+
+export interface Stashed {
+  readonly state: State;
+  /** The piece as it went in, 空囊 applied. */
+  readonly item: Item | null;
+  /** Whatever a full chest turned away (the new piece, or its weakest), melted. */
+  readonly dropped: Item | null;
+  readonly melted: number;
+}
+
+export function stash(s: State, found: Item | null): Stashed {
+  if (!found) return { state: s, item: null, dropped: null, melted: 0 };
+  const item = lifted(s, found);
+  const kept = addToChest(s.chest, item, limitFor(s));
+  const melted = kept.dropped ? salvageValue(kept.dropped, meltFactor(s)) : 0;
+  return { state: { ...s, chest: [...kept.chest], qi: s.qi + melted }, item, dropped: kept.dropped, melted };
+}
+
+/** The name a player would know the melted piece by. */
+export function droppedName(x: Item): string {
+  return templateOf(x).name;
+}

@@ -57,7 +57,7 @@ export const RARITY_INFO: Record<Rarity, RarityInfo> = {
 /**
  * What a piece of gear does.
  *
- * These are deliberately the *same seven axes the technique tree moves*. That is what
+ * These are deliberately the *same axes the technique tree moves*. That is what
  * makes a build a build: a 運 Fortune node and a 運 roll on a ring pull the same lever,
  * so a player can reach the same place by two routes and choose which.
  *
@@ -515,7 +515,7 @@ export function setTotals(worn: Worn): GearTotals {
  *
  *   none   no school has three pieces
  *   pure   one school has three or four (its first step) or five or six (its full)
- *   pair   two schools have three each: one of the ten named classes
+ *   pair   two schools have three each: one of the fifteen named classes
  *
  * Derived, never stored: changing clothes is changing class. See data/schools.ts.
  */

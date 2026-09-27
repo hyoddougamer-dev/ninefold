@@ -239,7 +239,7 @@ export function Lab() {
           battle={battle}
           state={hero}
           pulse={pulse}
-          chestFull={false}
+          overflow={null}
           onClose={() => setBattle(null)}
         />
       )}

@@ -1,4 +1,5 @@
 import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
+import type { Stashed } from '../../sim/stash.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
@@ -16,7 +17,7 @@ import { ARENA } from '../copy.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
-import { lootFrom, quarryBounty, seenBounty } from '../../sim/combat.ts';
+import { lootFrom, quarryPaid, seenPaid } from '../../sim/combat.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -98,7 +99,7 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, state, pulse, onClose, chestFull }: {
+export function Arena({ battle, state, pulse, onClose, overflow }: {
   battle: Battle;
   /**
    * 得 The whole state, not only the realm, because what a kill is *worth* depends on
@@ -107,7 +108,8 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
    */
   state: State;
   pulse: number;
-  chestFull: boolean;
+  /** 藏 What a full chest will do with the piece, worked out by the same stash() that does it. */
+  overflow: Stashed | null;
   onClose: () => void;
 }) {
   const realm = state.realm;
@@ -137,7 +139,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
   const before = state.killed[beast.key] ?? 0;
   // 見 What this kill pays in qi, which is only ever on the very first one.
   const bounty = outcome.won && battle.floor === undefined && before === 0
-    ? seenBounty(beast) : 0;
+    ? seenPaid(state, beast) : 0;
   const earned = outcome.won && battle.floor === undefined && marksOf(before + 1) > marksOf(before)
     ? { index: marksOf(before + 1) - 1 }
     : null;
@@ -148,7 +150,7 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
    * kill, like everything else here.
    */
   const weekly = outcome.won && battle.floor === undefined && isQuarry(state, beast) && quarryOwed(state)
-    ? quarryBounty(beast) : 0;
+    ? quarryPaid(state, beast) : 0;
 
   return (
     <div className="arena" data-over={over} data-won={over && outcome.won} data-lost={over && !outcome.won}
@@ -332,7 +334,13 @@ export function Arena({ battle, state, pulse, onClose, chestFull }: {
                     </span>
                   ))}
                 </i>
-                {chestFull && <em className="full">{ARENA.chestFull}</em>}
+                {overflow?.dropped && (
+                  <em className="full">
+                    {overflow.dropped.id === overflow.item?.id
+                      ? ARENA.chestFullNew(num(overflow.melted))
+                      : ARENA.chestFullOld(templateOf(overflow.dropped).name, num(overflow.melted))}
+                  </em>
+                )}
               </span>
             </div>
           )}

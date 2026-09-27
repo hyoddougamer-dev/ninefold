@@ -16,9 +16,9 @@ export function schoolSays(sc: School): string {
   switch (sc) {
     case 'sword': return CLASS.school.sword(SWORD_POWER[0], SWORD_POWER[1]);
     case 'qi': return CLASS.school.qi(QI_UPGRADES[0], QI_UPGRADES[1]);
-    case 'fortune': return CLASS.school.fortune(FORTUNE_BOND[0], FORTUNE_BOND[1], CLASS_AMP[0]);
+    case 'fortune': return CLASS.school.fortune(FORTUNE_BOND[0], FORTUNE_BOND[1], CLASS_AMP[0], CLASS_AMP[1]);
     case 'body': return CLASS.school.body(CLASS_AMP[0], CLASS_AMP[1]);
-    case 'artificer': return CLASS.school.artificer(ARTIFICER_REFINE[0], ARTIFICER_REFINE[1], CLASS_AMP[0]);
+    case 'artificer': return CLASS.school.artificer(ARTIFICER_REFINE[0], ARTIFICER_REFINE[1], CLASS_AMP[0], CLASS_AMP[1]);
     case 'arts': return CLASS.school.arts(ARTS_STRIKE[0], ARTS_STRIKE[1]);
   }
 }

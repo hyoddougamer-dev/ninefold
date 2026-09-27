@@ -118,6 +118,18 @@ describe('盾 what 驗 the audit found, closed', () => {
     expect(five.ok).toBe(false);
   });
 
+  it('the Dragon\'s anchor cannot be edited down to make crossings easy', () => {
+    const eased = { ...top, tribulationAt: 0, at: top.at + 600 };
+    const v = verify(top, validate(eased, eased.at), 600);
+    expect(v.ok).toBe(false);
+    expect(v.strike).toBe(true);
+  });
+
+  it('a warden cannot be said to have fallen without a kill of it', () => {
+    const r3 = WALKED.get('active')!.map((x) => x.s).find((x) => x.realm === 3 && !x.wardenFell && !(x.killed.crane > 0))!;
+    expect(validate({ ...r3, wardenFell: true }, r3.at).wardenFell).toBe(false);
+  });
+
   it('pills before the furnace exist are not kept', () => {
     const early = WALKED.get('active')!.map((x) => x.s).find((x) => x.realm === 5)!;
     const v = validate({ ...early, brewed: { body: 3000, bane: 3000, fortune: 3000 } }, early.at);

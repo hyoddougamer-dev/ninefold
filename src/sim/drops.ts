@@ -29,7 +29,7 @@ export function dropChance(beast: Beast, bonus = 0, always = false): number {
  * 器 Nothing falls in the first realm.
  *
  * Gear opens at the second, and the first realm is deliberately the bare loop: gather,
- * spend, fight, climb. A cultivator who meets six slots, five ranks, seven axes and a
+ * spend, fight, climb. A cultivator who meets six slots, five ranks, eight axes and a
  * chest in their first ten minutes has met a spreadsheet, not a game.
  */
 function dropsYet(realm: number): boolean {

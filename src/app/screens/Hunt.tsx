@@ -22,8 +22,7 @@ import { isQuarry, weekLeft } from '../../sim/week.ts';
 import { ARCHETYPES, RARITIES, RARITY_INFO } from '../../data/gear.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { fateOf, fatePromise } from '../../sim/fate.ts';
-import { FATE_FULL } from '../../sim/balance.ts';
+import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
 
 /**
  * 狩 Free hunting.
@@ -233,8 +232,8 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
                 return (
                   <span className="bfate">
                     <b className="cjk"><Term han="緣" /></b>
-                    <span className="bar"><i style={{ width: `${(f.n / FATE_FULL) * 100}%` }} /></span>
-                    <i>{HUNT.bond(f.n, FATE_FULL, RARITY_INFO[RARITIES[fatePromise(state, b)]].name)}</i>
+                    <span className="bar"><i style={{ width: `${(f.n / fateFull(state)) * 100}%` }} /></span>
+                    <i>{HUNT.bond(f.n, fateFull(state), RARITY_INFO[RARITIES[fatePromise(state, b)]].name)}</i>
                   </span>
                 );
               })()}

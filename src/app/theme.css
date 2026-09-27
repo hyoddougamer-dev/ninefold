@@ -2774,3 +2774,29 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .tcloud.c2 { animation-delay: -6.6s; }
 @keyframes tcloud { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
 @media (prefers-reduced-motion: reduce) { .tflame, .tcloud { animation: none; } }
+
+/* 窄 The hunt row on a narrow phone. At 320 the name column was what was left beside the
+   painting, the odds and the drive tag, about a hundred pixels, so "48 / 100 toward
+   Mastered" took three lines and the name wrapped round its own numbers. Here the row is
+   a grid: the name and the odds share the first line, and everything under them runs
+   the whole width. Scoped to rows that carry .bleaves, which only the hunt draws; the
+   fuse rows share .beast and keep their own layout. */
+@media (max-width: 380px) {
+  .beast:has(.bleaves) { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto auto;
+                         column-gap: 10px; row-gap: 3px; align-items: center; }
+  .beast:has(.bleaves) > .plate { grid-column: 1; grid-row: 1 / span 3; align-self: start; }
+  .beast:has(.bleaves) .bname { display: contents; }
+  .beast:has(.bleaves) .bname > b { grid-column: 2; grid-row: 1; }
+  .beast:has(.bleaves) > .odds { grid-column: 3; grid-row: 1; margin-left: 0; }
+  .beast:has(.bleaves) > .drivetag { grid-column: 4; grid-row: 1; }
+  .beast:has(.bleaves) .bname > i,
+  .beast:has(.bleaves) .bname > .wtag,
+  .beast:has(.bleaves) .bname > .marks { grid-column: 2 / -1; justify-self: start; }
+  .beast:has(.bleaves) > .bleaves,
+  .beast:has(.bleaves) > .bfate { grid-column: 1 / -1; }
+  .beast:has(.bleaves) > .bfate { padding-left: 0; }
+}
+
+/* 暈 The tree's node names wear a halo in the canvas's colour, painted under the letters,
+   so a branch line running behind "Opening Form" or "Heavy Plate" stops crossing it out. */
+.treesvg .thalo { paint-order: stroke; stroke: var(--panel2); stroke-width: 3px; stroke-linejoin: round; }

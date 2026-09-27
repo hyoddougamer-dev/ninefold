@@ -3,6 +3,7 @@ import { exportSave, importSave, saveFileName, wipe } from '../../sim/save.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { SAVE } from '../copy.ts';
+import { remembered } from '../../net/cloud.ts';
 
 /**
  * 存 The save, in the player's own hands.
@@ -84,7 +85,7 @@ export function SavePanel({ state, onRestore, onClose }: {
         <dt>{SAVE.gear}</dt><dd>{num(state.chest.length)} in the chest</dd>
       </dl>
 
-      <p className="says">{SAVE.why}</p>
+      <p className="says">{remembered() ? SAVE.whyCloud : SAVE.why}</p>
 
       <div className="saverow">
         <button className="act" onClick={copy}>複 <span>{SAVE.copy}</span></button>

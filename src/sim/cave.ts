@@ -45,8 +45,10 @@ export function seedCost(s: State, h: Herb): number {
  * never on the rate, and the cave is capped three ways over: three beds, planted by
  * hand, with material that only falls off a beast. See sim/week.ts.
  */
-export function harvestValue(s: State, h: Herb): number {
-  const week = isSeason(s, h) ? SEASON_HARVEST : 1;
+export function harvestValue(s: State, h: Herb, plantedAt = s.at): number {
+  // 期 The season is the week it was planted in. A bed sown on Sunday in season and taken
+  // on Monday used to lose the half again the screen had promised when it was sown.
+  const week = isSeason({ ...s, at: plantedAt }, h) ? SEASON_HARVEST : 1;
   // 陣師 The Formation Master's beds pay more. A payment on a harvest, never the rate.
   return Math.max(1, Math.round(h.paysMinutes * perMinute(s) * week * classHerbs(s)));
 }
@@ -103,7 +105,7 @@ export function harvest(s: State, which: number): State {
   if (!caveOpen(s) || !bed || !isRipe(s, bed)) return s;
   const h = herbOf(bed.herb!)!;
   const beds = s.beds.map((b, i) => (i === which ? EMPTY : b));
-  return { ...s, qi: s.qi + harvestValue(s, h), beds, reaped: (s.reaped ?? 0) + 1 };
+  return { ...s, qi: s.qi + harvestValue(s, h, bed.at), beds, reaped: (s.reaped ?? 0) + 1 };
 }
 
 /** Take everything that is ripe, which is what the button at the top of the cave does. */

@@ -70,14 +70,14 @@ export function Cave({ state, onPlant, onHarvest }: {
               <i>{herb ? herb.name : CAVE.empty}</i>
               {ripe && (
                 <button className="act small" onClick={() => onHarvest(i)}>
-                  {CAVE.take(num(harvestValue(state, herb!)))}
+                  {CAVE.take(num(harvestValue(state, herb!, bed!.at)))}
                 </button>
               )}
               {herb && !ripe && (
                 <>
                   {/* 明 What it will be worth, while it is still growing. A bed that
                       says only when it is ripe is a bed you cannot compare. */}
-                  <span className="worth">{CAVE.worth(num(harvestValue(state, herb)))}</span>
+                  <span className="worth">{CAVE.worth(num(harvestValue(state, herb, bed!.at)))}</span>
                   <span className="when">{CAVE.ripeIn(duration(leftOn(state, bed!)))}</span>
                 </>
               )}

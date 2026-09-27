@@ -1,5 +1,5 @@
 import { quarryOf, quarryOwed, weekLeft } from '../../sim/week.ts';
-import { quarryBounty, lootFrom } from '../../sim/combat.ts';
+import { quarryPaid, lootFrom } from '../../sim/combat.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { plateOf } from '../../data/bestiary.ts';
@@ -60,7 +60,7 @@ export function QuarryBand({ state, onFight }: {
             off a row that already carries a painting, and the band ran to six lines. */}
         <u className="mono">
           <Term han="材" plain /> {num(lootTaken(state, lootFrom(state, q)))}
-          {owed ? ` · ${WEEK.bounty(num(quarryBounty(q)))}` : ` · ${WEEK.bountyTaken}`}
+          {owed ? ` · ${WEEK.bounty(num(quarryPaid(state, q)))}` : ` · ${WEEK.bountyTaken}`}
           {` · ${WEEK.left(duration(weekLeft(state)))}`}
         </u>
       </span>

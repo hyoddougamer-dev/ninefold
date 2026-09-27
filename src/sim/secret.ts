@@ -2,21 +2,17 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT, ROOM_INFO, ROOMS, SPRING_MINUTES,
   depthScale, roomsFor, shrineDeep, type Room, type RoomKind, type Take,
 } from '../data/secret.ts';
+import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { beastPower, odds } from './combat.ts';
 
 import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
 import { fortuneOf } from './fortune.ts';
-import { addToChest, chestLimit } from './chest.ts';
-import { affinity } from './dao.ts';
-import { wornTotals } from '../data/gear.ts';
-import { salvageValue } from './salvage.ts';
 import { isBlessed } from './week.ts';
 import { BLESSED_ROOM } from './balance.ts';
 import type { State } from './state.ts';
 import { classSpring } from './schools.ts';
-import { meltFactor } from './salvage.ts';
 
 /**
  * 秘境 Walking the seven rooms.
@@ -240,23 +236,18 @@ export function open(s: State, which: 0 | 1, seed: number): State {
         out.layer)
       : null;
     if (item) {
-      const limit = chestLimit(out.unlocked,
-        wornTotals(out.worn, (x) => affinity(out.unlocked, x)).capacity, out.awakened);
-      const kept = addToChest(out.chest, item, limit);
-      out = { ...out, chest: [...kept.chest] };
-      out = { ...out, lastRun: {
-        ...out.lastRun,
-        items: [...out.lastRun.items, { template: item.template, rarity: item.rarity }],
+      // 藏 The one way every find goes in: 空囊 applied, a full chest's cast-off melted.
+      const st = stash(out, item);
+      out = { ...st.state, lastRun: {
+        ...st.state.lastRun,
+        items: [...st.state.lastRun.items, { template: st.item!.template, rarity: st.item!.rarity }],
       } };
-      if (kept.dropped) {
-        /**
-         * 拆 A chest with no room in it melts the worst piece down, and the qi that
-         * comes back is part of what the run gave. Saying "a piece of gear" and not
-         * counting the qi it turned into would be the tally lying about a room.
-         */
-        const back = salvageValue(kept.dropped, meltFactor(out));
-        out = { ...out, qi: out.qi + back, lastRun: add(out.lastRun, { qi: back }) };
-      }
+      /**
+       * 拆 A chest with no room in it melts the worst piece down, and the qi that comes
+       * back is part of what the run gave. Saying "a piece of gear" and not counting the
+       * qi it turned into would be the tally lying about a room.
+       */
+      if (st.melted > 0) out = { ...out, lastRun: add(out.lastRun, { qi: st.melted }) };
     }
   }
 

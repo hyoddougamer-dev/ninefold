@@ -5,6 +5,7 @@
  * which asserts the order and prints the table on every run, and `bible.ts`, which puts
  * the same table on the page. A measurement that appears twice has to be made once.
  */
+import { stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense,
@@ -20,7 +21,7 @@ import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import { affinity, canUnlock, focusBonus } from '../src/sim/dao.ts';
+import { canUnlock, focusBonus } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, harvestAll, plant, plantable } from '../src/sim/cave.ts';
 import {
@@ -30,10 +31,10 @@ import {
 import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
-import { meltFactor, salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
-import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
+import { salvageUpTo } from '../src/sim/salvage.ts';
+import { equip, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
-import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, wornTotals, type Item, type Slot } from '../src/data/gear.ts';
+import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type Item, type Slot } from '../src/data/gear.ts';
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
@@ -190,20 +191,15 @@ function takeDrop(s: State, beast: Beast, seed: number, build?: School | Pair): 
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
   // 緣 The same two calls the app makes: the bar decides the drop, then moves.
-  const item = dropFor(s, beast, seed, fortuneOf(s), s.layer);
-  s = noteFate(s, beast, item);
-  if (!item) return s;
+  const found = dropFor(s, beast, seed, fortuneOf(s), s.layer);
+  s = noteFate(s, beast, found);
+  if (!found) return s;
 
-  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
-  const kept = addToChest(s.chest, item, limit);
-  let out: State = { ...s, chest: [...kept.chest] };
-  /**
-   * 拆 Whatever the chest threw on the floor is melted instead of vanishing, which is
-   * the whole of what salvage changes for somebody playing normally. The harness has to
-   * do it or the qi it pays is invisible to every curve on the page.
-   */
-  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, meltFactor(s)) };
-  if (kept.dropped?.id === item.id) return out;    // the chest kept something better
+  // 藏 The same stash() the game uses: 空囊 lifts it, a full chest melts its cast-off.
+  const st = stash(s, found);
+  let out: State = st.state;
+  const item = st.item!;
+  if (st.dropped?.id === item.id) return out;    // the chest kept something better
 
   const slot = templateOf(item).slot as Slot;
   const worn = out.worn[slot];
@@ -328,7 +324,7 @@ function wears(s: State, item: Item, worn: Item, build: School | Pair | undefine
  *
  * 開 The gate is checked here, and it was not before. Every curve this harness has ever
  * printed was measured with the tree spent from the first realm, while the game does not
- * open it until the fourth, so the first three realms were modelled with 起 The
+ * open it until the second, so the first realm was modelled with 起 The
  * Beginning's +10% rate and a branch's worth of nodes that a real cultivator does not
  * have. The points still accrue from the first realm and still wait, which is the rule;
  * what waits with them now is the spending.

@@ -1,14 +1,10 @@
 import { MEETINGS, meetingOf, type Meeting, type Outcome, type Pick } from '../data/meetings.ts';
+import { stash } from './stash.ts';
 import { classMeet } from './schools.ts';
 import { rate } from './time.ts';
 import { loot } from './combat.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { rollDrop } from './drops.ts';
-import { meltFactor } from './salvage.ts';
-import { addToChest, chestLimit } from './chest.ts';
-import { affinity } from './dao.ts';
-import { wornTotals } from '../data/gear.ts';
-import { salvageValue } from './salvage.ts';
 import type { State } from './state.ts';
 
 /**
@@ -132,16 +128,9 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
       ? rollDrop(beast, out.realm, seed, { chance: 1, luck: p.outcome.luck, always: true, anyShape: true, source: 'road' },
         out.layer)
       : null;
-    if (item) {
-      const limit = chestLimit(out.unlocked,
-        wornTotals(out.worn, (x) => affinity(out.unlocked, x)).capacity, out.awakened);
-      const kept = addToChest(out.chest, item, limit);
-      out = { ...out, chest: [...kept.chest] };
-      // 拆 Whatever the chest turned away is melted rather than lost, the same as a drop.
-      if (kept.dropped) {
-        out = { ...out, qi: out.qi + salvageValue(kept.dropped, meltFactor(out)) };
-      }
-    }
+    // 藏 Into the chest the one way every find goes: 空囊 applied, a full chest's
+    // cast-off melted rather than lost.
+    out = stash(out, item).state;
   }
   return out;
 }

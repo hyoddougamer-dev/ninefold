@@ -6,7 +6,7 @@ import {
 import { fightDeps } from '../memo.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import {
-  compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictOf, verdictWithFight, wornSwing, type Swing,
+  compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictByLines, verdictOf, verdictWithFight, wornSwing, type Swing,
 } from '../../sim/inspect.ts';
 import { nearestTrial, trialOdds } from '../../sim/reach.ts';
 import { BEASTS } from '../../data/bestiary.ts';
@@ -75,10 +75,10 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item, wearing, ...fightDeps(state)]);
-  const byNumbers = verdictOf(move);
+  const byNumbers = verdictByLines(verdictOf(move), lines);
   const verdict = trial ? verdictWithFight(byNumbers, oddsBefore, oddsAfter) : byNumbers;
-  // Which of the two spoke: the sentence under the verdict says why.
-  const fightSpoke = verdict !== byNumbers;
+  // Which of the two spoke, and which way: the sentence under the verdict says why.
+  const fight = verdict === byNumbers ? null : oddsAfter > oddsBefore ? 'wins' : 'loses';
   const pct = (x: number) => `${Math.round(Math.max(0, Math.min(1, x)) * 100)}%`;
   const leftBy = ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
   const says = item.rolls.map((r) => r.affix).filter((a) => a in ITEM.axisSays);
@@ -139,7 +139,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
           {row('力', ITEM.power, move.power)}
           {row('氣', ITEM.qi, move.rate)}
         </div>
-        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fightSpoke)}</p>
+        <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fight)}</p>
       </div>
 
       {/* 戰 The same piece as odds in the nearest fight that is not yet sure. */}

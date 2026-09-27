@@ -1,3 +1,4 @@
+import { focusBonus } from '../../sim/dao.ts';
 import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
@@ -95,6 +96,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
   const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
+  // 入定 As deep as this cultivator's sitting goes: 神 the Spirit branch takes it past three.
+  const deepest = FOCUS_MAX + focusBonus(state.unlocked);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const wardenRaw = useMemo(() => oddsRaw(state, w), [w, ...fightDeps(state)]);
@@ -216,7 +219,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         <div className="r mono">
           {CULTIVATE.standing(`+${num(rate(state))} qi / s`)}
           {focus > 1.15 && (
-            <span className="deep" data-full={focus >= FOCUS_MAX - 0.001}>
+            <span className="deep" data-full={focus >= deepest - 0.001}>
               <Term han="入定" /> ×{focus.toFixed(1)}
             </span>
           )}
@@ -399,7 +402,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {focus > 1.15 && (
         <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {focus >= FOCUS_MAX - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
+          {focus >= deepest - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
           {' '}{CULTIVATE.sitting}
         </p>
       )}

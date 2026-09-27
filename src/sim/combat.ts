@@ -392,7 +392,7 @@ export function takeKill(s: State, b: Beast): State {
     ...s,
     wardenFell: b.warden ? true : s.wardenFell,
     // 金剛 The Vajra's first sights and quarries pay more.
-    qi: s.qi + Math.round(((kills === 0 ? seenBounty(b) : 0) + (week ? quarryBounty(b) : 0)) * classBounty(s)),
+    qi: s.qi + (kills === 0 ? seenPaid(s, b) : 0) + (week ? quarryPaid(s, b) : 0),
     materials: s.materials + lootTaken(s, lootFrom(s, b)),
     killed: { ...s.killed, [b.key]: kills + 1 },
     quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
@@ -539,4 +539,16 @@ export function currentWarden(s: State): Beast {
              icon: heaven.dragon.icon, plate: `heaven-${heaven.n}` };
   }
   return wardenOf(s.realm);
+}
+
+/**
+ * 見期 What a first sight and the week's quarry actually pay this cultivator, 金剛 the
+ * Vajra's half again included. The screens quote these, and the kill and the drive pay
+ * them, so the number on the arena is the number that lands.
+ */
+export function seenPaid(s: State, b: Beast): number {
+  return Math.round(seenBounty(b) * classBounty(s));
+}
+export function quarryPaid(s: State, b: Beast): number {
+  return Math.round(quarryBounty(b) * classBounty(s));
 }
