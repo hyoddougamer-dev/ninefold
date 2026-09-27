@@ -28,12 +28,16 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS } from './balance.ts';
+import { FOCUS_MAX, LAYERS, MARK_DAYS, TRIBULATION_CHALLENGE } from './balance.ts';
 import {
-  UPGRADES, UPGRADE_INFO, capOf, layersOpened, power, rate, upgradeCost, newState, type State,
+  UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
+  newState, type State,
 } from './state.ts';
 import { layerCost } from './time.ts';
-import { oddsRaw } from './combat.ts';
+import { beastPower, oddsRaw } from './combat.ts';
+import { heavensOpened } from '../data/heavens.ts';
+import { meetingOf } from '../data/meetings.ts';
+import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
 import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
 import { driveCost } from './hunt.ts';
@@ -168,6 +172,33 @@ function pillsBetween(a: State, b: State): number {
   return q;
 }
 
+/**
+ * 劫 The least the Dragon's anchor can be after these marks. Every crossing sets it at
+ * least to the Dragon that fell, which stood TRIBULATION_CHALLENGE above the anchor
+ * before it (or on the ladder, if that was higher), and a heaven opened multiplies it by
+ * what the new room is worth. The even-odds reading can only ever raise it further, so
+ * this is a floor an honest crossing always clears.
+ */
+export function anchorFloor(before: State, marks: number): number {
+  const base = beastPower(wardenOf(9));
+  let at = before.tribulationAt;
+  for (let m = before.tribulation; m < marks; m++) {
+    const dragon = Math.max(base * tribulationScale(m), at * TRIBULATION_CHALLENGE);
+    const step = heavensOpened(m + 1) > heavensOpened(m) ? heavenStep() : 1;
+    at = Math.max(at, dragon) * step;
+  }
+  return at;
+}
+
+/** 道 The most 道 the road and the vault could have paid between two saves. */
+function metCeiling(before: State, after: State, dt: number): number {
+  const road = after.met.filter((k) => !before.met.includes(k)).reduce((n, k) => {
+    const m = meetingOf(k);
+    return n + (m ? Math.max(0, ...m.picks.map((p) => (p.outcome.kind === 'dao' ? p.outcome.points : 0))) : 0);
+  }, 0);
+  return road + (Math.ceil(Math.max(0, dt) / DOOR_GAP) + 2) * RUN_DAO_CEILING;
+}
+
 /** Every piece the save holds must come from a realm the cultivator has stood in. */
 function gearFits(s: State): boolean {
   const all = [...Object.values(s.worn), ...s.chest].filter(Boolean) as Item[];
@@ -269,9 +300,20 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to
   // make every Dragon after it easier.
   if (after.tribulation >= before.tribulation && after.tribulationAt < before.tribulationAt * 0.999) why.push('anchor');
+  // And it grows by at least what each crossing grows it: a mark taken with the anchor
+  // left where it was would make the next Dragon the one just beaten, every two days.
+  else if (newMarks > 0 && after.tribulationAt < anchorFloor(before, after.tribulation) * 0.999) why.push('anchor');
 
   if (!gearFits(after)) why.push('gear');
   if (freePoints(after) < 0) why.push('dao');
+  // 道 The bank the road and the vault's shrines pay into: the most each newly answered
+  // meeting could hand over, and a walk through the vault every DOOR_GAP at most (one
+  // open at the start and one underway allowed for). validate() caps it only against the
+  // start the save claims for itself. It is a matter of time, so it waits rather than
+  // strikes: a month played offline and synced on the first day is honest, only early.
+  if (after.metPoints - before.metPoints > metCeiling(before, after, dt) && !why.includes('too-fast')) {
+    why.push('too-fast');
+  }
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.

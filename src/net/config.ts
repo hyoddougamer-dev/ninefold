@@ -14,3 +14,11 @@ export const SUPABASE_URL = 'https://yqppvmuwlhibswbbvjzz.supabase.co';
 const FALLBACK_KEY = 'sb_publishable_JnQK0Hq38VFR3z7YDuxIiw_DK95oag3';
 export const SUPABASE_KEY: string =
   (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_SUPABASE_KEY || FALLBACK_KEY;
+
+/**
+ * 盾 The hCaptcha site key, public like the one above, filled by the build from the
+ * repository variable HCAPTCHA_SITEKEY. Empty means no captcha: the game signs in as it
+ * always did. The server only asks for one once its secret is set too (auth-config.mjs).
+ */
+export const HCAPTCHA_SITEKEY: string =
+  (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_HCAPTCHA_SITEKEY || '';

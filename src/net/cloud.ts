@@ -12,6 +12,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_KEY, SUPABASE_URL } from './config.ts';
+import { captchaToken } from './captcha.ts';
 import type { State } from '../sim/state.ts';
 
 const FLAG = 'ninefold.ranked';
@@ -57,7 +58,7 @@ export async function who(): Promise<Who | null> {
 /** 入 In as a guest: a cultivator on this device, ranked, with no email asked for. */
 export async function enterAsGuest(): Promise<Who> {
   const c = await client();
-  const { data, error } = await c.auth.signInAnonymously();
+  const { data, error } = await c.auth.signInAnonymously({ options: { captchaToken: await captchaToken() } });
   if (error || !data.user) throw new Error(error?.message ?? 'no user');
   remember(true);
   return { id: data.user.id, email: null, guest: true };
@@ -72,7 +73,9 @@ export async function sendLink(email: string, guest: boolean): Promise<void> {
   const back = location.origin + location.pathname;
   const { error } = guest
     ? await c.auth.updateUser({ email }, { emailRedirectTo: back })
-    : await c.auth.signInWithOtp({ email, options: { emailRedirectTo: back, shouldCreateUser: true } });
+    : await c.auth.signInWithOtp({
+      email, options: { emailRedirectTo: back, shouldCreateUser: true, captchaToken: await captchaToken() },
+    });
   if (error) throw new Error(error.message);
 }
 
@@ -83,7 +86,10 @@ export async function sendLink(email: string, guest: boolean): Promise<void> {
  */
 export async function enterCode(email: string, code: string, guest: boolean): Promise<Who> {
   const c = await client();
-  const { data, error } = await c.auth.verifyOtp({ email, token: code.trim(), type: guest ? 'email_change' : 'email' });
+  const { data, error } = await c.auth.verifyOtp({
+    email, token: code.trim(), type: guest ? 'email_change' : 'email',
+    options: { captchaToken: guest ? undefined : await captchaToken() },
+  });
   if (error || !data.user) throw new Error(error?.message ?? 'no user');
   remember(true);
   return { id: data.user.id, email: data.user.email ?? email, guest: false };
@@ -110,7 +116,6 @@ export type SyncState = 'verified' | 'waiting' | 'refused' | 'behind';
 export interface Synced {
   readonly ranked: boolean;
   readonly state: SyncState;
-  readonly why: readonly string[];
   readonly suspect: boolean;
   readonly behindHours: number;
 }

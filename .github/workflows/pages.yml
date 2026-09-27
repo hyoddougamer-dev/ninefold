@@ -58,7 +58,11 @@ jobs:
               echo "key read from the project"
             fi
           fi
+      # 盾 The hCaptcha site key, a repository variable and public by design. Empty means
+      # the game signs in with no captcha, which is right until the server asks for one.
       - run: npm run build
+        env:
+          VITE_HCAPTCHA_SITEKEY: ${{ vars.HCAPTCHA_SITEKEY }}
       # 測 The testers' APK, beside the game, so it downloads from the game's own address.
       # The release link redirects to a signed storage URL, and a browser inside another
       # app (a chat, a mail client) tends to stop there with nothing downloaded. A plain

@@ -54,6 +54,11 @@ export interface Store {
    */
   claim(id: string, now: number, gap: number): Promise<number>;
   profile(id: string): Promise<Profile | null>;
+  /**
+   * 罰 The strikes and ban a deleted account on this player's email left behind, or null.
+   * See 20260928000000_barred.sql.
+   */
+  barred(id: string): Promise<{ strikes: number; banned: boolean } | null>;
   saved(id: string): Promise<Saved | null>;
   standing(id: string): Promise<Standing | null>;
   /** Create the profile; throws if the name is taken. */
@@ -73,9 +78,12 @@ export type Reply =
   | { status: 403; body: { error: 'banned' } }
   | { status: 200; body: {
       ranked: boolean;
-      /** 'verified', 'waiting' (too fast for now), 'refused' (impossible), 'behind' (older copy) */
+      /**
+       * 'verified', 'waiting' (too fast for now), 'refused' (impossible), 'behind' (older
+       * copy). Which check it was stays in sync_log: naming it here told anybody probing
+       * the server exactly which number to edit next.
+       */
       state: 'verified' | 'waiting' | 'refused' | 'behind';
-      why: readonly string[];
       suspect: boolean;
       standing: Standing | null;
       /** Hours the ranking is behind the phone, when it is. */
@@ -134,7 +142,9 @@ export async function sync(
 
   let profile = await store.profile(id);
   if (!profile) {
-    const fresh = { strikes: 0, suspect: false, banned: false };
+    // 罰 A new account starts clean, unless its email carried strikes out of a deleted one.
+    const was = await store.barred(id);
+    const fresh = { strikes: was?.strikes ?? 0, suspect: false, banned: was?.banned ?? false };
     const wanted = cleanName(name);
     try {
       profile = { name: wanted ?? defaultName(id), ...fresh };
@@ -231,6 +241,6 @@ export async function sync(
   const behindHours = v.ok ? 0 : Math.max(0, (after.at - (next.verifiedAt ?? after.at)) / 3600);
   return {
     status: 200,
-    body: { ranked: v.ok, state, why: v.why, suspect: profile.suspect, standing, behindHours },
+    body: { ranked: v.ok, state, suspect: profile.suspect, standing, behindHours },
   };
 }

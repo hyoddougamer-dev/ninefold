@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { playEndgame } from '../../../tools/endgame.ts';
-import { firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
+import { anchorFloor, firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
+import { RUN_DAO_CEILING } from '../../data/secret.ts';
 import { validate } from '../state.ts';
 import { fuse } from '../chest.ts';
 import { FUSE_TOP } from '../balance.ts';
@@ -123,6 +124,33 @@ describe('盾 what 驗 the audit found, closed', () => {
     const v = verify(top, validate(eased, eased.at), 600);
     expect(v.ok).toBe(false);
     expect(v.strike).toBe(true);
+  });
+
+  it('a mark cannot be taken with the Dragon\'s anchor left where it was', () => {
+    // Honest: every crossing played, through four heavens opening, clears the floor.
+    let prev = playEndgame(1).end;
+    for (let n = 2; n <= 12; n++) {
+      const next = playEndgame(n).end;
+      expect(next.tribulationAt).toBeGreaterThanOrEqual(anchorFloor(prev, next.tribulation) * 0.999);
+      prev = next;
+    }
+    // Forged: one more mark, the anchor untouched, and all the time in the world.
+    const later = top.at + 30 * 86_400;
+    const static_ = { ...top, tribulation: top.tribulation + 1, at: later };
+    const v = verify(top, validate(static_, later), later - top.at);
+    expect(v.why).toContain('anchor');
+    expect(v.strike).toBe(true);
+  });
+
+  it('道 from the road and the vault is bounded by the meetings answered and the doors opened', () => {
+    const later = top.at + 3600;
+    const forged = { ...top, metPoints: top.metPoints + 500, at: later };
+    const v = verify(top, validate(forged, later), 3600);
+    expect(v.ok).toBe(false);
+    expect(v.why).toContain('too-fast');
+    // An hour is at most three walks through the vault, which is all an hour may claim.
+    const honest = { ...top, metPoints: top.metPoints + 3 * RUN_DAO_CEILING, at: later };
+    expect(verify(top, validate(honest, later), 3600).ok).toBe(true);
   });
 
   it('a warden cannot be said to have fallen without a kill of it', () => {

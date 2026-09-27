@@ -6,12 +6,20 @@
  * plays a cheater, and fails the run if the server believes anything it should not.
  *
  *   SUPABASE_URL=… SUPABASE_KEY=… npx tsx tools/ranked.ts
+ *
+ * 盾 With CAPTCHA=on the server asks every sign-in for an hCaptcha answer, which a
+ * script cannot give. The run then proves exactly that (a guest without one is turned
+ * away) and makes its own two players with the secret key the workflow reads from the
+ * project, which the auth server lets past the captcha as an administrator. The key is
+ * masked in the log and never written anywhere.
  */
 import { newState } from '../src/sim/state.ts';
 import { advance } from '../src/sim/time.ts';
 
 const URL = process.env.SUPABASE_URL!;
 const KEY = process.env.SUPABASE_KEY!;
+const CAPTCHA = process.env.CAPTCHA === 'on';
+const SECRET = process.env.SUPABASE_SECRET ?? '';
 let failed = 0;
 const check = (ok: boolean, what: string, detail: unknown = '') => {
   console.log(`${ok ? '✓' : '✗'} ${what}${ok ? '' : `  ${JSON.stringify(detail)}`}`);
@@ -29,8 +37,23 @@ async function call(path: string, body: unknown, token?: string) {
   return { status: r.status, json };
 }
 
-const guest = await call('/auth/v1/signup', {});
-check(guest.status === 200 && !!guest.json?.access_token, 'a guest can sign in (anonymous sign-ins are on)', guest);
+/** A new guest: as a phone makes one, or past the captcha as the server's administrator. */
+async function signup() {
+  if (!CAPTCHA) return call('/auth/v1/signup', {});
+  const r = await fetch(`${URL}/auth/v1/signup`, {
+    method: 'POST', headers: { apikey: SECRET, 'Content-Type': 'application/json' }, body: '{}',
+  });
+  let json: any = null;
+  try { json = await r.json(); } catch { /* empty */ }
+  return { status: r.status, json };
+}
+
+if (CAPTCHA) {
+  const bare = await call('/auth/v1/signup', {});
+  check(bare.status >= 400 && !bare.json?.access_token, 'a guest with no captcha answer is turned away', bare.status);
+}
+const guest = await signup();
+check(guest.status === 200 && !!guest.json?.access_token, 'a guest can sign in (anonymous sign-ins are on)', guest.status);
 const token: string = guest.json?.access_token;
 
 const now = Math.floor(Date.now() / 1000);
@@ -58,6 +81,7 @@ await new Promise((r) => setTimeout(r, 22_000));
 const cheat = { ...fresh, at: now + 25, qi: 1e30 };
 const refused = await call('/functions/v1/sync', { save: cheat }, token);
 check(refused.status === 200 && refused.json?.ranked === false, 'an edited save is not ranked', refused);
+check(refused.json && !('why' in refused.json), 'and the reply does not say which check it failed', refused.json);
 
 const tooSoon = await call('/functions/v1/sync', { save: fresh }, token);
 check(tooSoon.status === 429, 'syncing again at once is refused', tooSoon.status);
@@ -73,7 +97,7 @@ const racing = await Promise.all([0, 1, 2, 3, 4].map(() => call('/functions/v1/s
 check(racing.filter((r) => r.status === 200).length === 1, 'five syncs sent at once are one sync', racing.map((r) => r.status));
 
 // A second guest, signed up this second, with a save that says it began weeks ago.
-const other = await call('/auth/v1/signup', {});
+const other = await signup();
 const otherToken: string = other.json?.access_token;
 const weeks = advance(newState(now - 30 * 86_400), now);
 const forged = await call('/functions/v1/sync', { save: weeks, name: '天下第一' }, otherToken);

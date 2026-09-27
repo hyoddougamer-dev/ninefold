@@ -60,6 +60,11 @@ function store(): Store {
       const { data } = await db.from('profiles').select('name, strikes, suspect, banned').eq('id', id).maybeSingle();
       return (data as Profile | null) ?? null;
     },
+    async barred(id) {
+      const { data, error } = await db.rpc('barred_for', { uid: id });
+      if (error) throw error;
+      return (data as { strikes: number; banned: boolean } | null) ?? null;
+    },
     async saved(id) {
       const { data } = await db.from('saves')
         .select('latest, verified, verified_at, last_sync, day_state, day_at, week_state, week_at').eq('user_id', id).maybeSingle();

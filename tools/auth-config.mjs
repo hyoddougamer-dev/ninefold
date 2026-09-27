@@ -27,6 +27,16 @@ const core = {
   // sign-in link has no business landing anywhere a published game is not.
   uri_allow_list: `${SITE}**`,
   mailer_otp_length: 6,
+  // 盾 Guests one address may make in an hour. A guest is an account a tap away, and the
+  // default let a script make thirty an hour from one machine. Ten is more than a family
+  // on one wifi will ever use.
+  rate_limit_anonymous_users: 10,
+  // 盾 hCaptcha on every sign-in, once both halves exist: the secret here and the site key
+  // the game is built with (HCAPTCHA_SITEKEY). One without the other would lock every
+  // guest out, so the workflow passes the secret only when it has both.
+  ...(process.env.HCAPTCHA_SECRET
+    ? { security_captcha_enabled: true, security_captcha_provider: 'hcaptcha', security_captcha_secret: process.env.HCAPTCHA_SECRET }
+    : { security_captcha_enabled: false }),
 };
 const mailer = {
   mailer_subjects_magic_link: 'Your Ninefold sign-in code',

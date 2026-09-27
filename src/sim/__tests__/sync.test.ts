@@ -12,6 +12,7 @@ import type { State } from '../state.ts';
  */
 function memory() {
   const profiles = new Map<string, Profile>();
+  const barred = new Map<string, { strikes: number; banned: boolean }>();
   const saves = new Map<string, Saved>();
   const standings = new Map<string, Standing>();
   const logs: { id: string; ok: boolean }[] = [];
@@ -32,6 +33,7 @@ function memory() {
       return next;
     },
     async profile(id) { return profiles.get(id) ?? null; },
+    async barred(id) { return barred.get(id) ?? null; },
     async saved(id) { return saves.get(id) ?? null; },
     async standing(id) { return standings.get(id) ?? null; },
     async writeProfile(id, p) { profiles.set(id, p); },
@@ -41,7 +43,7 @@ function memory() {
     async closeWeek(w) { closed = Math.max(closed, w); },
     async lastClosed() { return closed; },
   };
-  return { store, profiles, saves, standings, logs };
+  return { store, profiles, saves, standings, logs, barred };
 }
 
 const DAY = 86_400;
@@ -110,6 +112,21 @@ describe('同步 the ranked sync', () => {
     expect(m.profiles.get('u4')!.banned).toBe(true);
     const r = await sync(m.store, 'u4', a, a.at + 10_000, undefined, GAME_EPOCH);
     expect(r.status).toBe(403);
+  });
+
+  it('a banned player who deletes the account and signs in again on the same email is still banned', async () => {
+    const m = memory();
+    const a = shots[10].s;
+    // What delete_me() leaves behind for the new account's email (see the schema test).
+    m.barred.set('u5', { strikes: STRIKES_TO_BAN, banned: true });
+    const r = await sync(m.store, 'u5', a, a.at + 10, undefined, GAME_EPOCH);
+    expect(r.status).toBe(403);
+    // Two strikes carried over: one more impossibility and it is a ban.
+    m.barred.set('u6', { strikes: STRIKES_TO_BAN - 1, banned: false });
+    await sync(m.store, 'u6', a, a.at + 10, undefined, GAME_EPOCH);
+    const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
+    await sync(m.store, 'u6', { ...a, at: a.at + 100, chest: [...a.chest, sword] }, a.at + 100, undefined, GAME_EPOCH);
+    expect(m.profiles.get('u6')!.banned).toBe(true);
   });
 
   it('a new device’s empty save never overwrites a cultivator further along in the cloud', async () => {

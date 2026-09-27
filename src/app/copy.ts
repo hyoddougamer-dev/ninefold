@@ -179,7 +179,7 @@ export const RANKS = {
   } as Record<string, string>,
   back: 'Back to the climb',
   delete: 'Delete my ranked account',
-  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched.',
+  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
   deleteYes: 'Delete it',
   deleteNo: 'Keep it',
   privacy: 'Privacy',
