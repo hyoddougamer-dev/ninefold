@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { COMPANION_BLOW, COMPANION_FADE, HEART_PATH, MEET_GAP } from '../src/sim/balance.ts';
+import { COMPANION_BLOW, COMPANION_FADE, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -3914,6 +3914,41 @@ const page = `<meta charset="utf-8">
     <figure class="shots">
       <img src="bible-art/shot/companion.webp" alt="The companion card on the hunt, open, and the companion striking beside the cultivator in the arena">
       <figcaption>The real game. Left, on 狩 the hunt at 320: who fights beside you, and what each beast you could bond instead would strike for. Right, in the arena: the companion leaps on its own strike, and what it dealt rises over it.</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec" id="seclusion">
+    <h2><span class="h">閉關</span> Seclusion, and 心魔 the heart demon</h2>
+    <p class="t">From the fourth realm a cultivator can shut the door. ${SECLUSION / 3600} hours
+      later their heart demon comes: themselves, the same shape standing across the arena
+      turned to face them and darkened, at <b>${DEMON_EDGE}× their own power</b> and with
+      none of what they know. No stance, no arts, no companion, no class. Put it down and it
+      hands over ${DEMON_DAO} 道 point. Lose and nothing is lost: it draws back and comes again
+      in ${DEMON_RETURN / 60} minutes.</p>
+    <p class="t">It is the one fight in the game where power alone is not the answer,
+      because power is the one thing the demon has as much of. The build is what makes it
+      quick. Read off the fight at ${DEMON_EDGE}×, somebody with nothing set wins one time in
+      fourteen, somebody with a stance one in six, and a sixth-realm save with a stance and
+      two arts every time. The hour between tries is what makes those numbers mean
+      something: with a retry on the spot, every demon would fall to whoever tapped enough.</p>
+    <p class="t">刃 It was first tuned at 1.6× and rising 4% a demon, against the harnesses,
+      which set every art they own. A real save with a stance and two arts then met its
+      fourth demon at 0%, which is a wall, so it came down to ${DEMON_EDGE}× and flat. Nobody is
+      walled now; the build only changes how soon.</p>
+    <p class="t">There are ${DEMONS} in a life and ${DEMONS_PER_REALM} a realm, so every realm from
+      the fourth to the eighth has its own. Measured, the active cultivator puts them down
+      on days 4, 5, 9, 9, 13, 13, 22, 22 and 34. It arrives at the summit on the same day
+      as one who never shuts the door: nine points of the tree is a keepsake, not a
+      shortcut. The server counts one demon a night since the last sync, with one already
+      waiting allowed for, and a count that went down is another run.</p>
+    <p class="t">序 Adding it found a fault in the endgame harness. On one class's run the
+      loop refined every unit of material before it brewed a pill. With the gear one seed
+      gave it, the furnace had nothing to brew 煉體 with, and it sat four hundred days on a
+      Dragon twice its power. A person short of the Dragon brews the pill for exactly that
+      first, and now so does the harness.</p>
+    <figure class="shots">
+      <img src="bible-art/shot/seclusion.webp" alt="The seclusion card with a demon waiting, the fight against the darkened self in the arena, and the card counting down behind a shut door">
+      <figcaption>The real game. Left, on 修 at 320: the demon is waiting, with the odds and what it pays. Middle, in the arena: the cultivator and the companion against their own shape in crimson. Right: the door shut, five hours to go.</figcaption>
     </figure>
   </section>
 

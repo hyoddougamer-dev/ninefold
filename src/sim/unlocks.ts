@@ -85,7 +85,7 @@
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
-  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep';
+  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep' | 'seclusion';
 
 export interface SystemInfo {
   readonly key: System;
@@ -139,6 +139,11 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
   { key: 'keystones', han: '樞', name: 'The Keystones', realm: 4,
     gives: 'The three nodes of the tree that take something away to pay for what they give. Each one is stronger than the node beside it, and each one closes a door.' },
+  // 閉關 The fourth realm handed over only the keystones, which are a decision about
+  // points and not a thing to do. Seclusion is the thing to do: a door shut for a night
+  // and a fight waiting behind it. See sim/seclusion.ts.
+  { key: 'seclusion', han: '閉關', name: 'Seclusion', realm: 4,
+    gives: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, as strong as you are, without what you know. Beat it for a 道 point. Nine in a life, and a loss costs nothing.' },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,

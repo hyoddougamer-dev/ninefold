@@ -18,6 +18,7 @@ import {
 } from './schools.ts';
 import { BOON_BLOOD, BOON_LOTUS, COMPANION_BLOW, COMPANION_FADE } from './balance.ts';
 import { companionOf } from './companion.ts';
+import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 
 /**
@@ -488,6 +489,9 @@ export function oddsRaw(s: State, b: Beast, standing?: number): number {
  */
 export function effectiveBeastPower(s: State, b: Beast, standing?: number): number {
   const base = standing ?? beastPower(b);
+  // 心魔 The heart demon is the cultivator's own power and nothing thins it: no sunder,
+  // no bane, no blood method, no class. See sim/seclusion.ts.
+  if (b.key === DEMON_KEY && standing !== undefined) return standing;
   const trial = standing === undefined && b.key === 'dragon' && s.realm === 9;
   if (trial) {
     // 劫 The tribulation is lightning, not a beast. 破甲 and 破煞 thin what has blood in

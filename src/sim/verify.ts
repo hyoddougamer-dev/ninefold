@@ -38,7 +38,7 @@ import { beastPower, oddsRaw } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
-import { MEET_GAP } from './balance.ts';
+import { MEET_GAP, SECLUSION } from './balance.ts';
 import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
 import { driveCost } from './hunt.ts';
@@ -222,6 +222,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const down = layersOpened(after) < layersOpened(before)
     || after.tribulation < before.tribulation
     || after.tower < before.tower
+    || after.demons < before.demons
     || UPGRADES.some((u) => after.levels[u] < before.levels[u])
     // Commons only: a warden's count is a marker the arts read, not a tally that pays.
     || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0));
@@ -324,6 +325,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
   if (Object.entries(before.chose).some(([k, c]) => after.met.includes(k) && after.chose[k] !== undefined && after.chose[k] !== c)) {
     why.push('road');
   }
+
+  // 心魔 A heart demon waits a night behind a shut door, so more of them than the nights
+  // since the last sync (one already waiting allowed for) is a matter of time: it waits.
+  if (after.demons - before.demons > Math.floor(dt / SECLUSION) + 1 && !why.includes('too-fast')) why.push('too-fast');
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.

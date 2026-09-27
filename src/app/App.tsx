@@ -21,6 +21,7 @@ import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
+import { conquer, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -382,7 +383,7 @@ export function App() {
     };
   }, [ready]);
 
-  const startFight = useCallback((beast: Beast, floor?: number) => {
+  const startFight = useCallback((beast: Beast, floor?: number, demon?: boolean) => {
     // 守 A warden is only ever reachable at the end of its own realm. The screens have
     // always declined to draw it anywhere else, and that is exactly the kind of guard
     // that a second screen forgets, so it is asked of the sim here, once.
@@ -394,10 +395,12 @@ export function App() {
       // One seed for the fight and its drop, so the same kill always gives the same
       // item: closing the app and reopening it cannot re-roll a poor piece.
       const seed = Math.floor(now() * 1000) >>> 0;
-      const standing = floor === undefined ? undefined : floorPower(floor);
+      // 心魔 The demon stands on the cultivator's own power; a floor on its own.
+      const standing = demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
       return {
         beast,
         floor,
+        demon,
         qi: floor === undefined ? undefined : floorQi(state, floor),
         outcome: fight(state, beast, seed, standing),
         beat: 0,
@@ -410,11 +413,17 @@ export function App() {
         //
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
-        drop: floor !== undefined || !isOpen(state.realm, 'gear') ? null
+        drop: demon || floor !== undefined || !isOpen(state.realm, 'gear') ? null
           : dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
       };
     });
   }, [state]);
+
+  /** 心魔 The demon behind the door, only when it is waiting. */
+  const faceDemon = useCallback(() => {
+    if (!demonDue(state)) return;
+    startFight(demonOf(state), undefined, true);
+  }, [state, startFight]);
 
   /** 塔 The next floor of the tower, and only ever the next one. */
   const climbTower = useCallback((floor: number) => {
@@ -462,8 +471,12 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop, floor } = battle;
-    if (outcome.won && floor !== undefined) {
+    const { beast, outcome, drop, floor, demon } = battle;
+    if (demon) {
+      // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
+      // hour. Neither is a kill: the demon is never counted in the record.
+      setState((s) => (outcome.won ? conquer(s) : repel(s)));
+    } else if (outcome.won && floor !== undefined) {
       // 塔 A floor counts once. It pays material and hours of gathering.
       sfx.floor();
       setState((s) => clearFloor(s, floor));
@@ -700,6 +713,7 @@ export function App() {
             onAwaken={() => { setAwakenShut(false); sfx.tap(); }}
             onPlant={(which, key) => { setState((s) => plantSeed(s, which, key)); sfx.buy(); }}
             onHarvest={(which) => { setState((s) => harvestBed(s, which)); sfx.floor(); }}
+            onDemon={faceDemon}
             meeting={meeting}
             onMeet={(which) => {
               if (!meeting) return;

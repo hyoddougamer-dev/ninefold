@@ -4,7 +4,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
-import { HEALTH_PER_POWER } from '../../sim/balance.ts';
+import { DEMON_DAO, HEALTH_PER_POWER } from '../../sim/balance.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -14,7 +14,7 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, COMPANION } from '../copy.ts';
+import { ARENA, COMPANION, SECLUSION } from '../copy.ts';
 import { companionOf } from '../../sim/companion.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
@@ -55,6 +55,8 @@ export interface Battle {
   readonly floor?: number;
   /** 吸 The qi the floor gives up when it falls. Tower fights only. */
   readonly qi?: number;
+  /** 心魔 The heart demon: the cultivator's own shape, darkened, and never a kill. */
+  readonly demon?: boolean;
   readonly beast: Beast;
   readonly outcome: Outcome;
   /** Two beats to a round: even is the cultivator striking, odd is the beast. */
@@ -135,7 +137,11 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   const sky = (aboveSummit && pictureOf('heaven', aboveSummit))
     ?? pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
-  const say = over ? verdictLine(outcome.won, !!beast.warden) : blowLine(f.striker, f.round);
+  const say = over
+    ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden))
+    : blowLine(f.striker, f.round);
+  /** 心魔 A beast of the world, which is what a kill, a bounty and the week are paid for. */
+  const worldly = battle.floor === undefined && !battle.demon;
   /**
    * 熟 Whether this kill is the one that earns a mark. It is asked of the state *before*
    * the kill is written, so the arena is describing the fight it just played rather than
@@ -143,9 +149,9 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
    */
   const before = state.killed[beast.key] ?? 0;
   // 見 What this kill pays in qi, which is only ever on the very first one.
-  const bounty = outcome.won && battle.floor === undefined && before === 0
+  const bounty = outcome.won && worldly && before === 0
     ? seenPaid(state, beast) : 0;
-  const earned = outcome.won && battle.floor === undefined && marksOf(before + 1) > marksOf(before)
+  const earned = outcome.won && worldly && marksOf(before + 1) > marksOf(before)
     ? { index: marksOf(before + 1) - 1 }
     : null;
   const arts = f.arts.map((k) => ART_BY_KEY[k]).filter(Boolean);
@@ -154,7 +160,7 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
    * number moved and nothing on the screen said why. It is asked of the state before the
    * kill, like everything else here.
    */
-  const weekly = outcome.won && battle.floor === undefined && isQuarry(state, beast) && quarryOwed(state)
+  const weekly = outcome.won && worldly && isQuarry(state, beast) && quarryOwed(state)
     ? quarryPaid(state, beast) : 0;
 
   return (
@@ -233,8 +239,11 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
               * is missing it falls back to the plate, which falls back to the silhouette,
               * so nothing is ever half-drawn.
               */}
-            <span className="art" data-cut={!!cut} data-warden={!!beast.warden}>
-              {cut
+            <span className="art" data-cut={!!cut && !battle.demon} data-warden={!!beast.warden} data-demon={!!battle.demon}>
+              {battle.demon
+                /* 心魔 Your own figure, turned to face you and darkened. */
+                ? <Svg html={portraitLayers({ realm, pulse, focus: true, who: state.self })} />
+                : cut
                 ? <img className="beastcut" src={cut} alt={beast.name} />
                 : (
                   <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={br.colour}
@@ -289,7 +298,14 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
           <p>{say.text}</p>
           {/* 得 What it paid, as things you can see arrive rather than the tail of a
               sentence. 材 is the same number the save is credited, from the same function. */}
-          {outcome.won && (
+          {outcome.won && battle.demon && (
+            <div className="gains">
+              <span className="gain dao" style={{ animationDelay: '.25s' }}>
+                {SECLUSION.pays(DEMON_DAO)}
+              </span>
+            </div>
+          )}
+          {outcome.won && !battle.demon && (
             <div className="gains">
               <span className="gain" style={{ animationDelay: '.25s' }}>
                 +{num(battle.floor !== undefined
@@ -363,7 +379,10 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
           )}
           <button className="act" onClick={() => {
             // 勁 What was won rises off the button that takes it.
-            if (outcome.won) {
+            if (outcome.won && battle.demon) {
+              float(SECLUSION.pays(DEMON_DAO), 'jade');
+              burst('jade', null, 12, 64);
+            } else if (outcome.won) {
               const mat = battle.floor !== undefined
                 ? floorMaterial(state, battle.floor) : lootTaken(state, lootFrom(state, beast));
               float(`+${num(mat)} 材`, 'gold');

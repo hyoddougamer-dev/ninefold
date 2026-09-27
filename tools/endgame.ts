@@ -164,18 +164,23 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
        * the capped upgrades are full, and it is the only sink the game has left at the
        * top. So the loop does what the player does, and the measurement is of the game.
        */
+      // 序 While the Dragon is out of reach the body pills come first and the refining
+      // takes what is left. It was the other way round, and measured on one class's run
+      // (寶匠, with the gear one seed gave it) refining ate every unit of material four
+      // crossings in, the furnace had nothing to brew 煉體 with, the tower floors were
+      // past it, and the harness sat four hundred days on a Dragon at twice its power.
+      // A person short of the Dragon brews the pill that is for exactly that first.
+      const short = odds(s, currentWarden(s)) <= WILLING;
+      for (let i = 0; i < 4000 && short; i++) {
+        if (!canBrew(s, 'body')) break;
+        s = brew(s, 'body');
+      }
       for (let i = 0; i < 4000; i++) {
         const slot = SLOTS.find((x) => s.worn[x] && canRefine(s, x));
         if (!slot) break;
         s = refine(s, slot);
       }
-      const short = odds(s, currentWarden(s)) <= WILLING;
-      for (let i = 0; i < 4000; i++) {
-        if (short) {
-          if (!canBrew(s, 'body')) break;
-          s = brew(s, 'body');
-          continue;
-        }
+      for (let i = 0; i < 4000 && !short; i++) {
         const spare = s.qi - tribulationPool(s);
         const line = (['bane', 'fortune'] as const)
           .find((l) => canBrew(s, l) && pillPrice(s, l).qi <= spare);

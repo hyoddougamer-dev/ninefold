@@ -10,6 +10,10 @@ import type { State } from '../sim/state.ts';
  * 狩 the hunt used to leave out the kill counts, and the record's power moves with them.
  */
 export function fightDeps(s: State): readonly unknown[] {
+  // 靈獸 The companion strikes in every fight and 緣 a boon from the road (read off the
+  // answers) can change one, and both were missing: bonding a companion left the odds on
+  // the screen where they were until something else moved. 心魔 The demons put down are
+  // what the next demon stands on.
   return [s.realm, s.layer, s.levels, s.stance, s.sequence, s.worn, s.awakened, s.unlocked,
-    s.brewed, s.tribulation, s.killed];
+    s.brewed, s.tribulation, s.killed, s.companion, s.chose, s.demons];
 }

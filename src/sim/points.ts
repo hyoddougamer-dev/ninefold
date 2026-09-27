@@ -3,6 +3,7 @@ import { daoPoints } from './awaken.ts';
 import { layersOpened } from './time.ts';
 import { filledRealms, type State } from './state.ts';
 import { WARDENS } from '../data/bestiary.ts';
+import { DEMON_DAO } from './balance.ts';
 
 /**
  * 點 The 道 points a cultivator has earned and not yet spent.
@@ -22,15 +23,20 @@ function wardensDown(s: State): number {
     .filter(([k, n]) => n > 0 && WARDENS.some((w) => w.key === k)).length;
 }
 
+/** 心魔 What the heart demons put down have handed over. See sim/seclusion.ts. */
+function demonPoints(s: State): number {
+  return Math.max(0, s.demons) * DEMON_DAO;
+}
+
 /** Every point this cultivator has ever earned, cards included. */
 export function earnedPoints(s: State): number {
   // 緣 A point given by somebody on the road is earned exactly like any other, so it is
   // added here and nowhere else. See sim/meet.ts.
   return daoEarned(layersOpened(s), wardensDown(s), filledRealms(s),
-    daoPoints(s.awakened) + Math.max(0, s.metPoints));
+    daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s));
 }
 
 export function freePoints(s: State): number {
   return daoFree(layersOpened(s), wardensDown(s), s.unlocked, filledRealms(s),
-    daoPoints(s.awakened) + Math.max(0, s.metPoints));
+    daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s));
 }

@@ -8,6 +8,7 @@ import { canBrew, canRefine, clearFloor, lootTaken, towerOpen } from '../trials.
 import { rollDrop } from '../drops.ts';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { recordMaterial } from '../record.ts';
+import { canSeclude } from '../seclusion.ts';
 
 const T0 = 1_700_000_000;
 const at = (realm: number, over: Partial<State> = {}): State =>
@@ -62,6 +63,7 @@ describe('開 what each realm opens', () => {
       ['tower', (s) => towerOpen(s)],
       ['furnace', (s) => canBrew({ ...s, qi: 1e18, materials: 1e18 }, 'body')],
       ['refine', (s) => canRefine(s, 'weapon')],
+      ['seclusion', (s) => canSeclude(s)],
     ];
     for (const [key, works] of shut) {
       const below = at(opensAt(key) - 1, { qi: 1e18, materials: 1e18 });

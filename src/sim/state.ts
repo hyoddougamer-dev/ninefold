@@ -35,7 +35,8 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
-import { BOON_SWORDSOUL } from './balance.ts';
+import { BOON_SWORDSOUL, SECLUSION } from './balance.ts';
+import { demonsFor } from './seclusion.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -120,6 +121,13 @@ export interface State {
    * they have 通 mastered, which validate() checks against the kills. See sim/companion.ts.
    */
   companion: string | null;
+  /**
+   * 閉關 The instant the door was shut, or 0 while it is open, and 心魔 how many heart
+   * demons have fallen. Everything else about seclusion is derived from these and `at`.
+   * See sim/seclusion.ts.
+   */
+  secludedAt: number;
+  demons: number;
   /** 訣 The arts in the order they fire, at most SEQUENCE_SLOTS of them. */
   sequence: string[];
   /** 雷印 Thunder marks: tribulations crossed after the ninth realm. */
@@ -322,6 +330,7 @@ export function newState(now: number): State {
     unlocked: [],
     self: null,
     companion: null,
+    secludedAt: 0, demons: 0,
     stance: null,
     sequence: [],
     tribulation: 0,
@@ -576,6 +585,16 @@ export function breakThrough(s: State): State {
  */
 const CHEST_READ_LIMIT = 10_000;
 
+/** 閉關 The two numbers seclusion keeps, capped against the clock and the realm. */
+function validSeclusion(o: Record<string, unknown>, realm: number, startedAt: number, now: number,
+                        elapsed: number): Pick<State, 'secludedAt' | 'demons'> {
+  if (!isOpen(realm, 'seclusion')) return { secludedAt: 0, demons: 0 };
+  const n = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
+  const demons = Math.max(0, Math.min(demonsFor(realm), Math.floor(elapsed / SECLUSION), Math.floor(n(o.demons))));
+  const at = n(o.secludedAt);
+  return { demons, secludedAt: demons < demonsFor(realm) && at >= startedAt && at <= now ? at : 0 };
+}
+
 export function validate(raw: unknown, now: number): State {
   const o = (raw ?? {}) as Record<string, unknown>;
   if (o.v !== 1) return newState(now);
@@ -769,6 +788,10 @@ export function validate(raw: unknown, now: number): State {
     self: figureOf(typeof o.self === 'string' ? o.self : null)?.key ?? null,
     stance: validateStance(o.stance, realm, layer),
     companion: validCompanion(o.companion, killed),
+    // 心魔 A demon takes a night behind a shut door, so a save cannot claim more of them
+    // than the nights it has lived, nor any before the fourth realm opened the door.
+    // A door shut before the cultivator existed, or tomorrow, was never shut.
+    ...validSeclusion(o, realm, startedAt, now, elapsed),
     sequence: validateSequence(o.sequence, killed),
     // Marks are only reachable at realm 9, and only one at a time.
     // Capped at three hundred so the multipliers stay inside a double: a mark is

@@ -6,6 +6,7 @@
  * the same table on the page. A measurement that appears twice has to be made once.
  */
 import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
+import { conquer, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
@@ -14,7 +15,7 @@ import {
   newState, power, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
-import { companionShare, odds, takeKill } from '../src/sim/combat.ts';
+import { companionShare, fight, odds, takeKill } from '../src/sim/combat.ts';
 import { bond, bondable } from '../src/sim/companion.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
@@ -497,6 +498,14 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     }
     // 靈獸 Anybody who fights keeps the strongest companion they have mastered at their side.
     if (h.hunts > 0 && process.env.NF_NOPET !== '1') s = bestCompanion(s);
+
+    // 閉關 The door, shut whenever it can be, and 心魔 the demon fought when it comes, on
+    // a seeded fight like any other. A loss sends it back for DEMON_RETURN; the next visit
+    // tries again. Only somebody who fights at all fights this.
+    if (h.hunts > 0 && process.env.NF_NODEMON !== '1') {
+      if (demonDue(s)) s = fight(s, demonOf(s), ++seed, demonPower(s)).won ? conquer(s) : repel(s);
+      s = seclude(s);
+    }
 
     for (let i = 0; i < h.hunts; i++) {
       const b = quarryFor(s, h.calling);

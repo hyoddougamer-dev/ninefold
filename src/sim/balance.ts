@@ -1179,6 +1179,51 @@ export const BOON_LOTUS = 0.02;
 /** 血 A blood method: what a beast counts for, multiplied. Never the Dragon above the ninth realm. */
 export const BOON_BLOOD = 0.96;
 
+/**
+ * 閉關 Seclusion: the door is shut for this long, and then 心魔 the heart demon comes.
+ *
+ * Eight hours is one night, or one working day: shut the door before bed and the demon is
+ * waiting over breakfast. Nothing is paused or taken while the door is shut; the climb
+ * goes on exactly as it would have. It is a clock on a fight, not a cost.
+ */
+export const SECLUSION = 8 * 3600;
+/**
+ * 心魔 The heart demon stands at this multiple of the cultivator's own 力, and nothing
+ * thins it: no sunder, no bane, no blood method. It is what you are, without what you
+ * know. So stance, arts, companion and class win it and raw power alone struggles,
+ * because power is the one thing it has as much of as you do.
+ *
+ * 量 Read off the fight, the share of demons that fall at each multiple:
+ *
+ *                                        ×1.0   ×1.1   ×1.2   ×1.3   ×1.6
+ *     no stance, no arts                  63%    24%     7%     0%     0%
+ *     a stance only                       83%    39%    17%     2%     0%
+ *     a sixth-realm save, 穩 and two arts 100%   100%   100%    90%    24%
+ *     the casual harness, fourth realm    95%    68%    29%    17%     0%
+ *
+ * 刃 It was 1.6 and rose 4% a demon, tuned against the harnesses, which set every art
+ * they own. A real sixth-realm save with a stance and two arts then met its fourth demon
+ * at 0%. At 1.2 and flat, nobody is walled: somebody with nothing set wins one time in
+ * fourteen and it comes back every hour, somebody who has set a stance wins one time in
+ * six, and a build walks through it. The build is what makes it quick, never what makes
+ * it possible.
+ */
+export const DEMON_EDGE = 1.2;
+/** 心魔 A demon that wins draws back into the cultivator and comes again after this long. */
+export const DEMON_RETURN = 3600;
+/** 道 What a demon conquered hands over. */
+export const DEMON_DAO = 1;
+/** 心魔 How many there are in a life. Finite on purpose: 道 is power, and power must end. */
+export const DEMONS = 9;
+/**
+ * 心魔 And how many each realm from the fourth lets out. Measured with no limit, an
+ * active cultivator put all nine down inside a week of the door opening, and the fifth
+ * realm onward had nothing behind it. Two a realm spreads them over the fourth to the
+ * eighth, so every realm up to the summit has its own: the active harness puts them down
+ * on days 4, 5, 9, 9, 13, 13, 22, 22 and 34, and reaches the summit the same day either way.
+ */
+export const DEMONS_PER_REALM = 2;
+
 /** 秘境 How many rooms a run is. Seven is short enough to finish in one sitting. */
 export const ROOMS = 7;
 

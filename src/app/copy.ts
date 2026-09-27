@@ -1522,3 +1522,29 @@ export const ARENA = {
    *  silence is one the player never learns to go looking for. */
   earned: (han: string, pays: string) => `${han} · ${pays}, for good`,
 };
+
+/**
+ * 閉關 Seclusion, on 修 the cultivate screen, and 心魔 the heart demon behind the door.
+ * The loss line is said on the card and again in the arena, because a fight you are told
+ * you will probably lose has to say twice that losing it costs nothing.
+ */
+export const SECLUSION = {
+  head: '閉關 Seclusion',
+  plain: 'Seclusion',
+  open: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, a little stronger, without your stance, arts or companion.',
+  shut: 'Shut the door',
+  waiting: (left: string) => `The door is shut. Your heart demon comes in ${left}.`,
+  shutNote: 'Nothing stops while the door is shut. Hunt, climb, or close the game.',
+  due: 'Your heart demon is waiting.',
+  dueNote: 'It is you, a fifth stronger, with none of what you know. A loss costs nothing: it draws back for an hour.',
+  face: 'Face it',
+  odds: (pct: number) => `${pct}% odds`,
+  tally: (n: number, of: number) => `${n} of ${of} put down`,
+  pays: (n: number) => `+${n} 道 point`,
+  rest: (realm: number) =>
+    `The next demon waits for the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][realm - 1]} realm.`,
+  done: 'All nine demons are down. Your heart is still.',
+  /** 鬥 The arena's last word on the demon. */
+  won: { han: '心魔破', text: 'Your heart demon is down. What it held is yours.' },
+  lost: { han: '心魔退', text: 'It draws back into you, and comes again in an hour. Nothing was lost.' },
+};

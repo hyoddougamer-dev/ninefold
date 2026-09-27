@@ -24,6 +24,8 @@ import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Meet } from '../ui/Meet.tsx';
 import { Cave } from '../ui/Cave.tsx';
+import { Seclusion } from '../ui/Seclusion.tsx';
+import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
 import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, RANKS } from '../copy.ts';
 import { advice } from '../advice.ts';
@@ -34,7 +36,7 @@ import { useMemo, useRef, useState } from 'react';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest, title }: {
+  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest, onDemon, title }: {
   state: State;
   /** 冠 The title the rankings gave this player, if any. */
   title?: string | null;
@@ -73,6 +75,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   /** 洞天 Put a seed in a bed, and take a ripe one. */
   onPlant: (which: number, key: string) => void;
   onHarvest: (which: number) => void;
+  /** 心魔 Face the heart demon waiting behind the door. */
+  onDemon: () => void;
 }) {
   // 勁 Which box was just bought, for the half second it settles.
   const [bought, setBought] = useState<string | null>(null);
@@ -308,6 +312,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           interesting than a number, and below everything that is actually blocking. */}
       {meeting && <Meet state={state} meeting={meeting} onAnswer={onMeet} />}
 
+      {/* 心魔 A demon waiting is an event, so it stands up here with the road. The door
+          the rest of the time is a thing to do, so it lives with the cave below. */}
+      {demonDue(state) && <Seclusion state={state} onShut={() => set(seclude)} onFace={onDemon} />}
+
       {/* 悟道 The offer is derived from the save, so putting the sheet aside cannot lose
           it. This is what says so: it stays until the card is taken. */}
       {owesCard && (
@@ -508,6 +516,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {isOpen(state.realm, 'cave') && (
         <Cave state={state} onPlant={onPlant} onHarvest={onHarvest} />
       )}
+      {!demonDue(state) && <Seclusion state={state} onShut={() => set(seclude)} onFace={onDemon} />}
 
       {/* 凝丹 The way out of the one dead end the game has.
           It appears only when 材 material has actually run out and a core is still to be

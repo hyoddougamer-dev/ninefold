@@ -2889,3 +2889,40 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 暈 The tree's node names wear a halo in the canvas's colour, painted under the letters,
    so a branch line running behind "Opening Form" or "Heavy Plate" stops crossing it out. */
 .treesvg .thalo { paint-order: stroke; stroke: var(--panel2); stroke-width: 3px; stroke-linejoin: round; }
+
+/* 閉關 The seclusion card on 修. Scoped to .seclude: no other screen uses it.
+   心魔 The small figure is the cultivator's own, darkened: the same filter the arena puts
+   on the demon, so the card and the fight are visibly the same creature. */
+.seclude { margin-top: 14px; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 12px; padding: 12px 14px; }
+.seclude[data-due='true'] { border-color: var(--cinnabar);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cinnabar) 14%, var(--panel)), var(--panel) 70%); }
+.seclude .shead { display: flex; align-items: baseline; gap: 9px; }
+.seclude .shead b { font-size: 19px; font-weight: 400; color: var(--cinnabar); }
+.seclude .shead em { font-style: normal; font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 15px; flex: 1; }
+.seclude .shead span { font-size: 11.5px; color: var(--faint); }
+.seclude .sbody { display: flex; gap: 12px; align-items: center; margin: 8px 0 10px; }
+.seclude .demon { flex: none; width: 70px; height: 70px; opacity: .55; }
+.seclude .demon[data-due='true'] { opacity: 1; animation: demonbreath 3.2s ease-in-out infinite; }
+.seclude .demon, .foe .art[data-demon='true'] > * {
+  filter: brightness(.2) sepia(1) hue-rotate(-38deg) saturate(5) contrast(1.4)
+          drop-shadow(0 0 1.5px rgba(232, 84, 62, .95)) drop-shadow(0 0 12px rgba(210, 60, 50, .6)); }
+.seclude .ssay { min-width: 0; flex: 1; }
+.seclude .ssay em { display: block; font-style: normal; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+.seclude .ssay i { display: block; font-style: normal; font-size: 12.5px; color: var(--faint); line-height: 1.5; margin-top: 3px; }
+.seclude .ssay u { display: block; text-decoration: none; font-size: 12px; color: var(--cinnabar); margin-top: 5px; }
+.seclude .sbar { display: block; height: 4px; border-radius: 2px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.seclude .sbar i { display: block; height: 100%; margin: 0; background: var(--cinnabar); }
+.seclude[data-due='true'] .act.danger { background: var(--cinnabar); color: var(--ground); }
+@keyframes demonbreath { 50% { transform: scale(1.04); } }
+
+/* 心魔 In the arena the demon stands where a beast would, at the cultivator's own size,
+   turned to face her. The mirror goes on the child, because .art itself carries the
+   lunge and the shake, and a transform there would be overwritten on every blow. */
+.foe .art[data-demon='true'] { --fig: clamp(130px, 44vw, 232px); --dead: .10;
+  width: var(--fig); height: auto; aspect-ratio: 1 / 1; margin-bottom: calc(-1 * var(--dead) * var(--fig)); }
+.foe .art[data-demon='true'] > * { display: block; width: 100%; height: 100%; transform: scaleX(-1); }
+.foe .art[data-demon='true']::before { bottom: calc(var(--dead) * var(--fig) - 5px); width: 74%; }
+.gain.dao { color: var(--jade); background: color-mix(in srgb, var(--jade) 12%, transparent);
+            border-color: color-mix(in srgb, var(--jade) 45%, transparent); }
+@media (prefers-reduced-motion: reduce) { .seclude .demon[data-due='true'] { animation: none; } }
