@@ -616,6 +616,10 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  *     1.59   160 days, longest 8, 9 walkovers
  *     1.60   189 days, longest 10
  *     1.62   332 days, one mark of 38: running away
+ *
+ * 煉 Fusion was tried in the harness too and left out: with every three of a kind fused,
+ * no footing held both tests. 1.59 let 11 of the first 40 crossings be walkovers, and
+ * 1.5925 already ran the long haul to a mark of 27 days by the eightieth. See habits.ts.
  */
 export const TRIBULATION_FOOTING = 1.585;
 

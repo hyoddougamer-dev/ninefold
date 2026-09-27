@@ -461,6 +461,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       const b = quarryFor(s, h.calling);
       if (!b) break;
       s = takeKill(s, b);
+      // 煉 The harness does not fuse. Measured on 27 September: with every three of a kind
+      // fused, the cultivator reaches the summit stronger, the Dragon anchors to that, and
+      // the long haul runs away (a mark of 27 days by the eightieth crossing) at any footing
+      // the first forty accept. That is a balance question for fusion itself, left open.
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       fights++;
     }
