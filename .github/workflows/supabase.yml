@@ -55,9 +55,10 @@ jobs:
             echo "go=yes" >> "$GITHUB_OUTPUT"
           fi
 
+      # 盾 Pinned, so a CLI release can never change what ships without a commit saying so.
       - uses: supabase/setup-cli@v1
         if: steps.keys.outputs.go == 'yes'
-        with: { version: latest }
+        with: { version: 2.118.0 }
       - name: Which CLI
         if: steps.keys.outputs.go == 'yes'
         run: supabase --version
