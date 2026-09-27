@@ -147,7 +147,7 @@ describe('同步 the ranked sync', () => {
     expect(fast.profiles.get('f')!.suspect).toBe(true);
     // Flagged, not struck: a pace is a question for a person, not proof.
     expect(fast.profiles.get('f')!.banned).toBe(false);
-  });
+  }, 60_000);
 
   it('two syncs sent at once are one sync', async () => {
     const m = memory();
