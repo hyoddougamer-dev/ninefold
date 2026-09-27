@@ -32,7 +32,7 @@ const SPEC = JSON.parse(readFileSync(process.env.DISCORD_SPEC || new URL('./disc
 
 // Permission bits, from the Discord documentation.
 const P = {
-  VIEW: 1n << 10n, SEND: 1n << 11n, REACT: 1n << 6n, HISTORY: 1n << 16n,
+  INVITE: 1n << 0n, VIEW: 1n << 10n, SEND: 1n << 11n, REACT: 1n << 6n, HISTORY: 1n << 16n,
   THREADS: 1n << 35n, SEND_THREADS: 1n << 38n, ATTACH: 1n << 15n, EMBED: 1n << 14n,
 };
 const TYPE = { text: 0, category: 4, forum: 15 };
@@ -76,9 +76,11 @@ function plan() {
   for (const r of SPEC.roles) log(`  role ${r.name}`);
   for (const c of SPEC.categories) {
     log(`  category ${c.name}`);
-    for (const ch of c.channels) log(`    ${ch.type.padEnd(5)} #${ch.name}${ch.readOnly ? '  (read-only)' : ''}`);
+    for (const ch of c.channels) log(`    ${ch.type.padEnd(5)} #${ch.name}${ch.readOnly ? '  (read-only)' : ch.private ? '  (private)' : ''}`);
   }
   for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}`);
+  if (SPEC.community) log('  Community on, with the rules and a private team channel');
+  if (SPEC.invite) log('  one permanent invite, printed at the end');
 }
 
 async function run() {
@@ -121,12 +123,17 @@ async function run() {
     }
   }
 
-  // 頻 Categories and channels.
+  // 頻 Categories and channels, in two passes: everything that is not a forum first, so
+  // the rules and the team channel exist when Community is switched on, then the forums,
+  // which Discord only allows in a Community server.
   let channels = await call('GET', `/guilds/${GUILD}/channels`);
   const everyone = GUILD;               // @everyone's role id is the guild's id
-  const readOnly = [{ id: everyone, type: 0, allow: String(P.VIEW | P.HISTORY | P.REACT), deny: String(P.SEND | P.THREADS | P.SEND_THREADS) },
-                    ...(roleId.master ? [{ id: roleId.master, type: 0, allow: String(P.VIEW | P.SEND | P.EMBED | P.ATTACH), deny: '0' }] : [])];
+  const master = roleId.master ? [{ id: roleId.master, type: 0, allow: String(P.VIEW | P.SEND | P.EMBED | P.ATTACH), deny: '0' }] : [];
+  const readOnly = [{ id: everyone, type: 0, allow: String(P.VIEW | P.HISTORY | P.REACT), deny: String(P.SEND | P.THREADS | P.SEND_THREADS) }, ...master];
+  const hidden = [{ id: everyone, type: 0, allow: '0', deny: String(P.VIEW) }, ...master];
+  const overwritesOf = (ch) => (ch.private ? hidden : ch.readOnly ? readOnly : null);
   const channelId = {};
+  const parentId = {};
   let position = 0;
   for (const cat of SPEC.categories) {
     let parent = channels.find((x) => x.type === TYPE.category && same(x.name, cat.name));
@@ -134,48 +141,75 @@ async function run() {
       parent = await call('POST', `/guilds/${GUILD}/channels`, { name: cat.name, type: TYPE.category, position: position++ });
       log(`  category ${cat.name} made`);
     }
-    for (const ch of cat.channels) {
-      const overwrites = ch.readOnly ? readOnly : [];
-      let have = channels.find((x) => x.type !== TYPE.category && same(x.name, ch.name));
-      const body = { name: ch.name, topic: ch.topic, parent_id: parent.id, permission_overwrites: overwrites };
+    parentId[cat.name] = parent.id;
+  }
+
+  const ensure = async (cat, ch) => {
+    const parent = parentId[cat.name];
+    const overwrites = overwritesOf(ch);
+    let have = channels.find((x) => x.type !== TYPE.category && same(x.name, ch.name));
+    if (!have) {
+      const body = { name: ch.name, topic: ch.topic, parent_id: parent, type: TYPE[ch.type] };
+      if (overwrites) body.permission_overwrites = overwrites;
       if (ch.type === 'forum') body.available_tags = ch.tags.map((name) => ({ name }));
-      if (!have) {
-        try {
-          have = await call('POST', `/guilds/${GUILD}/channels`, { ...body, type: TYPE[ch.type] });
-          log(`  #${ch.name} made (${ch.type})`);
-        } catch (e) {
-          // 論 A forum needs a Community server on some accounts. Then it is a text channel,
-          // with the tags written into the topic, and the log says how to have the forum.
-          if (ch.type !== 'forum') throw e;
-          const topic = `${ch.topic} Etiquetas: ${ch.tags.join(', ')}.`;
-          have = await call('POST', `/guilds/${GUILD}/channels`, { name: ch.name, topic, parent_id: parent.id, type: TYPE.text });
-          log(`  #${ch.name} made as text: forums need Community on (Server Settings → Enable Community), then run this again`);
-        }
-      } else {
-        // 權 Permissions are only this file's business on a read-only channel. Anywhere
-        // else they are left to Bruno, so a change made by hand is never undone here.
-        const ids = (list) => JSON.stringify(list.map((o) => o.id).sort());
-        const drift = (have.topic ?? '') !== ch.topic || have.parent_id !== parent.id
-          || (ch.readOnly && ids(have.permission_overwrites ?? []) !== ids(overwrites));
-        if (drift) {
-          const fix = { topic: ch.topic, parent_id: parent.id };
-          if (ch.readOnly) fix.permission_overwrites = overwrites;
-          if (have.type === TYPE.forum && ch.type === 'forum') {
-            const names = (have.available_tags ?? []).map((t) => t.name);
-            fix.available_tags = [...(have.available_tags ?? []), ...ch.tags.filter((t) => !names.includes(t)).map((name) => ({ name }))];
-          }
-          await call('PATCH', `/channels/${have.id}`, fix);
-          log(`  #${ch.name} corrected`);
-        }
+      try {
+        have = await call('POST', `/guilds/${GUILD}/channels`, body);
+        log(`  #${ch.name} made (${ch.type})`);
+      } catch (e) {
+        // 論 Still refused: a text channel, the tags written into the topic, and the log
+        // says how to have the forum. A text channel cannot become a forum, so it has to go.
+        if (ch.type !== 'forum') throw e;
+        const topic = `${ch.topic} Tags: ${ch.tags.join(', ')}.`;
+        have = await call('POST', `/guilds/${GUILD}/channels`, { name: ch.name, topic, parent_id: parent, type: TYPE.text });
+        log(`  #${ch.name} made as text: Discord refused a forum. Turn Community on (Server Settings → Enable Community), delete #${ch.name}, and run this again`);
       }
-      channelId[ch.key] = have.id;
+    } else {
+      // 權 Permissions are only this file's business on a read-only or private channel.
+      // Anywhere else they are left to Bruno, so a change made by hand is never undone.
+      const ids = (list) => JSON.stringify(list.map((o) => o.id).sort());
+      const drift = (have.topic ?? '') !== ch.topic && !(have.type === TYPE.text && ch.type === 'forum')
+        || have.parent_id !== parent
+        || (overwrites && ids(have.permission_overwrites ?? []) !== ids(overwrites));
+      if (drift) {
+        const fix = { topic: ch.topic, parent_id: parent };
+        if (overwrites) fix.permission_overwrites = overwrites;
+        if (have.type === TYPE.forum && ch.type === 'forum') {
+          const names = (have.available_tags ?? []).map((t) => t.name);
+          fix.available_tags = [...(have.available_tags ?? []), ...ch.tags.filter((t) => !names.includes(t)).map((name) => ({ name }))];
+        }
+        await call('PATCH', `/channels/${have.id}`, fix);
+        log(`  #${ch.name} corrected`);
+      }
+    }
+    channelId[ch.key] = have.id;
+  };
+  for (const cat of SPEC.categories) for (const ch of cat.channels) if (ch.type !== 'forum') await ensure(cat, ch);
+
+  // 社 Community: what lets a server have forums, a rules screen and a welcome for new
+  // members. Discord asks for a rules channel, a channel for its own notices (the private
+  // team one), members to have a verified email, and media scanned for everyone.
+  if (SPEC.community && !(guild.features ?? []).includes('COMMUNITY')) {
+    try {
+      await call('PATCH', `/guilds/${GUILD}`, {
+        features: [...(guild.features ?? []), 'COMMUNITY'],
+        rules_channel_id: channelId[SPEC.community.rules],
+        public_updates_channel_id: channelId[SPEC.community.updates],
+        verification_level: Math.max(1, guild.verification_level ?? 0),
+        explicit_content_filter: 2,
+        default_message_notifications: 1,
+      });
+      log('  Community switched on');
+    } catch (e) {
+      log(`  could not switch Community on (${e.status}): turn it on by hand in Server Settings → Enable Community`);
     }
   }
+  for (const cat of SPEC.categories) for (const ch of cat.channels) if (ch.type === 'forum') await ensure(cat, ch);
 
   // 告 The messages, each found by its title among the bot's own and edited in place.
   for (const m of SPEC.messages) {
     const where = channelId[m.channel];
     const embed = { title: m.title, description: bodyOf(m), color: colour(m.color) };
+    if (m.image) embed.image = { url: m.image };
     // 釘 The pins first: a pinned message in a busy channel is long past the last fifty.
     const pins = await call('GET', `/channels/${where}/pins`);
     const recent = await call('GET', `/channels/${where}/messages?limit=50`);
@@ -188,7 +222,7 @@ async function run() {
     } else {
       id = mine.id;
       const e = mine.embeds[0];
-      if (e.description !== embed.description || e.color !== embed.color) {
+      if (e.description !== embed.description || e.color !== embed.color || (e.image?.url ?? '') !== (m.image ?? '')) {
         await call('PATCH', `/channels/${where}/messages/${id}`, { embeds: [embed] });
         log(`  "${m.title}" edited`);
       }
@@ -198,8 +232,22 @@ async function run() {
     }
   }
 
+  // 邀 One invite that never expires, to the welcome channel, found again rather than
+  // made again. The link is printed on every run so it can be read off the log.
+  let invite = null;
+  if (SPEC.invite) {
+    const at = channelId[SPEC.invite];
+    const all = await call('GET', `/guilds/${GUILD}/invites`).catch(() => []);
+    invite = all.find((i) => i.channel?.id === at && i.max_age === 0 && i.inviter?.id === me.id);
+    if (!invite) {
+      invite = await call('POST', `/channels/${at}/invites`, { max_age: 0, max_uses: 0, unique: false });
+      log('  invite made');
+    }
+    log(`Invite: https://discord.gg/${invite.code}`);
+  }
+
   log('Done. Anything not named in server.json was left as it was.');
-  return { dry: false, said, channelId, roleId };
+  return { dry: false, said, channelId, roleId, invite: invite?.code };
 }
 
 export { run };

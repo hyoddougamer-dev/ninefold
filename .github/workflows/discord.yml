@@ -9,6 +9,11 @@
 #                      Settings → Advanced → Developer Mode, then right-click the server
 #                      → Copy Server ID.
 # Without them the run proves the script against a fake Discord and prints the plan.
+#
+# The bot is invited with exactly the permissions it uses (manage the server, roles and
+# channels; make an invite; write, embed and pin):
+#   https://discord.com/oauth2/authorize?client_id=APP_ID&scope=bot&permissions=2251800082213937
+# The run ends by printing the server's permanent invite link.
 name: discord
 
 on:

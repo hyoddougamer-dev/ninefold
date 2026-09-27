@@ -24,9 +24,10 @@ const GUILD = '900', OWNER = '42', BOT = '7';
 let next = 1000;
 const id = () => String(next++);
 
-function fakeDiscord({ forumOk = true } = {}) {
+function fakeDiscord({ communityOk = true } = {}) {
   const state = {
-    guild: { id: GUILD, name: 'My server', owner_id: OWNER },
+    guild: { id: GUILD, name: 'My server', owner_id: OWNER, features: [], verification_level: 0 },
+    invites: [],
     roles: [{ id: GUILD, name: '@everyone', color: 0, hoist: false }],
     members: { [OWNER]: { roles: [] } },
     channels: [],
@@ -49,7 +50,16 @@ function fakeDiscord({ forumOk = true } = {}) {
       let m;
       if (path === '/users/@me') return send(200, { id: BOT, username: 'ninefold-bot' });
       if (path === `/guilds/${GUILD}` && req.method === 'GET') return send(200, state.guild);
-      if (path === `/guilds/${GUILD}` && req.method === 'PATCH') { Object.assign(state.guild, body); return send(200, state.guild); }
+      if (path === `/guilds/${GUILD}` && req.method === 'PATCH') {
+        // 社 Like Discord: Community needs a rules channel, a notices channel and settings.
+        if (body.features?.includes('COMMUNITY')) {
+          if (!communityOk) return send(403, { code: 50013, message: 'Missing Permissions' });
+          if (!body.rules_channel_id || !body.public_updates_channel_id || body.verification_level < 1 || body.explicit_content_filter !== 2) {
+            return send(400, { message: 'community requirements not met' });
+          }
+        }
+        Object.assign(state.guild, body); return send(200, state.guild);
+      }
       if (path === `/guilds/${GUILD}/roles` && req.method === 'GET') return send(200, state.roles);
       if (path === `/guilds/${GUILD}/roles` && req.method === 'POST') { const r = { id: id(), ...body }; state.roles.push(r); return send(200, r); }
       if ((m = path.match(/^\/guilds\/\d+\/roles\/(\d+)$/)) && req.method === 'PATCH') { const r = state.roles.find((x) => x.id === m[1]); Object.assign(r, body); return send(200, r); }
@@ -57,7 +67,7 @@ function fakeDiscord({ forumOk = true } = {}) {
       if ((m = path.match(/^\/guilds\/\d+\/members\/(\d+)\/roles\/(\d+)$/))) { state.members[m[1]].roles.push(m[2]); return send(204); }
       if (path === `/guilds/${GUILD}/channels` && req.method === 'GET') return send(200, state.channels);
       if (path === `/guilds/${GUILD}/channels` && req.method === 'POST') {
-        if (body.type === 15 && !forumOk) return send(400, { code: 50024, message: 'Cannot execute action on this channel type' });
+        if (body.type === 15 && !state.guild.features.includes('COMMUNITY')) return send(400, { code: 50024, message: 'Cannot execute action on this channel type' });
         const c = { id: id(), topic: null, permission_overwrites: [], available_tags: [], ...body };
         c.available_tags = (c.available_tags ?? []).map((t) => ({ id: id(), ...t }));
         state.channels.push(c); state.messages[c.id] = []; return send(200, c);
@@ -75,6 +85,11 @@ function fakeDiscord({ forumOk = true } = {}) {
         const msg = state.messages[m[1]].find((x) => x.id === m[2]); msg.embeds = body.embeds; return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/pins\/(\d+)$/))) { state.messages[m[1]].find((x) => x.id === m[2]).pinned = true; return send(204); }
+      if (path === `/guilds/${GUILD}/invites`) return send(200, state.invites);
+      if ((m = path.match(/^\/channels\/(\d+)\/invites$/)) && req.method === 'POST') {
+        const inv = { code: `code${id()}`, channel: { id: m[1] }, inviter: { id: BOT }, max_age: body.max_age, max_uses: body.max_uses };
+        state.invites.push(inv); return send(200, inv);
+      }
       return send(404, { message: `fake has no ${req.method} ${path}` });
     });
   });
@@ -135,12 +150,22 @@ await scenario({ body: async (port, env, state) => {
   check(state.limited, 'and survives a rate limit on the way');
   const forums = state.channels.filter((c) => c.type === 15);
   check(forums.length === 2 && forums.every((f) => f.available_tags.length > 0), 'the two forums carry their tags');
-  const readOnly = state.channels.filter((c) => c.permission_overwrites?.some((o) => o.id === GUILD));
-  check(readOnly.length === 2, 'welcome and announcements are read-only for @everyone');
+  const readOnly = state.channels.filter((c) => c.permission_overwrites?.some((o) => o.id === GUILD && BigInt(o.deny) & (1n << 11n)));
+  const wantRO = SPEC.categories.flatMap((c) => c.channels).filter((c) => c.readOnly).length;
+  check(readOnly.length === wantRO, `the ${wantRO} read-only channels are read-only for @everyone`);
+  const priv = state.channels.filter((c) => c.permission_overwrites?.some((o) => o.id === GUILD && BigInt(o.deny) & (1n << 10n)));
+  check(priv.length === 1 && priv[0].name.endsWith('team'), 'the team channel is hidden from @everyone');
+  check(state.guild.features.includes('COMMUNITY') && state.guild.rules_channel_id && state.guild.public_updates_channel_id === priv[0].id,
+    'Community is switched on, with the rules and the private team channel');
+  check(forums.length === 2, 'and the forums are made after it, as forums');
+  const inviteLine = first.split('\n').find((l) => l.startsWith('Invite: https://discord.gg/'));
+  check(!!inviteLine && state.invites.length === 1 && state.invites[0].max_age === 0, 'one permanent invite is made and printed');
+  check(posted.filter((m) => m.embeds[0].image?.url).length === SPEC.messages.filter((m) => m.image).length, 'the messages with a painting carry it');
 
   const second = await runSetup(port, env);
   check(changes(second).length === 0, `second run changes nothing${changes(second).length ? `: ${changes(second).join(' | ')}` : ''}`);
   check(Object.values(state.messages).flat().length === SPEC.messages.length, 'and posts nothing twice');
+  check(state.invites.length === 1 && second.includes(inviteLine), 'and finds the same invite again');
 
   // 漂 A topic edited by hand drifts back, and nothing else moves.
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
@@ -160,12 +185,14 @@ await scenario({ body: async (port, env, state) => {
     && Object.values(state.messages).flat().length === SPEC.messages.length, 'a message changed in server.json is edited in place, not posted again');
 } });
 
-// 5. Forums refused.
-await scenario({ forumOk: false, body: async (port, env, state) => {
+// 5. Community refused (a bot without Manage Server): forums fall back to text.
+await scenario({ communityOk: false, body: async (port, env, state) => {
   const out = await runSetup(port, env);
-  const asText = state.channels.filter((c) => /bugs|sugest/.test(c.name));
-  check(asText.length === 2 && asText.every((c) => c.type === 0 && /Etiquetas/.test(c.topic)), 'without Community the forums are made as text, tags in the topic');
+  const asText = state.channels.filter((c) => /bugs|ideas/.test(c.name));
+  check(asText.length === 2 && asText.every((c) => c.type === 0 && /Tags:/.test(c.topic)), 'without Community the forums are made as text, tags in the topic');
   check(/Enable Community/.test(out), 'and the log says how to get the forums');
+  const again = await runSetup(port, env);
+  check(changes(again).length === 0, 'and a second run does not fight the text channels it made');
 } });
 
 if (failed) { console.error(`\n${failed} check(s) failed.`); process.exit(1); }

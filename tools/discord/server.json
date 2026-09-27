@@ -1,42 +1,53 @@
 {
-  "_comment": "測 The testers' Discord server, as data. tools/discord.mjs makes the real server match this, and running it twice changes nothing the second time. The copy is in Portuguese because the testers are, like public/testar. Everything the testers read is here and nowhere else.",
+  "_comment": "測 The testers' Discord server, as data. tools/discord.mjs makes the real server match this, and running it twice changes nothing the second time. English, like the game: Bruno's community from his previous game is international. Everything the members read is here and nowhere else.",
   "name": "九境 Ninefold",
+  "community": { "rules": "welcome", "updates": "team" },
+  "invite": "welcome",
   "roles": [
-    { "key": "master", "name": "師 Mestre", "color": "#D4AF56", "hoist": true, "owner": true },
+    { "key": "master", "name": "師 Developer", "color": "#D4AF56", "hoist": true, "owner": true },
     { "key": "tester", "name": "測 Tester", "color": "#7FB495", "hoist": true }
   ],
   "categories": [
     {
       "name": "九境 NINEFOLD",
       "channels": [
-        { "key": "welcome", "name": "入門-boas-vindas", "type": "text", "readOnly": true,
-          "topic": "入門 Começa aqui: o que é o Ninefold, como instalar e onde falar." },
-        { "key": "news", "name": "告-anúncios", "type": "text", "readOnly": true,
-          "topic": "告 Versões novas e o que mudou. Só o Bruno escreve aqui." }
+        { "key": "welcome", "name": "入門-welcome", "type": "text", "readOnly": true,
+          "topic": "入門 Start here: what Ninefold is, how to play the test, and the rules." },
+        { "key": "news", "name": "告-announcements", "type": "text", "readOnly": true,
+          "topic": "告 New builds, what changed, and what is coming." },
+        { "key": "devlog", "name": "筆-dev-log", "type": "text", "readOnly": true,
+          "topic": "筆 Sneak peeks from the workbench: paintings, systems and numbers before they ship." }
       ]
     },
     {
-      "name": "測 TESTES",
+      "name": "測 PLAYTEST",
       "channels": [
         { "key": "bugs", "name": "報-bugs", "type": "forum",
-          "topic": "報 Um problema por publicação. Diz o que fizeste, o que esperavas e o que aconteceu. Junta uma captura se puderes, e a linha Build que aparece no fundo do menu ≡ (canto superior direito).",
-          "tags": ["Bug", "Arte", "Equilíbrio", "Texto", "Resolvido"] },
-        { "key": "ideas", "name": "議-sugestões", "type": "forum",
-          "topic": "議 Ideias e opiniões. O que tornaria o jogo melhor, o que tiravas, o que te fez voltar.",
-          "tags": ["Ideia", "Equilíbrio", "Arte", "Pergunta"] },
-        { "key": "journal", "name": "記-diário", "type": "text",
-          "topic": "記 Onde estás no jogo e o que te aconteceu hoje. Um reino, uma luta, uma pessoa na estrada. Curto chega." },
-        { "key": "shots", "name": "圖-capturas", "type": "text",
-          "topic": "圖 Capturas de ecrã: o que achaste bonito, estranho ou partido." }
+          "topic": "報 One problem per post. Say what you did, what you expected and what happened. Add a screenshot if you can, and the Build line from the bottom of the ≡ menu (top right corner).",
+          "tags": ["Bug", "Art", "Balance", "Text", "Fixed"] },
+        { "key": "ideas", "name": "議-ideas", "type": "forum",
+          "topic": "議 Ideas and opinions. What would make the game better, what you would take out, what made you come back.",
+          "tags": ["Idea", "Balance", "Art", "Question"] },
+        { "key": "journal", "name": "記-journal", "type": "text",
+          "topic": "記 Where you are in the game and what happened today. A realm, a fight, somebody on the road. Short is fine." },
+        { "key": "shots", "name": "圖-screenshots", "type": "text",
+          "topic": "圖 Screenshots: what you found beautiful, strange or broken." }
       ]
     },
     {
-      "name": "談 CONVERSA",
+      "name": "談 COMMUNITY",
       "channels": [
-        { "key": "general", "name": "談-geral", "type": "text",
-          "topic": "談 Conversa livre." },
+        { "key": "general", "name": "談-general", "type": "text",
+          "topic": "談 Talk about anything." },
         { "key": "ranks", "name": "榜-rankings", "type": "text",
-          "topic": "榜 Quem vai à frente no 天榜 Heaven List, e como lá chegou." }
+          "topic": "榜 Who leads the 天榜 Heaven List, and how they got there." }
+      ]
+    },
+    {
+      "name": "師 TEAM",
+      "channels": [
+        { "key": "team", "name": "師-team", "type": "text", "private": true,
+          "topic": "師 Only the developer sees this. Discord sends its community notices here." }
       ]
     }
   ],
@@ -45,46 +56,69 @@
       "key": "welcome-main",
       "channel": "welcome",
       "pin": true,
-      "title": "九境 Ninefold · Bem-vindo ao teste",
+      "title": "九境 Ninefold · Welcome",
       "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/1.webp",
       "body": [
-        "Um jogo idle de cultivo. O qi junta-se sozinho, mesmo com o telemóvel fechado, e sobes por nove reinos e nove céus.",
+        "An idle cultivation game. Qi gathers on its own, even with the phone closed, and you climb nine realms and the nine heavens above them.",
         "",
-        "**Instalar:** https://hyoddougamer-dev.github.io/ninefold/testar/",
-        "Android com a app, iPhone pelo Safari, PC pelo browser.",
+        "**Play:** https://hyoddougamer-dev.github.io/ninefold/",
+        "**Android app:** https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk",
+        "On iPhone, open the game in Safari and tap Share → Add to Home Screen.",
         "",
-        "**O que te pedimos:** joga como jogarias sem ninguém a ver. Abre quando te apetecer e conta-nos o que te confundiu, o que te irritou e o que te fez voltar.",
+        "**Where things go:** a problem to 報 bugs, an idea to 議 ideas, and where you are in the game to 記 journal.",
         "",
-        "**Onde:** um problema vai para 報 bugs, uma ideia para 議 sugestões, e onde estás no jogo para 記 diário.",
-        "",
-        "No jogo, perder nunca custa nada. Experimenta à vontade."
+        "Losing a fight never costs anything. Try everything."
       ]
     },
     {
       "key": "welcome-rules",
       "channel": "welcome",
       "pin": true,
-      "title": "規 Três regras",
+      "title": "規 The rules",
       "color": "#7FB495",
       "body": [
-        "**1.** Respeito por toda a gente. Isto é um grupo pequeno de amigos.",
-        "**2.** O jogo ainda está em teste: não partilhes o link fora daqui sem perguntar ao Bruno.",
-        "**3.** Um bug por publicação em 報 bugs, para nada se perder."
+        "**1.** Be kind. This is a small community and everyone here is helping.",
+        "**2.** The game is in closed test. Ask before sharing it outside the server.",
+        "**3.** One bug per post in 報 bugs, so nothing gets lost.",
+        "**4.** No spam, no advertising, nothing you would not show a stranger."
+      ]
+    },
+    {
+      "key": "launch",
+      "channel": "news",
+      "pin": true,
+      "title": "告 Ninefold: the first closed test",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/9.webp",
+      "body": [
+        "Hey everyone. This is the new home for **九境 Ninefold**, the game I have been building since Dao of the Endless Sky closed.",
+        "",
+        "It is an idle cultivation game, painted in ink. You gather qi, climb nine realms of nine layers, and cross the tribulation into nine heavens above the summit. Every beast is painted by hand, every realm has its own landscape, and people you meet on the road remember what you did.",
+        "",
+        "It is built around one promise: **nothing is ever taken away for being away.** Close it for a week and your cultivator is further along, never behind.",
+        "",
+        "**What I need from you:** play it the way you would if nobody was watching. Open it when you feel like it. Then tell me what confused you, what annoyed you, and what made you come back.",
+        "",
+        "**Play:** https://hyoddougamer-dev.github.io/ninefold/",
+        "**Android app:** https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk",
+        "",
+        "Bugs go to 報 bugs, ideas to 議 ideas. Thank you for being here."
       ]
     },
     {
       "key": "bugs-how",
       "channel": "news",
       "pin": true,
-      "title": "告 Como reportar um problema",
+      "title": "告 How to report a bug",
       "color": "#D2604E",
       "body": [
-        "Abre uma publicação nova em 報 bugs e diz três coisas:",
-        "**1.** O que fizeste.",
-        "**2.** O que esperavas que acontecesse.",
-        "**3.** O que aconteceu.",
+        "Open a new post in 報 bugs and say three things:",
+        "**1.** What you did.",
+        "**2.** What you expected to happen.",
+        "**3.** What happened instead.",
         "",
-        "Junta uma captura e a linha Build do fundo do menu ≡ (canto superior direito). Se o jogo mostrar um erro, copia o texto do erro também."
+        "Add a screenshot and the Build line from the bottom of the ≡ menu (top right corner). If the game showed an error, copy its text too."
       ]
     }
   ]

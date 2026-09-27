@@ -150,7 +150,9 @@ Supabase, nothing is done against Discord from here. It needs the secret
 `DISCORD_BOT_TOKEN` and the variable `DISCORD_GUILD_ID`; never ask for the token in chat.
 The script finds everything by name, never deletes, and a second run changes nothing:
 `node tools/discord-check.mjs` proves that against a fake Discord and the workflow runs it
-first. Its copy is Portuguese, like `public/testar`, because the testers are.
+first. Its copy is English, like the game: Bruno's community from his previous game
+(Dao of the Endless Sky) is international. The run switches Community on itself, so the
+forums are real forums, and prints the server's permanent invite at the end of its log.
 
 ## 屜 The drawer
 
