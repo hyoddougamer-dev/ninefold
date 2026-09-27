@@ -721,6 +721,27 @@ export const GUIDE = {
   },
 };
 
+/**
+ * 靈獸 The spirit companion. It says what a companion is worth as a share of the player's
+ * own blow, the only unit that means something in a fight, and how one is earned before
+ * there is one, so the system is visible before it is open.
+ */
+export const COMPANION = {
+  head: '靈獸 A spirit companion',
+  plain: 'A spirit companion',
+  earn: 'Master a beast (通, a hundred wins over it) and it will follow you, and fight beside you in every fight.',
+  with: (han: string, name: string) => `${han} ${name}`,
+  beside: (pct: number) => `靈獸 Your companion: strikes for ${pct}% of your blow, every round`,
+  strikes: (pct: number) => `strikes for ${pct}% of your blow, every round`,
+  choose: (n: number) => (n === 1 ? 'One beast you have mastered would follow you.' : `${n} beasts you have mastered would follow you.`),
+  pick: 'Choose',
+  change: 'Change',
+  close: 'Close',
+  part: 'Go on alone',
+  /** 鬥 In the arena, over the companion's own strike. */
+  hit: (n: string) => `−${n}`,
+};
+
 export const HUNT = {
   /** 出 When a beast of this realm walks out, for the rows that have not yet. */
   walksOut: (layer: number) => `layer ${layer}`,

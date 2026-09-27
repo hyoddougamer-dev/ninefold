@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { HEART_PATH, MEET_GAP } from '../src/sim/balance.ts';
+import { COMPANION_BLOW, COMPANION_FADE, HEART_PATH, MEET_GAP } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -3890,6 +3890,31 @@ const page = `<meta charset="utf-8">
       <i>your own</i> realm pays: 山鼠 the rat goes from 1 材 for ever to ${OLD_RAT} at the
       ninth. A quarter, so hunting at the top of your reach is still plainly better, and
       going back is no longer charity.</div>
+  </section>
+
+  <section class="sec" id="companion">
+    <h2><span class="h">靈獸</span> A spirit companion</h2>
+    <p class="t">A hundred wins over one beast is 通 mastery, and until now mastery paid two
+      per cent and was a number on the record. Now the beast follows you. Bond any common
+      beast you have mastered and it fights beside you in every fight: the hunt, the tower,
+      the vault and the Dragon.</p>
+    <p class="t">It strikes every round for <b>${Math.round(COMPANION_BLOW * 100)}% of your
+      blow</b> if it is a beast of the realm you are in, and ${Math.round(COMPANION_FADE * 100)}%
+      of that again for every realm it stands behind you. The rat that followed you out of
+      the first realm is a pet by the fourth, so the companion is worth changing as the climb
+      goes on, and changing it is free. A warden is never one: it is fought once.</p>
+    <p class="t">量 It was first read off the beast's own power against yours. Measured on a
+      real save, that came to 0% for every beast in the game: the commons are tuned against a
+      realm's floor, and a climbing cultivator is far past it. So it reads the realm,
+      which a player can see. Against a warden standing a fifth above you, a
+      companion of your own realm takes the odds from 7% to 22%. The climb itself does not
+      move: it is paced by qi, not by power, and the harness that keeps the best companion
+      arrives at the summit on the same day as the one that keeps none. And a cultivator
+      with no companion reads no extra die, so every fight they fight is the fight it was.</p>
+    <figure class="shots">
+      <img src="bible-art/shot/companion.webp" alt="The companion card on the hunt, open, and the companion striking beside the cultivator in the arena">
+      <figcaption>The real game. Left, on 狩 the hunt at 320: who fights beside you, and what each beast you could bond instead would strike for. Right, in the arena: the companion leaps on its own strike, and what it dealt rises over it.</figcaption>
+    </figure>
   </section>
 
   <section class="sec" id="record">

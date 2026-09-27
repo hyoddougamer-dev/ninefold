@@ -11,6 +11,7 @@ import {
 } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { Plate } from '../ui/Plate.tsx';
+import { Companion } from '../ui/Companion.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -38,8 +39,10 @@ import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
  * tab it used to hold went to 塔 the tower, which is a place you go rather than a page
  * you read.
  */
-export function Hunt({ state, onFight, onDrive, onSecret }: {
+export function Hunt({ state, onFight, onDrive, onSecret, onBond }: {
   state: State;
+  /** 靈獸 Bond a mastered beast, or go on alone. */
+  onBond: (key: string | null) => void;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
@@ -144,6 +147,10 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           about what still has a mark to earn, which is a permanent question, and this is
           a question that expires on Monday. Two different questions, two places. */}
       <QuarryBand state={state} onFight={onFight} />
+
+      {/* 靈獸 Who fights beside you. Shown from the first realm the record pays in, so it is
+          seen coming before the first beast is mastered. */}
+      {isOpen(state.realm, 'record') && <Companion state={state} onBond={onBond} />}
 
       <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
       <div className="stack">

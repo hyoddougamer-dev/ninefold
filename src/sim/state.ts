@@ -29,6 +29,7 @@ import { bodyTotals, classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
+import { validCompanion } from './companion.ts';
 import { EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
@@ -114,6 +115,11 @@ export interface State {
   self: string | null;
   /** 勢 The stance you fight in, or none yet. */
   stance: string | null;
+  /**
+   * 靈獸 The beast fighting beside this cultivator, by key, or none. Only a common beast
+   * they have 通 mastered, which validate() checks against the kills. See sim/companion.ts.
+   */
+  companion: string | null;
   /** 訣 The arts in the order they fire, at most SEQUENCE_SLOTS of them. */
   sequence: string[];
   /** 雷印 Thunder marks: tribulations crossed after the ninth realm. */
@@ -315,6 +321,7 @@ export function newState(now: number): State {
     chest: [],
     unlocked: [],
     self: null,
+    companion: null,
     stance: null,
     sequence: [],
     tribulation: 0,
@@ -761,6 +768,7 @@ export function validate(raw: unknown, now: number): State {
     // been asked, which every screen already draws.
     self: figureOf(typeof o.self === 'string' ? o.self : null)?.key ?? null,
     stance: validateStance(o.stance, realm, layer),
+    companion: validCompanion(o.companion, killed),
     sequence: validateSequence(o.sequence, killed),
     // Marks are only reachable at realm 9, and only one at a time.
     // Capped at three hundred so the multipliers stay inside a double: a mark is

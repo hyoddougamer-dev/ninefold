@@ -14,7 +14,8 @@ import {
   newState, power, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
-import { odds, takeKill } from '../src/sim/combat.ts';
+import { companionShare, odds, takeKill } from '../src/sim/combat.ts';
+import { bond, bondable } from '../src/sim/companion.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
@@ -213,6 +214,16 @@ function takeDrop(s: State, beast: Beast, seed: number, build?: School | Pair): 
     out = { ...out, worn: after.worn, chest: [...after.chest] };
   }
   return out;
+}
+
+/** 靈獸 Bond whichever mastered beast strikes hardest beside this cultivator now. */
+function bestCompanion(s: State): State {
+  let best = s.companion, share = companionShare(s);
+  for (const b of bondable(s)) {
+    const x = companionShare({ ...s, companion: b.key });
+    if (x > share + 1e-12) { best = b.key; share = x; }
+  }
+  return best === s.companion ? s : bond(s, best);
 }
 
 /**
@@ -484,6 +495,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       s = arrange(s, h.calling);
       arrangedOn = Math.floor((t - T0) / DAY);
     }
+    // 靈獸 Anybody who fights keeps the strongest companion they have mastered at their side.
+    if (h.hunts > 0 && process.env.NF_NOPET !== '1') s = bestCompanion(s);
 
     for (let i = 0; i < h.hunts; i++) {
       const b = quarryFor(s, h.calling);
