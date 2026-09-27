@@ -706,7 +706,10 @@ async function cut(sheet: Sheet, file: string) {
     const ix = Math.round((x1 - x0) * INSET);
     const iy = Math.round((y1 - y0) * INSET);
     const box = { left: x0 + ix, top: y0 + iy, width: x1 - x0 - ix * 2, height: y1 - y0 - iy * 2 };
-    const size = OUT[sheet.kind];
+    // 緣 The encounter sheets after the first were painted four across and three down on a
+    // landscape page, so their panels are square: kept square, not squeezed into the
+    // first sheet's tall shape, where the sides of every scene would have been cut off.
+    const size = sheet.kind === 'meet' && sheet.key !== 'meetings' ? { w: 640, h: 640 } : OUT[sheet.kind];
     const out = `${dir}/${c.key}.webp`;
 
     if (sheet.kind === 'beast') {
