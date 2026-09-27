@@ -950,7 +950,22 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   30% { transform: scale(1.22); color: var(--gold); }
   100% { transform: scale(1); }
 }
-.upg .lvl { display: inline-block; animation: bump .34s ease-out; }
+.upg .lvl { display: inline-block; white-space: nowrap; animation: bump .34s ease-out; }
+/* 窄 At 320 the price column leaves the name about 150px, so "· 13 of 18" broke onto a
+   line of its own and led it with a stray dot. There it always takes its own line, and
+   the dot that joined it to the effect goes. */
+@media (max-width: 380px) {
+  .upg .lvl { display: block; }
+  .upg .lvl .dot { display: none; }
+  .upg b .cjk { white-space: nowrap; }
+}
+/* 塔 The floor's beast and its power, the same way: one line where there is room, and at
+   320 the power on a line of its own, without the dot that joined them. */
+.flpow { white-space: nowrap; }
+@media (max-width: 380px) {
+  .flpow { display: block; }
+  .flpow .dot { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .upg .lvl { animation: none; } }
 
 /* 突破 The moment. Everything else stops for three quarters of a second. */

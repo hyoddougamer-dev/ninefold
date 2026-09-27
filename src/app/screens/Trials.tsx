@@ -72,7 +72,8 @@ export function Trials({ state, onFloor, onBrew }: {
               {TRIALS.floor(floor)}
             </b>
             <i className="faint" style={{ fontStyle: 'normal', fontSize: 12 }}>
-              {beast.han} {beast.name} · <Term han="力" /> {num(brings)}
+              {beast.han} {beast.name}{' '}
+              <span className="flpow"><span className="dot">· </span><Term han="力" /> {num(brings)}</span>
             </i>
           </span>
           <span className="tech mono" style={{ fontSize: 17, textAlign: 'right', color: tone }}>
@@ -100,7 +101,7 @@ export function Trials({ state, onFloor, onBrew }: {
 
       <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>
         <span className="faint">{TRIALS.sealWorth(`${Math.round(SEAL_LOOT * 100)}%`)}</span>
-        <span className="mono" style={{ color: 'var(--gold)' }}>{TRIALS.seals(held)}</span>
+        <span className="mono" style={{ color: 'var(--gold)', whiteSpace: 'nowrap', flex: 'none' }}>{TRIALS.seals(held)}</span>
       </div>
 
       <h2 className="heading">{TRIALS.furnaceHead}</h2>

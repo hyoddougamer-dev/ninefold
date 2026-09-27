@@ -464,7 +464,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                   never told, first, what any of them was. */}
               <span>
                 <b>{i.name} <span className="cjk faint">{i.han}</span></b>
-                <i>{i.effect} <span className="mono faint lvl" key={held}>· {CULTIVATE.cap(held, cap)}</span></i>
+                <i>{i.effect} <span className="mono faint lvl" key={held}><span className="dot">· </span>{CULTIVATE.cap(held, cap)}</span></i>
               </span>
               <span className="price">
                 {maxed
