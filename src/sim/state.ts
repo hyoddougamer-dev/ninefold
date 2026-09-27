@@ -271,7 +271,7 @@ export function heavenStep(): number {
     * UPGRADE_INFO.cores.gain ** LEVELS_PER_HEAVEN;
 }
 
-export function crossTribulation(s: State, dragonPower: number): State {
+export function crossTribulation(s: State, dragonPower: number, even: number): State {
   if (!canCross(s)) return s;
   // 境外 Did this crossing open a heaven? If it did, the thing at the end of the next
   // one grows by exactly what the new room is worth. See LEVELS_PER_HEAVEN.
@@ -280,16 +280,15 @@ export function crossTribulation(s: State, dragonPower: number): State {
   return {
     ...s,
     tribulation: s.tribulation + 1,
-    // Whichever is higher: the Dragon that fell, or what the cultivator actually stood
-    // there with. A cultivator arriving at the top is carrying a whole climb's worth of
-    // cores, gear and tree that the first Dragon knows nothing about: without this
-    // second reading they would walk through twenty crossings on that margin alone
-    // before the endgame started asking them for anything.
+    // Whichever is higher: the Dragon that fell, or the one this cultivator would have
+    // met at even odds, stood a footing above it. A cultivator arriving at the top is
+    // carrying a whole climb's worth of cores, gear and tree that the first Dragon knows
+    // nothing about: without the second reading they would walk through twenty
+    // crossings on that margin alone before the endgame started asking them for anything.
     //
-    // 立 TRIBULATION_FOOTING is what makes that reading honest. What stood in front of the
-    // Dragon was not 力; it was 力 with a stance and three arts on it, and that is the
-    // number the next Dragon has to be built from.
-    tribulationAt: Math.max(s.tribulationAt, dragonPower, power(s) * TRIBULATION_FOOTING) * step,
+    // 立 `even` is read off the fight (evenDragon in combat.ts), stance, arts and class
+    // included, so what the next Dragon is built from is what actually stood there.
+    tribulationAt: Math.max(s.tribulationAt, dragonPower, even * TRIBULATION_FOOTING) * step,
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
   };

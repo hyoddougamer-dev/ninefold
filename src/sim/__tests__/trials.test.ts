@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LINES, PILL_GRADES, PILL_LINES, pillOf } from '../../data/alchemy.ts';
-import { LAYERS_PER_REALM, levelCap } from '../balance.ts';
+import { LAYERS_PER_REALM, PILL_AHEAD, PILL_PACE, levelCap } from '../balance.ts';
 import { WARDEN_EDGE, odds, referencePower } from '../combat.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import {
@@ -144,16 +144,34 @@ describe('爐 the Furnace', () => {
   it('prices a pill off the mountain, and past the top goes on climbing', () => {
     const none = { body: 0, bane: 0, fortune: 0 };
     const rows = [0, 20, 40, 60, 80, 120, 200].map((n) => {
-      const cost = pillCost({ ...none, body: n }, 'body');
+      const cost = pillCost({ ...none, body: n }, 'body', n);
       return `  pill ${String(n + 1).padStart(4)}   ${num(cost.qi).padStart(8)} qi   ` +
         `${num(cost.materials).padStart(8)} 材`;
     });
     console.log(`\n  丹爐: the nth pill costs half of what the nth layer of the climb costs:\n${rows.join('\n')}\n`);
+    // On the marks' pace every pill costs more than the last.
     for (let n = 1; n < 300; n++) {
-      expect(pillCost({ ...none, body: n }, 'body').qi)
-        .toBeGreaterThan(pillCost({ ...none, body: n - 1 }, 'body').qi);
+      expect(pillCost({ ...none, body: n }, 'body', n).qi)
+        .toBeGreaterThan(pillCost({ ...none, body: n - 1 }, 'body', n).qi);
     }
-    expect(Number.isFinite(pillCost({ ...none, body: 2999 }, 'body').qi)).toBe(true);
+    expect(Number.isFinite(pillCost({ ...none, body: 2999 }, 'body', 3000).qi)).toBe(true);
+  });
+
+  /**
+   * 穩 And past PILL_AHEAD pills ahead of that pace, the price holds, in qi and in 材
+   * alike, so a cultivator who fell behind the Dragon pays days in a straight line to
+   * catch up rather than a wall. It never makes a pill cheaper than the one before it.
+   */
+  it('holds the price once a cultivator is far enough behind the marks', () => {
+    const none = { body: 0, bane: 0, fortune: 0 };
+    const marks = 10;
+    const edge = PILL_PACE * marks + PILL_AHEAD;
+    const at = (n: number) => pillCost({ ...none, body: n }, 'body', marks);
+    expect(at(edge).qi).toBeGreaterThan(at(edge - 1).qi);
+    expect(at(edge + 1)).toEqual(at(edge));
+    expect(at(edge + 50)).toEqual(at(edge));
+    // One more mark and the pace moves on, and so does the price.
+    expect(pillCost({ ...none, body: edge + 1 }, 'body', marks + 1).qi).toBeGreaterThan(at(edge).qi);
   });
 
   it('is shut until its realm, however much qi and material is in hand', () => {

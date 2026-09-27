@@ -89,7 +89,7 @@ export function clearFloor(s: State, floor: number): State {
 /** 丹 What the next pill of a line costs *this* cultivator, thrift cards counted. */
 export function pillPrice(s: State, line: Line): { qi: number; materials: number } {
   // 職 丹師 The Alchemist brews cheaper, in qi and in material alike.
-  const c = pillCost(s.brewed, line, pillFactor(s.awakened));
+  const c = pillCost(s.brewed, line, s.tribulation, pillFactor(s.awakened));
   const k = classPills(s);
   return k === 1 ? c : { qi: Math.ceil(c.qi * k), materials: Math.max(1, Math.ceil(c.materials * k)) };
 }

@@ -1,8 +1,8 @@
-import { RARITIES, templateOf, type Item } from '../data/gear.ts';
-import { addToChest, chestLimit } from './chest.ts';
-import { dropsRankUp } from './dao.ts';
+import { RARITIES, templateOf, type Item, type Rarity } from '../data/gear.ts';
+import { addToChest, chestLimit, fuse } from './chest.ts';
+import { dropsRankUp, fuseQuality } from './dao.ts';
 import { meltFactor, salvageValue } from './salvage.ts';
-import { bodyTotals } from './schools.ts';
+import { bodyTotals, gearFuse } from './schools.ts';
 import type { State } from './state.ts';
 
 /**
@@ -42,6 +42,16 @@ export function stash(s: State, found: Item | null): Stashed {
   const kept = addToChest(s.chest, item, limitFor(s));
   const melted = kept.dropped ? salvageValue(kept.dropped, meltFactor(s)) : 0;
   return { state: { ...s, chest: [...kept.chest], qi: s.qi + melted }, item, dropped: kept.dropped, melted };
+}
+
+/**
+ * 煉 Three become one, with everything this cultivator brings to a fusion: 巧手 Deft
+ * Hands on the tree and the 煉 line on the body. The game's button and the harnesses call
+ * this one function, so what the curves measure is what the button does.
+ */
+export function fuseIn(s: State, template: string, rarity: Rarity): { state: State; made: Item | null } {
+  const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s));
+  return out.made ? { state: { ...s, chest: [...out.chest] }, made: out.made } : { state: s, made: null };
 }
 
 /** The name a player would know the melted piece by. */

@@ -3,11 +3,11 @@ import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN }
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
-import { currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
+import { crossNow, currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
-  crossTribulation, power, tribulationPool, upgradeCost,
+  power, tribulationPool, upgradeCost,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -330,7 +330,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {crossing && (
         <div style={{ marginTop: 16 }}>
           <button className="act" onClick={() => {
-            set((s) => crossTribulation(s, dragon));
+            set((s) => crossNow(s));
             bloom('violet'); burst('violet', null, 22, 150);
           }}>
             渡劫 <span>Cross the tribulation</span>

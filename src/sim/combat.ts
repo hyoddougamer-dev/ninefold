@@ -3,7 +3,7 @@ import {
   FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
   OLD_BEAST_FLOOR, QUARRY_BOUNTY, QUARRY_LOOT, SEEN_BOUNTY, WARDEN_TRIBUTE, ladderBetween,
 } from './balance.ts';
-import { UPGRADE_INFO, power, tribulationPower, type State } from './state.ts';
+import { UPGRADE_INFO, crossTribulation, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -476,6 +476,39 @@ const SAMPLES = 41;
  */
 export function odds(s: State, b: Beast, standing?: number): number {
   return Math.max(0.02, Math.min(0.98, oddsRaw(s, b, standing)));
+}
+
+/**
+ * 立 The Dragon this cultivator would meet at even odds, as they stand right now.
+ *
+ * Read off the fight itself (stance, arts, class and every line the tribulation lets
+ * count), so it is the honest measure of what faced the Dragon, not 力 times a guess.
+ * The same forty-one seeded fights the odds read, halved on the Dragon's power until
+ * they split down the middle: a few hundred fights, once a crossing.
+ */
+export function evenDragon(s: State): number {
+  const at = 0.5;
+  const u0 = setup(s, currentWarden(s));
+  const wins = (p: number) => {
+    const u = { ...u0, bp0: p };
+    let won = 0;
+    for (let i = 0; i < SAMPLES; i++) if (run(u, (i * 2654435761) >>> 0, false).won) won++;
+    return won / SAMPLES;
+  };
+  let lo = Math.log(u0.pp) - 8, hi = Math.log(u0.pp) + 8;
+  for (let i = 0; i < 28; i++) {
+    const mid = (lo + hi) / 2;
+    if (wins(Math.exp(mid)) >= at) lo = mid; else hi = mid;
+  }
+  return Math.exp(lo);
+}
+
+/**
+ * 渡 Cross the tribulation: the Dragon that fell, and the one met at even odds, both read
+ * off the same fight. The screen and every harness cross through here.
+ */
+export function crossNow(s: State): State {
+  return crossTribulation(s, effectiveBeastPower(s, currentWarden(s)), evenDragon(s));
 }
 
 /**

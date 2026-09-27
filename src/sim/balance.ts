@@ -543,85 +543,32 @@ export const TRIBULATION_CHALLENGE = 1.89;
 export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
 
 /**
- * 立 Where the next Dragon plants its feet, as a multiple of the 力 the last one faced.
+ * 立 Where the next Dragon plants its feet: this many times the Dragon the cultivator
+ * would meet at even odds, read off the fight at the moment of the crossing.
  *
- * 力 is not what fights. A stance bends every blow and three arts bend three more, and
- * `arts.test.ts` measures the lot at 1.82x: none of it in `power()`, because `power()`
- * is also the cultivator's health and doubling that would be a different game.
+ * It used to be a multiple of 力, and 力 is not what fights. A stance bends every blow,
+ * three arts bend three more, and a class, a fusion or the next system anybody adds
+ * bends them again, none of it in `power()`. So the footing was a guess at the build,
+ * re-measured every time the build changed: 1.2, then 1.45, 1.59, 1.58 and 1.585, each
+ * one right for the harness of its day and wrong for any cultivator built differently.
+ * `evenDragon` in combat.ts reads the whole fight instead, so a build is cancelled out of
+ * both sides and the only question the next Dragon asks is the honest one: what have you
+ * added since last time?
  *
- * The endgame was built without that in mind. The Dragon anchored to `power(s) / 1.2`,
- * which reads as *it never falls more than a fifth behind you*, and then the build
- * covered the difference for nothing: measured over twenty-four crossings the odds never
- * once fell below 90%, and 雷池 the pool was the only thing between a cultivator and the
- * next mark. Two days, tap, win, for ever. 煉體 the one pill that matters up there was
- * never worth brewing.
+ * 穩 And the old footing sat on a knife edge. 1.585 held eighty crossings with a longest
+ * mark of 14 days, 1.59 ran them to 45, and 1.02 times the even Dragon walled by the
+ * fiftieth. That was not the footing's fault: see PILL_AHEAD, which is what made it hold.
+ * Measured with it, on the active cultivator who fuses:
  *
- * The right footing is not 1.82 either, because a multiplier on blows is worth about its
- * *square root* in the power ratio: 力 is the sword and the shield at once, so losing a
- * third of it costs twice over. Played out, the band is narrow and measured:
+ *     1.00   3 days a mark for ever, but 12 of 40 walkovers
+ *     1.03   5 to 7 days, 4 walkovers
+ *     1.05   7 to 8 days, 3 walkovers, and still 7 to 8 at the 160th crossing
+ *     1.07   8 days, 3 walkovers
+ *     1.20   12 to 13 days, 2 walkovers
  *
- *     1.20   odds 98% every crossing, two days, no decision
- *     1.35   two and three days, 63% and 98% alternating
- *     1.45   three days, 66-68%, six to eleven pills a crossing
- *     1.50   three days, 59-61%
- *     1.60   runs away: 6, 8, 11, 15, 22, 30, 43, 62 days
- *     1.70   a wall by the ninth mark, and never crossed again
- *
- * 煉器 And then the whole band moved, because the harness those readings came from was
- * not playing the game. It gathered, climbed 塔 the tower and brewed, and it never once
- * refined, so a cultivator drowning in 材 material converted none of it into power. 示
- * The advice line has always sent a capped cultivator to 煉器, and a real one arrives at
- * the heavens refining every slot. With that one step added to the loop every reading
- * above is wrong, and the Dragon at 1.45 is a walkover: **28 of 40 crossings over 90%,
- * median 98%**, which is the exact fault this constant was introduced to fix. It is the
- * same fault 爐 the furnace had, in the same harness: a spending policy nobody wrote
- * down, deciding the answer.
- *
- * Measured again, on a cultivator who refines:
- *
- *     1.45   122 days, 28 of 40 walkovers, median 98%
- *     1.55   132 days, 13 of 40 walkovers, median 78%
- *     1.58   136 days,  8 of 40 walkovers, median 68%
- *     1.59   144 days,  5 of 40 walkovers, median 66%
- *     1.60   154 days,  3 of 40 walkovers, median 66%, one mark of 9 days
- *     1.62   301 days, one mark of 32 days: running away
- *     1.65   1001 days, one of 158: gone
- *
- * 1.59 is the middle of what holds now, and it lands on the same 66-68% the first
- * measurement was aiming at, with the walkovers well clear of the quarter this file's
- * test refuses to go past. `tribulation.test.ts` plays forty crossings out and prints
- * them, so moving this is never quiet.
- *
- * 承 And the band moved again, by one step, when the gear started to matter. Two
- * things changed at once: refining now follows the place on the body, and the harness
- * wears what the game marks ▲ rather than guessing by rank and realm. A cultivator
- * arrives at the Dragon about a third stronger, the first crossing anchors to that, and
- * at 1.59 the eighty crossings ran away: 854 days, one mark of 45. Measured on the
- * finished drop rules:
- *
- *     1.59   854 days, longest 45: running away
- *     1.58   338 days, longest 9
- *     1.57   252 days, longest 5
- *
- * 1.58 is the one step, and it keeps the old shape: the reading before the change was
- * 396 days, longest 10.
- *
- * 緣 And half a step back, when the harness began answering the people on the road and
- * stopped marking three wardens killed on its first day. It arrives at the summit with
- * the qi, 道 and gear the meetings give, and at 1.58 thirteen of forty crossings were
- * walkovers against a test that allows ten. Forty crossings:
- *
- *     1.58   13 of 40 walkovers
- *     1.585  141 days, longest 5, 9 walkovers
- *     1.59   160 days, longest 8, 9 walkovers
- *     1.60   189 days, longest 10
- *     1.62   332 days, one mark of 38: running away
- *
- * 煉 Fusion was tried in the harness too and left out: with every three of a kind fused,
- * no footing held both tests. 1.59 let 11 of the first 40 crossings be walkovers, and
- * 1.5925 already ran the long haul to a mark of 27 days by the eightieth. See habits.ts.
+ * A step either side moves the pace by a day and walls nothing, which is the point.
  */
-export const TRIBULATION_FOOTING = 1.585;
+export const TRIBULATION_FOOTING = 1.05;
 
 /**
  * 雷池 How many days of gathering the thunder pool holds.
@@ -654,6 +601,36 @@ export const MARK_DAYS = 2;
 export const TRIBULATION_GAIN = 0.728;
 /** No single mark may take longer than this, or the endgame is a wall, not a ladder. */
 export const MAX_MARK_DAYS = 14;
+
+/**
+ * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.
+ */
+export const PILL_PACE = 3;
+
+/**
+ * 穩 How far ahead of that pace a pill's price keeps rising. Past it, the next pill costs
+ * what the last one did.
+ *
+ * This is the one number that makes the endgame hold, and it was missing. The arithmetic
+ * above balances on a point: three pills a crossing, bought with what a mark adds to the
+ * qi rate. A cultivator one pill short each time buys four, the fourth raises every
+ * price after it, their income does not follow, and the shortfall compounds into a wall.
+ * It was measured: a Dragon 2% heavier than even walled the fiftieth crossing, and one
+ * 10% heavier walled the tenth. No footing can fix that, because every player is short
+ * by a different amount.
+ *
+ * With the price held once a cultivator is this far behind, being behind costs days in
+ * a straight line instead of a curve: every short crossing asks for a few more pills at
+ * the same price, and the pills bought stay bought. Measured on the same run:
+ *
+ *     20   4 days a mark, flat to the eightieth
+ *     25   7 to 8 days, flat to the hundred and sixtieth
+ *     30   15 to 18 days: past a fortnight
+ *
+ * It only ever lowers a price, never raises one, and it holds for the qi and the 材
+ * material halves alike.
+ */
+export const PILL_AHEAD = 25;
 
 /**
  * 期 The week, and what it moves.

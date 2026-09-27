@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { limitFor, stash } from '../sim/stash.ts';
+import { fuseIn, limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -16,14 +16,13 @@ import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
-import { equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
+import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
-import { gearFuse } from '../sim/schools.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
-import { canUnlock, fuseQuality } from '../sim/dao.ts';
+import { canUnlock } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
@@ -516,10 +515,10 @@ export function App() {
 
   const onFuse = useCallback((template: string, rarity: string) => {
     setState((s) => {
-      const next = fuse(s.chest, template, rarity as Item['rarity'], fuseQuality(s.unlocked) * gearFuse(s));
+      const next = fuseIn(s, template, rarity as Item['rarity']);
       if (!next.made) return s;
       float(JUICE.fused, 'gold'); burst('gold', null, 16, 80);
-      return { ...s, chest: [...next.chest] };
+      return next.state;
     });
     sfx.breakthrough();
     haptics.win();

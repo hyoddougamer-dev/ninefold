@@ -32,8 +32,8 @@ import {
 } from '../src/sim/state.ts';
 import { advance, layerCost, layersOpened, rate } from '../src/sim/time.ts';
 import { LAYERS_PER_REALM } from '../src/sim/balance.ts';
-import { brew, canBrew, clearFloor, floorQi, standingFloor } from '../src/sim/trials.ts';
-import { pillCost } from '../src/sim/furnace.ts';
+import { brew, canBrew, clearFloor, floorQi, pillPrice, standingFloor } from '../src/sim/trials.ts';
+
 import { salvageUpTo, salvageWorth, salvageable } from '../src/sim/salvage.ts';
 import { salvageBonus } from '../src/sim/awaken.ts';
 import { canDrive, drive, driveCost, DRIVE_SIZES } from '../src/sim/hunt.ts';
@@ -107,7 +107,7 @@ console.log('出入 every verb, against the price it quotes');
     let s = { ...s0, qi: s0.qi + 1e18, materials: s0.materials + 1e12, realm: 9 };
     const line = (['body', 'bane', 'fortune'] as const).find((l) => canBrew(s, l));
     if (line) {
-      const price = pillCost(s.brewed, line);
+      const price = pillPrice(s, line);
       const before = { qi: s.qi, materials: s.materials };
       s = brew(s, line);
       if (!same(before.qi - s.qi, price.qi) || !same(before.materials - s.materials, price.materials)) {
@@ -244,7 +244,7 @@ console.log('出入 every verb, against the price it quotes');
     const end = playEndgame(1).end;
     const s: State = { ...end, wardenFell: true, qi: tribulationPool(end) * 1.4 };
     const pool = tribulationPool(s);
-    const after = crossTribulation(s, 1);
+    const after = crossTribulation(s, 1, 1);
     const took = s.qi - after.qi;
     if (!same(took, pool)) fail('渡劫 the crossing', `pool is ${num(pool)}, it took ${num(took)}`);
     else ok('渡劫 the crossing spends 雷池 the pool exactly, and the screen says so before the tap');

@@ -1,5 +1,5 @@
 import { LINES, type Line } from '../data/alchemy.ts';
-import { LADDER_GROWTH_LAST, LAYERS_PER_REALM, ladderOpen } from './balance.ts';
+import { LADDER_GROWTH_LAST, LAYERS_PER_REALM, PILL_AHEAD, PILL_PACE, ladderOpen } from './balance.ts';
 import { opensAt } from './unlocks.ts';
 
 /**
@@ -83,11 +83,15 @@ export function brewed(raw: unknown): Brewed {
  * price, and it is only ever the material half: a cheaper pill is a cheaper pill, and
  * the qi half rides the ladder, which is the clock. It is rounded up, so no number of
  * discounts can ever make a pill free. See pillFactor in sim/awaken.ts.
+ *
+ * 穩 `marks` is the cultivator's 雷印 count, because the price follows the marks' pace
+ * rather than the count alone: see PILL_AHEAD.
  */
 export function pillCost(
-  held: Brewed, line: Line, factor = 1,
+  held: Brewed, line: Line, marks: number, factor = 1,
 ): { qi: number; materials: number } {
-  const n = held[line] + PILL_RUNG;
+  // 穩 Past PILL_AHEAD pills ahead of the marks' pace, the price holds. See balance.ts.
+  const n = Math.min(held[line], PILL_PACE * marks + PILL_AHEAD) + PILL_RUNG;
   return {
     qi: Math.ceil(PILL_SHARE * ladderOpen(n)),
     materials: Math.max(1, Math.ceil(PILL_MATERIALS * PILL_MATERIAL_STEP ** n * factor)),

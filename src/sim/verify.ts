@@ -153,12 +153,15 @@ function rateOn(s: State, n: number): number {
 /**
  * 丹 The qi the pills brewed between two saves cost. Summed pill by pill, because every
  * pill costs more than the last; a forged thousand comes to more qi than a lifetime.
+ * Priced at the marks the earlier save had, which is the cheapest any of them could have
+ * been (PILL_AHEAD only ever holds a price down), so an honest save is never charged
+ * more than it paid.
  */
 function pillsBetween(a: State, b: State): number {
   let q = 0;
   for (const line of LINES) {
     for (let n = a.brewed[line]; n < b.brewed[line]; n++) {
-      q += pillCost({ ...b.brewed, [line]: n }, line).qi;
+      q += pillCost({ ...b.brewed, [line]: n }, line, a.tribulation).qi;
       if (!Number.isFinite(q)) return q;
     }
   }

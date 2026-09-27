@@ -7,9 +7,9 @@
  * has to be made once, and the endgame's numbers were typed into the bible by hand until
  * a change to the furnace made every one of them wrong at a stroke.
  */
-import { currentWarden, effectiveBeastPower, odds } from '../src/sim/combat.ts';
+import { crossNow, currentWarden, odds } from '../src/sim/combat.ts';
 import {
-  buy, canBuy, canCross, crossTribulation, tribulationPool, type State,
+  buy, canBuy, canCross, tribulationPool, type State,
 } from '../src/sim/state.ts';
 import { rate } from '../src/sim/time.ts';
 import { brew, canBrew, canRefine, clearFloor, pillPrice, refine, standingFloor } from '../src/sim/trials.ts';
@@ -114,7 +114,12 @@ function takeOwed(s: State, lean: Lean): State {
   return out;
 }
 
-export function playEndgame(marks: number, lean: Lean = 'pill', start?: State): Endgame {
+/**
+ * `heavier` stands every Dragon that much above where the game puts it, which is what a
+ * cultivator whose economy is short of the harness's looks like to the endgame. It is
+ * how the long haul proves it has no knife edge left: see longhaul.test.ts.
+ */
+export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, heavier = 1): Endgame {
   let s = takeOwed(start ?? arrived(), lean);
   const days: number[] = [];
   const floors: number[] = [];
@@ -181,7 +186,8 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State): 
     days.push(waited);
     floors.push(s.tower);
     chances.push(odds(s, currentWarden(s)));
-    s = crossTribulation({ ...s, wardenFell: true }, effectiveBeastPower(s, currentWarden(s)));
+    s = crossNow({ ...s, wardenFell: true });
+    if (heavier !== 1) s = { ...s, tribulationAt: s.tribulationAt * heavier };
     heavens.push(heavenAt(s.tribulation)?.han ?? '');
     // 悟道 A heaven owes a card, and the card is taken the moment the crossing opens it.
     s = takeOwed(s, lean);

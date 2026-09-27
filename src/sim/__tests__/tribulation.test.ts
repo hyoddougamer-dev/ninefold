@@ -4,7 +4,7 @@ import {
   TRIBULATION_POWER,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
-import { effectiveBeastPower } from '../combat.ts';
+import { crossNow, effectiveBeastPower, evenDragon } from '../combat.ts';
 import {
   atTribulation, canCross, crossTribulation, markBonus, newState, power,
   tribulationPool, tribulationScale, validate, type State,
@@ -40,14 +40,14 @@ describe('渡劫 the ladder above the ladder', () => {
     const won: State = { ...base, qi: tribulationPool(base), wardenFell: true };
     expect(canCross(won)).toBe(true);
     const beaten = effectiveBeastPower(won, DRAGON);
-    const after = crossTribulation(won, beaten);
+    const after = crossTribulation(won, beaten, evenDragon(won));
     expect(after.tribulation).toBe(3);
     expect(after.wardenFell).toBe(false);
 
     // Crossing without putting it down is refused rather than half-applied.
     const notYet = { ...won, wardenFell: false };
     expect(canCross(notYet)).toBe(false);
-    expect(crossTribulation(notYet, beaten)).toEqual(notYet);
+    expect(crossTribulation(notYet, beaten, evenDragon(notYet))).toEqual(notYet);
 
     expect(tribulationScale(0)).toBe(1);
     expect(tribulationScale(3)).toBeCloseTo(TRIBULATION_POWER ** 3, 6);
@@ -94,20 +94,29 @@ describe('渡劫 the ladder above the ladder', () => {
   /**
    * 立 The footing. A crossing is settled in blows, and a stance with three arts on it is
    * worth nearly twice the number on the screen, so a Dragon built from bare 力 is a
-   * Dragon the build beats for free, which is exactly what the endgame used to be.
+   * Dragon the build beats for free, which is exactly what the endgame used to be. The
+   * next Dragon is built from the one this cultivator would meet at even odds, read off
+   * the fight, so two cultivators with the same 力 and different builds are asked for
+   * different Dragons.
    */
-  it('builds the next Dragon from the power that actually faced the last one', () => {
+  it('builds the next Dragon from what actually faced the last one', () => {
     const s: State = {
       ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, killed: ALL_WARDENS,
       stance: 'endure', sequence: ['crane', 'tiger', 'wolf'],
       levels: { ...newState(T0).levels, technique: 54 },
     };
     const won = { ...s, qi: tribulationPool(s), wardenFell: true };
-    const after = crossTribulation(won, effectiveBeastPower(won, DRAGON));
-    expect(after.tribulationAt).toBeGreaterThanOrEqual(power(won) * TRIBULATION_FOOTING);
+    const after = crossNow(won);
+    expect(after.tribulationAt).toBeGreaterThanOrEqual(evenDragon(won) * TRIBULATION_FOOTING * 0.999);
     // And the next one stands a whole challenge above that footing, not level with it.
     expect(effectiveBeastPower(after, DRAGON))
       .toBeCloseTo(after.tribulationAt * TRIBULATION_CHALLENGE, 4);
+
+    // The same 力 with no stance and no arts meets a smaller Dragon at even odds, so the
+    // build is counted on both sides rather than forgiven.
+    const bare = { ...won, stance: null, sequence: [] } as State;
+    expect(power(bare)).toBeCloseTo(power(won), 6);
+    expect(evenDragon(won)).toBeGreaterThan(evenDragon(bare) * 1.2);
   });
 
   it('plays, and never lets one mark become a wall', () => {

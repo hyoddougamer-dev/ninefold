@@ -6,7 +6,7 @@
  * the same table on the page. A measurement that appears twice has to be made once.
  */
 import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
-import { stash } from '../src/sim/stash.ts';
+import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense,
@@ -33,7 +33,7 @@ import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/si
 import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageUpTo } from '../src/sim/salvage.ts';
-import { equip, itemWorth } from '../src/sim/chest.ts';
+import { equip, fusable, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
 import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type Item, type Slot } from '../src/data/gear.ts';
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
@@ -213,6 +213,32 @@ function takeDrop(s: State, beast: Beast, seed: number, build?: School | Pair): 
     out = { ...out, worn: after.worn, chest: [...after.chest] };
   }
   return out;
+}
+
+/**
+ * 煉 Fuse every three of a kind, and wear what comes out when the game would mark it ▲.
+ *
+ * A player fuses: the chest puts every group of three in front of them with a button on
+ * it. The harness did not, and for a night that hid a real fault. With fusion in, the
+ * cultivator arrived at the summit 5% stronger and the old footing (a multiple of 力)
+ * walled the eightieth crossing at 45 days one step up from where it passed. The fault
+ * was the endgame's, not fusion's: see PILL_AHEAD and TRIBULATION_FOOTING.
+ */
+function fuseAll(s: State, build?: School | Pair): State {
+  for (let i = 0; i < 60; i++) {
+    const g = fusable(s.chest)[0];
+    if (!g) break;
+    const f = fuseIn(s, g.template, g.rarity);
+    if (!f.made) break;
+    s = f.state;
+    const slot = templateOf(f.made).slot as Slot;
+    const worn = s.worn[slot];
+    if (!worn || wears(s, f.made, worn, build)) {
+      const after = equip(s.worn, s.chest, f.made, slot);
+      s = { ...s, worn: after.worn, chest: [...after.chest] };
+    }
+  }
+  return s;
 }
 
 /**
@@ -461,11 +487,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       const b = quarryFor(s, h.calling);
       if (!b) break;
       s = takeKill(s, b);
-      // 煉 The harness does not fuse. Measured on 27 September: with every three of a kind
-      // fused, the cultivator reaches the summit stronger, the Dragon anchors to that, and
-      // the long haul runs away (a mark of 27 days by the eightieth crossing) at any footing
-      // the first forty accept. That is a balance question for fusion itself, left open.
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
+      if (h.gear) s = fuseAll(s, h.calling);
       fights++;
     }
 

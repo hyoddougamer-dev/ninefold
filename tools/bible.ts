@@ -39,7 +39,7 @@ import {
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
   UNCAPPED_RATE_CEILING,
   TRIBULATION_CHALLENGE,
-  TRIBULATION_FOOTING, TRIBULATION_GAIN, ladderAt, levelCap, realmCost, OPENING_PURSE,
+  TRIBULATION_FOOTING, TRIBULATION_GAIN, PILL_AHEAD, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot, lootFrom, seenBounty } from '../src/sim/combat.ts';
 import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
@@ -897,8 +897,9 @@ const pillRows = LINES.map((line) => {
   </div>`;
 }).join('');
 
+// Priced on the marks' pace, where PILL_AHEAD never holds a price: the table is the climb.
 const pillPrices = [0, 20, 40, 60, 80, 120].map((n) => {
-  const cost = pillCost({ ...none, body: n }, 'body');
+  const cost = pillCost({ ...none, body: n }, 'body', n);
   return `<tr><td><b class="cjk">pill ${n + 1}</b></td>
     <td class="n">${num(cost.qi)}</td><td class="n">${num(cost.materials)}</td></tr>`;
 }).join('');
@@ -2777,8 +2778,8 @@ const page = `<meta charset="utf-8">
     <p class="t">With that one step added, a piece comes out at refine level <b>90</b>.
       The Dragon at its old footing was then a walkover in <b>28 crossings of 40</b>,
       which is the exact fault TRIBULATION_FOOTING exists to prevent. It was re-measured
-      from 1.45 to <b>1.59</b>, and the endgame now reads 144 days with a median crossing
-      at 66%. The same fault 爐 the furnace had, in the same harness: a spending policy
+      from 1.45 to <b>1.59</b>, and the endgame read 144 days with a median crossing at
+      66%. The same fault 爐 the furnace had, in the same harness: a spending policy
       nobody wrote down, quietly deciding the answer.</p>
 
     <div class="trios">${HEAVEN_TABLE}</div>
@@ -4187,12 +4188,20 @@ const page = `<meta charset="utf-8">
       Measured over twenty-four crossings, the odds never once fell under 90%, and 煉體,
       the one pill a Dragon can feel, was never worth brewing. Two days, tap, win, for ever.</p>
     <div class="rule"><b>立 Where the Dragon plants its feet.</b> ${TRIBULATION_FOOTING}x
-      the 力 it last faced, not 1.8x, because 力 is the sword and the shield at once and a
-      multiplier on blows is worth about its square root in the ratio. The band is narrow,
-      and it was measured at forty crossings each, twice. Without 煉器 refining in the
-      loop, 1.20 gave 98% every time and 1.45 the high sixties. With it, which is what a
-      real cultivator does, 1.45 is a walkover in 28 crossings of 40, 1.59 settles at 66%,
-      and 1.62 runs away to a mark of 32 days.</div>
+      the Dragon this cultivator would meet at even odds, read off the fight itself at the
+      moment of the crossing. It used to be a multiple of 力, and it was re-measured every
+      time the build changed: 1.2, 1.45, 1.59, 1.58, 1.585. A stance, three arts, a class
+      or a fusion all win fights that 力 does not see. Reading the fight cancels the build
+      out of both sides.</div>
+    <div class="rule"><b>穩 The knife edge, and what took it away.</b> The arithmetic below
+      balances on a point: three pills a crossing, bought with what a mark adds to the
+      rate. A cultivator one pill short each time buys four, the fourth raises every price
+      after it, and the shortfall compounds. Measured, a Dragon 2% heavier walled the
+      fiftieth crossing and 10% heavier walled the tenth. Any player whose economy was a
+      little short of the harness met a wall the harness never saw. Now a pill's price
+      stops rising once a cultivator is <b>${PILL_AHEAD} pills ahead of the marks' pace</b>,
+      so being behind costs days in a straight line. With every Dragon a tenth heavier the
+      marks go from ${Math.max(...ENDGAME.days)} days to about eleven and stay there.</div>
     <p class="t">The rest is solved, not chosen. Three pills a crossing, a price that rises
       ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
       ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.</p>
@@ -4607,7 +4616,8 @@ const page = `<meta charset="utf-8">
       was the reason no fresh drop could ever be worth wearing late in the climb: the old
       piece, refined twenty times, was worth twice itself. The same cultivator now wears
       eleven. The endgame's footing moved one step to hold, 1.59 to 1.58, because a
-      cultivator now arrives at the Dragon about a third stronger.</p>
+      cultivator arrived at the Dragon about a third stronger. That footing is gone now:
+      see <a href="#top">渡劫</a>.</p>
 
     <h3>物 Each beast leaves what it is</h3>
     <p class="t">Every beast carries three shapes of gear, chosen by what it is: the plated
