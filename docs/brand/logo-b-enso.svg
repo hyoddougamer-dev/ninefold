@@ -1,0 +1,15 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="brushb" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="3" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+    </filter>
+    <linearGradient id="stb" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#D4AF56"/><stop offset=".7" stop-color="#D4AF56" stop-opacity=".85"/><stop offset="1" stop-color="#D4AF56" stop-opacity=".35"/>
+    </linearGradient>
+    <radialGradient id="bgb" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#2A2217"/><stop offset="1" stop-color="#14110D"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bgb)"/>
+  <path d="M 354.0 86.3 A 196 196 0 1 1 189.0 71.8 L 191.7 79.3 A 170 170 0 1 0 351.0 91.5 Z" fill="url(#stb)" filter="url(#brushb)"/>
+  <path transform="translate(136 118) scale(0.24 0.24)" d="M305 258L305 29L497 46Q496 58 487 65Q478 72 460 75L460 75Q458 187 455 289L455 289L587 289L655 210L780 311Q775 317 766.50 322Q758 327 742 329L742 329L742 773Q742 784 747 789Q752 794 767 794L767 794L836 794Q846 794 852 793L852 793Q860 792 865 789.50Q870 787 875 778L875 778Q882 766 890.50 742.50Q899 719 909 687Q919 655 929 621L929 621L939 621L942 787Q968 800 975.50 812.50Q983 825 983 845L983 845Q983 873 965 892.50Q947 912 906 921.50Q865 931 797 931L797 931L725 931Q674 931 647 920.50Q620 910 610 884Q600 858 600 812L600 812L600 317L454 317Q450 422 434 515L434 515Q416 612 372 696Q328 780 246 849.50Q164 919 31 975L31 975L22 962Q115 891 171 813Q227 735 255.50 648Q284 561 295 464L295 464Q302 394 304 317L304 317L74 317L65 289L305 289Q305 274 305 258L305 258Z" fill="#EDE3D2"/>
+</svg>

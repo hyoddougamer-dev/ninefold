@@ -142,6 +142,14 @@ Each of these cost real time once. They are written down so they cost it once.
   new one was published instead. Keep the page's weight in mind: if it ever has to be
   republished over itself, the drawings are what make that impossible.
 
+## 屜 The drawer
+
+Ideas designed, shown to Bruno and deliberately not built yet live in `docs/DRAWER.md`,
+with the reason each one is waiting. Proposal A for spirit beasts (收服, the warden who
+stayed) is there for a future expansion. Read it before designing anything with beasts
+that follow the player: the first companion was reverted because it was a number bolted
+onto fights rather than a system of its own.
+
 ## 榜 The ranked server (Supabase, live since 2026-09-26)
 
 - Project `yqppvmuwlhibswbbvjzz`. **This sandbox cannot reach supabase.co** (the proxy
