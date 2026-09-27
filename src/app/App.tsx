@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { stash } from '../sim/stash.ts';
+import { limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -16,16 +16,15 @@ import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
-import { chestLimit, equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
+import { equip as equipItem, fuse, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
 import { gearFuse } from '../sim/schools.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
-import { affinity, canUnlock, fuseQuality } from '../sim/dao.ts';
+import { canUnlock, fuseQuality } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { wornTotals } from '../data/gear.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -93,11 +92,6 @@ type TabKey = (typeof TABS)[number]['key'];
 const now = () => Date.now() / 1000;
 
 /** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
-function limitOf(s: State): number {
-  const capacity = wornTotals(s.worn, (slot) => affinity(s.unlocked, slot)).capacity;
-  return chestLimit(s.unlocked, capacity, s.awakened);
-}
-
 interface Homecoming {
   readonly seconds: number;
   readonly qi: number;
@@ -500,7 +494,7 @@ export function App() {
 
   const onUnequip = useCallback((slot: Slot) => {
     setState((s) => {
-      const next = unequipItem(s.worn, s.chest, slot, limitOf(s));
+      const next = unequipItem(s.worn, s.chest, slot, limitFor(s));
       if (next.refused) return s;   // a full chest has nowhere to put it
       return { ...s, worn: next.worn, chest: [...next.chest] };
     });
@@ -857,7 +851,7 @@ export function App() {
           battle={battle}
           state={state}
           pulse={pulse}
-          overflow={battle.outcome.won && battle.drop && state.chest.length >= limitOf(state)
+          overflow={battle.outcome.won && battle.drop && state.chest.length >= limitFor(state)
             ? stash(state, battle.drop) : null}
           onClose={closeFight}
         />

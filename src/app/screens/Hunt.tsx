@@ -180,7 +180,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
                 <i>
-                  {b.name} · 力 {num(beastPower(b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
+                  {b.name} · 力 {num(effectiveBeastPower(state, b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
                 </i>
                 {/* 期 And the same chip on the row, because the band at the top is not
                     where somebody scrolling a list of twenty-five is looking. */}

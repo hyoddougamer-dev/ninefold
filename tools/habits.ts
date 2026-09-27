@@ -5,6 +5,7 @@
  * which asserts the order and prints the table on every run, and `bible.ts`, which puts
  * the same table on the page. A measurement that appears twice has to be made once.
  */
+import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
 import { stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
@@ -12,7 +13,7 @@ import {
   canFightWarden, condense,
   newState, power, upgradeCost, type State,
 } from '../src/sim/state.ts';
-import { advance, layersOpened } from '../src/sim/time.ts';
+import { advance, layersOpened, rate } from '../src/sim/time.ts';
 import { odds, takeKill } from '../src/sim/combat.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
@@ -294,6 +295,24 @@ function quarryFor(s: State, build: School | Pair | undefined): Beast | undefine
   return safe.reduce((best, b) => (short(b) > short(best) ? b : best), safe[0]);
 }
 
+/**
+ * 緣 Answer a meeting if one is waiting: the pick that can be paid for and gives the
+ * most, counting 道 and a piece of gear at an hour and two of this cultivator's own qi.
+ */
+function meetOnce(s: State, seed: number): State {
+  const m = meetingDue(s);
+  if (!m) return s;
+  const hour = rate(s) * 3600;
+  const worth = (i: 0 | 1) => {
+    const p = m.picks[i];
+    if (!canAnswer(s, p)) return -Infinity;
+    const g = giftOf(s, p.outcome);
+    return g.qi - priceOf(s, p).qi + g.dao * hour + (p.outcome.kind === 'item' ? 2 * hour : 0);
+  };
+  const which: 0 | 1 = worth(1) > worth(0) ? 1 : 0;
+  return answer(s, m.key, which, seed);
+}
+
 /** 職 How many of each school a build wants on the body. */
 function quotas(build: School | Pair): Partial<Record<School, number>> {
   const pair = PAIRS.find((p) => p.key === build);
@@ -378,6 +397,11 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     watch?.((t - T0) / DAY, s);
 
     s = spendTree(s, h.branch);
+
+    // 緣 The person on the road. Every cultivator who opens the game meets them, so the
+    // harness answers too: the qi, material, 道 and gear they give used to be missing from
+    // every curve on the page (found by the coherence audit).
+    s = meetOnce(s, ++seed);
 
     if (h.build) {
       const stance = [...STANCES].reverse().find((x) => x.realm <= s.realm);

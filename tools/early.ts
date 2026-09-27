@@ -26,6 +26,7 @@
  *
  *     npm run early
  */
+import { stash } from '../src/sim/stash.ts';
 import { LAYERS_PER_REALM, focusAt } from '../src/sim/balance.ts';
 import {
   UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canCondense, canFightWarden,
@@ -36,15 +37,14 @@ import { odds, takeKill } from '../src/sim/combat.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen, systemInfo, SYSTEMS } from '../src/sim/unlocks.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
-import { affinity, canUnlock } from '../src/sim/dao.ts';
+import { canUnlock } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { dropFor, noteFate } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
-import { salvageBonus } from '../src/sim/awaken.ts';
-import { salvageUpTo, salvageValue } from '../src/sim/salvage.ts';
-import { addToChest, chestLimit, equip, itemWorth } from '../src/sim/chest.ts';
+import { salvageUpTo } from '../src/sim/salvage.ts';
+import { equip, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
-import { SLOTS, templateOf, wornTotals, type Slot } from '../src/data/gear.ts';
+import { SLOTS, templateOf, type Slot } from '../src/data/gear.ts';
 import { canRefine, refine, refinePrice } from '../src/sim/trials.ts';
 import { advice } from '../src/app/advice.ts';
 import { MARKS, marksOf } from '../src/sim/record.ts';
@@ -132,14 +132,14 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
   // 緣 The same two calls the app makes: the bar decides the drop, then moves.
-  const item = dropFor(s, beast, seed, fortuneOf(s), s.layer);
-  s = noteFate(s, beast, item);
-  if (!item) return s;
-  const limit = chestLimit(s.unlocked, wornTotals(s.worn, (x) => affinity(s.unlocked, x)).capacity, s.awakened);
-  const kept = addToChest(s.chest, item, limit);
-  let out: State = { ...s, chest: [...kept.chest] };
-  if (kept.dropped) out = { ...out, qi: out.qi + salvageValue(kept.dropped, salvageBonus(s.awakened)) };
-  if (kept.dropped?.id === item.id) return out;
+  const found = dropFor(s, beast, seed, fortuneOf(s), s.layer);
+  s = noteFate(s, beast, found);
+  if (!found) return s;
+  // 藏 The game's own stash(): 空囊, the chest's limit and the melt, 寶匠 included.
+  const st = stash(s, found);
+  let out: State = st.state;
+  const item = st.item!;
+  if (st.dropped?.id === item.id) return out;
   const slot = templateOf(item).slot as Slot;
   const worn = out.worn[slot];
   if (!worn || swing(out, item).better) {

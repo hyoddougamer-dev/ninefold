@@ -1,4 +1,4 @@
-import { currentWarden, odds } from '../sim/combat.ts';
+import { currentWarden, effectiveBeastPower, odds } from '../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, upgradeCost,
   type State,
@@ -297,8 +297,9 @@ export function advice(s: State): Advice | null {
       .find((b) => odds(s, b) < 0.6);
     if (next) {
       return {
-        han: '狩', text: ADVICE.reachFor(next.han, beastPower(next), mine), tab: 'hunt',
-        toward: Math.max(0, Math.min(1, mine / beastPower(next))),
+        // 力 The beast as this cultivator meets it, the number the hunt row shows.
+        han: '狩', text: ADVICE.reachFor(next.han, effectiveBeastPower(s, next), mine), tab: 'hunt',
+        toward: Math.max(0, Math.min(1, mine / effectiveBeastPower(s, next))),
       };
     }
   }

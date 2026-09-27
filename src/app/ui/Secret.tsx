@@ -1,7 +1,7 @@
 import {
   ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave, roomsFor,
 } from '../../sim/secret.ts';
-import { beastPower, odds } from '../../sim/combat.ts';
+import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { duration, num } from '../../sim/format.ts';
 import { icon } from '../../art/icon.ts';
 import { chamber } from '../../art/secret.ts';
@@ -89,7 +89,7 @@ export function Secret({ state, onOpen, onLeave }: {
               <span className="body">
                 <b><span className="cjk">{info.han}</span> {gift.fight ? gift.fight.name : info.name}</b>
                 <i>{gift.fight
-                  ? SECRET.beast(num(beastPower(gift.fight)), chance, gift.fight.realm > state.realm)
+                  ? SECRET.beast(num(effectiveBeastPower(state, gift.fight)), chance, gift.fight.realm > state.realm)
                   : info.says}</i>
                 {bits.length > 0 && <em className="mono">{bits.join(' · ')}</em>}
                 {/* 期 And on the door itself, where the doubled number is already being

@@ -605,8 +605,19 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
  *
  * 1.58 is the one step, and it keeps the old shape: the reading before the change was
  * 396 days, longest 10.
+ *
+ * 緣 And half a step back, when the harness began answering the people on the road and
+ * stopped marking three wardens killed on its first day. It arrives at the summit with
+ * the qi, 道 and gear the meetings give, and at 1.58 thirteen of forty crossings were
+ * walkovers against a test that allows ten. Forty crossings:
+ *
+ *     1.58   13 of 40 walkovers
+ *     1.585  141 days, longest 5, 9 walkovers
+ *     1.59   160 days, longest 8, 9 walkovers
+ *     1.60   189 days, longest 10
+ *     1.62   332 days, one mark of 38: running away
  */
-export const TRIBULATION_FOOTING = 1.58;
+export const TRIBULATION_FOOTING = 1.585;
 
 /**
  * 雷池 How many days of gathering the thunder pool holds.
