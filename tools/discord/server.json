@@ -1,11 +1,19 @@
 {
-  "_comment": "測 The testers' Discord server, as data. tools/discord.mjs makes the real server match this, and running it twice changes nothing the second time. English, like the game: Bruno's community from his previous game is international. Everything the members read is here and nowhere else.",
+  "_comment": "測 The Ninefold Discord server, as data. tools/discord.mjs makes the real server match this, and running it twice changes nothing the second time. English, like the game: Bruno's community from his previous game is international. Everything the members read is here and nowhere else. In a message body, {#key} becomes a link to that channel.",
   "name": "九境 Ninefold",
+  "description": "An idle cultivation game, painted in ink. Nine realms, nine heavens, and nothing taken away for being away.",
   "community": { "rules": "welcome", "updates": "team" },
+  "settings": { "system": "general" },
   "invite": "welcome",
+  "everyone": ["INVITE", "VIEW", "SEND", "HISTORY", "EMBED", "ATTACH", "REACT", "EXTERNAL_EMOJIS", "EXTERNAL_STICKERS",
+    "CONNECT", "SPEAK", "VAD", "STREAM", "CHANGE_NICKNAME", "THREADS", "SEND_THREADS", "APP_COMMANDS", "VOICE_MESSAGES", "POLLS"],
   "roles": [
-    { "key": "master", "name": "師 Developer", "color": "#D4AF56", "hoist": true, "owner": true },
-    { "key": "tester", "name": "測 Tester", "color": "#7FB495", "hoist": true }
+    { "key": "master", "name": "師 Developer", "color": "#D4AF56", "hoist": true, "owner": true,
+      "permissions": ["MENTION_EVERYONE", "MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "PIN"] },
+    { "key": "mod", "name": "守 Guardian", "color": "#D2604E", "hoist": true,
+      "permissions": ["MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "MANAGE_NICKNAMES", "MUTE_MEMBERS", "MOVE_MEMBERS", "PIN"] },
+    { "key": "tester", "name": "測 Tester", "color": "#7FB495", "hoist": true },
+    { "key": "follower", "name": "觀 Follower", "color": "#9C907C", "hoist": false }
   ],
   "categories": [
     {
@@ -13,22 +21,22 @@
       "channels": [
         { "key": "welcome", "name": "入門-welcome", "type": "text", "readOnly": true,
           "topic": "入門 Start here: what Ninefold is, how to play the test, and the rules." },
-        { "key": "news", "name": "告-announcements", "type": "text", "readOnly": true,
+        { "key": "news", "name": "告-announcements", "type": "announcement", "readOnly": true,
           "topic": "告 New builds, what changed, and what is coming." },
-        { "key": "devlog", "name": "筆-dev-log", "type": "text", "readOnly": true,
+        { "key": "devlog", "name": "筆-dev-log", "type": "announcement", "readOnly": true,
           "topic": "筆 Sneak peeks from the workbench: paintings, systems and numbers before they ship." }
       ]
     },
     {
       "name": "測 PLAYTEST",
       "channels": [
-        { "key": "bugs", "name": "報-bugs", "type": "forum",
+        { "key": "bugs", "name": "報-bugs", "type": "forum", "emoji": "🐞",
           "topic": "報 One problem per post. Say what you did, what you expected and what happened. Add a screenshot if you can, and the Build line from the bottom of the ≡ menu (top right corner).",
-          "tags": ["Bug", "Art", "Balance", "Text", "Fixed"] },
+          "tags": [["Bug", "🐞"], ["Art", "🎨"], ["Balance", "⚖️"], ["Text", "📝"], ["Fixed", "✅"]] },
         { "key": "ideas", "name": "議-ideas", "type": "forum",
           "topic": "議 Ideas and opinions. What would make the game better, what you would take out, what made you come back.",
-          "tags": ["Idea", "Balance", "Art", "Question"] },
-        { "key": "journal", "name": "記-journal", "type": "text",
+          "tags": [["Idea", "💡"], ["Balance", "⚖️"], ["Art", "🎨"], ["Question", "❓"]] },
+        { "key": "journal", "name": "記-journal", "type": "text", "slowmode": 30,
           "topic": "記 Where you are in the game and what happened today. A realm, a fight, somebody on the road. Short is fine." },
         { "key": "shots", "name": "圖-screenshots", "type": "text",
           "topic": "圖 Screenshots: what you found beautiful, strange or broken." }
@@ -40,85 +48,129 @@
         { "key": "general", "name": "談-general", "type": "text",
           "topic": "談 Talk about anything." },
         { "key": "ranks", "name": "榜-rankings", "type": "text",
-          "topic": "榜 Who leads the 天榜 Heaven List, and how they got there." }
+          "topic": "榜 Who leads the 天榜 Heaven List, and how they got there." },
+        { "key": "lounge", "name": "聊 Lounge", "type": "voice" }
       ]
     },
     {
       "name": "師 TEAM",
       "channels": [
-        { "key": "team", "name": "師-team", "type": "text", "private": true,
-          "topic": "師 Only the developer sees this. Discord sends its community notices here." }
+        { "key": "team", "name": "師-team", "type": "text", "private": ["master", "mod"],
+          "topic": "師 The developer and the guardians. Discord sends its community notices here." }
       ]
     }
   ],
+  "welcomeScreen": {
+    "description": "An idle cultivation game, painted in ink. Start at the gate, then come and play.",
+    "channels": [
+      { "channel": "welcome", "emoji": "⛩️", "description": "Start here: how to play the test" },
+      { "channel": "news", "emoji": "📜", "description": "New builds and what changed" },
+      { "channel": "bugs", "emoji": "🐞", "description": "Found a problem? One post each" },
+      { "channel": "journal", "emoji": "🌙", "description": "Where you are and what happened today" },
+      { "channel": "general", "emoji": "🍵", "description": "Talk about anything" }
+    ]
+  },
+  "onboarding": {
+    "defaults": ["welcome", "news", "devlog", "bugs", "ideas", "journal", "shots", "general", "ranks"],
+    "prompts": [
+      {
+        "title": "What brings you to Ninefold?",
+        "single": true,
+        "options": [
+          { "title": "I want to playtest", "emoji": "🧪", "description": "You get the 測 Tester role. Thank you.", "roles": ["tester"] },
+          { "title": "I'm following along", "emoji": "👀", "description": "News and peeks, no homework.", "roles": ["follower"] }
+        ]
+      }
+    ]
+  },
   "messages": [
     {
       "key": "welcome-main",
       "channel": "welcome",
       "pin": true,
-      "title": "九境 Ninefold · Welcome",
+      "title": "九境 Ninefold",
       "color": "#D4AF56",
       "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/1.webp",
       "body": [
-        "An idle cultivation game. Qi gathers on its own, even with the phone closed, and you climb nine realms and the nine heavens above them.",
+        "**An idle cultivation game, painted in ink.** Qi gathers on its own, even with the phone closed, and you climb nine realms and the nine heavens above them.",
         "",
-        "**Play:** https://hyoddougamer-dev.github.io/ninefold/",
-        "**Android app:** https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk",
-        "On iPhone, open the game in Safari and tap Share → Add to Home Screen.",
-        "",
-        "**Where things go:** a problem to 報 bugs, an idea to 議 ideas, and where you are in the game to 記 journal.",
-        "",
-        "Losing a fight never costs anything. Try everything."
-      ]
+        "Losing a fight never costs anything, and nothing is ever taken away for being away. Try everything."
+      ],
+      "fields": [
+        ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
+        ["▸ Android app", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
+      ],
+      "footer": "九境 Ninefold · closed test"
+    },
+    {
+      "key": "welcome-guide",
+      "channel": "welcome",
+      "pin": true,
+      "title": "道 Finding your way",
+      "color": "#7FB495",
+      "body": [
+        "{#news} new builds and what changed",
+        "{#devlog} peeks at what is coming",
+        "{#bugs} one problem per post",
+        "{#ideas} what would make it better",
+        "{#journal} where you are and what happened today",
+        "{#shots} what you found beautiful, strange or broken",
+        "{#general} and {#ranks} everything else"
+      ],
+      "footer": "Pick 測 Tester in Channels & Roles if you want to help test"
     },
     {
       "key": "welcome-rules",
       "channel": "welcome",
       "pin": true,
       "title": "規 The rules",
-      "color": "#7FB495",
+      "color": "#D2604E",
       "body": [
-        "**1.** Be kind. This is a small community and everyone here is helping.",
-        "**2.** The game is in closed test. Ask before sharing it outside the server.",
-        "**3.** One bug per post in 報 bugs, so nothing gets lost.",
-        "**4.** No spam, no advertising, nothing you would not show a stranger."
+        "**1 · Be kind.** This is a small community and everyone here is helping.",
+        "**2 · Keep it closed.** The game is in closed test. Ask before sharing it outside the server.",
+        "**3 · One bug, one post.** In {#bugs}, so nothing gets lost.",
+        "**4 · No spam, no ads,** nothing you would not show a stranger.",
+        "",
+        "The 守 Guardians keep the peace. Breaking the rules gets a warning, then a timeout."
       ]
     },
     {
       "key": "launch",
       "channel": "news",
       "pin": true,
-      "title": "告 Ninefold: the first closed test",
+      "title": "告 Ninefold · The first closed test",
       "color": "#D4AF56",
       "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/9.webp",
       "body": [
         "Hey everyone. This is the new home for **九境 Ninefold**, the game I have been building since Dao of the Endless Sky closed.",
         "",
-        "It is an idle cultivation game, painted in ink. You gather qi, climb nine realms of nine layers, and cross the tribulation into nine heavens above the summit. Every beast is painted by hand, every realm has its own landscape, and people you meet on the road remember what you did.",
+        "It is an idle cultivation game, painted in ink. You gather qi, climb nine realms of nine layers, and cross the tribulation into nine heavens above the summit. Every beast is painted by hand, every realm has its own landscape, and the people you meet on the road remember what you did.",
         "",
         "It is built around one promise: **nothing is ever taken away for being away.** Close it for a week and your cultivator is further along, never behind.",
         "",
-        "**What I need from you:** play it the way you would if nobody was watching. Open it when you feel like it. Then tell me what confused you, what annoyed you, and what made you come back.",
-        "",
-        "**Play:** https://hyoddougamer-dev.github.io/ninefold/",
-        "**Android app:** https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk",
-        "",
-        "Bugs go to 報 bugs, ideas to 議 ideas. Thank you for being here."
-      ]
+        "**What I need from you:** play it the way you would if nobody was watching. Then tell me what confused you, what annoyed you, and what made you come back."
+      ],
+      "fields": [
+        ["▸ Play", "https://hyoddougamer-dev.github.io/ninefold/"],
+        ["▸ Android", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        ["▸ Report", "Bugs in {#bugs}, ideas in {#ideas}"]
+      ],
+      "footer": "Thank you for being here · 師 Bruno"
     },
     {
       "key": "bugs-how",
       "channel": "news",
       "pin": true,
-      "title": "告 How to report a bug",
+      "title": "報 How to report a bug",
       "color": "#D2604E",
       "body": [
-        "Open a new post in 報 bugs and say three things:",
+        "Open a new post in {#bugs} and say three things:",
         "**1.** What you did.",
         "**2.** What you expected to happen.",
         "**3.** What happened instead.",
         "",
-        "Add a screenshot and the Build line from the bottom of the ≡ menu (top right corner). If the game showed an error, copy its text too."
+        "Add a screenshot and the **Build** line from the bottom of the ≡ menu (top right corner). If the game showed an error, copy its text too."
       ]
     }
   ]
