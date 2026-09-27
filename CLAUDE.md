@@ -119,6 +119,11 @@ Each of these cost real time once. They are written down so they cost it once.
   column*, pushed the row past the stage and hung the beast off the side of the screen.
   This is the bug Bruno photographed, and `npm run arena` exists because of it: **look at
   a screen at 320 as well as at 400**, because nothing in the build was opening it there.
+- **A balance that holds at one number and not the next is a knife edge, not a balance.**
+  The Dragon's footing passed eighty crossings at 1.585 and walled them at 1.59, and every
+  real player sits a few per cent away from the harness. Before trusting a tuned number,
+  push the system off it (`playEndgame(80, 'pill', undefined, 1.1)` stands every Dragon a
+  tenth heavier) and check it slows rather than walls. `PILL_AHEAD` is what fixed that one.
 - **Read the harness by name, never by position.** `RUNS[0]`, `const [waiter, , , active]
   = runs`. Adding one cultivator to `HABITS` silently made every assertion and every
   sentence on the bible page about somebody else. Use `runs.find(r => r.habit.name === …)`.
@@ -147,6 +152,10 @@ Each of these cost real time once. They are written down so they cost it once.
 - Secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are set in GitHub. The legacy
   JWT keys are **off**: the game uses the publishable key, the function the new secret
   key (`SUPABASE_SECRET_KEYS`). Never put a secret key in the repo or ask for one in chat.
+- Guests are limited to ten an hour per address (`rate_limit_anonymous_users`, read back
+  after every deploy). hCaptcha is built in and **off** until both the `HCAPTCHA_SECRET`
+  secret and the `HCAPTCHA_SITEKEY` repository variable exist; one without the other would
+  lock guests out, so the workflow waits for both.
 - Supabase refuses custom email templates on the free plan without its own SMTP, so the
   sign-in email is a link with no code. Inside the APK that link opens the browser, so
   testers there play as guests.
