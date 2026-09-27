@@ -1,5 +1,5 @@
 import type { Beast } from '../data/bestiary.ts';
-import { DRIVE_QI, ladderBetween } from './balance.ts';
+import { DRIVE_QI, DRIVE_SIZES, ladderBetween } from './balance.ts';
 import { layersOpened } from './time.ts';
 import { lootFrom, quarryPaid } from './combat.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
@@ -51,7 +51,7 @@ import { classDrive } from './schools.ts';
  */
 
 /** The sizes offered. One is always free and always there; these are the bought ones. */
-export const DRIVE_SIZES = [10, 50, 200] as const;
+export { DRIVE_SIZES };
 
 /**
  * A beast can be driven once you have its 熟 Known mark: ten fights you won.

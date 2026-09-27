@@ -21,7 +21,10 @@
  * the same build.
  */
 
-import { LAYERS_PER_REALM } from '../sim/balance.ts';
+import {
+  ART_NUMBERS as A, LAYERS_PER_REALM, SEQUENCE_SLOTS, STANCE_LAYER, STANCE_NUMBERS as S,
+} from '../sim/balance.ts';
+import { pct } from '../sim/format.ts';
 
 export type StanceKey =
   | 'swift' | 'guard' | 'fierce' | 'entangle' | 'endure'
@@ -40,19 +43,19 @@ export interface Stance {
 
 export const STANCES: readonly Stance[] = [
   { key: 'swift', realm: 1, han: '疾', name: 'Swift',
-    text: 'You strike twice a round for 60% each, and your sequence runs twice as fast.',
+    text: `You strike twice a round for ${pct(S.swiftShare)} each, and your sequence runs twice as fast.`,
     wants: 'a sequence that wants to come round again' },
   { key: 'guard', realm: 2, han: '守', name: 'Guard',
-    text: 'You take 40% less and deal 25% less.',
+    text: `You take ${pct(1 - S.guardTaken)} less and deal ${pct(1 - S.guardDealt)} less.`,
     wants: '破 sunder, and fights you win slowly' },
   { key: 'fierce', realm: 3, han: '兇', name: 'Ferocious',
-    text: 'You deal 50% more and take 50% more.',
+    text: `You deal ${pct(S.fierceDealt - 1)} more and take ${pct(S.fierceTaken - 1)} more.`,
     wants: '力 power, and fights that end early' },
   { key: 'entangle', realm: 4, han: '纏', name: 'Entangle',
-    text: 'The beast loses 8% of its power every round.',
+    text: `The beast loses ${pct(1 - S.entangle)} of its power every round.`,
     wants: 'beasts above your weight' },
   { key: 'endure', realm: 5, han: '續', name: 'Endure',
-    text: 'You recover 6% of your health every round.',
+    text: `You recover ${pct(S.endure)} of your health every round.`,
     wants: '氣 qi, and long fights' },
   { key: 'steady', realm: 6, han: '穩', name: 'Steady',
     text: 'Your blows never vary. No dice at all.',
@@ -71,19 +74,8 @@ export const STANCES: readonly Stance[] = [
 export const STANCE_BY_KEY: Readonly<Record<string, Stance>> =
   Object.fromEntries(STANCES.map((s) => [s.key, s]));
 
-/**
- * 層 Where in its realm a stance walks out.
- *
- * 隙 Measured, a realm hands over everything it has in its first minute: the name, the
- * first common, the warden's art, the stance and a whole lineage of gear, and then runs
- * for twelve days with one beast every five. The commons were already spread across
- * layers 0, 4 and 7 for exactly this reason; the stance was not. It stands at the
- * second layer now, which is the first gap in a realm with nothing else in it.
- *
- * 取 Nothing is taken away by this. A stance held is held for ever, and the realm below
- * you gave you its own. What moves is when the *new* one arrives.
- */
-export const STANCE_LAYER = 2;
+/** 層 Where in its realm a stance walks out: STANCE_LAYER, in balance.ts. */
+export { STANCE_LAYER };
 
 /** The stances a cultivator standing here may stand in. */
 export function stancesFor(realm: number, layer = LAYERS_PER_REALM): readonly Stance[] {
@@ -104,28 +96,28 @@ export const ARTS: readonly Art[] = [
   { key: 'fox', realm: 1, han: '狐影', name: 'Fox Shadow', icon: 'fox-head',
     text: "The beast's blow this round misses you entirely." },
   { key: 'ape', realm: 2, han: '猿臂', name: 'Ape Arm', icon: 'monkey',
-    text: 'This strike hits for 60% more.' },
+    text: `This strike hits for ${pct(A.ape - 1)} more.` },
   { key: 'crane', realm: 3, han: '鶴唳', name: 'Crane Cry', icon: 'heron',
     text: 'The beast loses a tenth of its power for the rest of the fight.' },
   { key: 'tiger', realm: 4, han: '虎嘯', name: 'Tiger Roar', icon: 'tiger-head',
     text: 'This strike lands twice.' },
   { key: 'turtle', realm: 5, han: '龜息', name: 'Turtle Breath', icon: 'turtle',
-    text: 'You recover 12% of your health.' },
+    text: `You recover ${pct(A.turtle)} of your health.` },
   { key: 'puppet', realm: 6, han: '傀儡', name: 'Puppet Thread', icon: 'golem-head',
     text: 'A quarter of the blow you took last round is dealt back.' },
   { key: 'wolf', realm: 7, han: '狼噬', name: 'Wolf Bite', icon: 'direwolf',
-    text: 'This strike hits 12% harder for every round already fought.' },
+    text: `This strike hits ${pct(A.wolf)} harder for every round already fought.` },
   { key: 'serpent', realm: 8, han: '蛟騰', name: 'Serpent Rise', icon: 'sea-serpent',
     text: 'Triple damage, but only below half health.' },
   { key: 'dragon', realm: 9, han: '龍威', name: 'Dragon Might', icon: 'spiked-dragon-head',
-    text: "This strike hits 35% harder, and the beast's blow this round misses." },
+    text: `This strike hits ${pct(A.dragon - 1)} harder, and the beast's blow this round misses.` },
 ];
 
 export const ART_BY_KEY: Readonly<Record<string, Art>> =
   Object.fromEntries(ARTS.map((a) => [a.key, a]));
 
-/** How many arts fit in a sequence. Three is enough to order and few enough to hold. */
-export const SEQUENCE_SLOTS = 3;
+/** How many arts fit in a sequence: SEQUENCE_SLOTS, in balance.ts. */
+export { SEQUENCE_SLOTS };
 
 /** Which warden drops which art. Named rather than positional, so a reorder is safe. */
 export const WARDEN_ART: Readonly<Record<string, string>> = {

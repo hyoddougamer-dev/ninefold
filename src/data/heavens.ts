@@ -29,6 +29,9 @@
  * The Dragons are named because the alternative was measured and it is grim: forty
  * crossings against one animal called 龍, distinguishable only by the figure beside it.
  */
+
+import { MARKS_PER_HEAVEN } from '../sim/balance.ts';
+
 export interface Heaven {
   /** 1-based. Heaven 1 is entered on the first crossing. */
   readonly n: number;
@@ -48,23 +51,8 @@ export interface Heaven {
   readonly gains: string;
 }
 
-/**
- * 印 How many 雷印 marks one heaven is worth.
- *
- * Three, measured against the endgame harness: a crossing settles at about MARK_DAYS
- * plus the gathering either side of it, so three of them is a little over a week. Nine
- * heavens is then roughly eleven weeks of named arrivals on top of a climb that ends in
- * nine, which is the thirteen weeks that were asked for, with the climb and the
- * endgame overlapping rather than queueing.
- *
- * 二 Two was tried, to close the two weeks of the first thirteen that name nothing new
- * (weeks 10 and 13: a heaven comes every ten or eleven days and a week is seven). It is
- * a wall. Every heaven hands the Dragon the whole of its step at once, ×5.23, and two
- * crossings are not enough to fill the room the heaven opened, so the fifth heaven
- * arrives on day 149 instead of 103, one crossing takes 400 days, and the ninth heaven
- * is on day 981. Those two weeks are what 期 the week is for.
- */
-export const MARKS_PER_HEAVEN = 3;
+/** 印 How many 雷印 marks one heaven is worth: MARKS_PER_HEAVEN, in balance.ts. */
+export { MARKS_PER_HEAVEN };
 
 export const HEAVENS: readonly Heaven[] = [
   { n: 1, han: '真仙', name: 'True Immortal', colour: '#A077B8',

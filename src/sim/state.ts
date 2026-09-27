@@ -3,14 +3,16 @@ import {
   uncappedRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
-  FLOOR_LOOT, FLOOR_LOOT_GROWTH, FOCUS_MAX, OPENING_PURSE,
-  FATE_FULL, FUSE_TOP,
+  FOCUS_MAX, OPENING_PURSE,
+  FATE_FULL, FUSE_TOP, BEDS, CORE_STEP, FLOORS_PER_REALM, SECONDARY_SHARE, SECONDARIES,
+  UPGRADE_NUMBERS, floorPay,
 } from './balance.ts';
+import { pct } from './format.ts';
 import { BEASTS } from '../data/bestiary.ts';
 const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
-  AFFIXES, RARITIES, SECONDARIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
+  AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Worn,
 } from '../data/gear.ts';
 import { chestLimit, itemWorth } from './chest.ts';
@@ -27,7 +29,7 @@ import { bodyTotals, classPower, classUpgrades } from './schools.ts';
 import { weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, validMet } from '../data/meetings.ts';
-import { BEDS, EMPTY, validBeds, type Bed } from '../data/herbs.ts';
+import { EMPTY, validBeds, type Bed } from '../data/herbs.ts';
 import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
@@ -65,21 +67,21 @@ export const UPGRADE_INFO: Record<Upgrade, {
   currency: 'qi' | 'material';
 }> = {
   technique: { han: '劍訣', name: 'Sword Technique', icon: 'katana',
-    effect: '+22% power', share: 0.7, gain: 1.22, affects: 'power', currency: 'qi' },
+    effect: `+${pct(UPGRADE_NUMBERS.technique.gain - 1)} power`, ...UPGRADE_NUMBERS.technique,
+    affects: 'power', currency: 'qi' },
   method: { han: '功法', name: 'Cultivation Method', icon: 'scroll-unfurled',
-    effect: '+20% qi per second', share: 1.0, gain: 1.20, affects: 'rate', currency: 'qi' },
+    effect: `+${pct(UPGRADE_NUMBERS.method.gain - 1)} qi per second`, ...UPGRADE_NUMBERS.method,
+    affects: 'rate', currency: 'qi' },
   // Named 丹藥 Pills until 丹爐 the Furnace arrived and took the word. Two things called
   // "pills" on two screens is exactly the confusion the copy rules forbid, so this one
   // became what it always was: breathing.
   pills: { han: '吐納', name: 'Breathwork', icon: 'energy-breath',
-    effect: '+14% qi per second', share: 0.45, gain: 1.14, affects: 'rate', currency: 'qi' },
+    effect: `+${pct(UPGRADE_NUMBERS.pills.gain - 1)} qi per second`, ...UPGRADE_NUMBERS.pills,
+    affects: 'rate', currency: 'qi' },
   cores: { han: '妖丹', name: 'Beast Cores', icon: 'crystal-cluster',
-    effect: '+8% power', share: 3, gain: 1.08, affects: 'power', currency: 'material' },
+    effect: `+${pct(UPGRADE_NUMBERS.cores.gain - 1)} power`, ...UPGRADE_NUMBERS.cores,
+    affects: 'power', currency: 'material' },
 };
-
-/** What 妖丹 costs in materials at a given level. Materials are earned by hand, not by
- *  waiting, so this is the one price that does not ride the mountain. */
-export const CORE_STEP = 1.35;
 
 export interface State {
   readonly v: 1;
@@ -591,7 +593,8 @@ export function validate(raw: unknown, now: number): State {
   ) as Record<Upgrade, number>;
 
   const towerClaim = clamp(Math.floor(num(o.tower, 0)), 0, 3000);
-  const reach = towerClaim > 81 ? 9 : Math.max(realm + 1, Math.ceil(towerClaim / 9));
+  const reach = towerClaim > LAYERS ? LAYERS / FLOORS_PER_REALM
+    : Math.max(realm + 1, Math.ceil(towerClaim / FLOORS_PER_REALM));
   const rawKilled = (o.killed ?? {}) as Record<string, unknown>;
   const killed: Record<string, number> = {};
   for (const [k, v] of Object.entries(rawKilled)) {
@@ -631,7 +634,7 @@ export function validate(raw: unknown, now: number): State {
       // 限 Each line is capped at what its own rank and realm could ever make, a primary at
       // the fusion ceiling of its base and a secondary at the same of its 60%. A flat 120
       // let six realm-one pieces carry fifteen times the power of any honest set.
-      const top = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : 0.6) * FUSE_TOP * 1.001;
+      const top = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : SECONDARY_SHARE) * FUSE_TOP * 1.001;
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
@@ -859,7 +862,7 @@ export function validate(raw: unknown, now: number): State {
    * put together, and ten thousand times that is a generous ceiling that still moves
    * with the cultivator rather than standing still while they climb past it.
    */
-  const floorsWorth = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** Math.max(0, out.tower - 1);
+  const floorsWorth = floorPay(Math.max(1, out.tower));
   const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
 
   /**

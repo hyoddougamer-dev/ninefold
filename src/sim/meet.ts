@@ -6,6 +6,7 @@ import { loot } from './combat.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { rollDrop } from './drops.ts';
 import type { State } from './state.ts';
+import { MEET_GAP } from './balance.ts';
 
 /**
  * 緣 Whether somebody is on the road, and what happens when you answer them.
@@ -21,8 +22,11 @@ import type { State } from './state.ts';
  * away, and that includes an offer.
  */
 
-/** How long after one meeting before the next can arrive, in seconds. */
-export const MEET_GAP = 3 * 3600;
+/** How long after one meeting before the next can arrive, in seconds: see balance.ts. */
+export { MEET_GAP };
+
+/** The first realm anybody is met in, read off the meetings themselves. */
+const MEETS_FROM = Math.min(...MEETINGS.map((m) => m.realm));
 
 /** A cheap, stable hash, so a save picks its own meetings and always the same ones. */
 function pick(n: number): number {
@@ -40,7 +44,7 @@ function pick(n: number): number {
  * met, it is quiet, which is honest: this is flavour and not a chore list.
  */
 export function meetingDue(s: State): Meeting | null {
-  if (s.realm < 2) return null;
+  if (s.realm < MEETS_FROM) return null;
   const since = s.at - (s.metAt || s.startedAt);
   if (since < MEET_GAP) return null;
   const left = MEETINGS.filter((m) => m.realm <= s.realm && !s.met.includes(m.key));

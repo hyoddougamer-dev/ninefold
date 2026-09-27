@@ -1,8 +1,11 @@
 import type { Beast } from '../data/bestiary.ts';
 import { isOpen } from './unlocks.ts';
-import { LAYERS_PER_REALM } from './balance.ts';
 import {
-  AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SECONDARIES, baseValue, droppableIn,
+  BASE_DROP_CHANCE, LAYERS_PER_REALM, RARITY_WEIGHT, SECONDARIES, SECONDARY_SHARE, VARIANCE,
+  WARDEN_RARITY_TILT,
+} from './balance.ts';
+import {
+  AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, baseValue, droppableIn,
   roundValue, type Affix, type GearTemplate, type Item, type Rarity, type Roll,
 } from '../data/gear.ts';
 
@@ -14,7 +17,7 @@ import {
  * reloaded to re-roll a bad drop, and nothing has to be stored to prevent that.
  */
 
-export const BASE_DROP_CHANCE = 0.18;
+export { BASE_DROP_CHANCE };
 
 /**
  * Commons drop sometimes; a warden always leaves something, because it only dies once.
@@ -43,13 +46,14 @@ function dropsYet(realm: number): boolean {
  */
 export function rarityWeights(beast: Beast, luck = 1): Record<Rarity, number> {
   const r = beast.realm;
-  const lift = (beast.warden ? 2.6 : 1) * luck;
+  const lift = (beast.warden ? WARDEN_RARITY_TILT : 1) * luck;
+  const w = RARITY_WEIGHT;
   return {
-    common: Math.max(4, 60 - 5 * r) / lift,
-    spirit: 25 + r,
-    mystic: (10 + 2 * r) * lift,
-    earth: (3 + 1.2 * r) * lift,
-    heaven: (0.6 + 0.45 * r) * lift,
+    common: Math.max(w.common.floor, w.common.base - w.common.fall * r) / lift,
+    spirit: w.spirit.base + w.spirit.per * r,
+    mystic: (w.mystic.base + w.mystic.per * r) * lift,
+    earth: (w.earth.base + w.earth.per * r) * lift,
+    heaven: (w.heaven.base + w.heaven.per * r) * lift,
   };
 }
 
@@ -75,9 +79,6 @@ function pickRarity(beast: Beast, roll: number, luck: number): Rarity {
   }
   return 'common';
 }
-
-/** How much an item's rolled percentage may swing either side of its base. */
-export const VARIANCE = 0.15;
 
 export interface Fortune {
   /** Points added to a common's drop chance, as a fraction. */
@@ -118,9 +119,9 @@ export function rollSecondaries(
       if (at <= 0) { picked = a; break; }
     }
     pool.splice(pool.indexOf(picked), 1);
-    // A secondary is worth 60% of what the same rank's primary would be.
+    // A secondary is worth SECONDARY_SHARE of what the same rank's primary would be.
     const swing = 1 - VARIANCE + d() * VARIANCE * 2;
-    out.push({ affix: picked, value: roundValue(picked, baseValue(template, rarity, picked) * 0.6 * swing) });
+    out.push({ affix: picked, value: roundValue(picked, baseValue(template, rarity, picked) * SECONDARY_SHARE * swing) });
   }
   return out;
 }

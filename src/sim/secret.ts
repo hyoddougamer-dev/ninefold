@@ -10,7 +10,7 @@ import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
 import { fortuneOf } from './fortune.ts';
 import { isBlessed } from './week.ts';
-import { BLESSED_ROOM } from './balance.ts';
+import { BLESSED_ROOM, BRAZIER_LUCK, SHRINE_DEEP_POINTS, SHRINE_POINTS } from './balance.ts';
 import type { State } from './state.ts';
 import { classSpring } from './schools.ts';
 
@@ -177,7 +177,7 @@ export function giftOf(s: State, room: Room, step: number): {
       // 尋仙 The Immortal Seeker drinks deeper.
       return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week * classSpring(s))) };
     case 'shrine':
-      return { ...none, dao: (step >= shrineDeep(s.realm) ? 2 : 1) * week };
+      return { ...none, dao: (step >= shrineDeep(s.realm) ? SHRINE_DEEP_POINTS : SHRINE_POINTS) * week };
     case 'brazier':
       return { ...none, item: true };
     default:
@@ -231,7 +231,7 @@ export function open(s: State, which: 0 | 1, seed: number): State {
     const from = pool[pool.length - 1] ?? pool[0];
     const item = from
       ? rollDrop(from, out.realm, seed ^ 0x51ed2701,
-        { ...fortuneOf(out), chance: 1, always: true, luck: (fortuneOf(out).luck ?? 1) + 1.5,
+        { ...fortuneOf(out), chance: 1, always: true, luck: (fortuneOf(out).luck ?? 1) + BRAZIER_LUCK,
           anyShape: true, source: 'secret' },
         out.layer)
       : null;

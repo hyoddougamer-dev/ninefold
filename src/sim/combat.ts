@@ -1,7 +1,10 @@
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
-  FLOOR_LOOT, FLOOR_LOOT_GROWTH, HUNT_SHARE, LAYERS_PER_REALM, LEVELS_PER_REALM,
-  OLD_BEAST_FLOOR, QUARRY_BOUNTY, QUARRY_LOOT, SEEN_BOUNTY, WARDEN_TRIBUTE, ladderBetween,
+  ART_NUMBERS, BLOW_LOW, BLOW_SPREAD, COMMON_DEPTH_FIRST, COMMON_DEPTH_STEP, COMMON_STEPS,
+  CORES_FREE_REALMS, FIRST_STEPS, FORM, HEALTH_PER_POWER, HUNT_SHARE, LAYERS_PER_REALM,
+  LEVELS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, OLD_BEAST_FLOOR, QUARRY_BOUNTY, QUARRY_LOOT,
+  REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
+  floorPay, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, crossTribulation, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
@@ -26,47 +29,12 @@ import {
  */
 
 /**
- * 基準 The reference power at the top of a realm.
- *
- * Beasts have no curve of their own: they are tuned against *this*. The reference is a
- * cultivator standing at the realm's ceiling with 劍訣 *and* 妖丹 near the levels the
- * realm allows, not the one who spent nothing, not the one who optimised everything,
- * but the one in the middle. Gear, the tree, the arts and the furnace are the margin on
- * top, and they are what turns a coin flip into a win.
- *
- * The first version gave beasts an exponent of their own (1.42 per layer) and they ran
- * away from any possible player: at realm 4 the warden was worth twenty well-invested
- * cultivators. The second derived them from a share of all the qi ever earned, which
- * stopped being meaningful the moment upgrade prices started riding the mountain.
- * Deriving from the *cap* is the honest one: the cap is the ceiling on what a
- * cultivator of that realm can possibly hold, so the beasts follow it on their own and
- * nothing here needs touching when the curve moves.
- *
- * It sits a fixed *two levels* below the cap rather than a share of it. A share widens
- * as the cap does: at the ninth realm fifteen per cent of the cap is eight levels of
- * 劍訣, nearly five times the power, so the same warden would read as hopeless at 85%
- * of the cap and trivial at 100%. Two levels is two levels at every realm, so the last
- * stretch before a warden feels the same all the way up the mountain.
- *
- * **It counts 妖丹 cores, and that is the wall between playing and waiting.** Cores are
- * not bought with qi. They are bought with 材 material, and material only falls off
- * things you kill. So a warden cannot be walked past by somebody who has never opened
- * 狩 Hunt, however long they have been gathering.
- *
- * The wall arrives late on purpose. The first two realms ask for no cores at all, so a
- * new cultivator meets the 妖狐 and the 石猿 with qi alone and learns what a warden is
- * before learning that a warden is not enough. From the third realm the requirement
- * grows a realm at a time, measured, somebody who never fights anything stalls in the
- * fourth realm and stays there for ever.
- *
- * Nothing is taken from that cultivator for being away. The qi still gathers at full
- * rate with the phone closed, every second of it, because that is the promise the game
- * makes. What they are short of is not qi. It is a reason to have been there.
+ * 基準 The reference power at the top of a realm: a cultivator REFERENCE_BELOW levels
+ * short of the cap, with 妖丹 cores counted from past the first CORES_FREE_REALMS. Why it
+ * stands there, and why the cores are the wall between playing and waiting, is written
+ * beside the two numbers in balance.ts.
  */
-export const REFERENCE_BELOW = 2;
-
-/** How many realms are fought through before the wardens start asking for 妖丹 cores. */
-export const CORES_FREE_REALMS = 2;
+export { REFERENCE_BELOW, CORES_FREE_REALMS };
 
 /**
  * The same reading, taken anywhere: between realms, and above the ninth.
@@ -90,50 +58,6 @@ export function referencePower(realm: number): number {
 }
 
 /**
- * The share of the reference each step of a realm occupies. The three commons of a
- * realm have to be an easy one, a middling one and a hard one: the first version
- * indexed by *realm* rather than by beast, and all three came out with the same power
- * and the same odds, which turns three distinct animals into three identical buttons.
- */
-const STEPS = [0.45, 0.62, 0.84];
-
-/**
- * 初 And the first realm is spaced against the player, not against its own summit.
- *
- * Every realm is entered weak, measured, a cultivator arrives at 25%, 23%, 16%, 11%,
- * 7% of the realm they are entering. The first is 5%, and it is the same pattern, not an
- * exception. What makes it different is that it is the only realm with **nothing else in
- * it**: from the second there is gear to find, a stance to pick, a record filling, a
- * tower, a tree. In the first there is a bar and three boxes, and if the beasts are out
- * of reach as well then there is nothing at all.
- *
- * At the standard spacing the first fight a player can win arrives **two hours and six
- * minutes** in, and the true odds before it are not small. They are 0.0%, flat, for the
- * whole of it. Combat in the first realm was a step, not a ramp: nothing, nothing,
- * nothing, then 66% and trivial forty minutes later.
- *
- * So the first realm's three commons are placed where the player actually stands while
- * climbing it. Measured, at this spacing:
- *
- *     山鼠 the rat     力  0.7    98% from the first second
- *     野犬 the hound   力  4.0    at about 45 minutes
- *     澤蛙 the frog    力 14.0    at 3.5 hours
- *     妖狐 the fox     力 29.7    at the cap, as every warden is
- *
- * 初 The rat used to stand at 2.4, winnable at twelve minutes. Bruno, having watched
- * testers start: *"não conseguem fazer nada até terem power suficiente para os
- * primeiros monstros."* Twelve minutes is a long time to be told no by the only button
- * that is not a shop. A fresh cultivator stands at 力 1, so the rat is a won fight from
- * the first tap and its first sight pays the qi the first purchase is made with.
- *
- * 久 The frog is not moved, and that was measured rather than chosen. The endgame is
- * sensitive to it in steps: at 0.35 of the reference the eightieth crossing's longest
- * mark stretched from 10 days to 14, and at 0.40 to 0.62 to 27. At 0.70 it is exactly
- * what it was. The rat and the hound move nothing past the first realm.
- */
-const FIRST_STEPS = [0.035, 0.20, 0.70];
-
-/**
  * 守 What a warden asks for, as a multiple of its realm's reference.
  *
  * It is not a number at all: a warden stands at exactly the power of a cultivator who
@@ -146,12 +70,16 @@ const FIRST_STEPS = [0.035, 0.20, 0.70];
  */
 export const WARDEN_EDGE = UPGRADE_INFO.technique.gain ** REFERENCE_BELOW;
 
-/** A beast's power, always as a fraction of its realm's reference. */
+/**
+ * A beast's power, always as a fraction of its realm's reference. A common stands at its
+ * share of COMMON_STEPS, or of FIRST_STEPS in the first realm, which is spaced against the
+ * player rather than against its own summit. Both are in balance.ts with their measurements.
+ */
 export function beastPower(b: Beast): number {
   const ref = referencePower(b.realm);
   if (b.warden) return ref * WARDEN_EDGE;
   const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
-  const steps = b.realm === 1 ? FIRST_STEPS : STEPS;
+  const steps = b.realm === 1 ? FIRST_STEPS : COMMON_STEPS;
   return ref * steps[Math.max(0, i) % steps.length];
 }
 
@@ -185,21 +113,13 @@ function dice(seed: number): () => number {
   };
 }
 
-/** The most rounds a fight may run, so a theoretical draw can never hang anything. */
-export const ROUND_CAP = 24;
+/** 擊 One blow's roll: BLOW_LOW to BLOW_LOW + BLOW_SPREAD of itself. */
+function blowRoll(d: () => number): number {
+  return BLOW_LOW + d() * BLOW_SPREAD;
+}
 
-/**
- * 氣運 How the qi runs today: one roll for each side, before a blow is thrown.
- *
- * Blow-by-blow noise averages away. Ten blows of ±22% come out within 4% of the mean,
- * so whoever had more power won every single time and a fight was decided before it
- * started. The screen hid that behind a sigmoid over the power ratio, which cheerfully
- * promised 34% on fights the player would lose a hundred times out of a hundred.
- *
- * One roll per fight does not average away. It is what makes an underdog worth trying
- * and a favourite worth checking, and it is what the odds on screen are now counting.
- */
-export const FORM = 0.2;
+/** 氣運 FORM (the one roll each side gets before a blow is thrown) is in balance.ts. */
+export { FORM };
 
 /**
  * 戰 The fight, settled in one go.
@@ -265,8 +185,8 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
   const { stance, sequence, pp, bp0, artStrike, mend } = u;
 
   let beastPower = bp0;      // 纏 and 鶴唳 shave this as the fight runs
-  let ph = pp * 10;
-  let bh = bp0 * 10;
+  let ph = pp * HEALTH_PER_POWER;
+  let bh = bp0 * HEALTH_PER_POWER;
   const ph0 = ph;
   const bh0 = bh;
   let took = 0;              // what the beast dealt last round, for 傀儡 and 鏡
@@ -279,7 +199,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
 
   // 疾 runs the sequence twice a round, so the cursor is its own counter rather than
   // the round number.
-  const perRound = stance?.key === 'swift' ? 2 : 1;
+  const perRound = stance?.key === 'swift' ? STANCE_NUMBERS.swiftStrikes : 1;
   let cursor = 0;
   const rounds: Round[] = [];
 
@@ -294,13 +214,15 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
       // filling the sequence is always worth more than leaving it short.
       const art = sequence[cursor++ % sequence.length];
       // 疾 splits the round into two 60% strikes; everything else is one whole one.
-      let blow = pp * myForm * (stance?.key === 'steady' ? 1 : 0.82 + d() * 0.46)
-        * (stance?.key === 'swift' ? 0.6 : 1);
+      let blow = pp * myForm * (stance?.key === 'steady' ? 1 : blowRoll(d))
+        * (stance?.key === 'swift' ? STANCE_NUMBERS.swiftShare : 1);
 
       if (stance) {
-        if (stance.key === 'guard') blow *= 0.75;
-        if (stance.key === 'fierce') blow *= 1.5;
-        if (stance.key === 'reckless') blow = d() < 0.5 ? 0 : blow * 3;
+        if (stance.key === 'guard') blow *= STANCE_NUMBERS.guardDealt;
+        if (stance.key === 'fierce') blow *= STANCE_NUMBERS.fierceDealt;
+        if (stance.key === 'reckless') {
+          blow = d() < STANCE_NUMBERS.recklessMiss ? 0 : blow * STANCE_NUMBERS.recklessHit;
+        }
         if (stance.key === 'reverse') blow *= 1 + (1 - ph / ph0);
         if (stance.key === 'mirror') blow = Math.max(blow, took);
       }
@@ -309,14 +231,14 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
         fired.push(art.key);
         switch (art.key) {
           case 'fox': missed = true; break;
-          case 'ape': blow *= 1.6; break;
-          case 'crane': beastPower *= 0.9; break;
-          case 'tiger': blow *= 2; break;
-          case 'turtle': healed += ph0 * 0.12 * artStrike; break;
-          case 'puppet': blow += took * 0.25; break;
-          case 'wolf': blow *= 1 + 0.12 * i; break;
-          case 'serpent': if (ph / ph0 < 0.5) blow *= 3; break;
-          case 'dragon': blow *= 1.35; missed = true; break;
+          case 'ape': blow *= ART_NUMBERS.ape; break;
+          case 'crane': beastPower *= ART_NUMBERS.crane; break;
+          case 'tiger': blow *= ART_NUMBERS.tiger; break;
+          case 'turtle': healed += ph0 * ART_NUMBERS.turtle * artStrike; break;
+          case 'puppet': blow += took * ART_NUMBERS.puppet; break;
+          case 'wolf': blow *= 1 + ART_NUMBERS.wolf * i; break;
+          case 'serpent': if (ph / ph0 < ART_NUMBERS.serpentBelow) blow *= ART_NUMBERS.serpent; break;
+          case 'dragon': blow *= ART_NUMBERS.dragon; missed = true; break;
         }
         blow *= artStrike;
       }
@@ -324,15 +246,15 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
       mine += blow;
     }
 
-    if (stance?.key === 'entangle') beastPower *= 0.92;
-    if (stance?.key === 'endure') healed += ph0 * 0.06;
+    if (stance?.key === 'entangle') beastPower *= STANCE_NUMBERS.entangle;
+    if (stance?.key === 'endure') healed += ph0 * STANCE_NUMBERS.endure;
     healed += ph0 * mend;
 
     bh -= mine;
 
-    let theirs = missed ? 0 : beastPower * (0.82 + d() * 0.46);
-    if (stance?.key === 'guard') theirs *= 0.6;
-    if (stance?.key === 'fierce') theirs *= 1.5;
+    let theirs = missed ? 0 : beastPower * blowRoll(d);
+    if (stance?.key === 'guard') theirs *= STANCE_NUMBERS.guardTaken;
+    if (stance?.key === 'fierce') theirs *= STANCE_NUMBERS.fierceTaken;
     took = theirs;
 
     ph = Math.min(ph0, ph - theirs + healed);
@@ -361,13 +283,13 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
  */
 export function beastDepth(b: Beast): number {
   const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
-  return (b.realm - 1) * LAYERS_PER_REALM + 3 + 2 * Math.max(0, i);
+  return (b.realm - 1) * LAYERS_PER_REALM + COMMON_DEPTH_FIRST + COMMON_DEPTH_STEP * Math.max(0, i);
 }
 
 export function loot(b: Beast): number {
   const depth = b.warden ? b.realm * LAYERS_PER_REALM : beastDepth(b);
-  const share = b.warden ? HUNT_SHARE * 4 : HUNT_SHARE;
-  return Math.max(1, Math.round(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (depth - 1) * share));
+  const share = b.warden ? HUNT_SHARE * WARDEN_LOOT : HUNT_SHARE;
+  return Math.max(1, Math.round(floorPay(depth) * share));
 }
 
 /**
@@ -451,8 +373,8 @@ export function lootFrom(s: State, b: Beast): number {
   // it is the gate, and a gate that pays for its own key is not a gate. See
   // WARDEN_TRIBUTE for the measurement that made this necessary.
   if (b.warden) return Math.max(1, Math.round(own * WARDEN_TRIBUTE));
-  const mine = (Math.max(1, Math.min(9, s.realm)) - 1) * LAYERS_PER_REALM + 3;
-  const floor = FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (mine - 1) * HUNT_SHARE * OLD_BEAST_FLOOR;
+  const mine = (Math.max(1, Math.min(9, s.realm)) - 1) * LAYERS_PER_REALM + COMMON_DEPTH_FIRST;
+  const floor = floorPay(mine) * HUNT_SHARE * OLD_BEAST_FLOOR;
   // 期 The week's quarry, doubled here rather than at the point of payment, so that every
   // screen quoting a beast's material quotes the doubled number without knowing about the
   // week at all: 狩 the hunt row, 圍 the drive, and the line under 鬥 the arena.
@@ -475,7 +397,7 @@ const SAMPLES = 41;
  * and it can never disagree with what the player is about to watch.
  */
 export function odds(s: State, b: Beast, standing?: number): number {
-  return Math.max(0.02, Math.min(0.98, oddsRaw(s, b, standing)));
+  return Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, oddsRaw(s, b, standing)));
 }
 
 /**

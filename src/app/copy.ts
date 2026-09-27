@@ -20,6 +20,9 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
+import { FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { pct as percent } from '../sim/format.ts';
+
 /**
  * 引 How to play, and now only the part that cannot be shown.
  *
@@ -668,7 +671,7 @@ export const GUIDE = {
    */
   buy: {
     title: 'Spend what you were given',
-    text: 'You start holding 800 qi. Buy the box the arrow points at. '
+    text: `You start holding ${OPENING_PURSE} qi. Buy the box the arrow points at. `
       + 'Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   kill: {
@@ -681,8 +684,8 @@ export const GUIDE = {
   core: {
     title: 'Spend what the beast left',
     text: '\u6750 Material buys \u5996\u4e39 Beast Cores, the one upgrade priced in material. '
-      + '+8% power, for good.',
-    waiting: '\u5996\u4e39 costs 3 \u6750 material, and material only falls off things you kill. '
+      + `+${percent(UPGRADE_NUMBERS.cores.gain - 1)} power, for good.`,
+    waiting: `\u5996\u4e39 costs ${UPGRADE_NUMBERS.cores.share} \u6750 material, and material only falls off things you kill. `
       + 'Three rats pay for the first one.',
   },
   mark: {
@@ -895,7 +898,7 @@ export const ITEM = {
     rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
-    find: 'Beasts leave a piece more often, by up to 25 points and never past it.',
+    find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it.`,
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',

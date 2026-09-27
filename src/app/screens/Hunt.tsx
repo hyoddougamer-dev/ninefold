@@ -3,6 +3,7 @@ import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
+import { ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
@@ -158,7 +159,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
            * that wins none of its sampled fights now says how far off it is instead.
            */
           const raw = raws.get(b.key) ?? oddsRaw(state, b);
-          const c = Math.max(0.02, Math.min(0.98, raw));
+          const c = Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, raw));
           const gap = effectiveBeastPower(state, b) / Math.max(1e-9, power(state));
           const tone = raw <= 0 ? 'var(--faint)'
             : c > 0.66 ? 'var(--jade)' : c > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';

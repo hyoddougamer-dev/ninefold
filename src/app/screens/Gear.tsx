@@ -8,7 +8,7 @@ import {
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
 import { isOpen } from '../../sim/unlocks.ts';
-import { REFINE_GAIN, REFINE_LIMIT, clampRefine } from '../../sim/refine.ts';
+import { REFINE_LIMIT, clampRefine, refineFactor } from '../../sim/refine.ts';
 import { num } from '../../sim/format.ts';
 import { affinity } from '../../sim/dao.ts';
 import type { State } from '../../sim/state.ts';
@@ -201,7 +201,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                       {templateOf(item).han}
                     </b>
                     <i>{templateOf(item).name}</i>
-                    <em>{GEAR.refineAt(level, Math.round(((1 + REFINE_GAIN) ** level - 1) * 100))}</em>
+                    <em>{GEAR.refineAt(level, Math.round((refineFactor(level) - 1) * 100))}</em>
                   </span>
                   <span className="price">
                     {/* 價 A price, not a gain. It read "+12 material", which is what a

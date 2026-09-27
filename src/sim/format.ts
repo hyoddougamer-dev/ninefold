@@ -32,6 +32,14 @@ export function num(n: number): string {
   return `${Math.abs(v) >= 100 ? Math.round(v) : Number(v.toFixed(Math.abs(v) >= 10 ? 1 : 2))}${SUFFIX[step]}`;
 }
 
+/**
+ * 百 A share as the whole percentage the prose says: 0.22 reads "22%". Every line that
+ * quotes a balance number out loud goes through this, so the text cannot drift from it.
+ */
+export function pct(share: number): string {
+  return `${Math.round(share * 100)}%`;
+}
+
 export function duration(seconds: number): string {
   /**
    * 進 Round to the smaller unit first, then carry.

@@ -2,8 +2,7 @@ import {
   RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
-import { FUSE_TOP } from './balance.ts';
-import { SECONDARIES } from '../data/gear.ts';
+import { CHEST_LIMIT, FUSE_COUNT, FUSE_TOP, SECONDARIES, SECONDARY_SHARE } from './balance.ts';
 import { chestCap, extraChestSlots } from './dao.ts';
 import { chestSlots } from './awaken.ts';
 
@@ -18,8 +17,7 @@ import { chestSlots } from './awaken.ts';
  * annoyance: three of the same piece at the same rank become one of the rank above.
  */
 
-export const CHEST_LIMIT = 40;
-export const FUSE_COUNT = 3;
+export { CHEST_LIMIT, FUSE_COUNT };
 
 export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean {
   return chest.length >= limit;
@@ -186,7 +184,7 @@ export function fuse(
     .slice(0, SECONDARIES[up])
     .map(([affix]): Roll => ({
       affix,
-      value: roundValue(affix, baseValue(tpl, up, affix) * 0.6 * rolled),
+      value: roundValue(affix, baseValue(tpl, up, affix) * SECONDARY_SHARE * rolled),
     }));
 
   const made: Item = {

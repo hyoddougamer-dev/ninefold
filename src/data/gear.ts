@@ -1,4 +1,8 @@
-import { CLASS_AMP, LAYERS_PER_REALM, PAIR_CHEST, SCHOOL_FULL, SCHOOL_WAKES } from '../sim/balance.ts';
+import {
+  BASE_PERCENT, CLASS_AMP, LAYERS_PER_REALM, LINEAGE_LAYER, PAIR_CHEST, PERCENT_PER_REALM,
+  RARITY_MULT, SCHOOL_FULL, SCHOOL_WAKES, SECONDARIES, SET_STEPS, SET_WEIGHT,
+} from '../sim/balance.ts';
+import { refineFactor } from '../sim/refine.ts';
 import { SCHOOLS, SCHOOL_INFO, pairOf, schoolOfAxis, type PairInfo, type School } from './schools.ts';
 import { ERA_ICONS, eraOf } from './gearIcons.ts';
 
@@ -47,11 +51,11 @@ export interface RarityInfo {
 }
 
 export const RARITY_INFO: Record<Rarity, RarityInfo> = {
-  common: { han: '凡', name: 'Common', colour: '#9C907C', mult: 1,   glow: 0 },
-  spirit: { han: '靈', name: 'Spirit', colour: '#7FB495', mult: 1.6, glow: 1 },
-  mystic: { han: '玄', name: 'Mystic', colour: '#B2A566', mult: 2.5, glow: 2 },
-  earth:  { han: '地', name: 'Earth',  colour: '#D4AF56', mult: 4,   glow: 3 },
-  heaven: { han: '天', name: 'Heaven', colour: '#D2604E', mult: 6.5, glow: 4 },
+  common: { han: '凡', name: 'Common', colour: '#9C907C', mult: RARITY_MULT.common, glow: 0 },
+  spirit: { han: '靈', name: 'Spirit', colour: '#7FB495', mult: RARITY_MULT.spirit, glow: 1 },
+  mystic: { han: '玄', name: 'Mystic', colour: '#B2A566', mult: RARITY_MULT.mystic, glow: 2 },
+  earth:  { han: '地', name: 'Earth',  colour: '#D4AF56', mult: RARITY_MULT.earth,  glow: 3 },
+  heaven: { han: '天', name: 'Heaven', colour: '#D2604E', mult: RARITY_MULT.heaven, glow: 4 },
 };
 
 /**
@@ -98,21 +102,11 @@ export const AFFIX_INFO: Record<Affix, AffixInfo> = {
   art:      { han: '法', label: 'arts stronger', unit: '%',   scale: 0.6,  weight: 8 },
 };
 
-/** How many rolls a rank carries: one primary, plus these many secondaries. */
-export const SECONDARIES: Record<Rarity, number> = {
-  common: 0, spirit: 1, mystic: 2, earth: 3, heaven: 4,
-};
-
 /**
- * Gear grants a **percentage**, never a flat amount.
- *
- * The first cut handed out flat numbers, and flat numbers die: by the fifth realm a
- * cultivator's power is in the hundreds of thousands, so a sword worth +4,200 is worth
- * nothing. A percentage composes with the ladder and with every upgrade, so a good
- * weapon found at realm 3 is still a good weapon at realm 9.
+ * How many rolls a rank carries (one primary, plus SECONDARIES), and the percentage a
+ * piece grants (BASE_PERCENT, and PERCENT_PER_REALM more a realm): all in balance.ts.
  */
-export const BASE_PERCENT = 4;
-export const PERCENT_PER_REALM = 1;
+export { SECONDARIES };
 
 export interface GearTemplate {
   readonly key: string;
@@ -254,9 +248,8 @@ export interface RealmSet {
   readonly steps: readonly SetStep[];
 }
 
-/** The three steps of every set, and how much harder each one hits. */
-export const SET_STEPS: readonly number[] = [2, 4, 6];
-const SET_WEIGHT: readonly number[] = [1, 2, 4];
+/** The three steps of every set, and how much harder each one hits: see balance.ts. */
+export { SET_STEPS };
 
 /**
  * A set's step values are derived, not typed out, so no set can quietly outclass another:
@@ -345,20 +338,20 @@ export interface Item {
   readonly from?: string;
 }
 
+/** 煉 What one refine level adds to every line: REFINE_PER_LEVEL, in balance.ts. */
+export { REFINE_PER_LEVEL } from '../sim/balance.ts';
+
 /**
  * 煉 What a piece's lines are multiplied by, from refining.
  *
- * It lives here rather than in sim/refine.ts so that nothing can read a roll without it:
- * a refined piece has to be worth more everywhere at once, in the totals, on the screen
- * and in the comparison that says one piece beats another, or the number they refined stops
- * being the number the game uses.
+ * It is read here, beside the item, so that nothing can read a roll without it: a refined
+ * piece has to be worth more everywhere at once, in the totals, on the screen and in the
+ * comparison that says one piece beats another, or the number they refined stops being
+ * the number the game uses. The arithmetic is refineFactor's in sim/refine.ts, and only
+ * there, so the two can never disagree.
  */
-export const REFINE_PER_LEVEL = 0.04;
-
 export function refinedBy(item: Item): number {
-  const n = item.refine;
-  if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) return 1;
-  return (1 + REFINE_PER_LEVEL) ** Math.floor(n);
+  return refineFactor(item.refine);
 }
 
 /** What this piece gives on one axis, counting every line it carries, refining included. */
@@ -394,21 +387,10 @@ export function templateOf(item: Item): GearTemplate {
   return TEMPLATE_BY_KEY[item.template];
 }
 
-/** Gear that can drop in a realm: anything whose own realm has been reached. */
-/**
- * 層 Where in its realm a lineage starts falling.
- *
- * 隙 The same argument the commons and 勢 the stance make: a realm used to hand over its
- * whole loot table in the first minute of twelve days. It also put a power spike exactly
- * where the climb means you to be weak, since a realm is entered at about a fifth of what
- * it will ask for. 龍骸 Dragonwake starts dropping halfway up the eighth realm now, and a
- * lineage starting to drop is an event rather than a footnote.
- *
- * 舊 Only the newest lineage waits. Everything below it falls from the first second, and a
- * beast of a realm already passed drops its own realm's gear exactly as it always did.
- */
-export const LINEAGE_LAYER = 5;
+/** 層 Where in its realm a lineage starts falling: LINEAGE_LAYER, in balance.ts. */
+export { LINEAGE_LAYER };
 
+/** Gear that can drop in a realm: anything whose own realm has been reached. */
 export function droppableIn(realm: number, layer = LAYERS_PER_REALM): readonly GearTemplate[] {
   return GEAR.filter((g) => g.realm < realm || (g.realm === realm && layer >= LINEAGE_LAYER));
 }

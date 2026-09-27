@@ -23,6 +23,8 @@
  * question of where the material goes.
  */
 
+import { BEDS } from '../sim/balance.ts';
+
 export interface Herb {
   readonly key: string;
   readonly han: string;
@@ -72,8 +74,8 @@ export function herbOf(key: string): Herb | undefined {
   return BY_KEY[key];
 }
 
-/** How many beds the cave has. Three, and nothing in the game adds a fourth yet. */
-export const BEDS = 3;
+/** How many beds the cave has: BEDS, in balance.ts. */
+export { BEDS };
 
 /** 洞天 A bed: what is planted, and the instant it was planted. Nothing else is stored. */
 export interface Bed {

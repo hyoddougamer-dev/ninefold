@@ -1,5 +1,4 @@
-import { FLOOR_LOOT, FLOOR_LOOT_GROWTH } from './balance.ts';
-import { REFINE_PER_LEVEL } from '../data/gear.ts';
+import { FLOOR_LOOT, FLOOR_LOOT_GROWTH, REFINE_DEPTH, REFINE_PER_LEVEL, floorPay } from './balance.ts';
 
 /**
  * 煉器 Refining: what 材 material is actually for.
@@ -21,19 +20,11 @@ import { REFINE_PER_LEVEL } from '../data/gear.ts';
  * uncapped may ever raise gathering.
  */
 
-/** What one level adds to every line on the piece. It is declared beside the item so
- *  that nothing can read a roll without it; this is the same number. */
-export const REFINE_GAIN = REFINE_PER_LEVEL;
-
 /**
- * How many floors of the tower's own pay curve a refine level costs.
- *
- * The price rides the material curve exactly as an upgrade rides the mountain, so it
- * stays meaningful at every realm instead of being unaffordable at the first and free at
- * the ninth. Four floors a level puts a normal run at about level twenty on a piece and
- * a hard-tapping one at about thirty, which is the difference farming should make.
+ * What one level adds to every line on the piece, and how many floors of the tower's own
+ * pay curve a level costs: REFINE_PER_LEVEL and REFINE_DEPTH, in balance.ts.
  */
-export const REFINE_DEPTH = 4;
+export { REFINE_PER_LEVEL as REFINE_GAIN, REFINE_DEPTH };
 
 /**
  * The arithmetic guard, and nothing more: 1.04 to the 999th is about 1e17, a long way
@@ -56,7 +47,7 @@ export const REFINE_LIMIT = 999;
 
 /** What the next level on a piece costs, in material. */
 export function refineCost(level: number): number {
-  return Math.ceil(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (Math.max(0, level) * REFINE_DEPTH));
+  return Math.ceil(floorPay(Math.max(0, level) * REFINE_DEPTH + 1));
 }
 
 /** Everything spent to bring a piece from nothing to this level. */
@@ -66,9 +57,12 @@ export function refineSpent(level: number): number {
   return total;
 }
 
-/** What a refined piece's lines are multiplied by. */
+/**
+ * What a refined piece's lines are multiplied by. The one place it is worked out: 器
+ * refinedBy reads it for every line on a piece, and the gear screen for its preview.
+ */
 export function refineFactor(level: number | undefined): number {
-  return (1 + REFINE_GAIN) ** clampRefine(level);
+  return (1 + REFINE_PER_LEVEL) ** clampRefine(level);
 }
 
 export function clampRefine(level: number | undefined): number {

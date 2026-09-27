@@ -21,6 +21,11 @@
  *     with the same history walk the same rooms and the harness can walk them too.
  */
 
+import {
+  BLESSED_ROOM, DEEP_ROOMS, DOOR_GAP, ROOMS, ROOM_DEPTH, SHRINE_DEEP_POINTS, SPRING_MINUTES,
+} from '../sim/balance.ts';
+import { opensAt } from '../sim/unlocks.ts';
+
 /** What is behind a door. One thing each, so a door fits on a line. */
 export type Room =
   /** 獸 A beast, one realm above you. Beat it and it pays like a hunt. */
@@ -53,37 +58,20 @@ export const ROOM_INFO: Readonly<Record<RoomKind, KindInfo>> = {
     says: 'A piece of gear, rolled off this realm and lifted.' },
 };
 
-/** How many rooms a run is. Seven is short enough to finish in one sitting. */
-export const ROOMS = 7;
-
 /**
- * 深 秘境深處 The deeper vault, which is what the seventh realm hands over.
- *
- * 隙 Measured, every system in the game was open inside three weeks and nothing new
- * arrived for the twenty-five days after that. The cheapest honest answer is not a new
- * screen: it is a second gear on a system that already has one, because the screens,
- * the rooms, the gates and the tally all exist. The path simply goes further.
- *
- * 關 Four more rooms, and two more gates with them, since a gate is every other room.
- * They are the deepest rooms in the game, so 深 depthScale pays them the most, and the
- * gate ramp already runs out of your own realm and into the one above: the deeper gates
- * are the strongest things the realm above has. A cultivator who opens the door at the
- * seventh realm and walks all eleven has done something a sixth-realm cultivator could
- * not.
+ * How many rooms a run is (ROOMS), how many 秘境深 the deeper vault makes it (DEEP_ROOMS),
+ * and how long the door stays shut after one (DOOR_GAP): all in balance.ts.
  */
-export const DEEP_ROOMS = 11;
+export { DEEP_ROOMS, DOOR_GAP, ROOMS };
 
-/** The realm the path grows in. */
-export const DEEP_AT = 7;
+/** The realm the path grows in: when 秘境深 the deeper vault opens, and only there. */
+export const DEEP_AT = opensAt('deep');
 
 /** How long a run is for the cultivator walking it. */
 export const roomsFor = (realm: number) => (realm >= DEEP_AT ? DEEP_ROOMS : ROOMS);
 
-/** How long after a run before the door opens again, in seconds. */
-export const DOOR_GAP = 8 * 3600;
-
-/** The realm the door first appears in. */
-export const OPENS_AT = 3;
+/** The realm the door first appears in: when 秘境 opens, and only there. */
+export const OPENS_AT = opensAt('secret');
 
 /**
  * 深 What a room pays, by how deep it is.
@@ -105,11 +93,11 @@ export const OPENS_AT = 3;
  * non-hunter can turn into the power a warden asks for.
  */
 export function depthScale(step: number): number {
-  return 1 + step * 0.4;
+  return 1 + step * ROOM_DEPTH;
 }
 
-/** 泉 A spring pays this many minutes of standing gathering, before depth. */
-export const SPRING_MINUTES = 4;
+/** 泉 A spring pays SPRING_MINUTES of standing gathering, before depth: see balance.ts. */
+export { SPRING_MINUTES };
 
 /** 龕 A shrine pays one 道 point, and two in the last room of whatever path you walk. */
 export const shrineDeep = (realm: number) => roomsFor(realm) - 1;
@@ -185,4 +173,4 @@ export function validTake(raw: unknown, keys: (k: string) => boolean,
  * a cap on a currency that can only ever be spent on a tree of fixed size is there to
  * stop a forged heirloom, not to be tight.
  */
-export const RUN_DAO_CEILING = Math.ceil(DEEP_ROOMS / 2) * 2 * 2;
+export const RUN_DAO_CEILING = Math.ceil(DEEP_ROOMS / 2) * SHRINE_DEEP_POINTS * BLESSED_ROOM;

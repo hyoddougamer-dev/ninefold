@@ -1,5 +1,7 @@
 import { focusBonus } from '../../sim/dao.ts';
-import { CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, TRIBULATION_GAIN } from '../../sim/balance.ts';
+import {
+  CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
+} from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
@@ -285,7 +287,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                   per cent that is really a zero. */}
               <span className="tech mono" style={{ fontSize: 17, textAlign: 'right' }}>
                 {wardenRaw > 0
-                  ? `${Math.round(Math.max(0.02, Math.min(0.98, wardenRaw)) * 100)}%`
+                  ? `${Math.round(Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, wardenRaw)) * 100)}%`
                   : `×${wardenGap < 10 ? wardenGap.toFixed(1) : Math.round(wardenGap)}`}
                 <em className="faint" style={{ display: 'block', fontStyle: 'normal', fontSize: 9.5, letterSpacing: '.12em', textTransform: 'uppercase', fontFamily: 'Archivo' }}>
                   {wardenRaw > 0 ? HUNT.odds : HUNT.toReach}

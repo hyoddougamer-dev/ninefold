@@ -4,6 +4,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
+import { HEALTH_PER_POWER } from '../../sim/balance.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -95,7 +96,7 @@ export function frameAt(o: Outcome, beat: number) {
     arts: player ? here.arts : [],
     missed: !player && here.missed,
     /** True when this blow took a real bite: the frame shakes only for those. */
-    heavy: (player ? here.playerDamage / o.beastPower : here.beastDamage / o.playerPower) / 10 > HEAVY,
+    heavy: (player ? here.playerDamage / o.beastPower : here.beastDamage / o.playerPower) / HEALTH_PER_POWER > HEAVY,
   };
 }
 

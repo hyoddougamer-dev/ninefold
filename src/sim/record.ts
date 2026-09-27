@@ -1,4 +1,6 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
+import { KNOWN_MATERIAL, MARKS, MASTERED_POWER } from './balance.ts';
+import { pct } from './format.ts';
 
 /**
  * 錄 The record.
@@ -23,19 +25,14 @@ import { BEASTS, type Beast } from '../data/bestiary.ts';
  * who has been hunting for months rather than by somebody who farmed the first rat.
  */
 
-/** Kills that earn each mark. */
-export const MARKS: readonly number[] = [1, 10, 100];
+/** Kills that earn each mark, and what the 熟 and 通 marks pay: see balance.ts. */
+export { KNOWN_MATERIAL, MARKS, MASTERED_POWER };
 
 export const MARK_INFO: readonly { han: string; name: string; pays: string }[] = [
   { han: '見', name: 'Seen', pays: 'a first sight pays qi, and the record fills in' },
-  { han: '熟', name: 'Known', pays: '+2% 材 material' },
-  { han: '通', name: 'Mastered', pays: '+2% power' },
+  { han: '熟', name: 'Known', pays: `+${pct(KNOWN_MATERIAL)} 材 material` },
+  { han: '通', name: 'Mastered', pays: `+${pct(MASTERED_POWER)} power` },
 ];
-
-/** What one 熟 mark adds to everything that drops material. */
-export const KNOWN_MATERIAL = 0.02;
-/** What one 通 mark adds to power. */
-export const MASTERED_POWER = 0.02;
 
 export type Killed = Readonly<Record<string, number>>;
 

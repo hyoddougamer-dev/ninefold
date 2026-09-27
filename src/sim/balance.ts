@@ -379,6 +379,15 @@ export const FLOOR_LOOT_GROWTH = 1.2;
 export const HUNT_SHARE = 1 / 20;
 
 /**
+ * 材 The curve itself: what the floor at this depth pays, before any rounding. The tower,
+ * the hunt, the old-beast floor, refining and the save's material ceiling all read it
+ * here, so none of them can drift from the others.
+ */
+export function floorPay(floor: number): number {
+  return FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (floor - 1);
+}
+
+/**
  * 入定 Deep meditation: what being *there* is worth.
  *
  * Bruno asked for a difference between somebody who plays and somebody who only waits,
@@ -777,3 +786,411 @@ export const SEASON_HARVEST = 1.5;
 
 /** 室 What the blessed room of 秘境 the vault pays, against what that door usually gives. */
 export const BLESSED_ROOM = 2;
+
+/**
+ * 集 The numbers below lived beside the systems that read them until an audit gathered
+ * them here. Each keeps the comment it had where it used to live, and the system's own
+ * file says how it uses them.
+ */
+
+/**
+ * 修 The four upgrades, as numbers. `share` is what one level costs, as a share of the
+ * rung it rides (妖丹 Beast Cores read it in material); `gain` is what one level multiplies
+ * by. See UPGRADE_INFO in state.ts, which reads these and says them out loud.
+ */
+export const UPGRADE_NUMBERS = {
+  technique: { share: 0.7, gain: 1.22 },   // 劍訣 power
+  method: { share: 1.0, gain: 1.20 },      // 功法 qi per second
+  pills: { share: 0.45, gain: 1.14 },      // 吐納 qi per second
+  cores: { share: 3, gain: 1.08 },         // 妖丹 power, priced in material
+} as const;
+
+/** What 妖丹 costs in materials at a given level. Materials are earned by hand, not by
+ *  waiting, so this is the one price that does not ride the mountain. */
+export const CORE_STEP = 1.35;
+
+/**
+ * 基準 How many levels below a realm's cap the reference cultivator stands.
+ *
+ * Beasts have no curve of their own: they are tuned against *this*. The reference is a
+ * cultivator standing at the realm's ceiling with 劍訣 *and* 妖丹 near the levels the
+ * realm allows, not the one who spent nothing, not the one who optimised everything,
+ * but the one in the middle. Gear, the tree, the arts and the furnace are the margin on
+ * top, and they are what turns a coin flip into a win.
+ *
+ * The first version gave beasts an exponent of their own (1.42 per layer) and they ran
+ * away from any possible player: at realm 4 the warden was worth twenty well-invested
+ * cultivators. The second derived them from a share of all the qi ever earned, which
+ * stopped being meaningful the moment upgrade prices started riding the mountain.
+ * Deriving from the *cap* is the honest one: the cap is the ceiling on what a
+ * cultivator of that realm can possibly hold, so the beasts follow it on their own and
+ * nothing here needs touching when the curve moves.
+ *
+ * It sits a fixed *two levels* below the cap rather than a share of it. A share widens
+ * as the cap does: at the ninth realm fifteen per cent of the cap is eight levels of
+ * 劍訣, nearly five times the power, so the same warden would read as hopeless at 85%
+ * of the cap and trivial at 100%. Two levels is two levels at every realm, so the last
+ * stretch before a warden feels the same all the way up the mountain.
+ *
+ * **It counts 妖丹 cores, and that is the wall between playing and waiting.** Cores are
+ * not bought with qi. They are bought with 材 material, and material only falls off
+ * things you kill. So a warden cannot be walked past by somebody who has never opened
+ * 狩 Hunt, however long they have been gathering.
+ *
+ * The wall arrives late on purpose. The first two realms ask for no cores at all, so a
+ * new cultivator meets the 妖狐 and the 石猿 with qi alone and learns what a warden is
+ * before learning that a warden is not enough. From the third realm the requirement
+ * grows a realm at a time, measured, somebody who never fights anything stalls in the
+ * fourth realm and stays there for ever.
+ *
+ * Nothing is taken from that cultivator for being away. The qi still gathers at full
+ * rate with the phone closed, every second of it, because that is the promise the game
+ * makes. What they are short of is not qi. It is a reason to have been there.
+ */
+export const REFERENCE_BELOW = 2;
+
+/** How many realms are fought through before the wardens start asking for 妖丹 cores. */
+export const CORES_FREE_REALMS = 2;
+
+/**
+ * The share of the reference each step of a realm occupies. The three commons of a
+ * realm have to be an easy one, a middling one and a hard one: the first version
+ * indexed by *realm* rather than by beast, and all three came out with the same power
+ * and the same odds, which turns three distinct animals into three identical buttons.
+ */
+export const COMMON_STEPS: readonly number[] = [0.45, 0.62, 0.84];
+
+/**
+ * 初 And the first realm is spaced against the player, not against its own summit.
+ *
+ * Every realm is entered weak, measured, a cultivator arrives at 25%, 23%, 16%, 11%,
+ * 7% of the realm they are entering. The first is 5%, and it is the same pattern, not an
+ * exception. What makes it different is that it is the only realm with **nothing else in
+ * it**: from the second there is gear to find, a stance to pick, a record filling, a
+ * tower, a tree. In the first there is a bar and three boxes, and if the beasts are out
+ * of reach as well then there is nothing at all.
+ *
+ * At the standard spacing the first fight a player can win arrives **two hours and six
+ * minutes** in, and the true odds before it are not small. They are 0.0%, flat, for the
+ * whole of it. Combat in the first realm was a step, not a ramp: nothing, nothing,
+ * nothing, then 66% and trivial forty minutes later.
+ *
+ * So the first realm's three commons are placed where the player actually stands while
+ * climbing it. Measured, at this spacing:
+ *
+ *     山鼠 the rat     力  0.7    98% from the first second
+ *     野犬 the hound   力  4.0    at about 45 minutes
+ *     澤蛙 the frog    力 14.0    at 3.5 hours
+ *     妖狐 the fox     力 29.7    at the cap, as every warden is
+ *
+ * 初 The rat used to stand at 2.4, winnable at twelve minutes. Bruno, having watched
+ * testers start: *"não conseguem fazer nada até terem power suficiente para os
+ * primeiros monstros."* Twelve minutes is a long time to be told no by the only button
+ * that is not a shop. A fresh cultivator stands at 力 1, so the rat is a won fight from
+ * the first tap and its first sight pays the qi the first purchase is made with.
+ *
+ * 久 The frog is not moved, and that was measured rather than chosen. The endgame is
+ * sensitive to it in steps: at 0.35 of the reference the eightieth crossing's longest
+ * mark stretched from 10 days to 14, and at 0.40 to 0.62 to 27. At 0.70 it is exactly
+ * what it was. The rat and the hound move nothing past the first realm.
+ */
+export const FIRST_STEPS: readonly number[] = [0.035, 0.20, 0.70];
+
+/** The most rounds a fight may run, so a theoretical draw can never hang anything. */
+export const ROUND_CAP = 24;
+
+/**
+ * 氣運 How the qi runs today: one roll for each side, before a blow is thrown.
+ *
+ * Blow-by-blow noise averages away. Ten blows of ±22% come out within 4% of the mean,
+ * so whoever had more power won every single time and a fight was decided before it
+ * started. The screen hid that behind a sigmoid over the power ratio, which cheerfully
+ * promised 34% on fights the player would lose a hundred times out of a hundred.
+ *
+ * One roll per fight does not average away. It is what makes an underdog worth trying
+ * and a favourite worth checking, and it is what the odds on screen are now counting.
+ */
+export const FORM = 0.2;
+
+/** 血 A fighter's health, as a multiple of its power. The arena's bars read the same number. */
+export const HEALTH_PER_POWER = 10;
+
+/** 擊 Every blow rolls between BLOW_LOW and BLOW_LOW + BLOW_SPREAD of itself. */
+export const BLOW_LOW = 0.82;
+export const BLOW_SPREAD = 0.46;
+
+/** 勢 What each stance does to a round, by the numbers. data/arts.ts says them out loud. */
+export const STANCE_NUMBERS = {
+  swiftStrikes: 2,       // 疾 strikes a round, and times the sequence runs
+  swiftShare: 0.6,       // 疾 what each of those strikes is worth
+  guardDealt: 0.75,      // 守 what your blows are worth
+  guardTaken: 0.6,       // 守 what the beast's blows are worth
+  fierceDealt: 1.5,      // 兇 what your blows are worth
+  fierceTaken: 1.5,      // 兇 what the beast's blows are worth
+  entangle: 0.92,        // 纏 what the beast keeps of its power, every round
+  endure: 0.06,          // 續 health recovered every round, of the whole
+  recklessMiss: 0.5,     // 險 the chance a blow does nothing
+  recklessHit: 3,        // 險 what the rest are worth
+} as const;
+
+/** 訣 What each art does on the round it fires, by the numbers. data/arts.ts says them out loud. */
+export const ART_NUMBERS = {
+  ape: 1.6,              // 猿臂 the strike, multiplied
+  crane: 0.9,            // 鶴唳 what the beast keeps of its power, for the rest of the fight
+  tiger: 2,              // 虎嘯 the strike, multiplied: it lands twice
+  turtle: 0.12,          // 龜息 health recovered, of the whole
+  puppet: 0.25,          // 傀儡 the share of last round's blow dealt back
+  wolf: 0.12,            // 狼噬 added to the strike for every round already fought
+  serpentBelow: 0.5,     // 蛟騰 the health below which it wakes
+  serpent: 3,            // 蛟騰 the strike, multiplied, once awake
+  dragon: 1.35,          // 龍威 the strike, multiplied, and the beast's blow misses
+} as const;
+
+/**
+ * 算 The floor and the ceiling on the odds a screen quotes. "0%" on a button invites
+ * nobody to press it, and a run of good seeds should not read as a certainty.
+ */
+export const ODDS_FLOOR = 0.02;
+export const ODDS_CEILING = 0.98;
+
+/**
+ * 深 Where a realm's commons stand on the material curve: the first at this many layers
+ * into the realm, and each one after it this many further.
+ */
+export const COMMON_DEPTH_FIRST = 3;
+export const COMMON_DEPTH_STEP = 2;
+
+/** 守 What a warden's kill is worth against a common's HUNT_SHARE, at its own depth. */
+export const WARDEN_LOOT = 4;
+
+/** 層 Where in a realm its three commons walk out. See Beast.layer for the measurement. */
+export const COMMON_LAYERS = [0, 4, 7] as const;
+
+/**
+ * 落 What a dead beast leaves behind: the chance a common drops anything at all.
+ */
+export const BASE_DROP_CHANCE = 0.18;
+
+/** 守 How much harder a warden tilts the rarity weights toward the rare end. */
+export const WARDEN_RARITY_TILT = 2.6;
+
+/**
+ * The rarity weights, before the tilt: `base + per · realm`, and 凡 Common *falls* by
+ * `fall` a realm to its `floor`. They tilt upward with the realm, which is what makes the
+ * nine warden fights worth looking forward to.
+ */
+export const RARITY_WEIGHT = {
+  common: { base: 60, fall: 5, floor: 4 },
+  spirit: { base: 25, per: 1 },
+  mystic: { base: 10, per: 2 },
+  earth: { base: 3, per: 1.2 },
+  heaven: { base: 0.6, per: 0.45 },
+} as const;
+
+/** How much an item's rolled percentage may swing either side of its base. */
+export const VARIANCE = 0.15;
+
+/** A secondary line is worth this much of what the same rank's primary would be. */
+export const SECONDARY_SHARE = 0.6;
+
+/** 階 What each rank multiplies an item's percentage by. */
+export const RARITY_MULT = {
+  common: 1, spirit: 1.6, mystic: 2.5, earth: 4, heaven: 6.5,
+} as const;
+
+/** How many rolls a rank carries: one primary, plus these many secondaries. */
+export const SECONDARIES: Readonly<Record<'common' | 'spirit' | 'mystic' | 'earth' | 'heaven', number>> = {
+  common: 0, spirit: 1, mystic: 2, earth: 3, heaven: 4,
+};
+
+/**
+ * Gear grants a **percentage**, never a flat amount.
+ *
+ * The first cut handed out flat numbers, and flat numbers die: by the fifth realm a
+ * cultivator's power is in the hundreds of thousands, so a sword worth +4,200 is worth
+ * nothing. A percentage composes with the ladder and with every upgrade, so a good
+ * weapon found at realm 3 is still a good weapon at realm 9.
+ */
+export const BASE_PERCENT = 4;
+export const PERCENT_PER_REALM = 1;
+
+/** The three steps of every set, and how much harder each one hits. */
+export const SET_STEPS: readonly number[] = [2, 4, 6];
+export const SET_WEIGHT: readonly number[] = [1, 2, 4];
+
+/**
+ * 層 Where in its realm a lineage starts falling.
+ *
+ * 隙 The same argument the commons and 勢 the stance make: a realm used to hand over its
+ * whole loot table in the first minute of twelve days. It also put a power spike exactly
+ * where the climb means you to be weak, since a realm is entered at about a fifth of what
+ * it will ask for. 龍骸 Dragonwake starts dropping halfway up the eighth realm now, and a
+ * lineage starting to drop is an event rather than a footnote.
+ *
+ * 舊 Only the newest lineage waits. Everything below it falls from the first second, and a
+ * beast of a realm already passed drops its own realm's gear exactly as it always did.
+ */
+export const LINEAGE_LAYER = 5;
+
+/** 藏 Places in the chest before anything widens it. */
+export const CHEST_LIMIT = 40;
+/** 煉 How many of one piece at one rank fuse into one of the rank above. */
+export const FUSE_COUNT = 3;
+
+/**
+ * 層 Where in its realm a stance walks out.
+ *
+ * 隙 Measured, a realm hands over everything it has in its first minute: the name, the
+ * first common, the warden's art, the stance and a whole lineage of gear, and then runs
+ * for twelve days with one beast every five. The commons were already spread across
+ * layers 0, 4 and 7 for exactly this reason; the stance was not. It stands at the
+ * second layer now, which is the first gap in a realm with nothing else in it.
+ *
+ * 取 Nothing is taken away by this. A stance held is held for ever, and the realm below
+ * you gave you its own. What moves is when the *new* one arrives.
+ */
+export const STANCE_LAYER = 2;
+
+/** How many arts fit in a sequence. Three is enough to order and few enough to hold. */
+export const SEQUENCE_SLOTS = 3;
+
+/**
+ * 丹爐 The Furnace.
+ *
+ * A pill's price rides the mountain, exactly as an upgrade's does: a pill costs half of
+ * what a layer of the climb costs, and past the summit it goes on rising at the rate the
+ * summit was rising at.
+ *
+ * So it is never cheap and never a wall, and a cultivator at the top pays a layer of the
+ * mountain for two, which is the only reason the endgame has a pace at all.
+ */
+export const PILL_SHARE = 0.5;
+
+/**
+ * 爐底 How many realms below the furnace's own the first pill is priced: one to count the
+ * realms from zero, and one to stand **one realm behind** the cultivator. See PILL_RUNG in
+ * furnace.ts for why one realm and not none or two.
+ */
+export const PILL_REALMS_BELOW = 2;
+
+/** What the first pill of a line costs in materials, and what each one after adds. */
+export const PILL_MATERIALS = 14;
+/** One pill answers one tower floor, so its material price grows like a floor's pay. */
+export const PILL_MATERIAL_STEP = LADDER_GROWTH_LAST;
+
+/** What one pill of each line is worth. */
+export const PILL_POWER = 0.03;       // 煉體 +3% power, multiplied
+export const PILL_BANE = 0.985;       // 破煞 beasts at 98.5% per pill…
+export const PILL_BANE_FLOOR = 0.4;   // …and never below this share of their power
+export const PILL_FORTUNE = 0.04;     // 聚寶 +4% weight on the rare end of the table
+
+/**
+ * 煉 What one refine level adds to every line on a piece.
+ */
+export const REFINE_PER_LEVEL = 0.04;
+
+/**
+ * How many floors of the tower's own pay curve a refine level costs.
+ *
+ * The price rides the material curve exactly as an upgrade rides the mountain, so it
+ * stays meaningful at every realm instead of being unaffordable at the first and free at
+ * the ninth. Four floors a level puts a normal run at about level twenty on a piece and
+ * a hard-tapping one at about thirty, which is the difference farming should make.
+ */
+export const REFINE_DEPTH = 4;
+
+/** 無盡塔 Floors per realm, so floor 9 is the first realm's warden and floor 81 is the Dragon. */
+export const FLOORS_PER_REALM = LAYERS_PER_REALM;
+
+/** 塔印 What each tower seal adds to everything that drops materials. */
+export const SEAL_LOOT = 0.15;
+
+/** 錄 Kills that earn each mark: 見 Seen, 熟 Known, 通 Mastered. */
+export const MARKS: readonly number[] = [1, 10, 100];
+/** What one 熟 mark adds to everything that drops material. */
+export const KNOWN_MATERIAL = 0.02;
+/** What one 通 mark adds to power. */
+export const MASTERED_POWER = 0.02;
+
+/** 道 One point for every this many layers opened, and this many for every warden. */
+export const LAYERS_PER_POINT = 3;
+export const POINTS_PER_WARDEN = 2;
+/**
+ * 圖鑑 And what a realm's whole bestiary is worth, from the sixth realm.
+ *
+ * Four hundred fights for one point. It is deliberately the slowest 道 in the game and
+ * the only one that cannot be climbed toward: the ladder pays the other two just for
+ * going up, and this one is paid only for going back.
+ */
+export const POINTS_PER_BESTIARY = 1;
+
+/**
+ * 悟道 The least a refine level and a pill's material may cost, however many discount
+ * cards are taken. Refining is the one material sink with no ceiling, and the furnace is
+ * what the endgame is built on: a free one of either would be a different game.
+ */
+export const REFINE_DISCOUNT_FLOOR = 0.1;
+export const PILL_DISCOUNT_FLOOR = 0.3;
+
+/** 圍 The drive sizes offered. One is always free and always there; these are the bought ones. */
+export const DRIVE_SIZES = [10, 50, 200] as const;
+
+/** 緣 How long after one meeting before the next can arrive, in seconds. */
+export const MEET_GAP = 3 * 3600;
+
+/** 秘境 How many rooms a run is. Seven is short enough to finish in one sitting. */
+export const ROOMS = 7;
+
+/**
+ * 深 秘境深處 The deeper vault, which is what the seventh realm hands over.
+ *
+ * 隙 Measured, every system in the game was open inside three weeks and nothing new
+ * arrived for the twenty-five days after that. The cheapest honest answer is not a new
+ * screen: it is a second gear on a system that already has one, because the screens,
+ * the rooms, the gates and the tally all exist. The path simply goes further.
+ *
+ * 關 Four more rooms, and two more gates with them, since a gate is every other room.
+ * They are the deepest rooms in the game, so 深 depthScale pays them the most, and the
+ * gate ramp already runs out of your own realm and into the one above: the deeper gates
+ * are the strongest things the realm above has. A cultivator who opens the door at the
+ * seventh realm and walks all eleven has done something a sixth-realm cultivator could
+ * not.
+ */
+export const DEEP_ROOMS = 11;
+
+/** How long after a run before the door opens again, in seconds. */
+export const DOOR_GAP = 8 * 3600;
+
+/** 深 What each room deeper adds to what a room pays: the last is about three times the first. */
+export const ROOM_DEPTH = 0.4;
+
+/** 泉 A spring pays this many minutes of standing gathering, before depth. */
+export const SPRING_MINUTES = 4;
+
+/** 龕 A shrine pays this many 道 points, and the deep one in the last room of a path pays more. */
+export const SHRINE_POINTS = 1;
+export const SHRINE_DEEP_POINTS = 2;
+
+/** 爐 What a brazier adds to the rare end of the drop table, on top of the cultivator's own. */
+export const BRAZIER_LUCK = 1.5;
+
+/** 洞天 How many beds the cave has. Three, and nothing in the game adds a fourth yet. */
+export const BEDS = 3;
+
+/**
+ * 印 How many 雷印 marks one heaven is worth.
+ *
+ * Three, measured against the endgame harness: a crossing settles at about MARK_DAYS
+ * plus the gathering either side of it, so three of them is a little over a week. Nine
+ * heavens is then roughly eleven weeks of named arrivals on top of a climb that ends in
+ * nine, which is the thirteen weeks that were asked for, with the climb and the
+ * endgame overlapping rather than queueing.
+ *
+ * 二 Two was tried, to close the two weeks of the first thirteen that name nothing new
+ * (weeks 10 and 13: a heaven comes every ten or eleven days and a week is seven). It is
+ * a wall. Every heaven hands the Dragon the whole of its step at once, ×5.23, and two
+ * crossings are not enough to fill the room the heaven opened, so the fifth heaven
+ * arrives on day 149 instead of 103, one crossing takes 400 days, and the ninth heaven
+ * is on day 981. Those two weeks are what 期 the week is for.
+ */
+export const MARKS_PER_HEAVEN = 3;

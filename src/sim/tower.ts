@@ -1,5 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { FLOOR_LOOT, FLOOR_LOOT_GROWTH } from './balance.ts';
+import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, floorPay } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
 
 /**
@@ -15,8 +15,11 @@ import { WARDEN_EDGE, referenceAt } from './combat.ts';
  * floor, so the way to more materials is up, never round in circles.
  */
 
-/** Floors per realm, so floor 9 is the first realm's warden and floor 81 is the Dragon. */
-export const FLOORS_PER_REALM = 9;
+/**
+ * Floors per realm, so floor 9 is the first realm's warden and floor 81 is the Dragon. It
+ * is LAYERS_PER_REALM under the tower's own name, in balance.ts.
+ */
+export { FLOORS_PER_REALM };
 
 /**
  * What stands on a floor.
@@ -38,13 +41,13 @@ export function floorPower(floor: number): number {
  */
 export function floorBeast(floor: number): Beast {
   const realm = Math.max(1, Math.min(9, Math.ceil(floor / FLOORS_PER_REALM)));
-  const pool = floor <= 81 ? BEASTS.filter((b) => b.realm === realm) : BEASTS;
+  const pool = floor <= LAYERS ? BEASTS.filter((b) => b.realm === realm) : BEASTS;
   return pool[(floor - 1) % pool.length];
 }
 
 /** How much material a floor pays, the first time it falls. */
 export function floorLoot(floor: number): number {
-  return Math.round(FLOOR_LOOT * FLOOR_LOOT_GROWTH ** (floor - 1));
+  return Math.round(floorPay(floor));
 }
 
 /**
@@ -57,7 +60,7 @@ export function seals(best: number): number {
   return Math.floor(Math.max(0, best) / FLOORS_PER_REALM);
 }
 
-export const SEAL_LOOT = 0.15;
+export { SEAL_LOOT };
 
 /** What the seals are worth to everything that drops materials. */
 export function lootBonus(best: number): number {

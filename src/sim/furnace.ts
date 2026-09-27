@@ -1,5 +1,8 @@
 import { LINES, type Line } from '../data/alchemy.ts';
-import { LADDER_GROWTH_LAST, LAYERS_PER_REALM, PILL_AHEAD, PILL_PACE, ladderOpen } from './balance.ts';
+import {
+  LAYERS_PER_REALM, PILL_AHEAD, PILL_BANE, PILL_BANE_FLOOR, PILL_FORTUNE, PILL_MATERIALS,
+  PILL_MATERIAL_STEP, PILL_PACE, PILL_POWER, PILL_REALMS_BELOW, PILL_SHARE, ladderOpen,
+} from './balance.ts';
 import { opensAt } from './unlocks.ts';
 
 /**
@@ -15,14 +18,10 @@ import { opensAt } from './unlocks.ts';
  */
 
 /**
- * A pill's price rides the mountain, exactly as an upgrade's does: a pill costs half of
- * what a layer of the climb costs, and past the summit it goes on rising at the rate the
- * summit was rising at.
- *
- * So it is never cheap and never a wall, and a cultivator at the top pays a layer of the
- * mountain for two, which is the only reason the endgame has a pace at all.
+ * A pill's price rides the mountain, exactly as an upgrade's does: PILL_SHARE of the rung
+ * it stands on. That and the other pill numbers are in balance.ts.
  */
-export const PILL_SHARE = 0.5;
+export { PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE };
 
 /**
  * 爐底 Where the furnace's prices start on the mountain.
@@ -49,18 +48,7 @@ export const PILL_SHARE = 0.5;
  * It is derived from the unlock ladder rather than written down, so moving the furnace
  * moves its prices with it and the two can never disagree.
  */
-export const PILL_RUNG = (opensAt('furnace') - 2) * LAYERS_PER_REALM;
-
-/** What the first pill of a line costs in materials, and what each one after adds. */
-export const PILL_MATERIALS = 14;
-/** One pill answers one tower floor, so its material price grows like a floor's pay. */
-export const PILL_MATERIAL_STEP = LADDER_GROWTH_LAST;
-
-/** What one pill of each line is worth. */
-export const PILL_POWER = 0.03;       // 煉體 +3% power, multiplied
-export const PILL_BANE = 0.985;       // 破煞 beasts at 98.5% per pill…
-export const PILL_BANE_FLOOR = 0.4;   // …and never below this share of their power
-export const PILL_FORTUNE = 0.04;     // 聚寶 +4% weight on the rare end of the table
+export const PILL_RUNG = (opensAt('furnace') - PILL_REALMS_BELOW) * LAYERS_PER_REALM;
 
 export type Brewed = Record<Line, number>;
 

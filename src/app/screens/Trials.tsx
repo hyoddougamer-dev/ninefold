@@ -7,7 +7,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { TOWER_QI_HOURS } from '../../sim/balance.ts';
+import { FLOORS_PER_REALM, TOWER_QI_HOURS } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorPower, seals } from '../../sim/tower.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
@@ -40,7 +40,7 @@ export function Trials({ state, onFloor, onBrew }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const chance = useMemo(() => odds(state, beast, standing), [floor, ...fightDeps(state)]);
   const tone = chance > 0.66 ? 'var(--jade)' : chance > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
-  const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / 9))));
+  const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / FLOORS_PER_REALM))));
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
   const lit = isOpen(state.realm, 'furnace');

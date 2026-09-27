@@ -4,6 +4,7 @@ import { WARDENS, wardenOf } from '../../data/bestiary.ts';
 import { beastPower, odds } from '../combat.ts';
 import { artsHeld, sequenceOf, stanceOf, validateSequence, validateStance } from '../arts.ts';
 import { UPGRADE_INFO, newState, power, validate, type State } from '../state.ts';
+import { ART_NUMBERS, STANCE_NUMBERS } from '../balance.ts';
 
 const REALM = 6;
 const KILLED_ALL = Object.fromEntries(Object.keys(WARDEN_ART).map((k) => [k, 1]));
@@ -137,5 +138,31 @@ describe('勢 and 訣', () => {
     expect(power(armed)).toBeCloseTo(power(plain), 6);
     expect(odds(armed, wardenOf(REALM))).toBeGreaterThan(odds(plain, wardenOf(REALM)));
     expect(stanceOf(armed)?.key).toBe('endure');
+  });
+
+  /**
+   * 譯 Every percentage on a stance or an art is read off balance.ts, so it cannot drift.
+   * The few said in words instead ("twice", "triple", "a tenth") are held here, so that
+   * retuning one of them fails a test rather than leaving the sentence behind.
+   */
+  it('says in words exactly what the numbers do', () => {
+    const stance = (k: string) => STANCES.find((x) => x.key === k)!.text;
+    const art = (k: string) => ARTS.find((x) => x.key === k)!.text;
+
+    expect(stance('swift')).toContain('twice a round');
+    expect(STANCE_NUMBERS.swiftStrikes).toBe(2);
+    expect(stance('reckless')).toBe('Half your blows do nothing. The rest hit for triple.');
+    expect(STANCE_NUMBERS.recklessMiss).toBe(0.5);
+    expect(STANCE_NUMBERS.recklessHit).toBe(3);
+
+    expect(art('crane')).toContain('a tenth of its power');
+    expect(1 - ART_NUMBERS.crane).toBeCloseTo(0.1, 9);
+    expect(art('tiger')).toContain('lands twice');
+    expect(ART_NUMBERS.tiger).toBe(2);
+    expect(art('puppet')).toContain('A quarter');
+    expect(ART_NUMBERS.puppet).toBe(0.25);
+    expect(art('serpent')).toBe('Triple damage, but only below half health.');
+    expect(ART_NUMBERS.serpent).toBe(3);
+    expect(ART_NUMBERS.serpentBelow).toBe(0.5);
   });
 });

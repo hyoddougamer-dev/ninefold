@@ -83,6 +83,12 @@ export interface Node {
 /** 入定 How much deeper a 神 node sits you, from its 劍 twin's percentage. */
 const deep = (twin: number): number => Math.round(twin * TREE_FOCUS_SHARE) / 100;
 
+/**
+ * 劍 The four power nodes whose percentages the 神 Spirit's four big nodes are twinned to.
+ * Written once, so a twin cannot be retuned without its other half following.
+ */
+const TWIN = { chain: 20, swordheart: 30, formless: 45, tenthousand: 80 } as const;
+
 const n = (
   key: string, han: string, name: string, path: Path, tier: number,
   cost: number, effects: readonly Effect[], text: string,
@@ -93,15 +99,15 @@ export const NODES: readonly Node[] = [
   // 劍 The Sword: power, and affinity for what you swing and wear.
   n('opening',   '起手', 'Opening Form',   'sword', 0, 1, [{ kind: 'power', percent: 15 }], '+15% power'),
   n('edge',      '鋒',   'Edge',           'sword', 1, 1, [{ kind: 'affinity', slots: ['weapon'], percent: 40 }], 'weapons count 40% more'),
-  n('chain',     '連擊', 'Chain Strike',   'sword', 2, 2, [{ kind: 'power', percent: 20 }], '+20% power'),
+  n('chain',     '連擊', 'Chain Strike',   'sword', 2, 2, [{ kind: 'power', percent: TWIN.chain }], `+${TWIN.chain}% power`),
   n('sunder',    '破甲', 'Sunder',         'sword', 3, 2, [{ kind: 'beastWeakness', percent: 8 }], 'beasts count 8% weaker'),
-  n('swordheart','劍心', 'Sword Heart',    'sword', 4, 3, [{ kind: 'power', percent: 30 }], '+30% power'),
+  n('swordheart','劍心', 'Sword Heart',    'sword', 4, 3, [{ kind: 'power', percent: TWIN.swordheart }], `+${TWIN.swordheart}% power`),
   n('heavyplate','重甲', 'Heavy Plate',    'sword', 5, 3, [{ kind: 'affinity', slots: ['robe', 'boots'], percent: 40 }], 'robes and boots count 40% more', { excludes: 'forsake' }),
   n('forsake',   '捨甲', 'Forsake Armour', 'sword', 5, 3,
     [{ kind: 'power', percent: 60 }, { kind: 'affinityOff', slots: ['robe', 'boots'] }],
     '+60% power. Robes and boots give you nothing.', { excludes: 'heavyplate', keystone: true }),
-  n('formless',  '無鋒', 'Formless Edge',  'sword', 6, 4, [{ kind: 'power', percent: 45 }], '+45% power'),
-  n('tenthousand','萬劍','Ten Thousand Swords', 'sword', 7, 4, [{ kind: 'power', percent: 80 }], '+80% power'),
+  n('formless',  '無鋒', 'Formless Edge',  'sword', 6, 4, [{ kind: 'power', percent: TWIN.formless }], `+${TWIN.formless}% power`),
+  n('tenthousand','萬劍','Ten Thousand Swords', 'sword', 7, 4, [{ kind: 'power', percent: TWIN.tenthousand }], `+${TWIN.tenthousand}% power`),
 
   // 神 The Spirit: the gathering rate, and affinity for what you think with.
   //
@@ -110,15 +116,15 @@ export const NODES: readonly Node[] = [
   // and scaling the percentages down does not fix it. Only changing what they buy does.
   n('breathing', '吐納', 'Breathing',      'spirit', 0, 1, [{ kind: 'rate', percent: 10 }], '+10% qi per second'),
   n('clearmind', '明心', 'Clear Mind',     'spirit', 1, 1, [{ kind: 'affinity', slots: ['crown'], percent: 40 }], 'crowns count 40% more'),
-  n('circulation','周天','Circulation',    'spirit', 2, 2, [{ kind: 'focus', depth: deep(20) }], `入定 sits ${deep(20)}x deeper`),
+  n('circulation','周天','Circulation',    'spirit', 2, 2, [{ kind: 'focus', depth: deep(TWIN.chain) }], `入定 sits ${deep(TWIN.chain)}x deeper`),
   n('focus',     '凝神', 'Focus',          'spirit', 3, 2, [{ kind: 'affinity', slots: ['talisman', 'ring'], percent: 40 }], 'talismans and rings count 40% more'),
-  n('inner',     '內景', 'Inner Landscape','spirit', 4, 3, [{ kind: 'focus', depth: deep(30) }], `入定 sits ${deep(30)}x deeper`),
+  n('inner',     '內景', 'Inner Landscape','spirit', 4, 3, [{ kind: 'focus', depth: deep(TWIN.swordheart) }], `入定 sits ${deep(TWIN.swordheart)}x deeper`),
   n('travel',    '神遊', 'Spirit Travel',  'spirit', 5, 3, [{ kind: 'layerCost', percent: 6 }], 'layers cost 6% less qi', { excludes: 'forget' }),
   n('forget',    '忘機', 'Forget the Mechanism', 'spirit', 5, 3,
     [{ kind: 'layerCost', percent: 18 }, { kind: 'powerCut', percent: 45 }],
     'Layers cost 18% less qi. You lose 45% of your power.', { excludes: 'travel', keystone: true }),
-  n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'focus', depth: deep(45) }], `入定 sits ${deep(45)}x deeper`),
-  n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'focus', depth: deep(80) }], `入定 sits ${deep(80)}x deeper`),
+  n('greatvoid', '太虛', 'Great Void',     'spirit', 6, 4, [{ kind: 'focus', depth: deep(TWIN.formless) }], `入定 sits ${deep(TWIN.formless)}x deeper`),
+  n('transcend', '化境', 'Transcendence',  'spirit', 7, 4, [{ kind: 'focus', depth: deep(TWIN.tenthousand) }], `入定 sits ${deep(TWIN.tenthousand)}x deeper`),
 
   // 運 Fortune: what falls, and what you can keep.
   n('gleaning',  '拾遺', 'Gleaning',       'fortune', 0, 1, [{ kind: 'dropChance', percent: 5 }], '+5 to drop chance'),

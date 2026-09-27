@@ -1,4 +1,4 @@
-import { LAYERS_PER_REALM } from '../sim/balance.ts';
+import { COMMON_LAYERS, LAYERS_PER_REALM } from '../sim/balance.ts';
 
 /**
  * 妖 The bestiary.
@@ -69,8 +69,8 @@ export interface Beast {
   readonly leaves: readonly string[];
 }
 
-/** 層 Where in a realm its three commons walk out. See Beast.layer for the measurement. */
-export const COMMON_LAYERS = [0, 4, 7] as const;
+/** 層 Where in a realm its three commons walk out: COMMON_LAYERS, in balance.ts. */
+export { COMMON_LAYERS };
 
 const b = (key: string, han: string, name: string, realm: number, icon: string,
            nth: 0 | 1 | 2, leaves: readonly string[]): Beast =>

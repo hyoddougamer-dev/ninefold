@@ -1,5 +1,6 @@
 import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS, cardOf, type Card } from '../data/awakening.ts';
 import { heavensOpened } from '../data/heavens.ts';
+import { PILL_DISCOUNT_FLOOR, REFINE_DISCOUNT_FLOOR } from './balance.ts';
 
 /**
  * 悟道 What a breakthrough owes you, and what the cards you took are worth.
@@ -135,7 +136,7 @@ export function salvageBonus(awakened: readonly string[]): number {
  * the one material sink with no ceiling and a free one would be a different game.
  */
 export function refineFactor(awakened: readonly string[]): number {
-  return Math.max(0.1, 1 - sum(awakened, 'refine', 'percent'));
+  return Math.max(REFINE_DISCOUNT_FLOOR, 1 - sum(awakened, 'refine', 'percent'));
 }
 
 /** 藏 Places added to the chest. */
@@ -157,7 +158,7 @@ export function daoPoints(awakened: readonly string[]): number {
  * rather than a ceiling anybody meets.
  */
 export function pillFactor(awakened: readonly string[]): number {
-  return Math.max(0.3, 1 - sum(awakened, 'pill', 'percent'));
+  return Math.max(PILL_DISCOUNT_FLOOR, 1 - sum(awakened, 'pill', 'percent'));
 }
 
 /** 塔 What a floor of the Endless Tower pays in 材 material, multiplied. */

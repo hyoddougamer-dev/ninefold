@@ -12,7 +12,7 @@ import { keepSpare, load, save, untouched} from '../sim/save.ts';
 import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
-import { FOCUS_HOLD, focusAt } from '../sim/balance.ts';
+import { FOCUS_HOLD, LAYERS_PER_REALM, focusAt } from '../sim/balance.ts';
 import { focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
@@ -198,7 +198,7 @@ export function App() {
     const r = load(now());
     setState(r.state);
     setReady(true);
-    lastLayer.current = (r.state.realm - 1) * 9 + r.state.layer;
+    lastLayer.current = (r.state.realm - 1) * LAYERS_PER_REALM + r.state.layer;
     // A first-ever run has no save and no hours away: that is who the help is for. It
     // asks save.ts for what "has not begun" means rather than keeping its own idea of
     // it: the old one was "qi under five", which 囊 the opening purse made false, and
@@ -259,7 +259,7 @@ export function App() {
       setSatOut(open >= FOCUS_HOLD);
       setState((s) => {
         const next = advance(s, now(), false, deep);
-        const layers = (next.realm - 1) * 9 + next.layer;
+        const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
           sfx.layer();

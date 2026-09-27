@@ -3,6 +3,7 @@ import {
   type Effect, type Node,
 } from '../data/techniques.ts';
 import type { Slot } from '../data/gear.ts';
+import { LAYERS_PER_POINT, POINTS_PER_BESTIARY, POINTS_PER_WARDEN } from './balance.ts';
 
 /**
  * 道 The points the tree is bought with, and what a bought tree does.
@@ -16,16 +17,8 @@ import type { Slot } from '../data/gear.ts';
  * be read by state.ts without the two importing each other.
  */
 
-export const LAYERS_PER_POINT = 3;
-export const POINTS_PER_WARDEN = 2;
-/**
- * 圖鑑 And what a realm's whole bestiary is worth, from the sixth realm.
- *
- * Four hundred fights for one point. It is deliberately the slowest 道 in the game and
- * the only one that cannot be climbed toward: the ladder pays the other two just for
- * going up, and this one is paid only for going back.
- */
-export const POINTS_PER_BESTIARY = 1;
+/** How many 道 points each of those is worth, and 圖鑑 a finished bestiary: see balance.ts. */
+export { LAYERS_PER_POINT, POINTS_PER_BESTIARY, POINTS_PER_WARDEN };
 
 export function daoEarned(
   layersOpened: number, wardensKilled: number, realmsKnown = 0, fromCards = 0,
