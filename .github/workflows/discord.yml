@@ -1,0 +1,49 @@
+# 測 The testers' Discord server: roles, categories, channels, forums and the pinned
+# welcome, made to match tools/discord/server.json. By hand only (Actions → discord →
+# Run workflow), and again whenever server.json changes on main.
+#
+# Needs, set once in GitHub → Settings → Secrets and variables → Actions:
+#   DISCORD_BOT_TOKEN  a secret: the bot's token, from discord.com/developers/applications
+#                      → your app → Bot → Reset Token. Never pasted anywhere else.
+#   DISCORD_GUILD_ID   a variable (not a secret): the server's id. In Discord, turn on
+#                      Settings → Advanced → Developer Mode, then right-click the server
+#                      → Copy Server ID.
+# Without them the run proves the script against a fake Discord and prints the plan.
+name: discord
+
+on:
+  workflow_dispatch:
+    inputs:
+      icon:
+        description: 'Also set the server icon from docs/brand/icon-512.png'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ['tools/discord/**', 'tools/discord.mjs', '.github/workflows/discord.yml']
+
+concurrency: { group: discord, cancel-in-progress: false }
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      # 驗 A setup that only works once would post the welcome twice in front of every
+      # tester, so it is proved against a fake before it touches the real server.
+      - name: Prove the setup against a fake Discord
+        run: node tools/discord-check.mjs
+
+      - name: Make the real server match server.json
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          DISCORD_ICON: ${{ inputs.icon && 'docs/brand/icon-512.png' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then
+            echo "::warning::DISCORD_BOT_TOKEN or DISCORD_GUILD_ID is not set. Nothing was touched; the plan is below."
+          fi
+          node tools/discord.mjs

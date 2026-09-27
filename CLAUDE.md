@@ -142,6 +142,16 @@ Each of these cost real time once. They are written down so they cost it once.
   new one was published instead. Keep the page's weight in mind: if it ever has to be
   republished over itself, the drawings are what make that impossible.
 
+## 群 The testers' Discord
+
+The server is data (`tools/discord/server.json`) made real by `tools/discord.mjs`, run
+from `.github/workflows/discord.yml`. The sandbox cannot reach discord.com, so, as with
+Supabase, nothing is done against Discord from here. It needs the secret
+`DISCORD_BOT_TOKEN` and the variable `DISCORD_GUILD_ID`; never ask for the token in chat.
+The script finds everything by name, never deletes, and a second run changes nothing:
+`node tools/discord-check.mjs` proves that against a fake Discord and the workflow runs it
+first. Its copy is Portuguese, like `public/testar`, because the testers are.
+
 ## 屜 The drawer
 
 Ideas designed, shown to Bruno and deliberately not built yet live in `docs/DRAWER.md`,
