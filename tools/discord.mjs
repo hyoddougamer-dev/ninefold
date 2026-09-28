@@ -338,13 +338,26 @@ async function run() {
       const want = { name: rule.name, event_type: 1, trigger_metadata: meta, actions, enabled: true,
         exempt_roles: (rule.exempt ?? []).map((k) => roleId[k]).filter(Boolean),
         exempt_channels: (rule.exemptChannels ?? []).map((k) => channelId[k]).filter(Boolean) };
-      const mine = have.find((x) => x.trigger_type === type && (type !== TRIGGER.keyword || same(x.name, rule.name)));
+      // 古 Discord also lists a few rules of its own, shared by every server: their ids are
+      // older than the server itself, and no bot may edit them (a PATCH is a bare 404, as
+      // "Block Mention Spam" taught us on 2026-09-28). Ours is made beside it if Discord
+      // allows; if it does not, Discord's rule stands and that is not a failure.
+      const system = (x) => BigInt(x.id) < BigInt(GUILD);
+      const theirs = have.find((x) => x.trigger_type === type && system(x));
+      const mine = have.find((x) => x.trigger_type === type && !system(x) && (type !== TRIGGER.keyword || same(x.name, rule.name)));
       const sorted = (v) => (Array.isArray(v) ? [...v].sort() : v);
       const sig = (r) => JSON.stringify([r.name, !!r.enabled, Object.keys(meta).sort().map((k) => [k, sorted(r.trigger_metadata?.[k])]),
         (r.actions ?? []).map((a) => [a.type, a.metadata?.custom_message ?? '', a.metadata?.channel_id ?? '', a.metadata?.duration_seconds ?? 0]),
         sorted(r.exempt_roles ?? []), sorted(r.exempt_channels ?? [])]);
       if (!mine) {
-        await step(`AutoMod ${rule.name}`, async () => { await call('POST', `/guilds/${GUILD}/auto-moderation/rules`, { ...want, trigger_type: type }); log(`  AutoMod ${rule.name} made`); });
+        await step(`AutoMod ${rule.name}`, async () => {
+          try {
+            await call('POST', `/guilds/${GUILD}/auto-moderation/rules`, { ...want, trigger_type: type }); log(`  AutoMod ${rule.name} made`);
+          } catch (e) {
+            if (!theirs || e.status !== 400) throw e;
+            log(`  AutoMod ${rule.name}: Discord's own "${theirs.name}" holds this slot and no bot may edit it, so Discord's rule stands`);
+          }
+        });
       } else if (sig(mine) !== sig(want)) {
         await step(`AutoMod ${rule.name} (taking over "${mine.name}", ${mine.id})`, async () => { await call('PATCH', `/guilds/${GUILD}/auto-moderation/rules/${mine.id}`, want); log(`  AutoMod ${rule.name} set`); });
       }

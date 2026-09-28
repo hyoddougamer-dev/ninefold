@@ -26,6 +26,7 @@
  *      over, then a run that changes nothing.
  *   4. An empty server: everything made once, a second run changes nothing, drift is put
  *      back, a hand-made channel is left alone, an edited message is edited in place.
+ *   5. Discord's own shared mention rule already in the list: never edited, the run green.
  */
 import http from 'node:http';
 import { spawn } from 'node:child_process';
@@ -144,7 +145,7 @@ function fakeDiscord({ admin = true } = {}) {
         if (req.method === 'GET') return send(200, state.automod);
         if (!botMay(MANAGE_GUILD)) return refuse(403, 'Missing Permissions');
         const rule = req.method === 'POST' ? { id: id(), trigger_type: body.trigger_type } : state.automod.find((r) => path.endsWith(`/${r.id}`));
-        if (!rule) return refuse(404, 'no such rule');
+        if (!rule || rule.system) return send(404, { message: '404: Not Found', code: 0 });
         if (req.method === 'PATCH' && body.trigger_type !== undefined) return refuse(400, 'trigger_type cannot change');
         const t = rule.trigger_type;
         if (req.method === 'POST' && [3, 4, 5].includes(t) && state.automod.some((r) => r.trigger_type === t)) return refuse(400, 'Maximum number of rules of this trigger type reached');
@@ -302,6 +303,19 @@ await scenario({}, async (port, env, state) => {
   check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
     && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),
     'a new onboarding answer is added and every question and answer keeps its id, so nobody loses what they picked');
+});
+
+// 5. Discord's own shared rule, as the real server showed it on 2026-09-28: a mention rule
+// whose id is older than the server, which no bot may edit and which fills the one slot.
+await scenario({}, async (port, env, state) => {
+  state.automod.push({ id: '5', system: true, name: 'Block Mention Spam', trigger_type: 5, event_type: 1, enabled: true,
+    trigger_metadata: { mention_total_limit: 20 }, actions: [{ type: 1, metadata: {} }], exempt_roles: [], exempt_channels: [] });
+  const { out, code } = await runSetup(port, env);
+  check(code === 0 && /Block Mention Spam" holds this slot/.test(out) && !/PATCH .*rules\/5/.test(state.calls.join('\n')),
+    "Discord's own shared rule is never edited, it stands, and the run stays green");
+  check(state.automod.length === SPEC.automod.rules.length, 'and every other rule is made beside it');
+  const again = await runSetup(port, env);
+  check(again.code === 0 && changes(again.out).length === 0, `and a second run changes nothing${changes(again.out).length ? `: ${changes(again.out).join(' | ')}` : ''}`);
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
