@@ -586,10 +586,12 @@ export function App() {
   // 樂 The music starts on the first touch, the only moment a browser allows it, and
   // follows the player: the hunt, a big fight, the heavens, or cultivating.
   useEffect(() => {
+    // Every tap, not the first one only: a finger going down is not a gesture a browser
+    // will start sound from, and a start that was refused is tried again on the next.
     const go = () => unlockMusic();
-    window.addEventListener('pointerdown', go, { once: true });
-    window.addEventListener('keydown', go, { once: true });
-    return () => { window.removeEventListener('pointerdown', go); window.removeEventListener('keydown', go); };
+    const kinds = ['pointerup', 'click', 'keydown'] as const;
+    kinds.forEach((k) => window.addEventListener(k, go));
+    return () => kinds.forEach((k) => window.removeEventListener(k, go));
   }, []);
   const fightKind = battle ? (battle.beast.warden || battle.demon ? 'boss' : 'beast') : null;
   const heavens = state.tribulation > 0;

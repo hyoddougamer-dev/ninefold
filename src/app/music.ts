@@ -99,14 +99,15 @@ export function musicLevel(): number {
 const FADE = 2.5;
 const HANDOVER = 6;
 
-interface Deck { el: HTMLAudioElement; gain: GainNode; track: Track | null }
+interface Deck { el: HTMLAudioElement; gain: GainNode; track: Track | null; gen: number }
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let decks: [Deck, Deck] | null = null;
 let on = 0;                                // which deck is playing
 let mood: Mood = 'cultivate';
-let unlocked = false;
+let touched = false;
+let primed = false;
 const turn: Record<Mood, number> = { cultivate: 0, hunt: 0, battle: 0, heavens: 0 };
 
 function build(): boolean {
@@ -126,7 +127,7 @@ function build(): boolean {
       gain.gain.value = 0;
       ctx!.createMediaElementSource(el).connect(gain).connect(master!);
       el.addEventListener('timeupdate', () => nearEnd(el));
-      return { el, gain, track: null };
+      return { el, gain, track: null, gen: 0 };
     };
     decks = [deck(), deck()];
     return true;
@@ -136,54 +137,109 @@ function build(): boolean {
   }
 }
 
+const silent = () => MUSIC_LEVELS[level].volume === 0;
+const playing = () => !!decks && decks[on].track !== null && !decks[on].el.paused;
+
 /** 接 A track about to end hands over to the next one in its mood, overlapping. */
 function nearEnd(el: HTMLAudioElement): void {
   if (!decks || decks[on].el !== el || !Number.isFinite(el.duration)) return;
   if (el.duration - el.currentTime < HANDOVER) start(mood, true);
 }
 
-/** Starts the mood's next track on the idle deck and fades across to it. */
+/** Ramps one deck's gain to a value over `secs`, from wherever it is now. */
+function ramp(d: Deck, to: number, secs: number): void {
+  const now = ctx!.currentTime;
+  d.gain.gain.cancelScheduledValues(now);
+  d.gain.gain.setValueAtTime(d.gain.gain.value, now);
+  d.gain.gain.linearRampToValueAtTime(to, now + secs);
+}
+
+/**
+ * Starts the mood's next track on the idle deck and fades across to it.
+ *
+ * 待 The fade waits for the new track to be *playing*, not for the tap: on a slow
+ * connection the file takes seconds to arrive, and fading out on the tap left a gap of
+ * silence and then a track starting at full volume. 退 If the new one is refused or
+ * never arrives, the old one comes back up, so a failure is never silence.
+ */
 function start(m: Mood, next: boolean): void {
-  if (!ctx || !decks || MUSIC_LEVELS[level].volume === 0) return;
+  if (!ctx || !decks || silent()) return;
   const list = PLAYLIST[m];
+  const from = decks[on];
+  if (!next && from.track !== null && list.includes(from.track) && !from.el.paused) return;
   if (next) turn[m] = (turn[m] + 1) % list.length;
   const track = list[turn[m]];
-  const from = decks[on];
   const to = decks[1 - on];
-  if (!next && from.track !== null && list.includes(from.track) && !from.el.paused) return;
-  const now = ctx.currentTime;
+  const gen = ++to.gen;
+  from.gen++;
   to.track = track;
   to.el.src = fileOf(track);
   to.el.currentTime = 0;
-  to.gain.gain.cancelScheduledValues(now);
-  to.gain.gain.setValueAtTime(0, now);
-  to.gain.gain.linearRampToValueAtTime(1, now + FADE);
-  to.el.play().catch(() => { /* refused: the next gesture tries again */ });
-  from.gain.gain.cancelScheduledValues(now);
-  from.gain.gain.setValueAtTime(from.gain.gain.value, now);
-  from.gain.gain.linearRampToValueAtTime(0, now + FADE);
-  const leaving = from.el;
-  window.setTimeout(() => { if (decks && decks[on].el !== leaving) leaving.pause(); }, (FADE + 0.3) * 1000);
+  to.gain.gain.cancelScheduledValues(ctx.currentTime);
+  to.gain.gain.setValueAtTime(0, ctx.currentTime);
   on = 1 - on;
+  const leaving = from.track !== null && !from.el.paused ? from : null;
+  const cross = () => {
+    if (to.gen !== gen) return;
+    ramp(to, 1, FADE);
+    if (!leaving) return;
+    ramp(leaving, 0, FADE);
+    const g = leaving.gen;
+    // 蹤 Paused only if nothing has picked this deck up again in the meantime.
+    window.setTimeout(() => { if (leaving.gen === g && decks && decks[on] !== leaving) leaving.el.pause(); }, (FADE + 0.3) * 1000);
+  };
+  const giveUp = () => {
+    if (to.gen !== gen || !decks) return;
+    to.gen++;
+    to.el.pause();
+    if (leaving && decks[on] === to) { on = 1 - on; ramp(leaving, 1, 0.6); }
+  };
+  to.el.addEventListener('playing', cross, { once: true });
+  window.setTimeout(() => { if (to.gen === gen && to.el.paused) giveUp(); }, 9000);
+  to.el.play().catch(giveUp);
 }
 
 /** 情 Tell the music where the player is. Cheap to call on every render. */
 export function setMood(m: Mood): void {
-  if (m === mood && decks && !decks[on].el.paused) return;
+  if (m === mood && playing()) return;
   mood = m;
-  if (unlocked) start(m, false);
+  if (touched) start(m, false);
 }
 
 /**
- * 啟 The first touch of the game. Browsers only let sound start from inside a gesture,
- * so App calls this from its first pointerdown, and nothing plays before it.
+ * 啟 A touch of the game. Browsers let sound start only from inside a gesture, and a
+ * finger going *down* is not one (only lifting it is), so App calls this on every
+ * pointerup, click and key, not once. Each call wakes the audio if the phone put it to
+ * sleep and starts the music if nothing is playing, which is also how a refused start
+ * is tried again: on the next tap.
  */
 export function unlockMusic(): void {
-  if (unlocked) return;
-  unlocked = true;
-  if (MUSIC_LEVELS[level].volume === 0 || !build()) return;
-  if (ctx!.state === 'suspended') void ctx!.resume();
-  start(mood, false);
+  touched = true;
+  if (silent() || !build()) return;
+  if (ctx!.state !== 'running') void ctx!.resume();
+  if (!playing()) start(mood, false);
+  // 啟 An iPhone lets an audio element play on its own only once it has played inside
+  // a gesture. The first track plays on one deck; the handover three minutes later
+  // plays on the other. So the other is woken here too, silently, and put back.
+  if (!primed && decks) {
+    primed = true;
+    const idle = decks[1 - on];
+    if (idle.track === null) {
+      idle.el.src = hush();
+      idle.el.play().then(() => { if (decks && decks[on] !== idle) idle.el.pause(); }).catch(() => { primed = false; });
+    }
+  }
+}
+
+/** A tenth of a second of silence, made here, so waking a deck downloads nothing. */
+function hush(): string {
+  const n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const text = (o: number, t: string) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  text(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); text(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  text(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
 }
 
 /** Steps to the next level and returns it, so the button can say what it became. */
@@ -193,10 +249,14 @@ export function cycleMusic(): number {
   const volume = MUSIC_LEVELS[level].volume;
   if (volume === 0) {
     decks?.forEach((d) => d.el.pause());
-  } else if (unlocked && build()) {
+    if (ctx && ctx.state === 'running') void ctx.suspend();
+  } else if (touched && build()) {
     master!.gain.setTargetAtTime(volume, ctx!.currentTime, 0.2);
-    if (ctx!.state === 'suspended') void ctx!.resume();
-    if (decks![on].el.paused) start(mood, false);
+    if (ctx!.state !== 'running') void ctx!.resume();
+    // 續 Back on, the same track carries on where it stopped rather than from 0:00.
+    const d = decks![on];
+    if (d.track !== null && PLAYLIST[mood].includes(d.track)) d.el.play().catch(() => {});
+    else start(mood, false);
   }
   return level;
 }
@@ -208,7 +268,7 @@ if (typeof document !== 'undefined') {
     if (document.hidden) {
       decks.forEach((d) => d.el.pause());
       void ctx.suspend();
-    } else if (MUSIC_LEVELS[level].volume > 0 && unlocked) {
+    } else if (!silent() && touched) {
       void ctx.resume();
       const d = decks[on];
       if (d.track) d.el.play().catch(() => {});

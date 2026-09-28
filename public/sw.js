@@ -76,6 +76,10 @@ self.addEventListener('fetch', (event) => {
   // the cache (twelve megabytes nobody needs twice) and a phone's download manager would
   // be handed a response it did not ask for. The browser gets it straight.
   if (new URL(request.url).pathname.endsWith('.apk')) return;
+  // 樂 The music streams in ranges, a few hundred kilobytes at a time, and Safari has a
+  // long history of stalling media that passes through a worker. Nothing is gained by
+  // routing it here (a range is never cached), so the browser fetches it straight.
+  if (new URL(request.url).pathname.includes('/music/')) return;
 
   event.respondWith((async () => {
     try {
