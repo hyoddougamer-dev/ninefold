@@ -218,7 +218,7 @@
       "pin": true,
       "title": "九境 Ninefold",
       "color": "#D4AF56",
-      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/1.webp",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/welcome.webp",
       "body": [
         "**An idle cultivation game, painted in ink.** Qi gathers on its own, even with the phone closed, and you climb nine realms and the nine heavens above them.",
         "",
@@ -271,7 +271,7 @@
       "pin": true,
       "title": "告 Ninefold · The first closed test",
       "color": "#D4AF56",
-      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/9.webp",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/launch.webp",
       "body": [
         "Hey everyone. This is the new home for **九境 Ninefold**, the game I have been building since Dao of the Endless Sky closed.",
         "",
@@ -286,7 +286,7 @@
         ["▸ Android", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
         ["▸ Report", "Bugs in {#bugs}, ideas in {#ideas}"]
       ],
-      "footer": "Thank you for being here · 師 Bruno"
+      "footer": "Thank you for being here · 師 Shibaki"
     },
     {
       "key": "bugs-how",
@@ -309,6 +309,7 @@
       "pin": false,
       "title": "筆 Dev log #1 · A face, a finish and music",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-1.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/pc.webp",
       "body": ["What changed before the first testers arrive."],
       "fields": [
@@ -318,7 +319,7 @@
         ["▸ Fixes", "The end of a fight scrolls on short screens, the day shows in the header again, and *Report a bug* is in the ≡ menu."],
         ["▸ Next", "The warden's and the heavens' own music, and whatever you find. Tell us in {#bugs} and {#ideas}."]
       ],
-      "footer": "師 Bruno"
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -329,6 +330,7 @@
       "pin": true,
       "title": "入門 Start here: your first hour",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-start.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cultivate.webp",
       "body": [
         "**Ninefold is an idle cultivation game.** Qi gathers on its own, even with the game shut. You spend it to grow stronger, or let it fill the bar and climb.",
@@ -352,6 +354,7 @@
       "tag": "Start",
       "title": "氣 Qi, layers and the nine realms",
       "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-qi.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/1.webp",
       "body": [
         "Qi gathers at the full rate whether you are here or not, all night, with the phone shut.",
@@ -374,6 +377,7 @@
       "tag": "Systems",
       "title": "狩 Hunting, the Record and Beast Cores",
       "color": "#D2604E",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-hunt.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/hunt.webp",
       "body": [
         "Beasts wait on the 狩 Hunt screen. Fight them whenever you like, as often as you like, for nothing. The percentage on each is your odds.",
@@ -395,6 +399,7 @@
       "tag": "Systems",
       "title": "器 Gear: ranks, sets, classes and refining",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-gear.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/gear.webp",
       "body": [
         "From the second realm, beasts leave gear. Tap a piece in your chest to wear it. **Six places:** 劍 Weapon, 袍 Robe, 冠 Crown, 靴 Boots, 珮 Talisman, 戒 Ring.",
@@ -416,6 +421,7 @@
       "tag": "Systems",
       "title": "道 The Path, Keystones, Stances and Arts",
       "color": "#A077B8",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-path.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/path.webp",
       "body": [
         "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon and the Bestiary. They are spent on the tree in 道 the Path.",
@@ -434,6 +440,7 @@
       "tag": "Systems",
       "title": "洞天 The Cave and 秘境 the Secret Realm",
       "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-cave.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cave.webp",
       "body": [
         "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it.",
@@ -451,6 +458,7 @@
       "tag": "Systems",
       "title": "閉關 Seclusion, 塔 the Tower and 圖鑑 the Bestiary",
       "color": "#D2604E",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-tower.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
       "body": [
         "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour.",
@@ -466,6 +474,7 @@
       "tag": "Endgame",
       "title": "雷池 The Tribulation, 爐 the Furnace and the Heavens",
       "color": "#A077B8",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-trib.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/9.webp",
       "body": [
         "**雷池 The Tribulation** (ninth realm). The last layers of the whole climb. When they run out, the bar becomes the thunder pool, and a Dragon waits at the end of it. Every crossing earns a 雷印 thunder mark, and the Dragon comes back heavier every time you put it down.",
@@ -485,6 +494,7 @@
       "tag": "Systems",
       "title": "期 The week and the road",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-week.webp",
       "body": [
         "**期 The week** turns every Monday. It marks a beast worth double 材 material, a herb worth planting and a room of 秘境 worth reaching. It never touches the rate you gather at, so nobody falls behind for missing one.",
         "",
@@ -497,6 +507,7 @@
       "tag": "Systems",
       "title": "榜 Rankings, saves and devices",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-ranks.webp",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/ranks.webp",
       "body": [
         "Your game lives on the device and the browser you play on. The app, Chrome and a PC are separate games unless you sign in.",
@@ -517,6 +528,7 @@
       "tag": "FAQ",
       "title": "問 Questions testers ask",
       "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-faq.webp",
       "body": [
         "**Do I lose anything if I stop playing for a while?** No. Qi gathers the whole time, and nothing is ever taken away for being away.",
         "",
@@ -539,6 +551,7 @@
       "tag": "Start",
       "title": "開 What each realm opens",
       "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-opens.webp",
       "body": [
         "Nothing resets, so every realm hands over something that was not there before. The locked tabs in the game say which realm opens them."
       ],

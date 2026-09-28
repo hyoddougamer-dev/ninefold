@@ -296,8 +296,12 @@ await scenario({}, async (port, env, state) => {
   const posted = Object.entries(state.messages).filter(([c]) => !inThreads.has(c)).flatMap(([, list]) => list);
   check(posted.length === SPEC.messages.length && posted.filter((m) => m.pinned).length === SPEC.messages.filter((m) => m.pin).length,
     `the ${SPEC.messages.length} posts go up, the ${SPEC.messages.filter((m) => m.pin).length} meant to be pinned pinned`);
-  check(posted.every((m) => !/\{#\w+\}/.test(JSON.stringify(m.embeds))) && posted.some((m) => /<#\d+>/.test(m.embeds[0].description)), 'channel names in the posts are real links');
-  check(posted.filter((m) => m.embeds[0].image).length === SPEC.messages.filter((m) => m.image).length, 'the posts with a painting carry it');
+  check(posted.every((m) => !/\{#\w+\}/.test(JSON.stringify(m.embeds))) && posted.some((m) => /<#\d+>/.test(m.embeds.find((e) => e.title).description)), 'channel names in the posts are real links');
+  const words = (m) => m.embeds.find((e) => e.title);
+  check(posted.filter((m) => words(m).image).length === SPEC.messages.filter((m) => m.image).length, 'the posts with a picture carry it');
+  check(posted.filter((m) => m.embeds.length === 2 && !m.embeds[0].title && m.embeds[0].image).length === SPEC.messages.filter((m) => m.banner).length
+    && Object.values(state.messages).flat().filter((m) => m.embeds.length === 2).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
+    'every post with a banner wears it on top, above its words');
   check(state.limited, 'and a rate limit on the way is survived');
   const forums = state.channels.filter((c) => c.type === 15);
   const forumCount = all.filter((c) => c.type === 'forum').length;
@@ -336,7 +340,7 @@ await scenario({}, async (port, env, state) => {
   writeFileSync(wokePath, JSON.stringify(woke));
   const late = await runSetup(port, { ...env, DISCORD_SPEC: wokePath });
   const edited3 = state.messages[state.threads.find((t) => t.name === woke.posts[3].title).id][0];
-  check(late.code === 0 && edited3.embeds[0].description.endsWith('A line added later.') && state.threads.length === SPEC.posts.length,
+  check(late.code === 0 && edited3.embeds.find((e) => e.title).description.endsWith('A line added later.') && state.threads.length === SPEC.posts.length,
     'an archived guide is found, woken and edited in place, not posted again');
   await runSetup(port, env);   // and back to server.json as it is, for what follows
   check(Object.values(state.messages).flat().length - SPEC.posts.length === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
@@ -354,8 +358,8 @@ await scenario({}, async (port, env, state) => {
   const specPath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
   writeFileSync(specPath, JSON.stringify(edited));
   const fourth = await runSetup(port, { ...env, DISCORD_SPEC: specPath });
-  const first0 = Object.values(state.messages).flat().find((m) => m.embeds[0].title === SPEC.messages[0].title);
-  check(/edited/.test(fourth.out) && first0.embeds[0].description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length,
+  const first0 = Object.values(state.messages).flat().find((m) => m.embeds.some((e) => e.title === SPEC.messages[0].title));
+  check(/edited/.test(fourth.out) && first0.embeds.find((e) => e.title).description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length,
     'a post changed in server.json is edited in place, not posted again');
   check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
     && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),

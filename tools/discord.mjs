@@ -401,32 +401,34 @@ async function run() {
   // 告 The messages, each found by its title among the bot's own and edited in place.
   // {#key} in a body or a field becomes a link to that channel.
   const linked = (text) => text.replace(/\{#(\w+)\}/g, (_, k) => (channelId[k] ? `<#${channelId[k]}>` : `#${k}`));
-  const embedOf = (m) => {
+  // 旗 A post with a banner is two embeds: the banner alone on top, then the words.
+  const embedsOf = (m) => {
     const embed = { title: m.title, description: linked(m.body.join('\n')), color: colour(m.color) };
     if (m.image) embed.image = { url: m.image };
     if (m.fields) embed.fields = m.fields.map(([name, value]) => ({ name, value: linked(value), inline: false }));
     if (m.footer) embed.footer = { text: m.footer };
-    return embed;
+    return m.banner ? [{ color: colour(m.color), image: { url: m.banner } }, embed] : [embed];
   };
-  const sig = (x) => JSON.stringify([x.description, x.color, x.image?.url ?? '', (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']);
+  const sig = (list) => JSON.stringify((list ?? []).map((x) => [x.title ?? '', x.description ?? '', x.color, x.image?.url ?? '',
+    (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']));
   for (const m of SPEC.messages) {
     const where = channelId[m.channel];
     if (!where) continue;
-    const embed = embedOf(m);
+    const embeds = embedsOf(m);
     await step(`message "${m.title}"`, async () => {
       // 釘 The pins first: a pinned message in a busy channel is long past the last fifty.
       const pins = await call('GET', `/channels/${where}/pins`);
       const recent = await call('GET', `/channels/${where}/messages?limit=50`);
-      const ours = (x) => x.author?.id === me.id && x.embeds?.[0]?.title === m.title;
+      const ours = (x) => x.author?.id === me.id && (x.embeds ?? []).some((e) => e.title === m.title);
       const mine = pins.find(ours) ?? recent.find(ours);
       let id;
       if (!mine) {
-        id = (await call('POST', `/channels/${where}/messages`, { embeds: [embed] })).id;
+        id = (await call('POST', `/channels/${where}/messages`, { embeds })).id;
         log(`  "${m.title}" posted`);
       } else {
         id = mine.id;
-        if (sig(mine.embeds[0]) !== sig(embed)) {
-          await call('PATCH', `/channels/${where}/messages/${id}`, { embeds: [embed] });
+        if (sig(mine.embeds) !== sig(embeds)) {
+          await call('PATCH', `/channels/${where}/messages/${id}`, { embeds });
           log(`  "${m.title}" edited`);
         }
       }
@@ -450,7 +452,7 @@ async function run() {
   }
   for (const p of [...posts].reverse()) {
     const forum = channelId[p.forum];
-    const embed = embedOf(p);
+    const embeds = embedsOf(p);
     const spec = SPEC.categories.flatMap((c) => c.channels).find((c) => c.key === p.forum);
     const forumNow = channels.find((c) => c.id === forum);
     const tagId = p.tag ? (forumNow?.available_tags ?? []).find((t) => t.name === p.tag)?.id : undefined;
@@ -458,15 +460,15 @@ async function run() {
       let thread = (threads[forum] ?? []).find((t) => t.name === p.title);
       if (!thread) {
         thread = await call('POST', `/channels/${forum}/threads`, {
-          name: p.title, auto_archive_duration: 10080, applied_tags: tagId ? [tagId] : [], message: { embeds: [embed] },
+          name: p.title, auto_archive_duration: 10080, applied_tags: tagId ? [tagId] : [], message: { embeds },
         });
         log(`  "${p.title}" posted in #${spec?.name ?? p.forum}`);
       } else {
         const first = await call('GET', `/channels/${thread.id}/messages/${thread.id}`);
-        if (sig(first.embeds?.[0] ?? {}) !== sig(embed)) {
+        if (sig(first.embeds) !== sig(embeds)) {
           // An archived thread cannot be written in until it is woken.
           if (thread.thread_metadata?.archived) await call('PATCH', `/channels/${thread.id}`, { archived: false });
-          await call('PATCH', `/channels/${thread.id}/messages/${thread.id}`, { embeds: [embed] });
+          await call('PATCH', `/channels/${thread.id}/messages/${thread.id}`, { embeds });
           log(`  "${p.title}" edited`);
         }
       }

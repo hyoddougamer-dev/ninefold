@@ -161,6 +161,10 @@ game's own copy and numbers: when a system changes, its guide changes in the sam
 Only the developer and the bot open posts; members answer inside them. The screens the
 guides show live in `public/discord/`, served by Pages, and go up in a commit before the
 posts that point at them, so Discord never caches a broken image.
+Every post wears a banner from `tools/banners.mjs` (the game's own paintings and cut
+figures, a gold seal, the logo's lettering, the cards' frame): a new post is a line in
+`BANNERS` and a `banner` in server.json. **Bruno's real name never appears in anything
+members read.** He signs 師 Shibaki, the name his community knows.
 
 ## 樂 Music
 
