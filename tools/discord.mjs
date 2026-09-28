@@ -65,7 +65,7 @@ async function call(method, path, body) {
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       const err = new Error(`${method} ${path} → ${res.status} ${JSON.stringify(data)}`);
-      err.status = res.status; err.data = data;
+      err.status = res.status; err.data = data; err.request = `${method} ${path.replace(/\d{17,}/g, (x) => (x === GUILD ? 'guild' : x))}`;
       throw err;
     }
     return data;
@@ -77,7 +77,8 @@ async function call(method, path, body) {
 async function step(what, fn, hint = '') {
   try { return await fn(); } catch (e) {
     failed.push(what);
-    const detail = e.data ? `${e.status} ${e.data.message ?? ''} ${e.data.errors ? JSON.stringify(e.data.errors) : ''}` : e.message;
+    // The request itself is named too: a 404 with no message says nothing without it.
+    const detail = e.data ? `${e.request ?? ''} ${e.status} ${e.data.message ?? ''} ${e.data.errors ? JSON.stringify(e.data.errors) : ''}` : e.message;
     log(`  ✗ ${what}: ${detail.trim()}${hint ? `. ${hint}` : ''}`);
     return undefined;
   }
@@ -345,7 +346,7 @@ async function run() {
       if (!mine) {
         await step(`AutoMod ${rule.name}`, async () => { await call('POST', `/guilds/${GUILD}/auto-moderation/rules`, { ...want, trigger_type: type }); log(`  AutoMod ${rule.name} made`); });
       } else if (sig(mine) !== sig(want)) {
-        await step(`AutoMod ${rule.name}`, async () => { await call('PATCH', `/guilds/${GUILD}/auto-moderation/rules/${mine.id}`, want); log(`  AutoMod ${rule.name} set`); });
+        await step(`AutoMod ${rule.name} (taking over "${mine.name}", ${mine.id})`, async () => { await call('PATCH', `/guilds/${GUILD}/auto-moderation/rules/${mine.id}`, want); log(`  AutoMod ${rule.name} set`); });
       }
     }
   }

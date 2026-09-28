@@ -219,7 +219,7 @@ await scenario({ admin: false }, async (port, env, state) => {
   const welcome = state.channels.find((c) => c.name === '入門-welcome');
   check(welcome.permission_overwrites.some((o) => o.id === BOT && BigInt(o.allow) & SEND), 'the welcome channel now lets the bot write (the 403 of the first real run)');
   check(state.messages[welcome.id].length === SPEC.messages.filter((m) => m.channel === 'welcome').length, 'and the welcome posts go up');
-  check(first.code === 1 && /Community: 403.*Administrator/.test(first.out), 'Community is refused without Administrator, the fix in one line, and the run is red');
+  check(first.code === 1 && /Community: .*403.*Administrator/.test(first.out), 'Community is refused without Administrator, the fix in one line, and the run is red');
   check(state.channels.find((c) => c.name === '告-announcements').type === 0, 'announcements stay text until Community is on');
   check(state.channels.filter((c) => c.name === '報-bugs').length === 1, 'nothing made twice');
 
