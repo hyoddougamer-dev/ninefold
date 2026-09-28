@@ -299,9 +299,16 @@ await scenario({}, async (port, env, state) => {
   check(posted.every((m) => !/\{#\w+\}/.test(JSON.stringify(m.embeds))) && posted.some((m) => /<#\d+>/.test(m.embeds.find((e) => e.title).description)), 'channel names in the posts are real links');
   const words = (m) => m.embeds.find((e) => e.title);
   check(posted.filter((m) => words(m).image).length === SPEC.messages.filter((m) => m.image).length, 'the posts with a picture carry it');
-  check(posted.filter((m) => m.embeds.length === 2 && !m.embeds[0].title && m.embeds[0].image).length === SPEC.messages.filter((m) => m.banner).length
-    && Object.values(state.messages).flat().filter((m) => m.embeds.length === 2).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
+  const bannered = (m) => m.embeds.length >= 2 && !m.embeds[0].title && m.embeds[0].image;
+  check(posted.filter(bannered).length === SPEC.messages.filter((m) => m.banner).length
+    && Object.values(state.messages).flat().filter(bannered).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
     'every post with a banner wears it on top, above its words');
+  const all3 = [...SPEC.messages, ...SPEC.posts];
+  check(Object.values(state.messages).flat().every((m) => {
+    const spec = all3.find((x) => m.embeds.some((e) => e.title === x.title));
+    const after = m.embeds.slice(m.embeds.findIndex((e) => e.title) + 1);
+    return after.length === (spec.gallery ?? []).length && after.every((e, i) => e.image.url === spec.gallery[i]);
+  }), 'and a gallery follows the words, one picture to an embed');
   check(state.limited, 'and a rate limit on the way is survived');
   const forums = state.channels.filter((c) => c.type === 15);
   const forumCount = all.filter((c) => c.type === 'forum').length;

@@ -407,7 +407,9 @@ async function run() {
     if (m.image) embed.image = { url: m.image };
     if (m.fields) embed.fields = m.fields.map(([name, value]) => ({ name, value: linked(value), inline: false }));
     if (m.footer) embed.footer = { text: m.footer };
-    return m.banner ? [{ color: colour(m.color), image: { url: m.banner } }, embed] : [embed];
+    // 圖 And a gallery: more pictures after the words, each its own embed, full width.
+    const gallery = (m.gallery ?? []).map((url) => ({ color: colour(m.color), image: { url } }));
+    return [...(m.banner ? [{ color: colour(m.color), image: { url: m.banner } }] : []), embed, ...gallery];
   };
   const sig = (list) => JSON.stringify((list ?? []).map((x) => [x.title ?? '', x.description ?? '', x.color, x.image?.url ?? '',
     (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']));
