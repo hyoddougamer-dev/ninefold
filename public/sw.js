@@ -73,9 +73,10 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (new URL(request.url).origin !== self.location.origin) return;
   // 測 The testers' APK is a download, not a page. Answered from here it would be kept in
-  // the cache (twelve megabytes nobody needs twice) and a phone's download manager would
-  // be handed a response it did not ask for. The browser gets it straight.
-  if (new URL(request.url).pathname.endsWith('.apk')) return;
+  // the cache (seventeen megabytes nobody needs twice) and a phone's download manager would
+  // be handed a response it did not ask for. The browser gets it straight, and the zip
+  // that carries the same APK for phones where Chrome holds an .apk back.
+  if (/\.(apk|zip)$/.test(new URL(request.url).pathname)) return;
   // 樂 The music streams in ranges, a few hundred kilobytes at a time, and Safari has a
   // long history of stalling media that passes through a worker. Nothing is gained by
   // routing it here (a range is never cached), so the browser fetches it straight.

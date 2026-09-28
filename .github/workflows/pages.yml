@@ -70,7 +70,16 @@ jobs:
       - name: Put the testers' APK beside the game
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download testers -p ninefold.apk -D dist || echo "No testers release yet."
+        run: |
+          if gh release download testers -p ninefold.apk -D dist; then
+            # 裝 The same APK in a zip. On some phones Chrome holds an .apk at 100% and never
+            # lets it finish; a zip is not a file type Chrome stops to check, and the phone's
+            # own Files app opens it and installs what is inside. Stored, not compressed: an
+            # APK is already compressed, and this keeps the two files the same bytes.
+            (cd dist && zip -0 -q ninefold-android.zip ninefold.apk && unzip -tq ninefold-android.zip && ls -l ninefold.apk ninefold-android.zip)
+          else
+            echo "No testers release yet."
+          fi
       # Pages has to be switched on once, by hand, in Settings -> Pages -> Source:
       # GitHub Actions. The action cannot do it: `enablement: true` was tried and the
       # workflow token came back "Resource not accessible by integration", because
