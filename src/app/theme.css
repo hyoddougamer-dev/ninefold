@@ -890,11 +890,24 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
             display: block; color: var(--text); }
 .saying i { font-style: normal; font-size: 12.5px; color: var(--faint); }
 
-.verdict { text-align: center; padding: 8px 20px 0; animation: lift .3s ease-out both; }
+/* 捲 The verdict scrolls, and its button never does. A first kill in the week's quarry
+   with a drop says four things under the stage, and the arena clips what does not fit:
+   on a PC the window stopped at the second card with the button under its edge, and
+   nothing on the screen could be scrolled to reach it. */
+.verdict { text-align: center; padding: 8px 20px 0; animation: lift .3s ease-out both;
+           flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+           scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .verdict .han { font-family: 'Noto Serif SC', serif; font-size: 40px; display: block;
                 text-shadow: 0 0 30px currentColor; }
 .verdict p { margin: 4px 0 0; font-size: 14px; color: var(--faint); }
-.verdict .act { margin-top: 14px; }
+/* 讓 On a short screen the stage gives way once the fight is over: what it paid is the
+   thing to read now, and a 680px laptop or a small phone had room for the stage or the
+   rewards, not both. */
+@media (max-height: 820px) {
+  .arena[data-over='true'] .stage { --stage-h: min(34vh, 300px); }
+}
+.verdict .act { margin-top: 14px; position: sticky; bottom: 0; z-index: 1;
+                box-shadow: 0 -14px 18px -4px #0D0B08, 0 8px 0 0 #0D0B08; }
 
 /* ── return ──────────────────────────────────────────────────────────────── */
 
