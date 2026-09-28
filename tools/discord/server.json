@@ -226,7 +226,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android app", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        ["▸ Android app", "[Download the APK](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk). Open it in Chrome itself, not inside Discord: tap ⋮ then *Open in Chrome*. Chrome asks once whether to keep an APK; say yes, or the download stops at 100%."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
       ],
       "footer": "九境 Ninefold · closed test"
@@ -290,7 +290,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        ["▸ Android", "[Download the APK](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk). Open it in Chrome itself, not inside Discord: tap ⋮ then *Open in Chrome*. Chrome asks once whether to keep an APK; say yes, or the download stops at 100%."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."],
         ["▸ New here?", "{#guides} has a post for every system. Start with the pinned one."],
         ["▸ Found something?", "Bugs in {#bugs}, ideas in {#ideas}. The ≡ menu in the game has *Report a bug*."]
@@ -610,6 +610,8 @@
         "**What does a lost fight cost?** Nothing. Try the beasts you are not sure about.",
         "",
         "**Is there anything to buy?** No. There is no shop and no ads in the test.",
+        "",
+        "**The APK download stops at 100%.** Discord opened it in its own browser, which cannot ask you to keep an APK. Tap ⋮ then *Open in Chrome*, download it again and tap *Download anyway*. If it still sits there, look in Chrome ⋮ → Downloads: the file is usually already there.",
         "",
         "**Can I play on my phone and my PC?** Yes. Sign in with your email in the browser on both. The Android app plays as a guest.",
         "",
