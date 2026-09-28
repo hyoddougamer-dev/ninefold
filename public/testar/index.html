@@ -27,6 +27,12 @@
           text-decoration: none; background: var(--jade); color: var(--ground); font-size: 17px; }
   a.btn.alt { background: none; color: var(--jade); border: 1px solid var(--jade); }
   .note { font-size: 14px; border-left: 2px solid var(--gold); padding-left: 12px; }
+  .note a, .hint a { color: var(--jade); }
+  .way .tag { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+  .way h2 { margin-top: -6px; }
+  .shot { display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .shot img { display: block; width: 100%; height: auto; }
+  .hint { font-size: 13px; margin-top: -4px; }
   code { color: var(--text); }
 </style>
 </head>
@@ -38,16 +44,36 @@
     <p>Um jogo idle de cultivo. O qi junta-se sozinho, mesmo com o telemóvel fechado.</p>
   </header>
 
-  <section>
-    <h2>Android</h2>
-    <a class="btn" href="../ninefold.apk" download>Descarregar o APK</a>
+  <section class="way">
+    <p class="tag">Android · opção 1 · recomendada</p>
+    <h2>Instalar pelo Chrome</h2>
+    <p>Sem ficheiro para descarregar. É o mesmo jogo, em ecrã inteiro, com ícone próprio, e atualiza-se sozinho.</p>
     <ol>
-      <li>Abre esta página no <b>Chrome</b> (não dentro do WhatsApp, do Messenger ou de outra app: esses browsers não descarregam ficheiros).</li>
-      <li>Carrega em <b>Descarregar o APK</b>. Se o Chrome perguntar se queres manter o ficheiro, diz <b>Transferir mesmo assim</b>, senão o download fica parado nos 100%. Depois carrega em <b>Abrir</b>.</li>
-      <li>Se o Android perguntar, deixa o Chrome <b>instalar apps desconhecidas</b>.</li>
+      <li>Abre <b>hyoddougamer-dev.github.io/ninefold</b> no <b>Chrome</b>. Se abriu dentro do Discord ou de outra app, toca em ⋮ e em <b>Abrir no Chrome</b>.</li>
+      <li>Toca em <b>⋮</b> no canto superior direito e em <b>Instalar app</b>. Em alguns telemóveis diz <b>Adicionar ao ecrã principal</b>.</li>
+      <li>Toca em <b>Instalar</b>. O Ninefold aparece no ecrã principal.</li>
     </ol>
-    <p class="note">O download fica parado nos 100%? Descarrega <a href="../ninefold-android.zip">o mesmo APK num zip</a>, abre o zip na app Ficheiros e toca em <b>ninefold.apk</b> lá dentro.</p>
-    <p class="note">O jogo dentro da app atualiza-se sozinho. Só é preciso voltar aqui se te pedirmos.</p>
+    <a class="btn" href="../">Abrir o jogo</a>
+    <a class="shot" href="../discord/install/app-pt.webp"><img src="../discord/install/app-pt.webp" width="1800" height="1120" alt="Os quatro passos no Chrome: tocar em ⋮, tocar em Instalar app, confirmar, e o ícone do Ninefold no ecrã principal." loading="lazy"></a>
+    <p class="hint">Toca na imagem para a ver maior.</p>
+  </section>
+
+  <section class="way">
+    <p class="tag">Android · opção 2 · um ficheiro</p>
+    <h2>O APK, num zip</h2>
+    <p>Para quem quer mesmo o ficheiro da app. O zip leva o mesmo APK e passa nos telemóveis onde um .apk fica parado nos 100%.</p>
+    <a class="btn" href="../ninefold-android.zip">Descarregar o zip (17 MB)</a>
+    <ol>
+      <li>Descarrega o zip no <b>Chrome</b>. Quando acabar, toca em <b>Abrir</b>, ou procura-o em <b>Ficheiros → Transferências</b>.</li>
+      <li>Dentro do zip, toca em <b>ninefold.apk</b>.</li>
+      <li>O Android pergunta uma vez: toca em <b>Definições</b>, liga <b>Permitir desta origem</b> e volta.</li>
+      <li>Toca em <b>Instalar</b> e depois em <b>Abrir</b>.</li>
+    </ol>
+    <a class="shot" href="../discord/install/apk-pt.webp"><img src="../discord/install/apk-pt.webp" width="1800" height="1120" alt="Os quatro passos do APK: descarregar o zip, tocar em ninefold.apk, permitir esta origem, instalar." loading="lazy"></a>
+    <p class="hint">Toca na imagem para a ver maior. O APK sem zip também está <a href="../ninefold.apk">aqui</a>, mas em alguns telemóveis fica parado nos 100%.</p>
+    <p class="note"><b>É seguro?</b> É a nossa versão de teste, e o jogo lá dentro é o mesmo da opção 1. Não vem da Google Play, por isso o Android chama-lhe <b>app desconhecida</b> e pede para permitires a origem: é normal numa versão de teste. Depois de instalar, podes voltar a desligar <b>Permitir desta origem</b>. Descarrega-o só por esta página ou pelo nosso Discord.</p>
+    <p class="note"><b>O Android recusa instalar?</b> Desde setembro de 2026, no Brasil, Indonésia, Singapura e Tailândia, o Android pode recusar apps de programadores ainda não registados na Google, e esta versão de teste ainda não está. Usa a opção 1, que não instala nenhum APK nosso.</p>
+    <p class="note">O APK joga como <b>convidado</b> e o save fica nessa app, nesse telemóvel. O jogo lá dentro atualiza-se sozinho: só é preciso voltar aqui se te pedirmos.</p>
   </section>
 
   <section>
@@ -72,7 +98,7 @@
 
   <section>
     <h2>O teu progresso</h2>
-    <p>O progresso fica <b>no aparelho e no browser</b> onde jogas: a app, o Chrome e o PC são jogos separados.</p>
+    <p>O progresso fica <b>no aparelho e no browser</b> onde jogas: o APK, o Chrome e o PC são jogos separados. O jogo instalado pelo Chrome (opção 1) usa o mesmo save que o Chrome.</p>
     <p>No browser (PC, Chrome, Safari), abre o <b>Menu → Rankings</b> e entra com o teu <b>email</b>: recebes um link, e o mesmo cultivador abre em qualquer browser onde entrares. Também ficas nos rankings.</p>
     <p>Na app Android, entra nos rankings como <b>convidado</b>. O link do email abre o browser e não a app, por isso na app não serve para entrar.</p>
     <p>Sem conta, podes levá-lo à mão: <b>Menu → Your save → Copy the save</b>, e no outro lado <b>Restore from a copy</b>.</p>

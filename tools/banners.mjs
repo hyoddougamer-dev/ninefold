@@ -8,7 +8,7 @@
  * system's character in a gold seal; the title in the logo's lettering; and the frame the
  * game's cards wear, a gilt hairline with a bracket at each corner.
  *
- *     node tools/banners.mjs          → public/discord/banner/<key>.webp
+ *     node tools/banners.mjs [key…]    → public/discord/banner/<key>.webp
  *
  * It fetches its fonts from Google Fonts with curl (the logo's Cinzel, Cormorant, and only
  * the Chinese characters the banners use from Noto Serif SC), and draws in the test
@@ -29,6 +29,7 @@ export const BANNERS = [
   { key: 'welcome', seal: '入', over: '九境 Ninefold', title: 'Welcome, Cultivator', sub: 'An idle cultivation game, painted in ink', bg: 'realm/1', fig: 'self/woman-1' },
   { key: 'launch', seal: '告', over: '告 Announcement', title: 'The First Closed Test', sub: 'Nine realms, and nothing taken for being away', bg: 'realm/9', fig: 'cut/heaven-1' },
   { key: 'devlog-1', seal: '筆', over: '筆 Dev log · 01', title: 'A Face, a Finish and Music', sub: 'Before the first testers arrive', bg: 'realm/5', fig: 'self/man-5' },
+  { key: 'g-install', seal: '裝', over: '書 Guide · Before you play', title: 'Installing on Android', sub: 'Two ways onto your phone, step by step', bg: 'realm/3', fig: 'self/woman-3' },
   { key: 'g-start', seal: '入', over: '書 Guide · 01 of 14', title: 'Start Here', sub: 'Your first hour, and the three promises', bg: 'realm/1', fig: 'self/man-1' },
   { key: 'g-qi', seal: '氣', over: '書 Guide · 02 of 14', title: 'Qi and the Nine Realms', sub: 'Layers, sitting, and breaking through', bg: 'realm/2', fig: 'self/woman-2' },
   { key: 'g-hunt', seal: '狩', over: '書 Guide · 03 of 14', title: 'The Hunt', sub: 'Beasts, the Record and Beast Cores', bg: 'realm/3', fig: 'cut/tiger' },
@@ -112,7 +113,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const css = fonts();
   const browser = await chromium.launch({ executablePath: CHROME });
   const tab = await browser.newPage({ viewport: { width: 1200, height: 450 } });
-  for (const b of BANNERS) {
+  // Only the banners named on the command line, when any are: the rest are already up,
+  // and Discord keeps the copy it first fetched of each.
+  const only = process.argv.slice(2);
+  for (const b of BANNERS.filter((x) => !only.length || only.includes(x.key))) {
     await tab.setContent(page(b, css));
     await tab.evaluate(() => document.fonts.ready);
     await tab.waitForTimeout(150);
@@ -121,5 +125,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`  ${b.key}`);
   }
   await browser.close();
-  console.log(`旗 ${BANNERS.length} banners in ${OUT}.`);
+  console.log(`旗 banners in ${OUT}.`);
 }

@@ -165,6 +165,11 @@ Every post wears a banner from `tools/banners.mjs` (the game's own paintings and
 figures, a gold seal, the logo's lettering, the cards' frame): a new post is a line in
 `BANNERS` and a `banner` in server.json. **Bruno's real name never appears in anything
 members read.** He signs 師 Shibaki, the name his community knows.
+Android has two ways in, both in the 裝 install guide (`g-install`) and on `/testar/`: the game
+installed from Chrome, and the APK, served beside the game both bare and in a stored zip
+(some phones' Chrome holds an .apk at 100% for ever; a zip gets past it). The step pictures
+come from `tools/install-art.mjs`, and the Pages deploy fetches the APK and the zip from the
+live site and fails unless they are the same bytes.
 
 ## 樂 Music
 

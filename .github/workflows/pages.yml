@@ -76,7 +76,9 @@ jobs:
             # lets it finish; a zip is not a file type Chrome stops to check, and the phone's
             # own Files app opens it and installs what is inside. Stored, not compressed: an
             # APK is already compressed, and this keeps the two files the same bytes.
-            (cd dist && zip -0 -q ninefold-android.zip ninefold.apk && unzip -tq ninefold-android.zip && ls -l ninefold.apk ninefold-android.zip)
+            (cd dist && zip -0 -q ninefold-android.zip ninefold.apk && unzip -tq ninefold-android.zip \
+              && [ "$(unzip -p ninefold-android.zip ninefold.apk | sha256sum)" = "$(sha256sum < ninefold.apk)" ] \
+              && ls -l ninefold.apk ninefold-android.zip)
           else
             echo "No testers release yet."
           fi
@@ -102,3 +104,26 @@ jobs:
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
+      # 裝 Both ways onto an Android phone, fetched from the live site the way a tester's
+      # phone fetches them: the APK whole and with an APK's type, the zip holding those same
+      # bytes, the testers' page pointing at both, and the pictures the guides show. The
+      # CDN can take a minute to serve the new deploy, so it is asked a few times.
+      - name: The APK, the zip and the install guide answer on the live site
+        run: |
+          SITE="${{ steps.deploy.outputs.page_url }}"
+          for i in $(seq 1 12); do
+            ok=1
+            curl -sSf -D apk.hdr -o ninefold.apk "${SITE}ninefold.apk" || ok=0
+            curl -sSf -o ninefold-android.zip "${SITE}ninefold-android.zip" || ok=0
+            if [ $ok = 1 ] && [ "$(unzip -p ninefold-android.zip ninefold.apk | sha256sum)" = "$(sha256sum < ninefold.apk)" ]; then break; fi
+            echo "not yet ($i)"; ok=0; sleep 15
+          done
+          [ $ok = 1 ] || { echo "::error::The live APK and the APK in the live zip differ, or one is missing."; exit 1; }
+          grep -qi '^content-type: application/vnd.android.package-archive' apk.hdr || { echo "::error::The APK is not served as an APK."; grep -i content-type apk.hdr; exit 1; }
+          [ "$(stat -c %s ninefold.apk)" -gt 5000000 ] || { echo "::error::The live APK is too small to be the app."; exit 1; }
+          curl -sSf "${SITE}testar/" | grep -q 'ninefold-android.zip' || { echo "::error::The testers' page does not offer the zip."; exit 1; }
+          for f in discord/install/app-en.webp discord/install/apk-en.webp discord/install/app-pt.webp discord/install/apk-pt.webp discord/banner/g-install.webp; do
+            curl -sSf -o /dev/null "${SITE}$f" || { echo "::error::$f is missing from the live site."; exit 1; }
+          done
+          echo "APK $(stat -c %s ninefold.apk) bytes, $(sha256sum < ninefold.apk | cut -c1-16)…, the same inside the zip. Page and pictures live."
+
