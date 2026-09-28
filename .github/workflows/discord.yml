@@ -13,6 +13,8 @@
 # The bot is invited with exactly the permissions it uses (manage the server, roles and
 # channels; make an invite; write, embed and pin):
 #   https://discord.com/oauth2/authorize?client_id=APP_ID&scope=bot&permissions=2251800082213937
+# Then give the bot's role Administrator: switching Community on needs it, and so does an
+# AutoMod rule that times someone out (Moderate Members, which the invite does not ask for).
 # The run ends by printing the server's permanent invite link.
 name: discord
 

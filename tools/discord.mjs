@@ -42,7 +42,7 @@ const BIT = {
 };
 const perms = (...names) => names.flat().reduce((a, n) => a | (1n << BigInt(BIT[n])), 0n);
 const TYPE = { text: 0, voice: 2, category: 4, announcement: 5, forum: 15 };
-const colour = (hex) => parseInt(hex.slice(1), 16);
+const colour = (hex) => (hex ? parseInt(hex.slice(1), 16) : 0);
 const said = [];
 const failed = [];
 const log = (line) => { said.push(line); console.log(line); };
@@ -97,6 +97,8 @@ function plan() {
   }
   for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}`);
   if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out 測 Tester');
+  for (const p of SPEC.onboarding?.prompts ?? []) log(`  onboarding asks "${p.title}" (${p.options.map((o) => o.title).join(', ')})`);
+  for (const r of SPEC.automod?.rules ?? []) log(`  AutoMod: ${r.name}`);
   if (SPEC.invite) log('  one permanent invite, printed at the end');
 }
 
@@ -146,6 +148,17 @@ async function run() {
       });
     }
   }
+  // 序 The roles stand in server.json's order, top first, in the slots they already hold:
+  // hoisted roles are listed in that order, and a guardian can only time out a role below.
+  await step('role order', async () => {
+    const now = await call('GET', `/guilds/${GUILD}/roles`);
+    const ours = SPEC.roles.map((r) => now.find((x) => x.id === roleId[r.key])).filter(Boolean);
+    const slots = ours.map((x) => x.position).sort((a, b) => b - a);
+    if (ours.some((x, i) => x.position !== slots[i])) {
+      await call('PATCH', `/guilds/${GUILD}/roles`, ours.map((x, i) => ({ id: x.id, position: slots[i] })));
+      log('  roles put in order');
+    }
+  });
   if (SPEC.everyone) {
     const base = roles.find((x) => x.id === GUILD);
     const want = String(perms(SPEC.everyone));
@@ -278,26 +291,63 @@ async function run() {
     });
   }
 
-  // 導 Onboarding: one question on the way in, which hands out 測 Tester or 觀 Follower.
+  // 導 Onboarding: the questions on the way in, which hand out the roles. A question or an
+  // answer that is already there keeps its id, so what members picked is kept with it.
   if (SPEC.onboarding && community()) {
     await step('onboarding', async () => {
       const have = await call('GET', `/guilds/${GUILD}/onboarding`).catch(() => null);
-      const shape = (ps) => ps.map((p) => `${p.title}:${p.options.map((o) => o.title).join('|')}`).join('/');
-      if (have?.enabled && shape(have.prompts ?? []) === shape(SPEC.onboarding.prompts)) return;
-      // New prompts and options need ids of their own; Discord takes any snowflake-shaped one.
       let n = 0;
       const snow = () => String(((BigInt(Date.now()) - 1420070400000n) << 22n) + BigInt(++n));
-      await call('PUT', `/guilds/${GUILD}/onboarding`, {
+      const want = {
         enabled: true, mode: 0,
         default_channel_ids: SPEC.onboarding.defaults.map((k) => channelId[k]).filter(Boolean),
-        prompts: SPEC.onboarding.prompts.map((p) => ({
-          id: snow(), type: 0, title: p.title, single_select: !!p.single, required: false, in_onboarding: true,
-          options: p.options.map((o) => ({ id: snow(), title: o.title, description: o.description, emoji_name: o.emoji,
-            role_ids: (o.roles ?? []).map((k) => roleId[k]).filter(Boolean), channel_ids: [] })),
-        })),
-      });
+        prompts: SPEC.onboarding.prompts.map((p) => {
+          const was = (have?.prompts ?? []).find((x) => x.title === p.title);
+          return {
+            id: was?.id ?? snow(), type: 0, title: p.title, single_select: !!p.single, required: !!p.required, in_onboarding: true,
+            options: p.options.map((o) => ({ id: was?.options?.find((x) => x.title === o.title)?.id ?? snow(), title: o.title,
+              description: o.description, emoji_name: o.emoji, role_ids: (o.roles ?? []).map((k) => roleId[k]).filter(Boolean), channel_ids: [] })),
+          };
+        }),
+      };
+      const key = (x) => JSON.stringify([[...(x?.default_channel_ids ?? [])].sort(), (x?.prompts ?? []).map((p) => [p.title, !!p.single_select, !!p.required,
+        p.options.map((o) => [o.title, o.description ?? '', o.emoji?.name ?? o.emoji_name ?? '', [...(o.role_ids ?? [])].sort()])])]);
+      if (have?.enabled && key(have) === key(want)) return;
+      await call('PUT', `/guilds/${GUILD}/onboarding`, want);
       log('  onboarding set');
     });
+  }
+
+  // 守 AutoMod: Discord's own guardian, so nobody has to be awake for it. Spam, the preset
+  // word lists and mention spam are one rule each per server, so one already there (Discord
+  // makes some itself) is taken over and renamed; a keyword rule is found by its name.
+  if (SPEC.automod) {
+    const TRIGGER = { keyword: 1, spam: 3, preset: 4, mentions: 5 };
+    const PRESET = { profanity: 1, sexual: 2, slurs: 3 };
+    const have = await step('AutoMod rules', () => call('GET', `/guilds/${GUILD}/auto-moderation/rules`));
+    const alerts = channelId[SPEC.automod.alerts];
+    for (const rule of have ? SPEC.automod.rules : []) {
+      const type = TRIGGER[rule.trigger];
+      const meta = rule.trigger === 'keyword' ? { keyword_filter: rule.keywords ?? [], regex_patterns: rule.regex ?? [], allow_list: [] }
+        : rule.trigger === 'preset' ? { presets: rule.presets.map((p) => PRESET[p]), allow_list: [] }
+        : rule.trigger === 'mentions' ? { mention_total_limit: rule.limit, mention_raid_protection_enabled: !!rule.raid } : {};
+      const actions = [{ type: 1, metadata: { custom_message: SPEC.automod.message } }];
+      if (alerts) actions.push({ type: 2, metadata: { channel_id: alerts } });
+      if (rule.timeout) actions.push({ type: 3, metadata: { duration_seconds: rule.timeout } });
+      const want = { name: rule.name, event_type: 1, trigger_metadata: meta, actions, enabled: true,
+        exempt_roles: (rule.exempt ?? []).map((k) => roleId[k]).filter(Boolean),
+        exempt_channels: (rule.exemptChannels ?? []).map((k) => channelId[k]).filter(Boolean) };
+      const mine = have.find((x) => x.trigger_type === type && (type !== TRIGGER.keyword || same(x.name, rule.name)));
+      const sorted = (v) => (Array.isArray(v) ? [...v].sort() : v);
+      const sig = (r) => JSON.stringify([r.name, !!r.enabled, Object.keys(meta).sort().map((k) => [k, sorted(r.trigger_metadata?.[k])]),
+        (r.actions ?? []).map((a) => [a.type, a.metadata?.custom_message ?? '', a.metadata?.channel_id ?? '', a.metadata?.duration_seconds ?? 0]),
+        sorted(r.exempt_roles ?? []), sorted(r.exempt_channels ?? [])]);
+      if (!mine) {
+        await step(`AutoMod ${rule.name}`, async () => { await call('POST', `/guilds/${GUILD}/auto-moderation/rules`, { ...want, trigger_type: type }); log(`  AutoMod ${rule.name} made`); });
+      } else if (sig(mine) !== sig(want)) {
+        await step(`AutoMod ${rule.name}`, async () => { await call('PATCH', `/guilds/${GUILD}/auto-moderation/rules/${mine.id}`, want); log(`  AutoMod ${rule.name} set`); });
+      }
+    }
   }
 
   // 告 The messages, each found by its title among the bot's own and edited in place.

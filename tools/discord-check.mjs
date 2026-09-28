@@ -8,6 +8,11 @@
  *     the bot (or a role it has) back in. The welcome post was refused with a 403.
  *   - Only an Administrator may switch Community on. Refused with a 403.
  *
+ * and the ones found in the documentation since: a bot can only move roles below its own,
+ * AutoMod keeps one spam, one preset and one mention rule per server (Discord makes some
+ * itself when Community goes on), a timeout needs Moderate Members, which the bot's invite
+ * does not carry, and every onboarding answer has to hand out a role or a channel.
+ *
  * and the ones Discord documents: announcement channels, the welcome screen and onboarding
  * exist only in a Community server, and onboarding wants at least seven default channels,
  * five of which anybody may write in.
@@ -17,7 +22,8 @@
  *   2. Bruno's server as the first real run left it, bot without Administrator: the posts
  *      go up, Community is refused with the fix in one line, and the run exits red.
  *   3. The same server once the bot is an Administrator: Community, announcement channels,
- *      welcome screen and onboarding, then a run that changes nothing.
+ *      welcome screen, onboarding, the roles in order and Discord's own AutoMod rule taken
+ *      over, then a run that changes nothing.
  *   4. An empty server: everything made once, a second run changes nothing, drift is put
  *      back, a hand-made channel is left alone, an edited message is edited in place.
  */
@@ -32,18 +38,23 @@ const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
 const bit = (n) => 1n << BigInt(n);
-const SEND = bit(11), VIEW = bit(10);
+const SEND = bit(11), VIEW = bit(10), MANAGE_GUILD = bit(5), MODERATE = bit(40);
+const INVITED = 2251800082213937n;          // the permissions the bot's invite link asks for
 
 function fakeDiscord({ admin = true } = {}) {
   const state = {
     admin,
     guild: { id: GUILD, name: 'My server', owner_id: OWNER, features: [], verification_level: 0, explicit_content_filter: 0,
              default_message_notifications: 0, system_channel_id: null, system_channel_flags: 0 },
-    roles: [{ id: GUILD, name: '@everyone', color: 0, hoist: false, permissions: '1071698660929' },
-            { id: BOT_ROLE, name: 'Ninefold', color: 0, hoist: false, permissions: '0', managed: true }],
+    roles: [{ id: GUILD, name: '@everyone', color: 0, hoist: false, permissions: '1071698660929', position: 0 },
+            { id: BOT_ROLE, name: 'Ninefold', color: 0, hoist: false, permissions: String(INVITED), managed: true, position: 1 }],
     members: { [OWNER]: { roles: [] }, [BOT]: { roles: [BOT_ROLE] } },
-    channels: [], messages: {}, invites: [], welcome: null, onboarding: null, calls: [], limited: false,
+    channels: [], messages: {}, invites: [], welcome: null, onboarding: null, automod: [], calls: [], limited: false,
   };
+  // 序 A new role goes in just above @everyone, and everything above it moves up one.
+  const addRole = (r) => { for (const x of state.roles) if (x.position >= 1) x.position++; const role = { permissions: '0', position: 1, ...r }; state.roles.push(role); return role; };
+  const botMay = (b) => state.admin || !!(INVITED & b);
+  state.addRole = addRole;
   const channel = (cid) => state.channels.find((x) => x.id === cid);
   // 讀 Whether the bot may write here: the channel's overwrites, as Discord reads them.
   const botMaySend = (c) => {
@@ -80,7 +91,13 @@ function fakeDiscord({ admin = true } = {}) {
         Object.assign(state.guild, body); return send(200, state.guild);
       }
       if (path === `/guilds/${GUILD}/roles` && req.method === 'GET') return send(200, state.roles);
-      if (path === `/guilds/${GUILD}/roles` && req.method === 'POST') { const r = { id: id(), permissions: '0', ...body }; state.roles.push(r); return send(200, r); }
+      if (path === `/guilds/${GUILD}/roles` && req.method === 'POST') return send(200, addRole({ id: id(), ...body }));
+      if (path === `/guilds/${GUILD}/roles` && req.method === 'PATCH') {
+        const top = state.roles.find((x) => x.id === BOT_ROLE).position;
+        if (body.some((b) => b.position >= top || state.roles.find((x) => x.id === b.id).position >= top)) return refuse(403, 'Missing Permissions');
+        for (const b of body) state.roles.find((x) => x.id === b.id).position = b.position;
+        return send(200, state.roles);
+      }
       if ((m = path.match(/^\/guilds\/\d+\/roles\/(\d+)$/)) && req.method === 'PATCH') { const r = state.roles.find((x) => x.id === m[1]); Object.assign(r, body); return send(200, r); }
       if ((m = path.match(/^\/guilds\/\d+\/members\/(\d+)$/))) return send(200, state.members[m[1]]);
       if ((m = path.match(/^\/guilds\/\d+\/members\/(\d+)\/roles\/(\d+)$/))) { state.members[m[1]].roles.push(m[2]); return send(204); }
@@ -118,7 +135,29 @@ function fakeDiscord({ admin = true } = {}) {
         if (req.method === 'GET') return send(200, state.onboarding ?? { enabled: false, prompts: [] });
         const defaults = body.default_channel_ids.map(channel);
         if (defaults.length < 7 || defaults.filter(writable).length < 5) return refuse(400, 'onboarding needs 7 default channels, 5 writable');
+        const options = body.prompts.flatMap((p) => p.options);
+        if (options.some((o) => !o.role_ids.length && !o.channel_ids.length)) return refuse(400, 'every answer needs a role or a channel');
+        if (new Set([...body.prompts, ...options].map((x) => x.id)).size !== body.prompts.length + options.length) return refuse(400, 'ids must be unique');
         state.onboarding = body; return send(200, body);
+      }
+      if (path === `/guilds/${GUILD}/auto-moderation/rules` || path.startsWith(`/guilds/${GUILD}/auto-moderation/rules/`)) {
+        if (req.method === 'GET') return send(200, state.automod);
+        if (!botMay(MANAGE_GUILD)) return refuse(403, 'Missing Permissions');
+        const rule = req.method === 'POST' ? { id: id(), trigger_type: body.trigger_type } : state.automod.find((r) => path.endsWith(`/${r.id}`));
+        if (!rule) return refuse(404, 'no such rule');
+        if (req.method === 'PATCH' && body.trigger_type !== undefined) return refuse(400, 'trigger_type cannot change');
+        const t = rule.trigger_type;
+        if (req.method === 'POST' && [3, 4, 5].includes(t) && state.automod.some((r) => r.trigger_type === t)) return refuse(400, 'Maximum number of rules of this trigger type reached');
+        for (const a of body.actions ?? []) {
+          if (a.type === 3 && ![1, 5].includes(t)) return refuse(400, 'a timeout is only for keyword and mention rules');
+          if (a.type === 3 && !botMay(MODERATE)) return refuse(403, 'Missing Permissions');
+          if (a.type === 2 && !channel(a.metadata.channel_id)) return refuse(400, 'no such alert channel');
+          if ((a.metadata?.custom_message ?? '').length > 150) return refuse(400, 'custom_message over 150');
+        }
+        if ((body.trigger_metadata?.regex_patterns ?? []).some((r) => r.length > 260)) return refuse(400, 'regex over 260');
+        if (req.method === 'POST') state.automod.push(rule);
+        Object.assign(rule, body);
+        return send(200, rule);
       }
       if (path === `/guilds/${GUILD}/invites`) return send(200, state.invites);
       if ((m = path.match(/^\/channels\/(\d+)\/invites$/)) && req.method === 'POST') {
@@ -173,7 +212,7 @@ await scenario({ admin: false }, async (port, env, state) => {
   old('入門-welcome', 0, { parent_id: cats['九境 NINEFOLD'].id, permission_overwrites: [everyoneDeny] });
   old('告-announcements', 0, { parent_id: cats['九境 NINEFOLD'].id, permission_overwrites: [everyoneDeny] });
   old('報-bugs', 15, { parent_id: cats['測 PLAYTEST'].id, available_tags: [{ id: id(), name: 'Bug' }] });
-  state.roles.push({ id: id(), name: '師 Developer', color: 0xD4AF56, hoist: true, permissions: '0' });
+  state.addRole({ id: id(), name: '師 Developer', color: 0xD4AF56, hoist: true });
   state.limited = true;
 
   const first = await runSetup(port, env);
@@ -185,6 +224,9 @@ await scenario({ admin: false }, async (port, env, state) => {
   check(state.channels.filter((c) => c.name === '報-bugs').length === 1, 'nothing made twice');
 
   state.admin = true;
+  // 默 Switching Community on makes Discord add a mention-spam rule of its own.
+  state.automod.push({ id: id(), name: 'Block Mention Spam', trigger_type: 5, event_type: 1, enabled: true,
+    trigger_metadata: { mention_total_limit: 20 }, actions: [{ type: 1, metadata: {} }], exempt_roles: [], exempt_channels: [] });
   const second = await runSetup(port, env);
   check(second.code === 0 && state.guild.features.includes('COMMUNITY'), 'with Administrator, Community switches on');
   check(['告-announcements', '筆-dev-log'].every((n) => state.channels.find((c) => c.name === n)?.type === 5), 'and the announcement channels become announcement channels');
@@ -195,6 +237,13 @@ await scenario({ admin: false }, async (port, env, state) => {
   const devRole = state.roles.find((r) => r.name === '師 Developer');
   check(BigInt(devRole.permissions) & bit(17), 'the developer role keeps its permissions (it may ping @everyone)');
   check(!(BigInt(state.roles.find((r) => r.id === GUILD).permissions) & bit(17)), '@everyone may not ping @everyone');
+  const order = SPEC.roles.map((r) => state.roles.find((x) => x.name === r.name)?.position);
+  check(order.every((p, i) => i === 0 || p < order[i - 1]) && order[0] < state.roles.find((r) => r.id === BOT_ROLE).position,
+    `the roles stand in order, developer first, all below the bot (${order.join(' > ')})`);
+  const mentions = state.automod.filter((r) => r.trigger_type === 5);
+  check(mentions.length === 1 && mentions[0].name === '守 Mass mentions' && state.automod.length === SPEC.automod.rules.length, "Discord's own mention rule is taken over, not doubled");
+  check(state.onboarding.prompts.length === SPEC.onboarding.prompts.length && state.onboarding.prompts[0].required
+    && state.onboarding.prompts.every((p) => p.options.every((o) => o.role_ids.length)), 'onboarding asks every question, the first one required, and every answer hands out a role');
 
   const third = await runSetup(port, env);
   check(third.code === 0 && changes(third.out).length === 0, `and then a run changes nothing${changes(third.out).length ? `: ${changes(third.out).join(' | ')}` : ''}`);
@@ -220,6 +269,13 @@ await scenario({}, async (port, env, state) => {
   check(state.channels.some((c) => c.type === 2), 'a voice lounge');
   const team = state.channels.find((c) => c.name.endsWith('team'));
   check(team.permission_overwrites.some((o) => o.id === GUILD && BigInt(o.deny) & VIEW) && team.permission_overwrites.length === 4, 'the team channel is hidden from everyone but developer, guardians and bot');
+  const teamId = team.id;
+  check(state.automod.length === SPEC.automod.rules.length && state.automod.every((r) => r.actions.some((a) => a.type === 2 && a.metadata.channel_id === teamId)),
+    `${SPEC.automod.rules.length} AutoMod rules, every one reporting to the team channel`);
+  const staff = ['師 Developer', '守 Guardian'].map((n) => state.roles.find((r) => r.name === n).id);
+  const links = state.automod.find((r) => r.trigger_type === 1);
+  check(staff.every((s) => links.exempt_roles.includes(s)) && links.trigger_metadata.regex_patterns.every((r) => new RegExp(r).test('join discord.gg/abc')) && !new RegExp(links.trigger_metadata.regex_patterns[0]).test('https://hyoddougamer-dev.github.io/ninefold/'),
+    "the invite filter catches another server's invite, spares the game's own link, and never the staff");
   const inviteLine = first.split('\n').find((l) => l.startsWith('Invite: https://discord.gg/'));
   check(!!inviteLine && state.invites.length === 1, 'one permanent invite is made and printed');
 
@@ -235,12 +291,17 @@ await scenario({}, async (port, env, state) => {
 
   const edited = structuredClone(SPEC);
   edited.messages[0].body = [...edited.messages[0].body, 'One more line.'];
+  edited.onboarding.prompts[1].options.push({ title: 'Somewhere else', emoji: '❔', description: 'Anything else.', roles: ['browser'] });
+  const kept = state.onboarding.prompts.map((p) => [p.id, p.options.map((o) => o.id)]);
   const specPath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
   writeFileSync(specPath, JSON.stringify(edited));
   const fourth = await runSetup(port, { ...env, DISCORD_SPEC: specPath });
   const first0 = Object.values(state.messages).flat().find((m) => m.embeds[0].title === SPEC.messages[0].title);
   check(/edited/.test(fourth.out) && first0.embeds[0].description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length,
     'a post changed in server.json is edited in place, not posted again');
+  check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
+    && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),
+    'a new onboarding answer is added and every question and answer keeps its id, so nobody loses what they picked');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

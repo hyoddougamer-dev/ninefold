@@ -5,58 +5,124 @@
   "community": { "rules": "welcome", "updates": "team" },
   "settings": { "system": "general" },
   "invite": "welcome",
-  "everyone": ["INVITE", "VIEW", "SEND", "HISTORY", "EMBED", "ATTACH", "REACT", "EXTERNAL_EMOJIS", "EXTERNAL_STICKERS",
-    "CONNECT", "SPEAK", "VAD", "STREAM", "CHANGE_NICKNAME", "THREADS", "SEND_THREADS", "APP_COMMANDS", "VOICE_MESSAGES", "POLLS"],
+  "everyone": [
+    "INVITE",
+    "VIEW",
+    "SEND",
+    "HISTORY",
+    "EMBED",
+    "ATTACH",
+    "REACT",
+    "EXTERNAL_EMOJIS",
+    "EXTERNAL_STICKERS",
+    "CONNECT",
+    "SPEAK",
+    "VAD",
+    "STREAM",
+    "CHANGE_NICKNAME",
+    "THREADS",
+    "SEND_THREADS",
+    "APP_COMMANDS",
+    "VOICE_MESSAGES",
+    "POLLS"
+  ],
   "roles": [
-    { "key": "master", "name": "師 Developer", "color": "#D4AF56", "hoist": true, "owner": true,
-      "permissions": ["MENTION_EVERYONE", "MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "PIN"] },
-    { "key": "mod", "name": "守 Guardian", "color": "#D2604E", "hoist": true,
-      "permissions": ["MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "MANAGE_NICKNAMES", "MUTE_MEMBERS", "MOVE_MEMBERS", "PIN"] },
+    {
+      "key": "master",
+      "name": "師 Developer",
+      "color": "#D4AF56",
+      "hoist": true,
+      "owner": true,
+      "permissions": ["MENTION_EVERYONE", "MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "PIN"]
+    },
+    {
+      "key": "mod",
+      "name": "守 Guardian",
+      "color": "#D2604E",
+      "hoist": true,
+      "permissions": ["MANAGE_MESSAGES", "MANAGE_THREADS", "MODERATE_MEMBERS", "MANAGE_NICKNAMES", "MUTE_MEMBERS", "MOVE_MEMBERS", "PIN"]
+    },
     { "key": "tester", "name": "測 Tester", "color": "#7FB495", "hoist": true },
-    { "key": "follower", "name": "觀 Follower", "color": "#9C907C", "hoist": false }
+    { "key": "follower", "name": "觀 Follower", "color": "#9C907C", "hoist": false },
+    { "key": "builds", "name": "告 New builds", "color": "#C9A15A" },
+    { "key": "peeks", "name": "筆 Dev log", "color": "#B08F6E" },
+    { "key": "android", "name": "Android" },
+    { "key": "iphone", "name": "iPhone" },
+    { "key": "browser", "name": "Browser" }
   ],
   "categories": [
     {
       "name": "九境 NINEFOLD",
       "channels": [
-        { "key": "welcome", "name": "入門-welcome", "type": "text", "readOnly": true,
-          "topic": "入門 Start here: what Ninefold is, how to play the test, and the rules." },
-        { "key": "news", "name": "告-announcements", "type": "announcement", "readOnly": true,
-          "topic": "告 New builds, what changed, and what is coming." },
-        { "key": "devlog", "name": "筆-dev-log", "type": "announcement", "readOnly": true,
-          "topic": "筆 Sneak peeks from the workbench: paintings, systems and numbers before they ship." }
+        {
+          "key": "welcome",
+          "name": "入門-welcome",
+          "type": "text",
+          "readOnly": true,
+          "topic": "入門 Start here: what Ninefold is, how to play the test, and the rules."
+        },
+        {
+          "key": "news",
+          "name": "告-announcements",
+          "type": "announcement",
+          "readOnly": true,
+          "topic": "告 New builds, what changed, and what is coming."
+        },
+        {
+          "key": "devlog",
+          "name": "筆-dev-log",
+          "type": "announcement",
+          "readOnly": true,
+          "topic": "筆 Sneak peeks from the workbench: paintings, systems and numbers before they ship."
+        }
       ]
     },
     {
       "name": "測 PLAYTEST",
       "channels": [
-        { "key": "bugs", "name": "報-bugs", "type": "forum", "emoji": "🐞",
+        {
+          "key": "bugs",
+          "name": "報-bugs",
+          "type": "forum",
+          "emoji": "🐞",
           "topic": "報 One problem per post. Say what you did, what you expected and what happened. Add a screenshot if you can, and the Build line from the bottom of the ≡ menu (top right corner).",
-          "tags": [["Bug", "🐞"], ["Art", "🎨"], ["Balance", "⚖️"], ["Text", "📝"], ["Fixed", "✅"]] },
-        { "key": "ideas", "name": "議-ideas", "type": "forum",
+          "tags": [["Bug", "🐞"], ["Art", "🎨"], ["Balance", "⚖️"], ["Text", "📝"], ["Fixed", "✅"]]
+        },
+        {
+          "key": "ideas",
+          "name": "議-ideas",
+          "type": "forum",
           "topic": "議 Ideas and opinions. What would make the game better, what you would take out, what made you come back.",
-          "tags": [["Idea", "💡"], ["Balance", "⚖️"], ["Art", "🎨"], ["Question", "❓"]] },
-        { "key": "journal", "name": "記-journal", "type": "text", "slowmode": 30,
-          "topic": "記 Where you are in the game and what happened today. A realm, a fight, somebody on the road. Short is fine." },
-        { "key": "shots", "name": "圖-screenshots", "type": "text",
-          "topic": "圖 Screenshots: what you found beautiful, strange or broken." }
+          "tags": [["Idea", "💡"], ["Balance", "⚖️"], ["Art", "🎨"], ["Question", "❓"]]
+        },
+        {
+          "key": "journal",
+          "name": "記-journal",
+          "type": "text",
+          "slowmode": 30,
+          "topic": "記 Where you are in the game and what happened today. A realm, a fight, somebody on the road. Short is fine."
+        },
+        { "key": "shots", "name": "圖-screenshots", "type": "text", "topic": "圖 Screenshots: what you found beautiful, strange or broken." }
       ]
     },
     {
       "name": "談 COMMUNITY",
       "channels": [
-        { "key": "general", "name": "談-general", "type": "text",
-          "topic": "談 Talk about anything." },
-        { "key": "ranks", "name": "榜-rankings", "type": "text",
-          "topic": "榜 Who leads the 天榜 Heaven List, and how they got there." },
+        { "key": "general", "name": "談-general", "type": "text", "topic": "談 Talk about anything." },
+        { "key": "ranks", "name": "榜-rankings", "type": "text", "topic": "榜 Who leads the 天榜 Heaven List, and how they got there." },
         { "key": "lounge", "name": "聊 Lounge", "type": "voice" }
       ]
     },
     {
       "name": "師 TEAM",
       "channels": [
-        { "key": "team", "name": "師-team", "type": "text", "private": ["master", "mod"],
-          "topic": "師 The developer and the guardians. Discord sends its community notices here." }
+        {
+          "key": "team",
+          "name": "師-team",
+          "type": "text",
+          "private": ["master", "mod"],
+          "topic": "師 The developer and the guardians. Discord sends its community notices here."
+        }
       ]
     }
   ],
@@ -76,10 +142,48 @@
       {
         "title": "What brings you to Ninefold?",
         "single": true,
+        "required": true,
         "options": [
           { "title": "I want to playtest", "emoji": "🧪", "description": "You get the 測 Tester role. Thank you.", "roles": ["tester"] },
           { "title": "I'm following along", "emoji": "👀", "description": "News and peeks, no homework.", "roles": ["follower"] }
         ]
+      },
+      {
+        "title": "Where do you play?",
+        "single": false,
+        "required": false,
+        "options": [
+          { "title": "Android", "emoji": "🤖", "description": "The APK, or the browser on an Android phone.", "roles": ["android"] },
+          { "title": "iPhone", "emoji": "🍎", "description": "Safari, added to the Home Screen.", "roles": ["iphone"] },
+          { "title": "In a browser", "emoji": "🖥️", "description": "On a computer.", "roles": ["browser"] }
+        ]
+      },
+      {
+        "title": "What should ping you?",
+        "single": false,
+        "required": false,
+        "options": [
+          { "title": "New builds", "emoji": "🔔", "description": "One ping when a new build is out. Nothing else.", "roles": ["builds"] },
+          { "title": "Dev log peeks", "emoji": "🖌️", "description": "A ping when something new is shown from the workbench.", "roles": ["peeks"] }
+        ]
+      }
+    ]
+  },
+  "automod": {
+    "_comment": "守 Discord's own AutoMod, so nobody has to be awake for it. Spam, the preset lists and mention spam are one rule each per server, so an existing one of those is taken over and renamed rather than made again.",
+    "alerts": "team",
+    "message": "Held back by the server's guardian. If that was a mistake, a 守 Guardian will put it right.",
+    "rules": [
+      { "name": "守 Slurs and sexual content", "trigger": "preset", "presets": ["sexual", "slurs"], "exempt": ["master", "mod"] },
+      { "name": "守 Spam", "trigger": "spam" },
+      { "name": "守 Mass mentions", "trigger": "mentions", "limit": 5, "raid": true, "timeout": 600, "exempt": ["master", "mod"] },
+      {
+        "name": "守 Invites and scam links",
+        "trigger": "keyword",
+        "regex": ["(discord\\.gg|discord(app)?\\.com/invite|dsc\\.gg)/"],
+        "keywords": ["free nitro", "nitro for free", "steam gift"],
+        "exempt": ["master", "mod"],
+        "exemptChannels": ["team"]
       }
     ]
   },
@@ -98,7 +202,10 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android app", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        [
+          "▸ Android app",
+          "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"
+        ],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
       ],
       "footer": "九境 Ninefold · closed test"
@@ -118,7 +225,7 @@
         "{#shots} what you found beautiful, strange or broken",
         "{#general} and {#ranks} everything else"
       ],
-      "footer": "Pick 測 Tester in Channels & Roles if you want to help test"
+      "footer": "Pick your roles and pings in Channels & Roles, at the top of the channel list"
     },
     {
       "key": "welcome-rules",
@@ -131,8 +238,9 @@
         "**2 · Keep it closed.** The game is in closed test. Ask before sharing it outside the server.",
         "**3 · One bug, one post.** In {#bugs}, so nothing gets lost.",
         "**4 · No spam, no ads,** nothing you would not show a stranger.",
+        "**5 · Nobody pings @everyone.** A new build pings 告 New builds, and only the people who asked for it.",
         "",
-        "The 守 Guardians keep the peace. Breaking the rules gets a warning, then a timeout."
+        "Invite links, scam links and mass mentions are held back automatically. The 守 Guardians see every one, and breaking the rules gets a warning, then a timeout."
       ]
     },
     {
@@ -153,7 +261,10 @@
       ],
       "fields": [
         ["▸ Play", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
+        [
+          "▸ Android",
+          "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"
+        ],
         ["▸ Report", "Bugs in {#bugs}, ideas in {#ideas}"]
       ],
       "footer": "Thank you for being here · 師 Bruno"

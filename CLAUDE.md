@@ -153,6 +153,9 @@ The script finds everything by name, never deletes, and a second run changes not
 first. Its copy is English, like the game: Bruno's community from his previous game
 (Dao of the Endless Sky) is international. The run switches Community on itself, so the
 forums are real forums, and prints the server's permanent invite at the end of its log.
+Moderation is Discord's own AutoMod, set from the same file: one spam, one word-list and one
+mention rule per server, so the script takes over the ones Discord made rather than adding
+more, and every rule reports to #師-team. The bot keeps Administrator for that and Community.
 
 ## 屜 The drawer
 
