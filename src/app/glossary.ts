@@ -141,6 +141,7 @@ export const GROUPS: readonly Group[] = [
       { han: '滿', name: 'Full', note: KEY.full },
       { han: '存', name: 'Your save', note: KEY.save },
       { han: '碑', name: 'The stele', note: KEY.stele },
+      { han: '報', name: 'Report a bug', note: KEY.report },
       { han: '歸', name: 'Welcome back', note: KEY.back },
       { han: '拆', name: 'Melt', note: KEY.melt },
       { han: '圍', name: 'Drive', note: KEY.drive },

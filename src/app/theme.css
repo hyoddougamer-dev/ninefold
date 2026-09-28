@@ -1035,13 +1035,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
               display: flex; flex-direction: column; padding: 5px;
               background: var(--ground); border: 1px solid var(--line);
               border-radius: 11px; box-shadow: 0 14px 34px -12px rgba(0,0,0,.85); }
-.switchmenu button { display: flex; align-items: center; gap: 11px; width: 100%;
+.switchmenu button, .switchmenu a { display: flex; align-items: center; gap: 11px; width: 100%;
                      padding: 9px 9px; border: 0; background: transparent; border-radius: 8px;
-                     font: inherit; color: var(--text); cursor: pointer; text-align: left; }
-.switchmenu button:hover { background: var(--panel); }
-.switchmenu button > b { flex: none; width: 22px; text-align: center; font-weight: 400;
+                     font: inherit; color: var(--text); cursor: pointer; text-align: left; text-decoration: none; }
+.switchmenu button:hover, .switchmenu a:hover { background: var(--panel); }
+.switchmenu button > b, .switchmenu a > b { flex: none; width: 22px; text-align: center; font-weight: 400;
                          font-size: 16px; color: var(--jade); }
-.switchmenu button > span { font-size: 13.5px; }
+.switchmenu button > span, .switchmenu a > span { font-size: 13.5px; }
 .switchmenu button[data-on='false'] > b { color: var(--faint); }
 /* 版 Which build, for a tester's bug report. Quiet: nobody else needs it. */
 .switchmenu .build { display: block; padding: 6px 9px 3px; font: 500 10.5px/1.2 Rajdhani, sans-serif;

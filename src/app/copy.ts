@@ -364,6 +364,9 @@ export const MENU = {
   help: 'How to play',
   key: 'What the characters mean',
   stele: 'The stele',
+  report: 'Report a bug',
+  /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
+  discord: 'https://discord.gg/JFD9cTGscN',
 };
 
 /**
@@ -638,6 +641,7 @@ export const KEY = {
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
   save: 'Your save, to copy out or paste back. It lives in this browser only.',
   stele: 'Everything you have done, counted: the deeds and the figures.',
+  report: 'Opens the testers\' Discord. One problem per post, with the build line from the foot of the menu.',
   back: 'What gathered while the app was shut, paid in full.',
 
   close: 'Back to the game',

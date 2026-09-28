@@ -766,6 +766,10 @@ export function App() {
                 <b className="cjk">{han}</b><span>{label}</span>
               </button>
             ))}
+            {/* 報 Out to the testers' Discord, where the build line below goes in the post. */}
+            <a href={MENU.discord} target="_blank" rel="noopener noreferrer" onClick={() => { setMenu(false); sfx.tap(); }}>
+              <b className="cjk">報</b><span>{MENU.report}</span>
+            </a>
             <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0}>
               <b>{LEVELS[sound].icon}</b><span>{LEVELS[sound].label}</span>
             </button>
