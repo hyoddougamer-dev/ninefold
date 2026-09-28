@@ -22,11 +22,38 @@
   --faint: #9C907C;
   --locked: #3A3226;
   --gold: #D4AF56;
+  /* 貴 The finish Bruno approved on 2026-09-28 ("um look mais premium"): every card is
+     mounted the way a painting is, a gilt hairline round it and a gold bracket in each
+     corner, on a lacquer fill lit from above. The lettering of the logo, Cinzel, takes
+     the headings, the figures and the buttons; Cormorant the names of things. */
+  --gild: rgba(212, 175, 86, .22);
+  --gild-strong: rgba(212, 175, 86, .5);
+  --display: 'Cinzel', 'Noto Serif SC', Georgia, serif;
+  --serif: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+  --k: rgba(212, 175, 86, .75);
+  --mount:
+    linear-gradient(var(--k), var(--k)) left 5px top 5px / 11px 1px no-repeat,
+    linear-gradient(var(--k), var(--k)) left 5px top 5px / 1px 11px no-repeat,
+    linear-gradient(var(--k), var(--k)) right 5px top 5px / 11px 1px no-repeat,
+    linear-gradient(var(--k), var(--k)) right 5px top 5px / 1px 11px no-repeat,
+    linear-gradient(var(--k), var(--k)) left 5px bottom 5px / 11px 1px no-repeat,
+    linear-gradient(var(--k), var(--k)) left 5px bottom 5px / 1px 11px no-repeat,
+    linear-gradient(var(--k), var(--k)) right 5px bottom 5px / 11px 1px no-repeat,
+    linear-gradient(var(--k), var(--k)) right 5px bottom 5px / 1px 11px no-repeat;
+  --lacquer: radial-gradient(120% 90% at 50% 0%, rgba(255, 236, 200, .06), transparent 60%),
+             linear-gradient(180deg, #221D16, #17130E);
+  --lift: inset 0 1px 0 rgba(255, 236, 200, .07), 0 12px 26px -16px rgba(0, 0, 0, .9);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { height: 100%; }
+
+/* 紙 A breath of paper grain over everything, so no ground is flat digital black. Plain
+   opacity on one fixed layer: a blend mode would make the phone recomposite the whole
+   screen on every frame of the aura. */
+body::after { content: ''; position: fixed; inset: 0; z-index: 200; pointer-events: none; opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .93 0 0 0 0 .87 0 0 0 0 .75 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
 body {
   margin: 0;
@@ -48,13 +75,13 @@ body {
          padding: calc(env(safe-area-inset-top, 0px) + 12px) 15px 28px; }
 
 .tabs { display: grid; grid-template-columns: repeat(3, 1fr);
-        border-top: 1px solid var(--line); background: var(--panel2);
+        border-top: 1px solid var(--gild); background: linear-gradient(180deg, #1C1812, #120F0B);
         padding-bottom: env(safe-area-inset-bottom, 0px); }
 .tabs button { background: none; border: 0; color: var(--faint); padding: 9px 0 11px; font: inherit;
                display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
 .tabs .g { font-size: 19px; line-height: 1.1; }
-.tabs .l { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; }
-.tabs button[data-on='true'] { color: var(--jade); }
+.tabs .l { font-family: var(--display); font-weight: 600; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; }
+.tabs button[data-on='true'] { color: var(--gold); box-shadow: inset 0 2px 0 var(--gold); }
 /* 鎖 A tab the realm has not opened. Shown rather than hidden: you cannot look forward
    to a tab you have never seen, and looking forward is what a vertical game runs on. */
 .tabs button[data-shut='true'] { color: var(--line); }
@@ -88,7 +115,7 @@ body {
 
 .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .faint { color: var(--faint); }
-.heading { font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+.heading { font-family: var(--display); font-weight: 600; font-size: 11.5px; letter-spacing: .22em; text-transform: uppercase;
           color: var(--faint); font-weight: 600; margin: 26px 0 10px; }
 
 .bar { height: 6px; border-radius: 99px; background: var(--locked); overflow: hidden; }
@@ -101,15 +128,26 @@ body {
    scale is the compositor's alone. The same for every bar that follows the clock. */
 .bar > i.fill { width: 100%; transform-origin: 0 50%; transition: transform .25s linear; }
 
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; }
+.card { background: var(--mount), var(--lacquer); border: 1px solid var(--gild); border-radius: 12px; padding: 13px 14px;
+        box-shadow: var(--lift); }
+/* 題 A heading that is only words runs a gilt hairline out to the edge. */
+.heading:not(:has(> :not(.cjk))) { display: flex; align-items: center; gap: 12px; }
+.heading:not(:has(> :not(.cjk)))::after { content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--gild-strong), transparent); }
 
-button.act { font: inherit; font-size: 16px; padding: 13px; border-radius: 8px; cursor: pointer;
-              background: var(--jade); color: var(--ground); border: 0; width: 100%;
-              font-family: 'Noto Serif SC', serif; box-shadow: 0 0 22px rgba(127,180,149,.22); }
-button.act span { font-family: Archivo, sans-serif; font-size: 12px; letter-spacing: .14em;
-                   text-transform: uppercase; opacity: .7; margin-left: 8px; }
-button.act:disabled { background: var(--locked); color: var(--faint); box-shadow: none; cursor: default; }
-button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 22px rgba(210,96,78,.25); }
+/* 印 Lacquered: lit from above, a shadow under the lip, lettered in carved capitals. */
+button.act { font: inherit; font-size: 16px; padding: 13px; border-radius: 9px; cursor: pointer;
+              color: var(--ground); width: 100%; font-family: var(--display); font-weight: 600; letter-spacing: .06em;
+              background: linear-gradient(180deg, #93C8A8 0%, #74A98A 55%, #5F9476 100%);
+              border: 1px solid rgba(236, 246, 238, .28);
+              box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -2px 0 rgba(0, 0, 0, .18),
+                          0 10px 24px -10px rgba(127, 180, 149, .55); }
+button.act span { font-family: var(--display); font-weight: 600; font-size: 12.5px; letter-spacing: .2em;
+                   text-transform: uppercase; opacity: .85; margin-left: 8px; }
+button.act:disabled { background: var(--locked); color: var(--faint); box-shadow: none; cursor: default; border-color: transparent; }
+button.act[data-tone='cinnabar'] { background: linear-gradient(180deg, #E0806C 0%, #CC5A47 55%, #B04735 100%);
+  border-color: var(--gild-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 200, .35), inset 0 -2px 0 rgba(0, 0, 0, .22), 0 10px 26px -10px rgba(210, 96, 78, .6); }
 
 /* ── cultivate ────────────────────────────────────────────────────────────── */
 
@@ -163,7 +201,8 @@ button.act[data-tone='cinnabar'] { background: var(--cinnabar); box-shadow: 0 0 
 }
 
 .qi { text-align: center; margin-top: 2px; }
-.qi .n { font-family: Rajdhani, sans-serif; font-size: 40px; line-height: 1; font-weight: 600; }
+.qi .n { font-family: var(--display); font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: .02em;
+         text-shadow: 0 0 28px rgba(212, 175, 86, .3); }
 /* 階 The price of the rung the bar is filling, under the bar.
    It is the one number an idle game cannot be read without, and it was nowhere: the
    bar moved, the rate was on the screen, and what the bar was *for* was not. Tapping
@@ -408,7 +447,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    name is one short phrase instead of a wrapped sentence. It is one more scroll and
    it is legible at arm's length, which the grid was not. */
 .upgrades { display: flex; flex-direction: column; gap: 8px; }
-.upg { background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+.upg { background: var(--mount), var(--lacquer); border: 1px solid var(--gild); border-radius: 12px; box-shadow: var(--lift);
        padding: 13px 14px; display: flex; gap: 13px; align-items: center; text-align: left;
        font: inherit; color: var(--text); cursor: pointer; }
 .upg:disabled { opacity: .45; cursor: default; }
@@ -417,13 +456,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .upg .ic svg { display: block; }
 /* The English name is the heading now, so it is set in the body face at a readable
    size and the characters ride after it, small. */
-.upg b { display: block; font-size: 15px; font-weight: 500; }
+.upg b { display: block; font-family: var(--serif); font-size: 19px; font-weight: 600; line-height: 1.2; color: #F1E6CC; }
 .upg b .cjk { font-size: 13px; font-weight: 400; margin-left: 3px; }
 .upg i { display: block; font-style: normal; font-size: 12.5px; color: var(--faint);
          margin-top: 2px; }
 .upg i .mono { font-size: 11.5px; }
 .upg .price { margin-left: auto; flex: none; text-align: right; font-size: 12px; }
-.upg .price b { font-family: Rajdhani, sans-serif; font-size: 16px; color: var(--gold); font-weight: 600; }
+.upg .price b { font-family: var(--display); font-size: 15.5px; color: var(--gold); font-weight: 600; }
 /* 滿 Full for this realm. It is not "you cannot afford this", so it must not read
    like it: the box keeps its colour and the price becomes the character. */
 .upg[data-full="true"] { opacity: 1; border-color: var(--gold); }
@@ -458,7 +497,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 /* ── beasts ─────────────────────────────────────────────────────────────── */
 
-.beast { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+.beast { background: var(--mount), var(--lacquer); border: 1px solid var(--gild); border-radius: 12px; box-shadow: var(--lift);
          padding: 10px 12px; display: flex; gap: 11px; align-items: center; width: 100%;
          font: inherit; color: var(--text); text-align: left; cursor: pointer; }
 .beast:disabled { opacity: .4; cursor: default; }
@@ -510,13 +549,13 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    boxes abreast is unreadable on a phone, and the two payoffs are the answer to the
    question the three counters raise. */
 .tally { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; margin: 10px 0 2px; }
-.tally span { grid-column: span 2; background: var(--panel); border: 1px solid var(--line);
+.tally span { grid-column: span 2; background: var(--lacquer); border: 1px solid var(--gild);
               border-radius: 10px; padding: 7px 4px 6px; text-align: center; }
 .tally .pay { grid-column: span 3; }
 .tally span[data-on="true"] { border-color: var(--jade); }
 .tally b { display: block; font-size: 15px; color: var(--faint); line-height: 1.2; }
 .tally span[data-on="true"] b { color: var(--jade); }
-.tally em { display: block; font-style: normal; font-size: 14px; font-weight: 600; }
+.tally em { display: block; font-style: normal; font-family: var(--display); font-size: 14px; font-weight: 600; }
 .tally em i { font-style: normal; font-size: 10px; color: var(--faint); }
 .tally i { font-style: normal; display: block; font-size: 9px; letter-spacing: .1em;
            text-transform: uppercase; color: var(--faint); }
@@ -565,8 +604,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .notice { position: absolute; left: 10px; right: 10px; z-index: 11;
           bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
           display: flex; gap: 12px; align-items: flex-start;
-          background: var(--panel); border: 1px solid var(--jade); border-radius: 13px;
-          padding: 13px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.55);
+          background: var(--lacquer); border: 1px solid var(--jade); border-radius: 13px;
+          padding: 13px 14px; box-shadow: 0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255, 236, 200, .07);
           animation: arrive .28s ease both; }
 .notice > b { flex: none; font-size: 19px; font-weight: 400; color: var(--jade); line-height: 1.25; }
 .notice em { display: block; font-style: normal; font-family: Rajdhani, sans-serif;
@@ -580,7 +619,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
 
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
-.card3 { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+.card3 { background: var(--lacquer); border: 1px solid var(--gild); border-radius: 11px;
          padding: 10px 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .card3 .seal { width: 46px; height: 46px; }
 .card3 .seal svg { display: block; }
@@ -792,7 +831,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .victory i + i { animation-delay: .38s; }
 /* 得 What it paid, arriving one after the other. */
 .gains { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.gain { font-family: Rajdhani, sans-serif; font-weight: 700; font-size: 20px; color: var(--gold);
+.gain { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--gold);
         padding: 3px 13px; border-radius: 99px; background: color-mix(in srgb, var(--gold) 12%, transparent);
         border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
         animation: gainin .45s cubic-bezier(.2,.9,.3,1.3) both; }
@@ -1046,7 +1085,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 .switchmenu { position: absolute; top: 34px; right: 0; min-width: 214px;
               display: flex; flex-direction: column; padding: 5px;
-              background: var(--ground); border: 1px solid var(--line);
+              background: var(--lacquer); border: 1px solid var(--gild);
               border-radius: 11px; box-shadow: 0 14px 34px -12px rgba(0,0,0,.85); }
 .switchmenu button, .switchmenu a { display: flex; align-items: center; gap: 11px; width: 100%;
                      padding: 9px 9px; border: 0; background: transparent; border-radius: 8px;
@@ -1248,9 +1287,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    lost its T to a long "CULTIVATE · DAY 526" beside it, which is flex doing what flex
    does. The long side truncates instead. */
 /* The same row inside the wrapper the wide layout splits a screen with (桌, at the end). */
-.sheet > .row:first-child, .sheet > :is(.c-hero, .g-hero):first-child > .row:first-child { padding-right: 140px; }
+/* 收 140px was room for five corner buttons. They folded into one ≡ long ago, and the
+   rest of the room was eating the day: "CULTIVATE · DAY …" on any phone past day 9. */
+.sheet > .row:first-child, .sheet > :is(.c-hero, .g-hero):first-child > .row:first-child { padding-right: 56px; }
 :is(.sheet, .c-hero, .g-hero) > .row:first-child > :last-child { flex: none; white-space: nowrap; }
-:is(.sheet, .c-hero, .g-hero) > .row:first-child > :first-child { min-width: 0; overflow: hidden;
+:is(.sheet, .c-hero, .g-hero) > .row:first-child > :first-child { min-width: 0; overflow: hidden; font-family: var(--display); font-weight: 600;
                                            text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
@@ -1395,7 +1436,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; flex-direction: column; align-items: center; gap: 1px;
         min-width: 52px; padding: 7px 10px; border-radius: 10px; cursor: pointer;
-        background: var(--panel); border: 1px solid var(--line); color: var(--faint);
+        background: var(--lacquer); border: 1px solid var(--gild); color: var(--faint);
         font: inherit; }
 .chip.wide { min-width: 96px; }
 .chip b { font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 16px;
@@ -2772,7 +2813,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
      view dimmed behind it. The shadow is the dimming, so nothing else is needed. */
   .arena, .help, .whom, .cloudpick, .stelepage, .awaken, .secret, .realmcard, .drivesheet, .back, .runend, .shut {
     left: 0; right: 0; top: 32px; bottom: 32px; margin-inline: auto; width: min(640px, 100%);
-    border: 1px solid var(--line); border-radius: 16px; overflow: hidden auto;
+    border: 1px solid var(--gild-strong); border-radius: 16px; overflow: hidden auto;
     box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .7), 0 30px 80px rgba(0, 0, 0, .6); }
   .arena { width: min(580px, 100%); overflow: hidden; }
   /* 鬥 As tall as the fight and its verdict, in the middle of the screen. Stretched to the
