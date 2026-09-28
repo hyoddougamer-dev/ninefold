@@ -62,6 +62,19 @@
           "topic": "入門 Start here: what Ninefold is, how to play the test, and the rules."
         },
         {
+          "key": "guides",
+          "name": "書-guides",
+          "type": "forum",
+          "guide": true,
+          "topic": "書 How every system in Ninefold works, one post each. Questions go in the post they are about.",
+          "tags": [
+            ["Start", "🧭"],
+            ["Systems", "⚙️"],
+            ["Endgame", "⛈️"],
+            ["FAQ", "❓"]
+          ]
+        },
+        {
           "key": "news",
           "name": "告-announcements",
           "type": "announcement",
@@ -86,14 +99,25 @@
           "type": "forum",
           "emoji": "🐞",
           "topic": "報 One problem per post. Say what you did, what you expected and what happened. Add a screenshot if you can, and the Build line from the bottom of the ≡ menu (top right corner).",
-          "tags": [["Bug", "🐞"], ["Art", "🎨"], ["Balance", "⚖️"], ["Text", "📝"], ["Fixed", "✅"]]
+          "tags": [
+            ["Bug", "🐞"],
+            ["Art", "🎨"],
+            ["Balance", "⚖️"],
+            ["Text", "📝"],
+            ["Fixed", "✅"]
+          ]
         },
         {
           "key": "ideas",
           "name": "議-ideas",
           "type": "forum",
           "topic": "議 Ideas and opinions. What would make the game better, what you would take out, what made you come back.",
-          "tags": [["Idea", "💡"], ["Balance", "⚖️"], ["Art", "🎨"], ["Question", "❓"]]
+          "tags": [
+            ["Idea", "💡"],
+            ["Balance", "⚖️"],
+            ["Art", "🎨"],
+            ["Question", "❓"]
+          ]
         },
         {
           "key": "journal",
@@ -132,12 +156,12 @@
       { "channel": "welcome", "emoji": "⛩️", "description": "Start here: how to play the test" },
       { "channel": "news", "emoji": "📜", "description": "New builds and what changed" },
       { "channel": "bugs", "emoji": "🐞", "description": "Found a problem? One post each" },
-      { "channel": "journal", "emoji": "🌙", "description": "Where you are and what happened today" },
+      { "channel": "guides", "emoji": "📖", "description": "How every system works" },
       { "channel": "general", "emoji": "🍵", "description": "Talk about anything" }
     ]
   },
   "onboarding": {
-    "defaults": ["welcome", "news", "devlog", "bugs", "ideas", "journal", "shots", "general", "ranks"],
+    "defaults": ["welcome", "guides", "news", "devlog", "bugs", "ideas", "journal", "shots", "general", "ranks"],
     "prompts": [
       {
         "title": "What brings you to Ninefold?",
@@ -202,10 +226,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        [
-          "▸ Android app",
-          "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"
-        ],
+        ["▸ Android app", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
       ],
       "footer": "九境 Ninefold · closed test"
@@ -217,6 +238,7 @@
       "title": "道 Finding your way",
       "color": "#7FB495",
       "body": [
+        "{#guides} how every system works, one post each",
         "{#news} new builds and what changed",
         "{#devlog} peeks at what is coming",
         "{#bugs} one problem per post",
@@ -261,10 +283,7 @@
       ],
       "fields": [
         ["▸ Play", "https://hyoddougamer-dev.github.io/ninefold/"],
-        [
-          "▸ Android",
-          "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"
-        ],
+        ["▸ Android", "[Download the APK](https://github.com/hyoddougamer-dev/ninefold/releases/download/testers/ninefold.apk)"],
         ["▸ Report", "Bugs in {#bugs}, ideas in {#ideas}"]
       ],
       "footer": "Thank you for being here · 師 Bruno"
@@ -282,6 +301,257 @@
         "**3.** What happened instead.",
         "",
         "Add a screenshot and the **Build** line from the bottom of the ≡ menu (top right corner). If the game showed an error, copy its text too."
+      ]
+    },
+    {
+      "key": "devlog-1",
+      "channel": "devlog",
+      "pin": false,
+      "title": "筆 Dev log #1 · A face, a finish and music",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/pc.webp",
+      "body": ["What changed before the first testers arrive."],
+      "fields": [
+        ["▸ The logo", "A gold brush ensō with the seated cultivator inside. It is the app icon, the splash, the browser tab and this server."],
+        ["▸ A premium finish", "Every card mounted like a painting, gold corners, lettering taken from the logo, lacquered buttons, and a breath of paper grain."],
+        ["▸ Music", "Chinese ambient tracks made for the game: two for cultivating, one for the hunt. They follow you from screen to screen and have their own volume in the ≡ menu."],
+        ["▸ Fixes", "The end of a fight scrolls on short screens, the day shows in the header again, and *Report a bug* is in the ≡ menu."],
+        ["▸ Next", "The warden's and the heavens' own music, and whatever you find. Tell us in {#bugs} and {#ideas}."]
+      ],
+      "footer": "師 Bruno"
+    }
+  ],
+  "posts": [
+    {
+      "key": "g-start",
+      "forum": "guides",
+      "tag": "Start",
+      "pin": true,
+      "title": "入門 Start here: your first hour",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cultivate.webp",
+      "body": [
+        "**Ninefold is an idle cultivation game.** Qi gathers on its own, even with the game shut. You spend it to grow stronger, or let it fill the bar and climb.",
+        "",
+        "**Three promises the game keeps**",
+        "· Nothing is ever taken away for being away. Close it for a week and you come back further along.",
+        "· Losing a fight costs nothing. Not qi, not material, not a level.",
+        "· Nothing resets. Every realm adds something and keeps everything you had."
+      ],
+      "fields": [
+        ["▸ The guide in the game walks you through this", "1. Spend the qi your master left you on an upgrade.\n2. Win your first fight: the rat.\n3. Spend the 材 material it drops on 妖丹 Beast Cores.\n4. Kill the same beast ten times, for its 熟 Known mark.\n5. Fill the ninth layer, beat the realm's warden, and break through."],
+        ["▸ The characters", "Open ≡ Menu → *What the characters mean*. Any character with a dotted line under it says its name when you tap it."],
+        ["▸ Every other guide", "One post per system in this forum, in the order the game opens them. Ask your questions inside the post they are about."],
+        ["▸ Found a problem?", "≡ Menu → *Report a bug*, or open a post in {#bugs}."]
+      ],
+      "footer": "九境 Ninefold · closed test"
+    },
+    {
+      "key": "g-qi",
+      "forum": "guides",
+      "tag": "Start",
+      "title": "氣 Qi, layers and the nine realms",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/1.webp",
+      "body": [
+        "Qi gathers at the full rate whether you are here or not, all night, with the phone shut.",
+        "",
+        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for about a quarter of an hour (more with 神 the Spirit branch of the Path). A bonus for being there, never a cost for leaving.",
+        "",
+        "**Layers.** Qi fills the bar, and a full bar opens a layer by itself. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
+        "",
+        "**The trade.** Qi you spend on upgrades stops filling the bar. Choosing between the two is the whole game."
+      ],
+      "fields": [
+        ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi"],
+        ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
+        ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
+      ]
+    },
+    {
+      "key": "g-hunt",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "狩 Hunting, the Record and Beast Cores",
+      "color": "#D2604E",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/hunt.webp",
+      "body": [
+        "Beasts wait on the 狩 Hunt screen. Fight them whenever you like, as often as you like, for nothing. The percentage on each is your odds.",
+        "",
+        "A fight is settled the moment you press, then plays back round by round. **Win** and you collect 材 material, sometimes a piece of gear. **Lose** and nothing is taken. Come back stronger.",
+        "",
+        "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
+      ],
+      "fields": [
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power."],
+        ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each."],
+        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi. It moves every Monday."]
+      ]
+    },
+    {
+      "key": "g-gear",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "器 Gear: ranks, sets, classes and refining",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/gear.webp",
+      "body": [
+        "From the second realm, beasts leave gear. Tap a piece in your chest to wear it. **Six places:** 劍 Weapon, 袍 Robe, 冠 Crown, 靴 Boots, 珮 Talisman, 戒 Ring.",
+        "",
+        "**Five ranks:** 凡 Common, 靈 Spirit, 玄 Mystic, 地 Earth, 天 Heaven. The rank multiplies every line on a piece. Lines are percentages, so an old piece stays good.",
+        "",
+        "Gear power has no ceiling. Qi from gear has one."
+      ],
+      "fields": [
+        ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
+        ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
+        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level, and the levels stay on the piece, so refine the one you mean to keep."],
+        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi."]
+      ]
+    },
+    {
+      "key": "g-path",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "道 The Path, Keystones, Stances and Arts",
+      "color": "#A077B8",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/path.webp",
+      "body": [
+        "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon and the Bestiary. They are spent on the tree in 道 the Path.",
+        "",
+        "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it."
+      ],
+      "fields": [
+        ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
+        ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
+        ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."]
+      ]
+    },
+    {
+      "key": "g-cave",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "洞天 The Cave and 秘境 the Secret Realm",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cave.webp",
+      "body": [
+        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it.",
+        "",
+        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, two ways on at each, and every other room is a beast a realm above you. Nothing is carried in, so losing takes nothing back."
+      ],
+      "fields": [
+        ["▸ 秘境深 The Deeper Vault", "From the seventh realm the path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
+        ["▸ This week", "Each week one herb is worth planting and one room of the vault pays double. It changes every Monday."]
+      ]
+    },
+    {
+      "key": "g-tower",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "閉關 Seclusion, 塔 the Tower and 圖鑑 the Bestiary",
+      "color": "#D2604E",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
+      "body": [
+        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour.",
+        "",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything.",
+        "",
+        "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
+      ]
+    },
+    {
+      "key": "g-trib",
+      "forum": "guides",
+      "tag": "Endgame",
+      "title": "雷池 The Tribulation, 爐 the Furnace and the Heavens",
+      "color": "#A077B8",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/art/realm/9.webp",
+      "body": [
+        "**雷池 The Tribulation** (ninth realm). The last layers of the whole climb. When they run out, the bar becomes the thunder pool, and a Dragon waits at the end of it. Every crossing earns a 雷印 thunder mark, and the Dragon comes back heavier every time you put it down.",
+        "",
+        "**爐 The Furnace** (ninth realm). Pills, brewed from qi and material together, kept for good, with no cap. Power is what shortens a crossing.",
+        "",
+        "**The Heavens.** Thunder marks open nine heavens above the summit, and each one offers a 悟道 card: one of three, your choice."
+      ],
+      "fields": [
+        ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
+        ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit."]
+      ]
+    },
+    {
+      "key": "g-week",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "期 The week and the road",
+      "color": "#D4AF56",
+      "body": [
+        "**期 The week** turns every Monday. It marks a beast worth double 材 material, a herb worth planting and a room of 秘境 worth reaching. It never touches the rate you gather at, so nobody falls behind for missing one.",
+        "",
+        "**緣 The road.** Somebody is on the road every few hours: a child begging at a shrine, a pool with nothing living in it, and many more. One choice, and walking on is always free. Nothing is taken that you did not offer, and the road remembers what you did."
+      ]
+    },
+    {
+      "key": "g-ranks",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "榜 Rankings, saves and devices",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/ranks.webp",
+      "body": [
+        "Your game lives on the device and the browser you play on. The app, Chrome and a PC are separate games unless you sign in.",
+        "",
+        "**Joining the rankings** takes a name, then either nothing (a guest, on this device) or an email: you get a link, and the same cultivator opens in any browser where you use it. No password, ever.",
+        "",
+        "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up."
+      ],
+      "fields": [
+        ["▸ The three boards", "天榜 Heaven List: the furthest climb.\n期榜 This Week: layers climbed since Monday.\n塔榜 The Tower: the highest floor."],
+        ["▸ On the Android app", "Join as a guest. The email link opens the browser, not the app."],
+        ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*."]
+      ]
+    },
+    {
+      "key": "g-faq",
+      "forum": "guides",
+      "tag": "FAQ",
+      "title": "問 Questions testers ask",
+      "color": "#7FB495",
+      "body": [
+        "**Do I lose anything if I stop playing for a while?** No. Qi gathers the whole time, and nothing is ever taken away for being away.",
+        "",
+        "**What does a lost fight cost?** Nothing. Try the beasts you are not sure about.",
+        "",
+        "**Is there anything to buy?** No. There is no shop and no ads in the test.",
+        "",
+        "**Can I play on my phone and my PC?** Yes. Sign in with your email in the browser on both. The Android app plays as a guest.",
+        "",
+        "**The music is too loud, or I want it off.** ≡ Menu has one button for the sound and one for the music: on, quiet or off.",
+        "",
+        "**What do the characters mean?** ≡ Menu → *What the characters mean*. Every character has an English name beside it or under a tap.",
+        "",
+        "**How do I report a bug?** One post in {#bugs}: what you did, what you expected, what happened, and the *Build* line from the foot of the ≡ menu."
+      ]
+    },
+    {
+      "key": "g-opens",
+      "forum": "guides",
+      "tag": "Start",
+      "title": "開 What each realm opens",
+      "color": "#D4AF56",
+      "body": [
+        "Nothing resets, so every realm hands over something that was not there before. The locked tabs in the game say which realm opens them."
+      ],
+      "fields": [
+        ["▸ 練氣 Realm 1", "狩 Hunting · 妖丹 Beast Cores · 錄 The Record"],
+        ["▸ 築基 Realm 2", "器 Gear · 煉器 Refining · 洞天 The Cave · 勢 Stances and Arts · 道 The Path"],
+        ["▸ 金丹 Realm 3", "煉 Fusing · 秘境 The Secret Realm"],
+        ["▸ 元嬰 Realm 4", "樞 The Keystones · 閉關 Seclusion"],
+        ["▸ 化神 Realm 5", "塔 The Endless Tower"],
+        ["▸ 煉虛 Realm 6", "圖鑑 The Bestiary"],
+        ["▸ 合體 Realm 7", "秘境深 The Deeper Vault"],
+        ["▸ 大乘 Realm 8", "The last climb before the storm"],
+        ["▸ 渡劫 Realm 9", "爐 The Furnace · 雷池 The Tribulation, and the Heavens above it"]
       ]
     }
   ]

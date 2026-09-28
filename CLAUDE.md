@@ -156,6 +156,11 @@ forums are real forums, and prints the server's permanent invite at the end of i
 Moderation is Discord's own AutoMod, set from the same file: one spam, one word-list and one
 mention rule per server, so the script takes over the ones Discord made rather than adding
 more, and every rule reports to #師-team. The bot keeps Administrator for that and Community.
+書-guides is a forum with one post per system (`posts` in server.json), written from the
+game's own copy and numbers: when a system changes, its guide changes in the same commit.
+Only the developer and the bot open posts; members answer inside them. The screens the
+guides show live in `public/discord/`, served by Pages, and go up in a commit before the
+posts that point at them, so Discord never caches a broken image.
 
 ## 樂 Music
 

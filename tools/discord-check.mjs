@@ -50,7 +50,7 @@ function fakeDiscord({ admin = true } = {}) {
     roles: [{ id: GUILD, name: '@everyone', color: 0, hoist: false, permissions: '1071698660929', position: 0 },
             { id: BOT_ROLE, name: 'Ninefold', color: 0, hoist: false, permissions: String(INVITED), managed: true, position: 1 }],
     members: { [OWNER]: { roles: [] }, [BOT]: { roles: [BOT_ROLE] } },
-    channels: [], messages: {}, invites: [], welcome: null, onboarding: null, automod: [], calls: [], limited: false,
+    channels: [], messages: {}, invites: [], welcome: null, onboarding: null, automod: [], threads: [], calls: [], limited: false,
   };
   // 序 A new role goes in just above @everyone, and everything above it moves up one.
   const addRole = (r) => { for (const x of state.roles) if (x.position >= 1) x.position++; const role = { permissions: '0', position: 1, ...r }; state.roles.push(role); return role; };
@@ -81,6 +81,38 @@ function fakeDiscord({ admin = true } = {}) {
       if (req.method !== 'GET' && !state.limited) { state.limited = true; return send(429, { retry_after: 0.05 }); }
       const community = state.guild.features.includes('COMMUNITY');
       let m;
+      // 限 Discord's embed limits, which the real server answers with a bare 400.
+      const bad = (embeds) => (embeds ?? []).some((e) => (e.title ?? '').length > 256 || (e.description ?? '').length > 4096
+        || (e.fields ?? []).length > 25 || (e.fields ?? []).some((f) => f.name.length > 256 || f.value.length > 1024));
+      if (/\/(messages|threads)(\/\d+)?$/.test(path) && req.method !== 'GET' && bad(body?.embeds ?? body?.message?.embeds)) return refuse(400, 'Invalid Form Body: embed over its limits');
+      if (path === `/guilds/${GUILD}/threads/active`) return send(200, { threads: state.threads.filter((t) => !t.thread_metadata.archived) });
+      if ((m = path.match(/^\/channels\/(\d+)\/threads\/archived\/public$/))) return send(200, { threads: state.threads.filter((t) => t.parent_id === m[1] && t.thread_metadata.archived), has_more: false });
+      if ((m = path.match(/^\/channels\/(\d+)\/threads$/)) && req.method === 'POST') {
+        const forum = channel(m[1]);
+        if (!forum || forum.type !== 15) return refuse(400, 'not a forum');
+        if (!community) return refuse(400, 'forums need Community');
+        if (!body.name || body.name.length > 100) return refuse(400, 'a thread name is 1 to 100 characters');
+        const t = { id: id(), parent_id: m[1], name: body.name, flags: 0, applied_tags: body.applied_tags ?? [], thread_metadata: { archived: false } };
+        state.threads.push(t);
+        state.messages[t.id] = [{ id: t.id, author: { id: BOT }, pinned: false, embeds: JSON.parse(JSON.stringify(body.message.embeds)) }];
+        return send(201, t);
+      }
+      if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'GET') {
+        const msg = (state.messages[m[1]] ?? []).find((x) => x.id === m[2]);
+        return msg ? send(200, msg) : refuse(404, 'Unknown Message');
+      }
+      if ((m = path.match(/^\/channels\/(\d+)$/)) && req.method === 'PATCH' && state.threads.some((t) => t.id === m[1])) {
+        const t = state.threads.find((x) => x.id === m[1]);
+        if (body.archived !== undefined) t.thread_metadata.archived = body.archived;
+        if (body.flags !== undefined) {
+          if ((body.flags & 2) && state.threads.some((o) => o !== t && o.parent_id === t.parent_id && (o.flags & 2))) return refuse(400, 'a forum pins one post');
+          t.flags = body.flags;
+        }
+        return send(200, t);
+      }
+      if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'PATCH' && state.threads.some((t) => t.id === m[1] && t.thread_metadata.archived)) {
+        return refuse(400, 'Thread is archived');
+      }
       if (path === '/users/@me') return send(200, { id: BOT, username: 'Ninefold' });
       if (path === `/guilds/${GUILD}` && req.method === 'GET') return send(200, state.guild);
       if (path === `/guilds/${GUILD}` && req.method === 'PATCH') {
@@ -260,13 +292,16 @@ await scenario({}, async (port, env, state) => {
   check(state.roles.length === SPEC.roles.length + 2, 'and every role');
   check(state.members[OWNER].roles.length === 1, 'the owner is given the developer role');
   check(state.guild.name === SPEC.name && state.guild.description === SPEC.description, 'the server is named and described');
-  const posted = Object.values(state.messages).flat();
-  check(posted.length === SPEC.messages.length && posted.every((m) => m.pinned), `the ${SPEC.messages.length} posts go up, pinned`);
+  const inThreads = new Set(state.threads.map((t) => t.id));
+  const posted = Object.entries(state.messages).filter(([c]) => !inThreads.has(c)).flatMap(([, list]) => list);
+  check(posted.length === SPEC.messages.length && posted.filter((m) => m.pinned).length === SPEC.messages.filter((m) => m.pin).length,
+    `the ${SPEC.messages.length} posts go up, the ${SPEC.messages.filter((m) => m.pin).length} meant to be pinned pinned`);
   check(posted.every((m) => !/\{#\w+\}/.test(JSON.stringify(m.embeds))) && posted.some((m) => /<#\d+>/.test(m.embeds[0].description)), 'channel names in the posts are real links');
   check(posted.filter((m) => m.embeds[0].image).length === SPEC.messages.filter((m) => m.image).length, 'the posts with a painting carry it');
   check(state.limited, 'and a rate limit on the way is survived');
   const forums = state.channels.filter((c) => c.type === 15);
-  check(forums.length === 2 && forums.every((f) => f.available_tags.every((t) => t.emoji_name)), 'two forums, every tag with its emoji');
+  const forumCount = all.filter((c) => c.type === 'forum').length;
+  check(forums.length === forumCount && forums.every((f) => f.available_tags.every((t) => t.emoji_name)), `${forumCount} forums, every tag with its emoji`);
   check(state.channels.some((c) => c.type === 2), 'a voice lounge');
   const team = state.channels.find((c) => c.name.endsWith('team'));
   check(team.permission_overwrites.some((o) => o.id === GUILD && BigInt(o.deny) & VIEW) && team.permission_overwrites.length === 4, 'the team channel is hidden from everyone but developer, guardians and bot');
@@ -277,12 +312,34 @@ await scenario({}, async (port, env, state) => {
   const links = state.automod.find((r) => r.trigger_type === 1);
   check(staff.every((s) => links.exempt_roles.includes(s)) && links.trigger_metadata.regex_patterns.every((r) => new RegExp(r).test('join discord.gg/abc')) && !new RegExp(links.trigger_metadata.regex_patterns[0]).test('https://hyoddougamer-dev.github.io/ninefold/'),
     "the invite filter catches another server's invite, spares the game's own link, and never the staff");
+  const guides = state.channels.find((c) => c.name === '書-guides');
+  const posts = state.threads.filter((t) => t.parent_id === guides?.id);
+  check(guides?.type === 15 && posts.length === SPEC.posts.length, `the guides forum holds all ${SPEC.posts.length} posts`);
+  check(posts[posts.length - 1]?.name === SPEC.posts[0].title && posts[0]?.name === SPEC.posts[SPEC.posts.length - 1].title,
+    'made last to first, so the forum reads top to bottom in server.json order');
+  check(posts.filter((t) => t.flags & 2).length === 1 && posts.find((t) => t.flags & 2).name === SPEC.posts.find((p) => p.pin).title, 'the start-here post is the one pinned');
+  check(posts.every((t) => t.applied_tags.length === 1), 'every post carries its tag');
+  const everyoneThere = guides.permission_overwrites.find((o) => o.id === GUILD);
+  check(everyoneThere && BigInt(everyoneThere.deny) & SEND && BigInt(everyoneThere.allow) & bit(38),
+    'members cannot open a guide post, but can answer inside one');
   const inviteLine = first.split('\n').find((l) => l.startsWith('Invite: https://discord.gg/'));
   check(!!inviteLine && state.invites.length === 1, 'one permanent invite is made and printed');
 
   const again = await runSetup(port, env);
   check(again.code === 0 && changes(again.out).length === 0, `a second run changes nothing${changes(again.out).length ? `: ${changes(again.out).join(' | ')}` : ''}`);
-  check(Object.values(state.messages).flat().length === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
+  check(state.threads.length === SPEC.posts.length, 'no guide posted twice');
+  // 眠 A week later every post has gone quiet and archived itself. Changing one wakes it.
+  state.threads.forEach((t) => { t.thread_metadata.archived = true; });
+  const woke = structuredClone(SPEC);
+  woke.posts[3].body = [...woke.posts[3].body, 'A line added later.'];
+  const wokePath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(wokePath, JSON.stringify(woke));
+  const late = await runSetup(port, { ...env, DISCORD_SPEC: wokePath });
+  const edited3 = state.messages[state.threads.find((t) => t.name === woke.posts[3].title).id][0];
+  check(late.code === 0 && edited3.embeds[0].description.endsWith('A line added later.') && state.threads.length === SPEC.posts.length,
+    'an archived guide is found, woken and edited in place, not posted again');
+  await runSetup(port, env);   // and back to server.json as it is, for what follows
+  check(Object.values(state.messages).flat().length - SPEC.posts.length === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
 
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
   bugs.topic = 'someone typed here';
@@ -298,7 +355,7 @@ await scenario({}, async (port, env, state) => {
   writeFileSync(specPath, JSON.stringify(edited));
   const fourth = await runSetup(port, { ...env, DISCORD_SPEC: specPath });
   const first0 = Object.values(state.messages).flat().find((m) => m.embeds[0].title === SPEC.messages[0].title);
-  check(/edited/.test(fourth.out) && first0.embeds[0].description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length,
+  check(/edited/.test(fourth.out) && first0.embeds[0].description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length,
     'a post changed in server.json is edited in place, not posted again');
   check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
     && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),

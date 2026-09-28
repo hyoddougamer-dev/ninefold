@@ -97,13 +97,39 @@ function plan() {
     }
   }
   for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}`);
+  for (const p of SPEC.posts ?? []) log(`  post "${p.title}" in the ${p.forum} forum${p.pin ? ', pinned' : ''}`);
   if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out 測 Tester');
   for (const p of SPEC.onboarding?.prompts ?? []) log(`  onboarding asks "${p.title}" (${p.options.map((o) => o.title).join(', ')})`);
   for (const r of SPEC.automod?.rules ?? []) log(`  AutoMod: ${r.name}`);
   if (SPEC.invite) log('  one permanent invite, printed at the end');
 }
 
+/**
+ * 限 Discord's own limits on an embed, checked before anything is sent: a guide that is
+ * one character too long is refused with a 400 on the real server and nowhere else.
+ */
+function tooLong() {
+  const out = [];
+  for (const m of [...SPEC.messages, ...(SPEC.posts ?? [])]) {
+    const body = m.body.join('\n');
+    const fields = m.fields ?? [];
+    const total = m.title.length + body.length + (m.footer ?? '').length + fields.reduce((a, [n, v]) => a + n.length + v.length, 0);
+    if (m.title.length > 100) out.push(`"${m.title}": a title over 100 (a forum post's name)`);
+    if (body.length > 4096) out.push(`"${m.title}": a body of ${body.length}, over 4096`);
+    if (fields.length > 25) out.push(`"${m.title}": ${fields.length} fields, over 25`);
+    for (const [n, v] of fields) if (n.length > 256 || v.length > 1024) out.push(`"${m.title}": the field "${n}" is over its limit`);
+    if (total > 6000) out.push(`"${m.title}": ${total} characters in all, over 6000`);
+  }
+  return out;
+}
+
 async function run() {
+  const long = tooLong();
+  if (long.length) {
+    long.forEach((l) => log(`  ✗ ${l}`));
+    process.exitCode = 1;
+    return { dry: true, said, failed: long };
+  }
   if (!TOKEN || !GUILD) {
     log('No DISCORD_BOT_TOKEN or DISCORD_GUILD_ID: here is what would be made, and nothing was touched.');
     plan();
@@ -179,7 +205,10 @@ async function run() {
   const readOnly = [{ id: everyone, type: 0, allow: String(perms('VIEW', 'HISTORY', 'REACT')), deny: String(perms('SEND', 'THREADS', 'SEND_THREADS')) }, ...master, bot];
   const hiddenFor = (keys) => [{ id: everyone, type: 0, allow: '0', deny: String(perms('VIEW')) },
     ...keys.filter((k) => roleId[k]).map((k) => ({ id: roleId[k], type: 0, allow: String(perms('VIEW', 'SEND', 'EMBED', 'ATTACH', 'HISTORY')), deny: '0' })), bot];
-  const overwritesOf = (ch) => (ch.private ? hiddenFor(ch.private) : ch.readOnly ? readOnly : null);
+  // 書 A guide forum: only the developer and the bot open posts, and everybody may answer
+  // inside one, which is where a question about that system belongs.
+  const guide = [{ id: everyone, type: 0, allow: String(perms('VIEW', 'HISTORY', 'REACT', 'SEND_THREADS')), deny: String(perms('SEND', 'THREADS')) }, ...master, bot];
+  const overwritesOf = (ch) => (ch.private ? hiddenFor(ch.private) : ch.readOnly ? readOnly : ch.guide ? guide : null);
   const community = () => (guild.features ?? []).includes('COMMUNITY');
   const channelId = {};
   const parentId = {};
@@ -203,7 +232,12 @@ async function run() {
       if (ch.topic && type !== 'voice') body.topic = ch.topic;
       if (overwrites) body.permission_overwrites = overwrites;
       if (ch.slowmode) body.rate_limit_per_user = ch.slowmode;
-      if (type === 'forum') body.available_tags = ch.tags.map(([name, emoji]) => ({ name, emoji_name: emoji }));
+      if (type === 'forum') {
+        body.available_tags = ch.tags.map(([name, emoji]) => ({ name, emoji_name: emoji }));
+        // 序 Newest first by when a post was made, not by its last reply, in a list: the
+        // posts go up last-to-first, so they read top to bottom in server.json's order.
+        if (ch.guide) { body.default_sort_order = 1; body.default_forum_layout = 1; }
+      }
       have = await step(`#${ch.name}`, async () => {
         try {
           const x = await call('POST', `/guilds/${GUILD}/channels`, body); log(`  #${ch.name} made (${type})`); return x;
@@ -367,13 +401,18 @@ async function run() {
   // 告 The messages, each found by its title among the bot's own and edited in place.
   // {#key} in a body or a field becomes a link to that channel.
   const linked = (text) => text.replace(/\{#(\w+)\}/g, (_, k) => (channelId[k] ? `<#${channelId[k]}>` : `#${k}`));
-  for (const m of SPEC.messages) {
-    const where = channelId[m.channel];
-    if (!where) continue;
+  const embedOf = (m) => {
     const embed = { title: m.title, description: linked(m.body.join('\n')), color: colour(m.color) };
     if (m.image) embed.image = { url: m.image };
     if (m.fields) embed.fields = m.fields.map(([name, value]) => ({ name, value: linked(value), inline: false }));
     if (m.footer) embed.footer = { text: m.footer };
+    return embed;
+  };
+  const sig = (x) => JSON.stringify([x.description, x.color, x.image?.url ?? '', (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']);
+  for (const m of SPEC.messages) {
+    const where = channelId[m.channel];
+    if (!where) continue;
+    const embed = embedOf(m);
     await step(`message "${m.title}"`, async () => {
       // 釘 The pins first: a pinned message in a busy channel is long past the last fifty.
       const pins = await call('GET', `/channels/${where}/pins`);
@@ -386,13 +425,56 @@ async function run() {
         log(`  "${m.title}" posted`);
       } else {
         id = mine.id;
-        const sig = (x) => JSON.stringify([x.description, x.color, x.image?.url ?? '', (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']);
         if (sig(mine.embeds[0]) !== sig(embed)) {
           await call('PATCH', `/channels/${where}/messages/${id}`, { embeds: [embed] });
           log(`  "${m.title}" edited`);
         }
       }
       if (m.pin && !(mine?.pinned)) await call('PUT', `/channels/${where}/pins/${id}`);
+    });
+  }
+
+  // 書 Posts in a forum: one thread each, found by its title among the forum's threads,
+  // live or archived, and its first message edited in place when server.json changes.
+  // Made last-to-first, so a forum sorted newest-first reads in server.json's order.
+  const posts = (SPEC.posts ?? []).filter((p) => channelId[p.forum]);
+  const threads = {};
+  if (posts.length) {
+    await step('forum threads', async () => {
+      const live = (await call('GET', `/guilds/${GUILD}/threads/active`)).threads ?? [];
+      for (const f of new Set(posts.map((p) => channelId[p.forum]))) {
+        const old = (await call('GET', `/channels/${f}/threads/archived/public`)).threads ?? [];
+        threads[f] = [...live.filter((t) => t.parent_id === f), ...old];
+      }
+    });
+  }
+  for (const p of [...posts].reverse()) {
+    const forum = channelId[p.forum];
+    const embed = embedOf(p);
+    const spec = SPEC.categories.flatMap((c) => c.channels).find((c) => c.key === p.forum);
+    const forumNow = channels.find((c) => c.id === forum);
+    const tagId = p.tag ? (forumNow?.available_tags ?? []).find((t) => t.name === p.tag)?.id : undefined;
+    await step(`post "${p.title}"`, async () => {
+      let thread = (threads[forum] ?? []).find((t) => t.name === p.title);
+      if (!thread) {
+        thread = await call('POST', `/channels/${forum}/threads`, {
+          name: p.title, auto_archive_duration: 10080, applied_tags: tagId ? [tagId] : [], message: { embeds: [embed] },
+        });
+        log(`  "${p.title}" posted in #${spec?.name ?? p.forum}`);
+      } else {
+        const first = await call('GET', `/channels/${thread.id}/messages/${thread.id}`);
+        if (sig(first.embeds?.[0] ?? {}) !== sig(embed)) {
+          // An archived thread cannot be written in until it is woken.
+          if (thread.thread_metadata?.archived) await call('PATCH', `/channels/${thread.id}`, { archived: false });
+          await call('PATCH', `/channels/${thread.id}/messages/${thread.id}`, { embeds: [embed] });
+          log(`  "${p.title}" edited`);
+        }
+      }
+      // 釘 One post a forum may pin, which Discord keeps at the top whatever the sort.
+      if (p.pin && !((thread.flags ?? 0) & 2)) {
+        await call('PATCH', `/channels/${thread.id}`, { flags: (thread.flags ?? 0) | 2 });
+        log(`  "${p.title}" pinned`);
+      }
     });
   }
 
