@@ -226,7 +226,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android app", "Open the game in Chrome, tap ⋮ then *Install app* (or *Add to Home screen*). It is the same game as the APK, with its own icon, full screen, and it updates itself. Prefer a file? [The APK](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk), opened in Chrome itself. If it stops at 100%, take [the same APK in a zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open the zip in your Files app and tap *ninefold.apk* inside."],
+        ["▸ Android app", "Two ways, with pictures, in {#guides} → *裝 Installing on Android*.\n**1 · From Chrome** (recommended): open the game, tap ⋮ → *Install app*.\n**2 · The APK**: download [the zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in Files, tap *ninefold.apk*. A test build, not from Google Play, so Android asks you to allow the source once."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
       ],
       "footer": "九境 Ninefold · closed test"
@@ -290,7 +290,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
-        ["▸ Android", "Open the game in Chrome, tap ⋮ then *Install app* (or *Add to Home screen*). It is the same game as the APK, with its own icon, full screen, and it updates itself. Prefer a file? [The APK](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk), opened in Chrome itself. If it stops at 100%, take [the same APK in a zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open the zip in your Files app and tap *ninefold.apk* inside."],
+        ["▸ Android", "Two ways, with pictures, in {#guides} → *裝 Installing on Android*.\n**1 · From Chrome** (recommended): open the game, tap ⋮ → *Install app*.\n**2 · The APK**: download [the zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in Files, tap *ninefold.apk*. A test build, not from Google Play, so Android asks you to allow the source once."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."],
         ["▸ New here?", "{#guides} has a post for every system. Start with the pinned one."],
         ["▸ Found something?", "Bugs in {#bugs}, ideas in {#ideas}. The ≡ menu in the game has *Report a bug*."]
@@ -360,8 +360,44 @@
       "fields": [
         ["▸ The guide in the game walks you through this", "1. Spend the qi your master left you on an upgrade.\n2. Win your first fight: the rat.\n3. Spend the 材 material it drops on 妖丹 Beast Cores.\n4. Kill the same beast ten times, for its 熟 Known mark.\n5. Fill the ninth layer, beat the realm's warden, and break through."],
         ["▸ The characters", "Open ≡ Menu → *What the characters mean*. Any character with a dotted line under it says its name when you tap it."],
-        ["▸ Every other guide", "Fourteen posts in this forum, one per system,, in the order the game opens them. Ask your questions inside the post they are about."],
+        ["▸ Every other guide", "One post on installing, then one per system in the order the game opens them. Ask your questions inside the post they are about."],
         ["▸ Found a problem?", "≡ Menu → *Report a bug*, or open a post in {#bugs}."]
+      ],
+      "footer": "九境 Ninefold · closed test"
+    },
+    {
+      "key": "g-install",
+      "forum": "guides",
+      "tag": "Start",
+      "title": "裝 Installing on Android: two ways",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-install.webp?v=1",
+      "body": [
+        "**Two ways to put Ninefold on an Android phone.** Both are the same game. Pick one and stay with it, because each keeps its own save.",
+        "",
+        "**Way 1 · Install it from Chrome** (recommended)",
+        "1. Open **https://hyoddougamer-dev.github.io/ninefold/** in **Chrome**. If Discord opened it in its own browser, tap ⋮ → *Open in Chrome*.",
+        "2. Tap ⋮ at the top right → **Install app**. On some phones it reads *Add to Home screen*.",
+        "3. Tap **Install**. Ninefold appears on your home screen, opens full screen and updates itself.",
+        "",
+        "**Way 2 · The APK, in a zip**",
+        "1. In Chrome, download **[ninefold-android.zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip)** (17 MB).",
+        "2. Tap **Open** when it finishes, or find it in Files → Downloads. Tap **ninefold.apk** inside.",
+        "3. Android asks once: tap **Settings**, turn on **Allow from this source**, go back.",
+        "4. Tap **Install**, then **Open**.",
+        "",
+        "The bare [ninefold.apk](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk) is there too, but on some phones Chrome holds an .apk at 100% and never lets it finish. The zip carries the same file and gets past that."
+      ],
+      "fields": [
+        ["ⓘ Is the APK safe?", "It is our own test build, and the game inside it is the same web game as Way 1. It is not on Google Play, so Android calls it an *unknown app* and asks you to allow the source: that is expected for a test build. You can turn *Allow from this source* off again once it is installed. Only ever take a Ninefold APK from the links in this server."],
+        ["ⓘ Which one should I pick?", "Way 1, unless you want a file. It needs no permission, updates itself, and lets you sign in with email so your save follows you to other devices. The APK plays as a guest, and its save lives in that app on that phone."],
+        ["ⓘ Android refuses to install the APK", "Since September 2026, Android in Brazil, Indonesia, Singapore and Thailand can refuse apps from developers not yet registered with Google, and this test build is not registered yet. Use Way 1: it installs no APK of ours, so it is not affected."],
+        ["ⓘ Still stuck?", "Post in {#bugs} with your phone model, your Android version and a screenshot of where it stops."],
+        ["▸ iPhone", "Open the game in Safari → Share → *Add to Home Screen*. Same game, same promises."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/install/app-en.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/install/apk-en.webp?v=1"
       ],
       "footer": "九境 Ninefold · closed test"
     },
@@ -611,7 +647,7 @@
         "",
         "**Is there anything to buy?** No. There is no shop and no ads in the test.",
         "",
-        "**The APK download stops at 100% on my phone.** Install the game from Chrome instead: open the game, tap ⋮ then *Install app* (or *Add to Home screen*). It is the same game with its own icon, and it keeps your email sign-in, which the APK cannot. Or take [the same APK in a zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip): Chrome does not hold a zip back. Open it in your Files app, tap *ninefold.apk* inside, and allow Files to install apps when Android asks.",
+        "**The APK download stops at 100% on my phone.** Take the same APK in a zip, or install the game from Chrome with no file at all. Both ways, step by step with pictures: *裝 Installing on Android* in {#guides}.",
         "",
         "**Can I play on my phone and my PC?** Yes. Sign in with your email in the browser on both. The Android app plays as a guest.",
         "",
