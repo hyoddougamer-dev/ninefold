@@ -29,18 +29,20 @@ export const BANNERS = [
   { key: 'welcome', seal: '入', over: '九境 Ninefold', title: 'Welcome, Cultivator', sub: 'An idle cultivation game, painted in ink', bg: 'realm/1', fig: 'self/woman-1' },
   { key: 'launch', seal: '告', over: '告 Announcement', title: 'The First Closed Test', sub: 'Nine realms, and nothing taken for being away', bg: 'realm/9', fig: 'cut/heaven-1' },
   { key: 'devlog-1', seal: '筆', over: '筆 Dev log · 01', title: 'A Face, a Finish and Music', sub: 'Before the first testers arrive', bg: 'realm/5', fig: 'self/man-5' },
-  { key: 'g-start', seal: '入', over: '書 Guide · 01 of 12', title: 'Start Here', sub: 'Your first hour, and the three promises', bg: 'realm/1', fig: 'self/man-1' },
-  { key: 'g-qi', seal: '氣', over: '書 Guide · 02 of 12', title: 'Qi and the Nine Realms', sub: 'Layers, sitting, and breaking through', bg: 'realm/2', fig: 'self/woman-2' },
-  { key: 'g-hunt', seal: '狩', over: '書 Guide · 03 of 12', title: 'The Hunt', sub: 'Beasts, the Record and Beast Cores', bg: 'realm/3', fig: 'cut/tiger' },
-  { key: 'g-gear', seal: '器', over: '書 Guide · 04 of 12', title: 'Gear', sub: 'Ranks, sets, classes and refining', bg: 'realm/4', fig: 'self/woman-4' },
-  { key: 'g-path', seal: '道', over: '書 Guide · 05 of 12', title: 'The Path', sub: 'Nodes, keystones, stances and arts', bg: 'realm/6', fig: 'self/man-6' },
-  { key: 'g-cave', seal: '秘', over: '書 Guide · 06 of 12', title: 'The Cave and the Vault', sub: 'What grows while you are away, and seven rooms', bg: 'realm/5', fig: 'cut/jiao' },
-  { key: 'g-tower', seal: '塔', over: '書 Guide · 07 of 12', title: 'Seclusion and the Tower', sub: 'The heart demon, the endless floors, the Bestiary', bg: 'realm/7', fig: 'cut/wraith' },
-  { key: 'g-trib', seal: '劫', over: '書 Guide · 08 of 12', title: 'The Tribulation', sub: 'The Dragon, the Furnace and the nine Heavens', bg: 'heaven/9', fig: 'cut/dragon' },
-  { key: 'g-week', seal: '期', over: '書 Guide · 09 of 12', title: 'The Week and the Road', sub: 'What turns every Monday, and who you meet', bg: 'realm/8', fig: 'cut/crane' },
-  { key: 'g-ranks', seal: '榜', over: '書 Guide · 10 of 12', title: 'Rankings', sub: 'Three boards, your save, every device', bg: 'heaven/1', fig: 'self/woman-9' },
-  { key: 'g-faq', seal: '問', over: '書 Guide · 11 of 12', title: 'Questions', sub: 'What testers ask first', bg: 'realm/2', fig: 'cut/fox' },
-  { key: 'g-opens', seal: '開', over: '書 Guide · 12 of 12', title: 'What Each Realm Opens', sub: 'Nine realms, and nothing ever reset', bg: 'heaven/5', fig: 'cut/unicorn' },
+  { key: 'g-start', seal: '入', over: '書 Guide · 01 of 14', title: 'Start Here', sub: 'Your first hour, and the three promises', bg: 'realm/1', fig: 'self/man-1' },
+  { key: 'g-qi', seal: '氣', over: '書 Guide · 02 of 14', title: 'Qi and the Nine Realms', sub: 'Layers, sitting, and breaking through', bg: 'realm/2', fig: 'self/woman-2' },
+  { key: 'g-hunt', seal: '狩', over: '書 Guide · 03 of 14', title: 'The Hunt', sub: 'Beasts, the Record and Beast Cores', bg: 'realm/3', fig: 'cut/tiger' },
+  { key: 'g-gear', seal: '器', over: '書 Guide · 04 of 14', title: 'Gear', sub: 'Ranks, sets, classes and refining', bg: 'realm/4', fig: 'self/woman-4' },
+  { key: 'g-classes', seal: '職', over: '書 Guide · 05 of 14', title: 'Classes', sub: 'What you wear is who you become', bg: 'realm/4', fig: 'self/man-7' },
+  { key: 'g-pairs', seal: '合', over: '書 Guide · 06 of 14', title: 'The Fifteen Classes', sub: 'Two schools awake, one name, one perk', bg: 'realm/6', fig: 'self/woman-7' },
+  { key: 'g-path', seal: '道', over: '書 Guide · 07 of 14', title: 'The Path', sub: 'Nodes, keystones, stances and arts', bg: 'realm/6', fig: 'self/man-6' },
+  { key: 'g-cave', seal: '秘', over: '書 Guide · 08 of 14', title: 'The Cave and the Vault', sub: 'What grows while you are away, and seven rooms', bg: 'realm/5', fig: 'cut/jiao' },
+  { key: 'g-tower', seal: '塔', over: '書 Guide · 09 of 14', title: 'Seclusion and the Tower', sub: 'The heart demon, the endless floors, the Bestiary', bg: 'realm/7', fig: 'cut/wraith' },
+  { key: 'g-trib', seal: '劫', over: '書 Guide · 10 of 14', title: 'The Tribulation', sub: 'The Dragon, the Furnace and the nine Heavens', bg: 'heaven/9', fig: 'cut/dragon' },
+  { key: 'g-week', seal: '期', over: '書 Guide · 11 of 14', title: 'The Week and the Road', sub: 'What turns every Monday, and who you meet', bg: 'realm/8', fig: 'cut/crane' },
+  { key: 'g-ranks', seal: '榜', over: '書 Guide · 12 of 14', title: 'Rankings', sub: 'Three boards, your save, every device', bg: 'heaven/1', fig: 'self/woman-9' },
+  { key: 'g-faq', seal: '問', over: '書 Guide · 13 of 14', title: 'Questions', sub: 'What testers ask first', bg: 'realm/2', fig: 'cut/fox' },
+  { key: 'g-opens', seal: '開', over: '書 Guide · 14 of 14', title: 'What Each Realm Opens', sub: 'Nine realms, and nothing ever reset', bg: 'heaven/5', fig: 'cut/unicorn' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
@@ -48,8 +50,8 @@ const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time'
   binary ? {} : { encoding: 'utf8' });
 
 /** Google's CSS, with every font file pulled down and set inline, latin only. */
-function fonts() {
-  const han = [...new Set(BANNERS.flatMap((b) => [...b.seal, ...b.over]).filter((c) => /\p{Script=Han}/u.test(c)))].join('');
+export function fonts(extra = '') {
+  const han = [...new Set([...BANNERS.flatMap((b) => [...b.seal, ...b.over]), ...extra].filter((c) => /\p{Script=Han}/u.test(c)))].join('');
   const css = [
     curl('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@1,600&display=swap'),
     curl(`https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600&text=${encodeURIComponent(han)}`),
@@ -58,7 +60,7 @@ function fonts() {
     .replace(/url\((https:[^)]+)\)/g, (_, u) => `url(data:font/woff2;base64,${curl(u, true).toString('base64')})`);
 }
 
-const data = (file) => `data:image/webp;base64,${readFileSync(file).toString('base64')}`;
+export const data = (file) => `data:image/webp;base64,${readFileSync(file).toString('base64')}`;
 const G = 'rgba(212, 175, 86, .8)';
 const bracket = (x, y) => [
   `linear-gradient(${G}, ${G}) ${x} ${y} / 30px 2px no-repeat`,
