@@ -1,19 +1,26 @@
-# 標 Logo candidates
+# 標 The logo
 
-Three directions for the icon, drawn on 2026-09-27 for the first closed test, and the
-wordmark. Nothing here is in the game yet: Bruno chooses, then the chosen one becomes the
-app icon, the splash, the manifest and the testers' page.
+Chosen by Bruno on 2026-09-28: a gold brush ensō, left open, with the seated cultivator
+inside, painted on a warm dark ground. The two pictures he sent are the sources, and
+everything the game ships is made from them by one script:
 
-- `logo-a-seal.svg`: 印 a cinnabar seal with 九境 cut out of it.
-- `logo-b-enso.svg`: 圓相 a gold brush ensō, left open, with 九 inside. The recommended one:
-  it reads best at 24 px.
-- `logo-c-figure.svg`: 修 the game's own seated cultivator inside the ensō.
-- `wordmark.svg`: 九境 NINEFOLD, for the testers' page, a store listing and videos.
+    node tools/brand.mjs
 
-The characters are Noto Serif SC (the game's own face, SIL Open Font License) converted to
-outlines, so the files look the same on any device with no font installed. The side-by-side
-page with every size and a phone home screen: https://claude.ai/artifact/GcY2ALokEBLMXteyUdvDZo
+- `source/icon.webp`: the icon, 1254px square.
+- `source/wordmark.webp`: the icon beside NINEFOLD and "An idle cultivation game".
+- `mark.png`: the icon lifted off its ground (transparent), for anything laid on a colour.
+- `icon-512.png`: the server icon for Discord (`discord.yml`, the icon input).
 
-The current `public/icon-*.png` (a white figure on magenta and navy) predates the game's
-ink-and-paper look, and the Capacitor splash is navy `#080A18` where the game is `#14110D`.
-Both go when a logo is chosen.
+What the script writes, and who reads it:
+
+- `public/icon-192.png`, `icon-512.png`: the web app's icons, and its maskable icon (the
+  ring is two thirds of the square, inside the circle a mask keeps).
+- `public/apple-touch-icon.png`: an iPhone's home screen.
+- `public/favicon.png`: a browser tab. The ring alone, since the figure is a smudge at 16px.
+- `public/brand/wordmark.webp`: the testers' page, lifted off its ground.
+- `assets/`: the Android launcher icon (adaptive, in layers) and the splash, which
+  `.github/workflows/apk.yml` hands to `@capacitor/assets`. Before this the APK wore
+  Capacitor's placeholder icon.
+
+The earlier candidates (`logo-a-seal.svg`, `logo-b-enso.svg`, `logo-c-figure.svg`,
+`wordmark.svg`) are kept as the record of what was considered.

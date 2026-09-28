@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [capacitor.config.json, android-test/**, public/icon-*.png, .github/workflows/apk.yml]
+    paths: [capacitor.config.json, android-test/**, assets/**, public/icon-*.png, .github/workflows/apk.yml]
 
 permissions:
   contents: write
@@ -42,6 +42,19 @@ jobs:
           npm i --no-save @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
           npx cap add android
           npx cap sync android
+
+      # 標 The launcher icon and the splash, from assets/ (made by tools/brand.mjs). Without
+      # this the APK wore Capacitor's own placeholder icon, which it did until 2026-09-28.
+      # Android 12 and later draw their own splash from the icon on a plain colour, which
+      # is white unless the launch theme names one: it names the game's ground.
+      - name: Paint the icon and the splash
+        run: |
+          npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#14110D' --splashBackgroundColor '#14110D'
+          STYLES=android/app/src/main/res/values/styles.xml
+          grep -q windowSplashScreenBackground "$STYLES" || sed -i \
+            's|<item name="android:background">@drawable/splash</item>|&\n        <item name="windowSplashScreenBackground">#14110D</item>|' "$STYLES"
+          grep -q 'windowSplashScreenBackground">#14110D' "$STYLES"
+          test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
 
       # The shell has no game inside it: it opens the URL in capacitor.config.json. If
       # that page is not live the APK installs and shows nothing, which is a confusing
