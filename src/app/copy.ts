@@ -358,6 +358,12 @@ export const CULTIVATE = {
  * them says in English what it is, which is the rule the rest of the game already
  * follows and the one place that had escaped it.
  */
+/** 門 The head of the PC rail: the logo, and the line under it. */
+export const BRAND = {
+  name: 'Ninefold',
+  line: 'An idle cultivation game',
+};
+
 export const MENU = {
   label: 'Menu',
   save: 'Your save',

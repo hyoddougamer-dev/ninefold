@@ -86,8 +86,14 @@ export function Coach({ at }: { at: string | null }) {
   // above a row lands on the name of the row above it: pointing at 狩 Hunt, it sat on
   // the word CULTIVATE. A short target at the left edge of a wide screen is pointed at
   // from its right instead, where the rail has nothing in it.
-  const side = window.innerWidth >= 1100 && box.height < 70 && box.right < window.innerWidth * 0.3;
-  const y = side ? box.top + box.height / 2 : above ? box.top - 10 : box.bottom + 10;
+  const pc = window.innerWidth >= 1100;
+  const rail = pc && box.height < 70 && box.right < window.innerWidth * 0.3;
+  // 塢 And a target in the dock down the right is pointed at from its left, out of the
+  // stage. Above it, the arrow stood on the sentence explaining the fight: the dock is
+  // too narrow for the right-hand end of a button to be clear of the line over it.
+  const dock = pc && box.left > window.innerWidth * 0.6;
+  const side = rail ? 'right' : dock ? 'left' : 'none';
+  const y = side !== 'none' ? box.top + box.height / 2 : above ? box.top - 10 : box.bottom + 10;
 
   // 避 And across, away from the words.
   //
@@ -97,7 +103,7 @@ export function Coach({ at }: { at: string | null }) {
   // line, so the right-hand end of a wide target is reliably empty. Narrow targets keep
   // the centre, where there is nothing to miss.
   const wide = box.width > window.innerWidth * 0.55;
-  const x = side ? box.right + 12 : wide ? box.right - 26 : box.left + box.width / 2;
+  const x = rail ? box.right + 12 : dock ? box.left - 12 : wide ? box.right - 26 : box.left + box.width / 2;
 
   return (
     <div className="coach" aria-hidden="true">

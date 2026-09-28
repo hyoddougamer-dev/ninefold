@@ -58,7 +58,7 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
-import { BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
+import { BRAND, BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
 
 /** 版 Filled in by the build (vite.config.ts). */
 declare const __BUILD__: string;
@@ -782,6 +782,14 @@ export function App() {
       {menu && <div className="scrim" onClick={() => setMenu(false)} />}
 
       <nav className="tabs">
+        {/* 門 The logo at the head of the PC rail, as Bruno chose it: the ensō and the
+            lettering from the same painting. Hidden on a phone, where the rail is the
+            bar along the bottom and the home screen already wears the icon. */}
+        <div className="railbrand" aria-label={BRAND.name}>
+          <img className="mark" src="./brand/mark.webp" width="240" height="249" alt="" />
+          <img className="name" src="./brand/name.webp" width="640" height="100" alt={BRAND.name} />
+          <span><b className="cjk">九境</b> {BRAND.line}</span>
+        </div>
         {TABS.map((t) => {
           const shut = t.needs !== null && !isOpen(state.realm, t.needs);
           // 點 An unspent 道 point is money on the floor, and the screen it is spent on
@@ -807,6 +815,9 @@ export function App() {
                 {owed > 0 && <i className="owed" title={DAO.freePoints(owed)}>{owed}</i>}
               </span>
               <span className="l">{shut ? TABS_COPY.opensAt(systemInfo(t.needs!).realm) : t.label}</span>
+              {/* 名 On the PC rail there is room for the name as well as the realm that
+                  opens it, and three rows reading REALM 5, REALM 2, REALM 2 said nothing. */}
+              {shut && <span className="ln">{t.label}</span>}
             </button>
           );
         })}

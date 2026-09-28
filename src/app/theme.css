@@ -1615,7 +1615,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                 animation: coachNudge 1.7s ease-in-out infinite; }
 .coach .point[data-above="true"]  { transform: translateY(-100%); }
 .coach .point[data-above="false"] { transform: rotate(180deg); }
-.coach .point[data-side="true"]   { margin-left: 0; transform: translateY(-50%) rotate(90deg); }
+.coach .point[data-side="right"]  { margin-left: 0; transform: translateY(-50%) rotate(90deg); }
+.coach .point[data-side="left"]   { margin-left: 0; transform: translate(-100%, -50%) rotate(-90deg); }
 .coach .point svg { display: block; }
 @keyframes coachNudge {
   0%, 100% { opacity: 1; }
@@ -2646,6 +2647,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    Nothing below 1100px changes. */
 
 .backdrop { display: none; }
+.railbrand, nav.tabs .ln { display: none; }
 .c-hero, .c-side, .g-hero, .g-side { display: contents; }
 
 @media (min-width: 1100px) {
@@ -2671,13 +2673,28 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .app > nav.tabs { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 4px;
                     border-top: 0; border-right: 1px solid var(--line); padding: 30px 14px 90px;
                     background: rgba(20, 17, 13, .86); backdrop-filter: blur(6px); }
-  .app > nav.tabs::before { content: '九境\A NINEFOLD'; white-space: pre; display: block;
-                            padding: 0 12px 28px; font: 400 34px/1.12 'Noto Serif SC', serif;
-                            color: var(--jade); letter-spacing: .02em; }
+  /* 標 The logo, stacked: the ensō, the lettering, and a line in the logo's own green. */
+  .railbrand { display: flex; flex-direction: column; align-items: center; gap: 12px;
+               padding: 4px 6px 26px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .railbrand .mark { width: 104px; height: auto; filter: drop-shadow(0 0 18px rgba(212, 175, 86, .18)); }
+  .railbrand .name { width: 176px; height: auto; }
+  .railbrand span { font: 500 10px/1.3 Rajdhani, sans-serif; letter-spacing: .13em; text-transform: uppercase; white-space: nowrap;
+                    color: #86A98F; text-align: center; }
+  .railbrand span b { font: 400 12px 'Noto Serif SC', serif; letter-spacing: .1em; color: var(--gold); margin-right: 4px; }
+  /* A laptop 700px tall still fits the whole rail, Menu included. */
+  @media (max-height: 760px) { .railbrand { gap: 8px; padding-bottom: 16px; } .railbrand .mark { width: 68px; } .railbrand .name { width: 150px; } }
   .app > nav.tabs button { flex-direction: row; justify-content: flex-start; gap: 14px;
                            padding: 12px 14px; border-radius: 10px; text-align: left; position: relative; }
-  .app > nav.tabs button[data-on='true'] { background: rgba(127, 180, 149, .1);
-                                           box-shadow: inset 3px 0 0 var(--jade); }
+  /* The shell wears the logo's gold; the game inside keeps jade for qi. */
+  .app > nav.tabs button[data-on='true'] { background: linear-gradient(90deg, rgba(212, 175, 86, .14), rgba(212, 175, 86, .03));
+                                           box-shadow: inset 3px 0 0 var(--gold); }
+  .app > nav.tabs button[data-on='true'] .g, .app > nav.tabs button[data-on='true'] .l { color: var(--gold); }
+  /* 鎖 A shut tab names itself, dimmed, and says under it which realm opens it. */
+  .app > nav.tabs button[data-shut='true'] { flex-wrap: wrap; row-gap: 0; }
+  .app > nav.tabs button[data-shut='true'] .ln { display: block; order: 1; font-size: 12.5px; letter-spacing: .14em;
+                                                 text-transform: uppercase; color: var(--faint); }
+  .app > nav.tabs button[data-shut='true'] .l { order: 2; flex-basis: 100%; padding-left: 36px; margin-top: -1px;
+                                                font-size: 10px; letter-spacing: .12em; opacity: .5; }
   .app > nav.tabs button:hover:not([data-on='true']) { background: rgba(237, 227, 210, .04); }
   .app > nav.tabs .g { font-size: 22px; position: static; }
   .app > nav.tabs .l { font-size: 12.5px; letter-spacing: .14em; }

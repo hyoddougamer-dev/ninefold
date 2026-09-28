@@ -61,6 +61,12 @@ await sharp(mark).png().toFile('docs/brand/mark.png');
 // 名 The wordmark, trimmed to its painting, for the testers' page and anywhere else.
 await sharp(await lifted(WORDMARK, WORD_PAPER)).extract({ left: 140, top: 225, width: 1420, height: 460 }).resize(1136).webp({ quality: 88 }).toFile('public/brand/wordmark.webp');
 
+// 門 The PC rail's head: the ensō on its own and the lettering on its own, both lifted,
+// so the rail can stack them in a column the wordmark's own row would not fit.
+await sharp(mark).extract(RING).resize(240).webp({ quality: 90 }).toFile('public/brand/mark.webp');
+await sharp(await lifted(WORDMARK, WORD_PAPER)).extract({ left: 585, top: 355, width: 960, height: 150 })
+  .resize(640).webp({ quality: 90 }).toFile('public/brand/name.webp');
+
 // 機 Android, for @capacitor/assets in .github/workflows/apk.yml. It insets each adaptive
 // layer by a sixth, so these squares are exactly what the launcher shows before cutting it
 // to a circle or a squircle: the ring stands at two thirds, as it does in the web icon.
