@@ -166,8 +166,11 @@ figures, a gold seal, the logo's lettering, the cards' frame): a new post is a l
 `BANNERS` and a `banner` in server.json. **Bruno's real name never appears in anything
 members read.** He signs 師 Shibaki, the name his community knows.
 Android has two ways in, both in the 裝 install guide (`g-install`) and on `/testar/`: the game
-installed from Chrome, and the APK, served beside the game both bare and in a stored zip
-(some phones' Chrome holds an .apk at 100% for ever; a zip gets past it). The step pictures
+installed from Chrome, and the APK in a stored zip (some phones' Chrome holds a bare .apk
+at 100% for ever; a zip gets past it). The bare APK is still served, so an old link is not a
+dead end, but nothing links to it any more. The guide is pinned in 書-guides and tagged
+Install; a known-issue post is pinned in 報-bugs; a forum pins one post, and the script
+moves a pin by taking it off the old post first. The step pictures
 come from `tools/install-art.mjs`, and the Pages deploy fetches the APK and the zip from the
 live site and fails unless they are the same bytes.
 

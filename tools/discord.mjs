@@ -457,31 +457,59 @@ async function run() {
       }
     });
   }
+  // An archived thread cannot be written in, tagged or pinned until it is woken.
+  const wake = async (thread) => {
+    if (!thread.thread_metadata?.archived) return;
+    await call('PATCH', `/channels/${thread.id}`, { archived: false });
+    thread.thread_metadata.archived = false;
+  };
+  // 釘 A forum pins one post, so a pin that moves is taken off the old post first. Only
+  // posts this file names are ever unpinned; a post pinned by hand is left where it is.
+  for (const p of posts.filter((x) => !x.pin)) {
+    const thread = (threads[channelId[p.forum]] ?? []).find((t) => t.name === p.title);
+    if (!thread || !((thread.flags ?? 0) & 2)) continue;
+    await step(`unpin "${p.title}"`, async () => {
+      await wake(thread);
+      await call('PATCH', `/channels/${thread.id}`, { flags: thread.flags & ~2 });
+      thread.flags &= ~2;
+      log(`  "${p.title}" unpinned`);
+    });
+  }
   for (const p of [...posts].reverse()) {
     const forum = channelId[p.forum];
     const embeds = embedsOf(p);
     const spec = SPEC.categories.flatMap((c) => c.channels).find((c) => c.key === p.forum);
     const forumNow = channels.find((c) => c.id === forum);
-    const tagId = p.tag ? (forumNow?.available_tags ?? []).find((t) => t.name === p.tag)?.id : undefined;
+    // 籤 A post wears every tag it names (up to Discord's five), found by name in the forum.
+    const tagIds = (p.tags ?? (p.tag ? [p.tag] : []))
+      .map((n) => (forumNow?.available_tags ?? []).find((t) => t.name === n)?.id).filter(Boolean).slice(0, 5);
     await step(`post "${p.title}"`, async () => {
       let thread = (threads[forum] ?? []).find((t) => t.name === p.title);
       if (!thread) {
         thread = await call('POST', `/channels/${forum}/threads`, {
-          name: p.title, auto_archive_duration: 10080, applied_tags: tagId ? [tagId] : [], message: { embeds },
+          name: p.title, auto_archive_duration: 10080, applied_tags: tagIds, message: { embeds },
         });
         log(`  "${p.title}" posted in #${spec?.name ?? p.forum}`);
       } else {
         const first = await call('GET', `/channels/${thread.id}/messages/${thread.id}`);
         if (sig(first.embeds) !== sig(embeds)) {
-          // An archived thread cannot be written in until it is woken.
-          if (thread.thread_metadata?.archived) await call('PATCH', `/channels/${thread.id}`, { archived: false });
+          await wake(thread);
           await call('PATCH', `/channels/${thread.id}/messages/${thread.id}`, { embeds });
           log(`  "${p.title}" edited`);
+        }
+        const same = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+        if (tagIds.length && !same(thread.applied_tags ?? [], tagIds)) {
+          await wake(thread);
+          await call('PATCH', `/channels/${thread.id}`, { applied_tags: tagIds });
+          thread.applied_tags = tagIds;
+          log(`  "${p.title}" tagged ${(p.tags ?? [p.tag]).join(', ')}`);
         }
       }
       // 釘 One post a forum may pin, which Discord keeps at the top whatever the sort.
       if (p.pin && !((thread.flags ?? 0) & 2)) {
+        await wake(thread);
         await call('PATCH', `/channels/${thread.id}`, { flags: (thread.flags ?? 0) | 2 });
+        thread.flags = (thread.flags ?? 0) | 2;
         log(`  "${p.title}" pinned`);
       }
     });

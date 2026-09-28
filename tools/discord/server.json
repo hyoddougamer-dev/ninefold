@@ -68,6 +68,7 @@
           "guide": true,
           "topic": "書 How every system in Ninefold works, one post each. Questions go in the post they are about.",
           "tags": [
+            ["Install", "📲"],
             ["Start", "🧭"],
             ["Systems", "⚙️"],
             ["Endgame", "⛈️"],
@@ -316,6 +317,25 @@
       ]
     },
     {
+      "key": "android-fix",
+      "channel": "news",
+      "pin": true,
+      "title": "📲 Android: two ways in, both working",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-install.webp?v=1",
+      "body": [
+        "Some of you saw the Android download stop at 100%. The file was fine: Chrome on some phones holds an .apk back and never lets it finish. It is fixed, and there are now two ways in.",
+        "",
+        "**1 · Install it from Chrome** (recommended). Open the game in Chrome, tap ⋮ → *Install app*. Same game, full screen, its own icon, and it updates itself.",
+        "**2 · The APK, in a zip.** Download [ninefold-android.zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in your Files app, tap *ninefold.apk*. Android asks once to allow the source: that is expected for a test build.",
+        "",
+        "Pictures for every step: *裝 Installing on Android*, pinned at the top of {#guides}. The old APK link is retired; please don't share it.",
+        "",
+        "Thank you to the tester who reported this in the first hour. That is exactly what this test is for."
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
       "key": "devlog-1",
       "pin": false,
       "channel": "devlog",
@@ -344,7 +364,6 @@
       "key": "g-start",
       "forum": "guides",
       "tag": "Start",
-      "pin": true,
       "title": "入門 Start here: your first hour",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-start.webp?v=2",
@@ -368,7 +387,8 @@
     {
       "key": "g-install",
       "forum": "guides",
-      "tag": "Start",
+      "tags": ["Install", "Start"],
+      "pin": true,
       "title": "裝 Installing on Android: two ways",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-install.webp?v=1",
@@ -386,7 +406,7 @@
         "3. Android asks once: tap **Settings**, turn on **Allow from this source**, go back.",
         "4. Tap **Install**, then **Open**.",
         "",
-        "The bare [ninefold.apk](https://hyoddougamer-dev.github.io/ninefold/ninefold.apk) is there too, but on some phones Chrome holds an .apk at 100% and never lets it finish. The zip carries the same file and gets past that."
+        "Installed? Your first hour is in *入門 Start here*, right below."
       ],
       "fields": [
         ["ⓘ Is the APK safe?", "It is our own test build, and the game inside it is the same web game as Way 1. It is not on Google Play, so Android calls it an *unknown app* and asks you to allow the source: that is expected for a test build. You can turn *Allow from this source* off again once it is installed. Only ever take a Ninefold APK from the links in this server."],
@@ -679,6 +699,30 @@
         ["▸ 大乘 Realm 8", "The last climb before the storm"],
         ["▸ 渡劫 Realm 9", "爐 The Furnace · 雷池 The Tribulation, and the Heavens above it"]
       ]
+    },
+    {
+      "key": "known-android",
+      "forum": "bugs",
+      "tags": ["Bug", "Fixed"],
+      "pin": true,
+      "title": "📲 Known issue: the Android APK stops at 100% (fixed)",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-install.webp?v=1",
+      "body": [
+        "**Fixed on 28 September.** On some phones the APK downloaded to 17.37 of 17.37 MB and never finished, in Chrome, in Discord and in the Google app. The file itself was whole: those phones' Chrome holds an .apk back.",
+        "",
+        "**What to do now**",
+        "· **Easiest:** open the game in Chrome, tap ⋮ → *Install app*. No file at all, and it updates itself.",
+        "· **Want the APK?** Download [ninefold-android.zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in your Files app and tap *ninefold.apk* inside.",
+        "",
+        "Both ways, step by step with pictures: *裝 Installing on Android*, pinned at the top of {#guides}.",
+        "",
+        "The old APK link is no longer given anywhere. If you saved it, use the zip instead."
+      ],
+      "fields": [
+        ["Still stuck?", "Open a post here with your phone model, your Android version and a screenshot of where it stops. We read every one."]
+      ],
+      "footer": "九境 Ninefold · closed test"
     }
   ]
 }

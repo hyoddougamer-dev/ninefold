@@ -104,6 +104,12 @@ function fakeDiscord({ admin = true } = {}) {
       if ((m = path.match(/^\/channels\/(\d+)$/)) && req.method === 'PATCH' && state.threads.some((t) => t.id === m[1])) {
         const t = state.threads.find((x) => x.id === m[1]);
         if (body.archived !== undefined) t.thread_metadata.archived = body.archived;
+        else if (t.thread_metadata.archived) return refuse(400, 'Thread is archived');
+        if (body.applied_tags !== undefined) {
+          const forum = state.channels.find((c) => c.id === t.parent_id);
+          if (body.applied_tags.length > 5 || body.applied_tags.some((x) => !(forum.available_tags ?? []).some((a) => a.id === x))) return refuse(400, 'Invalid tag');
+          t.applied_tags = body.applied_tags;
+        }
         if (body.flags !== undefined) {
           if ((body.flags & 2) && state.threads.some((o) => o !== t && o.parent_id === t.parent_id && (o.flags & 2))) return refuse(400, 'a forum pins one post');
           t.flags = body.flags;
@@ -327,11 +333,20 @@ await scenario({}, async (port, env, state) => {
     "the invite filter catches another server's invite, spares the game's own link, and never the staff");
   const guides = state.channels.find((c) => c.name === '書-guides');
   const posts = state.threads.filter((t) => t.parent_id === guides?.id);
-  check(guides?.type === 15 && posts.length === SPEC.posts.length, `the guides forum holds all ${SPEC.posts.length} posts`);
-  check(posts[posts.length - 1]?.name === SPEC.posts[0].title && posts[0]?.name === SPEC.posts[SPEC.posts.length - 1].title,
+  const guideSpec = SPEC.posts.filter((p) => p.forum === 'guides');
+  check(guides?.type === 15 && posts.length === guideSpec.length, `the guides forum holds all ${guideSpec.length} guides`);
+  check(posts[posts.length - 1]?.name === guideSpec[0].title && posts[0]?.name === guideSpec[guideSpec.length - 1].title,
     'made last to first, so the forum reads top to bottom in server.json order');
-  check(posts.filter((t) => t.flags & 2).length === 1 && posts.find((t) => t.flags & 2).name === SPEC.posts.find((p) => p.pin).title, 'the start-here post is the one pinned');
-  check(posts.every((t) => t.applied_tags.length === 1), 'every post carries its tag');
+  const forumsWith = [...new Set(SPEC.posts.map((p) => p.forum))];
+  check(forumsWith.every((f) => SPEC.posts.filter((p) => p.forum === f && p.pin).length <= 1), 'server.json pins at most one post a forum');
+  check(forumsWith.every((f) => {
+    const at = state.channels.find((c) => c.name === all.find((x) => x.key === f).name);
+    const pinned = state.threads.filter((t) => t.parent_id === at.id && (t.flags & 2)).map((t) => t.name);
+    return JSON.stringify(pinned) === JSON.stringify(SPEC.posts.filter((p) => p.forum === f && p.pin).map((p) => p.title));
+  }), `the pinned posts are the ones server.json pins: ${SPEC.posts.filter((p) => p.pin).map((p) => p.key).join(', ')}`);
+  const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((a) => a.id === x).name).sort(); };
+  check(SPEC.posts.every((p) => JSON.stringify(tagNames(state.threads.find((t) => t.name === p.title))) === JSON.stringify([...(p.tags ?? [p.tag])].sort())),
+    'every post carries exactly the tags server.json gives it');
   const everyoneThere = guides.permission_overwrites.find((o) => o.id === GUILD);
   check(everyoneThere && BigInt(everyoneThere.deny) & SEND && BigInt(everyoneThere.allow) & bit(38),
     'members cannot open a guide post, but can answer inside one');
@@ -351,6 +366,23 @@ await scenario({}, async (port, env, state) => {
   const edited3 = state.messages[state.threads.find((t) => t.name === woke.posts[3].title).id][0];
   check(late.code === 0 && edited3.embeds.find((e) => e.title).description.endsWith('A line added later.') && state.threads.length === SPEC.posts.length,
     'an archived guide is found, woken and edited in place, not posted again');
+  // 釘 The pin moves to another post and a post changes its tags, with everything asleep.
+  state.threads.forEach((t) => { t.thread_metadata.archived = true; });
+  const moved = structuredClone(SPEC);
+  const gp = moved.posts.filter((p) => p.forum === 'guides');
+  const was = gp.find((p) => p.pin), now = gp.find((p) => !p.pin && p !== was);
+  was.pin = false; now.pin = true;
+  const retag = gp.find((p) => p !== was && p !== now);
+  const forumTags = all.find((c) => c.key === 'guides').tags.map(([n]) => n);
+  retag.tags = forumTags.slice(0, 2); delete retag.tag;
+  const movedPath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(movedPath, JSON.stringify(moved));
+  const shift = await runSetup(port, { ...env, DISCORD_SPEC: movedPath });
+  const pinnedNow = state.threads.filter((t) => t.parent_id === guides.id && (t.flags & 2)).map((t) => t.name);
+  check(shift.code === 0 && JSON.stringify(pinnedNow) === JSON.stringify([now.title]),
+    'a pin that moves leaves the old post first, even with every post archived');
+  check(JSON.stringify(tagNames(state.threads.find((t) => t.name === retag.title))) === JSON.stringify([...retag.tags].sort()),
+    "a post's tags follow server.json, archived or not");
   await runSetup(port, env);   // and back to server.json as it is, for what follows
   check(Object.values(state.messages).flat().length - SPEC.posts.length === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
 
