@@ -302,9 +302,14 @@ async function run() {
 
   // 設 Quiet defaults: only mentions notify, join messages in general, no boost nagging.
   if (SPEC.settings) {
-    const want = { default_message_notifications: 1, verification_level: Math.max(1, guild.verification_level ?? 0),
+    // 門 The door: level 2 means a verified email and a Discord account older than five
+    // minutes before anything can be said, which is what stops a raid of fresh accounts
+    // and costs a real tester nothing. Never lowered by this file if raised by hand.
+    const want = { default_message_notifications: 1, verification_level: Math.max(SPEC.settings.verification ?? 1, guild.verification_level ?? 0),
       explicit_content_filter: 2, system_channel_id: channelId[SPEC.settings.system] ?? null, system_channel_flags: (1 << 1) | (1 << 2) };
     if (community() && SPEC.description) want.description = SPEC.description;
+    // 警 Discord's own raid and DM-spam alerts go where the guardians read.
+    if (community() && SPEC.settings.alerts && channelId[SPEC.settings.alerts]) want.safety_alerts_channel_id = channelId[SPEC.settings.alerts];
     const diff = Object.fromEntries(Object.entries(want).filter(([k, v]) => (guild[k] ?? null) !== v));
     if (Object.keys(diff).length) {
       await step('server settings', async () => { guild = await call('PATCH', `/guilds/${GUILD}`, diff); log(`  settings set (${Object.keys(diff).join(', ')})`); });

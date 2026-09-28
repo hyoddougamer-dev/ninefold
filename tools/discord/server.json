@@ -3,7 +3,7 @@
   "name": "九境 Ninefold",
   "description": "An idle cultivation game, painted in ink. Nine realms, nine heavens, and nothing taken away for being away.",
   "community": { "rules": "welcome", "updates": "team" },
-  "settings": { "system": "general" },
+  "settings": { "system": "general", "verification": 2, "alerts": "team" },
   "invite": "welcome",
   "everyone": [
     "INVITE",

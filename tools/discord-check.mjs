@@ -292,6 +292,8 @@ await scenario({}, async (port, env, state) => {
   check(state.roles.length === SPEC.roles.length + 2, 'and every role');
   check(state.members[OWNER].roles.length === 1, 'the owner is given the developer role');
   check(state.guild.name === SPEC.name && state.guild.description === SPEC.description, 'the server is named and described');
+  check(state.guild.verification_level === 2 && state.guild.safety_alerts_channel_id === state.channels.find((c) => c.name.endsWith('team'))?.id,
+    'a fresh Discord account waits five minutes before it can speak, and raid alerts reach the team');
   const inThreads = new Set(state.threads.map((t) => t.id));
   const posted = Object.entries(state.messages).filter(([c]) => !inThreads.has(c)).flatMap(([, list]) => list);
   check(posted.length === SPEC.messages.length && posted.filter((m) => m.pinned).length === SPEC.messages.filter((m) => m.pin).length,
