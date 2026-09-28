@@ -64,6 +64,7 @@ import { BRAND, BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
 declare const __BUILD__: string;
 import { haptics } from './haptics.ts';
 import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
+import { MUSIC_LEVELS, cycleMusic, moodFor, musicLevel, setMood, unlockMusic } from './music.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
 import { DISMISSED, guide } from './guide.ts';
@@ -137,6 +138,7 @@ export function App() {
   const [inspect, setInspect] = useState<{ item: Item; wearing: boolean } | null>(null);
   const [fresh, setFresh] = useState(false);
   const [sound, setSound] = useState(soundLevel);
+  const [music, setMusic] = useState(musicLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
   /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
@@ -581,6 +583,19 @@ export function App() {
     if (LEVELS[next].volume > 0) sfx.tap();
   }, []);
 
+  // 樂 The music starts on the first touch, the only moment a browser allows it, and
+  // follows the player: the hunt, a big fight, the heavens, or cultivating.
+  useEffect(() => {
+    const go = () => unlockMusic();
+    window.addEventListener('pointerdown', go, { once: true });
+    window.addEventListener('keydown', go, { once: true });
+    return () => { window.removeEventListener('pointerdown', go); window.removeEventListener('keydown', go); };
+  }, []);
+  const fightKind = battle ? (battle.beast.warden || battle.demon ? 'boss' : 'beast') : null;
+  const heavens = state.tribulation > 0;
+  useEffect(() => { setMood(moodFor({ tab, fight: fightKind, heavens })); }, [tab, fightKind, heavens]);
+  const toggleMusic = useCallback(() => { setMusic(cycleMusic()); sfx.tap(); }, []);
+
   /** 拆 Melting one piece, from the sheet where it can be looked at first. */
   const onSalvage = useCallback((id: string) => {
     setState((s) => salvage(s, [id]));
@@ -772,6 +787,9 @@ export function App() {
             </a>
             <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0}>
               <b>{LEVELS[sound].icon}</b><span>{LEVELS[sound].label}</span>
+            </button>
+            <button onClick={toggleMusic} data-on={MUSIC_LEVELS[music].volume > 0}>
+              <b>{MUSIC_LEVELS[music].icon}</b><span>{MUSIC_LEVELS[music].label}</span>
             </button>
             <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
           </div>

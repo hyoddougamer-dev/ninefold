@@ -157,6 +157,16 @@ Moderation is Discord's own AutoMod, set from the same file: one spam, one word-
 mention rule per server, so the script takes over the ones Discord made rather than adding
 more, and every rule reports to #師-team. The bot keeps Administrator for that and Community.
 
+## 樂 Music
+
+Bruno makes the tracks in Suno (on a paid plan, which is what lets a game use them) and
+sends the MP3s. They go in `music-src/` as they came, and `node tools/music.mjs` (with
+`FFMPEG` pointing at an ffmpeg, which `npm i ffmpeg-static` in the scratchpad provides)
+trims, levels and writes each as AAC and Opus in `public/music/`. `src/app/music.ts` maps
+moods to tracks in `PLAYLIST`; a mood without its own track borrows one, so adding a track
+is a file and a line. The test Chromium has no AAC, which is why the Opus copy exists and
+why playback can be checked here at all.
+
 ## 屜 The drawer
 
 Ideas designed, shown to Bruno and deliberately not built yet live in `docs/DRAWER.md`,
