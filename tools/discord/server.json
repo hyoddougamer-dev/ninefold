@@ -227,6 +227,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
+        ["▸ On itch.io", "https://shibaki-dev.itch.io/ninefold (plays in the browser; its save is separate from the main site's)"],
         ["▸ Android app", "Two ways, with pictures, in {#guides} → *裝 Installing on Android*.\n**1 · From Chrome** (recommended): open the game, tap ⋮ → *Install app*.\n**2 · The APK**: download [the zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in Files, tap *ninefold.apk*. A test build, not from Google Play, so Android asks you to allow the source once."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."]
       ],
@@ -291,6 +292,7 @@
       ],
       "fields": [
         ["▸ Play in the browser", "https://hyoddougamer-dev.github.io/ninefold/"],
+        ["▸ On itch.io", "https://shibaki-dev.itch.io/ninefold (plays in the browser; its save is separate from the main site's)"],
         ["▸ Android", "Two ways, with pictures, in {#guides} → *裝 Installing on Android*.\n**1 · From Chrome** (recommended): open the game, tap ⋮ → *Install app*.\n**2 · The APK**: download [the zip](https://hyoddougamer-dev.github.io/ninefold/ninefold-android.zip), open it in Files, tap *ninefold.apk*. A test build, not from Google Play, so Android asks you to allow the source once."],
         ["▸ iPhone", "Open the game in Safari, tap Share, then Add to Home Screen."],
         ["▸ New here?", "{#guides} has a post for every system. Start with the pinned one."],
