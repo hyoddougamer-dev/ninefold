@@ -29,6 +29,25 @@ const ALLOWED_TO_FAIL = /fonts\.(googleapis|gstatic)\.com/;
 const problems = [];
 const fail = (where, what) => { problems.push(`${where}: ${what}`); console.log(`  ✗ ${where}  ${what}`); };
 
+/** 業 A workshop with something in every part of the screen: levels, a task, a pouch, a kit. */
+function workshop(realm, at) {
+  const xpAt = (l) => { let p = 0; for (let i = 1; i < l; i++) p += Math.floor(i + 300 * 2 ** (i / 7)); return Math.floor(p / 4); };
+  const lv = Math.min(90, realm * 9);
+  const xp = { herb: xpAt(lv), vein: xpAt(lv), render: xpAt(lv), forge: xpAt(lv) };
+  if (realm >= 5) xp.alchemy = xpAt(lv - 10);
+  if (realm >= 6) xp.sigil = xpAt(lv - 20);
+  if (realm >= 8) xp.array = xpAt(lv - 30);
+  const pouch = { moss: 40, bark: 12, iron: 30, cinnabar: 9, 'part:rat': 14, 'part:hound': 3, metal1: 5 };
+  if (realm >= 5) Object.assign(pouch, { 'might1@2': 3, 'guard1@0': 2 });
+  if (realm >= 6) Object.assign(pouch, { 'sigil:warding@1': 4, 'sigil:seeking': 2 });
+  if (realm >= 8) Object.assign(pouch, { 'array:dew': 1 });
+  return {
+    xp, task: 'herb:moss', since: at - 90, pouch, made: { 'herb:moss': 140 }, tools: { herb: 1 },
+    arrays: realm >= 8 ? ['array:dew'] : [], seek: 0,
+    carry: { elixir: realm >= 5 ? 'might1@2' : null, sigil: realm >= 6 ? 'sigil:warding@1' : null },
+  };
+}
+
 /** A cultivator standing in a realm, with enough of everything for its screens to fill. */
 function cultivator(realm) {
   const cap = realm * 6;
@@ -64,11 +83,12 @@ function cultivator(realm) {
     sequence: realm >= 3 ? ['crane'] : [],
     tribulation: 0, tribulationAt: 0, tower: realm >= 5 ? realm * 10 : 0,
     brewed: { body: 0, bane: 0, fortune: 0 },
+    crafts: realm >= 2 ? workshop(realm, at) : undefined,
     seen: ['guide', 'whom'],
   };
 }
 
-const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 'gear'], ['道', 'dao']];
+const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 'gear'], ['業', 'crafts'], ['道', 'dao']];
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
@@ -171,6 +191,35 @@ async function walk(label, state) {
     const blank = await page.$$eval('.sheet .qa-stack', (xs) =>
       xs.filter((x) => { const r = x.getBoundingClientRect(); return r.width < 8 || r.height < 8; }).length);
     if (blank) fail(`${label}/${name}`, `${blank} portrait${blank === 1 ? '' : 's'} with no size, drawn as nothing`);
+
+    // 業 The workshop is worked, not only looked at: every craft's tile, a recipe set
+    // going, a thing in the pouch looked at and carried. A tap that lands and changes
+    // nothing is the failure this is here to catch.
+    if (name === 'crafts') {
+      const tiles = await page.$$('.crafts .cskill');
+      if (tiles.length !== 7) fail(`${label}/crafts`, `${tiles.length} craft tiles, not 7`);
+      for (let i = 0; i < tiles.length; i++) {
+        await (await page.$$('.crafts .cskill'))[i].click().catch(() => {});
+        await page.waitForTimeout(120);
+        const junk = ((await page.textContent('.sheet')) ?? '').match(/NaN|undefined|Infinity|\[object/);
+        if (junk) fail(`${label}/crafts tile ${i}`, `shows "${junk[0]}" to the player`);
+      }
+      await (await page.$$('.crafts .cskill'))[0]?.click().catch(() => {});
+      await page.waitForTimeout(150);
+      const start = await page.$('.crafts .crow[data-on="false"] button.act');
+      if (start) {
+        await start.click();
+        await page.waitForTimeout(250);
+        if (!(await page.$('.crafts .crow[data-on="true"]'))) fail(`${label}/crafts`, 'Start was tapped and nothing is being made');
+      } else fail(`${label}/crafts`, 'no recipe offered a Start button');
+      const cell = await page.$('.crafts .cpc');
+      if (cell) {
+        await cell.click();
+        await page.waitForTimeout(150);
+        if (!(await page.$('.crafts .clook'))) fail(`${label}/crafts`, 'a thing in the pouch was tapped and nothing opened');
+      } else fail(`${label}/crafts`, 'the pouch is empty on a save that fills it');
+      console.log(`    業 ${tiles.length} crafts tapped, a recipe set going, the pouch opened`);
+    }
   }
 
   // 收 The corner, and every panel behind it. A tab may itself have raised a sheet, so

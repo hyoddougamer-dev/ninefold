@@ -17,6 +17,7 @@ import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { icon } from '../../art/icon.ts';
 import { Emblem } from '../ui/Emblem.tsx';
+import { Term } from '../ui/Term.tsx';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { CRAFTS } from '../copy.ts';
@@ -101,7 +102,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
       <div className="card cpanel">
         <div className="row">
           <span>
-            <b className="cjk" style={{ fontSize: 18, color: 'var(--gold)' }}>{info.han}</b>{' '}
+            <b className="cjk" style={{ fontSize: 18, color: 'var(--gold)' }}><Term han={info.han} plain /></b>{' '}
             <b style={{ fontSize: 16 }}>{info.name}</b>
           </span>
           {open && <span className="mono" style={{ color: 'var(--gold)' }}>{CRAFTS.level(level)}</span>}
@@ -111,7 +112,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           {CRAFTS.opensLong(info.seal, info.name, info.realm)}</p>}
         {open && (
           <>
-            <p className="crank"><span className="cjk">{rank.han}</span> {rank.name}</p>
+            <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}</p>
             <i className="cxp"><i style={{ width: `${Math.round((level >= 99 ? 1 : (xp - XP_TABLE[level]) / (XP_TABLE[next] - XP_TABLE[level])) * 100)}%` }} /></i>
             <p className="faint mono" style={{ margin: '4px 0 0', fontSize: 11.5 }}>
               {level >= 99 ? CRAFTS.xpTop(num(Math.floor(xp))) : CRAFTS.xpTo(num(Math.floor(xp)), num(Math.ceil(XP_TABLE[next] - xp)), next)}
@@ -265,7 +266,7 @@ function Row({ state, r, on, onStart }: { state: State; r: Recipe; on: boolean; 
             )}
             {needsOf(state, r).map(([k, n]) => (
               <span key={k} data-short={held(state, k) < n}>
-                {k === 'mat' ? <b className="cjk">材</b> : <Thing k={k} size={20} />}
+                {k === 'mat' ? <b className="cjk"><Term han="材" plain /></b> : <Thing k={k} size={20} />}
                 {num(held(state, k))}<em>/{num(n)}</em>
               </span>
             ))}

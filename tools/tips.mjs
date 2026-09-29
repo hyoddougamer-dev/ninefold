@@ -31,12 +31,31 @@ const CHROME = process.env.PLAYWRIGHT_CHROMIUM
   ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const SAVE_KEY = 'ninefold.save.v1';
 /** Every screen a character can be tapped on, by the tab that opens it. */
-const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 'gear'], ['道', 'dao']];
+const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 'gear'], ['業', 'crafts'], ['道', 'dao']];
 /** Which cultivators to walk. Narrowed while chasing one screen: TIPS_REALMS=2,3 */
 const REALMS = (process.env.TIPS_REALMS ?? '2,3,6,9').split(',').map(Number);
 
 const problems = [];
 const fail = (where, what) => { problems.push(`${where}: ${what}`); console.log(`  ✗ ${where}  ${what}`); };
+
+/** 業 A workshop with something in every part of the screen: levels, a task, a pouch, a kit. */
+function workshop(realm, at) {
+  const xpAt = (l) => { let p = 0; for (let i = 1; i < l; i++) p += Math.floor(i + 300 * 2 ** (i / 7)); return Math.floor(p / 4); };
+  const lv = Math.min(90, realm * 9);
+  const xp = { herb: xpAt(lv), vein: xpAt(lv), render: xpAt(lv), forge: xpAt(lv) };
+  if (realm >= 5) xp.alchemy = xpAt(lv - 10);
+  if (realm >= 6) xp.sigil = xpAt(lv - 20);
+  if (realm >= 8) xp.array = xpAt(lv - 30);
+  const pouch = { moss: 40, bark: 12, iron: 30, cinnabar: 9, 'part:rat': 14, 'part:hound': 3, metal1: 5 };
+  if (realm >= 5) Object.assign(pouch, { 'might1@2': 3, 'guard1@0': 2 });
+  if (realm >= 6) Object.assign(pouch, { 'sigil:warding@1': 4, 'sigil:seeking': 2 });
+  if (realm >= 8) Object.assign(pouch, { 'array:dew': 1 });
+  return {
+    xp, task: 'herb:moss', since: at - 90, pouch, made: { 'herb:moss': 140 }, tools: { herb: 1 },
+    arrays: realm >= 8 ? ['array:dew'] : [], seek: 0,
+    carry: { elixir: realm >= 5 ? 'might1@2' : null, sigil: realm >= 6 ? 'sigil:warding@1' : null },
+  };
+}
 
 /** A cultivator with enough behind them for the screens to fill with characters. */
 function cultivator(realm) {
@@ -60,6 +79,7 @@ function cultivator(realm) {
     stance: 'swift', sequence: realm >= 3 ? ['crane'] : [],
     tribulation: 0, tribulationAt: 0, tower: realm >= 5 ? realm * 10 : 0,
     brewed: { body: 0, bane: 0, fortune: 0 },
+    crafts: realm >= 2 ? workshop(realm, at) : undefined,
     // Every first-run card already read, so nothing floats over the screen being checked.
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage', 'fuse', 'whom'],
   };

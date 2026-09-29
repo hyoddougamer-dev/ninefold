@@ -43,7 +43,7 @@ export const REALMS: readonly Realm[] = [
   { n: 1, han: '練氣', name: 'Qi Refining',    colour: '#6E9C84', stuff: 'jade', aura: [], halos: 0,
     gains: 'Threads of qi rise off you as you breathe.' },
   { n: 2, han: '築基', name: 'Foundation',     colour: '#86AE8C', stuff: 'celadon', aura: ['aura'], halos: 0,
-    gains: '陣 A formation circle turns beneath you.' },
+    gains: '陣 A formation circle, the first of your arrays, turns beneath you.' },
   { n: 3, han: '金丹', name: 'Golden Core',    colour: '#B2A566', stuff: 'old bronze', aura: ['aura'], halos: 1,
     gains: '丹 Your golden core lights, and 圓光 a halo rises behind your head.' },
   { n: 4, han: '元嬰', name: 'Nascent Soul',   colour: '#D2B35B', stuff: 'gold leaf', aura: ['aura', 'sparkles'], halos: 1,
