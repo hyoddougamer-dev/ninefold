@@ -40,6 +40,7 @@ import { pictureOf } from '../src/data/pictures.ts';
 import { ICONS } from '../src/art/icons.generated.ts';
 import { mix } from '../src/art/aura.ts';
 import { MATERIALS, enso, inkOf } from './ink.ts';
+import { craftSheets } from './craft-sheets.ts';
 
 /** One cell of a sheet: what goes in it, and what the cut file is called. */
 export interface Cell {
@@ -48,6 +49,8 @@ export interface Cell {
   readonly name: string;
   /** The sentence that describes this subject inside the sheet prompt. */
   readonly subject: string;
+  /** 業 Its own pigment, where the realm's would be wrong (a craft's seal, an ore). */
+  readonly pigment?: string;
 }
 
 export interface Sheet {
@@ -559,6 +562,8 @@ export const SHEETS: readonly Sheet[] = [
   heavenAgainSheet(),
   skySheet(),
   ...EMBLEM_SHEETS.map(emblemSheet),
+  // 業 The workshop's eleven leaves. See tools/craft-sheets.ts.
+  ...craftSheets(),
   commonSheet('beasts-a', '獸甲', 'The commons of the first three realms', [1, 2, 3]),
   commonSheet('beasts-b', '獸乙', 'The commons of the middle three realms', [4, 5, 6]),
   commonSheet('beasts-c', '獸丙', 'The commons of the last three realms', [7, 8, 9]),
@@ -626,7 +631,8 @@ export function sheetPrompt(s: Sheet): string {
         : s.kind === 'self' ? s.realms[i] : i + 1;
       // 境外 A heaven card is painted in its heaven's pigment, one heaven to a row.
       const heavenRow = HEAVEN_CARD_SHEETS[s.key];
-      const pig = s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
+      const pig = c.pigment ? c.pigment
+        : s.key === 'heavens' || s.key === 'skies' ? HEAVEN_PIGMENT[i]
         : s.key === 'heavens-b' ? (HEAVEN_AGAIN[i][0] === 9 ? NINTH_HEAVEN_INK : HEAVEN_PIGMENT[HEAVEN_AGAIN[i][0] - 1])
         : s.key === 'awaken-e9' ? NINTH_HEAVEN_INK
         : heavenRow !== undefined ? HEAVEN_PIGMENT[heavenRow + Math.floor(i / s.cols)]
@@ -650,7 +656,7 @@ export function sheetPrompt(s: Sheet): string {
 panel with a thin dry ink rule around it and a narrow margin of bare paper
 outside the rule. ${shape}
 
-The plate: ${s.cells[0].subject}. The one pigment on the robe is ${inkOf(s.realms[0]).stuff}.
+The plate: ${s.cells[0].subject}. The one pigment on the robe is ${s.cells[0].pigment ?? inkOf(s.realms[0]).stuff}.
 
 ${MATERIALS}
 

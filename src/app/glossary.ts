@@ -1,3 +1,4 @@
+import { RANKS, SKILLS } from '../data/crafts.ts';
 import { UPGRADES, UPGRADE_INFO } from '../sim/state.ts';
 import { MARK_INFO, MARKS } from '../sim/record.ts';
 import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '../data/gear.ts';
@@ -127,6 +128,22 @@ export const GROUPS: readonly Group[] = [
       han: PATH_INFO[p].han, name: PATH_INFO[p].name,
       colour: PATH_INFO[p].colour, note: PATH_INFO[p].blurb, art: PATH_INFO[p].icon,
     })),
+  },
+  {
+    // 業 The seven crafts, their ranks and the words the workshop screen uses, all read
+    // out of data/crafts.ts, so a new craft or rank cannot appear untranslated.
+    title: KEY.craftsHead, blurb: KEY.craftsBlurb,
+    rows: [
+      ...SKILLS.map((k) => ({ han: k.seal, name: k.name, note: k.does, art: k.icon })),
+      ...SKILLS.map((k) => ({ han: k.han, name: k.name, note: KEY.craftCap(k.cap.han, k.cap.name) })),
+      ...RANKS.map((r) => ({ han: r.han, name: r.name, note: KEY.craftRank(r.at) })),
+      ...SKILLS.map((k) => ({ han: k.cap.han, name: k.cap.name, note: KEY.craftTop(k.name) })),
+      { han: '業', name: 'The workshop', note: KEY.workshop },
+      { han: '儲物袋', name: 'The pouch', note: KEY.pouch },
+      { han: '習', name: 'Familiarity', note: KEY.familiar },
+      { han: '攜', name: 'Carried', note: KEY.carried },
+      { han: '尋', name: 'A sure drop', note: KEY.seek },
+    ],
   },
   {
     title: KEY.systemsHead, blurb: KEY.systemsBlurb,

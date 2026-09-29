@@ -10,7 +10,7 @@ import {
 } from '../balance.ts';
 import {
   NO_CRAFTS, arraySlots, blocked, carry, kitFor, kitWhere, placeArray, qualityOdds, remainsOf,
-  secondsOf, setTask, spendKit, useSeeking, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
+  secondsOf, setTask, spendKit, takeSeeking, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
   type Crafts,
 } from '../crafts.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -258,7 +258,7 @@ describe('戰 what is carried into a fight', () => {
 
   it('turns a Seeking Sigil into a sure drop, never more than the limit', () => {
     let s = crafter(6, {}, { pouch: { 'sigil:seeking': 50 } });
-    for (let i = 0; i < 40; i++) s = useSeeking(s, 'sigil:seeking');
+    for (let i = 0; i < 40; i++) s = takeSeeking(s, 'sigil:seeking');
     expect(s.crafts.seek).toBe(20);
     expect(s.crafts.pouch['sigil:seeking']).toBe(30);
   });

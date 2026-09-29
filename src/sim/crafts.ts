@@ -377,7 +377,7 @@ export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): S
 }
 
 /** 尋 Use a Seeking Sigil or burn incense: the next beast beaten on the hunt leaves a piece. */
-export function useSeeking(s: State, key: string): State {
+export function takeSeeking(s: State, key: string): State {
   const k = splitKey(key).key;
   if ((k !== 'sigil:seeking' && k !== 'seekincense') || (s.crafts.pouch[key] ?? 0) < 1) return s;
   if (s.crafts.seek >= CRAFT_SEEK_MAX) return s;

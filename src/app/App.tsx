@@ -21,7 +21,13 @@ import { dropFor, noteFate } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
-import { kitFor, kitWhere, soulLocked, spendKit, spendSeek, work } from '../sim/crafts.ts';
+import {
+  carry, kitFor, kitWhere, placeArray, setTask, soulLocked, spendKit, spendSeek, takeSeeking, work,
+} from '../sim/crafts.ts';
+import { Crafts } from './screens/Crafts.tsx';
+import { RECIPE_BY_KEY, SKILL_BY_KEY } from '../data/crafts.ts';
+import type { Away } from '../sim/save.ts';
+import { CRAFTS } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -87,6 +93,7 @@ const TABS = [
   { key: 'hunt', han: '狩', label: 'Hunt', needs: 'hunt' },
   { key: 'trials', han: '塔', label: 'Trials', needs: 'tower' },
   { key: 'gear', han: '器', label: 'Gear', needs: 'gear' },
+  { key: 'crafts', han: '業', label: 'Crafts', needs: 'crafts' },
   { key: 'dao', han: '道', label: 'Path', needs: 'arts' },
 ] as const satisfies readonly { key: string; han: string; label: string; needs: System | null }[];
 
@@ -102,6 +109,7 @@ interface Homecoming {
   readonly climbed: number;
   readonly layers: number;
   readonly realms: number;
+  readonly crafts: Away | null;
 }
 
 export function App() {
@@ -219,7 +227,7 @@ export function App() {
     if (r.secondsAway > 120) {
       setHome({
         seconds: r.secondsAway, qi: r.qiEarned, climbed: r.qiClimbed,
-        layers: r.layersOpened, realms: r.realmsClimbed,
+        layers: r.layersOpened, realms: r.realmsClimbed, crafts: r.crafts,
       });
     }
   }, []);
@@ -764,6 +772,13 @@ export function App() {
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
+        {tab === 'crafts' && (
+          <Crafts state={state}
+            onTask={(key) => { setState((s) => setTask(s, key, now())); sfx.tap(); haptics.tap(); }}
+            onCarry={(hand, key) => { setState((s) => carry(s, hand, key)); sfx.tap(); }}
+            onUse={(key) => { setState((s) => takeSeeking(s, key)); sfx.buy(); }}
+            onPlace={(key, on) => { setState((s) => placeArray(s, key, on)); sfx.buy(); }} />
+        )}
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}
@@ -1169,6 +1184,13 @@ export function App() {
           {home.climbed > 0 && (
             <p className="faint" style={{ margin: '2px 0 0', fontSize: 12.5 }}>
               {RETURN.spent(num(home.climbed))}
+            </p>
+          )}
+          {/* 業 What the workshop did while nobody was watching it. */}
+          {home.crafts && RECIPE_BY_KEY[home.crafts.task] && (
+            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
+              業 {CRAFTS.awayLine(home.crafts.made, RECIPE_BY_KEY[home.crafts.task].name, home.crafts.from, home.crafts.to,
+                SKILL_BY_KEY[RECIPE_BY_KEY[home.crafts.task].skill].name)}
             </p>
           )}
           <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>

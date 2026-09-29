@@ -1264,10 +1264,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chestfilter button[aria-pressed='true'] { border-color: var(--text); color: var(--text); }
 .chestfilter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
 
-.tabs { grid-template-columns: repeat(6, 1fr); }
+.tabs { grid-template-columns: repeat(7, 1fr); }
 /* 榜 Six tabs on a 320px phone: the labels give up a little spacing to fit. */
 .tabs .l { letter-spacing: .1em; white-space: nowrap; }
 @media (max-width: 360px) { .tabs .l { font-size: 8.5px; letter-spacing: .04em; } }
+/* 業 Seven tabs on a 320px phone: the labels give up the rest of their spacing. */
+@media (max-width: 360px) { .tabs .l { font-size: 7.6px; letter-spacing: 0; } }
 /* 榜 The rankings tab is gold, so it reads as a place to go rather than one more screen,
    and its badge is the player's place on the Heaven List. */
 .tabs .ranktab .g { color: var(--gold); }
@@ -2964,3 +2966,76 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .gain.dao { color: var(--jade); background: color-mix(in srgb, var(--jade) 12%, transparent);
             border-color: color-mix(in srgb, var(--jade) 45%, transparent); }
 @media (prefers-reduced-motion: reduce) { .seclude .demon[data-due='true'] { animation: none; } }
+
+/* ── 業 the workshop ──────────────────────────────────────────────────────────
+   Every rule is scoped under .crafts: the recipe row, the pouch and the skill grid are
+   new shapes, and a class shared with another screen has bitten this repo three times. */
+.crafts .act.small { width: auto; flex: none; padding: 7px 12px; font-size: 12px; letter-spacing: .08em; border-radius: 8px; }
+.crafts .act.small[data-on='true'] { background: none; color: var(--gold); border: 1px solid var(--gold); box-shadow: none; }
+.crafts .act.small.ghost { background: none; color: var(--faint); border: 1px solid var(--line); box-shadow: none; }
+.crafts .cic { display: inline-grid; place-items: center; flex: none; border-radius: 9px; overflow: hidden;
+               border: 1.5px solid rgba(58, 50, 38, .9); background: #120F0B; }
+.crafts .cic img.emblem { display: block; }
+.crafts .cic .plate, .crafts .cic > * { max-width: 100%; }
+
+.crafts .ctask { margin-bottom: 14px; }
+.crafts .ctask[data-idle='true'] { border-style: dashed; }
+.crafts .ctask .row { gap: 12px; }
+.crafts .cprog { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
+.crafts .cprog > i { display: block; height: 100%; background: var(--jade); transition: width .2s linear; }
+.crafts .cprog[data-wait='true'] > i { background: var(--faint); }
+
+.crafts .cskills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.crafts > .row:first-child { padding-right: 56px; }
+.crafts .cskill { display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto auto auto;
+                  column-gap: 8px; align-items: center; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+                  background: var(--lacquer); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.crafts .cskill[data-on='true'] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gild-strong) inset; }
+.crafts .cskill[data-shut='true'] { opacity: .55; }
+.crafts .cskill b.cjk { grid-row: 1 / span 3; width: 34px; height: 34px; display: grid; place-items: center; font-size: 18px;
+                        color: var(--gold); border: 1px solid var(--gild-strong); border-radius: 7px; }
+.crafts .cskill .cs-name { font-size: 12.5px; font-weight: 600; min-width: 0; line-height: 1.2; }
+.crafts .cskill .cs-sub { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crafts .cskill .cs-sub em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold); margin-right: 2px; }
+.crafts .cskill[data-shut='true'] .cs-sub { white-space: normal; line-height: 1.25; }
+@media (max-width: 360px) { .crafts .cskill .cs-rank { display: none; } }
+.crafts .cskill[data-run='true'] .cs-sub::after { content: ' \00b7 working'; color: var(--jade); }
+.crafts .cs-bar { grid-column: 2; display: block; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.crafts .cs-bar > i { display: block; height: 100%; background: var(--gold); }
+
+.crafts .cpanel { margin-bottom: 10px; }
+.crafts .crank { margin: 8px 0 0; font-size: 13px; color: var(--gold); }
+.crafts .cxp { display: block; height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.crafts .cxp > i { display: block; height: 100%; background: linear-gradient(90deg, #9C7F36, var(--gold)); }
+
+.crafts .cgroups { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.crafts .cgroups button { font: inherit; font-size: 12px; background: none; color: var(--faint); cursor: pointer;
+                          border: 1px solid var(--line); border-radius: 99px; padding: 4px 11px; }
+.crafts .cgroups button[aria-selected='true'] { color: var(--gold); border-color: var(--gold); }
+
+.crafts .crecipes { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.crafts .crow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+                background: var(--lacquer); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.crafts .crow[data-on='true'] { border-color: var(--jade); }
+.crafts .crow[data-lock='true'] { opacity: .5; }
+.crafts .cr-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.crafts .cr-body > b { font-size: 13.5px; font-weight: 600; }
+.crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
+.crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
+.crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
+.crafts .cr-needs { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; }
+.crafts .cr-needs > span { display: inline-flex; align-items: center; gap: 4px; }
+.crafts .cr-needs > span[data-short='true'] { color: var(--cinnabar); }
+.crafts .cr-needs em { font-style: normal; color: var(--faint); }
+.crafts .cr-needs .cic { border-radius: 5px; }
+.crafts .cr-q { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 2px; max-width: 160px; }
+.crafts .cr-q > i { display: block; height: 100%; }
+.crafts .cr-lock { font-style: normal; font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+
+.crafts .cfloor, .crafts .ccarry, .crafts .clook { margin: 0 0 12px; }
+.crafts .cpouch { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; margin-bottom: 10px; }
+.crafts .cpc { position: relative; display: grid; place-items: center; padding: 3px; background: none; cursor: pointer;
+               border: 1px solid transparent; border-radius: 10px; }
+.crafts .cpc[data-on='true'] { border-color: var(--gold); }
+.crafts .cpc b { position: absolute; right: 4px; bottom: 2px; font-size: 10.5px; color: var(--text);
+                 text-shadow: 0 1px 2px #000, 0 0 4px #000; }

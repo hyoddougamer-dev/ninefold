@@ -633,6 +633,16 @@ export const KEY = {
   meeting: 'Somebody on the road, every few hours. One choice, and walking on is always free. Nothing is taken that you did not offer.',
   week: 'A mark that moves every Monday. A beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching. It never touches the rate you gather at.',
   systemsHead: '開 The systems, and the realm that opens each',
+  craftsHead: '業 The crafts',
+  craftsBlurb: 'Seven crafts that level from 1 to 99 in the workshop. Three gather, four make. One task at a time, and it keeps working for twelve hours after you leave.',
+  craftCap: (han: string, name: string) => `A craft. Its ninety-ninth level is called ${han} ${name}.`,
+  craftRank: (at: number) => `A craft's rank from level ${at}.`,
+  craftTop: (name: string) => `What level 99 of ${name} is called.`,
+  workshop: 'Where the seven crafts are worked, one task at a time.',
+  pouch: 'Everything the workshop gathers and makes.',
+  familiar: 'How many times a recipe has been made. Five marks, each one a small edge on that recipe.',
+  carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
+  seek: 'A Seeking Sigil or incense used: the next beast beaten on the hunt leaves a piece.',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
 
@@ -911,6 +921,8 @@ export const ITEM = {
   leftBy: (from: string | undefined, beast: string | null) => {
     if (from === 'secret') return 'Found in the secret realm.';
     if (from === 'road') return 'A gift from someone met on the road.';
+    // 業 A forged piece says what it is and what it will never be.
+    if (from === 'forge') return 'Forged by your own hand. It is finished: it cannot be fused, and it melts back into its metal.';
     return beast ? `Left by the ${beast}.` : null;
   },
   /** 解 What each line that moves a number does, in a sentence. */
@@ -1568,4 +1580,70 @@ export const SECLUSION = {
   /** 鬥 The arena's last word on the demon. */
   won: { han: '心魔破', text: 'Your heart demon is down. What it held is yours.' },
   lost: { han: '心魔退', text: 'It draws back into you, and comes again in an hour. Nothing was lost.' },
+};
+
+/**
+ * 業 The workshop: seven crafts, and everything the screen says about them.
+ *
+ * It has to say four things a player needs before they will trust a thing that runs while
+ * the app is shut: what is being made, what it costs, how long it keeps going without
+ * them, and that nothing is lost for coming back late. Every one of those is here.
+ */
+export const CRAFTS = {
+  tab: 'Crafts',
+  head: '業 The workshop',
+  total: (n: number) => `Total ${n}/693`,
+  later: (n: number) => `${n} more ${n === 1 ? 'opens' : 'open'} further up the craft.`,
+  says: 'One task at a time. It repeats on its own, and keeps working for twelve hours after you leave. Nothing it makes is ever lost.',
+  idle: 'The workshop is standing still. Choose something below and set it going.',
+  making: (name: string) => `Making ${name}`,
+  every: (time: string, xp: string) => `one every ${time} · +${xp} xp`,
+  waitingRemains: 'Waiting for remains: hunt this beast, and the workshop takes up the knife again.',
+  waitingNeeds: (what: string) => `Waiting for ${what}.`,
+  waitingChest: 'Your chest is full. Make room and the forge carries on.',
+  stop: 'Stop',
+  start: 'Start',
+  away: (hours: number) => `Works ${hours} hours after you leave`,
+  level: (n: number) => `level ${n}`,
+  xpTo: (have: string, left: string, next: number) => `${have} xp · ${left} to level ${next}`,
+  xpTop: (have: string) => `${have} xp · the top of the craft`,
+  opens: (realm: number) => `Opens at realm ${realm}`,
+  opensLong: (han: string, name: string, realm: number) => `${han} ${name} opens at realm ${realm}. What you gather before then waits for it.`,
+  tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
+  noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
+  why: {
+    level: (n: number) => `Level ${n}`,
+    realm: (n: number) => `Realm ${n}`,
+    tool: 'Held',
+    shut: 'Shut',
+  },
+  needs: 'Needs',
+  remains: (n: number) => `${n} remains`,
+  quality: 'Quality',
+  familiar: (marks: number) => `習 familiarity ${'\u25cf'.repeat(marks)}${'\u25cb'.repeat(5 - marks)}`,
+  makes: (n: number) => `${n} made`,
+  pouch: '儲物袋 The pouch',
+  pouchEmpty: 'Nothing yet. What the workshop gathers and makes lands here.',
+  kinds: (n: number) => `${n} kinds`,
+  carryHead: '攜 Carried into the next hard fight',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon or vault gate. A win spends them; a loss keeps them. Never the Dragon, never the tower.',
+  carryElixir: 'Elixir',
+  carrySigil: 'Sigil',
+  carryNone: 'Nothing',
+  carry: 'Carry',
+  uncarry: 'Put back',
+  use: 'Use',
+  place: 'Place in the floor',
+  lift: 'Lift out',
+  seek: (n: number) => `尋 ${n} sure ${n === 1 ? 'drop' : 'drops'} waiting on the hunt`,
+  arraysHead: (placed: number, slots: number) => `陣 The cave floor · ${placed} of ${slots} places`,
+  arraysNone: 'No array cut yet.',
+  arraysMore: (level: number) => `Another place at Arrays ${level}.`,
+  close: 'Close',
+  forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
+  gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
+  furnace: (pct: number) => `Every Alchemy level takes 0.2% off the pill furnace's material: ${pct}% now.`,
+  /** 歸 The homecoming line. */
+  awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
+    to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,
 };
