@@ -111,6 +111,9 @@ Play on the main site (keeps your save across devices with an email): https://hy
 
 Made by one developer, 師 Shibaki.
 
+AI DISCLOSURE
+The music was made with Suno. The current art is test art made with AI tools and edited by me; final art is planned. Design, systems and balance are mine. Full credits are in the game's menu.
+
 GENRE
 Simulation
 
@@ -118,6 +121,7 @@ TAGS (itch allows 10)
 idle, incremental, xianxia, cultivation, fantasy, hand-drawn, singleplayer, mobile, relaxing, chinese
 
 SETTINGS
+AI generation disclosure (on the edit page): answer Yes, and tick Graphics and Sound (and Code if you decide to say so, as on Reddit)
 Kind of project: HTML
 Classification: Games
 Release status: In development
