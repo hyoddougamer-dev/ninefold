@@ -95,7 +95,7 @@ Ninefold is an idle cultivation (xianxia) game. Qi gathers on its own, even with
 
 WHAT WAITS FOR YOU
 - Nine realms and nine heavens, each with its own painted landscape
-- 36 hand-painted beasts, a warden at the end of every realm, and Dragons above the summit
+- 36 beasts to hunt, a warden at the end of every realm, and Dragons above the summit
 - Gear in five ranks and six schools: wear three pieces of two schools and you become one of fifteen classes
 - A cave that grows while you sleep, a vault that opens every few hours, a tower with no top
 - Its own music, a road full of strangers, and a new quarry every week

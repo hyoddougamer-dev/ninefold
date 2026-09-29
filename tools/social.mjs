@@ -57,7 +57,7 @@ function farewell(css) {
 
 /** 招 The Reddit poster: portrait, because a phone's feed is where most people will meet it. */
 function poster(css) {
-  const pts = [['境', 'Nine realms', 'and nine heavens above them'], ['獸', '36 hand-painted beasts', 'a warden at the end of every realm'],
+  const pts = [['境', 'Nine realms', 'and nine heavens above them'], ['獸', '36 beasts to hunt', 'a warden at the end of every realm'],
     ['職', 'Fifteen classes', 'you become one by what you wear'], ['榜', 'Fair rankings', 'every climb checked against real time']];
   return `<!doctype html><meta charset="utf-8"><style>${css}${BASE}
   .p { width: 1080px; height: 1350px; position: relative; overflow: hidden; }
