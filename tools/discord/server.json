@@ -747,5 +747,46 @@
       ],
       "footer": "九境 Ninefold · closed test"
     }
+  ],
+  "threads": [
+    {
+      "forum": "bugs",
+      "title": "APK will not finish downloading",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Fixed ✅ Thank you for catching this on day one.",
+        "There are two ways in now: install the game from Chrome (⋮ → *Install app*), or take the APK inside a zip, which gets past the phones where a bare .apk stops at 100%. Both are step by step with pictures in *裝 Installing on Android*, pinned at the top of the guides.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Email linking",
+      "tags": ["Bug"],
+      "reply": [
+        "Confirmed, and thank you. Inside the Android app the email link always opens the browser, so the app can't finish signing in.",
+        "The fix is on its way: the sign-in email will carry a 6-digit code you type straight into the game, so it works inside the app too.",
+        "Until then, the version installed from Chrome (⋮ → *Install app*) shares its save with Chrome and signs in by email without trouble.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Roleplay",
+      "tags": ["Idea"],
+      "reply": [
+        "Love this. The road already keeps a quiet score of your choices (kind or hard), so making it a visible Orthodox or Demonic path, with its own encounters and short quest chains, is a natural next step. It's being designed now; we'll show it here before it goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "jobs",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks! The furnace, refining and the cave already work like crafts, and we're sketching how to turn them into proper life skills you level up. If there's a part of the DoES jobs you'd want back, tell us here.",
+        "· 師 Shibaki"
+      ]
+    }
   ]
 }
