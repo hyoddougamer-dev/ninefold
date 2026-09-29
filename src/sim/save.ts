@@ -2,6 +2,7 @@ import { newState, validate, type State } from './state.ts';
 import { OPENING_PURSE } from './balance.ts';
 import { advance, layerCost } from './time.ts';
 import { LAYERS_PER_REALM } from './balance.ts';
+import { isSealed, open, seal } from './seal.ts';
 
 const KEY = 'ninefold.save.v1';
 /**
@@ -43,13 +44,47 @@ export interface Return {
   readonly realmsClimbed: number;
 }
 
+/**
+ * 封 Set once this phone has written a sealed save. From then on a plain save in storage
+ * can only have been put there by hand, and so can a seal that no longer matches.
+ */
+const SEALED = 'ninefold.sealed';
+/** 改 Remembered once seen, until a wipe: the rankings screen says so (see wasEdited). */
+const EDITED = 'ninefold.edited';
+
+function noteEdited(): void {
+  try { localStorage.setItem(EDITED, '1'); } catch { /* nothing to do */ }
+}
+
+/** 改 Whether a save on this phone was ever changed outside the game. It still plays. */
+export function wasEdited(): boolean {
+  try { return localStorage.getItem(EDITED) === '1'; } catch { return false; }
+}
+
 function read(key: string): unknown {
   try {
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    if (isSealed(stored)) {
+      const { json, intact } = open(stored);
+      if (json === null) return null;
+      // Nothing is taken away for touching a save: it loads and plays as it is. The
+      // phone remembers it was touched, and the server was never going to believe it.
+      if (!intact) noteEdited();
+      return JSON.parse(json);
+    }
+    // A plain save is how every save was written before the seal, and it is read as it
+    // always was. Once this phone has sealed one, a plain one was put there by hand.
+    if (localStorage.getItem(SEALED) === '1') noteEdited();
+    return JSON.parse(stored);
   } catch {
     return null;   // storage blocked, private window, corrupt JSON: all the same here
   }
+}
+
+function write(key: string, s: State): void {
+  localStorage.setItem(key, seal(JSON.stringify(s)));
+  localStorage.setItem(SEALED, '1');
 }
 
 /** How far up a state is, so two of them can be compared without trusting either. */
@@ -123,7 +158,7 @@ let wiped = false;
 export function save(s: State): void {
   if (wiped) return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(s));
+    write(KEY, s);
   } catch {
     // Without storage the game is still playable this session. Not worth failing over.
   }
@@ -133,7 +168,7 @@ export function save(s: State): void {
 export function keepSpare(s: State): void {
   if (wiped) return;
   try {
-    localStorage.setItem(BACKUP, JSON.stringify(s));
+    write(BACKUP, s);
   } catch { /* same */ }
 }
 
@@ -145,6 +180,8 @@ export function wipe(): void {
   try {
     localStorage.removeItem(KEY);
     localStorage.removeItem(BACKUP);
+    localStorage.removeItem(SEALED);
+    localStorage.removeItem(EDITED);
   } catch { /* same */ }
 }
 
@@ -157,7 +194,7 @@ export function wipe(): void {
  * is one the player put somewhere themselves.
  */
 export function exportSave(s: State): string {
-  return JSON.stringify({ game: 'ninefold', exported: Math.round(Date.now() / 1000), state: s });
+  return seal(JSON.stringify({ game: 'ninefold', exported: Math.round(Date.now() / 1000), state: s }));
 }
 
 export interface Imported {
@@ -194,9 +231,13 @@ export function untouched(s: State): boolean {
 export function importSave(text: string, now: number): Imported {
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text.trim());
+    // 封 A sealed copy, or a plain one: every copy taken before the seal is plain, and so
+    // is the cloud's own copy. A broken seal is still a save; the server judges it.
+    const opened = isSealed(text) ? open(text).json : text.trim();
+    if (opened === null) throw new Error('unsealable');
+    parsed = JSON.parse(opened);
   } catch {
-    return { state: null, error: 'That is not a save. Paste the whole thing, from { to }.' };
+    return { state: null, error: 'That is not a save. Paste the whole text, exactly as it was copied.' };
   }
   const o = (parsed ?? {}) as Record<string, unknown>;
   // A bare state is accepted too: someone will paste the inner half and be right to.
@@ -213,5 +254,5 @@ export function importSave(text: string, now: number): Imported {
 /** A name a person can find again, with the day and where they had got to. */
 export function saveFileName(s: State): string {
   const day = new Date().toISOString().slice(0, 10);
-  return `ninefold-realm${s.realm}-${day}.json`;
+  return `ninefold-realm${s.realm}-${day}.txt`;
 }

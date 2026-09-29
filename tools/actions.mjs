@@ -20,6 +20,7 @@
  *     npm run actions
  */
 import { chromium } from 'playwright';
+import { isSealed, open as unsealText } from '../src/sim/seal.ts';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.PLAYWRIGHT_CHROMIUM
@@ -111,7 +112,9 @@ async function open(state, { keepCards = false } = {}) {
 }
 
 /** The save as the app has written it, which is the only state worth asserting on. */
-const held = (page) => page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? 'null'), SAVE_KEY);
+// 封 The game seals what it writes; a fabricated save written here is plain, and both open.
+const unseal = (raw) => (raw == null ? null : JSON.parse(isSealed(raw) ? unsealText(raw).json : raw));
+const held = async (page) => unseal(await page.evaluate((k) => localStorage.getItem(k), SAVE_KEY));
 /** The save is written on an interval, so an act is read after it has had time to land. */
 const settle = (page) => page.waitForTimeout(4600);
 
@@ -645,10 +648,11 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
     if (!text) fail('存', 'the copy button put nothing on the clipboard');
     else {
       try {
-        const parsed = JSON.parse(text);
-        if (parsed.game !== 'ninefold' || !parsed.state) fail('存', 'the copied text is not a ninefold save');
-        else pass('存 the copied save parses, names itself and carries the state');
-      } catch { fail('存', 'the copied text is not valid JSON'); }
+        const parsed = unseal(text);
+        if (!isSealed(text)) fail('存', 'the copied save is not sealed');
+        else if (parsed.game !== 'ninefold' || !parsed.state) fail('存', 'the copied text is not a ninefold save');
+        else pass('存 the copied save is sealed, opens, names itself and carries the state');
+      } catch { fail('存', 'the copied text does not open'); }
     }
   }
   if (page.noise.length) fail('存', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);

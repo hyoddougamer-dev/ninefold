@@ -4,6 +4,7 @@ import { callingLabel } from '../classes.ts';
 import { cleanName } from '../../net/names.ts';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
 import * as cloud from '../../net/cloud.ts';
+import { wasEdited } from '../../sim/save.ts';
 
 /**
  * 榜 The rankings, and the one sign-in the game has.
@@ -49,6 +50,7 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
       {who ? (
         <>
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} />
+          {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
           <div className="rtabs" role="tablist">
             {(Object.keys(RANKS.boards) as Board[]).map((k) => (
               <button key={k} role="tab" aria-selected={tab === k} data-on={tab === k} onClick={() => setTab(k)}>
@@ -81,6 +83,9 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
                 )}
           <p className="rnote small">
             <b>{RANKS.titlesHead}</b> {RANKS.titles}
+          </p>
+          <p className="rnote small">
+            <b>{RANKS.fairHead}</b> {RANKS.fair}
           </p>
           <Account who={who} me={me} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
                    onLinked={async () => { const w = await cloud.who(); if (w) onEnter(w, ''); }} />

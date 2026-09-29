@@ -47,7 +47,7 @@ export function SavePanel({ state, onRestore, onClose }: {
 
   const download = () => {
     try {
-      const url = URL.createObjectURL(new Blob([blob], { type: 'application/json' }));
+      const url = URL.createObjectURL(new Blob([blob], { type: 'text/plain' }));
       const a = document.createElement('a');
       a.href = url;
       a.download = saveFileName(state);

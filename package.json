@@ -19,7 +19,7 @@
     "bible": "tsx tools/bible.ts",
     "prose": "npm run build && tsx tools/prose.ts",
     "smoke": "node tools/smoke.mjs",
-    "actions": "node tools/actions.mjs",
+    "actions": "tsx tools/actions.mjs",
     "tips": "node tools/tips.mjs",
     "han": "tsx tools/han.ts",
     "early": "tsx tools/early.ts",
@@ -40,7 +40,7 @@
     "arena": "node tools/arena.mjs",
     "busy": "tsx tools/busy.ts",
     "worth": "tsx tools/worth.ts",
-    "ranks": "node tools/ranks.mjs",
+    "ranks": "tsx tools/ranks.mjs",
     "sounds": "node tools/sounds.mjs"
   },
   "dependencies": {

@@ -61,6 +61,11 @@ A visual change reported in words alone is an unfinished report.
 Each of these cost real time once. They are written down so they cost it once.
 
 - **The save stores seconds, not milliseconds.**
+- **The save is sealed** (`src/sim/seal.ts`): what the game writes to `localStorage` and the
+  copy a player takes read as noise. A fabricated save written plain by a tool still loads, so
+  fixtures stay plain; a tool that *reads* a save back must open it (`open` from seal.ts, which
+  is why `actions` and `ranks` run under tsx). The seal is a deterrent and a tell, never the
+  lock: the lock is the server (`sim/verify.ts`), and an edited save plays on but is not ranked.
 - **The app rewrites its save on page unload**, so editing `localStorage` has to be
   done with the app's scripts blocked (`route('**/assets/*.js', r => r.abort())`).
 - **Beast keys are `rat`, `hound`, `frog`**, not `mountain-rat`. Gear templates are

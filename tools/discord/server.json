@@ -336,6 +336,26 @@
       "footer": "師 Shibaki"
     },
     {
+      "key": "fair-play",
+      "channel": "news",
+      "pin": false,
+      "title": "盾 Fair play: sealed saves, verified boards",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-ranks.webp?v=2",
+      "body": [
+        "A tester opened his save file, edited his way to the ninth realm and told us straight away. Thank you: that is exactly the kind of report this test needs.",
+        "",
+        "**What happened on the boards:** nothing. The server refused every edited sync and kept him at the last point he had honestly reached. That is how the rankings are built: every climb is measured against how much real time has passed on the server, so an edited save, a moved clock or a forged copy never gets on.",
+        "",
+        "**What changes today:** your save is now sealed on your device. It reads as noise rather than text, and the game notices when a save was changed by hand. An edited save still plays, because nothing is ever taken away, but the Rankings screen says plainly that it will not be ranked.",
+        "",
+        "Your existing save is sealed the next time the game saves; you do not have to do anything. Copies you took before still restore.",
+        "",
+        "Found a way onto the boards you did not earn? That is the bug we most want to hear about, in {#bugs}."
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
       "key": "devlog-1",
       "pin": false,
       "channel": "devlog",
@@ -650,7 +670,8 @@
       "fields": [
         ["▸ The three boards", "天榜 Heaven List: the furthest climb.\n期榜 This Week: layers climbed since Monday.\n塔榜 The Tower: the highest floor."],
         ["▸ On the Android app", "Join as a guest. The email link opens the browser, not the app."],
-        ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*."]
+        ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was."],
+        ["▸ 盾 Fair play", "Your save is sealed on your device: it reads as noise, and the game notices when one was changed by hand. That keeps the casual edit out. The real guard is the server: every climb on the boards is measured against how much real time has passed, so an edited save, a moved clock or a forged copy never reaches them. An edited save still plays on your device, because nothing is ever taken away. It is just never ranked."]
       ]
     },
     {

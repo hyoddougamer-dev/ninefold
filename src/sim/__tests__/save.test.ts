@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { exportSave, importSave, keepSpare, load, rearm, save, saveFileName, wipe } from '../save.ts';
+import { exportSave, importSave, keepSpare, load, rearm, save, saveFileName, wasEdited, wipe } from '../save.ts';
+import { MAGIC, open, seal } from '../seal.ts';
 import { newState, power, tribulationPool, validate, type State } from '../state.ts';
 import { chestLimit } from '../chest.ts';
 import { advance, rate } from '../time.ts';
@@ -105,7 +106,8 @@ describe('存 the save', () => {
   it('exports something a person can carry away and bring back', () => {
     const before = deep(6, 7);
     const text = exportSave(before);
-    expect(JSON.parse(text).game).toBe('ninefold');
+    expect(text.startsWith(MAGIC)).toBe(true);
+    expect(JSON.parse(open(text).json ?? '').game).toBe('ninefold');
 
     const { state, error } = importSave(text, T0);
     expect(error).toBeNull();
@@ -184,7 +186,7 @@ describe('存 the save', () => {
   });
 
   it('names the file after where you had got to', () => {
-    expect(saveFileName(deep(7, 0))).toMatch(/^ninefold-realm7-\d{4}-\d{2}-\d{2}\.json$/);
+    expect(saveFileName(deep(7, 0))).toMatch(/^ninefold-realm7-\d{4}-\d{2}-\d{2}\.txt$/);
   });
 
   it('erases the spare too, or starting again does not', () => {
@@ -218,6 +220,64 @@ describe('存 the save', () => {
  * Nothing here is random in the sense that matters: the seed is fixed, so a failure is
  * a failure anybody can reproduce by running the suite again.
  */
+describe('封 the seal', () => {
+  beforeEach(() => rearm());
+
+  it('writes nothing a person can read, and reads back exactly what went in', () => {
+    const before = deep(5, 3);
+    save(before);
+    const raw = localStorage.getItem('ninefold.save.v1') ?? '';
+    expect(raw.startsWith(MAGIC)).toBe(true);
+    expect(raw).not.toMatch(/realm|"qi"|materials/);
+    expect(load(T0).state.realm).toBe(5);
+    expect(wasEdited()).toBe(false);
+  });
+
+  it('seals the same save to the same text, and any change breaks it', () => {
+    const json = JSON.stringify(deep(4, 2));
+    expect(seal(json)).toBe(seal(json));
+    expect(open(seal(json))).toEqual({ json, intact: true });
+    const forged = seal(json.replace('"realm":4', '"realm":9'));
+    const spliced = seal(json).slice(0, 26) + forged.slice(26);
+    expect(open(spliced).intact).toBe(false);
+  });
+
+  it('an old plain save still loads, quietly, and is sealed from then on', () => {
+    localStorage.setItem('ninefold.save.v1', JSON.stringify(deep(6, 1)));
+    const back = load(T0).state;
+    expect(back.realm).toBe(6);
+    expect(wasEdited()).toBe(false);
+    save(back);
+    expect((localStorage.getItem('ninefold.save.v1') ?? '').startsWith(MAGIC)).toBe(true);
+  });
+
+  it('a save changed by hand still plays, and the phone remembers it was touched', () => {
+    save(deep(2, 3));
+    const raw = localStorage.getItem('ninefold.save.v1') ?? '';
+    const inside = JSON.parse(open(raw).json ?? '');
+    const forged = seal(JSON.stringify({ ...inside, realm: 9 }));
+    localStorage.setItem('ninefold.save.v1', forged.slice(0, 12) + raw.slice(12, 26) + forged.slice(26));
+    expect(load(T0).state.realm).toBe(9);          // nothing is taken away
+    expect(wasEdited()).toBe(true);                // but the rankings screen says so
+    wipe();
+    expect(wasEdited()).toBe(false);               // and a fresh start is a fresh start
+  });
+
+  it('a plain save put back by hand after sealing is noticed too', () => {
+    save(deep(3, 0));
+    localStorage.setItem('ninefold.save.v1', JSON.stringify(deep(8, 0)));
+    load(T0);
+    expect(wasEdited()).toBe(true);
+  });
+
+  it('a sealed copy restores, and so does every plain copy taken before the seal', () => {
+    expect(importSave(exportSave(deep(7, 4)), T0).state?.realm).toBe(7);
+    const old = JSON.stringify({ game: 'ninefold', exported: T0, state: deep(5, 5) });
+    expect(importSave(old, T0).state?.realm).toBe(5);
+    expect(importSave(`${MAGIC}garbage`, T0).state).toBeNull();
+  });
+});
+
 describe('亂 a save that has been mangled', () => {
   /** A tiny seeded generator, so a break is reproducible rather than a story. */
   function rng(seed: number) {

@@ -161,6 +161,11 @@ export const RANKS = {
     reserved: 'The titles and the 修士 names are not for taking.',
     offline: 'That could not be saved just now.',
   },
+  /** 盾 Always under the boards, because a player who wonders whether they are fair should not have to ask. */
+  fairHead: '盾 Fair play',
+  fair: 'Your save is sealed on this device, and every climb on these boards was checked by the server against real time. A save changed by hand still plays, but it is never ranked.',
+  /** 改 Only on a phone whose save was changed outside the game. Nothing is taken away. */
+  edited: 'This save was changed outside the game. It still plays here, but the boards only ever count what the server can verify.',
   titlesHead: '冠 Titles',
   titles: 'The first on the Heaven List wears 天下第一 First Under Heaven. The week\'s top 1, 10 and 100 wear 期首, 期十 or 期百 for the week after.',
   cloudHead: 'A cultivator in the cloud',
@@ -1432,7 +1437,7 @@ export const SAVE = {
   /** 雲 The same, for a cultivator signed in to the rankings: there is a cloud copy. */
   whyCloud: 'Your save lives on this phone, and a copy is kept in the cloud while you are signed in to the rankings. A file of your own is still the one copy nobody else holds.',
   copy: 'Copy the save',
-  copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things.',
+  copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things. It is sealed: it reads as noise, and it restores exactly as it was.',
   copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
   download: 'Download a file',
   downloaded: 'Saved as a file.',

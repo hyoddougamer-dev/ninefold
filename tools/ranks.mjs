@@ -11,6 +11,9 @@
  *   npm run ranks          (the preview must be running: npx vite preview --port 4173)
  */
 import { chromium } from 'playwright';
+import { isSealed, open as unsealText } from '../src/sim/seal.ts';
+// 封 The game seals what it writes; a save written here is plain, and both open.
+const unseal = (raw) => (raw == null ? null : JSON.parse(isSealed(raw) ? unsealText(raw).json : raw));
 
 const BASE = process.env.BASE ?? 'http://localhost:4173/';
 const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -124,8 +127,26 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check((await page.locator('.ranks .rlist li').first().locator('.rcall').textContent()) === '劍仙 Sword Immortal',
     'in English beside the characters', await page.locator('.ranks .rlist .rcall').first().textContent());
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
+  check(/Fair play/.test(await page.locator('.ranks').textContent()), 'the boards say, under them, how they are kept fair');
+  check(await page.locator('.ranks .rstatus[data-tone="bad"]').count() === 0, 'and an untouched save hears nothing about editing');
+  // 改 A save changed by hand: it plays on, and the rankings screen says so plainly.
+  await page.evaluate(() => localStorage.setItem('ninefold.edited', '1'));
   await page.locator('.ranks .rtabs button', { hasText: 'Tower' }).click();
   await page.waitForTimeout(400);
+  check(/changed outside the game/.test(await page.locator('.ranks .rstatus[data-tone="bad"]').textContent().catch(() => '')),
+    'a save changed outside the game is told, in words, that the boards only count what verifies');
+  if (SHOTS) {
+    await page.locator('.ranks').evaluate((el) => { el.style.height = 'auto'; el.style.maxHeight = 'none'; el.style.overflow = 'visible'; });
+    await page.locator('.ranks').screenshot({ path: `${SHOTS}/${label}-fair.png` });
+    await page.reload();
+  }
+  await page.evaluate(() => localStorage.removeItem('ninefold.edited'));
+  if (SHOTS) {
+    await page.locator('nav.tabs .ranktab').click().catch(() => {});
+    await page.waitForSelector('.ranks .rtabs', { timeout: 6000 }).catch(() => {});
+    await page.locator('.ranks .rtabs button', { hasText: 'Tower' }).click();
+    await page.waitForTimeout(400);
+  }
   check(await page.locator('.ranks .rlist li').count() === 3, 'the tower board leaves off who has no floor');
   check(await page.evaluate(() => localStorage.getItem('ninefold.ranked')) === '1', 'the device remembers it signed in');
   await page.keyboard.press('Escape');
@@ -164,7 +185,7 @@ console.log('\na new device');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/newdevice-pick.png` });
   await page.locator('.cloudpick button.act').first().click();
   await page.waitForTimeout(700);
-  const realm = await page.evaluate(() => JSON.parse(localStorage.getItem('ninefold.save.v1') ?? '{}').realm);
+  const realm = unseal(await page.evaluate(() => localStorage.getItem('ninefold.save.v1')))?.realm;
   check(realm === 5, 'continuing from the cloud brings the cultivator here', String(realm));
   check(!(await page.evaluate(() => location.hash)).includes('access_token'), 'and the link is taken out of the address');
   await page.close();
@@ -196,7 +217,7 @@ console.log('\na new device, by the code in the email');
   check(seen.syncs.length === 0, 'nothing was synced before the choice, so the cloud copy is untouched', String(seen.syncs.length));
   await page.locator('.cloudpick button.act').first().click();
   await page.waitForTimeout(600);
-  const realm = await page.evaluate(() => JSON.parse(localStorage.getItem('ninefold.save.v1') ?? '{}').realm);
+  const realm = unseal(await page.evaluate(() => localStorage.getItem('ninefold.save.v1')))?.realm;
   check(realm === 4, 'and continuing brings it here', String(realm));
   await page.close();
 }
