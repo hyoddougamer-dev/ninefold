@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>九境 Painel</title>
+<meta name="theme-color" content="#14110D">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@1,600&display=swap">
+<style>
+  /*
+   * 脈 The developer's panel: the whole test on one page, read from the ranked server's
+   * stats() (counts only) and the public boards. Portuguese, because it is Bruno's.
+   */
+  :root { color-scheme: dark; --ground:#14110D; --panel:#1C1812; --line:#3A3226; --text:#EDE3D2; --faint:#A0937D;
+          --jade:#7FB495; --gold:#D4AF56; --sky:#8AA9D6; --red:#D98B7A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  main { max-width: 880px; margin: 0 auto; padding: 22px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { margin: 0; font: 700 28px/1.1 Cinzel, Georgia, serif; letter-spacing: .02em; }
+  h1 span { color: var(--gold); font-family: 'Noto Serif SC', 'Songti SC', serif; font-weight: 400; margin-right: 8px; }
+  .sub { font: italic 600 18px/1.3 'Cormorant Garamond', Georgia, serif; color: #CDB67F; margin: 4px 0 0; }
+  .when { font-size: 13px; color: var(--faint); display: flex; gap: 10px; align-items: center; }
+  button { font: inherit; color: var(--text); background: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--gold); }
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+  .card h2 { margin: 0 0 6px; font: 600 12px/1 Cinzel, Georgia, serif; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  .big { font: 700 34px/1.05 Cinzel, Georgia, serif; font-variant-numeric: tabular-nums; }
+  .small { font-size: 13px; color: var(--faint); margin: 6px 0 0; }
+  .small b { color: var(--text); font-weight: 600; }
+  .bad { color: var(--red); }
+  section.card h3 { margin: 0 0 4px; font: 700 18px/1.2 Cinzel, Georgia, serif; }
+  .help { font-size: 13px; color: var(--faint); margin: 0 0 10px; max-width: 64ch; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--faint); margin-bottom: 6px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  svg { display: block; width: 100%; height: auto; }
+  .bars { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; align-items: end; height: 150px; }
+  .bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; font-size: 12px; color: var(--faint); }
+  .bar div { width: 100%; background: linear-gradient(var(--gold), #9C7F36); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .bar b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tabs button[aria-selected="true"] { border-color: var(--gold); color: var(--gold); }
+  ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px;
+       border: 1px solid var(--line); border-radius: 8px; }
+  li .n { color: var(--gold); font: 700 15px Cinzel, Georgia, serif; text-align: center; }
+  li .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li .who em { font-style: normal; color: var(--gold); font-size: 12px; margin-left: 6px; }
+  li .v { font-variant-numeric: tabular-nums; color: var(--faint); font-size: 13px; }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .links a { color: var(--jade); text-decoration: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+  .links a:hover { border-color: var(--jade); }
+  .note { font-size: 13px; color: var(--faint); border-left: 2px solid var(--gold); padding-left: 10px; }
+  .empty { font-size: 13px; color: var(--faint); padding: 18px 0; text-align: center; }
+  .err { color: var(--red); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1><span>九境</span>Painel</h1>
+      <p class="sub">O teste, visto de cima</p>
+    </div>
+    <div class="when"><span id="when">A ler…</span><button id="again" type="button">Atualizar</button></div>
+  </header>
+  <p id="err" class="err" hidden></p>
+
+  <div class="grid">
+    <div class="card"><h2>Jogadores</h2><div class="big" id="players">·</div>
+      <p class="small"><b id="new24">·</b> nas últimas 24 h · <b id="new7">·</b> em 7 dias</p></div>
+    <div class="card"><h2>Ativos</h2><div class="big" id="active24">·</div>
+      <p class="small">nas últimas 24 h · <b id="active7">·</b> em 7 dias</p></div>
+    <div class="card"><h2>Discord</h2><div class="big" id="discord">·</div>
+      <p class="small"><b id="online">·</b> online agora</p></div>
+    <div class="card"><h2>Jogo justo</h2><div class="big" id="refused">·</div>
+      <p class="small">recusadas de <b id="syncs">·</b> sincronizações em 24 h · contas marcadas: <b id="held">·</b></p></div>
+  </div>
+
+  <section class="card">
+    <h3>Crescimento</h3>
+    <p class="help">Uma leitura por hora. Jogadores com conta no ranking, os que abriram o jogo nas últimas 24 horas, e os membros do Discord.</p>
+    <div class="legend"><span><i style="background:var(--gold)"></i>Jogadores</span><span><i style="background:var(--jade)"></i>Ativos (24 h)</span><span><i style="background:var(--sky)"></i>Discord</span></div>
+    <div id="chart"></div>
+  </section>
+
+  <section class="card">
+    <h3>Onde estão</h3>
+    <p class="help">Em que reino está cada jogador, contando só o que o servidor verificou. Diz-te até onde os testers chegam e onde param.</p>
+    <div class="bars" id="realms"></div>
+  </section>
+
+  <section class="card">
+    <h3>Rankings</h3>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-k="climb" aria-selected="true">天榜 Heaven List</button>
+      <button type="button" role="tab" data-k="week" aria-selected="false">期榜 Esta semana</button>
+      <button type="button" role="tab" data-k="tower" aria-selected="false">塔榜 Torre</button>
+    </div>
+    <ol id="board"></ol>
+  </section>
+
+  <section class="card">
+    <h3>Atalhos</h3>
+    <div class="links">
+      <a href="../" target="_blank" rel="noopener">Jogo</a>
+      <a href="https://discord.gg/JFD9cTGscN" target="_blank" rel="noopener">Discord</a>
+      <a href="https://github.com/hyoddougamer-dev/ninefold/actions" target="_blank" rel="noopener">GitHub Actions</a>
+      <a href="../testar/" target="_blank" rel="noopener">Página dos testers</a>
+    </div>
+  </section>
+
+  <p class="note">O que isto conta: só quem entrou nos rankings (como convidado ou com email). Quem joga sem nunca abrir os rankings não aparece aqui, porque o jogo não envia nada sem o jogador pedir. Os números são totais: nenhum email, nenhum save e nenhum nome além dos que os rankings já mostram.</p>
+</main>
+<script>
+  // 脈 Read-only: stats() gives counts, board() the public top ten. Same key the game uses.
+  const API = 'https://yqppvmuwlhibswbbvjzz.supabase.co/rest/v1/rpc/';
+  const KEY = 'sb_publishable_JnQK0Hq38VFR3z7YDuxIiw_DK95oag3';
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => (n == null ? '·' : Number(n).toLocaleString('pt-PT'));
+  let board = 'climb';
+
+  async function rpc(name, body = {}) {
+    const r = await fetch(API + name, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error(`${name} ${r.status}`);
+    return r.json();
+  }
+
+  function chart(pulse) {
+    const box = $('chart');
+    if (pulse.length < 2) { box.innerHTML = '<p class="empty">O gráfico enche-se a cada hora. Volta daqui a pouco.</p>'; return; }
+    const W = 800, H = 220, L = 40, R = 12, T = 12, B = 28;
+    const t0 = new Date(pulse[0].at).getTime(), t1 = new Date(pulse.at(-1).at).getTime();
+    const series = [['players', 'var(--gold)'], ['active24', 'var(--jade)'], ['discord', 'var(--sky)']];
+    const top = Math.max(1, ...pulse.flatMap((p) => series.map(([k]) => p[k] ?? 0)));
+    const step = Math.max(1, Math.ceil(top / 4));
+    const max = step * 4;
+    const x = (t) => L + (W - L - R) * ((t - t0) / Math.max(1, t1 - t0));
+    const y = (v) => T + (H - T - B) * (1 - v / max);
+    let svg = '';
+    for (let v = 0; v <= max; v += step) {
+      svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+      svg += `<text x="${L - 8}" y="${y(v) + 4}" fill="var(--faint)" font-size="12" text-anchor="end">${v}</text>`;
+    }
+    const days = [...new Set(pulse.map((p) => p.at.slice(0, 10)))];
+    const every = Math.max(1, Math.ceil(days.length / 6));
+    days.forEach((d, i) => {
+      if (i % every) return;
+      const t = new Date(`${d}T00:00:00Z`).getTime();
+      if (t < t0 || t > t1) return;
+      svg += `<text x="${x(t)}" y="${H - 8}" fill="var(--faint)" font-size="12" text-anchor="middle">${d.slice(8, 10)}/${d.slice(5, 7)}</text>`;
+    });
+    for (const [k, c] of series) {
+      const pts = pulse.filter((p) => p[k] != null).map((p) => `${x(new Date(p.at).getTime()).toFixed(1)},${y(p[k]).toFixed(1)}`);
+      if (pts.length > 1) svg += `<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Jogadores, ativos e membros do Discord ao longo do tempo">${svg}</svg>`;
+  }
+
+  function realms(list) {
+    const by = Object.fromEntries(list.map((r) => [r.realm, r.players]));
+    const max = Math.max(1, ...list.map((r) => r.players));
+    $('realms').innerHTML = Array.from({ length: 9 }, (_, i) => {
+      const n = by[i + 1] ?? 0;
+      return `<div class="bar"><b>${n}</b><div style="height:${Math.round((n / max) * 100)}%"></div><span>${i + 1}</span></div>`;
+    }).join('');
+  }
+
+  async function showBoard() {
+    document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.k === board)));
+    const rows = await rpc('board', { kind: board, lim: 10 }).catch(() => null);
+    if (!rows) { $('board').innerHTML = '<p class="empty">Os rankings não responderam agora.</p>'; return; }
+    if (!rows.length) { $('board').innerHTML = '<p class="empty">Ainda ninguém neste ranking.</p>'; return; }
+    const cell = (r) => board === 'tower' ? `andar ${r.tower}`
+      : board === 'week' ? `+${r.gain} camadas`
+        : r.marks > 0 ? `topo · 雷 ${r.marks}` : `reino ${Math.floor(r.climb / 9) + 1} · ${r.climb % 9}/9`;
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    $('board').innerHTML = rows.map((r) => `<li><span class="n">${r.rank}</span>
+      <span class="who">${esc(r.name)}${r.title ? `<em>${esc(r.title)}</em>` : ''}</span><span class="v">${cell(r)}</span></li>`).join('');
+  }
+
+  async function read() {
+    $('err').hidden = true;
+    try {
+      const s = await rpc('stats');
+      const last = s.pulse.at(-1);
+      $('players').textContent = fmt(s.players);
+      $('new24').textContent = fmt(s.new24);
+      $('new7').textContent = fmt(s.new7);
+      $('active24').textContent = fmt(s.active24);
+      $('active7').textContent = fmt(s.active7);
+      $('discord').textContent = fmt(last?.discord);
+      $('online').textContent = fmt(last?.online);
+      $('refused').textContent = fmt(s.refused24);
+      $('refused').classList.toggle('bad', s.refused24 > 0);
+      $('syncs').textContent = fmt(s.syncs24);
+      $('held').textContent = fmt(s.held);
+      chart(s.pulse);
+      realms(s.realms);
+      $('when').textContent = `Atualizado às ${new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`;
+    } catch (e) {
+      $('err').textContent = 'Não consegui ler o servidor agora. Tenta atualizar daqui a um minuto.';
+      $('err').hidden = false;
+    }
+    showBoard();
+  }
+
+  document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { board = b.dataset.k; showBoard(); }));
+  $('again').addEventListener('click', read);
+  read();
+  setInterval(read, 60_000);
+</script>
+</body>
+</html>

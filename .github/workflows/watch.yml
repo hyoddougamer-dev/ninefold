@@ -7,11 +7,15 @@
 # sync log counted (never a player's id, email or anything else that names somebody,
 # because this repository and its logs are public).
 #
-# Run by hand from Actions, or by a push that touches this file.
+# Run by hand from Actions, by a push that touches this file, and once an hour, when it
+# also takes 脈 the pulse: players, who was active, and the Discord server's members and
+# who is online, one row an hour, which the developer's panel (/painel/) draws.
 name: watch
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
   push:
     branches: [main]
     paths: ['.github/workflows/watch.yml']
@@ -27,6 +31,29 @@ jobs:
       URL: https://yqppvmuwlhibswbbvjzz.supabase.co
       TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
+      - name: 脈 Take the pulse (players, active, Discord members and online)
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+        run: |
+          M=null; O=null
+          if [ -n "$DISCORD_BOT_TOKEN" ] && [ -n "$DISCORD_GUILD_ID" ]; then
+            G=$(curl -sS "https://discord.com/api/v10/guilds/$DISCORD_GUILD_ID?with_counts=true" -H "Authorization: Bot $DISCORD_BOT_TOKEN" || echo '{}')
+            M=$(echo "$G" | node -e 'const g=JSON.parse(require("fs").readFileSync(0,"utf8"));process.stdout.write(String(Number.isInteger(g.approximate_member_count)?g.approximate_member_count:"null"))')
+            O=$(echo "$G" | node -e 'const g=JSON.parse(require("fs").readFileSync(0,"utf8"));process.stdout.write(String(Number.isInteger(g.approximate_presence_count)?g.approximate_presence_count:"null"))')
+          fi
+          echo "Discord: $M members, $O online"
+          node -e 'process.stdout.write(JSON.stringify({ query: `select public.take_pulse(${process.argv[1]}, ${process.argv[2]})` }))' "$M" "$O" > /tmp/p.json
+          curl -sSf -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+            -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data @/tmp/p.json > /dev/null
+          echo "pulse taken"
+      - name: What the panel reads
+        run: |
+          KEY=$(curl -sSf "https://api.supabase.com/v1/projects/$REF/api-keys" -H "Authorization: Bearer $TOKEN" \
+            | node -e 'const k=JSON.parse(require("fs").readFileSync(0,"utf8"));const p=k.find(x=>x.type==="publishable")??k.find(x=>x.name==="anon");process.stdout.write(p?p.api_key:"")')
+          echo "::add-mask::$KEY"
+          curl -sSf "$URL/rest/v1/rpc/stats" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}' \
+            | node -e 'const s=JSON.parse(require("fs").readFileSync(0,"utf8"));const {pulse,...rest}=s;console.log(JSON.stringify(rest));console.log("pulse rows:",pulse.length)'
       - name: The boards, as a player sees them
         run: |
           KEY=$(curl -sSf "https://api.supabase.com/v1/projects/$REF/api-keys" -H "Authorization: Bearer $TOKEN" \
