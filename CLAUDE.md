@@ -179,6 +179,17 @@ moves a pin by taking it off the old post first. The step pictures
 come from `tools/install-art.mjs`, and the Pages deploy fetches the APK and the zip from the
 live site and fails unless they are the same bytes.
 
+## 脈 The panel
+
+`/painel/` on the game's site is Bruno's one page for the test (Portuguese, noindex). Its
+top half reads `stats()`, counts only, and the public boards; `.github/workflows/watch.yml`
+takes one pulse an hour (players, active, the Discord's members and online) for its chart.
+Its 師 Jogadores list reads `panel_players(key)`: per player, behind a key Bruno holds. Only
+the key's SHA-256 is in the repository (`supabase/migrations/20260929010000_panel.sql`);
+to change the key, write a new migration with a new hash and give Bruno the new key in the
+chat, never in a file. It never returns an email or an id, and the schema test holds it to
+that. The repository and its Action logs are public: nothing per player is ever printed there.
+
 ## 樂 Music
 
 Bruno makes the tracks in Suno (on a paid plan, which is what lets a game use them) and
