@@ -1,0 +1,58 @@
+# 察 What the ranked server has seen, read without touching anything.
+#
+# A tester said the save is plain text and he edited his way to the ninth realm. The
+# save on a phone is the player's own, and editing it is always possible; what the
+# server promises is that an edited save never reaches the boards. This reads, and only
+# reads, whether that held: the public boards exactly as any player sees them, and the
+# sync log counted (never a player's id, email or anything else that names somebody,
+# because this repository and its logs are public).
+#
+# Run by hand from Actions, or by a push that touches this file.
+name: watch
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/watch.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    env:
+      REF: yqppvmuwlhibswbbvjzz
+      URL: https://yqppvmuwlhibswbbvjzz.supabase.co
+      TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: The boards, as a player sees them
+        run: |
+          KEY=$(curl -sSf "https://api.supabase.com/v1/projects/$REF/api-keys" -H "Authorization: Bearer $TOKEN" \
+            | node -e 'const k=JSON.parse(require("fs").readFileSync(0,"utf8"));const p=k.find(x=>x.type==="publishable")??k.find(x=>x.name==="anon");process.stdout.write(p?p.api_key:"")')
+          echo "::add-mask::$KEY"
+          for kind in climb week tower; do
+            echo "── $kind"
+            curl -sSf "$URL/rest/v1/rpc/board" -H "apikey: $KEY" -H "Content-Type: application/json" \
+              -d "{\"kind\":\"$kind\",\"lim\":15}" \
+              | node -e 'for (const r of JSON.parse(require("fs").readFileSync(0,"utf8"))) console.log(" ", JSON.stringify(Object.fromEntries(Object.entries(r).filter(([k]) => k !== "me"))))'
+          done
+      - name: The sync log, counted
+        run: |
+          q() {
+            node -e 'process.stdout.write(JSON.stringify({ query: process.argv[1] }))' "$1" > /tmp/q.json
+            curl -sSf -X POST "https://api.supabase.com/v1/projects/$REF/database/query" \
+              -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data @/tmp/q.json \
+              | node -e 'for (const r of JSON.parse(require("fs").readFileSync(0,"utf8"))) console.log(" ", JSON.stringify(r))'
+          }
+          echo "── accounts"
+          q "select count(*) as players, count(*) filter (where suspect) as held_as_suspect, count(*) filter (where strikes > 0) as with_strikes, count(*) filter (where banned) as banned from public.profiles"
+          echo "── syncs since the fresh start (2026-09-28 20:37 UTC)"
+          q "select count(*) as syncs, count(*) filter (where ok) as accepted, count(*) filter (where not ok) as refused, count(*) filter (where strike) as strikes, count(*) filter (where suspect) as suspect from public.sync_log where at >= '2026-09-28 20:37+00'"
+          echo "── why syncs were refused, by reason"
+          q "select reason, count(*) as times from public.sync_log, unnest(why) as reason where at >= '2026-09-28 20:37+00' group by reason order by times desc"
+          echo "── the highest standing held, honest players against held ones"
+          q "select p.suspect or p.banned or p.strikes > 0 as held, count(*) as players, max(s.climb) as top_climb, max(s.marks) as top_marks, max(s.tower) as top_tower from public.standings s join public.profiles p on p.id = s.user_id group by 1"
+          echo "── the cloud copies: how far the phones say they are, against what verified"
+          q "select count(*) as saves, count(*) filter (where verified is null) as never_verified, max((latest->>'realm')::int) as highest_realm_claimed, max((verified->>'realm')::int) as highest_realm_verified from public.saves"
