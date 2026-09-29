@@ -26,6 +26,9 @@ async function as(id: string | null, sql: string, params: unknown[] = []) {
   }
 }
 
+// 慢 Starting PGlite and running every migration took past vitest's ten-second default
+// when the machine was busy (a build or a browser running beside it), and the whole file
+// then skipped. A minute is room enough; a real hang still fails.
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(`
@@ -51,7 +54,7 @@ beforeAll(async () => {
       ('${C}', 80, 4, 90, week_of(), 70);
     update profiles set suspect = true where id = '${C}';
   `);
-});
+}, 60_000);   // 慢 a database from nothing and every migration: over ten seconds on a busy machine
 
 describe('榜 the ranked schema', () => {
   it('the boards read, suspects left off, ties to whoever was first', async () => {

@@ -1464,9 +1464,9 @@ export const LOADOUT = {
 };
 
 /**
- * 謝 Who made what. Honest about the tools: the music and the illustrations were made
- * with AI, and the code was written with an AI's help, and a player asking should find
- * that said plainly here rather than in a thread somewhere.
+ * 謝 Who made what. Honest about the tools: the music and the test art were made with AI,
+ * and a player asking should find that said plainly here rather than in a thread
+ * somewhere. The art line says it is test art, because the final art is to be made.
  */
 export const CREDITS = {
   title: '謝 Credits',
@@ -1474,8 +1474,7 @@ export const CREDITS = {
   rows: [
     ['設', 'Design, systems and balance', '師 Shibaki'],
     ['樂', 'Music', 'Made with Suno, for this game.'],
-    ['畫', 'Illustrations', 'Generated with AI, then chosen, edited and cut for the game by 師 Shibaki.'],
-    ['碼', 'Code', 'Written with the help of Claude, an AI model by Anthropic.'],
+    ['畫', 'Illustrations', 'Test art, made with AI tools, then chosen, edited and cut for the game by 師 Shibaki. The final art is planned to be made for the game.'],
     ['字', 'Lettering', 'Cinzel, Cormorant Garamond and Noto Serif SC, under the SIL Open Font License.'],
     ['器', 'Built with', 'React, Vite and Capacitor. The rankings run on Supabase.'],
   ] as const,
