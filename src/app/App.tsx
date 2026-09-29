@@ -39,6 +39,7 @@ import { armJuice, burst, centreOf, float } from './juice.ts';
 import { Trials } from './screens/Trials.tsx';
 import { Help } from './ui/Help.tsx';
 import { Key } from './ui/Key.tsx';
+import { Credits } from './ui/Credits.tsx';
 import { RealmCard } from './ui/RealmCard.tsx';
 import { Awaken } from './ui/Awaken.tsx';
 import { Figure } from './ui/Figure.tsx';
@@ -117,6 +118,7 @@ export function App() {
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
+  const [credits, setCredits] = useState(false);
   const [saving, setSaving] = useState(false);
   // 收 The corner. Shut by default, and shut again on every open: the game's own
   // screen is what a player came back for, not its settings.
@@ -685,7 +687,7 @@ export function App() {
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
-  const covered = help || prologue || ranks || !!cloudPick || key || stele || saving || realmPage || menu || !!driving
+  const covered = help || prologue || ranks || !!cloudPick || key || stele || credits || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   // 指 On the step's own screen the ring goes on the thing to press. Anywhere else it
@@ -778,6 +780,7 @@ export function App() {
               ['?', MENU.help, () => setHelp(true)],
               ['釋', MENU.key, () => setKey(true)],
               ['碑', MENU.stele, () => setStele(true)],
+              ['謝', MENU.credits, () => setCredits(true)],
             ] as const).map(([han, label, go]) => (
               <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
                 <b className="cjk">{han}</b><span>{label}</span>
@@ -1118,6 +1121,8 @@ export function App() {
           </button>
         </div>
       )}
+
+      {credits && <Credits onClose={() => { setCredits(false); sfx.tap(); }} />}
 
       {saving && (
         <SavePanel

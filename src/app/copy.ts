@@ -375,6 +375,7 @@ export const MENU = {
   help: 'How to play',
   key: 'What the characters mean',
   stele: 'The stele',
+  credits: 'Credits',
   report: 'Report a bug',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
@@ -1460,6 +1461,28 @@ export const LOADOUT = {
   noArts: 'You hold no arts yet. Each warden you put down hands over its own.',
   emptySlot: 'empty, a wasted round',
   rotation: 'One art fires each round, in this order, then it starts again. An empty slot fires nothing, so a full sequence is always worth more.',
+};
+
+/**
+ * 謝 Who made what. Honest about the tools: the music and the illustrations were made
+ * with AI, and the code was written with an AI's help, and a player asking should find
+ * that said plainly here rather than in a thread somewhere.
+ */
+export const CREDITS = {
+  title: '謝 Credits',
+  lead: 'Ninefold is made by one developer, 師 Shibaki.',
+  rows: [
+    ['設', 'Design, systems and balance', '師 Shibaki'],
+    ['樂', 'Music', 'Made with Suno, for this game.'],
+    ['畫', 'Illustrations', 'Generated with AI, then chosen, edited and cut for the game by 師 Shibaki.'],
+    ['碼', 'Code', 'Written with the help of Claude, an AI model by Anthropic.'],
+    ['字', 'Lettering', 'Cinzel, Cormorant Garamond and Noto Serif SC, under the SIL Open Font License.'],
+    ['器', 'Built with', 'React, Vite and Capacitor. The rankings run on Supabase.'],
+  ] as const,
+  iconsHead: 'Icons',
+  thanksHead: 'Thanks',
+  thanks: 'To everyone in the closed test, and to the Dao of the Endless Sky community, who waited.',
+  back: 'Back to the game',
 };
 
 export const BESTIARY = {
