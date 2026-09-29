@@ -19,7 +19,7 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--ground); color: var(--text);
          font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+  main { max-width: 1440px; margin: 0 auto; padding: 22px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
   header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   h1 { margin: 0; font: 700 28px/1.1 Cinzel, Georgia, serif; letter-spacing: .02em; }
   h1 span { color: var(--gold); font-family: 'Noto Serif SC', 'Songti SC', serif; font-weight: 400; margin-right: 8px; }
@@ -68,7 +68,7 @@
   .tools input { flex: 1 1 200px; }
   .tools .count { font-size: 13px; color: var(--faint); margin-left: auto; }
   .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
-  table { border-collapse: collapse; width: 100%; min-width: 960px; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; min-width: 1100px; font-size: 14px; }
   th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { font: 600 11px/1.2 Cinzel, Georgia, serif; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
        cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
@@ -82,6 +82,15 @@
   .pill.week { color: var(--gold); border-color: var(--gold); }
   .pill.off { color: var(--faint); }
   .pill.bad { color: var(--red); border-color: var(--red); }
+  td.obs { white-space: normal; min-width: 180px; max-width: 280px; font-size: 13px; color: var(--faint); }
+  td.obs .clr { display: block; color: var(--jade); font-size: 12px; }
+  .ed td { background: rgba(212,175,86,.05); white-space: normal; }
+  .ed textarea { width: 100%; min-height: 70px; font: inherit; color: var(--text); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+  .ed .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .ed .row .said { font-size: 13px; color: var(--faint); }
+  button.warn { border-color: var(--red); color: var(--red); }
+  button.small { padding: 4px 10px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -158,6 +167,8 @@
           <th data-k="joined">No ranking desde</th>
           <th data-k="email">Conta</th>
           <th data-k="held">Anti-cheat</th>
+          <th data-k="note">Observações</th>
+          <th></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -188,7 +199,8 @@
   async function rpc(name, body = {}) {
     const r = await fetch(API + name, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (!r.ok) throw new Error(`${name} ${r.status}`);
-    return r.json();
+    const text = await r.text();   // a function that returns nothing answers with nothing
+    return text ? JSON.parse(text) : null;
   }
 
   function chart(pulse) {
@@ -298,7 +310,7 @@
   const value = (p, k) => ({
     name: p.name.toLowerCase(), state: activity(p)[2], depth: p.marks > 0 ? 1000 + p.marks : (p.realm - 1) * 9 + p.layer,
     tower: p.tower, played: p.started ? -new Date(p.started).getTime() : 0, days: p.days, syncs7: p.syncs7,
-    seen: p.last_seen ? new Date(p.last_seen).getTime() : 0, joined: new Date(p.joined).getTime(), email: p.email ? 0 : 1, held: p.held ? 1 : 0,
+    seen: p.last_seen ? new Date(p.last_seen).getTime() : 0, joined: new Date(p.joined).getTime(), email: p.email ? 0 : 1, held: p.held ? 1 : 0, note: (p.note || '').toLowerCase(),
   }[k]);
   function shown() {
     const q = $('find').value.trim().toLowerCase();
@@ -315,13 +327,46 @@
         <td class="num">${where(p)}</td><td class="num">${p.tower}</td><td class="num">${since(p.started)}</td>
         <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${since(p.last_seen)}</td>
         <td>${day(p.joined)}</td><td>${p.email ? 'email' : 'convidado'}</td>
-        <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td></tr>`;
-    }).join('') || '<tr><td colspan="11" class="empty">Ninguém com esse nome.</td></tr>';
+        <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td>
+        <td class="obs">${esc(p.note || '')}${p.cleared ? `<span class="clr">marcação limpa a ${day(p.cleared)}</span>` : ''}</td>
+        <td><button type="button" class="small" data-edit="${esc(p.name)}">${open === p.name ? 'Fechar' : 'Obs.'}</button></td></tr>`
+        + (open === p.name ? editor(p) : '');
+    }).join('') || '<tr><td colspan="13" class="empty">Ninguém com esse nome.</td></tr>';
   }
+  // 註 One player open at a time: a note, and, for a flagged player, taking the flag off.
+  let open = null;
+  function editor(p) {
+    return `<tr class="ed"><td colspan="13">
+      <textarea id="note" maxlength="500" placeholder="O que se passou, ou o que foi alterado (fica guardado com o jogador)">${esc(p.note || '')}</textarea>
+      <div class="row">
+        <button type="button" id="savenote">Guardar nota</button>
+        ${p.held ? '<button type="button" class="warn" id="clear">Limpar a marcação</button>' : ''}
+        <span class="said" id="said">${p.held ? 'Limpar a marcação tira-lhe os avisos do anti-cheat. Escreve na nota porquê.' : ''}</span>
+      </div></td></tr>`;
+  }
+  async function act(fn) {
+    const note = $('note').value.trim();
+    if (fn === 'panel_clear' && !note) { $('said').textContent = 'Escreve primeiro na nota porque estás a limpar a marcação.'; return; }
+    if (fn === 'panel_clear' && !window.confirm(`Limpar a marcação de ${open}?`)) return;
+    try {
+      await rpc(fn, { key: getKey(), player: open, note });
+      $('said').textContent = fn === 'panel_clear' ? 'Marcação limpa.' : 'Nota guardada.';
+      people = await rpc('panel_players', { key: getKey() });
+      setTimeout(() => { open = null; drawPeople(); }, 700);
+    } catch (e) { $('said').textContent = 'Não deu para guardar agora. Tenta outra vez.'; }
+  }
+  $('rows').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.edit) { open = open === b.dataset.edit ? null : b.dataset.edit; drawPeople(); return; }
+    if (b.id === 'savenote') act('panel_note');
+    if (b.id === 'clear') act('panel_clear');
+  });
   function table() {
-    const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat'];
+    const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat', 'Observações', 'Marcação limpa'];
     const rows = shown().map((p) => [p.name, activity(p)[0], p.realm, p.layer, p.marks, p.tower, day(p.started), p.days, p.syncs7,
-      p.last_seen ? new Date(p.last_seen).toLocaleString('pt-PT') : '', day(p.joined), p.email ? 'email' : 'convidado', p.held ? 'marcado' : 'limpo']);
+      p.last_seen ? new Date(p.last_seen).toLocaleString('pt-PT') : '', day(p.joined), p.email ? 'email' : 'convidado', p.held ? 'marcado' : 'limpo',
+      p.note || '', p.cleared ? day(p.cleared) : '']);
     return [head, ...rows];
   }
   async function openPanel(k) {
@@ -362,7 +407,7 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
   if (getKey()) openPanel(getKey());
-  setInterval(() => { if (getKey() && !$('players-view').hidden) openPanel(getKey()); }, 120_000);
+  setInterval(() => { if (getKey() && !$('players-view').hidden && !open) openPanel(getKey()); }, 120_000);
 </script>
 </body>
 </html>

@@ -196,15 +196,35 @@ describe('榜 the ranked schema', () => {
     await expect(as(A, `select panel_players(null)`)).rejects.toThrow(/wrong key/);
     // The real key is not in this repository; the same function under a test key is.
     const { createHash } = await import('node:crypto');
-    const sql = readFileSync(`${MIGRATIONS}/20260929010000_panel.sql`, 'utf8')
+    const sql = readFileSync(`${MIGRATIONS}/20260929020000_panel_notes.sql`, 'utf8')
       .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`);
     await db.exec(sql);
     const rows = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p;
     expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(Object.keys(rows[0]).sort()).toEqual(
-      ['climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'realm', 'started', 'syncs7', 'tower']);
+      ['cleared', 'climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'note', 'realm', 'started', 'syncs7', 'tower']);
     expect(JSON.stringify(rows)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}-/);
     expect(rows.every((r: any) => typeof r.email === 'boolean')).toBe(true);
+
+    // 清 A flag taken off, and a note, only with the key.
+    const flagged = rows.find((r: any) => r.held) ?? rows[0];
+    const was = (await db.query(`select strikes, suspect, banned from profiles where lower(name) = lower('${flagged.name}')`)).rows[0] as any;
+    await db.exec(`update profiles set strikes = 2, suspect = true where lower(name) = lower('${flagged.name}')`);
+    await expect(as(null, `select panel_clear('guess', '${flagged.name}', 'x')`)).rejects.toThrow(/wrong key/);
+    await expect(as(null, `select panel_note('guess', '${flagged.name}', 'x')`)).rejects.toThrow(/wrong key/);
+    await expect(as(null, `select panel_clear('test-key', 'Nobody At All', 'x')`)).rejects.toThrow(/no such player/);
+    await as(null, `select panel_clear('test-key', '${flagged.name.toUpperCase()}', 'A test, said so on Discord.')`);
+    const after = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p.find((r: any) => r.name === flagged.name);
+    expect(after).toMatchObject({ held: false, note: 'A test, said so on Discord.' });
+    expect(after.cleared).toBeTruthy();
+    await as(null, `select panel_note('test-key', '${flagged.name}', 'Rewarded at launch.')`);
+    const noted = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p.find((r: any) => r.name === flagged.name);
+    expect(noted.note).toBe('Rewarded at launch.');
+    expect(noted.cleared).toBe(after.cleared);
+    await expect(as(A, `select * from panel_notes`)).rejects.toThrow(/permission denied/);
+    await expect(as(null, `select panel_ok('test-key')`)).rejects.toThrow(/permission denied/);
+    // and back as it was, for the tests after this one
+    await db.exec(`update profiles set strikes = ${was.strikes}, suspect = ${was.suspect}, banned = ${was.banned} where lower(name) = lower('${flagged.name}')`);
   });
 
   it('where I stand, for the signed-in player only', async () => {
