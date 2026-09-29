@@ -176,6 +176,21 @@ describe('榜 the ranked schema', () => {
     await expect(as(E, `select barred_for('${E}')`)).rejects.toThrow(/permission denied/);
   });
 
+  it('the panel reads counts, never a row, and only the server takes a pulse', async () => {
+    const st = ((await as(null, `select stats() as s`)).rows[0] as any).s;
+    expect(st.players).toBeGreaterThanOrEqual(1);
+    expect(Array.isArray(st.realms) && Array.isArray(st.pulse)).toBe(true);
+    const text = JSON.stringify(st);
+    expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);        // no player id anywhere
+    expect(text).not.toMatch(/@|Alpha|Beta|Gamma/);             // no email, no name
+    await expect(as(null, `select take_pulse(5, 2)`)).rejects.toThrow(/permission denied/);
+    await expect(as(A, `select * from pulse`)).rejects.toThrow(/permission denied/);
+    await db.exec('set role service_role');
+    try { await db.exec(`select take_pulse(12, 4)`); } finally { await db.exec('reset role'); }
+    const after = ((await as(null, `select stats() as s`)).rows[0] as any).s;
+    expect(after.pulse.at(-1)).toMatchObject({ discord: 12, online: 4 });
+  });
+
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
