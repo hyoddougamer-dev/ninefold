@@ -19,7 +19,7 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--ground); color: var(--text);
          font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-  main { max-width: 880px; margin: 0 auto; padding: 22px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
   header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   h1 { margin: 0; font: 700 28px/1.1 Cinzel, Georgia, serif; letter-spacing: .02em; }
   h1 span { color: var(--gold); font-family: 'Noto Serif SC', 'Songti SC', serif; font-weight: 400; margin-right: 8px; }
@@ -59,6 +59,29 @@
   .note { font-size: 13px; color: var(--faint); border-left: 2px solid var(--gold); padding-left: 10px; }
   .empty { font-size: 13px; color: var(--faint); padding: 18px 0; text-align: center; }
   .err { color: var(--red); font-size: 14px; }
+  /* 師 The private list: built for a PC, still usable on a phone (it scrolls sideways). */
+  .keyrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .keyrow input, .tools input { font: inherit; color: var(--text); background: var(--ground); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; min-width: 0; }
+  .keyrow input { flex: 1 1 260px; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+  .tools input { flex: 1 1 200px; }
+  .tools .count { font-size: 13px; color: var(--faint); margin-left: auto; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 960px; font-size: 14px; }
+  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font: 600 11px/1.2 Cinzel, Georgia, serif; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+       cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--panel); }
+  th[data-dir]::after { content: ' ▾'; color: var(--gold); }
+  th[data-dir="asc"]::after { content: ' ▴'; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  th.num { text-align: right; }
+  tbody tr:hover { background: rgba(212,175,86,.06); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); }
+  .pill.on { color: var(--jade); border-color: var(--jade); }
+  .pill.week { color: var(--gold); border-color: var(--gold); }
+  .pill.off { color: var(--faint); }
+  .pill.bad { color: var(--red); border-color: var(--red); }
 </style>
 </head>
 <body>
@@ -104,6 +127,42 @@
       <button type="button" role="tab" data-k="tower" aria-selected="false">塔榜 Torre</button>
     </div>
     <ol id="board"></ol>
+  </section>
+
+  <section class="card" id="private">
+    <h3>師 Jogadores <span style="font: 400 13px system-ui; color: var(--faint)">· privado</span></h3>
+    <p class="help">Cada jogador com conta no ranking: até onde chegou, há quanto tempo joga, quando voltou e em quantos dias jogou. Serve para ver quem está ativo e decidir recompensas. Precisa da tua chave; fica guardada só neste browser.</p>
+    <form class="keyrow" id="keyform">
+      <input id="key" type="password" autocomplete="off" placeholder="A chave do painel" aria-label="A chave do painel">
+      <button type="submit">Abrir</button>
+      <button type="button" id="forget" hidden>Esquecer a chave neste browser</button>
+    </form>
+    <p id="keyerr" class="err" hidden></p>
+    <div id="players-view" hidden>
+      <div class="tools">
+        <input id="find" type="search" placeholder="Procurar um nome" aria-label="Procurar um nome">
+        <button type="button" id="copytsv">Copiar para Excel</button>
+        <button type="button" id="csv">Descarregar CSV</button>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr>
+          <th data-k="name">Nome</th>
+          <th data-k="state">Atividade</th>
+          <th data-k="depth" class="num">Reino</th>
+          <th data-k="tower" class="num">Torre</th>
+          <th data-k="played" class="num">Joga há</th>
+          <th data-k="days" class="num">Dias com jogo</th>
+          <th data-k="syncs7" class="num">Sinc. 7 dias</th>
+          <th data-k="seen" class="num" data-dir="desc">Última vez</th>
+          <th data-k="joined">No ranking desde</th>
+          <th data-k="email">Conta</th>
+          <th data-k="held">Anti-cheat</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p class="help" style="margin-top:10px">Atividade: <b>ativo</b> jogou nas últimas 24 h, <b>esta semana</b> nos últimos 7 dias, <b>parado</b> há mais. "Dias com jogo" conta os dias diferentes em que o jogo falou com o servidor. "Conta: email" quer dizer que o jogador pode levar a conta para outro aparelho, e por isso também para o lançamento.</p>
+    </div>
   </section>
 
   <section class="card">
@@ -215,6 +274,95 @@
   $('again').addEventListener('click', read);
   read();
   setInterval(read, 60_000);
+
+  // 師 The private list. The key is kept in this browser only; the server holds its hash.
+  const KEYSTORE = 'ninefold.panel.key';
+  const getKey = () => { try { return localStorage.getItem(KEYSTORE) || ''; } catch { return ''; } };
+  const setKey = (k) => { try { k ? localStorage.setItem(KEYSTORE, k) : localStorage.removeItem(KEYSTORE); } catch {} };
+  let people = [], sortBy = 'seen', dir = 'desc';
+  const DAY = 86400e3;
+  const since = (iso) => {
+    if (!iso) return '·';
+    const d = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (d < 3600) return `${Math.max(1, Math.round(d / 60))} min`;
+    if (d < 86400) return `${Math.round(d / 3600)} h`;
+    return `${Math.round(d / 86400)} d`;
+  };
+  const day = (iso) => (iso ? new Date(iso).toLocaleDateString('pt-PT') : '·');
+  const where = (p) => (p.marks > 0 ? `topo · 雷 ${p.marks}` : `${p.realm} · ${p.layer}/9`);
+  const activity = (p) => {
+    const age = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : Infinity;
+    return age < DAY ? ['ativo', 'on', 0] : age < 7 * DAY ? ['esta semana', 'week', 1] : ['parado', 'off', 2];
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const value = (p, k) => ({
+    name: p.name.toLowerCase(), state: activity(p)[2], depth: p.marks > 0 ? 1000 + p.marks : (p.realm - 1) * 9 + p.layer,
+    tower: p.tower, played: p.started ? -new Date(p.started).getTime() : 0, days: p.days, syncs7: p.syncs7,
+    seen: p.last_seen ? new Date(p.last_seen).getTime() : 0, joined: new Date(p.joined).getTime(), email: p.email ? 0 : 1, held: p.held ? 1 : 0,
+  }[k]);
+  function shown() {
+    const q = $('find').value.trim().toLowerCase();
+    return people.filter((p) => !q || p.name.toLowerCase().includes(q))
+      .sort((a, b) => { const x = value(a, sortBy), y = value(b, sortBy); return (x < y ? -1 : x > y ? 1 : 0) * (dir === 'asc' ? 1 : -1); });
+  }
+  function drawPeople() {
+    const list = shown();
+    $('count').textContent = `${list.length} de ${people.length} jogadores`;
+    document.querySelectorAll('th[data-k]').forEach((th) => { if (th.dataset.k === sortBy) th.dataset.dir = dir; else delete th.dataset.dir; });
+    $('rows').innerHTML = list.map((p) => {
+      const [label, tone] = activity(p);
+      return `<tr><td><b>${esc(p.name)}</b></td><td><span class="pill ${tone}">${label}</span></td>
+        <td class="num">${where(p)}</td><td class="num">${p.tower}</td><td class="num">${since(p.started)}</td>
+        <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${since(p.last_seen)}</td>
+        <td>${day(p.joined)}</td><td>${p.email ? 'email' : 'convidado'}</td>
+        <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td></tr>`;
+    }).join('') || '<tr><td colspan="11" class="empty">Ninguém com esse nome.</td></tr>';
+  }
+  function table() {
+    const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat'];
+    const rows = shown().map((p) => [p.name, activity(p)[0], p.realm, p.layer, p.marks, p.tower, day(p.started), p.days, p.syncs7,
+      p.last_seen ? new Date(p.last_seen).toLocaleString('pt-PT') : '', day(p.joined), p.email ? 'email' : 'convidado', p.held ? 'marcado' : 'limpo']);
+    return [head, ...rows];
+  }
+  async function openPanel(k) {
+    $('keyerr').hidden = true;
+    try {
+      people = await rpc('panel_players', { key: k });
+      setKey(k);
+      $('key').value = '';
+      $('keyform').querySelector('button[type=submit]').textContent = 'Atualizar lista';
+      $('forget').hidden = false;
+      $('players-view').hidden = false;
+      drawPeople();
+    } catch (e) {
+      $('players-view').hidden = true;
+      $('keyerr').textContent = /400|401|403/.test(String(e.message)) ? 'Essa chave não abre o painel.' : 'O servidor não respondeu agora. Tenta daqui a um minuto.';
+      $('keyerr').hidden = false;
+    }
+  }
+  $('keyform').addEventListener('submit', (e) => { e.preventDefault(); const k = $('key').value.trim() || getKey(); if (k) openPanel(k); });
+  $('forget').addEventListener('click', () => { setKey(''); people = []; $('players-view').hidden = true; $('forget').hidden = true;
+    $('keyform').querySelector('button[type=submit]').textContent = 'Abrir'; });
+  $('find').addEventListener('input', drawPeople);
+  document.querySelectorAll('th[data-k]').forEach((th) => th.addEventListener('click', () => {
+    if (sortBy === th.dataset.k) dir = dir === 'asc' ? 'desc' : 'asc'; else { sortBy = th.dataset.k; dir = th.dataset.k === 'name' ? 'asc' : 'desc'; }
+    drawPeople();
+  }));
+  $('copytsv').addEventListener('click', async () => {
+    const text = table().map((r) => r.join('\t')).join('\n');
+    try { await navigator.clipboard.writeText(text); $('copytsv').textContent = 'Copiado'; } catch { $('copytsv').textContent = 'Não deu para copiar'; }
+    setTimeout(() => { $('copytsv').textContent = 'Copiar para Excel'; }, 1800);
+  });
+  $('csv').addEventListener('click', () => {
+    const csv = table().map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `ninefold-jogadores-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  if (getKey()) openPanel(getKey());
+  setInterval(() => { if (getKey() && !$('players-view').hidden) openPanel(getKey()); }, 120_000);
 </script>
 </body>
 </html>

@@ -191,6 +191,22 @@ describe('榜 the ranked schema', () => {
     expect(after.pulse.at(-1)).toMatchObject({ discord: 12, online: 4 });
   });
 
+  it('the private panel answers only its key, and never with an email', async () => {
+    await expect(as(null, `select panel_players('guess')`)).rejects.toThrow(/wrong key/);
+    await expect(as(A, `select panel_players(null)`)).rejects.toThrow(/wrong key/);
+    // The real key is not in this repository; the same function under a test key is.
+    const { createHash } = await import('node:crypto');
+    const sql = readFileSync(`${MIGRATIONS}/20260929010000_panel.sql`, 'utf8')
+      .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`);
+    await db.exec(sql);
+    const rows = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p;
+    expect(rows.length).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(rows[0]).sort()).toEqual(
+      ['climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'realm', 'started', 'syncs7', 'tower']);
+    expect(JSON.stringify(rows)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}-/);
+    expect(rows.every((r: any) => typeof r.email === 'boolean')).toBe(true);
+  });
+
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
