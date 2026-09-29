@@ -824,6 +824,11 @@ export const DRIVE = {
     + 'A drive settles the rest at once: the same material, the same record, the same '
     + 'drops. What the qi buys is the tapping.',
   free: 'Fighting it one at a time is still free, and always will be.',
+  /** 時 The price, in the unit it is charged in: minutes of the cultivator's own gathering. */
+  price: 'Each kill costs one minute of your own gathering.',
+  priceOld: 'A beast from an earlier realm pays a quarter of what yours do, so each kill of it costs a quarter of a minute.',
+  /** Under the number on each size: what it costs in qi, said as time. */
+  cost: (time: string) => `qi \u00b7 ${time}`,
   never: 'Not now',
   back: 'Back',
   kills: (n: number) => `${n} kills`,

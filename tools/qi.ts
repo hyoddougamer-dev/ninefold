@@ -150,7 +150,7 @@ console.log('出入 every verb, against the price it quotes');
     const beast = [...huntable(s.realm, s.layer)].reverse().find((b) => canDrive(s, b));
     if (beast) {
       const n = DRIVE_SIZES[0];
-      const price = driveCost(s, n);
+      const price = driveCost(s, n, beast);
       const before = s.qi;
       s = drive(s, beast, n, 7).state;
       if (!same(before - s.qi, price)) fail('圍 a drive', `quoted ${num(price)}, took ${num(before - s.qi)}`);
@@ -446,7 +446,7 @@ console.log('\n圍 a price nobody can pay');
   const beast = [...huntable(s.realm, s.layer)].reverse().find((b) => canDrive(s, b));
   if (beast) {
     const n = DRIVE_SIZES[DRIVE_SIZES.length - 1];
-    const price = driveCost(s, n);
+    const price = driveCost(s, n, beast);
     const broke: State = { ...s, qi: price / 2 };
     const out = drive(broke, beast, n, 3);
     if (out.state.qi < broke.qi - 1e-6) {

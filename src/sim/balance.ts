@@ -74,19 +74,39 @@ const LADDER: number[] = (() => {
 
 /** What the nth layer costs, counting from zero across the whole climb. */
 /**
- * 圍 What one kill of a drive costs, as a share of the first rung of the hunter's realm.
+ * 圍 What one kill of a drive costs, in minutes of the hunter's own gathering.
  *
- * Two per cent, so a drive of fifty costs about one rung and a drive of two hundred
- * costs four. A rung is the unit a player already feels. It is the thing the bar fills
- * with, so the price reads as "this drive costs me a layer", which is a decision
- * rather than a number.
+ * One minute, so a drive of fifty costs fifty minutes of qi and a drive of two hundred
+ * three hours and twenty, in every realm. What a drive buys is the cultivator's own
+ * time, so it is priced in time, the same unit 緣 the road already charges in.
  *
- * It is priced off the *hunter's* realm and not the beast's, because what a drive buys
- * is the cultivator's own time: two hundred rats and two hundred dragons are the same
- * afternoon. It is also why the price is flat per kill: a player should be able to do
- * the arithmetic without the screen doing it for them.
+ * 誤 It used to be two per cent of the rung the hunter stood on, so that "a drive of
+ * fifty costs a layer". A layer is not a fixed amount of time, though: measured on the
+ * active cultivator, fifty kills cost two hours of qi in the first realm and twenty-five
+ * to thirty in the seventh to the ninth, a whole day of gathering to save a few minutes
+ * of tapping. Raziel, on the testers' Discord: *"the Drive option in hunt is very
+ * expensive in Qi."* He was right.
+ *
+ * 量 Measured before changing it (tools/habits.ts, with drives turned on for the active
+ * and the once-a-day cultivators): the price barely moves the length of the game. The
+ * climb is paid in qi, a drive turns qi into 材 material, and material buys power that
+ * only matters at a warden. Across a rung's price, one minute, half a minute and a
+ * quarter, the active climb finished within a day or three of fifty-five either way and
+ * the ninth realm arrived on day 44 to 46 every time. What a cheaper drive changes is
+ * comfort: a tenth to a third more kills and power for whoever drives, and nothing at
+ * all for whoever does not. A quarter of a minute was nearly free and put half again
+ * as many kills on the board, so it stops at one.
  */
-export const DRIVE_QI = 0.02;
+export const DRIVE_MINUTES = 1;
+
+/**
+ * 舊 What a kill of a beast from an earlier realm costs in a drive, as a share of the
+ * full price. The same quarter an old beast pays (OLD_BEAST_FLOOR, below): a drive of
+ * two hundred rats costs fifty minutes, because it earns a quarter of what two hundred
+ * of the hunter's own beasts would. It is what makes finishing 圖鑑 the bestiary and a
+ * 緣 fate bar something a drive can do instead of four hundred taps.
+ */
+export const DRIVE_OLD = 0.25;
 
 /**
  * 舊 What an old beast pays, as a share of what this realm's weakest pays.

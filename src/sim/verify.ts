@@ -41,7 +41,7 @@ import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
 import { MEET_GAP, SECLUSION } from './balance.ts';
 import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
-import { driveCost } from './hunt.ts';
+import { driveFloor } from './hunt.ts';
 import { floorBeast, floorPower } from './tower.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -256,7 +256,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const spentAtEnd = after.qi
     + levelsBetween(before, after)
     + pillsBetween(before, after)
-    + (drove > 0 ? driveCost(before, Math.ceil(drove)) : 0);
+    + (drove > 0 ? driveFloor(before, Math.ceil(drove)) : 0);
   need += Math.max(0, spentAtEnd - pocket) / rEnd;
   // 雷 A thunder mark is 雷池 the pool filled: MARK_DAYS of the cultivator's own gathering,
   // however deep the 入定. It used to be charged as qi and divided by the rate at the end,
@@ -281,7 +281,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 擊 Fights beyond a hand's pace that the qi could not have bought as drives.
   // Measured without what the drives themselves could have dropped, or a million edited
   // kills would pay for their own drives in melted gear.
-  if (drove > 0 && driveCost(before, Math.ceil(drove)) / rEnd > have * SLACK) why.push('too-many-kills');
+  if (drove > 0 && driveFloor(before, Math.ceil(drove)) / rEnd > have * SLACK) why.push('too-many-kills');
 
   // 守 Every realm crossed had a warden in the way, and this build has to be able to beat it.
   for (let r = before.realm; r < after.realm; r++) {

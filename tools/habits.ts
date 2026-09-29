@@ -515,7 +515,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       // rest, which is still far greedier than anybody would really play.
       const stuck = atCeiling(s) && !s.wardenFell;
       const keep = stuck ? 0 : ladderBetween(layersOpened(s));
-      const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x) >= keep);
+      const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x, b) >= keep);
       if (!n) break;
       const d = drive(s, b, n, ++seed);
       s = d.state;
