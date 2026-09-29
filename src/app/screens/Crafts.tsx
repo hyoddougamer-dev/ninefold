@@ -8,7 +8,7 @@ import { RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
   arraySlots, blocked, carrySlot, furnaceDiscount, held, levelIn, marksOf, needsOf, placed,
-  progressOf, qualityFor, remainsOf, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
+  progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
 } from '../../sim/crafts.ts';
 import { CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS } from '../../sim/balance.ts';
 import { TOOL_METALS } from '../../data/crafts.ts';
@@ -182,7 +182,7 @@ function Task({ state, r, onStop }: { state: State; r: Recipe | null; onStop: ()
   }
   const why = blocked(state, r);
   const p = progressOf(state, state.at);
-  const wait = why === 'remains' ? CRAFTS.waitingRemains
+  const wait = why === 'remains' && r.remains ? CRAFTS.waitingRemains(state.killed[r.remains] ?? 0, knownAt(r.remains))
     : why === 'chest' ? CRAFTS.waitingChest
     : why === 'needs' ? CRAFTS.waitingNeeds(needsOf(state, r).filter(([k, n]) => held(state, k) < n)
       .map(([k]) => (k === 'mat' ? '材 material' : ITEM_BY_KEY[k]?.name ?? k)).join(', '))
@@ -258,10 +258,10 @@ function Row({ state, r, on, onStart }: { state: State; r: Recipe; on: boolean; 
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
           {marks > 0 && <> · {CRAFTS.familiar(marks)}</>}
         </i>
-        {(r.needs.length > 0 || r.remains) && (
+        {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (
           <span className="cr-needs">
-            {r.remains && (
-              <span data-short={remainsOf(state, r.remains) < 1}>{CRAFTS.remains(remainsOf(state, r.remains))}</span>
+            {r.remains && !known(state, r.remains) && (
+              <span data-short>{CRAFTS.remains(state.killed[r.remains] ?? 0, knownAt(r.remains))}</span>
             )}
             {needsOf(state, r).map(([k, n]) => (
               <span key={k} data-short={held(state, k) < n}>

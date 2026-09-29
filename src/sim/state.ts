@@ -208,8 +208,8 @@ export interface State {
   fate: Record<string, { n: number; best: number }>;
   /**
    * 業 The workshop: experience, the task in hand and the instant it was settled to, the
-   * pouch, familiarity, tools and arrays. Its levels are derived from its experience and
-   * its remains from the kills above. See sim/crafts.ts.
+   * pouch, familiarity, tools and arrays. Its levels are derived from its experience, and
+   * which beasts it can render from the kills above. See sim/crafts.ts.
    */
   crafts: Crafts;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */

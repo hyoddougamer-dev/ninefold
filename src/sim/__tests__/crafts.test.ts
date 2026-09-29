@@ -6,10 +6,10 @@ import {
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import {
-  CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
+  CRAFT_RENDER_KNOWN, CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
 } from '../balance.ts';
 import {
-  NO_CRAFTS, arraySlots, blocked, carry, kitFor, kitWhere, placeArray, qualityOdds, remainsOf,
+  NO_CRAFTS, arraySlots, blocked, carry, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
   secondsOf, setTask, spendKit, takeSeeking, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
   type Crafts,
 } from '../crafts.ts';
@@ -162,17 +162,25 @@ describe('時 work is read off the clock, not ticked', () => {
   });
 });
 
-describe('解 rendering takes what the hunt left', () => {
-  it('renders the kills and no more, and is not paid for time it had nothing to do', () => {
-    const s0 = setTask(crafter(2, { render: 10 }, {}, { killed: { rat: 5 } }), 'render:rat', T0);
+describe('解 rendering knows the beasts the hunt has taught it', () => {
+  it('waits for the tenth kill, is not paid for the wait, and then runs like a herb path', () => {
+    const s0 = setTask(crafter(2, { render: 10 }, {}, { killed: { rat: 9 } }), 'render:rat', T0);
+    expect(blocked(s0, RECIPE_BY_KEY['render:rat'])).toBe('remains');
     const s1 = work(s0, T0 + HOUR);
-    expect(s1.crafts.pouch[partKey('rat')]).toBe(5);
-    expect(remainsOf(s1, 'rat')).toBe(0);
-    // Six more rats killed after an idle hour: six parts, not an hour's worth.
-    const hunted = { ...s1, killed: { rat: 11 } };
-    const s2 = work(hunted, T0 + 2 * HOUR);
-    expect(s2.crafts.pouch[partKey('rat')]).toBe(11);
-    expect(s2.crafts.rendered.rat).toBe(11);
+    expect(s1.crafts.pouch[partKey('rat')] ?? 0).toBe(0);
+    expect(s1.crafts.since).toBe(T0 + HOUR);
+    // The tenth rat falls: from then on an hour of rendering is an hour's worth of parts.
+    const s2 = work({ ...s1, killed: { rat: 10 } }, T0 + 2 * HOUR);
+    const each = secondsOf(s2, RECIPE_BY_KEY['render:rat']);
+    expect(s2.crafts.pouch[partKey('rat')]).toBeGreaterThanOrEqual(Math.floor(HOUR / each));
+    expect(s2.killed.rat).toBe(10);
+  });
+
+  it('knows a warden from one kill, because a warden falls once a realm', () => {
+    expect(knownAt('fox')).toBe(1);
+    expect(knownAt('rat')).toBe(CRAFT_RENDER_KNOWN);
+    const s = crafter(3, { render: 30 }, {}, { killed: { fox: 1 } });
+    expect(blocked(s, RECIPE_BY_KEY['render:fox'])).toBe(null);
   });
 });
 
@@ -292,7 +300,6 @@ describe('守 a save is input', () => {
     const forged = validCrafts({
       xp: { herb: 13_034_431, vein: -5, forge: 'lots' },
       pouch: { moss: 1e15, nothing: 4, 'might2@9': 3, 'might2@1': 2, moss2: 1, 'moss@1': 2 },
-      rendered: { rat: 999, dragon: 5, nobody: 3 },
       tools: { herb: 6 },
       arrays: ['array:dew', 'array:dew', 'array:nothing'],
       carry: { elixir: 'might2@3', sigil: 'moss' },
@@ -305,7 +312,6 @@ describe('守 a save is input', () => {
     expect(forged.pouch).not.toHaveProperty('nothing');
     expect(forged.pouch).not.toHaveProperty('might2@9');
     expect(forged.pouch).not.toHaveProperty('moss@1');
-    expect(forged.rendered).toEqual({ rat: 10 });
     expect(forged.tools.herb).toBe(0);
     expect(forged.arrays).toEqual([]);
     expect(forged.carry).toEqual({ elixir: null, sigil: null });

@@ -22,7 +22,7 @@ import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SLOTS, CRAFT_ARRAY_SPEED,
   CRAFT_ARRAY_TWICE, CRAFT_ARRAY_XP, CRAFT_FURNACE_DISCOUNT, CRAFT_KIT, CRAFT_LONG_WATCH_HOURS,
   CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
-  CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, VARIANCE,
+  CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, VARIANCE,
 } from './balance.ts';
 import {
   ITEM_BY_KEY, LEVEL_CAP, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, SKILL_KEYS, TOOL_METALS, XP_CAP,
@@ -56,8 +56,6 @@ export interface Crafts {
   readonly pouch: Readonly<Record<string, number>>;
   /** 熟 How many of each recipe have been made: familiarity. */
   readonly made: Readonly<Record<string, number>>;
-  /** 解 Remains taken apart, by beast. What is left to render is the kills minus this. */
-  readonly rendered: Readonly<Record<string, number>>;
   /** 具 The best tool held for each craft, as a step 0..6. */
   readonly tools: Readonly<Record<SkillKey, number>>;
   /** 陣 The arrays cut into the floor, by item key. */
@@ -71,7 +69,7 @@ const zeroSkills = <T>(v: T): Record<SkillKey, T> =>
   Object.fromEntries(SKILL_KEYS.map((k) => [k, v])) as Record<SkillKey, T>;
 
 export const NO_CRAFTS: Crafts = {
-  xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {}, rendered: {},
+  xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
   tools: zeroSkills(0), arrays: [], carry: { elixir: null, sigil: null }, seek: 0,
 };
 
@@ -94,9 +92,15 @@ export function totalLevel(s: State): number {
   return SKILL_KEYS.reduce((n, k) => n + levelIn(s, k), 0);
 }
 
-/** 解 A beast's remains still waiting: every kill, less what has been rendered. */
-export function remainsOf(s: State, beast: string): number {
-  return Math.max(0, (s.killed[beast] ?? 0) - (s.crafts.rendered[beast] ?? 0));
+/** 解 How many of a beast have to fall before Rendering knows it: ten of a common, one warden. */
+export function knownAt(beast: string): number {
+  return WARDEN_KEYS.has(beast) ? 1 : CRAFT_RENDER_KNOWN;
+}
+const WARDEN_KEYS = new Set(BEASTS.filter((b) => b.warden).map((b) => b.key));
+
+/** 解 Whether Rendering knows a beast: enough of it have fallen. See CRAFT_RENDER_KNOWN. */
+export function known(s: State, beast: string): boolean {
+  return (s.killed[beast] ?? 0) >= knownAt(beast);
 }
 
 export function held(s: State, key: string): number {
@@ -164,7 +168,7 @@ export function blocked(s: State, r: Recipe): Blocked {
   if (levelIn(s, r.skill) < r.level) return 'level';
   if (s.realm < r.realm) return 'realm';
   if (r.makes.kind === 'tool' && (s.crafts.tools[r.makes.skill] ?? 0) >= r.makes.step) return 'tool';
-  if (r.remains && remainsOf(s, r.remains) < 1) return 'remains';
+  if (r.remains && !known(s, r.remains)) return 'remains';
   if (needsOf(s, r).some(([k, n]) => held(s, k) < n)) return 'needs';
   if (r.makes.kind === 'gear' && s.chest.length >= limitFor(s)) return 'chest';
   return null;
@@ -262,7 +266,6 @@ function makeOne(s: State, r: Recipe): State {
   for (const [k, m] of needsOf(s, r)) {
     if (k === 'mat') materials -= m; else addTo(pouch, k, -m);
   }
-  const rendered = r.remains ? { ...c.rendered, [r.remains]: (c.rendered[r.remains] ?? 0) + 1 } : c.rendered;
   const tools = r.makes.kind === 'tool'
     ? { ...c.tools, [r.makes.skill]: Math.max(c.tools[r.makes.skill] ?? 0, r.makes.step) } : c.tools;
 
@@ -281,7 +284,7 @@ function makeOne(s: State, r: Recipe): State {
   return {
     ...out,
     crafts: {
-      ...c, pouch, rendered, tools,
+      ...c, pouch, tools,
       made: { ...c.made, [r.key]: n + 1 },
       xp: { ...c.xp, [r.skill]: xp },
     },
@@ -529,13 +532,12 @@ export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.from
   return [k, best * (1 + CRAFT_ARRAY_XP)];
 })) as Record<SkillKey, number>;
 
-const BEAST_KEYS = new Set(BEASTS.map((b) => b.key));
 const POUCH_LIMIT = 1e9;
 
 /**
  * 守 The workshop from a save. Every number is capped by something the save cannot forge:
  * experience by the time the run has lived, a level's tools and arrays by the level,
- * remains taken apart by the kills, and anything that names nothing is not there.
+ * and anything that names nothing is not there.
  */
 export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 'startedAt'>, now: number): Crafts {
   const o = (raw ?? {}) as Record<string, unknown>;
@@ -571,13 +573,6 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     if (n > 0) made[k] = n;
   }
 
-  const rendered: Record<string, number> = {};
-  for (const [k, v] of Object.entries(rec(o.rendered))) {
-    if (!BEAST_KEYS.has(k)) continue;
-    const n = Math.floor(num(v, 0, s.killed[k] ?? 0));
-    if (n > 0) rendered[k] = n;
-  }
-
   // 具 A tool is only held if this forge level and realm could have made it.
   const forge = open('forge') ? level('forge') : 0;
   const rawTools = rec(o.tools);
@@ -607,7 +602,7 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
   return {
     xp, task,
     since: num(o.since, s.startedAt, now, now),
-    pouch, made, rendered, tools, arrays, carry: carryOut,
+    pouch, made, tools, arrays, carry: carryOut,
     seek: Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)),
   };
 }

@@ -1397,5 +1397,17 @@ export const CRAFT_KIT = {
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
 export const CRAFT_SEEK_MAX = 20;
 
+/**
+ * 解 How many of a common beast have to fall before Rendering knows what its kind leave.
+ *
+ * Rendering used to take one body per kill, and the harness showed why that could never
+ * work: an active cultivator kills about thirty-six beasts a day, and the craft asks for
+ * over a million makes to reach 99. A warden was worse: it falls once, so its part could
+ * be made once in a whole life. So a beast is learned instead of spent. Ten kills of a
+ * common and one of a warden, and from then on its kind's pelts, fangs and scales are
+ * worked like a herb path, for as long as the workshop runs.
+ */
+export const CRAFT_RENDER_KNOWN = 10;
+
 /** 丹 What each Alchemy level takes off the furnace's material price: 0.2%, so 20% at 99. */
 export const CRAFT_FURNACE_DISCOUNT = 0.002;

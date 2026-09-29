@@ -121,12 +121,12 @@ export const SYSTEMS: readonly SystemInfo[] = [
     gives: 'Three beds. Plant 材 material and it ripens into 氣 qi over real hours, and a ripe bed waits for you for ever.' },
   /**
    * 業 The workshop: four crafts at once, because they are one loop. Three gather (the
-   * paths, the veins, the remains of every kill since the first) and the forge turns what
+   * paths, the veins, and every beast the hunt has taught it) and the forge turns what
    * they gather into the gear that opens beside it. The other three crafts arrive one at a
    * time further up, where there is room: see data/crafts.ts.
    */
   { key: 'crafts', han: '業', name: 'The Workshop', realm: 2,
-    gives: 'Four crafts that level from 1 to 99: gather herbs and ore, render what the hunt left, and forge the piece you choose. The workshop keeps working while you are away.' },
+    gives: 'Four crafts that level from 1 to 99: gather herbs and ore, render the beasts the hunt has taught you, and forge the piece you choose. The workshop keeps working while you are away.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
   { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,

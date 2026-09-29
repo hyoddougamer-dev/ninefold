@@ -9,9 +9,11 @@
  * shape that beast already drops, in the metal of its realm.
  *
  * 三 Three crafts gather and four make. The gathering ones take only time, and 解 Rendering
- * takes what the hunt left: every kill is counted, so every kill is a body to render,
- * and the remains of a thousand rats killed before the workshop opened are waiting for it
- * the day it does. A system arriving late arrives full.
+ * asks the hunt for one thing: to know the beast. Ten of a common fallen (one warden) and
+ * its kind's pelts, fangs and scales are worked for as long as the workshop runs, so the
+ * thousand rats killed before the workshop opened have taught it the rat the day it does.
+ * A system arriving late arrives full. See CRAFT_RENDER_KNOWN for why it is not one body
+ * per kill.
  *
  * 經 The experience table is RuneScape's, and every recipe's experience is worked out
  * here from one number, CRAFT_HOURS_TO_CAP, so the months to 99 are a sentence in
@@ -70,8 +72,8 @@ export const SKILLS: readonly Skill[] = [
     where: 'the veins', icon: 'rune-stone' },
   { key: 'render', seal: '解', han: '解獸', name: 'Rendering', gathers: true, realm: opensAt('crafts'), opens: 'crafts',
     tool: { han: '刀', name: 'Knife', icon: 'machete' }, cap: { han: '庖丁', name: 'Cook Ding' },
-    does: 'Every beast you kill leaves its remains. Here they become one part of that beast: a pelt, a fang, a scale, its blood.',
-    where: 'the remains of the hunt', icon: 'machete' },
+    does: 'Kill ten of a beast (one, for a warden) and you know what its kind leave behind. Here that becomes one part of it: a pelt, a fang, a scale, its blood.',
+    where: 'the grounds of the hunt', icon: 'machete' },
   { key: 'forge', seal: '鑄', han: '鑄器', name: 'Forging', gathers: false, realm: opensAt('crafts'), opens: 'crafts',
     tool: { han: '錘', name: 'Hammer', icon: 'stamper' }, cap: { han: '器聖', name: 'Forge Saint' },
     does: 'Smelt the nine metals, then forge the piece you choose, in the shape a beast teaches. It makes every craft’s tool as well.',
@@ -237,7 +239,7 @@ export interface Recipe {
   readonly seconds: number;
   readonly xp: number;
   readonly needs: readonly (readonly [string, number])[];
-  /** 解 Rendering takes one of this beast's remains, which are derived from the kills. */
+  /** 解 Rendering needs this beast known: enough of it killed. See CRAFT_RENDER_KNOWN. */
   readonly remains?: string;
   readonly makes: Makes;
   readonly graded: boolean;
@@ -265,8 +267,11 @@ for (const b of BEASTS) {
   const p = PARTS[b.key];
   if (!p) continue;
   recipe({ key: `render:${b.key}`, skill: 'render', group: `Realm ${b.realm}`, han: p[0], name: p[1],
-    level: tierLevel(b.realm) + RENDER_STEP[nthOf(b)], realm: b.realm,
-    // 守 A warden is fought once a realm, so its remains are few and slower to take apart.
+    // 初 The first realm's three commons are all level 1, so whichever beast the hunt
+    // began on is the one that teaches the knife. With only the rat at level 1, a
+    // cultivator who had moved on to hounds before the tenth rat could never start.
+    level: tierLevel(b.realm) + (b.realm === 1 && !b.warden ? 0 : RENDER_STEP[nthOf(b)]), realm: b.realm,
+    // 守 A warden's parts are rarer things, and slower to take apart.
     seconds: CRAFT_SECONDS.render * (b.warden ? 2 : 1), needs: [], remains: b.key,
     makes: { kind: 'item', item: partKey(b.key) }, graded: false });
 }

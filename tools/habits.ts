@@ -6,7 +6,10 @@
  * the same table on the page. A measurement that appears twice has to be made once.
  */
 import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
-import { conquer, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
+import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
+import { FORGED, kitFor, soulLocked, spendKit, work } from '../src/sim/crafts.ts';
+import { NO_KIT } from '../src/sim/kit.ts';
+import { carryBest, craftVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
@@ -97,6 +100,14 @@ export interface Habit {
    * building a class does. `classes.test.ts` plays all fifteen.
    */
   readonly calling?: School | Pair;
+  /**
+   * 業 Whether they work the workshop, and carry what it makes into every hard fight.
+   *
+   * The crafts touch the climb in one place only: an elixir and a sigil carried into a
+   * warden, a heart demon or a vault gate. So this is the habit that answers what the
+   * whole workshop is worth to the ladder, played greedily (see tools/crafter.ts).
+   */
+  readonly crafts?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -148,6 +159,11 @@ export const HABITS: readonly Habit[] = [
   { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'dao',
     furnace: true, build: true, branch: 'spirit',
     who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
+  // 業 The same cultivator as `active` again, with the workshop never idle and the best
+  // elixir and sigil carried into every warden and demon: what the crafts are worth.
+  { name: 'crafts it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+    furnace: true, build: true, branch: 'sword', crafts: true,
+    who: 'The active cultivator, with the workshop always running and its kit in every hard fight.' },
 ];
 
 /** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
@@ -422,6 +438,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     }
     t += tick;
     s = advance(s, t);
+    if (h.crafts) s = work(s, t);
 
     watch?.((t - T0) / DAY, s);
 
@@ -450,16 +467,22 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // qi has nowhere else to go and the only move left is to condense cores out of it.
     // Everybody does this when cornered; the difference between the habits is how often
     // they are cornered, which is exactly the difference being measured.
+    // 業 Somebody who crafts looks at the pouch first: the kit changes the odds, so it
+    // changes how many cores they have to condense before the fight looks worth it.
+    const kitOf = (x: State) => (h.crafts ? kitFor(x, wardenOf(x.realm), 'warden') : { kit: NO_KIT, spends: false });
     if (canFightWarden(s)) {
+      if (h.crafts) s = carryBest(s, wardenOf(s.realm), 'warden');
       for (let i = 0; i < 40; i++) {
-        if (odds(s, wardenOf(s.realm)) > 0.5 || !canCondense(s)) break;
+        if (odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.5 || !canCondense(s)) break;
         s = condense(s);
       }
     }
 
     // 妖 The gate: the warden is fought when the realm is full and it looks worth trying.
-    if (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.2) {
+    if (canFightWarden(s) && odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.2) {
+      const spends = kitOf(s).spends;
       s = takeKill(s, wardenOf(s.realm));
+      if (spends) s = spendKit(s);
       fights++;
     }
     if (canBreakThrough(s)) s = breakThrough(s);
@@ -490,12 +513,21 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // a seeded fight like any other. A loss sends it back for DEMON_RETURN; the next visit
     // tries again. Only somebody who fights at all fights this.
     if (h.hunts > 0 && process.env.NF_NODEMON !== '1') {
+      if (demonDue(s) && h.crafts) {
+        s = carryBest(s, demonOf(s), 'demon', demonPower(s));
+        const { kit, spends } = kitFor(s, demonOf(s), 'demon');
+        if (fight(s, demonOf(s), ++seed, demonPower(s), kit).won) {
+          s = soulLocked(s) ? conquerTwice(s) : conquer(s);
+          if (spends) s = spendKit(s);
+        } else s = repel(s);
+      }
       if (demonDue(s)) s = fight(s, demonOf(s), ++seed, demonPower(s)).won ? conquer(s) : repel(s);
       s = seclude(s);
     }
 
     for (let i = 0; i < h.hunts; i++) {
-      const b = quarryFor(s, h.calling);
+      const b = (h.crafts ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined)
+        ?? quarryFor(s, h.calling);
       if (!b) break;
       s = takeKill(s, b);
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
@@ -561,6 +593,21 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       for (let i = 0; i < BEDS; i++) {
         const want = [...plantable(s)].reverse().find((h) => canPlant(s, i, h.key));
         if (want) s = plant(s, i, want.key);
+      }
+    }
+
+    // 業 The workshop, last thing on the visit: settle it, cut arrays into the floor, set
+    // it on something that will still be running when they are back, and wear a forged
+    // piece the moment the game would mark it ▲, as with anything that falls.
+    if (h.crafts) {
+      s = craftVisit(s, t, tick);
+      for (const it of s.chest.filter((x) => x.from === FORGED)) {
+        const slot = templateOf(it).slot as Slot;
+        const worn = s.worn[slot];
+        if (!worn || wears(s, it, worn, h.calling)) {
+          const after = equip(s.worn, s.chest, it, slot);
+          s = { ...s, worn: after.worn, chest: [...after.chest] };
+        }
       }
     }
 
