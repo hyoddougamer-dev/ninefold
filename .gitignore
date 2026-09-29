@@ -37,3 +37,6 @@ supabase/.temp
 
 # npm run sounds writes every cue here to listen to; it is output, not source.
 sounds/
+
+# 市 node tools/itch.mjs writes the itch.io kit here; it is output, not source.
+itch-kit/

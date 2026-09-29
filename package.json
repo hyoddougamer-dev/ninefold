@@ -41,6 +41,7 @@
     "busy": "tsx tools/busy.ts",
     "worth": "tsx tools/worth.ts",
     "ranks": "tsx tools/ranks.mjs",
+    "itch": "node tools/itch.mjs",
     "sounds": "node tools/sounds.mjs"
   },
   "dependencies": {
