@@ -3,9 +3,13 @@
  * Run by .github/workflows/supabase.yml, which sends it with the access token.
  *
  * Guests are allowed (anonymous sign-ins) and links come back to the game. The `mail`
- * half would put a six-digit code beside the link, because inside the installed app a
- * link opens the phone's browser rather than the game. Supabase refuses it on the free
- * plan without a mail server of our own, so until there is one the email is a link only.
+ * half puts a six-digit code beside the link, because inside the installed app a link
+ * opens the phone's browser rather than the game (Jerokhna found it on the first day).
+ * Supabase refuses custom wording on the free plan without a mail server of our own, so
+ * the `mail` half carries that server too, once it exists: the SMTP_PASS secret and the
+ * SMTP_SENDER variable (an address on a domain the mail service has verified). The host,
+ * port and user default to Resend's; SMTP_HOST, SMTP_PORT and SMTP_USER change them.
+ * Without both, the email stays a link only, exactly as before.
  */
 const SITE = process.env.SITE ?? 'https://hyoddougamer-dev.github.io/ninefold/';
 
@@ -47,5 +51,15 @@ const mailer = {
   mailer_templates_email_change_content: mail('Your code to add this email to your cultivator:'),
 };
 
+// 郵 The mail server, only when both halves are there; half of one would stop every email.
+const smtp = process.env.SMTP_PASS && process.env.SMTP_SENDER ? {
+  smtp_admin_email: process.env.SMTP_SENDER,
+  smtp_sender_name: 'Ninefold',
+  smtp_host: process.env.SMTP_HOST || 'smtp.resend.com',
+  smtp_port: process.env.SMTP_PORT || '465',
+  smtp_user: process.env.SMTP_USER || 'resend',
+  smtp_pass: process.env.SMTP_PASS,
+} : {};
+
 const part = process.argv[2];
-process.stdout.write(JSON.stringify(part === 'core' ? core : part === 'mail' ? mailer : { ...core, ...mailer }));
+process.stdout.write(JSON.stringify(part === 'core' ? core : part === 'mail' ? { ...smtp, ...mailer } : { ...core, ...smtp, ...mailer }));
