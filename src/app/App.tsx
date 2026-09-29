@@ -20,7 +20,8 @@ import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
-import { conquer, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
+import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
+import { kitFor, kitWhere, soulLocked, spendKit, spendSeek, work } from '../sim/crafts.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -263,7 +264,9 @@ export function App() {
       // very different things to put on a screen.
       setSatOut(open >= FOCUS_HOLD);
       setState((s) => {
-        const next = advance(s, now(), false, deep);
+        // 業 And the workshop, settled to the same instant. It reads its own clock.
+        const t = now();
+        const next = work(advance(s, t, false, deep), t);
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -400,12 +403,19 @@ export function App() {
       const seed = Math.floor(now() * 1000) >>> 0;
       // 心魔 The demon stands on the cultivator's own power; a floor on its own.
       const standing = demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
+      // 業 What is carried goes into a warden, a heart demon, never a floor or a common.
+      const carried = kitFor(state, beast, kitWhere(state, beast, standing));
+      // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt.
+      const sought = !demon && floor === undefined && !beast.warden && state.crafts.seek > 0
+        && isOpen(state.realm, 'gear');
       return {
         beast,
         floor,
         demon,
+        kit: carried.spends,
+        sought,
         qi: floor === undefined ? undefined : floorQi(state, floor),
-        outcome: fight(state, beast, seed, standing),
+        outcome: fight(state, beast, seed, standing, carried.kit),
         beat: 0,
         over: false,
         // A tower floor pays in materials, not in gear. Gear comes from the world.
@@ -417,7 +427,8 @@ export function App() {
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
         drop: demon || floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
+          : dropFor(state, beast, seed ^ 0x9e3779b9,
+            sought ? { ...fortuneOf(state), always: true } : fortuneOf(state), state.layer),
       };
     });
   }, [state]);
@@ -474,11 +485,14 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop, floor, demon } = battle;
+    const { beast, outcome, drop, floor, demon, kit, sought } = battle;
+    // 業 A won fight spends what was carried into it; a lost one keeps it.
+    const spent = (s: State) => (outcome.won && kit ? spendKit(s) : s);
     if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
       // hour. Neither is a kill: the demon is never counted in the record.
-      setState((s) => (outcome.won ? conquer(s) : repel(s)));
+      // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
+      setState((s) => (outcome.won ? spent(soulLocked(s) ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
       // 塔 A floor counts once. It pays material and hours of gathering.
       sfx.floor();
@@ -492,7 +506,8 @@ export function App() {
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
-        return stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const taken = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        return spent(sought ? spendSeek(taken) : taken);
       });
     }
     setBattle(null);

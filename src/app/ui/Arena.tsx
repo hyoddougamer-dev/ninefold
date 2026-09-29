@@ -62,6 +62,10 @@ export interface Battle {
   readonly beat: number;
   readonly over: boolean;
   readonly drop: Item | null;
+  /** 業 Something carried went into this fight, and a win spends it. */
+  readonly kit?: boolean;
+  /** 尋 A waiting sure drop was used on this fight, and a win spends it. */
+  readonly sought?: boolean;
 }
 
 export type Striker = 'player' | 'beast';

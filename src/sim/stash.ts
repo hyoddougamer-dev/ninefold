@@ -1,7 +1,7 @@
 import { RARITIES, templateOf, type Item, type Rarity } from '../data/gear.ts';
 import { addToChest, chestLimit, fuse } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
-import { meltFactor, salvageValue } from './salvage.ts';
+import { meltFactor, returnMetal, salvageValue } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
 import type { State } from './state.ts';
 
@@ -41,7 +41,8 @@ export function stash(s: State, found: Item | null): Stashed {
   const item = lifted(s, found);
   const kept = addToChest(s.chest, item, limitFor(s));
   const melted = kept.dropped ? salvageValue(kept.dropped, meltFactor(s)) : 0;
-  return { state: { ...s, chest: [...kept.chest], qi: s.qi + melted }, item, dropped: kept.dropped, melted };
+  const state = { ...s, chest: [...kept.chest], qi: s.qi + melted };
+  return { state: kept.dropped ? returnMetal(state, [kept.dropped]) : state, item, dropped: kept.dropped, melted };
 }
 
 /**

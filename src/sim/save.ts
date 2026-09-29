@@ -1,6 +1,8 @@
 import { newState, validate, type State } from './state.ts';
 import { OPENING_PURSE } from './balance.ts';
 import { advance, layerCost } from './time.ts';
+import { work } from './crafts.ts';
+import { RECIPE_BY_KEY, levelOf } from '../data/crafts.ts';
 import { LAYERS_PER_REALM } from './balance.ts';
 import { isSealed, open, seal } from './seal.ts';
 
@@ -42,6 +44,17 @@ export interface Return {
   readonly qiClimbed: number;
   readonly layersOpened: number;
   readonly realmsClimbed: number;
+  /** 業 What the workshop did while the app was shut, or null if it was standing still. */
+  readonly crafts: Away | null;
+}
+
+/** 業 The workshop's absence, for the card that welcomes a cultivator back. */
+export interface Away {
+  readonly task: string;
+  readonly made: number;
+  readonly xp: number;
+  readonly from: number;
+  readonly to: number;
 }
 
 /**
@@ -129,7 +142,10 @@ export function load(now: number): Return {
 
   const before = raw ? validate(raw, now) : newState(now);
   const secondsAway = Math.max(0, now - before.at);
-  const after = advance(before, now);
+  const after = work(advance(before, now), now);
+  const task = before.crafts.task;
+  const r = task ? RECIPE_BY_KEY[task] : undefined;
+  const made = r ? (after.crafts.made[r.key] ?? 0) - (before.crafts.made[r.key] ?? 0) : 0;
 
   const layersOf = (s: State) => (s.realm - 1) * 9 + s.layer;
 
@@ -141,6 +157,11 @@ export function load(now: number): Return {
     qiClimbed: climbed,
     layersOpened: Math.max(0, layersOf(after) - layersOf(before)),
     realmsClimbed: Math.max(0, after.realm - before.realm),
+    crafts: r && made > 0 ? {
+      task: r.key, made,
+      xp: (after.crafts.xp[r.skill] ?? 0) - (before.crafts.xp[r.skill] ?? 0),
+      from: levelOf(before.crafts.xp[r.skill] ?? 0), to: levelOf(after.crafts.xp[r.skill] ?? 0),
+    } : null,
   };
 }
 

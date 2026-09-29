@@ -74,6 +74,14 @@ export function conquer(s: State): State {
   return demonDue(s) ? { ...s, demons: s.demons + 1, secludedAt: 0 } : s;
 }
 
+/**
+ * 鎖魂 The demon fell with a Soul-Lock Sigil carried: it counts twice, never past the
+ * realm's own number of them. The sigil is spent by the caller, like any carried thing.
+ */
+export function conquerTwice(s: State): State {
+  return demonDue(s) ? { ...s, demons: Math.min(demonsFor(s.realm), s.demons + 2), secludedAt: 0 } : s;
+}
+
 /** 退 The demon won: it draws back, and comes again in DEMON_RETURN. Nothing else changes. */
 export function repel(s: State): State {
   return demonDue(s) ? { ...s, secludedAt: s.at - SECLUSION + DEMON_RETURN } : s;

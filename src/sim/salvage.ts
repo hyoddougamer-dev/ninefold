@@ -3,6 +3,7 @@ import { RARITIES, RARITY_INFO, templateOf, type Item, type Rarity } from '../da
 import { salvageBonus } from './awaken.ts';
 import type { State } from './state.ts';
 import { classMelt } from './schools.ts';
+import { FORGED, metalKey } from '../data/crafts.ts';
 
 /**
  * 拆 Breaking a piece down.
@@ -21,6 +22,9 @@ export function meltFactor(s: Pick<State, 'awakened' | 'worn' | 'unlocked'>): nu
 }
 
 export function salvageValue(item: Item, factor = 1): number {
+  // 業 A forged piece melts back into its metal and never into qi (see returnMetal), or
+  // the forge would be a qi mill with a hammer on it.
+  if (item.from === FORGED) return 0;
   // A save is input, and a hand-edited one can name a template that does not exist.
   // An unknown piece is worth the first realm's junk, never a crash.
   const realm = Math.max(1, Math.min(9, templateOf(item)?.realm ?? 1));
@@ -53,11 +57,26 @@ export function salvage(s: State, ids: readonly string[]): State {
   const wanted = new Set(ids);
   const going = s.chest.filter((x) => wanted.has(x.id));
   if (going.length === 0) return s;
-  return {
+  return returnMetal({
     ...s,
     qi: s.qi + salvageWorth(going, meltFactor(s)),
     chest: s.chest.filter((x) => !wanted.has(x.id)),
-  };
+  }, going);
+}
+
+/**
+ * 業 What a forged piece melts into: two of its realm's metal, into the pouch. It is the
+ * one thing the forge can take back, and it is never qi.
+ */
+export function returnMetal(s: State, pieces: readonly Item[]): State {
+  const mine = pieces.filter((x) => x.from === FORGED);
+  if (mine.length === 0 || !s.crafts) return s;
+  const pouch = { ...s.crafts.pouch };
+  for (const p of mine) {
+    const k = metalKey(Math.max(1, Math.min(9, templateOf(p)?.realm ?? 1)));
+    pouch[k] = (pouch[k] ?? 0) + 2;
+  }
+  return { ...s, crafts: { ...s.crafts, pouch } };
 }
 
 /** The bulk form: everything at or below a rank, in one go. */

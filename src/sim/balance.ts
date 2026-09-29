@@ -1283,3 +1283,119 @@ export const BEDS = 3;
  * is on day 981. Those two weeks are what 期 the week is for.
  */
 export const MARKS_PER_HEAVEN = 3;
+
+/* ── 業 The crafts ─────────────────────────────────────────────────────────────
+ *
+ * Bruno, after the proposal: *"adorei tudo nos crafts/lifeskills"*, and before it: *"algo
+ * mais complexo com materials diferentes, opções de craft e ranks de craft que façam
+ * sentido dentro do conteúdo que temos, género Melvor Idle ou RuneScape, sendo lv 1 o
+ * mais básico e lvl 99 meses para fazer cap."* Seven crafts, levels 1 to 99 on the
+ * RuneScape table, one task at a time, and the workshop keeps working while the app is
+ * shut. Every number that shapes it is here; the tables are in data/crafts.ts.
+ *
+ * 律 What it may and may not touch. Nothing a craft makes raises the qi rate, and nothing
+ * it makes can be melted into qi. It moves fights, drops, shapes and the other crafts,
+ * and every one of those is capped by the level, which is capped at 99.
+ */
+
+/**
+ * 時 How many hours of work take one craft from level 1 to 99, at the best recipe each
+ * level allows and with no tool, no array and no familiarity.
+ *
+ * 1,550 hours is about three months of a workshop that runs sixteen hours a day, which is
+ * a visit in the morning and one at night. RuneScape's table puts level 92 at half the
+ * experience, so the last seven levels are as long as the first ninety-two. Tools, arrays
+ * and familiarity take a fifth to a quarter off that at the end; the realm gate adds it
+ * back, because the best recipes wait for the realm their material comes from.
+ */
+export const CRAFT_HOURS_TO_CAP = 1550;
+
+/** 時 Seconds one action takes, before tools and arrays, per craft. */
+export const CRAFT_SECONDS: Readonly<Record<string, number>> = {
+  herb: 6, vein: 7, render: 5, alchemy: 8, forge: 12, sigil: 8, array: 40,
+};
+
+/**
+ * 眠 How long the workshop keeps working after the last visit, in hours.
+ *
+ * Twelve, so a visit in the morning and one at night keep it busy all day, and a week away
+ * comes back to twelve hours of work rather than to nothing. It is a clock on the work,
+ * never a cost: nothing made is ever lost, and coming back late only means the workshop
+ * stood still for the hours past twelve.
+ */
+export const CRAFT_WORK_HOURS = 12;
+/** 長守 What the Long-Watch Array adds to that. */
+export const CRAFT_LONG_WATCH_HOURS = 4;
+
+/** 具 How much faster each step of a craft's tool makes it: six metals, 5% each. */
+export const CRAFT_TOOL_STEP = 0.05;
+export const CRAFT_TOOL_STEPS = 6;
+
+/**
+ * 熟 Familiarity: how many times a recipe has to be made for each of its five marks. The
+ * first comes in an afternoon, the last in weeks of making the one thing.
+ */
+export const CRAFT_MARKS = [25, 100, 300, 800, 2000] as const;
+/** 熟 The first mark: this much faster. The second: one make in this many comes out twice. */
+export const CRAFT_MARK_FASTER = 0.05;
+export const CRAFT_MARK_TWICE = 0.05;
+
+/**
+ * 品 Quality, the five ranks gear already has, rolled on everything a craft makes that
+ * can be better or worse. `score` is the levels above the recipe plus six a mark of
+ * familiarity; the weights below turn it into odds. At the recipe's own level a make is
+ * Common nine times in ten; forty levels over with every mark, Heaven is one in fifty.
+ */
+export const CRAFT_QUALITY = {
+  mark: 6,
+  spiritBase: 8, spiritPer: 1.1,
+  mysticFrom: 8, mysticBase: 2, mysticPer: 0.55,
+  earthFrom: 20, earthPer: 0.28,
+  heavenFrom: 35, heavenPer: 0.12,
+} as const;
+/** 品 What each rank multiplies a consumable's effect by, Common to Heaven. */
+export const CRAFT_QUALITY_MULT = [1, 1.15, 1.3, 1.5, 1.75] as const;
+
+/**
+ * 陣 The arrays. Three places in the cave floor, a fourth at Arrays 50 and a fifth at 99.
+ * What each one does is the number beside it.
+ */
+export const CRAFT_ARRAY_SLOTS = [[1, 3], [50, 4], [99, 5]] as const;
+export const CRAFT_ARRAY_SPEED = 0.10;   // 聚露 地脈 馴火: that craft this much faster
+export const CRAFT_ARRAY_TWICE = 0.10;   // 利刃: one part in ten comes out twice
+export const CRAFT_ARRAY_GUARD = 0.05;   // 護法: this much less taken from wardens and demons
+export const CRAFT_ARRAY_DOOR = 1800;    // 秘門: the vault door, this many seconds sooner
+export const CRAFT_ARRAY_XP = 0.05;      // 天地: every craft earns this much more
+export const CRAFT_ARRAY_QUALITY = 6;    // 九宮: this much on the quality score
+
+/**
+ * 戰 What a carried elixir or sigil does in a fight. They are carried into the next
+ * fight that is a warden, a heart demon or a beast of the vault, and spent only if it is
+ * won: a lost fight keeps them, because a lost fight costs nothing.
+ *
+ * 劫 Never the Dragon, and never a tower floor. The Dragon is anchored to the power that
+ * faced it, and the tower pays qi by the floor, so anything that carried a cultivator up
+ * either of them would be a lever on the endgame or on the qi. Both were measured before
+ * this rule and both were the reason for it.
+ *
+ * 級 A tier-N elixir is made for realm-N fights. Carried into a harder realm it works at
+ * half strength a realm, so the recipes have to keep climbing with the cultivator.
+ */
+export const CRAFT_KIT = {
+  mend: 0.02,        // 回 health mended every round, as a share of the whole
+  guard: 0.12,       // 護 less taken
+  might: 0.12,       // 力 harder struck
+  fade: 0.5,         // each realm the fight is above the elixir's tier
+  warding: 0.15,     // 護身符
+  thunder: 0.15,     // 雷符
+  fiveThunders: 0.25,// 五雷符
+  mirror: 0.10,      // 照妖符: this share of every blow taken goes back
+  purity: 0.15,      // 清心符: the heart demon this much weaker
+  calmHeart: 0.10,   // 靜心丹: the same, from the furnace side
+} as const;
+
+/** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
+export const CRAFT_SEEK_MAX = 20;
+
+/** 丹 What each Alchemy level takes off the furnace's material price: 0.2%, so 20% at 99. */
+export const CRAFT_FURNACE_DISCOUNT = 0.002;
