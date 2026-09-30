@@ -689,7 +689,7 @@ export function App() {
     [state, ready, battle, bloom],
   );
 
-  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao') => {
+  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts') => {
     setState((s) => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] }));
     if (go) setTab(go);
     sfx.tap();

@@ -72,6 +72,25 @@ describe('驗 honest play is never held against anybody', () => {
   }
 });
 
+describe('業 a ranked save from before the workshop', () => {
+  it('still verifies, and the workshop it then starts is measured from zero', () => {
+    // The server's last accepted copy was written before crafts existed. It is read back
+    // through validate(), so it arrives with an empty workshop, and the next honest sync
+    // (a day later, workshop and all) is judged against that.
+    const shots = WALKED.get('crafts it all')!;
+    const at = shots.findIndex((x) => x.day >= 30);
+    const then = shots[at];
+    const { crafts: _none, ...old } = structuredClone(then.s) as unknown as Record<string, unknown>;
+    const before = validate(old, then.s.at);
+    expect(Object.values(before.crafts.xp).every((x) => x === 0)).toBe(true);
+    const next = shots.find((x) => x.day >= then.day + 1)!;
+    const fresh = validate({ ...structuredClone(next.s), crafts: { ...next.s.crafts, xp: {}, pouch: {}, made: {} } }, next.s.at);
+    const v = verify(before, fresh, (next.day - then.day) * DAY);
+    expect(v.why).toEqual([]);
+    expect(v.ok).toBe(true);
+  });
+});
+
 describe('驗 the first sync is measured from when the save began', () => {
   it('an honest save a month in passes', () => {
     const shots = WALKED.get('active')!;

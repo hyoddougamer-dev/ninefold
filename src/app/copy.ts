@@ -1411,6 +1411,11 @@ export const NOTICE = {
     text: 'The levels stay on the piece, not on you. A run\'s material poured into one '
       + 'sword is material that is not in the next sword you find.',
   },
+  workshop: {
+    title: 'The workshop is open',
+    text: 'Seven crafts that level from 1 to 99, on the 業 tab. Set it on one thing and it keeps '
+      + 'working for twelve hours after you leave. Alchemy opens at realm 5, Sigils at 6, Arrays at 7.',
+  },
   record: {
     title: 'Old beasts are worth going back for',
     text: 'Ten kills of one beast is a 熟 mark and a hundred is 通. Old beasts still have '
