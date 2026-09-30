@@ -2998,6 +2998,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cskill[data-shut='true'] { opacity: .55; }
 .crafts .cskill b.cjk { grid-row: 1 / span 3; width: 34px; height: 34px; display: grid; place-items: center; font-size: 18px;
                         color: var(--gold); border: 1px solid var(--gild-strong); border-radius: 7px; }
+.crafts .cskill b.cjk[data-painted='true'] { border: 0; overflow: hidden; border-radius: 50%;
+                                          box-shadow: 0 0 0 1px var(--gild-strong); }
+.crafts .cskill b.cjk img { display: block; width: 34px; height: 34px; }
+.crafts .cskill[data-shut='true'] b.cjk img { filter: grayscale(.8); }
+.crafts .cscene { margin: -4px -4px 10px; height: 118px; border-radius: 8px; overflow: hidden;
+                  box-shadow: inset 0 0 0 1px var(--gild); }
+.crafts .cscene img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 55%;
+                      filter: saturate(.92) brightness(.92); }
+.crafts .ctool { display: inline-block; vertical-align: -5px; margin-right: 4px; }
+.crafts .ctool img.emblem { border-radius: 50%; }
 .crafts .cskill .cs-name { font-size: 12.5px; font-weight: 600; min-width: 0; line-height: 1.2; }
 .crafts .cskill .cs-sub { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .crafts .cskill .cs-sub em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold); margin-right: 2px; }

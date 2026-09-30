@@ -21,6 +21,10 @@ import { Term } from '../ui/Term.tsx';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { CRAFTS } from '../copy.ts';
+import { pictureOf } from '../../data/pictures.ts';
+
+/** 具 The painted tool of a craft, named by the tool: sickle, pick, knife, furnace. */
+const toolArt = (skill: SkillKey) => `tool-${SKILL_BY_KEY[skill].tool.name.toLowerCase()}`;
 
 /**
  * 業 The workshop.
@@ -88,7 +92,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
             <button key={k.key} className="cskill" data-on={k.key === skill} data-shut={!on}
               data-run={running?.skill === k.key}
               onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); }}>
-              <b className="cjk">{k.seal}</b>
+              <Seal skill={k.key} han={k.seal} />
               <span className="cs-name">{k.name}</span>
               <span className="cs-sub">
                 {on ? <><em className="mono">{l}</em> <span className="cs-rank">{rankOf(k.key, l).name}</span></> : CRAFTS.opens(k.realm)}
@@ -100,6 +104,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
       </div>
 
       <div className="card cpanel">
+        <Scene skill={skill} />
         <div className="row">
           <span>
             <b className="cjk" style={{ fontSize: 18, color: 'var(--gold)' }}><Term han={info.han} plain /></b>{' '}
@@ -118,6 +123,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
               {level >= 99 ? CRAFTS.xpTop(num(Math.floor(xp))) : CRAFTS.xpTo(num(Math.floor(xp)), num(Math.ceil(XP_TABLE[next] - xp)), next)}
             </p>
             <p className="faint" style={{ margin: '6px 0 0', fontSize: 12 }}>
+              <span className="ctool"><Emblem family="craft" subject={toolArt(skill)} icon={info.tool.icon} size={20} alt={info.tool.name} /></span>
               <span className="cjk">{info.tool.han}</span>{' '}
               {tool > 0
                 ? CRAFTS.tool(`${REALM_SETS[TOOL_METALS[tool - 1] - 1].word} ${info.tool.name}`, Math.round(tool * CRAFT_TOOL_STEP * 100))
@@ -162,6 +168,22 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   );
 }
 
+/** 印 A craft's painted seal, or its character while the painting is not there. */
+function Seal({ skill, han }: { skill: SkillKey; han: string }) {
+  const painted = pictureOf('emblem', `craft-seal-${skill}`);
+  return <b className="cjk" data-painted={!!painted}>{painted ? <img src={painted} alt="" width={34} height={34} /> : han}</b>;
+}
+
+/**
+ * 坊 The craft at work, painted across the top of its panel. Forging and Alchemy share
+ * the workshop's own scene: the sheet has six panels and the hearth is theirs.
+ */
+function Scene({ skill }: { skill: SkillKey }) {
+  const painted = pictureOf('meet', `craft-${skill}`) ?? pictureOf('meet', 'craft-workshop');
+  if (!painted) return null;
+  return <div className="cscene"><img src={painted} alt="" loading="lazy" decoding="async" /></div>;
+}
+
 /**
  * Which list a craft opens on: the one the workshop is making from, if it is this craft,
  * or else the one with the newest thing this cultivator can make.
@@ -182,7 +204,10 @@ function Task({ state, r, onStop }: { state: State; r: Recipe | null; onStop: ()
   if (!r) {
     return (
       <div className="card ctask" data-idle="true">
-        <p className="faint" style={{ margin: 0, fontSize: 13 }}>{CRAFTS.idle}</p>
+        <div className="row" style={{ gap: 12, justifyContent: 'flex-start' }}>
+          <span className="cic" style={{ width: 40, height: 40 }}><Emblem family="craft" subject="order" icon="scroll-unfurled" size={30} alt="" /></span>
+          <p className="faint" style={{ margin: 0, fontSize: 13, flex: 1 }}>{CRAFTS.idle}</p>
+        </div>
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12 }}>{CRAFTS.says}</p>
       </div>
     );
@@ -220,8 +245,9 @@ const fmtXp = (x: number) => (x >= 100 ? num(Math.round(x)) : x.toFixed(1).repla
 function Out({ r, size }: { r: Recipe; size: number }) {
   if (r.makes.kind === 'item') return <Thing k={r.makes.item} size={size} />;
   if (r.makes.kind === 'tool') {
+    const t = SKILL_BY_KEY[r.makes.skill].tool;
     return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
-      <Svg html={icon(SKILL_BY_KEY[r.makes.skill].tool.icon, Math.round(size * 0.62))} /></span>;
+      <Emblem family="craft" subject={toolArt(r.makes.skill)} icon={t.icon} size={Math.round(size * 0.72)} alt={t.name} /></span>;
   }
   const tpl = TEMPLATE_BY_KEY[r.makes.template];
   return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
@@ -243,7 +269,10 @@ function Thing({ k, size }: { k: string; size: number }) {
   return (
     <span className="cic" style={{ width: size, height: size, color: colour, borderColor: ring }}>
       {it.paint
-        ? <Emblem family={it.paint.family} subject={it.paint.subject} icon={it.icon} size={Math.round(size * 0.66)} alt={it.name} />
+        // 畫 A painting keeps its paper round the object, so it is given the cell the way a
+        // beast's plate is; a drawn icon has no paper and keeps its margin.
+        ? <Emblem family={it.paint.family} subject={it.paint.subject} icon={it.icon} alt={it.name}
+            size={Math.round(size * (pictureOf('emblem', `${it.paint.family}-${it.paint.subject}`) ? 0.9 : 0.66))} />
         : <Svg html={icon(it.icon, Math.round(size * 0.66))} />}
     </span>
   );
