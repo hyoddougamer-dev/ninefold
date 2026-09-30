@@ -154,8 +154,10 @@ function fakeDiscord({ admin = true } = {}) {
       if ((m = path.match(/^\/channels\/(\d+)\/pins$/))) return send(200, state.messages[m[1]].filter((x) => x.pinned));
       if ((m = path.match(/^\/channels\/(\d+)\/messages$/)) && req.method === 'GET') return send(200, [...state.messages[m[1]]].reverse().slice(0, 50));
       if ((m = path.match(/^\/channels\/(\d+)\/messages$/)) && req.method === 'POST') {
-        if (!botMaySend(channel(m[1]))) return refuse(403, 'Missing Permissions');
-        const msg = { id: id(), author: { id: BOT }, pinned: false, embeds: body.embeds.map((e) => JSON.parse(JSON.stringify(e))) };
+        const inThread = state.threads.find((t) => t.id === m[1]);
+        if (inThread?.thread_metadata.archived) return refuse(400, 'Thread is archived');
+        if (!inThread && !botMaySend(channel(m[1]))) return refuse(403, 'Missing Permissions');
+        const msg = { id: id(), author: { id: BOT }, pinned: false, content: body.content ?? '', embeds: (body.embeds ?? []).map((e) => JSON.parse(JSON.stringify(e))) };
         state.messages[m[1]].push(msg); return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'PATCH') {
@@ -418,6 +420,34 @@ await scenario({}, async (port, env, state) => {
   check(state.automod.length === SPEC.automod.rules.length, 'and every other rule is made beside it');
   const again = await runSetup(port, env);
   check(again.code === 0 && changes(again.out).length === 0, `and a second run changes nothing${changes(again.out).length ? `: ${changes(again.out).join(' | ')}` : ''}`);
+});
+
+// 6. 答 Posts the testers opened: tagged as server.json says and answered once, by name.
+// A thread can be answered again later (業 the workshop went back to the "jobs" thread that
+// asked for it), so server.json may name one title twice: one post, one answer per entry.
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const forumOf = (key) => state.channels.find((c) => c.name === all.find((x) => x.key === key).name);
+  const owed = (a) => (SPEC.threads ?? []).filter((x) => x.forum === a.forum && x.title === a.title).length;
+  for (const a of (SPEC.threads ?? []).filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i)) {
+    const t = { id: id(), parent_id: forumOf(a.forum).id, name: a.title, flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
+    state.threads.push(t);
+    state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
+  }
+  const first = await runSetup(port, env);
+  const mine = (a) => state.threads.find((t) => t.name === a.title && t.owner_id === '4242');
+  const replies = (a) => state.messages[mine(a).id].filter((x) => x.author.id === BOT);
+  const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x).name).sort(); };
+  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => r.content.startsWith('<@4242> '))),
+    `each of the ${(SPEC.threads ?? []).length} answers is given once, naming whoever opened the post, even archived`);
+  check((SPEC.threads ?? []).every((a) => JSON.stringify(tagNames(mine(a))) === JSON.stringify([...(a.tags ?? [])].sort())),
+    'and wears the tags server.json gives it');
+  const again = await runSetup(port, env);
+  check(again.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a)) && !/answered|tagged/.test(again.out),
+    'and a second run answers nobody twice');
+  state.threads = state.threads.filter((t) => t.owner_id !== '4242');
+  const gone = await runSetup(port, env);
+  check(gone.code === 0 && /not found .* skipped/.test(gone.out), 'a post its author deleted is skipped, never made');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

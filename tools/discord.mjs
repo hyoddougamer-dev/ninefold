@@ -98,6 +98,7 @@ function plan() {
   }
   for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}`);
   for (const p of SPEC.posts ?? []) log(`  post "${p.title}" in the ${p.forum} forum${p.pin ? ', pinned' : ''}`);
+  for (const a of SPEC.threads ?? []) log(`  answer "${a.title}" in the ${a.forum} forum${a.tags ? `, tagged ${a.tags.join(', ')}` : ''}`);
   if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out 測 Tester');
   for (const p of SPEC.onboarding?.prompts ?? []) log(`  onboarding asks "${p.title}" (${p.options.map((o) => o.title).join(', ')})`);
   for (const r of SPEC.automod?.rules ?? []) log(`  AutoMod: ${r.name}`);
@@ -511,6 +512,45 @@ async function run() {
         await call('PATCH', `/channels/${thread.id}`, { flags: (thread.flags ?? 0) | 2 });
         thread.flags = (thread.flags ?? 0) | 2;
         log(`  "${p.title}" pinned`);
+      }
+    });
+  }
+
+  // 答 Answers to what the testers opened: a post of theirs in a forum, found by its exact
+  // title, given the tags server.json names and one reply from the team, which starts by
+  // naming whoever opened it. Found again by its opening words, so it is posted once. A
+  // post that is not there (renamed, or deleted by its author) is skipped, never made.
+  for (const a of SPEC.threads ?? []) {
+    const forum = channelId[a.forum];
+    if (!forum) continue;
+    await step(`answer "${a.title}"`, async () => {
+      if (!threads[forum]) {
+        const live = (await call('GET', `/guilds/${GUILD}/threads/active`)).threads ?? [];
+        const old = (await call('GET', `/channels/${forum}/threads/archived/public`)).threads ?? [];
+        threads[forum] = [...live.filter((t) => t.parent_id === forum), ...old];
+      }
+      const thread = threads[forum].find((t) => t.name === a.title);
+      if (!thread) { log(`  "${a.title}" not found in #${a.forum}, skipped`); return; }
+      const forumNow = channels.find((c) => c.id === forum);
+      const tagIds = (a.tags ?? []).map((n) => (forumNow?.available_tags ?? []).find((t) => t.name === n)?.id).filter(Boolean).slice(0, 5);
+      const same = (x, y) => JSON.stringify([...x].sort()) === JSON.stringify([...y].sort());
+      if (tagIds.length && !same(thread.applied_tags ?? [], tagIds)) {
+        await wake(thread);
+        await call('PATCH', `/channels/${thread.id}`, { applied_tags: tagIds });
+        thread.applied_tags = tagIds;
+        log(`  "${a.title}" tagged ${a.tags.join(', ')}`);
+      }
+      if (a.reply) {
+        const text = a.reply.join('\n');
+        const opening = text.slice(0, 60);
+        const said = await call('GET', `/channels/${thread.id}/messages?limit=100`);
+        if (!said.some((m) => m.author?.id === me.id && (m.content ?? '').includes(opening))) {
+          await wake(thread);
+          await call('POST', `/channels/${thread.id}/messages`, {
+            content: `${thread.owner_id ? `<@${thread.owner_id}> ` : ''}${text}`, allowed_mentions: { users: thread.owner_id ? [thread.owner_id] : [] },
+          });
+          log(`  "${a.title}" answered`);
+        }
       }
     });
   }

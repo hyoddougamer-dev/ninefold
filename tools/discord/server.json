@@ -379,6 +379,31 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/devlog-1.webp?v=2"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "devlog-2",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Dev log #2 · The Workshop is coming",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-2.webp?v=2",
+      "body": [
+        "The next update is the biggest since the test opened, and it began with you. Raziel asked for jobs like the ones in Dao of the Endless Sky. Here is what we built, before it goes in, so you can tell us what to change."
+      ],
+      "fields": [
+        ["業 The Workshop", "A new tab from realm 2: seven crafts you level from 1 to 99. Gather herbs and ore, render the parts of the beasts you hunt, forge metal, tools and the gear you choose. Alchemy follows at realm 5, Sigil Writing at 6, Arrays at 7."],
+        ["攜 What it is for", "An elixir and a sigil carried into your next warden, heart demon or vault gate. A win spends what took part, a loss keeps it. Forged gear is the piece you choose, and it melts back into metal, never qi."],
+        ["守 What it never does", "It keeps working 12 hours after you close the game and loses nothing. Nothing it makes raises your qi rate. We played the whole climb with it and without it: it lands within two days either way. A second road, not a shortcut."],
+        ["畫 Painted", "Every herb, ore, metal, elixir, sigil, array and tool is painted in the same ink as the beasts, and each craft has its own scene. The pictures below are the real game."],
+        ["圍 The drive, repriced", "Raziel was right: the drive cost too much. Its price was a share of the layer you stood on, so late in the climb a drive of fifty ate more than a day of qi to save a few minutes of tapping. With this update it costs time instead: one minute of your own gathering per kill, so fifty kills are fifty minutes of qi in every realm. A beast from an earlier realm costs a quarter of that, which puts the bestiary and the fate bars within a drive's reach. It pays what the same kills by hand would (the same material, record and drops), and fighting one at a time stays free."],
+        ["議 Tell us", "What would you change before it lands? Everything is open. Answer in *業 The Workshop: tell us what you think*, pinned in {#ideas}."],
+        ["謝 Thanks", "To Raziel, for the jobs thread and for the word about the drive. Every post in {#bugs} and {#ideas} is read."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=2"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -724,6 +749,33 @@
       ]
     },
     {
+      "key": "ideas-workshop",
+      "forum": "ideas",
+      "tags": ["Idea"],
+      "pin": true,
+      "title": "業 The Workshop: tell us what you think",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-workshop.webp?v=2",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop.webp?v=2",
+      "body": [
+        "**Seven crafts you level from 1 to 99 are on their way**, on a new 業 tab from realm 2. It began in this forum: Raziel's *jobs* thread asked for something like the jobs in Dao of the Endless Sky. Thank you, Raziel.",
+        "",
+        "We built the whole of it at once so you can judge the whole of it, and we want your opinion before it lands, while it is still easy to change."
+      ],
+      "fields": [
+        ["業 In one line", "Gather (藥 herbs, 礦 ore, 解 beast parts) › make (鑄 metal, tools and gear, 丹 elixirs, 符 sigils) › carry an elixir and a sigil into a warden, heart demon or vault gate › keep 陣 arrays that make it all faster. The chart below has every craft."],
+        ["守 The promises it keeps", "It works 12 hours after you leave and loses nothing. Nothing it makes raises your qi rate. A lost fight never spends your kit. With it or without it the climb takes the same time within two days: a second road, not a toll."],
+        ["❓ What we want to know", "**1.** Which craft would you start with, and why?\n**2.** Are 12 hours of work while you are away enough?\n**3.** Alchemy opens at realm 5, Sigils at 6, Arrays at 7. Too late, or right?\n**4.** Does 1 to 99 sound like the right length?\n**5.** What from the jobs in Dao of the Endless Sky would you miss here?"],
+        ["📷 The real thing", "Every picture here is the game itself, not a mockup. When it lands, a screenshot of your first forged piece or elixir is the best answer we could get."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/workshop-forge.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/workshop-carry.webp?v=2"
+      ],
+      "footer": "師 Shibaki · every reply is read"
+    },
+    {
       "key": "known-android",
       "forum": "bugs",
       "tags": ["Bug", "Fixed"],
@@ -746,6 +798,48 @@
         ["Still stuck?", "Open a post here with your phone model, your Android version and a screenshot of where it stops. We read every one."]
       ],
       "footer": "九境 Ninefold · closed test"
+    }
+  ],
+  "threads": [
+    {
+      "forum": "bugs",
+      "title": "APK will not finish downloading",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Fixed ✅ Thank you for catching this on day one.",
+        "There are two ways in now: install the game from Chrome (⋮ → *Install app*), or take the APK inside a zip, which gets past the phones where a bare .apk stops at 100%. Both are step by step with pictures in *裝 Installing on Android*, pinned at the top of the guides.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Email linking",
+      "tags": ["Bug"],
+      "reply": [
+        "Confirmed, and thank you. Inside the Android app the email link always opens the browser, so the app can't finish signing in.",
+        "We are working on a fix: a code in the email that you type straight into the game, so it works inside the app too. We will say here when it lands.",
+        "Until then, the version installed from Chrome (⋮ → *Install app*) shares its save with Chrome and signs in by email without trouble.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Roleplay",
+      "tags": ["Idea"],
+      "reply": [
+        "Love this. The road already keeps a quiet score of your choices (kind or hard), so making it a visible Orthodox or Demonic path, with its own encounters and short quest chains, is a natural next step. It's being designed now; we'll show it here before it goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "jobs",
+      "tags": ["Idea"],
+      "reply": [
+        "It's built: 業 the Workshop, seven crafts you level from 1 to 99, and it began with this thread. Thank you!",
+        "Everything about it is in the new post *業 The Workshop: tell us what you think*, here in ideas. Tell us what you would change before it lands.",
+        "· 師 Shibaki"
+      ]
     }
   ]
 }
