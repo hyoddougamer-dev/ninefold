@@ -1603,10 +1603,16 @@ export const CRAFTS = {
   head: '業 The workshop',
   total: (n: number) => `Total ${n}/693`,
   totalLabel: 'Total level',
+  /** The same, on a screen too narrow for two words. */
+  totalShort: 'Total',
   // 篩 The recipe filters, for a craft with more recipes than a screen holds.
   findHint: 'Find a recipe',
   filters: { all: 'All', ready: 'Ready now', next: 'Coming next' } as Record<'all' | 'ready' | 'next', string>,
   nothingShown: 'Nothing here right now. Try All, or gather what the recipes ask for.',
+  nothingYet: 'Nothing here right now. Gather what the recipes ask for.',
+  nothingFound: (words: string) => `No recipe in this craft matches “${words}”.`,
+  /** 作 On a craft's tile, in place of its rank, while it is the one working. */
+  tileWorking: 'working',
   later: (n: number) => `${n} more ${n === 1 ? 'opens' : 'open'} further up the craft.`,
   says: 'One task at a time. It repeats on its own, and keeps working for twelve hours after you leave. Nothing it makes is ever lost.',
   idle: 'The workshop is standing still. Choose something below and set it going.',

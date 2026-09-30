@@ -621,6 +621,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                  padding: 8px 12px; cursor: pointer; font-weight: 600; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
+/* 版 On a PC the card sits over the stage, clear of the rail, and no wider than it reads:
+   left and right with a max width and auto margins centre it without a transform. */
+@media (min-width: 1100px) {
+  .notice { left: calc(var(--rail) + 24px); right: 24px; max-width: 720px; margin-inline: auto; }
+  /* And on a screen with a dock, over the stage alone, so it covers neither side. */
+  .app:has(> .sheet:is([data-screen='cultivate'], [data-screen='gear'], [data-screen='crafts'])) .notice {
+    right: calc(var(--dock) + 24px); }
+}
 
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .card3 { background: var(--lacquer); border: 1px solid var(--gild); border-radius: 11px;
@@ -3056,7 +3064,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cskill .cs-sub em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold); margin-right: 2px; }
 .crafts .cskill[data-shut='true'] .cs-sub { white-space: normal; line-height: 1.25; }
 @media (max-width: 360px) { .crafts .cskill .cs-rank { display: none; } }
-.crafts .cskill[data-run='true'] .cs-sub::after { content: ' \00b7 working'; color: var(--jade); }
+.crafts .cskill .cs-working { color: var(--jade); }
 .crafts .cs-bar { grid-column: 2; display: block; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
 .crafts .cs-bar > i { display: block; height: 100%; background: var(--gold); }
 
@@ -3127,4 +3135,5 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @media (min-width: 1100px) and (max-width: 1599px) {
   .crafts .cskill .cs-rank { display: none; }
 }
-@media (max-width: 360px) { .crafts .ctotal > span:not(.term) { display: none; } }
+.crafts .ctotal .ct-short { display: none; }
+@media (max-width: 360px) { .crafts .ctotal .ct-long { display: none; } .crafts .ctotal .ct-short { display: inline; } }

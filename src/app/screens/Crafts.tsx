@@ -27,6 +27,27 @@ import { pictureOf } from '../../data/pictures.ts';
 const toolArt = (skill: SkillKey) => `tool-${SKILL_BY_KEY[skill].tool.name.toLowerCase()}`;
 
 /**
+ * 篩 What a search looks through: the recipe's own name, and the words a player would
+ * reach for to find it, which are what goes in and, for gear, the slot and the beast whose
+ * shape it takes. "crab" and "robe" used to find nothing in the forge while a crab-shaped
+ * robe sat in the list.
+ */
+const HAY = new Map<string, string>();
+function hay(r: Recipe): string {
+  let h = HAY.get(r.key);
+  if (h === undefined) {
+    const words = [r.name, r.han, r.group, ...r.needs.map(([k]) => ITEM_BY_KEY[k]?.name ?? '')];
+    if (r.makes.kind === 'gear') {
+      const { template, beast } = r.makes;
+      words.push(TEMPLATE_BY_KEY[template]?.slot ?? '', BEASTS.find((b) => b.key === beast)?.name ?? '');
+    }
+    h = words.join(' ').toLowerCase();
+    HAY.set(r.key, h);
+  }
+  return h;
+}
+
+/**
  * 業 The workshop.
  *
  * Seven crafts in a grid, the one chosen underneath with every recipe it has, and the
@@ -66,7 +87,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   // list. Gear is only ever the realm you are in and the one before it.
   const needle = find.trim().toLowerCase();
   const all = mine.filter((r) => (needle
-      ? `${r.name} ${r.han} ${r.group}`.toLowerCase().includes(needle)
+      ? hay(r).includes(needle)
       : (groups.length < 2 || r.group === shown))
     && (r.makes.kind !== 'gear' || (r.realm <= state.realm && r.realm >= state.realm - 1)));
   const isLocked = (r: Recipe) => { const b = blocked(state, r); return b === 'level' || b === 'realm'; };
@@ -92,7 +113,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           which answers a tap with what it is (Bruno, testing: "total quê?"). */}
       <div className="row ctop">
         <h2 className="heading" style={{ margin: 0, flex: 1 }}>{CRAFTS.head}</h2>
-        <span className="ctotal"><Term han="總" plain /> <span>{CRAFTS.totalLabel}</span>{' '}
+        <span className="ctotal"><Term han="總" plain /> <span className="ct-long">{CRAFTS.totalLabel}</span>
+          <span className="ct-short">{CRAFTS.totalShort}</span>{' '}
           <b className="mono">{totalLevel(state)}</b><i className="mono">/693</i></span>
       </div>
       <Task state={state} r={running} onStop={() => onTask(null)} />
@@ -120,7 +142,12 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
               <Seal skill={k.key} han={k.seal} />
               <span className="cs-name">{k.name}</span>
               <span className="cs-sub">
-                {on ? <><em className="mono">{l}</em> <span className="cs-rank">{rankOf(k.key, l).name}</span></> : CRAFTS.opens(k.realm)}
+                {/* 作 The craft that is working says so in place of its rank, which the panel
+                    below shows anyway: a marker tacked on after the rank was the first thing
+                    an ellipsis cut. */}
+                {on ? <><em className="mono">{l}</em> {running?.skill === k.key
+                  ? <span className="cs-working">{CRAFTS.tileWorking}</span>
+                  : <span className="cs-rank">{rankOf(k.key, l).name}</span>}</> : CRAFTS.opens(k.realm)}
               </span>
               {on && <i className="cs-bar"><i style={{ width: `${Math.round(fill * 100)}%` }} /></i>}
             </button>
@@ -192,7 +219,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
 
       {open && (
         <div className="crecipes">
-          {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>{CRAFTS.nothingShown}</p>}
+          {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
+            {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
           {list.map((r) => (
             <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key}
               onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} />
@@ -413,7 +441,7 @@ function Carry({ state, onCarry }: { state: State; onCarry: (hand: 'elixir' | 's
         {k ? <Thing k={k} size={32} /> : <span className="cic" style={{ width: 32, height: 32 }} />}
         <span style={{ flex: 1, minWidth: 0, fontSize: 12.5 }}>
           <i className="faint" style={{ fontStyle: 'normal', display: 'block' }}>{which === 'elixir' ? CRAFTS.carryElixir : CRAFTS.carrySigil}</i>
-          <b>{it ? `${q !== null ? RARITY_INFO[RARITIES[q]].han + ' ' : ''}${it.name} ×${state.crafts.pouch[k!] ?? 0}` : CRAFTS.carryNone}</b>
+          <b>{it ? `${q !== null ? `${RARITY_INFO[RARITIES[q]].han} ${RARITY_INFO[RARITIES[q]].name} ` : ''}${it.name} ×${state.crafts.pouch[k!] ?? 0}` : CRAFTS.carryNone}</b>
         </span>
         {k && <button className="act small ghost" onClick={() => onCarry(which, null)}>{CRAFTS.uncarry}</button>}
       </div>
