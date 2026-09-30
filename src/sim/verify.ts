@@ -79,6 +79,19 @@ export const PRE_JOIN_CREDIT = 3 * 86_400;
  */
 export const FIRST_PACE = 0.55;
 
+/**
+ * 坐 And one sitting on top of it, once. FIRST_PACE is a pace for days, and a first sync
+ * that comes after twelve minutes is not a day: it is somebody playing with the game in
+ * front of them, where qi runs three times over (FOCUS_MAX) and every first sight pays.
+ * Measured on the live server, 2026-09-30: 195 of 591 syncs were held back as too fast,
+ * and replaying an honest new player showed why: every first sync of the first half hour
+ * was refused, at up to four times the allowed pace, so nobody who tried the game ever
+ * saw their name on a board in the sitting they tried it in. An hour of credit covers
+ * that sitting. It is worth an hour of a climb of fifty-five days to whoever would forge
+ * it, and it is spent once, on the first sync.
+ */
+export const FIRST_SITTING = 3600;
+
 /** 餘 Room for rounding and for a rate that dipped mid-interval (a piece taken off). */
 export const SLACK = 1.15;
 
@@ -289,7 +302,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // burst bigger than that is not refused for ever, only until real time catches up: the
   // server keeps measuring from the last save it accepted, so the gap grows until it
   // pays. What cannot happen is a long gap going faster than the fastest honest one.
-  const have = first ? dt * FIRST_PACE : dt + Math.min(dt * BURST, BURST_CAP);
+  const have = first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP);
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 

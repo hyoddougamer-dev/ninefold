@@ -6,10 +6,12 @@ import { anchorFloor, firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../
 import { RUN_DAO_CEILING } from '../../data/secret.ts';
 import { validate } from '../state.ts';
 import { fuse } from '../chest.ts';
-import { FUSE_TOP } from '../balance.ts';
+import { FUSE_TOP, focusAt } from '../balance.ts';
 import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
-import { newState, type State } from '../state.ts';
+import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, type State } from '../state.ts';
+import { odds, takeKill } from '../combat.ts';
+import { huntable, wardenOf } from '../../data/bestiary.ts';
 
 /**
  * 驗 The anti-cheat, held to both of its promises.
@@ -88,6 +90,44 @@ describe('業 a ranked save from before the workshop', () => {
     const v = verify(before, fresh, (next.day - then.day) * DAY);
     expect(v.why).toEqual([]);
     expect(v.ok).toBe(true);
+  });
+});
+
+describe('坐 the first sitting reaches the boards', () => {
+  /** A new player, the way tools/sitting.mjs plays one: buy what is lit, fight what is winnable. */
+  function sitting(minutes: number): State {
+    const T = GAME_EPOCH + 10 * DAY;
+    let s = newState(T);
+    let t = T;
+    while (t - T < minutes * 60) {
+      for (const u of UPGRADES) while (canBuy(s, u) && s.levels[u] < capOf(s, u)) s = buy(s, u);
+      if (canFightWarden(s) && odds(s, wardenOf(s.realm)) > 0.5) {
+        s = takeKill(s, wardenOf(s.realm));
+        if (canBreakThrough(s)) s = breakThrough(s);
+      }
+      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
+      if (b) s = takeKill(s, b);
+      t += 12;
+      s = advance(s, t, false, focusAt(t - T));
+    }
+    return s;
+  }
+
+  it('accepts an honest new player at every point of the first half hour', () => {
+    // Measured 2026-09-30 on the live server: every first sync of an active first half
+    // hour was refused as too fast, so nobody saw their name on a board the day they tried.
+    for (const m of [2, 5, 10, 15, 20, 30]) {
+      const s = sitting(m);
+      const { before, seconds, first } = firstSync(s, s.at, s.startedAt + 5);
+      const v = verify(before, s, seconds, first);
+      expect(v.why, `${m} min`).toEqual([]);
+    }
+  });
+
+  it('but a first sync a quarter of an hour in that claims the third realm still waits', () => {
+    const s = { ...sitting(15), realm: 3, layer: 4 };
+    const { before, seconds, first } = firstSync(s, s.at, s.startedAt + 5);
+    expect(verify(before, s, seconds, first).ok).toBe(false);
   });
 });
 
