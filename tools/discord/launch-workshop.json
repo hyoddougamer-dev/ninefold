@@ -9,7 +9,7 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-3.webp?v=1",
       "body": [
-        "It is in the game. Thank you to everyone who answered the preview in {#ideas}: what changed because of you is below."
+        "It's in the game. Seven crafts, painted, and a second road beside the climb."
       ],
       "fields": [
         [
@@ -31,6 +31,10 @@
         [
           "圍 The drive costs time now",
           "One minute of your own gathering per kill, in every realm: 50 kills are 50 minutes. A beast from an earlier realm costs a quarter of that. Late in the climb, fifty kills used to cost more than a whole day of qi."
+        ],
+        [
+          "榜 Fairer rankings",
+          "Win a warden or a tower floor against long odds and it counts. Before, the server could mistake a lucky win for a cheat."
         ],
         [
           "議 Tell us",
