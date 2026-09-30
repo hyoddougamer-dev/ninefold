@@ -96,7 +96,7 @@ function plan() {
       log(`    ${ch.type.padEnd(12)} #${ch.name}${note}`);
     }
   }
-  for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}`);
+  for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}${(SPEC.announce ?? []).includes(m.channel) ? ', to @everyone when new' : ''}`);
   for (const p of SPEC.posts ?? []) log(`  post "${p.title}" in the ${p.forum} forum${p.pin ? ', pinned' : ''}`);
   for (const a of SPEC.threads ?? []) log(`  answer "${a.title}" in the ${a.forum} forum${a.tags ? `, tagged ${a.tags.join(', ')}` : ''}`);
   if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out 測 Tester');
@@ -430,9 +430,13 @@ async function run() {
       const ours = (x) => x.author?.id === me.id && (x.embeds ?? []).some((e) => e.title === m.title);
       const mine = pins.find(ours) ?? recent.find(ours);
       let id;
+      // 眾 A new post in a channel server.json names in `announce` tells everybody it is
+      // there. Only on the first post: an edit never notifies, so it never pings twice.
+      const loud = (SPEC.announce ?? []).includes(m.channel);
       if (!mine) {
-        id = (await call('POST', `/channels/${where}/messages`, { embeds })).id;
-        log(`  "${m.title}" posted`);
+        id = (await call('POST', `/channels/${where}/messages`, loud
+          ? { content: '@everyone', allowed_mentions: { parse: ['everyone'] }, embeds } : { embeds })).id;
+        log(`  "${m.title}" posted${loud ? ', to everyone' : ''}`);
       } else {
         id = mine.id;
         if (sig(mine.embeds) !== sig(embeds)) {
@@ -441,6 +445,16 @@ async function run() {
         }
       }
       if (m.pin && !(mine?.pinned)) await call('PUT', `/channels/${where}/pins/${id}`);
+      // 告眾 A post that went up before it could tell everybody gets one short line after
+      // it that does, found again among the bot's messages after the post, so it is said once.
+      if (m.nudge && mine && !(mine.content ?? '').includes('@everyone')) {
+        const text = linked(m.nudge);
+        const after = await call('GET', `/channels/${where}/messages?after=${id}&limit=100`);
+        if (!after.some((x) => x.author?.id === me.id && (x.content ?? '').includes(text.slice(0, 60)))) {
+          await call('POST', `/channels/${where}/messages`, { content: `@everyone ${text}`, allowed_mentions: { parse: ['everyone'] } });
+          log(`  "${m.title}" told everyone`);
+        }
+      }
     });
   }
 

@@ -5,6 +5,7 @@
   "community": { "rules": "welcome", "updates": "team" },
   "settings": { "system": "general", "verification": 2, "alerts": "team" },
   "invite": "welcome",
+  "announce": ["news", "devlog"],
   "everyone": [
     "INVITE",
     "VIEW",
@@ -382,6 +383,7 @@
     },
     {
       "key": "devlog-2",
+      "nudge": "筆 Dev log #2 is up, just above: the Workshop is coming, and the drive gets cheaper. Tell us what you would change in the pinned post in {#ideas}.",
       "pin": false,
       "channel": "devlog",
       "title": "筆 Dev log #2 · The Workshop is coming",
