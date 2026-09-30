@@ -186,7 +186,10 @@ console.log('出入 every verb, against the price it quotes');
       if (!same(beforeQi - s.qi, 0)) fail('洞天 planting', `took ${num(beforeQi - s.qi)} qi, and a seed is paid in material`);
       if (!same(beforeMat - s.materials, cost)) fail('洞天 planting', `quoted 材 ${num(cost)}, took ${num(beforeMat - s.materials)}`);
       const ripe = { ...s, at: s.at + h.hours * 3600 };
-      const pays = harvestValue(ripe, h);
+      // 期 Priced by the week it was sown in, as the screen quotes it (Cave.tsx passes the
+      // bed's own clock). Read at the ripe instant, a bed that ripened into the next week
+      // looked like a broken promise whenever this ran near a Sunday.
+      const pays = harvestValue(ripe, h, ripe.beds[0].at);
       const q = ripe.qi;
       const taken = harvest(ripe, 0);
       if (!isRipe(ripe, ripe.beds[0])) fail('洞天 a bed', 'did not ripen on its own clock');
