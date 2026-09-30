@@ -273,8 +273,8 @@ export function advice(s: State): Advice | null {
       const mark = nextMark(s.killed[reachable.key] ?? 0)!;
       return {
         han: '狩',
-        text: ADVICE.goHunt(reachable.han, Math.round(odds(s, reachable) * 100),
-          mark.at - (s.killed[reachable.key] ?? 0), MARK_INFO[mark.index].han),
+        text: ADVICE.goHunt(reachable.han, reachable.name, Math.round(odds(s, reachable) * 100),
+          mark.at - (s.killed[reachable.key] ?? 0), MARK_INFO[mark.index].han, MARK_INFO[mark.index].name),
         tab: 'hunt',
       };
     }
@@ -298,7 +298,7 @@ export function advice(s: State): Advice | null {
     if (next) {
       return {
         // 力 The beast as this cultivator meets it, the number the hunt row shows.
-        han: '狩', text: ADVICE.reachFor(next.han, effectiveBeastPower(s, next), mine), tab: 'hunt',
+        han: '狩', text: ADVICE.reachFor(next.han, next.name, effectiveBeastPower(s, next), mine), tab: 'hunt',
         toward: Math.max(0, Math.min(1, mine / effectiveBeastPower(s, next))),
       };
     }

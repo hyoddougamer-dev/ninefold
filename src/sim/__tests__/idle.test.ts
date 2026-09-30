@@ -27,7 +27,7 @@ describe('閒 where a realm\'s qi goes', () => {
     for (const share of shares) expect(share).toBeGreaterThan(1);
   }, 30_000);
 
-  it('leaves the lightest cultivator standing at a ceiling for most of the first realm', () => {
+  it('ends the first realm at the next visit, for everybody', () => {
     const runs = walkAll();
     for (const run of runs) {
       const rows = run.rows.map((r) =>
@@ -45,16 +45,21 @@ describe('閒 where a realm\'s qi goes', () => {
     const first = (run: typeof light) => run.rows.find((r) => r.realm === 1)!;
 
     /**
-     * 頂 The finding, and what is left of it. A realm's bar stops at its last rung and
-     * qi banks there, and for somebody who opens the app once a day that used to be
-     * three quarters of the first realm: the one realm where a player has not yet
-     * decided to stay. It is about half of a realm that is itself half as long now.
+     * 頂 The finding, and what became of it. A realm's bar stops at its last rung and qi
+     * banks there, and for somebody who opens the app once a day that used to be half
+     * of the first realm: the one realm where a player has not yet decided to stay.
+     *
+     * 初 Since the first realm became the first sitting (FIRST_REALM_PRICE) its price
+     * no longer holds anybody. Whoever plays through the first sitting leaves it inside
+     * the first twenty minutes; whoever opens the app and goes finds the bar full and
+     * the warden ready on their next visit. So the wait is only ever the gap between
+     * visits, and nobody is slower than before: measured 2026-09-30, once a day 24 hours
+     * as it was, three times a day 24 → 8, six times a day 12 → 4.
      */
-    expect(first(light).stuckHours / first(light).hours).toBeGreaterThan(0.3);
-    expect(first(light).stuckHours / first(light).hours).toBeLessThan(0.6);
-    // And it is a *habit* problem rather than a pricing one: showing up shortens it.
-    expect(first(busy).stuckHours / first(busy).hours)
-      .toBeLessThan(first(light).stuckHours / first(light).hours);
+    expect(first(light).hours).toBeLessThanOrEqual(24);
+    expect(first(busy).hours).toBeLessThanOrEqual(8);
+    // And it is a *habit* matter rather than a pricing one: showing up shortens it.
+    expect(first(busy).hours).toBeLessThan(first(light).hours);
 
     /**
      * 費 The two halves of that wait have collapsed into one, which is the plainest way
@@ -106,9 +111,14 @@ describe('閒 where a realm\'s qi goes', () => {
      * What the band is for is still held: nothing reads under 15% or over 80%, the
      * idler's climb did not move by a single day (144 before, 144 after), and 分 the
      * test above still says every realm allows more than its own ladder to be bought.
+     *
+     * 初 Except the first realm, since it became the first sitting: its rungs and its
+     * upgrades cost a fourteenth of what they did, so everything in it is bought within
+     * minutes and the rest of a visitor's day banks at the full bar, to be 銀 carried
+     * into the second realm. A small share there is a cheap realm, not an empty one.
      */
     for (const run of runs) {
-      for (const row of run.rows) {
+      for (const row of run.rows.filter((r) => r.realm >= 2)) {
         expect(row.intoUpgrades).toBeGreaterThan(0.15);
         expect(row.intoUpgrades).toBeLessThan(0.8);
       }
