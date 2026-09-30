@@ -34,7 +34,7 @@ import {
   newState, type State,
 } from './state.ts';
 import { layerCost } from './time.ts';
-import { beastPower, oddsRaw } from './combat.ts';
+import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
@@ -317,7 +317,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   for (let r = before.realm; r < after.realm; r++) {
     const w = wardenOf(r);
     const there = { ...after, realm: r, layer: 8 };
-    if (oddsRaw(there, w, undefined, bestKit(there, w, 'warden')) <= 0) { why.push('warden'); break; }
+    if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
   // 業 One task at a time, so the experience every craft gained between two saves has to
   // fit in the seconds between them, at the fastest each one can ever be worked.
@@ -325,13 +325,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 劫 Every mark is a Dragon beaten, and the last one has to be beatable by this build.
   if (newMarks > 0) {
     const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
-    if (oddsRaw(faced, wardenOf(9)) <= 0) why.push('warden');
+    if (!beatable(faced, wardenOf(9))) why.push('warden');
   }
   // 塔 And the highest floor claimed has to be one this build can take.
   if (after.tower > before.tower && after.tower > 0) {
     const f = after.tower;
     if (power(after) > 0 && floorPower(f) / power(after) > 4) why.push('tower');
-    else if (oddsRaw(after, floorBeast(f), floorPower(f)) <= 0) why.push('tower');
+    else if (!beatable(after, floorBeast(f), floorPower(f))) why.push('tower');
   }
 
   // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to

@@ -474,6 +474,23 @@ export function oddsRaw(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT
 }
 
 /**
+ * 可 Whether this build could ever win the fight at all, which is a stronger question than
+ * the odds. The odds are read from SAMPLES fights, so a fight won once in a few hundred
+ * reads 0 there, and the screen shows it as ODDS_FLOOR. A loss costs nothing, so an
+ * honest player may well press it until it lands: the server must not call that a cheat.
+ * So a reading of 0 is looked at again, far deeper, before it is believed.
+ */
+export const BEATABLE_SAMPLES = 2000;
+export function beatable(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): boolean {
+  if (oddsRaw(s, b, standing, kit) > 0) return true;
+  const u = setup(s, b, standing, kit);
+  for (let i = 0; i < BEATABLE_SAMPLES; i++) {
+    if (run(u, (i * 2246822519 + 374761393) >>> 0, false).won) return true;
+  }
+  return false;
+}
+
+/**
  * A beast's power as this cultivator meets it.
  *
  * 破甲 Sunder shaves it down, and 渡劫 raises the Dragon: after the ninth realm the same
