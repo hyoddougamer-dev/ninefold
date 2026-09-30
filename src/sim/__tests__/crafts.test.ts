@@ -308,7 +308,10 @@ describe('守 a save is input', () => {
     }, { realm: 3, killed: { rat: 10 }, startedAt: T0 }, now);
     expect(forged.xp.herb).toBeLessThanOrEqual(HOUR * XP_PER_SECOND_MAX.herb * 1.05);
     expect(forged.xp.vein).toBe(0);
-    expect(forged.pouch.moss).toBe(1e9);
+    // Moss pays its experience per make: no more moss than the (already capped) herb
+    // experience could have paid for, twice over for the doubling marks.
+    expect(forged.pouch.moss).toBeGreaterThan(0);
+    expect(forged.pouch.moss).toBeLessThanOrEqual(Math.ceil(forged.xp.herb / RECIPE_BY_KEY['herb:moss'].xp) * 2 + 1);
     expect(forged.pouch).not.toHaveProperty('nothing');
     expect(forged.pouch).not.toHaveProperty('might2@9');
     expect(forged.pouch).not.toHaveProperty('moss@1');
@@ -320,12 +323,26 @@ describe('守 a save is input', () => {
   });
 
   it('holds every key a real pouch can hold', () => {
+    const maxed = Object.fromEntries(SKILL_KEYS.map((k) => [k, XP_TABLE[99]]));
     for (const it of ITEMS) {
       const k = it.graded ? `${it.key}@2` : it.key;
       expect(splitKey(k).key).toBe(it.key);
-      const back = validCrafts({ pouch: { [k]: 3 } }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e6);
+      const back = validCrafts({ pouch: { [k]: 3 }, xp: maxed }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e9);
       expect(back.pouch[k], k).toBe(3);
     }
+  });
+
+  it('keeps nothing the craft levels could not have made, and no more than the experience paid for', () => {
+    const back = validCrafts({
+      xp: { alchemy: XP_TABLE[12], herb: XP_TABLE[99] },
+      pouch: { 'might9@4': 50, 'mend1@4': 1e6, 'sigil:heavenseal@4': 9, 'array:heavenearth': 1, moss: 1e8 },
+    }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(back.pouch).not.toHaveProperty('might9@4');
+    expect(back.pouch).not.toHaveProperty('sigil:heavenseal@4');
+    expect(back.pouch).not.toHaveProperty('array:heavenearth');
+    expect(back.pouch['mend1@4']).toBeLessThanOrEqual(Math.ceil(XP_TABLE[12] / RECIPE_BY_KEY['alchemy:mend1'].xp) * 2 + 1);
+    // A craft at 99 stops earning and keeps making, so its pouch is not held to the experience.
+    expect(back.pouch.moss).toBe(1e8);
   });
 });
 

@@ -526,7 +526,9 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     }
 
     for (let i = 0; i < h.hunts; i++) {
-      const b = (h.crafts ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined)
+      // 解 One kill a visit, at most, goes to a beast the knife does not know yet: learning
+      // is done on the way, never instead of the hunt.
+      const b = (h.crafts && i === 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined)
         ?? quarryFor(s, h.calling);
       if (!b) break;
       s = takeKill(s, b);

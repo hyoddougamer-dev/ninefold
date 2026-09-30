@@ -533,6 +533,9 @@ export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.from
 })) as Record<SkillKey, number>;
 
 const POUCH_LIMIT = 1e9;
+/** The recipe that makes each item: one each, so a pouch key names the craft behind it. */
+const MAKER: Readonly<Record<string, Recipe>> = Object.fromEntries(
+  RECIPES.filter((r) => r.makes.kind === 'item').map((r) => [(r.makes as { item: string }).item, r]));
 
 /**
  * 守 The workshop from a save. Every number is capped by something the save cannot forge:
@@ -554,6 +557,9 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
   }
   const level = (k: SkillKey) => levelOf(xp[k]);
 
+  // 儲 A thing is only in the pouch if this craft level and realm could have made it, and
+  // never more of it than the craft's experience paid for: every make pays the recipe's
+  // experience or more, and the most any make yields is two (the second mark, Keen-Edge).
   const pouch: Record<string, number> = {};
   let entries = 0;
   for (const [k, v] of Object.entries(rec(o.pouch))) {
@@ -562,7 +568,11 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     const it = ITEM_BY_KEY[key];
     if (!it) continue;
     if (it.graded ? quality === null : quality !== null) continue;
-    const n = Math.floor(num(v, 0, POUCH_LIMIT));
+    const r = MAKER[key];
+    if (!r || !open(r.skill) || level(r.skill) < r.level || s.realm < r.realm) continue;
+    // At 99 the experience stops and the makes do not, so a finished craft is not held to it.
+    const most = xp[r.skill] >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp[r.skill] / r.xp) * 2 + 1;
+    const n = Math.floor(num(v, 0, Math.min(POUCH_LIMIT, most)));
     if (n > 0) { pouch[k] = n; entries++; }
   }
 
