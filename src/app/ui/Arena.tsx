@@ -14,7 +14,9 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, SECLUSION } from '../copy.ts';
+import { ARENA, CRAFTS, SECLUSION } from '../copy.ts';
+import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
+import type { Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
@@ -62,8 +64,8 @@ export interface Battle {
   readonly beat: number;
   readonly over: boolean;
   readonly drop: Item | null;
-  /** 業 Something carried went into this fight, and a win spends it. */
-  readonly kit?: boolean;
+  /** 業 What was carried into this fight and took part in it; a win spends it. */
+  readonly kit?: Used;
   /** 尋 A waiting sure drop was used on this fight, and a win spends it. */
   readonly sought?: boolean;
 }
@@ -137,6 +139,8 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   const sky = (aboveSummit && pictureOf('heaven', aboveSummit))
     ?? pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
+  const kitNames = [battle.kit?.elixir, battle.kit?.sigil].filter((k): k is string => !!k)
+    .map((k) => ITEM_BY_KEY[splitKey(k).key]?.name ?? k).join(' · ') || null;
   const say = over
     ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
         realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
@@ -278,6 +282,7 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
           <i>{say.text}</i>
         </p>
       )}
+      {!over && kitNames && <p className="kitchip"><b className="cjk">攜</b> {CRAFTS.kitIn(kitNames)}</p>}
 
       {over && (
         <div className="verdict">
@@ -285,6 +290,11 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
             {say.han}
           </span>
           <p>{say.text}</p>
+          {/* 攜 A kit is said to be spent on a win and kept on a loss, every time. */}
+          {kitNames && (
+            <p className="kitline"><b className="cjk">攜</b> {outcome.won ? CRAFTS.kitSpent(kitNames) : CRAFTS.kitKept(kitNames)}</p>
+          )}
+          {battle.sought && !outcome.won && <p className="kitline"><b className="cjk">尋</b> {CRAFTS.seekKept}</p>}
           {/* 得 What it paid, as things you can see arrive rather than the tail of a
               sentence. 材 is the same number the save is credited, from the same function. */}
           {outcome.won && battle.demon && (

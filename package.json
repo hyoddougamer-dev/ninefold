@@ -19,6 +19,7 @@
     "bible": "tsx tools/bible.ts",
     "prose": "npm run build && tsx tools/prose.ts",
     "smoke": "node tools/smoke.mjs",
+    "workshop": "node tools/workshop-play.mjs",
     "actions": "tsx tools/actions.mjs",
     "tips": "node tools/tips.mjs",
     "han": "tsx tools/han.ts",

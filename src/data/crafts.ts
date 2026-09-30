@@ -385,7 +385,7 @@ for (const line of ELIXIR_LINES) {
 /** 丹 The three that are not a line. */
 const SPECIALS: readonly [string, string, string, number, number, (readonly [string, number])[], string, string][] = [
   ['seekincense', '尋寶香', 'Treasure-Seeking Incense', 18, 2, [['orchid', 2], [partKey('bat'), 1]],
-    'Burn it, and the next beast you beat on the hunt is sure to leave a piece.', 'incense'],
+    'Burn it, and the next beast you beat by hand on the hunt that would have left nothing leaves a piece.', 'incense'],
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
     'Carried into seclusion: your heart demon stands a tenth weaker.', 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
@@ -402,7 +402,7 @@ for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
 /** 符 Sigils: paper, cinnabar and a beast's ink. The last word of each is what it does. */
 export const SIGILS: readonly [string, string, string, number, number, (readonly [string, number])[], string, string][] = [
   ['warding', '護身符', 'Warding Sigil', 1, 1, [], 'You take less in one hard fight.', 'wax-seal'],
-  ['seeking', '尋物符', 'Seeking Sigil', 12, 2, [[partKey('fox'), 1]], 'Use it, and the next beast you beat on the hunt is sure to leave a piece.', 'scroll-unfurled'],
+  ['seeking', '尋物符', 'Seeking Sigil', 12, 2, [[partKey('fox'), 1]], 'Use it, and the next beast you beat by hand on the hunt that would have left nothing leaves a piece.', 'scroll-unfurled'],
   ['thunder', '雷符', 'Thunder Sigil', 23, 3, [[partKey('raven'), 1]], 'You strike harder in one hard fight.', 'lightning-helix'],
   ['binding', '縛妖符', 'Binding Sigil', 34, 4, [[partKey('vulture'), 1]], 'The beast loses its first blow.', 'tied-scroll'],
   ['mirror', '照妖符', 'Mirror Sigil', 45, 5, [[partKey('crab'), 1]], 'A tenth of every blow you take goes back to the beast.', 'crystal-ball'],

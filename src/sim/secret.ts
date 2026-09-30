@@ -227,7 +227,7 @@ export function open(s: State, which: 0 | 1, seed: number): State {
     const carried = kitFor(s, beast, 'vault');
     const won = (hash(seed) % 10_000) / 10_000 < odds(s, beast, undefined, carried.kit);
     if (!won) return leave({ ...s, lastRun: { ...s.lastRun, beaten: true } });
-    out = { ...(carried.spends ? spendKit(out) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
+    out = { ...(carried.spends ? spendKit(out, carried.used) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
   }
   if (gift.qi) out = { ...out, qi: out.qi + gift.qi, lastRun: add(out.lastRun, { qi: gift.qi }) };
   if (gift.materials) out = { ...out, materials: out.materials + gift.materials };

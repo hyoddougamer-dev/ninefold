@@ -4,6 +4,7 @@ import { dropsRankUp, fuseQuality } from './dao.ts';
 import { meltFactor, returnMetal, salvageValue } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
 import type { State } from './state.ts';
+import { FORGED } from '../data/crafts.ts';
 
 /**
  * 藏 Where a piece goes when it is found: the one way, for the game and the harnesses.
@@ -20,9 +21,13 @@ export function limitFor(s: State): number {
   return chestLimit(s.unlocked, bodyTotals(s).capacity, s.awakened);
 }
 
-/** 空囊 A drop a rank higher, when the tree says so. */
+/**
+ * 空囊 A drop a rank higher, when the tree says so. A drop, not a forged piece: the forge
+ * shows its odds on the recipe, and a piece that came out a rank above them would make
+ * those odds wrong on the one screen that quotes them.
+ */
 export function lifted(s: State, item: Item): Item {
-  if (!dropsRankUp(s.unlocked)) return item;
+  if (!dropsRankUp(s.unlocked) || item.from === FORGED) return item;
   const i = Math.min(RARITIES.length - 1, RARITIES.indexOf(item.rarity) + 1);
   return { ...item, rarity: RARITIES[i] };
 }

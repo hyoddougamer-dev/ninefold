@@ -10,7 +10,7 @@ import {
   arraySlots, blocked, carrySlot, furnaceDiscount, held, levelIn, marksOf, needsOf, placed,
   progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
 } from '../../sim/crafts.ts';
-import { CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS } from '../../sim/balance.ts';
+import { CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
 import { TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -412,9 +412,13 @@ function Pouch({ state, looking, setLooking, onCarry, onUse, onPlace }: {
             {hand && state.crafts.carry[hand] === look && (
               <button className="act small" onClick={() => onCarry(hand, null)}>{CRAFTS.uncarry}</button>
             )}
-            {seeking && <button className="act small" onClick={() => onUse(look)}>{CRAFTS.use}</button>}
+            {seeking && (
+              <button className="act small" disabled={state.crafts.seek >= CRAFT_SEEK_MAX} onClick={() => onUse(look)}>{CRAFTS.use}</button>
+            )}
             {it.kind === 'array' && skillOpen(state, 'array') && (
-              <button className="act small" onClick={() => onPlace(look.slice('array:'.length), !placed(state, look.slice('array:'.length)))}>
+              <button className="act small"
+                disabled={!placed(state, look.slice('array:'.length)) && state.crafts.arrays.length >= arraySlots(levelIn(state, 'array'))}
+                onClick={() => onPlace(look.slice('array:'.length), !placed(state, look.slice('array:'.length)))}>
                 {placed(state, look.slice('array:'.length)) ? CRAFTS.lift : CRAFTS.place}
               </button>
             )}

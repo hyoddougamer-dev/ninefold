@@ -22,8 +22,9 @@ import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SLOTS, CRAFT_ARRAY_SPEED,
   CRAFT_ARRAY_TWICE, CRAFT_ARRAY_XP, CRAFT_FURNACE_DISCOUNT, CRAFT_KIT, CRAFT_LONG_WATCH_HOURS,
   CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
-  CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, VARIANCE,
+  CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, DEMONS, DEMONS_PER_REALM, VARIANCE,
 } from './balance.ts';
+import { opensAt } from './unlocks.ts';
 import {
   ITEM_BY_KEY, LEVEL_CAP, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, SKILL_KEYS, TOOL_METALS, XP_CAP,
   FORGED, arrayKey, levelOf, pouchKey, splitKey, tierLevel,
@@ -412,21 +413,36 @@ function fade(tier: number, fightRealm: number): number {
   return fightRealm <= tier ? 1 : CRAFT_KIT.fade ** (fightRealm - tier);
 }
 
+/** 攜 The pouch keys that took part in a fight, one per hand: only these are spent. */
+export interface Used {
+  readonly elixir: string | null;
+  readonly sigil: string | null;
+}
+
 export interface Carried {
   readonly kit: Kit;
   /** Whether anything carried was put into this fight, and so is spent if it is won. */
   readonly spends: boolean;
+  /**
+   * Which of the two hands did something here. A hand that did nothing is not spent: a
+   * Purity Sigil carried beside an elixir into a warden used to be spent with the elixir,
+   * though it only ever works on a heart demon.
+   */
+  readonly used: Used;
 }
+
+export const NOT_USED: Used = { elixir: null, sigil: null };
 
 /**
  * 戰 The kit a fight is fought with: what is carried, and the Guardian Array under the
  * floor. The array is not carried and never spent.
  */
 export function kitFor(s: State, b: Beast, where: Where | null): Carried {
-  if (!where) return { kit: NO_KIT, spends: false };
+  if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
   const fightRealm = Math.max(1, Math.min(9, where === 'demon' ? s.realm : b.realm));
   let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0;
   let bind = false, revive = false, spends = false;
+  let usedElixir: string | null = null, usedSigil: string | null = null;
 
   const e = s.crafts.carry.elixir;
   if (e && (s.crafts.pouch[e] ?? 0) > 0) {
@@ -440,9 +456,12 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (line === 'might') { strike *= 1 + CRAFT_KIT.might * q * f; spends = true; }
     if (key === 'calmheart' && where === 'demon') { demon *= 1 - CRAFT_KIT.calmHeart * q; spends = true; }
     if (key === 'nineturn') { revive = true; spends = true; }
+    if (spends) usedElixir = e;
   }
   const g = s.crafts.carry.sigil;
   if (g && (s.crafts.pouch[g] ?? 0) > 0) {
+    const before = spends;
+    spends = false;
     const { key, quality } = splitKey(g);
     const it = ITEM_BY_KEY[key];
     const q = CRAFT_QUALITY_MULT[quality ?? 0];
@@ -454,16 +473,29 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
       case 'binding': bind = true; spends = true; break;
       case 'mirror': reflect += CRAFT_KIT.mirror * q * f; spends = true; break;
       case 'purity': if (where === 'demon') { demon *= 1 - CRAFT_KIT.purity * q; spends = true; } break;
-      case 'soullock': if (where === 'demon') spends = true; break;
+      // 鎖魂 Only where it can count twice: with one demon left in the realm it would count
+      // once like any other, so it stays in the pouch.
+      case 'soullock': if (where === 'demon' && demonsLeft(s) >= 2) spends = true; break;
       case 'heavenseal':
         taken *= 1 - CRAFT_KIT.warding * q * f;
         strike *= 1 + CRAFT_KIT.thunder * q * f;
         spends = true;
         break;
     }
+    if (spends) usedSigil = g;
+    spends = spends || before;
   }
   if ((where === 'warden' || where === 'demon') && placed(s, 'guardian')) taken *= 1 - CRAFT_ARRAY_GUARD;
-  return { kit: { strike, taken, mend, bind, reflect, revive, demon }, spends };
+  return { kit: { strike, taken, mend, bind, reflect, revive, demon }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
+}
+
+/**
+ * 心魔 Demons this realm still has to let out. The same sum as seclusion.ts's demonsFor,
+ * written here because seclusion.ts reads the state and the state reads this file;
+ * crafts.test holds the two to each other.
+ */
+export function demonsLeft(s: Pick<State, 'realm' | 'demons'>): number {
+  return Math.min(DEMONS, Math.max(0, (s.realm - opensAt('seclusion') + 1) * DEMONS_PER_REALM)) - s.demons;
 }
 
 /** 鎖魂 Whether a Soul-Lock Sigil is carried, so a fallen heart demon counts twice. */
@@ -473,15 +505,20 @@ export function soulLocked(s: State): boolean {
 }
 
 /**
- * 戰 A won fight spends what was carried into it: one of each, and a hand that runs out is
- * empty again. A lost one spends nothing, because losing costs nothing.
+ * 戰 A won fight spends what took part in it (see Carried.used): one of each, and a hand
+ * that runs out is empty again. A lost one spends nothing, because losing costs nothing.
+ * The keys are the ones read when the fight began, so nothing changed in the pouch while
+ * it was being fought can be spent in their place.
  */
-export function spendKit(s: State): State {
+export function spendKit(s: State, used: Used): State {
   const c = s.crafts;
   const pouch = { ...c.pouch };
   let { elixir, sigil } = c.carry;
-  if (elixir && (pouch[elixir] ?? 0) > 0) { addTo(pouch, elixir, -1); if (!pouch[elixir]) elixir = null; }
-  if (sigil && (pouch[sigil] ?? 0) > 0) { addTo(pouch, sigil, -1); if (!pouch[sigil]) sigil = null; }
+  for (const k of [used.elixir, used.sigil]) {
+    if (!k || (pouch[k] ?? 0) < 1) continue;
+    addTo(pouch, k, -1);
+    if (!pouch[k]) { if (elixir === k) elixir = null; if (sigil === k) sigil = null; }
+  }
   return { ...s, crafts: { ...c, pouch, carry: { elixir, sigil } } };
 }
 
@@ -576,10 +613,15 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     if (n > 0) { pouch[k] = n; entries++; }
   }
 
+  // 熟 Familiarity is made things counted, and every make paid the recipe's experience, so
+  // no recipe can have been made more often than its craft's experience allows (a craft
+  // at 99 stops earning and keeps making, so it is not held to it).
   const made: Record<string, number> = {};
   for (const [k, v] of Object.entries(rec(o.made))) {
-    if (!RECIPE_BY_KEY[k]) continue;
-    const n = Math.floor(num(v, 0, 1e8));
+    const r = RECIPE_BY_KEY[k];
+    if (!r) continue;
+    const most = xp[r.skill] >= XP_CAP ? 1e8 : Math.ceil(xp[r.skill] / r.xp);
+    const n = Math.floor(num(v, 0, most));
     if (n > 0) made[k] = n;
   }
 
@@ -613,8 +655,14 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     xp, task,
     since: num(o.since, s.startedAt, now, now),
     pouch, made, tools, arrays, carry: carryOut,
-    seek: Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)),
+    // 尋 Sure drops come only from a Seeking Sigil or incense, so only a hand that can make one holds any.
+    seek: seeks(level) ? Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)) : 0,
   };
+}
+
+/** 尋 Whether these levels could make anything that leaves a sure drop. */
+function seeks(level: (k: SkillKey) => number): boolean {
+  return level('sigil') >= RECIPE_BY_KEY['sigil:seeking'].level || level('alchemy') >= RECIPE_BY_KEY['alchemy:seekincense'].level;
 }
 
 /** Every recipe of a craft, in the order the screen and the guide list them. */

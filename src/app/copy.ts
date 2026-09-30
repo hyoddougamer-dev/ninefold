@@ -642,7 +642,7 @@ export const KEY = {
   pouch: 'Everything the workshop gathers and makes.',
   familiar: 'How many times a recipe has been made. Five marks, each one a small edge on that recipe.',
   carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
-  seek: 'A Seeking Sigil or incense used: the next beast beaten on the hunt leaves a piece.',
+  seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
 
@@ -1644,6 +1644,11 @@ export const CRAFTS = {
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
   furnace: (pct: number) => `Every Alchemy level takes 0.2% off the pill furnace's material: ${pct}% now.`,
   /** 歸 The homecoming line. */
+  // 攜 What the arena says about a kit carried in, so a loss is seen to have cost nothing.
+  kitIn: (names: string) => `Carried in: ${names}`,
+  kitSpent: (names: string) => `Carried in and spent: ${names}.`,
+  kitKept: (names: string) => `Carried in and kept: ${names}. Losing costs nothing.`,
+  seekKept: 'A sure drop still waits for your next win.',
   awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
     to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,
 };

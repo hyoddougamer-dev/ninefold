@@ -22,10 +22,10 @@ import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
-  carry, kitFor, kitWhere, placeArray, setTask, soulLocked, spendKit, spendSeek, takeSeeking, work,
+  carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, work,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
-import { RECIPE_BY_KEY, SKILL_BY_KEY } from '../data/crafts.ts';
+import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
 import type { Away } from '../sim/save.ts';
 import { CRAFTS } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
@@ -413,14 +413,17 @@ export function App() {
       const standing = demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
       // 業 What is carried goes into a warden, a heart demon, never a floor or a common.
       const carried = kitFor(state, beast, kitWhere(state, beast, standing));
-      // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt.
-      const sought = !demon && floor === undefined && !beast.warden && state.crafts.seek > 0
-        && isOpen(state.realm, 'gear');
+      // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt, and only
+      // when it changes something: a piece that was falling anyway (造化, or a fate bar
+      // come due) leaves the sure drop waiting for a beast that would have left nothing.
+      const drops = !demon && floor === undefined && isOpen(state.realm, 'gear');
+      const plain = drops ? dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null;
+      const sought = drops && !plain && !beast.warden && state.crafts.seek > 0;
       return {
         beast,
         floor,
         demon,
-        kit: carried.spends,
+        kit: carried.spends ? carried.used : undefined,
         sought,
         qi: floor === undefined ? undefined : floorQi(state, floor),
         outcome: fight(state, beast, seed, standing, carried.kit),
@@ -434,9 +437,7 @@ export function App() {
         //
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
-        drop: demon || floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : dropFor(state, beast, seed ^ 0x9e3779b9,
-            sought ? { ...fortuneOf(state), always: true } : fortuneOf(state), state.layer),
+        drop: sought ? dropFor(state, beast, seed ^ 0x9e3779b9, { ...fortuneOf(state), always: true }, state.layer) : plain,
       };
     });
   }, [state]);
@@ -494,13 +495,15 @@ export function App() {
   const closeFight = useCallback(() => {
     if (!battle) return;
     const { beast, outcome, drop, floor, demon, kit, sought } = battle;
-    // 業 A won fight spends what was carried into it; a lost one keeps it.
-    const spent = (s: State) => (outcome.won && kit ? spendKit(s) : s);
+    // 業 A won fight spends what took part in it; a lost one keeps it.
+    const spent = (s: State) => (outcome.won && kit ? spendKit(s, kit) : s);
+    // 鎖魂 Read off the hand that went in, not off whatever is carried now.
+    const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
     if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
       // hour. Neither is a kill: the demon is never counted in the record.
       // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
-      setState((s) => (outcome.won ? spent(soulLocked(s) ? conquerTwice(s) : conquer(s)) : repel(s)));
+      setState((s) => (outcome.won ? spent(locked ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
       // 塔 A floor counts once. It pays material and hours of gathering.
       sfx.floor();

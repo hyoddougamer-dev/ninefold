@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ITEMS, ITEM_BY_KEY, PARTS, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_KEYS, XP_TABLE, levelOf, partKey,
-  splitKey, type SkillKey,
+  FORGED, splitKey, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
@@ -9,7 +9,7 @@ import {
   CRAFT_RENDER_KNOWN, CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
 } from '../balance.ts';
 import {
-  NO_CRAFTS, arraySlots, blocked, carry, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
+  NO_CRAFTS, arraySlots, blocked, carry, demonsLeft, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
   secondsOf, setTask, spendKit, takeSeeking, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
   type Crafts,
 } from '../crafts.ts';
@@ -17,10 +17,10 @@ import { newState, rate, validate, type State } from '../state.ts';
 import { oddsRaw } from '../combat.ts';
 import { fusable } from '../chest.ts';
 import { salvage } from '../salvage.ts';
-import { limitFor } from '../stash.ts';
+import { lifted, limitFor } from '../stash.ts';
 import { verify } from '../verify.ts';
 import { floorBeast, floorPower } from '../tower.ts';
-import { demonOf, demonPower } from '../seclusion.ts';
+import { demonOf, demonPower, demonsFor } from '../seclusion.ts';
 import { isOpen } from '../unlocks.ts';
 
 const T0 = 1_700_000_000;
@@ -242,9 +242,25 @@ describe('戰 what is carried into a fight', () => {
     // Heaven Might made for the realm, and a Thunder Sigil three realms under it, faded.
     expect(k.kit.strike).toBeCloseTo((1 + 0.12 * 1.75) * (1 + 0.15 * 1.75 * 0.5 ** 3), 6);
     expect(oddsRaw(s, w, undefined, k.kit)).toBeGreaterThanOrEqual(oddsRaw(s, w));
-    s = spendKit(s);
+    s = spendKit(s, k.used);
     expect(s.crafts.pouch['might6@4']).toBe(2);
     expect(s.crafts.pouch['sigil:thunder@4']).toBe(2);
+  });
+
+  it('spends only the hand that took part: a demon sigil beside an elixir stays for the demon', () => {
+    const h = hard(6);
+    let s: State = { ...h, crafts: { ...h.crafts, pouch: { ...h.crafts.pouch, 'sigil:purity@4': 3 } } };
+    s = carry(carry(s, 'elixir', 'might6@4'), 'sigil', 'sigil:purity@4');
+    const w = wardenOf(6);
+    const k = kitFor(s, w, kitWhere(s, w));
+    expect(k.used).toEqual({ elixir: 'might6@4', sigil: null });
+    s = spendKit(s, k.used);
+    expect(s.crafts.pouch['might6@4']).toBe(2);
+    expect(s.crafts.pouch['sigil:purity@4']).toBe(3);
+    expect(s.crafts.carry.sigil).toBe('sigil:purity@4');
+    // At the demon it is the one that works.
+    const d = kitFor(s, demonOf(s), 'demon');
+    expect(d.used.sigil).toBe('sigil:purity@4');
   });
 
   it('never goes into the Dragon, a tower floor or a common beast', () => {
@@ -285,6 +301,39 @@ describe('陣 arrays', () => {
   });
 });
 
+describe('查 what the review found', () => {
+  it('counts the demons left the same way seclusion does, in every realm', () => {
+    for (let realm = 1; realm <= 9; realm++) for (let demons = 0; demons <= 9; demons++) {
+      expect(demonsLeft({ realm, demons })).toBe(demonsFor(realm) - demons);
+    }
+  });
+
+  it('keeps a Soul-Lock Sigil for a demon that can count twice, not the last one of a realm', () => {
+    const h = crafter(8, { sigil: 99 }, { pouch: { 'sigil:soullock@2': 2 } });
+    const base = carry(h, 'sigil', 'sigil:soullock@2');
+    const two = { ...base, demons: demonsFor(8) - 2 };
+    const last = { ...base, demons: demonsFor(8) - 1 };
+    expect(kitFor(two, demonOf(two), 'demon').used.sigil).toBe('sigil:soullock@2');
+    expect(kitFor(last, demonOf(last), 'demon').used.sigil).toBe(null);
+  });
+
+  it('holds familiarity and sure drops to what the craft levels could have made', () => {
+    const back = validCrafts({
+      xp: { herb: XP_TABLE[5] }, made: { 'herb:moss': 5000 }, seek: 20,
+    }, { realm: 3, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(back.made['herb:moss']).toBeLessThanOrEqual(Math.ceil(XP_TABLE[5] / RECIPE_BY_KEY['herb:moss'].xp));
+    expect(back.seek).toBe(0);
+    const writer = validCrafts({ xp: { sigil: XP_TABLE[20] }, seek: 20 }, { realm: 6, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(writer.seek).toBe(20);
+  });
+
+  it('never lifts a forged piece a rank with 空囊, so the odds on the recipe hold', () => {
+    const s = { ...crafter(3, {}), unlocked: ['root', 'emptypouch'] };
+    const piece = { id: 'f', template: 'sword3', rarity: 'common' as const, rolls: [], from: FORGED };
+    expect(lifted(s, piece).rarity).toBe('common');
+  });
+});
+
 describe('守 a save is input', () => {
   it('round-trips an honest workshop unchanged', () => {
     const s0 = setTask(crafter(5, { herb: 40, vein: 38, render: 30, forge: 35, alchemy: 12 },
@@ -318,7 +367,7 @@ describe('守 a save is input', () => {
     expect(forged.tools.herb).toBe(0);
     expect(forged.arrays).toEqual([]);
     expect(forged.carry).toEqual({ elixir: null, sigil: null });
-    expect(forged.seek).toBe(20);
+    expect(forged.seek).toBe(0);   // no Sigil Writing and no Alchemy: nothing it holds could have left a sure drop
     expect(forged.task).toBeNull();
   });
 

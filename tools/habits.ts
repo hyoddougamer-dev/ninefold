@@ -7,7 +7,7 @@
  */
 import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
-import { FORGED, kitFor, soulLocked, spendKit, work } from '../src/sim/crafts.ts';
+import { FORGED, NOT_USED, kitFor, soulLocked, spendKit, work } from '../src/sim/crafts.ts';
 import { NO_KIT } from '../src/sim/kit.ts';
 import { carryBest, craftVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
@@ -469,7 +469,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // they are cornered, which is exactly the difference being measured.
     // 業 Somebody who crafts looks at the pouch first: the kit changes the odds, so it
     // changes how many cores they have to condense before the fight looks worth it.
-    const kitOf = (x: State) => (h.crafts ? kitFor(x, wardenOf(x.realm), 'warden') : { kit: NO_KIT, spends: false });
+    const kitOf = (x: State) => (h.crafts ? kitFor(x, wardenOf(x.realm), 'warden') : { kit: NO_KIT, spends: false, used: NOT_USED });
     if (canFightWarden(s)) {
       if (h.crafts) s = carryBest(s, wardenOf(s.realm), 'warden');
       for (let i = 0; i < 40; i++) {
@@ -480,9 +480,9 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
 
     // 妖 The gate: the warden is fought when the realm is full and it looks worth trying.
     if (canFightWarden(s) && odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.2) {
-      const spends = kitOf(s).spends;
+      const { spends, used } = kitOf(s);
       s = takeKill(s, wardenOf(s.realm));
-      if (spends) s = spendKit(s);
+      if (spends) s = spendKit(s, used);
       fights++;
     }
     if (canBreakThrough(s)) s = breakThrough(s);
@@ -515,10 +515,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     if (h.hunts > 0 && process.env.NF_NODEMON !== '1') {
       if (demonDue(s) && h.crafts) {
         s = carryBest(s, demonOf(s), 'demon', demonPower(s));
-        const { kit, spends } = kitFor(s, demonOf(s), 'demon');
+        const { kit, spends, used } = kitFor(s, demonOf(s), 'demon');
         if (fight(s, demonOf(s), ++seed, demonPower(s), kit).won) {
           s = soulLocked(s) ? conquerTwice(s) : conquer(s);
-          if (spends) s = spendKit(s);
+          if (spends) s = spendKit(s, used);
         } else s = repel(s);
       }
       if (demonDue(s)) s = fight(s, demonOf(s), ++seed, demonPower(s)).won ? conquer(s) : repel(s);
