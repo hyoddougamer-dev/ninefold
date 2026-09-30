@@ -184,11 +184,12 @@ export const SYSTEMS: readonly SystemInfo[] = [
    * realm hands over instead is 秘境深 the deeper vault.
    */
   /**
-   * 陣 The eighth realm handed over a stance and an art and no system at all, and the
-   * slowest craft fits there: arrays are cut once and kept, and what they do is make the
-   * other six faster.
+   * 陣 The seventh realm opened one system, the deeper vault, and the slowest craft fits
+   * beside it: arrays are cut once and kept, and what they do is make the other six
+   * faster and the vault door sooner. It sat at the eighth for a draft, which put it two
+   * months into a casual climb; the seventh is five weeks.
    */
-  { key: 'arrays', han: '陣', name: 'Arrays', realm: 8,
+  { key: 'arrays', han: '陣', name: 'Arrays', realm: 7,
     gives: 'The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 9,
     gives: 'Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.' },

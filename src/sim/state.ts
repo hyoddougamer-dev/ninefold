@@ -37,7 +37,7 @@ import {
 import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, SECLUSION } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
-import { FORGED, RECIPE_BY_KEY } from '../data/crafts.ts';
+import { FORGED, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -768,6 +768,10 @@ export function validate(raw: unknown, now: number): State {
       .map((x) => x.it);
 
   const elapsed = Math.max(0, now - startedAt);
+  const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
+  // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
+  // cut, so holding one is what widens the ceiling, placed or lifted out.
+  const doorGap = (crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
 
   const out: State = {
     v: 1,
@@ -825,7 +829,7 @@ export function validate(raw: unknown, now: number): State {
     // it too, so the ceiling has to allow for every walk the clock could have allowed.
     // See RUN_DAO_CEILING for the measurement that made this necessary.
     metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0,
-      MEET_POINT_CEILING + Math.ceil(elapsed / (isOpen(realm, 'arrays') ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP)) * RUN_DAO_CEILING),
+      MEET_POINT_CEILING + Math.ceil(elapsed / doorGap) * RUN_DAO_CEILING),
     // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
@@ -856,7 +860,7 @@ export function validate(raw: unknown, now: number): State {
         }];
       })),
     // 業 The workshop, capped against the clock, the kills and its own levels.
-    crafts: validCrafts(o.crafts, { realm, killed, startedAt }, now),
+    crafts,
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

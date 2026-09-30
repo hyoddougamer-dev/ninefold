@@ -59,7 +59,7 @@ export interface Skill {
  *   2  採藥 採礦 解獸 鑄器   with 器 gear and 洞天 the cave
  *   5  丹 Alchemy          with the tower
  *   6  符 Sigil Writing    with 圖鑑 the bestiary
- *   8  陣 Arrays           the eighth realm opened no system at all
+ *   7  陣 Arrays           with 秘境深 the deeper vault, whose door it brings sooner
  */
 export const SKILLS: readonly Skill[] = [
   { key: 'herb', seal: '藥', han: '採藥', name: 'Herb Gathering', gathers: true, realm: opensAt('crafts'), opens: 'crafts',

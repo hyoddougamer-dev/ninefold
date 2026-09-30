@@ -43,8 +43,7 @@ import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
-import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
-import { isOpen } from './unlocks.ts';
+import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower } from './tower.ts';
 import { pillCost } from './furnace.ts';
@@ -202,8 +201,8 @@ function metCeiling(before: State, after: State, dt: number): number {
     const m = meetingOf(k);
     return n + (m ? Math.max(0, ...m.picks.map((p) => (p.outcome.kind === 'dao' ? p.outcome.points : 0))) : 0);
   }, 0);
-  // 秘門 The Hidden Door Array opens the door sooner, so the ceiling is read at its gap.
-  const gap = isOpen(after.realm, 'arrays') ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
+  const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
   return road + (Math.ceil(Math.max(0, dt) / gap) + 2) * RUN_DAO_CEILING;
 }
 
