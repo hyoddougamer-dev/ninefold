@@ -40,3 +40,6 @@ sounds/
 
 # 市 node tools/itch.mjs writes the itch.io kit here; it is output, not source.
 itch-kit/
+
+# Throwaway scripts a session writes while measuring; never part of the repository.
+tools/.tmp-*
