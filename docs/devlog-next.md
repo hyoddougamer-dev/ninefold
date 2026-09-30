@@ -2,14 +2,23 @@
 
 What is ready on the working branch for the next release, and the words the players will
 read. Nothing here is live: `main` moves only when Bruno has seen the changes and approved
-this text. When it ships, the message goes into `tools/discord/server.json` as a devlog
-entry with a new key (e.g. `update-2026-09-30`) in the same push.
+this text. The words are already in `tools/discord/server.json` on the branch, so the push
+to `main` that ships the game posts them too:
+
+- `update-2026-09-30`: 筆 Dev log #2 · The Workshop opens (devlog)
+- `g-crafts`: 業 The Workshop guide (guides), and the 圍 drive and 開 realm guides updated
+- `ideas-workshop`: 業 The Workshop: tell us what you think (ideas, pinned)
+- a second answer in Raziel's *jobs* thread, pointing at the post above
+
+The pictures they use (`public/discord/workshop*.webp`, `promo/workshop*.webp`, three
+banners) are committed with them, so Pages serves them before Discord first asks.
 
 ## Ready on the branch
 
 | Change | Player-facing | Status |
 |---|---|---|
 | 圍 Drive priced in minutes of your own gathering, old beasts a quarter | yes | ready, measured, tested |
+| 業 The Workshop: seven crafts 1 to 99 (realm 2, 丹 5, 符 6, 陣 7) | yes | ready, measured, tested; painted art waits for Bruno's 11 sheets |
 | 郵 Sign-in email carries a 6-digit code | yes, once live | waits for the mail service (`SMTP_PASS`, `SMTP_SENDER`); do not announce before |
 | 答 The bot answers testers' posts by name | no | already used from the branch |
 
@@ -17,7 +26,10 @@ The drive change also changes 驗 the server check (`src/sim/verify.ts` reads `d
 so the release has to deploy the ranked server with it. The Supabase workflow does that on
 a push to `main` that touches the sim.
 
-## The message
+## The first draft (drive only)
+
+Kept for the record; the message that ships is `update-2026-09-30` in server.json, which
+carries this and the workshop together.
 
 **Title:** 圍 Update · The drive, repriced
 
@@ -45,3 +57,20 @@ Measured with `tools/habits.ts` and `tools/endgame.ts`, before and after:
 What a drive of fifty cost before, in hours of the active cultivator's own qi: 2 in the
 first realm, 8 in the fourth, 25 to 29 in the seventh to the ninth. Now 50 minutes
 everywhere, 13 minutes on an older beast.
+
+## 業 The workshop, measured
+
+Played by `tools/habits.ts` with `tools/crafter.ts` (the workshop always running, the best
+kit carried into every warden and demon), against the same cultivator without it:
+
+| Cultivator | Whole ladder, without | With the workshop |
+|---|---|---|
+| active | day 54.3 | day 55.0 |
+| once a day | day 82.0 | day 81.0 |
+| casual | day 82.3 | day 83.3 |
+| barely fights | day 116 | day 118 |
+
+The active crafter ends the climb with the crafts near 75 (total 450 of 693). A warden is
+already about 98% for an active player when the realm fills, so the kit matters most to
+somebody who plays lightly: a sixth-realm warden at 63% becomes 85% for *barely fights*.
+`crafter.test.ts` holds the two-day band and reads the crafter's save back every week.

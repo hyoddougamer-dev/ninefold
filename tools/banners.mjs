@@ -44,6 +44,10 @@ export const BANNERS = [
   { key: 'g-ranks', seal: '榜', over: '書 Guide · 12 of 14', title: 'Rankings', sub: 'Three boards, your save, every device', bg: 'heaven/1', fig: 'self/woman-9' },
   { key: 'g-faq', seal: '問', over: '書 Guide · 13 of 14', title: 'Questions', sub: 'What testers ask first', bg: 'realm/2', fig: 'cut/fox' },
   { key: 'g-opens', seal: '開', over: '書 Guide · 14 of 14', title: 'What Each Realm Opens', sub: 'Nine realms, and nothing ever reset', bg: 'heaven/5', fig: 'cut/unicorn' },
+  // 業 The workshop: its guide, the post that asks what the testers think, and the dev log that ships it.
+  { key: 'g-crafts', seal: '業', over: '書 Guide · The Workshop', title: 'The Seven Crafts', sub: 'Gather, render, forge, brew, write, cut', bg: 'realm/2', fig: 'self/man-2' },
+  { key: 'ideas-workshop', seal: '議', over: '議 Your opinion', title: 'The Workshop', sub: 'Seven crafts from 1 to 99: tell us what you think', bg: 'realm/5', fig: 'self/woman-5' },
+  { key: 'devlog-2', seal: '筆', over: '筆 Dev log · 02', title: 'The Workshop Opens', sub: 'Seven crafts, and a fairer drive', bg: 'realm/6', fig: 'self/woman-6' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',

@@ -162,10 +162,16 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   );
 }
 
-/** Which list a craft opens on: the one with the newest thing this cultivator can make. */
+/**
+ * Which list a craft opens on: the one the workshop is making from, if it is this craft,
+ * or else the one with the newest thing this cultivator can make.
+ */
 function defaultGroup(s: State, skill: SkillKey, groups: readonly string[]): string {
   if (groups.length < 2) return groups[0] ?? '';
-  const can = RECIPES.filter((r) => r.skill === skill && levelIn(s, skill) >= r.level && s.realm >= r.realm);
+  const running = s.crafts.task ? RECIPE_BY_KEY[s.crafts.task] : undefined;
+  if (running?.skill === skill && groups.includes(running.group)) return running.group;
+  const can = RECIPES.filter((r) => r.skill === skill && levelIn(s, skill) >= r.level && s.realm >= r.realm)
+    .sort((a, b) => a.level - b.level);
   if (skill === 'render') return `Realm ${Math.min(s.realm, 9)}`;
   if (skill === 'forge') return can.some((r) => r.makes.kind === 'gear') ? 'Gear' : 'Smelting';
   return can.at(-1)?.group ?? groups[0];

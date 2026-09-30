@@ -423,10 +423,13 @@ await scenario({}, async (port, env, state) => {
 });
 
 // 6. 答 Posts the testers opened: tagged as server.json says and answered once, by name.
+// A thread can be answered again later (業 the workshop went back to the "jobs" thread that
+// asked for it), so server.json may name one title twice: one post, one answer per entry.
 await scenario({}, async (port, env, state) => {
   await runSetup(port, env);
   const forumOf = (key) => state.channels.find((c) => c.name === all.find((x) => x.key === key).name);
-  for (const a of SPEC.threads ?? []) {
+  const owed = (a) => (SPEC.threads ?? []).filter((x) => x.forum === a.forum && x.title === a.title).length;
+  for (const a of (SPEC.threads ?? []).filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i)) {
     const t = { id: id(), parent_id: forumOf(a.forum).id, name: a.title, flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
     state.threads.push(t);
     state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
@@ -435,12 +438,12 @@ await scenario({}, async (port, env, state) => {
   const mine = (a) => state.threads.find((t) => t.name === a.title && t.owner_id === '4242');
   const replies = (a) => state.messages[mine(a).id].filter((x) => x.author.id === BOT);
   const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x).name).sort(); };
-  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === 1 && replies(a)[0].content.startsWith('<@4242> ')),
-    `each of the ${(SPEC.threads ?? []).length} tester posts gets one answer, naming whoever opened it, even archived`);
+  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => r.content.startsWith('<@4242> '))),
+    `each of the ${(SPEC.threads ?? []).length} answers is given once, naming whoever opened the post, even archived`);
   check((SPEC.threads ?? []).every((a) => JSON.stringify(tagNames(mine(a))) === JSON.stringify([...(a.tags ?? [])].sort())),
     'and wears the tags server.json gives it');
   const again = await runSetup(port, env);
-  check(again.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === 1) && !/answered|tagged/.test(again.out),
+  check(again.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a)) && !/answered|tagged/.test(again.out),
     'and a second run answers nobody twice');
   state.threads = state.threads.filter((t) => t.owner_id !== '4242');
   const gone = await runSetup(port, env);
