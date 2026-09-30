@@ -4,6 +4,7 @@ import { MAGIC, open, seal } from '../seal.ts';
 import { newState, power, tribulationPool, validate, type State } from '../state.ts';
 import { chestLimit } from '../chest.ts';
 import { advance, rate } from '../time.ts';
+import { ladderAt } from '../balance.ts';
 
 const T0 = 1_700_000_000;
 
@@ -47,7 +48,7 @@ describe('存 the save', () => {
    * lie, and it is the shape of *"o meu qi resetar"*, said three times.
    */
   it('reports the qi the hours gathered, rungs included, and says where it went', () => {
-    const rung = 900;                                  // the first rung of the first realm
+    const rung = ladderAt(0);                          // the first rung of the first realm
     const before: State = { ...newState(T0), qi: rung * 0.95, at: T0 };
     save(before);
     // Long enough to gather nine tenths of a rung: one opens, and the bar ends lower.

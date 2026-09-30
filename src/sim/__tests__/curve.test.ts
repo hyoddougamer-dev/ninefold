@@ -242,14 +242,17 @@ describe('囊 the opening', () => {
     expect(OPENING_PURSE / realmCost(9)).toBeLessThan(1e-9);
   });
 
-  it('moves the first event of the game from six minutes to about one', () => {
+  // 初 It used to move the first layer from six minutes to about one. The first realm is
+  // the first sitting now (FIRST_REALM_PRICE), so the first layer is inside the first
+  // minute with or without the purse, and the purse is what makes it sooner still.
+  it('opens the first layer inside the first minute, and sooner with the purse', () => {
     const opened = (s: State) => s.layer > 0;
     const bare = sit({ ...newState(T0), qi: 0 }, opened);
     const purse = sit(newState(T0), opened);
-    console.log(`\n  囊 the opening: first press 3m44s → 0m00s · ` +
-      `first layer ${(bare / 60).toFixed(1)} min → ${(purse / 60).toFixed(1)} min\n`);
-    expect(bare).toBeGreaterThan(5 * 60);
-    expect(purse).toBeLessThan(2 * 60);
+    console.log(`\n  囊 the opening: first press at 0m00s · ` +
+      `first layer ${(bare / 60).toFixed(1)} min bare → ${(purse / 60).toFixed(1)} min with the purse\n`);
+    expect(bare).toBeLessThan(60);
+    expect(purse).toBeLessThan(bare);
   });
 });
 

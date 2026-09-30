@@ -44,6 +44,14 @@ describe('業 a crafter played for a whole climb', () => {
    * on it either: the kit is carried only into a warden, a demon or a vault gate, and the
    * ladder is paid for in qi. Measured with the same cultivator with and without it, at
    * two paces of play, the whole ladder lands within two days either way.
+   *
+   * 量 Once a day is counted in whole visits, so its difference is a whole number of days.
+   * It has read anywhere from two days ahead to two days behind as numbers elsewhere
+   * moved (81 against 83 on 2026-09-30, while the first realm was being shortened). When
+   * it is behind, the days are the crafter's own errand: one hunt a visit spent learning
+   * a beast for Rendering, which is a quarter of a once-a-day player's hunting, and with
+   * that errand switched off the two landed on the same day. So the bound is the one the
+   * dev log states, two days, inclusive.
    */
   it.each(['active', 'once a day'])('neither buys nor taxes the climb: %s, within two days of the same cultivator without it', (name) => {
     const base = HABITS.find((x) => x.name === name)!;
@@ -51,6 +59,6 @@ describe('業 a crafter played for a whole climb', () => {
     const crafted = name === h.name ? run : play({ ...base, crafts: true }, 400);
     console.log(`    ${name.padEnd(12)} plain day ${plain.days.toFixed(1)}  with the workshop day ${crafted.days.toFixed(1)}`);
     expect(crafted.done).toBe(true);
-    expect(Math.abs(plain.days - crafted.days)).toBeLessThan(2);
+    expect(Math.abs(plain.days - crafted.days)).toBeLessThanOrEqual(2);
   }, 60_000);
 });

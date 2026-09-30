@@ -23,6 +23,7 @@ and approved this text. The words go out in two steps (Bruno, 2026-09-30: announ
 | 攜 The arena says whether a kit was spent or kept; odds on the cards count the kit | yes | ready, played by `npm run workshop` |
 | 郵 Sign-in email carries a 6-digit code | yes, once live | waits for the mail service (`SMTP_PASS`, `SMTP_SENDER`); do not announce before |
 | 答 The bot answers testers' posts by name | no | on `main` since the announcement |
+| 初 The first realm is the first sitting: realm 2 at about twelve minutes of play (`npm run sitting`) | yes | ready, measured on the real build; a line in devlog-3 and in the 入門 guide |
 | 業 A card, once, for every player the workshop is open to, veterans included | yes | ready; an old save loads intact and the ranked server still verifies it |
 
 The drive change also changes 驗 the server check (`src/sim/verify.ts` reads `driveFloor`),

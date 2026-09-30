@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { advice } from '../advice.ts';
 import { LAYERS_PER_REALM, focusAt, levelCap } from '../../sim/balance.ts';
-import { buy, canBuy, newState, type State, type Upgrade } from '../../sim/state.ts';
+import { breakThrough, buy, canBreakThrough, canFightWarden, canBuy, newState, type State, type Upgrade } from '../../sim/state.ts';
+import { odds, takeKill } from '../../sim/combat.ts';
+import { huntable, wardenOf } from '../../data/bestiary.ts';
 import { advance } from '../../sim/time.ts';
 import { REALMS } from '../../data/realms.ts';
 import { weekOf } from '../../sim/week.ts';
@@ -66,14 +68,21 @@ describe('示 the line that is never empty', () => {
   it('says something at every step of a real first realm', () => {
     let s: State = newState(T0);
     const seen = new Set<string>();
-    for (let t = 1; t <= 14 * 3600; t++) {
+    // 初 The first realm is the first sitting now (FIRST_REALM_PRICE): an hour holds all
+    // of it, so it is read every thirty seconds rather than every five minutes, and the
+    // walker plays it the way the sitting is played, a fight between readings.
+    for (let t = 1; t <= 3600; t++) {
       s = advance(s, T0 + t, false, focusAt(t % 5400));
       for (const u of UPGRADES) if (canBuy(s, u)) s = buy(s, u);
-      if (t % 300) continue;
+      if (t % 30) continue;
       const tip = advice(s);
       expect(tip).not.toBeNull();
       seen.add(tip!.text);
+      if (canFightWarden(s) && odds(s, wardenOf(1)) > 0.5) s = takeKill(s, wardenOf(1));
+      if (canBreakThrough(s)) s = breakThrough(s);
       if (s.realm > 1) break;
+      const b = [...huntable(s.realm, s.layer)].reverse().find((x) => odds(s, x) > 0.7);
+      if (b) s = takeKill(s, b);
     }
     /**
      * And it is not one sentence on a loop. It is checked on the *text* rather than the

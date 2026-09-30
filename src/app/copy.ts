@@ -567,11 +567,14 @@ export const ADVICE = {
    * time. A line that only speaks when you are stuck teaches a player that not being
    * stuck means there is nothing to do.
    */
-  goHunt: (han: string, pct: number, left: number, mark: string) =>
-    `${han} is within reach at ${pct}%. ${left} more ${left === 1 ? 'kill' : 'kills'} earns its ${mark} mark.`,
+  // 譯 The beast and the mark by name as well as by character: a line that said only
+  // 山鼠 and 見 named its two subjects in a script most players cannot read.
+  goHunt: (han: string, name: string, pct: number, left: number, mark: string, markName: string) =>
+    `${han} ${name} is within reach at ${pct}%. ${left} more ${left === 1 ? 'kill earns' : 'kills earn'} `
+    + `its ${mark} ${markName} mark.`,
   canAfford: (han: string, name: string) => `You can afford another ${han} ${name} right now.`,
-  reachFor: (han: string, wants: number, mine: number) =>
-    `${han} stands at 力 ${Math.round(wants * 10) / 10}. You are at 力 ${Math.round(mine * 10) / 10}. `
+  reachFor: (han: string, name: string, wants: number, mine: number) =>
+    `${han} ${name} stands at 力 ${Math.round(wants * 10) / 10}. You are at 力 ${Math.round(mine * 10) / 10}. `
     + `Every level and every layer closes that.`,
   opensSoon: (han: string, name: string, realmHan: string, realmName: string, gives: string) =>
     `${han} ${name} opens at ${realmHan} ${realmName}. ${gives}`,

@@ -150,7 +150,7 @@ describe('戰 the beasts', () => {
     for (let t = 1; t <= 14 * 3600; t++) {
       s = advance(s, T0 + t, false, focusAt(t % 5400));
       for (const u of ['pills', 'method', 'technique'] as const) if (canBuy(s, u)) s = buy(s, u);
-      if (t % 120) continue;
+      if (t % 10) continue;
       for (const c of commonsOf(1)) if (won[c.key] === undefined && odds(s, c) >= 0.6) won[c.key] = t;
       if (s.realm > 1) break;
     }
@@ -158,14 +158,15 @@ describe('戰 the beasts', () => {
     console.log(`\n  初 the first realm's own ladder: ${commonsOf(1).map((c) =>
       `${c.han} 力 ${beastPower(c).toFixed(1)} at ${((won[c.key] ?? Infinity) / 60).toFixed(0)} min`).join(' · ')}\n`);
 
-    // The first fight is there from the first minute, not two hours later, and the
-    // second inside the first sitting.
-    expect(rat).toBeLessThanOrEqual(2 * 60);
-    expect(hound).toBeLessThan(60 * 60);
-    // And the other two are spread, so the realm keeps asking something new.
-    expect(hound).toBeGreaterThan(rat * 2);
+    // The first fight is there from the first minute, not two hours later, and since
+    // the first realm became the first sitting (FIRST_REALM_PRICE) all three are inside
+    // it: before, the hound came at 45 minutes and the frog at three and a half hours.
+    expect(rat).toBeLessThanOrEqual(60);
+    expect(hound).toBeLessThan(5 * 60);
+    expect(frog).toBeLessThan(15 * 60);
+    // And they are still spread, so the sitting keeps asking something new.
+    expect(hound).toBeGreaterThan(rat + 60);
     expect(frog).toBeGreaterThan(hound * 1.5);
-    expect(frog).toBeLessThan(6 * 3600);
     // The warden is untouched: it still stands at a filled realm cap.
     expect(beastPower(wardenOf(1))).toBeGreaterThan(beastPower(commonsOf(1)[2]) * 1.5);
   });

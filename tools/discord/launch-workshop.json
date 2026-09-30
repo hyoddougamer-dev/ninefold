@@ -33,6 +33,10 @@
           "One minute of your own gathering per kill, in every realm: 50 kills are 50 minutes. A beast from an earlier realm costs a quarter of that. Late in the climb, fifty kills used to cost more than a whole day of qi."
         ],
         [
+          "初 A faster first realm",
+          "The first realm is now your first sitting: the hound, the frog and the fox come within about a quarter of an hour, and gear, the Path and the workshop open right after. A player on Reddit told us the first minutes were one rat after another, and they were right. Thank you. Already past realm 1? Nothing changes for you."
+        ],
+        [
           "議 Tell us",
           "Everything about the workshop can still change. Tell us what you think in *業 The Workshop: tell us what you think*, in {#ideas}. How every craft works is in {#guides}."
         ],
@@ -141,6 +145,11 @@
       "post": "g-hunt",
       "field": "▸ 圍 Drive",
       "value": "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs one minute of your own gathering, and a quarter of that on a beast from an earlier realm."
+    },
+    {
+      "post": "g-start",
+      "field": "▸ The guide in the game walks you through this",
+      "value": "1. Spend the qi your master left you on an upgrade.\n2. Win your first fight: the rat.\n3. Spend the 材 material it drops on 妖丹 Beast Cores.\n4. Kill the same beast ten times, for its 熟 Known mark.\n5. Fill the ninth layer, beat the realm's warden, and break through.\nPlayed straight through, the first realm takes about a quarter of an hour."
     }
   ],
   "ideasBody": [

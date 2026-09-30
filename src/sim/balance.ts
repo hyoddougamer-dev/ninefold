@@ -33,29 +33,58 @@ export const LAYER_BONUS = 1.02;
  * 囊 What your master left you.
  *
  * Measured by playing it: a new cultivator gathers 1 qi a second and the cheapest thing
- * on the screen costs 491, so for the first three minutes and forty-five seconds the
+ * on the screen cost 491, so for the first three minutes and forty-five seconds the
  * game says SPEND YOUR QI over three boxes that cannot be pressed. That is not a slow
  * opening, it is an opening with no decision in it, and an idle game's first minute is
  * the only one a player has not yet decided to give you.
  *
- * So the cultivator begins holding something. Not a head start: 800 qi is nothing
+ * So the cultivator begins holding something. Not a head start: the purse is nothing
  * against a climb measured in quintillions, and it is gone by the first hour. What it
  * buys is the *question*, at second zero: the two cheaper upgrades are already lit, and
  * the bar is already nine tenths of the way up the first rung.
  *
  * That is the whole game in its first frame. Qi spent is qi that did not open a layer,
  * and qi banked is an upgrade not bought: the same trade the furnace and the thunder
- * pool ask about eighty rungs later. It is better met in the first minute, for 800 qi,
- * than in the ninth realm for a fortnight of gathering.
+ * pool ask about eighty rungs later. It is better met in the first minute, for a handful
+ * of qi, than in the ninth realm for a fortnight of gathering.
+ *
+ * 初 It was 800 against a first rung of 900. The first realm's rungs are seven hundredths of
+ * that now (FIRST_REALM_PRICE, below), so the purse is too: 56 against 63.
  *
  * It sits **below** LADDER_FIRST on purpose. A purse at or above the first rung would be
  * swallowed by the ladder on the first tick: the player would open the app, watch a
  * layer open by itself, and never see the choice. Below it, nothing moves until they
  * move it.
  */
-export const OPENING_PURSE = 800;
+export const OPENING_PURSE = 56;
 
 export const LADDER_FIRST = 900;
+
+/**
+ * 初 What the first realm's nine rungs cost, as a share of where the mountain would have
+ * put them. The first realm is the first sitting.
+ *
+ * A player on Reddit, 2026-09-30: *"Gave it a try, got bored after a few minutes ...
+ * I didn't even make it to the point you mention in your post where you speak about
+ * equipping stuff after tapping to kill the 20th rat in a row."* Measured by playing it
+ * without stopping: the rat was the only beast for thirteen minutes (sixty-five of them),
+ * Beast Cores the only thing bought, and half an hour in the cultivator stood on the
+ * third layer of nine. Gear, the Path, the stances and the workshop all wait in the
+ * second realm, which was seven or eight hours away. The only minutes a new player gives
+ * a game were spent on one button.
+ *
+ * At seven hundredths, played on the real build from a brand new game (tools/sitting.mjs,
+ * which buys what is lit and fights what the guide points at, ten seconds between taps):
+ * the hound can be beaten at 1:20, the frog at 5:40, the fox falls at 11:50 and the second
+ * realm, with its gear, its Path and its workshop, opens at twelve minutes. A twentieth
+ * made it seven minutes, which is a realm gone before it is looked at; a tenth made it
+ * nineteen and a half. The idle pace starts in the second realm, where there is enough to
+ * choose between and a workshop to leave running overnight. Only these nine rungs move:
+ * the second realm arrives at the same rate and costs exactly what it did, so the climb
+ * is a few hours shorter in fifty-five days, and nobody past the first realm can tell.
+ * The upgrades of the first realm ride the same rungs, so they are cheaper with it.
+ */
+export const FIRST_REALM_PRICE = 0.07;
 /** How much dearer each layer is than the last, at the foot of the mountain… */
 export const LADDER_GROWTH_FIRST = 1.4660;
 /** …and at the summit. It never falls below the rate's own growth, so the climb never
@@ -69,6 +98,7 @@ const LADDER: number[] = (() => {
     out.push(c);
     c *= LADDER_GROWTH_FIRST * (LADDER_GROWTH_LAST / LADDER_GROWTH_FIRST) ** (n / (LAYERS - 1));
   }
+  for (let n = 0; n < LAYERS_PER_REALM; n++) out[n] *= FIRST_REALM_PRICE;
   return out;
 })();
 
