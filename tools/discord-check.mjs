@@ -157,7 +157,7 @@ function fakeDiscord({ admin = true } = {}) {
         const inThread = state.threads.find((t) => t.id === m[1]);
         if (inThread?.thread_metadata.archived) return refuse(400, 'Thread is archived');
         if (!inThread && !botMaySend(channel(m[1]))) return refuse(403, 'Missing Permissions');
-        const msg = { id: id(), author: { id: BOT }, pinned: false, content: body.content ?? '', embeds: (body.embeds ?? []).map((e) => JSON.parse(JSON.stringify(e))) };
+        const msg = { id: id(), author: { id: BOT }, pinned: false, content: body.content ?? '', allowed_mentions: body.allowed_mentions, embeds: (body.embeds ?? []).map((e) => JSON.parse(JSON.stringify(e))) };
         state.messages[m[1]].push(msg); return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'PATCH') {
@@ -448,6 +448,28 @@ await scenario({}, async (port, env, state) => {
   state.threads = state.threads.filter((t) => t.owner_id !== '4242');
   const gone = await runSetup(port, env);
   check(gone.code === 0 && /not found .* skipped/.test(gone.out), 'a post its author deleted is skipped, never made');
+});
+
+// 7. 眾 Announcements and dev logs tell everybody, once. A new one carries @everyone itself;
+// one that went up before it could (a `nudge` in server.json) gets one short line after it.
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const loud = new Set((SPEC.announce ?? []).map((k) => state.channels.find((c) => c.name === all.find((x) => x.key === k).name).id));
+  const tops = Object.entries(state.messages).filter(([c]) => state.channels.some((x) => x.id === c));
+  const pings = (m) => m.content.includes('@everyone') && (m.allowed_mentions?.parse ?? []).includes('everyone');
+  check(tops.every(([c, list]) => list.every((m) => pings(m) === loud.has(c))) && tops.some(([c, list]) => loud.has(c) && list.length),
+    'a new announcement or dev log tells @everyone, and nothing else does');
+  // The live server: the nudged posts went up before they could say it.
+  const nudged = SPEC.messages.filter((m) => m.nudge);
+  for (const m of nudged) {
+    const msg = Object.values(state.messages).flat().find((x) => x.embeds.some((e) => e.title === m.title));
+    msg.content = ''; msg.allowed_mentions = undefined;
+  }
+  const said = () => Object.values(state.messages).flat().filter((x) => !x.embeds.length && pings(x)).length;
+  const first = await runSetup(port, env);
+  check(first.code === 0 && said() === nudged.length, `each of the ${nudged.length} posts that went up quietly tells everyone once`);
+  const again = await runSetup(port, env);
+  check(again.code === 0 && said() === nudged.length && !/told everyone/.test(again.out), 'and a second run tells nobody twice');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
