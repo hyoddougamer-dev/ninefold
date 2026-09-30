@@ -510,6 +510,16 @@ export function soulLocked(s: State): boolean {
  * The keys are the ones read when the fight began, so nothing changed in the pouch while
  * it was being fought can be spent in their place.
  */
+/**
+ * 九轉 What a won fight actually spends. Every other elixir works in every round it is
+ * carried, but the Nine-Turn Pill does one thing, once, and only if the cultivator
+ * falls: a win that never needed it has not used it. The rule the screen states is "a win
+ * spends whichever took part", and a pill still in the pouch at the end took no part.
+ */
+export function tookPart(used: Used, revived: boolean): Used {
+  return used.elixir && splitKey(used.elixir).key === 'nineturn' && !revived ? { ...used, elixir: null } : used;
+}
+
 export function spendKit(s: State, used: Used): State {
   const c = s.crafts;
   const pouch = { ...c.pouch };
@@ -619,7 +629,9 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
   const made: Record<string, number> = {};
   for (const [k, v] of Object.entries(rec(o.made))) {
     const r = RECIPE_BY_KEY[k];
-    if (!r) continue;
+    // And only recipes this level and realm could have made at all, as the pouch above:
+    // a level never falls, so an honest save never holds a count it could not have made.
+    if (!r || !open(r.skill) || level(r.skill) < r.level || s.realm < r.realm) continue;
     const most = xp[r.skill] >= XP_CAP ? 1e8 : Math.ceil(xp[r.skill] / r.xp);
     const n = Math.floor(num(v, 0, most));
     if (n > 0) made[k] = n;

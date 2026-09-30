@@ -1669,6 +1669,8 @@ export const CRAFTS = {
   kitIn: (names: string) => `Carried in: ${names}`,
   kitSpent: (names: string) => `Carried in and spent: ${names}.`,
   kitKept: (names: string) => `Carried in and kept: ${names}. Losing costs nothing.`,
+  /** 九轉 A win that never needed the pill it carried keeps it. */
+  kitUnneeded: (names: string) => `Never needed, so kept: ${names}.`,
   seekKept: 'A sure drop still waits for your next win.',
   awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
     to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,

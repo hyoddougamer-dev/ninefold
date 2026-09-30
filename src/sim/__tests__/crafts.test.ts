@@ -10,7 +10,7 @@ import {
 } from '../balance.ts';
 import {
   NO_CRAFTS, arraySlots, blocked, carry, demonsLeft, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
-  secondsOf, setTask, spendKit, takeSeeking, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
+  secondsOf, setTask, spendKit, takeSeeking, tookPart, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
   type Crafts,
 } from '../crafts.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -325,6 +325,22 @@ describe('查 what the review found', () => {
     expect(back.seek).toBe(0);
     const writer = validCrafts({ xp: { sigil: XP_TABLE[20] }, seek: 20 }, { realm: 6, killed: {}, startedAt: T0 }, T0 + 1e9);
     expect(writer.seek).toBe(20);
+    // A count is held only for a recipe the level and realm could make at all: a forged
+    // save at herb 45 claiming Lingzhi (level 95) keeps none of it, and its own moss.
+    const high = validCrafts({
+      xp: { herb: XP_TABLE[45] }, made: { 'herb:moss': 30, 'herb:lingzhi': 2000 },
+    }, { realm: 9, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(RECIPE_BY_KEY['herb:lingzhi'].level).toBeGreaterThan(45);
+    expect(high.made['herb:lingzhi']).toBeUndefined();
+    expect(high.made['herb:moss']).toBe(30);
+  });
+
+  it('spends a Nine-Turn Pill only on the win it brought back, and keeps it on any other', () => {
+    const used = { elixir: 'nineturn@3', sigil: 'sigil:thunder@2' };
+    expect(tookPart(used, false)).toEqual({ elixir: null, sigil: 'sigil:thunder@2' });
+    expect(tookPart(used, true)).toEqual(used);
+    // Every other elixir works in every round, so it took part whether or not it was close.
+    expect(tookPart({ elixir: 'might6@2', sigil: null }, false)).toEqual({ elixir: 'might6@2', sigil: null });
   });
 
   it('never lifts a forged piece a rank with 空囊, so the odds on the recipe hold', () => {

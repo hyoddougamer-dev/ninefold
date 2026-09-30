@@ -105,6 +105,8 @@ export interface Outcome {
   readonly rounds: readonly Round[];
   readonly playerPower: number;
   readonly beastPower: number;
+  /** 九轉 Whether a carried Nine-Turn Pill brought the cultivator back in this fight. */
+  readonly revived?: boolean;
 }
 
 
@@ -285,7 +287,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
     });
   }
 
-  return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0 };
+  return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0, revived: kit.revive && revived };
 }
 
 /**

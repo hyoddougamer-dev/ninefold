@@ -16,7 +16,7 @@ import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { ARENA, CRAFTS, SECLUSION } from '../copy.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
-import type { Used } from '../../sim/crafts.ts';
+import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
@@ -139,8 +139,13 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   const sky = (aboveSummit && pictureOf('heaven', aboveSummit))
     ?? pictureOf('realm', String(beast.realm));
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
-  const kitNames = [battle.kit?.elixir, battle.kit?.sigil].filter((k): k is string => !!k)
+  const names = (ks: readonly (string | null | undefined)[]) => ks.filter((k): k is string => !!k)
     .map((k) => ITEM_BY_KEY[splitKey(k).key]?.name ?? k).join(' · ') || null;
+  const kitNames = names([battle.kit?.elixir, battle.kit?.sigil]);
+  // 九轉 On a win, what was spent and what was carried in but never needed.
+  const took = battle.kit && tookPart(battle.kit, !!outcome.revived);
+  const spentNames = took ? names([took.elixir, took.sigil]) : null;
+  const unneeded = battle.kit && took && battle.kit.elixir !== took.elixir ? names([battle.kit.elixir]) : null;
   const say = over
     ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
         realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
@@ -292,7 +297,8 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
           <p>{say.text}</p>
           {/* 攜 A kit is said to be spent on a win and kept on a loss, every time. */}
           {kitNames && (
-            <p className="kitline"><b className="cjk">攜</b> {outcome.won ? CRAFTS.kitSpent(kitNames) : CRAFTS.kitKept(kitNames)}</p>
+            <p className="kitline"><b className="cjk">攜</b> {!outcome.won ? CRAFTS.kitKept(kitNames)
+              : [spentNames && CRAFTS.kitSpent(spentNames), unneeded && CRAFTS.kitUnneeded(unneeded)].filter(Boolean).join(' ')}</p>
           )}
           {battle.sought && !outcome.won && <p className="kitline"><b className="cjk">尋</b> {CRAFTS.seekKept}</p>}
           {/* 得 What it paid, as things you can see arrive rather than the tail of a

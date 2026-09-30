@@ -389,7 +389,7 @@ const SPECIALS: readonly [string, string, string, number, number, (readonly [str
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
     'Carried into seclusion: your heart demon stands a tenth weaker.', 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
-    'Once in one hard fight, a blow that would put you down mends you to full instead.', 'dragon-orb'],
+    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it.', 'dragon-orb'],
 ];
 for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   item({ key, han, name, kind: 'elixir', realm, icon, graded: key !== 'seekincense', does,

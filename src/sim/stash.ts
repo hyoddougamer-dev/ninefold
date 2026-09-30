@@ -1,4 +1,4 @@
-import { RARITIES, templateOf, type Item, type Rarity } from '../data/gear.ts';
+import { RARITIES, type Item, type Rarity } from '../data/gear.ts';
 import { addToChest, chestLimit, fuse } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
 import { meltFactor, returnMetal, salvageValue } from './salvage.ts';
@@ -58,9 +58,4 @@ export function stash(s: State, found: Item | null): Stashed {
 export function fuseIn(s: State, template: string, rarity: Rarity): { state: State; made: Item | null } {
   const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s));
   return out.made ? { state: { ...s, chest: [...out.chest] }, made: out.made } : { state: s, made: null };
-}
-
-/** The name a player would know the melted piece by. */
-export function droppedName(x: Item): string {
-  return templateOf(x).name;
 }

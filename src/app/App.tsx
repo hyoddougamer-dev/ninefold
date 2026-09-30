@@ -22,7 +22,7 @@ import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
-  carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, work,
+  carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, tookPart, work,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
 import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
@@ -101,7 +101,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 const now = () => Date.now() / 1000;
 
-/** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
+/** 歸 What the homecoming card says: how long away, and what the time did. */
 interface Homecoming {
   readonly seconds: number;
   readonly qi: number;
@@ -175,6 +175,23 @@ export function App() {
   const meeting = meetingDue(state);
   const loaded = useRef(false);
   const lastLayer = useRef(0);
+  /**
+   * 一 A sound, a burst or a buzz decided inside a state updater, played once per tap.
+   *
+   * An updater has to be pure, and these were not: React runs one twice under StrictMode
+   * and may run it again when a tick lands between the tap and the render, so a refine
+   * could ring twice. The effect still has to be decided in there, because only there is
+   * the state the tap really applied to. So each tap takes a number before it calls
+   * setState, and whatever the updater asks to play is played once for that number.
+   */
+  const taps = useRef(0);
+  const played = useRef(new Set<number>());
+  const once = (id: number, effect: () => void) => {
+    if (played.current.has(id)) return;
+    played.current.add(id);
+    if (played.current.size > 64) played.current.delete(played.current.values().next().value!);
+    effect();
+  };
   /**
    * 入定 When this visit started, or null while the app is in the background.
    *
@@ -455,11 +472,11 @@ export function App() {
   }, [state, startFight]);
 
   const onBrew = useCallback((line: Line) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = brew(s, line);
       if (next === s) return s;
-      sfx.brew();
-      haptics.win();
+      once(id, () => { sfx.brew(); haptics.win(); });
       return next;
     });
   }, []);
@@ -496,7 +513,7 @@ export function App() {
     if (!battle) return;
     const { beast, outcome, drop, floor, demon, kit, sought } = battle;
     // 業 A won fight spends what took part in it; a lost one keeps it.
-    const spent = (s: State) => (outcome.won && kit ? spendKit(s, kit) : s);
+    const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
     const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
     if (demon) {
@@ -509,11 +526,12 @@ export function App() {
       sfx.floor();
       setState((s) => clearFloor(s, floor));
     } else if (outcome.won) {
+      const id = ++taps.current;
       setState((s) => {
         // 錄 A mark earned is rare enough to be worth hearing.
         const kills = s.killed[beast.key] ?? 0;
         const before = marksOf(kills);
-        if (marksOf(kills + 1) > before) sfx.mark();
+        if (marksOf(kills + 1) > before) once(id, sfx.mark);
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
@@ -546,21 +564,21 @@ export function App() {
 
   /** 煉器 Refining spends material on a piece you are already wearing. */
   const onRefine = useCallback((slot: Slot) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = refine(s, slot);
       if (next === s) return s;
-      float(JUICE.refined, 'gold'); burst('gold', null, 10, 56);
-      sfx.buy();
-      haptics.strike();
+      once(id, () => { float(JUICE.refined, 'gold'); burst('gold', null, 10, 56); sfx.buy(); haptics.strike(); });
       return next;
     });
   }, []);
 
   const onFuse = useCallback((template: string, rarity: string) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = fuseIn(s, template, rarity as Item['rarity']);
       if (!next.made) return s;
-      float(JUICE.fused, 'gold'); burst('gold', null, 16, 80);
+      once(id, () => { float(JUICE.fused, 'gold'); burst('gold', null, 16, 80); });
       return next.state;
     });
     sfx.breakthrough();
@@ -642,10 +660,11 @@ export function App() {
   }, []);
 
   const onUnlock = useCallback((key: string) => {
+    const id = ++taps.current;
     setState((s) => {
       const free = freeOf(s);
       if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
-      float(JUICE.learned, 'jade'); burst('jade', null, 14, 70);
+      once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
       return { ...s, unlocked: [...s.unlocked, key] };
     });
     sfx.buy();
