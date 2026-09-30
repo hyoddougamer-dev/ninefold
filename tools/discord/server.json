@@ -406,6 +406,35 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=2"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-09-30",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · A faster first realm",
+      "color": "#8FB49B",
+      "body": [
+        "The first realm was too slow to start. It's now your first sitting: new beasts every few minutes, the realm's warden in about twelve, and gear, the Path and the Cave right after."
+      ],
+      "fields": [
+        [
+          "▸ Already past realm 1?",
+          "Nothing changes for you."
+        ],
+        [
+          "▸ Still in it?",
+          "Open the game and you'll climb a few layers at once."
+        ],
+        [
+          "榜 On the boards from day one",
+          "New players now show up on the rankings in their first session. Before, the server held a busy first session back as \"too fast\"."
+        ],
+        [
+          "謝 Thanks",
+          "To the player on Reddit who told us the start was one rat after another. You were right."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
