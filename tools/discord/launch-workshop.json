@@ -1,0 +1,151 @@
+{
+  "_comment": "業 The Workshop's launch: what goes into server.json the day it ships, not before. The announcement (devlog-2, the ideas post and the first jobs reply) went first; this is the release. Move each entry into server.json, apply each edit to its guide's field, replace the ideas post body, and fill the 'what changed because of you' field in devlog-3 from the testers' answers.",
+  "messages": [
+    {
+      "key": "devlog-3",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Dev log #3 · The Workshop opens",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-3.webp?v=1",
+      "body": [
+        "It is in the game. Thank you to everyone who answered the preview in {#ideas}: what changed because of you is below."
+      ],
+      "fields": [
+        [
+          "業 The Workshop",
+          "A new tab from realm 2: seven crafts you level from 1 to 99. Gather herbs and ore, render the parts of the beasts you hunt, and forge metal, tools and the gear you choose. It keeps working 12 hours after you close the game."
+        ],
+        [
+          "丹 符 陣 Further up",
+          "Alchemy opens at realm 5, Sigil Writing at 6 and Arrays at 7. An elixir and a sigil go into your next warden, heart demon or vault gate, and only a win spends them. The arena says which: spent on a win, kept on a loss."
+        ],
+        [
+          "畫 Painted",
+          "Every herb, ore, metal, elixir, sigil, array and tool is painted in the same ink as the beasts, and each craft has its own scene. On a phone the pouch is its own view, one shelf per kind. On a PC the crafts and the pouch sit side by side."
+        ],
+        [
+          "守 What it never does",
+          "Nothing the workshop makes raises your qi rate, and a lost fight never spends your kit. We played the whole climb with it and without it, and it lands within two days either way. A second road, not a shortcut."
+        ],
+        [
+          "圍 The drive costs time now",
+          "One minute of your own gathering per kill, in every realm: 50 kills are 50 minutes. A beast from an earlier realm costs a quarter of that. Late in the climb, fifty kills used to cost more than a whole day of qi."
+        ],
+        [
+          "議 Tell us",
+          "Everything about the workshop can still change. Tell us what you think in *業 The Workshop: tell us what you think*, in {#ideas}. How every craft works is in {#guides}."
+        ],
+        [
+          "謝 Thanks",
+          "To Raziel, for the jobs thread and for the word about the drive. And to everyone posting in {#bugs} and {#ideas}: every post is read."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
+    }
+  ],
+  "posts": [
+    {
+      "key": "g-crafts",
+      "forum": "guides",
+      "tag": "Systems",
+      "title": "業 The Workshop: seven crafts, 1 to 99",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-crafts.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/workshop.webp?v=1",
+      "body": [
+        "**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away."
+      ],
+      "fields": [
+        [
+          "▸ 藥 Herb Gathering · 礦 Vein Delving",
+          "Realm 2. Herbs from the paths of every realm you have reached, and ore from their veins. They need only time."
+        ],
+        [
+          "▸ 解 Rendering",
+          "Realm 2. Kill ten of a common beast (one, for a warden) and the workshop knows what its kind leave behind: a pelt, a fang, a scale. From then on it renders that part for as long as you let it."
+        ],
+        [
+          "▸ 鑄 Forging",
+          "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."
+        ],
+        [
+          "▸ 丹 Alchemy",
+          "Realm 5. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."
+        ],
+        [
+          "▸ 符 Sigil Writing",
+          "Realm 6. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."
+        ],
+        [
+          "▸ 陣 Arrays",
+          "Realm 7. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."
+        ],
+        [
+          "▸ 攜 Carrying",
+          "One elixir and one sigil go into your next warden, heart demon or vault gate, and the odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the Dragon, never the tower, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."
+        ],
+        [
+          "▸ 品 Quality and 習 familiarity",
+          "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2000 made: faster, sometimes two at once, one fewer of the first ingredient, and at the fifth never Common."
+        ],
+        [
+          "▸ ⏳ How long",
+          "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"
+      ]
+    }
+  ],
+  "threads": [
+    {
+      "forum": "ideas",
+      "title": "jobs",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "It's in the game now: 業 the Workshop. Thank you for starting it!",
+        "How every craft works is in the guides; how it plays is up to you. Tell us here.",
+        "· 師 Shibaki"
+      ]
+    }
+  ],
+  "edits": [
+    {
+      "post": "g-opens",
+      "field": "▸ 築基 Realm 2",
+      "value": "器 Gear · 煉器 Refining · 洞天 The Cave · 勢 Stances and Arts · 道 The Path · 業 The Workshop: 藥 Herbs, 礦 Veins, 解 Rendering, 鑄 Forging"
+    },
+    {
+      "post": "g-opens",
+      "field": "▸ 化神 Realm 5",
+      "value": "塔 The Endless Tower · 丹 Alchemy"
+    },
+    {
+      "post": "g-opens",
+      "field": "▸ 煉虛 Realm 6",
+      "value": "圖鑑 The Bestiary · 符 Sigil Writing"
+    },
+    {
+      "post": "g-opens",
+      "field": "▸ 合體 Realm 7",
+      "value": "秘境深 The Deeper Vault · 陣 Arrays"
+    },
+    {
+      "post": "g-hunt",
+      "field": "▸ 圍 Drive",
+      "value": "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs one minute of your own gathering, and a quarter of that on a beast from an earlier realm."
+    }
+  ],
+  "ideasBody": [
+    "**Seven crafts you level from 1 to 99 are in the game now**, on the 業 tab from realm 2. It began in this forum with Raziel's *jobs* thread. Thank you, Raziel.",
+    "",
+    "Tell us how it plays now that it is in your hands."
+  ]
+}

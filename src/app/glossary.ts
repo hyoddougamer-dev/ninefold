@@ -139,6 +139,7 @@ export const GROUPS: readonly Group[] = [
       ...RANKS.map((r) => ({ han: r.han, name: r.name, note: KEY.craftRank(r.at) })),
       ...SKILLS.map((k) => ({ han: k.cap.han, name: k.cap.name, note: KEY.craftTop(k.name) })),
       { han: '業', name: 'The workshop', note: KEY.workshop },
+      { han: '總', name: 'Total level', note: KEY.craftTotal },
       { han: '儲物袋', name: 'The pouch', note: KEY.pouch },
       { han: '習', name: 'Familiarity', note: KEY.familiar },
       { han: '攜', name: 'Carried', note: KEY.carried },

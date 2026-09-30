@@ -3000,12 +3000,31 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                         color: var(--gold); border: 1px solid var(--gild-strong); border-radius: 7px; }
 .crafts .cskill b.cjk[data-painted='true'] { border: 0; overflow: hidden; border-radius: 50%;
                                           box-shadow: 0 0 0 1px var(--gild-strong); }
-.crafts .cskill b.cjk img { display: block; width: 34px; height: 34px; }
+.crafts .cskill b.cjk img { display: block; width: 34px; height: 34px; transform: scale(1.32); }
 .crafts .cskill[data-shut='true'] b.cjk img { filter: grayscale(.8); }
-.crafts .cscene { margin: -4px -4px 10px; height: 118px; border-radius: 8px; overflow: hidden;
-                  box-shadow: inset 0 0 0 1px var(--gild); }
-.crafts .cscene img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 55%;
-                      filter: saturate(.92) brightness(.92); }
+/* 坊 The craft's painting, whole and square beside its name: a painting is a scene, and
+   cut into a band it showed a basket and half a hat (Bruno: "mal centradas"). */
+.crafts .cphead { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: start; }
+.crafts .cscene { width: 92px; height: 92px; border-radius: 8px; overflow: hidden; background: #d8c49a;
+                  box-shadow: 0 0 0 1px var(--gild-strong), 0 4px 14px rgba(0, 0, 0, .35); }
+.crafts .cscene img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 總 The top line: where you are, and the one number the workshop adds up to. */
+.crafts .crank { display: flex; align-items: baseline; gap: 6px; }
+.crafts .crank .clevel { margin-left: auto; color: var(--gold); font-size: 13px; }
+.crafts .ctop { align-items: center; gap: 10px; margin-bottom: 12px; }
+.crafts .ctotal { white-space: nowrap; font-size: 12px; color: var(--faint); display: inline-flex; align-items: baseline; gap: 4px; }
+.crafts .ctotal b { font-size: 15px; color: var(--gold); }
+.crafts .ctotal i { font-style: normal; }
+/* 篩 Search and three chips, for a craft with more recipes than a screen holds. */
+.crafts .cfilter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+.crafts .cfilter input { flex: 1 1 160px; min-width: 0; padding: 8px 11px; border-radius: 9px; font: inherit; font-size: 13px;
+                         color: var(--text); background: rgba(20, 17, 13, .7); border: 1px solid var(--line); }
+.crafts .cfilter input:focus { outline: none; border-color: var(--gild-strong); }
+.crafts .cf-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.crafts .cf-chips button { padding: 6px 10px; border-radius: 99px; font-size: 12px; color: var(--faint);
+                           background: none; border: 1px solid var(--line); }
+.crafts .cf-chips button[aria-selected='true'] { color: var(--gold); border-color: var(--gild-strong); background: rgba(212, 175, 86, .1); }
+.crafts .cf-chips i { font-style: normal; opacity: .7; margin-left: 2px; }
 .crafts .ctool { display: inline-block; vertical-align: -5px; margin-right: 4px; }
 .crafts .ctool img.emblem { border-radius: 50%; }
 .crafts .w-main, .crafts .w-work, .crafts .w-side { display: contents; }
@@ -3100,11 +3119,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .crafts .cskills { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .crafts .crecipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-items: start; }
   .crafts .crecipes > p { grid-column: 1 / -1; }
-  .crafts .cscene { height: 150px; }
+  .crafts .cphead { grid-template-columns: 132px minmax(0, 1fr); gap: 16px; }
+  .crafts .cscene { width: 132px; height: 132px; }
   .crafts .w-side .cpouch { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); }
 }
 /* A laptop's stage holds four tiles only if the rank waits for the panel below. */
 @media (min-width: 1100px) and (max-width: 1599px) {
   .crafts .cskill .cs-rank { display: none; }
-  .crafts .cscene { height: 120px; }
 }
+@media (max-width: 360px) { .crafts .ctotal > span:not(.term) { display: none; } }

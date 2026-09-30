@@ -51,6 +51,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const [group, setGroup] = useState<string | null>(null);
   const [looking, setLooking] = useState<string | null>(null);
   const [view, setView] = useState<'work' | 'pouch'>('work');
+  const [find, setFind] = useState('');
+  const [filter, setFilter] = useState<'all' | 'ready' | 'next'>('all');
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
 
   const open = skillOpen(state, skill);
@@ -60,13 +62,24 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const mine = useMemo(() => RECIPES.filter((r) => r.skill === skill), [skill]);
   const groups = useMemo(() => [...new Set(mine.map((r) => r.group))], [mine]);
   const shown = group && groups.includes(group) ? group : defaultGroup(state, skill, groups);
-  const all = mine.filter((r) => (groups.length < 2 || r.group === shown)
+  // 篩 A search looks through the whole craft, whatever list is open; otherwise the open
+  // list. Gear is only ever the realm you are in and the one before it.
+  const needle = find.trim().toLowerCase();
+  const all = mine.filter((r) => (needle
+      ? `${r.name} ${r.han} ${r.group}`.toLowerCase().includes(needle)
+      : (groups.length < 2 || r.group === shown))
     && (r.makes.kind !== 'gear' || (r.realm <= state.realm && r.realm >= state.realm - 1)));
+  const isLocked = (r: Recipe) => { const b = blocked(state, r); return b === 'level' || b === 'realm'; };
+  const ready = all.filter((r) => blocked(state, r) === null);
+  const locked = all.filter(isLocked);
+  const counts = { all: all.length, ready: ready.length, next: locked.length };
   // 列 Everything that can be made, and the next few that cannot yet, so the list says
-  // what is coming without turning into a wall of grey.
-  const locked = all.filter((r) => { const b = blocked(state, r); return b === 'level' || b === 'realm'; });
-  const list = all.filter((r) => !locked.includes(r) || locked.indexOf(r) < 3);
-  const later = locked.length - Math.min(3, locked.length);
+  // what is coming without turning into a wall of grey. The chips narrow it further.
+  const list = filter === 'ready' ? ready
+    : filter === 'next' ? locked.slice(0, 6)
+    : all.filter((r) => !isLocked(r) || locked.indexOf(r) < 3);
+  const later = filter === 'all' ? locked.length - Math.min(3, locked.length)
+    : filter === 'next' ? Math.max(0, locked.length - 6) : 0;
 
   const xp = state.crafts.xp[skill] ?? 0;
   const next = Math.min(99, level + 1);
@@ -75,14 +88,13 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   return (
     <div className="crafts" data-view={view}>
       <div className="w-main">
-      <div className="row">
-        <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-          業 {CRAFTS.tab}
-        </span>
-        <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>{CRAFTS.total(totalLevel(state))}</span>
+      {/* 總 One line: where you are, and the one number the whole workshop adds up to,
+          which answers a tap with what it is (Bruno, testing: "total quê?"). */}
+      <div className="row ctop">
+        <h2 className="heading" style={{ margin: 0, flex: 1 }}>{CRAFTS.head}</h2>
+        <span className="ctotal"><Term han="總" plain /> <span>{CRAFTS.totalLabel}</span>{' '}
+          <b className="mono">{totalLevel(state)}</b><i className="mono">/693</i></span>
       </div>
-
-      <h2 className="heading">{CRAFTS.head}</h2>
       <Task state={state} r={running} onStop={() => onTask(null)} />
 
       {/* 版 On a phone the workshop and the pouch are two views of one screen, so neither
@@ -104,7 +116,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           return (
             <button key={k.key} className="cskill" data-on={k.key === skill} data-shut={!on}
               data-run={running?.skill === k.key}
-              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); }}>
+              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); setFind(''); setFilter('all'); }}>
               <Seal skill={k.key} han={k.seal} />
               <span className="cs-name">{k.name}</span>
               <span className="cs-sub">
@@ -117,20 +129,22 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
       </div>
 
       <div className="card cpanel">
-        <Scene skill={skill} />
-        <div className="row">
-          <span>
-            <b className="cjk" style={{ fontSize: 18, color: 'var(--gold)' }}><Term han={info.han} plain /></b>{' '}
-            <b style={{ fontSize: 16 }}>{info.name}</b>
-          </span>
-          {open && <span className="mono" style={{ color: 'var(--gold)' }}>{CRAFTS.level(level)}</span>}
-        </div>
-        <p className="faint" style={{ margin: '4px 0 0', fontSize: 12.5 }}>{info.does}</p>
+        <div className="cphead">
+          <Scene skill={skill} />
+          <div style={{ minWidth: 0 }}>
+            <div className="row">
+              <span>
+                <b className="cjk" style={{ fontSize: 18, color: 'var(--gold)' }}><Term han={info.han} plain /></b>{' '}
+                <b style={{ fontSize: 16 }}>{info.name}</b>
+              </span>
+            </div>
+            <p className="faint" style={{ margin: '4px 0 0', fontSize: 12.5 }}>{info.does}</p>
         {!open && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
           {CRAFTS.opensLong(info.seal, info.name, info.realm)}</p>}
         {open && (
           <>
-            <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}</p>
+            <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}
+              <span className="mono clevel">{CRAFTS.level(level)}</span></p>
             <i className="cxp"><i style={{ width: `${Math.round((level >= 99 ? 1 : (xp - XP_TABLE[level]) / (XP_TABLE[next] - XP_TABLE[level])) * 100)}%` }} /></i>
             <p className="faint mono" style={{ margin: '4px 0 0', fontSize: 11.5 }}>
               {level >= 99 ? CRAFTS.xpTop(num(Math.floor(xp))) : CRAFTS.xpTo(num(Math.floor(xp)), num(Math.ceil(XP_TABLE[next] - xp)), next)}
@@ -149,6 +163,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
             )}
           </>
         )}
+          </div>
+        </div>
       </div>
 
       {open && skill === 'array' && <Floor state={state} onPlace={onPlace} />}
@@ -160,10 +176,23 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           ))}
         </div>
       )}
-      {open && shown === 'Gear' && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.gearShown(state.realm)} {CRAFTS.forgedRule}</p>}
+      {open && mine.length > 10 && (
+        <div className="cfilter">
+          <input type="search" value={find} placeholder={CRAFTS.findHint} aria-label={CRAFTS.findHint}
+            onChange={(e) => setFind(e.target.value)} />
+          <div className="cf-chips" role="tablist">
+            {(['all', 'ready', 'next'] as const).map((f) => (
+              <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}>
+                {CRAFTS.filters[f]} <i className="mono">{counts[f]}</i></button>
+            ))}
+          </div>
+        </div>
+      )}
+      {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.gearShown(state.realm)} {CRAFTS.forgedRule}</p>}
 
       {open && (
         <div className="crecipes">
+          {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>{CRAFTS.nothingShown}</p>}
           {list.map((r) => (
             <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key}
               onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} />
