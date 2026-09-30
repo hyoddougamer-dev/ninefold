@@ -116,7 +116,10 @@ await shoot(page, 'workshop-forge', '.crafts .cgroups', 12);
 // 攜 What goes into a hard fight: the carried pair, and a thing in the pouch opened.
 await page.click('.crafts .cskill:has-text("Alchemy")');
 await page.waitForTimeout(250);
-const pill = await page.$('.crafts .cpc[aria-label="Jade Tide Pill"]');
+// 版 On a phone the pouch is the second view of the screen.
+await page.click('.crafts .cswitch button:nth-child(2)');
+await page.waitForTimeout(250);
+const pill = await page.$('.crafts .cpc[aria-label^="Jade Tide Pill"]');
 if (pill) { await pill.click(); await page.waitForTimeout(250); }
 await shoot(page, 'workshop-carry', '.crafts .ccarry', 12);
 await page.close();

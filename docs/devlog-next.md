@@ -18,7 +18,9 @@ banners) are committed with them, so Pages serves them before Discord first asks
 | Change | Player-facing | Status |
 |---|---|---|
 | 圍 Drive priced in minutes of your own gathering, old beasts a quarter | yes | ready, measured, tested |
-| 業 The Workshop: seven crafts 1 to 99 (realm 2, 丹 5, 符 6, 陣 7) | yes | ready, measured, tested; painted art waits for Bruno's 11 sheets |
+| 業 The Workshop: seven crafts 1 to 99 (realm 2, 丹 5, 符 6, 陣 7), painted | yes | ready, measured, tested, reviewed |
+| 版 Workshop layout: pouch as its own view on a phone, crafts and pouch side by side on a PC | yes | ready, shot at 320, 400, 1366 and 1920 |
+| 攜 The arena says whether a kit was spent or kept; odds on the cards count the kit | yes | ready, played by `npm run workshop` |
 | 郵 Sign-in email carries a 6-digit code | yes, once live | waits for the mail service (`SMTP_PASS`, `SMTP_SENDER`); do not announce before |
 | 答 The bot answers testers' posts by name | no | already used from the branch |
 

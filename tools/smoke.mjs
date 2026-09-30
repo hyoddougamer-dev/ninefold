@@ -212,13 +212,18 @@ async function walk(label, state) {
         await page.waitForTimeout(250);
         if (!(await page.$('.crafts .crow[data-on="true"]'))) fail(`${label}/crafts`, 'Start was tapped and nothing is being made');
       } else fail(`${label}/crafts`, 'no recipe offered a Start button');
+      // 版 On a phone the pouch is the second view; the switch has to show it.
+      await page.click('.crafts .cswitch button:nth-child(2)');
+      await page.waitForTimeout(200);
+      if (!(await page.isVisible('.crafts .cshelf'))) fail(`${label}/crafts`, 'the Pouch switch was tapped and the pouch did not show');
       const cell = await page.$('.crafts .cpc');
       if (cell) {
         await cell.click();
         await page.waitForTimeout(150);
         if (!(await page.$('.crafts .clook'))) fail(`${label}/crafts`, 'a thing in the pouch was tapped and nothing opened');
       } else fail(`${label}/crafts`, 'the pouch is empty on a save that fills it');
-      console.log(`    業 ${tiles.length} crafts tapped, a recipe set going, the pouch opened`);
+      console.log(`    業 ${tiles.length} crafts tapped, a recipe set going, the pouch switched to and opened`);
+      await page.click('.crafts .cswitch button:nth-child(1)').catch(() => {});
     }
   }
 

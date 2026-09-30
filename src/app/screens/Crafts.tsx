@@ -50,6 +50,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const [skill, setSkill] = useState<SkillKey>(running?.skill ?? first);
   const [group, setGroup] = useState<string | null>(null);
   const [looking, setLooking] = useState<string | null>(null);
+  const [view, setView] = useState<'work' | 'pouch'>('work');
+  const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
 
   const open = skillOpen(state, skill);
   const level = levelIn(state, skill);
@@ -71,7 +73,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const tool = state.crafts.tools[skill] ?? 0;
 
   return (
-    <div className="crafts">
+    <div className="crafts" data-view={view}>
+      <div className="w-main">
       <div className="row">
         <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
           業 {CRAFTS.tab}
@@ -82,6 +85,16 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
       <h2 className="heading">{CRAFTS.head}</h2>
       <Task state={state} r={running} onStop={() => onTask(null)} />
 
+      {/* 版 On a phone the workshop and the pouch are two views of one screen, so neither
+          sits under a long list of the other. A wide screen shows both at once. */}
+      <div className="cswitch" role="tablist">
+        <button role="tab" aria-selected={view === 'work'} onClick={() => setView('work')}>
+          <b className="cjk">業</b> {CRAFTS.viewWork}</button>
+        <button role="tab" aria-selected={view === 'pouch'} onClick={() => setView('pouch')}>
+          <b className="cjk">儲</b> {CRAFTS.viewPouch(kinds)}</button>
+      </div>
+
+      <div className="w-work">
       <div className="cskills">
         {SKILLS.map((k) => {
           const on = skillOpen(state, k.key);
@@ -158,12 +171,15 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
         </div>
       )}
+      </div>
+      </div>
 
-      <Carry state={state} onCarry={onCarry} />
-
-      <h2 className="heading">{CRAFTS.pouch}</h2>
-      <Pouch state={state} looking={looking} setLooking={setLooking}
-        onCarry={onCarry} onUse={onUse} onPlace={onPlace} />
+      <div className="w-side">
+        <Carry state={state} onCarry={onCarry} />
+        <h2 className="heading">{CRAFTS.pouch}</h2>
+        <Pouch state={state} looking={looking} setLooking={setLooking}
+          onCarry={onCarry} onUse={onUse} onPlace={onPlace} />
+      </div>
     </div>
   );
 }
@@ -405,56 +421,87 @@ function Pouch({ state, looking, setLooking, onCarry, onUse, onPlace }: {
     });
   if (keys.length === 0) return <p className="faint" style={{ fontSize: 12.5 }}>{CRAFTS.pouchEmpty}</p>;
   const look = looking && state.crafts.pouch[looking] ? looking : null;
-  const it = look ? ITEM_BY_KEY[splitKey(look).key] : null;
-  const q = look ? splitKey(look).quality : null;
-  const hand = look ? carrySlot(look) : null;
-  const seeking = look && (splitKey(look).key === 'sigil:seeking' || splitKey(look).key === 'seekincense');
+  const carried = new Set([state.crafts.carry.elixir, state.crafts.carry.sigil].filter(Boolean));
+  // 類 One shelf per kind, so a pouch of forty things reads as seven short rows, and the
+  // detail opens under the shelf it was tapped on instead of at the foot of all of them.
+  const shelves = KIND_ORDER.map((kind) => ({ kind, keys: keys.filter((k) => ITEM_BY_KEY[splitKey(k).key].kind === kind) }))
+    .filter((x) => x.keys.length > 0);
   return (
     <>
-      <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.kinds(keys.length)}</p>
-      <div className="cpouch">
-        {keys.map((k) => (
-          <button key={k} className="cpc" data-on={k === look} onClick={() => setLooking(k === look ? null : k)}
-            aria-label={ITEM_BY_KEY[splitKey(k).key].name}>
-            <Thing k={k} size={44} />
-            <b className="mono">{num(state.crafts.pouch[k])}</b>
-          </button>
-        ))}
-      </div>
-      {look && it && (
-        <div className="card clook">
-          <div className="row" style={{ gap: 10 }}>
-            <Thing k={look} size={40} />
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <b><span className="cjk">{it.han}</span> {it.name}</b>
-              <i className="faint" style={{ display: 'block', fontStyle: 'normal', fontSize: 12 }}>
-                {q !== null && <span style={{ color: RARITY_INFO[RARITIES[q]].colour }}>{RARITY_INFO[RARITIES[q]].han} {RARITY_INFO[RARITIES[q]].name} · </span>}
-                {realmOf(it.realm).han} realm {it.realm} · ×{num(state.crafts.pouch[look])}
-              </i>
-            </span>
+      <p className="faint" style={{ margin: '0 0 6px', fontSize: 12 }}>{CRAFTS.kinds(keys.length)} · {CRAFTS.pouchTap}</p>
+      {shelves.map(({ kind, keys: here }) => (
+        <div key={kind} className="cshelf">
+          <p className="cshelf-h"><b className="cjk">{CRAFTS.kindHan[kind]}</b> {CRAFTS.kindName[kind]}</p>
+          <div className="cpouch">
+            {here.map((k) => {
+              const it = ITEM_BY_KEY[splitKey(k).key];
+              const q = splitKey(k).quality;
+              const tip = `${it.name}${q !== null ? ` · ${RARITY_INFO[RARITIES[q]].name}` : ''} · ×${num(state.crafts.pouch[k])}`;
+              return (
+                <button key={k} className="cpc" data-on={k === look} data-carried={carried.has(k)}
+                  onClick={() => setLooking(k === look ? null : k)} aria-label={tip} title={tip}>
+                  <Thing k={k} size={44} />
+                  <b className="mono">{num(state.crafts.pouch[k])}</b>
+                  <span className="cpc-tip" aria-hidden="true">{it.name}</span>
+                </button>
+              );
+            })}
           </div>
-          {it.does && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{it.does}</p>}
-          <div className="row" style={{ marginTop: 10, gap: 8, justifyContent: 'flex-end' }}>
-            {hand && state.crafts.carry[hand] !== look && (
-              <button className="act small" onClick={() => onCarry(hand, look)}>{CRAFTS.carry}</button>
-            )}
-            {hand && state.crafts.carry[hand] === look && (
-              <button className="act small" onClick={() => onCarry(hand, null)}>{CRAFTS.uncarry}</button>
-            )}
-            {seeking && (
-              <button className="act small" disabled={state.crafts.seek >= CRAFT_SEEK_MAX} onClick={() => onUse(look)}>{CRAFTS.use}</button>
-            )}
-            {it.kind === 'array' && skillOpen(state, 'array') && (
-              <button className="act small"
-                disabled={!placed(state, look.slice('array:'.length)) && state.crafts.arrays.length >= arraySlots(levelIn(state, 'array'))}
-                onClick={() => onPlace(look.slice('array:'.length), !placed(state, look.slice('array:'.length)))}>
-                {placed(state, look.slice('array:'.length)) ? CRAFTS.lift : CRAFTS.place}
-              </button>
-            )}
-            <button className="act small ghost" onClick={() => setLooking(null)}>{CRAFTS.close}</button>
-          </div>
+          {look && here.includes(look) && (
+            <Look state={state} look={look} onClose={() => setLooking(null)} onCarry={onCarry} onUse={onUse} onPlace={onPlace} />
+          )}
         </div>
-      )}
+      ))}
     </>
+  );
+}
+
+/** 看 One thing in the pouch, opened: what it is, what it does, and what can be done with it. */
+function Look({ state, look, onClose, onCarry, onUse, onPlace }: {
+  state: State;
+  look: string;
+  onClose: () => void;
+  onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
+  onUse: (key: string) => void;
+  onPlace: (key: string, on: boolean) => void;
+}) {
+  const it = ITEM_BY_KEY[splitKey(look).key];
+  const q = splitKey(look).quality;
+  const hand = carrySlot(look);
+  const seeking = splitKey(look).key === 'sigil:seeking' || splitKey(look).key === 'seekincense';
+  const arrayKey = look.slice('array:'.length);
+  return (
+    <div className="card clook">
+      <div className="row" style={{ gap: 10 }}>
+        <Thing k={look} size={40} />
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <b><span className="cjk">{it.han}</span> {it.name}</b>
+          <i className="faint" style={{ display: 'block', fontStyle: 'normal', fontSize: 12 }}>
+            {q !== null && <span style={{ color: RARITY_INFO[RARITIES[q]].colour }}>{RARITY_INFO[RARITIES[q]].han} {RARITY_INFO[RARITIES[q]].name} · </span>}
+            {realmOf(it.realm).han} realm {it.realm} · ×{num(state.crafts.pouch[look])}
+          </i>
+        </span>
+      </div>
+      {it.does && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{it.does}</p>}
+      <div className="row" style={{ marginTop: 10, gap: 8, justifyContent: 'flex-end' }}>
+        {hand && state.crafts.carry[hand] !== look && (
+          <button className="act small" onClick={() => onCarry(hand, look)}>{CRAFTS.carry}</button>
+        )}
+        {hand && state.crafts.carry[hand] === look && (
+          <button className="act small" onClick={() => onCarry(hand, null)}>{CRAFTS.uncarry}</button>
+        )}
+        {seeking && (
+          <button className="act small" disabled={state.crafts.seek >= CRAFT_SEEK_MAX} onClick={() => onUse(look)}>{CRAFTS.use}</button>
+        )}
+        {it.kind === 'array' && skillOpen(state, 'array') && (
+          <button className="act small"
+            disabled={!placed(state, arrayKey) && state.crafts.arrays.length >= arraySlots(levelIn(state, 'array'))}
+            onClick={() => onPlace(arrayKey, !placed(state, arrayKey))}>
+            {placed(state, arrayKey) ? CRAFTS.lift : CRAFTS.place}
+          </button>
+        )}
+        <button className="act small ghost" onClick={onClose}>{CRAFTS.close}</button>
+      </div>
+    </div>
   );
 }

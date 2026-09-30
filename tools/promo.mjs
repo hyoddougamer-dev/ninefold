@@ -9,7 +9,7 @@
  * so a changed perk changes the chart the next time this runs.
  */
 import { chromium } from 'playwright';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
 import { fonts, data } from './banners.mjs';
@@ -175,6 +175,11 @@ const devlog = () => {
   </div>`;
 };
 
+/** 印 A craft's painted seal, or its character in a gold square while there is no painting. */
+const seal = (k, size) => existsSync(`public/art/emblem/craft-seal-${k.key}.webp`)
+  ? `<img src="${data(`public/art/emblem/craft-seal-${k.key}.webp`)}" style="width:${size}px;height:${size}px;border-radius:50%;display:block;box-shadow:0 0 0 1.5px rgba(212,175,86,.7)">`
+  : `<div class="cn" style="width:${size}px;height:${size}px;display:grid;place-items:center;font-size:${Math.round(size * 0.55)}px;color:#E2C26A;border:2px solid #D4AF56;border-radius:8px;background:rgba(212,175,86,.08)">${k.seal}</div>`;
+
 /** 業 The workshop's key art: what it is on the left, three real screens on the right. */
 const workshop = () => `
   <div style="width:1600px;height:900px;position:relative;overflow:hidden">
@@ -195,8 +200,7 @@ const workshop = () => `
       <div style="font:italic 600 32px/1.25 'Cormorant Garamond',serif;color:#D8C28E;margin:26px 0 22px">Seven crafts, levelled from 1 to 99.<br>Gather, render, forge, brew, write, cut.</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;width:600px">
         ${craft.skills.map((k) => `<div style="text-align:center">
-          <div class="cn" style="width:64px;height:64px;margin:0 auto;display:grid;place-items:center;font-size:34px;color:#E2C26A;
-               border:1.5px solid rgba(212,175,86,.7);border-radius:8px;background:rgba(212,175,86,.07)">${k.seal}</div>
+          <div style="display:flex;justify-content:center">${seal(k, 64)}</div>
           <div style="font:600 11px/1.2 Cinzel,serif;letter-spacing:.06em;color:#EAD9AE;margin-top:8px">${k.name.toUpperCase()}</div></div>`).join('')}
       </div>
       <div style="width:160px;height:1px;background:linear-gradient(90deg,#D4AF56,transparent);margin:34px 0 22px"></div>
@@ -212,8 +216,7 @@ const workshopChart = () => {
   const card = (k) => `
     <div style="padding:16px 18px 14px;border:1px solid rgba(212,175,86,.4);border-radius:12px;
                 background:linear-gradient(180deg,rgba(212,175,86,.10),rgba(13,11,8,.2) 55%),#17130E;display:grid;grid-template-columns:62px 1fr;gap:4px 14px;align-content:start">
-      <div class="cn" style="grid-row:span 4;width:62px;height:62px;border-radius:8px;display:grid;place-items:center;font-size:34px;
-                  color:#E2C26A;border:2px solid #D4AF56;background:rgba(212,175,86,.08)">${k.seal}</div>
+      <div style="grid-row:span 4">${seal(k, 62)}</div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
         <span style="font:700 20px/1.1 Cinzel,serif;color:#F3E8CF">${k.name}</span>
         <span style="font:600 12px/1 Cinzel,serif;letter-spacing:.12em;color:${k.realm === 2 ? '#8FB49B' : '#C9B27A'};white-space:nowrap">REALM ${k.realm}</span></div>

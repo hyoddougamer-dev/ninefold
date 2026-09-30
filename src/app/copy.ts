@@ -1625,8 +1625,15 @@ export const CRAFTS = {
   pouch: '儲物袋 The pouch',
   pouchEmpty: 'Nothing yet. What the workshop gathers and makes lands here.',
   kinds: (n: number) => `${n} kinds`,
+  pouchTap: 'tap one to see what it does',
+  // 類 The pouch's shelves: English first, the character beside it.
+  kindName: { herb: 'Herbs', ore: 'Ores', part: 'Beast parts', metal: 'Metals', elixir: 'Elixirs', sigil: 'Sigils', array: 'Arrays' } as Record<string, string>,
+  kindHan: { herb: '藥', ore: '礦', part: '解', metal: '鑄', elixir: '丹', sigil: '符', array: '陣' } as Record<string, string>,
+  // 版 The workshop and the pouch are two views on a phone and side by side on a wide screen.
+  viewWork: 'Workshop',
+  viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon or vault gate. A win spends them; a loss keeps them. Never the Dragon, never the tower.',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon or vault gate. A win spends whichever took part; a loss keeps both. Never the Dragon, never the tower.',
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   carryNone: 'Nothing',
