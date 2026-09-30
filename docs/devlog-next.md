@@ -1,10 +1,10 @@
 # 筆 The next devlog, drafted
 
 What is ready on the working branch for the next release, and the words the players will
-read. Nothing here is live: `main` moves only when Bruno has seen the changes and approved
-this text. The words go out in two steps (Bruno, 2026-09-30: announce first, guides at launch):
+read. The game changes here are not live: `main` moves only when Bruno has seen the changes
+and approved this text. The words go out in two steps (Bruno, 2026-09-30: announce first, guides at launch):
 
-1. **The announcement**, already in `tools/discord/server.json`: `devlog-2` (筆 Dev log #2 ·
+1. **The announcement**, posted from `main` on 2026-09-30: `devlog-2` (筆 Dev log #2 ·
    The Workshop is coming), the pinned `ideas-workshop` post asking what to change, and a
    reply in Raziel's *jobs* thread. It needs only `server.json` and `public/discord/` on
    `main`: the game itself does not change.
@@ -22,7 +22,8 @@ this text. The words go out in two steps (Bruno, 2026-09-30: announce first, gui
 | 版 Workshop layout: pouch as its own view on a phone, crafts and pouch side by side on a PC | yes | ready, shot at 320, 400, 1366 and 1920 |
 | 攜 The arena says whether a kit was spent or kept; odds on the cards count the kit | yes | ready, played by `npm run workshop` |
 | 郵 Sign-in email carries a 6-digit code | yes, once live | waits for the mail service (`SMTP_PASS`, `SMTP_SENDER`); do not announce before |
-| 答 The bot answers testers' posts by name | no | already used from the branch |
+| 答 The bot answers testers' posts by name | no | on `main` since the announcement |
+| 業 A card, once, for every player the workshop is open to, veterans included | yes | ready; an old save loads intact and the ranked server still verifies it |
 
 The drive change also changes 驗 the server check (`src/sim/verify.ts` reads `driveFloor`),
 so the release has to deploy the ranked server with it. The Supabase workflow does that on
