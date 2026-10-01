@@ -435,6 +435,27 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "workshop-today",
+      "pin": false,
+      "channel": "news",
+      "title": "業 The Workshop opens today",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop.webp?v=2",
+      "body": ["**Today at 13:00 UTC** (14:00 in Lisbon and London). Discord shows it in your own time: <t:1790859600:F>, <t:1790859600:R>."],
+      "fields": [
+        ["業 What it is", "Seven crafts you level from 1 to 99, on a new tab from realm 2: herbs and ore, beast parts, forged gear, elixirs, sigils and arrays. Set it on one thing and it keeps working for twelve hours after you close the game."],
+        ["守 Nothing is lost", "Your save, your realm and everything you own stay exactly as they are. Already past realm 1? The tab will simply be there when you open the game."],
+        ["📷 The real thing", "Below: the workshop, the forge choosing a piece, and the pouch with an elixir and a sigil carried into the next hard fight."],
+        ["📜 At launch", "Dev log #3 with everything that changed, and a guide to every craft in {#guides}."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/workshop.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/workshop-forge.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/workshop-carry.webp?v=2"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
