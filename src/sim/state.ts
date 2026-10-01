@@ -427,6 +427,23 @@ export function buy(s: State, u: Upgrade): State {
 }
 
 /**
+ * 盡 As many of one upgrade as can be paid for now, each at its own price, the way a
+ * player tapping the box until it greys out would buy them. Nothing is cheaper for being
+ * bought together: it is buy() in a loop, and stops where buy() would.
+ */
+export function buyMax(s: State, u: Upgrade): { state: State; n: number; cost: number } {
+  let state = s;
+  let n = 0;
+  let cost = 0;
+  while (canBuy(state, u) && n < 10_000) {
+    cost += upgradeCost(state, u);
+    state = buy(state, u);
+    n++;
+  }
+  return { state, n, cost };
+}
+
+/**
  * 凝丹 The other price of a 妖丹 core: raw qi, for somebody with no beast to hand.
  *
  * It rides the rung the cultivator is standing on rather than the core's own level, so

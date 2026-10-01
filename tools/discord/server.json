@@ -477,6 +477,23 @@
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop.webp?v=1"],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Less clicking",
+      "color": "#8FB49B",
+      "body": ["Hunting was too much clicking for an idle game. This update is about that, and it started with two posts in {#ideas}."],
+      "fields": [
+        ["自 Auto-hunt", "Win a fight and press Auto: the game keeps hunting that beast for you while it's open. It stops if you lose, if you switch away, or when you press Stop. Every kill counts exactly like one you clicked."],
+        ["再 Again", "Collect and fight the same beast again in one tap, right next to Collect."],
+        ["盡 Max", "Above the upgrades, switch from ×1 to Max and one tap buys every level you can afford."],
+        ["鍵 On a PC", "Space skips a fight, Enter collects, R goes again, A starts Auto, Esc closes, 1 to 7 change tab. Clicking outside a window closes it too."],
+        ["譯 Names next to the characters", "The fight screen names both sides in English, every 材 says material, and gear stats say what they are. On a PC a character's note opens when you hover over it."],
+        ["謝 Thanks", "To rekaris, for both posts. That's exactly the kind of feedback that changes the game, so keep it coming."]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -943,6 +960,28 @@
       "reply": [
         "It's in the game now: 業 the Workshop. Thank you for starting it!",
         "How every craft works is in the guides; how it plays is up to you. Tell us here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "QoL",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks for this, you're right. That was way too much clicking for one kill.",
+        "It's fixed in today's update. Enter or Space collects, Esc closes things, and clicking outside a window closes it. There's an Again button right next to Collect (R on the keyboard), and Auto (A) if you'd rather it keep hunting that beast on its own while the game is open. The upgrades got a Max button too.",
+        "Let me know how it feels!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Remove chinese characters from english version or add tooltips on every occurence",
+      "tags": ["Idea"],
+      "reply": [
+        "Fair point, and thanks for explaining it so clearly.",
+        "The idea was always English first, with the characters riding alongside. You found the places where that broke: the fight result showing only 材, and gear stats with just a character. Those all have their English names now, the fight screen names both sides, and on a PC a character's note opens when you hover over it.",
+        "If you spot anywhere else where a character is on its own, post it here and I'll fix it.",
         "· 師 Shibaki"
       ]
     }

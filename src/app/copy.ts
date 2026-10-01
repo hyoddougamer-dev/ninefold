@@ -228,6 +228,11 @@ export const CULTIVATE = {
   fullWord: 'full',
   materialWord: 'material',
   spend: 'Spend your qi',
+  /** 盡 One tap buys one, or as many as can be paid for. */
+  buyMode: 'How many one tap buys',
+  buyOne: '×1',
+  buyMax: 'Max',
+  lot: (n: number) => `×${n}`,
   wardenHead: "妖 The realm's warden",
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
 
@@ -1574,6 +1579,12 @@ export const ARENA = {
   /** 鍵 The keys, printed on the buttons they press, and only where there is a keyboard. */
   keyCollect: 'Enter',
   keyAgain: 'R',
+  /** 自 The auto-hunt, started from a won verdict and run while the game is open. */
+  auto: 'Auto',
+  keyAuto: 'A',
+  autoOn: (name: string) => `Hunting the ${name} on its own`,
+  autoTally: (kills: number, mats: string) => `${kills} ${kills === 1 ? 'kill' : 'kills'} · +${mats} 材 material`,
+  stop: 'Stop',
   /** 略 A fight is settled the moment it starts; watching it is a choice. */
   skip: 'Tap to see how it ends',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in

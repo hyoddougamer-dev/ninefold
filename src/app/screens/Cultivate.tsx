@@ -8,7 +8,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { crossNow, currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, canBreakThrough,
+  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
   power, tribulationPool, upgradeCost,
   type State,
@@ -34,6 +34,9 @@ import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { useMemo, useRef, useState } from 'react';
+
+/** 盡 Where the ×1 or Max choice is kept, on this device. */
+const BUY_KEY = 'ninefold.buy';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
@@ -81,6 +84,18 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 }) {
   // 勁 Which box was just bought, for the half second it settles.
   const [bought, setBought] = useState<string | null>(null);
+  /**
+   * 盡 One tap buys one, or as many as the qi will pay for. The idle convention, asked for
+   * by Bruno after rekaris's post about clicking: a realm's six levels of each upgrade were
+   * six taps on the same box. Remembered on this device only; it changes no number.
+   */
+  const [many, setMany] = useState<boolean>(() => {
+    try { return localStorage.getItem(BUY_KEY) === 'max'; } catch { return false; }
+  });
+  const pickMany = (max: boolean) => {
+    setMany(max);
+    try { localStorage.setItem(BUY_KEY, max ? 'max' : 'one'); } catch { /* a private window keeps it for the visit */ }
+  };
   const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -427,7 +442,13 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </p>
       )}
 
-      <h2 className="heading">{CULTIVATE.spend}</h2>
+      <div className="spendrow">
+        <h2 className="heading">{CULTIVATE.spend}</h2>
+        <div className="buymode" role="group" aria-label={CULTIVATE.buyMode}>
+          <button data-on={!many} onClick={() => pickMany(false)}>{CULTIVATE.buyOne}</button>
+          <button data-on={many} onClick={() => pickMany(true)}>{CULTIVATE.buyMax}</button>
+        </div>
+      </div>
       {UPGRADES.every((u) => state.levels[u] >= capOf(state, u)
         || (u === 'cores' && !isOpen(state.realm, 'cores'))) && (
         <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
@@ -440,6 +461,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         {UPGRADES.filter((u) => u !== 'cores' || isOpen(state.realm, 'cores')).map((u) => {
           const i = UPGRADE_INFO[u];
           const cost = upgradeCost(state, u);
+          // 盡 In Max mode the box shows what one tap will now buy, and for how much.
+          const lot = many ? buyMax(state, u) : null;
           const held = state.levels[u];
           // 境外 The cap is per upgrade above the summit: a heaven opens room on 力 and
           // never on 氣. See capOf.
@@ -461,10 +484,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
               data-bought={bought === u}
               disabled={!canBuy(state, u)} onClick={() => {
-                set((s) => buy(s, u));
+                const n = many ? buyMax(state, u).n : 1;
+                set((s) => (many ? buyMax(s, u).state : buy(s, u)));
                 // 勁 What was bought rises from the finger that bought it.
                 const tone = i.affects === 'power' ? 'gold' : 'jade';
-                float(i.effect, tone);
+                float(n > 1 ? `${i.effect} ×${n}` : i.effect, tone);
                 burst(tone, null, 10, 56);
                 setBought(u);
                 if (settle.current) clearTimeout(settle.current);
@@ -490,7 +514,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     </i>
                   </>
                   : <>
-                    <b>{num(cost)}</b>
+                    {lot && lot.n > 1 && <i className="lot">{CULTIVATE.lot(lot.n)}</i>}
+                    <b>{num(lot && lot.n > 1 ? lot.cost : cost)}</b>
                     <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
                       {i.currency === 'qi' ? 'qi' : CULTIVATE.materialWord}
                     </i>

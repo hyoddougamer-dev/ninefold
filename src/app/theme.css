@@ -130,6 +130,14 @@ body {
 
 .card { background: var(--mount), var(--lacquer); border: 1px solid var(--gild); border-radius: 12px; padding: 13px 14px;
         box-shadow: var(--lift); }
+/* 盡 The heading over the upgrades shares its line with ×1 / Max. */
+.spendrow { display: flex; align-items: flex-end; gap: 12px; margin: 26px 0 10px; }
+.spendrow > .heading { flex: 1; margin: 0; }
+.buymode { display: inline-flex; border: 1px solid var(--gild); border-radius: 99px; overflow: hidden; flex: none; }
+.buymode button { font: 600 11.5px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+                  padding: 6px 11px; background: transparent; color: var(--faint); border: 0; }
+.buymode button[data-on='true'] { background: rgba(212,175,86,.16); color: var(--gold); }
+.upg .price .lot { display: block; font-style: normal; font-size: 10.5px; color: var(--gold); letter-spacing: .06em; }
 /* 題 A heading that is only words runs a gilt hairline out to the edge. */
 .heading:not(:has(> :not(.cjk))) { display: flex; align-items: center; gap: 12px; }
 .heading:not(:has(> :not(.cjk)))::after { content: ''; flex: 1; height: 1px;
@@ -965,9 +973,27 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 }
 /* 再 Collect and Again share the row, Collect the wider: it is the one a thumb expects. */
 .verdict .vacts { margin-top: 14px; position: sticky; bottom: 0; z-index: 1;
-                  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px;
+                  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
                   box-shadow: 0 -14px 18px -4px #0D0B08, 0 8px 0 0 #0D0B08; }
 .verdict .vacts .act { width: 100%; }
+/* Collect alone, or Collect above Again and Auto: it is the button a thumb expects. */
+.verdict .vacts .collect:only-child, .verdict .vacts .collect:nth-last-child(3) { grid-column: 1 / -1; }
+.verdict .vacts .auto { color: var(--gold); border-color: rgba(212,175,86,.45); }
+.verdict .vacts .auto span { margin-left: 6px; }
+/* 自 While the auto-hunt runs: what it is doing, what it has made, and the way to stop it. */
+.arena .autobar { margin: 10px 18px 0; padding: 10px 12px; border-radius: 10px; display: flex; gap: 12px;
+                  align-items: center; justify-content: space-between; cursor: default;
+                  border: 1px solid rgba(212,175,86,.35); background: rgba(212,175,86,.07); }
+.arena .autobar > span { font-size: 13px; color: var(--text); min-width: 0; }
+.arena .autobar > span b { color: var(--gold); margin-right: 4px; }
+.arena .autobar > span i { display: block; font-style: normal; font-size: 12px; color: var(--faint); margin-top: 2px; }
+.arena .autobar .act { width: auto; flex: none; padding: 9px 14px; font-size: 14px; color: var(--gold);
+                       border-color: rgba(212,175,86,.45); }
+.arena .autobar kbd { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .arena .autobar kbd { display: inline-block; margin-left: 8px; padding: 1px 5px; border-radius: 4px;
+                        font: 600 10px/1.5 Rajdhani, sans-serif; border: 1px solid currentColor; opacity: .55; }
+}
 .verdict .vacts .again { padding-inline: 18px; color: var(--jade); border-color: rgba(127,180,149,.45); }
 .verdict .vacts .again span { margin-left: 6px; }
 /* 鍵 The key a button answers to, printed on it, only where there is a keyboard. */

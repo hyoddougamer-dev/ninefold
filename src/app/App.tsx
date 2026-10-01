@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { fuseIn, limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
@@ -100,6 +100,12 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key'];
 
 const now = () => Date.now() / 1000;
+
+/**
+ * 擊 The least time between two fights starting, in the app. The ranked server allows one
+ * per MIN_FIGHT_SECONDS (1.2 s) before it counts kills as bought; this keeps clear of it.
+ */
+const PACE_MS = 1500;
 
 /** 歸 What the homecoming card says: how long away, and what the time did. */
 interface Homecoming {
@@ -414,11 +420,26 @@ export function App() {
     };
   }, [ready]);
 
+  /** 擊 When the last fight started, and a fight asked for before the pace allowed it. */
+  const lastStart = useRef(0);
+  const queued = useRef<{ beast: Beast; floor?: number; demon?: boolean } | null>(null);
+  const [tick, setTick] = useState(0);
+
   const startFight = useCallback((beast: Beast, floor?: number, demon?: boolean) => {
     // 守 A warden is only ever reachable at the end of its own realm. The screens have
     // always declined to draw it anywhere else, and that is exactly the kind of guard
     // that a second screen forgets, so it is asked of the sim here, once.
     if (beast.warden && floor === undefined && !canFightWarden(state)) return;
+    // 擊 Never faster than a hand. The ranked server reads any kill beyond one per
+    // MIN_FIGHT_SECONDS as bought with qi, and a burst of them as a cheat; with a skip, R
+    // and the auto-hunt a fight could otherwise start every few hundred milliseconds. A
+    // fight asked for too soon is queued, and starts the moment the pace allows.
+    if (Date.now() < lastStart.current + PACE_MS) {
+      queued.current = { beast, floor, demon };
+      setTick((t) => t + 1);
+      return;
+    }
+    lastStart.current = Date.now();
     sfx.tap();
     haptics.tap();
     // 鍵 Whatever button started this keeps the focus, and a Space pressed to skip the
@@ -440,6 +461,7 @@ export function App() {
       const plain = drops ? dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null;
       const sought = drops && !plain && !beast.warden && state.crafts.seek > 0;
       return {
+        id: seed,
         beast,
         floor,
         demon,
@@ -563,20 +585,65 @@ export function App() {
    * fight would be rolled on the old one. So it is remembered, and started by the effect
    * below once the kill is in the state.
    */
-  const again = useRef<Beast | null>(null);
   const canAgain = !!battle && !battle.demon && battle.floor === undefined
     && !(battle.beast.warden && battle.outcome.won);
+  // 續 The verdict stays up until the pace allows the next fight, and the next fight
+  // starts before the browser paints (a layout effect), so going again never flashes
+  // the hunt list between two fights.
+  const holding = useRef(false);
   const fightAgain = useCallback(() => {
-    if (!battle) return;
-    again.current = battle.beast;
+    if (!battle?.over || holding.current) return;
+    const wait = lastStart.current + PACE_MS - Date.now();
+    if (wait > 0) {
+      holding.current = true;
+      setTimeout(() => { holding.current = false; againRef.current(); }, wait + 5);
+      return;
+    }
+    queued.current = { beast: battle.beast };
     closeFight();
   }, [battle, closeFight]);
+  const againRef = useRef(fightAgain);
+  againRef.current = fightAgain;
+  useLayoutEffect(() => {
+    if (battle || !queued.current) return;
+    const wait = lastStart.current + PACE_MS - Date.now();
+    if (wait > 0) {
+      const id = setTimeout(() => setTick((t) => t + 1), wait + 10);
+      return () => clearTimeout(id);
+    }
+    const q = queued.current;
+    queued.current = null;
+    startFight(q.beast, q.floor, q.demon);
+  }, [battle, startFight, tick]);
+
+  /**
+   * 自 The auto-hunt: the same beast, again and again, while the game is open.
+   *
+   * Bruno: *"sinto que a hunt é um click infinito, e não me parece muito de idle."* It is
+   * exactly the player pressing Again: every kill goes through closeFight and the sim, at
+   * the hand's pace above, so the numbers, the harnesses and the ranked server see the
+   * same game they always did. It never runs with the game hidden (a phone in a pocket is
+   * not a hand on it), it stops on a loss, and a warden, a floor and the demon are never
+   * fought on their own.
+   */
+  const [auto, setAuto] = useState<{ beast: Beast; kills: number; from: number } | null>(null);
+  const startAuto = useCallback(() => {
+    if (!battle || !canAgain || !battle.outcome.won) return;
+    setAuto({ beast: battle.beast, kills: 1, from: state.materials });
+    fightAgain();
+  }, [battle, canAgain, fightAgain, state.materials]);
+  const stopAuto = useCallback(() => setAuto(null), []);
   useEffect(() => {
-    if (battle || !again.current) return;
-    const beast = again.current;
-    again.current = null;
-    startFight(beast);
-  }, [battle, startFight]);
+    if (!auto) return;
+    const away = () => { if (document.visibilityState === 'hidden') setAuto(null); };
+    document.addEventListener('visibilitychange', away);
+    return () => document.removeEventListener('visibilitychange', away);
+  }, [auto]);
+  /** One more kill on the tally, when the auto-hunt takes a won fight and goes again. */
+  const autoNext = useCallback(() => {
+    setAuto((a) => (a ? { ...a, kills: a.kills + 1 } : a));
+    fightAgain();
+  }, [fightAgain]);
 
   const onEquip = useCallback((item: Item) => {
     sfx.buy();
@@ -814,7 +881,15 @@ export function App() {
     if ((e.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]')) return;
     const press = (sel: string) => document.querySelector<HTMLButtonElement>(sel)?.click();
     const go = e.key === 'Enter' || e.key === ' ';
+    if (battle && auto) {
+      if (go || e.key === 'Escape') { e.preventDefault(); stopAuto(); }
+      return;
+    }
     if (battle) {
+      if (battle.over && (e.key === 'a' || e.key === 'A') && canAgain && battle.outcome.won) {
+        e.preventDefault(); press('.verdict .vacts .auto');
+        return;
+      }
       if (!battle.over) {
         if (go || e.key === 'Escape') { e.preventDefault(); skipFight(); }
       } else if (go || e.key === 'Escape') {
@@ -1053,6 +1128,11 @@ export function App() {
           onClose={closeFight}
           onAgain={canAgain ? fightAgain : undefined}
           onSkip={skipFight}
+          auto={auto && auto.beast.key === battle.beast.key && battle.floor === undefined && !battle.demon
+            ? { kills: auto.kills, gained: Math.max(0, state.materials - auto.from) } : null}
+          onAuto={canAgain && battle.outcome.won && !auto ? startAuto : undefined}
+          onAutoNext={autoNext}
+          onStop={stopAuto}
         />
       )}
 

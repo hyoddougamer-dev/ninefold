@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
 import type { Stashed } from '../../sim/stash.ts';
 import { plateOf } from '../../data/bestiary.ts';
@@ -47,6 +48,10 @@ import type { State } from '../../sim/state.ts';
  */
 
 export const BEAT_MS = 175;
+/** 自 The auto-hunt: blows watched before the skip, and how long a verdict is held. */
+const AUTO_WATCH_MS = 450;
+const AUTO_VERDICT_MS = 700;
+const AUTO_READ_MS = 2200;
 
 /** A blow worth shaking the frame for, as a share of the cultivator's whole health. */
 const HEAVY = 0.09;
@@ -68,6 +73,8 @@ export interface Battle {
   readonly kit?: Used;
   /** 尋 A waiting sure drop was used on this fight, and a win spends it. */
   readonly sought?: boolean;
+  /** 續 This fight, among the ones the arena shows without closing (Again, the auto-hunt). */
+  readonly id?: number;
 }
 
 export type Striker = 'player' | 'beast';
@@ -108,7 +115,7 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow }: {
+export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow, auto, onAuto, onAutoNext, onStop }: {
   battle: Battle;
   /**
    * 得 The whole state, not only the realm, because what a kill is *worth* depends on
@@ -125,6 +132,13 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   onAgain?: () => void;
   /** 略 The fight is settled before the first blow, so a tap jumps to how it ends. */
   onSkip?: () => void;
+  /** 自 The auto-hunt running on this beast: kills so far and the material they made. */
+  auto?: { kills: number; gained: number } | null;
+  /** 自 Start the auto-hunt from this verdict. Absent where it cannot run. */
+  onAuto?: () => void;
+  /** 自 Take this kill and go again, on the auto-hunt's own clock. */
+  onAutoNext?: () => void;
+  onStop?: () => void;
 }) {
   const realm = state.realm;
   const { beast, outcome, beat, over } = battle;
@@ -193,6 +207,26 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
     }
   };
 
+  /**
+   * 自 The auto-hunt's clock. A blow or two is watched, then the fight jumps to how it
+   * ends; the verdict stays long enough to read, longer when it says something new (a
+   * mark, a piece, the week's quarry), then the kill is taken and the next one begins.
+   * A loss stops it: the verdict stays, and the player decides.
+   */
+  const running = !!auto;
+  const notable = outcome.won && (!!earned || !!battle.drop || weekly > 0);
+  useEffect(() => {
+    if (!running || over) return;
+    const id = setTimeout(() => onSkip?.(), AUTO_WATCH_MS);
+    return () => clearTimeout(id);
+  }, [running, over]);
+  useEffect(() => {
+    if (!running || !over) return;
+    if (!outcome.won) { onStop?.(); return; }
+    const id = setTimeout(() => { take(); onAutoNext?.(); }, notable ? AUTO_READ_MS : AUTO_VERDICT_MS);
+    return () => clearTimeout(id);
+  }, [running, over]);
+
   return (
     <div className="arena" data-over={over} data-won={over && outcome.won} data-lost={over && !outcome.won}
          data-by={f.striker} data-heavy={!over && f.heavy} onClick={over ? undefined : onSkip}>
@@ -219,7 +253,9 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
           </div>
         )}
 
-        <div className="duel">
+        {/* 續 Keyed by the fight, so a fight that follows another without the arena closing
+            draws its beast afresh rather than keeping the last one's death. */}
+        <div className="duel" key={battle.id}>
           <div className="fighter you" data-hit={hit === 'player'} data-strike={!over && f.striker === 'player'}>
             <span className="art"><Svg html={portraitLayers({ realm, pulse, focus: true, who: state.self })} /></span>
             {/* 勝 A ring of her own light going out from her when it is over and she won. */}
@@ -312,7 +348,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
         </p>
       )}
       {!over && kitNames && <p className="kitchip"><b className="cjk">攜</b> {CRAFTS.kitIn(kitNames)}</p>}
-      {!over && onSkip && <p className="skiphint">{ARENA.skip}</p>}
+      {!over && onSkip && !auto && <p className="skiphint">{ARENA.skip}</p>}
+      {auto && (
+        <div className="autobar" onClick={(e) => e.stopPropagation()}>
+          <span>
+            <b className="cjk">自</b> {ARENA.autoOn(beast.name)}
+            <i>{ARENA.autoTally(auto.kills, num(auto.gained))}</i>
+          </span>
+          <button className="act ghost" onClick={onStop}>止 <span>{ARENA.stop}</span><kbd>Esc</kbd></button>
+        </div>
+      )}
 
       {over && (
         <div className="verdict">
@@ -408,8 +453,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               </span>
             </div>
           )}
-          <div className="vacts">
-            <button className="act" onClick={() => { take(); onClose(); }}>
+          {!auto && <div className="vacts">
+            <button className="act collect" onClick={() => { take(); onClose(); }}>
               {outcome.won ? '收' : '退'}{' '}
               <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
               <kbd>{ARENA.keyCollect}</kbd>
@@ -420,7 +465,13 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                 <kbd>{ARENA.keyAgain}</kbd>
               </button>
             )}
-          </div>
+            {onAuto && (
+              <button className="act ghost auto" onClick={onAuto}>
+                自 <span>{ARENA.auto}</span>
+                <kbd>{ARENA.keyAuto}</kbd>
+              </button>
+            )}
+          </div>}
         </div>
       )}
     </div>

@@ -22,7 +22,7 @@ const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium';
 const SAVE_KEY = 'ninefold.save.v1';
 
-function cultivator() {
+function cultivator(over = {}) {
   const at = Math.floor(Date.now() / 1000);
   return {
     v: 1, at, startedAt: at - 30 * 86400,
@@ -34,6 +34,7 @@ function cultivator() {
     brewed: { body: 0, bane: 0, fortune: 0 }, awakened: ['feast', 'wolf'],
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
       'fuse', 'whom', 'workshop'],
+    ...over,
   };
 }
 
@@ -42,11 +43,11 @@ const check = (ok, said) => { console.log(`${ok ? '✓' : '✗'} ${said}`); if (
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-async function open(width, height) {
+async function open(width, height, over = {}) {
   const page = await browser.newPage({ viewport: { width, height } });
   await page.route('**/assets/*.js', (r) => r.abort());
   await page.goto(BASE);
-  await page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [SAVE_KEY, cultivator()]);
+  await page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [SAVE_KEY, cultivator(over)]);
   await page.unroute('**/assets/*.js');
   await page.goto(BASE);
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
@@ -91,7 +92,9 @@ async function fightFirst(page) {
   check(/material/.test(gain ?? ''), `the verdict says what the 材 is ("${(gain ?? '').trim()}")`);
 
   await page.keyboard.press('r');
-  await page.waitForTimeout(500);
+  // 擊 The next fight waits for the hand's pace (1.5 s from the last start), not longer.
+  await page.waitForFunction(() => !!document.querySelector('.arena') && !document.querySelector('.verdict'),
+    null, { timeout: 2500 }).catch(() => {});
   check(!!(await page.$('.arena')) && !(await page.$('.verdict')), 'R collects and starts the same beast again');
   await page.click('.arena');
   await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
@@ -103,6 +106,33 @@ async function fightFirst(page) {
 
   const after = await count();
   check(after === before + 2, `both kills are in the record (${before} then ${after})`);
+
+  // 自 The auto-hunt: started with A from a won verdict, paced, counted, stopped by Esc.
+  await fightFirst(page);
+  await page.click('.arena');
+  await page.waitForSelector('.verdict .vacts .auto', { timeout: 3000 }).catch(() => {});
+  const a0 = Date.now();
+  await page.keyboard.press('a');
+  await page.waitForSelector('.autobar', { timeout: 3000 }).catch(() => {});
+  check(!!(await page.$('.autobar')), 'A starts the auto-hunt and the arena says so');
+  await page.waitForTimeout(9000);
+  const tally = await page.$eval('.autobar i', (e) => e.textContent).catch(() => '');
+  const ran = Number(tally?.match(/^(\d+)/)?.[1] ?? 0);
+  const secs = (Date.now() - a0) / 1000;
+  check(ran >= 4, `it keeps fighting on its own (${ran} kills in ${secs.toFixed(1)} s)`);
+  // The server allows one fight per 1.2 s before it counts kills as bought.
+  check(ran <= secs / 1.2 + 1, `and never faster than a hand (${(secs / Math.max(1, ran)).toFixed(2)} s a kill)`);
+  check(/material/.test(tally ?? ''), `the tally names what it made ("${tally}")`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.autobar')), 'Esc stops it');
+  await page.waitForTimeout(400);
+  if (await page.$('.verdict')) await page.keyboard.press('Enter');
+  await page.waitForTimeout(3000);
+  const done = await count();
+  await page.waitForTimeout(3000);
+  check(await count() === done && !(await page.$('.arena')), 'and nothing more is fought once it stops');
+  check(done - after >= ran, `every kill it counted is in the record (${after} then ${done}, ${ran} counted)`);
 
   await page.keyboard.press('1');
   await page.waitForTimeout(300);
@@ -144,6 +174,28 @@ async function fightFirst(page) {
     check(!(await page.$('.termtip')), 'and the note goes when the pointer does');
   } else check(false, 'there was a character with a note on the hunt screen to hover');
 
+  await page.close();
+}
+
+// ── 盡 Max: one tap buys what the qi will pay for ─────────────────────────────
+{
+  const page = await open(400, 860, { qi: 1e12, levels: { technique: 12, method: 12, pills: 12, cores: 12 } });
+  await page.keyboard.press('1');
+  await page.waitForTimeout(300);
+  const lvl = async () => (await page.$eval('[data-coach="upg-technique"] .lvl', (e) => e.textContent).catch(() => ''))
+    .match(/(\d+) of (\d+)/)?.slice(1).map(Number) ?? [NaN, NaN];
+  await page.click('.buymode button:has-text("Max")');
+  await page.waitForTimeout(200);
+  const [had, cap] = await lvl();
+  await page.click('[data-coach="upg-technique"]');
+  await page.waitForTimeout(300);
+  const [has] = await lvl();
+  check(had < cap && has === cap, `Max buys to the ceiling in one tap (${had} then ${has} of ${cap})`);
+  await page.reload();
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(500);
+  const on = await page.getAttribute('.buymode button:has-text("Max")', 'data-on').catch(() => null);
+  check(on === 'true', 'and the choice is still Max after a reload');
   await page.close();
 }
 
