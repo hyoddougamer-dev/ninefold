@@ -8,7 +8,7 @@ and approved this text. The words go out in two steps (Bruno, 2026-09-30: announ
    The Workshop is coming), the pinned `ideas-workshop` post asking what to change, and a
    reply in Raziel's *jobs* thread. It needs only `server.json` and `public/discord/` on
    `main`: the game itself does not change.
-2. **The launch**, kept in `tools/discord/launch-workshop.json`: `devlog-3` (The Workshop
+2. **The launch**, 2026-10-01 at 14:00 Lisbon, moved into `server.json` (the staging file is gone): `devlog-3` (The Workshop
    opens), the `g-crafts` guide, the drive and realm guides' new lines, the ideas post saying
    it is live, and a second reply to Raziel. Moved into `server.json` in the push that ships
    the game, with a line in devlog-3 for what the testers' answers changed.
