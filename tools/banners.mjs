@@ -48,7 +48,7 @@ export const BANNERS = [
   { key: 'g-crafts', seal: '業', over: '書 Guide · The Workshop', title: 'The Seven Crafts', sub: 'Gather, render, forge, brew, write, cut', bg: 'realm/2', fig: 'self/man-2' },
   { key: 'ideas-workshop', seal: '議', over: '議 Your opinion', title: 'The Workshop', sub: 'Seven crafts from 1 to 99: tell us what you think', bg: 'realm/5', fig: 'self/woman-5' },
   { key: 'devlog-2', seal: '筆', over: '筆 Dev log · 02', title: 'The Workshop Is Coming', sub: 'Seven crafts, painted, and a fairer drive', bg: 'realm/6', fig: 'self/woman-6' },
-  // 業 The launch's own, kept for the day it ships: see tools/discord/launch-workshop.json.
+  // 業 The workshop's launch: dev log 3 and the guide to the seven crafts.
   { key: 'devlog-3', seal: '筆', over: '筆 Dev log · 03', title: 'The Workshop Opens', sub: 'Seven crafts, from 1 to 99', bg: 'realm/2', fig: 'self/man-5' },
 ];
 
