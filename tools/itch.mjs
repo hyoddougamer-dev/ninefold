@@ -98,6 +98,7 @@ WHAT WAITS FOR YOU
 - 36 beasts to hunt, a warden at the end of every realm, and Dragons above the summit
 - Gear in five ranks and six schools: wear three pieces of two schools and you become one of fifteen classes
 - A cave that grows while you sleep, a vault that opens every few hours, a tower with no top
+- A workshop of seven crafts, levelled from 1 to 99, that keeps working while you are away
 - Its own music, a road full of strangers, and a new quarry every week
 - Rankings where every climb is checked against real time on the server, so nobody edits their way up
 
