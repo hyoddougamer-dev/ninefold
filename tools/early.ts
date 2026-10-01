@@ -389,7 +389,7 @@ export function waits(upTo = 3, playing = false): readonly Wait[] {
         const b = [...huntable(s.realm, s.layer)].reverse().find((x) => canDrive(s, x));
         if (!b) break;
         const keep = ladderBetween(layersOpened(s));
-        const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x) >= keep);
+        const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x, b) >= keep);
         if (!n) break;
         s = drive(s, b, n, ++seed).state;
       }

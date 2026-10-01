@@ -3,7 +3,7 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 
 /** 符 Which family this emblem belongs to. Keys collide across them. */
-export type Family = 'art' | 'card' | 'herb' | 'pill' | 'room';
+export type Family = 'art' | 'card' | 'herb' | 'pill' | 'room' | 'craft';
 
 /**
  * 符 A small thing in a row, painted if it has been painted and drawn if it has not.

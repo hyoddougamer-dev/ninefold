@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
-import { DRIVE_SIZES, canAffordDrive, canDrive, drive, driveCost } from '../hunt.ts';
+import { DRIVE_SIZES, canAffordDrive, canDrive, drive, driveCost, driveFloor } from '../hunt.ts';
 import { loot, lootFrom, takeKill } from '../combat.ts';
 import { MARKS, marksOf } from '../record.ts';
-import { newState, type State } from '../state.ts';
-import { ladderBetween } from '../balance.ts';
-import { layersOpened } from '../time.ts';
+import { newState, rate, type State } from '../state.ts';
+import { DRIVE_MINUTES, DRIVE_OLD } from '../balance.ts';
 import { num } from '../format.ts';
 import { isQuarry } from '../week.ts';
 
@@ -121,7 +120,7 @@ describe('圍 the drive', () => {
   it('spends the qi it says it spends, and refuses outright when it cannot be paid', () => {
     const rat = commonsOf(1)[0];
     const s = hunter(2);
-    const cost = driveCost(s, 200);
+    const cost = driveCost(s, 200, rat);
     const d = drive(s, rat, 200, 7);
     expect(d.qiSpent).toBe(cost);
     expect(d.state.qi).toBe(s.qi - cost);
@@ -135,22 +134,32 @@ describe('圍 the drive', () => {
   });
 
   /**
-   * 梯 The price rides the rung you are standing on, not the realm's first.
+   * 時 The price is time: a minute of the hunter's own gathering a kill, in every realm.
    *
-   * Priced off the realm's floor, a drive stayed cheap while the rungs around it grew
-   * geometrically, so a cultivator at a ceiling could drive for nothing. The measuring
-   * cultivator who tried it bought a million fights, never left the third realm, and
-   * ended weaker than one who never hunted at all.
+   * It used to ride the rung, so that fifty kills cost a layer, and a layer late in the
+   * climb is a whole day of qi (Raziel: "very expensive"). Gathering grows with the
+   * climb, so a price in minutes of it can never go stale the way the realm's first rung
+   * did, when a cultivator at a ceiling drove for nothing and never climbed again.
    */
-  it('costs about a layer for fifty, wherever you are standing', () => {
+  it('costs a minute of your own gathering a kill, wherever you are standing', () => {
     for (const r of [1, 5, 9]) {
       for (const layer of [0, 4, 8]) {
         const s = { ...hunter(r), layer };
-        const rung = ladderBetween(layersOpened(s));
-        expect(driveCost(s, 50) / rung).toBeGreaterThan(0.5);
-        expect(driveCost(s, 50) / rung).toBeLessThan(2);
+        const own = commonsOf(r)[0];
+        expect(driveCost(s, 50, own) / rate(s)).toBeCloseTo(50 * DRIVE_MINUTES * 60, -1);
       }
     }
+  });
+
+  /** 舊 An old beast pays a quarter, so a kill of it costs a quarter. */
+  it('charges a quarter for a beast from an earlier realm, and the floor is that quarter', () => {
+    const s = hunter(6);
+    const own = commonsOf(6)[0];
+    const rat = commonsOf(1)[0];
+    expect(driveCost(s, 200, rat) / driveCost(s, 200, own)).toBeCloseTo(DRIVE_OLD, 2);
+    expect(driveFloor(s, 200)).toBe(driveCost(s, 200, rat));
+    const d = drive(s, rat, 200, 11);
+    expect(d.qiSpent).toBe(driveCost(s, 200, rat));
   });
 
   it('is pure: the same drive twice is the same drive', () => {

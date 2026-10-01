@@ -1,12 +1,11 @@
 import type { Beast } from '../data/bestiary.ts';
-import { DRIVE_QI, DRIVE_SIZES, ladderBetween } from './balance.ts';
-import { layersOpened } from './time.ts';
+import { DRIVE_MINUTES, DRIVE_OLD, DRIVE_SIZES } from './balance.ts';
 import { lootFrom, quarryPaid } from './combat.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import { MARKS, marksOf } from './record.ts';
 import { lootTaken } from './trials.ts';
 import { isOpen } from './unlocks.ts';
-import type { State } from './state.ts';
+import { rate, type State } from './state.ts';
 import { dropFor, noteFate } from './fate.ts';
 import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
@@ -69,30 +68,43 @@ export function canDrive(s: State, b: Beast): boolean {
 }
 
 /**
- * What a drive costs in qi.
+ * What a drive costs in qi: DRIVE_MINUTES of the hunter's own gathering per kill.
  *
- * Priced off the rung the hunter is standing on rather than the beast, because what is
- * being bought is the cultivator's own time: driving a rat and driving a dragon are the
- * same hour of your life. It is flat per kill, so the arithmetic is one multiplication
- * a player can do in their head.
+ * Priced in time because what is being bought is the cultivator's own time, and a
+ * minute is a minute in every realm. It is flat per kill, so the screen can say "fifty
+ * minutes of your qi" and mean it. A beast from an earlier realm costs DRIVE_OLD of
+ * that, because it pays the same quarter (see balance.ts).
  *
- * 梯 The rung has to be the *current* one, and the harness proved it. Priced off the
- * first rung of the realm instead, a drive stayed cheap while the rungs around it grew
- * geometrically, so a cultivator sitting at a realm's ceiling could drive essentially
- * for free, and the measuring cultivator who tried it bought a million fights, never
- * climbed past the third realm, and ended weaker than one who never hunted at all.
- * Riding the current rung keeps "a drive of fifty costs about a layer" true everywhere
- * on the mountain, which is the only sentence about the price a player has to hold.
+ * 梯 The rate has to be the cultivator's *own*, now, and not a fixed number. The first
+ * price of all was a share of the realm's first rung, which stayed still while the
+ * climb around it grew, and the measuring cultivator who found that bought a million
+ * fights and never climbed. Gathering grows with the climb, so a minute of it stays a
+ * minute of it all the way up.
+ *
+ * 誤 The price before this one rode the current rung (2% of it a kill), which kept "a
+ * drive of fifty costs a layer" true and made a late drive cost a day. See DRIVE_MINUTES.
  */
-export function driveCost(s: State, n: number): number {
+export function driveCost(s: State, n: number, b?: Beast): number {
+  const old = b && b.realm < s.realm ? DRIVE_OLD : 1;
   // 俠客 The Wanderer drives for less.
   // 商印 The merchant's token from the road: a better price, for good.
-  return Math.ceil(n * DRIVE_QI * ladderBetween(layersOpened(s)) * classDrive(s)
+  return Math.ceil(n * DRIVE_MINUTES * 60 * rate(s) * old * classDrive(s)
+    * (hasBoon(s, 'token') ? BOON_TOKEN : 1));
+}
+
+/**
+ * 守 The least any drive of n kills can honestly cost: every kill an old beast. The
+ * server reads this and never driveCost, because it sees how many kills were made and
+ * not which beasts they were, and a check that assumed the dearer price would refuse
+ * an honest cultivator who drove rats.
+ */
+export function driveFloor(s: State, n: number): number {
+  return Math.ceil(n * DRIVE_MINUTES * 60 * rate(s) * DRIVE_OLD * classDrive(s)
     * (hasBoon(s, 'token') ? BOON_TOKEN : 1));
 }
 
 export function canAffordDrive(s: State, b: Beast, n: number): boolean {
-  return canDrive(s, b) && s.qi >= driveCost(s, n);
+  return canDrive(s, b) && s.qi >= driveCost(s, n, b);
 }
 
 export interface Drive {
@@ -119,7 +131,7 @@ export interface Drive {
  */
 export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fortune = {}): Drive {
   const kills = Math.max(1, Math.floor(n));
-  const qiSpent = driveCost(s, kills);
+  const qiSpent = driveCost(s, kills, b);
   /**
    * 守 A drive is paid for before it happens, and this is where that is enforced rather
    * than only on the button.

@@ -1,3 +1,4 @@
+import { kitFor } from '../../sim/crafts.ts';
 import {
   ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave, roomsFor,
 } from '../../sim/secret.ts';
@@ -77,7 +78,7 @@ export function Secret({ state, onOpen, onLeave }: {
           const which = i as 0 | 1;
           const gift = giftOf(state, room, step);
           const info = ROOM_INFO[room.kind];
-          const chance = gift.fight ? Math.round(odds(state, gift.fight) * 100) : 0;
+          const chance = gift.fight ? Math.round(odds(state, gift.fight, undefined, kitFor(state, gift.fight, 'vault').kit) * 100) : 0;
           const bits: string[] = [];
           if (gift.qi) bits.push(`+${num(gift.qi)} qi`);
           if (gift.dao) bits.push(`+${gift.dao} 道`);

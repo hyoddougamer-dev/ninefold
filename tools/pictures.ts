@@ -29,6 +29,7 @@ import { REALMS } from '../src/data/realms.ts';
 import { HEAVENS } from '../src/data/heavens.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
+import { craftSheets } from './craft-sheets.ts';
 import { ARTS } from '../src/data/arts.ts';
 import { ALL_CARDS } from '../src/data/awakening.ts';
 import { HERBS } from '../src/data/herbs.ts';
@@ -37,6 +38,9 @@ import { ROOM_INFO } from '../src/data/secret.ts';
 import type { Painted } from '../src/data/pictures.ts';
 
 const ROOT = 'public/art';
+/** 業 Every cell the workshop's eleven sheets cut, by the kind it is filed under. */
+const CRAFT_CELLS = (kind: 'meet' | 'emblem') => craftSheets().filter((x) => x.kind === kind).flatMap((x) => x.cells.map((c) => c.key));
+
 const KINDS: readonly Painted[] = ['beast', 'realm', 'heaven', 'cut', 'self', 'meet', 'emblem'];
 
 /** What each kind is allowed to be named, so a stray file cannot enter the game. */
@@ -48,13 +52,15 @@ const KEYS: Record<Painted, readonly string[]> = {
   heaven: HEAVENS.map((h) => String(h.n)),
   cut: [...BEASTS.map((b) => b.key), ...HEAVEN_PLATES],
   self: FIGURES.flatMap((f) => REALMS.map((r) => figureKey(f.key, r.n))),
-  meet: MEETINGS.map((m) => m.key),
+  // 業 The workshop's scenes are painted like the road's meetings, and named by its sheet.
+  meet: [...MEETINGS.map((m) => m.key), ...CRAFT_CELLS('meet')],
   emblem: [
     ...ARTS.map((a) => `art-${a.key}`),
     ...ALL_CARDS.map((c) => `card-${c.key}`),
     ...HERBS.map((h) => `herb-${h.key}`),
     ...Object.keys(PILL_LINES).map((k) => `pill-${k}`),
     ...Object.keys(ROOM_INFO).map((k) => `room-${k}`),
+    ...CRAFT_CELLS('emblem'),
   ],
 };
 

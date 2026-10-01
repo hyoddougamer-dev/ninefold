@@ -7,12 +7,12 @@ import { DRIVE_SIZES, canAffordDrive, drive, driveCost, type Drive as Result } f
 import { lootFrom } from '../../sim/combat.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import { MARK_INFO } from '../../sim/record.ts';
-import { num } from '../../sim/format.ts';
+import { duration, num } from '../../sim/format.ts';
 import { RARITY_INFO, templateOf } from '../../data/gear.ts';
 import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
-import type { State } from '../../sim/state.ts';
+import { rate, type State } from '../../sim/state.ts';
 import { DRIVE, HUNT } from '../copy.ts';
 
 /**
@@ -94,10 +94,11 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
         </span>
       </div>
       <p className="faint blurb">{DRIVE.what}</p>
+      <p className="faint blurb">{beast.realm < state.realm ? DRIVE.priceOld : DRIVE.price}</p>
 
       <div className="sizes">
         {DRIVE_SIZES.map((n) => {
-          const cost = driveCost(state, n);
+          const cost = driveCost(state, n, beast);
           const can = canAffordDrive(state, beast, n);
           return (
             <button key={n} className="size" disabled={!can}
@@ -112,7 +113,7 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
                 <i>{DRIVE.willPay(num(per * n))}</i>
               </span>
               <span className="price mono">
-                {num(cost)}<em>qi</em>
+                {num(cost)}<em>{DRIVE.cost(duration(cost / rate(state)))}</em>
               </span>
             </button>
           );

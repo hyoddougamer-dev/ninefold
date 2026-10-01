@@ -1,3 +1,4 @@
+import { furnaceDiscount } from './crafts.ts';
 import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
 import { floorLoot, floorPower, lootBonus, nextFloor } from './tower.ts';
@@ -91,7 +92,9 @@ export function pillPrice(s: State, line: Line): { qi: number; materials: number
   // 職 丹師 The Alchemist brews cheaper, in qi and in material alike.
   const c = pillCost(s.brewed, line, s.tribulation, pillFactor(s.awakened));
   const k = classPills(s);
-  return k === 1 ? c : { qi: Math.ceil(c.qi * k), materials: Math.max(1, Math.ceil(c.materials * k)) };
+  // 丹 And every Alchemy level takes a little off the material. See furnaceDiscount.
+  const m = s.crafts ? furnaceDiscount(s) : 1;
+  return k === 1 && m === 1 ? c : { qi: Math.ceil(c.qi * k), materials: Math.max(1, Math.ceil(c.materials * k * m)) };
 }
 
 /**

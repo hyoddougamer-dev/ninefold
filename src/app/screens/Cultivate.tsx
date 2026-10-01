@@ -1,3 +1,4 @@
+import { kitFor, kitWhere } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -106,7 +107,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const deepest = FOCUS_MAX + focusBonus(state.unlocked);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const wardenRaw = useMemo(() => oddsRaw(state, w), [w, ...fightDeps(state)]);
+  // 攜 Quoted with what is carried, because that is the fight that will be fought.
+  const wardenRaw = useMemo(() => oddsRaw(state, w, undefined, kitFor(state, w, kitWhere(state, w)).kit),
+    [w, ...fightDeps(state)]);
   const wardenGap = dragon / Math.max(1e-9, power(state));
   const tip = advice(state);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.

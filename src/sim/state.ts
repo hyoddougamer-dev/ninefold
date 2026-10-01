@@ -34,8 +34,13 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
-import { BOON_SWORDSOUL, SECLUSION } from './balance.ts';
+import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, SECLUSION } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
+import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
+import { FORGED, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
+
+/** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
+const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -201,6 +206,12 @@ export interface State {
    * and the best rank (an index into RARITIES) that beast has ever left. See FATE_FULL.
    */
   fate: Record<string, { n: number; best: number }>;
+  /**
+   * 業 The workshop: experience, the task in hand and the instant it was settled to, the
+   * pouch, familiarity, tools and arrays. Its levels are derived from its experience, and
+   * which beasts it can render from the kills above. See sim/crafts.ts.
+   */
+  crafts: Crafts;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
 }
@@ -336,6 +347,7 @@ export function newState(now: number): State {
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
     quarryWeek: -1,
     fate: {},
+    crafts: { ...NO_CRAFTS, since: now },
     seen: [],
   };
 }
@@ -583,7 +595,9 @@ function validSeclusion(o: Record<string, unknown>, realm: number, startedAt: nu
                         elapsed: number): Pick<State, 'secludedAt' | 'demons'> {
   if (!isOpen(realm, 'seclusion')) return { secludedAt: 0, demons: 0 };
   const n = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
-  const demons = Math.max(0, Math.min(demonsFor(realm), Math.floor(elapsed / SECLUSION), Math.floor(n(o.demons))));
+  // 鎖魂 Two a night at most once a Soul-Lock Sigil can be written, and one before.
+  const perNight = realm >= SOUL_LOCK_REALM ? 2 : 1;
+  const demons = Math.max(0, Math.min(demonsFor(realm), perNight * Math.floor(elapsed / SECLUSION), Math.floor(n(o.demons))));
   const at = n(o.secludedAt);
   return { demons, secludedAt: demons < demonsFor(realm) && at >= startedAt && at <= now ? at : 0 };
 }
@@ -673,7 +687,7 @@ export function validate(raw: unknown, now: number): State {
     const refine = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
     // 源 Who left it is a word on the sheet and nothing else, so it is kept only when it
     // names something real: a beast, or one of the two places that are not a kill.
-    const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road')
+    const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED)
       ? { from: o.from } : {};
     return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from }
       : { id, template: tpl.key, rarity, rolls, ...from };
@@ -754,6 +768,10 @@ export function validate(raw: unknown, now: number): State {
       .map((x) => x.it);
 
   const elapsed = Math.max(0, now - startedAt);
+  const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
+  // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
+  // cut, so holding one is what widens the ceiling, placed or lifted out.
+  const doorGap = (crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
 
   const out: State = {
     v: 1,
@@ -811,7 +829,7 @@ export function validate(raw: unknown, now: number): State {
     // it too, so the ceiling has to allow for every walk the clock could have allowed.
     // See RUN_DAO_CEILING for the measurement that made this necessary.
     metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0,
-      MEET_POINT_CEILING + Math.ceil(elapsed / DOOR_GAP) * RUN_DAO_CEILING),
+      MEET_POINT_CEILING + Math.ceil(elapsed / doorGap) * RUN_DAO_CEILING),
     // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
@@ -841,6 +859,8 @@ export function validate(raw: unknown, now: number): State {
           best: clamp(Math.floor(num(f.best, -1)), -1, RARITIES.length - 1),
         }];
       })),
+    // 業 The workshop, capped against the clock, the kills and its own levels.
+    crafts,
     // 新 The one piece of state worth nothing to cheat: the worst a forged list can do
     // is skip a card that explains the game. It is bounded so it cannot grow a save.
     seen: (Array.isArray(o.seen) ? o.seen : [])

@@ -90,6 +90,13 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           CAPTCHA_SECRET: ${{ secrets.HCAPTCHA_SECRET }}
           CAPTCHA_SITEKEY: ${{ vars.HCAPTCHA_SITEKEY }}
+          # 郵 The mail server that lets the email carry a code (see tools/auth-config.mjs).
+          # Only the password is a secret; the rest are repository variables.
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_SENDER: ${{ vars.SMTP_SENDER }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USER: ${{ vars.SMTP_USER }}
         # Two calls, because the API refuses a whole PATCH for one field it will not take
         # (the email templates can be locked on a project without its own mail server),
         # and guests and links must not wait on the email's wording. The API's own
@@ -112,6 +119,7 @@ jobs:
           patch /tmp/core.json
           rm -f /tmp/core.json
           patch /tmp/mail.json || echo "::warning::The email templates were refused; sign-in emails carry the link only."
+          rm -f /tmp/mail.json   # it holds the mail password once there is one
           # 盾 Read back what the server now holds, so a field it quietly ignored is a red run.
           curl -sS -f "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" | node -e '

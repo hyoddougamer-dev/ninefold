@@ -1,3 +1,4 @@
+import { kitFor } from '../../sim/crafts.ts';
 import { useMemo } from 'react';
 import { portraitLayers } from '../../art/aura.ts';
 import { odds as oddsOf } from '../../sim/combat.ts';
@@ -24,7 +25,7 @@ export function Seclusion({ state, onShut, onFace }: {
 }) {
   const due = demonDue(state);
   const odds = useMemo(
-    () => (due ? oddsOf(state, demonOf(state), demonPower(state)) : 0),
+    () => (due ? oddsOf(state, demonOf(state), demonPower(state), kitFor(state, demonOf(state), 'demon').kit) : 0),
     [due, ...fightDeps(state)],
   );
   if (!isOpen(state.realm, 'seclusion')) return null;

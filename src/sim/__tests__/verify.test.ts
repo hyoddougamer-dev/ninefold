@@ -10,7 +10,7 @@ import { FUSE_TOP, focusAt } from '../balance.ts';
 import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
 import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, type State } from '../state.ts';
-import { odds, takeKill } from '../combat.ts';
+import { beatable, odds, oddsRaw, takeKill } from '../combat.ts';
 import { huntable, wardenOf } from '../../data/bestiary.ts';
 
 /**
@@ -74,6 +74,25 @@ describe('驗 honest play is never held against anybody', () => {
   }
 });
 
+describe('業 a ranked save from before the workshop', () => {
+  it('still verifies, and the workshop it then starts is measured from zero', () => {
+    // The server's last accepted copy was written before crafts existed. It is read back
+    // through validate(), so it arrives with an empty workshop, and the next honest sync
+    // (a day later, workshop and all) is judged against that.
+    const shots = WALKED.get('crafts it all')!;
+    const at = shots.findIndex((x) => x.day >= 30);
+    const then = shots[at];
+    const { crafts: _none, ...old } = structuredClone(then.s) as unknown as Record<string, unknown>;
+    const before = validate(old, then.s.at);
+    expect(Object.values(before.crafts.xp).every((x) => x === 0)).toBe(true);
+    const next = shots.find((x) => x.day >= then.day + 1)!;
+    const fresh = validate({ ...structuredClone(next.s), crafts: { ...next.s.crafts, xp: {}, pouch: {}, made: {} } }, next.s.at);
+    const v = verify(before, fresh, (next.day - then.day) * DAY);
+    expect(v.why).toEqual([]);
+    expect(v.ok).toBe(true);
+  });
+});
+
 describe('坐 the first sitting reaches the boards', () => {
   /** A new player, the way tools/sitting.mjs plays one: buy what is lit, fight what is winnable. */
   function sitting(minutes: number): State {
@@ -109,6 +128,30 @@ describe('坐 the first sitting reaches the boards', () => {
     const s = { ...sitting(15), realm: 3, layer: 4 };
     const { before, seconds, first } = firstSync(s, s.at, s.startedAt + 5);
     expect(verify(before, s, seconds, first).ok).toBe(false);
+  });
+});
+
+describe('可 a warden won against the odds is not a cheat', () => {
+  // Measured 2026-09-30: this build reads 0 of 41 against the second realm's warden, so
+  // the screen shows 2% and the server used to strike whoever won it. A loss costs
+  // nothing, so pressing it until it lands is honest, and three strikes were a ban.
+  const T = GAME_EPOCH + 40 * DAY;
+  const edge = { ...newState(T - 30 * DAY), at: T, realm: 2, layer: 8, levels: { technique: 6, method: 12, pills: 12, cores: 12 } };
+
+  it('reads the fight as winnable when it is, rarely', () => {
+    expect(oddsRaw(edge, wardenOf(2))).toBe(0);
+    expect(beatable(edge, wardenOf(2))).toBe(true);
+  });
+
+  it('accepts the crossing it won, and still refuses one this build could never win', () => {
+    const crossed = { ...edge, realm: 3, layer: 0 };
+    expect(verify(edge, crossed, 30 * DAY).why).not.toContain('warden');
+    const bare = { ...edge, levels: { technique: 0, method: 0, pills: 0, cores: 0 } };
+    const forged = { ...bare, realm: 3, layer: 0 };
+    expect(beatable(bare, wardenOf(2))).toBe(false);
+    const v = verify(bare, forged, 30 * DAY);
+    expect(v.why).toContain('warden');
+    expect(v.strike).toBe(true);
   });
 });
 

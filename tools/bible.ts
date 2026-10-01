@@ -60,7 +60,7 @@ import { playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../src/data/schools.ts';
 import { pairSays, schoolSaysAt } from '../src/app/classes.ts';
-import { ART_BEND, FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
+import { ART_BEND, DRIVE_MINUTES, FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
@@ -79,7 +79,7 @@ import {
 } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
 
-import { num } from '../src/sim/format.ts';
+import { duration, num } from '../src/sim/format.ts';
 import { icon } from '../src/art/icon.ts';
 import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
@@ -996,9 +996,10 @@ const MOCK_DRIVE = (() => {
   return `<div class="mk drive">
     ${DRIVE_SIZES.map((n) => `<div class="size"><span class="n">${n}</span>
       <span class="what"><b>${n} kills</b><i>about ${num(per * n)} 材</i></span>
-      <span class="price">${num(driveCost(s5, n))}<em>qi</em></span></div>`).join('')}
-    <p class="cap">${b.han} ${b.name}, halfway up the fifth realm. Fifty kills costs about
-      one rung wherever you are standing, and fighting it one at a time is still free.</p>
+      <span class="price">${num(driveCost(s5, n, b))}<em>qi · ${duration(n * DRIVE_MINUTES * 60)}</em></span></div>`).join('')}
+    <p class="cap">${b.han} ${b.name}, halfway up the fifth realm. Each kill costs one minute of
+      your own gathering wherever you are standing, a beast from an earlier realm a quarter of
+      that, and fighting it one at a time is still free.</p>
   </div>`;
 })();
 

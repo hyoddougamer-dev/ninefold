@@ -1,3 +1,4 @@
+import { FORGED } from '../data/crafts.ts';
 import {
   RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
@@ -134,6 +135,8 @@ export function nextRarity(rarity: Rarity): Rarity | null {
 export function fusable(chest: readonly Item[]): readonly { template: string; rarity: Rarity; count: number }[] {
   const tally = new Map<string, number>();
   for (const it of chest) {
+    // 業 A forged piece is finished: it is never one of three. See sim/crafts.ts.
+    if (it.from === FORGED) continue;
     const key = `${it.template}|${it.rarity}`;
     tally.set(key, (tally.get(key) ?? 0) + 1);
   }
@@ -159,7 +162,7 @@ export function fuse(
   const tpl = TEMPLATE_BY_KEY[template];
   if (!up || !tpl) return { chest, made: null };
 
-  const matching = chest.filter((x) => x.template === template && x.rarity === rarity);
+  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && x.from !== FORGED);
   if (matching.length < FUSE_COUNT) return { chest, made: null };
 
   const eaten = matching.slice(0, FUSE_COUNT);

@@ -1,0 +1,40 @@
+# 讀 Reads 報-bugs and 議-ideas and prints them sealed, so the working session can read
+# what the testers wrote without their words landing in this repository's public logs.
+#
+# The digest is sealed with a fresh AES key, and that key with tools/discord/reader.pub.pem
+# (RSA). Only the session that made the key pair can open it. Nothing in Discord changes.
+#
+# Runs on a push to the working branch that touches the reader, its key or read-request
+# (a file whose only job is to be touched to ask for a fresh read), and by hand.
+name: discord-read
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/idle-fantasy-mobile-game-nzn90r]
+    paths: ['tools/discord-read.mjs', 'tools/discord/reader.pub.pem', 'tools/discord/read-request', '.github/workflows/discord-read.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Read the forums and seal the digest
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+        run: |
+          node tools/discord-read.mjs > /tmp/digest.md
+          echo "digest: $(wc -l < /tmp/digest.md) lines"
+          openssl rand -out /tmp/k.bin 32
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in /tmp/digest.md -out /tmp/digest.enc -pass file:/tmp/k.bin
+          openssl pkeyutl -encrypt -pubin -inkey tools/discord/reader.pub.pem -pkeyopt rsa_padding_mode:oaep -in /tmp/k.bin -out /tmp/k.enc
+          echo "===KEY==="; base64 -w0 /tmp/k.enc; echo
+          echo "===DIGEST==="; base64 -w0 /tmp/digest.enc; echo
+          echo "===END==="
+          shred -u /tmp/k.bin /tmp/digest.md

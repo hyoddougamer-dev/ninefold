@@ -34,14 +34,17 @@ import {
   newState, type State,
 } from './state.ts';
 import { layerCost } from './time.ts';
-import { beastPower, oddsRaw } from './combat.ts';
+import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
 import { MEET_GAP, SECLUSION } from './balance.ts';
 import { focusBonus } from './dao.ts';
 import { freePoints } from './points.ts';
-import { driveCost } from './hunt.ts';
+import { driveFloor } from './hunt.ts';
+import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
+import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
+import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower } from './tower.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -211,7 +214,19 @@ function metCeiling(before: State, after: State, dt: number): number {
     const m = meetingOf(k);
     return n + (m ? Math.max(0, ...m.picks.map((p) => (p.outcome.kind === 'dao' ? p.outcome.points : 0))) : 0);
   }, 0);
-  return road + (Math.ceil(Math.max(0, dt) / DOOR_GAP) + 2) * RUN_DAO_CEILING;
+  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
+  const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  return road + (Math.ceil(Math.max(0, dt) / gap) + 2) * RUN_DAO_CEILING;
+}
+
+/** 業 The seconds of work the experience gained between two saves took, at its fastest. */
+export function craftSeconds(before: State, after: State): number {
+  let t = 0;
+  for (const k of SKILL_KEYS) {
+    const gain = Math.max(0, (after.crafts?.xp[k] ?? 0) - (before.crafts?.xp[k] ?? 0));
+    t += gain / XP_PER_SECOND_MAX[k];
+  }
+  return t;
 }
 
 /** Every piece the save holds must come from a realm the cultivator has stood in. */
@@ -269,7 +284,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const spentAtEnd = after.qi
     + levelsBetween(before, after)
     + pillsBetween(before, after)
-    + (drove > 0 ? driveCost(before, Math.ceil(drove)) : 0);
+    + (drove > 0 ? driveFloor(before, Math.ceil(drove)) : 0);
   need += Math.max(0, spentAtEnd - pocket) / rEnd;
   // 雷 A thunder mark is 雷池 the pool filled: MARK_DAYS of the cultivator's own gathering,
   // however deep the 入定. It used to be charged as qi and divided by the rate at the end,
@@ -294,23 +309,29 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 擊 Fights beyond a hand's pace that the qi could not have bought as drives.
   // Measured without what the drives themselves could have dropped, or a million edited
   // kills would pay for their own drives in melted gear.
-  if (drove > 0 && driveCost(before, Math.ceil(drove)) / rEnd > have * SLACK) why.push('too-many-kills');
+  if (drove > 0 && driveFloor(before, Math.ceil(drove)) / rEnd > have * SLACK) why.push('too-many-kills');
 
   // 守 Every realm crossed had a warden in the way, and this build has to be able to beat it.
+  // 業 With the strongest kit this cultivator's crafts could have carried into it: the
+  // server sees the warden beaten, never what was in the other hand.
   for (let r = before.realm; r < after.realm; r++) {
     const w = wardenOf(r);
-    if (oddsRaw({ ...after, realm: r, layer: 8 }, w) <= 0) { why.push('warden'); break; }
+    const there = { ...after, realm: r, layer: 8 };
+    if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
+  // 業 One task at a time, so the experience every craft gained between two saves has to
+  // fit in the seconds between them, at the fastest each one can ever be worked.
+  if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
   // 劫 Every mark is a Dragon beaten, and the last one has to be beatable by this build.
   if (newMarks > 0) {
     const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
-    if (oddsRaw(faced, wardenOf(9)) <= 0) why.push('warden');
+    if (!beatable(faced, wardenOf(9))) why.push('warden');
   }
   // 塔 And the highest floor claimed has to be one this build can take.
   if (after.tower > before.tower && after.tower > 0) {
     const f = after.tower;
     if (power(after) > 0 && floorPower(f) / power(after) > 4) why.push('tower');
-    else if (oddsRaw(after, floorBeast(f), floorPower(f)) <= 0) why.push('tower');
+    else if (!beatable(after, floorBeast(f), floorPower(f))) why.push('tower');
   }
 
   // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to
@@ -341,7 +362,9 @@ export function verify(before: State, after: State, seconds: number, first = fal
 
   // 心魔 A heart demon waits a night behind a shut door, so more of them than the nights
   // since the last sync (one already waiting allowed for) is a matter of time: it waits.
-  if (after.demons - before.demons > Math.floor(dt / SECLUSION) + 1 && !why.includes('too-fast')) why.push('too-fast');
+  // 鎖魂 A Soul-Lock Sigil makes one count twice, so two a night is honest.
+  const perNight = after.realm >= RECIPE_BY_KEY['sigil:soullock'].realm ? 2 : 1;
+  if (after.demons - before.demons > perNight * (Math.floor(dt / SECLUSION) + 1) && !why.includes('too-fast')) why.push('too-fast');
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.

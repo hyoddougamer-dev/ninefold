@@ -20,7 +20,14 @@ import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
-import { conquer, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
+import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
+import {
+  carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, tookPart, work,
+} from '../sim/crafts.ts';
+import { Crafts } from './screens/Crafts.tsx';
+import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
+import type { Away } from '../sim/save.ts';
+import { CRAFTS } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -86,6 +93,7 @@ const TABS = [
   { key: 'hunt', han: '狩', label: 'Hunt', needs: 'hunt' },
   { key: 'trials', han: '塔', label: 'Trials', needs: 'tower' },
   { key: 'gear', han: '器', label: 'Gear', needs: 'gear' },
+  { key: 'crafts', han: '業', label: 'Crafts', needs: 'crafts' },
   { key: 'dao', han: '道', label: 'Path', needs: 'arts' },
 ] as const satisfies readonly { key: string; han: string; label: string; needs: System | null }[];
 
@@ -93,7 +101,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 const now = () => Date.now() / 1000;
 
-/** The chest's size for a given state, counting the tree and the 藏 rolls on gear. */
+/** 歸 What the homecoming card says: how long away, and what the time did. */
 interface Homecoming {
   readonly seconds: number;
   readonly qi: number;
@@ -101,6 +109,7 @@ interface Homecoming {
   readonly climbed: number;
   readonly layers: number;
   readonly realms: number;
+  readonly crafts: Away | null;
 }
 
 export function App() {
@@ -167,6 +176,23 @@ export function App() {
   const loaded = useRef(false);
   const lastLayer = useRef(0);
   /**
+   * 一 A sound, a burst or a buzz decided inside a state updater, played once per tap.
+   *
+   * An updater has to be pure, and these were not: React runs one twice under StrictMode
+   * and may run it again when a tick lands between the tap and the render, so a refine
+   * could ring twice. The effect still has to be decided in there, because only there is
+   * the state the tap really applied to. So each tap takes a number before it calls
+   * setState, and whatever the updater asks to play is played once for that number.
+   */
+  const taps = useRef(0);
+  const played = useRef(new Set<number>());
+  const once = (id: number, effect: () => void) => {
+    if (played.current.has(id)) return;
+    played.current.add(id);
+    if (played.current.size > 64) played.current.delete(played.current.values().next().value!);
+    effect();
+  };
+  /**
    * 入定 When this visit started, or null while the app is in the background.
    *
    * It is deliberately *not* in the save. Being away must never cost anything. That is
@@ -218,7 +244,7 @@ export function App() {
     if (r.secondsAway > 120) {
       setHome({
         seconds: r.secondsAway, qi: r.qiEarned, climbed: r.qiClimbed,
-        layers: r.layersOpened, realms: r.realmsClimbed,
+        layers: r.layersOpened, realms: r.realmsClimbed, crafts: r.crafts,
       });
     }
   }, []);
@@ -263,7 +289,9 @@ export function App() {
       // very different things to put on a screen.
       setSatOut(open >= FOCUS_HOLD);
       setState((s) => {
-        const next = advance(s, now(), false, deep);
+        // 業 And the workshop, settled to the same instant. It reads its own clock.
+        const t = now();
+        const next = work(advance(s, t, false, deep), t);
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -400,12 +428,22 @@ export function App() {
       const seed = Math.floor(now() * 1000) >>> 0;
       // 心魔 The demon stands on the cultivator's own power; a floor on its own.
       const standing = demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
+      // 業 What is carried goes into a warden, a heart demon, never a floor or a common.
+      const carried = kitFor(state, beast, kitWhere(state, beast, standing));
+      // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt, and only
+      // when it changes something: a piece that was falling anyway (造化, or a fate bar
+      // come due) leaves the sure drop waiting for a beast that would have left nothing.
+      const drops = !demon && floor === undefined && isOpen(state.realm, 'gear');
+      const plain = drops ? dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null;
+      const sought = drops && !plain && !beast.warden && state.crafts.seek > 0;
       return {
         beast,
         floor,
         demon,
+        kit: carried.spends ? carried.used : undefined,
+        sought,
         qi: floor === undefined ? undefined : floorQi(state, floor),
-        outcome: fight(state, beast, seed, standing),
+        outcome: fight(state, beast, seed, standing, carried.kit),
         beat: 0,
         over: false,
         // A tower floor pays in materials, not in gear. Gear comes from the world.
@@ -416,8 +454,7 @@ export function App() {
         //
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
-        drop: demon || floor !== undefined || !isOpen(state.realm, 'gear') ? null
-          : dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer),
+        drop: sought ? dropFor(state, beast, seed ^ 0x9e3779b9, { ...fortuneOf(state), always: true }, state.layer) : plain,
       };
     });
   }, [state]);
@@ -435,11 +472,11 @@ export function App() {
   }, [state, startFight]);
 
   const onBrew = useCallback((line: Line) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = brew(s, line);
       if (next === s) return s;
-      sfx.brew();
-      haptics.win();
+      once(id, () => { sfx.brew(); haptics.win(); });
       return next;
     });
   }, []);
@@ -474,25 +511,32 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop, floor, demon } = battle;
+    const { beast, outcome, drop, floor, demon, kit, sought } = battle;
+    // 業 A won fight spends what took part in it; a lost one keeps it.
+    const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
+    // 鎖魂 Read off the hand that went in, not off whatever is carried now.
+    const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
     if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
       // hour. Neither is a kill: the demon is never counted in the record.
-      setState((s) => (outcome.won ? conquer(s) : repel(s)));
+      // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
+      setState((s) => (outcome.won ? spent(locked ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
       // 塔 A floor counts once. It pays material and hours of gathering.
       sfx.floor();
       setState((s) => clearFloor(s, floor));
     } else if (outcome.won) {
+      const id = ++taps.current;
       setState((s) => {
         // 錄 A mark earned is rare enough to be worth hearing.
         const kills = s.killed[beast.key] ?? 0;
         const before = marksOf(kills);
-        if (marksOf(kills + 1) > before) sfx.mark();
+        if (marksOf(kills + 1) > before) once(id, sfx.mark);
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
-        return stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const taken = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        return spent(sought ? spendSeek(taken) : taken);
       });
     }
     setBattle(null);
@@ -520,21 +564,21 @@ export function App() {
 
   /** 煉器 Refining spends material on a piece you are already wearing. */
   const onRefine = useCallback((slot: Slot) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = refine(s, slot);
       if (next === s) return s;
-      float(JUICE.refined, 'gold'); burst('gold', null, 10, 56);
-      sfx.buy();
-      haptics.strike();
+      once(id, () => { float(JUICE.refined, 'gold'); burst('gold', null, 10, 56); sfx.buy(); haptics.strike(); });
       return next;
     });
   }, []);
 
   const onFuse = useCallback((template: string, rarity: string) => {
+    const id = ++taps.current;
     setState((s) => {
       const next = fuseIn(s, template, rarity as Item['rarity']);
       if (!next.made) return s;
-      float(JUICE.fused, 'gold'); burst('gold', null, 16, 80);
+      once(id, () => { float(JUICE.fused, 'gold'); burst('gold', null, 16, 80); });
       return next.state;
     });
     sfx.breakthrough();
@@ -616,10 +660,11 @@ export function App() {
   }, []);
 
   const onUnlock = useCallback((key: string) => {
+    const id = ++taps.current;
     setState((s) => {
       const free = freeOf(s);
       if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
-      float(JUICE.learned, 'jade'); burst('jade', null, 14, 70);
+      once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
       return { ...s, unlocked: [...s.unlocked, key] };
     });
     sfx.buy();
@@ -663,7 +708,7 @@ export function App() {
     [state, ready, battle, bloom],
   );
 
-  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao') => {
+  const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts') => {
     setState((s) => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] }));
     if (go) setTab(go);
     sfx.tap();
@@ -749,6 +794,13 @@ export function App() {
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
+        {tab === 'crafts' && (
+          <Crafts state={state}
+            onTask={(key) => { setState((s) => setTask(s, key, now())); sfx.tap(); haptics.tap(); }}
+            onCarry={(hand, key) => { setState((s) => carry(s, hand, key)); sfx.tap(); }}
+            onUse={(key) => { setState((s) => takeSeeking(s, key)); sfx.buy(); }}
+            onPlace={(key, on) => { setState((s) => placeArray(s, key, on)); sfx.buy(); }} />
+        )}
         {tab === 'gear' && (
           <Gear
             state={state} pulse={pulse}
@@ -1154,6 +1206,13 @@ export function App() {
           {home.climbed > 0 && (
             <p className="faint" style={{ margin: '2px 0 0', fontSize: 12.5 }}>
               {RETURN.spent(num(home.climbed))}
+            </p>
+          )}
+          {/* 業 What the workshop did while nobody was watching it. */}
+          {home.crafts && RECIPE_BY_KEY[home.crafts.task] && (
+            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
+              業 {CRAFTS.awayLine(home.crafts.made, RECIPE_BY_KEY[home.crafts.task].name, home.crafts.from, home.crafts.to,
+                SKILL_BY_KEY[RECIPE_BY_KEY[home.crafts.task].skill].name)}
             </p>
           )}
           <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>

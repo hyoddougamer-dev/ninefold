@@ -19,6 +19,9 @@ import {
 import { BOON_BLOOD, BOON_LOTUS } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
+import { NO_KIT, type Kit } from './kit.ts';
+
+export { NO_KIT, type Kit };
 
 /**
  * 戰 Automatic combat, watched.
@@ -102,7 +105,10 @@ export interface Outcome {
   readonly rounds: readonly Round[];
   readonly playerPower: number;
   readonly beastPower: number;
+  /** 九轉 Whether a carried Nine-Turn Pill brought the cultivator back in this fight. */
+  readonly revived?: boolean;
 }
+
 
 /** Deterministic noise: the same fight at the same instant gives the same result. */
 function dice(seed: number): () => number {
@@ -136,8 +142,8 @@ export { FORM };
  * beast's power *before* the beast answers, which is why taking it early is worth more
  * than taking it late.
  */
-export function fight(s: State, b: Beast, seed: number, standing?: number): Outcome {
-  return run(setup(s, b, standing), seed, true);
+export function fight(s: State, b: Beast, seed: number, standing?: number, kit: Kit = NO_KIT): Outcome {
+  return run(setup(s, b, standing, kit), seed, true);
 }
 
 /**
@@ -157,9 +163,10 @@ interface Setup {
   readonly artStrike: number;
   readonly mend: number;
   readonly playerPower: number;
+  readonly kit: Kit;
 }
 
-function setup(s: State, b: Beast, standing?: number): Setup {
+function setup(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): Setup {
   const pp = power(s);
   // 法 What an art strikes for: the arts line on the body, and the Arts school's step.
   // The line has no hold on 劫 the tribulation, for the reason 破 has none: the Dragon is
@@ -173,20 +180,23 @@ function setup(s: State, b: Beast, standing?: number): Setup {
     sequence: sequenceOf(s),
     pp,
     // A tower floor brings its own power; everywhere else the beast brings its own.
-    bp0: standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing),
+    bp0: (standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing))
+      * (b.key === DEMON_KEY ? kit.demon : 1),
     // 劍聖 The Sword Saint's form never rolls below its middle.
     formFloor: classForm(s),
     artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
     // 羅漢 The Arhat mends a little every round, as 續 Endure does.
     // 蓮 And the lotus seed from the monk on the road, for somebody who walked kindly.
-    mend: classMend(s) + (hasBoon(s, 'lotus') ? BOON_LOTUS : 0),
+    mend: classMend(s) + (hasBoon(s, 'lotus') ? BOON_LOTUS : 0) + kit.mend,
     playerPower: pp,
+    kit,
   };
 }
 
 /** One fight from a setup. `record` keeps the rounds for the screen; the odds need only who won. */
 function run(u: Setup, seed: number, record: boolean): Outcome {
-  const { stance, sequence, pp, bp0, artStrike, mend } = u;
+  const { stance, sequence, pp, bp0, artStrike, mend, kit } = u;
+  let revived = !kit.revive;
 
   let beastPower = bp0;      // 纏 and 鶴唳 shave this as the fight runs
   let ph = pp * HEALTH_PER_POWER;
@@ -247,7 +257,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
         blow *= artStrike;
       }
 
-      mine += blow;
+      mine += blow * kit.strike;
     }
 
     if (stance?.key === 'entangle') beastPower *= STANCE_NUMBERS.entangle;
@@ -259,9 +269,13 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
     let theirs = missed ? 0 : beastPower * blowRoll(d);
     if (stance?.key === 'guard') theirs *= STANCE_NUMBERS.guardTaken;
     if (stance?.key === 'fierce') theirs *= STANCE_NUMBERS.fierceTaken;
+    theirs *= kit.taken;
+    if (kit.bind && i === 0) theirs = 0;
     took = theirs;
+    if (kit.reflect > 0) bh -= theirs * kit.reflect;
 
     ph = Math.min(ph0, ph - theirs + healed);
+    if (ph <= 0 && !revived) { ph = ph0; revived = true; }
 
     if (record) rounds.push({
       playerHealth: Math.max(0, ph / ph0),
@@ -273,7 +287,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
     });
   }
 
-  return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0 };
+  return { won: bh <= 0 || ph / ph0 > bh / bh0, rounds, playerPower: pp, beastPower: bp0, revived: kit.revive && revived };
 }
 
 /**
@@ -400,8 +414,8 @@ const SAMPLES = 41;
  * So it simply *fights*: twenty-five times, on spread seeds, and counts. Pure, cheap,
  * and it can never disagree with what the player is about to watch.
  */
-export function odds(s: State, b: Beast, standing?: number): number {
-  return Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, oddsRaw(s, b, standing)));
+export function odds(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): number {
+  return Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, oddsRaw(s, b, standing, kit)));
 }
 
 /**
@@ -450,13 +464,30 @@ export function crossNow(s: State): State {
  * percentage at all and says how far off the beast is instead. Nothing about the fight
  * changes; the screen stops rounding the answer up to something that sounds possible.
  */
-export function oddsRaw(s: State, b: Beast, standing?: number): number {
+export function oddsRaw(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): number {
   let won = 0;
-  const u = setup(s, b, standing);
+  const u = setup(s, b, standing, kit);
   for (let i = 0; i < SAMPLES; i++) {
     if (run(u, (i * 2654435761) >>> 0, false).won) won++;
   }
   return won / SAMPLES;
+}
+
+/**
+ * 可 Whether this build could ever win the fight at all, which is a stronger question than
+ * the odds. The odds are read from SAMPLES fights, so a fight won once in a few hundred
+ * reads 0 there, and the screen shows it as ODDS_FLOOR. A loss costs nothing, so an
+ * honest player may well press it until it lands: the server must not call that a cheat.
+ * So a reading of 0 is looked at again, far deeper, before it is believed.
+ */
+export const BEATABLE_SAMPLES = 2000;
+export function beatable(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): boolean {
+  if (oddsRaw(s, b, standing, kit) > 0) return true;
+  const u = setup(s, b, standing, kit);
+  for (let i = 0; i < BEATABLE_SAMPLES; i++) {
+    if (run(u, (i * 2246822519 + 374761393) >>> 0, false).won) return true;
+  }
+  return false;
 }
 
 /**

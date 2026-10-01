@@ -85,7 +85,8 @@
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
-  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep' | 'seclusion';
+  | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep' | 'seclusion'
+  | 'crafts' | 'alchemy' | 'sigils' | 'arrays';
 
 export interface SystemInfo {
   readonly key: System;
@@ -118,6 +119,14 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // than for owning it. See data/herbs.ts.
   { key: 'cave', han: '洞天', name: 'The Cave', realm: 2,
     gives: 'Three beds. Plant 材 material and it ripens into 氣 qi over real hours, and a ripe bed waits for you for ever.' },
+  /**
+   * 業 The workshop: four crafts at once, because they are one loop. Three gather (the
+   * paths, the veins, and every beast the hunt has taught it) and the forge turns what
+   * they gather into the gear that opens beside it. The other three crafts arrive one at a
+   * time further up, where there is room: see data/crafts.ts.
+   */
+  { key: 'crafts', han: '業', name: 'The Workshop', realm: 2,
+    gives: 'Four crafts that level from 1 to 99: gather herbs and ore, render the beasts the hunt has taught you, and forge the piece you choose. The workshop keeps working while you are away.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
   { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,
@@ -144,10 +153,14 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // and a fight waiting behind it. See sim/seclusion.ts.
   { key: 'seclusion', han: '閉關', name: 'Seclusion', realm: 4,
     gives: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, as strong as you are, without what you know. Beat it for a 道 point. Nine in a life, and a loss costs nothing.' },
+  { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
+    gives: 'A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win.' },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
+  { key: 'sigils', han: '符', name: 'Sigil Writing', realm: 6,
+    gives: 'A sixth craft: paper, cinnabar and a beast\u2019s ink. Sigils for a hard fight, and one that makes a beast leave a piece.' },
   { key: 'bestiary', han: '圖鑑', name: 'The Bestiary', realm: 6,
     gives: 'A realm whose four beasts you have all 熟 Known, ten kills of each, pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.' },
   /**
@@ -170,6 +183,14 @@ export const SYSTEMS: readonly SystemInfo[] = [
    * gathering and power is the only thing that shortens a crossing. What the seventh
    * realm hands over instead is 秘境深 the deeper vault.
    */
+  /**
+   * 陣 The seventh realm opened one system, the deeper vault, and the slowest craft fits
+   * beside it: arrays are cut once and kept, and what they do is make the other six
+   * faster and the vault door sooner. It sat at the eighth for a draft, which put it two
+   * months into a casual climb; the seventh is five weeks.
+   */
+  { key: 'arrays', han: '陣', name: 'Arrays', realm: 7,
+    gives: 'The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows.' },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 9,
     gives: 'Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,

@@ -1,3 +1,4 @@
+import { doorGapFor, kitFor, spendKit, tookPart } from './crafts.ts';
 import {
   DOOR_GAP, NO_TAKE, OPENS_AT, ROOM_INFO, ROOMS, SPRING_MINUTES,
   depthScale, roomsFor, shrineDeep, type Room, type RoomKind, type Take,
@@ -109,7 +110,12 @@ export function beastAt(s: State, step: number): Beast {
 
 export function doorOpen(s: State): boolean {
   if (s.realm < OPENS_AT) return false;
-  return s.at - (s.runAt || s.startedAt) >= DOOR_GAP;
+  return s.at - (s.runAt || s.startedAt) >= doorGap(s);
+}
+
+/** 秘門 The gap between runs, which the Hidden Door Array shortens. */
+export function doorGap(s: State): number {
+  return s.crafts ? doorGapFor(s, DOOR_GAP) : DOOR_GAP;
 }
 
 export function inside(s: State): boolean {
@@ -123,7 +129,7 @@ export function canEnter(s: State): boolean {
 /** How long until the door opens again, in seconds. Zero when it is open. */
 export function doorIn(s: State): number {
   if (s.realm < OPENS_AT) return 0;
-  return Math.max(0, DOOR_GAP - (s.at - (s.runAt || s.startedAt)));
+  return Math.max(0, doorGap(s) - (s.at - (s.runAt || s.startedAt)));
 }
 
 /**
@@ -217,9 +223,15 @@ export function open(s: State, which: 0 | 1, seed: number): State {
      */
     const beast = gift.fight;
     // 戰 One roll, the same odds the screen would quote, and nothing is staked on it.
-    const won = (hash(seed) % 10_000) / 10_000 < odds(s, beast);
+    // 業 What is carried goes in with the walker and is spent only if the gate falls.
+    const carried = kitFor(s, beast, 'vault');
+    const roll = (hash(seed) % 10_000) / 10_000;
+    const won = roll < odds(s, beast, undefined, carried.kit);
     if (!won) return leave({ ...s, lastRun: { ...s.lastRun, beaten: true } });
-    out = { ...out, lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
+    // 九轉 A gate is one roll, not a fight, so a Nine-Turn Pill is said to have brought the
+    // walker back when the same roll would have lost without it; otherwise it stays.
+    const revived = carried.kit.revive && roll >= odds(s, beast, undefined, { ...carried.kit, revive: false });
+    out = { ...(carried.spends ? spendKit(out, tookPart(carried.used, revived)) : out), lastRun: { ...out.lastRun, gates: out.lastRun.gates + 1 } };
   }
   if (gift.qi) out = { ...out, qi: out.qi + gift.qi, lastRun: add(out.lastRun, { qi: gift.qi }) };
   if (gift.materials) out = { ...out, materials: out.materials + gift.materials };

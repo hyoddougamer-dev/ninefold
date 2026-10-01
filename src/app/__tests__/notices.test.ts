@@ -3,6 +3,8 @@ import { NOTICES, nextNotice } from '../notices.ts';
 import { newState, validate, type State } from '../../sim/state.ts';
 import { levelCap } from '../../sim/balance.ts';
 import { GEAR, baseValue } from '../../data/gear.ts';
+import { DISMISSED } from '../guide.ts';
+import { WHOM } from '../../data/figures.ts';
 
 const T0 = 1_700_000_000;
 
@@ -63,5 +65,59 @@ describe('新 the cards that arrive once', () => {
 
     const flood = validate({ ...newState(T0), v: 1, seen: Array.from({ length: 500 }, (_, i) => `k${i}`) }, T0 + 5);
     expect(flood.seen.length).toBeLessThanOrEqual(32);
+  });
+
+  it('has room in a save for every card the game can ever show', () => {
+    // validate() keeps the first 32 read keys. If the game could write more than that, the
+    // newest card would fall off every save on load and come back every time it opened.
+    const every = new Set([...NOTICES.map((n) => n.key), DISMISSED, WHOM]);
+    expect(every.size).toBeLessThanOrEqual(32);
+    const full = validate({ ...newState(T0), v: 1, seen: [...every] }, T0 + 5);
+    expect(full.seen).toEqual([...every]);
+  });
+});
+
+describe('業 the workshop, arriving on saves that were made before it', () => {
+  // A veteran from before the workshop: sixth realm, every older card read, a save with
+  // no crafts in it at all, exactly as the live game writes one today.
+  const older = NOTICES.filter((n) => n.key !== 'workshop').map((n) => n.key);
+  const veteran = () => {
+    const s = newState(T0) as unknown as Record<string, unknown>;
+    const { crafts: _gone, ...rest } = s;
+    return {
+      ...rest, v: 1, realm: 6, layer: 3, qi: 123_456, materials: 7_890,
+      levels: { technique: 36, method: 30, pills: 24, cores: 12 },
+      killed: { rat: 90, hound: 40, fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1 },
+      seen: [...older, DISMISSED, WHOM], tower: 44,
+    };
+  };
+
+  it('loads with everything the player had, and an empty workshop', () => {
+    const s = validate(veteran(), T0 + 60);
+    expect(s.realm).toBe(6);
+    expect(s.layer).toBe(3);
+    expect(s.qi).toBe(123_456);
+    expect(s.materials).toBe(7_890);
+    expect(s.levels).toEqual({ technique: 36, method: 30, pills: 24, cores: 12 });
+    expect(s.killed).toMatchObject({ rat: 90, hound: 40, fox: 1, tiger: 1 });
+    expect(s.tower).toBe(44);
+    expect(s.seen).toEqual([...older, DISMISSED, WHOM]);
+    // Nothing made, nothing owed: the workshop starts from the moment it is opened.
+    expect(s.crafts.task).toBeNull();
+    expect(Object.keys(s.crafts.pouch)).toHaveLength(0);
+    expect(Object.values(s.crafts.xp).every((x) => x === 0)).toBe(true);
+  });
+
+  it('tells a player already past the second realm, once, and points at the tab', () => {
+    const s = validate(veteran(), T0 + 60);
+    const card = nextNotice(s);
+    expect(card?.key).toBe('workshop');
+    expect(card?.tab).toBe('crafts');
+    expect(nextNotice({ ...s, seen: [...s.seen, 'workshop'] })?.key).not.toBe('workshop');
+  });
+
+  it('says nothing to a player still in the first realm', () => {
+    const s = validate({ ...veteran(), realm: 1, layer: 3 }, T0 + 60);
+    expect(NOTICES.find((n) => n.key === 'workshop')!.when(s)).toBe(false);
   });
 });

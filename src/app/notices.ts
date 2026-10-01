@@ -33,7 +33,7 @@ export interface Notice {
   /** Is this true yet? */
   readonly when: (s: State) => boolean;
   /** Where to send the player, if there is somewhere. */
-  readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
+  readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts';
 }
 
 export const NOTICES: readonly Notice[] = [
@@ -64,6 +64,12 @@ export const NOTICES: readonly Notice[] = [
   {
     key: 'record', han: '錄', title: NOTICE.record.title, text: NOTICE.record.text, tab: 'hunt',
     when: (s) => isOpen(s.realm, 'record') && BEASTS.some((b) => (s.killed[b.key] ?? 0) >= MARKS[1]),
+  },
+  {
+    // 業 Once, for everybody the workshop is open to: whoever reaches the second realm,
+    // and whoever was already past it the day it arrived, who never saw it open.
+    key: 'workshop', han: '業', title: NOTICE.workshop.title, text: NOTICE.workshop.text, tab: 'crafts',
+    when: (s) => isOpen(s.realm, 'crafts'),
   },
   {
     key: 'pool', han: '雷池', title: NOTICE.pool.title, text: NOTICE.pool.text,

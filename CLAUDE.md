@@ -166,6 +166,8 @@ game's own copy and numbers: when a system changes, its guide changes in the sam
 Only the developer and the bot open posts; members answer inside them. The screens the
 guides show live in `public/discord/`, served by Pages, and go up in a commit before the
 posts that point at them, so Discord never caches a broken image.
+A new post in the announcements or dev log channel tells @everyone (`announce` in server.json,
+Bruno 2026-09-30); a post that went up before that gets one short `nudge` line after it.
 Every post wears a banner from `tools/banners.mjs` (the game's own paintings and cut
 figures, a gold seal, the logo's lettering, the cards' frame): a new post is a line in
 `BANNERS` and a `banner` in server.json. **Bruno's real name never appears in anything
@@ -230,7 +232,23 @@ onto fights rather than a system of its own.
 - Deleting real rows on the live database is refused by the safety check unless Bruno asks
   for it by name and the migration is scoped to exactly what he asked for.
 
-## Git
+## Git, and what players are told
 
-Develop on `claude/idle-fantasy-mobile-game-nzn90r`; Bruno has also authorised pushing
-to `main`. Both get every commit.
+Bruno, 2026-09-29: *"a partir de agora não fazemos commits ou publicamos sem fazer updates
+e devlogs para avisar os players."*
+
+- **The working branch** (`claude/idle-fantasy-mobile-game-nzn90r`) gets every commit. A
+  push there builds and tests the game but changes nothing a player sees: Pages, Discord
+  and the ranked server deploy from `main` only.
+- **`main` is a release.** A push to `main` updates the live game for everyone, so it goes
+  only when Bruno has seen what changed (with pictures, as above) and approved the words
+  the players will read, and it carries those words in the same push: a message in
+  `tools/discord/server.json` (`channel: devlog`, a new `key` per release, e.g.
+  `update-2026-09-30`) that the Discord workflow posts when `main` moves. Big changes are an
+  announcement as well; a fix is a line in the next update post.
+- **The one exception** is the game being broken for players: fix it, push, and post the
+  note straight after, the same day.
+- The testers' bugs and ideas are read with `tools/discord-read.mjs` through the
+  `discord-read` workflow (sealed to `tools/discord/reader.pub.pem`; the private half lives
+  only in the working session, so a new session makes a new pair and commits the new
+  public half before reading).

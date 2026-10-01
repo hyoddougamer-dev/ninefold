@@ -564,6 +564,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .card3 .marks { justify-content: center; }
 
 /* 熟 A mark earned, said in the arena where the kill happened. */
+.verdict .kitline { margin: 6px 0 0; font-size: 12.5px; color: var(--faint); }
+.verdict .kitline b.cjk { color: var(--gold); margin-right: 3px; }
+.kitchip { margin: 6px auto 0; text-align: center; font-size: 12px; color: var(--faint); }
+.kitchip b.cjk { color: var(--gold); margin-right: 3px; }
 .verdict .mark { display: flex; gap: 11px; align-items: center; justify-content: center;
                  margin: 10px 0 0; padding: 9px 13px; border-radius: 11px;
                  background: color-mix(in srgb, var(--gold) 12%, transparent);
@@ -617,6 +621,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                  padding: 8px 12px; cursor: pointer; font-weight: 600; }
 @keyframes arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .notice { animation: none; } }
+/* 版 On a PC the card sits over the stage, clear of the rail, and no wider than it reads:
+   left and right with a max width and auto margins centre it without a transform. */
+@media (min-width: 1100px) {
+  .notice { left: calc(var(--rail) + 24px); right: 24px; max-width: 720px; margin-inline: auto; }
+  /* And on a screen with a dock, over the stage alone, so it covers neither side. */
+  .app:has(> .sheet:is([data-screen='cultivate'], [data-screen='gear'], [data-screen='crafts'])) .notice {
+    right: calc(var(--dock) + 24px); }
+}
 
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .card3 { background: var(--lacquer); border: 1px solid var(--gild); border-radius: 11px;
@@ -1264,10 +1276,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chestfilter button[aria-pressed='true'] { border-color: var(--text); color: var(--text); }
 .chestfilter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
 
-.tabs { grid-template-columns: repeat(6, 1fr); }
+.tabs { grid-template-columns: repeat(7, 1fr); }
 /* 榜 Six tabs on a 320px phone: the labels give up a little spacing to fit. */
 .tabs .l { letter-spacing: .1em; white-space: nowrap; }
 @media (max-width: 360px) { .tabs .l { font-size: 8.5px; letter-spacing: .04em; } }
+/* 業 Seven tabs on a 320px phone: the labels give up the rest of their spacing. */
+@media (max-width: 360px) { .tabs .l { font-size: 7.6px; letter-spacing: 0; } }
 /* 榜 The rankings tab is gold, so it reads as a place to go rather than one more screen,
    and its badge is the player's place on the Heaven List. */
 .tabs .ranktab .g { color: var(--gold); }
@@ -2964,3 +2978,162 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .gain.dao { color: var(--jade); background: color-mix(in srgb, var(--jade) 12%, transparent);
             border-color: color-mix(in srgb, var(--jade) 45%, transparent); }
 @media (prefers-reduced-motion: reduce) { .seclude .demon[data-due='true'] { animation: none; } }
+
+/* ── 業 the workshop ──────────────────────────────────────────────────────────
+   Every rule is scoped under .crafts: the recipe row, the pouch and the skill grid are
+   new shapes, and a class shared with another screen has bitten this repo three times. */
+.crafts .act.small { width: auto; flex: none; padding: 7px 12px; font-size: 12px; letter-spacing: .08em; border-radius: 8px; }
+.crafts .act.small[data-on='true'] { background: none; color: var(--gold); border: 1px solid var(--gold); box-shadow: none; }
+.crafts .act.small.ghost { background: none; color: var(--faint); border: 1px solid var(--line); box-shadow: none; }
+.crafts .cic { display: inline-grid; place-items: center; flex: none; border-radius: 9px; overflow: hidden;
+               border: 1.5px solid rgba(58, 50, 38, .9); background: #120F0B; }
+.crafts .cic img.emblem { display: block; }
+.crafts .cic .plate, .crafts .cic > * { max-width: 100%; }
+
+.crafts .ctask { margin-bottom: 14px; }
+.crafts .ctask[data-idle='true'] { border-style: dashed; }
+.crafts .ctask .row { gap: 12px; }
+.crafts .cprog { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 10px; }
+.crafts .cprog > i { display: block; height: 100%; background: var(--jade); transition: width .2s linear; }
+.crafts .cprog[data-wait='true'] > i { background: var(--faint); }
+
+.crafts .cskills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.crafts .w-main > .row:first-child { padding-right: 56px; }
+.crafts .cskill { display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto auto auto;
+                  column-gap: 8px; align-items: center; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+                  background: var(--lacquer); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.crafts .cskill[data-on='true'] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gild-strong) inset; }
+.crafts .cskill[data-shut='true'] { opacity: .55; }
+.crafts .cskill b.cjk { grid-row: 1 / span 3; width: 34px; height: 34px; display: grid; place-items: center; font-size: 18px;
+                        color: var(--gold); border: 1px solid var(--gild-strong); border-radius: 7px; }
+.crafts .cskill b.cjk[data-painted='true'] { border: 0; overflow: hidden; border-radius: 50%;
+                                          box-shadow: 0 0 0 1px var(--gild-strong); }
+.crafts .cskill b.cjk img { display: block; width: 34px; height: 34px; transform: scale(1.32); }
+.crafts .cskill[data-shut='true'] b.cjk img { filter: grayscale(.8); }
+/* 坊 The craft's painting, whole and square beside its name: a painting is a scene, and
+   cut into a band it showed a basket and half a hat (Bruno: "mal centradas"). */
+.crafts .cphead { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: start; }
+.crafts .cscene { width: 92px; height: 92px; border-radius: 8px; overflow: hidden; background: #d8c49a;
+                  box-shadow: 0 0 0 1px var(--gild-strong), 0 4px 14px rgba(0, 0, 0, .35); }
+.crafts .cscene img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* 總 The top line: where you are, and the one number the workshop adds up to. */
+.crafts .crank { display: flex; align-items: baseline; gap: 6px; }
+.crafts .crank .clevel { margin-left: auto; color: var(--gold); font-size: 13px; }
+.crafts .ctop { align-items: center; gap: 10px; margin-bottom: 12px; }
+.crafts .ctotal { white-space: nowrap; font-size: 12px; color: var(--faint); display: inline-flex; align-items: baseline; gap: 4px; }
+.crafts .ctotal b { font-size: 15px; color: var(--gold); }
+.crafts .ctotal i { font-style: normal; }
+/* 篩 Search and three chips, for a craft with more recipes than a screen holds. */
+.crafts .cfilter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
+.crafts .cfilter input { flex: 1 1 160px; min-width: 0; padding: 8px 11px; border-radius: 9px; font: inherit; font-size: 13px;
+                         color: var(--text); background: rgba(20, 17, 13, .7); border: 1px solid var(--line); }
+.crafts .cfilter input:focus { outline: none; border-color: var(--gild-strong); }
+.crafts .cf-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.crafts .cf-chips button { padding: 6px 10px; border-radius: 99px; font-size: 12px; color: var(--faint);
+                           background: none; border: 1px solid var(--line); }
+.crafts .cf-chips button[aria-selected='true'] { color: var(--gold); border-color: var(--gild-strong); background: rgba(212, 175, 86, .1); }
+.crafts .cf-chips i { font-style: normal; opacity: .7; margin-left: 2px; }
+.crafts .ctool { display: inline-block; vertical-align: -5px; margin-right: 4px; }
+.crafts .ctool img.emblem { border-radius: 50%; }
+.crafts .w-main, .crafts .w-work, .crafts .w-side { display: contents; }
+.crafts[data-view='work'] .w-side { display: none; }
+.crafts[data-view='pouch'] .w-work { display: none; }
+.crafts .cswitch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 12px; padding: 4px;
+                   border: 1px solid var(--line); border-radius: 12px; background: rgba(20, 17, 13, .6); }
+.crafts .cswitch button { padding: 9px 8px; border-radius: 9px; font-size: 13px; color: var(--faint); background: none; border: 0; }
+.crafts .cswitch button[aria-selected='true'] { color: var(--gold); background: rgba(212, 175, 86, .12);
+                                               box-shadow: inset 0 0 0 1px var(--gild-strong); }
+.crafts .cswitch b.cjk { margin-right: 4px; }
+.crafts .cshelf { margin-bottom: 10px; }
+.crafts .cshelf-h { margin: 0 0 6px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.crafts .cshelf-h b.cjk { color: var(--gold); letter-spacing: 0; margin-right: 3px; font-size: 13px; }
+.crafts .cpc[data-carried='true'] { box-shadow: inset 0 0 0 1px var(--jade); }
+.crafts .cpc { position: relative; }
+.crafts .cpc-tip { display: none; }
+@media (hover: hover) {
+  /* 註 On a mouse, the name above the cell. It sits inside the cell's own box and is only
+     ever as wide as the name, so it cannot be dragged off the screen the way a centred,
+     translated note can (see CLAUDE.md, the tooltip that was clamped). */
+  .crafts .cpc:hover .cpc-tip { display: block; position: absolute; left: 0; bottom: calc(100% + 4px); z-index: 3;
+    white-space: nowrap; padding: 4px 7px; border-radius: 6px; font-size: 11.5px; color: var(--text);
+    background: rgba(15, 12, 9, .96); border: 1px solid var(--gild-strong); pointer-events: none; }
+  .crafts .cpouch .cpc:nth-child(n+4):hover .cpc-tip { left: auto; right: 0; }
+}
+.crafts .cskill .cs-name { font-size: 12.5px; font-weight: 600; min-width: 0; line-height: 1.2; }
+.crafts .cskill .cs-sub { font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crafts .cskill .cs-sub em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--gold); margin-right: 2px; }
+.crafts .cskill[data-shut='true'] .cs-sub { white-space: normal; line-height: 1.25; }
+@media (max-width: 360px) { .crafts .cskill .cs-rank { display: none; } }
+.crafts .cskill .cs-working { color: var(--jade); }
+.crafts .cs-bar { grid-column: 2; display: block; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.crafts .cs-bar > i { display: block; height: 100%; background: var(--gold); }
+
+.crafts .cpanel { margin-bottom: 10px; }
+.crafts .crank { margin: 8px 0 0; font-size: 13px; color: var(--gold); }
+.crafts .cxp { display: block; height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.crafts .cxp > i { display: block; height: 100%; background: linear-gradient(90deg, #9C7F36, var(--gold)); }
+
+.crafts .cgroups { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.crafts .cgroups button { font: inherit; font-size: 12px; background: none; color: var(--faint); cursor: pointer;
+                          border: 1px solid var(--line); border-radius: 99px; padding: 4px 11px; }
+.crafts .cgroups button[aria-selected='true'] { color: var(--gold); border-color: var(--gold); }
+
+.crafts .crecipes { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.crafts .crow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+                background: var(--lacquer); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.crafts .crow[data-on='true'] { border-color: var(--jade); }
+.crafts .crow[data-lock='true'] { opacity: .5; }
+.crafts .cr-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.crafts .cr-body > b { font-size: 13.5px; font-weight: 600; }
+.crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
+.crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
+.crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
+.crafts .cr-needs { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; }
+.crafts .cr-needs > span { display: inline-flex; align-items: center; gap: 4px; }
+.crafts .cr-needs > span[data-short='true'] { color: var(--cinnabar); }
+.crafts .cr-needs em { font-style: normal; color: var(--faint); }
+.crafts .cr-needs .cic { border-radius: 5px; }
+.crafts .cr-q { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 2px; max-width: 160px; }
+.crafts .cr-q > i { display: block; height: 100%; }
+.crafts .cr-lock { font-style: normal; font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+
+.crafts .cfloor, .crafts .ccarry, .crafts .clook { margin: 0 0 12px; }
+.crafts .cpouch { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; margin-bottom: 10px; }
+.crafts .cpc { position: relative; display: grid; place-items: center; padding: 3px; background: none; cursor: pointer;
+               border: 1px solid transparent; border-radius: 10px; }
+.crafts .cpc[data-on='true'] { border-color: var(--gold); }
+.crafts .cpc b { position: absolute; right: 4px; bottom: 2px; font-size: 10.5px; color: var(--text);
+                 text-shadow: 0 1px 2px #000, 0 0 4px #000; }
+
+/* 業 The workshop on a wide screen: the crafts on the stage, the pouch in the dock.
+   The same stage and dock as 修 and 器, so the three read as one game: the things you
+   work on in the middle, the things you hold down the right edge, each scrolling itself.
+   Two views on a phone become both at once here, so the switch goes. */
+@media (min-width: 1100px) {
+  .app > .sheet[data-screen='crafts'] { overflow: hidden; padding: 0; position: relative; display: block; }
+  .sheet[data-screen='crafts'] > .crafts { height: 100%; display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--dock); grid-template-rows: minmax(0, 1fr); }
+  .sheet[data-screen='crafts']::before { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: var(--dock);
+    background: rgba(20, 17, 13, .84); border-left: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .crafts .w-main { display: block; grid-column: 1; min-width: 0; min-height: 0; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    padding: 36px max(40px, calc((100% - 880px) / 2)) 48px; }
+  .crafts .w-side { display: block !important; grid-column: 2; min-width: 0; min-height: 0; overflow-y: auto; position: relative;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent; padding: 32px 28px 48px; }
+  .crafts .w-work { display: block !important; }
+  .crafts .w-main > .row:first-child { padding-right: 0; }
+  .crafts .cswitch { display: none; }
+  /* Seven crafts in one row of four and one of three, and the recipes two across. */
+  .crafts .cskills { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .crafts .crecipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-items: start; }
+  .crafts .crecipes > p { grid-column: 1 / -1; }
+  .crafts .cphead { grid-template-columns: 132px minmax(0, 1fr); gap: 16px; }
+  .crafts .cscene { width: 132px; height: 132px; }
+  .crafts .w-side .cpouch { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); }
+}
+/* A laptop's stage holds four tiles only if the rank waits for the panel below. */
+@media (min-width: 1100px) and (max-width: 1599px) {
+  .crafts .cskill .cs-rank { display: none; }
+}
+.crafts .ctotal .ct-short { display: none; }
+@media (max-width: 360px) { .crafts .ctotal .ct-long { display: none; } .crafts .ctotal .ct-short { display: inline; } }

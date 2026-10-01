@@ -64,7 +64,7 @@ function cultivator(realm, beast) {
     awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought']
       .slice(0, [0, 0, 2, 2, 4, 4, 6, 6, 8, 8][realm]),
     seen: ['guide', 'whom', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones',
-           'bestiary', 'salvage', 'fuse'],
+           'bestiary', 'salvage', 'fuse', 'workshop'],
   };
 }
 
