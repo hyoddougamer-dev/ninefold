@@ -1540,6 +1540,13 @@ export const RETURN = {
   power: 'power now',
 };
 
+/**
+ * 譯 The words the two unit characters stand for, printed beside them wherever a number
+ * wears one. 力 and 材 are on more numbers than anything else in the game, and they were
+ * the characters players kept asking about (rekaris, on the Discord, 2026-10-01).
+ */
+export const UNIT = { power: 'power', material: 'material' };
+
 export const ARENA = {
   /**
    * 見 The first time a beast falls, and only the first.
@@ -1560,6 +1567,15 @@ export const ARENA = {
   missed: 'turned aside',
   collect: 'Collect',
   withdraw: 'Withdraw',
+  /** 再 The same beast again, from the verdict. One button where there used to be three
+   *  trips across the screen: rekaris, on the Discord, 2026-10-01. */
+  again: 'Again',
+  floor: (n: number) => `Floor ${n}`,
+  /** 鍵 The keys, printed on the buttons they press, and only where there is a keyboard. */
+  keyCollect: 'Enter',
+  keyAgain: 'R',
+  /** 略 A fight is settled the moment it starts; watching it is a choice. */
+  skip: 'Tap to see how it ends',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in
    *  silence is one the player never learns to go looking for. */
   earned: (han: string, pays: string) => `${han} · ${pays}, for good`,

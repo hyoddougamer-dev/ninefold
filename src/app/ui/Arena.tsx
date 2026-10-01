@@ -14,7 +14,7 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, CRAFTS, SECLUSION } from '../copy.ts';
+import { ARENA, CRAFTS, SECLUSION, UNIT } from '../copy.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
@@ -108,7 +108,7 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, state, pulse, onClose, overflow }: {
+export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow }: {
   battle: Battle;
   /**
    * 得 The whole state, not only the realm, because what a kill is *worth* depends on
@@ -120,6 +120,11 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   /** 藏 What a full chest will do with the piece, worked out by the same stash() that does it. */
   overflow: Stashed | null;
   onClose: () => void;
+  /** 再 Collect, then the same beast again. Absent where again makes no sense: a warden
+   *  that fell, a floor of the tower, the heart demon. */
+  onAgain?: () => void;
+  /** 略 The fight is settled before the first blow, so a tap jumps to how it ends. */
+  onSkip?: () => void;
 }) {
   const realm = state.realm;
   const { beast, outcome, beat, over } = battle;
@@ -173,9 +178,24 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
   const weekly = outcome.won && worldly && isQuarry(state, beast) && quarryOwed(state)
     ? quarryPaid(state, beast) : 0;
 
+  /** 勁 What was won rises off the button that takes it, whichever button that is. */
+  const take = () => {
+    if (outcome.won && battle.demon) {
+      float(SECLUSION.pays(DEMON_DAO), 'jade');
+      burst('jade', null, 12, 64);
+    } else if (outcome.won) {
+      const mat = battle.floor !== undefined
+        ? floorMaterial(state, battle.floor) : lootTaken(state, lootFrom(state, beast));
+      float(`+${num(mat)} ${UNIT.material}`, 'gold');
+      const qi = (battle.qi ?? 0) + bounty + weekly;
+      if (qi > 0) setTimeout(() => float(`+${num(qi)} qi`, 'jade'), 160);
+      burst('gold', null, 12, 64);
+    }
+  };
+
   return (
     <div className="arena" data-over={over} data-won={over && outcome.won} data-lost={over && !outcome.won}
-         data-by={f.striker} data-heavy={!over && f.heavy}>
+         data-by={f.striker} data-heavy={!over && f.heavy} onClick={over ? undefined : onSkip}>
       {/* 景 The same painting, soft and dark, behind the whole arena. The stage used to
           be a strip of landscape between two bands of flat black, which on a computer
           screen read as a letterbox rather than a place. */}
@@ -215,7 +235,7 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
 
           <div className="gap">
             {!over && (
-              <span key={beat} className="clash">
+              <span key={beat} className="clash" aria-hidden="true">
                 <i /><b>{f.striker === 'player' ? '擊' : '反'}</b>
               </span>
             )}
@@ -261,10 +281,13 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
 
       <div className="feet">
         <div className="who">
+          {/* 譯 The realm and the beast by name, beside their characters. The arena
+              was the one screen that named both fighters in Chinese alone. */}
           <span className="nm">
             <b className="cjk" style={{ color: r.colour }}>{r.han}</b>
-            <em className="mono">力 {num(outcome.playerPower)}</em>
+            <span className="en">{r.name}</span>
           </span>
+          <em className="pw mono"><b className="cjk">力</b> {num(outcome.playerPower)} {UNIT.power}</em>
           <span className="bar"><i style={{ width: `${f.playerHealth * 100}%` }} /></span>
         </div>
         <div className="who r">
@@ -272,11 +295,12 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
             <b className="cjk" style={{ color: br.colour }}>
               {battle.floor === undefined ? beast.han : `${battle.floor}層`}
             </b>
-            {/* What it *brings*, not what the table says it is worth. A tower floor
-                carries its own power and the 渡劫 Dragon rises every crossing, so the
-                table's number would be a different beast's. */}
-            <em className="mono">力 {num(outcome.beastPower)}</em>
+            <span className="en">{battle.floor === undefined ? beast.name : ARENA.floor(battle.floor)}</span>
           </span>
+          {/* What it *brings*, not what the table says it is worth. A tower floor
+              carries its own power and the 渡劫 Dragon rises every crossing, so the
+              table's number would be a different beast's. */}
+          <em className="pw mono"><b className="cjk">力</b> {num(outcome.beastPower)} {UNIT.power}</em>
           <span className="bar"><i style={{ width: `${f.beastHealth * 100}%` }} /></span>
         </div>
       </div>
@@ -288,6 +312,7 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
         </p>
       )}
       {!over && kitNames && <p className="kitchip"><b className="cjk">攜</b> {CRAFTS.kitIn(kitNames)}</p>}
+      {!over && onSkip && <p className="skiphint">{ARENA.skip}</p>}
 
       {over && (
         <div className="verdict">
@@ -315,7 +340,7 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
               <span className="gain" style={{ animationDelay: '.25s' }}>
                 +{num(battle.floor !== undefined
                   ? floorMaterial(state, battle.floor)
-                  : lootTaken(state, lootFrom(state, beast)))} <b className="cjk">材</b>
+                  : lootTaken(state, lootFrom(state, beast)))} <b className="cjk">材</b> {UNIT.material}
               </span>
               {(battle.qi ?? 0) + bounty + weekly > 0 && (
                 <span className="gain qi" style={{ animationDelay: '.4s' }}>
@@ -341,8 +366,8 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
                 <em>{MARK_INFO[earned.index].name}</em>
                 <i>
                   {bounty > 0 && earned.index === 0
-                    ? ARENA.firstSight(num(bounty), beast.han)
-                    : ARENA.earned(beast.han, MARK_INFO[earned.index].pays)}
+                    ? ARENA.firstSight(num(bounty), `${beast.han} ${beast.name}`)
+                    : ARENA.earned(`${beast.han} ${beast.name}`, MARK_INFO[earned.index].pays)}
                 </i>
               </span>
             </p>
@@ -368,7 +393,8 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
                   {battle.drop.rolls.map((roll) => (
                     <span key={roll.affix} style={{ marginLeft: 7 }}>
                       <span className="cjk">{AFFIX_INFO[roll.affix].han}</span>
-                      +{Math.round(roll.value * 10) / 10}
+                      {' '}+{Math.round(roll.value * 10) / 10}{AFFIX_INFO[roll.affix].unit === '%' ? '%' : ''}
+                      {' '}{AFFIX_INFO[roll.affix].label}
                     </span>
                   ))}
                 </i>
@@ -382,24 +408,19 @@ export function Arena({ battle, state, pulse, onClose, overflow }: {
               </span>
             </div>
           )}
-          <button className="act" onClick={() => {
-            // 勁 What was won rises off the button that takes it.
-            if (outcome.won && battle.demon) {
-              float(SECLUSION.pays(DEMON_DAO), 'jade');
-              burst('jade', null, 12, 64);
-            } else if (outcome.won) {
-              const mat = battle.floor !== undefined
-                ? floorMaterial(state, battle.floor) : lootTaken(state, lootFrom(state, beast));
-              float(`+${num(mat)} 材`, 'gold');
-              const qi = (battle.qi ?? 0) + bounty + weekly;
-              if (qi > 0) setTimeout(() => float(`+${num(qi)} qi`, 'jade'), 160);
-              burst('gold', null, 12, 64);
-            }
-            onClose();
-          }}>
-            {outcome.won ? '收' : '退'}{' '}
-            <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
-          </button>
+          <div className="vacts">
+            <button className="act" onClick={() => { take(); onClose(); }}>
+              {outcome.won ? '收' : '退'}{' '}
+              <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
+              <kbd>{ARENA.keyCollect}</kbd>
+            </button>
+            {onAgain && (
+              <button className="act ghost again" onClick={() => { take(); onAgain(); }}>
+                再 <span>{ARENA.again}</span>
+                <kbd>{ARENA.keyAgain}</kbd>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

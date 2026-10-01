@@ -927,6 +927,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
            font-weight: 600; display: flex; gap: 7px; align-items: baseline; }
 .who.r .nm { flex-direction: row-reverse; }
 .who .nm b { font-size: 16px; font-weight: 400; }
+/* 譯 The English name beside the character, cut short rather than pushing the bar. */
+.who .nm { min-width: 0; }
+.who .nm .en { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+               color: var(--text); font-size: 12.5px; }
+.who .pw { font-size: 11.5px; color: var(--faint); font-style: italic; }
+.who .pw b { font-size: 12px; margin-right: 2px; color: var(--faint); }
 .who .bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden;
             display: flex; }
 .who.r .bar { justify-content: flex-end; }
@@ -957,8 +963,34 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @media (max-height: 820px) {
   .arena[data-over='true'] .stage { --stage-h: min(34vh, 300px); }
 }
-.verdict .act { margin-top: 14px; position: sticky; bottom: 0; z-index: 1;
-                box-shadow: 0 -14px 18px -4px #0D0B08, 0 8px 0 0 #0D0B08; }
+/* 再 Collect and Again share the row, Collect the wider: it is the one a thumb expects. */
+.verdict .vacts { margin-top: 14px; position: sticky; bottom: 0; z-index: 1;
+                  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px;
+                  box-shadow: 0 -14px 18px -4px #0D0B08, 0 8px 0 0 #0D0B08; }
+.verdict .vacts .act { width: 100%; }
+.verdict .vacts .again { padding-inline: 18px; color: var(--jade); border-color: rgba(127,180,149,.45); }
+.verdict .vacts .again span { margin-left: 6px; }
+/* 鍵 The key a button answers to, printed on it, only where there is a keyboard. */
+.verdict .vacts kbd { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .verdict .vacts kbd { display: inline-block; margin-left: 10px; padding: 1px 6px; border-radius: 4px;
+                        font: 600 10px/1.5 Rajdhani, sans-serif; letter-spacing: .08em; vertical-align: 2px;
+                        border: 1px solid currentColor; opacity: .55; }
+}
+/* 窄 On the narrowest phones the two buttons share 280 pixels: no key chips, tighter letters. */
+.verdict .vacts .act { white-space: nowrap; }
+@media (max-width: 380px) {
+  .verdict .vacts kbd { display: none !important; }
+  .verdict .vacts .act span { letter-spacing: .12em; margin-left: 5px; }
+  .verdict .vacts .again { padding-inline: 12px; }
+}
+/* 略 Said once, quietly, under the fight: the outcome is already decided. */
+.arena:not([data-over='true']) { cursor: pointer; }
+.arena .skiphint { margin: 6px 0 0; text-align: center; font-size: 11px; color: var(--faint); opacity: .6; }
+/* 譯 A number and the word for it stay on one line together. */
+.nw { white-space: nowrap; }
+/* 外 The veil a click beside a window lands on. Only a computer has a beside. */
+.veil { display: none; }
 
 /* ── return ──────────────────────────────────────────────────────────────── */
 
@@ -2830,6 +2862,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
     border: 1px solid var(--gild-strong); border-radius: 16px; overflow: hidden auto;
     box-shadow: 0 0 0 100vmax rgba(8, 7, 5, .7), 0 30px 80px rgba(0, 0, 0, .6); }
   .arena { width: min(580px, 100%); overflow: hidden; }
+  .veil { display: block; position: fixed; inset: 0; z-index: 9; cursor: pointer; }
   /* 鬥 As tall as the fight and its verdict, in the middle of the screen. Stretched to the
      window's height it was a strip of landscape between two slabs of black. */
   .arena { top: 0; bottom: 0; margin-block: auto; height: fit-content; max-height: calc(100% - 64px);

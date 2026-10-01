@@ -76,6 +76,8 @@ export function Term({ han, sense, plain, children }: {
   const [from, setFrom] = useState<DOMRect | null>(null);
   /** Where the note goes, once its real size is known. Null means not yet measured. */
   const [at, setAt] = useState<{ left: number; top: number; below: boolean } | null>(null);
+  /** Opened by the pointer passing over, and so closed by it leaving. */
+  const hovered = useRef(false);
 
   // 閉 Anything else the player does puts it away: another tap, a scroll, a key.
   useEffect(() => {
@@ -126,12 +128,25 @@ export function Term({ han, sense, plain, children }: {
     const r = ref.current?.getBoundingClientRect();
     if (r) setFrom(r);
   };
+  const shut = () => { setFrom(null); setAt(null); };
+
+  // 指 With a mouse the note answers the pointer, not only the click. rekaris, on the
+  // Discord: *"hovering it in that place does not say anything."* A note opened by
+  // hovering goes when the pointer does; a click on it keeps it, like a tap does.
+  const fine = () => typeof window.matchMedia === 'function'
+    && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
   return (
     <>
       <button ref={ref} className="term cjk" data-plain={plain || undefined}
         data-open={from ? 'true' : undefined}
-        onClick={(e) => { e.stopPropagation(); from ? (setFrom(null), setAt(null)) : open(); }}
+        onMouseEnter={() => { if (fine() && !from) { hovered.current = true; open(); } }}
+        onMouseLeave={() => { if (hovered.current) { hovered.current = false; shut(); } }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (hovered.current) { hovered.current = false; open(); return; }
+          if (from) shut(); else open();
+        }}
         aria-label={`${han}: ${term.name}`}>
         {children ?? han}
       </button>

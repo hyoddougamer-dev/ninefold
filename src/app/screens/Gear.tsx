@@ -18,7 +18,7 @@ import { gearTile, wornRim } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Calling } from '../ui/Calling.tsx';
 import { Term } from '../ui/Term.tsx';
-import { CULTIVATE, GEAR } from '../copy.ts';
+import { CULTIVATE, GEAR, UNIT } from '../copy.ts';
 import { gearLift, swing } from '../../sim/inspect.ts';
 import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
 import { meltFactor, salvageWorth, salvageable } from '../../sim/salvage.ts';
@@ -179,7 +179,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <>
           <div className="row" style={{ marginTop: 18 }}>
             <h2 className="heading" style={{ margin: 0 }}>{GEAR.refineHead}</h2>
-            <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)}</span>
+            <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)} {UNIT.material}</span>
           </div>
           <p className="faint" style={{ fontSize: 12.5, margin: '4px 0 8px' }}>{GEAR.refine}</p>
           <div className="stack">

@@ -8,7 +8,7 @@ import { duration, num } from '../../sim/format.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
-import { CAVE, WEEK } from '../copy.ts';
+import { CAVE, WEEK, UNIT } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
 import { isSeason, seasonOf, weekLeft } from '../../sim/week.ts';
 import { WeekTag } from './Week.tsx';
@@ -113,7 +113,7 @@ export function Cave({ state, onPlant, onHarvest }: {
                   {' · '}{CAVE.perHour(num(Math.round(harvestValue(state, h) / h.hours)))}</u>
               </span>
               <span className="price">
-                <b>材 {num(seedCost(state, h))}</b>
+                <b>材 {num(seedCost(state, h))} {UNIT.material}</b>
                 <i>{CAVE.after(h.hours)}</i>
               </span>
             </button>

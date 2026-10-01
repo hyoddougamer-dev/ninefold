@@ -14,7 +14,7 @@ import { Plate } from '../ui/Plate.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT } from '../copy.ts';
+import { HUNT, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
@@ -181,7 +181,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
               <span className="bname">
                 <b style={{ color: r.colour }}>{b.han}</b>
                 <i>
-                  {b.name} · 力 {num(effectiveBeastPower(state, b))} · 材 {num(lootTaken(state, lootFrom(state, b)))}
+                  {b.name} · <span className="nw">力 {num(effectiveBeastPower(state, b))} {UNIT.power}</span> · <span className="nw">材 {num(lootTaken(state, lootFrom(state, b)))} {UNIT.material}</span>
                 </i>
                 {/* 期 And the same chip on the row, because the band at the top is not
                     where somebody scrolling a list of twenty-five is looking. */}

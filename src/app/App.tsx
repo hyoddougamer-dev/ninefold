@@ -421,6 +421,9 @@ export function App() {
     if (beast.warden && floor === undefined && !canFightWarden(state)) return;
     sfx.tap();
     haptics.tap();
+    // 鍵 Whatever button started this keeps the focus, and a Space pressed to skip the
+    // fight would press it again underneath. Nothing outside the arena holds a key now.
+    (document.activeElement as HTMLElement | null)?.blur?.();
     setBattle((current) => {
       if (current) return current;   // one fight at a time
       // One seed for the fight and its drop, so the same kill always gives the same
@@ -542,6 +545,38 @@ export function App() {
     setBattle(null);
     sfx.tap();
   }, [battle]);
+
+  /**
+   * 略 A fight is settled before its first blow (fight() above), so watching it is a
+   * choice. A tap on the stage, or a key, jumps to the verdict; nothing is decided by it.
+   */
+  const skipFight = useCallback(() => {
+    setBattle((b) => (b && !b.over ? { ...b, beat: beatsIn(b.outcome) - 1, over: true } : b));
+  }, []);
+
+  /**
+   * 再 The same beast again, from the verdict.
+   *
+   * rekaris, on the Discord: *"I have to click on the fight, then move mouse on collect,
+   * then move back to fight."* Three trips for one kill. The next fight cannot start inside
+   * closeFight, because the state that credits this kill has not landed yet and the next
+   * fight would be rolled on the old one. So it is remembered, and started by the effect
+   * below once the kill is in the state.
+   */
+  const again = useRef<Beast | null>(null);
+  const canAgain = !!battle && !battle.demon && battle.floor === undefined
+    && !(battle.beast.warden && battle.outcome.won);
+  const fightAgain = useCallback(() => {
+    if (!battle) return;
+    again.current = battle.beast;
+    closeFight();
+  }, [battle, closeFight]);
+  useEffect(() => {
+    if (battle || !again.current) return;
+    const beast = again.current;
+    again.current = null;
+    startFight(beast);
+  }, [battle, startFight]);
 
   const onEquip = useCallback((item: Item) => {
     sfx.buy();
@@ -753,6 +788,62 @@ export function App() {
   const backdrop = (heavenNow && pictureOf('heaven', String(heavenNow.n)))
     ?? pictureOf('realm', String(state.realm));
 
+  /** 出口 What closing means right now: the window on top, or nothing. */
+  const panelOut = saving ? () => { setSaving(false); sfx.tap(); }
+    : key ? () => { setKey(false); sfx.tap(); }
+    : help ? () => { setHelp(false); sfx.tap(); }
+    : ranks ? () => { setRanks(false); sfx.tap(); }
+    : inspect ? () => { setInspect(null); sfx.tap(); }
+    : driving ? () => { setDriving(null); sfx.tap(); }
+    : realmPage ? () => { setRealmPage(false); sfx.tap(); }
+    : null;
+
+  /**
+   * 鍵 The keyboard, for whoever has one.
+   *
+   *   Enter or Space   in a fight: skip to the end; on the verdict: collect.
+   *   R                on the verdict: collect and fight the same beast again.
+   *   Esc              close the window on top, the menu, or the verdict.
+   *   1 to 7           the tabs, in the order the rail shows them.
+   *
+   * Read from a ref so the listener is bound once and always sees this render.
+   */
+  const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
+  onKey.current = (e: KeyboardEvent) => {
+    if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
+    if ((e.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]')) return;
+    const press = (sel: string) => document.querySelector<HTMLButtonElement>(sel)?.click();
+    const go = e.key === 'Enter' || e.key === ' ';
+    if (battle) {
+      if (!battle.over) {
+        if (go || e.key === 'Escape') { e.preventDefault(); skipFight(); }
+      } else if (go || e.key === 'Escape') {
+        e.preventDefault(); press('.verdict .vacts .act');
+      } else if ((e.key === 'r' || e.key === 'R') && canAgain) {
+        e.preventDefault(); press('.verdict .vacts .again');
+      }
+      return;
+    }
+    if (e.key === 'Escape') {
+      const shut = panelOut ?? (menu ? () => setMenu(false) : locked !== null ? () => setLocked(null) : null);
+      if (shut) { e.preventDefault(); shut(); }
+      return;
+    }
+    if (/^[1-7]$/.test(e.key) && !covered) {
+      const n = Number(e.key) - 1;
+      if (n === TABS.length) { setRanks(true); sfx.tap(); return; }
+      const t = TABS[n];
+      if (!t) return;
+      if (t.needs !== null && !isOpen(state.realm, t.needs)) setLocked(t.needs);
+      else { setTab(t.key); sfx.tap(); }
+    }
+  };
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => onKey.current(e);
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
   return (
     <div className="app">
       {backdrop && <div className="backdrop" aria-hidden="true" style={{ backgroundImage: `url(${backdrop})` }} />}
@@ -937,17 +1028,20 @@ export function App() {
         * decision about a fight, and a cross beside it would read as a second, safer
         * way out of the same thing. 歸 the return card is one button and no scroll.
         */}
-      {(() => {
-        const out = saving ? () => { setSaving(false); sfx.tap(); }
-          : key ? () => { setKey(false); sfx.tap(); }
-          : help ? () => { setHelp(false); sfx.tap(); }
-          : ranks ? () => { setRanks(false); sfx.tap(); }
-          : inspect ? () => { setInspect(null); sfx.tap(); }
-          : driving ? () => { setDriving(null); sfx.tap(); }
-          : realmPage ? () => { setRealmPage(false); sfx.tap(); }
-          : null;
-        return out ? <Escape onClose={out} /> : null;
-      })()}
+      {panelOut && <Escape onClose={panelOut} />}
+
+      {/* 外 On a computer a window floats over the game, and a click beside it used to
+          land on the game underneath: the hunt list, mid-fight. The veil takes that
+          click and does what the window's own button would. A phone never draws it,
+          because there every window covers the whole screen. */}
+      {(battle || panelOut) && (
+        <div className="veil" aria-hidden="true" onClick={() => {
+          if (battle) {
+            if (!battle.over) skipFight();
+            else document.querySelector<HTMLButtonElement>('.verdict .vacts .act')?.click();
+          } else panelOut?.();
+        }} />
+      )}
 
       {battle && (
         <Arena
@@ -957,6 +1051,8 @@ export function App() {
           overflow={battle.outcome.won && battle.drop && state.chest.length >= limitFor(state)
             ? stash(state, battle.drop) : null}
           onClose={closeFight}
+          onAgain={canAgain ? fightAgain : undefined}
+          onSkip={skipFight}
         />
       )}
 

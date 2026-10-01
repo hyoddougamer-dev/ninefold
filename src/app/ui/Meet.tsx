@@ -3,7 +3,7 @@ import { icon } from '../../art/icon.ts';
 import { pictureOf } from '../../data/pictures.ts';
 import { num } from '../../sim/format.ts';
 import { Svg } from './Svg.tsx';
-import { MEET } from '../copy.ts';
+import { MEET, UNIT } from '../copy.ts';
 import { BOON_INFO, meetingOf } from '../../data/meetings.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -31,7 +31,7 @@ export function Meet({ state, meeting, onAnswer }: {
     const cost = priceOf(state, p);
     const gift = giftOf(state, p.outcome);
     const bits: string[] = [];
-    if (cost.materials) bits.push(MEET.costs(`材 ${num(cost.materials)}`));
+    if (cost.materials) bits.push(MEET.costs(`${num(cost.materials)} 材 ${UNIT.material}`));
     if (cost.qi) bits.push(MEET.costs(`${num(cost.qi)} qi`));
     if (gift.qi) bits.push(`+${num(gift.qi)} qi`);
     if (gift.materials) bits.push(`+材 ${num(gift.materials)}`);

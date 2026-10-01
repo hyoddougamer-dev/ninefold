@@ -16,7 +16,7 @@ import { furnace, tower } from '../../art/trials.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
-import { TRIALS } from '../copy.ts';
+import { TRIALS, UNIT } from '../copy.ts';
 
 /**
  * 塔 and 爐: the two halves of what qi buys once a realm is full.
@@ -142,7 +142,7 @@ export function Trials({ state, onFloor, onBrew }: {
                 <b style={shortQi ? { color: 'var(--cinnabar)' } : undefined}>{num(cost.qi)}</b>
                 <i className="faint tag">qi</i>
                 <b style={{ color: short ? 'var(--cinnabar)' : 'var(--gold)' }}>{num(cost.materials)}</b>
-                <i className="faint tag">材</i>
+                <i className="faint tag">材 {UNIT.material}</i>
               </span>
             </button>
           );

@@ -195,6 +195,10 @@ const LOOK = `((names) => {
     const han = text.replace(/[^㐀-鿿]/g, '');
     if (!han) continue;
     if (named(text, han)) continue;
+    // 飾 A flourish is not a label. 擊 and 反 flash between the fighters for a fifth of a
+    // second each, coloured by who strikes; they name nothing, and are hidden from a
+    // screen reader for the same reason. aria-hidden is the game saying so.
+    if (el.closest('[aria-hidden="true"]')) continue;
 
     // 標 A control that carries its own accessible name is named: the rank picker on
     // 器 is five characters in a row and each button says "Spirit and below". A reader
@@ -257,8 +261,41 @@ async function walk(realm: number) {
       found.get(key).screens.add(name);
     }
   }
+
+  // 鬥 The arena, read twice: mid-fight and on the verdict. It is not a tab, so the walk
+  // above never stood in it, and it was the one screen naming both fighters in Chinese
+  // alone (金丹 against 鐵甲, a +29 材 with no word): rekaris found that on the Discord
+  // before any audit did.
+  const read = async (where: string) => {
+    const rows = (await page.evaluate(`${LOOK}(${JSON.stringify(NAMES)})`)) as HanRow[];
+    for (const row of rows) {
+      const key = `${row.where}|${row.text}`;
+      if (!found.has(key)) found.set(key, { ...row, screens: new Set<string>() });
+      found.get(key).screens.add(where);
+    }
+  };
+  const hunt = await page.$('nav.tabs button:has-text("狩")');
+  if (hunt && await hunt.getAttribute('data-shut') !== 'true') {
+    await hunt.click().catch(() => {});
+    await page.waitForTimeout(400);
+    const row = await page.$('[data-coach="beast-first"]') ?? (await page.$$('button.beast'))[0];
+    const box = await row?.boundingBox();
+    if (box) {
+      await page.mouse.click(box.x + box.width - 12, box.y + box.height / 2);
+      await page.waitForSelector('.arena', { timeout: 4000 }).catch(() => {});
+      if (await page.$('.arena')) {
+        arenas++;
+        await read('arena');
+        await page.click('.arena').catch(() => {});   // 略 the tap that skips to the end
+        await page.waitForSelector('.verdict', { timeout: 6000 }).catch(() => {});
+        if (await page.$('.verdict')) { verdicts++; await read('verdict'); }
+      }
+    }
+  }
   await page.close();
 }
+let arenas = 0;
+let verdicts = 0;
 
 for (const realm of [2, 4, 6, 9]) await walk(realm);
 await browser.close();
@@ -296,4 +333,9 @@ if (rows.length < FLOOR) {
     + '    broken walk rather than a clean sheet. Check what a fresh save opens on.\n');
   process.exit(1);
 }
-console.log('  ✓ every character on every screen is named by the card it sits in.\n');
+if (arenas < 4 || verdicts < 4) {
+  console.log(`  ✗ the arena was read ${arenas} times and its verdict ${verdicts}, of 4 each.`);
+  console.log('    A fight that never opened is an arena nobody checked.\n');
+  process.exit(1);
+}
+console.log('  ✓ every character on every screen is named by the card it sits in, the arena too.\n');
