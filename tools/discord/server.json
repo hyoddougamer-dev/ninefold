@@ -592,6 +592,27 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fixes-pc.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02-cards",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Change your Enlightenment cards",
+      "color": "#8FB49B",
+      "body": [
+        "rekaris made the case that in a game you keep for months, a card you picked in week one shouldn't lock your build for good. Fair, and now it doesn't.",
+        "",
+        "**悟道 Your Enlightenment cards** (in the menu, or the line on the home screen) shows every card you've taken. Tap *Change* on any of them to see the other two it came with and what each would do for you, then tap twice to trade.",
+        "",
+        "It costs your own qi: half a day of gathering for your newest card, half a day more for each card taken after it. We measured it first: across a whole climb your card choices are worth about a day, so this is for playing the build you want, not for racing.",
+        "",
+        "Also in this update: a few fixes from a review of the code. Loadouts now stay on screen when you've taken everything off, and melting can never touch a locked piece. Thanks to rekaris, and to everyone in {#ideas} and {#bugs}!"
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-trade.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-pc.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -676,6 +697,7 @@
       "fields": [
         ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
+        ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card taken after it, and asks you to tap twice."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
       ]
     },
@@ -1195,6 +1217,18 @@
         "Thanks for raising it. The 悟道 cards are meant to close doors, so no two climbs end up the same, which is why they're permanent for now.",
         "The unfair part was choosing blind. In the next update every card says what it does in your own numbers before you take it (Lucky Star, for example, shows your Mystic-or-better drops now and with it).",
         "The 道 Path is different: its points keep coming, so you can fill most of it over time. If more people would like a way to change the last card, I'll look at it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow one to reset seemingly permanent choices",
+      "tags": ["Idea"],
+      "reply": [
+        "You talked me round on this one, and I'm glad you pushed back. You're right that with one save you keep growing for months, it should be able to follow your build.",
+        "So it's in: there's a *Your Enlightenment cards* page now (in the menu, or tap the line on the home screen). It lists every card you've taken, and any of them can be swapped for one of the other two it came with, with what each would do for you in your own numbers.",
+        "It costs your own qi: half a day of gathering for your newest card, and half a day more for each card you took after it. Fixing a recent choice is cheap, rewriting the start of your climb is a real decision. It asks you to tap twice, so nobody pays for it by accident.",
+        "I measured it before letting it in: picking every card differently over a whole climb moves the ninth realm by about a day, so this is about playing the build you want, not racing. Thanks for arguing for it!",
         "· 師 Shibaki"
       ]
     },
