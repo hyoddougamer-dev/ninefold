@@ -1382,6 +1382,22 @@ export const CLASS = {
   offItsFull: (school: string) => `Wearing it takes your ${school} school off its full.`,
   keyHead: '職 Classes',
   keyBlurb: 'Every piece belongs to a school by the line it leads with. Three pieces of one school wake it, five bring it to its full, and three of each of two schools make one of fifteen named classes.',
+  /**
+   * 譜 Which piece is which school. Raziel Morgenstern, on the Discord: *"I have no idea
+   * which name is what class, apart from learning it by heart."*
+   */
+  book: {
+    open: 'Which piece is which school',
+    title: 'Which piece is which school',
+    blurb: 'The school goes with the shape, never the metal: every Sword is a Sword piece, from the first realm to the ninth. Three pieces of one school wake it, five bring it to its full.',
+    leads: (lines: string) => `Leads with ${lines}`,
+    wearing: (n: number) => (n === 0 ? 'none worn' : `${n} worn`),
+    worn: 'worn',
+    none: (slot: string) => `No ${slot.toLowerCase()}`,
+    pairsHead: '合 The fifteen classes',
+    pairsBlurb: 'Three pieces of each of two schools wake both, and the class where they meet adds its own perk.',
+    close: 'Close',
+  },
 };
 
 export const DAO = {

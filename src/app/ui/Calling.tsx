@@ -11,7 +11,7 @@ import { pairSays, schoolSaysAt } from '../classes.ts';
  * how far is each school, and what would the next piece do. The class is derived from
  * the worn set on every render, never stored: take a piece off and it is gone.
  */
-export function Calling({ worn }: { worn: Worn }) {
+export function Calling({ worn, onBook }: { worn: Worn; onBook?: () => void }) {
   const c = callingOf(worn);
   const top = [...SCHOOLS].sort((a, b) => c.counts[b] - c.counts[a])[0];
   const pure = c.kind === 'pure' && c.school ? SCHOOL_INFO[c.school] : null;
@@ -48,6 +48,12 @@ export function Calling({ worn }: { worn: Worn }) {
           ))}
         </span>
         {hint && <span className="cnext">{hint}</span>}
+        {/* 譜 Which piece is which school, so nobody has to learn the names by heart. */}
+        {onBook && (
+          <button className="cbook" onClick={onBook}>
+            <span className="cjk" aria-hidden="true">譜</span> {CLASS.book.open}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1504,6 +1504,50 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .calling .cschools em b { color: var(--text); font-weight: 600; }
 .calling .cschools em[data-on="true"] { color: var(--text); }
 .calling .cnext { font-size: 11.5px; color: var(--faint); }
+.calling .cbook { justify-self: start; margin-top: 4px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+                  border: 1px solid rgba(212,175,86,.45); background: rgba(212,175,86,.07); color: var(--gold);
+                  font: inherit; font-size: 12px; }
+.calling .cbook .cjk { margin-right: 2px; }
+.calling .cbook:hover { background: rgba(212,175,86,.14); }
+
+/* 譜 Which piece is which school. A .help sheet for its frame, like 榜; everything inside
+   is its own and starts sb-, because .schools is the chest's filter row. */
+.schoolbook { gap: 14px; }
+.schoolbook h2 { padding-right: 56px; }
+.schoolbook h2 .cjk { color: var(--gold); }
+.schoolbook .sb-blurb { margin: -6px 0 0; font-size: 13px; line-height: 1.5; }
+.schoolbook .sb-school { display: grid; gap: 8px; padding: 12px 12px 14px; border-radius: 12px;
+                         border: 1px solid var(--line); border-left: 3px solid var(--c);
+                         background: linear-gradient(100deg, color-mix(in srgb, var(--c) 12%, transparent), transparent 70%); }
+.schoolbook .sb-school header { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.schoolbook .sb-seal { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 6px;
+                       background: var(--c); color: #150F0A; font-size: 21px; line-height: 1; transform: rotate(-4deg); }
+.schoolbook .sb-school header b { display: block; font-size: 15.5px; font-weight: 600; }
+.schoolbook .sb-school header b .cjk { color: var(--c); font-weight: 400; }
+.schoolbook .sb-school header i { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); margin-top: 2px; }
+.schoolbook .sb-says { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--text); }
+.schoolbook .sb-shapes { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px 6px; }
+.schoolbook figure { margin: 0; display: grid; justify-items: center; gap: 4px; min-width: 0; }
+.schoolbook figure svg { display: block; }
+.schoolbook figcaption { font-size: 11px; line-height: 1.2; text-align: center; color: var(--text); overflow-wrap: anywhere; }
+.schoolbook figcaption small { display: block; font-size: 10px; color: var(--faint); margin-top: 1px; }
+.schoolbook figure[data-worn] svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c) 70%, transparent)); }
+.schoolbook figure[data-worn] figcaption small { color: var(--c); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.schoolbook .sb-gap { width: 50px; height: 50px; border: 1px dashed var(--line); border-radius: 9px; }
+.schoolbook .sb-none figcaption { color: var(--faint); }
+.schoolbook .sb-pairs { display: flex; flex-direction: column; gap: 7px; }
+.schoolbook .sb-pairs h3 { margin: 6px 0 0; font-family: 'Noto Serif SC', serif; font-weight: 400; font-size: 17px; color: var(--jade); }
+.schoolbook .sb-pairs > p { margin: 0; font-size: 12.5px; line-height: 1.45; }
+.schoolbook .sb-pair { padding: 8px 11px; border-radius: 10px; border: 1px solid var(--line);
+                       background: linear-gradient(100deg, color-mix(in srgb, var(--a) 12%, transparent), color-mix(in srgb, var(--b) 10%, transparent)); }
+.schoolbook .sb-pair b { display: block; font-size: 14px; font-weight: 600; }
+.schoolbook .sb-pair b .cjk { color: var(--gold); font-weight: 400; }
+.schoolbook .sb-pair i { display: block; font-style: normal; font-size: 12px; color: var(--faint); line-height: 1.45; margin-top: 2px; }
+.schoolbook .sb-pair .sb-a { color: var(--a); } .schoolbook .sb-pair .sb-b { color: var(--b); }
+@media (min-width: 900px) {
+  .schoolbook .sb-pairs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .schoolbook .sb-pairs h3, .schoolbook .sb-pairs > p { grid-column: 1 / -1; }
+}
 
 /* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */
 .setrow { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;

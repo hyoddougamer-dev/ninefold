@@ -107,6 +107,40 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   check(await overflow(page) <= 0, `${tag}: the gear screen does not scroll sideways`);
   await shot(page, `${tag}-gear`);
 
+  // ── 譜 which piece is which school, one tap from the class ──────────────────────────
+  // Raziel Morgenstern: "I have no idea which name is what class, apart from learning it by heart."
+  const book = await page.$('.calling .cbook');
+  check(!!book, `${tag}: the class has a button for which piece is which school`);
+  if (book) {
+    await page.$eval('.calling', (e) => e.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(150);
+    await shot(page, `${tag}-bookbutton`);
+    await book.click();
+    await page.waitForSelector('.schoolbook', { timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(300);
+    const schools = await page.$$eval('.schoolbook .sb-school', (els) => els.length);
+    const shapes = await page.$$eval('.schoolbook .sb-school figure:not(.sb-none)', (els) => els.length);
+    check(schools === 6 && shapes === 54, `${tag}: six schools and all fifty-four shapes (${schools}, ${shapes})`);
+    const worn = await page.$$eval('.schoolbook figure[data-worn] figcaption', (els) => els.map((e) => e.textContent));
+    check(worn.length === 2 && worn.some((t) => /^Sword/.test(t ?? '')) && worn.some((t) => /^Robe/.test(t ?? '')),
+      `${tag}: the two shapes worn say so (${worn.join(' | ')})`);
+    const pairs = await page.$$eval('.schoolbook .sb-pair', (els) => els.length);
+    check(pairs === 15, `${tag}: and the fifteen classes under them (${pairs})`);
+    check(await overflow(page) <= 0, `${tag}: the page does not scroll sideways`);
+    await shot(page, `${tag}-book`);
+    if (tag !== 'p320') {
+      await page.$eval('.schoolbook .sb-school:nth-of-type(3)', (e) => e.scrollIntoView({ block: 'start' }));
+      await page.waitForTimeout(200);
+      await shot(page, `${tag}-book2`);
+      await page.$eval('.schoolbook .sb-pairs', (e) => e.scrollIntoView({ block: 'start' }));
+      await page.waitForTimeout(200);
+      await shot(page, `${tag}-book3`);
+    }
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    check(!(await page.$('.schoolbook')), `${tag}: Esc closes it`);
+  }
+
   // ── 鎖 lock a piece, melt everything up to 天, and the piece is still there ──────────
   await page.click('.chest .chestit[aria-label^="Iron"], .chest .chestit >> nth=0');
   await page.waitForSelector('.lockbtn', { timeout: 3000 }).catch(() => {});

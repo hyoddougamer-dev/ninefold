@@ -38,7 +38,7 @@ import { SET_LIMIT } from '../../sim/state.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onBook }: {
   state: State;
   pulse: number;
   /** 拆 The rank the bulk melt reaches up to. Held by the app so it survives a tab. */
@@ -55,6 +55,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onSaveSet: (index: number, name: string) => void;
   onWearSet: (index: number) => void;
   onClearSet: (index: number) => void;
+  /** 譜 Open the page of which piece is which school. */
+  onBook: () => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
@@ -175,7 +177,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       </div>
 
       {/* 職 The class the body wears: read off it, never stored. */}
-      <Calling worn={state.worn} />
+      <Calling worn={state.worn} onBook={onBook} />
 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>

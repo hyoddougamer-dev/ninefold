@@ -61,6 +61,7 @@ import {
 import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
+import { Schools } from './ui/Schools.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
@@ -132,6 +133,8 @@ export function App() {
   const [prologue, setPrologue] = useState(false);
   // 釋 The key: what every character on the screen means.
   const [key, setKey] = useState(false);
+  /** 譜 The page of which piece is which school, opened from the class on 器. */
+  const [book, setBook] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
@@ -871,6 +874,7 @@ export function App() {
   /** 出口 What closing means right now: the window on top, or nothing. */
   const panelOut = saving ? () => { setSaving(false); sfx.tap(); }
     : key ? () => { setKey(false); sfx.tap(); }
+    : book ? () => { setBook(false); sfx.tap(); }
     : help ? () => { setHelp(false); sfx.tap(); }
     : ranks ? () => { setRanks(false); sfx.tap(); }
     : inspect ? () => { setInspect(null); sfx.tap(); }
@@ -998,6 +1002,7 @@ export function App() {
               sfx.buy(); haptics.strike();
             }}
             onClearSet={(i) => { setState((s) => clearSet(s, i)); sfx.tap(); }}
+            onBook={() => { setBook(true); sfx.tap(); }}
           />
         )}
         {tab === 'dao' && (
@@ -1267,6 +1272,7 @@ export function App() {
         />
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
+      {book && <Schools state={state} onClose={() => { setBook(false); sfx.tap(); }} />}
 
       {/* 相 Asked once, before anything else, and reopened from 助 the help sheet. It is
           shown while the answer is null, so a save that has never been asked asks, and a
