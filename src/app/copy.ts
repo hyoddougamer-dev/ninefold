@@ -616,6 +616,9 @@ export const KEY = {
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
+  /** 精 絕 The deep marks pay the beast that earned them, and only that one. */
+  deep: (at: number, material: number, drop: number) =>
+    `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast`,
   /** 緣 The bond, for the key and the tooltip. */
   bond: (full: number) => `Every win over a beast fills its bond. The ${full}th win leaves a piece for certain, `
     + 'a rank above the best that beast has given you, and the bond starts again.',
@@ -821,6 +824,8 @@ export const HUNT = {
   toward: (kills: number, at: number, name: string) =>
     (kills === 0 ? `not yet hunted · ${at} for ${name}` : `${kills} / ${at} toward ${name}`),
   mastered: 'every mark earned',
+  /** 精 絕 Past 通, the two deep marks, one beast at a time. See DEEP_MARKS. */
+  deepToward: (kills: number, at: number, name: string) => `${kills.toLocaleString('en')} / ${at.toLocaleString('en')} toward ${name}`,
   /** 物 What a beast leaves, said once on its row. */
   leaves: 'Leaves',
   /** 緣 The bond on the row: how far, and what the full one promises. */
@@ -1173,6 +1178,9 @@ export const CAVE = {
  * point of banking every room on the spot is that there is nothing to lose.
  */
 export const SECRET = {
+  /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
+  useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
+  keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
   head: 'The secret realm',
   ready: (rooms: number) => `The door is open. ${rooms} rooms, and every other one is a gate.`,
   shut: (left: string) => `The door opens again in ${left}. It will wait for you.`,

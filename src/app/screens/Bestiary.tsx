@@ -3,7 +3,7 @@ import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import type { State } from '../../sim/state.ts';
 import { AUTHORS } from '../../art/icons.generated.ts';
 import { Plate } from '../ui/Plate.tsx';
-import { MARK_INFO, knownIn, marksOf } from '../../sim/record.ts';
+import { DEEP_INFO, MARK_INFO, deepOf, knownIn, marksOf } from '../../sim/record.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
@@ -58,6 +58,10 @@ export function Bestiary({ state }: { state: State }) {
                     <span className="marks">
                       {MARK_INFO.map((m, i) => (
                         <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
+                      ))}
+                      {/* 精 絕 The deep marks, once a beast has earned the first. */}
+                      {deepOf(kills) > 0 && DEEP_INFO.map((m, i) => (
+                        <em key={m.han} className="cjk" data-on={i < deepOf(kills)} data-deep>{m.han}</em>
                       ))}
                     </span>
                     {/* 職 The schools of what it leaves, once it has been met. rekaris, on the

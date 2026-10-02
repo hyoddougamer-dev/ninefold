@@ -230,6 +230,8 @@ describe('深 the deeper vault', () => {
     const forged = validate(
       { ...newState(now - 86400), at: now, realm: 7, metPoints: 4000 }, now,
     );
-    expect(forged.metPoints).toBeLessThan(MEET_POINT_CEILING + 4 * RUN_DAO_CEILING);
+    // A day holds three walks by the door's clock and 鑰 one more by a Realm Key, so four.
+    expect(forged.metPoints).toBeLessThanOrEqual(MEET_POINT_CEILING + 4 * RUN_DAO_CEILING);
+    expect(forged.metPoints).toBeLessThan(4000);
   });
 });

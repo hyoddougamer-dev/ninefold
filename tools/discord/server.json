@@ -516,6 +516,36 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/auto-pc.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02-ideas",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Your ideas, one by one",
+      "color": "#8FB49B",
+      "body": [
+        "Every post in {#ideas} and {#bugs} from the last two days, read and answered. Most of them are in this update, and the rest are being measured before they go in."
+      ],
+      "fields": [
+        ["鎖 Locks and 套 Loadouts", "Lock a piece and nothing melts it, fuses it or pushes it out of a full chest. Save what you wear as a loadout, up to three, and put it all back on with one tap. A loadout is named after the class it makes."],
+        ["職 Schools at a glance", "Every gear icon carries its school's seal in the corner, the chest filters by school, and each beast shows which school every piece it leaves belongs to. On a PC a piece's sheet opens with every effect shown."],
+        ["序 Order the hunt", "A switch over the beasts: Next mark, Strongest or Most material. Your device remembers it."],
+        ["精 Two new marks", "精 Seasoned at 1,000 kills of a beast and 絕 Peerless at 5,000. Each pays that beast alone +10% 材 material and +2 points of drop chance."],
+        ["鑰 The Realm Key", "Forge one in the Workshop from the third realm and it opens 秘境 the secret realm's door at once. The door takes one key a day."],
+        ["悟道 Cards with numbers", "Every card now says what it does in your own numbers before you take it. And the luck cards were weak late on, so luck now lifts 地 Earth and 天 Heaven pieces more than 玄 Mystic ones."],
+        ["物 Names in the Workshop", "Tap or hover a material in a recipe to see what it is and which craft makes it, with a button that takes you there."],
+        ["寶匠 Treasure Smith", "Its allowance for melting refills 30% faster, and what melts into material past it gives 30% more."],
+        ["🐞 Fixed", "Clicking another window no longer ends 入定 sitting while the game is still on your screen. The \"held for review\" note on the rankings says plainly that it isn't a strike."],
+        ["▸ Nothing is taken", "Your qi, material, gear and saves are exactly as they were."],
+        ["謝 Thanks", "To rekaris, for ten posts that shaped almost all of this, and to everyone testing. Keep them coming."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/loadouts.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/hunt-order.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/realm-key.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-numbers.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -619,7 +649,8 @@
         "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
       ],
       "fields": [
-        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power."],
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each."],
+        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school, so you can see who drops 運 Fortune or 劍 Sword pieces."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi. It moves every Monday."]
@@ -643,6 +674,7 @@
       "fields": [
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most) and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner, and the chest filters by school."],
         ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level, and the levels stay on the piece, so refine the one you mean to keep."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
@@ -696,7 +728,7 @@
         ["金剛 Vajra · 氣 Qi + 體 Body", "First sights and the week's quarry pay 50% more qi."],
         ["丹師 Alchemist · 氣 Qi + 器 Artificer", "Pills cost 15% less."],
         ["獵王 Hunt King · 運 Fortune + 體 Body", "Beasts leave a piece 8 points more often."],
-        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more qi."],
+        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more, and its allowance refills 30% faster."],
         ["甲匠 Armourer · 體 Body + 器 Artificer", "The chest holds 10 more."],
         ["劍聖 Sword Saint · 劍 Sword + 法 Arts", "Your form in a fight never rolls below its middle."],
         ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay 25% more qi."],
@@ -738,6 +770,7 @@
         "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, two ways on at each, and every other room is a beast a realm above you. Nothing is carried in, so losing takes nothing back."
       ],
       "fields": [
+        ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day."],
         ["▸ 秘境深 The Deeper Vault", "From the seventh realm the path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
         ["▸ This week", "Each week one herb is worth planting and one room of the vault pays double. It changes every Monday."]
       ]
@@ -754,7 +787,7 @@
       "fields": [
         ["▸ 藥 Herb Gathering · 礦 Vein Delving", "Realm 2. Herbs from the paths of every realm you have reached, and ore from their veins. They need only time."],
         ["▸ 解 Rendering", "Realm 2. Kill ten of a common beast (one, for a warden) and the workshop knows what its kind leave behind: a pelt, a fang, a scale. From then on it renders that part for as long as you let it."],
-        ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
+        ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), forge 鑰 Realm Keys that open the secret realm's door (one a day), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
         ["▸ 丹 Alchemy", "Realm 5. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."],
         ["▸ 陣 Arrays", "Realm 7. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
@@ -1132,6 +1165,26 @@
       "reply": [
         "All three are in the next update, thank you!",
         "On a computer, a piece's sheet opens with every effect already shown. Every gear icon carries its school's seal (劍 Sword, 運 Fortune and so on) in the top corner, and the chest has a second row of filters by school.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "tags": ["Idea", "Balance"],
+      "reply": [
+        "Measured, and it's in today's update. 精 Seasoned at 1,000 kills of a beast and 絕 Peerless at 5,000: each pays that beast +10% material and +2 points of drop chance, and never qi.",
+        "With Auto, about a dozen beasts pass 1,000 in two months and one passes 5,000, so a 25,000 mark would have been out of reach for everyone. That one stays out for now. Thanks for pushing for it!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding the option to force your way into secret realm",
+      "tags": ["Idea"],
+      "reply": [
+        "It's in today's update: 鑰 the Realm Key. Forge it in the Workshop from the third realm (two Elder Bronze ingots and 90 material) and it opens the door straight away. The door takes one key a day.",
+        "I measured it first: one extra walk a day moves the climb by a day or two at most, and helps most the people who only check in once a day. Thanks for the idea!",
         "· 師 Shibaki"
       ]
     },

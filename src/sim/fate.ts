@@ -5,6 +5,7 @@ import { rollDrop, type Fortune } from './drops.ts';
 import { isOpen } from './unlocks.ts';
 import { classBond } from './schools.ts';
 import type { State } from './state.ts';
+import { deepDrop } from './record.ts';
 
 /**
  * 緣 The bond with a beast, and the drop it promises.
@@ -48,8 +49,11 @@ export function dropFor(
 ): Item | null {
   if (!isOpen(s.realm, 'gear')) return null;
   const due = fateDue(s, b);
+  // 精 A beast's deep marks make it leave a piece more often: see DEEP_DROP.
+  const deep = deepDrop(s.killed[b.key] ?? 0);
+  const f = deep > 0 ? { ...fortune, chance: (fortune.chance ?? 0) + deep } : fortune;
   return rollDrop(b, s.realm, seed,
-    due ? { ...fortune, always: true, floor: Math.max(fortune.floor ?? 0, fatePromise(s, b)) } : fortune,
+    due ? { ...f, always: true, floor: Math.max(f.floor ?? 0, fatePromise(s, b)) } : f,
     layer);
 }
 

@@ -136,7 +136,7 @@ export function levelOf(xp: number): number {
 
 /* ── 物 Materials ─────────────────────────────────────────────────────────── */
 
-export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array';
+export type ItemKind = 'herb' | 'ore' | 'part' | 'metal' | 'elixir' | 'sigil' | 'array' | 'key';
 
 export interface CraftItem {
   readonly key: string;
@@ -320,6 +320,22 @@ TOOL_METALS.forEach((realm, i) => {
       does: `${s.name} ${Math.round(step * 5)}% faster, for good.` });
   }
 });
+
+/**
+ * 鑰 The Realm Key. rekaris, on the Discord, asked to force the way into 秘境 the secret
+ * realm rather than wait out its door. Paid straight in material that would be a road
+ * from material to qi with no end, so it is a thing the forge makes, and the door takes
+ * one a day at most (see useKey in sim/secret.ts). Measured with the habits (2 October):
+ * a key every day moves the ninth realm by 0.2 to 2 days, and most for the cultivator
+ * who visits once a day, who is the one it is for.
+ */
+export const REALM_KEY = 'realmkey';
+item({ key: REALM_KEY, han: '鑰', name: 'Realm Key', kind: 'key', realm: 3, icon: 'wax-seal',
+  does: 'Opens 秘境 the secret realm now instead of waiting. The door takes one a day.' });
+recipe({ key: `forge:${REALM_KEY}`, skill: 'forge', group: 'Tools', han: '鑰', name: 'Realm Key',
+  level: tierLevel(3), realm: 3, seconds: CRAFT_SECONDS.forge, needs: [[metalKey(3), 2], ['mat', 90]],
+  makes: { kind: 'item', item: REALM_KEY }, graded: false,
+  does: 'Opens 秘境 the secret realm now. The door takes one a day.' });
 
 /**
  * 器 Gear: every beast teaches the three shapes it already drops, in its realm's metal.

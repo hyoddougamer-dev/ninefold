@@ -5,6 +5,7 @@ import {
 } from '../data/secret.ts';
 import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
+import { REALM_KEY } from '../data/crafts.ts';
 import { beastPower, odds } from './combat.ts';
 
 import { rate } from './time.ts';
@@ -124,6 +125,31 @@ export function inside(s: State): boolean {
 
 export function canEnter(s: State): boolean {
   return doorOpen(s) && !inside(s);
+}
+
+/** 鑰 The day a moment falls in, for the key's one-a-day: whole UTC days. */
+export const keyDayOf = (at: number): number => Math.floor(at / 86_400);
+
+/** 鑰 Whether a Realm Key would open the door now: held, the door shut, not used today. */
+export function canUseKey(s: State): boolean {
+  return s.realm >= OPENS_AT && !inside(s) && !doorOpen(s)
+    && (s.crafts?.pouch[REALM_KEY] ?? 0) > 0 && (s.keyDay ?? 0) < keyDayOf(s.at);
+}
+
+/**
+ * 鑰 Open the door with a key: the gap since the last run is counted as served, the key
+ * is spent, and today's key is used. The run itself is the same as any other.
+ */
+export function useKey(s: State): State {
+  if (!canUseKey(s)) return s;
+  const left = (s.crafts.pouch[REALM_KEY] ?? 0) - 1;
+  const pouch = Object.fromEntries(Object.entries({ ...s.crafts.pouch, [REALM_KEY]: left }).filter(([, n]) => n > 0));
+  return {
+    ...s,
+    crafts: { ...s.crafts, pouch },
+    runAt: Math.max(0, s.at - doorGap(s)),
+    keyDay: keyDayOf(s.at),
+  };
 }
 
 /** How long until the door opens again, in seconds. Zero when it is open. */

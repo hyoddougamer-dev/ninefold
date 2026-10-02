@@ -560,6 +560,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .marks em { font-style: normal; font-size: 11px; color: var(--line); line-height: 1;
             font-family: 'Noto Serif SC', serif; }
 .marks em[data-on="true"] { color: var(--jade); }
+/* 精 絕 The deep marks: a gap before them, and lit in cinnabar, the colour of the rare. */
+.marks em[data-deep] { margin-left: 3px; }
+.marks em[data-deep][data-on="true"] { color: var(--cinnabar); }
 .marks i { font-style: normal; font-size: 10.5px; color: var(--faint); margin-left: 4px; }
 
 /* 錄 Three marks on the top row, and what they are paying you on the second. Five
@@ -3269,3 +3272,11 @@ button.gs-new .cjk { margin: 0; }
   /* 序 Three words on a 320px phone: tighter, so the switch keeps the page's margin. */
   .huntorder button { padding: 7px 7px; letter-spacing: .03em; font-size: 10px; }
 }
+
+/* 鑰 The key under a shut door: its own small button, sharing nothing with the door. */
+.doorkey { display: flex; align-items: center; gap: 8px; width: 100%; margin: -4px 0 12px; padding: 9px 12px;
+           background: none; border: 1px dashed var(--gild-strong); border-radius: 10px; cursor: pointer;
+           font: inherit; font-size: 13px; color: var(--gold); text-align: left; }
+.doorkey:hover, .doorkey:focus-visible { background: rgba(212,175,86,.08); }
+.doorkey .cjk, .doorkeynote .cjk { font-weight: 400; font-size: 15px; }
+.doorkeynote { margin: -4px 0 12px; font-size: 12px; display: flex; gap: 8px; align-items: center; }

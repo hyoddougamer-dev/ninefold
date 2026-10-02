@@ -1217,6 +1217,22 @@ export const KNOWN_MATERIAL = 0.02;
 /** What one 通 mark adds to power. */
 export const MASTERED_POWER = 0.02;
 
+/**
+ * 精 絕 Two marks past 通, for one beast at a time. rekaris, on the Discord: with the
+ * auto-hunt and a cheaper drive, a hundred kills is a few minutes, so the record stopped
+ * too early. Each deep mark pays that beast alone: DEEP_MATERIAL more of its 材 material
+ * and DEEP_DROP more chance that it leaves a piece. Never qi: nothing uncapped may raise
+ * the qi rate, and kills are uncapped.
+ *
+ * Measured (2 October, the auto-hunt cultivator, five seeds): the climb does not move
+ * (realm nine on day 36.0 before, 36.1 after), and the material hunted by day sixty rises
+ * by about a quarter. By day sixty ten to thirteen beasts pass 1,000 and one passes 5,000,
+ * so a third mark at 25,000 was out of reach and is left out.
+ */
+export const DEEP_MARKS: readonly number[] = [1000, 5000];
+export const DEEP_MATERIAL = 0.10;
+export const DEEP_DROP = 0.02;
+
 /** 道 One point for every this many layers opened, and this many for every warden. */
 export const LAYERS_PER_POINT = 3;
 export const POINTS_PER_WARDEN = 2;

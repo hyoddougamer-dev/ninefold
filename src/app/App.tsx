@@ -56,7 +56,7 @@ import { cardDue as awakeningDue, take as takeAwakening } from '../sim/awaken.ts
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
-  enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor,
+  enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor, useKey,
 } from '../sim/secret.ts';
 import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
@@ -970,6 +970,7 @@ export function App() {
             onFight={(key) => startFight(byKey[key])}
             onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
+            onKey={() => { setState((s) => enterSecret(useKey(s))); sfx.buy(); haptics.strike(); }}
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}

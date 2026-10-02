@@ -108,3 +108,57 @@ describe('錄 the record', () => {
     expect(marksOf(held.killed.rat)).toBe(MARKS.length);
   });
 });
+
+/**
+ * 精 絕 The deep marks. rekaris, on the Discord: a hundred kills is a few minutes with the
+ * auto-hunt. Two marks past 通 pay the one beast that earned them, in material and drops,
+ * and never in qi.
+ */
+describe('精 絕 the deep marks', () => {
+  it('come at 1,000 and 5,000 kills, and only after 通', async () => {
+    const { deepOf, nextDeep, DEEP_MARKS } = await import('../record.ts');
+    expect(DEEP_MARKS).toEqual([1000, 5000]);
+    expect([deepOf(999), deepOf(1000), deepOf(4999), deepOf(5000), deepOf(1e6)]).toEqual([0, 1, 1, 2, 2]);
+    expect(nextDeep(50)).toBeNull();
+    expect(nextDeep(100)).toEqual({ at: 1000, index: 0 });
+    expect(nextDeep(5000)).toBeNull();
+  });
+
+  it('pay that beast more material, and nobody else', async () => {
+    const { lootFrom } = await import('../combat.ts');
+    const { newState } = await import('../state.ts');
+    const { BEASTS } = await import('../../data/bestiary.ts');
+    const { DEEP_MATERIAL } = await import('../balance.ts');
+    const b = BEASTS.find((x) => x.realm === 3 && !x.warden)!;
+    const other = BEASTS.find((x) => x.realm === 3 && !x.warden && x.key !== b.key)!;
+    const s = { ...newState(1_700_000_000), realm: 3, layer: 4 };
+    const plain = lootFrom(s, b);
+    const deep = { ...s, killed: { [b.key]: 1000 } };
+    expect(lootFrom(deep, b)).toBe(Math.round(plain * (1 + DEEP_MATERIAL)));
+    expect(lootFrom({ ...s, killed: { [b.key]: 5000 } }, b)).toBe(Math.round(plain * (1 + 2 * DEEP_MATERIAL)));
+    expect(lootFrom(deep, other)).toBe(lootFrom(s, other));
+  });
+
+  it('make that beast leave a piece more often', async () => {
+    const { dropFor } = await import('../fate.ts');
+    const { newState } = await import('../state.ts');
+    const { BEASTS } = await import('../../data/bestiary.ts');
+    const b = BEASTS.find((x) => x.realm === 3 && !x.warden)!;
+    const s = { ...newState(1_700_000_000), realm: 3, layer: 4 };
+    const count = (killed: number) => {
+      let n = 0;
+      const st = { ...s, killed: { [b.key]: killed } };
+      for (let seed = 1; seed <= 4000; seed++) if (dropFor({ ...st, fate: {} }, b, seed)) n++;
+      return n / 4000;
+    };
+    expect(count(5000) - count(100)).toBeGreaterThan(0.025);
+  });
+
+  it('never touch the qi rate', async () => {
+    const { rate, newState } = await import('../state.ts');
+    const { BEASTS } = await import('../../data/bestiary.ts');
+    const s = { ...newState(1_700_000_000), realm: 3, layer: 4 };
+    const all = Object.fromEntries(BEASTS.map((b) => [b.key, 5000]));
+    expect(rate({ ...s, killed: all })).toBe(rate({ ...s, killed: Object.fromEntries(BEASTS.map((b) => [b.key, 100])) }));
+  });
+});

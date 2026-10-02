@@ -223,6 +223,8 @@ export interface State {
   runStep: number;
   runAt: number;
   runs: number;
+  /** 鑰 The day (epoch seconds / 86 400) a Realm Key last opened the door. See useKey. */
+  keyDay: number;
   /**
    * 記 What the last run gave, in total, so the end of one can say so.
    *
@@ -384,7 +386,7 @@ export function newState(now: number): State {
     awakened: [],
     met: [], metAt: 0, metPoints: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
-    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE,
+    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0,
     quarryWeek: -1,
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },
@@ -894,7 +896,7 @@ export function validate(raw: unknown, now: number): State {
     // it too, so the ceiling has to allow for every walk the clock could have allowed.
     // See RUN_DAO_CEILING for the measurement that made this necessary.
     metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0,
-      MEET_POINT_CEILING + Math.ceil(elapsed / doorGap) * RUN_DAO_CEILING),
+      MEET_POINT_CEILING + (Math.ceil(elapsed / doorGap) + Math.ceil(elapsed / 86_400)) * RUN_DAO_CEILING),
     // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),
@@ -908,6 +910,8 @@ export function validate(raw: unknown, now: number): State {
       ? clamp(Math.floor(num(o.runStep, -1)), -1, roomsFor(realm) - 1) : -1,
     runAt: clamp(num(o.runAt, 0), 0, now),
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
+    // 鑰 A day, never one ahead of the save's own clock.
+    keyDay: clamp(Math.floor(num(o.keyDay, 0)), 0, Math.floor(now / 86_400)),
     lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES),
     // 期 A week the cultivator has not lived through yet is not a week they took the
     // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is

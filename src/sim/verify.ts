@@ -216,7 +216,8 @@ function metCeiling(before: State, after: State, dt: number): number {
   }, 0);
   // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
   const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
-  return road + (Math.ceil(Math.max(0, dt) / gap) + 2) * RUN_DAO_CEILING;
+  // 鑰 And a Realm Key can open it once more a day: see useKey in sim/secret.ts.
+  return road + (Math.ceil(Math.max(0, dt) / gap) + Math.ceil(Math.max(0, dt) / 86_400) + 2) * RUN_DAO_CEILING;
 }
 
 /** 業 The seconds of work the experience gained between two saves took, at its fastest. */

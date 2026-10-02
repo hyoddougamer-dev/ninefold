@@ -1,3 +1,4 @@
+import { deepMaterial } from './record.ts';
 import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   ART_NUMBERS, BLOW_LOW, BLOW_SPREAD, COMMON_DEPTH_FIRST, COMMON_DEPTH_STEP, COMMON_STEPS,
@@ -397,7 +398,8 @@ export function lootFrom(s: State, b: Beast): number {
   // screen quoting a beast's material quotes the doubled number without knowing about the
   // week at all: 狩 the hunt row, 圍 the drive, and the line under 鬥 the arena.
   const week = isQuarry(s, b) ? QUARRY_LOOT : 1;
-  return Math.max(own, Math.round(floor)) * week;
+  // 精 And this beast's own deep marks, so every screen that quotes it quotes them too.
+  return Math.round(Math.max(own, Math.round(floor)) * week * deepMaterial(s.killed[b.key] ?? 0));
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */

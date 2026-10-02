@@ -1,5 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { KNOWN_MATERIAL, MARKS, MASTERED_POWER } from './balance.ts';
+import { DEEP_DROP, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER } from './balance.ts';
 import { pct } from './format.ts';
 
 /**
@@ -26,7 +26,37 @@ import { pct } from './format.ts';
  */
 
 /** Kills that earn each mark, and what the 熟 and 通 marks pay: see balance.ts. */
-export { KNOWN_MATERIAL, MARKS, MASTERED_POWER };
+export { DEEP_DROP, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER };
+
+/** 精 絕 The two deep marks: see DEEP_MARKS. They pay the one beast that earned them. */
+export const DEEP_INFO: readonly { han: string; name: string }[] = [
+  { han: '精', name: 'Seasoned' },
+  { han: '絕', name: 'Peerless' },
+];
+
+/** How many deep marks a beast has: 0 to 2. */
+export function deepOf(kills: number): number {
+  let n = 0;
+  for (const at of DEEP_MARKS) if (kills >= at) n++;
+  return n;
+}
+
+/** The next deep mark, once 通 is earned, or null when both are. */
+export function nextDeep(kills: number): { at: number; index: number } | null {
+  if (kills < MARKS[MARKS.length - 1]) return null;
+  const i = deepOf(kills);
+  return i >= DEEP_MARKS.length ? null : { at: DEEP_MARKS[i], index: i };
+}
+
+/** 精 What this beast's own deep marks add to its 材 material, as a multiplier. */
+export function deepMaterial(kills: number): number {
+  return 1 + DEEP_MATERIAL * deepOf(kills);
+}
+
+/** 精 What they add to the chance it leaves a piece, in points. */
+export function deepDrop(kills: number): number {
+  return DEEP_DROP * deepOf(kills);
+}
 
 export const MARK_INFO: readonly { han: string; name: string; pays: string }[] = [
   { han: '見', name: 'Seen', pays: 'a first sight pays qi, and the record fills in' },

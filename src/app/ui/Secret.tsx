@@ -1,6 +1,7 @@
 import { kitFor } from '../../sim/crafts.ts';
+import { REALM_KEY } from '../../data/crafts.ts';
 import {
-  ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave, roomsFor,
+  ROOM_INFO, doorIn, doorsAt, giftOf, isGate, leave, roomsFor, canUseKey,
 } from '../../sim/secret.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -191,10 +192,15 @@ export function Tally({ state, onClose }: { state: State; onClose: () => void })
 }
 
 /** 門 The card on 狩 that says whether the door is open, and opens it. */
-export function Door({ state, onEnter }: { state: State; onEnter: () => void }) {
+export function Door({ state, onEnter, onKey }: { state: State; onEnter: () => void; onKey?: () => void }) {
   const left = doorIn(state);
   const rooms = roomsFor(state.realm);
+  // 鑰 A Realm Key opens a shut door, once a day. Shown only while it would do something,
+  // or to say why one held cannot be used until tomorrow.
+  const keys = state.crafts?.pouch[REALM_KEY] ?? 0;
+  const usable = canUseKey(state);
   return (
+    <>
     <button className="door open" disabled={left > 0} onClick={onEnter}>
       <span className="s"><Svg html={icon('crystal-shrine', 26)} /></span>
       <span className="body">
@@ -206,6 +212,10 @@ export function Door({ state, onEnter }: { state: State; onEnter: () => void }) 
       </span>
       {left === 0 && <em className="cjk">›</em>}
     </button>
+    {left > 0 && keys > 0 && (usable && onKey
+      ? <button className="doorkey" onClick={onKey}><b className="cjk">鑰</b> {SECRET.useKey(keys)}</button>
+      : <p className="faint doorkeynote"><b className="cjk">鑰</b> {SECRET.keyTomorrow}</p>)}
+    </>
   );
 }
 

@@ -7,7 +7,7 @@ import { ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
-  MARK_INFO, marksOf, nextMark, recordMaterial, recordPower, recordTally,
+  DEEP_INFO, MARK_INFO, deepOf, marksOf, nextDeep, nextMark, recordMaterial, recordPower, recordTally,
 } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { Plate } from '../ui/Plate.tsx';
@@ -42,13 +42,15 @@ import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
 type HuntOrder = 'mark' | 'strong' | 'material';
 const ORDER_KEY = 'ninefold.huntorder';
 
-export function Hunt({ state, onFight, onDrive, onSecret }: {
+export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
   state: State;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
   /** 秘境 Walk through the door, when it is open. */
   onSecret: () => void;
+  /** 鑰 Open the shut door with a Realm Key. */
+  onKey: () => void;
 }) {
   const [record, setRecord] = useState(false);
   const seen = BEASTS.filter((b) => (state.killed[b.key] ?? 0) > 0).length;
@@ -136,7 +138,7 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
 
       {/* 秘境 The door, at the top of the hunt because a secret realm is a hunt with a
           shape. It says when it opens again rather than going away, because it waits. */}
-      {isOpen(state.realm, 'secret') && <Door state={state} onEnter={onSecret} />}
+      {isOpen(state.realm, 'secret') && <Door state={state} onEnter={onSecret} onKey={onKey} />}
 
       {/* 直 The record is the page's second question, and a new cultivator has not asked
           its first one yet. Bruno: *"é preciso ser mais intuitivo."* Before the first
@@ -225,8 +227,14 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
                   {/* 註 The mark leads as a character you can tap, then the count and
                       the name. What it pays is on the same screen, once, rather than on
                       every one of twenty-five rows. */}
+                  {/* 精 絕 Past 通, the deep marks this beast alone pays for. */}
+                  {!next && DEEP_INFO.map((m, i) => (
+                    <em key={m.han} data-on={i < deepOf(kills)} data-deep><Term han={m.han} /></em>
+                  ))}
                   <i className="mono">
-                    {next ? HUNT.toward(kills, next.at, MARK_INFO[next.index].name) : HUNT.mastered}
+                    {next ? HUNT.toward(kills, next.at, MARK_INFO[next.index].name)
+                      : nextDeep(kills) ? HUNT.deepToward(kills, nextDeep(kills)!.at, DEEP_INFO[nextDeep(kills)!.index].name)
+                      : HUNT.mastered}
                   </i>
                 </span>
               </span>
