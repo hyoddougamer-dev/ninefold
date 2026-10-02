@@ -606,7 +606,7 @@
         "",
         "It costs your own qi: half a day of gathering for your newest card, half a day more for each card taken after it. We measured it first: across a whole climb your card choices are worth about a day, so this is for playing the build you want, not for racing.",
         "",
-        "Also in this update: a few fixes from a review of the code. Loadouts now stay on screen when you've taken everything off, and melting can never touch a locked piece. Thanks to rekaris, and to everyone in {#ideas} and {#bugs}!"
+        "Also in this update: a few fixes from a review of the code. Loadouts now stay on screen when you've taken everything off, melting can never touch a locked piece, and the school filters in the chest show up even when all your pieces are from one school. Thanks to rekaris, and to everyone in {#ideas} and {#bugs}!"
       ],
       "gallery": [
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-trade.webp?v=1",
@@ -1320,6 +1320,17 @@
         "You were looking in exactly the right place, the game was just hiding it from you. On a computer the filter rows scrolled sideways and got cut off at the edge, so the school row looked like it wasn't there. They wrap onto a second line now.",
         "I also moved every line of a piece up to the top of its sheet, right under power and qi, so at 150% zoom you shouldn't need to scroll at all.",
         "Your screenshots made this one easy to find, thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Show all stats of the gear by default",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks for checking again, and sorry, you were right: there was a second thing hiding it. The school row only appeared when your chest held pieces from at least two schools, so if you've been farming one school and melting the rest, it never showed up at all.",
+        "That's fixed now: the row is there whenever your chest has anything in it.",
+        "If you still don't see it after a reload, open the menu (≡) and look at the last line, it says *Build* and a date. If it's older than today, tell me where you play (the website, itch.io or the Android app) and I'll sort it out.",
         "· 師 Shibaki"
       ]
     }
