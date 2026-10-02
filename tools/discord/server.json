@@ -663,6 +663,7 @@
       "title": "器 Gear: ranks, sets, classes and refining",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-gear.webp?v=2",
+      "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/schools-chart.webp?v=1"],
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/gear.webp",
       "body": [
         "From the second realm, beasts leave gear. Tap a piece in your chest to wear it. **Six places:** 劍 Weapon, 袍 Robe, 冠 Crown, 靴 Boots, 珮 Talisman, 戒 Ring.",
@@ -707,7 +708,8 @@
         ["法 Arts Cultivator · 法修", "Leads with 法 Art. The arts in your sequence strike 15% harder, or 30% at the full."]
       ],
       "gallery": [
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/classes.webp?v=2"
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/classes.webp?v=2",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/schools-chart.webp?v=1"
       ]
     },
     {
@@ -717,6 +719,7 @@
       "title": "合 The fifteen classes",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-pairs.webp?v=2",
+      "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/pairs-chart.webp?v=1"],
       "body": [
         "Wake two schools with three pieces each and you become one of these. You keep both schools' first steps, and the class adds a perk of its own on a system no school touches."
       ],
