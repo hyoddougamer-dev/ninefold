@@ -193,6 +193,7 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   if (icon) {
     await icon.click();
     await page.waitForSelector('.termtip', { timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(350);   // the note fades in; read it once it has
     const said = await page.$eval('.termtip', (e) => e.textContent).catch(() => '');
     check(/Made in/.test(said ?? ''), `${tag}: the note names it and says where it is made ("${(said ?? '').slice(0, 70)}")`);
     if (tag !== 'p320') await shot(page, `${tag}-craftnote`);
