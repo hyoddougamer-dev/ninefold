@@ -435,7 +435,10 @@ await scenario({}, async (port, env, state) => {
     state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
   }
   const first = await runSetup(port, env);
-  const mine = (a) => state.threads.find((t) => t.name === a.title && t.owner_id === '4242');
+  // 處 By forum as well as title: a post can be answered in whichever forum holds it, by
+  // naming it under both (the bot skips the one where it is not).
+  const mine = (a) => state.threads.find((t) => t.name === a.title && t.owner_id === '4242'
+    && t.parent_id === forumOf(a.forum).id);
   const replies = (a) => state.messages[mine(a).id].filter((x) => x.author.id === BOT);
   const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x).name).sort(); };
   check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => r.content.startsWith('<@4242> '))),

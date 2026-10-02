@@ -1005,6 +1005,7 @@
     {
       "forum": "ideas",
       "title": "QoL",
+      "tags": ["Idea"],
       "reply": [
         "Glad you like Auto! And you were right about the balance. I measured it this morning: with Auto on, melting gear turned kills into qi so fast that the whole climb went about three times quicker.",
         "It's fixed in today's update. Melting pays qi from an allowance that refills as you gather, and past it pieces melt into material. Auto now opens for a beast once it's Known (10 kills), so you still get to know each beast first, and the drive is four times cheaper (fifteen seconds of gathering per kill), since it's now the way to hunt while the game is closed.",
@@ -1027,6 +1028,7 @@
     {
       "forum": "ideas",
       "title": "Withered bone gear grants way too much qi on meltdown",
+      "tags": ["Idea"],
       "reply": [
         "Good catch, and you're not missing anything: melting really was the fastest way to get qi, and it never should have been.",
         "The jump you saw is because realm 1 got a lot cheaper a couple of days ago, while realm 2 pieces kept their old melt value.",
