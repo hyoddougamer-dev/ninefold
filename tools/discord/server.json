@@ -546,6 +546,27 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-numbers.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02-schools",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Which piece is which school",
+      "color": "#8FB49B",
+      "body": [
+        "Thanks to Raziel Morgenstern for asking! Under your class on the 器 Gear screen there's now a **譜 Which piece is which school** button. It shows every shape under its school, drawn in your realm's metal, marks the pieces you're wearing, and says what each school and each of the fifteen classes gives.",
+        "",
+        "Two rows of filters on top pick one school, one place on the body, or both: tap 運 Fortune and Ring and you see the two Fortune rings and Fortune's five classes. No numbers changed."
+      ],
+      "fields": [
+        ["▸ Also in the guides", "The same chart is in the Gear, Classes and Fifteen Classes guides in {#guides}, so you can read it away from the game too."],
+        ["謝 Thanks", "To Raziel Morgenstern for the question, and to everyone posting in {#ideas} and {#bugs}. Keep them coming."]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/schools-page.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/schools-phone.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
