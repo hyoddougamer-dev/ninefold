@@ -386,6 +386,7 @@ export const MENU = {
   key: 'What the characters mean',
   stele: 'The stele',
   credits: 'Credits',
+  cards: 'Your 悟道 cards',
   report: 'Report a bug',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
@@ -1007,6 +1008,31 @@ export const AWAKEN = {
   lead: 'Take one of the three. The other two close, and what you take is yours for the rest of the climb.',
   take: 'Take this one',
   later: 'Decide later',
+  /**
+   * 改 Your cards, and trading one. rekaris, on the Discord: *"I would much rather be able
+   * to change my past choices when tweaking/changing builds rather than being locked into
+   * previous poor decision."*
+   */
+  hand: {
+    title: 'Your cards',
+    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card taken after it.',
+    none: 'No cards yet. The first one comes with the second realm.',
+    line: (n: number) => (n === 1 ? '悟道 Your card · change it' : `悟道 Your ${n} cards · change one`),
+    fromRealm: (han: string, name: string) => `From ${han} ${name}`,
+    fromHeaven: (han: string, name: string) => `From the heaven ${han} ${name}`,
+    change: 'Change',
+    keep: 'Keep it',
+    cost: (days: string, qi: string) => `${days} of your qi · ${qi}`,
+    trade: 'Trade for this',
+    traded: (name: string) => `${name} is yours now`,
+    why: {
+      qi: 'Not enough qi in the bar yet.',
+      dao: 'Its 道 points are already spent in the tree. Take a node back first.',
+      chest: 'Its chest places are full. Make room in the chest first.',
+      card: 'That card cannot be taken here.',
+    } as Record<'qi' | 'dao' | 'chest' | 'card', string>,
+    close: 'Close',
+  },
   /** 修 The card the home screen keeps up until the choice is made. */
   waiting: 'A 悟道 awakening is owed you. Three cards, and one of them is yours.',
   /** 釋 What the character means, for the key and the tooltip. */

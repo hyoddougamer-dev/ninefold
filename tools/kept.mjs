@@ -31,7 +31,7 @@ function cultivator(over = {}) {
   const at = Math.floor(Date.now() / 1000);
   return {
     v: 1, at, startedAt: at - 30 * 86400,
-    realm: 4, layer: 4, qi: 1e6, materials: 2e4, wardenFell: false,
+    realm: 4, layer: 4, qi: 1e9, materials: 2e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
     killed: { rat: 150, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },
     worn: { weapon: piece('w-on', 'sword3', 'earth', 22), robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
@@ -289,6 +289,32 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
       check(!!lit, `${tag}: Go takes the player to that recipe, lit`);
     } else check(false, `${tag}: the note has a Go button`);
   }
+
+  // ── 改 the cards already taken, and trading one ─────────────────────────────────────
+  // rekaris: "give the player the possibility to change any of their 'permanent' choices
+  // at a very, very, very large cost."
+  await page.click('.mainswitch');
+  await page.waitForTimeout(200);
+  await page.click('.switchmenu button:has-text("Your 悟道 cards")');
+  await page.waitForSelector('.cardbook', { timeout: 3000 }).catch(() => {});
+  const held = await page.$$eval('.cardbook .cb-card', (els) => els.length);
+  check(held === 3, `${tag}: the cards page lists the three cards taken (${held})`);
+  const cardWas = await page.$eval('.cardbook .cb-card:last-of-type .cb-head b', (e) => e.textContent).catch(() => '');
+  await page.click('.cardbook .cb-card:last-of-type .cb-change');
+  await page.waitForTimeout(250);
+  const alts = await page.$$eval('.cardbook .cb-alt', (els) => els.length);
+  const cost = await page.$eval('.cardbook .cb-cost', (e) => e.textContent).catch(() => '');
+  check(alts === 2 && /half a day of your qi/.test(cost ?? ''), `${tag}: Change offers the other two and the price ("${cost}")`);
+  check(await overflow(page) <= 0, `${tag}: the cards page does not scroll sideways`);
+  await shot(page, `${tag}-cards`);
+  await page.click('.cardbook .cb-alt .act:not([disabled]) >> nth=0');
+  await page.waitForTimeout(400);
+  const cardNow = await page.$eval('.cardbook .cb-card:last-of-type .cb-head b', (e) => e.textContent).catch(() => '');
+  check(!!cardNow && cardNow !== cardWas, `${tag}: trading swaps the card ("${cardWas}" for "${cardNow}")`);
+  await shot(page, `${tag}-cards-traded`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.cardbook')), `${tag}: Esc closes the cards page`);
 
   // ── PC: every effect of a piece is open without asking ──────────────────────────────
   if (pc) {

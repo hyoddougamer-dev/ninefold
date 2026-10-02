@@ -50,7 +50,12 @@ function countFrom(realm: number, luck: number): Rarity {
   return 'heaven';
 }
 
-export function cardWorth(s: State, card: Card): Worth {
+/**
+ * `at` is set when the card would replace one already held (改, sim/retrade.ts) rather
+ * than join the end of the hand. No trio holds two cards of one kind, so the card it
+ * replaces never moves the same number and the rest reads the same either way.
+ */
+export function cardWorth(s: State, card: Card, at?: number): Worth {
   const e = card.effect;
   const f = fortuneOf(s);
   if (e.kind === 'luck') {
@@ -78,7 +83,8 @@ export function cardWorth(s: State, card: Card): Worth {
     return {
       kind: 'chest',
       before: chestLimit(s.unlocked, room, s.awakened),
-      after: chestLimit(s.unlocked, room, [...valid(s.awakened), card.key]),
+      after: chestLimit(s.unlocked, room, at === undefined ? [...valid(s.awakened), card.key]
+        : valid(s.awakened).map((k, j) => (j === at ? card.key : k))),
     };
   }
   return { kind: 'flat' };

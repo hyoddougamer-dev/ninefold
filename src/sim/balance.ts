@@ -147,6 +147,29 @@ export const DRIVE_MINUTES = 0.25;
 export const DRIVE_OLD = 0.25;
 
 /**
+ * 改 What changing a card already taken costs, in days of the cultivator's own gathering,
+ * for each card taken after it and the card itself.
+ *
+ * rekaris, on the Discord: *"give the player the possibility to change any of their
+ * 'permanent' choices at a very, very, very large cost."* Bruno chose to let any card be
+ * traded for another of the three it was offered with, paid in qi, dearer the further
+ * back it is. So the newest card costs half a day of qi, the one before it a day, and the
+ * first card of a whole climb (seventeen back) eight and a half.
+ *
+ * Priced in the cultivator's own time, like the drive, so it costs the same share of a
+ * climb at every stage of it. No card raises the qi rate, so a trade can only ever move
+ * qi out of the bar and into a different kind of help: it can never pay for itself in qi.
+ *
+ * 測 Measured on 2026-10-02 with the active cultivator: taking every card of one kind
+ * for a whole climb against another moves the ninth realm 1.4 days at most (salvage 43.8,
+ * material 45.0, 道 45.2). A whole hand is worth less than three of the cheapest trades.
+ * A cultivator built to trade every card to suit each realm, trading before buying
+ * anything, afforded one trade in 120 days: the bar never holds half a day of qi unless
+ * somebody saves for it on purpose.
+ */
+export const RETRADE_DAYS = 0.5;
+
+/**
  * 舊 What an old beast pays, as a share of what this realm's weakest pays.
  *
  * Measured, before this existed: the frog of the first realm paid **2 材** and the frog

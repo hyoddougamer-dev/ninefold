@@ -40,7 +40,7 @@ const BUY_KEY = 'ninefold.buy';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, meeting, onMeet, onPlant, onHarvest, onDemon, title }: {
+  owesCard, onAwaken, onCards, meeting, onMeet, onPlant, onHarvest, onDemon, title }: {
   state: State;
   /** 冠 The title the rankings gave this player, if any. */
   title?: string | null;
@@ -72,6 +72,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   owesCard: boolean;
   /** 悟道 Put the three cards back on the screen. */
   onAwaken: () => void;
+  /** 改 Open the cards already taken, where one can be traded. */
+  onCards: () => void;
   /** 緣 Somebody waiting on the road, or nobody. */
   meeting: Meeting | null;
   /** 緣 Answer them, one way or the other. */
@@ -342,6 +344,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           <i>{AWAKEN.waiting}</i>
           <em className="cjk">›</em>
         </button>
+      )}
+      {/* 改 The cards already taken, one tap away, and quiet: it is not a thing to do. */}
+      {!owesCard && state.awakened.length > 0 && (
+        <button className="handline" onClick={onCards}>{AWAKEN.hand.line(state.awakened.length)} ›</button>
       )}
 
       {ready && (

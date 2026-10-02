@@ -27,7 +27,7 @@ import {
 import { Crafts } from './screens/Crafts.tsx';
 import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
 import type { Away } from '../sim/save.ts';
-import { CRAFTS, GEAR } from './copy.ts';
+import { AWAKEN, CRAFTS, GEAR } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -52,7 +52,7 @@ import { RealmCard } from './ui/RealmCard.tsx';
 import { Awaken } from './ui/Awaken.tsx';
 import { Figure } from './ui/Figure.tsx';
 import { WHOM } from '../data/figures.ts';
-import { cardDue as awakeningDue, take as takeAwakening } from '../sim/awaken.ts';
+import { cardDue as awakeningDue, cardOf, take as takeAwakening } from '../sim/awaken.ts';
 import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
@@ -61,6 +61,8 @@ import {
 import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
+import { Cards } from './ui/Cards.tsx';
+import { retrade } from '../sim/retrade.ts';
 import { Schools } from './ui/Schools.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
@@ -135,6 +137,8 @@ export function App() {
   const [key, setKey] = useState(false);
   /** 譜 The page of which piece is which school, opened from the class on 器. */
   const [book, setBook] = useState(false);
+  /** 改 The cards already taken, where one can be traded. */
+  const [cards, setCards] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
@@ -875,6 +879,7 @@ export function App() {
   const panelOut = saving ? () => { setSaving(false); sfx.tap(); }
     : key ? () => { setKey(false); sfx.tap(); }
     : book ? () => { setBook(false); sfx.tap(); }
+    : cards ? () => { setCards(false); sfx.tap(); }
     : help ? () => { setHelp(false); sfx.tap(); }
     : ranks ? () => { setRanks(false); sfx.tap(); }
     : inspect ? () => { setInspect(null); sfx.tap(); }
@@ -957,6 +962,7 @@ export function App() {
             onRealm={() => { setRealmPage(true); sfx.tap(); }}
             owesCard={owesCard}
             onAwaken={() => { setAwakenShut(false); sfx.tap(); }}
+            onCards={() => { setCards(true); sfx.tap(); }}
             onPlant={(which, key) => { setState((s) => plantSeed(s, which, key)); sfx.buy(); }}
             onHarvest={(which) => { setState((s) => harvestBed(s, which)); sfx.floor(); }}
             onDemon={faceDemon}
@@ -1029,6 +1035,7 @@ export function App() {
               ['?', MENU.help, () => setHelp(true)],
               ['釋', MENU.key, () => setKey(true)],
               ['碑', MENU.stele, () => setStele(true)],
+              ['悟', MENU.cards, () => setCards(true)],
               ['謝', MENU.credits, () => setCredits(true)],
             ] as const).map(([han, label, go]) => (
               <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
@@ -1274,6 +1281,17 @@ export function App() {
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
       {book && <Schools state={state} onClose={() => { setBook(false); sfx.tap(); }} />}
+      {cards && (
+        <Cards state={state} onClose={() => { setCards(false); sfx.tap(); }}
+          onTrade={(i, key) => {
+            const id = ++taps.current;
+            setState((s) => {
+              const r = retrade(s, i, key);
+              if (!r.refused) once(id, () => { float(AWAKEN.hand.traded(cardOf(key)?.name ?? ''), 'gold'); sfx.buy(); haptics.strike(); });
+              return r.state;
+            });
+          }} />
+      )}
 
       {/* 相 Asked once, before anything else, and reopened from 助 the help sheet. It is
           shown while the answer is null, so a save that has never been asked asks, and a
