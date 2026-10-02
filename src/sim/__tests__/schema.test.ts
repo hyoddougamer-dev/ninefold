@@ -202,6 +202,8 @@ describe('榜 the ranked schema', () => {
     const sql = readFileSync(`${MIGRATIONS}/20260929020000_panel_notes.sql`, 'utf8')
       .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`);
     await db.exec(sql);
+    // and the later migrations that redefine its functions, as they stand on the server
+    await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
     const rows = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p;
     expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(Object.keys(rows[0]).sort()).toEqual(
@@ -228,6 +230,40 @@ describe('榜 the ranked schema', () => {
     await expect(as(null, `select panel_ok('test-key')`)).rejects.toThrow(/permission denied/);
     // and back as it was, for the tests after this one
     await db.exec(`update profiles set strikes = ${was.strikes}, suspect = ${was.suspect}, banned = ${was.banned} where lower(name) = lower('${flagged.name}')`);
+  });
+
+  /**
+   * 清 A cleared flag has to stay cleared. The sync also measures the climb against where
+   * it stood a day and a week before, so a flag taken off while those windows still held
+   * the fast stretch came straight back on the next sync.
+   */
+  it('a cleared flag restarts the day and week windows, and rekaris is cleared alone', async () => {
+    const R = '77777777-7777-7777-7777-777777777777';
+    const D = '88888888-8888-8888-8888-888888888888';
+    await db.exec(`
+      insert into auth.users values ('${R}'), ('${D}');
+      insert into profiles (id, name, strikes, suspect) values ('${R}', 'Rekaris', 1, true), ('${D}', 'Delta', 1, true);
+      insert into saves (user_id, latest, verified, verified_at, day_state, day_at, week_state, week_at) values
+        ('${R}', '{"at": 3}', '{"at": 2}', '2026-10-02T10:00:00Z', '{"at": 1}', '2026-10-01T10:00:00Z', '{"at": 0}', '2026-09-25T10:00:00Z'),
+        ('${D}', '{"at": 3}', '{"at": 2}', '2026-10-02T10:00:00Z', '{"at": 1}', '2026-10-01T10:00:00Z', '{"at": 0}', '2026-09-25T10:00:00Z');
+    `);
+    await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
+    const read = async (id: string) => (await db.query(`
+      select p.strikes, p.suspect, s.day_state, s.day_at, s.week_state, s.week_at, s.verified_at, n.cleared_at
+        from profiles p join saves s on s.user_id = p.id left join panel_notes n on n.user_id = p.id
+       where p.id = '${id}'`)).rows[0] as any;
+    const r = await read(R);
+    expect(r).toMatchObject({ strikes: 0, suspect: false, day_state: { at: 2 }, week_state: { at: 2 } });
+    expect(r.day_at).toEqual(r.verified_at);
+    expect(r.week_at).toEqual(r.verified_at);
+    expect(r.cleared_at).toBeTruthy();
+    // 他 Nobody else Bruno did not name is touched.
+    expect(await read(D)).toMatchObject({ strikes: 1, suspect: true, day_state: { at: 1 }, week_state: { at: 0 }, cleared_at: null });
+    // and the panel's own button now does the same
+    await as(null, `select panel_clear('test-key', 'delta', 'checked')`);
+    expect(await read(D)).toMatchObject({ strikes: 0, suspect: false, day_state: { at: 2 }, week_state: { at: 2 } });
+    await expect(as(A, `select clear_flag('${D}', 'x')`)).rejects.toThrow(/permission denied/);
+    await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
   });
 
   it('where I stand, for the signed-in player only', async () => {
