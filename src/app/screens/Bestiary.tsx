@@ -9,6 +9,8 @@ import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
 import { schoolOf } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
+import { Term } from '../ui/Term.tsx';
+import { schoolSays } from '../classes.ts';
 
 /**
  * 錄 The bestiary.
@@ -71,8 +73,13 @@ export function Bestiary({ state }: { state: State }) {
                       <span className="bschools" aria-label={BESTIARY.leavesSchools(b.leaves.map((a) =>
                         SCHOOL_INFO[schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] })].short))}>
                         {b.leaves.map((a, i) => {
-                          const sc = SCHOOL_INFO[schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] })];
-                          return <em key={`${a}${i}`} className="cjk" style={{ color: sc.colour }} title={sc.short}>{sc.seal}</em>;
+                          const key = schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] });
+                          const sc = SCHOOL_INFO[key];
+                          return (
+                            <em key={`${a}${i}`} className="cjk" style={{ color: sc.colour }}>
+                              <Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} />
+                            </em>
+                          );
                         })}
                       </span>
                     )}

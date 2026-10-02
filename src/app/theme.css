@@ -1353,6 +1353,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chestfilter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
 /* 職 The school line sits tight under the slot line, each seal in its school's colour. */
 .chestfilter.schools { margin-top: -6px; }
+/* 腦 On a computer the rows wrap instead of scrolling: a row that scrolls sideways under
+   a mouse looks like a row that ends, and rekaris could not find the school filters. */
+@media (min-width: 900px) { .chestfilter { flex-wrap: wrap; overflow: visible; } }
 .chestfilter.schools button .cjk { color: var(--hue, inherit); }
 .chestfilter.schools button[aria-pressed='true'] { border-color: var(--hue, var(--text)); }
 
@@ -2412,6 +2415,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .itemsheet .verdict[data-k="same"] h4, .itemsheet .verdict[data-k="down"] h4 { color: var(--faint); }
 .itemsheet .verdict .vg { font-size: 22px; line-height: 1; }
 .itemsheet .vrows { display: grid; gap: 4px; margin-top: 9px; }
+.itemsheet .vlines { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.itemsheet .vline { font-size: 11.5px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--text); }
+.itemsheet .vline .cjk { font-weight: 400; color: var(--gold); }
+.itemsheet .vline em { font-style: normal; color: var(--faint); }
+.itemsheet .vline[data-up] { border-color: rgba(127,180,149,.55); }
+.itemsheet .vline[data-up] em { color: var(--jade); }
+.itemsheet .vline[data-down] { border-color: rgba(210,96,78,.5); }
+.itemsheet .vline[data-down] em { color: var(--cinnabar); }
 .itemsheet .vrow { display: flex; align-items: baseline; gap: 9px; font-size: 15px; }
 .itemsheet .vrow .cjk { width: 18px; color: var(--faint); }
 .itemsheet .vrow b { font-weight: 600; }
@@ -3308,6 +3319,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .gset[data-on='true'] .gs-wear i { color: var(--jade); }
 .gset .gs-save { padding: 0 12px; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
 .gset .gs-clear { width: 38px; font-size: 18px; color: var(--faint); }
+.gset .gs-rename { width: 38px; font-size: 15px; color: var(--faint); }
+.gset .gs-name { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--gild-strong);
+                 background: var(--panel); color: var(--text); font: inherit; font-size: 14px; }
 .gset .gs-save:hover, .gset .gs-clear:hover { color: var(--text); border-color: var(--gild-strong); }
 button.gs-new { width: 100%; display: flex; align-items: center; gap: 8px; font: inherit; cursor: pointer; border: 1px dashed var(--gild); border-radius: 10px; background: none;
                 color: var(--gold); padding: 9px 12px; text-align: left; font-size: 13px; }

@@ -38,7 +38,7 @@ import { SET_LIMIT } from '../../sim/state.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onBook }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onRenameSet, onBook }: {
   state: State;
   pulse: number;
   /** 拆 The rank the bulk melt reaches up to. Held by the app so it survives a tab. */
@@ -55,6 +55,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onSaveSet: (index: number, name: string) => void;
   onWearSet: (index: number) => void;
   onClearSet: (index: number) => void;
+  /** 名 Give loadout `index` a name of the player's own. */
+  onRenameSet: (index: number, name: string) => void;
   /** 譜 Open the page of which piece is which school. */
   onBook: () => void;
 }) {
@@ -79,6 +81,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   // 職 And by school, a second line under the first. rekaris, on the Discord: *"You already
   // have filters for gear slot, adding another line of filters for the class would be great."*
   const [kin, setKin] = useState<'any' | School>('any');
+  /** 名 Which loadout is being renamed, if any. */
+  const [naming, setNaming] = useState<number | null>(null);
   // 拆 What the melt would take, so the button can say so before it is pressed.
   const melting = salvageable(state.chest, upTo);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
@@ -199,6 +203,22 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             {state.sets.map((set, i) => {
               const on = isWorn(state, i);
               const n = Object.keys(set.ids).length;
+              if (naming === i) {
+                // 名 Enter or leaving the field keeps the name; Esc puts the old one back.
+                const done = (keep: boolean, value: string) => { setNaming(null); if (keep) onRenameSet(i, value); };
+                return (
+                  <div key={i} className="gset" data-on={on}>
+                    <input className="gs-name" autoFocus maxLength={24} defaultValue={set.name}
+                      aria-label={GEAR.loadoutNameField}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter') done(true, e.currentTarget.value);
+                        if (e.key === 'Escape') done(false, '');
+                      }}
+                      onBlur={(e) => done(true, e.currentTarget.value)} />
+                  </div>
+                );
+              }
               return (
                 <div key={i} className="gset" data-on={on}>
                   <button className="gs-wear" disabled={on} onClick={() => onWearSet(i)}
@@ -206,6 +226,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <b>{set.name}</b>
                     <i>{on ? GEAR.loadoutWorn : GEAR.loadoutPieces(n)}</i>
                   </button>
+                  <button className="gs-rename" onClick={() => setNaming(i)}
+                    aria-label={GEAR.loadoutRename(set.name)} title={GEAR.loadoutRename(set.name)}>✎</button>
                   <button className="gs-save" onClick={() => onSaveSet(i, set.name)}
                     aria-label={GEAR.loadoutResave(set.name)} title={GEAR.loadoutResave(set.name)}>{GEAR.loadoutSaveShort}</button>
                   <button className="gs-clear" onClick={() => onClearSet(i)}
@@ -465,7 +487,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                           // what the eye is shown: the name, the rank, and whether it is better.
                           aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
                             ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
-                    <Svg html={gearTile(item, { size: 56 })} />
+                    {/* 註 On a computer the pointer reads the tile out: name, rank and school. */}
+                    <span title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ${SCHOOL_INFO[schoolOf(item)].short} school`}>
+                      <Svg html={gearTile(item, { size: 56 })} />
+                    </span>
                     {move.better && <span className="upmark" aria-hidden="true">▲</span>}
                     {item.locked && <span className="lockmark" aria-hidden="true">鎖</span>}
                   </button>

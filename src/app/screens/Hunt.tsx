@@ -12,6 +12,7 @@ import {
 import { num } from '../../sim/format.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Term } from '../ui/Term.tsx';
+import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
 import { HUNT, UNIT } from '../copy.ts';
@@ -89,7 +90,8 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
     const all = [...huntable(state.realm, state.layer)];
     const pay = new Map(all.map((b) => [b.key, lootFrom(state, b)]));
     return all.sort((a, b) => {
-      const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
+      // A mark still to earn first, then only the deep marks left, then nothing left.
+      const left = (x: typeof a) => { const k = state.killed[x.key] ?? 0; return nextMark(k) ? 0 : nextDeep(k) ? 1 : 2; };
       if (order === 'strong') return left(a) - left(b) || beastPower(b) - beastPower(a);
       if (order === 'material') return left(a) - left(b) || (pay.get(b.key) ?? 0) - (pay.get(a.key) ?? 0) || beastPower(b) - beastPower(a);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
@@ -109,7 +111,11 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
    * reads, however well it is ordered. What is still a question stays on top as cards;
    * what is done goes behind one line that says how many, and opens if you want it.
    */
-  const open = sorted.filter((b) => nextMark(state.killed[b.key] ?? 0));
+  // 精 絕 A beast at 通 still has the deep marks ahead, so it is not finished until they are
+  // earned too. rekaris, on the Discord: *"My beasts are marked as 'finished' despite the
+  // new milestones."*
+  const finished = (b: (typeof BEASTS)[number]) => { const k = state.killed[b.key] ?? 0; return !nextMark(k) && !nextDeep(k); };
+  const open = sorted.filter((b) => !finished(b));
   /**
    * 算 Each beast's odds, once. oddsRaw fights forty-one times to answer, and the count in
    * the heading and the figure on every row both need it: asked twice, the hunt screen
@@ -121,7 +127,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sorted, ...fightDeps(state)]);
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
-  const done = sorted.filter((b) => !nextMark(state.killed[b.key] ?? 0));
+  const done = sorted.filter(finished);
   const list = showDone ? [...open, ...done] : open;
 
   return (
@@ -200,7 +206,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
           return (
             /* 指 The sort already puts the beast worth pressing at the top, so that is
                the row 引 the guide points its arrow at. */
-            <button key={b.key} className="beast" data-done={!next}
+            <button key={b.key} className="beast" data-done={finished(b)}
               data-coach={i === 0 ? 'beast-first' : undefined}
               onClick={() => onFight(b.key)}>
               {/* 牌 The plate, not the seal: thirty-six paintings exist now, and the
@@ -260,11 +266,16 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
                     // for fortune pieces, but I don't know which monsters drop them."*
                     const piece = { id: 'l', template: `${a}${Math.min(b.realm, state.realm)}`,
                       rarity: RARITIES[fatePromise(state, b)], rolls: [] };
-                    const sc = SCHOOL_INFO[schoolOf(piece)];
+                    const key = schoolOf(piece);
+                    const sc = SCHOOL_INFO[key];
                     return (
-                      <em key={a} title={`${arch.name}, ${sc.short}`} aria-label={`${arch.name}, ${sc.short}`}>
+                      <em key={a} aria-label={`${arch.name}, ${sc.short}`}>
                         <Svg html={gearTile(piece, { size: 26 })} />
-                        <span><b className="cjk lsch" style={{ color: sc.colour }}>{sc.seal}</b> {arch.name}</span>
+                        <span><b className="cjk lsch" style={{ color: sc.colour }}>
+                          {/* 註 Hover or tap the seal and it says which school, in English.
+                              rekaris: *"it would be great if I could hover over it and know what it is."* */}
+                          <Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} />
+                        </b> {arch.name}</span>
                       </em>
                     );
                   })}

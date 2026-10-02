@@ -33,10 +33,10 @@ function cultivator(over = {}) {
     v: 1, at, startedAt: at - 30 * 86400,
     realm: 4, layer: 4, qi: 1e6, materials: 2e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
-    killed: { rat: 30, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },
+    killed: { rat: 150, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },
     worn: { weapon: piece('w-on', 'sword3', 'earth', 22), robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
     chest: [
-      piece('c-junk1', 'sword2'), piece('c-junk2', 'leather2'), piece('c-keep', 'sword4', 'earth', 30),
+      piece('c-junk1', 'sword2'), piece('c-junk2', 'leather2'), { ...piece('c-keep', 'sword4', 'earth', 30), rolls: [{ affix: 'power', value: 30 }, { affix: 'luck', value: 6 }, { affix: 'find', value: 2.4 }] },
       piece('c-luck', 'cloak3', 'mystic', 8, 'luck'), piece('c-robe', 'robe3', 'spirit', 7, 'rate'),
       piece('c-crown', 'bonecrown3', 'common', 4, 'refine'),
     ],
@@ -105,6 +105,14 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     await page.waitForTimeout(200);
   } else check(false, `${tag}: there was a Fortune piece to filter by`);
   check(await overflow(page) <= 0, `${tag}: the gear screen does not scroll sideways`);
+  if (pc) {
+    // 腦 rekaris could not find the school filters: on a computer a row cut at the edge
+    // reads as a row that ends, so there the rows wrap and nothing hides past the edge.
+    const hidden = await page.$$eval('.chestfilter', (rows) => rows.filter((r) => r.scrollWidth > r.clientWidth + 1).length);
+    check(hidden === 0, `${tag}: no filter row hides chips past its edge (${hidden})`);
+    const tip = await page.$eval('.chest .chestit [title]', (e) => e.getAttribute('title')).catch(() => '');
+    check(/school$/.test(tip ?? ''), `${tag}: hovering a tile names it, its rank and its school ("${tip}")`);
+  }
   await shot(page, `${tag}-gear`);
 
   // ── 譜 which piece is which school, one tap from the class ──────────────────────────
@@ -212,6 +220,13 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
       const back = await page.$eval('.gset .gs-wear i', (e) => e.textContent).catch(() => '');
       check(/Wearing/.test(back ?? ''), `${tag}: one tap and it is all worn again`);
     }
+    // 名 rekaris: "being able to rename the loadout would be a nice addition."
+    await page.click('.gset .gs-rename');
+    await page.fill('.gset .gs-name', 'Boss killer');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(250);
+    const renamed = await page.$eval('.gset .gs-wear b', (e) => e.textContent).catch(() => '');
+    check(renamed === 'Boss killer', `${tag}: a loadout takes a name of the player's own ("${renamed}")`);
     if (tag === 'p400' || tag === 'pc') {
       await page.$eval('.gsets', (e) => e.scrollIntoView({ block: 'center' })).catch(() => {});
       await page.waitForTimeout(200);
@@ -235,6 +250,20 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   const leaves = await page.$$eval('.bleaves em', (els) => els.slice(0, 3).map((e) => e.getAttribute('aria-label')));
   check(leaves.length > 0 && leaves.every((l) => /, (Sword|Qi|Fortune|Body|Artificer|Arts)$/.test(l ?? '')),
     `${tag}: each piece a beast leaves names its school (${leaves.join(' | ')})`);
+  // 精 rekaris: "My beasts are marked as 'finished' despite the new milestones."
+  const deepOpen = await page.$$eval('.stack > .beast[data-done="false"] .marks em[data-deep]', (els) => els.length);
+  check(deepOpen >= 2, `${tag}: a beast past 100 kills stays in the list, working toward 精 (${deepOpen} deep pips)`);
+  const seal = await page.$('.bleaves .lsch .term');
+  if (seal) {
+    await seal.click();
+    await page.waitForSelector('.termtip', { timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(350);
+    const said = await page.$eval('.termtip', (e) => e.textContent).catch(() => '');
+    check(/school/.test(said ?? ''), `${tag}: a school seal on the hunt names its school ("${(said ?? '').slice(0, 60)}")`);
+    if (tag !== 'p320') await shot(page, `${tag}-sealnote`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+  } else check(false, `${tag}: the hunt shows a school seal to tap`);
   check(await overflow(page) <= 0, `${tag}: the hunt screen does not scroll sideways`);
   await shot(page, `${tag}-hunt`);
   await page.click('.huntorder button:has-text("Next mark")');
@@ -268,6 +297,8 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     await page.waitForTimeout(400);
     const opened = await page.$eval('details.idetail', (d) => d.open).catch(() => false);
     check(opened, `${tag}: on a computer the sheet opens with every effect shown`);
+    const top = await page.$$eval('.itemsheet .verdict .vline', (els) => els.length);
+    check(top >= 1, `${tag}: every line of the piece sits at the top beside power and qi (${top})`);
     await shot(page, `${tag}-sheet`);
   } else {
     await tab(page, '器');
@@ -275,6 +306,9 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     await page.waitForTimeout(400);
     const opened = await page.$eval('details.idetail', (d) => d.open).catch(() => true);
     check(!opened, `${tag}: on a phone the details stay folded, as before`);
+    const top = await page.$$eval('.itemsheet .verdict .vline', (els) => els.length);
+    check(top >= 1, `${tag}: and the lines of the piece are at the top anyway (${top})`);
+    if (tag === 'p400') await shot(page, `${tag}-sheettop`);
   }
   await page.close();
 }

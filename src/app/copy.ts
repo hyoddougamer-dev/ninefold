@@ -1289,6 +1289,8 @@ export const GEAR = {
   loadoutOn: (name: string) => `${name}, worn now`,
   loadoutResave: (name: string) => `Save what you wear as ${name}`,
   loadoutForget: (name: string) => `Forget ${name}`,
+  loadoutRename: (name: string) => `Rename ${name}`,
+  loadoutNameField: 'Loadout name',
   loadoutDefault: (n: number) => `Loadout ${n}`,
   setMissing: (n: number) => (n === 1 ? '1 piece of that loadout is gone' : `${n} pieces of that loadout are gone`),
   lockedWord: 'locked',

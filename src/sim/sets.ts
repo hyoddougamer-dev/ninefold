@@ -45,6 +45,21 @@ export function saveSet(s: State, index: number, name: string): State {
   return out;
 }
 
+/**
+ * 名 Rename set `index`, and nothing else: its pieces stay as they are. rekaris, on the
+ * Discord: *"being able to rename the loadout would be a nice addition."* The same rule as
+ * a saved name: no control characters, 24 at most, and an empty name keeps the old one.
+ */
+export function renameSet(s: State, index: number, name: string): State {
+  const set = s.sets[index];
+  if (!set) return s;
+  const clean = name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24);
+  if (!clean || clean === set.name) return s;
+  const sets = [...s.sets];
+  sets[index] = { ...set, name: clean };
+  return { ...s, sets };
+}
+
 /** 套 Forget set `index`. Its pieces stay where they are, still locked. */
 export function clearSet(s: State, index: number): State {
   if (index < 0 || index >= s.sets.length) return s;

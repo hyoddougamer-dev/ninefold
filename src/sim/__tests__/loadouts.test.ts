@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { type Item } from '../../data/gear.ts';
 import { addToChest, fusable, fuse } from '../chest.ts';
 import { salvage, salvageUpTo, salvageable } from '../salvage.ts';
-import { clearSet, isWorn, saveSet, setLocked, wearSet } from '../sets.ts';
+import { clearSet, isWorn, renameSet, saveSet, setLocked, wearSet } from '../sets.ts';
 import { SET_LIMIT, newState, validate, type State } from '../state.ts';
 
 const T0 = 1_700_000_000;
@@ -99,6 +99,18 @@ describe('套 a saved set', () => {
     expect(v.sets.length).toBeLessThanOrEqual(SET_LIMIT);
     expect(v.sets[0]).toEqual({ name: 'x'.repeat(24), ids: { weapon: 'w1' } });
     expect(validate({ ...raw, sets: 'nope' }, T0).sets).toEqual([]);
+  });
+
+  /** 名 rekaris: "being able to rename the loadout would be a nice addition." */
+  it('takes a new name and keeps its pieces, and an empty name keeps the old one', () => {
+    const s = saveSet(body(), 0, 'Sword Cultivator');
+    const named = renameSet(s, 0, '  Boss  killer\u0007 ');
+    expect(named.sets[0].name).toBe('Boss  killer');
+    expect(named.sets[0].ids).toEqual(s.sets[0].ids);
+    expect(renameSet(s, 0, '   ').sets[0].name).toBe('Sword Cultivator');
+    expect(renameSet(s, 0, 'x'.repeat(60)).sets[0].name).toHaveLength(24);
+    expect(renameSet(s, 5, 'nobody')).toBe(s);
+    expect(validate(JSON.parse(JSON.stringify(named)), T0).sets[0].name).toBe('Boss  killer');
   });
 
   it('a save from before sets existed loads with none', () => {

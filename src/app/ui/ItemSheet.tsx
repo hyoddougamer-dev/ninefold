@@ -141,6 +141,18 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
           {row('力', ITEM.power, move.power)}
           {row('氣', ITEM.qi, move.rate)}
         </div>
+        {/* 列 Every line on the piece, up here beside power and qi, so nothing has to be
+            opened or scrolled to. rekaris, on the Discord: *"I would find it better to be in
+            the top with power and qi ... I play at 150% zoom."* Against what is worn, a line
+            that rises is jade and one that falls is red. */}
+        <div className="vlines">
+          {lines.filter((d) => d.theirs > 0).map((d) => (
+            <span key={d.affix} className="vline" data-up={(against && d.theirs > d.mine) || undefined} data-down={(against && d.theirs < d.mine) || undefined}>
+              <b className="cjk">{AFFIX_INFO[d.affix].han}</b> {AFFIX_INFO[d.affix].label}{' '}
+              <em className="mono">+{show(d.affix, d.theirs)}</em>
+            </span>
+          ))}
+        </div>
         <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fight)}</p>
       </div>
 

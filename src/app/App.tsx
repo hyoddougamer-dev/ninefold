@@ -32,7 +32,7 @@ import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { clearSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
+import { clearSet, renameSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -1002,6 +1002,7 @@ export function App() {
               sfx.buy(); haptics.strike();
             }}
             onClearSet={(i) => { setState((s) => clearSet(s, i)); sfx.tap(); }}
+            onRenameSet={(i, name) => { setState((s) => renameSet(s, i, name)); sfx.tap(); }}
             onBook={() => { setBook(true); sfx.tap(); }}
           />
         )}
