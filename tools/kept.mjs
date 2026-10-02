@@ -128,6 +128,27 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     check(pairs === 15, `${tag}: and the fifteen classes under them (${pairs})`);
     check(await overflow(page) <= 0, `${tag}: the page does not scroll sideways`);
     await shot(page, `${tag}-book`);
+    // 篩 One school and one place: "which rings are Fortune?"
+    await page.click('.schoolbook .sb-filter button:has-text("Fortune")');
+    await page.click('.schoolbook .sb-filter button:has-text("Ring")');
+    await page.waitForTimeout(250);
+    const rings = await page.$$eval('.schoolbook .sb-school figure:not(.sb-none) figcaption', (els) =>
+      els.map((e) => e.firstChild?.textContent?.trim()));
+    const fpairs = await page.$$eval('.schoolbook .sb-pair', (els) => els.length);
+    check(JSON.stringify(rings) === '["Amethyst","Emerald"]' && fpairs === 5,
+      `${tag}: Fortune and Ring show the two Fortune rings and Fortune's five classes (${rings.join(', ')}; ${fpairs})`);
+    check(await overflow(page) <= 0, `${tag}: the filtered page does not scroll sideways`);
+    await page.$eval('.schoolbook', (e) => e.scrollTo(0, 0));
+    await page.waitForTimeout(150);
+    await shot(page, `${tag}-bookfilter`);
+    await page.click('.schoolbook .sb-filter button:has-text("Artificer")');
+    await page.click('.schoolbook .sb-filter button:has-text("Weapon")');
+    await page.waitForTimeout(200);
+    const noWeapon = await page.$$eval('.schoolbook .sb-none figcaption', (els) => els.map((e) => e.firstChild?.textContent));
+    check(noWeapon.length === 1 && /No weapon/.test(noWeapon[0] ?? ''), `${tag}: the Artificer says it has no weapon (${noWeapon.join('')})`);
+    await page.click('.schoolbook .sb-filter button:has-text("Every school")');
+    await page.click('.schoolbook .sb-filter button:has-text("Every place")');
+    await page.waitForTimeout(200);
     if (tag !== 'p320') {
       await page.$eval('.schoolbook .sb-school:nth-of-type(3)', (e) => e.scrollIntoView({ block: 'start' }));
       await page.waitForTimeout(200);

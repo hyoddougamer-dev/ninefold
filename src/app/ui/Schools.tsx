@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { AFFIX_INFO, ARCHETYPES, SLOTS, SLOT_INFO, callingOf, templateOf, type Item } from '../../data/gear.ts';
+import { useMemo, useState } from 'react';
+import { AFFIX_INFO, ARCHETYPES, SLOTS, SLOT_INFO, callingOf, templateOf, type Item, type Slot } from '../../data/gear.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO, schoolOfAxis, type School } from '../../data/schools.ts';
 import type { State } from '../../sim/state.ts';
 import { gearTile } from '../../art/gear.ts';
@@ -17,6 +17,9 @@ import { Svg } from './Svg.tsx';
  * the realm the cultivator stands in, so the page looks like what they are finding, and
  * a shape they are wearing says so.
  *
+ * 篩 Two lines of filters on top, a school and a place on the body, because the question
+ * a player brings is usually one of them: "which rings are Fortune?"
+ *
  * Every sentence is schoolSays and pairSays, read off balance.ts: the same words the
  * ribbon, the key and tools/schools-chart.ts use, so none of them can drift.
  */
@@ -28,16 +31,38 @@ export function Schools({ state, onClose }: { state: State; onClose: () => void 
   const worn = useMemo(() => new Set(SLOTS.map((s) => state.worn[s])
     .filter((x): x is Item => !!x).map((x) => templateOf(x).archetype)), [state.worn]);
   const counts = callingOf(state.worn).counts;
+  const [only, setOnly] = useState<School | 'any'>('any');
+  const [place, setPlace] = useState<Slot | 'any'>('any');
+  const shown = only === 'any' ? SCHOOLS : SCHOOLS.filter((sc) => sc === only);
 
   return (
     <div className="help schoolbook">
       <h2><span className="cjk">譜</span> {CLASS.book.title}</h2>
       <p className="faint sb-blurb">{CLASS.book.blurb}</p>
 
-      {SCHOOLS.map((sc) => {
+      <div className="sb-filter" role="group" aria-label={CLASS.book.schoolsFilter}>
+        <button type="button" aria-pressed={only === 'any'} onClick={() => setOnly('any')}>{CLASS.book.anySchool}</button>
+        {SCHOOLS.map((sc) => (
+          <button key={sc} type="button" aria-pressed={only === sc} onClick={() => setOnly(sc)}
+            style={{ ['--c' as string]: SCHOOL_INFO[sc].colour }}>
+            <span className="cjk" aria-hidden="true">{SCHOOL_INFO[sc].seal}</span> {SCHOOL_INFO[sc].short}
+          </button>
+        ))}
+      </div>
+      <div className="sb-filter" role="group" aria-label={CLASS.book.placesFilter}>
+        <button type="button" aria-pressed={place === 'any'} onClick={() => setPlace('any')}>{CLASS.book.anyPlace}</button>
+        {SLOTS.map((slot) => (
+          // The place's own character is left off: 劍 Weapon beside 劍 Sword reads as one thing.
+          <button key={slot} type="button" aria-pressed={place === slot} onClick={() => setPlace(slot)}>
+            {SLOT_INFO[slot].name}
+          </button>
+        ))}
+      </div>
+
+      {shown.map((sc) => {
         const s = SCHOOL_INFO[sc];
-        const list = shapesOf(sc);
-        const missing = SLOTS.filter((slot) => !list.some((a) => a.slot === slot));
+        const list = shapesOf(sc).filter((a) => place === 'any' || a.slot === place);
+        const missing = SLOTS.filter((slot) => (place === 'any' || slot === place) && !list.some((a) => a.slot === slot));
         const lines = s.axes.map((a) => `${AFFIX_INFO[a].han} ${AFFIX_INFO[a].label}`).join(' or ');
         return (
           <section key={sc} className="sb-school" style={{ ['--c' as string]: s.colour }}>
@@ -71,7 +96,7 @@ export function Schools({ state, onClose }: { state: State; onClose: () => void 
       <section className="sb-pairs">
         <h3>{CLASS.book.pairsHead}</h3>
         <p className="faint">{CLASS.book.pairsBlurb}</p>
-        {PAIRS.map((p) => (
+        {PAIRS.filter((p) => only === 'any' || p.a === only || p.b === only).map((p) => (
           <div key={p.key} className="sb-pair"
             style={{ ['--a' as string]: SCHOOL_INFO[p.a].colour, ['--b' as string]: SCHOOL_INFO[p.b].colour }}>
             <b><span className="cjk">{p.han}</span> {p.name}</b>

@@ -1516,6 +1516,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .schoolbook h2 { padding-right: 56px; }
 .schoolbook h2 .cjk { color: var(--gold); }
 .schoolbook .sb-blurb { margin: -6px 0 0; font-size: 13px; line-height: 1.5; }
+.schoolbook .sb-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; }
+.schoolbook .sb-filter button { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line);
+                                background: var(--panel); color: var(--faint); font: inherit; font-size: 12.5px; cursor: pointer; }
+.schoolbook .sb-filter button .cjk { color: var(--c, var(--gold)); }
+.schoolbook .sb-filter button[aria-pressed="true"] { color: var(--text); border-color: var(--c, var(--gold));
+                                                     background: color-mix(in srgb, var(--c, #D4AF56) 14%, transparent); }
 .schoolbook .sb-school { display: grid; gap: 8px; padding: 12px 12px 14px; border-radius: 12px;
                          border: 1px solid var(--line); border-left: 3px solid var(--c);
                          background: linear-gradient(100deg, color-mix(in srgb, var(--c) 12%, transparent), transparent 70%); }
