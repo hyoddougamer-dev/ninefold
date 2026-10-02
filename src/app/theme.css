@@ -1803,8 +1803,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .awaken .acard .nm b { font-size: 24px; font-weight: 400; color: var(--jade); margin-right: 9px; }
 .awaken .acard .nm em { font-style: normal; font-family: Rajdhani, sans-serif;
                         font-weight: 700; font-size: 16px; }
-.awaken .acard i { grid-column: 2; font-style: normal; font-size: 12.5px; color: var(--faint);
-                   line-height: 1.55; margin-top: 4px; }
+/* 數 What the card does, in the player's own numbers. */
+.awaken .acard .fx { grid-column: 2; font-size: 13.5px; color: var(--text); line-height: 1.5; margin-top: 5px; }
 .awaken .acard .take { grid-column: 2; margin-top: 11px; justify-self: start;
                        font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
                        font-family: Archivo, sans-serif; font-weight: 600;

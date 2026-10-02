@@ -3,6 +3,7 @@ import { Emblem } from './Emblem.tsx';
 import { realm as realmOf } from '../../data/realms.ts';
 import { heavenAt } from '../../data/heavens.ts';
 import { AWAKEN } from '../copy.ts';
+import { cardWorth } from '../../sim/cardworth.ts';
 import type { State } from '../../sim/state.ts';
 
 /**
@@ -55,7 +56,9 @@ export function Awaken({ state, onTake, onClose }: {
               <b className="cjk">{c.han}</b>
               <em>{c.name}</em>
             </span>
-            <i>{c.says}</i>
+            {/* 數 What it does in numbers. Its old line said the same thing in words, and
+                for 福星 Lucky Star said it so loosely that nobody could tell what it did. */}
+            <span className="fx">{AWAKEN.effect(c.effect, cardWorth(state, c))}</span>
             <span className="take">{AWAKEN.take}</span>
           </button>
         ))}

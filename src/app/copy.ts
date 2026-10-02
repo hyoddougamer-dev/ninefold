@@ -22,6 +22,9 @@
 
 import { FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
+import type { Effect } from '../data/awakening.ts';
+import type { Worth } from '../sim/cardworth.ts';
+import { RARITY_INFO } from '../data/gear.ts';
 
 /**
  * 引 How to play, and now only the part that cannot be shown.
@@ -994,6 +997,28 @@ export const AWAKEN = {
   waiting: 'A 悟道 awakening is owed you. Three cards, and one of them is yours.',
   /** 釋 What the character means, for the key and the tooltip. */
   what: 'Three cards at every breakthrough and at every heaven, and you keep one. Taking it closes the other two. Seventeen choices across a climb, so no two cultivators end up the same.',
+  /**
+   * 數 What the card does, in numbers. rekaris, on the Discord, of 福星 Lucky Star:
+   * *"Whats this supposed to do? Is it cryptic on purpose?"* This is the line that answers
+   * the question, read off the player's own fortune (see sim/cardworth.ts).
+   */
+  effect: (e: Effect, w: Worth): string => {
+    const share = (x: number) => `${Math.round(x * 100)}%`;
+    if (w.kind === 'luck') return `Gear of ${RARITY_INFO[w.from].han} ${RARITY_INFO[w.from].name} rank${w.from === 'heaven' ? '' : ' or better'}: ${share(w.before)} of your drops now, ${share(w.after)} with this.`;
+    if (w.kind === 'drop') return w.before >= 1 ? 'Every beast already drops a piece for you, so this adds nothing yet.'
+      : `A beast drops a piece on ${share(w.before)} of kills now, ${share(w.after)} with this.`;
+    if (w.kind === 'chest') return w.after === w.before ? 'Your chest is capped by the tree, so this adds no room.'
+      : `Your chest holds ${w.before} pieces now, ${w.after} with this.`;
+    switch (e.kind) {
+      case 'material': return `+${share(e.percent)} 材 material from every beast, for good.`;
+      case 'salvage': return `Melting pays +${share(e.percent)}: more qi, or more 材 material once the allowance is spent.`;
+      case 'refine': return `煉器 Refining costs ${share(e.percent)} less 材 material, at every level.`;
+      case 'dao': return `+${e.points} 道 Path points, yours now.`;
+      case 'pill': return `Every pill costs ${share(e.percent)} less 材 material.`;
+      case 'tower': return `Every 塔 tower floor pays +${share(e.percent)} 材 material.`;
+      default: return '';
+    }
+  },
 };
 
 /**
