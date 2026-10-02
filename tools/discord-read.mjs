@@ -1,6 +1,8 @@
 /**
  * 讀 What the testers wrote: every post in 報-bugs and 議-ideas, with its tags, its first
- * message and the replies under it, as one Markdown digest.
+ * message and the replies under it, and the last hundred messages of each channel they
+ * talk in, as one Markdown digest. The channels came in on 2026-10-02: rekaris asked what
+ * 福星 Lucky Star does in a channel, not a forum, and the digest never saw it.
  *
  * Bruno: "valida o discord bugs e ideas de players e comenta comigo o que podemos
  * melhorar". The sandbox cannot reach Discord and the Action logs of this repository are
@@ -59,5 +61,18 @@ for (const key of FORUMS) {
     }
     out.push('');
   }
+}
+// 談 The channels people talk in. Never the team's own, and never the ones only the
+// developer and the bot write in.
+const TALK = ['general', 'screenshots', 'rankings'];
+for (const c of channels.filter((x) => x.type === 0 && TALK.some((k) => x.name.endsWith(k)))) {
+  const msgs = (await call(`/channels/${c.id}/messages?limit=100`)).reverse().filter((m) => !m.author?.bot);
+  out.push(`## ${c.name} (last ${msgs.length} messages)`, '');
+  for (const m of msgs) {
+    const files = (m.attachments ?? []).length ? ` [${m.attachments.length} image/file]` : '';
+    const text = clip((m.content ?? '').replace(/\s+/g, ' ').trim(), 600);
+    if (text || files) out.push(`- ${day(m.timestamp)} **${m.author?.username ?? '?'}**: ${text}${files}`);
+  }
+  out.push('');
 }
 console.log(out.join('\n'));
