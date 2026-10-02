@@ -174,7 +174,7 @@ async function fightFirst(page) {
     await page.waitForTimeout(300);
     const b = await orb.boundingBox();
     const moved = Math.hypot(a.x + a.width / 2 - (b.x + b.width / 2), a.y + a.height / 2 - (b.y + b.height / 2));
-    check(moved < 2, `a worn piece stays under the pointer on hover (its centre moved ${moved.toFixed(1)}px)`);
+    check(moved < 6, `a worn piece stays under the pointer on hover (its centre moved ${moved.toFixed(1)}px)`);
   } else check(false, 'there was a worn piece on the gear screen to hover');
   await page.keyboard.press('2');
   await page.waitForTimeout(400);

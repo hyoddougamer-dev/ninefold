@@ -4,7 +4,7 @@ import {
 } from '../balance.ts';
 import { RARITIES, RARITY_INFO, type Item, type Rarity } from '../../data/gear.ts';
 import { FUSE_COUNT, fuse } from '../chest.ts';
-import { salvage, salvageUpTo, salvageValue, salvageWorth, salvageable } from '../salvage.ts';
+import { meltFactor, meltQuote, salvage, salvageUpTo, salvageValue, salvageWorth, salvageable } from '../salvage.ts';
 import { newState, type State } from '../state.ts';
 import { num } from '../format.ts';
 
@@ -106,7 +106,16 @@ describe('拆 melting gear down', () => {
     const s: State = { ...newState(T0), realm: 3, chest, qi: 0 };
     const after = salvageUpTo(s, 'spirit');
     expect(after.chest.map((x) => x.id)).toEqual(['m1', 'h1']);
-    expect(after.qi).toBe(salvageWorth([chest[0], chest[1], chest[2]]));
+    // 拆 Paid through the melting allowance: qi while it holds, 材 material past it. A
+    // third-realm newcomer's six hours of gathering cannot hold a third-realm pile.
+    const pays = meltQuote(s, [chest[0], chest[1], chest[2]]);
+    expect(after.qi).toBeCloseTo(pays.qi, 0);
+    expect(after.materials).toBe(pays.materials);
+    expect(pays.qi + pays.materials).toBeGreaterThan(0);
+    // With the allowance unspent and deep enough, it is the whole of what they are worth.
+    const deep = { ...s, layer: 8, melt: 1e9 };
+    expect(salvageUpTo(deep, 'spirit').qi)
+      .toBe(salvageWorth([chest[0], chest[1], chest[2]], meltFactor(deep)));
   });
 
   it('leaves what is worn alone, and shrugs at an id that is not there', () => {

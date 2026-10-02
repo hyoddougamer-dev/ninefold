@@ -494,6 +494,23 @@
         ["謝 Thanks", "To rekaris, for both posts. That's exactly the kind of feedback that changes the game, so keep it coming."]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02-melt",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Melting, Auto and the drive",
+      "color": "#8FB49B",
+      "body": ["A balance fix, the morning after Auto went in. It found a hole that was already there."],
+      "fields": [
+        ["拆 Melting", "Melting gear now pays qi out of an allowance that refills as you gather, open or closed, up to six hours of your own gathering. Past it, a piece melts into 材 material instead. With Auto on, melting had become faster than cultivating, and the whole climb ran about three times too fast."],
+        ["自 Auto", "Auto opens for a beast once it's Known, at 10 kills. Again works on every beast, as before."],
+        ["圍 The drive", "Four times cheaper: fifteen seconds of your own gathering per kill. It's the way to hunt while the game is closed."],
+        ["器 A fix", "On a PC, hovering a piece you wear no longer makes it jump away from the mouse."],
+        ["▸ Nothing is taken", "Your qi, material and gear stay exactly as they are, and the allowance starts full."],
+        ["謝 Thanks", "To rekaris again, for three posts in one morning that found all of this."]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -982,6 +999,49 @@
         "Fair point, and thanks for explaining it so clearly.",
         "The idea was always English first, with the characters riding alongside. You found the places where that broke: the fight result showing only 材, and gear stats with just a character. Those all have their English names now, the fight screen names both sides, and on a PC a character's note opens when you hover over it.",
         "If you spot anywhere else where a character is on its own, post it here and I'll fix it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "QoL",
+      "reply": [
+        "Glad you like Auto! And you were right about the balance. I measured it this morning: with Auto on, melting gear turned kills into qi so fast that the whole climb went about three times quicker.",
+        "It's fixed in today's update. Melting pays qi from an allowance that refills as you gather, and past it pieces melt into material. Auto now opens for a beast once it's Known (10 kills), so you still get to know each beast first, and the drive is four times cheaper (fifteen seconds of gathering per kill), since it's now the way to hunt while the game is closed.",
+        "Thanks again, this is exactly the kind of feedback that keeps the game honest.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Withered bone gear grants way too much qi on meltdown",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Good catch, and you're not missing anything: melting really was the fastest way to get qi, and it never should have been.",
+        "The jump you saw is because realm 1 got a lot cheaper a couple of days ago, while realm 2 pieces kept their old melt value.",
+        "It's fixed in today's update. Melting now pays qi out of an allowance that refills as you gather (up to six hours of your own gathering), and anything past it melts into 材 material instead. Melting is still worth doing, it just can't outrun cultivating anymore.",
+        "Thanks for digging into this!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Withered bone gear grants way too much qi on meltdown",
+      "reply": [
+        "Good catch, and you're not missing anything: melting really was the fastest way to get qi, and it never should have been.",
+        "The jump you saw is because realm 1 got a lot cheaper a couple of days ago, while realm 2 pieces kept their old melt value.",
+        "It's fixed in today's update. Melting now pays qi out of an allowance that refills as you gather (up to six hours of your own gathering), and anything past it melts into 材 material instead. Melting is still worth doing, it just can't outrun cultivating anymore.",
+        "Thanks for digging into this!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Hovering equipped gear causes animation that makes it hard to click it",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Thanks, that's a proper bug, and your description made it easy to find. The hover was replacing the tile's own position, so it jumped away from the mouse and back again.",
+        "It's fixed in today's update: it just grows a little in place now, like the rest of the gear.",
         "· 師 Shibaki"
       ]
     }
