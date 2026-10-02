@@ -466,7 +466,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 </button>
               ))}
             </div>
-            {SCHOOLS.filter((sc) => bySchool(sc) > 0).length > 1 && (
+            {/* 職 Always there when the chest holds anything. It used to wait for two schools,
+                and a cultivator farming one school (rekaris, on the Discord, twice: "I still
+                don't see them") never saw the row at all. */}
+            {read.length > 0 && (
               <div className="chestfilter schools" role="group" aria-label={GEAR.anySchool}>
                 <button type="button" aria-pressed={school === 'any'} onClick={() => setKin('any')}>{GEAR.anySchool}</button>
                 {SCHOOLS.filter((sc) => bySchool(sc) > 0).map((sc) => (
