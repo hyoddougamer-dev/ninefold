@@ -696,7 +696,7 @@
         ["金剛 Vajra · 氣 Qi + 體 Body", "First sights and the week's quarry pay 50% more qi."],
         ["丹師 Alchemist · 氣 Qi + 器 Artificer", "Pills cost 15% less."],
         ["獵王 Hunt King · 運 Fortune + 體 Body", "Beasts leave a piece 8 points more often."],
-        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more, and its allowance refills 30% faster."],
+        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more qi."],
         ["甲匠 Armourer · 體 Body + 器 Artificer", "The chest holds 10 more."],
         ["劍聖 Sword Saint · 劍 Sword + 法 Arts", "Your form in a fight never rolls below its middle."],
         ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay 25% more qi."],
@@ -1025,7 +1025,113 @@
       "reply": [
         "You're right, and that's a sharp catch. Once the allowance ran out, the Treasure Smith's bonus did nothing at all.",
         "In the next update the class refills the melting allowance 30% faster, and anything that melts into material past it gives 30% more material too, so the build keeps paying either way.",
+        "On lowering the base to a third instead: I ran it, and with Auto a third of a lot is still a lot. Tens of thousands of kills a day add up whatever the rate, so it only slows the leak down. The allowance is what keeps melting from ever outpacing cultivating, which is the one rule the economy leans on. The drop and rarity builds still pay off, because what melts past the allowance turns into material.",
         "Thanks for thinking it through!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When changing tabs or application, the game goes \"offline\"",
+      "tags": ["Bug"],
+      "reply": [
+        "Thanks for the detailed report, and for the tip about timers! You found a real one.",
+        "The game was treating any click outside its window as you leaving, so 入定 sitting started over even with the game right there on your screen.",
+        "In the next update it only counts as leaving when the game is actually off screen: minimised, in another tab, or fully covered by another window. With it visible on a second monitor or beside your work, sitting, Auto and music keep going.",
+        "When it's fully hidden, Auto still pauses on purpose: hunting with nobody watching is what the Drive is for, and it keeps the hunt fair for the rankings.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Inventory management improvements",
+      "tags": ["Idea"],
+      "reply": [
+        "Both of these are in the next update, thank you!",
+        "鎖 Lock: any piece can be locked from its sheet. A locked piece is never melted (one at a time, with the rank filter up to 天 Heaven, or by a full chest) and never fused.",
+        "套 Loadouts: up to three. Save what you're wearing and put it all back on with one tap. Saving a loadout locks its pieces, and it's named after the class it makes, so switching class is one tap.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add item drop information to bestiary",
+      "tags": ["Idea"],
+      "reply": [
+        "Great idea, thanks. In the next update each beast says which school every piece it leaves belongs to, on the hunt list and in the bestiary, so you can see straight away who drops Fortune pieces.",
+        "Every gear icon also carries its school's seal in the corner now, and the chest has a filter by school.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding the option to force your way into secret realm",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks, this one is worth doing carefully. Paying qi or material straight into the door would open a road from material to qi with no limit, which is exactly the kind of leak we just closed in melting.",
+        "What I'm looking at instead is a key made in the 業 Workshop, at most one a day. It gives the crafts a job and keeps the realm special. I'll measure it before anything goes in.",
+        "For reference, the rooms alternate between springs that pay qi and gates you have to win.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Enemies in Hunt grow trivially easy",
+      "tags": ["Balance"],
+      "reply": [
+        "You're right, and I think this is the most important point anyone has raised so far. Once you can beat a realm's warden, power stops mattering until the next one, and qi gear wins every time.",
+        "I'm designing a fix that gives power a use every day without touching qi: hunting the same beast deeper, where it scales up and pays better ranks and more material. It touches combat, rewards and the ranked server at once, so it gets measured and shown here before it goes in.",
+        "Thanks for laying it out with real numbers, that helps a lot.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "tags": ["Idea", "Balance"],
+      "reply": [
+        "Agreed. With Auto, 100 kills takes a few minutes, so the record stops too early.",
+        "I'm measuring new marks past 100 (somewhere around 1,000, 5,000 and 25,000) that pay material and drop chance for that beast. They'll never pay qi: nothing without a cap is allowed to raise the qi rate. I'll post the numbers before it lands.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add hover info on materials in crafting",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks, that was a real gap. In the next update every material in a recipe names itself when you hover or tap it, says which craft makes it, and has a button that takes you straight to that recipe.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow one to reset seemingly permanent choices",
+      "tags": ["Idea"],
+      "reply": [
+        "Thanks for raising it. The 悟道 cards are meant to close doors, so no two climbs end up the same, which is why they're permanent for now.",
+        "The unfair part was choosing blind. In the next update every card says what it does in your own numbers before you take it (Lucky Star, for example, shows your Mystic-or-better drops now and with it).",
+        "The 道 Path is different: its points keep coming, so you can fill most of it over time. If more people would like a way to change the last card, I'll look at it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Order enemies based on their power",
+      "tags": ["Idea"],
+      "reply": [
+        "Fair point, thanks! The current order is built for someone learning the hunt, not for someone farming it.",
+        "In the next update there's a switch above the list: Next mark (as now), Strongest, or Most material. It's remembered on your device.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Show all stats of the gear by default",
+      "tags": ["Idea"],
+      "reply": [
+        "All three are in the next update, thank you!",
+        "On a computer, a piece's sheet opens with every effect already shown. Every gear icon carries its school's seal (劍 Sword, 運 Fortune and so on) in the top corner, and the chest has a second row of filters by school.",
         "· 師 Shibaki"
       ]
     },
