@@ -71,7 +71,9 @@ export function melt(s: State, pieces: readonly Item[]): Melted {
     const paid = Math.min(worth, room);
     room -= paid;
     qi += paid;
-    if (paid < worth) materials += Math.round(meltMaterial(p) * (1 - paid / worth));
+    // The cards and 寶匠 lift the spill as well, or a melting build would stop paying the
+    // moment the allowance ran out (rekaris, 2026-10-02).
+    if (paid < worth) materials += Math.round(meltMaterial(p) * factor * (1 - paid / worth));
   }
   const used = r > 0 ? qi / r : 0;
   return {

@@ -696,7 +696,7 @@
         ["金剛 Vajra · 氣 Qi + 體 Body", "First sights and the week's quarry pay 50% more qi."],
         ["丹師 Alchemist · 氣 Qi + 器 Artificer", "Pills cost 15% less."],
         ["獵王 Hunt King · 運 Fortune + 體 Body", "Beasts leave a piece 8 points more often."],
-        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more qi."],
+        ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more, and its allowance refills 30% faster."],
         ["甲匠 Armourer · 體 Body + 器 Artificer", "The chest holds 10 more."],
         ["劍聖 Sword Saint · 劍 Sword + 法 Arts", "Your form in a fight never rolls below its middle."],
         ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay 25% more qi."],
@@ -1019,26 +1019,13 @@
       ]
     },
     {
-      "forum": "bugs",
-      "title": "Withered bone gear grants way too much qi on meltdown",
-      "tags": ["Bug", "Fixed"],
-      "reply": [
-        "Good catch, and you're not missing anything: melting really was the fastest way to get qi, and it never should have been.",
-        "The jump you saw is because realm 1 got a lot cheaper a couple of days ago, while realm 2 pieces kept their old melt value.",
-        "It's fixed in today's update. Melting now pays qi out of an allowance that refills as you gather (up to six hours of your own gathering), and anything past it melts into 材 material instead. Melting is still worth doing, it just can't outrun cultivating anymore.",
-        "Thanks for digging into this!",
-        "· 師 Shibaki"
-      ]
-    },
-    {
       "forum": "ideas",
-      "title": "Withered bone gear grants way too much qi on meltdown",
+      "title": "QoL",
       "tags": ["Idea"],
       "reply": [
-        "Good catch, and you're not missing anything: melting really was the fastest way to get qi, and it never should have been.",
-        "The jump you saw is because realm 1 got a lot cheaper a couple of days ago, while realm 2 pieces kept their old melt value.",
-        "It's fixed in today's update. Melting now pays qi out of an allowance that refills as you gather (up to six hours of your own gathering), and anything past it melts into 材 material instead. Melting is still worth doing, it just can't outrun cultivating anymore.",
-        "Thanks for digging into this!",
+        "You're right, and that's a sharp catch. Once the allowance ran out, the Treasure Smith's bonus did nothing at all.",
+        "In the next update the class refills the melting allowance 30% faster, and anything that melts into material past it gives 30% more material too, so the build keeps paying either way.",
+        "Thanks for thinking it through!",
         "· 師 Shibaki"
       ]
     },

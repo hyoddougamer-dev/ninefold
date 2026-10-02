@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { MELT_CAP, MELT_FILL } from '../balance.ts';
-import { type Item } from '../../data/gear.ts';
+import { MELT_CAP, MELT_FILL, PAIR_MELT } from '../balance.ts';
+import { ARCHETYPES, TEMPLATE_BY_KEY, type Item, type Worn } from '../../data/gear.ts';
+import { SCHOOL_INFO, type School } from '../../data/schools.ts';
+import { classMelt } from '../schools.ts';
 import { melt, meltMaterial, salvage, salvageValue, meltFactor } from '../salvage.ts';
 import { stash } from '../stash.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -70,5 +72,50 @@ describe('拆 the melting allowance', () => {
     expect(validate(old, T0).melt).toBe(MELT_CAP);
     expect(validate({ ...newState(T0), melt: 1e12 }, T0).melt).toBe(MELT_CAP);
     expect(validate({ ...newState(T0), melt: -5 }, T0).melt).toBe(0);
+  });
+});
+
+/**
+ * 寶匠 rekaris, on the Discord: "what is the point of getting more qi from melting when
+ * you've hit the allowance?" None, and that made the Treasure Smith a class that stopped
+ * working at the cap. It now refills the allowance faster and lifts the material spill.
+ */
+describe('寶匠 the Treasure Smith past the allowance', () => {
+  const smith = (): State => {
+    const worn: Worn = {};
+    const plan: [School, number][] = [['fortune', 3], ['artificer', 3]];
+    for (const [school, n] of plan) {
+      let left = n;
+      for (const a of ARCHETYPES) {
+        if (left === 0) break;
+        if (worn[a.slot] || !SCHOOL_INFO[school].axes.includes(a.affix)) continue;
+        const tpl = TEMPLATE_BY_KEY[`${a.key}6`];
+        worn[a.slot] = { id: `${school}-${a.slot}`, template: tpl.key, rarity: 'earth', rolls: [{ affix: tpl.affix, value: 40 }] };
+        left -= 1;
+      }
+    }
+    return { ...at(2, 0), worn };
+  };
+
+  it('is a Treasure Smith', () => {
+    expect(classMelt(smith())).toBe(PAIR_MELT);
+  });
+
+  it('refills the allowance faster', () => {
+    const plain = advance(at(2, 0), T0 + 3600);
+    const s = advance(smith(), T0 + 3600);
+    expect(plain.melt).toBeCloseTo(3600 * MELT_FILL, 6);
+    expect(s.melt).toBeCloseTo(3600 * MELT_FILL * PAIR_MELT, 6);
+  });
+
+  it('melts more material once the allowance is spent', () => {
+    const p = piece('a', 2);
+    expect(melt(smith(), [p]).materials).toBe(Math.round(meltMaterial(p) * PAIR_MELT));
+    expect(melt(at(2, 0), [p]).materials).toBe(meltMaterial(p));
+  });
+
+  it('still never fills past the cap', () => {
+    const s = advance({ ...smith(), melt: MELT_CAP - 1 }, T0 + 86400 * 30);
+    expect(s.melt).toBe(MELT_CAP);
   });
 });
