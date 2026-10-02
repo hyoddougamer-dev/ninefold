@@ -48,6 +48,15 @@ export function nextDeep(kills: number): { at: number; index: number } | null {
   return i >= DEEP_MARKS.length ? null : { at: DEEP_MARKS[i], index: i };
 }
 
+/**
+ * 完 Where a beast's record stands: 0 while a first mark is still to earn, 1 once only
+ * the deep marks are left, 2 when every mark is earned. The hunt list sorts and folds by
+ * it, so the two can never disagree about what "finished" means.
+ */
+export function stage(kills: number): 0 | 1 | 2 {
+  return nextMark(kills) ? 0 : nextDeep(kills) ? 1 : 2;
+}
+
 /** 精 What this beast's own deep marks add to its 材 material, as a multiplier. */
 export function deepMaterial(kills: number): number {
   return 1 + DEEP_MATERIAL * deepOf(kills);

@@ -33,6 +33,21 @@ describe('鎖 a locked piece', () => {
     expect(full.chest.map((x) => x.id)).toEqual(['x', 'y']);
   });
 
+  it('stays in the chest when it is named in a melt beside other pieces', () => {
+    const s = setLocked(at({ chest: [piece('a'), piece('b')] }), 'a', true);
+    const out = salvage(s, ['a', 'b']);
+    expect(out.chest.map((x) => x.id)).toEqual(['a']);
+    expect(out.qi).toBe(salvage(at({ chest: [piece('b')] }), ['b']).qi);
+  });
+
+  it('is the last a chest gives up when a save arrives over its limit', () => {
+    const many = Array.from({ length: 120 }, (_, i) => (i % 2
+      ? { ...piece(`l${i}`), locked: true as const } : piece(`h${i}`, 'sword9', 'heaven')));
+    const kept = validate({ ...at(), chest: many }, T0).chest;
+    expect(kept.length).toBeLessThan(many.length);
+    expect(kept.every((x) => x.locked)).toBe(true);
+  });
+
   it('is never one of three in a fusion', () => {
     const chest = [{ ...piece('a'), locked: true as const }, piece('b'), piece('c')];
     expect(fusable(chest)).toEqual([]);

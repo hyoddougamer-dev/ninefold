@@ -7,7 +7,7 @@ import { DEEP_INFO, MARK_INFO, deepOf, knownIn, marksOf } from '../../sim/record
 import { isOpen } from '../../sim/unlocks.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
-import { schoolOf } from '../../data/gear.ts';
+import { schoolOfShape } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
@@ -70,10 +70,10 @@ export function Bestiary({ state }: { state: State }) {
                         Discord: "I am looking for fortune pieces, but I don't know which
                         monsters drop them." */}
                     {found && b.leaves.length > 0 && (
-                      <span className="bschools" aria-label={BESTIARY.leavesSchools(b.leaves.map((a) =>
-                        SCHOOL_INFO[schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] })].short))}>
+                      <span className="bschools" role="group" aria-label={BESTIARY.leavesSchools(b.leaves.map((a) =>
+                        SCHOOL_INFO[schoolOfShape(a)].short))}>
                         {b.leaves.map((a, i) => {
-                          const key = schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] });
+                          const key = schoolOfShape(a);
                           const sc = SCHOOL_INFO[key];
                           return (
                             <em key={`${a}${i}`} className="cjk" style={{ color: sc.colour }}>

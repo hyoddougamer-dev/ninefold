@@ -7,7 +7,7 @@ import { ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
-  DEEP_INFO, MARK_INFO, deepOf, marksOf, nextDeep, nextMark, recordMaterial, recordPower, recordTally,
+  DEEP_INFO, MARK_INFO, deepOf, marksOf, nextDeep, nextMark, stage, recordMaterial, recordPower, recordTally,
 } from '../../sim/record.ts';
 import { num } from '../../sim/format.ts';
 import { Plate } from '../ui/Plate.tsx';
@@ -20,7 +20,7 @@ import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
-import { isQuarry, weekLeft } from '../../sim/week.ts';
+import { isQuarry, weekLeft, weekOf } from '../../sim/week.ts';
 import { ARCHETYPES, RARITIES, RARITY_INFO, schoolOf } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { gearTile } from '../../art/gear.ts';
@@ -91,7 +91,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
     const pay = new Map(all.map((b) => [b.key, lootFrom(state, b)]));
     return all.sort((a, b) => {
       // A mark still to earn first, then only the deep marks left, then nothing left.
-      const left = (x: typeof a) => { const k = state.killed[x.key] ?? 0; return nextMark(k) ? 0 : nextDeep(k) ? 1 : 2; };
+      const left = (x: typeof a) => stage(state.killed[x.key] ?? 0);
       if (order === 'strong') return left(a) - left(b) || beastPower(b) - beastPower(a);
       if (order === 'material') return left(a) - left(b) || (pay.get(b.key) ?? 0) - (pay.get(a.key) ?? 0) || beastPower(b) - beastPower(a);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
@@ -100,7 +100,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
       return left(a) - left(b) || b.realm - a.realm || beastPower(a) - beastPower(b);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.realm, state.layer, state.killed, order]);
+  }, [state.realm, state.layer, state.killed, order, weekOf(state.at)]);
 
   /**
    * 完 And the finished ones are folded, not listed.
@@ -114,7 +114,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
   // 精 絕 A beast at 通 still has the deep marks ahead, so it is not finished until they are
   // earned too. rekaris, on the Discord: *"My beasts are marked as 'finished' despite the
   // new milestones."*
-  const finished = (b: (typeof BEASTS)[number]) => { const k = state.killed[b.key] ?? 0; return !nextMark(k) && !nextDeep(k); };
+  const finished = (b: (typeof BEASTS)[number]) => stage(state.killed[b.key] ?? 0) === 2;
   const open = sorted.filter((b) => !finished(b));
   /**
    * 算 Each beast's odds, once. oddsRaw fights forty-one times to answer, and the count in
@@ -179,7 +179,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
         <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
         <div className="huntorder" role="group" aria-label={HUNT.orderBy}>
           {(['mark', 'strong', 'material'] as const).map((o) => (
-            <button key={o} data-on={order === o} onClick={() => pickOrder(o)}>{HUNT.order[o]}</button>
+            <button key={o} data-on={order === o} aria-pressed={order === o} onClick={() => pickOrder(o)}>{HUNT.order[o]}</button>
           ))}
         </div>
       </div>
@@ -269,7 +269,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
                     const key = schoolOf(piece);
                     const sc = SCHOOL_INFO[key];
                     return (
-                      <em key={a} aria-label={`${arch.name}, ${sc.short}`}>
+                      <em key={a}>
                         <Svg html={gearTile(piece, { size: 26 })} />
                         <span><b className="cjk lsch" style={{ color: sc.colour }}>
                           {/* 註 Hover or tap the seal and it says which school, in English.

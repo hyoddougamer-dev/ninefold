@@ -247,8 +247,8 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   await tab(page, '狩');
   const on = await page.getAttribute('.huntorder button:has-text("Strongest")', 'data-on');
   check(on === 'true', `${tag}: and the order is still Strongest after a reload`);
-  const leaves = await page.$$eval('.bleaves em', (els) => els.slice(0, 3).map((e) => e.getAttribute('aria-label')));
-  check(leaves.length > 0 && leaves.every((l) => /, (Sword|Qi|Fortune|Body|Artificer|Arts)$/.test(l ?? '')),
+  const leaves = await page.$$eval('.bleaves em .term', (els) => els.slice(0, 3).map((e) => e.getAttribute('aria-label')));
+  check(leaves.length > 0 && leaves.every((l) => /: (Sword|Qi|Fortune|Body|Artificer|Arts) school$/.test(l ?? '')),
     `${tag}: each piece a beast leaves names its school (${leaves.join(' | ')})`);
   // 精 rekaris: "My beasts are marked as 'finished' despite the new milestones."
   const deepOpen = await page.$$eval('.stack > .beast[data-done="false"] .marks em[data-deep]', (els) => els.length);
@@ -293,9 +293,13 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   // ── 改 the cards already taken, and trading one ─────────────────────────────────────
   // rekaris: "give the player the possibility to change any of their 'permanent' choices
   // at a very, very, very large cost."
+  await tab(page, '修');
+  const line = await page.$eval('.handline', (e) => e.textContent).catch(() => '');
+  check(/Enlightenment · your 3 cards/.test(line ?? ''), `${tag}: the home screen says how many cards and that one can change ("${line}")`);
+  if (tag === 'p400') { await page.$eval('.handline', (e) => e.scrollIntoView({ block: 'center' })).catch(() => {}); await page.waitForTimeout(200); await shot(page, `${tag}-handline`); }
   await page.click('.mainswitch');
   await page.waitForTimeout(200);
-  await page.click('.switchmenu button:has-text("Your 悟道 cards")');
+  await page.click('.switchmenu button:has-text("Your Enlightenment cards")');
   await page.waitForSelector('.cardbook', { timeout: 3000 }).catch(() => {});
   const held = await page.$$eval('.cardbook .cb-card', (els) => els.length);
   check(held === 3, `${tag}: the cards page lists the three cards taken (${held})`);
@@ -308,6 +312,12 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   check(await overflow(page) <= 0, `${tag}: the cards page does not scroll sideways`);
   await shot(page, `${tag}-cards`);
   await page.click('.cardbook .cb-alt .act:not([disabled]) >> nth=0');
+  await page.waitForTimeout(200);
+  const asks = await page.$eval('.cardbook .cb-alt .act:not(.ghost)', (e) => e.textContent).catch(() => '');
+  const unchanged = await page.$eval('.cardbook .cb-card:last-of-type .cb-head b', (e) => e.textContent).catch(() => '');
+  check(/Tap again to pay/.test(asks ?? '') && unchanged === cardWas, `${tag}: the first tap only asks ("${asks}")`);
+  if (tag !== 'p320') await shot(page, `${tag}-cards-sure`);
+  await page.click('.cardbook .cb-alt .act:not(.ghost)');
   await page.waitForTimeout(400);
   const cardNow = await page.$eval('.cardbook .cb-card:last-of-type .cb-head b', (e) => e.textContent).catch(() => '');
   check(!!cardNow && cardNow !== cardWas, `${tag}: trading swaps the card ("${cardWas}" for "${cardNow}")`);

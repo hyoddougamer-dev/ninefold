@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { AFFIX_INFO, ARCHETYPES, SLOTS, SLOT_INFO, callingOf, templateOf, type Item, type Slot } from '../../data/gear.ts';
-import { PAIRS, SCHOOLS, SCHOOL_INFO, schoolOfAxis, type School } from '../../data/schools.ts';
+import { AFFIX_INFO, SLOTS, SLOT_INFO, callingOf, shapesOf, templateOf, type Item, type Slot } from '../../data/gear.ts';
+import { PAIRS, SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
 import type { State } from '../../sim/state.ts';
 import { gearTile } from '../../art/gear.ts';
 import { CLASS } from '../copy.ts';
@@ -23,8 +23,6 @@ import { Svg } from './Svg.tsx';
  * Every sentence is schoolSays and pairSays, read off balance.ts: the same words the
  * ribbon, the key and tools/schools-chart.ts use, so none of them can drift.
  */
-const shapesOf = (sc: School) => SLOTS.flatMap((slot) =>
-  ARCHETYPES.filter((a) => a.slot === slot && schoolOfAxis(a.affix) === sc));
 
 export function Schools({ state, onClose }: { state: State; onClose: () => void }) {
   const realm = Math.min(9, Math.max(1, state.realm));

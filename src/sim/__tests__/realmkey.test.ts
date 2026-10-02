@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { REALM_KEY, RECIPE_BY_KEY } from '../../data/crafts.ts';
 import { canEnter, canUseKey, doorGap, enter, keyDayOf, leave, useKey } from '../secret.ts';
 import { newState, validate, type State } from '../state.ts';
+import { verify } from '../verify.ts';
 
 const T0 = 1_700_000_000;
 /** A cultivator at the third realm who has just walked out of the vault. */
@@ -60,5 +61,13 @@ describe('鑰 the Realm Key', () => {
     const old = JSON.parse(JSON.stringify(s));
     delete old.keyDay;
     expect(validate(old, s.at + 60).keyDay).toBe(0);
+  });
+
+  /** 鑰 The day the last key turned only moves forward, so a second key a day cannot be had by winding it back. */
+  it('reads a key day wound back as a save gone backwards, never as progress', () => {
+    const before = { ...justOut(1), keyDay: 19_700 } as State;
+    const after = { ...before, at: before.at + 600, keyDay: 0 } as State;
+    expect(verify(before, after, 600).why).toContain('went-down');
+    expect(verify(before, { ...after, keyDay: 19_700 }, 600).why).not.toContain('went-down');
   });
 });

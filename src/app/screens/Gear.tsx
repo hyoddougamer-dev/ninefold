@@ -195,7 +195,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       {/* 套 Loadouts. rekaris, on the Discord: *"Set up loadouts. Grouping up multiple pieces
           into a loadout and then having a single button to equip such loadout."* A class is
           read off what is worn, so this is how a cultivator changes class in one tap. */}
-      {SLOTS.some((slot) => state.worn[slot]) && (
+      {/* 套 Shown whenever there is a loadout to put on, even on a bare body: taking
+          everything off to change class is exactly when one is wanted. */}
+      {(SLOTS.some((slot) => state.worn[slot]) || state.sets.length > 0) && (
         <>
           <h2 className="heading">{GEAR.loadoutHead}</h2>
           <p className="faint" style={{ fontSize: 12.5, margin: '0 0 8px' }}>{GEAR.loadouts}</p>
@@ -235,7 +237,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 </div>
               );
             })}
-            {state.sets.length < SET_LIMIT && (
+            {state.sets.length < SET_LIMIT && SLOTS.some((slot) => state.worn[slot]) && (
               <button className="gs-new" onClick={() => onSaveSet(state.sets.length, loadoutName(state))}>
                 <b className="cjk">套</b> {GEAR.loadoutSave}
               </button>

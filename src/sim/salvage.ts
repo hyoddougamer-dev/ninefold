@@ -116,9 +116,11 @@ export function salvage(s: State, ids: readonly string[]): State {
   // 鎖 And a locked one is not melted by name either: it has to be unlocked first.
   const going = s.chest.filter((x) => wanted.has(x.id) && !x.locked);
   if (going.length === 0) return s;
+  // Only what is melted leaves: a locked id asked for by name stays where it is.
+  const gone = new Set(going.map((x) => x.id));
   return returnMetal({
     ...melt(s, going).state,
-    chest: s.chest.filter((x) => !wanted.has(x.id)),
+    chest: s.chest.filter((x) => !gone.has(x.id)),
   }, going);
 }
 

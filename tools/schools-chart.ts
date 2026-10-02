@@ -15,8 +15,8 @@
 import { chromium } from 'playwright';
 import sharp from 'sharp';
 import { gearTile } from '../src/art/gear.ts';
-import { AFFIX_INFO, ARCHETYPES, SLOTS, SLOT_INFO, type Item } from '../src/data/gear.ts';
-import { PAIRS, SCHOOLS, SCHOOL_INFO, schoolOfAxis, type School } from '../src/data/schools.ts';
+import { AFFIX_INFO, SLOTS, SLOT_INFO, shapesOf, type Item } from '../src/data/gear.ts';
+import { PAIRS, SCHOOLS, SCHOOL_INFO, type School } from '../src/data/schools.ts';
 import { SCHOOL_FULL, SCHOOL_WAKES } from '../src/sim/balance.ts';
 import { pairSays, schoolSays } from '../src/app/classes.ts';
 import { data, fonts } from './banners.mjs';
@@ -31,8 +31,7 @@ const tile = (key: string, affix: string) => gearTile({
   id: key, template: `${key}${REALM}`, rarity: 'earth', rolls: [{ affix, value: 1 }],
 } as unknown as Item, { size: 76 });
 
-const shapes = (sc: School) => SLOTS.flatMap((slot) =>
-  ARCHETYPES.filter((a) => a.slot === slot && schoolOfAxis(a.affix) === sc));
+const shapes = shapesOf;
 
 const G = 'rgba(212,175,86,.8)';
 const bracket = (x: string, y: string) =>

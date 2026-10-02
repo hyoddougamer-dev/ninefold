@@ -99,12 +99,17 @@ export interface GearSet {
 /** 套 How many sets a cultivator may keep. */
 export const SET_LIMIT = 3;
 
+/** 名 A loadout's name, cleaned once for the save and for the screen: no control characters, 24 at most. */
+export function cleanSetName(raw: string): string {
+  return raw.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24);
+}
+
 function validSets(raw: unknown): readonly GearSet[] {
   if (!Array.isArray(raw)) return [];
   const out: GearSet[] = [];
   for (const r of raw.slice(0, SET_LIMIT)) {
     const o = (r ?? {}) as Record<string, unknown>;
-    const name = typeof o.name === 'string' ? o.name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24) : '';
+    const name = typeof o.name === 'string' ? cleanSetName(o.name) : '';
     const rawIds = (o.ids ?? {}) as Record<string, unknown>;
     const ids: Partial<Record<Slot, string>> = {};
     for (const slot of SLOTS) {
@@ -822,8 +827,9 @@ export function validate(raw: unknown, now: number): State {
   const allowance = Math.max(slots, Math.floor(slots + roomCarried));
   const chest: Item[] = carried.length <= allowance ? carried
     : carried
-      .map((it, i) => ({ it, i, worth: itemWorth(it) }))
-      .sort((a, b) => b.worth - a.worth || a.i - b.i)
+      // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
+      .map((it, i) => ({ it, i, worth: itemWorth(it), kept: it.locked ? 1 : 0 }))
+      .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)
       .slice(0, allowance)
       .sort((a, b) => a.i - b.i)
       .map((x) => x.it);

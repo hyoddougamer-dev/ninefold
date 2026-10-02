@@ -854,7 +854,7 @@ export function App() {
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
-  const covered = help || prologue || ranks || !!cloudPick || key || stele || credits || saving || realmPage || menu || !!driving
+  const covered = help || prologue || ranks || !!cloudPick || key || book || cards || stele || credits || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   // 指 On the step's own screen the ring goes on the thing to press. Anywhere else it

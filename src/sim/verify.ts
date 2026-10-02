@@ -252,6 +252,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
     || after.tribulation < before.tribulation
     || after.tower < before.tower
     || after.demons < before.demons
+    // 鑰 The day the last Realm Key turned only moves forward.
+    || (after.keyDay ?? 0) < (before.keyDay ?? 0)
     || UPGRADES.some((u) => after.levels[u] < before.levels[u])
     // Commons only: a warden's count is a marker the arts read, not a tally that pays.
     || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0));

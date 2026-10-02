@@ -386,7 +386,7 @@ export const MENU = {
   key: 'What the characters mean',
   stele: 'The stele',
   credits: 'Credits',
-  cards: 'Your 悟道 cards',
+  cards: 'Your Enlightenment cards',
   report: 'Report a bug',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
@@ -1014,16 +1014,17 @@ export const AWAKEN = {
    * previous poor decision."*
    */
   hand: {
-    title: 'Your cards',
+    title: 'Your Enlightenment cards',
     blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card taken after it.',
     none: 'No cards yet. The first one comes with the second realm.',
-    line: (n: number) => (n === 1 ? '悟道 Your card · change it' : `悟道 Your ${n} cards · change one`),
+    line: (n: number) => (n === 1 ? '悟道 Enlightenment · your card · change it' : `悟道 Enlightenment · your ${n} cards · change one`),
     fromRealm: (han: string, name: string) => `From ${han} ${name}`,
     fromHeaven: (han: string, name: string) => `From the heaven ${han} ${name}`,
     change: 'Change',
     keep: 'Keep it',
     cost: (days: string, qi: string) => `${days} of your qi · ${qi}`,
     trade: 'Trade for this',
+    sure: (qi: string) => `Tap again to pay ${qi} qi`,
     traded: (name: string) => `${name} is yours now`,
     why: {
       qi: 'Not enough qi in the bar yet.',

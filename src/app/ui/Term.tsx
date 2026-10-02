@@ -90,6 +90,8 @@ export function Term({ han, sense, plain, children, entry, go, bare }: {
   const hovered = useRef(false);
   /** The close a pointer leaving a note with a button waits on. See `go`. */
   const later = useRef<number | undefined>(undefined);
+  // A note that goes away under a closing screen leaves no timer behind it.
+  useEffect(() => () => window.clearTimeout(later.current), []);
 
   // 閉 Anything else the player does puts it away: another tap, a scroll, a key.
   useEffect(() => {
@@ -156,7 +158,11 @@ export function Term({ han, sense, plain, children, entry, go, bare }: {
     <>
       <button ref={ref} className="term cjk" data-plain={plain || undefined}
         data-open={from ? 'true' : undefined} data-bare={bare || undefined}
-        onMouseEnter={() => { if (fine() && !from) { hovered.current = true; open(); } }}
+        onMouseEnter={() => {
+          // Back over the character before the note's wait ran out: it stays.
+          window.clearTimeout(later.current);
+          if (fine() && !from) { hovered.current = true; open(); }
+        }}
         onMouseLeave={() => {
           if (!hovered.current) return;
           // 往 A note with somewhere to go waits a moment, so the pointer can reach its button.
@@ -165,6 +171,7 @@ export function Term({ han, sense, plain, children, entry, go, bare }: {
         }}
         onClick={(e) => {
           e.stopPropagation();
+          window.clearTimeout(later.current);
           if (hovered.current) { hovered.current = false; open(); return; }
           if (from) shut(); else open();
         }}

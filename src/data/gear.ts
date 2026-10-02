@@ -518,6 +518,16 @@ export interface Calling {
   readonly counts: Readonly<Record<School, number>>;
 }
 
+/** 職 The school a shape belongs to, by its key, without making up a piece to ask. */
+export function schoolOfShape(key: string): School {
+  return schoolOfAxis(ARCHETYPES.find((a) => a.key === key)?.affix ?? 'power');
+}
+
+/** 譜 Every shape that belongs to a school, in slot order: the page and the Discord chart. */
+export function shapesOf(school: School): readonly Archetype[] {
+  return SLOTS.flatMap((slot) => ARCHETYPES.filter((a) => a.slot === slot && schoolOfAxis(a.affix) === school));
+}
+
 export function schoolOf(item: Item): School {
   // The line it leads with, as the player reads it on the sheet. A piece found before a
   // shape changed its axis still leads with what it rolled, and belongs where it reads.

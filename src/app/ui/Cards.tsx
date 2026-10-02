@@ -37,6 +37,8 @@ export function Cards({ state, onTrade, onClose }: {
 }) {
   const cards = held(state.awakened);
   const [open, setOpen] = useState<number | null>(null);
+  /** 確 The card a first tap asked for. Qi paid is gone, so the second tap is the one that pays. */
+  const [sure, setSure] = useState<string | null>(null);
 
   /** What an alternative does, read as if it stood where card `i` stands. */
   const says = (i: number, c: Card) => AWAKEN.effect(c.effect, cardWorth(state, c, i));
@@ -59,7 +61,7 @@ export function Cards({ state, onTrade, onClose }: {
                 <p>{c.says}</p>
               </div>
               <button type="button" className="cb-change" aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : i)}>
+                onClick={() => { setOpen(isOpen ? null : i); setSure(null); }}>
                 {isOpen ? AWAKEN.hand.keep : AWAKEN.hand.change}
               </button>
             </div>
@@ -76,9 +78,12 @@ export function Cards({ state, onTrade, onClose }: {
                         <p>{says(i, alt)}</p>
                         {refused && <em>{AWAKEN.hand.why[refused]}</em>}
                       </div>
-                      <button type="button" className="act" disabled={!!refused}
-                        onClick={() => { onTrade(i, alt.key); setOpen(null); }}>
-                        {AWAKEN.hand.trade}
+                      <button type="button" className={sure === alt.key ? 'act' : 'act ghost'} disabled={!!refused}
+                        onClick={() => {
+                          if (sure !== alt.key) { setSure(alt.key); return; }
+                          onTrade(i, alt.key); setOpen(null); setSure(null);
+                        }}>
+                        {sure === alt.key ? AWAKEN.hand.sure(num(cost)) : AWAKEN.hand.trade}
                       </button>
                     </div>
                   );

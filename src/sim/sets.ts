@@ -1,6 +1,6 @@
 import { SLOTS, templateOf, type Item, type Slot } from '../data/gear.ts';
 import { equip } from './chest.ts';
-import { SET_LIMIT, type GearSet, type State } from './state.ts';
+import { SET_LIMIT, cleanSetName, type GearSet, type State } from './state.ts';
 
 /**
  * 鎖 套 Keeping pieces, and putting a whole body of them on at once.
@@ -22,8 +22,11 @@ export function setLocked(s: State, id: string, on: boolean): State {
     const { locked: _was, ...rest } = x;
     return rest;
   };
-  const worn = { ...s.worn };
-  for (const slot of SLOTS) if (worn[slot]) worn[slot] = flip(worn[slot]!);
+  // 算 worn is a cache key for the fight odds and the class: copied only when a worn piece
+  // is the one changing, so locking a chest piece does not redo every fight on the screen.
+  const onBody = SLOTS.some((slot) => s.worn[slot]?.id === id);
+  const worn = onBody ? { ...s.worn } : s.worn;
+  if (onBody) for (const slot of SLOTS) if (worn[slot]) worn[slot] = flip(worn[slot]!);
   return { ...s, worn, chest: s.chest.map(flip) };
 }
 
@@ -36,7 +39,7 @@ export function saveSet(s: State, index: number, name: string): State {
   const ids: Partial<Record<Slot, string>> = {};
   for (const slot of SLOTS) { const it = s.worn[slot]; if (it) ids[slot] = it.id; }
   if (Object.keys(ids).length === 0) return s;
-  const clean = name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24) || `Set ${index + 1}`;
+  const clean = cleanSetName(name) || `Set ${index + 1}`;
   const sets: GearSet[] = [...s.sets];
   if (index > sets.length) return s;            // sets are kept in order, with no holes
   sets[index] = { name: clean, ids };
@@ -53,7 +56,7 @@ export function saveSet(s: State, index: number, name: string): State {
 export function renameSet(s: State, index: number, name: string): State {
   const set = s.sets[index];
   if (!set) return s;
-  const clean = name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24);
+  const clean = cleanSetName(name);
   if (!clean || clean === set.name) return s;
   const sets = [...s.sets];
   sets[index] = { ...set, name: clean };
