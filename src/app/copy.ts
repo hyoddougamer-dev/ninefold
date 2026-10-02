@@ -844,8 +844,8 @@ export const DRIVE = {
     + 'drops. What the qi buys is the tapping.',
   free: 'Fighting it one at a time is still free, and always will be.',
   /** 時 The price, in the unit it is charged in: minutes of the cultivator's own gathering. */
-  price: 'Each kill costs one minute of your own gathering.',
-  priceOld: 'A beast from an earlier realm pays a quarter of what yours do, so each kill of it costs a quarter of a minute.',
+  price: 'Each kill costs fifteen seconds of your own gathering.',
+  priceOld: 'A beast from an earlier realm pays a quarter of what yours do, so each kill of it costs a quarter of that.',
   /** Under the number on each size: what it costs in qi, said as time. */
   cost: (time: string) => `qi \u00b7 ${time}`,
   never: 'Not now',
@@ -1235,6 +1235,9 @@ export const GEAR = {
   opens: (n: number) => (n === 1 ? 'opens 1 layer straight away' : `opens ${n} layers straight away`),
   banks: 'goes into the bar',
   melting: 'Gear you will not wear is qi you have not collected.',
+  /** 拆 The melting allowance, said where it bites. See MELT_FILL. */
+  allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
+    + 'It refills as you gather, open or shut.',
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
   meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
@@ -1552,6 +1555,13 @@ export const RETURN = {
  */
 export const UNIT = { power: 'power', material: 'material' };
 
+/**
+ * 拆 What a melt pays, said the same way everywhere: qi while the melting allowance holds
+ * it, 材 material past it, or both.
+ */
+export const meltPays = (qi: string, mats: string, hasQi: boolean, hasMats: boolean) =>
+  hasQi && hasMats ? `${qi} qi and ${mats} 材 material` : hasMats ? `${mats} 材 material` : `${qi} qi`;
+
 export const ARENA = {
   /**
    * 見 The first time a beast falls, and only the first.
@@ -1564,8 +1574,8 @@ export const ARENA = {
     `+${qi} qi for the first ${han} you ever killed, once and never again. `
     + 'Every beast but a warden pays this the first time it falls.',
   /** 藏 A full chest keeps the better piece and melts the other into qi. Never lost. */
-  chestFullNew: (qi: string) => `The chest is full and holds better. This one melts into ${qi} qi.`,
-  chestFullOld: (name: string, qi: string) => `The chest is full, so your weakest piece, the ${name}, melts into ${qi} qi to make room.`,
+  chestFullNew: (pays: string) => `The chest is full and holds better. This one melts into ${pays}.`,
+  chestFullOld: (name: string, pays: string) => `The chest is full, so your weakest piece, the ${name}, melts into ${pays} to make room.`,
   /** 期 The week's quarry, the first kill of the week. */
   weekHead: 'The week\u2019s quarry',
   week: (qi: string) => `+${qi} qi for the first one this week. Every one this week pays double 材 material.`,
@@ -1585,6 +1595,7 @@ export const ARENA = {
   autoOn: (name: string) => `Hunting the ${name} on its own`,
   autoTally: (kills: number, mats: string) => `${kills} ${kills === 1 ? 'kill' : 'kills'} · +${mats} 材 material`,
   stop: 'Stop',
+  autoIn: (left: number, name: string) => `Auto opens once the ${name} is Known: ${left} more ${left === 1 ? 'kill' : 'kills'}.`,
   /** 略 A fight is settled the moment it starts; watching it is a choice. */
   skip: 'Tap to see how it ends',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in

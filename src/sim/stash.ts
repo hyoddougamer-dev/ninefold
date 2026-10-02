@@ -1,7 +1,7 @@
 import { RARITIES, type Item, type Rarity } from '../data/gear.ts';
 import { addToChest, chestLimit, fuse } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
-import { meltFactor, returnMetal, salvageValue } from './salvage.ts';
+import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
 import type { State } from './state.ts';
 import { FORGED } from '../data/crafts.ts';
@@ -39,15 +39,20 @@ export interface Stashed {
   /** Whatever a full chest turned away (the new piece, or its weakest), melted. */
   readonly dropped: Item | null;
   readonly melted: number;
+  /** 材 What the cast-off melted into once the melting allowance was spent. */
+  readonly meltedMaterial: number;
 }
 
 export function stash(s: State, found: Item | null): Stashed {
-  if (!found) return { state: s, item: null, dropped: null, melted: 0 };
+  if (!found) return { state: s, item: null, dropped: null, melted: 0, meltedMaterial: 0 };
   const item = lifted(s, found);
   const kept = addToChest(s.chest, item, limitFor(s));
-  const melted = kept.dropped ? salvageValue(kept.dropped, meltFactor(s)) : 0;
-  const state = { ...s, chest: [...kept.chest], qi: s.qi + melted };
-  return { state: kept.dropped ? returnMetal(state, [kept.dropped]) : state, item, dropped: kept.dropped, melted };
+  const m = kept.dropped ? melt(s, [kept.dropped]) : null;
+  const state = { ...(m ? m.state : s), chest: [...kept.chest] };
+  return {
+    state: kept.dropped ? returnMetal(state, [kept.dropped]) : state,
+    item, dropped: kept.dropped, melted: m?.qi ?? 0, meltedMaterial: m?.materials ?? 0,
+  };
 }
 
 /**

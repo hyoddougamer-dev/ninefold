@@ -159,6 +159,12 @@ export const HABITS: readonly Habit[] = [
   { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'dao',
     furnace: true, build: true, branch: 'spirit',
     who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
+  // 自 The same cultivator as `active`, leaving 自 the auto-hunt running through each
+  // ten-minute visit: four hundred kills a visit at the app's pace (one fight per 1.5 s).
+  // It is what found the melting hole (see MELT_FILL), and it stays so the hole stays shut.
+  { name: 'runs auto', gear: true, checks: 6, minutes: 10, hunts: 400, tower: true, furnace: true, build: true,
+    branch: 'sword',
+    who: 'The active cultivator, with Auto left on for the whole of every visit.' },
   // 業 The same cultivator as `active` again, with the workshop never idle and the best
   // elixir and sigil carried into every warden and demon: what the crafts are worth.
   { name: 'crafts it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,

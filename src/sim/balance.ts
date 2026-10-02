@@ -127,7 +127,15 @@ const LADDER: number[] = (() => {
  * all for whoever does not. A quarter of a minute was nearly free and put half again
  * as many kills on the board, so it stops at one.
  */
-export const DRIVE_MINUTES = 1;
+/**
+ * 自 A quarter, since 2026-10-02. rekaris, the morning after the auto-hunt: *"With Auto I
+ * can get 200 kills in a few minutes, while Drive would cost me 3,5hr of cultivation."*
+ * The drive is now the way to hunt while the game is shut, and it can be cheap because
+ * what made kills dangerous was the qi from melting, which has its own ceiling now
+ * (MELT_FILL). Measured: `drives it all` reaches the ninth realm on day 44.7 at a minute
+ * a kill, 44.8 at half and 43.8 at a quarter; nobody else moves.
+ */
+export const DRIVE_MINUTES = 0.25;
 
 /**
  * 舊 What a kill of a beast from an earlier realm costs in a drive, as a share of the
@@ -272,6 +280,30 @@ export const CORE_QI_RUNGS = 6;
  * units, and fused they make one 靈 that melts for 1.6. 煉器 refining is not counted at
  * all, or 材 material would have a second door out into qi.
  */
+/**
+ * 拆 The melting allowance: how much qi melting can pay, in seconds of the cultivator's
+ * own gathering.
+ *
+ * rekaris, on the Discord (2026-10-02), the morning after 自 the auto-hunt: *"With Auto I
+ * can get 200 kills in a few minutes"*, and an hour later: *"Withered bone gear grants way
+ * too much qi on meltdown ... gathering qi by melting down is the fastest way."* Both were
+ * the same hole. A piece's melt is a share of its realm's first rung, so it never grew
+ * with the hunter, but the *number* of pieces did: every kill can drop one, a full chest
+ * melts what it cannot keep, and melting had no ceiling on how often. Measured with
+ * tools/habits.ts: the active cultivator reaches the ninth realm on day 44; the same
+ * cultivator running the auto-hunt ten minutes a visit reached it on day 12, and with
+ * melting switched off, on day 42. The kills were never the problem; the qi was.
+ *
+ * So melting pays qi out of an allowance that fills with time, MELT_FILL seconds of
+ * gathering for every second that passes, and holds at most MELT_CAP. It fills while the
+ * game is shut, so somebody who comes back melts their chest at full value; it runs dry
+ * for somebody melting thousands of pieces an hour. What melts past it is not thrown
+ * away: it melts into 材 material instead (see meltMaterial), which buys power and never
+ * qi. Nothing uncapped may raise the qi rate, and now nothing uncapped pays qi either.
+ */
+export const MELT_FILL = 0.25;
+export const MELT_CAP = 6 * 3600;
+
 export const SALVAGE_SHARE_FIRST = 0.30;
 export const SALVAGE_SHARE_LAST = 0.04;
 

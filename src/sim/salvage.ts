@@ -1,7 +1,9 @@
-import { LAYERS_PER_REALM, ladderAt, salvageShare } from './balance.ts';
+import {
+  COMMON_DEPTH_FIRST, HUNT_SHARE, LAYERS_PER_REALM, floorPay, ladderAt, salvageShare,
+} from './balance.ts';
 import { RARITIES, RARITY_INFO, templateOf, type Item, type Rarity } from '../data/gear.ts';
 import { salvageBonus } from './awaken.ts';
-import type { State } from './state.ts';
+import { rate, type State } from './state.ts';
 import { classMelt } from './schools.ts';
 import { FORGED, metalKey } from '../data/crafts.ts';
 
@@ -32,6 +34,59 @@ export function salvageValue(item: Item, factor = 1): number {
   return Math.max(1, Math.round(rung * salvageShare(realm) * RARITY_INFO[item.rarity].mult * factor));
 }
 
+/**
+ * 材 What a piece melts into once the allowance is spent: the material the first common
+ * beast of its realm leaves, by its rank. Read off the table and never off the record or
+ * the tower, so it cannot compound with them. A forged piece still goes back to metal.
+ */
+export function meltMaterial(item: Item): number {
+  if (item.from === FORGED) return 0;
+  const realm = Math.max(1, Math.min(9, templateOf(item)?.realm ?? 1));
+  const depth = (realm - 1) * LAYERS_PER_REALM + COMMON_DEPTH_FIRST;
+  return Math.max(1, Math.round(floorPay(depth) * HUNT_SHARE * RARITY_INFO[item.rarity].mult));
+}
+
+/** What melting a pile pays: qi out of the allowance, and the rest as 材 material. */
+export interface Melted {
+  readonly state: State;
+  readonly qi: number;
+  readonly materials: number;
+}
+
+/**
+ * 拆 Melt pieces against the allowance, in the order given. Each piece pays its qi while
+ * the allowance holds it, and its material once it does not; a piece that only part fits
+ * pays the part in qi and the rest in proportion. The chest is not touched here: callers
+ * decide what leaves it. See MELT_FILL for why this exists.
+ */
+export function melt(s: State, pieces: readonly Item[]): Melted {
+  const r = rate(s);
+  const factor = meltFactor(s);
+  let room = Math.max(0, s.melt ?? 0) * r;
+  let qi = 0;
+  let materials = 0;
+  for (const p of pieces) {
+    const worth = salvageValue(p, factor);
+    if (worth <= 0) continue;
+    const paid = Math.min(worth, room);
+    room -= paid;
+    qi += paid;
+    if (paid < worth) materials += Math.round(meltMaterial(p) * (1 - paid / worth));
+  }
+  const used = r > 0 ? qi / r : 0;
+  return {
+    state: { ...s, qi: s.qi + qi, materials: s.materials + materials, melt: Math.max(0, (s.melt ?? 0) - used) },
+    qi: Math.round(qi),
+    materials,
+  };
+}
+
+/** What melting this pile would pay right now, without melting it: for the buttons. */
+export function meltQuote(s: State, pieces: readonly Item[]): { qi: number; materials: number } {
+  const m = melt(s, pieces);
+  return { qi: m.qi, materials: m.materials };
+}
+
 /** Everything in the chest at or below a rank. What is worn is not in the chest. */
 export function salvageable(chest: readonly Item[], upTo: Rarity): readonly Item[] {
   const top = RARITIES.indexOf(upTo);
@@ -58,8 +113,7 @@ export function salvage(s: State, ids: readonly string[]): State {
   const going = s.chest.filter((x) => wanted.has(x.id));
   if (going.length === 0) return s;
   return returnMetal({
-    ...s,
-    qi: s.qi + salvageWorth(going, meltFactor(s)),
+    ...melt(s, going).state,
     chest: s.chest.filter((x) => !wanted.has(x.id)),
   }, going);
 }

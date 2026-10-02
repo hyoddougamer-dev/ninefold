@@ -599,7 +599,7 @@
       "fields": [
         ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
-        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs one minute of your own gathering, and a quarter of that on a beast from an earlier realm."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi. It moves every Monday."]
       ]
     },
@@ -622,7 +622,7 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level, and the levels stay on the piece, so refine the one you mean to keep."],
-        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi."]
+        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
     {

@@ -66,6 +66,7 @@ import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
+import { MARKS } from '../sim/balance.ts';
 import { BRAND, BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
 
 /** 版 Filled in by the build (vite.config.ts). */
@@ -627,11 +628,17 @@ export function App() {
    * fought on their own.
    */
   const [auto, setAuto] = useState<{ beast: Beast; kills: number; from: number } | null>(null);
+  /**
+   * 熟 The auto-hunt opens for a beast once it is Known: ten kills, this one included.
+   * rekaris, on the Discord: keep it as a reward for having learned a beast. Ten and not
+   * a hundred, so the first-realm hunt is not a hundred clicks again.
+   */
+  const autoLeft = battle ? Math.max(0, MARKS[1] - ((state.killed[battle.beast.key] ?? 0) + 1)) : 0;
   const startAuto = useCallback(() => {
-    if (!battle || !canAgain || !battle.outcome.won) return;
+    if (!battle || !canAgain || !battle.outcome.won || autoLeft > 0) return;
     setAuto({ beast: battle.beast, kills: 1, from: state.materials });
     fightAgain();
-  }, [battle, canAgain, fightAgain, state.materials]);
+  }, [battle, canAgain, fightAgain, state.materials, autoLeft]);
   const stopAuto = useCallback(() => setAuto(null), []);
   useEffect(() => {
     if (!auto) return;
@@ -1130,7 +1137,8 @@ export function App() {
           onSkip={skipFight}
           auto={auto && auto.beast.key === battle.beast.key && battle.floor === undefined && !battle.demon
             ? { kills: auto.kills, gained: Math.max(0, state.materials - auto.from) } : null}
-          onAuto={canAgain && battle.outcome.won && !auto ? startAuto : undefined}
+          onAuto={canAgain && battle.outcome.won && !auto && autoLeft === 0 ? startAuto : undefined}
+          autoLeft={canAgain && battle.outcome.won && !auto ? autoLeft : 0}
           onAutoNext={autoNext}
           onStop={stopAuto}
         />

@@ -34,7 +34,7 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
-import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, SECLUSION } from './balance.ts';
+import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, MELT_CAP, SECLUSION } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
 import { FORGED, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
@@ -135,6 +135,12 @@ export interface State {
   tribulationAt: number;
   /** 塔 The highest floor of the Endless Tower that has fallen. */
   tower: number;
+  /**
+   * 拆 The melting allowance, in seconds of this cultivator's own gathering: what melting
+   * a piece may still pay in qi. Fills with time (advance), drawn by every melt. See
+   * MELT_FILL.
+   */
+  melt: number;
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
   /**
@@ -340,6 +346,7 @@ export function newState(now: number): State {
     tribulation: 0,
     tribulationAt: 0,
     tower: 0,
+    melt: MELT_CAP,
     brewed: { ...NO_PILLS },
     awakened: [],
     met: [], metAt: 0, metPoints: 0, chose: {},
@@ -830,6 +837,9 @@ export function validate(raw: unknown, now: number): State {
     // The tower is climbed one floor at a time and every floor is a fight, so a save
     // claiming floor nine thousand is claiming nine thousand fights that never happened.
     tower: towerClaim,
+    // 拆 A save from before the allowance starts it full: nothing is taken for having
+    // been played before the rule existed.
+    melt: clamp(num(o.melt, MELT_CAP), 0, MELT_CAP),
     // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
     // enough to claim five hundred floors of the tower in thirty seconds.
     brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },

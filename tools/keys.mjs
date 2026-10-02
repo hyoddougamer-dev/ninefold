@@ -28,7 +28,7 @@ function cultivator(over = {}) {
     v: 1, at, startedAt: at - 30 * 86400,
     realm: 3, layer: 3, qi: 1e5, materials: 1e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
-    killed: { rat: 3, hound: 2, frog: 2, beetle: 2 },
+    killed: { rat: 3, hound: 2, frog: 2, beetle: 12 },
     worn: { weapon: { id: 'w', template: 'sword3', rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
     chest: [], self: 'woman', stance: 'swift', sequence: [], tribulation: 0, tribulationAt: 0, tower: 0,
     brewed: { body: 0, bane: 0, fortune: 0 }, awakened: ['feast', 'wolf'],
@@ -164,6 +164,21 @@ async function fightFirst(page) {
   await page.waitForTimeout(400);
   check(!(await page.$('.arena')), 'a click beside the verdict collects, and nothing underneath was pressed');
 
+  // 位 A worn piece grows where it is when the pointer rests on it, and stays put.
+  await page.keyboard.press('4');
+  await page.waitForTimeout(400);
+  const orb = await page.$('.orb');
+  if (orb) {
+    const a = await orb.boundingBox();
+    await orb.hover();
+    await page.waitForTimeout(300);
+    const b = await orb.boundingBox();
+    const moved = Math.hypot(a.x + a.width / 2 - (b.x + b.width / 2), a.y + a.height / 2 - (b.y + b.height / 2));
+    check(moved < 2, `a worn piece stays under the pointer on hover (its centre moved ${moved.toFixed(1)}px)`);
+  } else check(false, 'there was a worn piece on the gear screen to hover');
+  await page.keyboard.press('2');
+  await page.waitForTimeout(400);
+
   const term = await page.$('.sheet .term');
   if (term) {
     await term.hover();
@@ -196,6 +211,18 @@ async function fightFirst(page) {
   await page.waitForTimeout(500);
   const on = await page.getAttribute('.buymode button:has-text("Max")', 'data-on').catch(() => null);
   check(on === 'true', 'and the choice is still Max after a reload');
+  await page.close();
+}
+
+// ── 熟 Auto opens per beast once it is Known ────────────────────────────────
+{
+  const page = await open(400, 860, { killed: { rat: 3, hound: 2, frog: 2, beetle: 3 } });
+  await fightFirst(page);
+  await page.click('.arena');
+  await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
+  const said = await page.$eval('.verdict', (e) => e.textContent).catch(() => '');
+  check(!(await page.$('.verdict .vacts .auto')) && /Auto opens once the .+ is Known: 6 more kills/.test(said ?? ''),
+    'a beast killed four times has no Auto yet, and the verdict says six more');
   await page.close();
 }
 

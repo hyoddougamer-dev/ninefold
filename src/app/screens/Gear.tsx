@@ -21,7 +21,7 @@ import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR, UNIT } from '../copy.ts';
 import { gearLift, swing } from '../../sim/inspect.ts';
 import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
-import { meltFactor, salvageWorth, salvageable } from '../../sim/salvage.ts';
+import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
 
@@ -71,7 +71,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const melting = salvageable(state.chest, upTo);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
   // quoted less than landed, up to nine tenths less with every melt card taken.
-  const meltWorth = salvageWorth(melting, meltFactor(state));
+  // 拆 Through the melting allowance, the way salvage() pays it: qi first, material past it.
+  const quote = meltQuote(state, melting);
+  const meltWorth = quote.qi;
   const opening = buysWith(state, meltWorth);
 
   return (
@@ -343,8 +345,14 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                   standing on makes the big number fall, and the button says so first. */}
               <span className="goes">{opening.rungs > 0 ? GEAR.opens(opening.rungs) : GEAR.banks}</span>
             </i>
-            <em className="mono">{num(meltWorth)}<span>qi</span></em>
+            <em className="mono">
+              {meltWorth > 0 && <>{num(meltWorth)}<span>qi</span></>}
+              {quote.materials > 0 && <span className="mats">+{num(quote.materials)} 材 {UNIT.material}</span>}
+            </em>
           </button>
+          {quote.materials > 0 && (
+            <p className="faint allowance">{GEAR.allowance(num(meltWorth))}</p>
+          )}
         </div>
       )}
 

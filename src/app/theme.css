@@ -1013,6 +1013,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 略 Said once, quietly, under the fight: the outcome is already decided. */
 .arena:not([data-over='true']) { cursor: pointer; }
 .arena .skiphint { margin: 6px 0 0; text-align: center; font-size: 11px; color: var(--faint); opacity: .6; }
+/* 拆 Past the melting allowance a melt pays material, said under the qi it did pay. */
+.melt em .mats { display: block; font-size: 11px; color: var(--gold); letter-spacing: .02em; }
+.melting .allowance { margin: 8px 0 0; font-size: 12px; }
 /* 譯 A number and the word for it stay on one line together. */
 .nw { white-space: nowrap; }
 /* 外 The veil a click beside a window lands on. Only a computer has a beside. */
@@ -2733,12 +2736,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .tabs button, .switchmenu button { cursor: pointer; }
   .act:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 0 0 1px rgba(237,227,210,.12), 0 6px 22px -10px currentColor; }
   .act.ghost:hover:not(:disabled) { border-color: var(--faint); filter: none; }
-  .upg, .beast, .chestit, .orb { transition: transform .15s ease-out, border-color .15s, box-shadow .15s; }
+  .upg, .beast, .chestit { transition: transform .15s ease-out, border-color .15s, box-shadow .15s; }
   .upg:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(212,175,86,.55);
                               box-shadow: 0 8px 24px -14px rgba(212,175,86,.7); }
   .beast:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(127,180,149,.5);
                                 box-shadow: 0 8px 24px -14px rgba(127,180,149,.7); }
-  .chestit:hover, .orb:hover { transform: translateY(-2px) scale(1.04); }
+  .chestit:hover { transform: translateY(-2px) scale(1.04); }
+  /* 位 A worn piece is placed on the ring by its own transform, translate(-50%, -50%),
+     and a hover that set transform replaced it: the piece jumped half its size down and
+     right, out from under the pointer, came back, and jumped again (rekaris, on the
+     Discord). It grows with the independent scale property, which leaves the place alone. */
+  .orb { transition: scale .15s ease-out; }
+  .orb:hover { scale: 1.06; }
 }
 
 /* 息 She breathes. A scale of a fraction of a percent every six seconds, on the

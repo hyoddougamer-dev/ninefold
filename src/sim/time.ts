@@ -1,4 +1,4 @@
-import { LAYERS, LAYERS_PER_REALM, ladderAt } from './balance.ts';
+import { LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt } from './balance.ts';
 import { layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 
@@ -95,7 +95,9 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
     }
   }
 
-  return { ...s, at: now, realm, layer, qi, wardenFell };
+  // 拆 The melting allowance fills with the time that passed, open or shut.
+  const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL);
+  return { ...s, at: now, realm, layer, qi, wardenFell, melt };
 }
 
 /**

@@ -15,7 +15,7 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, CRAFTS, SECLUSION, UNIT } from '../copy.ts';
+import { ARENA, CRAFTS, SECLUSION, UNIT, meltPays } from '../copy.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
@@ -115,7 +115,7 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow, auto, onAuto, onAutoNext, onStop }: {
+export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow, auto, onAuto, onAutoNext, onStop, autoLeft = 0 }: {
   battle: Battle;
   /**
    * 得 The whole state, not only the realm, because what a kill is *worth* depends on
@@ -139,6 +139,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   /** 自 Take this kill and go again, on the auto-hunt's own clock. */
   onAutoNext?: () => void;
   onStop?: () => void;
+  /** 熟 Kills of this beast still to go before Auto opens for it, after this one. */
+  autoLeft?: number;
 }) {
   const realm = state.realm;
   const { beast, outcome, beat, over } = battle;
@@ -446,13 +448,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                 {overflow?.dropped && (
                   <em className="full">
                     {overflow.dropped.id === overflow.item?.id
-                      ? ARENA.chestFullNew(num(overflow.melted))
-                      : ARENA.chestFullOld(templateOf(overflow.dropped).name, num(overflow.melted))}
+                      ? ARENA.chestFullNew(meltPays(num(overflow.melted), num(overflow.meltedMaterial),
+                        overflow.melted > 0, overflow.meltedMaterial > 0))
+                      : ARENA.chestFullOld(templateOf(overflow.dropped).name, meltPays(num(overflow.melted),
+                        num(overflow.meltedMaterial), overflow.melted > 0, overflow.meltedMaterial > 0))}
                   </em>
                 )}
               </span>
             </div>
           )}
+          {autoLeft > 0 && <p className="kitline"><b className="cjk">自</b> {ARENA.autoIn(autoLeft, beast.name)}</p>}
           {!auto && <div className="vacts">
             <button className="act collect" onClick={() => { take(); onClose(); }}>
               {outcome.won ? '收' : '退'}{' '}

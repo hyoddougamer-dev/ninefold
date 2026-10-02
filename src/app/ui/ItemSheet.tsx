@@ -15,8 +15,8 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
-import { CLASS, ITEM } from '../copy.ts';
-import { meltFactor, salvageValue } from '../../sim/salvage.ts';
+import { CLASS, ITEM, UNIT } from '../copy.ts';
+import { meltQuote } from '../../sim/salvage.ts';
 import { num } from '../../sim/format.ts';
 
 /**
@@ -246,7 +246,16 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>
           <i>{ITEM.salvage}</i>
-          <em className="mono">{num(salvageValue(item, meltFactor(state)))}<span>qi</span></em>
+          {(() => {
+            // 拆 Quoted through the melting allowance, exactly as the melt will pay it.
+            const q = meltQuote(state, [item]);
+            return (
+              <em className="mono">
+                {q.qi > 0 && <>{num(q.qi)}<span>qi</span></>}
+                {q.materials > 0 && <span className="mats">+{num(q.materials)} 材 {UNIT.material}</span>}
+              </em>
+            );
+          })()}
         </button>
       )}
     </div>
