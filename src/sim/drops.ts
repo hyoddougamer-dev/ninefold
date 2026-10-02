@@ -1,7 +1,8 @@
 import type { Beast } from '../data/bestiary.ts';
 import { isOpen } from './unlocks.ts';
 import {
-  BASE_DROP_CHANCE, LAYERS_PER_REALM, RARITY_WEIGHT, SECONDARIES, SECONDARY_SHARE, VARIANCE,
+  BASE_DROP_CHANCE, LAYERS_PER_REALM, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
+  SECONDARIES, SECONDARY_SHARE, VARIANCE,
   WARDEN_RARITY_TILT,
 } from './balance.ts';
 import {
@@ -47,13 +48,16 @@ function dropsYet(realm: number): boolean {
 export function rarityWeights(beast: Beast, luck = 1): Record<Rarity, number> {
   const r = beast.realm;
   const lift = (beast.warden ? WARDEN_RARITY_TILT : 1) * luck;
+  // 階 The luck alone is graded, never the warden's tilt, and only up to its cap. See
+  // LUCK_EARTH_GRADE. At luck 1 both factors are 1 and the table is what it always was.
+  const grade = Math.min(LUCK_GRADE_CAP, Math.max(1, luck));
   const w = RARITY_WEIGHT;
   return {
     common: Math.max(w.common.floor, w.common.base - w.common.fall * r) / lift,
     spirit: w.spirit.base + w.spirit.per * r,
     mystic: (w.mystic.base + w.mystic.per * r) * lift,
-    earth: (w.earth.base + w.earth.per * r) * lift,
-    heaven: (w.heaven.base + w.heaven.per * r) * lift,
+    earth: (w.earth.base + w.earth.per * r) * lift * grade ** LUCK_EARTH_GRADE,
+    heaven: (w.heaven.base + w.heaven.per * r) * lift * grade ** LUCK_HEAVEN_GRADE,
   };
 }
 

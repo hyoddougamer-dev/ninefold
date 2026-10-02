@@ -1069,6 +1069,29 @@ export const RARITY_WEIGHT = {
   heaven: { base: 0.6, per: 0.45 },
 } as const;
 
+/**
+ * 階 Luck lifts the top of the table more than the middle.
+ *
+ * It used to lift 玄 Mystic, 地 Earth and 天 Heaven by the same factor, and that has a
+ * ceiling built in: once most drops are Mystic, more luck mostly makes *more Mystic*. The
+ * cards said so the day they started saying what they do in numbers (sim/cardworth.ts):
+ * 通天 Reaching Heaven, the ninth realm's luck card, moved a cultivator's Earth-or-better
+ * share from 33% to 35%. Nobody takes that over three fifths more material.
+ *
+ * So Earth is lifted by the luck to the power 1 + LUCK_EARTH_GRADE and Heaven by 1 +
+ * LUCK_HEAVEN_GRADE. Measured with the habits and the endgame (2 October): the climb
+ * moves by under a day on every habit, the endgame by none, and Reaching Heaven is worth
+ * +5.7 points of Earth-or-better and +3.0 of Heaven instead of +2.1 and +0.6.
+ *
+ * 頂 And the grading stops. The equal lift stopped itself (the shares flatten as luck
+ * grows) and a graded one would not: luck has no cap, and at L = 20 a steeper grade put
+ * half of all drops at Heaven. Only luck up to LUCK_GRADE_CAP is graded; past it, luck
+ * lifts all three alike again, as it always did.
+ */
+export const LUCK_EARTH_GRADE = 0.25;
+export const LUCK_HEAVEN_GRADE = 0.5;
+export const LUCK_GRADE_CAP = 10;
+
 /** How much an item's rolled percentage may swing either side of its base. */
 export const VARIANCE = 0.15;
 
