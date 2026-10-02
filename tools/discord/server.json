@@ -567,6 +567,31 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/schools-phone.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-02-fixes",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Five fixes from your posts",
+      "color": "#8FB49B",
+      "body": [
+        "Thanks to rekaris for testing the last update within hours! Five things came out of it, and all five are in now:",
+        "",
+        "· A beast at 100 kills no longer hides as finished: it stays in the list on its way to 精 Seasoned and 絕 Peerless.",
+        "· Loadouts can be renamed with ✎.",
+        "· Hover or tap a school seal on the hunt list or in the bestiary and it says which school it is.",
+        "· On a computer the chest filters wrap onto a new line instead of hiding past the edge.",
+        "· Every line of a piece now sits at the top of its sheet, beside power and qi.",
+        "",
+        "No numbers changed. Keep the reports coming in {#bugs} and {#ideas}, they make the game better every day."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fixes-deep.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fixes-seal.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fixes-sheet.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fixes-pc.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1228,8 +1253,8 @@
       "title": "Inventory management improvements",
       "tags": ["Idea"],
       "reply": [
-        "Done, it's in the next update. There's a ✎ next to each loadout now: tap it, type a name and press Enter (Esc keeps the old one).",
-        "Thanks for using them straight away!",
+        "Done! There's a little ✎ next to each loadout now. Tap it, type whatever you like and hit Enter (or Esc if you change your mind).",
+        "Really nice to see loadouts getting used within hours of going in. Thanks!",
         "· 師 Shibaki"
       ]
     },
@@ -1238,8 +1263,8 @@
       "title": "Add item drop information to bestiary",
       "tags": ["Idea"],
       "reply": [
-        "Good call. In the next update every school seal on the hunt list and in the bestiary names its school when you hover over it or tap it, and says what that school gives.",
-        "On a computer, hovering a piece in your chest also names it, its rank and its school. Thanks!",
+        "Good shout. The colour only helps once you already know it, so now if you hover over a school seal on the hunt list or in the bestiary (or tap it on a phone) it tells you the school in English and what it gives.",
+        "On a computer, hovering a piece in your chest names it, its rank and its school too. Thanks for pushing on this one!",
         "· 師 Shibaki"
       ]
     },
@@ -1248,8 +1273,8 @@
       "title": "Consider adding more milestones to hunts",
       "tags": ["Idea", "Balance"],
       "reply": [
-        "Not your save, that was our mistake, and thanks for catching it. A beast at 100 kills was still folded away as finished, even with 精 Seasoned and 絕 Peerless ahead of it.",
-        "Fixed in the next update: it stays in the list, shows its count toward 1,000, and only counts as finished once both new marks are earned. The kills you already have all count.",
+        "Your save is fine, that one was on me. Beasts at 100 kills were still being tucked away as finished, even with 精 Seasoned and 絕 Peerless still ahead of them.",
+        "It's fixed now: they stay in the list and show how far you are toward 1,000, and they only count as finished once both new marks are earned. Every kill you already had still counts. Thanks for spotting it so fast!",
         "· 師 Shibaki"
       ]
     },
@@ -1258,9 +1283,9 @@
       "title": "Show all stats of the gear by default",
       "tags": ["Idea"],
       "reply": [
-        "You were looking in the right place! On a computer the filter rows scrolled sideways and were cut at the edge, so the school row looked like it wasn't there. In the next update they wrap onto a new line instead.",
-        "And every line of a piece now sits at the top of its sheet, right under power and qi, so nothing needs opening or scrolling at 150% zoom.",
-        "Thanks for the screenshots, they showed exactly what was wrong.",
+        "You were looking in exactly the right place, the game was just hiding it from you. On a computer the filter rows scrolled sideways and got cut off at the edge, so the school row looked like it wasn't there. They wrap onto a second line now.",
+        "I also moved every line of a piece up to the top of its sheet, right under power and qi, so at 150% zoom you shouldn't need to scroll at all.",
+        "Your screenshots made this one easy to find, thank you!",
         "· 師 Shibaki"
       ]
     }
