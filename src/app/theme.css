@@ -1005,6 +1005,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 }
 /* 窄 On the narrowest phones the two buttons share 280 pixels: no key chips, tighter letters. */
 .verdict .vacts .act { white-space: nowrap; }
+/* 鍵 The key chips only where a button has room for its word and its key both: a half
+   width Collect in a window under 520px pushed "Enter" past its own edge. */
+@media (max-width: 520px) { .verdict .vacts kbd, .arena .autobar kbd { display: none !important; } }
 @media (max-width: 380px) {
   .verdict .vacts kbd { display: none !important; }
   .verdict .vacts .act span { letter-spacing: .12em; margin-left: 5px; }

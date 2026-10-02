@@ -510,6 +510,11 @@
         ["▸ Nothing is taken", "Your qi, material and gear stay exactly as they are, and the allowance starts full."],
         ["謝 Thanks", "To rekaris again, for three posts in one morning that found all of this."]
       ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/melt-allowance.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/auto-known.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/auto-pc.webp?v=1"
+      ],
       "footer": "師 Shibaki"
     }
   ],
