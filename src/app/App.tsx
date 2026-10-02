@@ -27,11 +27,12 @@ import {
 import { Crafts } from './screens/Crafts.tsx';
 import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
 import type { Away } from '../sim/save.ts';
-import { CRAFTS } from './copy.ts';
+import { CRAFTS, GEAR } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
+import { clearSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -256,23 +257,28 @@ export function App() {
     }
   }, []);
 
-  // 入定 The visit. It starts when the app comes to the front and ends when it leaves,
+  // 入定 The visit. It starts when the game comes on screen and ends when it goes off it,
   // and nothing about it is remembered between visits.
+  //
+  // 視 On screen, not in focus. rekaris, on the Discord: *"I would expect to be able to use
+  // my computer while playing the game"*. A click in another window used to end the visit
+  // (a `blur`) with the game still in plain sight beside it, and coming back started the
+  // sitting again from nothing. The sitting still ends after a quarter of an hour, so a
+  // game left on a second screen is paid the same as one looked at.
   useEffect(() => {
     if (!ready) return;
-    const enter = () => { since.current = now(); };
+    const enter = () => { if (since.current === null) since.current = now(); };
     const leave = () => { since.current = null; setFocus(1); setSatOut(false); };
     const onVisibility = () => (document.hidden ? leave() : enter());
+    since.current = null;
     enter();
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', leave);
-    window.addEventListener('focus', enter);
-    window.addEventListener('blur', leave);
+    window.addEventListener('pageshow', enter);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', leave);
-      window.removeEventListener('focus', enter);
-      window.removeEventListener('blur', leave);
+      window.removeEventListener('pageshow', enter);
     };
   }, [ready]);
 
@@ -980,6 +986,17 @@ export function App() {
             upTo={meltUpTo} onUpTo={setMeltUpTo}
             onInspect={(item, wearing) => { setInspect({ item, wearing }); sfx.tap(); }}
             onFuse={onFuse} onRefine={onRefine} onSalvageAll={onSalvageAll}
+            onSaveSet={(i, name) => { setState((s) => saveSet(s, i, name)); sfx.buy(); haptics.tap(); }}
+            onWearSet={(i) => {
+              const id = ++taps.current;
+              setState((s) => {
+                const r = wearSet(s, i);
+                if (r.missing > 0) once(id, () => float(GEAR.setMissing(r.missing), 'gold'));
+                return r.state;
+              });
+              sfx.buy(); haptics.strike();
+            }}
+            onClearSet={(i) => { setState((s) => clearSet(s, i)); sfx.tap(); }}
           />
         )}
         {tab === 'dao' && (
@@ -1308,6 +1325,11 @@ export function App() {
           onWear={() => { onEquip(inspect.item); setInspect(null); }}
           onTakeOff={() => { onUnequip(templateOf(inspect.item).slot); setInspect(null); }}
           onSalvage={() => { onSalvage(inspect.item.id); setInspect(null); }}
+          onLock={(on) => {
+            setState((s) => lockPiece(s, inspect.item.id, on));
+            setInspect({ ...inspect, item: on ? { ...inspect.item, locked: true } : (({ locked: _l, ...rest }) => rest)(inspect.item) });
+            sfx.tap();
+          }}
           onClose={() => { setInspect(null); sfx.tap(); }}
         />
       )}

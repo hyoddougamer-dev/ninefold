@@ -56,11 +56,15 @@ export function addToChest(
 ): Kept {
   if (!chestFull(chest, limit)) return { chest: [...chest, item], dropped: null };
 
-  let worstAt = 0;
-  for (let i = 1; i < chest.length; i++) {
-    if (itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
+  // 鎖 A locked piece is never the one that goes. If every piece is locked, the new one
+  // goes instead, which is what a full chest always did with a piece no better than its
+  // worst: nothing the player chose to keep is ever taken.
+  let worstAt = -1;
+  for (let i = 0; i < chest.length; i++) {
+    if (chest[i].locked) continue;
+    if (worstAt < 0 || itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
   }
-  const worst = chest[worstAt];
+  const worst = worstAt >= 0 ? chest[worstAt] : undefined;
   if (!worst || itemWorth(item) <= itemWorth(worst)) return { chest, dropped: item };
 
   const next = chest.slice();
@@ -136,7 +140,8 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
   const tally = new Map<string, number>();
   for (const it of chest) {
     // 業 A forged piece is finished: it is never one of three. See sim/crafts.ts.
-    if (it.from === FORGED) continue;
+    // 鎖 Nor is a locked one: fusing melts three pieces into one.
+    if (it.from === FORGED || it.locked) continue;
     const key = `${it.template}|${it.rarity}`;
     tally.set(key, (tally.get(key) ?? 0) + 1);
   }
@@ -162,7 +167,7 @@ export function fuse(
   const tpl = TEMPLATE_BY_KEY[template];
   if (!up || !tpl) return { chest, made: null };
 
-  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && x.from !== FORGED);
+  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && x.from !== FORGED && !x.locked);
   if (matching.length < FUSE_COUNT) return { chest, made: null };
 
   const eaten = matching.slice(0, FUSE_COUNT);

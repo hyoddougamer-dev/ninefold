@@ -48,8 +48,18 @@ import { GLOSS } from '../glossary.ts';
  * layout effect, before the browser paints, so there is no flash of it in the wrong
  * place.
  */
-export function Term({ han, sense, plain, children }: {
+export function Term({ han, sense, plain, children, entry, go, bare }: {
   han: string;
+  /**
+   * 物 A note the glossary does not hold: a thing in the workshop, named where its icon
+   * stands. rekaris, on the Discord: *"The icons for materials required to craft something
+   * are very small and it is hard/impossible to tell what that thing is."*
+   */
+  entry?: { readonly han: string; readonly name: string; readonly note?: string };
+  /** 往 A way to where the thing comes from, as a button inside the note. */
+  go?: { readonly label: string; readonly onGo: () => void };
+  /** No underline and no colour: the children are a picture, not a word. */
+  bare?: boolean;
   /**
    * 義 Which sense of the character this screen means, where it has two.
    *
@@ -69,7 +79,7 @@ export function Term({ han, sense, plain, children }: {
   plain?: boolean;
   children?: React.ReactNode;
 }) {
-  const term = (sense ? GLOSS[`${sense}:${han}`] : undefined) ?? GLOSS[han];
+  const term = entry ?? (sense ? GLOSS[`${sense}:${han}`] : undefined) ?? GLOSS[han];
   const ref = useRef<HTMLButtonElement>(null);
   const tip = useRef<HTMLSpanElement>(null);
   /** Where the character is. Set on the tap, and never recomputed. */
@@ -78,11 +88,17 @@ export function Term({ han, sense, plain, children }: {
   const [at, setAt] = useState<{ left: number; top: number; below: boolean } | null>(null);
   /** Opened by the pointer passing over, and so closed by it leaving. */
   const hovered = useRef(false);
+  /** The close a pointer leaving a note with a button waits on. See `go`. */
+  const later = useRef<number | undefined>(undefined);
 
   // 閉 Anything else the player does puts it away: another tap, a scroll, a key.
   useEffect(() => {
     if (!from) return;
-    const shut = () => { setFrom(null); setAt(null); };
+    const shut = (e?: Event) => {
+      // A press inside the note is the note being used (its 往 button), not put away.
+      if (e && tip.current && e.target instanceof Node && tip.current.contains(e.target)) return;
+      setFrom(null); setAt(null);
+    };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') shut(); };
     // 捲 A scroll closes the note only when it takes the character somewhere. Measured by
     // 註 the tip harness, tapping 緣 on a tall hunt row nudged the list by one pixel (the
@@ -139,9 +155,14 @@ export function Term({ han, sense, plain, children }: {
   return (
     <>
       <button ref={ref} className="term cjk" data-plain={plain || undefined}
-        data-open={from ? 'true' : undefined}
+        data-open={from ? 'true' : undefined} data-bare={bare || undefined}
         onMouseEnter={() => { if (fine() && !from) { hovered.current = true; open(); } }}
-        onMouseLeave={() => { if (hovered.current) { hovered.current = false; shut(); } }}
+        onMouseLeave={() => {
+          if (!hovered.current) return;
+          // 往 A note with somewhere to go waits a moment, so the pointer can reach its button.
+          if (go) { later.current = window.setTimeout(() => { hovered.current = false; shut(); }, 260); return; }
+          hovered.current = false; shut();
+        }}
         onClick={(e) => {
           e.stopPropagation();
           if (hovered.current) { hovered.current = false; open(); return; }
@@ -153,10 +174,13 @@ export function Term({ han, sense, plain, children }: {
       {from && createPortal(
         <span ref={tip} className="termtip" data-below={at ? at.below : true}
           style={at ? { left: at.left, top: at.top } : { left: 0, top: 0, visibility: 'hidden' }}
-          role="tooltip">
+          onMouseEnter={() => window.clearTimeout(later.current)}
+          onMouseLeave={() => { if (hovered.current) { hovered.current = false; shut(); } }}
+          role={go ? 'dialog' : 'tooltip'}>
           <b className="cjk">{term.han}</b>
           <em>{term.name}</em>
           {term.note && <i>{term.note}</i>}
+          {go && <button className="termgo" onClick={() => { shut(); go.onGo(); }}>{go.label}</button>}
         </span>, document.body)}
     </>
   );

@@ -92,7 +92,8 @@ export function meltQuote(s: State, pieces: readonly Item[]): { qi: number; mate
 /** Everything in the chest at or below a rank. What is worn is not in the chest. */
 export function salvageable(chest: readonly Item[], upTo: Rarity): readonly Item[] {
   const top = RARITIES.indexOf(upTo);
-  return chest.filter((x) => RARITIES.indexOf(x.rarity) <= top);
+  // 鎖 A locked piece is never in the pile, whatever rank the button reaches.
+  return chest.filter((x) => RARITIES.indexOf(x.rarity) <= top && !x.locked);
 }
 
 /**
@@ -112,7 +113,8 @@ export function salvageWorth(items: readonly Item[], factor = 1): number {
  */
 export function salvage(s: State, ids: readonly string[]): State {
   const wanted = new Set(ids);
-  const going = s.chest.filter((x) => wanted.has(x.id));
+  // 鎖 And a locked one is not melted by name either: it has to be unlocked first.
+  const going = s.chest.filter((x) => wanted.has(x.id) && !x.locked);
   if (going.length === 0) return s;
   return returnMetal({
     ...melt(s, going).state,

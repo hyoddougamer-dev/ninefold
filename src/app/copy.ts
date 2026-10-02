@@ -152,7 +152,9 @@ export const RANKS = {
     waiting: (h: string) => `Your climb is ahead of real time by ${h}. It will be ranked as the hours pass.`,
     behind: 'This device has an older copy than the one ranked. Nothing is lost.',
     refused: 'Something in this save could not have happened. It is not ranked.',
-    suspect: 'Your climb is faster than anybody honest was measured to go, so it is held for review.',
+    /** 疑 Not an accusation. rekaris saw the old line ("faster than anybody honest") after
+     *  melting with Auto before the melting allowance existed: the speed was the game's. */
+    suspect: 'Your climb went faster than the game expects, so it is off the boards until we take a look. Your game is not touched, and this is not a strike.',
     never: 'Not synced yet.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
@@ -832,6 +834,9 @@ export const HUNT = {
    * nowhere smaller to put one. Now there is.
    */
   record: 'Every kill is counted, for ever, and the count pays.',
+  /** 序 How the list is ordered, chosen by the player and kept on the device. */
+  orderBy: 'Order the beasts by',
+  order: { mark: 'Next mark', strong: 'Strongest', material: 'Most material' } as const,
 };
 
 /**
@@ -919,6 +924,10 @@ export const ITEM = {
     return `The ${name} you wear is better.`;
   },
   wornSays: 'Against the same place left empty.',
+  /** 鎖 Keeping a piece on purpose. */
+  lock: 'Lock',
+  unlock: 'Unlock',
+  lockedSays: 'Locked: it is never melted, never fused, and a full chest leaves it alone.',
   detail: 'Every effect, in detail',
   /** 頂 Why the 氣 line reads bigger than what it does. */
   qiCeiling: 'Qi from gear bends toward a ceiling, so this adds less than it reads.',
@@ -1261,6 +1270,21 @@ export const GEAR = {
   banks: 'goes into the bar',
   melting: 'Gear you will not wear is qi you have not collected.',
   /** 拆 The melting allowance, said where it bites. See MELT_FILL. */
+  /** 套 Loadouts: whole bodies of gear, remembered and put back on in one tap. */
+  loadoutHead: '套 Loadouts',
+  loadouts: 'Save what you wear and put it all back on in one tap. Saving locks the pieces, so nothing melts them.',
+  loadoutSave: 'Save what you wear',
+  loadoutSaveShort: 'Save',
+  loadoutWorn: 'Wearing it',
+  loadoutPieces: (n: number) => (n === 1 ? '1 piece · tap to wear' : `${n} pieces · tap to wear`),
+  loadoutWear: (name: string) => `Wear ${name}`,
+  loadoutOn: (name: string) => `${name}, worn now`,
+  loadoutResave: (name: string) => `Save what you wear as ${name}`,
+  loadoutForget: (name: string) => `Forget ${name}`,
+  loadoutDefault: (n: number) => `Loadout ${n}`,
+  setMissing: (n: number) => (n === 1 ? '1 piece of that loadout is gone' : `${n} pieces of that loadout are gone`),
+  lockedWord: 'locked',
+  anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
     + 'It refills as you gather, open or shut.',
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
@@ -1549,6 +1573,8 @@ export const BESTIARY = {
   credits: 'Art credits',
   icons: (authors: string) =>
     `Icons from game-icons.net, Creative Commons BY 3.0. Authors: ${authors}.`,
+  /** 職 For a screen reader: the schools of the three pieces a beast leaves. */
+  leavesSchools: (schools: readonly string[]) => `Leaves ${schools.join(', ')} pieces`,
 };
 
 export const RETURN = {
@@ -1702,6 +1728,9 @@ export const CRAFTS = {
   },
   needs: 'Needs',
   remains: (n: number, of: number) => `${n}/${of} killed`,
+  /** 物 The note on a thing's icon in a recipe: which craft makes it. */
+  madeBy: (han: string, skill: string, recipe: string) => `Made in ${han} ${skill}: ${recipe}.`,
+  goMake: (recipe: string) => `Go to ${recipe}`,
   quality: 'Quality',
   familiar: (marks: number) => `習 familiarity ${'\u25cf'.repeat(marks)}${'\u25cb'.repeat(5 - marks)}`,
   makes: (n: number) => `${n} made`,

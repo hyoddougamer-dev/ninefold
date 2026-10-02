@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ITEM_BY_KEY, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, XP_TABLE, rankOf, splitKey,
   type Recipe, type SkillKey,
@@ -75,6 +75,24 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const [find, setFind] = useState('');
   const [filter, setFilter] = useState<'all' | 'ready' | 'next'>('all');
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
+  /**
+   * 往 Take the player to the recipe that makes a thing, from the note on its icon. It is
+   * searched for by name so it is in the list whatever list was open, then scrolled to and
+   * lit for a moment.
+   */
+  const [lit, setLit] = useState<string | null>(null);
+  const goTo = (key: string) => {
+    const r = RECIPE_BY_KEY[key];
+    if (!r) return;
+    setView('work'); setSkill(r.skill); setGroup(r.group); setFilter('all'); setFind(r.name); setLit(r.key);
+  };
+  useEffect(() => {
+    if (!lit) return;
+    const el = document.querySelector(`[data-recipe="${lit}"]`);
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const id = window.setTimeout(() => setLit(null), 1600);
+    return () => window.clearTimeout(id);
+  }, [lit]);
 
   const open = skillOpen(state, skill);
   const level = levelIn(state, skill);
@@ -222,8 +240,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
             {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
           {list.map((r) => (
-            <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key}
-              onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} />
+            <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
+              onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
           ))}
           {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
         </div>
@@ -351,15 +369,45 @@ function Thing({ k, size }: { k: string; size: number }) {
   );
 }
 
+/**
+ * 物 What a thing in a recipe is, and where it comes from, on its own icon.
+ *
+ * rekaris, on the Discord: *"The icons for materials required to craft something are very
+ * small and it is hard/impossible to tell what that thing is ... clicking it would
+ * automatically move you to the crafting that drops this item."* So the icon is a note,
+ * opened by a tap or a resting pointer, naming the thing in English beside its character,
+ * saying which craft makes it, and carrying a button that goes there.
+ */
+const MAKER = new Map<string, Recipe>();
+for (const r of RECIPES) if (r.makes.kind === 'item' && !MAKER.has(r.makes.item)) MAKER.set(r.makes.item, r);
+
+function Named({ k, onGo }: { k: string; onGo: (key: string) => void }) {
+  const { key, quality } = splitKey(k);
+  const it = ITEM_BY_KEY[key];
+  if (!it) return null;
+  const from = MAKER.get(key);
+  const skill = from ? SKILL_BY_KEY[from.skill] : null;
+  const name = quality !== null ? `${RARITY_INFO[RARITIES[quality]].name} ${it.name}` : it.name;
+  return (
+    <Term han={it.han} bare
+      entry={{ han: it.han, name, note: from && skill ? CRAFTS.madeBy(skill.han, skill.name, from.name) : it.does }}
+      go={from ? { label: CRAFTS.goMake(from.name), onGo: () => onGo(from.key) } : undefined}>
+      <Thing k={k} size={20} />
+    </Term>
+  );
+}
+
 /** A recipe: what it makes, what it needs against what is held, how long, what it pays. */
-function Row({ state, r, on, onStart }: { state: State; r: Recipe; on: boolean; onStart: () => void }) {
+function Row({ state, r, on, lit, onStart, onGo }: {
+  state: State; r: Recipe; on: boolean; lit: boolean; onStart: () => void; onGo: (key: string) => void;
+}) {
   const why = blocked(state, r);
   const lock = why === 'level' ? CRAFTS.why.level(r.level) : why === 'realm' ? CRAFTS.why.realm(r.realm)
     : why === 'tool' ? CRAFTS.why.tool : why === 'shut' ? CRAFTS.why.shut : null;
   const q = r.graded && !lock ? qualityFor(state, r) : null;
   const marks = marksOf(state, r);
   return (
-    <div className="crow" data-on={on} data-lock={lock !== null}>
+    <div className="crow" data-on={on} data-lock={lock !== null} data-recipe={r.key} data-lit={lit || undefined}>
       <Out r={r} size={40} />
       <span className="cr-body">
         <b><span className="cjk">{r.han}</span> {r.name}</b>
@@ -374,7 +422,7 @@ function Row({ state, r, on, onStart }: { state: State; r: Recipe; on: boolean; 
             )}
             {needsOf(state, r).map(([k, n]) => (
               <span key={k} data-short={held(state, k) < n}>
-                {k === 'mat' ? <b className="cjk"><Term han="材" plain /></b> : <Thing k={k} size={20} />}
+                {k === 'mat' ? <b className="cjk"><Term han="材" plain /></b> : <Named k={k} onGo={onGo} />}
                 {num(held(state, k))}<em>/{num(n)}</em>
               </span>
             ))}

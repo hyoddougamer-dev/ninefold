@@ -13,7 +13,7 @@ const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
   AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
-  type Affix, type Item, type Rarity, type Roll, type Worn,
+  type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { chestLimit, itemWorth } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
@@ -90,6 +90,32 @@ export const UPGRADE_INFO: Record<Upgrade, {
     affects: 'power', currency: 'material' },
 };
 
+/** 套 A saved set of gear. See State.sets. */
+export interface GearSet {
+  readonly name: string;
+  readonly ids: Partial<Record<Slot, string>>;
+}
+
+/** 套 How many sets a cultivator may keep. */
+export const SET_LIMIT = 3;
+
+function validSets(raw: unknown): readonly GearSet[] {
+  if (!Array.isArray(raw)) return [];
+  const out: GearSet[] = [];
+  for (const r of raw.slice(0, SET_LIMIT)) {
+    const o = (r ?? {}) as Record<string, unknown>;
+    const name = typeof o.name === 'string' ? o.name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24) : '';
+    const rawIds = (o.ids ?? {}) as Record<string, unknown>;
+    const ids: Partial<Record<Slot, string>> = {};
+    for (const slot of SLOTS) {
+      const id = rawIds[slot];
+      if (typeof id === 'string' && id.length > 0 && id.length <= 64) ids[slot] = id;
+    }
+    if (name && Object.keys(ids).length > 0) out.push({ name, ids });
+  }
+  return out;
+}
+
 export interface State {
   readonly v: 1;
   /** Epoch seconds this state is correct as of. */
@@ -141,6 +167,12 @@ export interface State {
    * MELT_FILL.
    */
   melt: number;
+  /**
+   * 套 Saved sets of gear: a name and, for each place on the body, the piece that goes
+   * there. Pieces are named by id and looked up when the set is put on, so a set never
+   * holds a copy of anything. See sim/sets.ts.
+   */
+  sets: readonly GearSet[];
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
   /**
@@ -347,6 +379,7 @@ export function newState(now: number): State {
     tribulationAt: 0,
     tower: 0,
     melt: MELT_CAP,
+    sets: [],
     brewed: { ...NO_PILLS },
     awakened: [],
     met: [], metAt: 0, metPoints: 0, chose: {},
@@ -713,8 +746,10 @@ export function validate(raw: unknown, now: number): State {
     // names something real: a beast, or one of the two places that are not a kill.
     const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED)
       ? { from: o.from } : {};
-    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from }
-      : { id, template: tpl.key, rarity, rolls, ...from };
+    // 鎖 A lock is a yes or nothing; any other value is no lock.
+    const locked = o.locked === true ? { locked: true as const } : {};
+    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from, ...locked }
+      : { id, template: tpl.key, rarity, rolls, ...from, ...locked };
   };
 
   const used = new Set<string>();
@@ -840,6 +875,9 @@ export function validate(raw: unknown, now: number): State {
     // 拆 A save from before the allowance starts it full: nothing is taken for having
     // been played before the rule existed.
     melt: clamp(num(o.melt, MELT_CAP), 0, MELT_CAP),
+    // 套 At most SET_LIMIT sets, each a short name and a piece id per place on the body.
+    // A set naming a piece that is gone is kept: it says so when it is put on.
+    sets: validSets(o.sets),
     // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
     // enough to claim five hundred floors of the tower in thirty seconds.
     brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },

@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { fightDeps } from '../memo.ts';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
-  activeSets, primaryOf, templateOf, wornRarity, wornTotals,
+  activeSets, callingOf, primaryOf, schoolOf, templateOf, wornRarity, wornTotals,
   type Affix, type Item, type Rarity, type Slot,
 } from '../../data/gear.ts';
+import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -24,6 +25,8 @@ import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/sch
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
+import { isWorn } from '../../sim/sets.ts';
+import { SET_LIMIT } from '../../sim/state.ts';
 
 /**
  * 器 The gear screen: the ring.
@@ -35,7 +38,7 @@ import { buysWith } from '../../sim/time.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet }: {
   state: State;
   pulse: number;
   /** 拆 The rank the bulk melt reaches up to. Held by the app so it survives a tab. */
@@ -48,6 +51,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onFuse: (template: string, rarity: string) => void;
   /** 煉器 Refining the piece in a slot. Paid in 材 material and never in qi. */
   onRefine: (slot: Slot) => void;
+  /** 套 Loadouts: remember what is worn, put a remembered body back on, forget one. */
+  onSaveSet: (index: number, name: string) => void;
+  onWearSet: (index: number) => void;
+  onClearSet: (index: number) => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
@@ -67,6 +74,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const worn = SLOTS.some((slot) => state.worn[slot]);
   // 篩 The chest's filter lives here: it is a way of looking, not a fact about the save.
   const [only, setOnly] = useState<'all' | 'better' | Slot>('all');
+  // 職 And by school, a second line under the first. rekaris, on the Discord: *"You already
+  // have filters for gear slot, adding another line of filters for the class would be great."*
+  const [kin, setKin] = useState<'any' | School>('any');
   // 拆 What the melt would take, so the button can say so before it is pressed.
   const melting = salvageable(state.chest, upTo);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
@@ -176,6 +186,40 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       </div>
 
       <div className="g-side">
+      {/* 套 Loadouts. rekaris, on the Discord: *"Set up loadouts. Grouping up multiple pieces
+          into a loadout and then having a single button to equip such loadout."* A class is
+          read off what is worn, so this is how a cultivator changes class in one tap. */}
+      {SLOTS.some((slot) => state.worn[slot]) && (
+        <>
+          <h2 className="heading">{GEAR.loadoutHead}</h2>
+          <p className="faint" style={{ fontSize: 12.5, margin: '0 0 8px' }}>{GEAR.loadouts}</p>
+          <div className="gsets">
+            {state.sets.map((set, i) => {
+              const on = isWorn(state, i);
+              const n = Object.keys(set.ids).length;
+              return (
+                <div key={i} className="gset" data-on={on}>
+                  <button className="gs-wear" disabled={on} onClick={() => onWearSet(i)}
+                    aria-label={on ? GEAR.loadoutOn(set.name) : GEAR.loadoutWear(set.name)}>
+                    <b>{set.name}</b>
+                    <i>{on ? GEAR.loadoutWorn : GEAR.loadoutPieces(n)}</i>
+                  </button>
+                  <button className="gs-save" onClick={() => onSaveSet(i, set.name)}
+                    aria-label={GEAR.loadoutResave(set.name)} title={GEAR.loadoutResave(set.name)}>{GEAR.loadoutSaveShort}</button>
+                  <button className="gs-clear" onClick={() => onClearSet(i)}
+                    aria-label={GEAR.loadoutForget(set.name)} title={GEAR.loadoutForget(set.name)}>×</button>
+                </div>
+              );
+            })}
+            {state.sets.length < SET_LIMIT && (
+              <button className="gs-new" onClick={() => onSaveSet(state.sets.length, loadoutName(state))}>
+                <b className="cjk">套</b> {GEAR.loadoutSave}
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
       {/* 煉器 Where material goes. Everything else it buys is capped; this is not. */}
       {isOpen(state.realm, 'refine') && SLOTS.some((slot) => state.worn[slot]) && (
         <>
@@ -373,8 +417,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           || (RARITIES.indexOf(b.item.rarity) - RARITIES.indexOf(a.item.rarity))
           || (templateOf(b.item).realm - templateOf(a.item).realm));
         const ups = read.filter((r) => r.move.better).length;
-        const pick = only === 'better' ? read.filter((r) => r.move.better)
-          : only === 'all' ? read : read.filter((r) => templateOf(r.item).slot === only);
+        const bySchool = (sc: School) => read.filter((r) => schoolOf(r.item) === sc).length;
+        const school = kin !== 'any' && bySchool(kin) === 0 ? 'any' : kin;
+        const pick = (only === 'better' ? read.filter((r) => r.move.better)
+          : only === 'all' ? read : read.filter((r) => templateOf(r.item).slot === only))
+          .filter((r) => school === 'any' || schoolOf(r.item) === school);
         const bySlot = (slot: Slot) => read.filter((r) => templateOf(r.item).slot === slot).length;
         return (
           <>
@@ -393,6 +440,17 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 </button>
               ))}
             </div>
+            {SCHOOLS.filter((sc) => bySchool(sc) > 0).length > 1 && (
+              <div className="chestfilter schools" role="group" aria-label={GEAR.anySchool}>
+                <button type="button" aria-pressed={school === 'any'} onClick={() => setKin('any')}>{GEAR.anySchool}</button>
+                {SCHOOLS.filter((sc) => bySchool(sc) > 0).map((sc) => (
+                  <button key={sc} type="button" aria-pressed={school === sc} onClick={() => setKin(sc)}
+                    style={{ ['--hue' as string]: SCHOOL_INFO[sc].colour }}>
+                    <span className="cjk">{SCHOOL_INFO[sc].seal}</span> {SCHOOL_INFO[sc].short} <i className="mono">{bySchool(sc)}</i>
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="chest">
               {pick.map(({ item, move }, index) => {
                 const tpl = templateOf(item);
@@ -404,9 +462,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                           // 譯 The tile carries no number now, so the screen reader is told
                           // what the eye is shown: the name, the rank, and whether it is better.
                           aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
-                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}`}>
+                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
                     <Svg html={gearTile(item, { size: 56 })} />
                     {move.better && <span className="upmark" aria-hidden="true">▲</span>}
+                    {item.locked && <span className="lockmark" aria-hidden="true">鎖</span>}
                   </button>
                 );
               })}
@@ -424,4 +483,12 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       </div>
     </>
   );
+}
+
+/** 套 A new loadout is named after the class it makes, which is the thing it is for. */
+function loadoutName(state: State): string {
+  const c = callingOf(state.worn);
+  if (c.kind === 'pair' && c.pair) return c.pair.name;
+  if (c.kind === 'pure' && c.school) return SCHOOL_INFO[c.school].short;
+  return GEAR.loadoutDefault(state.sets.length + 1);
 }

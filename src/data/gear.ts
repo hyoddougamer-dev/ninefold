@@ -336,6 +336,12 @@ export interface Item {
    * Only ever read to say so on the item sheet, never by a number.
    */
   readonly from?: string;
+  /**
+   * 鎖 Kept on purpose. A locked piece is never melted (one at a time, all up to a rank,
+   * or by a full chest) and never fused. rekaris, on the Discord: *"Favorite a piece, this
+   * will allow me to protect a set pieces from destroyed them in any way."*
+   */
+  readonly locked?: true;
 }
 
 /** 煉 What one refine level adds to every line: REFINE_PER_LEVEL, in balance.ts. */

@@ -7,6 +7,8 @@ import { MARK_INFO, knownIn, marksOf } from '../../sim/record.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
+import { schoolOf } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
 
 /**
  * 錄 The bestiary.
@@ -58,6 +60,18 @@ export function Bestiary({ state }: { state: State }) {
                         <em key={m.han} className="cjk" data-on={i < marks}>{m.han}</em>
                       ))}
                     </span>
+                    {/* 職 The schools of what it leaves, once it has been met. rekaris, on the
+                        Discord: "I am looking for fortune pieces, but I don't know which
+                        monsters drop them." */}
+                    {found && b.leaves.length > 0 && (
+                      <span className="bschools" aria-label={BESTIARY.leavesSchools(b.leaves.map((a) =>
+                        SCHOOL_INFO[schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] })].short))}>
+                        {b.leaves.map((a, i) => {
+                          const sc = SCHOOL_INFO[schoolOf({ id: 'b', template: `${a}${b.realm}`, rarity: 'common', rolls: [] })];
+                          return <em key={`${a}${i}`} className="cjk" style={{ color: sc.colour }} title={sc.short}>{sc.seal}</em>;
+                        })}
+                      </span>
+                    )}
                   </div>
                 );
               })}

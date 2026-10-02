@@ -308,6 +308,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .termtip[data-below="false"] { animation-name: tipinup; }
 @keyframes tipinup { from { opacity: 0; transform: translateY(4px); } }
 @media (prefers-reduced-motion: reduce) { .termtip { animation: none; } }
+/* 物 A thing named by its picture: no underline, the picture is the affordance. */
+.crow[data-lit] { outline: 1px solid var(--gold); outline-offset: 2px; transition: outline-color .4s; }
+.term[data-bare] { border-bottom: 0; color: inherit; display: inline-flex; }
+.term[data-bare][data-open] > * { outline: 1px solid var(--gold); outline-offset: 1px; }
+/* 往 Where it comes from, one tap away. */
+.termtip .termgo { display: block; margin-top: 9px; background: none; border: 1px solid var(--jade);
+                   border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12px;
+                   letter-spacing: .06em; color: var(--jade); cursor: pointer; }
+.termtip .termgo:hover, .termtip .termgo:focus-visible { background: rgba(127,180,149,.12); }
 
 /* 出口 The one way out, fixed to the viewport so it can never scroll away.
    Above .help (13), .arena and every sheet, because it has to be reachable from all
@@ -1339,6 +1348,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chestfilter button i { font-style: normal; font-size: 11px; opacity: .8; }
 .chestfilter button[aria-pressed='true'] { border-color: var(--text); color: var(--text); }
 .chestfilter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
+/* 職 The school line sits tight under the slot line, each seal in its school's colour. */
+.chestfilter.schools { margin-top: -6px; }
+.chestfilter.schools button .cjk { color: var(--hue, inherit); }
+.chestfilter.schools button[aria-pressed='true'] { border-color: var(--hue, var(--text)); }
 
 .tabs { grid-template-columns: repeat(7, 1fr); }
 /* 榜 Six tabs on a 320px phone: the labels give up a little spacing to fit. */
@@ -2282,6 +2295,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
              padding: calc(env(safe-area-inset-top, 0px) + 26px) 18px
                       calc(env(safe-area-inset-bottom, 0px) + 22px); }
 
+/* 縮 Nothing in the sheet gives up its height to fit: it scrolls instead. With every effect
+   open on a computer, the column was squeezing the verdict to a sliver. */
+.itemsheet > * { flex-shrink: 0; }
 .itemsheet .head { display: flex; gap: 15px; align-items: center; }
 .itemsheet .head .tile { flex: none; }
 .itemsheet .head .tile svg { display: block; }
@@ -3208,3 +3224,48 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 }
 .crafts .ctotal .ct-short { display: none; }
 @media (max-width: 360px) { .crafts .ctotal .ct-long { display: none; } .crafts .ctotal .ct-short { display: inline; } }
+
+/* 職 錄 The schools of what a beast leaves, under its marks in the bestiary. */
+.card3 .bschools { display: flex; gap: 5px; justify-content: center; margin-top: 3px; font-size: 12px; }
+.card3 .bschools em { font-style: normal; }
+/* 職 狩 The school seal beside each piece a beast leaves on the hunt row. */
+.bleaves .lsch { font-weight: 400; margin-right: 1px; }
+
+/* 序 狩 The hunt list's order, beside its heading. Its own block, shaped like 修's ×1/Max
+   switch and sharing nothing with it, so the two screens can change apart. */
+.huntrow { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin: 26px 0 10px; }
+.huntrow > .heading { flex: 1 1 auto; margin: 0; min-width: 0; }
+.huntorder { display: inline-flex; border: 1px solid var(--gild); border-radius: 99px; overflow: hidden; flex: none; }
+.huntorder button { font: 600 10.5px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+                    background: none; border: 0; color: var(--faint); padding: 7px 10px; white-space: nowrap; }
+.huntorder button[data-on='true'] { background: rgba(212,175,86,.16); color: var(--gold); }
+.huntorder button:focus-visible { outline: 1px solid var(--gold); outline-offset: -2px; }
+
+/* Its own blocks, sharing nothing with ui/Loadout.tsx's .loadout (the arts in a fight). */
+/* 套 器 Loadouts: one row each, the name wears it, Save writes over it, × forgets it. */
+.gsets { display: flex; flex-direction: column; gap: 7px; margin-bottom: 4px; }
+.gset { display: flex; align-items: stretch; gap: 6px; }
+.gset > button { width: auto; font: inherit; cursor: pointer; border: 1px solid var(--line); border-radius: 10px;
+                    background: var(--panel); color: var(--text); }
+.gset .gs-wear { flex: 1; min-width: 0; text-align: left; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+.gset .gs-wear b { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gset .gs-wear i { font-style: normal; font-size: 11.5px; color: var(--faint); }
+.gset .gs-wear:not(:disabled):hover { border-color: var(--gild-strong); }
+.gset[data-on='true'] .gs-wear { border-color: var(--jade); cursor: default; }
+.gset[data-on='true'] .gs-wear i { color: var(--jade); }
+.gset .gs-save { padding: 0 12px; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.gset .gs-clear { width: 38px; font-size: 18px; color: var(--faint); }
+.gset .gs-save:hover, .gset .gs-clear:hover { color: var(--text); border-color: var(--gild-strong); }
+button.gs-new { width: 100%; display: flex; align-items: center; gap: 8px; font: inherit; cursor: pointer; border: 1px dashed var(--gild); border-radius: 10px; background: none;
+                color: var(--gold); padding: 9px 12px; text-align: left; font-size: 13px; }
+button.gs-new .cjk { margin: 0; }
+/* 鎖 A locked piece in the chest: a clasp at the foot of the tile. */
+.chestit .lockmark { position: absolute; bottom: -6px; left: 50%; margin-left: -9px; width: 18px; height: 18px;
+                     border-radius: 50%; background: var(--gold); color: #1a150e; font: 10px/18px 'Noto Serif SC', serif;
+                     text-align: center; box-shadow: 0 0 0 2px var(--ground); pointer-events: none; }
+.lockbtn[data-on='true'] { border-color: var(--gold); color: var(--gold); }
+.lockedsays { font-size: 12px; margin: 6px 0 0; text-align: center; }
+@media (max-width: 360px) {
+  /* 序 Three words on a 320px phone: tighter, so the switch keeps the page's margin. */
+  .huntorder button { padding: 7px 7px; letter-spacing: .03em; font-size: 10px; }
+}

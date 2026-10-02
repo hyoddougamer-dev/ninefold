@@ -20,7 +20,8 @@ import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
 import { isQuarry, weekLeft } from '../../sim/week.ts';
-import { ARCHETYPES, RARITIES, RARITY_INFO } from '../../data/gear.ts';
+import { ARCHETYPES, RARITIES, RARITY_INFO, schoolOf } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
@@ -38,6 +39,9 @@ import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
  * tab it used to hold went to 塔 the tower, which is a place you go rather than a page
  * you read.
  */
+type HuntOrder = 'mark' | 'strong' | 'material';
+const ORDER_KEY = 'ninefold.huntorder';
+
 export function Hunt({ state, onFight, onDrive, onSecret }: {
   state: State;
   onFight: (key: string) => void;
@@ -65,16 +69,34 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
   // 出 The commons of this realm that have not walked out yet.
   const coming = comingIn(state.realm, state.layer);
 
+  /**
+   * 序 And the order can be asked for. rekaris, on the Discord: *"I would expect the first
+   * enemy in the list to either be the strongest, or the one dropping the most materials,
+   * now it is neither."* The order below is right for somebody learning the hunt and wrong
+   * for somebody farming it, so both are offered and the choice stays on the device.
+   * Whatever the order, a beast with nothing left to earn still folds away at the bottom.
+   */
+  const [order, setOrder] = useState<HuntOrder>(() => {
+    try { const o = localStorage.getItem(ORDER_KEY); return o === 'strong' || o === 'material' ? o : 'mark'; } catch { return 'mark'; }
+  });
+  const pickOrder = (o: HuntOrder) => {
+    setOrder(o);
+    try { localStorage.setItem(ORDER_KEY, o); } catch { /* a private window keeps it for the visit */ }
+  };
   const sorted = useMemo(() => {
     const all = [...huntable(state.realm, state.layer)];
+    const pay = new Map(all.map((b) => [b.key, lootFrom(state, b)]));
     return all.sort((a, b) => {
       const left = (x: typeof a) => (nextMark(state.killed[x.key] ?? 0) ? 0 : 1);
+      if (order === 'strong') return left(a) - left(b) || beastPower(b) - beastPower(a);
+      if (order === 'material') return left(a) - left(b) || (pay.get(b.key) ?? 0) - (pay.get(a.key) ?? 0) || beastPower(b) - beastPower(a);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
       // alphabet put 澤蛙 the frog (the hardest of the three) at the top, so a new
       // cultivator's first sight of 狩 was the one beast furthest out of reach.
       return left(a) - left(b) || b.realm - a.realm || beastPower(a) - beastPower(b);
     });
-  }, [state.realm, state.layer, state.killed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.realm, state.layer, state.killed, order]);
 
   /**
    * 完 And the finished ones are folded, not listed.
@@ -145,7 +167,14 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
           a question that expires on Monday. Two different questions, two places. */}
       <QuarryBand state={state} onFight={onFight} />
 
-      <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
+      <div className="huntrow">
+        <h2 className="heading">{HUNT.reach(sorted.length, beatable)}</h2>
+        <div className="huntorder" role="group" aria-label={HUNT.orderBy}>
+          {(['mark', 'strong', 'material'] as const).map((o) => (
+            <button key={o} data-on={order === o} onClick={() => pickOrder(o)}>{HUNT.order[o]}</button>
+          ))}
+        </div>
+      </div>
       <div className="stack">
         {list.map((b, i) => {
           const r = realmOf(b.realm);
@@ -217,13 +246,19 @@ export function Hunt({ state, onFight, onDrive, onSecret }: {
                   <i>{HUNT.leaves}</i>
                   {b.leaves.map((a) => {
                     const arch = ARCHETYPES.find((x) => x.key === a);
-                    return arch ? (
-                      <em key={a} title={arch.name}>
-                        <Svg html={gearTile({ id: 'l', template: `${a}${Math.min(b.realm, state.realm)}`,
-                          rarity: RARITIES[fatePromise(state, b)], rolls: [] }, { size: 26 })} />
-                        <span>{arch.name}</span>
+                    if (!arch) return null;
+                    // 職 And which school each piece is, so a cultivator after 運 Fortune
+                    // pieces can see who leaves them. rekaris, on the Discord: *"I am looking
+                    // for fortune pieces, but I don't know which monsters drop them."*
+                    const piece = { id: 'l', template: `${a}${Math.min(b.realm, state.realm)}`,
+                      rarity: RARITIES[fatePromise(state, b)], rolls: [] };
+                    const sc = SCHOOL_INFO[schoolOf(piece)];
+                    return (
+                      <em key={a} title={`${arch.name}, ${sc.short}`} aria-label={`${arch.name}, ${sc.short}`}>
+                        <Svg html={gearTile(piece, { size: 26 })} />
+                        <span><b className="cjk lsch" style={{ color: sc.colour }}>{sc.seal}</b> {arch.name}</span>
                       </em>
-                    ) : null;
+                    );
                   })}
                 </span>
               )}

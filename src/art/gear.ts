@@ -1,7 +1,8 @@
 import { ICONS } from './icons.generated.ts';
 import {
-  RARITY_INFO, SLOT_INFO, realmSet, templateOf, type Item, type Rarity, type Slot,
+  RARITY_INFO, SLOT_INFO, realmSet, schoolOf, templateOf, type Item, type Rarity, type Slot,
 } from '../data/gear.ts';
+import { SCHOOL_INFO } from '../data/schools.ts';
 import { realm as realmOf } from '../data/realms.ts';
 
 /**
@@ -30,6 +31,8 @@ export interface TileOptions {
   readonly slot?: Slot;
   /** 0..1: turns the 地 ring and drifts the 天 motes. */
   readonly spin?: number;
+  /** The school's seal in the top-left corner. On by default from 40px, where it can be read. */
+  readonly school?: boolean;
 }
 
 function frame(S: number, colour: string, glow: number, spin: number, uid: string): string {
@@ -175,13 +178,21 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
     `<g fill="url(#mg${mid})">${body}</g><g mask="url(#mm${mid})">${materialMark(m.mark, mid)}</g></g>`;
 
   return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" ` +
-    `aria-label="${tpl.name}, ${rar.name}, ${rs.name} set">` +
+    `aria-label="${tpl.name}, ${rar.name}, ${rs.name} set, ${SCHOOL_INFO[schoolOf(item)].short}">` +
     frame(S, rar.colour, rar.glow, spin, uid) +
     object +
     `<text x="4" y="${S - 3.5}" font-size="${f(S * 0.18)}" ` +
     `fill="${rc}" fill-opacity=".85" font-family="'Noto Serif SC',serif">${rs.han.slice(0, 1)}</text>` +
     `<text x="${S - 4}" y="${S - 3.5}" text-anchor="end" font-size="${f(S * 0.18)}" ` +
     `fill="${rar.colour}" fill-opacity=".9" font-family="'Noto Serif SC',serif">${rar.han}</text>` +
+    // 職 The school, top left. rekaris, on the Discord: *"I would appreciate it if it was
+    // possible to instantly know what set/class a gear is (sword/fortune/...) from the icon
+    // itself ... there are still two empty corners."* The top right is the ▲ of a better
+    // piece in the chest, so the school takes the top left, in the school's own colour.
+    ((opts.school ?? S >= 40)
+      ? `<text x="4" y="${f(S * 0.18 + 3)}" font-size="${f(S * 0.18)}" fill="${SCHOOL_INFO[schoolOf(item)].colour}" ` +
+        `fill-opacity=".9" font-family="'Noto Serif SC',serif">${SCHOOL_INFO[schoolOf(item)].seal}</text>`
+      : '') +
     `</svg>`;
 }
 

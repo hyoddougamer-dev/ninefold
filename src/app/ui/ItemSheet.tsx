@@ -43,7 +43,7 @@ import { num } from '../../sim/format.ts';
  * piece put on in a copy of the save, which is the same pair of functions the entire
  * game is built on, so the sheet and the game can never disagree.
  */
-export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, onClose }: {
+export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, onLock, onClose }: {
   state: State;
   item: Item;
   /** True when this is the piece already on the body, rather than one in the chest. */
@@ -52,6 +52,8 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   onTakeOff: () => void;
   /** 拆 Melt it down for qi. */
   onSalvage: () => void;
+  /** 鎖 Keep it, or stop keeping it. */
+  onLock: (on: boolean) => void;
   onClose: () => void;
 }) {
   const tpl = templateOf(item);
@@ -184,11 +186,18 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
             著 <span>{verdict === 'up' || verdict === 'trade' ? (worn ? ITEM.swap : ITEM.wear) : ITEM.anyway}</span>
           </button>
         )}
+        {/* 鎖 Kept on purpose: no melt, no fusion, and a full chest leaves it alone. */}
+        <button className="act ghost lockbtn" data-on={item.locked ? 'true' : undefined} aria-pressed={!!item.locked}
+          onClick={() => onLock(!item.locked)}>鎖 <span>{item.locked ? ITEM.unlock : ITEM.lock}</span></button>
         <button className="act ghost" onClick={onClose}>退 <span>{ITEM.close}</span></button>
       </div>
+      {item.locked && <p className="faint lockedsays">{ITEM.lockedSays}</p>}
 
-      {/* 細 Everything the answer was worked out from, for anyone who wants to check it. */}
-      <details className="idetail">
+      {/* 細 Everything the answer was worked out from, for anyone who wants to check it.
+          Open from the start where the screen has room for it. rekaris, on the Discord:
+          *"It is very annoying to have to click each time I want to see the other stats
+          ... there is plenty of space, at least on desktop."* */}
+      <details className="idetail" open={roomy() || undefined}>
         <summary>{ITEM.detail}</summary>
 
         {/* 階 The rank ladder, drawn. The frame and the glow were carrying this alone. */}
@@ -242,7 +251,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
       {/* 拆 Melting the piece, on the one screen where a player is actually looking at
           it and can see what they would be giving up. It is never offered for the piece
           on the body: taking it off first is one tap and is the honest order. */}
-      {!wearing && (
+      {!wearing && !item.locked && (
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>
           <i>{ITEM.salvage}</i>
@@ -260,4 +269,10 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
       )}
     </div>
   );
+}
+
+/** A screen wide enough to show every line of a piece without being asked. */
+function roomy(): boolean {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    && window.matchMedia('(min-width: 900px)').matches;
 }
