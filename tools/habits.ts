@@ -159,18 +159,27 @@ export const HABITS: readonly Habit[] = [
   { name: 'walks 神', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true, cards: 'dao',
     furnace: true, build: true, branch: 'spirit',
     who: 'The active cultivator again, walking 神 the Spirit instead of 劍 the Sword.' },
-  // 自 The same cultivator as `active`, leaving 自 the auto-hunt running through each
-  // ten-minute visit: four hundred kills a visit at the app's pace (one fight per 1.5 s).
-  // It is what found the melting hole (see MELT_FILL), and it stays so the hole stays shut.
-  { name: 'runs auto', gear: true, checks: 6, minutes: 10, hunts: 400, tower: true, furnace: true, build: true,
-    branch: 'sword',
-    who: 'The active cultivator, with Auto left on for the whole of every visit.' },
   // 業 The same cultivator as `active` again, with the workshop never idle and the best
   // elixir and sigil carried into every warden and demon: what the crafts are worth.
   { name: 'crafts it all', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
     furnace: true, build: true, branch: 'sword', crafts: true,
     who: 'The active cultivator, with the workshop always running and its kit in every hard fight.' },
 ];
+
+/**
+ * 自 The same cultivator as `active`, with 自 the auto-hunt running for three minutes of
+ * each visit: a hundred and twenty kills a visit at the app's pace (one fight per 1.5 s),
+ * twenty times the hand. Measured before the ceiling, eighty a visit already moved the
+ * ninth realm from day 44 to day 26, so this is plenty to catch the hole coming back,
+ * and a third of the fights of a whole ten-minute visit.
+ * It is what found the melting hole (see MELT_FILL), and src/sim/__tests__/auto.test.ts
+ * plays it on every run so the hole stays shut. It is kept out of HABITS because a
+ * hundred thousand simulated fights in every test that walks the habits was more than
+ * the test runner would sit through.
+ */
+export const AUTO_HABIT: Habit = { name: 'runs auto', gear: true, checks: 6, minutes: 10, hunts: 120, tower: true,
+  furnace: true, build: true, branch: 'sword',
+  who: 'The active cultivator, with Auto left on for three minutes of every visit.' };
 
 /** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
 const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
