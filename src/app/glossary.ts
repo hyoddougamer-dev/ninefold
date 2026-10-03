@@ -5,12 +5,20 @@ import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '..
 import { STANCES } from '../data/arts.ts';
 import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
-import { FATE_FULL } from '../sim/balance.ts';
+import { CRAFT_FEED_LEVEL, FATE_FULL } from '../sim/balance.ts';
+import { FEEDER } from '../sim/crafts.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
 import { AWAKEN, CAVE, CLASS, FIGURE, KEY, SECRET } from './copy.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../data/schools.ts';
 import { pairSays, schoolSays } from './classes.ts';
+
+/** 開 A late craft opens sooner at its feeder's level: "Herb Gathering 40". */
+function sooner(system: string): string | undefined {
+  const craft = SKILLS.find((k) => k.opens === system && FEEDER[k.key]);
+  const f = craft ? FEEDER[craft.key] : undefined;
+  return f ? `${SKILLS.find((k) => k.key === f)!.name} ${CRAFT_FEED_LEVEL}` : undefined;
+}
 
 /**
  * 釋 Every character the game uses, and what it means, assembled once.
@@ -150,7 +158,7 @@ export const GROUPS: readonly Group[] = [
   {
     title: KEY.systemsHead, blurb: KEY.systemsBlurb,
     rows: SYSTEMS.map((s) => ({
-      han: s.han, name: s.name, note: KEY.opensAt(realmOf(s.realm).han, realmOf(s.realm).name),
+      han: s.han, name: s.name, note: KEY.opensAt(realmOf(s.realm).han, realmOf(s.realm).name, sooner(s.key)),
     })),
   },
   {

@@ -21,7 +21,8 @@
 import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SLOTS, CRAFT_ARRAY_SPEED,
   CRAFT_ARRAY_TWICE, CRAFT_ARRAY_XP, CRAFT_FURNACE_DISCOUNT, CRAFT_KIT, CRAFT_LONG_WATCH_HOURS,
-  CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
+  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP,
+  CRAFT_MASTERY_SPEED, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
   CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, DEMONS, DEMONS_PER_REALM, VARIANCE,
 } from './balance.ts';
 import { opensAt } from './unlocks.ts';
@@ -69,6 +70,9 @@ export interface Crafts {
 const zeroSkills = <T>(v: T): Record<SkillKey, T> =>
   Object.fromEntries(SKILL_KEYS.map((k) => [k, v])) as Record<SkillKey, T>;
 
+const RECIPES_OF: Readonly<Record<SkillKey, readonly Recipe[]>> =
+  Object.fromEntries(SKILL_KEYS.map((k) => [k, RECIPES.filter((r) => r.skill === k)])) as unknown as Record<SkillKey, readonly Recipe[]>;
+
 export const NO_CRAFTS: Crafts = {
   xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
   tools: zeroSkills(0), arrays: [], carry: { elixir: null, sigil: null }, seek: 0,
@@ -76,8 +80,26 @@ export const NO_CRAFTS: Crafts = {
 
 /* ── 讀 Reading the workshop ─────────────────────────────────────────────── */
 
+/**
+ * 開 The craft whose level opens each late craft before its realm does: Alchemy from Herb
+ * Gathering, Sigil Writing from Vein Delving, Arrays from Forging, at CRAFT_FEED_LEVEL.
+ * The four first crafts open by realm alone, so a feeder is always open when it counts.
+ */
+export const FEEDER: Readonly<Partial<Record<SkillKey, SkillKey>>> = { alchemy: 'herb', sigil: 'vein', array: 'forge' };
+
+/**
+ * 開 Whether a craft is open at this realm with these levels: its realm, or its feeder at
+ * CRAFT_FEED_LEVEL. One rule, read by the game and by validate() alike, so a save can
+ * never hold a craft the screen would not have opened. Every recipe keeps its own realm.
+ */
+export function openBy(realm: number, skill: SkillKey, level: (k: SkillKey) => number): boolean {
+  if (realm >= SKILL_BY_KEY[skill].realm) return true;
+  const f = FEEDER[skill];
+  return !!f && realm >= SKILL_BY_KEY[f].realm && level(f) >= CRAFT_FEED_LEVEL;
+}
+
 export function skillOpen(s: State, skill: SkillKey): boolean {
-  return s.realm >= SKILL_BY_KEY[skill].realm;
+  return openBy(s.realm, skill, (k) => levelOf(s.crafts.xp[k] ?? 0));
 }
 
 export function workshopOpen(s: State): boolean {
@@ -115,6 +137,55 @@ export function marksOf(s: State, r: Recipe): number {
   return CRAFT_MARKS.filter((m) => n >= m).length;
 }
 
+/** 熟 Whether a recipe's make can come out twice: a thing for the pouch, never an array. */
+export function doubles(r: Recipe): boolean {
+  return r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.kind !== 'array';
+}
+
+/**
+ * 熟 Whether mark `i` (1 to 5) does its own thing for this recipe: the first always, the
+ * second if it doubles, the third if it needs more than one of its first thing, the
+ * fourth and fifth if it makes a thing with a rank.
+ */
+export function markApplies(r: Recipe, i: number): boolean {
+  if (i === 1) return true;
+  if (i === 2) return doubles(r);
+  if (i === 3) return r.needs.length > 0 && r.needs[0][1] > 1;
+  return !!r.graded;
+}
+
+/**
+ * 熟 The marks that stand in for one that would do nothing (see CRAFT_MARK_SUB): how many
+ * make it faster, and how much more chance of two they add.
+ */
+export function subsOf(s: State, r: Recipe): { readonly fast: number; readonly twice: number } {
+  const m = marksOf(s, r);
+  let fast = 0, twice = 0;
+  for (let i = 2; i <= m; i++) {
+    if (markApplies(r, i)) continue;
+    if (doubles(r)) twice += CRAFT_MARK_SUB; else fast++;
+  }
+  return { fast, twice };
+}
+
+/** 熟 The chance one make of this recipe comes out twice, from its marks. */
+export function twiceOf(s: State, r: Recipe): number {
+  return (marksOf(s, r) >= 2 && doubles(r) ? CRAFT_MARK_TWICE : 0) + subsOf(s, r).twice;
+}
+
+/** 熟 How many of a craft's recipes have every mark: the count its mastery is read from. */
+export function masteredIn(s: State, skill: SkillKey): number {
+  const top = CRAFT_MARKS[CRAFT_MARKS.length - 1];
+  let n = 0;
+  for (const r of RECIPES_OF[skill]) if ((s.crafts.made[r.key] ?? 0) >= top) n++;
+  return n;
+}
+
+/** 熟 How much faster a craft's mastery makes every recipe of it, 0 to CRAFT_MASTERY_CAP. */
+export function masteryOf(s: State, skill: SkillKey): number {
+  return Math.min(CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED * masteredIn(s, skill));
+}
+
 export function placed(s: State, key: string): boolean {
   return s.crafts.arrays.includes(arrayKey(key));
 }
@@ -142,7 +213,9 @@ function arrayFactor(s: State, skill: SkillKey): number {
 /** 時 Seconds one make of this recipe takes, for this cultivator, now. */
 export function secondsOf(s: State, r: Recipe): number {
   return r.seconds * toolFactor(s, r.skill) * arrayFactor(s, r.skill)
-    * (marksOf(s, r) >= 1 ? 1 - CRAFT_MARK_FASTER : 1);
+    * (marksOf(s, r) >= 1 ? 1 - CRAFT_MARK_FASTER : 1)
+    * (1 - CRAFT_MARK_SUB) ** subsOf(s, r).fast
+    * (1 - masteryOf(s, r.skill));
 }
 
 /** 經 The experience one make pays this cultivator. */
@@ -270,11 +343,11 @@ function makeOne(s: State, r: Recipe): State {
   const tools = r.makes.kind === 'tool'
     ? { ...c.tools, [r.makes.skill]: Math.max(c.tools[r.makes.skill] ?? 0, r.makes.step) } : c.tools;
 
-  const marks = marksOf(s, r);
   const rank = r.graded ? pick(qualityFor(s, r), d()) : -1;
   let out: State = { ...s, materials };
   if (r.makes.kind === 'item') {
-    const twice = (marks >= 2 && d() < CRAFT_MARK_TWICE)
+    const chance = twiceOf(s, r);
+    const twice = (chance > 0 && d() < chance)
       || (r.skill === 'render' && placed(s, 'keenedge') && d() < CRAFT_ARRAY_TWICE);
     addTo(pouch, pouchKey(r.makes.item, r.graded ? rank : undefined), twice ? 2 : 1);
   } else if (r.makes.kind === 'gear') {
@@ -622,7 +695,9 @@ export function doorGapFor(s: State, gap: number): number {
  * validate() and 驗 the server both read this; neither ever knows more than it does.
  */
 export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.fromEntries(SKILL_KEYS.map((k) => {
-  const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED) * (1 - CRAFT_MARK_FASTER);
+  // The first mark, the four after it standing in as speed at most, and the craft mastered.
+  const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED) * (1 - CRAFT_MARK_FASTER)
+    * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - CRAFT_MASTERY_CAP);
   const best = Math.max(...RECIPES.filter((r) => r.skill === k).map((r) => r.xp / (r.seconds * fastest)));
   return [k, best * (1 + CRAFT_ARRAY_XP)];
 })) as Record<SkillKey, number>;
@@ -643,18 +718,22 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     typeof x === 'number' && Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback;
   const rec = (x: unknown) => (x && typeof x === 'object' && !Array.isArray(x) ? x as Record<string, unknown> : {});
   const elapsed = Math.max(0, now - s.startedAt);
-  const open = (k: SkillKey) => s.realm >= SKILL_BY_KEY[k].realm;
 
+  // 開 The feeders first (they open by realm alone), then the crafts their levels open,
+  // read off the experience already validated: so an honest early alchemist keeps hers.
   const rawXp = rec(o.xp);
   const xp = zeroSkills(0);
-  for (const k of SKILL_KEYS) {
-    xp[k] = open(k) ? num(rawXp[k], 0, Math.min(XP_CAP, elapsed * XP_PER_SECOND_MAX[k] * 1.05)) : 0;
+  const fedLast = [...SKILL_KEYS].sort((a, b) => (FEEDER[a] ? 1 : 0) - (FEEDER[b] ? 1 : 0));
+  for (const k of fedLast) {
+    xp[k] = openBy(s.realm, k, (f) => levelOf(xp[f]))
+      ? num(rawXp[k], 0, Math.min(XP_CAP, elapsed * XP_PER_SECOND_MAX[k] * 1.05)) : 0;
   }
+  const open = (k: SkillKey) => openBy(s.realm, k, (f) => levelOf(xp[f]));
   const level = (k: SkillKey) => levelOf(xp[k]);
 
   // 儲 A thing is only in the pouch if this craft level and realm could have made it, and
   // never more of it than the craft's experience paid for: every make pays the recipe's
-  // experience or more, and the most any make yields is two (the second mark, Keen-Edge).
+  // experience or more, and the most any make yields is two (the marks, Keen-Edge).
   const pouch: Record<string, number> = {};
   let entries = 0;
   for (const [k, v] of Object.entries(rec(o.pouch))) {
@@ -727,7 +806,7 @@ function seeks(level: (k: SkillKey) => number): boolean {
 
 /** Every recipe of a craft, in the order the screen and the guide list them. */
 export function recipesOf(skill: SkillKey): readonly Recipe[] {
-  return RECIPES.filter((r) => r.skill === skill);
+  return RECIPES_OF[skill];
 }
 
 export { FORGED, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, SKILL_KEYS, ITEM_BY_KEY };

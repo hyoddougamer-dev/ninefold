@@ -7,10 +7,10 @@ import { BEASTS, plateOf } from '../../data/bestiary.ts';
 import { RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
-  arraySlots, blocked, carrySlot, furnaceDiscount, held, levelIn, marksOf, needsOf, placed,
+  FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, marksOf, masteryOf, needsOf, placed,
   progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
 } from '../../sim/crafts.ts';
-import { CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
+import { CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
 import { TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -23,6 +23,12 @@ import { Svg } from '../ui/Svg.tsx';
 import { CRAFTS, WORKSHOP_FIX } from '../copy.ts';
 import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { pictureOf } from '../../data/pictures.ts';
+
+/** 開 The craft whose level opens this one before its realm, and at what level, if any. */
+const feederOf = (skill: SkillKey) => {
+  const f = FEEDER[skill];
+  return f ? { name: SKILL_BY_KEY[f].name, level: CRAFT_FEED_LEVEL } : undefined;
+};
 
 /** 具 The painted tool of a craft, named by the tool: sickle, pick, knife, furnace. */
 const toolArt = (skill: SkillKey) => `tool-${SKILL_BY_KEY[skill].tool.name.toLowerCase()}`;
@@ -135,10 +141,14 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
   const counts = { all: all.length, ready: ready.length, next: locked.length };
   // 列 Everything that can be made, and the next few that cannot yet, so the list says
   // what is coming without turning into a wall of grey. The chips narrow it further.
-  const list = filter === 'ready' ? ready
+  // 覽 A craft not open yet shows every recipe it has, greyed and with no Start, so a climb
+  // can be planned around it. rekaris: *"being able to see what Alchemy does even before
+  // unlocking it would allow the player to plan."*
+  const list = !open ? all
+    : filter === 'ready' ? ready
     : filter === 'next' ? locked.slice(0, 6)
     : all.filter((r) => !isLocked(r) || locked.indexOf(r) < 3);
-  const later = filter === 'all' ? locked.length - Math.min(3, locked.length)
+  const later = !open ? 0 : filter === 'all' ? locked.length - Math.min(3, locked.length)
     : filter === 'next' ? Math.max(0, locked.length - 6) : 0;
 
   const xp = state.crafts.xp[skill] ?? 0;
@@ -187,7 +197,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
                     an ellipsis cut. */}
                 {on ? <><em className="mono">{l}</em> {running?.skill === k.key
                   ? <span className="cs-working">{CRAFTS.tileWorking}</span>
-                  : <span className="cs-rank">{rankOf(k.key, l).name}</span>}</> : CRAFTS.opens(k.realm)}
+                  : <span className="cs-rank">{rankOf(k.key, l).name}</span>}</> : CRAFTS.opens(k.realm, feederOf(k.key))}
               </span>
               {on && <i className="cs-bar"><i style={{ width: `${Math.round(fill * 100)}%` }} /></i>}
             </button>
@@ -207,7 +217,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
             </div>
             <p className="faint" style={{ margin: '4px 0 0', fontSize: 12.5 }}>{info.does}</p>
         {!open && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {CRAFTS.opensLong(info.seal, info.name, info.realm)}</p>}
+          {CRAFTS.opensLong(info.seal, info.name, info.realm, feederOf(skill))}</p>}
         {open && (
           <>
             <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}
@@ -236,23 +246,23 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
 
       {open && skill === 'array' && <Floor state={state} onPlace={onPlace} />}
 
-      {open && groups.length > 1 && (
+      {groups.length > 1 && (
         <div className="cgroups" role="tablist">
           {groups.map((g) => (
             <button key={g} role="tab" aria-selected={g === shown} onClick={() => setGroup(g)}>{g}</button>
           ))}
         </div>
       )}
-      {open && mine.length > 10 && (
+      {mine.length > 10 && (
         <div className="cfilter">
           <input type="search" value={find} placeholder={CRAFTS.findHint} aria-label={CRAFTS.findHint}
             onChange={(e) => setFind(e.target.value)} />
-          <div className="cf-chips" role="tablist">
+          {open && <div className="cf-chips" role="tablist">
             {(['all', 'ready', 'next'] as const).map((f) => (
               <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}>
                 {CRAFTS.filters[f]} <i className="mono">{counts[f]}</i></button>
             ))}
-          </div>
+          </div>}
         </div>
       )}
       {open && shown === 'Gear' && !find && (
@@ -268,17 +278,16 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>
         {tier === 'near' ? CRAFTS.gearShown(state.realm) : CRAFTS.gearOf(tier)} {CRAFTS.forgedRule}</p>}
 
-      {open && (
-        <div className="crecipes">
-          {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
-            {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
-          {list.map((r) => (
-            <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
-              onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
-          ))}
-          {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
-        </div>
-      )}
+      {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
+      <div className="crecipes" data-preview={!open || undefined}>
+        {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
+          {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
+        {list.map((r) => (
+          <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
+            onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
+        ))}
+        {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
+      </div>
       </div>
       </div>
 
@@ -501,7 +510,9 @@ function Row({ state, r, on, lit, onStart, onGo }: {
 }) {
   const why = blocked(state, r);
   const lock = why === 'level' ? CRAFTS.why.level(r.level) : why === 'realm' ? CRAFTS.why.realm(r.realm)
-    : why === 'tool' ? CRAFTS.why.tool : why === 'shut' ? CRAFTS.why.shut : null;
+    : why === 'tool' ? CRAFTS.why.tool
+    // 覽 A craft not open yet: the realm the recipe waits for, if that is further still.
+    : why === 'shut' ? (r.realm > state.realm ? CRAFTS.why.realm(r.realm) : CRAFTS.why.shut) : null;
   const q = r.graded && !lock ? qualityFor(state, r) : null;
   const marks = marksOf(state, r);
   return (
@@ -512,7 +523,8 @@ function Row({ state, r, on, lit, onStart, onGo }: {
         <i className="cr-meta mono">
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
           {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare
-            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded, (r.needs[0]?.[1] ?? 0) > 1, r.makes.kind === 'item') }}>
+            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded,
+              (r.needs[0]?.[1] ?? 0) > 1, doubles(r), SKILL_BY_KEY[r.skill].name, masteryOf(state, r.skill)) }}>
             <span className="cr-fam">{CRAFTS.familiar(marks)}</span></Term></>}
         </i>
         {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (

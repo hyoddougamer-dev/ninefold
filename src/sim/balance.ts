@@ -515,14 +515,22 @@ export function floorPay(floor: number): number {
  * lasts FOCUS_HOLD and then it is over; to have another one, leave and come back, or press
  * 坐 Sit again, which is the same thing without the leaving (the app restarts the visit).
  *
- * So a visit is worth about half an hour of extra gathering, however long the screen
- * stays on, and six visits a day is worth a few hours. The tower is what carries the
- * real difference between playing and waiting; this is what makes the minutes in front
- * of it feel like they counted.
+ * So a visit is worth about an hour of extra gathering, however long the screen stays
+ * on, and six visits a day is worth a few hours. The tower is what carries the real
+ * difference between playing and waiting; this is what makes the minutes in front of it
+ * feel like they counted.
+ *
+ * Half an hour since 2026-10-03; it was a quarter. Testers sit with the game open for
+ * longer than that, and a sitting that ended halfway through read as a penalty. Measured:
+ * a sitting that never ended while the screen was on took a tab left open sixteen hours a
+ * day from day 63 to day 38 (33 on the Spirit branch) and set off the ranked server's
+ * suspicion over a week, so it still ends. At thirty minutes nothing is flagged, every
+ * habit in the harness lands where it did (none sits longer than fifteen), and a player
+ * who sits an hour at a time reaches the ninth realm about two days sooner.
  */
 export const FOCUS_MAX = 3;
 export const FOCUS_RAMP = 180;
-export const FOCUS_HOLD = 900;
+export const FOCUS_HOLD = 1800;
 
 export function focusAt(secondsOpen: number, deeper = 0): number {
   if (!(secondsOpen > 0)) return 1;
@@ -1308,9 +1316,16 @@ export const DEEP_MARKS: readonly number[] = [1000, 5000];
  * three are global. This means there is little reason to go back to the earlier beasts
  * and finish them."* Measured over a whole climb: only the auto-hunter earns deep marks
  * before the ninth realm (eleven by day 45), and its ninth realm moves from day 38.3 to
- * 38.2; nobody else moves. All fifty-four earned would be +27%. Material, never qi.
+ * 38.2; nobody else moves. Material, never qi.
+ *
+ * Doubled to 1% on 2026-10-03: at half a percent a deep mark took 253 to 272 thousand
+ * kills of the best beast to pay back the time spent on an old one, which nobody would
+ * ever see. At 1% that is 126 to 140 thousand (the auto-hunt kills about 720 a day), a
+ * collector's bonus that is felt. The pace does not move. At 2% the record's ceiling
+ * passes what record.test allows (2.8 against 2.5; the most it allows is about 1.44%),
+ * so 1% is where it stays. All fifty-four earned would be +54%.
  */
-export const DEEP_EVERYWHERE = 0.005;
+export const DEEP_EVERYWHERE = 0.01;
 export const DEEP_MATERIAL = 0.10;
 export const DEEP_DROP = 0.02;
 
@@ -1467,9 +1482,17 @@ export const SHRINE_DAO_PER_REALM = 3;
  * between day 8 (the hourly hand) and day 24 (once a day), and the ninth realm moves by
  * under a day for every habit. A capstone already taken is kept: this only decides when
  * one can be bought. It is a rule of the tree rather than a system of its own, because
- * the sixth realm already opens two things and the ladder hands over two at most.
+ * the realm it waits for already opens two things and the ladder hands over two at most.
+ *
+ * Moved to the fifth on 2026-10-03, when testers said the sixth kept the tree's best
+ * nodes out of reach for too much of the climb. Measured over a whole climb (capstone day,
+ * then the ninth realm): active 11.7 and 41.5 at the sixth against 8.2 and 42.3 at the
+ * fifth; once a day 21 and 63 against 14 and 64; every hour 7.8 and 28 against 5.3 and
+ * 28.4; never fights 37 against 19. The ninth realm moves by under a day for everybody,
+ * points never hold the branch back (it is affordable from day one to nine), and the
+ * capstone waits through 17 to 22% of the climb instead of 28 to 33%.
  */
-export const CAPSTONE_REALM = 6;
+export const CAPSTONE_REALM = 5;
 
 /** 爐 What a brazier adds to the rare end of the drop table, on top of the cultivator's own. */
 export const BRAZIER_LUCK = 1.5;
@@ -1517,7 +1540,8 @@ export const MARKS_PER_HEAVEN = 3;
  * 1,550 hours is about three months of a workshop that runs sixteen hours a day, which is
  * a visit in the morning and one at night. RuneScape's table puts level 92 at half the
  * experience, so the last seven levels are as long as the first ninety-two. Tools, arrays
- * and familiarity take a fifth to a quarter off that at the end; the realm gate adds it
+ * and familiarity take up to half off that at the end (a third from the tool and the
+ * array, the rest from the marks and a craft mastered); the realm gate adds much of it
  * back, because the best recipes wait for the realm their material comes from.
  */
 export const CRAFT_HOURS_TO_CAP = 1550;
@@ -1539,6 +1563,20 @@ export const CRAFT_WORK_HOURS = 12;
 /** 長守 What the Long-Watch Array adds to that. */
 export const CRAFT_LONG_WATCH_HOURS = 4;
 
+/**
+ * 開 The level of a first craft that opens the late craft it feeds before that craft's
+ * realm does: Alchemy at Herb Gathering 40, Sigil Writing at Vein Delving 40, Arrays at
+ * Forging 40 (sim/crafts.ts, FEEDER). Each recipe still waits for its own realm, so an
+ * early craft opens with its first recipes and nothing a realm has not reached.
+ *
+ * rekaris and others on the Discord: a crafter who loved the workshop waited a fortnight
+ * to a month for the craft they wanted. Measured over a whole climb (feeder at 40 against
+ * the realm gate, in days): active 3.8, 3.7 and 4.3 against 8.3, 11.2 and 20.5; once a
+ * day 14, 5 and 9 against 14, 20 and 33. The climb is identical either way, because the
+ * kit only goes into a warden, a demon or a vault gate.
+ */
+export const CRAFT_FEED_LEVEL = 40;
+
 /** 具 How much faster each step of a craft's tool makes it: six metals, 5% each. */
 export const CRAFT_TOOL_STEP = 0.05;
 export const CRAFT_TOOL_STEPS = 6;
@@ -1548,9 +1586,39 @@ export const CRAFT_TOOL_STEPS = 6;
  * first comes in an afternoon, the last in weeks of making the one thing.
  */
 export const CRAFT_MARKS = [25, 100, 300, 800, 2000] as const;
-/** 熟 The first mark: this much faster. The second: one make in this many comes out twice. */
-export const CRAFT_MARK_FASTER = 0.05;
-export const CRAFT_MARK_TWICE = 0.05;
+/**
+ * 熟 What the marks give. The first: this much faster. The second: this chance a make
+ * comes out twice, for a recipe that makes a thing for the pouch; gear, a tool and an
+ * array are made once, so for them the second mark is CRAFT_MARK_SUB faster instead.
+ * The third (one less of the first thing it needs), the fourth (better odds of a high
+ * rank) and the fifth (never Common) stay where they do something. Where one would do
+ * nothing, because the recipe needs only one of its first thing or makes nothing with a
+ * rank, it gives CRAFT_MARK_SUB more chance of two for a recipe that doubles and
+ * CRAFT_MARK_SUB faster for the rest, so every mark on every recipe gives something.
+ *
+ * rekaris, on the Discord (2026-10-03): the marks were too small to notice, and three of
+ * them did nothing for most recipes. Doubled from 5% and filled in on 2026-10-03.
+ * Measured over a whole climb with the crafter (its whole ladder against the same
+ * cultivator without the workshop): active 49.5 against 50.7, once a day 78 against 79,
+ * where they were 49.5 against 51.5 and 78 against 77. The workshop stays a road beside
+ * the climb and never up it.
+ */
+export const CRAFT_MARK_FASTER = 0.10;
+export const CRAFT_MARK_TWICE = 0.10;
+export const CRAFT_MARK_SUB = 0.10;
+
+/**
+ * 熟 Mastery of a whole craft: every recipe of it made CRAFT_MARKS' last count of times
+ * (all five marks) makes that whole craft CRAFT_MASTERY_SPEED faster, up to
+ * CRAFT_MASTERY_CAP. A reason to finish recipes that are not the best one any more.
+ * Never qi. Measured over a whole climb, counted per craft: the strong crafter masters
+ * its first herb recipe on its first day and ends the climb with 2 to 16 recipes a craft
+ * (Rendering, with thirty-six, reaches the cap on day 39); once a day ends with 0 to 7.
+ * Counted across all seven crafts instead, the cap bound by day 5.5, which made it a
+ * flat bonus rather than something a craft earns.
+ */
+export const CRAFT_MASTERY_SPEED = 0.01;
+export const CRAFT_MASTERY_CAP = 0.15;
 
 /**
  * 品 Quality, the five ranks gear already has, rolled on everything a craft makes that

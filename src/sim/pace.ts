@@ -14,7 +14,7 @@ import { type State } from './state.ts';
  * whole shape of the climb had to be guessed at.
  *
  * 時 Every time here is read off the **standing** rate, never off 入定 the sitting. The
- * sitting ends after a quarter of an hour, so a countdown that rode it would promise a
+ * sitting ends after half an hour, so a countdown that rode it would promise a
  * day that arrives in three. A player who sits gets there sooner than the screen said,
  * which is the only direction this is allowed to be wrong in. 待 the price countdowns
  * already follow that rule and this is the same rule.

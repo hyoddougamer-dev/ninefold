@@ -812,7 +812,7 @@
       "body": [
         "Qi gathers at the full rate whether you are here or not, all night, with the phone shut.",
         "",
-        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for a quarter of an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
+        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for half an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
         "",
         "**Layers.** Qi fills the bar, and a full bar opens a layer by itself. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
         "",
@@ -841,7 +841,7 @@
         "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
       ],
       "fields": [
-        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +0.5% 材 material from every beast."],
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +1% 材 material from every beast."],
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
@@ -944,7 +944,7 @@
       "body": [
         "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon and the Bestiary. They are spent on the tree in 道 the Path.",
         "",
-        "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it."
+        "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the fifth realm."
       ],
       "fields": [
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
@@ -980,16 +980,16 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-crafts.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/workshop.webp?v=1",
-      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away."],
+      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away.", "", "A craft that is not open yet still shows its recipes, greyed, so you can plan for it."],
       "fields": [
         ["▸ 藥 Herb Gathering · 礦 Vein Delving", "Realm 2. Herbs from the paths of every realm you have reached, and ore from their veins. They need only time."],
         ["▸ 解 Rendering", "Realm 2. Kill ten of a common beast (one, for a warden) and the workshop knows what its kind leave behind: a pelt, a fang, a scale. From then on it renders that part for as long as you let it."],
         ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), forge 鑰 Realm Keys that open the secret realm's door (one a day), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
-        ["▸ 丹 Alchemy", "Realm 5. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."],
-        ["▸ 符 Sigil Writing", "Realm 6. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."],
-        ["▸ 陣 Arrays", "Realm 7. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
+        ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."],
+        ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."],
+        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
         ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon or vault gate, and the odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the Dragon, never the tower, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."],
-        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2000 made: faster, sometimes two at once, one fewer of the first ingredient, and at the fifth never Common."],
+        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made: 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient; better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%. Tap the dots on a recipe to see its own five."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."]
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"]
@@ -1562,7 +1562,7 @@
       "tags": ["Question"],
       "reply": [
         "It does more than the screen used to say, sorry about that, and thanks for asking. Since today's update you can tap the dots on any recipe to see it all.",
-        "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 5% faster, then 1 make in 20 comes out twice (materials, elixirs and sigils; a piece of gear or a tool is always made once), then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. The note also says plainly when a mark has nothing to give that recipe (gathering needs nothing to spare and makes nothing with a rank).",
+        "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 10% faster, then 1 make in 10 comes out twice (materials, elixirs and sigils; a piece of gear, a tool or an array is made once, so it gets 10% faster instead), then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. Where a mark has nothing to give a recipe (gathering needs nothing to spare and makes nothing with a rank), it gives another 1 in 10 twice, or another 10% faster. And every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%.",
         "· 師 Shibaki"
       ]
     }
