@@ -57,7 +57,7 @@ for (const key of FORUMS) {
     for (const [i, m] of msgs.entries()) {
       const text = [m.content, ...(m.embeds ?? []).map((e) => [e.title, e.description].filter(Boolean).join(': '))].filter(Boolean).join(' / ');
       const files = (m.attachments ?? []).length ? ` [${m.attachments.length} image/file]` : '';
-      out.push(`${i === 0 ? '>' : '  -'} **${m.author?.username ?? '?'}**: ${clip(text.replace(/\s+/g, ' ').trim(), i === 0 ? 1500 : 500)}${files}`);
+      out.push(`${i === 0 ? '>' : '  -'} **${m.author?.username ?? '?'}**: ${clip(text.replace(/\s+/g, ' ').trim(), i === 0 ? 4000 : 4000)}${files}`);
     }
     out.push('');
   }
@@ -70,7 +70,7 @@ for (const c of channels.filter((x) => x.type === 0 && TALK.some((k) => x.name.e
   out.push(`## ${c.name} (last ${msgs.length} messages)`, '');
   for (const m of msgs) {
     const files = (m.attachments ?? []).length ? ` [${m.attachments.length} image/file]` : '';
-    const text = clip((m.content ?? '').replace(/\s+/g, ' ').trim(), 600);
+    const text = clip((m.content ?? '').replace(/\s+/g, ' ').trim(), 1500);
     if (text || files) out.push(`- ${day(m.timestamp)} **${m.author?.username ?? '?'}**: ${text}${files}`);
   }
   out.push('');
