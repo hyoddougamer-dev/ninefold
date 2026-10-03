@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -968,7 +968,7 @@ export const ITEM = {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
     rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
     capacity: 'More places in the chest.',
-    luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
+    luck: 'Rarer gear from every drop, and better rolls on what drops. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
       + `With 造化 Creation every beast drops already, so it becomes the chance of a second piece.`,
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
@@ -1169,7 +1169,7 @@ export const WEEK = {
   /** 室 The mark in the vault. */
   blessed: (n: number, of: number) => `Room ${n} of ${of} pays double this week.`,
   /** 示 The line the advice gives when the week is pointing at something worth doing. */
-  advise: (name: string) => `${name} is this week\u2019s quarry: double material, and the first kill pays qi.`,
+  advise: (name: string) => `${name} is this week\u2019s quarry: double material, and the first kill pays at least ${QUARRY_HOURS} hours of your gathering.`,
 };
 
 export const CAVE = {

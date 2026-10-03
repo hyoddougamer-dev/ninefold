@@ -28,7 +28,7 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_MELT, TRIBULATION_CHALLENGE } from './balance.ts';
+import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -312,7 +312,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 2026-10-03 left the Treasure Smith past that margin, so it is counted as itself now,
   // in the same deep-sitting seconds as the rest of the budget.
   const melted = (MELT_CAP + dt * MELT_FILL * PAIR_MELT) / focus;
-  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted;
+  // 期 And the week's quarry pays QUARRY_HOURS of gathering at once, 金剛 the Vajra's half
+  // again at most, the week it is first taken: a lump, allowed for as itself.
+  const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0) ? QUARRY_HOURS * 3600 * PAIR_BOUNTY / focus : 0;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 

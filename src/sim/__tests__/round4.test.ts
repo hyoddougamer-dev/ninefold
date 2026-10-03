@@ -108,3 +108,25 @@ describe('極 the last node of each branch waits for its realm', () => {
     expect(validate(JSON.parse(JSON.stringify(s)), T0).unlocked).toContain('creation');
   });
 });
+
+describe('溢 luck lifts the roll, not only the rank', () => {
+  it('lifts nothing at luck 1, more with more, and never past its cap below FUSE_TOP', async () => {
+    const { rollLift } = await import('../drops.ts');
+    const { LUCK_ROLL_TOP, VARIANCE, FUSE_TOP } = await import('../balance.ts');
+    expect(rollLift(1)).toBe(0);
+    expect(rollLift(3)).toBeGreaterThan(rollLift(2));
+    expect(rollLift(1e9)).toBe(LUCK_ROLL_TOP);
+    expect(1 + VARIANCE + LUCK_ROLL_TOP).toBeLessThan(FUSE_TOP);
+  });
+});
+
+describe('期 the week’s quarry pays at least hours of your own gathering', () => {
+  it('pays the greater of its own share and QUARRY_HOURS of the rate', async () => {
+    const { quarryPaid } = await import('../combat.ts');
+    const { rate } = await import('../state.ts');
+    const { QUARRY_HOURS } = await import('../balance.ts');
+    const s = at({ realm: 6, layer: 4 });
+    const old = commonsOf(1)[0];
+    expect(quarryPaid(s, old)).toBeGreaterThanOrEqual(Math.round(rate(s) * 3600 * QUARRY_HOURS));
+  });
+});

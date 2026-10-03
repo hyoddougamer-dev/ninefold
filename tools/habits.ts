@@ -19,6 +19,7 @@ import {
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
 import { fight, odds, takeKill } from '../src/sim/combat.ts';
+import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
@@ -547,6 +548,16 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       s = seclude(s);
     }
 
+    // 期 The week's quarry first, when the odds are good: a real player hunts the beast
+    // that pays this week. The harness never did, so 期 was a reward nothing measured.
+    if (h.hunts > 0 && quarryOwed(s)) {
+      const q = quarryOf(s);
+      if (q && odds(s, q) > 0.7) {
+        s = takeKill(s, q);
+        if (h.gear) s = takeDrop(s, q, ++seed, h.calling);
+        fights++;
+      }
+    }
     for (let i = 0; i < h.hunts; i++) {
       // 解 One kill a visit, at most, goes to a beast the knife does not know yet: learning
       // is done on the way, never instead of the hunt.

@@ -60,7 +60,7 @@ import { playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../src/data/schools.ts';
 import { pairSays, schoolSaysAt } from '../src/app/classes.ts';
-import { ART_BEND, DRIVE_MINUTES, FIND_TOP, FUSE_BEND, LUCK_BEND, SUNDER_BEND } from '../src/sim/balance.ts';
+import { ART_BEND, DRIVE_MINUTES, FIND_TOP, FUSE_BEND, LUCK_BEND, LUCK_ROLL_BEND, LUCK_ROLL_TOP, SUNDER_BEND } from '../src/sim/balance.ts';
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
@@ -4696,7 +4696,7 @@ const page = `<meta charset="utf-8">
       them touches the qi rate:</p>
     <table>
       <tr><th>line</th><th>what a total of L does</th></tr>
-      <tr><td>運 rarer gear</td><td>the rare end of a drop weighs ×(1 + ${LUCK_BEND}·ln(1 + L))</td></tr>
+      <tr><td>運 rarer gear</td><td>the rare end of a drop weighs ×(1 + ${LUCK_BEND}·ln(1 + L)); and since 2026-10-03 the whole of a cultivator's luck lifts the band every drop rolls in by ${LUCK_ROLL_BEND}·ln(luck), never more than ${LUCK_ROLL_TOP}</td></tr>
       <tr><td>拾 drop chance</td><td>a beast leaves a piece up to ${Math.round(FIND_TOP * 100)} points more often, and never more</td></tr>
       <tr><td>破 beasts weaker</td><td>a beast counts 1 / (1 + ${SUNDER_BEND}·ln(1 + L)) of itself, and never the Dragon</td></tr>
       <tr><td>煉 fusion quality</td><td>a fusion keeps ×(1 + ${FUSE_BEND}·ln(1 + L)) of its quality</td></tr>

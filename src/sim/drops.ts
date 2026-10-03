@@ -3,7 +3,7 @@ import { isOpen } from './unlocks.ts';
 import {
   BASE_DROP_CHANCE, LAYERS_PER_REALM, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
   SECONDARIES, SECONDARY_SHARE, VARIANCE,
-  WARDEN_RARITY_TILT,
+  WARDEN_RARITY_TILT, LUCK_ROLL_BEND, LUCK_ROLL_TOP,
 } from './balance.ts';
 import {
   AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, baseValue, droppableIn,
@@ -108,7 +108,7 @@ export interface Fortune {
  * lines of 力 on one piece read as a bug even when the maths is fine.
  */
 export function rollSecondaries(
-  template: GearTemplate, rarity: Rarity, d: () => number,
+  template: GearTemplate, rarity: Rarity, d: () => number, lift = 0,
 ): readonly Roll[] {
   const count = SECONDARIES[rarity];
   const pool: Affix[] = AFFIXES.filter((a) => a !== template.affix);
@@ -124,7 +124,7 @@ export function rollSecondaries(
     }
     pool.splice(pool.indexOf(picked), 1);
     // A secondary is worth SECONDARY_SHARE of what the same rank's primary would be.
-    const swing = 1 - VARIANCE + d() * VARIANCE * 2;
+    const swing = 1 - VARIANCE + lift + d() * VARIANCE * 2;
     out.push({ affix: picked, value: roundValue(picked, baseValue(template, rarity, picked) * SECONDARY_SHARE * swing) });
   }
   return out;
@@ -154,7 +154,9 @@ export function rollDrop(
   const rolled = pickRarity(beast, d(), fortune.luck ?? 1);
   const rarity = RARITIES[Math.max(RARITIES.indexOf(rolled),
     Math.min(RARITIES.length - 1, Math.floor(fortune.floor ?? 0)))];
-  const swing = 1 - VARIANCE + d() * VARIANCE * 2;
+  // 溢 Luck lifts the band the roll falls in as well as the rank: see LUCK_ROLL_BEND.
+  const lift = rollLift(fortune.luck ?? 1);
+  const swing = 1 - VARIANCE + lift + d() * VARIANCE * 2;
   const primary: Roll = {
     affix: template.affix,
     value: roundValue(template.affix, baseValue(template, rarity, template.affix) * swing),
@@ -164,9 +166,14 @@ export function rollDrop(
     id: `${seed.toString(36)}-${template.key}`,
     template: template.key,
     rarity,
-    rolls: [primary, ...rollSecondaries(template, rarity, d)],
+    rolls: [primary, ...rollSecondaries(template, rarity, d, lift)],
     from: fortune.source ?? beast.key,
   };
+}
+
+/** 溢 How far luck lifts the band a drop rolls in: LUCK_ROLL_BEND · ln(luck), capped. */
+export function rollLift(luck: number): number {
+  return Math.min(LUCK_ROLL_TOP, LUCK_ROLL_BEND * Math.log(Math.max(1, luck)));
 }
 
 /** The odds of each rank from one beast, for the screen to show honestly. */
