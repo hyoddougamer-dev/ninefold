@@ -642,6 +642,37 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/sheet-zero.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-03-b",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · A second piece, a tree that lasts, and a lot of small fixes",
+      "color": "#B88A5A",
+      "body": [
+        "A big round of your feedback plus a full audit of the game. Thank you, rekaris and Raziel, and everyone testing.",
+        "",
+        "**造化 Creation gives a second piece.** Once every kill drops a piece, your drop chance is now the chance of a *second* piece from the same kill (up to 50%), instead of the small bit of luck it gave this morning. More pieces means more to fuse, which is where the best gear comes from.",
+        "",
+        "**道 The Path lasts longer.** The secret realm's shrines were handing out almost every Path point in the game, so the whole tree was bought in two days. Shrines now pay up to 3 points per realm you've reached, then pay qi like a spring. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the sixth realm. **Anything you already bought stays yours.**",
+        "",
+        "**習 Familiarity explains itself.** Tap the dots on a recipe to see what each of its five marks gives and how many makes are left.",
+        "",
+        "**Fixes**",
+        "· A new cultivator keeps their 56 qi until their first purchase, instead of watching the bar eat it.",
+        "· Arts show their English names on the Path, every rank chip in the chest is named, and the stele reads in English.",
+        "· The stele and the credits close with ✕ or Esc.",
+        "· On small phones the day count no longer gets cut off, and the ≡ button no longer covers prices when you scroll.",
+        "· The save panel says what is true whether you play as a guest or signed in.",
+        "· Gear power shows two decimals, the bar says when a warden is waiting, and the Tower shows how much stronger a floor is instead of a misleading 2%.",
+        "· The card-trade price and the tribulation counts now read the same everywhere.",
+        "· The ranked server now counts melting properly, so heavy Auto melters are never held back."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/second-piece.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/capstone-gate.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -726,7 +757,7 @@
       "fields": [
         ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
-        ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card taken after it, and asks you to tap twice."],
+        ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
       ]
     },
@@ -1422,6 +1453,16 @@
       "reply": [
         "Good catch, and I agree. Since today's update every 精 Seasoned and 絕 Peerless mark also adds +0.5% 材 material from every beast, on top of what it gives that beast, so finishing old beasts counts everywhere.",
         "It stays material, never qi. I measured it over a whole climb and it doesn't move anyone's pace, it just makes the long hunt worth something. Thanks for thinking it through!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": ["Question"],
+      "reply": [
+        "It does more than the screen used to say, sorry about that, and thanks for asking. Since today's update you can tap the dots on any recipe to see it all.",
+        "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 5% faster, then 1 make in 20 comes out twice, then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. The note also says plainly when a mark has nothing to give that recipe (gathering needs nothing to spare and makes nothing with a rank).",
         "· 師 Shibaki"
       ]
     }
