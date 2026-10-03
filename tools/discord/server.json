@@ -791,6 +791,24 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-lines.webp?v=1"
       ],
       "footer": "師 Shibaki · thank you for every reply"
+    },
+    {
+      "key": "update-2026-10-03-e",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Encounters say what they gave",
+      "color": "#B88A5A",
+      "body": [
+        "A small one, from a question rekaris asked tonight. Thank you!",
+        "",
+        "**緣 After an encounter on the road, the card now tells you what came of it:** what you gave, what you got, and if it was a piece of gear, which piece and whether it went into your chest or your full chest melted something to make room. There's a button straight to it in 器 Gear.",
+        "",
+        "The stele's list of everybody you've met also says when someone left you a piece."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/meet-receipt.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1704,6 +1722,18 @@
       "reply": [
         "I checked the math, and you were right to ask. An old beast pays far less material than your best one, so farming one to 1,000 kills only pays the bonus back after well over a hundred thousand kills of your best beast.",
         "Since today's update the bonus is doubled to +1% per mark, and I'll be honest about what it is: a collector's reward for finishing beasts, not a material investment. For the most material, hunt your best beast.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Some \"event\" results are ambiguous",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "Good question, and you were right: the game didn't tell you. Feeding the crow gives you a piece of gear, rolled with a bit of extra luck. With a full chest it went in the same way a drop does, and your weakest piece (or the crow's, if it was the weaker one) melted into qi or material. None of that was on screen.",
+        "Since today's update the encounter card stays after you answer and says exactly what came of it: what you gave, what you got, which piece and where it went, with a button to it in Gear. The stele also notes who left you a piece. Thanks for asking!",
         "· 師 Shibaki"
       ]
     }
