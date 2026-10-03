@@ -4,7 +4,7 @@ import { commonsOf } from '../data/bestiary.ts';
 import { loot } from './combat.ts';
 import { rate } from './time.ts';
 import { isOpen } from './unlocks.ts';
-import { isSeason } from './week.ts';
+import { isSeason, seasonOf } from './week.ts';
 import { SEASON_HARVEST } from './balance.ts';
 import type { State } from './state.ts';
 
@@ -108,11 +108,58 @@ export function harvest(s: State, which: number): State {
   return { ...s, qi: s.qi + harvestValue(s, h, bed.at), beds, reaped: (s.reaped ?? 0) + 1 };
 }
 
-/** Take everything that is ripe, which is what the button at the top of the cave does. */
+/** 收 Take everything that is ripe: the cave's 收 Take all button, and every harness visit. */
 export function harvestAll(s: State): State {
   let out = s;
   for (let i = 0; i < BEDS; i++) out = harvest(out, i);
   return out;
+}
+
+/**
+ * 期 The herb a bed is sown with again: the one that was just taken out of it, because how
+ * long a herb takes is the player's own decision about when they will be back. Only when
+ * that seed cannot be paid for does the herb in season go in instead, if it can be.
+ */
+export function againFor(s: State, which: number, was: string): string | null {
+  if (canPlant(s, which, was)) return was;
+  const season = seasonOf(s);
+  return season && canPlant(s, which, season.key) ? season.key : null;
+}
+
+/**
+ * 收 Take all and plant again. Every ripe bed is taken, and each one is sown at once with
+ * the same herb, or with the herb in season when the same one cannot be paid for
+ * (againFor). A bed neither can be paid for is left empty.
+ *
+ * It is harvest() and plant() in a loop and nothing else, so it pays exactly what the
+ * single taps pay: nine taps and four scrolls become one, and no number moves.
+ */
+export function harvestAndReplant(s: State): State {
+  let out = s;
+  for (let i = 0; i < BEDS; i++) {
+    const bed = out.beds[i];
+    if (!bed || !isRipe(out, bed)) continue;
+    const was = bed.herb!;
+    out = harvest(out, i);
+    const again = againFor(out, i, was);
+    if (again) out = plant(out, i, again);
+  }
+  return out;
+}
+
+/** 種 Plant one herb in every empty bed, as far as the material reaches. */
+export function plantAll(s: State, key: string): State {
+  let out = s;
+  for (let i = 0; i < BEDS; i++) out = plant(out, i, key);
+  return out;
+}
+
+/** How many beds stand empty right now. */
+export function emptyCount(s: State): number {
+  if (!caveOpen(s)) return 0;
+  let n = 0;
+  for (let i = 0; i < BEDS; i++) if (!s.beds[i]?.herb) n++;
+  return n;
 }
 
 /** How many beds are ripe right now, for the count on the tab and in the advice. */

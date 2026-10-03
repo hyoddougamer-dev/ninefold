@@ -69,9 +69,23 @@ export function demonOf(s: State): Beast {
            icon: 'meditation', leaves: [] };
 }
 
-/** 破 The demon fell: the door opens again and the count goes up. Only a waiting demon can. */
+/**
+ * 關 The door after a demon falls: shut again at once while the realm still has a demon
+ * left in it, open when it has none.
+ *
+ * It used to open every time, and shutting it again was a tap on 修 that nothing asked
+ * for. Forgetting it cost a whole eight-hour window for nothing, and the harnesses shut it
+ * on every visit anyway, so the curves were already measuring the door that shuts itself.
+ * It shuts at the instant the demon fell, which is the earliest a hand could have shut it,
+ * so the ranked server's one demon a night still holds.
+ */
+function afterDemon(s: State, demons: number): State {
+  return { ...s, demons, secludedAt: demons < demonsFor(s.realm) ? s.at : 0 };
+}
+
+/** 破 The demon fell: the count goes up, and the door shuts again if a demon is left. */
 export function conquer(s: State): State {
-  return demonDue(s) ? { ...s, demons: s.demons + 1, secludedAt: 0 } : s;
+  return demonDue(s) ? afterDemon(s, s.demons + 1) : s;
 }
 
 /**
@@ -79,7 +93,7 @@ export function conquer(s: State): State {
  * realm's own number of them. The sigil is spent by the caller, like any carried thing.
  */
 export function conquerTwice(s: State): State {
-  return demonDue(s) ? { ...s, demons: Math.min(demonsFor(s.realm), s.demons + 2), secludedAt: 0 } : s;
+  return demonDue(s) ? afterDemon(s, Math.min(demonsFor(s.realm), s.demons + 2)) : s;
 }
 
 /** 退 The demon won: it draws back, and comes again in DEMON_RETURN. Nothing else changes. */
