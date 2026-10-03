@@ -696,6 +696,28 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/coach-arrow.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-03-d",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Luck that lifts your rolls, and a quarry worth hunting",
+      "color": "#B88A5A",
+      "body": [
+        "Thank you, rekaris, for saying out loud that luck felt underwhelming late on. You were right, and here is what changed.",
+        "",
+        "**運 Luck now lifts the roll, not only the rank.** Once every drop was 天 Heaven, luck had nothing left to do. Now your luck also raises where a drop's lines can land: at luck ×2 the best roll goes from 1.15 to about 1.23 of its base, and it tops out at 1.35. The first luck counts the most. Fusing still goes higher (up to 1.5), so fusion stays where the very best gear comes from.",
+        "",
+        "**期 The week's quarry is worth hunting again.** Its first kill each week paid qi from the quarry's own realm, so late in the climb it paid almost nothing. It now pays at least **four hours of your own gathering**, once a week. The hunt band shows the exact amount before you fight.",
+        "",
+        "· The ranked server now counts melting properly, so heavy Auto melters are never held back.",
+        "· The ranked server knows about the new quarry payout, so taking it never holds a save for review."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/luck-rolls.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/quarry-hours.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
