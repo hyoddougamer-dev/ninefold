@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
-import { AFFIX_INFO, RARITY_INFO, templateOf, type Item } from '../../data/gear.ts';
-import type { Stashed } from '../../sim/stash.ts';
+import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, templateOf, type Item } from '../../data/gear.ts';
+import { lifted, type Stashed } from '../../sim/stash.ts';
+import { marksUp } from '../../sim/inspect.ts';
+import { demonsFor } from '../../sim/seclusion.ts';
+import { QOL } from '../copy.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
@@ -117,7 +120,7 @@ export function frameAt(o: Outcome, beat: number) {
   };
 }
 
-export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow, auto, onAuto, onAutoNext, onStop, autoLeft = 0 }: {
+export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow, auto, onAuto, onAutoNext, onStop, autoLeft = 0, onNext, onWearDrop }: {
   battle: Battle;
   /**
    * 得 The whole state, not only the realm, because what a kill is *worth* depends on
@@ -143,6 +146,10 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   onStop?: () => void;
   /** 熟 Kills of this beast still to go before Auto opens for it, after this one. */
   autoLeft?: number;
+  /** 登 Collect, then the next floor of the tower. Only on a floor that fell. */
+  onNext?: () => void;
+  /** 著 Collect, and put the piece that fell straight on. */
+  onWearDrop?: () => void;
 }) {
   const realm = state.realm;
   const { beast, outcome, beat, over } = battle;
@@ -195,6 +202,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
    */
   const weekly = outcome.won && worldly && isQuarry(state, beast) && quarryOwed(state)
     ? quarryPaid(state, beast) : 0;
+  /**
+   * ▲ Whether the piece that fell is better than what is worn, by the chest's own ▲ rule
+   * (marksUp), read as it would go in (空囊 applied) and as it would be worn (承 the slot's
+   * levels). Only when the chest will keep it: a piece a full chest melts cannot be worn.
+   */
+  const dropUp = outcome.won && !!battle.drop && !(overflow?.dropped && overflow.dropped.id === overflow.item?.id)
+    && marksUp(state, lifted(state, battle.drop));
+  // 關 The demon fell and the realm still has one: the door has shut again by itself.
+  const soulLock = !!battle.kit?.sigil && splitKey(battle.kit.sigil).key === 'sigil:soullock';
+  const reshut = !!battle.demon && outcome.won && state.demons + (soulLock ? 2 : 1) < demonsFor(state.realm);
 
   /** 勁 What was won rises off the button that takes it, whichever button that is. */
   const take = () => {
@@ -384,6 +401,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               </span>
             </div>
           )}
+          {reshut && <p className="kitline"><b className="cjk">關</b> {QOL.seclusion.shutAgain}</p>}
           {outcome.won && !battle.demon && (
             <div className="gains">
               <span className="gain" style={{ animationDelay: '.25s' }}>
@@ -437,8 +455,10 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                 <b className="cjk" style={{ color: RARITY_INFO[battle.drop.rarity].colour }}>
                   {templateOf(battle.drop).han}
                 </b>
+                {/* ▲ Better than what is worn, said before the lines so it is never under the buttons. */}
+                {dropUp && <em className="dropup"><span aria-hidden="true">▲</span> {QOL.arena.better}</em>}
                 <i>
-                  {templateOf(battle.drop).name}
+                  {QOL.slotted(templateOf(battle.drop).name, SLOT_INFO[templateOf(battle.drop).slot].name)}
                   {battle.drop.rolls.map((roll) => (
                     <span key={roll.affix} style={{ marginLeft: 7 }}>
                       <span className="cjk">{AFFIX_INFO[roll.affix].han}</span>
@@ -476,10 +496,23 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               <span>{outcome.won ? ARENA.collect : ARENA.withdraw}</span>
               <kbd>{ARENA.keyCollect}</kbd>
             </button>
+            {/* 著 Collect and put the piece straight on, beside Collect, when it is ▲. */}
+            {dropUp && onWearDrop && (
+              <button className="act ghost wearit" data-qol="wear-drop" onClick={() => { take(); onWearDrop(); }}>
+                著 <span>{QOL.arena.wearIt}</span>
+              </button>
+            )}
             {onAgain && (
               <button className="act ghost again" onClick={() => { take(); onAgain(); }}>
                 再 <span>{ARENA.again}</span>
                 <kbd>{ARENA.keyAgain}</kbd>
+              </button>
+            )}
+            {/* 登 The next floor, on the pace of Again and on its key. A lost floor has none. */}
+            {onNext && outcome.won && (
+              <button className="act ghost again nextfloor" onClick={() => { take(); onNext(); }}>
+                登 <span>{QOL.arena.nextFloor}</span>
+                <kbd>{QOL.arena.keyNext}</kbd>
               </button>
             )}
             {onAuto && (

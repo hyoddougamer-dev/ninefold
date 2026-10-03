@@ -819,7 +819,7 @@
         "**The trade.** Qi you spend on upgrades stops filling the bar. Choosing between the two is the whole game."
       ],
       "fields": [
-        ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi"],
+        ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi\n盡 Buy all buys every level you can pay for, cheapest first"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
         ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
@@ -842,9 +842,9 @@
       ],
       "fields": [
         ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +0.5% 材 material from every beast."],
-        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school, so you can see who drops 運 Fortune or 劍 Sword pieces."],
+        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
-        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi: never less than four hours of your own gathering. It moves every Monday."]
       ]
     },
@@ -868,9 +868,9 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner, and the chest filters by school."],
-        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted."],
-        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner. The chest filters by place, by school and by lines (a piece must carry every line you pick), and keeps up to three filters you name."],
+        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all. ▲ **Wear all upgrades** puts every ▲ on at once."],
+        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
     {
@@ -962,7 +962,7 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-cave.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cave.webp",
       "body": [
-        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it.",
+        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
         "",
         "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, two ways on at each, and every other room is a beast a realm above you. Nothing is carried in, so losing takes nothing back."
       ],
@@ -1003,9 +1003,9 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-tower.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
       "body": [
-        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour.",
+        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything.",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC).",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]

@@ -21,6 +21,7 @@ import { Term } from '../ui/Term.tsx';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { CRAFTS } from '../copy.ts';
+import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { pictureOf } from '../../data/pictures.ts';
 
 /** 具 The painted tool of a craft, named by the tool: sickle, pick, knife, furnace. */
@@ -68,13 +69,20 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
 }) {
   const running = state.crafts.task ? RECIPE_BY_KEY[state.crafts.task] : null;
   const first = SKILLS.find((k) => skillOpen(state, k.key))?.key ?? 'herb';
-  const [skill, setSkill] = useState<SkillKey>(running?.skill ?? first);
+  // 記 Remembered on the device: the craft last looked at, if it is open, before the running one.
+  const [skill, setSkillRaw] = useState<SkillKey>(() => {
+    const kept = recall<string>('crafts.skill', '', (x): x is string => typeof x === 'string');
+    const k = SKILLS.find((x) => x.key === kept)?.key;
+    return k && skillOpen(state, k) ? k : running?.skill ?? first;
+  });
+  const setSkill = (k: SkillKey) => { setSkillRaw(k); keep('crafts.skill', k); };
   const [group, setGroup] = useState<string | null>(null);
   const [looking, setLooking] = useState<string | null>(null);
   const [view, setView] = useState<'work' | 'pouch'>('work');
   const [find, setFind] = useState('');
-  const [filter, setFilter] = useState<'all' | 'ready' | 'next'>('all');
-  const [tier, setTier] = useState<number | 'near'>('near');
+  const [filter, setFilter] = useRemembered<'all' | 'ready' | 'next'>('crafts.filter', 'all', oneOf(['all', 'ready', 'next'] as const));
+  const [tier, setTier] = useRemembered<number | 'near'>('crafts.tier', 'near',
+    (x): x is number | 'near' => x === 'near' || (typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= 9));
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
   /**
    * 往 Take the player to the recipe that makes a thing, from the note on its icon. It is

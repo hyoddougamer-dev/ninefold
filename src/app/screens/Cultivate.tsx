@@ -8,7 +8,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { crossNow, currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import {
-  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyMax, canBreakThrough,
+  UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
   power, tribulationPool, upgradeCost,
   type State,
@@ -28,15 +28,15 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, RANKS } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, QOL, RANKS } from '../copy.ts';
+import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
+import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
 import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide, heldAtFirstRung } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { useMemo, useRef, useState } from 'react';
 
-/** 盡 Where the ×1 or Max choice is kept, on this device. */
-const BUY_KEY = 'ninefold.buy';
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
@@ -91,13 +91,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
    * by Bruno after rekaris's post about clicking: a realm's six levels of each upgrade were
    * six taps on the same box. Remembered on this device only; it changes no number.
    */
-  const [many, setMany] = useState<boolean>(() => {
-    try { return localStorage.getItem(BUY_KEY) === 'max'; } catch { return false; }
-  });
-  const pickMany = (max: boolean) => {
-    setMany(max);
-    try { localStorage.setItem(BUY_KEY, max ? 'max' : 'one'); } catch { /* a private window keeps it for the visit */ }
-  };
+  // 記 Kept in prefs.ts now, under the same key, because 爐 the furnace shares it.
+  const [many, pickMany] = useBuyMax();
   const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
   const r = realmOf(state.realm);
   const w = currentWarden(state);
@@ -549,6 +544,21 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           );
         })}
       </div>
+      {/* 盡 Every level that can be paid for, cheapest first: the loop the measuring
+          cultivators buy by (buyAll). Shown when it would buy more than one tap does. */}
+      {(() => {
+        const all = buyAll(state);
+        if (all.n < 2) return null;
+        return (
+          <button className="act ghost buyall" onClick={() => {
+            set((s) => buyAll(s).state);
+            float(QOL.buy.bought(all.n), 'jade');
+            burst('jade', null, 12, 60);
+          }}>
+            盡 <span>{QOL.buy.all}</span> <i>{QOL.buy.allSays(all.n)}</i>
+          </button>
+        );
+      })()}
       {/* 階 Said once under the boxes rather than on every row that needs it. */}
       {UPGRADES.some((u) => (u !== 'cores' || isOpen(state.realm, 'cores'))
         && UPGRADE_INFO[u].currency === 'qi' && state.levels[u] < capOf(state, u)
@@ -559,7 +569,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {/* 洞天 Under the boxes, because it is the other place material goes and the
           question is always the same one: cores, refining, or the ground. */}
       {isOpen(state.realm, 'cave') && (
-        <Cave state={state} onPlant={onPlant} onHarvest={onHarvest} />
+        <Cave state={state} onPlant={onPlant} onHarvest={onHarvest}
+          onTakeAll={(again) => set((s) => (again ? harvestAndReplant(s) : harvestAll(s)))}
+          onPlantAll={(key) => set((s) => plantAll(s, key))} />
       )}
       {!demonDue(state) && <Seclusion state={state} onShut={() => set(seclude)} onFace={onDemon} />}
 

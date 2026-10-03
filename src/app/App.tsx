@@ -72,6 +72,13 @@ import { Svg } from './ui/Svg.tsx';
 import { Arena, BEAT_MS, beatsIn, type Battle } from './ui/Arena.tsx';
 import { MARKS } from '../sim/balance.ts';
 import { BRAND, BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
+// 便 The quality-of-life batch B: bulk buttons, the next floor, wear it from the verdict.
+import { QOL } from './copy.ts';
+import { recall, keep, oneOf } from './prefs.ts';
+import { RARITIES } from '../data/gear.ts';
+import { brewMax } from '../sim/trials.ts';
+import { wearBetter } from '../sim/inspect.ts';
+import { fuseAllIn } from '../sim/stash.ts';
 
 /** 版 Filled in by the build (vite.config.ts). */
 declare const __BUILD__: string;
@@ -182,7 +189,9 @@ export function App() {
   /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
   const [locked, setLocked] = useState<System | null>(null);
   /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
-  const [meltUpTo, setMeltUpTo] = useState<Rarity>('common');
+  // 記 Remembered on the device: it used to reset to Common on every load ("Melt 0 pieces").
+  const [meltUpTo, setMeltUpToRaw] = useState<Rarity>(() => recall('melt.upTo', 'common', oneOf(RARITIES)));
+  const setMeltUpTo = useCallback((r: Rarity) => { setMeltUpToRaw(r); keep('melt.upTo', r); }, []);
   /**
    * 出 Whether the end of a run is on the screen.
    *
@@ -526,10 +535,11 @@ export function App() {
     startFight(floorBeast(floor), floor);
   }, [state, startFight]);
 
-  const onBrew = useCallback((line: Line) => {
+  const onBrew = useCallback((line: Line, max = false) => {
     const id = ++taps.current;
     setState((s) => {
-      const next = brew(s, line);
+      // 盡 ×Max brews as many as can be paid for, each at its own price (brewMax).
+      const next = max ? brewMax(s, line).state : brew(s, line);
       if (next === s) return s;
       once(id, () => { sfx.brew(); haptics.win(); });
       return next;
@@ -564,7 +574,7 @@ export function App() {
     return () => { clearTimeout(id); clearTimeout(hurt); };
   }, [battle]);
 
-  const closeFight = useCallback(() => {
+  const closeFight = useCallback((wear = false) => {
     if (!battle) return;
     const { beast, outcome, drop, extra, floor, demon, kit, sought } = battle;
     // 業 A won fight spends what took part in it; a lost one keeps it.
@@ -590,7 +600,14 @@ export function App() {
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
-        const first = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const put = stash(noteFate(takeKill(s, beast), beast, drop), drop);
+        let first = put.state;
+        // 著 Wear it, from the verdict: the piece as it went in (空囊 applied), and only if
+        // the chest kept it. The same swap the item sheet's button makes.
+        if (wear && put.item && first.chest.some((x) => x.id === put.item!.id)) {
+          const on = equipItem(first.worn, first.chest, put.item, templateOf(put.item).slot);
+          first = { ...first, worn: on.worn, chest: [...on.chest] };
+        }
         const taken = extra ? stash(first, extra).state : first;
         return spent(sought ? spendSeek(taken) : taken);
       });
@@ -635,6 +652,27 @@ export function App() {
   }, [battle, closeFight]);
   const againRef = useRef(fightAgain);
   againRef.current = fightAgain;
+  /**
+   * 登 The next floor, from a won floor's verdict (key R). It is Again for the tower: the
+   * floor is credited by closeFight, and the next one starts through the same queue and
+   * the same pace, so nothing about a climb is faster than tapping 登 Climb each time. A
+   * floor that was lost offers only the way out.
+   */
+  const canNext = !!battle && battle.floor !== undefined && !battle.demon && battle.outcome.won;
+  const climbNext = useCallback(() => {
+    if (!battle?.over || battle.floor === undefined || !battle.outcome.won || holding.current) return;
+    const wait = lastStart.current + PACE_MS - Date.now();
+    if (wait > 0) {
+      holding.current = true;
+      setTimeout(() => { holding.current = false; nextRef.current(); }, wait + 5);
+      return;
+    }
+    const f = battle.floor + 1;
+    queued.current = { beast: floorBeast(f), floor: f };
+    closeFight();
+  }, [battle, closeFight]);
+  const nextRef = useRef(climbNext);
+  nextRef.current = climbNext;
   useLayoutEffect(() => {
     if (battle || !queued.current) return;
     const wait = lastStart.current + PACE_MS - Date.now();
@@ -681,6 +719,36 @@ export function App() {
     setAuto((a) => (a ? { ...a, kills: a.kills + 1 } : a));
     fightAgain();
   }, [fightAgain]);
+  /**
+   * 自 Auto straight from a Known beast's row on 狩: the same auto-hunt, same rules (Known
+   * only, stops on a loss or a hidden page, the hand's pace), started without first
+   * fighting one by hand to reach a verdict. Three taps become one.
+   */
+  const autoFrom = useCallback((beast: Beast) => {
+    if (battle || auto || beast.warden || (state.killed[beast.key] ?? 0) < MARKS[1]) return;
+    setAuto({ beast, kills: 0, from: state.materials });
+    startFight(beast);
+  }, [battle, auto, state.killed, state.materials, startFight]);
+
+  /** ▲ 著 Put on every ▲ piece in the chest at once. */
+  const onWearAll = useCallback(() => {
+    const id = ++taps.current;
+    setState((s) => {
+      const r = wearBetter(s);
+      if (r.worn > 0) once(id, () => { float(QOL.gear.wore(r.worn), 'gold'); burst('gold', null, 12, 64); sfx.buy(); haptics.strike(); });
+      return r.state;
+    });
+  }, []);
+
+  /** 煉 Fuse every group of three until none is left. */
+  const onFuseAll = useCallback(() => {
+    const id = ++taps.current;
+    setState((s) => {
+      const r = fuseAllIn(s);
+      if (r.state !== s) once(id, () => { float(QOL.gear.fused(r.made.length), 'gold'); burst('gold', null, 16, 80); sfx.breakthrough(); haptics.win(); });
+      return r.state;
+    });
+  }, []);
 
   const onEquip = useCallback((item: Item) => {
     sfx.buy();
@@ -937,7 +1005,7 @@ export function App() {
         if (go || e.key === 'Escape') { e.preventDefault(); skipFight(); }
       } else if (go || e.key === 'Escape') {
         e.preventDefault(); press('.verdict .vacts .act');
-      } else if ((e.key === 'r' || e.key === 'R') && canAgain) {
+      } else if ((e.key === 'r' || e.key === 'R') && (canAgain || canNext)) {
         e.preventDefault(); press('.verdict .vacts .again');
       }
       return;
@@ -1001,6 +1069,7 @@ export function App() {
             state={state}
             onFight={(key) => startFight(byKey[key])}
             onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
+            onAuto={(key) => autoFrom(byKey[key])}
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
             onKey={() => { setState((s) => enterSecret(useKey(s))); sfx.buy(); haptics.strike(); }}
           />
@@ -1032,6 +1101,7 @@ export function App() {
             onClearSet={(i) => { setState((s) => clearSet(s, i)); sfx.tap(); }}
             onRenameSet={(i, name) => { setState((s) => renameSet(s, i, name)); sfx.tap(); }}
             onBook={() => { setBook(true); sfx.tap(); }}
+            onWearAll={onWearAll} onFuseAll={onFuseAll}
           />
         )}
         {tab === 'dao' && (
@@ -1186,8 +1256,10 @@ export function App() {
           pulse={pulse}
           overflow={battle.outcome.won && battle.drop && state.chest.length >= limitFor(state)
             ? stash(state, battle.drop) : null}
-          onClose={closeFight}
+          onClose={() => closeFight()}
           onAgain={canAgain ? fightAgain : undefined}
+          onNext={canNext ? climbNext : undefined}
+          onWearDrop={() => closeFight(true)}
           onSkip={skipFight}
           auto={auto && auto.beast.key === battle.beast.key && battle.floor === undefined && !battle.demon
             ? { kills: auto.kills, gained: Math.max(0, state.materials - auto.from) } : null}
