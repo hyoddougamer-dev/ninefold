@@ -672,6 +672,30 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/capstone-gate.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-03-c",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Three things that were hard to see",
+      "color": "#B88A5A",
+      "body": [
+        "A small one. Thank you all for testing and for every screenshot you send.",
+        "",
+        "**塔 The Tower on a computer.** The tower drawing and the floor you're about to climb now sit side by side, so the 登 Climb button is on the first screen instead of below it. Phones are unchanged.",
+        "",
+        "**龍骸 Dragon-scale gear reads again.** The realm-8 pieces were red on red inside a red Heaven frame, and on a phone the sword looked like a smudge. The metal is lighter, the scales are drawn light, and each piece has a dark outline.",
+        "",
+        "**指 The guide's arrow stays out of the way.** On small phones the arrow pointing at your first purchase could sit on top of the ×1 / MAX buttons. It now finds a clear spot.",
+        "",
+        "Coming next: luck that lifts the rolls on your gear, not only the rank, and a weekly quarry that pays at least four hours of your own gathering. Both touch the ranked server, so they go out together once it's updated."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/tower-pc.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/dragon-gear.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/coach-arrow.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
