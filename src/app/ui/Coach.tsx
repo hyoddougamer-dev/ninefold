@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * 指 The pointing finger.
@@ -32,6 +32,7 @@ import { useEffect, useState } from 'react';
  */
 export function Coach({ at }: { at: string | null }) {
   const [box, setBox] = useState<DOMRect | null>(null);
+  const target = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!at) { setBox(null); return; }
@@ -51,6 +52,7 @@ export function Coach({ at }: { at: string | null }) {
 
     const tick = () => {
       const el = find();
+      target.current = el;
       const r = el?.getBoundingClientRect() ?? null;
       // A rendered-but-collapsed element measures 0x0. That is "not there" for our
       // purposes, and drawing a ring on it would put a dot in the top-left corner.
@@ -63,7 +65,8 @@ export function Coach({ at }: { at: string | null }) {
       // first, then the page glides down to the ring: read, then follow.
       if (next && !brought) {
         brought = true;
-        const off = next.top < 8 || next.bottom > window.innerHeight - 8;
+        const bottom = el?.closest('nav.tabs') ? window.innerHeight : floorY();
+        const off = next.top < 8 || next.bottom > bottom - 8;
         if (off) bring = window.setTimeout(() => el?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 1100);
       }
       raf = requestAnimationFrame(tick);
@@ -78,9 +81,15 @@ export function Coach({ at }: { at: string | null }) {
 
   if (!box) return null;
 
-  // The arrow goes wherever there is room. Above the target by preference, because a
-  // thumb on a phone is usually below what it is about to press and would cover it.
-  const above = box.top > 86;
+  // 底 The phone's tab bar is in the window but not in the page. A target scrolled under
+  // it was still "on the screen" to the old test, so the arrow stood on RANKS pointing
+  // down at a tab nobody meant. Under the bar, there is no ring, and the arrow waits just
+  // above the bar, pointing down at where the box is.
+  // A tab of the bar itself is pointed at where it stands, bar and all.
+  const inBar = !!target.current?.closest('nav.tabs');
+  const floor = inBar ? window.innerHeight : floorY();
+  const under = box.top > floor - 16;
+  const above = under || box.top > 86;
 
   // 側 On the PC the tabs are a rail down the left, one row under another, and an arrow
   // above a row lands on the name of the row above it: pointing at 狩 Hunt, it sat on
@@ -93,25 +102,32 @@ export function Coach({ at }: { at: string | null }) {
   // too narrow for the right-hand end of a button to be clear of the line over it.
   const dock = pc && box.left > window.innerWidth * 0.6;
   const side = rail ? 'right' : dock ? 'left' : 'none';
-  const y = side !== 'none' ? box.top + box.height / 2 : above ? box.top - 10 : box.bottom + 10;
 
-  // 避 And across, away from the words.
-  //
-  // Centred over a full-width button, the arrow lands in the middle of whatever line of
-  // text sits above it, the screen's heading or the sentence explaining the fight,
-  // and covers a word. Text on this screen is set from the left and rarely fills the
-  // line, so the right-hand end of a wide target is reliably empty. Narrow targets keep
-  // the centre, where there is nothing to miss.
+  // 避 And across, away from the words: the right-hand end of a wide target, where text
+  // set from the left rarely reaches. But never onto another control. At 320 the right
+  // end of 劍訣 sat on the ×1/MAX switch, so each place is tried in turn and the first
+  // one with nothing pressable under the disc wins.
   const wide = box.width > window.innerWidth * 0.55;
-  const x = rail ? box.right + 12 : dock ? box.left - 12 : wide ? box.right - 26 : box.left + box.width / 2;
+  const yOf = (up: boolean) => (under ? floor - 6 : up ? box.top - 10 : box.bottom + 10);
+  const spots: { x: number; up: boolean }[] = side !== 'none'
+    ? [{ x: rail ? box.right + 12 : box.left - 12, up: above }]
+    : [
+      { x: wide ? box.right - 26 : box.left + box.width / 2, up: above },
+      { x: box.left + box.width / 2, up: above },
+      { x: box.left + 34, up: above },
+      ...(under ? [] : [{ x: wide ? box.right - 26 : box.left + box.width / 2, up: !above }]),
+    ];
+  const pick = spots.find((p) => !onControl(p.x, p.up ? yOf(p.up) - 34 : yOf(p.up), target.current, floor)) ?? spots[0];
+  const x = pick.x;
+  const y = side !== 'none' ? box.top + box.height / 2 : yOf(pick.up);
 
   return (
-    <div className="coach" aria-hidden="true">
-      <span className="ring" style={{
+    <div className="coach" aria-hidden="true" style={{ bottom: window.innerHeight - floor }}>
+      {!under && <span className="ring" style={{
         left: box.left - 5, top: box.top - 5,
         width: box.width + 10, height: box.height + 10,
-      }} />
-      <span className="point" data-above={above} data-side={side}
+      }} />}
+      <span className="point" data-above={pick.up} data-side={side}
         style={{ left: x, top: y }}>
         <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
           <path d="M12 3 L12 19 M5.5 12.5 L12 19.5 L18.5 12.5"
@@ -121,6 +137,24 @@ export function Coach({ at }: { at: string | null }) {
       </span>
     </div>
   );
+}
+
+/** 底 Where the page ends: the top of the phone's tab bar, or the bottom of the window. */
+function floorY(): number {
+  const r = document.querySelector('nav.tabs')?.getBoundingClientRect();
+  return r && r.top > window.innerHeight / 2 ? r.top : window.innerHeight;
+}
+
+/** Would a 34px disc with its top edge at `top` sit on something pressable that is not the target? */
+function onControl(cx: number, top: number, target: HTMLElement | null, floor: number): boolean {
+  if (top < 0 || top + 34 > floor || cx - 17 < 0 || cx + 17 > window.innerWidth) return true;
+  for (const [px, py] of [[cx - 13, top + 5], [cx + 13, top + 5], [cx - 13, top + 29], [cx + 13, top + 29], [cx, top + 17]]) {
+    for (const el of document.elementsFromPoint(px, py)) {
+      if (target && (target === el || target.contains(el) || el.contains(target))) continue;
+      if (el.closest('button, a, input, select, textarea, [role="button"], [role="tab"], nav')) return true;
+    }
+  }
+  return false;
 }
 
 function sameRect(a: DOMRect | null, b: DOMRect | null): boolean {

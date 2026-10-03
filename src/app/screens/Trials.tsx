@@ -66,6 +66,10 @@ export function Trials({ state, onFloor, onBrew }: {
       <h2 className="heading">{TRIALS.towerHead}</h2>
       {/* 塔 The tower drawn as far up as it has been climbed: one tier to a 塔印 seal,
           so the silhouette is the progress and not an illustration beside it. */}
+      {/* 並 On a wide screen the drawing and the floor stand side by side: stacked, the
+          drawing alone filled the first screen of a 1366x768 laptop and the 登 Climb
+          button was below the fold. On a phone this is a plain block and nothing moves. */}
+      <div className="towerduo">
       <span className="place" data-tall="true">
         <Svg html={tower(state.tower)} />
       </span>
@@ -103,6 +107,7 @@ export function Trials({ state, onFloor, onBrew }: {
         <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>
           登 <span>{TRIALS.climb}</span>
         </button>
+      </div>
       </div>
 
       <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>
