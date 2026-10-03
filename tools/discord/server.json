@@ -737,6 +737,60 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "devlog-4",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Dev log #4 · Fewer taps, clearer screens",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-4.webp?v=1",
+      "body": [
+        "Your quality-of-life call got exactly the answers we hoped for. Thank you, rekaris, for the long and careful posts, and thank you to everyone testing.",
+        "",
+        "We also played the game ourselves and counted every tap: a two-minute check-in took 31 to 53. This update is about cutting that down."
+      ],
+      "fields": [
+        [
+          "歸 Coming back",
+          "The return screen now lists everything that is waiting for you: ripe beds, an open vault, a heart demon, someone on the road, Path points you can actually spend, better gear in your chest, a tower floor you can take. Each line takes you there. If the workshop stopped or waited for something while you were away, it says what and for how long. Tabs carry a small dot when something there is ready."
+        ],
+        [
+          "一 One tap where there were many",
+          "· 洞天 Cave: *Take all and plant again*\n· 修 *Buy all*, and 爐 pills ×Max\n· 器 *Wear all upgrades* and *Fuse all groups*\n· 塔 *Next floor* straight from a won fight (R)\n· 圍 *Drive again*, or as many as your qi pays for\n· 自 *Auto* straight from a beast's row\n· 閉關 The seclusion door shuts again by itself after a demon falls"
+        ],
+        [
+          "篩 Finding gear",
+          "Both of these came from rekaris in the quality-of-life thread. Drops name the slot beside the piece (*Laurel · Crown*). The chest has a third filter row, by lines: pick several and only pieces with all of them show, and you can save up to three filters. A better drop says so on the fight result, with a *Wear it* button. Your filters, melt rank and workshop choices are remembered on your device."
+        ],
+        [
+          "入定 Sitting, explained",
+          "A chip shows how deep you are sitting and how long is left, and a sitting now lasts **30 minutes** instead of 15. When it ends, the screen says what starts the next one and offers 坐 *Sit again*."
+        ],
+        [
+          "業 The workshop",
+          "Every familiarity mark now gives something on every recipe: 10% faster at 25 makes, then 1 in 10 comes out twice (or 10% faster again for gear and tools), and on from there. Each recipe made 2,000 times makes its whole craft 1% faster, up to 15%. Alchemy, Sigil Writing and Arrays open at their realm, **or sooner** once Herb Gathering, Vein Delving or Forging reaches 40. A craft that isn't open yet shows its recipes greyed, so you can plan for it."
+        ],
+        [
+          "道 The Path and the hunt",
+          "The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) now opens at the **fifth** realm instead of the sixth. Each 精 Seasoned and 絕 Peerless mark adds **+1%** material from every beast (it was +0.5%)."
+        ],
+        [
+          "🐞 Fixed",
+          "· A piece's sheet compared it unrefined against your refined one, so a real upgrade could read as weaker. It now reads the piece as it would be once worn.\n· Familiarity no longer promises that gear or tools come out twice.\n· A shrine that has given this realm's Path points now says it pays qi.\n· Number keys no longer change tab behind the vault or the cards. Esc and Enter close the return screen and notes, and 1 and 2 pick a vault door.\n· Small buttons on phones are easier to hit."
+        ],
+        [
+          "守 What stays the same",
+          "We measured all of this over the whole climb: the biggest change in anyone's pace is about a day, nothing is taken for being away, and losing a fight still costs nothing."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-return.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-cave.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-gear.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-lines.webp?v=1"
+      ],
+      "footer": "師 Shibaki · thank you for every reply"
     }
   ],
   "posts": [
@@ -1563,6 +1617,93 @@
       "reply": [
         "It does more than the screen used to say, sorry about that, and thanks for asking. Since today's update you can tap the dots on any recipe to see it all.",
         "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 10% faster, then 1 make in 10 comes out twice (materials, elixirs and sigils; a piece of gear, a tool or an array is made once, so it gets 10% faster instead), then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. Where a mark has nothing to give a recipe (gathering needs nothing to spare and makes nothing with a rank), it gives another 1 in 10 twice, or another 10% faster. And every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Sitting is inconsistent",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thanks for laying this out so clearly, you're right that it was confusing. Since today's update the 修 Cultivate screen shows a chip while you sit, with how deep you are and how long is left. When it ends, it says exactly what starts the next one, with a 坐 Sit again button right there.",
+        "A sitting also lasts 30 minutes now instead of 15. We did measure keeping it on for as long as the game is open: anyone leaving a tab open all day would climb weeks faster than someone actually playing, so it stays a bonus for being there, just a clearer and longer one.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When gear is compared to the equipped piece, it is being compared against the refined stats",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Good catch, thank you. The ▲ itself was right, but the item sheet compared the new piece bare against your refined one, so a real upgrade could read as weaker.",
+        "Fixed in today's update: the sheet reads a piece as it would be once worn, with your slot's refining carried over, and says so in a line under the stats. There's also a ▲ Wear all upgrades button in the chest now.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "I am not sure I like Crafts locked behind realm",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Love this one, thank you. Since today's update Alchemy, Sigil Writing and Arrays open at their realm or sooner, once the craft that feeds them reaches level 40: Herb Gathering for Alchemy, Vein Delving for Sigils, Forging for Arrays. A focused crafter opens Alchemy around day 3 or 4 instead of day 8.",
+        "You can also open a craft that isn't open yet and read every recipe in it, greyed, so you can plan exactly the way you described. Each recipe still waits for its own realm, so an early alchemist brews what their realm allows.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "More to things to improve, think and strategize about",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Thank you for writing all of this down. It's the kind of post that shapes the next months.",
+        "Deeper hunts, where power has a use every day, is already being designed, and your idea of weaknesses and armour types goes into it. Improving cave beds, studying a Dao and forging a piece with the lines you choose are next on the list to design, each with its own cost so they compete for your resources the way you describe. I'll post the designs here before anything goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "You were right that the bonuses were too small to feel, and that marks giving nothing were a miss. I measured a stronger table and it's in today's update.",
+        "Every mark now gives something on every recipe: 10% faster at 25 makes, then 1 make in 10 comes out twice (or another 10% faster for gear and tools), and the later marks give their own bonus or another one of those where theirs didn't apply. Each recipe you take to 2,000 makes also makes its whole craft 1% faster, up to 15%. Tap the dots on a recipe to see it all. It doesn't change how fast anyone climbs, it just makes the work you put into a recipe show.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adjusting the melting allowance",
+      "tags": [
+        "Idea",
+        "Balance"
+      ],
+      "reply": [
+        "To answer your question: it fills strictly at your standing rate, sitting doesn't speed it up. We tested filling it at the sitting rate, and it made Auto the fastest way to climb by several days, which is the one line we keep. Today's update does make sitting itself last 30 minutes instead of 15, though.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "tags": [
+        "Idea",
+        "Balance"
+      ],
+      "reply": [
+        "I checked the math, and you were right to ask. An old beast pays far less material than your best one, so farming one to 1,000 kills only pays the bonus back after well over a hundred thousand kills of your best beast.",
+        "Since today's update the bonus is doubled to +1% per mark, and I'll be honest about what it is: a collector's reward for finishing beasts, not a material investment. For the most material, hunt your best beast.",
         "· 師 Shibaki"
       ]
     }

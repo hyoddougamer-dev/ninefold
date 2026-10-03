@@ -3976,8 +3976,8 @@ const page = `<meta charset="utf-8">
       somebody who farmed the first rat. ${(KNOWN_MATERIAL * 100).toFixed(0)}% and
       ${(MASTERED_POWER * 100).toFixed(0)}% a beast.</p>
     <p class="t">精 絕 Past it, ${DEEP_MARKS.map((n) => n.toLocaleString('en')).join(' and ')} kills
-      of one common beast are two deep marks: each pays that beast
-      ${(DEEP_MATERIAL * 100).toFixed(0)}% more material, and since 2026-10-03
+      of one common beast are two deep marks, and each pays that beast
+      ${(DEEP_MATERIAL * 100).toFixed(0)}% more material. Since 2026-10-03 each also pays
       ${(DEEP_EVERYWHERE * 100).toFixed(0)}% more from every beast, so finishing an old
       beast counts everywhere. It was half a percent at first, and at that a deep mark
       took a quarter of a million kills of the best beast to pay back. Every deep mark on
