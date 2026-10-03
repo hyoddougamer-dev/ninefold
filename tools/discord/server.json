@@ -737,6 +737,60 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "devlog-4",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Dev log #4 · Fewer taps, clearer screens",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/devlog-4.webp?v=1",
+      "body": [
+        "Your quality-of-life call got exactly the answers we hoped for. Thank you, rekaris, for the long and careful posts, and thank you to everyone testing.",
+        "",
+        "We also played the game ourselves and counted every tap: a two-minute check-in took 31 to 53. This update is about cutting that down."
+      ],
+      "fields": [
+        [
+          "歸 Coming back",
+          "The return screen now lists everything that is waiting for you: ripe beds, an open vault, a heart demon, someone on the road, Path points you can actually spend, better gear in your chest, a tower floor you can take. Each line takes you there. If the workshop stopped or waited for something while you were away, it says what and for how long. Tabs carry a small dot when something there is ready."
+        ],
+        [
+          "一 One tap where there were many",
+          "· 洞天 Cave: *Take all and plant again*\n· 修 *Buy all*, and 爐 pills ×Max\n· 器 *Wear all upgrades* and *Fuse all groups*\n· 塔 *Next floor* straight from a won fight (R)\n· 圍 *Drive again*, or as many as your qi pays for\n· 自 *Auto* straight from a beast's row\n· 閉關 The seclusion door shuts again by itself after a demon falls"
+        ],
+        [
+          "篩 Finding gear",
+          "Both of these came from rekaris in the quality-of-life thread. Drops name the slot beside the piece (*Laurel · Crown*). The chest has a third filter row, by lines: pick several and only pieces with all of them show, and you can save up to three filters. A better drop says so on the fight result, with a *Wear it* button. Your filters, melt rank and workshop choices are remembered on your device."
+        ],
+        [
+          "入定 Sitting, explained",
+          "A chip shows how deep you are sitting and how long is left, and a sitting now lasts **30 minutes** instead of 15. When it ends, the screen says what starts the next one and offers 坐 *Sit again*."
+        ],
+        [
+          "業 The workshop",
+          "Every familiarity mark now gives something on every recipe: 10% faster at 25 makes, then 1 in 10 comes out twice (or 10% faster again for gear and tools), and on from there. Each recipe made 2,000 times makes its whole craft 1% faster, up to 15%. Alchemy, Sigil Writing and Arrays open at their realm, **or sooner** once Herb Gathering, Vein Delving or Forging reaches 40. A craft that isn't open yet shows its recipes greyed, so you can plan for it."
+        ],
+        [
+          "道 The Path and the hunt",
+          "The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) now opens at the **fifth** realm instead of the sixth. Each 精 Seasoned and 絕 Peerless mark adds **+1%** material from every beast (it was +0.5%)."
+        ],
+        [
+          "🐞 Fixed",
+          "· A piece's sheet compared it unrefined against your refined one, so a real upgrade could read as weaker. It now reads the piece as it would be once worn.\n· Familiarity no longer promises that gear or tools come out twice.\n· A shrine that has given this realm's Path points now says it pays qi.\n· Number keys no longer change tab behind the vault or the cards. Esc and Enter close the return screen and notes, and 1 and 2 pick a vault door.\n· Small buttons on phones are easier to hit."
+        ],
+        [
+          "守 What stays the same",
+          "We measured all of this over the whole climb: the biggest change in anyone's pace is about a day, nothing is taken for being away, and losing a fight still costs nothing."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-return.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-cave.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-gear.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-lines.webp?v=1"
+      ],
+      "footer": "師 Shibaki · thank you for every reply"
     }
   ],
   "posts": [
@@ -812,14 +866,14 @@
       "body": [
         "Qi gathers at the full rate whether you are here or not, all night, with the phone shut.",
         "",
-        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for about a quarter of an hour (more with 神 the Spirit branch of the Path). A bonus for being there, never a cost for leaving.",
+        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for half an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
         "",
         "**Layers.** Qi fills the bar, and a full bar opens a layer by itself. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
         "",
         "**The trade.** Qi you spend on upgrades stops filling the bar. Choosing between the two is the whole game."
       ],
       "fields": [
-        ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi"],
+        ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi\n盡 Buy all buys every level you can pay for, cheapest first"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
         ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
@@ -841,10 +895,10 @@
         "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
       ],
       "fields": [
-        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +0.5% 材 material from every beast."],
-        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school, so you can see who drops 運 Fortune or 劍 Sword pieces."],
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +1% 材 material from every beast."],
+        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
-        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi: never less than four hours of your own gathering. It moves every Monday."]
       ]
     },
@@ -868,9 +922,9 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner, and the chest filters by school."],
-        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted."],
-        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner. The chest filters by place, by school and by lines (a piece must carry every line you pick), and keeps up to three filters you name."],
+        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all. ▲ **Wear all upgrades** puts every ▲ on at once."],
+        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
     {
@@ -944,7 +998,7 @@
       "body": [
         "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon and the Bestiary. They are spent on the tree in 道 the Path.",
         "",
-        "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it."
+        "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the fifth realm."
       ],
       "fields": [
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
@@ -962,7 +1016,7 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-cave.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cave.webp",
       "body": [
-        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it.",
+        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
         "",
         "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, two ways on at each, and every other room is a beast a realm above you. Nothing is carried in, so losing takes nothing back."
       ],
@@ -980,16 +1034,16 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-crafts.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/workshop.webp?v=1",
-      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away."],
+      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away.", "", "A craft that is not open yet still shows its recipes, greyed, so you can plan for it."],
       "fields": [
         ["▸ 藥 Herb Gathering · 礦 Vein Delving", "Realm 2. Herbs from the paths of every realm you have reached, and ore from their veins. They need only time."],
         ["▸ 解 Rendering", "Realm 2. Kill ten of a common beast (one, for a warden) and the workshop knows what its kind leave behind: a pelt, a fang, a scale. From then on it renders that part for as long as you let it."],
         ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), forge 鑰 Realm Keys that open the secret realm's door (one a day), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
-        ["▸ 丹 Alchemy", "Realm 5. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."],
-        ["▸ 符 Sigil Writing", "Realm 6. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."],
-        ["▸ 陣 Arrays", "Realm 7. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
+        ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending, Guarding and Might for every realm, and three rare ones. Each Alchemy level also takes 0.2% off the pill furnace's material."],
+        ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding, Thunder, Binding, Mirror, Five Thunders), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece."],
+        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
         ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon or vault gate, and the odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the Dragon, never the tower, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."],
-        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2000 made: faster, sometimes two at once, one fewer of the first ingredient, and at the fifth never Common."],
+        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made: 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient; better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%. Tap the dots on a recipe to see its own five."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."]
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"]
@@ -1003,9 +1057,9 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-tower.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
       "body": [
-        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour.",
+        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything.",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC).",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
@@ -1562,7 +1616,94 @@
       "tags": ["Question"],
       "reply": [
         "It does more than the screen used to say, sorry about that, and thanks for asking. Since today's update you can tap the dots on any recipe to see it all.",
-        "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 5% faster, then 1 make in 20 comes out twice, then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. The note also says plainly when a mark has nothing to give that recipe (gathering needs nothing to spare and makes nothing with a rank).",
+        "Five marks, at 25, 100, 300, 800 and 2,000 makes of one recipe: 10% faster, then 1 make in 10 comes out twice (materials, elixirs and sigils; a piece of gear, a tool or an array is made once, so it gets 10% faster instead), then one less of its first ingredient, then better odds of a high rank, and at the last it never comes out Common. Where a mark has nothing to give a recipe (gathering needs nothing to spare and makes nothing with a rank), it gives another 1 in 10 twice, or another 10% faster. And every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Sitting is inconsistent",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thanks for laying this out so clearly, you're right that it was confusing. Since today's update the 修 Cultivate screen shows a chip while you sit, with how deep you are and how long is left. When it ends, it says exactly what starts the next one, with a 坐 Sit again button right there.",
+        "A sitting also lasts 30 minutes now instead of 15. We did measure keeping it on for as long as the game is open: anyone leaving a tab open all day would climb weeks faster than someone actually playing, so it stays a bonus for being there, just a clearer and longer one.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When gear is compared to the equipped piece, it is being compared against the refined stats",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Good catch, thank you. The ▲ itself was right, but the item sheet compared the new piece bare against your refined one, so a real upgrade could read as weaker.",
+        "Fixed in today's update: the sheet reads a piece as it would be once worn, with your slot's refining carried over, and says so in a line under the stats. There's also a ▲ Wear all upgrades button in the chest now.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "I am not sure I like Crafts locked behind realm",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Love this one, thank you. Since today's update Alchemy, Sigil Writing and Arrays open at their realm or sooner, once the craft that feeds them reaches level 40: Herb Gathering for Alchemy, Vein Delving for Sigils, Forging for Arrays. A focused crafter opens Alchemy around day 3 or 4 instead of day 8.",
+        "You can also open a craft that isn't open yet and read every recipe in it, greyed, so you can plan exactly the way you described. Each recipe still waits for its own realm, so an early alchemist brews what their realm allows.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "More to things to improve, think and strategize about",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Thank you for writing all of this down. It's the kind of post that shapes the next months.",
+        "Deeper hunts, where power has a use every day, is already being designed, and your idea of weaknesses and armour types goes into it. Improving cave beds, studying a Dao and forging a piece with the lines you choose are next on the list to design, each with its own cost so they compete for your resources the way you describe. I'll post the designs here before anything goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "You were right that the bonuses were too small to feel, and that marks giving nothing were a miss. I measured a stronger table and it's in today's update.",
+        "Every mark now gives something on every recipe: 10% faster at 25 makes, then 1 make in 10 comes out twice (or another 10% faster for gear and tools), and the later marks give their own bonus or another one of those where theirs didn't apply. Each recipe you take to 2,000 makes also makes its whole craft 1% faster, up to 15%. Tap the dots on a recipe to see it all. It doesn't change how fast anyone climbs, it just makes the work you put into a recipe show.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adjusting the melting allowance",
+      "tags": [
+        "Idea",
+        "Balance"
+      ],
+      "reply": [
+        "To answer your question: it fills strictly at your standing rate, sitting doesn't speed it up. We tested filling it at the sitting rate, and it made Auto the fastest way to climb by several days, which is the one line we keep. Today's update does make sitting itself last 30 minutes instead of 15, though.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "tags": [
+        "Idea",
+        "Balance"
+      ],
+      "reply": [
+        "I checked the math, and you were right to ask. An old beast pays far less material than your best one, so farming one to 1,000 kills only pays the bonus back after well over a hundred thousand kills of your best beast.",
+        "Since today's update the bonus is doubled to +1% per mark, and I'll be honest about what it is: a collector's reward for finishing beasts, not a material investment. For the most material, hunt your best beast.",
         "· 師 Shibaki"
       ]
     }
