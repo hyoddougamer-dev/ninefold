@@ -18,7 +18,7 @@ import { freePoints } from '../sim/points.ts';
 import { cardDue as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
 import { canEnter as canEnterSecret } from '../sim/secret.ts';
-import { canUnlock } from '../sim/dao.ts';
+import { canUnlock, capstonesOpen } from '../sim/dao.ts';
 import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
 import { clampRefine, refineCost } from '../sim/refine.ts';
@@ -85,7 +85,7 @@ function pointsWaiting(s: State): number {
   const free = freePoints(s);
   if (free <= 0) return 0;
   const reachable = ALL_NODES
-    .some((n) => canUnlock(n.key, s.unlocked, free, isOpen(s.realm, 'keystones')));
+    .some((n) => canUnlock(n.key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm)));
   return reachable ? free : 0;
 }
 

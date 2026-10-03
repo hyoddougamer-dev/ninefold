@@ -3,6 +3,7 @@ import { RARITIES, type Rarity } from '../data/gear.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { chestLimit } from './chest.ts';
 import { dropChance, rarityWeights } from './drops.ts';
+import { secondChance } from './fate.ts';
 import { fortuneOf } from './fortune.ts';
 import { bodyTotals, gearLuck } from './schools.ts';
 import { valid } from './awaken.ts';
@@ -25,6 +26,8 @@ export type Worth =
   | { readonly kind: 'luck'; readonly from: Rarity; readonly before: number; readonly after: number }
   /** 器 The chance a kill drops a piece at all. */
   | { readonly kind: 'drop'; readonly before: number; readonly after: number }
+  /** 造化 With Creation: the chance a kill leaves a second piece. */
+  | { readonly kind: 'second'; readonly before: number; readonly after: number }
   /** 藏 Places in the chest. */
   | { readonly kind: 'chest'; readonly before: number; readonly after: number }
   /** Everything else is already a plain percentage or count, and says so itself. */
@@ -72,6 +75,14 @@ export function cardWorth(s: State, card: Card, at?: number): Worth {
     const beast = commonsOf(Math.max(1, Math.min(9, s.realm)))[0];
     if (!beast) return { kind: 'flat' };
     const always = f.always ?? false;
+    // 造化 Under Creation the first piece is certain and the chance is a second piece's.
+    if (always) {
+      return {
+        kind: 'second',
+        before: secondChance(s, beast, f),
+        after: secondChance(s, beast, { ...f, chance: (f.chance ?? 0) + e.percent }),
+      };
+    }
     return {
       kind: 'drop',
       before: dropChance(beast, f.chance ?? 0, always),

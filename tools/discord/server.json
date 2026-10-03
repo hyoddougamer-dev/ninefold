@@ -855,7 +855,7 @@
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
         ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
         ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
-        ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance turns into luck instead (+0.1 for every 10 points, up to +0.5), so drop chance lines still count."]
+        ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance is the chance of a second piece from the same kill (up to 50%), so drop chance lines still count and feed 煉 fusion."]
       ]
     },
     {

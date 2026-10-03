@@ -34,7 +34,7 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
-import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, MELT_CAP, SECLUSION } from './balance.ts';
+import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, MELT_CAP, SECLUSION, SHRINE_DAO_PER_REALM } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
 import { FORGED, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
@@ -200,6 +200,8 @@ export interface State {
   met: string[];
   metAt: number;
   metPoints: number;
+  /** 龕 The 道 points 秘境 the vault's shrines have paid, against SHRINE_DAO_PER_REALM. */
+  vaultDao: number;
   /**
    * 緣 Which answer each meeting was given, by key. The road remembers it: some people
    * only come back to somebody who answered them one way, the 心 heart is added up from
@@ -389,7 +391,7 @@ export function newState(now: number): State {
     sets: [],
     brewed: { ...NO_PILLS },
     awakened: [],
-    met: [], metAt: 0, metPoints: 0, chose: {},
+    met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0,
     quarryWeek: -1,
@@ -903,6 +905,10 @@ export function validate(raw: unknown, now: number): State {
     // See RUN_DAO_CEILING for the measurement that made this necessary.
     metPoints: clamp(Math.floor(num(o.metPoints, 0)), 0,
       MEET_POINT_CEILING + (Math.ceil(elapsed / doorGap) + Math.ceil(elapsed / 86_400)) * RUN_DAO_CEILING),
+    // 龕 What the shrines paid can never pass what the realms reached allow. A save from
+    // before the count arrives with none, so its shrines pay their realm's share again:
+    // nothing it already earned is touched.
+    vaultDao: clamp(Math.floor(num(o.vaultDao, 0)), 0, SHRINE_DAO_PER_REALM * Math.min(9, Math.max(1, realm))),
     // 洞天 Always exactly three beds. A key naming no herb is an empty bed, and no bed
     // may claim to have been planted tomorrow or before the cultivator existed.
     beds: validBeds(o.beds, clamp(num(o.at, now), startedAt, now), startedAt),

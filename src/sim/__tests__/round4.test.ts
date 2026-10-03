@@ -1,0 +1,110 @@
+import { describe, expect, it } from 'vitest';
+import { commonsOf } from '../../data/bestiary.ts';
+import { ALL_NODES } from '../../data/techniques.ts';
+import { CAPSTONE_REALM, SECOND_DROP_CAP, SHRINE_DAO_PER_REALM } from '../balance.ts';
+import { CAPSTONE_TIER, canUnlock, capstonesOpen } from '../dao.ts';
+import { secondChance, secondDropFor } from '../fate.ts';
+import { fortuneOf } from '../fortune.ts';
+import { giftOf } from '../secret.ts';
+import { newState, validate, type State } from '../state.ts';
+
+/**
+ * 四 The testers' fourth round, held where the numbers are.
+ *
+ * rekaris (2026-10-03): drop chance after 造化 Creation was underwhelming as luck; and the
+ * audit the same afternoon found the vault's shrines paying nine tenths of all 道, so the
+ * tree was finished on day 2. These hold the answers.
+ */
+const T0 = 1_700_000_000;
+const at = (over: Partial<State>): State => ({ ...newState(T0), ...over } as State);
+
+describe('造化 a second piece once Creation makes the first certain', () => {
+  const beast = commonsOf(4)[0];
+  const creation = ALL_NODES.filter((n) => n.path === 'fortune').map((n) => n.key);
+
+  it('is never rolled without Creation, nor on a warden', () => {
+    const s = at({ realm: 4 });
+    expect(secondChance(s, beast, fortuneOf(s))).toBe(0);
+    let hits = 0;
+    for (let seed = 1; seed < 400; seed++) if (secondDropFor(s, beast, seed, fortuneOf(s))) hits++;
+    expect(hits).toBe(0);
+  });
+
+  it('turns the drop chance into a second piece, capped, and the same kill leaves the same pair', () => {
+    const s = at({ realm: 4, unlocked: ['root', ...creation] });
+    const f = fortuneOf(s);
+    expect(f.always).toBe(true);
+    const chance = secondChance(s, beast, f);
+    expect(chance).toBeGreaterThan(0);
+    expect(chance).toBeLessThanOrEqual(SECOND_DROP_CAP);
+    expect(secondChance(s, beast, { ...f, chance: 9 })).toBe(SECOND_DROP_CAP);
+    let hits = 0;
+    const N = 4000;
+    for (let seed = 1; seed <= N; seed++) {
+      const a = secondDropFor(s, beast, seed, f);
+      const b = secondDropFor(s, beast, seed, f);
+      expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+      if (a) hits++;
+    }
+    // The dice land within a few points of the chance they were given.
+    expect(Math.abs(hits / N - chance)).toBeLessThan(0.03);
+  });
+
+  it('no longer turns drop chance into luck', () => {
+    const plain = at({ realm: 4, unlocked: ['root', ...creation.filter((k) => k !== 'creation')] });
+    const full = at({ realm: 4, unlocked: ['root', ...creation] });
+    expect(fortuneOf(full).luck).toBe(fortuneOf(plain).luck);
+  });
+});
+
+describe('龕 the vault pays 道 up to its realm, then pays qi', () => {
+  const shrine = { kind: 'shrine' } as const;
+
+  it('pays points while the realm has some left, and never past it', () => {
+    const s = at({ realm: 3, vaultDao: SHRINE_DAO_PER_REALM * 3 - 1 });
+    const g = giftOf(s, shrine as never, 0);
+    expect(g.dao).toBe(1);
+    expect(g.qi).toBe(0);
+  });
+
+  it('pays like a spring once the realm has given its share', () => {
+    const s = at({ realm: 3, vaultDao: SHRINE_DAO_PER_REALM * 3 });
+    const g = giftOf(s, shrine as never, 0);
+    expect(g.dao).toBe(0);
+    expect(g.qi).toBeGreaterThan(0);
+  });
+
+  it('reads an old save with no count as none paid, and caps a forged count at the realm', () => {
+    const raw = JSON.parse(JSON.stringify(at({ realm: 4 }))) as Record<string, unknown>;
+    delete raw.vaultDao;
+    expect(validate(raw, T0).vaultDao).toBe(0);
+    expect(validate({ ...raw, vaultDao: 999 }, T0).vaultDao).toBe(SHRINE_DAO_PER_REALM * 4);
+  });
+});
+
+describe('極 the last node of each branch waits for its realm', () => {
+  const capstones = ALL_NODES.filter((n) => n.tier === CAPSTONE_TIER);
+
+  it('is one per branch', () => {
+    expect(capstones.map((n) => n.path).sort()).toEqual(['fortune', 'spirit', 'sword']);
+  });
+
+  it('cannot be bought below the realm, and can at it', () => {
+    expect(capstonesOpen(CAPSTONE_REALM - 1)).toBe(false);
+    expect(capstonesOpen(CAPSTONE_REALM)).toBe(true);
+    for (const c of capstones) {
+      const branch = ALL_NODES.filter((n) => n.path === c.path && n.tier < CAPSTONE_TIER).map((n) => n.key);
+      const held = ['root', ...branch];
+      const could = ALL_NODES.filter((n) => n.path === c.path && n.tier === CAPSTONE_TIER - 1).length > 0;
+      if (!could) continue;
+      expect(canUnlock(c.key, held, 99, true, false)).toBe(false);
+      expect(canUnlock(c.key, held, 99, true, true)).toBe(canUnlock(c.key, held, 99));
+    }
+  });
+
+  it('takes nothing away: a capstone bought early is still held after validate()', () => {
+    const fortune = ALL_NODES.filter((n) => n.path === 'fortune' && !n.keystone).map((n) => n.key);
+    const s = at({ realm: 3, unlocked: ['root', ...fortune] });
+    expect(validate(JSON.parse(JSON.stringify(s)), T0).unlocked).toContain('creation');
+  });
+});

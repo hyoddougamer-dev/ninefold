@@ -617,7 +617,7 @@ export const KEY = {
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
-  /** 精 絕 The deep marks pay the beast that earned them, and only that one. */
+  /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
     `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast, `
     + `and +${(everywhere * 100).toFixed(1)}% 材 material from every beast`,
@@ -960,7 +960,7 @@ export const ITEM = {
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
-      + `With 造化 Creation every beast drops already, so it turns into luck instead.`,
+      + `With 造化 Creation every beast drops already, so it becomes the chance of a second piece.`,
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
@@ -1048,8 +1048,9 @@ export const AWAKEN = {
   effect: (e: Effect, w: Worth): string => {
     const share = (x: number) => `${Math.round(x * 100)}%`;
     if (w.kind === 'luck') return `Gear of ${RARITY_INFO[w.from].han} ${RARITY_INFO[w.from].name} rank${w.from === 'heaven' ? '' : ' or better'}: ${share(w.before)} of your drops now, ${share(w.after)} with this.`;
-    if (w.kind === 'drop') return w.before >= 1 ? 'Every beast already drops a piece for you, so this adds nothing yet.'
-      : `A beast drops a piece on ${share(w.before)} of kills now, ${share(w.after)} with this.`;
+    if (w.kind === 'drop') return `A beast drops a piece on ${share(w.before)} of kills now, ${share(w.after)} with this.`;
+    if (w.kind === 'second') return w.after === w.before ? 'A second piece is as likely as it can be already.'
+      : `With 造化 Creation every kill drops a piece, and ${share(w.before)} of kills drop a second now, ${share(w.after)} with this.`;
     if (w.kind === 'chest') return w.after === w.before ? 'Your chest is capped by the tree, so this adds no room.'
       : `Your chest holds ${w.before} pieces now, ${w.after} with this.`;
     switch (e.kind) {
@@ -1207,6 +1208,8 @@ export const CAVE = {
  * point of banking every room on the spot is that there is nothing to lose.
  */
 export const SECRET = {
+  /** 龕 A shrine past its realm's share of 道 (SHRINE_DAO_PER_REALM). */
+  shrineSpent: 'this realm\u2019s 道 Path points are taken, so it pays qi',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
   useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
@@ -1451,9 +1454,13 @@ export const DAO = {
   tree: 'All three branches grow from 起, and the gold bridges cross between them. Tap a node to read it.',
   /** 數 It read "6 free · 0/6", and nothing said what the second pair was. */
   purse: (spent: number, earned: number) => ` to spend · ${spent} of ${earned} spent`,
-  /** 短 The point is that you cannot have it all. It does not need a second sentence. */
-  short: (cost: number, earned: number) =>
-    `${cost} 道 to buy it all; a whole climb earns about ${earned}.`,
+  /**
+   * 短 The point is that you cannot have it all. It used to say a climb earns about 42,
+   * a number fifteen times wrong by 2026-10-03 (the vault's shrines had no cap). What
+   * keeps a tree from holding everything is the forks, so it says that instead.
+   */
+  short: (cost: number) =>
+    `${cost} 道 would buy every node, but each fork closes one side for good.`,
   taken: (n: number, total: number) => `${n} of ${total} taken`,
   keystone: 'Stronger than the node beside it, and it takes something away.',
   /**
@@ -1467,6 +1474,9 @@ export const DAO = {
   keystoneShut: (han: string, name: string) =>
     `樞 The keystones open in ${han} ${name}. You can see them from here, and they are ` +
     'meant to be seen: a fork you know is coming is a climb with a plan in it.',
+  /** 極 Why a branch's last node is dark before the sixth realm. */
+  capstoneShut: (han: string, name: string) =>
+    `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
@@ -1676,6 +1686,8 @@ export const meltPays = (qi: string, mats: string, hasQi: boolean, hasMats: bool
   hasQi && hasMats ? `${qi} qi and ${mats} 材 material` : hasMats ? `${mats} 材 material` : `${qi} qi`;
 
 export const ARENA = {
+  /** 造化 A second piece from the same kill. */
+  secondPiece: (name: string, rank: string) => `Creation: a second piece, ${rank} ${name}`,
   /**
    * 見 The first time a beast falls, and only the first.
    *

@@ -13,11 +13,11 @@ import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM, focusAt } from '../sim/balance.ts';
-import { focusBonus } from '../sim/dao.ts';
+import { capstonesOpen, focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
-import { dropFor, noteFate } from '../sim/fate.ts';
+import { dropFor, noteFate, secondDropFor } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
@@ -494,6 +494,8 @@ export function App() {
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
         drop: sought ? dropFor(state, beast, seed ^ 0x9e3779b9, { ...fortuneOf(state), always: true }, state.layer) : plain,
+        // 造化 Creation turns the drop chance into a second piece from the same kill.
+        extra: drops && !sought ? secondDropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null,
       };
     });
   }, [state]);
@@ -550,7 +552,7 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop, floor, demon, kit, sought } = battle;
+    const { beast, outcome, drop, extra, floor, demon, kit, sought } = battle;
     // 業 A won fight spends what took part in it; a lost one keeps it.
     const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
@@ -574,7 +576,8 @@ export function App() {
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
-        const taken = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const first = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const taken = extra ? stash(first, extra).state : first;
         return spent(sought ? spendSeek(taken) : taken);
       });
     }
@@ -785,7 +788,7 @@ export function App() {
     const id = ++taps.current;
     setState((s) => {
       const free = freeOf(s);
-      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
+      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))) return s;
       once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
       return { ...s, unlocked: [...s.unlocked, key] };
     });

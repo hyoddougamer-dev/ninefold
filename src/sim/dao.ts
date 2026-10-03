@@ -3,15 +3,18 @@ import {
   type Effect, type Node,
 } from '../data/techniques.ts';
 import type { Slot } from '../data/gear.ts';
-import { LAYERS_PER_POINT, POINTS_PER_BESTIARY, POINTS_PER_WARDEN } from './balance.ts';
+import { CAPSTONE_REALM, LAYERS_PER_POINT, POINTS_PER_BESTIARY, POINTS_PER_WARDEN } from './balance.ts';
 
 /**
  * 道 The points the tree is bought with, and what a bought tree does.
  *
  * Points come from the climb itself: one for every three layers opened, two for every
- * warden that falls. A whole run earns about forty-two against the sixty the tree
- * costs, so nobody finishes it. That gap is the feature: a tree you can complete is a
- * checklist, and a checklist is not a build.
+ * warden that falls, and the road, the heart demon, the bestiary and the vault's shrines
+ * beside them. This said a run earned forty-two against the sixty the tree costs, and by
+ * 2026-10-03 it was fifteen times that: the shrines alone paid over eight hundred, and
+ * the tree was finished on day 2. The shrines now pay SHRINE_DAO_PER_REALM a realm and
+ * each branch's last node waits for CAPSTONE_REALM, so the tree fills over the middle of
+ * the climb. The forks still close for good, which is where the build is.
  *
  * Every accessor here takes the unlocked list rather than the State, so this module can
  * be read by state.ts without the two importing each other.
@@ -58,14 +61,24 @@ export function excludedBy(node: Node): Node | null {
   return node.excludes ? NODE_BY_KEY[node.excludes] ?? null : null;
 }
 
+/** 極 The tier of each branch's last node, the one CAPSTONE_REALM opens. */
+export const CAPSTONE_TIER = 7;
+
+/** 極 Whether a branch's last node can be bought yet. */
+export function capstonesOpen(realm: number): boolean {
+  return realm >= CAPSTONE_REALM;
+}
+
 export function canUnlock(
-  key: string, unlocked: readonly string[], free: number, keystones = true,
+  key: string, unlocked: readonly string[], free: number, keystones = true, capstones = true,
 ): boolean {
   const node = NODE_BY_KEY[key];
   if (!node || unlocked.includes(key)) return false;
   // 樞 The three that take something away arrive at their own realm. See unlocks.ts:
   // the tree is the second realm's gift and the decisions are the fourth's.
   if (node.keystone && !keystones) return false;
+  // 極 And the last node of each branch waits for CAPSTONE_REALM.
+  if (node.tier === CAPSTONE_TIER && !capstones) return false;
   const twin = excludedBy(node);
   if (twin && unlocked.includes(twin.key)) return false;      // the fork was already taken
   const needs = requirements(node);

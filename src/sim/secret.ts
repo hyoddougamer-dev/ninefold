@@ -12,7 +12,7 @@ import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
 import { fortuneOf } from './fortune.ts';
 import { isBlessed } from './week.ts';
-import { BLESSED_ROOM, BRAZIER_LUCK, SHRINE_DEEP_POINTS, SHRINE_POINTS } from './balance.ts';
+import { BLESSED_ROOM, BRAZIER_LUCK, SHRINE_DAO_PER_REALM, SHRINE_DEEP_POINTS, SHRINE_POINTS } from './balance.ts';
 import type { State } from './state.ts';
 import { classSpring } from './schools.ts';
 
@@ -208,8 +208,15 @@ export function giftOf(s: State, room: Room, step: number): {
     case 'spring':
       // 尋仙 The Immortal Seeker drinks deeper.
       return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week * classSpring(s))) };
-    case 'shrine':
-      return { ...none, dao: (step >= shrineDeep(s.realm) ? SHRINE_DEEP_POINTS : SHRINE_POINTS) * week };
+    case 'shrine': {
+      // 龕 A shrine pays 道 up to its realm's share (SHRINE_DAO_PER_REALM), then pays as
+      // a spring does, so the door is never empty and the tree is never finished on day 2.
+      const left = SHRINE_DAO_PER_REALM * Math.min(9, s.realm) - (s.vaultDao ?? 0);
+      if (left <= 0) {
+        return { ...none, qi: Math.max(1, Math.round(SPRING_MINUTES * deep * rate(s) * 60 * week * classSpring(s))) };
+      }
+      return { ...none, dao: Math.min(left, (step >= shrineDeep(s.realm) ? SHRINE_DEEP_POINTS : SHRINE_POINTS) * week) };
+    }
     case 'brazier':
       return { ...none, item: true };
     default:
@@ -262,7 +269,8 @@ export function open(s: State, which: 0 | 1, seed: number): State {
   if (gift.qi) out = { ...out, qi: out.qi + gift.qi, lastRun: add(out.lastRun, { qi: gift.qi }) };
   if (gift.materials) out = { ...out, materials: out.materials + gift.materials };
   if (gift.dao) {
-    out = { ...out, metPoints: out.metPoints + gift.dao, lastRun: add(out.lastRun, { dao: gift.dao }) };
+    out = { ...out, metPoints: out.metPoints + gift.dao, vaultDao: (out.vaultDao ?? 0) + gift.dao,
+      lastRun: add(out.lastRun, { dao: gift.dao }) };
   }
   if (gift.item) {
     const pool = commonsOf(Math.max(1, Math.min(9, out.realm)));

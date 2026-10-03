@@ -155,7 +155,10 @@ export function knownIn(killed: Killed, realm: number): { done: number; of: numb
 /** Everything the record could ever be worth, for the screen that has to promise it. */
 export function recordCeiling(): { material: number; power: number } {
   return {
-    material: 1 + KNOWN_MATERIAL * BEASTS.length + DEEP_EVERYWHERE * DEEP_MARKS.length * BEASTS.length,
+    // 精 Deep marks only on the commons: a warden is fought once (the Dragon aside), so
+    // a thousand kills of one is out of reach and the ceiling should not promise it.
+    material: 1 + KNOWN_MATERIAL * BEASTS.length
+      + DEEP_EVERYWHERE * DEEP_MARKS.length * BEASTS.filter((b) => !b.warden).length,
     power: 1 + MASTERED_POWER * BEASTS.length,
   };
 }

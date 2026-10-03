@@ -83,6 +83,8 @@ export function Secret({ state, onOpen, onLeave }: {
           const bits: string[] = [];
           if (gift.qi) bits.push(`+${num(gift.qi)} qi`);
           if (gift.dao) bits.push(`+${gift.dao} 道`);
+          // 龕 A shrine whose realm has given its 道 says why it pays qi instead.
+          if (room.kind === 'shrine' && !gift.dao) bits.push(SECRET.shrineSpent);
           if (gift.item) bits.push(SECRET.apiece);
           return (
             <button key={which} className="way" data-fight={!!gift.fight || undefined}

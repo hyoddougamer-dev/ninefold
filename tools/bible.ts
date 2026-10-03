@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION } from '../src/sim/balance.ts';
+import { CAPSTONE_REALM, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION, SHRINE_DAO_PER_REALM } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -448,7 +448,7 @@ const SYSTEMS: readonly System[] = [
   { han: '煉器', name: 'Refining', status: 'done', at: 'refine',
     line: 'Material makes a worn piece better, for ever, with no top level. It is the only thing 材 could not buy before, and 材 was eight times over-supplied.' },
   { han: '道', name: 'The technique tree', status: 'done', at: 'tree',
-    line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道 against about ${FULL_RUN} a run. Nobody finishes it.` },
+    line: `One merged tree of ${ALL_NODES.length} nodes costing ${TOTAL_COST} 道. The forks close for good, so no tree holds it all.` },
   { han: '開', name: 'What each realm opens', status: 'done', at: 'opens',
     line: 'Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.' },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
@@ -4158,8 +4158,8 @@ const page = `<meta charset="utf-8">
     <p class="t">A run's material roughly <b>doubles</b> what your gear is worth, and a run
       spent farming gets a little further up the same curve rather than somewhere else
       entirely. <b>The levels follow the place on the body</b>: a new piece put on takes the
-      higher of the two, and the piece taken off keeps the lower, so material poured into
-      one sword is never lost to the next one (rekaris asked, 2026-10-02).</p>
+      higher of the two, and the piece taken off keeps the lower. Material poured into one
+      sword is never lost to the next one (rekaris asked, 2026-10-02).</p>
     <div class="rule"><b>And the chest stopped eating drops.</b> ${CHEST} slots, and a full
       one used to refuse everything that fell after the last, which a cultivator hunting
       properly manages inside one visit. Losing the 天 that just dropped because forty 凡
@@ -4208,9 +4208,13 @@ const page = `<meta charset="utf-8">
     <p class="t"><b>One tree, ${ALL_NODES.length} nodes, three branches that all grow from
       起.</b> Gold bridges cross between them, so you can climb one branch and step into the
       next. Points come from the climb itself: one for every three layers, two for every
-      warden. A full run earns about <b>${FULL_RUN}</b> against a tree costing
-      <b>${TOTAL_COST}</b>, so nobody finishes it, and that gap is the feature. A tree you
-      can complete is a checklist, and a checklist is not a build.</p>
+      warden, and the road, the heart demon, the bestiary and the vault's shrines beside them.
+      The layers and wardens alone pay <b>${FULL_RUN}</b> against a tree costing
+      <b>${TOTAL_COST}</b>. Until 2026-10-03 the shrines had no cap and paid over eight
+      hundred, so the tree was finished on day 2. Now they pay ${SHRINE_DAO_PER_REALM} a
+      realm, each branch's last node waits for the ${CAPSTONE_REALM}th realm, and the tree
+      fills over the middle of the climb. The forks still close for good, which is what
+      keeps it a build and not a checklist.</p>
     <p class="t">At the middle of each branch there are two nodes and room for one. Each
       keystone is stronger than the node beside it and each one gives something up.</p>
     <div class="cards three">${treeColumns}</div>

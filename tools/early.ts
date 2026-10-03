@@ -37,14 +37,14 @@ import { odds, takeKill } from '../src/sim/combat.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen, systemInfo, SYSTEMS } from '../src/sim/unlocks.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
-import { canUnlock } from '../src/sim/dao.ts';
+import { canUnlock, capstonesOpen } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
-import { dropFor, noteFate } from '../src/sim/fate.ts';
+import { dropFor, noteFate, secondDropFor } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageUpTo } from '../src/sim/salvage.ts';
 import { equip, itemWorth } from '../src/sim/chest.ts';
 import { swing } from '../src/sim/inspect.ts';
-import { SLOTS, templateOf, type Slot } from '../src/data/gear.ts';
+import { SLOTS, templateOf, type Item, type Slot } from '../src/data/gear.ts';
 import { canRefine, refine, refinePrice } from '../src/sim/trials.ts';
 import { advice } from '../src/app/advice.ts';
 import { MARKS, marksOf } from '../src/sim/record.ts';
@@ -132,8 +132,15 @@ function takeDrop(s: State, beast: Beast, seed: number): State {
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
   // 緣 The same two calls the app makes: the bar decides the drop, then moves.
-  const found = dropFor(s, beast, seed, fortuneOf(s), s.layer);
-  s = noteFate(s, beast, found);
+  // 造化 And with Creation the same kill can leave a second piece, as in the app.
+  const f = fortuneOf(s);
+  const found = dropFor(s, beast, seed, f, s.layer);
+  const extra = secondDropFor(s, beast, seed, f, s.layer);
+  s = keepDrop(noteFate(s, beast, found), found);
+  return extra ? keepDrop(s, extra) : s;
+}
+
+function keepDrop(s: State, found: Item | null): State {
   if (!found) return s;
   // 藏 The game's own stash(): 空囊, the chest's limit and the melt, 寶匠 included.
   const st = stash(s, found);
@@ -192,7 +199,7 @@ export function walk(p: Player, upTo = 3, spends = true): Early {
       stale: out.filter((b) => marksOf(s.killed[b.key] ?? 0) >= MARKS.length).length,
       buys: UPGRADES.filter((u) => canBuy(s, u) && s.levels[u] < capOf(s, u)).length,
       nodes: isOpen(s.realm, 'tree')
-        ? ALL_NODES.filter((n) => canUnlock(n.key, s.unlocked, freeNodes(s), isOpen(s.realm, 'keystones'))).length
+        ? ALL_NODES.filter((n) => canUnlock(n.key, s.unlocked, freeNodes(s), isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))).length
         : 0,
       wear: betterInChest(s),
       melt: s.chest.length > 0,
@@ -268,7 +275,7 @@ export function walk(p: Player, upTo = 3, spends = true): Early {
     // 示 Unless we are measuring what a player who has not found the tab is told, which
     // is Bruno's case exactly: eleven points unspent, and the advice pointing at a bat.
     if (spends && isOpen(s.realm, 'tree')) for (let g = 0; g < 200; g++) {
-      const want = ALL_NODES.find((n) => canUnlock(n.key, s.unlocked, freeNodes(s), isOpen(s.realm, 'keystones')));
+      const want = ALL_NODES.find((n) => canUnlock(n.key, s.unlocked, freeNodes(s), isOpen(s.realm, 'keystones'), capstonesOpen(s.realm)));
       if (!want) break;
       s = { ...s, unlocked: [...s.unlocked, want.key] };
       say(`道 bought ${want.key}`);
