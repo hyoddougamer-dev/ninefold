@@ -696,6 +696,47 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/coach-arrow.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-03-d",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Luck that lifts your rolls, and a quarry worth hunting",
+      "color": "#B88A5A",
+      "body": [
+        "Thank you, rekaris, for saying out loud that luck felt underwhelming late on. You were right, and here is what changed.",
+        "",
+        "**運 Luck now lifts the roll, not only the rank.** Once every drop was 天 Heaven, luck had nothing left to do. Now your luck also raises where a drop's lines can land: at luck ×2 the best roll goes from 1.15 to about 1.23 of its base, and it tops out at 1.35. The first luck counts the most. Fusing still goes higher (up to 1.5), so fusion stays where the very best gear comes from.",
+        "",
+        "**期 The week's quarry is worth hunting again.** Its first kill each week paid qi from the quarry's own realm, so late in the climb it paid almost nothing. It now pays at least **four hours of your own gathering**, once a week. The hunt band shows the exact amount before you fight.",
+        "",
+        "· The ranked server now counts melting properly, so heavy Auto melters are never held back.",
+        "· The ranked server knows about the new quarry payout, so taking it never holds a save for review."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/luck-rolls.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/quarry-hours.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-qol",
+      "pin": false,
+      "channel": "news",
+      "title": "便 Help us make Ninefold easier",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/news-qol.webp?v=1",
+      "body": [
+        "**Quality of life comes first this week.** Thank you all for playing, and for every report and idea so far.",
+        "",
+        "Head to {#ideas} and open **便 Quality of life: what slows you down?** Tell us every tap, scroll and wait you would cut, on a phone or a computer. Small ideas are the best ones.",
+        "",
+        "The picture below is what your posts have already put in the game."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -804,7 +845,7 @@
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school, so you can see who drops 運 Fortune or 劍 Sword pieces."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
-        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi. It moves every Monday."]
+        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi: never less than four hours of your own gathering. It moves every Monday."]
       ]
     },
     {
@@ -1075,7 +1116,7 @@
       "key": "ideas-workshop",
       "forum": "ideas",
       "tags": ["Idea"],
-      "pin": true,
+      "pin": false,
       "title": "業 The Workshop: tell us what you think",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-workshop.webp?v=2",
@@ -1121,6 +1162,42 @@
         ["Still stuck?", "Open a post here with your phone model, your Android version and a screenshot of where it stops. We read every one."]
       ],
       "footer": "九境 Ninefold · closed test"
+    },
+    {
+      "key": "ideas-qol",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": true,
+      "title": "便 Quality of life: what slows you down?",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-qol.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1",
+      "body": [
+        "**This week, making the game easier to play comes first.** Thank you for every post so far: most of the picture below began in this forum.",
+        "",
+        "Reply here with anything that costs you a tap, a scroll or a wait you would rather not spend. Small is perfect. *\"I open the gear tab every visit just to check one thing\"* is exactly what we want to hear."
+      ],
+      "fields": [
+        [
+          "❓ Some places to start",
+          "**1.** What do you tap every visit that could be one tap?\n**2.** What do you have to remember that the game could remind you of?\n**3.** What do you scroll past or search for every time?\n**4.** On a computer: which key would you want, and for what?\n**5.** What would make a two-minute check-in faster?\n**6.** What did Dao of the Endless Sky, or another idle game, do that you miss here?"
+        ],
+        [
+          "✍️ How to answer",
+          "One idea per reply is easiest to track, and a screenshot of the screen you mean helps a lot. Say whether you play on a phone or a computer."
+        ],
+        [
+          "守 What stays",
+          "Nothing is taken away for being away, and losing a fight costs nothing. Those are the game's promises, so ideas that keep them are the ones we can build."
+        ],
+        [
+          "📌 What happens next",
+          "Every reply is read. The ideas that make the most players' days easier go in first, and the dev log will say whose idea each one was."
+        ]
+      ],
+      "footer": "師 Shibaki · every reply is read"
     }
   ],
   "threads": [
