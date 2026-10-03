@@ -16,7 +16,7 @@ import { odds } from '../src/sim/combat.ts';
 import { LINES } from '../src/data/alchemy.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import { canUnlock } from '../src/sim/dao.ts';
+import { canUnlock, capstonesOpen } from '../src/sim/dao.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
 import { wardenOf } from '../src/data/bestiary.ts';
 import { REALMS } from '../src/data/realms.ts';
@@ -63,7 +63,7 @@ function spend(s: State, branch: Branch): State {
     const free = freePoints(out);
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
-      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));
+      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones'), capstonesOpen(out.realm)));
     if (!want) break;
     out = { ...out, unlocked: [...out.unlocked, want.key] };
   }

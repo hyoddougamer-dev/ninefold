@@ -32,7 +32,7 @@ import { canBrew, canRefine, refinePrice, standingFloor } from '../src/sim/trial
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { LINES } from '../src/data/alchemy.ts';
 import { ALL_NODES } from '../src/data/techniques.ts';
-import { canUnlock } from '../src/sim/dao.ts';
+import { canUnlock, capstonesOpen } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, plantable, ripeCount } from '../src/sim/cave.ts';
 import { canEnter } from '../src/sim/secret.ts';
@@ -74,7 +74,7 @@ export const KINDS: readonly Kind[] = [
   { han: '爐', name: 'brew a pill', taps: (s) => LINES.filter((l) => canBrew(s, l)).length },
   { han: '煉器', name: 'refine a piece', taps: (s) => SLOTS.filter((x) => s.worn[x] && canRefine(s, x) && (refinePrice(s, x) ?? Infinity) <= s.materials).length },
   { han: '道', name: 'learn a node', taps: (s) => (isOpen(s.realm, 'tree')
-      ? ALL_NODES.filter((n) => canUnlock(n.key, s.unlocked, freePoints(s), isOpen(s.realm, 'keystones'))).length : 0) },
+      ? ALL_NODES.filter((n) => canUnlock(n.key, s.unlocked, freePoints(s), isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))).length : 0) },
   { han: '洞天', name: 'work the cave', taps: (s) => (isOpen(s.realm, 'cave')
       ? ripeCount(s) + [...Array(BEDS).keys()].filter((i) => plantable(s).some((h) => canPlant(s, i, h.key))).length : 0) },
   { han: '秘境', name: 'walk the vault', taps: (s) => (canEnter(s) ? 1 : 0) },

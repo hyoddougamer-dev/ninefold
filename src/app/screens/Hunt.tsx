@@ -233,7 +233,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
                   {/* 註 The mark leads as a character you can tap, then the count and
                       the name. What it pays is on the same screen, once, rather than on
                       every one of twenty-five rows. */}
-                  {/* 精 絕 Past 通, the deep marks this beast alone pays for. */}
+                  {/* 精 絕 Past 通, the deep marks: this beast pays most for them, every beast a little. */}
                   {!next && DEEP_INFO.map((m, i) => (
                     <em key={m.han} data-on={i < deepOf(kills)} data-deep><Term han={m.han} /></em>
                   ))}

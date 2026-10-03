@@ -13,11 +13,11 @@ import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM, focusAt } from '../sim/balance.ts';
-import { focusBonus } from '../sim/dao.ts';
+import { capstonesOpen, focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
 import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
-import { dropFor, noteFate } from '../sim/fate.ts';
+import { dropFor, noteFate, secondDropFor } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
@@ -80,7 +80,7 @@ import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { MUSIC_LEVELS, cycleMusic, moodFor, musicLevel, setMood, unlockMusic } from './music.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
-import { DISMISSED, guide } from './guide.ts';
+import { DISMISSED, clockUntil, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
@@ -125,6 +125,18 @@ interface Homecoming {
 
 export function App() {
   const [tab, setTab] = useState<TabKey>('cultivate');
+  /**
+   * 頂 Whether the screen has been scrolled away from its top.
+   *
+   * The ≡ button floats in the top-right corner of a phone, and on a scrolled screen it
+   * sat on whatever passed under it: a 13.4M price on 修, a recipe's count on 業. Once the
+   * screen is scrolled, a solid strip comes in behind the button across the whole top,
+   * so what scrolls up goes under a header, as in any app, and never half under a button.
+   * At the top the strip is not drawn, because every screen's first row already keeps
+   * clear of the corner.
+   */
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => { setScrolled(false); }, [tab]);
   const [state, setState] = useState<State>(() => newState(now()));
   const [battle, setBattle] = useState<Battle | null>(null);
   const [home, setHome] = useState<Homecoming | null>(null);
@@ -311,7 +323,9 @@ export function App() {
       setState((s) => {
         // 業 And the workshop, settled to the same instant. It reads its own clock.
         const t = now();
-        const next = work(advance(s, t, false, deep), t);
+        // 囊 A fresh cultivator's first rung waits for the first purchase; the time it
+        // waits is owed, not lost, and arrives on the tick after. See clockUntil.
+        const next = work(advance(s, clockUntil(s, t, deep), false, deep), t);
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -494,6 +508,8 @@ export function App() {
         // 緣 A win that fills this beast's bar leaves a piece for certain: dropFor reads
         // the bar, and closeFight moves it.
         drop: sought ? dropFor(state, beast, seed ^ 0x9e3779b9, { ...fortuneOf(state), always: true }, state.layer) : plain,
+        // 造化 Creation turns the drop chance into a second piece from the same kill.
+        extra: drops && !sought ? secondDropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null,
       };
     });
   }, [state]);
@@ -550,7 +566,7 @@ export function App() {
 
   const closeFight = useCallback(() => {
     if (!battle) return;
-    const { beast, outcome, drop, floor, demon, kit, sought } = battle;
+    const { beast, outcome, drop, extra, floor, demon, kit, sought } = battle;
     // 業 A won fight spends what took part in it; a lost one keeps it.
     const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
@@ -574,7 +590,8 @@ export function App() {
         // 收 The count, the material, 見 the first-sight bounty and where the piece goes
         // (空囊 and a full chest's melt included) all come from the sim, so the harnesses
         // that measure this game see exactly what the player gets.
-        const taken = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const first = stash(noteFate(takeKill(s, beast), beast, drop), drop).state;
+        const taken = extra ? stash(first, extra).state : first;
         return spent(sought ? spendSeek(taken) : taken);
       });
     }
@@ -785,7 +802,7 @@ export function App() {
     const id = ++taps.current;
     setState((s) => {
       const free = freeOf(s);
-      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'))) return s;
+      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))) return s;
       once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
       return { ...s, unlocked: [...s.unlocked, key] };
     });
@@ -885,6 +902,10 @@ export function App() {
     : inspect ? () => { setInspect(null); sfx.tap(); }
     : driving ? () => { setDriving(null); sfx.tap(); }
     : realmPage ? () => { setRealmPage(false); sfx.tap(); }
+    // 碑 謝 The stele and the credits are menu panels like the rest, so they take the same
+    // fixed cross and the same Esc. They were left out, and the stele is a long page.
+    : stele ? () => { setStele(false); sfx.tap(); }
+    : credits ? () => { setCredits(false); sfx.tap(); }
     : null;
 
   /**
@@ -947,7 +968,8 @@ export function App() {
       {/* 屏 The screen names itself in the DOM. A locked tab takes the tap and changes
           nothing, and 註 the tooltip harness was walking the previous screen a second
           time and reporting its characters under the wrong tab's name. */}
-      <div className="sheet" key={tab} data-screen={tab}>
+      <div className="sheet" key={tab} data-screen={tab}
+        onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 2)}>
         {tab === 'cultivate' && (
           <Cultivate
             state={state}
@@ -1023,6 +1045,7 @@ export function App() {
           Bruno said so: *"fica muito confuso"*. They fold into one, and when it opens
           each one arrives with its name in English beside it, which is the same rule
           the upgrades follow, applied to the one place that had escaped it. */}
+      <div className="topband" aria-hidden="true" data-on={scrolled && !covered} />
       <div className="switches" data-open={menu} hidden={covered && !menu}>
         <button className="mainswitch" data-on={menu} aria-expanded={menu}
           aria-label={MENU.label} onClick={() => { setMenu((m) => !m); sfx.tap(); }}>
@@ -1411,6 +1434,7 @@ export function App() {
       {saving && (
         <SavePanel
           state={state}
+          who={who}
           onRestore={(next) => { setState(next); save(next); keepSpare(next); }}
           onClose={() => { setSaving(false); sfx.tap(); }}
         />

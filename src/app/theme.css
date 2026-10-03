@@ -416,13 +416,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 /* 階 The rank the melt reaches up to. Five chips, and whatever is lit is the ceiling. */
 .melting { margin-top: 4px; }
 .melting .ranks { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.melting .rk { width: 34px; height: 34px; border-radius: 9px; display: grid;
-               place-items: center; cursor: pointer; font: inherit;
+/* 譯 Each chip carries its rank's English name under the character, so 凡 靈 玄 地 天 are
+   never five characters alone. Five across fit a 320px phone because they share the row. */
+.melting .rk { flex: 1 1 0; min-width: 0; max-width: 66px; border-radius: 9px;
+               display: flex; flex-direction: column; align-items: center; gap: 1px;
+               padding: 5px 2px 4px; cursor: pointer; font: inherit;
                background: var(--panel2); border: 1px solid var(--line); color: var(--line); }
-.melting .rk b { font-size: 16px; font-weight: 400; color: inherit; }
+.melting .rk b { font-size: 16px; font-weight: 400; color: inherit; line-height: 1.1; }
+.melting .rk .rk-name { font-size: 9.5px; letter-spacing: .03em; color: var(--faint); line-height: 1.2; }
+.melting .rk[data-on='true'] .rk-name { color: var(--hue); }
 .melting .rk[data-on='true'] { border-color: var(--hue); color: var(--hue);
                                box-shadow: 0 0 12px -3px var(--hue); }
-.melting .upto { margin-left: 4px; font-size: 12.5px; color: var(--faint); }
+.melting .upto { flex-basis: 100%; margin: 2px 0 0 2px; font-size: 12.5px; color: var(--faint); }
 
 /* 出 The beasts of this realm that have not walked out yet. Deliberately quieter than
    a huntable row. It is something to look forward to, not something to press. */
@@ -1166,6 +1171,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 }
 .switches .mainswitch[data-on='true'] { color: var(--jade); border-color: var(--jade); }
 
+/* 頂 The strip behind ≡ once a phone screen is scrolled, so nothing scrolls half under the
+   button. It takes the taps that land on it, which would otherwise reach a row the
+   player cannot see. Not drawn at the top of a screen, nor on a computer, where ≡ lives
+   in the rail. */
+.topband { position: absolute; top: 0; left: 0; right: 0; z-index: 15;
+           height: calc(env(safe-area-inset-top, 0px) + 46px);
+           background: var(--ground); border-bottom: 1px solid var(--line);
+           box-shadow: 0 8px 14px -10px rgba(0,0,0,.8);
+           opacity: 0; pointer-events: none; transition: opacity .12s ease-out; }
+.topband[data-on='true'] { opacity: 1; pointer-events: auto; }
+
 /* The scrim is invisible and only there to catch the tap that shuts the list. It sits
    under the list and over everything else, so the game is never pressed by accident
    through an open menu. */
@@ -1377,6 +1393,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .spoil span { text-align: left; }
 .spoil b { display: block; font-size: 17px; }
 .spoil i { font-style: normal; font-size: 12px; color: var(--faint); }
+.spoil[data-extra] { margin-top: 4px; gap: 9px; opacity: .92; }
+.spoil[data-extra] em { font-style: normal; color: var(--gold); font-size: 13px; }
 .spoil .full { display: block; font-style: normal; font-size: 11.5px; color: var(--cinnabar); margin-top: 3px; }
 
 /* 存 ? 碑 音 float over the top-right corner, so the first row of every screen keeps
@@ -1390,6 +1408,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 :is(.sheet, .c-hero, .g-hero) > .row:first-child > :last-child { flex: none; white-space: nowrap; }
 :is(.sheet, .c-hero, .g-hero) > .row:first-child > :first-child { min-width: 0; overflow: hidden; font-family: var(--display); font-weight: 600;
                                            text-overflow: ellipsis; white-space: nowrap; }
+/* 日 修 Cultivate's day is a number a player reads, so it wraps rather than truncating:
+   "DAY 1…" was day 121 at 320 wide. The day and its number stay on one line together. */
+.c-hero > .row:first-child > .c-title { overflow: visible; white-space: normal; text-overflow: clip; }
+.c-hero > .row:first-child > .c-title .c-day { white-space: nowrap; }
 
 /* ── 道 the tree, drawn on one canvas ───────────────────────────────────── */
 
@@ -1658,6 +1680,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .slot b { font-size: 16px; color: var(--hue); margin-right: 7px; }
 .slot i { font-style: normal; font-size: 12px; color: var(--faint); }
 .slot .nm { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 2px; }
+/* 譯 The art's English name beside its characters, in the slots and on the spare chips. */
+.slot .nm .lo-name { font-style: normal; font-weight: 600; font-size: 13.5px; color: var(--text);
+                     margin-right: 2px; }
+.slot .nm i { flex-basis: 100%; }
+.pick .lo-name { font-style: normal; font-size: 12.5px; color: var(--text); }
 .pool { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .pick { display: inline-flex; align-items: center; gap: 6px; font: inherit; cursor: pointer;
         background: var(--panel); border: 1px solid var(--hue); border-radius: 9px;
@@ -1714,6 +1741,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    second row. `.heading` is not a flex anywhere else, and this is scoped so it stays
    that way. */
 .stelepage .heading { display: flex; align-items: baseline; gap: 8px; }
+/* 出口 The fixed cross sits in the top-right corner of a phone, so the first row keeps
+   its count clear of it, as every other panel's first line does. */
+.stelepage > .row:first-child { padding-right: 58px; min-height: 34px; }
 
 .stele { display: flex; gap: 13px; align-items: center; background: var(--panel2);
          border: 1px solid var(--line); border-radius: 13px; padding: 12px 14px; }
@@ -2690,6 +2720,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   color: var(--gold);
 }
 
+/* 譯 The line under the path that names 期 the week's room in words. */
+.secret .pathweek { margin: 0 0 4px; font-size: 12px; color: var(--gold); text-align: right; }
+
 /* 門 The line on the door card outside, which is a third kind of thing on that card. */
 .door .body u { display: block; text-decoration: none; margin-top: 5px; font-size: 11.5px;
                 color: var(--gold); opacity: .85; }
@@ -2896,6 +2929,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 @media (min-width: 1100px) {
   :root { --rail: 248px; --dock: clamp(400px, 30vw, 540px); }
+  .topband { display: none; }
   body { background: #0D0B08; }
 
   /* 景 The realm's painting behind everything, clearest on the stage. */
@@ -3372,3 +3406,6 @@ button.gs-new .cjk { margin: 0; }
 .doorkeynote { margin: -4px 0 12px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
 .itemsheet .vline[data-none] { border-style: dashed; opacity: .8; }
 .crafts .ctier { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+
+/* 習 A note that is a list (familiarity's five marks) keeps its line breaks. */
+.termtip i { white-space: pre-line; }

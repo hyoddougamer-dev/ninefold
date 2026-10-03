@@ -28,7 +28,7 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS, TRIBULATION_CHALLENGE } from './balance.ts';
+import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_MELT, TRIBULATION_CHALLENGE } from './balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -305,7 +305,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // burst bigger than that is not refused for ever, only until real time catches up: the
   // server keeps measuring from the last save it accepted, so the gap grows until it
   // pays. What cannot happen is a long gap going faster than the fastest honest one.
-  const have = first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP);
+  //
+  // 拆 And melting pays qi beside the gathering, out of its own allowance: MELT_CAP to
+  // start and MELT_FILL of a standing second for every second, 寶匠 the Treasure Smith's
+  // faster fill at most. It used to fit only inside SLACK, and raising MELT_FILL on
+  // 2026-10-03 left the Treasure Smith past that margin, so it is counted as itself now,
+  // in the same deep-sitting seconds as the rest of the budget.
+  const melted = (MELT_CAP + dt * MELT_FILL * PAIR_MELT) / focus;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 

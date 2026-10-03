@@ -1124,17 +1124,19 @@ export const LUCK_GRADE_CAP = 10;
 
 /**
  * 造化 Once Creation makes every kill drop, chance to drop has nothing left to do, so it
- * turns into luck: DROP_TO_LUCK of luck for every whole of chance (ten points of drop
- * chance are +0.1 luck), never more than DROP_LUCK_CAP. rekaris, on the Discord
- * (2026-10-03): *"Is there any reason to stack more drop chance if you get the last node
- * (Creation)?"* There was not. Measured on fortune-branch copies of the three habits:
- * Earth and Heaven over the climb rise from about 41% to 43-44%, and the ninth realm moves
- * by a day or less (42.5 to 41.3, 29.7 to 29.3, 36.7 to 36.0). "Only what passes 100%"
- * was measured too and does nothing: nobody's chance gets near it. The cap is its own
- * because luck lifts the rare ranks with no ceiling of its own past the grading.
+ * becomes the chance of a *second* piece from the same kill, never more than
+ * SECOND_DROP_CAP. rekaris, on the Discord (2026-10-03): the first answer turned it into
+ * luck (+0.1 for ten points), and he found it underwhelming, rightly: every habit ends
+ * the climb wearing six 天 Heaven pieces, so luck, which only picks the rank, stops
+ * mattering, while more pieces feed 煉 fusion, which is where quality is made.
+ * Measured on fortune-branch copies of the habits (realm-9 day; pieces found; Heaven
+ * found), luck against second piece: active 41.7 / 41.7, 1776 / 2157, 200 / 206; every
+ * hour 28.1 / 27.5, 6364 / 7865, 710 / 815; casual 66.7 / 66.7, 707 / 857, 72 / 95; auto
+ * 35.0 / 33.3, still days behind every hour. Melting past the allowance turns the extra
+ * pieces into material, never qi. The highest chance any habit reaches is about 0.32,
+ * so the cap is a rail, not a lever.
  */
-export const DROP_TO_LUCK = 1;
-export const DROP_LUCK_CAP = 0.5;
+export const SECOND_DROP_CAP = 0.5;
 
 /** How much an item's rolled percentage may swing either side of its base. */
 export const VARIANCE = 0.15;
@@ -1413,6 +1415,27 @@ export const SPRING_MINUTES = 4;
 /** 龕 A shrine pays this many 道 points, and the deep one in the last room of a path pays more. */
 export const SHRINE_POINTS = 1;
 export const SHRINE_DEEP_POINTS = 2;
+/**
+ * 龕 But only this many 道 points from shrines for each realm reached; past it a shrine
+ * pays like a spring. Measured (2026-10-03): with no cap, shrines paid 816 of the 902
+ * points an active cultivator earned over a climb, against a tree that can take 61, so
+ * the whole tree, capstones and all, was bought by day 5 (day 3 for the hourly hand) and
+ * 道 was dead money for the rest of the game. At three a realm a whole climb's shrines pay
+ * 27, the tree fills around day 12 (active) to day 27 (once a day), and the ninth realm
+ * does not slow for anybody, because a capped shrine still pays.
+ */
+export const SHRINE_DAO_PER_REALM = 3;
+
+/**
+ * 極 The realm the last node of each branch waits for: 萬劍 Ten Thousand Swords, 化境
+ * Transcendence and 造化 Creation. Measured the same day: all three were bought on the
+ * second day, the tree finished before it had been read. Gated at the sixth, they arrive
+ * between day 8 (the hourly hand) and day 24 (once a day), and the ninth realm moves by
+ * under a day for every habit. A capstone already taken is kept: this only decides when
+ * one can be bought. It is a rule of the tree rather than a system of its own, because
+ * the sixth realm already opens two things and the ladder hands over two at most.
+ */
+export const CAPSTONE_REALM = 6;
 
 /** 爐 What a brazier adds to the rare end of the drop table, on top of the cultivator's own. */
 export const BRAZIER_LUCK = 1.5;
@@ -1430,7 +1453,8 @@ export const BEDS = 3;
  * endgame overlapping rather than queueing.
  *
  * 二 Two was tried, to close the two weeks of the first thirteen that name nothing new
- * (weeks 10 and 13: a heaven comes every ten or eleven days and a week is seven). It is
+ * (weeks 10 and 13: a heaven came every ten or eleven days then, and a week is seven;
+ * measured again on 2026-10-03 the first nine heavens take 141 days, about 15.7 each). It is
  * a wall. Every heaven hands the Dragon the whole of its step at once, ×5.23, and two
  * crossings are not enough to fill the room the heaven opened, so the fifth heaven
  * arrives on day 149 instead of 103, one crossing takes 400 days, and the ninth heaven

@@ -1,6 +1,6 @@
 import type { Beast } from '../data/bestiary.ts';
 import { RARITIES, type Item } from '../data/gear.ts';
-import { FATE_FLOOR, FATE_TOP_COMMON, FATE_TOP_WARDEN, LAYERS_PER_REALM } from './balance.ts';
+import { FATE_FLOOR, FATE_TOP_COMMON, FATE_TOP_WARDEN, LAYERS_PER_REALM, SECOND_DROP_CAP } from './balance.ts';
 import { rollDrop, type Fortune } from './drops.ts';
 import { isOpen } from './unlocks.ts';
 import { classBond } from './schools.ts';
@@ -55,6 +55,31 @@ export function dropFor(
   return rollDrop(b, s.realm, seed,
     due ? { ...f, always: true, floor: Math.max(f.floor ?? 0, fatePromise(s, b)) } : f,
     layer);
+}
+
+/** 造化 How likely a second piece is from one kill: the drop chance, once Creation has
+ * made the first certain, a beast's own 精 deep marks included. 0 without Creation. */
+export function secondChance(s: State, b: Beast, fortune: Fortune = {}): number {
+  if (!fortune.always || b.warden || !isOpen(s.realm, 'gear')) return 0;
+  const deep = deepDrop(s.killed[b.key] ?? 0);
+  return Math.min(SECOND_DROP_CAP, Math.max(0, (fortune.chance ?? 0) + deep));
+}
+
+/**
+ * 造化 The second piece a kill leaves, if the dice give one. Seeded from the kill, apart
+ * from the first piece's dice, so the same kill always leaves the same pair. It never
+ * moves the bond bar: the bar counts wins, not pieces.
+ */
+export function secondDropFor(
+  s: State, b: Beast, seed: number, fortune: Fortune = {}, layer = s.layer ?? LAYERS_PER_REALM,
+): Item | null {
+  const chance = secondChance(s, b, fortune);
+  if (chance <= 0) return null;
+  let x = (seed ^ 0x5bd1e995) >>> 0;
+  x = Math.imul(x ^ (x >>> 15), 2246822507) >>> 0;
+  x = (x ^ (x >>> 13)) >>> 0;
+  if (x / 4294967296 >= chance) return null;
+  return rollDrop(b, s.realm, (seed ^ 0x2545f491) >>> 0, { ...fortune, always: true }, layer);
 }
 
 /** The bar after a win: one fuller, or empty again if this was the win that filled it. */

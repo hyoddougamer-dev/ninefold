@@ -86,6 +86,9 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
     const r = RECIPE_BY_KEY[key];
     if (!r) return;
     setView('work'); setSkill(r.skill); setGroup(r.group); setFilter('all'); setFind(r.name); setLit(r.key);
+    // 鑄 The realm row starts again at Now, or a Go to a piece of this realm could land on
+    // a list still showing realm 2 with the lit row filtered out of it.
+    setTier('near');
   };
   useEffect(() => {
     if (!lit) return;
@@ -162,7 +165,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           return (
             <button key={k.key} className="cskill" data-on={k.key === skill} data-shut={!on}
               data-run={running?.skill === k.key}
-              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); setFind(''); setFilter('all'); }}>
+              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); setFind(''); setFilter('all'); setTier('near'); }}>
               <Seal skill={k.key} han={k.seal} />
               <span className="cs-name">{k.name}</span>
               <span className="cs-sub">
@@ -430,7 +433,9 @@ function Row({ state, r, on, lit, onStart, onGo }: {
         <b><span className="cjk">{r.han}</span> {r.name}</b>
         <i className="cr-meta mono">
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
-          {marks > 0 && <> · {CRAFTS.familiar(marks)}</>}
+          {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare
+            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded, (r.needs[0]?.[1] ?? 0) > 1) }}>
+            <span className="cr-fam">{CRAFTS.familiar(marks)}</span></Term></>}
         </i>
         {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (
           <span className="cr-needs">

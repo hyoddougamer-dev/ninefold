@@ -6,7 +6,7 @@ import { MARKS, marksOf } from './record.ts';
 import { lootTaken } from './trials.ts';
 import { isOpen } from './unlocks.ts';
 import { rate, type State } from './state.ts';
-import { dropFor, noteFate } from './fate.ts';
+import { dropFor, noteFate, secondDropFor } from './fate.ts';
 import { itemWorth } from './chest.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
@@ -159,11 +159,15 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
     // for the other hundred, because tapping them would have.
     const now = { ...s, killed: { ...s.killed, [b.key]: before + i } };
     material += lootTaken(now, lootFrom(now, b));
-    const item = dropFor(bond, b, (seed + i * 2654435761) >>> 0, fortune, s.layer);
+    const kseed = (seed + i * 2654435761) >>> 0;
+    const item = dropFor(bond, b, kseed, fortune, s.layer);
     bond = noteFate(bond, b, item);
-    if (!item) continue;
-    dropsRolled++;
-    if (!best || itemWorth(item) > itemWorth(best)) best = item;
+    // 造化 With Creation a kill can leave a second piece; it counts like any other.
+    for (const it of [item, secondDropFor(bond, b, kseed, fortune, s.layer)]) {
+      if (!it) continue;
+      dropsRolled++;
+      if (!best || itemWorth(it) > itemWorth(best)) best = it;
+    }
   }
 
   const after = before + kills;

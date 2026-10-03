@@ -3,7 +3,8 @@ import {
   ALL_NODES, LINKS, NODE_BY_KEY, PATHS, PATH_INFO, ROOT, TOTAL_COST,
   nodesOf, type Node, type Path,
 } from '../../data/techniques.ts';
-import { canUnlock, daoSpent } from '../../sim/dao.ts';
+import { CAPSTONE_TIER, canUnlock, capstonesOpen, daoSpent } from '../../sim/dao.ts';
+import { CAPSTONE_REALM } from '../../sim/balance.ts';
 import { type State } from '../../sim/state.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -34,15 +35,15 @@ const TOP = 26;        // where the root sits
 type Status = 'have' | 'open' | 'poor' | 'shut' | 'locked';
 
 function statusOf(
-  node: Node, unlocked: readonly string[], free: number, keystones: boolean,
+  node: Node, unlocked: readonly string[], free: number, keystones: boolean, capstones = true,
 ): Status {
   if (unlocked.includes(node.key)) return 'have';
   const twin = node.excludes ? NODE_BY_KEY[node.excludes] : null;
   if (twin && unlocked.includes(twin.key)) return 'shut';
-  if (canUnlock(node.key, unlocked, free, keystones)) return 'open';
+  if (canUnlock(node.key, unlocked, free, keystones, capstones)) return 'open';
   // 樞 A keystone below its realm reads as locked, not as unaffordable: the difference
   // matters, because one of them is a thing you can fix by saving up.
-  if (canUnlock(node.key, unlocked, Infinity, keystones)) return 'poor';
+  if (canUnlock(node.key, unlocked, Infinity, keystones, capstones)) return 'poor';
   return 'locked';
 }
 
@@ -139,6 +140,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const free = freeOf(state);
   // 樞 The three that cost you something arrive at their own realm, two above this one.
   const keys = isOpen(state.realm, 'keystones');
+  // 極 And each branch's last node waits for the sixth.
+  const caps = capstonesOpen(state.realm);
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
 
@@ -196,7 +199,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
 
       <p className="faint" style={{ fontSize: 12.5, margin: '6px 0 0', lineHeight: 1.65 }}>
         {DAO.tree}<br />
-        {DAO.short(TOTAL_COST, 42)} {DAO.taken(taken, ALL_NODES.length)}.
+        {DAO.short(TOTAL_COST)} {DAO.taken(taken, ALL_NODES.length)}.
       </p>
 
       <div className="legend">
@@ -212,8 +215,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       {chosen && (
         <Detail
           node={chosen}
-          status={statusOf(chosen, state.unlocked, free, keys)}
+          status={statusOf(chosen, state.unlocked, free, keys, caps)}
           keystones={keys}
+          capstones={caps}
           onLearn={() => { onUnlock(chosen.key); setPicked(null); }}
           onClose={() => setPicked(null)}
         />
@@ -226,8 +230,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
             const lit = state.unlocked.includes(a.node.key) && state.unlocked.includes(b.node.key);
             const bridge = a.node.path !== b.node.path
               && a.node.key !== ROOT.key && b.node.key !== ROOT.key;
-            const dead = statusOf(b.node, state.unlocked, free, keys) === 'shut'
-              || statusOf(a.node, state.unlocked, free, keys) === 'shut';
+            const dead = statusOf(b.node, state.unlocked, free, keys, caps) === 'shut'
+              || statusOf(a.node, state.unlocked, free, keys, caps) === 'shut';
             return (
               <line
                 key={`${a.node.key}-${b.node.key}`}
@@ -241,9 +245,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           })}
 
           {PLACED.map(({ node, x, y }) => {
-            const status = statusOf(node, state.unlocked, free, keys);
+            const status = statusOf(node, state.unlocked, free, keys, caps);
             // 指 The first node that can be learned right now, for 引 the guide's ring.
-            const first = status === 'open' && PLACED.find((p) => statusOf(p.node, state.unlocked, free, keys) === 'open')?.node.key === node.key;
+            const first = status === 'open' && PLACED.find((p) => statusOf(p.node, state.unlocked, free, keys, caps) === 'open')?.node.key === node.key;
             const on = status === 'have';
             const open = status === 'open';
             const colour = hue(node);
@@ -304,11 +308,13 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
    in four harnesses. It lives in sim/points.ts now, once, because 悟道 the cards hand
    points over too and a count in six places is a count that will disagree in five. */
 
-function Detail({ node, status, keystones, onLearn, onClose }: {
+function Detail({ node, status, keystones, capstones, onLearn, onClose }: {
   node: Node;
   status: Status;
   /** 樞 Whether the three that cost you something are open yet. See unlocks.ts. */
   keystones: boolean;
+  /** 極 Whether each branch's last node is open yet. */
+  capstones: boolean;
   onLearn: () => void;
   onClose: () => void;
 }) {
@@ -333,6 +339,11 @@ function Detail({ node, status, keystones, onLearn, onClose }: {
       {node.keystone && !keystones && (
         <p style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
           {DAO.keystoneShut(realmOf(opensAt('keystones')).han, realmOf(opensAt('keystones')).name)}
+        </p>
+      )}
+      {node.tier === CAPSTONE_TIER && !capstones && status !== 'have' && (
+        <p style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
+          {DAO.capstoneShut(realmOf(CAPSTONE_REALM).han, realmOf(CAPSTONE_REALM).name)}
         </p>
       )}
       {twin && (

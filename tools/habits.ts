@@ -26,7 +26,7 @@ import { STANCES } from '../src/data/arts.ts';
 import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
-import { canUnlock, focusBonus } from '../src/sim/dao.ts';
+import { canUnlock, capstonesOpen, focusBonus } from '../src/sim/dao.ts';
 import { freePoints } from '../src/sim/points.ts';
 import { BEDS, canPlant, harvestAll, plant, plantable } from '../src/sim/cave.ts';
 import {
@@ -34,7 +34,7 @@ import {
   inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../src/sim/secret.ts';
 import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
-import { dropFor, noteFate } from '../src/sim/fate.ts';
+import { dropFor, noteFate, secondDropFor } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageUpTo } from '../src/sim/salvage.ts';
 import { equip, fusable, itemWorth } from '../src/sim/chest.ts';
@@ -224,8 +224,15 @@ function takeDrop(s: State, beast: Beast, seed: number, build?: School | Pair): 
   // 運 One place builds this now, and building it here by hand is what let two of the
   // harnesses pass 空囊 where the field means 造化. See sim/fortune.ts.
   // 緣 The same two calls the app makes: the bar decides the drop, then moves.
-  const found = dropFor(s, beast, seed, fortuneOf(s), s.layer);
-  s = noteFate(s, beast, found);
+  // 造化 And with Creation the same kill can leave a second piece, as in the app.
+  const f = fortuneOf(s);
+  const found = dropFor(s, beast, seed, f, s.layer);
+  const extra = secondDropFor(s, beast, seed, f, s.layer);
+  s = keepDrop(noteFate(s, beast, found), found, build);
+  return extra ? keepDrop(s, extra, build) : s;
+}
+
+function keepDrop(s: State, found: Item | null, build?: School | Pair): State {
   if (!found) return s;
 
   // 藏 The same stash() the game uses: 空囊 lifts it, a full chest melts its cast-off.
@@ -415,7 +422,7 @@ function spendTree(s: State, branch: Path | undefined): State {
     const free = freePoints(out);
     const want = ALL_NODES
       .filter((n) => n.key === 'root' || n.path === branch)
-      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones')));
+      .find((n) => canUnlock(n.key, out.unlocked, free, isOpen(out.realm, 'keystones'), capstonesOpen(out.realm)));
     if (!want) break;
     out = { ...out, unlocked: [...out.unlocked, want.key] };
   }

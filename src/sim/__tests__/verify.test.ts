@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HABITS, play } from '../../../tools/habits.ts';
+import { AUTO_HABIT, HABITS, play } from '../../../tools/habits.ts';
 import { playEndgame } from '../../../tools/endgame.ts';
 import { rate } from '../time.ts';
 import { anchorFloor, firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
@@ -72,6 +72,21 @@ describe('驗 honest play is never held against anybody', () => {
       expect(verify(r.last.s, end.s, (end.day - r.last.day) * DAY + DAY).ok).toBe(true);
     });
   }
+});
+
+describe('自 the auto-hunter melting all day is honest too', () => {
+  // 拆 Melting pays qi beside the gathering, out of its allowance. The verifier used to
+  // fit it inside SLACK alone, and MELT_FILL rising on 2026-10-03 left the margin thin;
+  // the allowance is in the budget now, and the hand that melts most proves it.
+  it('no strike, no flag, and the ranking never more than a day and a half behind', () => {
+    const shots: Shot[] = [];
+    play(AUTO_HABIT, 90, (day, s) => shots.push({ day, s: structuredClone(s) }));
+    expect(shots.length).toBeGreaterThan(60);
+    const r = server(shots);
+    console.log(`    ${AUTO_HABIT.name.padEnd(14)} ranking at most ${r.lag.toFixed(1)} h behind the phone`);
+    expect(r.held.slice(0, 5)).toEqual([]);
+    expect(r.lag).toBeLessThanOrEqual(36);
+  }, 120_000);
 });
 
 describe('業 a ranked save from before the workshop', () => {

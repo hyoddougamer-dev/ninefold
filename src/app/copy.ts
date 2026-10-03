@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -242,7 +242,10 @@ export const CULTIVATE = {
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
-  tribulationHead: '劫 The tribulation',
+  /** 劫 The heading names the crossing still to come, and the line under the realm's name
+   *  the ones already made, so "2" and "3" never sit on one screen unexplained. */
+  tribulationNext: (n: number) => `劫 Tribulation ${n} · the next crossing`,
+  crossed: (n: number) => (n === 1 ? '1 tribulation crossed' : `${n} tribulations crossed`),
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
@@ -441,6 +444,11 @@ export const REALMCARD = {
 
 export const PACE = {
   rungLeft: (qi: string, time: string) => `${qi} qi to go · about ${time}`,
+  /** 守 The ninth rung is the warden, not qi: no countdown to it, only who stands there. */
+  wardenWaits: (han: string, name: string) => `No more qi to climb here. The warden ${han} ${name} is waiting for you`,
+  breakOpen: 'No more qi to climb here, and the warden is down. 突破 Break through when you are ready',
+  /** 囊 The first rung waits for the first purchase, and the qi it waits with is owed. */
+  held: 'The first layer waits until you spend your qi. Nothing is lost while it waits',
 };
 
 export const LADDER = {
@@ -469,10 +477,12 @@ export const CHRONICLE = {
   standing: (day: number, realm: string) => `Day ${day} of the climb, standing in ${realm}.`,
   nearest: (han: string, name: string) => `Nearest: ${han} ${name} ·`,
   figures: 'Where you have got to',
-  day: 'day', realm: 'realm', rungs: 'layers opened', power: 'power', rate: 'gathering',
+  day: 'day', realm: 'realm',
+  realmNamed: (name: string) => `realm · ${name}`,
+  rungs: 'layers opened', power: 'power', rate: 'gathering',
   kills: 'beasts killed', seen: 'beasts met', mastered: '通 mastered', wardens: 'wardens down',
-  floor: 'best floor', seals: '塔印 seals', pills: 'pills brewed', refine: 'deepest 煉器',
-  dao: '道 spent', marks: '雷印 marks', met: 'people met',
+  floor: 'best floor', seals: '塔印 seals', pills: 'alchemy pills brewed', refine: 'deepest refine',
+  dao: '道 Path points spent', marks: '雷印 marks', met: 'people met in meetings',
   rule: 'A deed pays nothing at all. It is a record of what this cultivator did, and the record is the reward.',
   counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
     + 'no list of what you have earned, so there is nothing to forge.',
@@ -617,7 +627,7 @@ export const KEY = {
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
-  /** 精 絕 The deep marks pay the beast that earned them, and only that one. */
+  /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
     `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast, `
     + `and +${(everywhere * 100).toFixed(1)}% 材 material from every beast`,
@@ -960,7 +970,7 @@ export const ITEM = {
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
-      + `With 造化 Creation every beast drops already, so it turns into luck instead.`,
+      + `With 造化 Creation every beast drops already, so it becomes the chance of a second piece.`,
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
@@ -1017,7 +1027,7 @@ export const AWAKEN = {
    */
   hand: {
     title: 'Your Enlightenment cards',
-    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card taken after it.',
+    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card further back.',
     none: 'No cards yet. The first one comes with the second realm.',
     line: (n: number) => (n === 1 ? '悟道 Enlightenment · your card · change it' : `悟道 Enlightenment · your ${n} cards · change one`),
     fromRealm: (han: string, name: string) => `From ${han} ${name}`,
@@ -1048,8 +1058,9 @@ export const AWAKEN = {
   effect: (e: Effect, w: Worth): string => {
     const share = (x: number) => `${Math.round(x * 100)}%`;
     if (w.kind === 'luck') return `Gear of ${RARITY_INFO[w.from].han} ${RARITY_INFO[w.from].name} rank${w.from === 'heaven' ? '' : ' or better'}: ${share(w.before)} of your drops now, ${share(w.after)} with this.`;
-    if (w.kind === 'drop') return w.before >= 1 ? 'Every beast already drops a piece for you, so this adds nothing yet.'
-      : `A beast drops a piece on ${share(w.before)} of kills now, ${share(w.after)} with this.`;
+    if (w.kind === 'drop') return `A beast drops a piece on ${share(w.before)} of kills now, ${share(w.after)} with this.`;
+    if (w.kind === 'second') return w.after === w.before ? 'A second piece is as likely as it can be already.'
+      : `With 造化 Creation every kill drops a piece, and ${share(w.before)} of kills drop a second now, ${share(w.after)} with this.`;
     if (w.kind === 'chest') return w.after === w.before ? 'Your chest is capped by the tree, so this adds no room.'
       : `Your chest holds ${w.before} pieces now, ${w.after} with this.`;
     switch (e.kind) {
@@ -1093,7 +1104,7 @@ export const MEET = {
  * aiming for a number.
  */
 export const ROAD = {
-  head: '緣 The road',
+  head: '緣 Meetings and the road',
   heart: '心 The heart',
   kind: '仁 Kind',
   hard: '狠 Hard',
@@ -1207,6 +1218,8 @@ export const CAVE = {
  * point of banking every room on the spot is that there is nothing to lose.
  */
 export const SECRET = {
+  /** 龕 A shrine past its realm's share of 道 (SHRINE_DAO_PER_REALM). */
+  shrineSpent: 'this realm\u2019s 道 Path points are taken, so it pays qi',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
   useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
@@ -1451,9 +1464,13 @@ export const DAO = {
   tree: 'All three branches grow from 起, and the gold bridges cross between them. Tap a node to read it.',
   /** 數 It read "6 free · 0/6", and nothing said what the second pair was. */
   purse: (spent: number, earned: number) => ` to spend · ${spent} of ${earned} spent`,
-  /** 短 The point is that you cannot have it all. It does not need a second sentence. */
-  short: (cost: number, earned: number) =>
-    `${cost} 道 to buy it all; a whole climb earns about ${earned}.`,
+  /**
+   * 短 The point is that you cannot have it all. It used to say a climb earns about 42,
+   * a number fifteen times wrong by 2026-10-03 (the vault's shrines had no cap). What
+   * keeps a tree from holding everything is the forks, so it says that instead.
+   */
+  short: (cost: number) =>
+    `${cost} 道 would buy every node, but each fork closes one side for good.`,
   taken: (n: number, total: number) => `${n} of ${total} taken`,
   keystone: 'Stronger than the node beside it, and it takes something away.',
   /**
@@ -1467,6 +1484,9 @@ export const DAO = {
   keystoneShut: (han: string, name: string) =>
     `樞 The keystones open in ${han} ${name}. You can see them from here, and they are ` +
     'meant to be seen: a fork you know is coming is a climb with a plan in it.',
+  /** 極 Why a branch's last node is dark before the sixth realm. */
+  capstoneShut: (han: string, name: string) =>
+    `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
@@ -1579,8 +1599,14 @@ export const SAVE = {
   played: 'played for',
   reached: 'reached',
   gear: 'gear',
-  why: 'Your save lives in this browser, on this phone. There is no account. Clear the browser data and it is gone. Keep a copy somewhere you will find it again.',
-  /** 雲 The same, for a cultivator signed in to the rankings: there is a cloud copy. */
+  /** 存 Not signed in to anything: the save is this browser's alone. It used to say "There
+   *  is no account", beside a 榜 Ranks screen offering one. */
+  why: 'Your save lives in this browser, on this phone, and clearing the browser data clears it. Sign in with your email under 榜 Ranks and a copy is kept in the cloud. The email brings a link and a six-digit code, and the code works in the Android app too. Or keep a copy of your own somewhere you will find it again.',
+  /** 雲 A ranked guest: there is a cloud copy, but only this device holds the key to it. */
+  whyGuest: 'You are ranked as a guest, so a copy is kept in the cloud. Only this device can open it, so clearing the browser data loses it. Add your email under 榜 Ranks to keep it on every device, or keep a copy of your own.',
+  /** 雲 Signed in with an email: the cloud copy opens anywhere they sign in. */
+  whyEmail: (email: string) => `You are signed in as ${email}, so a copy of your save is kept in the cloud and opens on any device you sign in on. A file of your own is still the one copy nobody else holds.`,
+  /** 雲 Signed in before, and the account not read yet. */
   whyCloud: 'Your save lives on this phone, and a copy is kept in the cloud while you are signed in to the rankings. A file of your own is still the one copy nobody else holds.',
   copy: 'Copy the save',
   copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things. It is sealed: it reads as noise, and it restores exactly as it was.',
@@ -1676,6 +1702,8 @@ export const meltPays = (qi: string, mats: string, hasQi: boolean, hasMats: bool
   hasQi && hasMats ? `${qi} qi and ${mats} 材 material` : hasMats ? `${mats} 材 material` : `${qi} qi`;
 
 export const ARENA = {
+  /** 造化 A second piece from the same kill. */
+  secondPiece: (name: string, rank: string) => `Creation: a second piece, ${rank} ${name}`,
   /**
    * 見 The first time a beast falls, and only the first.
    *
@@ -1795,6 +1823,26 @@ export const CRAFTS = {
   goMake: (recipe: string) => `Go to ${recipe}`,
   quality: 'Quality',
   familiar: (marks: number) => `習 familiarity ${'\u25cf'.repeat(marks)}${'\u25cb'.repeat(5 - marks)}`,
+  /**
+   * 習 What each familiarity mark gives, said where the dots are. rekaris, on the Discord
+   * (2026-10-03): *"does it do anything? Doesn't seem to speed up the craft or anything?"*
+   * It did, five things, and the dots never said which. A recipe that makes nothing with
+   * a rank says its last two marks do nothing for it, rather than promising quality, and
+   * one that needs nothing says the same of the third.
+   */
+  familiarNote: (made: number, graded: boolean, fewer: boolean) => {
+    const gives = [
+      `${Math.round(CRAFT_MARK_FASTER * 100)}% faster`,
+      `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice`,
+      fewer ? 'one less of the first thing it needs' : 'nothing here: it needs nothing to spare',
+      graded ? 'better odds of a high rank' : 'nothing here: it makes nothing with a rank',
+      graded ? 'never comes out Common' : 'nothing here either',
+    ];
+    const next = CRAFT_MARKS.find((m) => made < m);
+    return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
+      + CRAFT_MARKS.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
+      + (graded ? '\nEvery mark also lifts the rank a little.' : '');
+  },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
   pouchEmpty: 'Nothing yet. What the workshop gathers and makes lands here.',

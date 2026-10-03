@@ -67,7 +67,7 @@ async function open(width, height, over = {}) {
   for (let i = 0; i < 8; i++) {
     const b = await page.$('.notice button, .awaken .later');
     if (!b) break;
-    await b.click().catch(() => {});
+    await b.click({ timeout: 3000 }).catch(() => {});   // inside 秘境 a notice sits under the room
     await page.waitForTimeout(250);
   }
   return page;
@@ -317,6 +317,14 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
   check(/realm 2\./.test(of2 ?? '') && rows2 > 0, `${tag}: realm 2 shows its own pieces (${rows2} rows, "${(of2 ?? '').slice(0, 34)}")`);
   check(await overflow(page) <= 0, `${tag}: the realm row does not push the screen sideways`);
   if (tag !== 'p320') { await page.$eval('.ctier', (e) => e.scrollIntoView({ block: 'start' })); await page.evaluate(() => window.scrollBy(0, -70)); await page.waitForTimeout(150); await shot(page, `${tag}-forgerealms`); }
+  // 鑄 Another craft and back again starts the realm row at Now, not at the realm left lit.
+  await page.click('.cskill:not([data-shut="true"]) >> nth=0').catch(() => {});
+  await page.waitForTimeout(200);
+  if (forge) { await page.click('.cskill:has-text("Forg"), .cskill:has-text("鍛")').catch(() => {}); await page.waitForTimeout(250); }
+  await page.click('.cgroups button:has-text("Gear")').catch(() => {});
+  await page.waitForTimeout(200);
+  const litTier = await page.$eval('.ctier button[aria-selected="true"]', (e) => e.textContent.trim()).catch(() => '');
+  check(litTier === 'Now', `${tag}: switching craft and back puts the realm row back on Now ("${litTier}")`);
 
   // ── 改 the cards already taken, and trading one ─────────────────────────────────────
   // rekaris: "give the player the possibility to change any of their 'permanent' choices
@@ -374,6 +382,186 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     check(top >= 1, `${tag}: and the lines of the piece are at the top anyway (${top})`);
     if (tag === 'p400') await shot(page, `${tag}-sheettop`);
   }
+  await page.close();
+}
+
+// ── 審 The audit of 2026-10-03: what a new player, a phone and a reader of English met ──
+// Each of these was found by playing the build and photographing it; each check is the
+// picture's complaint turned into a question the screen has to answer.
+const clearAll = async (page) => {
+  for (let i = 0; i < 24; i++) {
+    const card = await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(200); continue; }
+    const who = await page.$('.whom .pick');
+    if (who) { await who.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(220); continue; }
+    const el = await page.$('.prologue button.act, .help button.act, .notice button, .scrim, .back button.act');
+    if (!el) break;
+    await el.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(220);
+  }
+  // A notice's button can change the tab; come back to 修. Inside 秘境 the tabs are covered.
+  await page.click('nav.tabs button:has-text("修")', { timeout: 2000 }).catch(() => {});
+  await page.waitForTimeout(300);
+};
+const menuTo = async (page, label) => {
+  await page.click('button.mainswitch');
+  await page.waitForTimeout(250);
+  await page.click(`.switchmenu button:has-text("${label}")`);
+  await page.waitForTimeout(400);
+};
+const HAN = /[㐀-鿿]/;
+const now = () => Math.floor(Date.now() / 1000);
+
+// 囊 The opening purse is still there when the guide asks the player to spend it.
+{
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 }, deviceScaleFactor: 2 });
+  await page.goto(BASE);
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(BASE);
+  await page.waitForSelector('nav.tabs button, .prologue', { timeout: 15000 });
+  await page.waitForTimeout(600);
+  await clearAll(page);
+  await page.waitForTimeout(12000);   // twice as long as the purse needs to reach the rung
+  const qi = Number((await page.textContent('.qi .n')).replace(/[^0-9.]/g, ''));
+  const layer = await page.$eval('.ladder', (e) => e.textContent.replace(/\s+/g, ' ')).catch(() => '');
+  const pace = await page.textContent('.pace').catch(() => '');
+  check(qi >= 56 && /layer 1\/9/.test(layer), `fresh: after twelve seconds the purse is whole and the first layer waits (${qi} qi, ${layer.slice(0, 32)})`);
+  check(/waits until you spend/.test(pace ?? ''), `fresh: the bar says the layer is waiting ("${pace}")`);
+  const box = await page.$('[data-coach^="upg-"]:not([disabled])');
+  check(!!box, 'fresh: the box the arrow points at can be bought');
+  if (box) { await box.click(); await page.waitForTimeout(1200); }
+  const step = await page.textContent('.guide .n').catch(() => '');
+  check(!/Step 1 of/i.test(step ?? ''), `fresh: buying it finishes the first step ("${step}")`);
+  await shot(page, 'fresh-purse');
+  await page.close();
+}
+
+for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320']]) {
+  // 勢 The arts on the Path name themselves in English, in the slots and on the spare chips.
+  const page = await open(w, h, { killed: { rat: 150, hound: 20, frog: 20, fox: 1, ape: 1, crane: 1 }, sequence: ['crane'] });
+  await clearAll(page);
+  await tab(page, '道');
+  await page.click('button:has-text("Stance")').catch(() => {});
+  await page.waitForTimeout(300);
+  const slotName = await page.$eval('.seq .slot[data-filled="true"] .lo-name', (e) => e.textContent).catch(() => '');
+  const spare = await page.$$eval('.pool .pick', (els) => els.map((e) => e.querySelector('.lo-name')?.textContent ?? ''));
+  check(/[A-Za-z]{3}/.test(slotName ?? '') && spare.length >= 1 && spare.every((t) => /[A-Za-z]{3}/.test(t)),
+    `${tag}: every art in the sequence and the spares carries its English name ("${slotName}"; ${spare.join(', ')})`);
+  check(await overflow(page) <= 0, `${tag}: the arts do not push the screen sideways`);
+
+  // 日 The day is never cut short.
+  await tab(page, '修');
+  const day = await page.$eval('.c-hero .c-title', (e) => ({ text: e.textContent, cut: e.scrollWidth > e.clientWidth + 1 })).catch(() => null);
+  check(!!day && !day.cut && /day 31/i.test(day.text ?? ''), `${tag}: the day reads in full ("${day?.text}")`);
+
+  // 頂 Nothing scrolls half under ≡: once a screen is scrolled, a strip backs the corner.
+  for (const t of ['修', '狩', '器', '業', '道']) {
+    await tab(page, t);
+    const tall = await page.$eval('.sheet', (e) => e.scrollHeight - e.clientHeight);
+    if (tall < 80) continue;
+    const top = await page.$eval('.topband', (e) => e.dataset.on).catch(() => 'missing');
+    await page.$eval('.sheet', (e) => e.scrollTo(0, 240));
+    await page.waitForTimeout(300);
+    const backed = await page.evaluate(() => {
+      const band = document.querySelector('.topband');
+      const btn = document.querySelector('button.mainswitch');
+      if (!band || !btn) return false;
+      const b = band.getBoundingClientRect(); const m = btn.getBoundingClientRect();
+      return band.dataset.on === 'true' && getComputedStyle(band).opacity === '1'
+        && b.left <= 0 && b.right >= innerWidth - 1 && b.bottom >= m.bottom;
+    });
+    check(top === 'false' && backed, `${tag} ${t}: at the top no strip; scrolled, a solid strip backs ≡ across the screen`);
+  }
+
+  // 藏 The melt's rank chips each say their rank.
+  await tab(page, '器');
+  const ranks = await page.$$eval('.melting .rk .rk-name', (els) => els.map((e) => e.textContent));
+  check(ranks.join() === 'Common,Spirit,Mystic,Earth,Heaven', `${tag}: every rank chip carries its English name (${ranks.join(', ')})`);
+  // 數 Power from gear to two places under ×2, beside the per cent it means.
+  const lift = await page.$eval('.lift .lp b', (e) => e.textContent).catch(() => '');
+  check(/^×(\d\.\d\d|[2-9]\.\d|\d{2,})$/.test(lift ?? ''), `${tag}: the gear's power reads like its per cent ("${lift}")`);
+  if (tag === 'p400') await shot(page, `${tag}-audit-gear`);
+
+  // 碑 The stele has the fixed ✕, Esc closes it, and its tiles are named in English.
+  await tab(page, '修');
+  await menuTo(page, 'stele');
+  check(!!(await page.$('.stelepage')) && !!(await page.$('.escape')), `${tag}: the stele has the fixed cross`);
+  const figs = await page.$$eval('.figures .fig', (els) => els.map((e) => ({ v: e.querySelector('em')?.textContent ?? '', l: e.querySelector('i')?.textContent ?? '' })));
+  check(figs.length > 10 && figs.every((f) => !HAN.test(f.v) && /[A-Za-z]{3}/.test(f.l)),
+    `${tag}: no stele figure is characters alone (${figs.filter((f) => HAN.test(f.v)).map((f) => f.v).join(', ') || 'none'})`);
+  const realmTile = figs.find((f) => /^realm/.test(f.l));
+  check(/Nascent Soul/.test(realmTile?.l ?? ''), `${tag}: the realm tile names the realm in English ("${realmTile?.l}")`);
+  const clear = await page.$eval('.stelepage > .row:first-child > :last-child', (e) => {
+    const r = e.getBoundingClientRect(); const x = document.querySelector('.escape')?.getBoundingClientRect();
+    return !x || r.right <= x.left || r.top >= x.bottom;
+  }).catch(() => false);
+  check(clear, `${tag}: the stele's count is not under the cross`);
+  if (tag === 'p400') await shot(page, `${tag}-audit-stele`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.stelepage')), `${tag}: Esc closes the stele`);
+  await menuTo(page, 'redits');
+  check(!!(await page.$('.credits')) && !!(await page.$('.escape')), `${tag}: the credits have the fixed cross`);
+  await page.click('.escape');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.credits')), `${tag}: the cross closes the credits`);
+
+  // 存 The save panel does not say there is no account beside a screen offering one.
+  await menuTo(page, 'save');
+  const says = await page.textContent('.help .says').catch(() => '');
+  check(!/no account/i.test(says ?? '') && /Ranks/.test(says ?? '') && /six-digit code/.test(says ?? ''),
+    `${tag}: the save panel tells a guest how a cloud copy is had ("${(says ?? '').slice(0, 60)}...")`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+
+  // 悟道 The trade's price reads right for the newest card.
+  await page.click('button.mainswitch');
+  await page.waitForTimeout(200);
+  await page.click('.switchmenu button:has-text("Your Enlightenment cards")');
+  await page.waitForTimeout(350);
+  const blurb = await page.textContent('.cardbook').catch(() => '');
+  check(/half a day more for each card further back/.test(blurb ?? '') && !/taken after it/.test(blurb ?? ''),
+    `${tag}: the cards page prices older cards as further back`);
+  await page.close();
+}
+
+// 守 塔 A warden standing is named on the bar, and a tower floor out of reach says how far.
+{
+  const page = await open(400, 860, { realm: 8, layer: 8, qi: 5e12, tower: 75, startedAt: now() - 120 * 86400,
+    levels: { technique: 10, method: 30, pills: 30, cores: 10 },
+    killed: { rat: 150, hound: 20, frog: 20, fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1 },
+    awakened: ['feast', 'wolf', 'luckystar', 'slaughter', 'platform', 'hoard', 'dew'] });
+  await clearAll(page);
+  const pace = await page.textContent('.pace').catch(() => '');
+  check(/The warden .+ is waiting/.test(pace ?? '') && !/0 qi to go/.test(pace ?? ''), `late: the bar names the warden waiting ("${pace}")`);
+  await tab(page, '塔');
+  const tower = await page.$eval('.card .tech', (e) => e.textContent.replace(/\s+/g, ' ')).catch(() => '');
+  check(/^×[\d.]+[kMBT]? ?stronger/i.test(tower.trim()), `late: an unwinnable tower floor says how much stronger it is ("${tower}")`);
+  await shot(page, 'p400-audit-tower');
+  await page.close();
+}
+
+// 劫 碑 The top of the climb: the crossings made and the next one named, and one heaven on both pages.
+{
+  const page = await open(400, 860, { realm: 9, layer: 8, qi: 1e15, tribulation: 2, tribulationAt: now() - 3 * 86400,
+    killed: { rat: 150, hound: 20, frog: 20, fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1 },
+    awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought'] });
+  await clearAll(page);
+  const hero = await page.textContent('.c-hero').catch(() => '');
+  const head = await page.textContent('.c-side h2.heading').catch(() => '');
+  check(/2 tribulations crossed · 2 marks/.test(hero ?? '') && /Tribulation 3 · the next crossing/.test(head ?? ''),
+    `top: the crossings made and the next one are both named ("${head}")`);
+  await menuTo(page, 'stele');
+  const stele = await page.textContent('.stele .said').catch(() => '');
+  check(/standing in True Immortal/.test(stele ?? ''), `top: the stele stands in the same heaven ("${(stele ?? '').slice(0, 60)}")`);
+  await page.close();
+}
+
+// 期 The week's room on the secret realm's path is named in words.
+{
+  const page = await open(400, 860, { runStep: 0, runAt: now() - 12 * 3600 });
+  const week = await page.textContent('.secret .pathweek').catch(() => '');
+  check(/Room \d of \d pays double this week/.test(week ?? ''), `secret: the path names the week's room ("${week}")`);
   await page.close();
 }
 

@@ -1,11 +1,11 @@
 import {
-  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, upgradeCost,
+  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, rate, upgradeCost,
   wardenStands,
   type State,
 } from '../sim/state.ts';
 import { MARKS } from '../sim/record.ts';
 import { LAYERS_PER_REALM } from '../sim/balance.ts';
-import { progress } from '../sim/time.ts';
+import { layerCost, progress } from '../sim/time.ts';
 import { commonsOf, wardenOf } from '../data/bestiary.ts';
 import { oddsRaw } from '../sim/combat.ts';
 import { isOpen } from '../sim/unlocks.ts';
@@ -287,3 +287,48 @@ export function guide(s: State): Guiding | null {
 
 /** The key that hides the guide, kept in the same seen-list the notices use. */
 export const DISMISSED = 'guide';
+
+/**
+ * 囊 The opening purse is the player's to spend, so the first rung waits for them.
+ *
+ * Played from a fresh save at 400 wide. The title, the prologue and 相 the face question
+ * take most of a minute, and the clock runs behind them at a qi a second. The first rung
+ * costs 63 against a purse of 56. So the guide said "You start holding 56 qi. Buy the
+ * box the arrow points at" to a player whose bar had already opened a layer by itself:
+ * 0.6 qi in hand and a greyed box. balance.ts says of the purse that "nothing moves until
+ * they move it", and that had stopped being true.
+ *
+ * So while the first step is still open (nothing bought yet, on the first rung of the
+ * first realm) the clock is only allowed to run the bar up to a hair under the rung. The
+ * rest of the time is not dropped: the save's own stamp stays where the bar stopped, and
+ * the first tick after the first purchase pays every second of it through `advance`, the
+ * same way a return from being away is paid. Nothing is taken away; it arrives a minute
+ * later, after the choice.
+ *
+ * It lets go by itself if the player puts the guide away, or after ten minutes from the
+ * save's first second, so a player who decides to bank rather than buy is never stuck.
+ */
+export const FIRST_HOLD = 600;
+const HOLD_SHORT = 0.1;
+
+/** A fresh cultivator who has not yet made the first purchase the purse is for. */
+export function onFirstPurse(s: State): boolean {
+  return s.realm === 1 && s.layer === 0 && !UPGRADES.some((u) => s.levels[u] > 0)
+    && !s.seen.includes(DISMISSED);
+}
+
+/** The instant the clock may run the save to: `now`, or earlier while the purse waits. */
+export function clockUntil(s: State, now: number, focus: number): number {
+  if (!onFirstPurse(s) || now - s.startedAt >= FIRST_HOLD) return now;
+  const cost = layerCost(s.realm, s.layer, s.unlocked);
+  const per = rate(s) * Math.max(1, focus);
+  if (!Number.isFinite(cost) || !(per > 0)) return now;
+  return Math.min(now, s.at + Math.max(0, (cost - HOLD_SHORT - s.qi) / per));
+}
+
+/** Whether the bar is standing just under the first rung, waiting for the purchase. */
+export function heldAtFirstRung(s: State): boolean {
+  if (!onFirstPurse(s)) return false;
+  const cost = layerCost(s.realm, s.layer, s.unlocked);
+  return Number.isFinite(cost) && cost - s.qi <= HOLD_SHORT + 1e-6;
+}

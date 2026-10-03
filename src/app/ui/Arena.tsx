@@ -69,6 +69,8 @@ export interface Battle {
   readonly beat: number;
   readonly over: boolean;
   readonly drop: Item | null;
+  /** 造化 A second piece from the same kill, with Creation and the dice. */
+  readonly extra?: Item | null;
   /** 業 What was carried into this fight and took part in it; a win spends it. */
   readonly kit?: Used;
   /** 尋 A waiting sure drop was used on this fight, and a win spends it. */
@@ -454,6 +456,16 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                         num(overflow.meltedMaterial), overflow.melted > 0, overflow.meltedMaterial > 0))}
                   </em>
                 )}
+              </span>
+            </div>
+          )}
+          {/* 造化 Creation's second piece from the same kill, said as one line under the first. */}
+          {outcome.won && battle.extra && (
+            <div className="spoil" data-extra>
+              <Svg html={gearTile(battle.extra, { size: 40 })} />
+              <span>
+                <em className="cjk">造化</em>{' '}
+                <i>{ARENA.secondPiece(templateOf(battle.extra).name, RARITY_INFO[battle.extra.rarity].name)}</i>
               </span>
             </div>
           )}

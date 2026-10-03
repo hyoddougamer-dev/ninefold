@@ -4,9 +4,9 @@ import type { Slot } from './gear.ts';
 /**
  * 道 The technique tree.
  *
- * Three paths, eight nodes each, and never enough 道 points to take them all. A full
- * run earns about forty-two against the sixty it would cost to buy everything. That
- * shortfall is the whole design: a tree you can complete is a checklist, not a choice.
+ * Three paths, eight nodes each, and a fork in each that closes for good, so no tree
+ * holds everything. How fast the points come, and when each branch's last node opens,
+ * is in sim/dao.ts and balance.ts (SHRINE_DAO_PER_REALM, CAPSTONE_REALM).
  *
  * **On locking gear to a path.** The tree does not lock anything, and that is
  * deliberate. In a game whose gear falls at random, a hard class lock turns five drops
@@ -137,7 +137,7 @@ export const NODES: readonly Node[] = [
     [{ kind: 'rankUp' }, { kind: 'chestCap', slots: 12 }],
     'Every drop comes one rank higher. Your chest holds only 12.', { excludes: 'favour', keystone: true }),
   n('treasury',  '寶庫', 'Treasury',       'fortune', 6, 4, [{ kind: 'chestSlots', slots: 12 }], '+12 places in the chest'),
-  n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something, and drop chance turns into luck'),
+  n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something, and drop chance becomes a chance of a second piece'),
 ];
 
 /**

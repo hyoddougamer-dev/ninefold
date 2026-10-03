@@ -41,7 +41,7 @@ const lines = [
   COPY.GEAR.powerSays(5.1), COPY.GEAR.powerSays(1.3),
   ...(['up', 'trade', 'same', 'down'] as const).map((v) => COPY.ITEM.versus(v, 'Iron Sword')),
   COPY.ITEM.versus('up', null),
-  COPY.DAO.short(70, 42), COPY.DAO.taken(7, 28), COPY.DAO.closes('捨甲', 'Forsake Armour'),
+  COPY.DAO.short(70), COPY.DAO.taken(7, 28), COPY.DAO.closes('捨甲', 'Forsake Armour'),
   COPY.DAO.closed('重甲'), COPY.DAO.costs(3),
   COPY.BESTIARY.icons('lorc, delapouite'),
   COPY.RETURN.away('3h 20m'),
