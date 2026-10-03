@@ -53,7 +53,7 @@ import { Awaken } from './ui/Awaken.tsx';
 import { Figure } from './ui/Figure.tsx';
 import { WHOM } from '../data/figures.ts';
 import { cardDue as awakeningDue, cardOf, take as takeAwakening } from '../sim/awaken.ts';
-import { answer as answerMeeting, meetingDue } from '../sim/meet.ts';
+import { answerWithReceipt, meetingDue, type Receipt } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
   enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor, useKey,
@@ -193,6 +193,8 @@ export function App() {
   const [awakenShut, setAwakenShut] = useState(false);
   const [whom, setWhom] = useState(false);
   // 圍 The beast whose drive sheet is open, if any.
+  // 據 What the last meeting gave, shown once on 修 until it is read; never stored.
+  const [meetDone, setMeetDone] = useState<Receipt | null>(null);
   const [driving, setDriving] = useState<Beast | null>(null);
   // 鑑 The piece being looked at, and whether it is the one on the body.
   const [inspect, setInspect] = useState<{ item: Item; wearing: boolean } | null>(null);
@@ -1176,9 +1178,18 @@ export function App() {
             meeting={meeting}
             onMeet={(which) => {
               if (!meeting) return;
-              setState((s) => answerMeeting(s, meeting.key, which, (s.at ^ s.met.length * 2654435761) | 0));
+              // 據 The answer is pure and seeded, so working it out here gives the same state
+              // the updater keeps; the receipt is only what the screen says about it.
+              setState((s) => {
+                const r = answerWithReceipt(s, meeting.key, which, (s.at ^ s.met.length * 2654435761) | 0);
+                if (r.receipt) setMeetDone(r.receipt);
+                return r.state;
+              });
               sfx.buy();
             }}
+            meetDone={meetDone}
+            onMeetDone={() => setMeetDone(null)}
+            onMeetSee={() => { setMeetDone(null); setTab('gear'); sfx.tap(); }}
           />
         )}
         {tab === 'hunt' && (

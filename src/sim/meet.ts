@@ -1,6 +1,6 @@
 import { MEETINGS, boonsOf, heartOf, meetingOf, roadOpen, type Boon, type Meeting, type Outcome, type Pick } from '../data/meetings.ts';
 import { HEART_PATH } from './balance.ts';
-import { stash } from './stash.ts';
+import { stash, type Stashed } from './stash.ts';
 import { classMeet } from './schools.ts';
 import { rate } from './time.ts';
 import { loot } from './combat.ts';
@@ -136,10 +136,37 @@ export function giftOf(s: State, o: Outcome): { qi: number; materials: number; d
  * is set from the instant in the state rather than from a clock, so this stays pure.
  */
 export function answer(s: State, key: string, which: 0 | 1, seed: number): State {
+  return answerWithReceipt(s, key, which, seed).state;
+}
+
+/**
+ * 據 What an answer gave, said afterwards.
+ *
+ * rekaris (2026-10-03): "I've seen a crow, gave it material and I probably got something?
+ * Well, I don't know what. Was it a piece of gear? I had full inventory." The card simply
+ * vanished. This is the same answer with a receipt: what it cost, what it gave, and for a
+ * piece, which piece and whether the chest kept it or a full chest melted one. Nothing in
+ * it is stored; the screen shows it once and lets it go.
+ */
+export interface Receipt {
+  readonly key: string;
+  readonly which: 0 | 1;
+  readonly then: string;
+  readonly qi: number;
+  readonly materials: number;
+  readonly dao: number;
+  readonly costQi: number;
+  readonly costMaterials: number;
+  readonly boon: string | null;
+  readonly found: Stashed | null;
+}
+
+export function answerWithReceipt(s: State, key: string, which: 0 | 1, seed: number): { state: State; receipt: Receipt | null } {
+  const none = { state: s, receipt: null };
   const m = meetingOf(key);
-  if (!m || s.met.includes(key) || !roadOpen(m, s.realm, s.tribulation, s.met, s.chose)) return s;
+  if (!m || s.met.includes(key) || !roadOpen(m, s.realm, s.tribulation, s.met, s.chose)) return none;
   const p = m.picks[which];
-  if (!canAnswer(s, p)) return s;
+  if (!canAnswer(s, p)) return none;
 
   const cost = priceOf(s, p);
   const gift = giftOf(s, p.outcome);
@@ -157,6 +184,7 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
   if (gift.dao > 0) out = { ...out, metPoints: (out.metPoints ?? 0) + gift.dao };
 
   // 器 A piece, rolled from this realm's own table, with the meeting's own luck.
+  let found: Stashed | null = null;
   if (p.outcome.kind === 'item') {
     const commons = commonsOf(Math.max(1, Math.min(9, out.realm)));
     const beast = commons[commons.length - 1] ?? commons[0];
@@ -166,9 +194,17 @@ export function answer(s: State, key: string, which: 0 | 1, seed: number): State
       : null;
     // 藏 Into the chest the one way every find goes: 空囊 applied, a full chest's
     // cast-off melted rather than lost.
-    out = stash(out, item).state;
+    found = stash(out, item);
+    out = found.state;
   }
-  return out;
+  return {
+    state: out,
+    receipt: {
+      key, which, then: p.then, qi: gift.qi, materials: gift.materials, dao: gift.dao,
+      costQi: cost.qi, costMaterials: cost.materials,
+      boon: p.outcome.kind === 'boon' ? p.outcome.boon : null, found,
+    },
+  };
 }
 
 export { MEETINGS, meetingOf, type Boon, type Meeting, type Pick };

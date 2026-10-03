@@ -1089,6 +1089,23 @@ export const MEET = {
   drawn: (kind: 'kind' | 'hard') => (kind === 'kind'
     ? '心 Found you because of how kindly you have walked.'
     : '心 Found you because of how hard you have walked.'),
+  /**
+   * 據 What an answer gave, said once it is given. rekaris (2026-10-03) fed a crow and
+   * could not tell what came of it: the card just vanished.
+   */
+  done: {
+    head: '據 What came of it',
+    youChose: (label: string) => `You chose “${label}”.`,
+    gave: 'It gave you',
+    paid: (what: string) => `You gave ${what}.`,
+    piece: (name: string, rank: string) => `${rank} ${name}, in your chest now`,
+    pieceMelted: (name: string, rank: string, pays: string) =>
+      `${rank} ${name}. Your chest was full and held better, so it melted into ${pays}.`,
+    pieceMadeRoom: (name: string, rank: string, old: string, pays: string) =>
+      `${rank} ${name}, in your chest now. It was full, so your weakest piece, the ${old}, melted into ${pays}.`,
+    see: '器 See it in Gear',
+    ok: 'Continue',
+  },
 };
 
 /**
@@ -1113,6 +1130,8 @@ export const ROAD = {
   metHead: (n: number, of: number) => `遇 Everybody met · ${n} of ${of}`,
   none: 'Nobody yet. The road starts at the second realm.',
   youChose: (label: string) => `You chose “${label}”.`,
+  /** 據 And for an answer that gave a piece, the stele says so: the piece itself is in the chest. */
+  leftPiece: 'It left you a piece of gear.',
   toCome: (n: number) => (n === 1
     ? '歸 One of them may yet come back.'
     : `歸 ${n} of them may yet come back.`),
