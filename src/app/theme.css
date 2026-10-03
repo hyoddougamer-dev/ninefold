@@ -3415,3 +3415,157 @@ button.gs-new .cjk { margin: 0; }
 
 /* 習 A note that is a list (familiarity's five marks) keeps its line breaks. */
 .termtip i { white-space: pre-line; }
+
+/* ── 待 What is waiting, the keys, the sitting, and fingers (quality of life, 2026-10-03) ──
+   Every block below is scoped to its own screen or element; none of these classes is
+   shared with anything that already existed. */
+
+/* 點 A dot on a tab with something ready on it, and 新 on a tab a breakthrough just
+   filled. They ride the button's corner on a phone, and the end of the row on the rail. */
+nav.tabs > button { position: relative; }
+nav.tabs .readydot { position: absolute; top: 7px; right: calc(50% - 17px); width: 7px; height: 7px;
+                     border-radius: 50%; background: var(--jade);
+                     box-shadow: 0 0 0 2px #15120D, 0 0 8px rgba(127,180,149,.8); }
+nav.tabs .newdot { position: absolute; top: 5px; left: calc(50% - 21px); font-style: normal;
+                   font-size: 0; color: transparent; width: 8px; height: 8px;
+                   border-radius: 50%; background: var(--gold);
+                   box-shadow: 0 0 0 2px #15120D, 0 0 8px rgba(212,175,86,.8); }
+nav.tabs .newdot b { display: none; }
+nav.tabs .tabkey { display: none; }
+
+/* 突破 What the realm opened: each row a way in, with the tab it is on. */
+.bloom .openedhead { margin: 18px 0 0; font: 600 11px/1 var(--display); letter-spacing: .2em;
+                     text-transform: uppercase; color: var(--faint); }
+.bloom .opened { margin-top: 10px; }
+.bloom .openedrow { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; width: 100%;
+                    background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+                    padding: 11px 13px; text-align: left; font: inherit; color: var(--text); cursor: pointer; }
+.bloom .openedrow:hover, .bloom .openedrow:focus-visible { border-color: var(--gold); }
+.bloom .openedrow .openedtab { grid-column: 2; text-decoration: none; justify-self: end;
+                               font: 600 11px/1.2 var(--display); letter-spacing: .12em;
+                               text-transform: uppercase; color: var(--gold); }
+
+/* 歸 The return card: the workshop's whole night, and what is waiting now. It may hold
+   more than a phone's height, so it scrolls, and centres only while it fits. */
+.back { overflow-y: auto; justify-content: safe center; }
+.back .backcraft { margin: 2px 0 0; max-width: 34em; font-size: 12.5px; line-height: 1.55; color: var(--gold); }
+.back .backcraft .cjk { font-weight: 400; margin-right: 2px; }
+.back .backwait { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 6px; }
+.back .backwait h3 { margin: 4px 0 2px; font: 600 11px/1 var(--display); letter-spacing: .2em;
+                     text-transform: uppercase; color: var(--faint); }
+.back .backrow { display: grid; grid-template-columns: minmax(34px, auto) 1fr auto; align-items: center; gap: 10px;
+                 min-height: 44px; padding: 7px 12px; text-align: left; font: inherit; color: var(--text);
+                 background: var(--panel); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.back .backrow:hover, .back .backrow:focus-visible { border-color: var(--jade); }
+.back .backrow b { white-space: nowrap; font-size: 17px; font-weight: 400; color: var(--jade); text-align: center; }
+.back .backrow span { font-size: 13px; line-height: 1.35; }
+.back .backrow em { font: 600 10.5px/1.2 var(--display); font-style: normal; letter-spacing: .1em;
+                    text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+
+/* 修 Ready now: a line of chips under the realm's name. They wrap rather than scroll, so
+   nothing waiting is ever off the side of the screen. */
+.readystrip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
+.readystrip .rs-head { font: 600 10.5px/1 var(--display); letter-spacing: .18em; text-transform: uppercase;
+                       color: var(--jade); margin-right: 2px; }
+.readystrip .rs-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 4px 11px;
+                       font: inherit; font-size: 12.5px; color: var(--text); cursor: pointer; position: relative;
+                       background: rgba(127,180,149,.08); border: 1px solid rgba(127,180,149,.45); border-radius: 99px; }
+.readystrip .rs-chip::after { content: ''; position: absolute; inset: -4px -2px; }
+.readystrip .rs-chip:hover, .readystrip .rs-chip:focus-visible { border-color: var(--jade); }
+.readystrip .rs-chip .cjk { font-size: 14px; font-weight: 400; color: var(--jade); }
+
+/* 入定 The sitting, under the qi: a chip with its time while it lasts, and what starts the
+   next one once it has passed. */
+.qi .sitline { margin-top: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.qi .sitline .sitchip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; font-size: 12.5px;
+                        color: var(--gold); border: 1px solid var(--gild); border-radius: 99px;
+                        background: rgba(212,175,86,.08); }
+.qi .sitline[data-full='true'] .sitchip { background: rgba(212,175,86,.18); }
+.qi .sitline p { margin: 0; font-size: 12px; line-height: 1.5; max-width: 34em; text-align: center; }
+.qi .sitline[data-over='true'] p { font-size: 12.5px; }
+.qi .sitline .sitagain { width: auto; margin-top: 4px; padding: 9px 18px; min-height: 40px; font-size: 13px; }
+
+/* 業 A workshop that waits says so in the open, with the tap that ends the wait. */
+.crafts .ctask .ct-still { color: var(--gold); }
+.crafts .ctask[data-wait='true'] { border-color: var(--gold); }
+.crafts .ctask .ct-fix { width: auto; margin-top: 10px; padding: 9px 16px; min-height: 40px; font-size: 13px; }
+
+/* 鍵 The keys in How to play, only where there is a keyboard and a pointer to go with it. */
+.howto .hkeys { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .howto .hkeys { display: block; margin-top: 4px; }
+  .howto .hkeys h3 { margin: 0 0 8px; font: 600 11.5px/1 var(--display); letter-spacing: .2em;
+                     text-transform: uppercase; color: var(--faint); }
+  .howto .hkeys dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .howto .hkeys dl > div { display: grid; grid-template-columns: 9.5em 1fr; gap: 10px; align-items: baseline; }
+  .howto .hkeys dt { margin: 0; }
+  .howto .hkeys dd { margin: 0; font-size: 13px; color: var(--faint); line-height: 1.5; }
+  .howto .hkeys kbd { font: 600 11.5px/1 Rajdhani, sans-serif; letter-spacing: .04em; color: var(--text);
+                      border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 3px 6px; }
+}
+
+/* 指 Fingers. Every one of these was under 30px tall, and the smallest was 20. Each keeps
+   how it looks and takes a tap over at least 40px, by an invisible area round it. */
+.spendrow .buymode { overflow: visible; }
+.spendrow .buymode button { position: relative; }
+.spendrow .buymode button:first-child { border-radius: 99px 0 0 99px; }
+.spendrow .buymode button:last-child { border-radius: 0 99px 99px 0; }
+.spendrow .buymode button::after { content: ''; position: absolute; inset: -9px 0; }
+.sheet[data-screen='hunt'] .huntorder { overflow: visible; }
+.sheet[data-screen='hunt'] .huntorder button { position: relative; }
+.sheet[data-screen='hunt'] .huntorder button:first-child { border-radius: 99px 0 0 99px; }
+.sheet[data-screen='hunt'] .huntorder button:last-child { border-radius: 0 99px 99px 0; }
+.sheet[data-screen='hunt'] .huntorder button::after { content: ''; position: absolute; inset: -8px 0; }
+/* The chest's chips scroll sideways, which clips anything drawn outside them, so the button
+   is the 40px and the pill is drawn inside it. */
+.sheet[data-screen='gear'] .chestfilter { margin-top: -7px; margin-bottom: 3px; padding-top: 0; padding-bottom: 0; }
+.sheet[data-screen='gear'] .chestfilter.schools { margin-top: -5px; }
+.sheet[data-screen='gear'] .chestfilter button { position: relative; min-height: 40px; align-items: center;
+                                                 border-color: transparent; background: none; }
+.sheet[data-screen='gear'] .chestfilter button::before { content: ''; position: absolute; inset: 8px 0;
+                                                         border: 1px solid var(--line); border-radius: 99px; pointer-events: none; }
+.sheet[data-screen='gear'] .chestfilter button[aria-pressed='true'] { border-color: transparent; }
+.sheet[data-screen='gear'] .chestfilter button[aria-pressed='true']::before { border-color: var(--text); }
+.sheet[data-screen='gear'] .chestfilter button.ups[aria-pressed='true']::before { border-color: var(--jade); }
+.sheet[data-screen='gear'] .chestfilter.schools button[aria-pressed='true']::before { border-color: var(--hue, var(--text)); }
+.sheet[data-screen='cultivate'] .guidex { width: 40px; height: 40px; right: 1px; bottom: 1px; }
+.sheet[data-screen='dao'] .xclose { min-width: 40px; min-height: 40px; margin: -10px -10px -10px 0;
+                                    display: inline-grid; place-items: center; }
+.sheet[data-screen='dao'] .tnode:focus { outline: none; }
+.sheet[data-screen='dao'] .tnode:focus-visible .thit { stroke: var(--gold); stroke-width: 1.6; }
+
+/* 鍵 On a computer's rail: the dots at the end of the row, where they cannot land on the
+   name, and with a pointer the key beside each tab. */
+@media (min-width: 1100px) {
+  .app > nav.tabs .readydot { top: 50%; right: 16px; transform: translateY(-50%); }
+  .app > nav.tabs .newdot { top: 50%; left: auto; right: 32px; transform: translateY(-50%);
+                            width: auto; height: auto; padding: 3px 7px; border-radius: 99px;
+                            font: 700 10.5px/1 Rajdhani, sans-serif; letter-spacing: .1em;
+                            text-transform: uppercase; color: #15120D; }
+  .app > nav.tabs .newdot b { display: inline; font: 400 11px 'Noto Serif SC', serif; }
+  .app > nav.tabs button:has(.owed) .readydot { right: 52px; }
+}
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .app > nav.tabs .tabkey { display: inline-grid; place-items: center; position: absolute; left: -2px; top: 50%;
+                            transform: translateY(-50%); min-width: 15px; height: 15px; padding: 0 2px;
+                            font: 600 10px/1 Rajdhani, sans-serif; color: var(--faint); opacity: .7;
+                            border: 1px solid var(--line); border-radius: 4px; background: #15120D; }
+  .app > nav.tabs button:hover .tabkey { opacity: 1; color: var(--text); }
+}
+/* 修 On a phone the strip is one line that scrolls sideways, fading at the edge so it
+   says there is more: three rows of chips pushed the cultivator half a screen down. */
+@media (max-width: 1099px) {
+  .readystrip { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -15px; padding-right: 26px;
+                -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent);
+                mask-image: linear-gradient(90deg, #000 calc(100% - 34px), transparent); }
+  .readystrip::-webkit-scrollbar { display: none; }
+  .readystrip .rs-chip { flex: none; min-height: 36px; white-space: nowrap; }
+  .readystrip .rs-head { flex: none; }
+}
+/* 歸 Nothing on the return card gives up its height to the list; the card scrolls instead. */
+.back > * { flex-shrink: 0; }
+/* 歸 On a 320 phone the tab a row goes to sits under its sentence, not beside it. */
+@media (max-width: 360px) {
+  .back .backrow { grid-template-columns: minmax(28px, auto) 1fr; row-gap: 2px; }
+  .back .backrow em { grid-column: 2; }
+}

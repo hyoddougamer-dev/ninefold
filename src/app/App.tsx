@@ -25,9 +25,9 @@ import {
   carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, tookPart, work,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
-import { RECIPE_BY_KEY, SKILL_BY_KEY, splitKey } from '../data/crafts.ts';
+import { splitKey } from '../data/crafts.ts';
 import type { Away } from '../sim/save.ts';
-import { AWAKEN, CRAFTS, GEAR } from './copy.ts';
+import { AWAKEN, GEAR } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
@@ -85,6 +85,14 @@ import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
 import { BLOOM, DAO, LOCKED, MENU, UPDATE } from './copy.ts';
+// ── 待 What is waiting, the keys and the sitting (quality of life, 2026-10-03) ──
+import { OPENED, READY } from './copy.ts';
+import { heavyOf, ready as readyNow, readyByTab, type Place, type Waiting } from './ready.ts';
+import { workshopLines } from './away.ts';
+import { TAB_OF, clearFresh, freshTabs, markFresh, newTabsOf } from './fresh.ts';
+import { spendablePoints } from '../sim/points.ts';
+import { fightDeps } from './memo.ts';
+import { weekOf } from '../sim/week.ts';
 
 /**
  * 開 The tabs, and what opens them.
@@ -103,6 +111,13 @@ const TABS = [
 ] as const satisfies readonly { key: string; han: string; label: string; needs: System | null }[];
 
 type TabKey = (typeof TABS)[number]['key'];
+
+/** 待 Where on its screen a row of the waiting list is, so taking it brings it into view. */
+const READY_AT: Partial<Record<Waiting['key'], string>> = {
+  beds: '.cave', demon: '.seclude', road: '.meet', breakthrough: '[data-coach="breakthrough"]',
+  cross: '[data-ready="cross"]', vault: '.door.open', workshop: '.ctask', upgrades: '.chestfilter .ups',
+  chestFull: '.melting', melt: '.melting',
+};
 
 const now = () => Date.now() / 1000;
 
@@ -193,9 +208,10 @@ export function App() {
    */
   const [tally, setTally] = useState(false);
 
-  /** 點 道 points earned and not yet spent. The tab bar wears the count, and 示 the
-      line of advice reads the same number. See sim/points.ts. */
-  const free = freeOf(state);
+  /** 點 道 points earned, not yet spent, and with a node in reach to spend them on. The
+      tab bar wears the count, and 示 the line of advice reads the same number. It wore
+      the bare count once, and a full tree read 32 at the eighth realm. See sim/points.ts. */
+  const free = spendablePoints(state);
   /** 悟道 Whether a breakthrough still owes this cultivator a card. Derived, always. */
   const owesCard = awakeningDue(state) !== null;
   /** 緣 Who is on the road, if anybody. Derived from the save, so it cannot be lost. */
@@ -245,6 +261,8 @@ export function App() {
   }, [state]);
   const [focus, setFocus] = useState(1);
   const [satOut, setSatOut] = useState(false);
+  /** 入定 Whole seconds left in this visit's sitting, 0 when there is none. */
+  const [sitLeft, setSitLeft] = useState(0);
   const [opened, setOpened] = useState(false);
   const openedTimer = useRef(0);
 
@@ -287,7 +305,7 @@ export function App() {
   useEffect(() => {
     if (!ready) return;
     const enter = () => { if (since.current === null) since.current = now(); };
-    const leave = () => { since.current = null; setFocus(1); setSatOut(false); };
+    const leave = () => { since.current = null; setFocus(1); setSatOut(false); setSitLeft(0); };
     const onVisibility = () => (document.hidden ? leave() : enter());
     since.current = null;
     enter();
@@ -320,6 +338,7 @@ export function App() {
       // it reads 1 both before the sitting begins and after it ends, and those are two
       // very different things to put on a screen.
       setSatOut(open >= FOCUS_HOLD);
+      setSitLeft(since.current === null ? 0 : Math.max(0, Math.ceil(FOCUS_HOLD - open)));
       setState((s) => {
         // 業 And the workshop, settled to the same instant. It reads its own clock.
         const t = now();
@@ -758,6 +777,9 @@ export function App() {
       // A realm that handed something over waits to be read. One that only changed the
       // light does not. 1.4 seconds is right for a colour and wrong for three cards.
       if (opensIn(state.realm).length === 0) setTimeout(() => setBloom(null), 1400);
+      // 新 And every tab it put something on wears a dot until it is opened.
+      const tabs = newTabsOf(state.realm);
+      setState((s) => markFresh(s, tabs));
     }
     lastRealm.current = state.realm;
   }, [state.realm, ready]);
@@ -871,9 +893,50 @@ export function App() {
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
-  const covered = help || prologue || ranks || !!cloudPick || key || book || cards || stele || credits || saving || realmPage || menu || !!driving
+  /** 收 What hides the corner Menu. The vault, the tally and the cards keep it, as they always did. */
+  const shade = help || prologue || ranks || !!cloudPick || key || book || cards || stele || credits || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
+  /**
+   * 悟道 Whether the three cards are on the screen. Never over 突破 the breakthrough: what
+   * the realm opened is read first, then the cards, then the tab it opened.
+   */
+  const cardsUp = owesCard && !awakenShut && bloom === null;
+  /**
+   * 鍵 What covers the screen, for the keys and the ring. The vault, the tally and the
+   * owed cards were missing from it, so 1 to 7 switched the tab underneath them and the
+   * guide's ring was drawn on a screen nobody could see.
+   */
+  const covered = shade || insideSecret(state) || tally || cardsUp;
+
+  // ── 待 What is waiting (quality of life, 2026-10-03) ─────────────────────────────
+  // The fight reads and the chest's try-ons are worked out once per change rather than
+  // five times a second: the clock moves the qi on every tick and that changes none of them.
+  // 業 Not the pouch, which the workshop moves every few seconds: none of these reads it
+  // (a tower floor and a common beast are never fought with a kit, and gear is power).
+  const heavy = useMemo(() => heavyOf(state),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [...fightDeps(state).filter((d) => d !== state.crafts.pouch), state.chest, state.tower, state.quarryWeek,
+      weekOf(state.at)]);
+  const waiting = useMemo(() => readyNow(state, heavy), [state, heavy]);
+  const byTab = readyByTab(waiting);
+  /** 新 The tabs a breakthrough put something on, until each is opened. */
+  const newTabs = freshTabs(state);
+  useEffect(() => { setState((s) => clearFresh(s, tab)); }, [tab]);
+  /** 待 Take a row of the list: its tab, and on 修 the thing itself, brought into view. */
+  const goReady = (w: Waiting) => {
+    setHome(null);
+    sfx.tap();
+    if (w.key === 'card') { setAwakenShut(false); setTab('cultivate'); return; }
+    setTab(w.tab);
+    const at = READY_AT[w.key];
+    if (at) {
+      window.setTimeout(() => document.querySelector(at)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 90);
+    }
+  };
+  /** 突破 Go to the tab a system just opened on. */
+  const goOpened = (place: Place) => { setBloom(null); setTab(place); sfx.tap(); };
+  // ── end 待 ──────────────────────────────────────────────────────────────────────
   // 指 On the step's own screen the ring goes on the thing to press. Anywhere else it
   // goes on the tab that leads there: "go and kill the rat" used to point at nothing at
   // all until the player guessed which tab the rat was on.
@@ -942,6 +1005,55 @@ export function App() {
       }
       return;
     }
+    // ── 鍵 The windows that had no keys (quality of life, 2026-10-03) ──────────────
+    // A window opened from the Menu sits over all of these, so its own Esc comes first.
+    if (!panelOut) {
+      const esc = e.key === 'Escape';
+      const enter = e.key === 'Enter';
+      // 歸 The return card: Enter, Space or Esc carries on.
+      if (home) {
+        if (go || esc) { e.preventDefault(); setHome(null); sfx.tap(); }
+        return;
+      }
+      if (bloom !== null) {
+        if (go || esc) { e.preventDefault(); press('.bloom .act'); }
+        return;
+      }
+      // 秘境 1 or ← takes the left door, 2 or → the right one. Nothing else: walking out
+      // ends a run, so it is never a key that could be pressed by accident.
+      if (insideSecret(state)) {
+        const door = e.key === '1' || e.key === 'ArrowLeft' ? 0 : e.key === '2' || e.key === 'ArrowRight' ? 1 : -1;
+        if (door >= 0) {
+          e.preventDefault();
+          document.querySelectorAll<HTMLButtonElement>('.secret .ways .way')[door]?.click();
+        }
+        return;
+      }
+      if (tally) {
+        if (go || esc) { e.preventDefault(); press('.runend .endcard .act'); }
+        return;
+      }
+      // 悟道 Esc is Later: the card waits, as it always does.
+      if (cardsUp) {
+        if (esc) { e.preventDefault(); press('.awaken .later'); }
+        return;
+      }
+      // 相 Esc is Not yet.
+      if (asking) {
+        if (esc) { e.preventDefault(); press('.whom .later'); }
+        return;
+      }
+      // 新 A note at the foot of the screen: Enter reads it, Esc puts it away. Only when
+      // nothing else holds the focus, or Enter on a focused button would land here instead.
+      const loose = !document.activeElement || document.activeElement === document.body;
+      if (notice && !menu && loose && (enter || esc)) {
+        e.preventDefault();
+        if (enter) press('.notice button');
+        else readNotice(notice.key);
+        return;
+      }
+    }
+    // ── end 鍵 ──────────────────────────────────────────────────────────────────────
     if (e.key === 'Escape') {
       const shut = panelOut ?? (menu ? () => setMenu(false) : locked !== null ? () => setLocked(null) : null);
       if (shut) { e.preventDefault(); shut(); }
@@ -977,6 +1089,11 @@ export function App() {
             pulse={pulse}
             focus={focus}
             satOut={satOut}
+            sitLeft={sitLeft}
+            // 坐 Exactly what coming back to the game does: a new sitting from now.
+            onSitAgain={() => { since.current = now(); setSatOut(false); setSitLeft(FOCUS_HOLD); sfx.tap(); }}
+            waiting={waiting}
+            onReady={goReady}
             opened={opened}
             set={climb}
             onFight={() => startFight(currentWarden(state))}
@@ -1008,6 +1125,7 @@ export function App() {
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
         {tab === 'crafts' && (
           <Crafts state={state}
+            onGo={(where) => { setTab(where); sfx.tap(); }}
             onTask={(key) => { setState((s) => setTask(s, key, now())); sfx.tap(); haptics.tap(); }}
             onCarry={(hand, key) => { setState((s) => carry(s, hand, key)); sfx.tap(); }}
             onUse={(key) => { setState((s) => takeSeeking(s, key)); sfx.buy(); }}
@@ -1046,7 +1164,7 @@ export function App() {
           each one arrives with its name in English beside it, which is the same rule
           the upgrades follow, applied to the one place that had escaped it. */}
       <div className="topband" aria-hidden="true" data-on={scrolled && !covered} />
-      <div className="switches" data-open={menu} hidden={covered && !menu}>
+      <div className="switches" data-open={menu} hidden={shade && !menu}>
         <button className="mainswitch" data-on={menu} aria-expanded={menu}
           aria-label={MENU.label} onClick={() => { setMenu((m) => !m); sfx.tap(); }}>
           {menu ? '✕' : '≡'}
@@ -1092,20 +1210,41 @@ export function App() {
           <img className="name" src="./brand/name.webp" width="640" height="100" alt={BRAND.name} />
           <span><b className="cjk">九境</b> {BRAND.line}</span>
         </div>
-        {TABS.map((t) => {
+        {TABS.map((t, i) => {
           const shut = t.needs !== null && !isOpen(state.realm, t.needs);
           // 點 An unspent 道 point is money on the floor, and the screen it is spent on
           // is three taps and a scroll away. So the tab carries the count: the one place
           // a player looking at any other screen will see it.
           const owed = t.key === 'dao' && !shut && isOpen(state.realm, 'tree') ? free : 0;
+          // 待 Something ready on this tab: a dot, and the sentences in its label. Not on the
+          // tab being looked at, and not the 道 points, which wear their own count.
+          const here = shut ? [] : (byTab[t.key] ?? []).filter((w) => w.key !== 'points');
+          const dot = here.length > 0 && tab !== t.key;
+          // 新 A tab the last breakthrough put something on, until it is opened.
+          const isNew = !shut && tab !== t.key && newTabs.includes(t.key);
+          const opened = isNew ? opensIn(state.realm).filter((x) => TAB_OF[x.key] === t.key).map((x) => x.name) : [];
+          const says = [
+            ...(dot ? here.map((w) => w.long) : []),
+            ...(isNew ? [OPENED.tabNew(opened.join(', '))] : []),
+            ...(owed > 0 ? [DAO.freePoints(owed)] : []),
+          ];
+          const label = says.length ? READY.tabSays(t.label, says.join(' ')) : undefined;
           return (
             <button
               key={t.key}
               data-on={tab === t.key}
               data-shut={shut}
               data-coach={`tab-${t.key}`}
+              data-ready={dot || undefined}
+              data-new={isNew || undefined}
+              aria-label={label}
+              title={label}
               onClick={() => (shut ? setLocked(t.needs) : setTab(t.key))}
             >
+              {/* 鍵 The key that opens it, on a computer's rail. */}
+              <kbd className="tabkey" aria-hidden="true">{i + 1}</kbd>
+              {dot && <i className="readydot" aria-hidden="true" />}
+              {isNew && <i className="newdot" aria-hidden="true"><b className="cjk">新</b> {OPENED.newWord}</i>}
               {/* A locked tab keeps its own character and swaps its name for the realm
                   that opens it. Four identical padlocks in a row say nothing.
                   譯 It says the realm's *number* and not its name. 化神 sat under 塔 on
@@ -1130,6 +1269,7 @@ export function App() {
         <button className="ranktab" data-on={ranks} data-coach="tab-ranks"
           aria-label={place ? RANKS.tabPlace(place) : RANKS.tab}
           onClick={() => { setRanks(true); sfx.tap(); }}>
+          <kbd className="tabkey" aria-hidden="true">{TABS.length + 1}</kbd>
           <span className="g cjk">
             榜
             {place !== null && <i className="owed rankplace">#{place}</i>}
@@ -1208,14 +1348,23 @@ export function App() {
             <p>{realmOf(bloom).gains}</p>
             {opensIn(bloom).length > 0 && (
               <>
+                {/* 突破 Each row names the tab it is on and goes there. The cards wait until
+                    this has been read (see cardsUp), and every tab named here wears 新 until
+                    it is opened. */}
+                <p className="openedhead">{OPENED.head}</p>
                 <div className="opened">
-                  {opensIn(bloom).map((sys) => (
-                    <span key={sys.key}>
-                      <b className="cjk">{sys.han}</b>
-                      <em>{sys.name}</em>
-                      <i>{sys.gives}</i>
-                    </span>
-                  ))}
+                  {opensIn(bloom).map((sys) => {
+                    const place = TAB_OF[sys.key];
+                    const t = TABS.find((x) => x.key === place)!;
+                    return (
+                      <button key={sys.key} type="button" className="openedrow" onClick={() => goOpened(place)}>
+                        <b className="cjk">{sys.han}</b>
+                        <em>{sys.name}</em>
+                        <i>{sys.gives}</i>
+                        <u className="openedtab">{OPENED.where(t.han, t.label)}</u>
+                      </button>
+                    );
+                  })}
                 </div>
                 <button className="act" onClick={() => { setBloom(null); sfx.tap(); }}>
                   續 <span>{BLOOM.on}</span>
@@ -1407,7 +1556,7 @@ export function App() {
 
       {/* 悟道 Raised by the save rather than by an event: if a choice is owed and the
           player has not put it aside, the three cards are on the screen. */}
-      {owesCard && !awakenShut && (
+      {cardsUp && (
         <Awaken
           state={state}
           onTake={(key) => {
@@ -1464,12 +1613,28 @@ export function App() {
               {RETURN.spent(num(home.climbed))}
             </p>
           )}
-          {/* 業 What the workshop did while nobody was watching it. */}
-          {home.crafts && RECIPE_BY_KEY[home.crafts.task] && (
-            <p style={{ margin: '6px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
-              業 {CRAFTS.awayLine(home.crafts.made, RECIPE_BY_KEY[home.crafts.task].name, home.crafts.from, home.crafts.to,
-                SKILL_BY_KEY[RECIPE_BY_KEY[home.crafts.task].skill].name)}
+          {/* 業 What the workshop did while nobody was watching it, and why it stood still
+              when it did, including the nights it made nothing at all. */}
+          {home.crafts && workshopLines(home.crafts).length > 0 && (
+            <p className="backcraft">
+              <b className="cjk">業</b> {workshopLines(home.crafts).join(' ')}
             </p>
+          )}
+          {/* 待 What is waiting now, each row a way straight to it. */}
+          {waiting.length > 0 && (
+            <div className="backwait">
+              <h3>{READY.head}</h3>
+              {waiting.map((w) => {
+                const t = TABS.find((x) => x.key === w.tab)!;
+                return (
+                  <button key={w.key} type="button" className="backrow" onClick={() => goReady(w)}>
+                    <b className="cjk">{w.han}</b>
+                    <span>{w.long}</span>
+                    <em>{READY.onTab(t.han, t.label)}</em>
+                  </button>
+                );
+              })}
+            </div>
           )}
           <button className="act" style={{ maxWidth: 240 }} onClick={() => { setHome(null); sfx.tap(); }}>
             續 <span>Continue</span>

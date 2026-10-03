@@ -51,7 +51,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for a quarter of an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -291,7 +291,6 @@ export const CULTIVATE = {
    * gained by staying, never as something lost by leaving, because leaving costs
    * nothing and the game has to keep saying so.
    */
-  deep: 'Sitting with it deepens your gathering. It keeps rising for a few minutes.',
   deepFull: 'Fully settled. This is as deep as sitting with it goes.',
   /**
    * 氣 Why the number moves, said on the screen where it moves.
@@ -307,11 +306,7 @@ export const CULTIVATE = {
    * rule every other pair of numbers in this game follows.
    */
   standing: (n: string) => `${n} standing`,
-  sitting: 'The sitting lasts a quarter of an hour. Leave and come back for another one.',
-  /** And what the number falls back to, framed as the thing it is: a bonus that ended. */
-  sittingOver: (n: string) =>
-    `入定 That sitting has passed and you are back to your standing ${n} a second. ` +
-    'Nothing was taken: the sitting was extra. Come back later and it begins again.',
+  // 入定 The sitting's own lines (how long is left, what starts the next) are in SIT below.
 
   /**
    * 雷池 The pool. It is the ninth realm's bar, and it refills.
@@ -1884,6 +1879,152 @@ export const CRAFTS = {
   /** 九轉 A win that never needed the pill it carried keeps it. */
   kitUnneeded: (names: string) => `Never needed, so kept: ${names}.`,
   seekKept: 'A sure drop still waits for your next win.',
-  awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
-    to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,
+  // 歸 The homecoming lines moved to WORKSHOP_AWAY below, which says why it stood still too.
+};
+
+/* ── 待 What is waiting for you, and the batch that reads it ─────────────────────────
+ *
+ * Quality of life, 2026-10-03. Two audits played a check-in at every stage of the climb
+ * and counted thirty to fifty taps, most of them spent finding what was ready rather
+ * than taking it. Everything below is read off the save (see app/ready.ts): nothing here
+ * is stored, and no line in it may read as a loss, because nothing is ever lost.
+ */
+
+export const READY = {
+  /** 歸 The heading of the list on the return card. */
+  head: '待 Waiting for you',
+  /** 修 The strip at the top of Cultivate. */
+  strip: 'Ready now',
+  /** The tab a row is taken on, said at the end of the row. */
+  onTab: (han: string, label: string) => `${han} ${label} \u203a`,
+  /** 點 A tab's own label when something on it is ready, for the screen reader and the pointer. */
+  tabSays: (label: string, what: string) => `${label}: ${what}`,
+  material: '材 material',
+  card: { short: 'Choose a card', long: 'A breakthrough card is waiting for you to choose it.' },
+  breakthrough: { short: 'Break through', long: 'The warden is down. The next realm is open to you.' },
+  cross: { short: 'Cross', long: 'The Dragon is down. The tribulation is ready to be crossed.' },
+  demon: { short: 'Heart demon', long: 'Your heart demon waits behind the door.' },
+  road: { short: 'On the road', long: (name: string) => `${name} is waiting for you on the road.` },
+  beds: {
+    short: (n: number) => `Cave: ${n} ripe`,
+    long: (n: number) => (n === 1 ? 'A cave bed is ripe.' : `${n} cave beds are ripe.`),
+  },
+  vault: { short: 'Vault open', long: 'The vault door is open.' },
+  points: {
+    short: (n: number) => `Path: ${n} to spend`,
+    long: (n: number) => `${n} Path ${n === 1 ? 'point' : 'points'} to spend.`,
+  },
+  workshop: {
+    shortIdle: 'Workshop: no task',
+    shortWaits: 'Workshop waits',
+    idle: 'The workshop has no task. Pick one and it works while you are away.',
+    needs: (what: string) => `The workshop is waiting for ${what}.`,
+    chest: 'The forge is waiting for room in your chest.',
+    remains: (beast: string) => `The workshop is waiting to know the ${beast}.`,
+  },
+  quarry: {
+    short: 'Week\u2019s quarry',
+    long: (name: string, left: string) => `The week\u2019s quarry, the ${name}, still pays its first-kill qi. ${left} left.`,
+  },
+  floor: {
+    short: (f: number) => `Tower floor ${f}`,
+    long: (f: number, pct: number) => `Tower floor ${f} is ${pct}% to win.`,
+  },
+  upgrades: {
+    short: (n: number) => `${n} better ${n === 1 ? 'piece' : 'pieces'}`,
+    long: (n: number) => `${n} ${n === 1 ? 'piece' : 'pieces'} in your chest would be an upgrade.`,
+  },
+  chestFull: { short: 'Chest full', long: 'Your chest is full. Wear or melt a piece to make room.' },
+  melt: { short: 'Melting pays qi', long: 'Your melting allowance is full, so melting pays its whole worth in qi.' },
+};
+
+/**
+ * 業 What the workshop did while nobody watched, said whole.
+ *
+ * It said only what was made, and only when something was. A night spent waiting for ore
+ * said nothing; thirty hours away said "made 12,126" and never that it had rested for the
+ * last eighteen. Each line says what happened as what it is: a rest or a wait, never a loss.
+ */
+export const WORKSHOP_AWAY = {
+  made: (n: number, name: string) => `The workshop made ${n.toLocaleString('en')} \u00d7 ${name}.`,
+  level: (skill: string, from: number, to: number) => `${skill} ${from} \u2192 ${to}.`,
+  rested: (span: string, hours: number) => `Then it rested for ${span}: it works ${hours} hours after each visit.`,
+  waitedAfter: (span: string, what: string) => `Then it waited ${span} for ${what}.`,
+  waited: (span: string, what: string, name: string) => `It waited ${span} for ${what} to make ${name}.`,
+  roomAfter: (span: string) => `Then it waited ${span} for room in your chest.`,
+  room: (span: string) => `It waited ${span} for room in your chest.`,
+  know: (span: string, beast: string) => `It waited ${span} to know the ${beast}.`,
+  doneAfter: (span: string) => `Then it stood ready for a new task for ${span}.`,
+  done: (span: string) => `Its last task was done, and it stood ready for a new one for ${span}.`,
+  none: (span: string, hours: number) => `It had no task for ${span}. Set one and it works ${hours} hours after you leave.`,
+};
+
+/** 業 The one tap that sets a waiting workshop going again, on the Crafts screen. */
+export const WORKSHOP_FIX = {
+  gather: (what: string) => `Gather ${what}`,
+  gatherNote: (name: string) => `This changes the task. Set ${name} again once there is enough.`,
+  hunt: 'Hunt for 材 material',
+  huntBeast: (beast: string) => `Hunt the ${beast}`,
+  room: 'Make room in the chest',
+  again: (name: string) => `Make ${name} again`,
+  goTo: (name: string) => `Find ${name}`,
+};
+
+/** 突破 What a realm hands over, said before the cards, and each one a way in. */
+export const OPENED = {
+  head: 'Opened in this realm',
+  /** The tab a system lives on, at the end of its row. */
+  where: (han: string, label: string) => `${han} ${label} \u203a`,
+  /** And on the tab itself until it is opened. */
+  tabNew: (names: string) => `New here: ${names}.`,
+  newWord: 'New',
+};
+
+/**
+ * 鍵 The keys, said once in How to play, on a device with a pointer.
+ *
+ * rekaris asked for Esc in the arena, and every window after it learned the same keys. A
+ * key nobody is told about is a key nobody presses.
+ */
+export const KEYS = {
+  head: '鍵 Keys',
+  rows: [
+    ['1 to 7', 'The tabs, in the order the bar shows them.'],
+    ['Space or Enter', 'In a fight, skip to the end. At the verdict, collect.'],
+    ['R', 'At the verdict, collect and fight the same beast again.'],
+    ['A', 'At the verdict, start the auto-hunt on a beast you know.'],
+    ['Esc', 'Close whatever is on top. On the cards it means Later, on the question Not yet.'],
+    ['Enter', 'Close the return card or a note.'],
+    ['1 or 2, \u2190 or \u2192', 'In the vault, take the left or the right door.'],
+  ] as const,
+};
+
+/** 道 A node of the tree as a button: what the screen reader says, and what a key opens. */
+export const NODE = {
+  label: (name: string, han: string, status: 'have' | 'open' | 'poor' | 'locked' | 'shut', cost: number) =>
+    `${name} ${han}, ${{
+      have: 'learned',
+      open: `can be learned for ${cost} 道`,
+      poor: `costs ${cost} 道, more than you hold`,
+      locked: 'not reachable yet',
+      shut: 'closed by the node beside it',
+    }[status]}`,
+};
+
+/**
+ * 入定 The sitting, said so a player always knows which part of it they are in.
+ *
+ * rekaris, on the Discord: *"what constitutes 'check again'? ... I reload the page and it
+ * starts again ... the player knows exactly when they start meditating, when it ends and
+ * when to check back."* It begins when the game comes on screen and ends a quarter of an
+ * hour later. Coming back to the game starts a new one, and so does 坐 Sit again, which is
+ * exactly what a reload did, without the reload.
+ */
+export const SIT = {
+  chip: (x: string, left: string) => `Sitting \u00d7${x} \u00b7 ${left} left`,
+  rising: 'It deepens for three minutes, then holds until the quarter of an hour is up.',
+  over: (n: string) =>
+    `That sitting has passed, so you gather at your standing ${n} a second. Nothing was taken: the sitting was extra.`,
+  how: 'A new sitting starts whenever you come back to the game, or now:',
+  again: 'Sit again',
 };

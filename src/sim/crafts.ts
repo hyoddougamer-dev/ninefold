@@ -305,29 +305,77 @@ function makeOne(s: State, r: Recipe): State {
  * the instant moves to now, so what arrives later is not paid for time it was not there.
  */
 export function work(s: State, now: number): State {
+  return settle(s, now).state;
+}
+
+/**
+ * 停 Why the workshop stood still, if it did.
+ *
+ *   'needs', 'chest', 'remains'  the task was set and waited for what it needs;
+ *   'idle'     there was no task, or the one set could not be made any more (a tool
+ *              already held clears itself after its one make);
+ *   'limit'    it worked its CRAFT_WORK_HOURS after the last visit and then rested.
+ *
+ * None of these is a loss: nothing made is taken back, and nothing waits to spoil.
+ */
+export type Stood = 'needs' | 'chest' | 'remains' | 'idle' | 'limit';
+
+export interface Settled {
+  readonly state: State;
+  /** Why it stopped making, or null if it was still working at `now`. */
+  readonly stood: Stood | null;
+  /** 時 The instant it stopped making, when it did. */
+  readonly stoodFrom: number | null;
+}
+
+/**
+ * 時 work(), with the report the 歸 return card reads: why it stopped and since when.
+ * The state it hands back is exactly what work() always handed back; the report is read
+ * off the same loop, so the card and the pouch can never disagree.
+ */
+export function settle(s: State, now: number): Settled {
   const c = s.crafts;
-  if (!Number.isFinite(now)) return s;
-  if (!c.task) return c.since === now ? s : { ...s, crafts: { ...c, since: now } };
+  if (!Number.isFinite(now)) return { state: s, stood: null, stoodFrom: null };
+  if (!c.task) {
+    return { state: c.since === now ? s : { ...s, crafts: { ...c, since: now } }, stood: 'idle', stoodFrom: c.since };
+  }
   const r = RECIPE_BY_KEY[c.task];
-  if (!r || !canSet(s, r)) return { ...s, crafts: { ...c, task: null, since: now } };
-  if (now <= c.since) return s;
+  if (!r || !canSet(s, r)) {
+    return { state: { ...s, crafts: { ...c, task: null, since: now } }, stood: 'idle', stoodFrom: c.since };
+  }
+  if (now <= c.since) return { state: s, stood: null, stoodFrom: null };
 
   const end = Math.min(now, c.since + workSeconds(s));
   let out = s;
   let at = c.since;
+  let stood: Stood | null = null;
+  let stoodFrom: number | null = null;
   // 守 A day's worth of the fastest recipe is under thirty thousand makes; this is only a
   // guard against a clock that has gone somewhere a clock cannot go.
   for (let guard = 0; guard < 200_000; guard++) {
     const t = secondsOf(out, r);
     if (at + t > end) break;
-    if (blocked(out, r) !== null) { at = now; break; }
+    const b = blocked(out, r);
+    if (b !== null) {
+      stood = b === 'needs' || b === 'chest' || b === 'remains' ? b : 'idle';
+      stoodFrom = at;
+      at = now;
+      break;
+    }
     out = makeOne(out, r);
     at += t;
   }
   // The workshop stood still at its limit: the rest of the absence is not owed, and the
   // make that was half done when it stopped is dropped rather than finished on return.
+  // 待 The loop can also end on the clock with the pouch already empty: the next make
+  // was due after `now`, and it could not have started anyway. That is a wait, not work.
+  if (stood === null) {
+    const b = blocked(out, r);
+    if (b === 'needs' || b === 'chest' || b === 'remains') { stood = b; stoodFrom = at; }
+    else if (end < now) { stood = 'limit'; stoodFrom = end; }
+  }
   const since = end < now ? now : at;
-  return { ...out, crafts: { ...out.crafts, since: Math.min(now, since) } };
+  return { state: { ...out, crafts: { ...out.crafts, since: Math.min(now, since) } }, stood, stoodFrom };
 }
 
 /** 作 Set the workshop going on a recipe. Settles what was running first. */
