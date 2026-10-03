@@ -718,6 +718,25 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/quarry-hours.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-qol",
+      "pin": false,
+      "channel": "news",
+      "title": "便 Help us make Ninefold easier",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/news-qol.webp?v=1",
+      "body": [
+        "**Quality of life comes first this week.** Thank you all for playing, and for every report and idea so far.",
+        "",
+        "Head to {#ideas} and open **便 Quality of life: what slows you down?** Tell us every tap, scroll and wait you would cut, on a phone or a computer. Small ideas are the best ones.",
+        "",
+        "The picture below is what your posts have already put in the game."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1097,7 +1116,7 @@
       "key": "ideas-workshop",
       "forum": "ideas",
       "tags": ["Idea"],
-      "pin": true,
+      "pin": false,
       "title": "業 The Workshop: tell us what you think",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-workshop.webp?v=2",
@@ -1143,6 +1162,42 @@
         ["Still stuck?", "Open a post here with your phone model, your Android version and a screenshot of where it stops. We read every one."]
       ],
       "footer": "九境 Ninefold · closed test"
+    },
+    {
+      "key": "ideas-qol",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": true,
+      "title": "便 Quality of life: what slows you down?",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-qol.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/qol-asked.webp?v=1",
+      "body": [
+        "**This week, making the game easier to play comes first.** Thank you for every post so far: most of the picture below began in this forum.",
+        "",
+        "Reply here with anything that costs you a tap, a scroll or a wait you would rather not spend. Small is perfect. *\"I open the gear tab every visit just to check one thing\"* is exactly what we want to hear."
+      ],
+      "fields": [
+        [
+          "❓ Some places to start",
+          "**1.** What do you tap every visit that could be one tap?\n**2.** What do you have to remember that the game could remind you of?\n**3.** What do you scroll past or search for every time?\n**4.** On a computer: which key would you want, and for what?\n**5.** What would make a two-minute check-in faster?\n**6.** What did Dao of the Endless Sky, or another idle game, do that you miss here?"
+        ],
+        [
+          "✍️ How to answer",
+          "One idea per reply is easiest to track, and a screenshot of the screen you mean helps a lot. Say whether you play on a phone or a computer."
+        ],
+        [
+          "守 What stays",
+          "Nothing is taken away for being away, and losing a fight costs nothing. Those are the game's promises, so ideas that keep them are the ones we can build."
+        ],
+        [
+          "📌 What happens next",
+          "Every reply is read. The ideas that make the most players' days easier go in first, and the dev log will say whose idea each one was."
+        ]
+      ],
+      "footer": "師 Shibaki · every reply is read"
     }
   ],
   "threads": [
