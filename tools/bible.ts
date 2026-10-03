@@ -64,7 +64,7 @@ import { ART_BEND, DRIVE_MINUTES, FIND_TOP, FUSE_BEND, LUCK_BEND, LUCK_ROLL_BEND
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
-  KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
+  DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
 import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
@@ -2276,7 +2276,7 @@ const page = `<meta charset="utf-8">
       <tr><td>緣, 秘境, 洞天</td><td>Two monospace fonts the page never loads, so the phone's own</td><td>The game's own fonts</td></tr>
     </table>
     <div class="rule"><b>實 And the numbers the prose says are tested now.</b> Eight hundred qi,
-      +8% a core, three rats, ten kills, a quarter of an hour, two days, seventeen choices.
+      +8% a core, three rats, ten kills, half an hour, two days, seventeen choices.
       Each sentence that names a number is held to the constant it names. The day the
       number moves, the sentence fails a test instead of lying on a phone.</div>
 
@@ -3209,9 +3209,9 @@ const page = `<meta charset="utf-8">
         from the third it tightens a realm at a time.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">入定</b> <em>Sitting with it gathers deeper</em>
         <i>With the app open the rate climbs to ${FOCUS_MAX}x over ${FOCUS_RAMP / 60} minutes,
-        holds, and ends after ${FOCUS_HOLD / 60}. It ends on purpose: a multiplier that
+        holds, and ends after ${FOCUS_HOLD / 60} minutes. It ends on purpose: a multiplier that
         simply held would be farmed by leaving the phone on a charger. To sit again, leave
-        and come back.</i></span></div>
+        and come back, or press 坐 Sit again.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
         <i>${TOWER_QI_HOURS} hours of your own gathering, once, and never again. There is no
         floor to farm. This is the one place in the game where fighting moves the bar
@@ -3569,7 +3569,7 @@ const page = `<meta charset="utf-8">
       minutes became a schedule, which is the difference between a game that is idling
       and a game that looks broken.</div>
     <p class="t">The countdown rides the <b>standing</b> rate and not the one \u5165\u5b9a is
-      paying at that moment, on purpose: the sitting ends after a quarter of an hour, so
+      paying at that moment, on purpose: the sitting ends after half an hour, so
       a countdown riding on it would promise a minute that arrives at four. A player who
       is sitting gets there sooner than the screen said, which is the only direction this
       is allowed to be wrong in.</p>
@@ -3620,7 +3620,7 @@ const page = `<meta charset="utf-8">
       gear, the tree. It does not move unless you move it. \u5165\u5b9a <b>the sitting</b> is the
       other one: it climbs from \u00d71 to \u00d7${FOCUS_MAX} over ${FOCUS_RAMP / 60} minutes with
       the app open, holds, and ends after ${FOCUS_HOLD / 60} minutes. So the one number on
-      the screen rose for three minutes, sat still for twelve, and then fell to a third
+      the screen rose for three minutes, sat still for ${(FOCUS_HOLD - FOCUS_RAMP) / 60}, and then fell to a third
       of itself while the player watched, with nothing beside it.</p>
     <div class="rule"><b>The standing rate leads now, and the sitting rides alongside
       it.</b> <code>+124 qi / s standing</code>, a \u5165\u5b9a \u00d73.0 badge, and
@@ -3970,11 +3970,18 @@ const page = `<meta charset="utf-8">
       marks:</p>
     <div class="rows">${markRows}</div>
     <p class="t">A finished record, all ${BEASTS.length} beasts at ${MARKS[MARKS.length - 1]}
-      kills each, is <b>×${ceiling.material.toFixed(2)}</b> material and
+      kills each, is <b>×${(1 + KNOWN_MATERIAL * BEASTS.length).toFixed(2)}</b> material and
       <b>×${ceiling.power.toFixed(2)}</b> power. Worth having, never worth grinding for in
       one sitting, and reached by somebody who has been hunting for months rather than by
       somebody who farmed the first rat. ${(KNOWN_MATERIAL * 100).toFixed(0)}% and
       ${(MASTERED_POWER * 100).toFixed(0)}% a beast.</p>
+    <p class="t">精 絕 Past it, ${DEEP_MARKS.map((n) => n.toLocaleString('en')).join(' and ')} kills
+      of one common beast are two deep marks: each pays that beast
+      ${(DEEP_MATERIAL * 100).toFixed(0)}% more material, and since 2026-10-03
+      ${(DEEP_EVERYWHERE * 100).toFixed(0)}% more from every beast, so finishing an old
+      beast counts everywhere. It was half a percent at first, and at that a deep mark
+      took a quarter of a million kills of the best beast to pay back. Every deep mark on
+      every common beast brings the material to <b>×${ceiling.material.toFixed(2)}</b>.</p>
     <div class="rule"><b>Neither mark touches the qi rate.</b> A mark is a hundred taps or
       it is nothing, so if the record paid in gathering it would be the one uncapped thing
       in the game that pays for waiting. It pays in material and in power, and the list
@@ -4212,7 +4219,7 @@ const page = `<meta charset="utf-8">
       The layers and wardens alone pay <b>${FULL_RUN}</b> against a tree costing
       <b>${TOTAL_COST}</b>. Until 2026-10-03 the shrines had no cap and paid over eight
       hundred, so the tree was finished on day 2. Now they pay ${SHRINE_DAO_PER_REALM} a
-      realm, each branch's last node waits for the ${CAPSTONE_REALM}th realm, and the tree
+      realm, each branch's last node waits for the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][CAPSTONE_REALM - 1]} realm, and the tree
       fills over the middle of the climb. The forks still close for good, which is what
       keeps it a build and not a checklist.</p>
     <p class="t">At the middle of each branch there are two nodes and room for one. Each
