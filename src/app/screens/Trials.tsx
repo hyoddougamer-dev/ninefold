@@ -4,10 +4,10 @@ import { fightDeps } from '../memo.ts';
 import { Emblem } from '../ui/Emblem.tsx';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { effectiveBeastPower, odds } from '../../sim/combat.ts';
+import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, TOWER_QI_HOURS } from '../../sim/balance.ts';
+import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_HOURS } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorPower, seals } from '../../sim/tower.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
@@ -16,7 +16,7 @@ import { furnace, tower } from '../../art/trials.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
-import { TRIALS, UNIT } from '../copy.ts';
+import { HUNT, TRIALS, UNIT } from '../copy.ts';
 
 /**
  * 塔 and 爐: the two halves of what qi buys once a realm is full.
@@ -38,8 +38,14 @@ export function Trials({ state, onFloor, onBrew }: {
   // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
   const brings = effectiveBeastPower(state, beast, standing);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const chance = useMemo(() => odds(state, beast, standing), [floor, ...fightDeps(state)]);
-  const tone = chance > 0.66 ? 'var(--jade)' : chance > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
+  const raw = useMemo(() => oddsRaw(state, beast, standing), [floor, ...fightDeps(state)]);
+  // 誠 Out of reach is not two per cent, here as on 狩 the hunt. The floor under the quoted
+  // odds put "2% odds" on a floor whose beast stood 375,000 times stronger; a floor that
+  // wins none of its sampled fights says how far off it is instead.
+  const chance = Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, raw));
+  const gap = brings / Math.max(1e-9, power(state));
+  const tone = raw <= 0 ? 'var(--faint)'
+    : chance > 0.66 ? 'var(--jade)' : chance > 0.33 ? 'var(--gold)' : 'var(--cinnabar)';
   const r = realmOf(Math.max(1, Math.min(9, Math.ceil(floor / FLOORS_PER_REALM))));
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
@@ -77,8 +83,8 @@ export function Trials({ state, onFloor, onBrew }: {
             </i>
           </span>
           <span className="tech mono" style={{ fontSize: 17, textAlign: 'right', color: tone }}>
-            {Math.round(chance * 100)}%
-            <em className="faint tag">odds</em>
+            {raw > 0 ? `${Math.round(chance * 100)}%` : `×${gap < 10 ? gap.toFixed(1) : num(gap)}`}
+            <em className="faint tag">{raw > 0 ? HUNT.odds : HUNT.toReach}</em>
           </span>
         </div>
         <div className="row" style={{ marginTop: 10, fontSize: 12.5 }}>

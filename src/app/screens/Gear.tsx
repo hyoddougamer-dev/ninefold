@@ -110,7 +110,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <div className="lift">
           <div className="lp">
             <span className="lghost cjk" aria-hidden="true">力</span>
-            <b className="mono"><small>×</small>{lift.power >= 10 ? Math.round(lift.power) : lift.power.toFixed(1)}</b>
+            {/* 數 Two places under ×2, as 氣 beside it has: "×1.2" sat next to "23%
+                harder", and the two read as two different numbers. */}
+            <b className="mono"><small>×</small>{lift.power >= 10 ? Math.round(lift.power)
+              : lift.power >= 1.95 ? lift.power.toFixed(1) : lift.power.toFixed(2)}</b>
             <span className="ll"><span className="cjk">力</span> {GEAR.powerFrom}</span>
             <span className="ls">{GEAR.powerSays(lift.power)}</span>
           </div>
@@ -402,6 +405,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                       onClick={() => onUpTo(r)}
                       aria-label={`${RARITY_INFO[r].name} and below`}>
                 <b className="cjk">{RARITY_INFO[r].han}</b>
+                {/* 譯 Every rank says its name, not only the lit one in the line beside. */}
+                <small className="rk-name" aria-hidden="true">{RARITY_INFO[r].name}</small>
               </button>
             ))}
             <span className="upto">{GEAR.upTo(RARITY_INFO[upTo].name)}</span>

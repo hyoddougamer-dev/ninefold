@@ -242,7 +242,10 @@ export const CULTIVATE = {
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
-  tribulationHead: '劫 The tribulation',
+  /** 劫 The heading names the crossing still to come, and the line under the realm's name
+   *  the ones already made, so "2" and "3" never sit on one screen unexplained. */
+  tribulationNext: (n: number) => `劫 Tribulation ${n} · the next crossing`,
+  crossed: (n: number) => (n === 1 ? '1 tribulation crossed' : `${n} tribulations crossed`),
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
@@ -441,6 +444,11 @@ export const REALMCARD = {
 
 export const PACE = {
   rungLeft: (qi: string, time: string) => `${qi} qi to go · about ${time}`,
+  /** 守 The ninth rung is the warden, not qi: no countdown to it, only who stands there. */
+  wardenWaits: (han: string, name: string) => `No more qi to climb here. The warden ${han} ${name} is waiting for you`,
+  breakOpen: 'No more qi to climb here, and the warden is down. 突破 Break through when you are ready',
+  /** 囊 The first rung waits for the first purchase, and the qi it waits with is owed. */
+  held: 'The first layer waits until you spend your qi. Nothing is lost while it waits',
 };
 
 export const LADDER = {
@@ -469,10 +477,12 @@ export const CHRONICLE = {
   standing: (day: number, realm: string) => `Day ${day} of the climb, standing in ${realm}.`,
   nearest: (han: string, name: string) => `Nearest: ${han} ${name} ·`,
   figures: 'Where you have got to',
-  day: 'day', realm: 'realm', rungs: 'layers opened', power: 'power', rate: 'gathering',
+  day: 'day', realm: 'realm',
+  realmNamed: (name: string) => `realm · ${name}`,
+  rungs: 'layers opened', power: 'power', rate: 'gathering',
   kills: 'beasts killed', seen: 'beasts met', mastered: '通 mastered', wardens: 'wardens down',
-  floor: 'best floor', seals: '塔印 seals', pills: 'pills brewed', refine: 'deepest 煉器',
-  dao: '道 spent', marks: '雷印 marks', met: 'people met',
+  floor: 'best floor', seals: '塔印 seals', pills: 'alchemy pills brewed', refine: 'deepest refine',
+  dao: '道 Path points spent', marks: '雷印 marks', met: 'people met in meetings',
   rule: 'A deed pays nothing at all. It is a record of what this cultivator did, and the record is the reward.',
   counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
     + 'no list of what you have earned, so there is nothing to forge.',
@@ -1017,7 +1027,7 @@ export const AWAKEN = {
    */
   hand: {
     title: 'Your Enlightenment cards',
-    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card taken after it.',
+    blurb: 'Every card you have taken, oldest first. Any of them can be traded for one of the other two it came with. It costs your own qi: half a day of gathering for the newest card, and half a day more for each card further back.',
     none: 'No cards yet. The first one comes with the second realm.',
     line: (n: number) => (n === 1 ? '悟道 Enlightenment · your card · change it' : `悟道 Enlightenment · your ${n} cards · change one`),
     fromRealm: (han: string, name: string) => `From ${han} ${name}`,
@@ -1093,7 +1103,7 @@ export const MEET = {
  * aiming for a number.
  */
 export const ROAD = {
-  head: '緣 The road',
+  head: '緣 Meetings and the road',
   heart: '心 The heart',
   kind: '仁 Kind',
   hard: '狠 Hard',
@@ -1579,8 +1589,14 @@ export const SAVE = {
   played: 'played for',
   reached: 'reached',
   gear: 'gear',
-  why: 'Your save lives in this browser, on this phone. There is no account. Clear the browser data and it is gone. Keep a copy somewhere you will find it again.',
-  /** 雲 The same, for a cultivator signed in to the rankings: there is a cloud copy. */
+  /** 存 Not signed in to anything: the save is this browser's alone. It used to say "There
+   *  is no account", beside a 榜 Ranks screen offering one. */
+  why: 'Your save lives in this browser, on this phone, and clearing the browser data clears it. Sign in with your email under 榜 Ranks and a copy is kept in the cloud. The email brings a link and a six-digit code, and the code works in the Android app too. Or keep a copy of your own somewhere you will find it again.',
+  /** 雲 A ranked guest: there is a cloud copy, but only this device holds the key to it. */
+  whyGuest: 'You are ranked as a guest, so a copy is kept in the cloud. Only this device can open it, so clearing the browser data loses it. Add your email under 榜 Ranks to keep it on every device, or keep a copy of your own.',
+  /** 雲 Signed in with an email: the cloud copy opens anywhere they sign in. */
+  whyEmail: (email: string) => `You are signed in as ${email}, so a copy of your save is kept in the cloud and opens on any device you sign in on. A file of your own is still the one copy nobody else holds.`,
+  /** 雲 Signed in before, and the account not read yet. */
   whyCloud: 'Your save lives on this phone, and a copy is kept in the cloud while you are signed in to the rankings. A file of your own is still the one copy nobody else holds.',
   copy: 'Copy the save',
   copied: 'Copied. Paste it into a note, a message to yourself, anywhere you keep things. It is sealed: it reads as noise, and it restores exactly as it was.',

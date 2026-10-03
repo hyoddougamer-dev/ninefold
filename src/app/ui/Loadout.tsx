@@ -84,7 +84,7 @@ export function Loadout({ state, onStance, onSequence }: {
                   {art ? (
                     <>
                       <span className="ic"><Emblem family="art" subject={art.key} icon={art.icon} size={22} alt={art.name} /></span>
-                      <span className="nm"><b className="cjk">{art.han}</b><i>{art.text}</i></span>
+                      <span className="nm"><b className="cjk">{art.han}</b><em className="lo-name">{art.name}</em><i>{art.text}</i></span>
                     </>
                   ) : (
                     <span className="nm"><i>{LOADOUT.emptySlot}</i></span>
@@ -103,6 +103,8 @@ export function Loadout({ state, onStance, onSequence }: {
                         onClick={() => add(a)} title={a.text}>
                   <span className="ic"><Emblem family="art" subject={a.key} icon={a.icon} size={20} alt={a.name} /></span>
                   <b className="cjk">{a.han}</b>
+                  {/* 譯 English leads: the art is named beside its characters, not only in a hover. */}
+                  <em className="lo-name">{a.name}</em>
                 </button>
               ))}
             </div>

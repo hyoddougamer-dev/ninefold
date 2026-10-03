@@ -19,7 +19,7 @@
  *     npm run han
  */
 import { chromium } from 'playwright';
-import { GLOSS } from '../src/app/glossary.ts';
+import { GLOSS, GROUPS } from '../src/app/glossary.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { BEASTS } from '../src/data/bestiary.ts';
 import { HERBS } from '../src/data/herbs.ts';
@@ -58,6 +58,9 @@ const put = (han: string, name: string) => {
   (NAMES[han] ??= []).push(name);
 };
 for (const [han, term] of Object.entries(GLOSS)) if (!han.includes(':')) put(han, term.name);
+// 緣 GLOSS keeps the first row for a character, so 緣 there is only Bond; the key's other
+// row, 緣 A meeting, is the sense the stele's road and its people-met tile mean.
+for (const g of GROUPS) for (const row of g.rows) put(row.han, row.name);
 for (const r of REALMS) put(r.han, r.name);
 for (const b of BEASTS) put(b.han, b.name);
 for (const h of HERBS) put(h.han, h.name);
@@ -274,6 +277,24 @@ async function walk(realm: number) {
       found.get(key).screens.add(where);
     }
   };
+  // 碑 The stele, read too. It is a menu panel rather than a tab, so the walk above never
+  // stood in it, and the audit of 2026-10-03 found "元嬰 4" and "deepest 煉器" there.
+  await page.click('nav.tabs button:has-text("修")', { timeout: 3000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  const corner = await page.$('button.mainswitch');
+  if (corner) {
+    await corner.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(250);
+    const item = await page.$('.switchmenu button:has-text("stele")');
+    if (item) {
+      await item.click().catch(() => {});
+      await page.waitForSelector('.stelepage', { timeout: 3000 }).catch(() => {});
+      if (await page.$('.stelepage')) { steles++; await read('stele'); }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+    }
+  }
+
   const hunt = await page.$('nav.tabs button:has-text("狩")');
   if (hunt && await hunt.getAttribute('data-shut') !== 'true') {
     await hunt.click().catch(() => {});
@@ -296,8 +317,46 @@ async function walk(realm: number) {
 }
 let arenas = 0;
 let verdicts = 0;
+let steles = 0;
+let secrets = 0;
+
+/**
+ * 秘境 The secret realm, read standing in its first room. It covers the whole screen and
+ * is no tab, so nothing above reached it: 期 under a seal on its path stood alone there.
+ */
+async function walkSecret() {
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  const at = Math.floor(Date.now() / 1000);
+  await page.route('**/assets/*.js', (r) => r.abort());
+  await page.goto(BASE);
+  await page.evaluate(([k, v]) => localStorage.setItem(k as string, JSON.stringify(v)),
+    [SAVE_KEY, { ...cultivator(4), runStep: 0, runAt: at - 12 * 3600 }] as [string, unknown]);
+  await page.unroute('**/assets/*.js');
+  await page.goto(BASE);
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(900);
+  for (let i = 0; i < 12; i++) {
+    const card = await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(200); continue; }
+    const el = await page.$('.notice button');
+    if (!el) break;
+    await el.click({ timeout: 4000 }).catch(() => {});
+    await page.waitForTimeout(200);
+  }
+  if (await page.$('.secret .path')) {
+    secrets++;
+    const rows = (await page.evaluate(`${LOOK}(${JSON.stringify(NAMES)})`)) as HanRow[];
+    for (const row of rows) {
+      const key = `${row.where}|${row.text}`;
+      if (!found.has(key)) found.set(key, { ...row, screens: new Set<string>() });
+      found.get(key).screens.add('secret');
+    }
+  }
+  await page.close();
+}
 
 for (const realm of [2, 4, 6, 9]) await walk(realm);
+await walkSecret();
 await browser.close();
 
 const rows = [...found.values()];
@@ -338,4 +397,9 @@ if (arenas < 4 || verdicts < 4) {
   console.log('    A fight that never opened is an arena nobody checked.\n');
   process.exit(1);
 }
-console.log('  ✓ every character on every screen is named by the card it sits in, the arena too.\n');
+if (steles < 4 || secrets < 1) {
+  console.log(`  ✗ the stele was read ${steles} times of 4 and the secret realm ${secrets} of 1.`);
+  console.log('    A panel that never opened is a panel nobody checked.\n');
+  process.exit(1);
+}
+console.log('  ✓ every character is named by the card it sits in, on every screen and in the arena, stele and secret realm.\n');

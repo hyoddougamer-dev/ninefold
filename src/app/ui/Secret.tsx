@@ -10,6 +10,7 @@ import { chamber } from '../../art/secret.ts';
 import { gearTile } from '../../art/gear.ts';
 import { RARITY_INFO, TEMPLATE_BY_KEY, type Rarity } from '../../data/gear.ts';
 import { Svg } from './Svg.tsx';
+import { Term } from './Term.tsx';
 import { SECRET } from '../copy.ts';
 import type { State } from '../../sim/state.ts';
 import { isBlessed, blessedStep, weekLeft } from '../../sim/week.ts';
@@ -73,6 +74,11 @@ export function Secret({ state, onOpen, onLeave }: {
           </span>
         ))}
       </div>
+      {/* 譯 期 under a seal on the path is the week's mark, and it stood there alone. The
+          line under the path names it: which room, and that it pays double. */}
+      {Array.from({ length: rooms }, (_, i) => i).some((i) => isBlessed(state, i)) && (
+        <p className="pathweek"><Term han="期" /> {WEEK.blessed(blessedStep(state) + 1, rooms)}</p>
+      )}
 
       <div className="ways">
         {doors.map((room, i) => {

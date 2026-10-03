@@ -80,7 +80,7 @@ import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
 import { MUSIC_LEVELS, cycleMusic, moodFor, musicLevel, setMood, unlockMusic } from './music.ts';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
-import { DISMISSED, guide } from './guide.ts';
+import { DISMISSED, clockUntil, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
@@ -125,6 +125,18 @@ interface Homecoming {
 
 export function App() {
   const [tab, setTab] = useState<TabKey>('cultivate');
+  /**
+   * 頂 Whether the screen has been scrolled away from its top.
+   *
+   * The ≡ button floats in the top-right corner of a phone, and on a scrolled screen it
+   * sat on whatever passed under it: a 13.4M price on 修, a recipe's count on 業. Once the
+   * screen is scrolled, a solid strip comes in behind the button across the whole top,
+   * so what scrolls up goes under a header, as in any app, and never half under a button.
+   * At the top the strip is not drawn, because every screen's first row already keeps
+   * clear of the corner.
+   */
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => { setScrolled(false); }, [tab]);
   const [state, setState] = useState<State>(() => newState(now()));
   const [battle, setBattle] = useState<Battle | null>(null);
   const [home, setHome] = useState<Homecoming | null>(null);
@@ -311,7 +323,9 @@ export function App() {
       setState((s) => {
         // 業 And the workshop, settled to the same instant. It reads its own clock.
         const t = now();
-        const next = work(advance(s, t, false, deep), t);
+        // 囊 A fresh cultivator's first rung waits for the first purchase; the time it
+        // waits is owed, not lost, and arrives on the tick after. See clockUntil.
+        const next = work(advance(s, clockUntil(s, t, deep), false, deep), t);
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -885,6 +899,10 @@ export function App() {
     : inspect ? () => { setInspect(null); sfx.tap(); }
     : driving ? () => { setDriving(null); sfx.tap(); }
     : realmPage ? () => { setRealmPage(false); sfx.tap(); }
+    // 碑 謝 The stele and the credits are menu panels like the rest, so they take the same
+    // fixed cross and the same Esc. They were left out, and the stele is a long page.
+    : stele ? () => { setStele(false); sfx.tap(); }
+    : credits ? () => { setCredits(false); sfx.tap(); }
     : null;
 
   /**
@@ -947,7 +965,8 @@ export function App() {
       {/* 屏 The screen names itself in the DOM. A locked tab takes the tap and changes
           nothing, and 註 the tooltip harness was walking the previous screen a second
           time and reporting its characters under the wrong tab's name. */}
-      <div className="sheet" key={tab} data-screen={tab}>
+      <div className="sheet" key={tab} data-screen={tab}
+        onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 2)}>
         {tab === 'cultivate' && (
           <Cultivate
             state={state}
@@ -1023,6 +1042,7 @@ export function App() {
           Bruno said so: *"fica muito confuso"*. They fold into one, and when it opens
           each one arrives with its name in English beside it, which is the same rule
           the upgrades follow, applied to the one place that had escaped it. */}
+      <div className="topband" aria-hidden="true" data-on={scrolled && !covered} />
       <div className="switches" data-open={menu} hidden={covered && !menu}>
         <button className="mainswitch" data-on={menu} aria-expanded={menu}
           aria-label={MENU.label} onClick={() => { setMenu((m) => !m); sfx.tap(); }}>
@@ -1411,6 +1431,7 @@ export function App() {
       {saving && (
         <SavePanel
           state={state}
+          who={who}
           onRestore={(next) => { setState(next); save(next); keepSpare(next); }}
           onClose={() => { setSaving(false); sfx.tap(); }}
         />
