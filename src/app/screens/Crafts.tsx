@@ -430,7 +430,9 @@ function Row({ state, r, on, lit, onStart, onGo }: {
         <b><span className="cjk">{r.han}</span> {r.name}</b>
         <i className="cr-meta mono">
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
-          {marks > 0 && <> · {CRAFTS.familiar(marks)}</>}
+          {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare
+            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded, (r.needs[0]?.[1] ?? 0) > 1) }}>
+            <span className="cr-fam">{CRAFTS.familiar(marks)}</span></Term></>}
         </i>
         {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (
           <span className="cr-needs">

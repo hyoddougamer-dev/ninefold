@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -1795,6 +1795,26 @@ export const CRAFTS = {
   goMake: (recipe: string) => `Go to ${recipe}`,
   quality: 'Quality',
   familiar: (marks: number) => `習 familiarity ${'\u25cf'.repeat(marks)}${'\u25cb'.repeat(5 - marks)}`,
+  /**
+   * 習 What each familiarity mark gives, said where the dots are. rekaris, on the Discord
+   * (2026-10-03): *"does it do anything? Doesn't seem to speed up the craft or anything?"*
+   * It did, five things, and the dots never said which. A recipe that makes nothing with
+   * a rank says its last two marks do nothing for it, rather than promising quality, and
+   * one that needs nothing says the same of the third.
+   */
+  familiarNote: (made: number, graded: boolean, fewer: boolean) => {
+    const gives = [
+      `${Math.round(CRAFT_MARK_FASTER * 100)}% faster`,
+      `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice`,
+      fewer ? 'one less of the first thing it needs' : 'nothing here: it needs nothing to spare',
+      graded ? 'better odds of a high rank' : 'nothing here: it makes nothing with a rank',
+      graded ? 'never comes out Common' : 'nothing here either',
+    ];
+    const next = CRAFT_MARKS.find((m) => made < m);
+    return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
+      + CRAFT_MARKS.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
+      + (graded ? '\nEvery mark also lifts the rank a little.' : '');
+  },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
   pouchEmpty: 'Nothing yet. What the workshop gathers and makes lands here.',
