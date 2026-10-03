@@ -29,7 +29,10 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
   onSignOut: () => void;
   onClose: () => void;
 }) {
-  const [tab, setTab] = useState<Board>('climb');
+  // 期 It opens on the week, where everybody starts level on Monday. Raziel, on the
+  // Discord (2026-10-02), asked whether a new player could ever catch one five months in:
+  // on the Heaven List, no, and on This Week, in their first week.
+  const [tab, setTab] = useState<Board>('week');
   const [rows, setRows] = useState<readonly Row[] | null>(null);
   const [me, setMe] = useState<Mine | null>(null);
   const [failed, setFailed] = useState(false);

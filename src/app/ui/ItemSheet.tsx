@@ -144,10 +144,12 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
         {/* 列 Every line on the piece, up here beside power and qi, so nothing has to be
             opened or scrolled to. rekaris, on the Discord: *"I would find it better to be in
             the top with power and qi ... I play at 150% zoom."* Against what is worn, a line
-            that rises is jade and one that falls is red. */}
+            that rises is jade and one that falls is red, and a line the worn piece has and
+            this one lacks is shown as +0 with a dashed edge (rekaris again: a piece with no
+            drop chance otherwise looks strictly better). */}
         <div className="vlines">
-          {lines.filter((d) => d.theirs > 0).map((d) => (
-            <span key={d.affix} className="vline" data-up={(against && d.theirs > d.mine) || undefined} data-down={(against && d.theirs < d.mine) || undefined}>
+          {lines.filter((d) => d.theirs > 0 || (against && d.mine > 0)).map((d) => (
+            <span key={d.affix} className="vline" data-none={d.theirs <= 0 || undefined} data-up={(against && d.theirs > d.mine) || undefined} data-down={(against && d.theirs < d.mine) || undefined}>
               <b className="cjk">{AFFIX_INFO[d.affix].han}</b> {AFFIX_INFO[d.affix].label}{' '}
               <em className="mono">+{show(d.affix, d.theirs)}</em>
             </span>

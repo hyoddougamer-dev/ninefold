@@ -74,6 +74,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const [view, setView] = useState<'work' | 'pouch'>('work');
   const [find, setFind] = useState('');
   const [filter, setFilter] = useState<'all' | 'ready' | 'next'>('all');
+  const [tier, setTier] = useState<number | 'near'>('near');
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
   /**
    * 往 Take the player to the recipe that makes a thing, from the note on its icon. It is
@@ -102,12 +103,17 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const groups = useMemo(() => [...new Set(mine.map((r) => r.group))], [mine]);
   const shown = group && groups.includes(group) ? group : defaultGroup(state, skill, groups);
   // 篩 A search looks through the whole craft, whatever list is open; otherwise the open
-  // list. Gear is only ever the realm you are in and the one before it.
+  // list. Gear is the realm you are in and the one before it, unless a realm is picked
+  // in the row above the list. rekaris, on the Discord (2026-10-02): *"I see no reason
+  // why I should not be able to craft lower-tier stuff."* The sim never refused it; only
+  // this list did. A search reaches every realm already open.
   const needle = find.trim().toLowerCase();
   const all = mine.filter((r) => (needle
       ? hay(r).includes(needle)
       : (groups.length < 2 || r.group === shown))
-    && (r.makes.kind !== 'gear' || (r.realm <= state.realm && r.realm >= state.realm - 1)));
+    && (r.makes.kind !== 'gear' || (needle ? r.realm <= state.realm
+      : tier === 'near' ? r.realm <= state.realm && r.realm >= state.realm - 1
+      : r.realm === tier)));
   const isLocked = (r: Recipe) => { const b = blocked(state, r); return b === 'level' || b === 'realm'; };
   const ready = all.filter((r) => blocked(state, r) === null);
   const locked = all.filter(isLocked);
@@ -233,7 +239,18 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           </div>
         </div>
       )}
-      {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.gearShown(state.realm)} {CRAFTS.forgedRule}</p>}
+      {open && shown === 'Gear' && !find && (
+        <div className="cf-chips ctier" role="tablist" aria-label={CRAFTS.tiers}>
+          <button role="tab" aria-selected={tier === 'near'} onClick={() => setTier('near')}>{CRAFTS.tierNow}</button>
+          {Array.from({ length: Math.min(9, state.realm) }, (_, i) => i + 1).map((n) => (
+            <button key={n} role="tab" aria-selected={tier === n} onClick={() => setTier(n)}
+              title={realmOf(n).name} style={{ color: realmOf(n).colour }}>
+              <span className="cjk" aria-hidden="true">{realmOf(n).han}</span> {n}</button>
+          ))}
+        </div>
+      )}
+      {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>
+        {tier === 'near' ? CRAFTS.gearShown(state.realm) : CRAFTS.gearOf(tier)} {CRAFTS.forgedRule}</p>}
 
       {open && (
         <div className="crecipes">

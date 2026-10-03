@@ -3370,3 +3370,5 @@ button.gs-new .cjk { margin: 0; }
 .doorkey:hover, .doorkey:focus-visible { background: rgba(212,175,86,.08); }
 .doorkey .cjk, .doorkeynote .cjk { font-weight: 400; font-size: 15px; }
 .doorkeynote { margin: -4px 0 12px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+.itemsheet .vline[data-none] { border-style: dashed; opacity: .8; }
+.crafts .ctier { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }

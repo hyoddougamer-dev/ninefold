@@ -1,6 +1,6 @@
 import { RANKS, SKILLS } from '../data/crafts.ts';
 import { UPGRADES, UPGRADE_INFO } from '../sim/state.ts';
-import { DEEP_DROP, DEEP_INFO, DEEP_MARKS, DEEP_MATERIAL, MARK_INFO, MARKS } from '../sim/record.ts';
+import { DEEP_DROP, DEEP_EVERYWHERE, DEEP_INFO, DEEP_MARKS, DEEP_MATERIAL, MARK_INFO, MARKS } from '../sim/record.ts';
 import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '../data/gear.ts';
 import { STANCES } from '../data/arts.ts';
 import { PATHS, PATH_INFO } from '../data/techniques.ts';
@@ -76,7 +76,7 @@ export const GROUPS: readonly Group[] = [
     title: KEY.marksHead, blurb: KEY.marksBlurb,
     rows: [
       ...MARK_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.mark(MARKS[i], m.pays) })),
-      ...DEEP_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.deep(DEEP_MARKS[i], DEEP_MATERIAL, DEEP_DROP) })),
+      ...DEEP_INFO.map((m, i) => ({ han: m.han, name: m.name, note: KEY.deep(DEEP_MARKS[i], DEEP_MATERIAL, DEEP_DROP, DEEP_EVERYWHERE) })),
       { han: '緣', name: 'Bond', note: KEY.bond(FATE_FULL) },
     ],
   },

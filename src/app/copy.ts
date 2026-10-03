@@ -118,8 +118,8 @@ export const RANKS = {
   tab: 'Ranks',
   tabPlace: (n: number) => `Rankings, you are number ${n} on the Heaven List`,
   boards: {
-    climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit.' },
     week: { han: '期榜', name: 'This Week', what: 'Layers climbed since Monday. Everybody starts the week level.' },
+    climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit.' },
     tower: { han: '塔榜', name: 'The Tower', what: 'The highest floor of the Endless Tower.' },
   },
   joinHead: 'Join the rankings',
@@ -543,7 +543,7 @@ export const ADVICE = {
    */
   refine: (han: string, levels: number) =>
     `Your 材 will take ${han} ${levels} ${levels === 1 ? 'level' : 'levels'} further in 器 Gear. `
-    + `Refining has no cap, and the levels stay on the piece.`,
+    + `Refining has no cap, and the levels follow what you wear.`,
   refineCapped: 'Your 妖丹 cores are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
   needMaterial: (short: number) =>
     `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
@@ -618,8 +618,9 @@ export const KEY = {
   marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
   /** 精 絕 The deep marks pay the beast that earned them, and only that one. */
-  deep: (at: number, material: number, drop: number) =>
-    `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast`,
+  deep: (at: number, material: number, drop: number, everywhere: number) =>
+    `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast, `
+    + `and +${(everywhere * 100).toFixed(1)}% 材 material from every beast`,
   /** 緣 The bond, for the key and the tooltip. */
   bond: (full: number) => `Every win over a beast fills its bond. The ${full}th win leaves a piece for certain, `
     + 'a rank above the best that beast has given you, and the bond starts again.',
@@ -958,7 +959,8 @@ export const ITEM = {
     rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop. It bends, so the first of it counts the most.',
-    find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it.`,
+    find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
+      + `With 造化 Creation every beast drops already, so it turns into luck instead.`,
     sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
@@ -1346,8 +1348,8 @@ export const GEAR = {
    * know you were making is not one.
    */
   refineHead: '煉器 Refine',
-  refine: 'Material makes a piece you already wear better, and there is no top level. '
-    + 'The levels stay on the piece, so pick the one you mean to keep.',
+  refine: 'Material makes what you wear better, and there is no top level. Put on a new '
+    + 'piece and the higher of the two levels goes with you; the one you take off keeps the lower.',
   refineAt: (level: number, pct: number) =>
     (level === 0 ? 'not refined yet' : `煉 ${level} · every line on it +${pct}%`),
   setNeed: (n: number) => `${n} more ${n === 1 ? 'piece' : 'pieces'} of this realm`,
@@ -1524,9 +1526,12 @@ export const NOTICE = {
       + 'brewed is qi that did not open a layer, so this is a trade rather than a freebie.',
   },
   refine: {
-    title: 'Pick the piece you mean to keep',
-    text: 'The levels stay on the piece, not on you. A run\'s material poured into one '
-      + 'sword is material that is not in the next sword you find.',
+    // 承 rekaris, on the Discord (2026-10-02): the old card said the levels stay on the
+    // piece, and swapping a sword kept them. The levels follow the place on the body
+    // (sim/carryRefine), so the card says that.
+    title: 'Refining is never thrown away',
+    text: 'Put on a new piece and it takes the higher of the two levels; the piece you take '
+      + 'off keeps the lower. Pour material in freely: an upgrade never wastes it.',
   },
   workshop: {
     title: 'The workshop is open',
@@ -1818,6 +1823,10 @@ export const CRAFTS = {
   close: 'Close',
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
+  gearOf: (realm: number) => `Showing the gear of realm ${realm}.`,
+  /** 鑄 The row of realms above the forge's gear list. */
+  tiers: 'Which realm',
+  tierNow: 'Now',
   furnace: (pct: number) => `Every Alchemy level takes 0.2% off the pill furnace's material: ${pct}% now.`,
   /** 歸 The homecoming line. */
   // 攜 What the arena says about a kit carried in, so a loss is seen to have cost nothing.

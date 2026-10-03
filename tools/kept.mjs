@@ -34,7 +34,10 @@ function cultivator(over = {}) {
     realm: 4, layer: 4, qi: 1e9, materials: 2e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
     killed: { rat: 150, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },
-    worn: { weapon: piece('w-on', 'sword3', 'earth', 22), robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
+    // The worn sword has a 破 sunder line no piece in the chest has, so every chest sword's
+    // sheet must show it as +0.
+    worn: { weapon: { ...piece('w-on', 'sword3', 'earth', 22), rolls: [{ affix: 'power', value: 22 }, { affix: 'sunder', value: 3 }] },
+      robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
     chest: [
       piece('c-junk1', 'sword2'), piece('c-junk2', 'leather2'), { ...piece('c-keep', 'sword4', 'earth', 30), rolls: [{ affix: 'power', value: 30 }, { affix: 'luck', value: 6 }, { affix: 'find', value: 2.4 }] },
       piece('c-luck', 'cloak3', 'mystic', 8, 'luck'), piece('c-robe', 'robe3', 'spirit', 7, 'rate'),
@@ -170,6 +173,16 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     check(!(await page.$('.schoolbook')), `${tag}: Esc closes it`);
   }
 
+  // ── 示 a line the worn piece has and this one lacks reads +0 ─────────────────────────
+  // rekaris: "Please consider adding even the 'absent' stats as '0' at the top."
+  await page.click('.chest .chestit:has([title*="Sword · "]) >> nth=0').catch(() => {});
+  await page.waitForTimeout(400);
+  const none = await page.$$eval('.itemsheet .vline[data-none]', (els) => els.map((e) => e.textContent.replace(/\s+/g, ' ').trim()));
+  check(none.some((t) => /\+0/.test(t)), `${tag}: a chest sword shows the worn sword's missing line as +0 (${none.join(' | ')})`);
+  if (tag === 'p400' || pc) await shot(page, `${tag}-sheetzero`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+
   // ── 鎖 lock a piece, melt everything up to 天, and the piece is still there ──────────
   await page.click('.chest .chestit[aria-label^="Iron"], .chest .chestit >> nth=0');
   await page.waitForSelector('.lockbtn', { timeout: 3000 }).catch(() => {});
@@ -289,6 +302,21 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
       check(!!lit, `${tag}: Go takes the player to that recipe, lit`);
     } else check(false, `${tag}: the note has a Go button`);
   }
+
+  // ── 鑄 forging the gear of any realm already reached ────────────────────────────────
+  // rekaris: "I see no reason why I should not be able to craft lower-tier stuff."
+  await page.fill('.cfilter input', '').catch(() => {});   // Go above left a search in it
+  await page.click('.cgroups button:has-text("Gear")').catch(() => {});
+  await page.waitForTimeout(250);
+  const tiers = await page.$$eval('.ctier button', (els) => els.map((e) => e.textContent.trim()));
+  check(tiers.length === 5 && tiers[0] === 'Now', `${tag}: the forge's gear list has Now and the four realms reached (${tiers.join(' | ')})`);
+  await page.click('.ctier button:has-text("2")').catch(() => {});
+  await page.waitForTimeout(250);
+  const of2 = await page.$eval('.crafts p.faint:has-text("Showing the gear")', (e) => e.textContent).catch(() => '');
+  const rows2 = await page.$$eval('.crecipes .crow', (els) => els.length);
+  check(/realm 2\./.test(of2 ?? '') && rows2 > 0, `${tag}: realm 2 shows its own pieces (${rows2} rows, "${(of2 ?? '').slice(0, 34)}")`);
+  check(await overflow(page) <= 0, `${tag}: the realm row does not push the screen sideways`);
+  if (tag !== 'p320') { await page.$eval('.ctier', (e) => e.scrollIntoView({ block: 'start' })); await page.evaluate(() => window.scrollBy(0, -70)); await page.waitForTimeout(150); await shot(page, `${tag}-forgerealms`); }
 
   // ── 改 the cards already taken, and trading one ─────────────────────────────────────
   // rekaris: "give the player the possibility to change any of their 'permanent' choices

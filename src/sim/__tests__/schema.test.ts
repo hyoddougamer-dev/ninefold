@@ -204,12 +204,27 @@ describe('榜 the ranked schema', () => {
     await db.exec(sql);
     // and the later migrations that redefine its functions, as they stand on the server
     await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
+    await db.exec(readFileSync(`${MIGRATIONS}/20261003000000_panel_refusals.sql`, 'utf8'));
+    // 拒 Gamma's day: two syncs refused for too-fast (one with it twice, from both windows),
+    // one for the tower, one that went through, and a refusal two days old that is not today's.
+    await db.exec(`insert into sync_log (user_id, at, ok, why) values
+      ('${C}', now() - interval '1 hour', false, '{too-fast,too-fast}'),
+      ('${C}', now() - interval '2 hours', false, '{too-fast}'),
+      ('${C}', now() - interval '3 hours', false, '{tower}'),
+      ('${C}', now() - interval '4 hours', true, '{}'),
+      ('${C}', now() - interval '2 days', false, '{tower}'),
+      ('${C}', now() - interval '3 days', false, '{tower}')`);
     const rows = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p;
     expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(Object.keys(rows[0]).sort()).toEqual(
-      ['cleared', 'climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'note', 'realm', 'started', 'syncs7', 'tower']);
+      ['cleared', 'climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'note', 'realm',
+        'refused_day', 'refused_why', 'started', 'syncs7', 'syncs_day', 'tower']);
     expect(JSON.stringify(rows)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}-/);
     expect(rows.every((r: any) => typeof r.email === 'boolean')).toBe(true);
+    expect(rows.find((r: any) => r.name === 'Gamma')).toMatchObject({ syncs_day: 4, refused_day: 3, refused_why: 'too-fast' });
+    // A player with nothing refused today has a count of nothing and no reason.
+    expect(rows.find((r: any) => r.name === '修士 Alpha')).toMatchObject({ refused_day: 0, refused_why: null });
+    await db.exec(`delete from sync_log where user_id = '${C}'`);
 
     // 清 A flag taken off, and a note, only with the key.
     const flagged = rows.find((r: any) => r.held) ?? rows[0];

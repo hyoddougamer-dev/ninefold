@@ -119,6 +119,10 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check(await page.locator('.ranks .rlist li[data-me="true"]').count() === 1, 'the new player is on the board, marked as them');
   check(seen.syncs.length >= 1 && seen.syncs[0]?.save?.v === 1, 'the sync carried the save', JSON.stringify(seen.syncs[0])?.slice(0, 80));
   check(seen.names.includes('Bruno'), 'and the name', seen.names.join(','));
+  // 期 It opens on the week, the one board a newcomer can win (Raziel, 2026-10-02).
+  const opened = await page.locator('.ranks .rtabs button[aria-selected="true"]').textContent();
+  const first = await page.locator('.ranks .rtabs button').first().textContent();
+  check(/This Week/.test(opened ?? '') && /This Week/.test(first ?? ''), 'the rankings open on This Week, the first tab', `${opened} / ${first}`);
   await page.waitForTimeout(400);
   check(await page.locator('.ranks .rstatus[data-tone="good"]').isVisible(), 'the status says the climb is ranked');
   check(await page.locator('.ranks .rlist .rcall').count() === 2,
