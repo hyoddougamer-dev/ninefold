@@ -205,7 +205,8 @@ function Road({ state }: { state: State }) {
                 <b className="cjk">{m.han}</b>
                 <span>
                   <em>{m.name}</em>
-                  <i>{c === undefined ? ROAD.older : ROAD.youChose(m.picks[c].label)}</i>
+                  <i>{c === undefined ? ROAD.older : ROAD.youChose(m.picks[c].label)}
+                    {c !== undefined && m.picks[c].outcome.kind === 'item' ? ` ${ROAD.leftPiece}` : ''}</i>
                 </span>
               </li>
             );

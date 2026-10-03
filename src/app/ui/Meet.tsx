@@ -1,9 +1,11 @@
-import { canAnswer, giftOf, priceOf, type Meeting, type Pick } from '../../sim/meet.ts';
+import { canAnswer, giftOf, priceOf, type Meeting, type Pick, type Receipt } from '../../sim/meet.ts';
+import { RARITY_INFO, SLOT_INFO, templateOf } from '../../data/gear.ts';
+import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { pictureOf } from '../../data/pictures.ts';
 import { num } from '../../sim/format.ts';
 import { Svg } from './Svg.tsx';
-import { MEET, UNIT } from '../copy.ts';
+import { MEET, QOL, UNIT, meltPays } from '../copy.ts';
 import { BOON_INFO, meetingOf } from '../../data/meetings.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -88,6 +90,70 @@ export function Meet({ state, meeting, onAnswer }: {
         {!scene && picks}
       </div>
       {scene && picks}
+    </div>
+  );
+}
+
+/**
+ * 據 What came of it: the same card, after the answer, until the player has read it.
+ *
+ * The answer is already in the save when this shows, so closing it, or closing the app,
+ * loses nothing. It only says what happened: the meeting's own line, what was paid, and
+ * what came of it, and for a piece, which piece and whether the chest kept it.
+ */
+export function MeetDone({ receipt, onClose, onSee }: {
+  receipt: Receipt; onClose: () => void; onSee: () => void;
+}) {
+  const meeting = meetingOf(receipt.key);
+  if (!meeting) return null;
+  const pick = meeting.picks[receipt.which];
+  const scene = pictureOf('meet', meeting.key);
+  const paid: string[] = [];
+  if (receipt.costMaterials) paid.push(`${num(receipt.costMaterials)} 材 ${UNIT.material}`);
+  if (receipt.costQi) paid.push(`${num(receipt.costQi)} qi`);
+  const gave: string[] = [];
+  if (receipt.qi) gave.push(`+${num(receipt.qi)} qi`);
+  if (receipt.materials) gave.push(`+材 ${num(receipt.materials)} ${UNIT.material}`);
+  if (receipt.dao) gave.push(`+${receipt.dao} 道 Path`);
+  if (receipt.boon) gave.push(MEET.stays(BOON_INFO[receipt.boon as keyof typeof BOON_INFO].what));
+  const f = receipt.found;
+  const item = f?.item ?? null;
+  let pieceLine: string | null = null;
+  if (item) {
+    const t = templateOf(item);
+    const name = QOL.slotted(t.name, SLOT_INFO[t.slot].name);
+    const rank = RARITY_INFO[item.rarity].name;
+    const pays = meltPays(num(f!.melted), num(f!.meltedMaterial), f!.melted > 0, f!.meltedMaterial > 0);
+    pieceLine = !f!.dropped ? MEET.done.piece(name, rank)
+      : f!.dropped.id === item.id ? MEET.done.pieceMelted(name, rank, pays)
+      : MEET.done.pieceMadeRoom(name, rank, templateOf(f!.dropped).name, pays);
+  }
+  const kept = item && f && (!f.dropped || f.dropped.id !== item.id);
+  return (
+    <div className="meet meetdone" data-scene={!!scene}>
+      {scene
+        ? <img className="scenery" src={scene} alt="" aria-hidden="true" />
+        : <span className="s"><Svg html={icon(meeting.icon, 30)} /></span>}
+      <div className="body">
+        <b><span className="cjk">緣</span> {meeting.name}</b>
+        <i>{MEET.done.youChose(pick.label)} {receipt.then}</i>
+        {paid.length > 0 && <em className="mpaid">{MEET.done.paid(paid.join(' and '))}</em>}
+      </div>
+      <div className="mgot">
+        <span className="mhead">{MEET.done.head}</span>
+        {gave.length > 0 && <p>{gave.join(' · ')}</p>}
+        {item && pieceLine && (
+          <div className="mpiece">
+            <Svg html={gearTile(item, { size: 52 })} />
+            <p style={{ color: RARITY_INFO[item.rarity].colour }}>{pieceLine}</p>
+          </div>
+        )}
+        {gave.length === 0 && !item && <p>{MEET.nothing}</p>}
+        <div className="mdone">
+          {kept && <button type="button" className="act small" onClick={onSee}>{MEET.done.see}</button>}
+          <button type="button" className="act small" onClick={onClose}>{MEET.done.ok}</button>
+        </div>
+      </div>
     </div>
   );
 }

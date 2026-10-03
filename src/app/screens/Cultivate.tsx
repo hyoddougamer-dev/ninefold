@@ -23,7 +23,8 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
-import { Meet } from '../ui/Meet.tsx';
+import { Meet, MeetDone } from '../ui/Meet.tsx';
+import type { Receipt } from '../../sim/meet.ts';
 import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
@@ -44,7 +45,7 @@ const clockOf = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, onCards, meeting, onMeet, onPlant, onHarvest, onDemon, title,
+  owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title,
   sitLeft = 0, onSitAgain, waiting = [], onReady }: {
   state: State;
   /** 入定 Whole seconds left in this visit's sitting; 0 when it has ended or not begun. */
@@ -91,6 +92,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   meeting: Meeting | null;
   /** 緣 Answer them, one way or the other. */
   onMeet: (which: 0 | 1) => void;
+  /** 據 What the last answer gave, until it is read. */
+  meetDone: Receipt | null;
+  onMeetDone: () => void;
+  onMeetSee: () => void;
   /** 洞天 Put a seed in a bed, and take a ripe one. */
   onPlant: (which: number, key: string) => void;
   onHarvest: (which: number) => void;
@@ -383,7 +388,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
 
       {/* 緣 Somebody on the road. Above 示 the advice, because a person waiting is more
           interesting than a number, and below everything that is actually blocking. */}
-      {meeting && <Meet state={state} meeting={meeting} onAnswer={onMeet} />}
+      {meetDone
+        ? <MeetDone receipt={meetDone} onClose={onMeetDone} onSee={onMeetSee} />
+        : meeting && <Meet state={state} meeting={meeting} onAnswer={onMeet} />}
 
       {/* 心魔 A demon waiting is an event, so it stands up here with the road. The door
           the rest of the time is a thing to do, so it lives with the cave below. */}
