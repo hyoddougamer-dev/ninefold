@@ -52,13 +52,16 @@ const mailer = {
 };
 
 // 郵 The mail server, only when both halves are there; half of one would stop every email.
-const smtp = process.env.SMTP_PASS && process.env.SMTP_SENDER ? {
-  smtp_admin_email: process.env.SMTP_SENDER,
+// Every value is trimmed: a variable pasted into GitHub's form kept its line break once,
+// and Supabase refused "ninefold.game@gmail.com\r\n" as an invalid address.
+const env = (k) => (process.env[k] ?? '').trim();
+const smtp = env('SMTP_PASS') && env('SMTP_SENDER') ? {
+  smtp_admin_email: env('SMTP_SENDER'),
   smtp_sender_name: 'Ninefold',
-  smtp_host: process.env.SMTP_HOST || 'smtp.resend.com',
-  smtp_port: process.env.SMTP_PORT || '465',
-  smtp_user: process.env.SMTP_USER || 'resend',
-  smtp_pass: process.env.SMTP_PASS,
+  smtp_host: env('SMTP_HOST') || 'smtp.resend.com',
+  smtp_port: env('SMTP_PORT') || '465',
+  smtp_user: env('SMTP_USER') || 'resend',
+  smtp_pass: env('SMTP_PASS'),
 } : {};
 
 const part = process.argv[2];
