@@ -613,6 +613,35 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/cards-pc.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-03",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Older forges, faster melting, deep marks everywhere",
+      "color": "#C9A55A",
+      "body": [
+        "A round of your ideas, nearly all from rekaris and Raziel. Thank you both, and thanks to everyone posting in the forums.",
+        "",
+        "**鑄 Forge any realm you've reached.** A row of realms sits above the Gear list in Forging. *Now* is your realm and the one before, like before, and any realm you've reached shows its own pieces. A search looks through all of them.",
+        "",
+        "**拆 Melting refills faster.** The allowance now refills at 37.5% of your gathering, up from 25%. Over a whole climb Auto gets about five days back and still stays a little behind someone who checks in every hour.",
+        "",
+        "**精 Deep marks count everywhere.** Every 精 Seasoned and 絕 Peerless mark also adds +0.5% 材 material from every beast now, so finishing old beasts pays off.",
+        "",
+        "**造化 Creation turns drop chance into luck.** Once every kill drops a piece, drop chance had nothing left to do. Now it becomes luck: +0.1 for every 10 points, up to +0.5.",
+        "",
+        "**示 Missing lines show as +0.** A piece's sheet now also lists the lines the piece you wear has and this one doesn't, with a dashed red edge, so it can't pass for a strict upgrade.",
+        "",
+        "**期 The rankings open on This Week.** Everybody starts level on Monday, so it's the board a new player can win in their first week.",
+        "",
+        "Also: the refining text was wrong. The levels follow what you wear: a new piece you put on takes the higher of the two levels, and the one you take off keeps the lower. That's how it always worked; now it says so."
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-realms.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/sheet-zero.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -717,7 +746,7 @@
         "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
       ],
       "fields": [
-        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each."],
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +0.5% 材 material from every beast."],
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school, so you can see who drops 運 Fortune or 劍 Sword pieces."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
@@ -745,7 +774,7 @@
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
         ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner, and the chest filters by school."],
-        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level, and the levels stay on the piece, so refine the one you mean to keep."],
+        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
@@ -825,7 +854,8 @@
       "fields": [
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
         ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
-        ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."]
+        ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
+        ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance turns into luck instead (+0.1 for every 10 points, up to +0.5), so drop chance lines still count."]
       ]
     },
     {
@@ -934,7 +964,7 @@
         "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up."
       ],
       "fields": [
-        ["▸ The three boards", "天榜 Heaven List: the furthest climb.\n期榜 This Week: layers climbed since Monday.\n塔榜 The Tower: the highest floor."],
+        ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb.\n塔榜 The Tower: the highest floor."],
         ["▸ On the Android app", "Join as a guest. The email link opens the browser, not the app."],
         ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was."],
         ["▸ 盾 Fair play", "Your save is sealed on your device: it reads as noise, and the game notices when one was changed by hand. That keeps the casual edit out. The real guard is the server: every climb on the boards is measured against how much real time has passed, so an edited save, a moved clock or a forged copy never reaches them. An edited save still plays on your device, because nothing is ever taken away. It is just never ranked."]
@@ -1331,6 +1361,57 @@
         "Thanks for checking again, and sorry, you were right: there was a second thing hiding it. The school row only appeared when your chest held pieces from at least two schools, so if you've been farming one school and melting the rest, it never showed up at all.",
         "That's fixed now: the row is there whenever your chest has anything in it.",
         "If you still don't see it after a reload, open the menu (≡) and look at the last line, it says *Build* and a date. If it's older than today, tell me where you play (the website, itch.io or the Android app) and I'll sort it out.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Cannot craft lower-tier equipment",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Good point, thank you. There was no real reason to hide them, it only kept the list short.",
+        "In today's update the Gear list in Forging has a row of realms above it. *Now* shows your realm and the one before, like before, and any realm you've already reached shows its own pieces. A search looks through all of them too. So when your levels or materials make an older piece the better choice, you can forge it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Refinement carries over between gear",
+      "tags": ["Bug", "Fixed"],
+      "reply": [
+        "Thanks for catching this. The text was wrong, not the game.",
+        "Refining belongs to the place on your body rather than to the piece: a new piece you put on takes the higher of the two levels, and the piece you take off keeps the lower one. That way an upgrade dropping never costs you what you paid. The game says exactly that since today's update.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Show all stats of the gear by default",
+      "tags": ["Idea"],
+      "reply": [
+        "Agreed, that one can fool you. Since today's update the top of the sheet also shows every line the piece you're wearing has and this one doesn't, as +0 with a dashed red edge. A piece that's missing drop chance can't pass for a strict upgrade any more.",
+        "Thanks for sticking with this thread, it got a lot better because of you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adjusting the melting allowance",
+      "tags": ["Idea", "Balance"],
+      "reply": [
+        "You're right, and I measured it. The allowance refilled at a quarter of your gathering, which left Auto about eight days behind someone checking in every hour over a whole climb.",
+        "Since today's update it refills half as fast again (37.5%). That gives Auto about five days back and still keeps it a little behind the every-hour player, so idle stays the backbone. Pushing it further made Auto the fastest way to play, which is the one line I don't want to cross.",
+        "Thanks for running the numbers yourself!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "tags": ["Idea", "Balance"],
+      "reply": [
+        "Good catch, and I agree. Since today's update every 精 Seasoned and 絕 Peerless mark also adds +0.5% 材 material from every beast, on top of what it gives that beast, so finishing old beasts counts everywhere.",
+        "It stays material, never qi. I measured it over a whole climb and it doesn't move anyone's pace, it just makes the long hunt worth something. Thanks for thinking it through!",
         "· 師 Shibaki"
       ]
     }

@@ -4,7 +4,7 @@ import { pillFortune } from './furnace.ts';
 import type { Fortune } from './drops.ts';
 import type { State } from './state.ts';
 import { classDrop, gearFind, gearLuck } from './schools.ts';
-import { BOON_FAMILIAR } from './balance.ts';
+import { BOON_FAMILIAR, DROP_LUCK_CAP, DROP_TO_LUCK } from './balance.ts';
 import { hasBoon } from '../data/meetings.ts';
 
 /**
@@ -27,11 +27,20 @@ import { hasBoon } from '../data/meetings.ts';
  */
 export function fortuneOf(s: State): Fortune {
   // 運拾 The body's own two lines, bent, and 獵王 the Hunt King's extra chance.
+  // 鴉 And the two crows from the road.
+  const chance = dropChanceBonus(s.unlocked) + dropBonus(s.awakened) + gearFind(s) + classDrop(s)
+    + (hasBoon(s, 'familiar') ? BOON_FAMILIAR : 0);
+  const always = alwaysDrops(s.unlocked);
   return {
-    // 鴉 And the two crows from the road.
-    chance: dropChanceBonus(s.unlocked) + dropBonus(s.awakened) + gearFind(s) + classDrop(s)
-      + (hasBoon(s, 'familiar') ? BOON_FAMILIAR : 0),
-    luck: (rarityLuck(s.unlocked) * pillFortune(s.brewed) + luckBonus(s.awakened)) * gearLuck(s),
-    always: alwaysDrops(s.unlocked),
+    chance,
+    // 造化 With Creation every kill drops already, so the chance turns into luck.
+    luck: (rarityLuck(s.unlocked) * pillFortune(s.brewed) + luckBonus(s.awakened)) * gearLuck(s)
+      + (always ? chanceAsLuck(chance) : 0),
+    always,
   };
+}
+
+/** 造化 The luck a drop chance becomes once Creation has made it redundant: DROP_TO_LUCK. */
+export function chanceAsLuck(chance: number): number {
+  return Math.min(DROP_LUCK_CAP, Math.max(0, chance) * DROP_TO_LUCK);
 }

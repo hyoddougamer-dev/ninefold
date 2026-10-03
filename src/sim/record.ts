@@ -1,5 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { DEEP_DROP, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER } from './balance.ts';
+import { DEEP_DROP, DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER } from './balance.ts';
 import { pct } from './format.ts';
 
 /**
@@ -26,9 +26,10 @@ import { pct } from './format.ts';
  */
 
 /** Kills that earn each mark, and what the 熟 and 通 marks pay: see balance.ts. */
-export { DEEP_DROP, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER };
+export { DEEP_DROP, DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MASTERED_POWER };
 
-/** 精 絕 The two deep marks: see DEEP_MARKS. They pay the one beast that earned them. */
+/** 精 絕 The two deep marks: see DEEP_MARKS. They pay the one beast that earned them, and a
+ * little of every beast (DEEP_EVERYWHERE). */
 export const DEEP_INFO: readonly { han: string; name: string }[] = [
   { han: '精', name: 'Seasoned' },
   { han: '絕', name: 'Peerless' },
@@ -99,9 +100,16 @@ export function recordTally(killed: Killed): readonly number[] {
   return MARKS.map((at) => countAt(killed, at));
 }
 
-/** 熟 What the record is worth to every drop of 材 material. */
+/** 精 Every deep mark earned, across the whole record: 0 to twice the beasts. */
+export function deepTotal(killed: Killed): number {
+  let n = 0;
+  for (const b of BEASTS) n += deepOf(killed[b.key] ?? 0);
+  return n;
+}
+
+/** 熟 精 What the record is worth to every drop of 材 material. */
 export function recordMaterial(killed: Killed): number {
-  return 1 + KNOWN_MATERIAL * countAt(killed, MARKS[1]);
+  return 1 + KNOWN_MATERIAL * countAt(killed, MARKS[1]) + DEEP_EVERYWHERE * deepTotal(killed);
 }
 
 /** 通 What the record is worth to 力 power. */
@@ -147,7 +155,7 @@ export function knownIn(killed: Killed, realm: number): { done: number; of: numb
 /** Everything the record could ever be worth, for the screen that has to promise it. */
 export function recordCeiling(): { material: number; power: number } {
   return {
-    material: 1 + KNOWN_MATERIAL * BEASTS.length,
+    material: 1 + KNOWN_MATERIAL * BEASTS.length + DEEP_EVERYWHERE * DEEP_MARKS.length * BEASTS.length,
     power: 1 + MASTERED_POWER * BEASTS.length,
   };
 }

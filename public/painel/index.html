@@ -83,6 +83,7 @@
   .pill.off { color: var(--faint); }
   .pill.bad { color: var(--red); border-color: var(--red); }
   td.obs { white-space: normal; min-width: 180px; max-width: 280px; font-size: 13px; color: var(--faint); }
+  td.num .why { display: block; font-size: 12px; color: var(--red); }
   td.obs .clr { display: block; color: var(--jade); font-size: 12px; }
   .ed td { background: rgba(212,175,86,.05); white-space: normal; }
   .ed textarea { width: 100%; min-height: 70px; font: inherit; color: var(--text); background: var(--ground);
@@ -163,6 +164,7 @@
           <th data-k="played" class="num">Joga há</th>
           <th data-k="days" class="num">Dias com jogo</th>
           <th data-k="syncs7" class="num">Sinc. 7 dias</th>
+          <th data-k="refused" class="num">Recusadas 24 h</th>
           <th data-k="seen" class="num" data-dir="desc">Última vez</th>
           <th data-k="joined">No ranking desde</th>
           <th data-k="email">Conta</th>
@@ -172,7 +174,7 @@
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
-      <p class="help" style="margin-top:10px">Atividade: <b>ativo</b> jogou nas últimas 24 h, <b>esta semana</b> nos últimos 7 dias, <b>parado</b> há mais. "Dias com jogo" conta os dias diferentes em que o jogo falou com o servidor. "Conta: email" quer dizer que o jogador pode levar a conta para outro aparelho, e por isso também para o lançamento.</p>
+      <p class="help" style="margin-top:10px">Atividade: <b>ativo</b> jogou nas últimas 24 h, <b>esta semana</b> nos últimos 7 dias, <b>parado</b> há mais. "Dias com jogo" conta os dias diferentes em que o jogo falou com o servidor. "Recusadas 24 h" são as sincronizações que o verificador recusou no último dia, de quantas houve, com o motivo mais comum por baixo (<b>too-fast</b>: o jogo avançou mais depressa do que o tempo permite). Muitas recusas num jogador honesto querem dizer que é o verificador que o está a prender. "Conta: email" quer dizer que o jogador pode levar a conta para outro aparelho, e por isso também para o lançamento.</p>
     </div>
   </section>
 
@@ -308,9 +310,12 @@
     return age < DAY ? ['ativo', 'on', 0] : age < 7 * DAY ? ['esta semana', 'week', 1] : ['parado', 'off', 2];
   };
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // 拒 Syncs the verifier refused in the last 24 hours, of how many, and the reason most of them had.
+  const refusals = (p) => (p.refused_day > 0
+    ? `${p.refused_day} de ${p.syncs_day}${p.refused_why ? `<span class="why">${esc(p.refused_why)}</span>` : ''}` : '·');
   const value = (p, k) => ({
     name: p.name.toLowerCase(), state: activity(p)[2], depth: p.marks > 0 ? 1000 + p.marks : (p.realm - 1) * 9 + p.layer,
-    tower: p.tower, played: p.started ? -new Date(p.started).getTime() : 0, days: p.days, syncs7: p.syncs7,
+    tower: p.tower, played: p.started ? -new Date(p.started).getTime() : 0, days: p.days, syncs7: p.syncs7, refused: p.refused_day || 0,
     seen: p.last_seen ? new Date(p.last_seen).getTime() : 0, joined: new Date(p.joined).getTime(), email: p.email ? 0 : 1, held: p.held ? 1 : 0, note: (p.note || '').toLowerCase(),
   }[k]);
   function shown() {
@@ -326,18 +331,18 @@
       const [label, tone] = activity(p);
       return `<tr><td><b>${esc(p.name)}</b></td><td><span class="pill ${tone}">${label}</span></td>
         <td class="num">${where(p)}</td><td class="num">${p.tower}</td><td class="num">${since(p.started)}</td>
-        <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${since(p.last_seen)}</td>
+        <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${refusals(p)}</td><td class="num">${since(p.last_seen)}</td>
         <td>${day(p.joined)}</td><td>${p.email ? 'email' : 'convidado'}</td>
         <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td>
         <td class="obs">${esc(p.note || '')}${p.cleared ? `<span class="clr">marcação limpa a ${day(p.cleared)}</span>` : ''}</td>
         <td><button type="button" class="small" data-edit="${esc(p.name)}">${open === p.name ? 'Fechar' : 'Obs.'}</button></td></tr>`
         + (open === p.name ? editor(p) : '');
-    }).join('') || '<tr><td colspan="13" class="empty">Ninguém com esse nome.</td></tr>';
+    }).join('') || '<tr><td colspan="14" class="empty">Ninguém com esse nome.</td></tr>';
   }
   // 註 One player open at a time: a note, and, for a flagged player, taking the flag off.
   let open = null;
   function editor(p) {
-    return `<tr class="ed"><td colspan="13">
+    return `<tr class="ed"><td colspan="14">
       <textarea id="note" maxlength="500" placeholder="O que se passou, ou o que foi alterado (fica guardado com o jogador)">${esc(p.note || '')}</textarea>
       <div class="row">
         <button type="button" id="savenote">Guardar nota</button>
@@ -364,9 +369,9 @@
     if (b.id === 'clear') act('panel_clear');
   });
   function table() {
-    const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat', 'Observações', 'Marcação limpa'];
+    const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Recusadas 24 h', 'Sincronizações 24 h', 'Motivo mais comum', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat', 'Observações', 'Marcação limpa'];
     const rows = shown().map((p) => [p.name, activity(p)[0], p.realm, p.layer, p.marks, p.tower, day(p.started), p.days, p.syncs7,
-      p.last_seen ? new Date(p.last_seen).toLocaleString('pt-PT') : '', day(p.joined), p.email ? 'email' : 'convidado', p.held ? 'marcado' : 'limpo',
+      p.refused_day ?? '', p.syncs_day ?? '', p.refused_why || '', p.last_seen ? new Date(p.last_seen).toLocaleString('pt-PT') : '', day(p.joined), p.email ? 'email' : 'convidado', p.held ? 'marcado' : 'limpo',
       p.note || '', p.cleared ? day(p.cleared) : '']);
     return [head, ...rows];
   }

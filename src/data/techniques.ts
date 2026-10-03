@@ -137,7 +137,7 @@ export const NODES: readonly Node[] = [
     [{ kind: 'rankUp' }, { kind: 'chestCap', slots: 12 }],
     'Every drop comes one rank higher. Your chest holds only 12.', { excludes: 'favour', keystone: true }),
   n('treasury',  '寶庫', 'Treasury',       'fortune', 6, 4, [{ kind: 'chestSlots', slots: 12 }], '+12 places in the chest'),
-  n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something'),
+  n('creation',  '造化', 'Creation',       'fortune', 7, 4, [{ kind: 'alwaysDrop' }], 'every beast drops something, and drop chance turns into luck'),
 ];
 
 /**

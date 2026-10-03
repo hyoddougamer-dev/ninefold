@@ -323,8 +323,15 @@ export const CORE_QI_RUNGS = 6;
  * for somebody melting thousands of pieces an hour. What melts past it is not thrown
  * away: it melts into 材 material instead (see meltMaterial), which buys power and never
  * qi. Nothing uncapped may raise the qi rate, and now nothing uncapped pays qi either.
+ *
+ * 拆 Half as much again since 2026-10-03. rekaris: *"running auto hunts almost doesn't
+ * seem worth it - it is better to just let the game sleep until the allowance is full."*
+ * Measured over a whole climb (realm-9 day; active, every hour, auto): at 0.25 it was
+ * 43.8, 30.5, 38.3, auto 7.8 days behind the every-hour hand; at 0.375, 43.8, 30.2, 33.2,
+ * three days behind; at 0.5, 31.5, a day and a half (a knife edge); from about 0.6 auto
+ * is ahead of every hand, which auto.test refuses. Active never empties it either way.
  */
-export const MELT_FILL = 0.25;
+export const MELT_FILL = 0.375;
 export const MELT_CAP = 6 * 3600;
 
 export const SALVAGE_SHARE_FIRST = 0.30;
@@ -1115,6 +1122,20 @@ export const LUCK_EARTH_GRADE = 0.25;
 export const LUCK_HEAVEN_GRADE = 0.5;
 export const LUCK_GRADE_CAP = 10;
 
+/**
+ * 造化 Once Creation makes every kill drop, chance to drop has nothing left to do, so it
+ * turns into luck: DROP_TO_LUCK of luck for every whole of chance (ten points of drop
+ * chance are +0.1 luck), never more than DROP_LUCK_CAP. rekaris, on the Discord
+ * (2026-10-03): *"Is there any reason to stack more drop chance if you get the last node
+ * (Creation)?"* There was not. Measured on fortune-branch copies of the three habits:
+ * Earth and Heaven over the climb rise from about 41% to 43-44%, and the ninth realm moves
+ * by a day or less (42.5 to 41.3, 29.7 to 29.3, 36.7 to 36.0). "Only what passes 100%"
+ * was measured too and does nothing: nobody's chance gets near it. The cap is its own
+ * because luck lifts the rare ranks with no ceiling of its own past the grading.
+ */
+export const DROP_TO_LUCK = 1;
+export const DROP_LUCK_CAP = 0.5;
+
 /** How much an item's rolled percentage may swing either side of its base. */
 export const VARIANCE = 0.15;
 
@@ -1253,6 +1274,15 @@ export const MASTERED_POWER = 0.02;
  * so a third mark at 25,000 was out of reach and is left out.
  */
 export const DEEP_MARKS: readonly number[] = [1000, 5000];
+/**
+ * 精 And every deep mark also adds this much 材 material from every beast, since
+ * 2026-10-03. rekaris: *"the latest two milestones provide local bonuses, while the first
+ * three are global. This means there is little reason to go back to the earlier beasts
+ * and finish them."* Measured over a whole climb: only the auto-hunter earns deep marks
+ * before the ninth realm (eleven by day 45), and its ninth realm moves from day 38.3 to
+ * 38.2; nobody else moves. All fifty-four earned would be +27%. Material, never qi.
+ */
+export const DEEP_EVERYWHERE = 0.005;
 export const DEEP_MATERIAL = 0.10;
 export const DEEP_DROP = 0.02;
 

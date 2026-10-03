@@ -4157,8 +4157,9 @@ const page = `<meta charset="utf-8">
     </table>
     <p class="t">A run's material roughly <b>doubles</b> what your gear is worth, and a run
       spent farming gets a little further up the same curve rather than somewhere else
-      entirely. <b>The levels stay on the piece</b>, which is the decision: material poured
-      into one sword is not in the next sword.</p>
+      entirely. <b>The levels follow the place on the body</b>: a new piece put on takes the
+      higher of the two, and the piece taken off keeps the lower, so material poured into
+      one sword is never lost to the next one (rekaris asked, 2026-10-02).</p>
     <div class="rule"><b>And the chest stopped eating drops.</b> ${CHEST} slots, and a full
       one used to refuse everything that fell after the last, which a cultivator hunting
       properly manages inside one visit. Losing the 天 that just dropped because forty 凡
