@@ -565,6 +565,91 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320']]) {
   await page.close();
 }
 
+// ── 便 The quality-of-life call (batch B): one tap where there were many, and choices kept ──
+for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
+  const ripe = now() - 13 * 3600;
+  const page = await open(w, h, { realm: 5, layer: 4, tower: 0, materials: 1e6,
+    beds: [{ herb: 'moss', at: ripe }, { herb: 'orchid', at: ripe }, { herb: null, at: 0 }],
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
+      'fuse', 'whom', 'workshop', 'cave', 'secret', 'seclusion', 'refine', 'record', 'deep'] });
+  await clearAll(page);
+
+  // 洞天 收 Take all and plant again: both ripe beds taken and sown with what was in them.
+  const replant = await page.$('[data-qol="cave-replant"]');
+  check(!!replant, `${tag}: the cave offers Take all and plant again`);
+  if (replant) {
+    await replant.click();
+    await page.waitForTimeout(400);
+    const beds = await page.$$eval('.cave .bed', (els) => els.map((e) => `${e.dataset.ripe ? 'ripe' : ''}${e.querySelector(':scope > i')?.textContent}`));
+    check(beds[0] === 'Spirit Moss' && beds[1] === 'Moonlight Orchid', `${tag}: and the same herbs went back in (${beds.join(' | ')})`);
+  }
+  check(await overflow(page) <= 0, `${tag}: the cave does not push the screen sideways`);
+
+  // 器 ▲ Wear all upgrades: a better sword in the chest goes on, and nothing ▲ is left.
+  await tab(page, '器');
+  const wear = await page.$('[data-qol="wear-all"]');
+  check(!!wear, `${tag}: a ▲ in the chest offers Wear all upgrades`);
+  if (wear) {
+    await wear.click();
+    await page.waitForTimeout(400);
+    const left = await page.$$eval('.chest .chestit[data-better="true"]', (els) => els.length);
+    check(left === 0, `${tag}: and afterwards nothing in the chest is ▲ (${left})`);
+  }
+  // 記 The melt rank and the chest's slot filter survive a reload.
+  await page.click('.melting .rk >> nth=1');
+  await page.click('.chestfilter button:has-text("Weapon")').catch(() => {});
+  await page.waitForTimeout(200);
+  await saved(page);
+  await clearAll(page);
+  await tab(page, '器');
+  const rank = await page.$eval('.melting .rk[data-on="true"]', (e) => e.getAttribute('aria-label')).catch(() => '');
+  check(/^Spirit/.test(rank ?? ''), `${tag}: the melt rank is still Spirit after a reload ("${rank}")`);
+  const slot = await page.$eval('.chestfilter button[aria-pressed="true"]', (e) => e.textContent).catch(() => '');
+  check(/Weapon|All/.test(slot ?? ''), `${tag}: the chest's slot filter is kept ("${slot}")`);
+  check(await overflow(page) <= 0, `${tag}: the gear screen does not scroll sideways`);
+
+  // 狩 自 Auto on every Known row and nowhere else, and the slot beside each piece's name.
+  await tab(page, '狩');
+  const tags = await page.$$eval('.beast', (rows) => rows.map((r) => [!!r.querySelector('.drivetag'), !!r.querySelector('.autotag')]));
+  check(tags.some(([d]) => d) && tags.every(([d, a]) => d === a), `${tag}: Auto sits on exactly the rows that can be driven (${tags.filter(([, a]) => a).length})`);
+  const named = await page.$$eval('.beast .bleaves em > span:last-child', (els) => els.map((e) => e.textContent.trim()));
+  check(named.length > 0 && named.every((t) => /·\s*(Weapon|Robe|Crown|Boots|Talisman|Ring)$/.test(t) || /(Robe|Crown|Boots|Ring)$/.test(t)),
+    `${tag}: every piece a beast leaves says where it is worn (${named.slice(0, 3).join(' | ')})`);
+  check(await overflow(page) <= 0, `${tag}: the hunt does not push the screen sideways`);
+
+  // 圍 The last row drives as many as the qi pays for; the result offers Drive again.
+  await page.click('.drivetag');
+  await page.waitForTimeout(300);
+  check(!!(await page.$('[data-qol="drive-most"]:not([disabled])')), `${tag}: the drive sheet has a row for as many as the qi pays for`);
+  await page.click('.drivesheet .size >> nth=0');
+  await page.waitForTimeout(300);
+  check(!!(await page.$('[data-qol="drive-again"]')), `${tag}: the drive result offers Drive again`);
+  await page.click('.drivesheet .act.ghost');
+  await page.waitForTimeout(300);
+
+  // 塔 登 Next floor on a floor that fell, and only Collect on one that did not.
+  await tab(page, '塔');
+  await page.click('.act[data-tone="cinnabar"]');
+  await page.waitForTimeout(300);
+  if (await page.$('.arena:not([data-over="true"])')) await page.click('.arena');
+  await page.waitForSelector('.verdict', { timeout: 8000 });
+  const won = await page.$('.arena[data-won="true"]');
+  check(!!won && !!(await page.$('.verdict .vacts .nextfloor')), `${tag}: a won floor offers Next floor`);
+  await page.close();
+}
+{
+  const page = await open(400, 860, { realm: 5, layer: 4, tower: 95 });
+  await clearAll(page);
+  await tab(page, '塔');
+  await page.click('.act[data-tone="cinnabar"]');
+  await page.waitForTimeout(300);
+  if (await page.$('.arena:not([data-over="true"])')) await page.click('.arena');
+  await page.waitForSelector('.verdict', { timeout: 8000 });
+  check(!!(await page.$('.arena[data-lost="true"]')) && !(await page.$('.verdict .vacts .nextfloor')),
+    'qolB: a lost floor offers only the way out');
+  await page.close();
+}
+
 await browser.close();
 console.log(problems.length ? `\n鎖 ${problems.length} broken: ${problems.join('; ')}\n`
   : '\n鎖 kept, found and ordered as asked, on a phone and on a computer.\n');
