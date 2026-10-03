@@ -53,6 +53,8 @@ export const BANNERS = [
   // 便 The call for quality-of-life ideas: the forum post that gathers them, and the announcement that points at it.
   { key: 'ideas-qol', seal: '便', over: '議 Your ideas · Quality of life', title: 'What Slows You Down?', sub: 'Tell us every tap, scroll and wait you would cut', bg: 'realm/4', fig: 'self/woman-8' },
   { key: 'news-qol', seal: '便', over: '告 Announcement', title: 'Make Ninefold Easier', sub: 'Your quality-of-life ideas come first this week', bg: 'realm/8', fig: 'self/man-8' },
+  // 筆 The update that answers the call: what the testers asked for, in the game.
+  { key: 'devlog-4', seal: '便', over: '筆 Dev log · 04', title: 'Fewer Taps, Clearer Screens', sub: 'Your quality-of-life ideas, in the game', bg: 'realm/6', fig: 'self/woman-6' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',

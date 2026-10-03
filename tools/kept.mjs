@@ -565,6 +565,217 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320']]) {
   await page.close();
 }
 
+// ── 便 The quality-of-life call (batch B): one tap where there were many, and choices kept ──
+for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
+  const ripe = now() - 13 * 3600;
+  const page = await open(w, h, { realm: 5, layer: 4, tower: 0, materials: 1e6,
+    beds: [{ herb: 'moss', at: ripe }, { herb: 'orchid', at: ripe }, { herb: null, at: 0 }],
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
+      'fuse', 'whom', 'workshop', 'cave', 'secret', 'seclusion', 'refine', 'record', 'deep'] });
+  await clearAll(page);
+
+  // 洞天 收 Take all and plant again: both ripe beds taken and sown with what was in them.
+  const replant = await page.$('[data-qol="cave-replant"]');
+  check(!!replant, `${tag}: the cave offers Take all and plant again`);
+  if (replant) {
+    await replant.click();
+    await page.waitForTimeout(400);
+    const beds = await page.$$eval('.cave .bed', (els) => els.map((e) => `${e.dataset.ripe ? 'ripe' : ''}${e.querySelector(':scope > i')?.textContent}`));
+    check(beds[0] === 'Spirit Moss' && beds[1] === 'Moonlight Orchid', `${tag}: and the same herbs went back in (${beds.join(' | ')})`);
+  }
+  check(await overflow(page) <= 0, `${tag}: the cave does not push the screen sideways`);
+
+  // 器 ▲ Wear all upgrades: a better sword in the chest goes on, and nothing ▲ is left.
+  await tab(page, '器');
+  const wear = await page.$('[data-qol="wear-all"]');
+  check(!!wear, `${tag}: a ▲ in the chest offers Wear all upgrades`);
+  if (wear) {
+    await wear.click();
+    await page.waitForTimeout(400);
+    const left = await page.$$eval('.chest .chestit[data-better="true"]', (els) => els.length);
+    check(left === 0, `${tag}: and afterwards nothing in the chest is ▲ (${left})`);
+  }
+  // 記 The melt rank and the chest's slot filter survive a reload.
+  await page.click('.melting .rk >> nth=1');
+  await page.click('.chestfilter button:has-text("Weapon")').catch(() => {});
+  await page.waitForTimeout(200);
+  await saved(page);
+  await clearAll(page);
+  await tab(page, '器');
+  const rank = await page.$eval('.melting .rk[data-on="true"]', (e) => e.getAttribute('aria-label')).catch(() => '');
+  check(/^Spirit/.test(rank ?? ''), `${tag}: the melt rank is still Spirit after a reload ("${rank}")`);
+  const slot = await page.$eval('.chestfilter button[aria-pressed="true"]', (e) => e.textContent).catch(() => '');
+  check(/Weapon|All/.test(slot ?? ''), `${tag}: the chest's slot filter is kept ("${slot}")`);
+  check(await overflow(page) <= 0, `${tag}: the gear screen does not scroll sideways`);
+
+  // 狩 自 Auto on every Known row and nowhere else, and the slot beside each piece's name.
+  await tab(page, '狩');
+  const tags = await page.$$eval('.beast', (rows) => rows.map((r) => [!!r.querySelector('.drivetag'), !!r.querySelector('.autotag')]));
+  check(tags.some(([d]) => d) && tags.every(([d, a]) => d === a), `${tag}: Auto sits on exactly the rows that can be driven (${tags.filter(([, a]) => a).length})`);
+  const named = await page.$$eval('.beast .bleaves em > span:last-child', (els) => els.map((e) => e.textContent.trim()));
+  check(named.length > 0 && named.every((t) => /·\s*(Weapon|Robe|Crown|Boots|Talisman|Ring)$/.test(t) || /(Robe|Crown|Boots|Ring)$/.test(t)),
+    `${tag}: every piece a beast leaves says where it is worn (${named.slice(0, 3).join(' | ')})`);
+  check(await overflow(page) <= 0, `${tag}: the hunt does not push the screen sideways`);
+
+  // 圍 The last row drives as many as the qi pays for; the result offers Drive again.
+  await page.click('.drivetag');
+  await page.waitForTimeout(300);
+  check(!!(await page.$('[data-qol="drive-most"]:not([disabled])')), `${tag}: the drive sheet has a row for as many as the qi pays for`);
+  await page.click('.drivesheet .size >> nth=0');
+  await page.waitForTimeout(300);
+  check(!!(await page.$('[data-qol="drive-again"]')), `${tag}: the drive result offers Drive again`);
+  await page.click('.drivesheet .act.ghost');
+  await page.waitForTimeout(300);
+
+  // 塔 登 Next floor on a floor that fell, and only Collect on one that did not.
+  await tab(page, '塔');
+  await page.click('.act[data-tone="cinnabar"]');
+  await page.waitForTimeout(300);
+  if (await page.$('.arena:not([data-over="true"])')) await page.click('.arena');
+  await page.waitForSelector('.verdict', { timeout: 8000 });
+  const won = await page.$('.arena[data-won="true"]');
+  check(!!won && !!(await page.$('.verdict .vacts .nextfloor')), `${tag}: a won floor offers Next floor`);
+  await page.close();
+}
+{
+  const page = await open(400, 860, { realm: 5, layer: 4, tower: 95 });
+  await clearAll(page);
+  await tab(page, '塔');
+  await page.click('.act[data-tone="cinnabar"]');
+  await page.waitForTimeout(300);
+  if (await page.$('.arena:not([data-over="true"])')) await page.click('.arena');
+  await page.waitForSelector('.verdict', { timeout: 8000 });
+  check(!!(await page.$('.arena[data-lost="true"]')) && !(await page.$('.verdict .vacts .nextfloor')),
+    'qolB: a lost floor offers only the way out');
+  await page.close();
+}
+
+// ── 待 Quality of life, 2026-10-03: what is waiting, the keys, the sitting, and fingers ──
+// Two audits counted thirty to fifty taps a check-in, most of them spent finding what was
+// ready. Each check here is one of their findings turned into a question for the screen.
+{
+  // 歸 Eight hours away: a workshop that waited all night for ore, ripe beds, an open vault.
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 }, deviceScaleFactor: 1 });
+  const t = now();
+  const save = cultivator({
+    at: t - 8 * 3600, runAt: t - 30 * 86400,
+    beds: [{ herb: 'moss', at: t - 3 * 86400 }, { herb: 'moss', at: t - 3 * 86400 }, { herb: null, at: 0 }],
+    crafts: { xp: { herb: 0, vein: 400, render: 0, forge: 400, alchemy: 0, sigil: 0, array: 0 },
+      task: 'forge:metal1', since: t - 8 * 3600, pouch: {}, made: {}, tools: {}, arrays: [],
+      carry: { elixir: null, sigil: null }, seek: 0 },
+  });
+  await page.route('**/assets/*.js', (r) => r.abort());
+  await page.goto(BASE);
+  await page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [SAVE_KEY, save]);
+  await page.unroute('**/assets/*.js');
+  await page.goto(BASE);
+  await page.waitForSelector('.back', { timeout: 15000 });
+  await page.waitForTimeout(600);
+  const craft = await page.textContent('.back .backcraft').catch(() => '');
+  check(/waited 8h for Mortal Iron Ore/.test(craft ?? ''), `qol: the return card says the workshop waited, with nothing made ("${craft}")`);
+  const rows = await page.$$eval('.back .backrow', (els) => els.map((e) => e.textContent));
+  check(rows.some((r) => /cave beds are ripe/.test(r)) && rows.some((r) => /vault door is open/.test(r))
+    && rows.some((r) => /waiting for Mortal Iron Ore/.test(r)), `qol: the return card lists what is waiting (${rows.length} rows)`);
+  check(rows.every((r) => !/\b(lost|wasted|missed)\b/i.test(r)), 'qol: nothing on the list reads as a loss');
+  // 鍵 Digits do nothing under the card; Esc carries on.
+  await page.keyboard.press('3');
+  await page.waitForTimeout(250);
+  check(await page.$('.back') !== null && await page.$eval('.sheet', (e) => e.dataset.screen) === 'cultivate',
+    'qol: a digit pressed under the return card changes nothing');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  check(await page.$('.back') === null, 'qol: Esc closes the return card');
+  // 點 The strip on 修 and the dots on the tabs.
+  const chips = await page.$$eval('.readystrip .rs-chip', (els) => els.map((e) => e.textContent));
+  check(chips.some((c) => /Vault open/.test(c)), `qol: Ready now on 修 names the open vault (${chips.join(' | ')})`);
+  const dots = await page.$$eval('nav.tabs button[data-ready]', (els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
+  check(dots.some((d) => /^Hunt: .*vault door is open/.test(d)) && dots.some((d) => /^Crafts: /.test(d)),
+    `qol: the tabs with something ready wear a dot that says what (${dots.length})`);
+  // 業 The fix on the Crafts screen sets the gathering going.
+  await page.click('.readystrip .rs-chip:has-text("Workshop")');
+  await page.waitForTimeout(400);
+  const fix = await page.textContent('.ctask .ct-fix').catch(() => '');
+  check(/Gather Mortal Iron Ore/.test(fix ?? ''), `qol: a waiting workshop offers the one tap that fixes it ("${fix}")`);
+  await page.click('.ctask .ct-fix');
+  await page.waitForTimeout(400);
+  const making = await page.textContent('.ctask').catch(() => '');
+  check(/Making Mortal Iron Ore/.test(making ?? ''), 'qol: the tap set the gathering going');
+  // 指 The small buttons take a finger.
+  await page.click('nav.tabs button:has-text("修")');
+  await page.waitForTimeout(300);
+  await page.locator('.spendrow').scrollIntoViewIfNeeded();
+  const hit = await page.$eval('.spendrow .buymode button', (b) => {
+    const r = b.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    return [r.top + r.height / 2 - 19, r.top + r.height / 2 + 19].every((y) => b.contains(document.elementFromPoint(x, y)));
+  });
+  check(hit, 'qol: ×1 takes a tap 40px tall');
+  await page.click('nav.tabs button:has-text("器")');
+  await page.waitForTimeout(300);
+  const chipH = await page.$eval('.chestfilter button', (b) => b.getBoundingClientRect().height);
+  check(chipH >= 40, `qol: a chest filter chip takes a tap ${Math.round(chipH)}px tall`);
+  check(await overflow(page) <= 0, 'qol: the gear screen still does not scroll sideways');
+  await page.close();
+}
+{
+  // 秘境 Inside the vault the digits pick a door and never the tab underneath.
+  const page = await open(400, 860, { runStep: 0, runAt: now() - 12 * 3600 });
+  await page.keyboard.press('2');
+  await page.waitForTimeout(500);
+  const step = await page.textContent('.secret .over').catch(() => '');
+  check(/Room 2 of/.test(step ?? '') || await page.$('.runend') !== null, `qol: 2 takes the right-hand door in the vault ("${step}")`);
+  check(await page.$eval('.sheet', (e) => e.dataset.screen) === 'cultivate', 'qol: and the tab underneath stays where it was');
+  await page.close();
+}
+{
+  // 突破 What opened is read before the cards, each row goes to its tab, and 新 marks it.
+  const page = await open(400, 860, { realm: 2, layer: 8, qi: 1e9, wardenFell: true, awakened: ['feast'],
+    killed: { rat: 150, hound: 20, frog: 20, fox: 1, ape: 1 } });
+  await clearAll(page);
+  await page.click('[data-coach="breakthrough"]');
+  await page.waitForTimeout(1600);
+  const opened = await page.$$eval('.bloom .openedrow', (els) => els.map((e) => e.textContent));
+  check(opened.length >= 2 && opened.every((o) => /›/.test(o)) && await page.$('.awaken') === null,
+    `qol: the breakthrough lists what opened, with its tab, and the cards wait (${opened.length} rows)`);
+  await page.click('.bloom .openedrow:has-text("Secret")');
+  await page.waitForTimeout(500);
+  check(await page.$eval('.sheet', (e) => e.dataset.screen) === 'hunt' && await page.$('.awaken') !== null,
+    'qol: a row goes to its tab, and the cards come up after');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  check(await page.$('.awaken') === null, 'qol: Esc on the cards is Later');
+  const fresh = await page.$$eval('nav.tabs button[data-new]', (els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
+  check(fresh.some((f) => /^Gear: .*New here: Fusing\./.test(f)), `qol: the tab with something new wears 新 until it is opened (${fresh.join(' | ')})`);
+  await page.click('nav.tabs button:has-text("器")');
+  await page.waitForTimeout(400);
+  check(await page.$('nav.tabs button[data-new]:has-text("器")') === null, 'qol: opening the tab takes its dot off');
+  await page.close();
+}
+{
+  // 入定 The sitting says its time, then what starts the next one, and Sit again starts it.
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 }, deviceScaleFactor: 1 });
+  await page.clock.install({ time: Date.now() });
+  await page.route('**/assets/*.js', (r) => r.abort());
+  await page.goto(BASE);
+  await page.evaluate(([k, s]) => localStorage.setItem(k, JSON.stringify(s)), [SAVE_KEY, cultivator()]);
+  await page.unroute('**/assets/*.js');
+  await page.goto(BASE);
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.clock.runFor(200_000);
+  await clearAll(page);
+  const chip = await page.textContent('.sitline .sitchip').catch(() => '');
+  // Half an hour (FOCUS_HOLD), 200 seconds of it gone.
+  check(/Sitting ×3\.0 · 2[56]:\d\d left/.test(chip ?? ''), `qol: a sitting says how deep it is and how long it has ("${chip}")`);
+  await page.clock.runFor(27 * 60_000);
+  const over = await page.textContent('.sitline[data-over]').catch(() => '');
+  check(/starts whenever you come back to the game/.test(over ?? '') && await page.$('.sitagain') !== null,
+    'qol: a sitting that has passed says what starts the next one, and offers it');
+  await page.click('.sitagain');
+  await page.clock.runFor(5000);
+  check(await page.$('.sitline .sitchip') !== null, 'qol: Sit again starts a new sitting');
+  await page.close();
+}
+
 await browser.close();
 console.log(problems.length ? `\n鎖 ${problems.length} broken: ${problems.join('; ')}\n`
   : '\n鎖 kept, found and ordered as asked, on a phone and on a computer.\n');

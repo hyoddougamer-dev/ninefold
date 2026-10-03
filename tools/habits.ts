@@ -13,14 +13,14 @@ import { carryBest, craftVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
-  UPGRADES, atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense,
+  atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
   canFightWarden, condense,
   newState, power, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
 import { fight, odds, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
-import { DRIVE_SIZES, canDrive, drive, driveCost } from '../src/sim/hunt.ts';
+import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
 import { STANCES } from '../src/data/arts.ts';
@@ -582,7 +582,11 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       // rest, which is still far greedier than anybody would really play.
       const stuck = atCeiling(s) && !s.wardenFell;
       const keep = stuck ? 0 : ladderBetween(layersOpened(s));
-      const n = [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x, b) >= keep);
+      // 盡 NF_DRIVEMAX=1 drives as many as the budget pays for (the sheet's last row)
+      // instead of the three fixed sizes: the check that the finer size moves no curve.
+      const n = process.env.NF_DRIVEMAX === '1'
+        ? driveMax({ ...s, qi: Math.max(0, s.qi - keep) }, b) || undefined
+        : [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x, b) >= keep);
       if (!n) break;
       const d = drive(s, b, n, ++seed);
       s = d.state;
@@ -682,12 +686,9 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       fights++;
     }
 
-    for (let g = 0; g < 400; g++) {
-      const open2 = UPGRADES.filter((u) => canBuy(s, u));
-      if (!open2.length) break;
-      open2.sort((a, b) => upgradeCost(s, a) - upgradeCost(s, b));
-      s = buy(s, open2[0]);
-    }
+    // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
+    // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
+    s = buyAll(s, () => true).state;
     // 爐 Pills when the warden is out of reach, and none once it is beatable: qi brewed
     // is qi that did not open a layer.
     if (h.furnace && (h.brews ?? 'stuck') === 'stuck') for (let g = 0; g < 400; g++) {

@@ -6,7 +6,7 @@ import {
 import { fightDeps } from '../memo.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import {
-  compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictByLines, verdictOf, verdictWithFight, wornSwing, type Swing,
+  compare, ifBare, ifWorn, levelsCarried, linesOf, sizeOf, swing, verdictByLines, verdictOf, verdictWithFight, wornSwing, type Swing,
 } from '../../sim/inspect.ts';
 import { nearestTrial, trialOdds } from '../../sim/reach.ts';
 import { BEASTS } from '../../data/bestiary.ts';
@@ -15,7 +15,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from './Svg.tsx';
 import type { State } from '../../sim/state.ts';
-import { CLASS, ITEM, UNIT } from '../copy.ts';
+import { CLASS, ITEM, QOL, UNIT } from '../copy.ts';
 import { meltQuote } from '../../sim/salvage.ts';
 import { num } from '../../sim/format.ts';
 
@@ -61,7 +61,9 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   const slot = SLOT_INFO[tpl.slot];
   const worn = state.worn[tpl.slot];
   const against = wearing ? undefined : worn;
+  // 承 Read as it would be once on: it takes the slot's refining levels (see compare).
   const lines = compare(item, against);
+  const carried = levelsCarried(item, against);
   // 判 A chest piece is read against what is worn; a worn piece against the same place
   // left empty, which is what it is doing for you right now.
   const move: Swing = wearing ? wornSwing(state, item) : swing(state, item);
@@ -155,6 +157,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
             </span>
           ))}
         </div>
+        {carried > 0 && <p className="carried">{QOL.gear.carried(carried)}</p>}
         <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fight)}</p>
       </div>
 

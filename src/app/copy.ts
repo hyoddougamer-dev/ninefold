@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -51,7 +51,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for about a quarter of an hour. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -291,7 +291,6 @@ export const CULTIVATE = {
    * gained by staying, never as something lost by leaving, because leaving costs
    * nothing and the game has to keep saying so.
    */
-  deep: 'Sitting with it deepens your gathering. It keeps rising for a few minutes.',
   deepFull: 'Fully settled. This is as deep as sitting with it goes.',
   /**
    * 氣 Why the number moves, said on the screen where it moves.
@@ -307,11 +306,7 @@ export const CULTIVATE = {
    * rule every other pair of numbers in this game follows.
    */
   standing: (n: string) => `${n} standing`,
-  sitting: 'The sitting lasts a quarter of an hour. Leave and come back for another one.',
-  /** And what the number falls back to, framed as the thing it is: a bonus that ended. */
-  sittingOver: (n: string) =>
-    `入定 That sitting has passed and you are back to your standing ${n} a second. ` +
-    'Nothing was taken: the sitting was extra. Come back later and it begins again.',
+  // 入定 The sitting's own lines (how long is left, what starts the next) are in SIT below.
 
   /**
    * 雷池 The pool. It is the ninth realm's bar, and it refills.
@@ -630,7 +625,7 @@ export const KEY = {
   /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
     `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast, `
-    + `and +${(everywhere * 100).toFixed(1)}% 材 material from every beast`,
+    + `and +${Number((everywhere * 100).toFixed(1))}% 材 material from every beast`,
   /** 緣 The bond, for the key and the tooltip. */
   bond: (full: number) => `Every win over a beast fills its bond. The ${full}th win leaves a piece for certain, `
     + 'a rank above the best that beast has given you, and the bond starts again.',
@@ -669,11 +664,11 @@ export const KEY = {
   workshop: 'Where the seven crafts are worked, one task at a time.',
   craftTotal: 'Your seven craft levels added up: 7 when every craft is new, 693 when all seven stand at 99. Every level in any craft adds one, so it grows with whatever you work.',
   pouch: 'Everything the workshop gathers and makes.',
-  familiar: 'How many times a recipe has been made. Five marks, each one a small edge on that recipe.',
+  familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
   carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
-  opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
+  opensAt: (han: string, name: string, sooner?: string) => `opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}`,
 
   doingHead: '作 Words you will meet',
   doingBlurb: 'The rest of the characters that ask you to do something.',
@@ -686,7 +681,7 @@ export const KEY = {
   melt: 'Break a piece down into qi. Worth a share of a layer of the realm it was made in.',
   drive: 'Buy many kills of a beast you already know, instead of tapping for each one.',
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
-  sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after a quarter of an hour.',
+  sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after half an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
   layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
@@ -1220,6 +1215,8 @@ export const CAVE = {
 export const SECRET = {
   /** 龕 A shrine past its realm's share of 道 (SHRINE_DAO_PER_REALM). */
   shrineSpent: 'this realm\u2019s 道 Path points are taken, so it pays qi',
+  /** The door's own line once the realm's shrine points are taken, so it never promises 道 above the qi it pays. */
+  shrineSpentSays: 'Its 道 is spent for this realm. What is left in it is qi.',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
   useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
@@ -1484,7 +1481,7 @@ export const DAO = {
   keystoneShut: (han: string, name: string) =>
     `樞 The keystones open in ${han} ${name}. You can see them from here, and they are ` +
     'meant to be seen: a fork you know is coming is a climb with a plan in it.',
-  /** 極 Why a branch's last node is dark before the sixth realm. */
+  /** 極 Why a branch's last node is dark before CAPSTONE_REALM, the fifth. */
   capstoneShut: (han: string, name: string) =>
     `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
@@ -1556,7 +1553,8 @@ export const NOTICE = {
   workshop: {
     title: 'The workshop is open',
     text: 'Seven crafts that level from 1 to 99, on the 業 tab. Set it on one thing and it keeps '
-      + 'working for twelve hours after you leave. Alchemy opens at realm 5, Sigils at 6, Arrays at 7.',
+      + `working for twelve hours after you leave. Alchemy opens at realm 5 or Herb Gathering ${CRAFT_FEED_LEVEL}, `
+      + `Sigils at 6 or Vein Delving ${CRAFT_FEED_LEVEL}, Arrays at 7 or Forging ${CRAFT_FEED_LEVEL}.`,
   },
   record: {
     title: 'Old beasts are worth going back for',
@@ -1806,15 +1804,20 @@ export const CRAFTS = {
   level: (n: number) => `level ${n}`,
   xpTo: (have: string, left: string, next: number) => `${have} xp · ${left} to level ${next}`,
   xpTop: (have: string) => `${have} xp · the top of the craft`,
-  opens: (realm: number) => `Opens at realm ${realm}`,
-  opensLong: (han: string, name: string, realm: number) => `${han} ${name} opens at realm ${realm}. What you gather before then waits for it.`,
+  /** 開 On a shut craft's tile, and the full line under it: its realm, or its feeder's level. */
+  opens: (realm: number, feeder?: { name: string; level: number }) =>
+    (feeder ? `Realm ${realm} or ${feeder.name} ${feeder.level}` : `Opens at realm ${realm}`),
+  opensLong: (han: string, name: string, realm: number, feeder?: { name: string; level: number }) =>
+    `${han} ${name} opens at realm ${realm}${feeder ? `, or at ${feeder.name} ${feeder.level}` : ''}. What you gather before then waits for it.`,
+  /** 覽 Over the recipes of a craft that is not open yet, shown so a climb can be planned. */
+  preview: (name: string) => `A look ahead: what ${name} makes once it opens. Each recipe also waits for its own level and realm.`,
   tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,
     realm: (n: number) => `Realm ${n}`,
     tool: 'Held',
-    shut: 'Shut',
+    shut: 'Not open',
   },
   needs: 'Needs',
   remains: (n: number, of: number) => `${n}/${of} killed`,
@@ -1826,22 +1829,30 @@ export const CRAFTS = {
   /**
    * 習 What each familiarity mark gives, said where the dots are. rekaris, on the Discord
    * (2026-10-03): *"does it do anything? Doesn't seem to speed up the craft or anything?"*
-   * It did, five things, and the dots never said which. A recipe that makes nothing with
-   * a rank says its last two marks do nothing for it, rather than promising quality, and
-   * one that needs nothing says the same of the third.
+   * It did, and the dots never said which. Since the same day every mark gives something
+   * on every recipe: where its own gift would do nothing, a recipe that makes a thing for
+   * the pouch gets another chance of two, and gear, a tool or an array gets faster (see
+   * CRAFT_MARK_SUB). `doubles` is whether a make can come out twice at all.
    */
-  familiarNote: (made: number, graded: boolean, fewer: boolean) => {
+  familiarNote: (made: number, graded: boolean, fewer: boolean, doubles: boolean, craft: string, mastery: number) => {
+    const pct = (x: number) => Math.round(x * 100);
+    const instead = doubles
+      ? `another 1 in ${Math.round(1 / CRAFT_MARK_SUB)} comes out twice`
+      : `another ${pct(CRAFT_MARK_SUB)}% faster`;
     const gives = [
-      `${Math.round(CRAFT_MARK_FASTER * 100)}% faster`,
-      `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice`,
-      fewer ? 'one less of the first thing it needs' : 'nothing here: it needs nothing to spare',
-      graded ? 'better odds of a high rank' : 'nothing here: it makes nothing with a rank',
-      graded ? 'never comes out Common' : 'nothing here either',
+      `${pct(CRAFT_MARK_FASTER)}% faster`,
+      // A piece of gear, a tool or an array is made once: it gets faster instead.
+      doubles ? `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice` : `${pct(CRAFT_MARK_SUB)}% faster again (it is made one at a time)`,
+      fewer ? 'one less of the first thing it needs' : instead,
+      graded ? 'better odds of a high rank' : instead,
+      graded ? 'never comes out Common' : instead,
     ];
     const next = CRAFT_MARKS.find((m) => made < m);
+    const top = CRAFT_MARKS[CRAFT_MARKS.length - 1].toLocaleString('en');
     return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
       + CRAFT_MARKS.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
-      + (graded ? '\nEvery mark also lifts the rank a little.' : '');
+      + (graded ? '\nEvery mark also lifts the rank a little.' : '')
+      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} ${pct(CRAFT_MASTERY_SPEED)}% faster, up to ${pct(CRAFT_MASTERY_CAP)}%: ${pct(mastery)}% now.`;
   },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
@@ -1884,6 +1895,225 @@ export const CRAFTS = {
   /** 九轉 A win that never needed the pill it carried keeps it. */
   kitUnneeded: (names: string) => `Never needed, so kept: ${names}.`,
   seekKept: 'A sure drop still waits for your next win.',
-  awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
-    to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,
+  // 歸 The homecoming lines moved to WORKSHOP_AWAY below, which says why it stood still too.
+};
+
+/* ── 待 What is waiting for you, and the batch that reads it ─────────────────────────
+ *
+ * Quality of life, 2026-10-03. Two audits played a check-in at every stage of the climb
+ * and counted thirty to fifty taps, most of them spent finding what was ready rather
+ * than taking it. Everything below is read off the save (see app/ready.ts): nothing here
+ * is stored, and no line in it may read as a loss, because nothing is ever lost.
+ */
+
+export const READY = {
+  /** 歸 The heading of the list on the return card. */
+  head: '待 Waiting for you',
+  /** 修 The strip at the top of Cultivate. */
+  strip: 'Ready now',
+  /** The tab a row is taken on, said at the end of the row. */
+  onTab: (han: string, label: string) => `${han} ${label} \u203a`,
+  /** 點 A tab's own label when something on it is ready, for the screen reader and the pointer. */
+  tabSays: (label: string, what: string) => `${label}: ${what}`,
+  material: '材 material',
+  card: { short: 'Choose a card', long: 'A breakthrough card is waiting for you to choose it.' },
+  breakthrough: { short: 'Break through', long: 'The warden is down. The next realm is open to you.' },
+  cross: { short: 'Cross', long: 'The Dragon is down. The tribulation is ready to be crossed.' },
+  demon: { short: 'Heart demon', long: 'Your heart demon waits behind the door.' },
+  road: { short: 'On the road', long: (name: string) => `${name} is waiting for you on the road.` },
+  beds: {
+    short: (n: number) => `Cave: ${n} ripe`,
+    long: (n: number) => (n === 1 ? 'A cave bed is ripe.' : `${n} cave beds are ripe.`),
+  },
+  vault: { short: 'Vault open', long: 'The vault door is open.' },
+  points: {
+    short: (n: number) => `Path: ${n} to spend`,
+    long: (n: number) => `${n} Path ${n === 1 ? 'point' : 'points'} to spend.`,
+  },
+  workshop: {
+    shortIdle: 'Workshop: no task',
+    shortWaits: 'Workshop waits',
+    idle: 'The workshop has no task. Pick one and it works while you are away.',
+    needs: (what: string) => `The workshop is waiting for ${what}.`,
+    chest: 'The forge is waiting for room in your chest.',
+    remains: (beast: string) => `The workshop is waiting to know the ${beast}.`,
+  },
+  quarry: {
+    short: 'Week\u2019s quarry',
+    long: (name: string, left: string) => `The week\u2019s quarry, the ${name}, still pays its first-kill qi. ${left} left.`,
+  },
+  floor: {
+    short: (f: number) => `Tower floor ${f}`,
+    long: (f: number, pct: number) => `Tower floor ${f} is ${pct}% to win.`,
+  },
+  upgrades: {
+    short: (n: number) => `${n} better ${n === 1 ? 'piece' : 'pieces'}`,
+    long: (n: number) => `${n} ${n === 1 ? 'piece' : 'pieces'} in your chest would be an upgrade.`,
+  },
+  chestFull: { short: 'Chest full', long: 'Your chest is full. Wear or melt a piece to make room.' },
+  melt: { short: 'Melting pays qi', long: 'Your melting allowance is full, so melting pays its whole worth in qi.' },
+};
+
+/**
+ * 業 What the workshop did while nobody watched, said whole.
+ *
+ * It said only what was made, and only when something was. A night spent waiting for ore
+ * said nothing; thirty hours away said "made 12,126" and never that it had rested for the
+ * last eighteen. Each line says what happened as what it is: a rest or a wait, never a loss.
+ */
+export const WORKSHOP_AWAY = {
+  made: (n: number, name: string) => `The workshop made ${n.toLocaleString('en')} \u00d7 ${name}.`,
+  level: (skill: string, from: number, to: number) => `${skill} ${from} \u2192 ${to}.`,
+  rested: (span: string, hours: number) => `Then it rested for ${span}: it works ${hours} hours after each visit.`,
+  waitedAfter: (span: string, what: string) => `Then it waited ${span} for ${what}.`,
+  waited: (span: string, what: string, name: string) => `It waited ${span} for ${what} to make ${name}.`,
+  roomAfter: (span: string) => `Then it waited ${span} for room in your chest.`,
+  room: (span: string) => `It waited ${span} for room in your chest.`,
+  know: (span: string, beast: string) => `It waited ${span} to know the ${beast}.`,
+  doneAfter: (span: string) => `Then it stood ready for a new task for ${span}.`,
+  done: (span: string) => `Its last task was done, and it stood ready for a new one for ${span}.`,
+  none: (span: string, hours: number) => `It had no task for ${span}. Set one and it works ${hours} hours after you leave.`,
+};
+
+/** 業 The one tap that sets a waiting workshop going again, on the Crafts screen. */
+export const WORKSHOP_FIX = {
+  gather: (what: string) => `Gather ${what}`,
+  gatherNote: (name: string) => `This changes the task. Set ${name} again once there is enough.`,
+  hunt: 'Hunt for 材 material',
+  huntBeast: (beast: string) => `Hunt the ${beast}`,
+  room: 'Make room in the chest',
+  again: (name: string) => `Make ${name} again`,
+  goTo: (name: string) => `Find ${name}`,
+};
+
+/** 突破 What a realm hands over, said before the cards, and each one a way in. */
+export const OPENED = {
+  head: 'Opened in this realm',
+  /** The tab a system lives on, at the end of its row. */
+  where: (han: string, label: string) => `${han} ${label} \u203a`,
+  /** And on the tab itself until it is opened. */
+  tabNew: (names: string) => `New here: ${names}.`,
+  newWord: 'New',
+};
+
+/**
+ * 鍵 The keys, said once in How to play, on a device with a pointer.
+ *
+ * rekaris asked for Esc in the arena, and every window after it learned the same keys. A
+ * key nobody is told about is a key nobody presses.
+ */
+export const KEYS = {
+  head: '鍵 Keys',
+  rows: [
+    ['1 to 7', 'The tabs, in the order the bar shows them.'],
+    ['Space or Enter', 'In a fight, skip to the end. At the verdict, collect.'],
+    ['R', 'At the verdict, collect and fight the same beast again.'],
+    ['A', 'At the verdict, start the auto-hunt on a beast you know.'],
+    ['Esc', 'Close whatever is on top. On the cards it means Later, on the question Not yet.'],
+    ['Enter', 'Close the return card or a note.'],
+    ['1 or 2, \u2190 or \u2192', 'In the vault, take the left or the right door.'],
+  ] as const,
+};
+
+/** 道 A node of the tree as a button: what the screen reader says, and what a key opens. */
+export const NODE = {
+  label: (name: string, han: string, status: 'have' | 'open' | 'poor' | 'locked' | 'shut', cost: number) =>
+    `${name} ${han}, ${{
+      have: 'learned',
+      open: `can be learned for ${cost} 道`,
+      poor: `costs ${cost} 道, more than you hold`,
+      locked: 'not reachable yet',
+      shut: 'closed by the node beside it',
+    }[status]}`,
+};
+
+/**
+ * 入定 The sitting, said so a player always knows which part of it they are in.
+ *
+ * rekaris, on the Discord: *"what constitutes 'check again'? ... I reload the page and it
+ * starts again ... the player knows exactly when they start meditating, when it ends and
+ * when to check back."* It begins when the game comes on screen and ends half an hour
+ * later (a quarter of an hour until 2026-10-03). Coming back to the game starts a new
+ * one, and so does 坐 Sit again, which is exactly what a reload did, without the reload.
+ */
+export const SIT = {
+  chip: (x: string, left: string) => `Sitting \u00d7${x} \u00b7 ${left} left`,
+  rising: 'It deepens for three minutes, then holds until the half hour is up.',
+  over: (n: string) =>
+    `That sitting has passed, so you gather at your standing ${n} a second. Nothing was taken: the sitting was extra.`,
+  how: 'A new sitting starts whenever you come back to the game, or now:',
+  again: 'Sit again',
+};
+
+// \u2500\u2500 \u4fbf Quality of life, batch B (2026-10-03) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+/**
+ * \u4fbf The bulk buttons and remembered choices from the quality-of-life call. Every one is
+ * the single tap in a loop (see src/sim), so the copy only has to say what it will do
+ * before it is pressed and what it leaves alone. Kept in one block so it reads, and
+ * merges, as one piece.
+ */
+export const QOL = {
+  cave: {
+    takeReplant: 'Take all and plant again',
+    takeAll: 'Take all',
+    /** Under the two take buttons: what is ripe and what it pays. */
+    ripe: (n: number, qi: string) => `${n} ripe \u00b7 ${qi} qi`,
+    replantSays: 'Each ripe bed is sown again with the same herb. If you cannot pay for that seed, the herb in season goes in, or the bed stays empty.',
+    plantEmpty: (n: number) => (n === 1 ? 'Plant in the empty bed' : `Plant in all ${n} empty beds`),
+    /** Over the seed list when one herb is going into every empty bed. */
+    pickForAll: (n: number) => `Choose one herb for ${n === 1 ? 'the empty bed' : `all ${n} empty beds`}.`,
+  },
+  gear: {
+    wearAll: 'Wear all upgrades',
+    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. Locked pieces, loadout pieces and any that would change your class stay put.',
+    wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
+    fuseAll: 'Fuse all groups',
+    fuseAllSays: 'Three into one, again and again, until no three match. Locked and forged pieces are never fused.',
+    fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
+    /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
+    carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,
+    /** \u7be9 The chest's third filter: by lines. */
+    lines: 'Lines',
+    anyLine: 'Any line',
+    linesSays: 'A piece shows only if it has every line you pick.',
+    none: 'Nothing in the chest matches this filter.',
+    /** \u5b58 Saved filters, up to three, on this device. */
+    saveFilter: 'Save this filter',
+    filterName: 'Name this filter',
+    filterDefault: (n: number) => `Filter ${n}`,
+    keepIt: 'Keep',
+    cancel: 'Not now',
+    forget: 'Forget',
+    forgetOne: (name: string) => `Forget the filter ${name}`,
+    filtersFull: 'Three filters are kept. Forget one to keep another.',
+    savedHead: 'Saved filters',
+  },
+  /** \u5668 A piece's slot, in English, beside its name wherever a beast's drops are listed. */
+  slotted: (name: string, slot: string) => (name.toLowerCase().includes(slot.toLowerCase()) ? name : `${name} \u00b7 ${slot}`),
+  arena: {
+    better: 'Better than what you wear',
+    wearIt: 'Wear it',
+    wornNow: 'Worn',
+    nextFloor: 'Next floor',
+    keyNext: 'R',
+  },
+  drive: {
+    again: 'Drive again',
+    most: 'As many as your qi pays for',
+    mostCap: (n: number) => `up to ${n} at once`,
+    againSays: (n: number, qi: string) => `${n} kills for ${qi} qi, at today's price.`,
+  },
+  hunt: {
+    auto: 'Auto',
+    autoSays: (name: string) => `Hunt the ${name} on its own, until you stop it or a fight is lost`,
+  },
+  seclusion: {
+    shutsAgain: 'When a demon falls and this realm still has one left, the door shuts again by itself.',
+    shutAgain: 'The door has shut again by itself. The next one comes in eight hours.',
+  },
+  buy: {
+    all: 'Buy all',
+    allSays: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}, cheapest first`,
+    bought: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}`,
+  },
 };

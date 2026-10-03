@@ -15,13 +15,13 @@ import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT, UNIT } from '../copy.ts';
+import { HUNT, QOL, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
 import { isQuarry, weekLeft, weekOf } from '../../sim/week.ts';
-import { ARCHETYPES, RARITIES, RARITY_INFO, schoolOf } from '../../data/gear.ts';
+import { ARCHETYPES, RARITIES, RARITY_INFO, SLOT_INFO, schoolOf } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
@@ -43,11 +43,13 @@ import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
 type HuntOrder = 'mark' | 'strong' | 'material';
 const ORDER_KEY = 'ninefold.huntorder';
 
-export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
+export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
   state: State;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
+  /** 自 Start the auto-hunt on a beast you have 熟 Known, straight from its row. */
+  onAuto?: (key: string) => void;
   /** 秘境 Walk through the door, when it is open. */
   onSecret: () => void;
   /** 鑰 Open the shut door with a Realm Key. */
@@ -250,7 +252,22 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
               </span>
               {/* 圍 Ten wins earn the right to stop tapping. The tag sits inside the
                   row but swallows its own click, so the row still fights once. */}
-              {canDrive(state, b) && <DriveTag onOpen={() => onDrive(b.key)} />}
+              {/* 自 Auto on the row, by the same rule as the verdict's: Known, never a warden.
+                  It swallows its own click like the drive tag, so the row still fights once.
+                  The two tags stand one above the other, so the name column keeps its width. */}
+              {canDrive(state, b) && (
+                <span className="rowtags">
+                  <DriveTag onOpen={() => onDrive(b.key)} />
+                  {onAuto && (
+                    <span className="autotag" role="button" tabIndex={0} aria-label={`自 ${QOL.hunt.autoSays(b.name)}`}
+                      title={QOL.hunt.autoSays(b.name)} data-qol="row-auto"
+                      onClick={(e) => { e.stopPropagation(); onAuto(b.key); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); onAuto(b.key); } }}>
+                      <b className="cjk">自</b><i>{QOL.hunt.auto}</i>
+                    </span>
+                  )}
+                </span>
+              )}
               {/* 行 Under the row, across its whole width: the name column is too narrow at
                   320 to hold three pieces and a bar beside the odds. */}
                 {/* 物 What this beast leaves, drawn as it would fall to you now: its
@@ -275,7 +292,7 @@ export function Hunt({ state, onFight, onDrive, onSecret, onKey }: {
                           {/* 註 Hover or tap the seal and it says which school, in English.
                               rekaris: *"it would be great if I could hover over it and know what it is."* */}
                           <Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} />
-                        </b> {arch.name}</span>
+                        </b> {QOL.slotted(arch.name, SLOT_INFO[arch.slot].name)}</span>
                       </em>
                     );
                   })}

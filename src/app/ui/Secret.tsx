@@ -100,7 +100,7 @@ export function Secret({ state, onOpen, onLeave }: {
                 <b><span className="cjk">{info.han}</span> {gift.fight ? gift.fight.name : info.name}</b>
                 <i>{gift.fight
                   ? SECRET.beast(num(effectiveBeastPower(state, gift.fight)), chance, gift.fight.realm > state.realm)
-                  : info.says}</i>
+                  : room.kind === 'shrine' && !gift.dao ? SECRET.shrineSpentSays : info.says}</i>
                 {bits.length > 0 && <em className="mono">{bits.join(' · ')}</em>}
                 {/* 期 And on the door itself, where the doubled number is already being
                     quoted: giftOf applies the blessing, so the line above is the truth

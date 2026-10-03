@@ -1,5 +1,5 @@
 import { RARITIES, type Item, type Rarity } from '../data/gear.ts';
-import { addToChest, chestLimit, fuse } from './chest.ts';
+import { addToChest, chestLimit, fusable, fuse } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
 import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
@@ -63,4 +63,27 @@ export function stash(s: State, found: Item | null): Stashed {
 export function fuseIn(s: State, template: string, rarity: Rarity): { state: State; made: Item | null } {
   const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s));
   return out.made ? { state: { ...s, chest: [...out.chest] }, made: out.made } : { state: s, made: null };
+}
+
+/**
+ * 煉 Fuse every group: three of a kind become one a rank higher, again and again until no
+ * three of a kind are left, which is what pressing every 煉 row in turn does (a fusion can
+ * make the third of a new group). fusable() already leaves out 鎖 locked and 業 forged
+ * pieces, so neither is ever melted into anything. It is fuseIn() in a loop, the harness's
+ * own loop, so the pieces it makes are the pieces the single taps make.
+ */
+export function fuseAllIn(s: State): { state: State; made: readonly Item[] } {
+  let out = s;
+  const made: Item[] = [];
+  for (let i = 0; i < 200; i++) {
+    const g = fusable(out.chest)[0];
+    if (!g) break;
+    const f = fuseIn(out, g.template, g.rarity);
+    if (!f.made) break;
+    out = f.state;
+    made.push(f.made);
+  }
+  // A piece made and then melted into a later one is not a piece the chest holds.
+  const held = new Set(out.chest.map((x) => x.id));
+  return { state: out, made: made.filter((x) => held.has(x.id)) };
 }

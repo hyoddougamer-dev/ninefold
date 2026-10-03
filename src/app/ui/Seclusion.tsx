@@ -10,7 +10,8 @@ import { DEMONS, DEMON_DAO, SECLUSION as SECLUDE_FOR } from '../../sim/balance.t
 import { isOpen } from '../../sim/unlocks.ts';
 import type { State } from '../../sim/state.ts';
 import { fightDeps } from '../memo.ts';
-import { SECLUSION } from '../copy.ts';
+import { QOL, SECLUSION } from '../copy.ts';
+import { demonsFor } from '../../sim/seclusion.ts';
 import { Svg } from './Svg.tsx';
 
 /**
@@ -54,9 +55,12 @@ export function Seclusion({ state, onShut, onFace }: {
           {shut && <>
             <em>{SECLUSION.waiting(duration(left))}</em>
             <i>{SECLUSION.shutNote}</i>
+            {/* 關 It shuts again by itself after a demon falls, while one is left. */}
+            {state.demons + 1 < demonsFor(state.realm) && <i>{QOL.seclusion.shutsAgain}</i>}
             <span className="sbar"><i style={{ width: `${(1 - left / SECLUDE_FOR) * 100}%` }} /></span>
           </>}
           {!secluded(state) && !rest && <i>{SECLUSION.open}</i>}
+          {!secluded(state) && !rest && state.demons + 1 < demonsFor(state.realm) && <i>{QOL.seclusion.shutsAgain}</i>}
           {rest && <i>{state.demons >= DEMONS ? SECLUSION.done : SECLUSION.rest(state.realm + 1)}</i>}
         </span>
       </div>

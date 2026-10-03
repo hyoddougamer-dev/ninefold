@@ -7,10 +7,10 @@ import { BEASTS, plateOf } from '../../data/bestiary.ts';
 import { RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
-  arraySlots, blocked, carrySlot, furnaceDiscount, held, levelIn, marksOf, needsOf, placed,
+  FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, marksOf, masteryOf, needsOf, placed,
   progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
 } from '../../sim/crafts.ts';
-import { CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
+import { CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
 import { TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -20,8 +20,15 @@ import { Emblem } from '../ui/Emblem.tsx';
 import { Term } from '../ui/Term.tsx';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
-import { CRAFTS } from '../copy.ts';
+import { CRAFTS, WORKSHOP_FIX } from '../copy.ts';
+import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { pictureOf } from '../../data/pictures.ts';
+
+/** 開 The craft whose level opens this one before its realm, and at what level, if any. */
+const feederOf = (skill: SkillKey) => {
+  const f = FEEDER[skill];
+  return f ? { name: SKILL_BY_KEY[f].name, level: CRAFT_FEED_LEVEL } : undefined;
+};
 
 /** 具 The painted tool of a craft, named by the tool: sickle, pick, knife, furnace. */
 const toolArt = (skill: SkillKey) => `tool-${SKILL_BY_KEY[skill].tool.name.toLowerCase()}`;
@@ -59,22 +66,33 @@ function hay(r: Recipe): string {
  * like every other bar in the game, so the screen and the save can never disagree about
  * how far along the make is.
  */
-export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
+export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo }: {
   state: State;
   onTask: (key: string | null) => void;
+  /** 業 Leave for another screen: the hunt for what the workshop waits on, the chest for room. */
+  onGo?: (where: 'hunt' | 'gear') => void;
   onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
   onUse: (key: string) => void;
   onPlace: (key: string, on: boolean) => void;
 }) {
+  // 業 Every task set here is remembered on this device, for 再 Make it again.
+  const onTask = (key: string | null) => { if (key) rememberTask(key); setTaskTo(key); };
   const running = state.crafts.task ? RECIPE_BY_KEY[state.crafts.task] : null;
   const first = SKILLS.find((k) => skillOpen(state, k.key))?.key ?? 'herb';
-  const [skill, setSkill] = useState<SkillKey>(running?.skill ?? first);
+  // 記 Remembered on the device: the craft last looked at, if it is open, before the running one.
+  const [skill, setSkillRaw] = useState<SkillKey>(() => {
+    const kept = recall<string>('crafts.skill', '', (x): x is string => typeof x === 'string');
+    const k = SKILLS.find((x) => x.key === kept)?.key;
+    return k && skillOpen(state, k) ? k : running?.skill ?? first;
+  });
+  const setSkill = (k: SkillKey) => { setSkillRaw(k); keep('crafts.skill', k); };
   const [group, setGroup] = useState<string | null>(null);
   const [looking, setLooking] = useState<string | null>(null);
   const [view, setView] = useState<'work' | 'pouch'>('work');
   const [find, setFind] = useState('');
-  const [filter, setFilter] = useState<'all' | 'ready' | 'next'>('all');
-  const [tier, setTier] = useState<number | 'near'>('near');
+  const [filter, setFilter] = useRemembered<'all' | 'ready' | 'next'>('crafts.filter', 'all', oneOf(['all', 'ready', 'next'] as const));
+  const [tier, setTier] = useRemembered<number | 'near'>('crafts.tier', 'near',
+    (x): x is number | 'near' => x === 'near' || (typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= 9));
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
   /**
    * 往 Take the player to the recipe that makes a thing, from the note on its icon. It is
@@ -123,10 +141,14 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
   const counts = { all: all.length, ready: ready.length, next: locked.length };
   // 列 Everything that can be made, and the next few that cannot yet, so the list says
   // what is coming without turning into a wall of grey. The chips narrow it further.
-  const list = filter === 'ready' ? ready
+  // 覽 A craft not open yet shows every recipe it has, greyed and with no Start, so a climb
+  // can be planned around it. rekaris: *"being able to see what Alchemy does even before
+  // unlocking it would allow the player to plan."*
+  const list = !open ? all
+    : filter === 'ready' ? ready
     : filter === 'next' ? locked.slice(0, 6)
     : all.filter((r) => !isLocked(r) || locked.indexOf(r) < 3);
-  const later = filter === 'all' ? locked.length - Math.min(3, locked.length)
+  const later = !open ? 0 : filter === 'all' ? locked.length - Math.min(3, locked.length)
     : filter === 'next' ? Math.max(0, locked.length - 6) : 0;
 
   const xp = state.crafts.xp[skill] ?? 0;
@@ -144,7 +166,8 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           <span className="ct-short">{CRAFTS.totalShort}</span>{' '}
           <b className="mono">{totalLevel(state)}</b><i className="mono">/693</i></span>
       </div>
-      <Task state={state} r={running} onStop={() => onTask(null)} />
+      <Task state={state} r={running} onStop={() => onTask(null)}
+        onSet={(key) => onTask(key)} onGo={onGo} onFind={goTo} />
 
       {/* 版 On a phone the workshop and the pouch are two views of one screen, so neither
           sits under a long list of the other. A wide screen shows both at once. */}
@@ -174,7 +197,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
                     an ellipsis cut. */}
                 {on ? <><em className="mono">{l}</em> {running?.skill === k.key
                   ? <span className="cs-working">{CRAFTS.tileWorking}</span>
-                  : <span className="cs-rank">{rankOf(k.key, l).name}</span>}</> : CRAFTS.opens(k.realm)}
+                  : <span className="cs-rank">{rankOf(k.key, l).name}</span>}</> : CRAFTS.opens(k.realm, feederOf(k.key))}
               </span>
               {on && <i className="cs-bar"><i style={{ width: `${Math.round(fill * 100)}%` }} /></i>}
             </button>
@@ -194,7 +217,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
             </div>
             <p className="faint" style={{ margin: '4px 0 0', fontSize: 12.5 }}>{info.does}</p>
         {!open && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {CRAFTS.opensLong(info.seal, info.name, info.realm)}</p>}
+          {CRAFTS.opensLong(info.seal, info.name, info.realm, feederOf(skill))}</p>}
         {open && (
           <>
             <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}
@@ -223,23 +246,23 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
 
       {open && skill === 'array' && <Floor state={state} onPlace={onPlace} />}
 
-      {open && groups.length > 1 && (
+      {groups.length > 1 && (
         <div className="cgroups" role="tablist">
           {groups.map((g) => (
             <button key={g} role="tab" aria-selected={g === shown} onClick={() => setGroup(g)}>{g}</button>
           ))}
         </div>
       )}
-      {open && mine.length > 10 && (
+      {mine.length > 10 && (
         <div className="cfilter">
           <input type="search" value={find} placeholder={CRAFTS.findHint} aria-label={CRAFTS.findHint}
             onChange={(e) => setFind(e.target.value)} />
-          <div className="cf-chips" role="tablist">
+          {open && <div className="cf-chips" role="tablist">
             {(['all', 'ready', 'next'] as const).map((f) => (
               <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}>
                 {CRAFTS.filters[f]} <i className="mono">{counts[f]}</i></button>
             ))}
-          </div>
+          </div>}
         </div>
       )}
       {open && shown === 'Gear' && !find && (
@@ -255,17 +278,16 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
       {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>
         {tier === 'near' ? CRAFTS.gearShown(state.realm) : CRAFTS.gearOf(tier)} {CRAFTS.forgedRule}</p>}
 
-      {open && (
-        <div className="crecipes">
-          {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
-            {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
-          {list.map((r) => (
-            <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
-              onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
-          ))}
-          {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
-        </div>
-      )}
+      {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
+      <div className="crecipes" data-preview={!open || undefined}>
+        {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
+          {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
+        {list.map((r) => (
+          <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
+            onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
+        ))}
+        {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
+      </div>
       </div>
       </div>
 
@@ -310,15 +332,73 @@ function defaultGroup(s: State, skill: SkillKey, groups: readonly string[]): str
   return can.at(-1)?.group ?? groups[0];
 }
 
+/* ── 業 A workshop standing still, and the one tap that sets it going (2026-10-03) ── */
+
+/** 業 The last tasks set on this device, newest first. A convenience of this phone, not the save. */
+const LAST_TASKS = 'ninefold.lastTasks';
+function lastTasks(): readonly string[] {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(LAST_TASKS) ?? '[]');
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 3) : [];
+  } catch { return []; }
+}
+function rememberTask(key: string): void {
+  try { localStorage.setItem(LAST_TASKS, JSON.stringify([key, ...lastTasks().filter((k) => k !== key)].slice(0, 3))); } catch { /* a private window keeps nothing */ }
+}
+
+/**
+ * 業 What sets a standing workshop going again, if anything can from here.
+ *
+ * The audit found a crafter's workshop waiting all night for ore at two stages of the climb,
+ * the one stall in the game that costs real progress (8 to 12 hours of crafting), said in
+ * grey on a screen nobody had opened. So it is said in the open, with a button: gather
+ * what is missing, go and hunt for it, make room in the chest, or make the last thing again.
+ */
+interface Fix { readonly han: string; readonly label: string; readonly note?: string; readonly run: () => void }
+
+function fixFor(state: State, r: Recipe | null, act: {
+  onSet: (key: string) => void; onGo?: (where: 'hunt' | 'gear') => void; onFind: (key: string) => void;
+}): Fix | null {
+  if (!r) {
+    const runs = (x: Recipe | undefined): x is Recipe => !!x && blocked(state, x) === null;
+    const again = lastTasks().map((k) => RECIPE_BY_KEY[k]).find(runs)
+      ?? RECIPES.filter((x) => (state.crafts.made[x.key] ?? 0) > 0 && runs(x))
+        .sort((a, b) => (state.crafts.made[b.key] ?? 0) - (state.crafts.made[a.key] ?? 0))[0];
+    return again ? { han: '再', label: WORKSHOP_FIX.again(again.name), run: () => act.onSet(again.key) } : null;
+  }
+  const why = blocked(state, r);
+  if (why === 'chest') return act.onGo ? { han: '器', label: WORKSHOP_FIX.room, run: () => act.onGo!('gear') } : null;
+  if (why === 'remains' && r.remains) {
+    const beast = BEASTS.find((b) => b.key === r.remains)?.name ?? r.remains;
+    return act.onGo ? { han: '狩', label: WORKSHOP_FIX.huntBeast(beast), run: () => act.onGo!('hunt') } : null;
+  }
+  if (why !== 'needs') return null;
+  const missing = needsOf(state, r).find(([k, n]) => held(state, k) < n)?.[0];
+  if (!missing) return null;
+  if (missing === 'mat') return act.onGo ? { han: '狩', label: WORKSHOP_FIX.hunt, run: () => act.onGo!('hunt') } : null;
+  const maker = MAKER.get(splitKey(missing).key);
+  if (!maker) return null;
+  if (blocked(state, maker) === null) {
+    const name = ITEM_BY_KEY[splitKey(missing).key]?.name ?? maker.name;
+    return { han: '採', label: WORKSHOP_FIX.gather(name), note: WORKSHOP_FIX.gatherNote(r.name), run: () => act.onSet(maker.key) };
+  }
+  return { han: '往', label: WORKSHOP_FIX.goTo(maker.name), run: () => act.onFind(maker.key) };
+}
+
 /** 作 The task in hand: what, how far, how long it keeps going, and why it is waiting. */
-function Task({ state, r, onStop }: { state: State; r: Recipe | null; onStop: () => void }) {
+function Task({ state, r, onStop, onSet, onGo, onFind }: {
+  state: State; r: Recipe | null; onStop: () => void;
+  onSet: (key: string) => void; onGo?: (where: 'hunt' | 'gear') => void; onFind: (key: string) => void;
+}) {
+  const fix = fixFor(state, r, { onSet, onGo, onFind });
   if (!r) {
     return (
       <div className="card ctask" data-idle="true">
         <div className="row" style={{ gap: 12, justifyContent: 'flex-start' }}>
           <span className="cic" style={{ width: 40, height: 40 }}><Emblem family="craft" subject="order" icon="scroll-unfurled" size={30} alt="" /></span>
-          <p className="faint" style={{ margin: 0, fontSize: 13, flex: 1 }}>{CRAFTS.idle}</p>
+          <p className="ct-still" style={{ margin: 0, fontSize: 13, flex: 1 }}>{CRAFTS.idle}</p>
         </div>
+        {fix && <button className="act small ct-fix" onClick={fix.run}>{fix.han} <span>{fix.label}</span></button>}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12 }}>{CRAFTS.says}</p>
       </div>
     );
@@ -331,7 +411,7 @@ function Task({ state, r, onStop }: { state: State; r: Recipe | null; onStop: ()
       .map(([k]) => (k === 'mat' ? '材 material' : ITEM_BY_KEY[k]?.name ?? k)).join(', '))
     : null;
   return (
-    <div className="card ctask">
+    <div className="card ctask" data-wait={wait !== null || undefined}>
       <div className="row">
         <Out r={r} size={40} />
         <span style={{ flex: 1, minWidth: 0 }}>
@@ -343,9 +423,16 @@ function Task({ state, r, onStop }: { state: State; r: Recipe | null; onStop: ()
         <button className="act small" onClick={onStop}>{CRAFTS.stop}</button>
       </div>
       <i className="cprog" data-wait={wait !== null}><i style={{ width: `${Math.round(p * 100)}%` }} /></i>
-      <p className="faint" style={{ margin: '6px 0 0', fontSize: 12 }}>
+      {/* 業 A wait is said in the open, not in grey, with the tap that ends it. */}
+      <p className={wait ? 'ct-still' : 'faint'} style={{ margin: '6px 0 0', fontSize: 12 }}>
         {wait ?? `${CRAFTS.away(Math.round(workSeconds(state) / 3600))} · ${CRAFTS.makes(state.crafts.made[r.key] ?? 0)}`}
       </p>
+      {wait && fix && (
+        <>
+          <button className="act small ct-fix" onClick={fix.run}>{fix.han} <span>{fix.label}</span></button>
+          {fix.note && <p className="faint" style={{ margin: '6px 0 0', fontSize: 11.5 }}>{fix.note}</p>}
+        </>
+      )}
     </div>
   );
 }
@@ -423,7 +510,9 @@ function Row({ state, r, on, lit, onStart, onGo }: {
 }) {
   const why = blocked(state, r);
   const lock = why === 'level' ? CRAFTS.why.level(r.level) : why === 'realm' ? CRAFTS.why.realm(r.realm)
-    : why === 'tool' ? CRAFTS.why.tool : why === 'shut' ? CRAFTS.why.shut : null;
+    : why === 'tool' ? CRAFTS.why.tool
+    // 覽 A craft not open yet: the realm the recipe waits for, if that is further still.
+    : why === 'shut' ? (r.realm > state.realm ? CRAFTS.why.realm(r.realm) : CRAFTS.why.shut) : null;
   const q = r.graded && !lock ? qualityFor(state, r) : null;
   const marks = marksOf(state, r);
   return (
@@ -434,7 +523,8 @@ function Row({ state, r, on, lit, onStart, onGo }: {
         <i className="cr-meta mono">
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
           {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare
-            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded, (r.needs[0]?.[1] ?? 0) > 1) }}>
+            entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded,
+              (r.needs[0]?.[1] ?? 0) > 1, doubles(r), SKILL_BY_KEY[r.skill].name, masteryOf(state, r.skill)) }}>
             <span className="cr-fam">{CRAFTS.familiar(marks)}</span></Term></>}
         </i>
         {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (

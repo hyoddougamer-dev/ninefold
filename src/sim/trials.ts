@@ -128,6 +128,18 @@ export function brew(s: State, line: Line): State {
 }
 
 /**
+ * 盡 As many pills of one line as can be paid for now, each at its own price, the way a
+ * player tapping the pill until it greys out would brew them. Nothing is cheaper for being
+ * brewed together: it is brew() in a loop and stops where brew() would, as buyMax does on 修.
+ */
+export function brewMax(s: State, line: Line): { state: State; n: number; qi: number; materials: number } {
+  let state = s;
+  let n = 0;
+  for (; n < 10_000 && canBrew(state, line); n++) state = brew(state, line);
+  return { state, n, qi: s.qi - state.qi, materials: s.materials - state.materials };
+}
+
+/**
  * 煉器 What refining the piece in a slot would cost, and whether it can be paid.
  *
  * Material only. Qi buys the mountain and the furnace; material buys the body of your

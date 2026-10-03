@@ -8,7 +8,7 @@ import { CAPSTONE_REALM } from '../../sim/balance.ts';
 import { type State } from '../../sim/state.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { DAO } from '../copy.ts';
+import { DAO, NODE } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
 import { Term } from '../ui/Term.tsx';
 import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points.ts';
@@ -24,6 +24,8 @@ import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points
  */
 
 const R = 17;          // node radius
+/** 指 The radius that takes a tap, past the drawn one. */
+const HIT = 24;
 const GAP = 82;        // vertical distance between tiers, with room for two lines of name
 // 讀 21 put a fork's two nodes almost touching, and their names ran into each other:
 // "Heavy Plate" and "Forsake Armour" read as one line at a phone's width.
@@ -140,7 +142,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const free = freeOf(state);
   // 樞 The three that cost you something arrive at their own realm, two above this one.
   const keys = isOpen(state.realm, 'keystones');
-  // 極 And each branch's last node waits for the sixth.
+  // 極 And each branch's last node waits for CAPSTONE_REALM, the fifth.
   const caps = capstonesOpen(state.realm);
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
@@ -255,6 +257,11 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
             return (
               <g key={node.key} className="tnode" data-status={status}
                  data-coach={first ? 'dao-open' : undefined}
+                 // 指 A button, to a keyboard and a screen reader as well as to a finger.
+                 role="button" tabIndex={0} aria-label={NODE.label(node.name, node.han, status, node.cost)}
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setPicked(node.key); }
+                 }}
                  onClick={() => setPicked(node.key)} style={{ cursor: 'pointer' }}>
                 {open && <circle cx={x} cy={y} r={R + 5} fill={colour} fillOpacity=".13" />}
                 <circle
@@ -294,6 +301,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
                   <circle cx={x} cy={y} r={R + 4} fill="none" stroke="#EDE3D2"
                           strokeWidth="1" strokeOpacity=".7" />
                 )}
+                {/* 指 The finger's circle, wider than the drawn one and drawn last so it
+                    takes the tap: a node is about 26px across on a 320 phone, this about 36. */}
+                <circle className="thit" cx={x} cy={y} r={HIT} fill="transparent" />
               </g>
             );
           })}

@@ -39,7 +39,8 @@ import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
 import { MEET_GAP, SECLUSION } from './balance.ts';
-import { focusBonus } from './dao.ts';
+import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
+import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
@@ -208,12 +209,25 @@ export function anchorFloor(before: State, marks: number): number {
   return at;
 }
 
+/**
+ * 龕 From this instant (seconds) the vault's 道 is read from vaultDao, which counts exactly
+ * what the shrines paid since SHRINE_DAO_PER_REALM capped them on 2026-10-03. A save from
+ * before it, or a phone still running the old build for a day or two, paid shrines without
+ * counting them, so a pair that starts earlier keeps the walk-by-walk ceiling below.
+ */
+export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
+
 /** 道 The most 道 the road and the vault could have paid between two saves. */
-function metCeiling(before: State, after: State, dt: number): number {
+function metCeiling(before: State, after: State, dt: number, first = false): number {
   const road = after.met.filter((k) => !before.met.includes(k)).reduce((n, k) => {
     const m = meetingOf(k);
     return n + (m ? Math.max(0, ...m.picks.map((p) => (p.outcome.kind === 'dao' ? p.outcome.points : 0))) : 0);
   }, 0);
+  // 2026-10-03 audit: a walk's RUN_DAO_CEILING per possible walk let one twenty-second sync
+  // bank 96 points, the whole tree, while an honest climb now earns 27 from shrines at most.
+  if (!first && before.at >= DAO_BANK_STRICT_FROM) {
+    return road + Math.max(0, (after.vaultDao ?? 0) - (before.vaultDao ?? 0));
+  }
   // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
   const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
   // 鑰 And a Realm Key can open it once more a day: see useKey in sim/secret.ts.
@@ -361,7 +375,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // open at the start and one underway allowed for). validate() caps it only against the
   // start the save claims for itself. It is a matter of time, so it waits rather than
   // strikes: a month played offline and synced on the first day is honest, only early.
-  if (after.metPoints - before.metPoints > metCeiling(before, after, dt) && !why.includes('too-fast')) {
+  if (after.metPoints - before.metPoints > metCeiling(before, after, dt, first) && !why.includes('too-fast')) {
+    why.push('too-fast');
+  }
+  // 極 A branch's last node waits for CAPSTONE_REALM in the game, so one newly held below
+  // it was not bought in the game. It waits rather than strikes: a pair that starts before
+  // the gate existed may hold one honestly, and so it is only read from the same instant.
+  if (!first && before.at >= DAO_BANK_STRICT_FROM && !capstonesOpen(after.realm) && !why.includes('too-fast')
+    && after.unlocked.some((k) => NODE_BY_KEY[k]?.tier === CAPSTONE_TIER && !before.unlocked.includes(k))) {
     why.push('too-fast');
   }
   // 緣 Somebody on the road arrives MEET_GAP after the last at the soonest, so more new

@@ -1,4 +1,6 @@
-import { daoEarned, daoFree } from './dao.ts';
+import { canUnlock, capstonesOpen, daoEarned, daoFree } from './dao.ts';
+import { ALL_NODES } from '../data/techniques.ts';
+import { isOpen } from './unlocks.ts';
 import { daoPoints } from './awaken.ts';
 import { layersOpened } from './time.ts';
 import { filledRealms, type State } from './state.ts';
@@ -39,4 +41,23 @@ export function earnedPoints(s: State): number {
 export function freePoints(s: State): number {
   return daoFree(layersOpened(s), wardensDown(s), s.unlocked, filledRealms(s),
     daoPoints(s.awakened) + Math.max(0, s.metPoints) + demonPoints(s));
+}
+
+/**
+ * 道 Points earned, not spent, and a node actually within reach to spend them on.
+ *
+ * Both halves matter. Points with nothing reachable to buy is not a thing to do, and
+ * telling a player to go and spend what they cannot spend is worse than silence. 示 the
+ * advice line has read this for a long time; 點 the badge on the 道 tab read the bare
+ * count instead, and a cultivator with the whole open tree bought wore 32 on it at the
+ * eighth realm and 53 at the top, every visit, for points nothing would take. It lives
+ * here so the two of them, and 待 the list of what is waiting, read one number.
+ */
+export function spendablePoints(s: State): number {
+  if (!isOpen(s.realm, 'tree')) return 0;
+  const free = freePoints(s);
+  if (free <= 0) return 0;
+  const keystones = isOpen(s.realm, 'keystones');
+  const capstones = capstonesOpen(s.realm);
+  return ALL_NODES.some((n) => canUnlock(n.key, s.unlocked, free, keystones, capstones)) ? free : 0;
 }

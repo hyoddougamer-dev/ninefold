@@ -1,5 +1,5 @@
 import type { Beast } from '../data/bestiary.ts';
-import { DRIVE_MINUTES, DRIVE_OLD, DRIVE_SIZES } from './balance.ts';
+import { DRIVE_MINUTES, DRIVE_MOST, DRIVE_OLD, DRIVE_SIZES } from './balance.ts';
 import { lootFrom, quarryPaid } from './combat.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import { MARKS, marksOf } from './record.ts';
@@ -105,6 +105,21 @@ export function driveFloor(s: State, n: number): number {
 
 export function canAffordDrive(s: State, b: Beast, n: number): boolean {
   return canDrive(s, b) && s.qi >= driveCost(s, n, b);
+}
+
+/**
+ * 盡 As many kills as the qi in hand pays for, up to DRIVE_MOST: the drive sheet's last
+ * row. Each kill costs what it costs in any drive, so this is the 200 row tapped until the
+ * qi runs out, in one go. Zero when not even one can be paid for, or the beast cannot be
+ * driven at all.
+ */
+export function driveMax(s: State, b: Beast): number {
+  if (!canDrive(s, b)) return 0;
+  const one = driveCost(s, 1, b) || 1;
+  let n = Math.min(DRIVE_MOST, Math.max(0, Math.floor(s.qi / Math.max(1e-9, driveCost(s, 1000, b) / 1000))));
+  // The price is rounded up as a whole, so step down until it really is affordable.
+  while (n > 0 && driveCost(s, n, b) > s.qi) n--;
+  return s.qi >= one ? Math.max(1, n) : 0;
 }
 
 export interface Drive {

@@ -492,6 +492,31 @@ export function buyMax(s: State, u: Upgrade): { state: State; n: number; cost: n
   return { state, n, cost };
 }
 
+/** 修 Whether 修 draws this upgrade's box: 妖丹 waits for the realm that sells it. */
+export function onScreen(s: State, u: Upgrade): boolean {
+  return u !== 'cores' || isOpen(s.realm, 'cores');
+}
+
+/**
+ * 盡 Buy all: every level that can be paid for now, the cheapest first, each at its own
+ * price, until nothing more can be. It is the loop the measuring cultivators have always
+ * bought by (tools/habits.ts), so the button and the curves are the same player. A box
+ * the realm has not opened yet (妖丹 before its realm) is not bought by the button, which
+ * buys only what 修 shows; the harness passes its own rule and keeps its old behaviour.
+ */
+export function buyAll(s: State, shown: (s: State, u: Upgrade) => boolean = onScreen): { state: State; n: number } {
+  let state = s;
+  let n = 0;
+  for (let g = 0; g < 10_000; g++) {
+    const can = UPGRADES.filter((u) => shown(state, u) && canBuy(state, u));
+    if (!can.length) break;
+    can.sort((a, b) => upgradeCost(state, a) - upgradeCost(state, b));
+    state = buy(state, can[0]);
+    n++;
+  }
+  return { state, n };
+}
+
 /**
  * 凝丹 The other price of a 妖丹 core: raw qi, for somebody with no beast to hand.
  *
