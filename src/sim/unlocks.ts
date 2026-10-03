@@ -83,6 +83,8 @@
  * late arrives *full*.
  */
 
+import { CRAFT_FEED_LEVEL } from './balance.ts';
+
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
   | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep' | 'seclusion'
@@ -154,13 +156,13 @@ export const SYSTEMS: readonly SystemInfo[] = [
   { key: 'seclusion', han: '閉關', name: 'Seclusion', realm: 4,
     gives: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, as strong as you are, without what you know. Beat it for a 道 point. Nine in a life, and a loss costs nothing.' },
   { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
-    gives: 'A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win.' },
+    gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'sigils', han: '符', name: 'Sigil Writing', realm: 6,
-    gives: 'A sixth craft: paper, cinnabar and a beast\u2019s ink. Sigils for a hard fight, and one that makes a beast leave a piece.' },
+    gives: `A sixth craft: paper, cinnabar and a beast\u2019s ink. Sigils for a hard fight, and one that makes a beast leave a piece. Vein Delving ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'bestiary', han: '圖鑑', name: 'The Bestiary', realm: 6,
     gives: 'A realm whose four beasts you have all 熟 Known, ten kills of each, pays a 道 point. The kills were being counted all along, and now going back to finish a realm pays for the tree.' },
   /**
@@ -190,7 +192,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
    * months into a casual climb; the seventh is five weeks.
    */
   { key: 'arrays', han: '陣', name: 'Arrays', realm: 7,
-    gives: 'The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows.' },
+    gives: `The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows. Forging ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 9,
     gives: 'Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,

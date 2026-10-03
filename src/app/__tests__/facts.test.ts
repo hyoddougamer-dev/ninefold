@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  AWAKEN, DRIVE, GUIDE, HELP, KEY, LADDER, NOTICE, TRIALS,
+  AWAKEN, DRIVE, GUIDE, HELP, KEY, LADDER, NOTICE, SIT, TRIALS,
 } from '../copy.ts';
 import {
   FOCUS_HOLD, FOCUS_MAX, LAYERS_PER_REALM, MARK_DAYS, OPENING_PURSE,
@@ -55,13 +55,14 @@ describe('實 what the copy says is what the game does', () => {
     expect(DRIVE.what).toContain('ten times');
   });
 
-  it('入定 the sitting: three times, a quarter of an hour', () => {
+  it('入定 the sitting: three times, half an hour', () => {
     expect(FOCUS_MAX).toBe(3);
-    expect(FOCUS_HOLD).toBe(15 * 60);
+    expect(FOCUS_HOLD).toBe(30 * 60);
     expect(HELP.steps[1][1]).toContain('three times');
-    expect(HELP.steps[1][1]).toContain('quarter of an hour');
+    expect(HELP.steps[1][1]).toContain('half an hour');
     expect(KEY.sitting).toContain('three times');
-    expect(KEY.sitting).toContain('quarter of an hour');
+    expect(KEY.sitting).toContain('half an hour');
+    expect(SIT.rising).toContain('half hour');
   });
 
   it('the ladder: nine layers, and the warden at the ninth', () => {

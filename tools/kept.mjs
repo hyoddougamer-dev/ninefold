@@ -764,8 +764,9 @@ for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   await page.clock.runFor(200_000);
   await clearAll(page);
   const chip = await page.textContent('.sitline .sitchip').catch(() => '');
-  check(/Sitting ×3\.0 · 1[01]:\d\d left/.test(chip ?? ''), `qol: a sitting says how deep it is and how long it has ("${chip}")`);
-  await page.clock.runFor(12 * 60_000);
+  // Half an hour (FOCUS_HOLD), 200 seconds of it gone.
+  check(/Sitting ×3\.0 · 2[56]:\d\d left/.test(chip ?? ''), `qol: a sitting says how deep it is and how long it has ("${chip}")`);
+  await page.clock.runFor(27 * 60_000);
   const over = await page.textContent('.sitline[data-over]').catch(() => '');
   check(/starts whenever you come back to the game/.test(over ?? '') && await page.$('.sitagain') !== null,
     'qol: a sitting that has passed says what starts the next one, and offers it');

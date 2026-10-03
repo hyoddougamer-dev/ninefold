@@ -116,11 +116,15 @@ export function pickTask(s: State, span: number): string | null {
   const tools = RECIPES.filter((r) => r.makes.kind === 'tool' && canSet(s, r)).sort((a, b) => a.level - b.level);
   for (const r of tools) { const t = feed(s, r, span); if (t) return t; }
   // 級 Then the craft furthest behind: its best rate that will keep running, or else
-  // whatever feeds the best recipe it has.
-  const open = SKILL_KEYS.filter((k) => skillOpen(s, k) && k !== 'array')
+  // whatever feeds the best recipe it has. Arrays level like any other craft: an array is
+  // cut for the floor once, but making another is how Arrays climbs, the way a player
+  // levels it, so here any array it can make and pay for counts.
+  const open = SKILL_KEYS.filter((k) => skillOpen(s, k))
     .sort((a, b) => levelIn(s, a) - levelIn(s, b));
   for (const k of open) {
-    const r = best(s, runnable(s, span, recipesOf(k as SkillKey)));
+    const r = best(s, k === 'array'
+      ? recipesOf('array').filter((x) => canSet(s, x) && lasts(s, x) >= 1)
+      : runnable(s, span, recipesOf(k as SkillKey)));
     if (r) return r.key;
     const top = recipesOf(k as SkillKey).filter((x) => canSet(s, x) && x.makes.kind === 'item')
       .sort((a, b) => b.level - a.level);

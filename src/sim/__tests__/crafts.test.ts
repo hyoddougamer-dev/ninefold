@@ -7,10 +7,13 @@ import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import {
   CRAFT_RENDER_KNOWN, CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
+  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP,
+  CRAFT_MASTERY_SPEED,
 } from '../balance.ts';
 import {
   NO_CRAFTS, arraySlots, blocked, carry, demonsLeft, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
   secondsOf, setTask, spendKit, takeSeeking, tookPart, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
+  markApplies, masteryOf, skillOpen, subsOf, twiceOf, recipesOf,
   type Crafts,
 } from '../crafts.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -112,6 +115,69 @@ describe('開 the workshop opens with the climb', () => {
     // 級 And a recipe waits for its realm, whatever the level.
     expect(blocked(crafter(3, { herb: 99 }), RECIPE_BY_KEY['herb:lotus'])).toBe('realm');
   });
+
+  it('opens a late craft early at its feeder\'s CRAFT_FEED_LEVEL, and keeps every recipe at its realm', () => {
+    const feeds = [['alchemy', 'herb'], ['sigil', 'vein'], ['array', 'forge']] as const;
+    for (const [late, feeder] of feeds) {
+      expect(skillOpen(crafter(2, { [feeder]: CRAFT_FEED_LEVEL - 1 }), late), late).toBe(false);
+      expect(skillOpen(crafter(2, { [feeder]: CRAFT_FEED_LEVEL }), late), late).toBe(true);
+      // Every recipe it has still waits for its own realm.
+      const s = crafter(2, { [feeder]: CRAFT_FEED_LEVEL, [late]: 99 });
+      for (const r of recipesOf(late)) if (r.realm > 2) expect(blocked(s, r), r.key).toBe('realm');
+    }
+    const early = crafter(2, { herb: CRAFT_FEED_LEVEL, alchemy: 1 }, { pouch: { moss: 4, [partKey('rat')]: 2 } });
+    expect(setTask(early, 'alchemy:mend1', T0).crafts.task).toBe('alchemy:mend1');
+  });
+
+  it('never lets validate() zero an honest early alchemist, and never opens one that is not', () => {
+    const save = { xp: { herb: XP_TABLE[CRAFT_FEED_LEVEL], alchemy: XP_TABLE[12] }, made: { 'alchemy:mend1': 30 } };
+    const back = validCrafts(save, { realm: 2, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(back.xp.alchemy).toBe(XP_TABLE[12]);
+    expect(back.made['alchemy:mend1']).toBe(30);
+    const short = validCrafts({ ...save, xp: { ...save.xp, herb: XP_TABLE[CRAFT_FEED_LEVEL - 1] } }, { realm: 2, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(short.xp.alchemy).toBe(0);
+    expect(short.made['alchemy:mend1']).toBeUndefined();
+  });
+});
+
+describe('習 familiarity', () => {
+  const made = (r: string, n: number) => crafter(9, { herb: 99, vein: 99, render: 99, forge: 99, alchemy: 99, sigil: 99, array: 99 }, { made: { [r]: n } });
+
+  it('gives something at every mark on every recipe', () => {
+    for (const r of RECIPES) {
+      for (let i = 2; i <= CRAFT_MARKS.length; i++) {
+        const before = made(r.key, CRAFT_MARKS[i - 2]);
+        const after = made(r.key, CRAFT_MARKS[i - 1]);
+        const gained = markApplies(r, i)
+          || subsOf(after, r).fast > subsOf(before, r).fast || twiceOf(after, r) > twiceOf(before, r);
+        expect(gained, `${r.key} mark ${i}`).toBe(true);
+      }
+    }
+  });
+
+  it('makes a thing for the pouch twice, and gear, a tool or an array faster instead', () => {
+    const herb = RECIPE_BY_KEY['herb:moss'];
+    expect(twiceOf(made('herb:moss', CRAFT_MARKS[1]), herb)).toBeCloseTo(CRAFT_MARK_TWICE, 9);
+    // Moss needs nothing and has no rank: its last three marks are each another chance of two.
+    expect(twiceOf(made('herb:moss', CRAFT_MARKS[4]), herb)).toBeCloseTo(CRAFT_MARK_TWICE + 3 * CRAFT_MARK_SUB, 9);
+    const gear = RECIPE_BY_KEY['forge:gear:hound:saber'];
+    const g0 = secondsOf(made(gear.key, CRAFT_MARKS[0]), gear);
+    expect(twiceOf(made(gear.key, CRAFT_MARKS[1]), gear)).toBe(0);
+    expect(secondsOf(made(gear.key, CRAFT_MARKS[1]), gear)).toBeCloseTo(g0 * (1 - CRAFT_MARK_SUB), 6);
+    const arr = RECIPES.find((r) => r.skill === 'array')!;
+    expect(twiceOf(made(arr.key, CRAFT_MARKS[4]), arr)).toBe(0);
+  });
+
+  it('makes a whole craft faster for every recipe of it mastered, up to CRAFT_MASTERY_CAP', () => {
+    const herbs = recipesOf('herb');
+    const all = (n: number) => crafter(9, { herb: 99 }, { made: Object.fromEntries(herbs.slice(0, n).map((r) => [r.key, CRAFT_MARKS[4]])) });
+    expect(masteryOf(all(0), 'herb')).toBe(0);
+    expect(masteryOf(all(3), 'herb')).toBeCloseTo(3 * CRAFT_MASTERY_SPEED, 9);
+    expect(masteryOf(all(3), 'vein')).toBe(0);
+    const forge = recipesOf('forge');
+    const smith = crafter(9, { forge: 99 }, { made: Object.fromEntries(forge.map((r) => [r.key, CRAFT_MARKS[4]])) });
+    expect(masteryOf(smith, 'forge')).toBe(CRAFT_MASTERY_CAP);
+  });
 });
 
 describe('時 work is read off the clock, not ticked', () => {
@@ -122,10 +188,11 @@ describe('時 work is read off the clock, not ticked', () => {
     for (let t = T0; t <= T0 + 3 * HOUR; t += 60) often = work(often, t);
     expect(often.crafts.pouch).toEqual(once.crafts.pouch);
     expect(often.crafts.xp.vein).toBeCloseTo(once.crafts.xp.vein, 6);
-    // Familiarity speeds it up as it goes, so it is at least the plain rate and not much more.
+    // Familiarity speeds it up as it goes, so it is at least the plain rate and not much more:
+    // ore doubles, so only its first mark is speed (the others stand in as a chance of two).
     const plain = Math.floor(3 * HOUR / secondsOf(s0, RECIPE_BY_KEY['vein:frostsilver']));
     expect(once.crafts.made['vein:frostsilver']).toBeGreaterThanOrEqual(plain);
-    expect(once.crafts.made['vein:frostsilver']).toBeLessThan(plain * 1.06);
+    expect(once.crafts.made['vein:frostsilver']).toBeLessThan(plain / (1 - CRAFT_MARK_FASTER) * 1.01);
   });
 
   it('works CRAFT_WORK_HOURS after the last visit and then stands still, losing nothing', () => {

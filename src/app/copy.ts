@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_TWICE, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -51,7 +51,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for a quarter of an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -625,7 +625,7 @@ export const KEY = {
   /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
     `at ${at.toLocaleString('en')} kills of one beast · +${Math.round(material * 100)}% 材 material and +${Math.round(drop * 100)} points of drop chance from that beast, `
-    + `and +${(everywhere * 100).toFixed(1)}% 材 material from every beast`,
+    + `and +${Number((everywhere * 100).toFixed(1))}% 材 material from every beast`,
   /** 緣 The bond, for the key and the tooltip. */
   bond: (full: number) => `Every win over a beast fills its bond. The ${full}th win leaves a piece for certain, `
     + 'a rank above the best that beast has given you, and the bond starts again.',
@@ -664,11 +664,11 @@ export const KEY = {
   workshop: 'Where the seven crafts are worked, one task at a time.',
   craftTotal: 'Your seven craft levels added up: 7 when every craft is new, 693 when all seven stand at 99. Every level in any craft adds one, so it grows with whatever you work.',
   pouch: 'Everything the workshop gathers and makes.',
-  familiar: 'How many times a recipe has been made. Five marks, each one a small edge on that recipe.',
+  familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
   carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
   systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
-  opensAt: (han: string, name: string) => `opens at ${han} ${name}`,
+  opensAt: (han: string, name: string, sooner?: string) => `opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}`,
 
   doingHead: '作 Words you will meet',
   doingBlurb: 'The rest of the characters that ask you to do something.',
@@ -681,7 +681,7 @@ export const KEY = {
   melt: 'Break a piece down into qi. Worth a share of a layer of the realm it was made in.',
   drive: 'Buy many kills of a beast you already know, instead of tapping for each one.',
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
-  sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after a quarter of an hour.',
+  sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after half an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
   layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
@@ -1481,7 +1481,7 @@ export const DAO = {
   keystoneShut: (han: string, name: string) =>
     `樞 The keystones open in ${han} ${name}. You can see them from here, and they are ` +
     'meant to be seen: a fork you know is coming is a climb with a plan in it.',
-  /** 極 Why a branch's last node is dark before the sixth realm. */
+  /** 極 Why a branch's last node is dark before CAPSTONE_REALM, the fifth. */
   capstoneShut: (han: string, name: string) =>
     `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
@@ -1553,7 +1553,8 @@ export const NOTICE = {
   workshop: {
     title: 'The workshop is open',
     text: 'Seven crafts that level from 1 to 99, on the 業 tab. Set it on one thing and it keeps '
-      + 'working for twelve hours after you leave. Alchemy opens at realm 5, Sigils at 6, Arrays at 7.',
+      + `working for twelve hours after you leave. Alchemy opens at realm 5 or Herb Gathering ${CRAFT_FEED_LEVEL}, `
+      + `Sigils at 6 or Vein Delving ${CRAFT_FEED_LEVEL}, Arrays at 7 or Forging ${CRAFT_FEED_LEVEL}.`,
   },
   record: {
     title: 'Old beasts are worth going back for',
@@ -1803,15 +1804,20 @@ export const CRAFTS = {
   level: (n: number) => `level ${n}`,
   xpTo: (have: string, left: string, next: number) => `${have} xp · ${left} to level ${next}`,
   xpTop: (have: string) => `${have} xp · the top of the craft`,
-  opens: (realm: number) => `Opens at realm ${realm}`,
-  opensLong: (han: string, name: string, realm: number) => `${han} ${name} opens at realm ${realm}. What you gather before then waits for it.`,
+  /** 開 On a shut craft's tile, and the full line under it: its realm, or its feeder's level. */
+  opens: (realm: number, feeder?: { name: string; level: number }) =>
+    (feeder ? `Realm ${realm} or ${feeder.name} ${feeder.level}` : `Opens at realm ${realm}`),
+  opensLong: (han: string, name: string, realm: number, feeder?: { name: string; level: number }) =>
+    `${han} ${name} opens at realm ${realm}${feeder ? `, or at ${feeder.name} ${feeder.level}` : ''}. What you gather before then waits for it.`,
+  /** 覽 Over the recipes of a craft that is not open yet, shown so a climb can be planned. */
+  preview: (name: string) => `A look ahead: what ${name} makes once it opens. Each recipe also waits for its own level and realm.`,
   tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,
     realm: (n: number) => `Realm ${n}`,
     tool: 'Held',
-    shut: 'Shut',
+    shut: 'Not open',
   },
   needs: 'Needs',
   remains: (n: number, of: number) => `${n}/${of} killed`,
@@ -1823,23 +1829,30 @@ export const CRAFTS = {
   /**
    * 習 What each familiarity mark gives, said where the dots are. rekaris, on the Discord
    * (2026-10-03): *"does it do anything? Doesn't seem to speed up the craft or anything?"*
-   * It did, five things, and the dots never said which. A recipe that makes nothing with
-   * a rank says its last two marks do nothing for it, rather than promising quality, and
-   * one that needs nothing says the same of the third.
+   * It did, and the dots never said which. Since the same day every mark gives something
+   * on every recipe: where its own gift would do nothing, a recipe that makes a thing for
+   * the pouch gets another chance of two, and gear, a tool or an array gets faster (see
+   * CRAFT_MARK_SUB). `doubles` is whether a make can come out twice at all.
    */
-  familiarNote: (made: number, graded: boolean, fewer: boolean, doubles: boolean) => {
+  familiarNote: (made: number, graded: boolean, fewer: boolean, doubles: boolean, craft: string, mastery: number) => {
+    const pct = (x: number) => Math.round(x * 100);
+    const instead = doubles
+      ? `another 1 in ${Math.round(1 / CRAFT_MARK_SUB)} comes out twice`
+      : `another ${pct(CRAFT_MARK_SUB)}% faster`;
     const gives = [
-      `${Math.round(CRAFT_MARK_FASTER * 100)}% faster`,
-      // A piece of gear or a tool is made once: only materials, elixirs and sigils double.
-      doubles ? `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice` : 'nothing here: a piece or a tool is made once',
-      fewer ? 'one less of the first thing it needs' : 'nothing here: it needs nothing to spare',
-      graded ? 'better odds of a high rank' : 'nothing here: it makes nothing with a rank',
-      graded ? 'never comes out Common' : 'nothing here either',
+      `${pct(CRAFT_MARK_FASTER)}% faster`,
+      // A piece of gear, a tool or an array is made once: it gets faster instead.
+      doubles ? `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice` : `${pct(CRAFT_MARK_SUB)}% faster again (it is made one at a time)`,
+      fewer ? 'one less of the first thing it needs' : instead,
+      graded ? 'better odds of a high rank' : instead,
+      graded ? 'never comes out Common' : instead,
     ];
     const next = CRAFT_MARKS.find((m) => made < m);
+    const top = CRAFT_MARKS[CRAFT_MARKS.length - 1].toLocaleString('en');
     return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
       + CRAFT_MARKS.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
-      + (graded ? '\nEvery mark also lifts the rank a little.' : '');
+      + (graded ? '\nEvery mark also lifts the rank a little.' : '')
+      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} ${pct(CRAFT_MASTERY_SPEED)}% faster, up to ${pct(CRAFT_MASTERY_CAP)}%: ${pct(mastery)}% now.`;
   },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
@@ -2019,13 +2032,13 @@ export const NODE = {
  *
  * rekaris, on the Discord: *"what constitutes 'check again'? ... I reload the page and it
  * starts again ... the player knows exactly when they start meditating, when it ends and
- * when to check back."* It begins when the game comes on screen and ends a quarter of an
- * hour later. Coming back to the game starts a new one, and so does 坐 Sit again, which is
- * exactly what a reload did, without the reload.
+ * when to check back."* It begins when the game comes on screen and ends half an hour
+ * later (a quarter of an hour until 2026-10-03). Coming back to the game starts a new
+ * one, and so does 坐 Sit again, which is exactly what a reload did, without the reload.
  */
 export const SIT = {
   chip: (x: string, left: string) => `Sitting \u00d7${x} \u00b7 ${left} left`,
-  rising: 'It deepens for three minutes, then holds until the quarter of an hour is up.',
+  rising: 'It deepens for three minutes, then holds until the half hour is up.',
   over: (n: string) =>
     `That sitting has passed, so you gather at your standing ${n} a second. Nothing was taken: the sitting was extra.`,
   how: 'A new sitting starts whenever you come back to the game, or now:',

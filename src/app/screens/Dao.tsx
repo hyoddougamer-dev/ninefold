@@ -142,7 +142,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const free = freeOf(state);
   // 樞 The three that cost you something arrive at their own realm, two above this one.
   const keys = isOpen(state.realm, 'keystones');
-  // 極 And each branch's last node waits for the sixth.
+  // 極 And each branch's last node waits for CAPSTONE_REALM, the fifth.
   const caps = capstonesOpen(state.realm);
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;

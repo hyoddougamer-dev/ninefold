@@ -159,7 +159,7 @@ export function affordableIn(
   // 頂 At the summit there is no rung to take the qi, so everything is only ever a wait.
   //
   // 定 The wait is counted at the **standing** rate and not at the one 入定 is currently
-  // paying, on purpose. The sitting ends after a quarter of an hour, so a countdown
+  // paying, on purpose. The sitting ends after half an hour, so a countdown
   // riding on it would promise a minute that arrives at four, and the standing rate is
   // the one that is still true tomorrow. A player who is sitting gets there sooner than
   // the screen said, which is the only direction this is allowed to be wrong in.

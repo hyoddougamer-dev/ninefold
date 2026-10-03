@@ -309,7 +309,7 @@ export function App() {
   // 視 On screen, not in focus. rekaris, on the Discord: *"I would expect to be able to use
   // my computer while playing the game"*. A click in another window used to end the visit
   // (a `blur`) with the game still in plain sight beside it, and coming back started the
-  // sitting again from nothing. The sitting still ends after a quarter of an hour, so a
+  // sitting again from nothing. The sitting still ends after half an hour, so a
   // game left on a second screen is paid the same as one looked at.
   useEffect(() => {
     if (!ready) return;

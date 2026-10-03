@@ -60,7 +60,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
-  /** 入定 True once this visit's sitting has run its quarter of an hour. */
+  /** 入定 True once this visit's sitting has run its half hour (FOCUS_HOLD). */
   satOut: boolean;
   /** 階 True for half a second after a rung opens, so the bar can say so. */
   opened: boolean;
