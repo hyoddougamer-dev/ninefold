@@ -130,3 +130,39 @@ describe('期 the week’s quarry pays at least hours of your own gathering', ()
     expect(quarryPaid(s, old)).toBeGreaterThanOrEqual(Math.round(rate(s) * 3600 * QUARRY_HOURS));
   });
 });
+
+describe('盾 the server reads the 道 bank from what the shrines paid (audit, 2026-10-03)', () => {
+  // A pair from after the cutoff: the same saves, moved in time together.
+  const late = async () => {
+    const { DAO_BANK_STRICT_FROM } = await import('../verify.ts');
+    const { HABITS, play } = await import('../../../tools/habits.ts');
+    const shots: State[] = [];
+    play(HABITS.find((h) => h.name === 'active')!, 12, (_d, s) => shots.push(structuredClone(s)));
+    const off = DAO_BANK_STRICT_FROM + 3600 - shots[0].startedAt;
+    const move = (s: State): State => ({ ...s, at: s.at + off, startedAt: s.startedAt + off });
+    return { shots, move };
+  };
+
+  it('holds a sync that banks more 道 than the road and the shrines paid', async () => {
+    const { verify } = await import('../verify.ts');
+    const { shots, move } = await late();
+    const s = move(shots.find((x) => x.realm === 3)!);
+    const forged = { ...s, metPoints: s.metPoints + 30, at: s.at + 20 };
+    expect(verify(s, forged, 20).why).toContain('too-fast');
+    // The same lump on a first sync is read as before: an old save may hold it honestly.
+    expect(verify(s, forged, 20, true).why).not.toContain('too-fast');
+  }, 120_000);
+
+  it('holds a capstone that appears below its realm, and never an honest pair', async () => {
+    const { verify } = await import('../verify.ts');
+    const { shots, move } = await late();
+    const s = move(shots.find((x) => x.realm === 4)!);
+    const cap = ALL_NODES.find((n) => n.tier === CAPSTONE_TIER && n.path === 'fortune')!;
+    const forged = { ...s, unlocked: [...s.unlocked, cap.key], at: s.at + 60 };
+    expect(verify(s, forged, 60).why).toContain('too-fast');
+    for (let i = 1; i < shots.length; i++) {
+      const b = move(shots[i - 1]), a = move(shots[i]);
+      expect(verify(b, a, a.at - b.at).why).not.toContain('too-fast');
+    }
+  }, 120_000);
+});

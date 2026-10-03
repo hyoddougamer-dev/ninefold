@@ -1220,6 +1220,8 @@ export const CAVE = {
 export const SECRET = {
   /** 龕 A shrine past its realm's share of 道 (SHRINE_DAO_PER_REALM). */
   shrineSpent: 'this realm\u2019s 道 Path points are taken, so it pays qi',
+  /** The door's own line once the realm's shrine points are taken, so it never promises 道 above the qi it pays. */
+  shrineSpentSays: 'Its 道 is spent for this realm. What is left in it is qi.',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
   useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
@@ -1830,10 +1832,11 @@ export const CRAFTS = {
    * a rank says its last two marks do nothing for it, rather than promising quality, and
    * one that needs nothing says the same of the third.
    */
-  familiarNote: (made: number, graded: boolean, fewer: boolean) => {
+  familiarNote: (made: number, graded: boolean, fewer: boolean, doubles: boolean) => {
     const gives = [
       `${Math.round(CRAFT_MARK_FASTER * 100)}% faster`,
-      `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice`,
+      // A piece of gear or a tool is made once: only materials, elixirs and sigils double.
+      doubles ? `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice` : 'nothing here: a piece or a tool is made once',
       fewer ? 'one less of the first thing it needs' : 'nothing here: it needs nothing to spare',
       graded ? 'better odds of a high rank' : 'nothing here: it makes nothing with a rank',
       graded ? 'never comes out Common' : 'nothing here either',
