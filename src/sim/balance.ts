@@ -789,6 +789,16 @@ export const QUARRY_LOOT = 2;
  * It is a fifth of what a first sight is worth for that reason.
  */
 export const QUARRY_BOUNTY = 0.1;
+/**
+ * 期 And never less than this many hours of the cultivator's own gathering. The share
+ * above follows the quarry's own realm, so late in the climb a realm-three owl paid a
+ * few hundredths of a second (6.7e5 against 4.9e7 qi a second). Measured over three seeds
+ * with a harness that takes the quarry when its odds are good (realm-9 day): once a day
+ * 69.0 to 65.3, casual 69.6 to 67.4, active 44.1 to 43.5, every hour 29.8 to 29.4. The
+ * light hands gain most, which is who a weekly reward is for. Once a week and a lump,
+ * never a rate.
+ */
+export const QUARRY_HOURS = 4;
 
 /**
  * 緣 The bond with one beast: how many wins fill it, and what a full one promises.
@@ -1137,6 +1147,21 @@ export const LUCK_GRADE_CAP = 10;
  * so the cap is a rail, not a lever.
  */
 export const SECOND_DROP_CAP = 0.5;
+
+/**
+ * 溢 What luck does to a roll, once it has done what it can to the rank. Every habit ends
+ * the climb wearing 天 Heaven (rekaris, 2026-10-03: luck "is somewhat underwhelming"),
+ * and luck only ever picked the rank, so it stopped mattering exactly when it was
+ * highest. Now it also lifts the band every drop rolls in by LUCK_ROLL_BEND · ln(luck),
+ * never more than LUCK_ROLL_TOP: the best drop goes from 1 + VARIANCE to 1.35 of its
+ * base, still under FUSE_TOP, and fusion carries the lift because it keeps an average.
+ * Measured over five seeds (realm-9 day; worn primary roll against base): active 44.5 to
+ * 44.4, 1.06 to 1.10; active on the fortune branch 41.3 to 41.9, 1.18 to 1.40; every
+ * hour 29.8 to 29.6; auto 33.1 to 33.8. Doubled, the climb moves by 1.2 days at most,
+ * and the endgame by five days in 553. It slopes rather than walls.
+ */
+export const LUCK_ROLL_BEND = 0.12;
+export const LUCK_ROLL_TOP = 0.2;
 
 /** How much an item's rolled percentage may swing either side of its base. */
 export const VARIANCE = 0.15;
