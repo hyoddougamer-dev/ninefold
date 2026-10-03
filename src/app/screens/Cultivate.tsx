@@ -36,12 +36,25 @@ import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide, heldAtFirstRung } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { useMemo, useRef, useState } from 'react';
+import { READY, SIT } from '../copy.ts';
+import type { Waiting } from '../ready.ts';
 
+/** 入定 A sitting's time left as a clock, 14:05, which is how a countdown is read. */
+const clockOf = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, onCards, meeting, onMeet, onPlant, onHarvest, onDemon, title }: {
+  owesCard, onAwaken, onCards, meeting, onMeet, onPlant, onHarvest, onDemon, title,
+  sitLeft = 0, onSitAgain, waiting = [], onReady }: {
   state: State;
+  /** 入定 Whole seconds left in this visit's sitting; 0 when it has ended or not begun. */
+  sitLeft?: number;
+  /** 坐 Start a new sitting now, which is what coming back to the game does. */
+  onSitAgain?: () => void;
+  /** 待 What is waiting, read off the save. See app/ready.ts. */
+  waiting?: readonly Waiting[];
+  /** 待 Take one of them. */
+  onReady?: (w: Waiting) => void;
   /** 冠 The title the rankings gave this player, if any. */
   title?: string | null;
   pulse: number;
@@ -219,6 +232,22 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </span>
       </p>
 
+      {/* 待 Ready now: everything waiting, one tap each. Up here because the audit's
+          check-ins spent most of their taps finding these, and the screen a player opens
+          on is where they should be found. Taking one goes to its tab, or on this screen
+          brings it into view. */}
+      {waiting.length > 0 && onReady && (
+        <div className="readystrip" role="group" aria-label={READY.strip}>
+          <span className="rs-head">{READY.strip}</span>
+          {waiting.map((w) => (
+            <button key={w.key} type="button" className="rs-chip" data-tab={w.tab}
+              title={w.long} aria-label={w.long} onClick={() => onReady(w)}>
+              <b className="cjk">{w.han}</b> {w.short}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 雷池 Once the ladder runs out the portrait gives the screen over to the pool:
           the basin fills with the qi, and the bolts only come down when it is full. It
           is the same bar, drawn as the place it actually is. */}
@@ -251,6 +280,24 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </div>
         {focus > 1.15 && (
           <div className="rnow mono">{num(rate(state) * focus)} qi / s now</div>
+        )}
+        {/* 入定 Which part of the sitting this is, said every moment of it: deepening or
+            holding with the time it has left, or over with what starts the next one.
+            rekaris: "the player knows exactly when they start meditating, when it ends
+            and when to check back." */}
+        {sitLeft > 0 && !satOut && (
+          <div className="sitline" data-full={focus >= deepest - 0.001}>
+            <span className="sitchip mono"><Term han="入定" /> {SIT.chip(focus.toFixed(1), clockOf(sitLeft))}</span>
+            <p className="faint">{focus >= deepest - 0.001 ? CULTIVATE.deepFull : SIT.rising}</p>
+          </div>
+        )}
+        {satOut && (
+          <div className="sitline" data-over="true">
+            <p className="faint"><Term han="入定" /> {SIT.over(num(rate(state)))} {SIT.how}</p>
+            {onSitAgain && (
+              <button className="act small sitagain" onClick={onSitAgain}>坐 <span>{SIT.again}</span></button>
+            )}
+          </div>
         )}
       </div>
 
@@ -368,7 +415,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       )}
 
       {crossing && (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: 16 }} data-ready="cross">
           <button className="act" onClick={() => {
             set((s) => crossNow(s));
             bloom('violet'); burst('violet', null, 22, 150);
@@ -440,19 +487,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </div>
       )}
 
-      {focus > 1.15 && (
-        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {focus >= deepest - 0.001 ? CULTIVATE.deepFull : CULTIVATE.deep}
-          {' '}{CULTIVATE.sitting}
-        </p>
-      )}
-      {/* 入定 And when it ends the screen says so, because a number that falls by two
-          thirds with nothing beside it reads as something taken away. */}
-      {satOut && (
-        <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {CULTIVATE.sittingOver(num(rate(state)))}
-        </p>
-      )}
+      {/* 入定 The sitting is said under the qi now, where its number is (see .sitline):
+          when it ends the screen says so, because a number that falls by two thirds with
+          nothing beside it reads as something taken away. */}
 
       <div className="spendrow">
         <h2 className="heading">{CULTIVATE.spend}</h2>

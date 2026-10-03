@@ -14,12 +14,10 @@ import { MARK_INFO, nextMark } from '../sim/record.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { pillOf } from '../data/alchemy.ts';
 import { ADVICE, WEEK } from './copy.ts';
-import { freePoints } from '../sim/points.ts';
+import { spendablePoints } from '../sim/points.ts';
 import { cardDue as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
 import { canEnter as canEnterSecret } from '../sim/secret.ts';
-import { canUnlock, capstonesOpen } from '../sim/dao.ts';
-import { ALL_NODES } from '../data/techniques.ts';
 import { canRefine } from '../sim/trials.ts';
 import { clampRefine, refineCost } from '../sim/refine.ts';
 import { SLOTS, templateOf } from '../data/gear.ts';
@@ -74,20 +72,8 @@ function bodyPill(s: State): string {
   return pillOf('body', s.realm).han;
 }
 
-/**
- * 道 Points earned, not spent, and a node actually within reach to spend them on.
- *
- * Both halves matter. Points with nothing reachable to buy is not a thing to do, and
- * telling a player to go and spend what they cannot spend is worse than silence.
- */
-function pointsWaiting(s: State): number {
-  if (!isOpen(s.realm, 'tree')) return 0;
-  const free = freePoints(s);
-  if (free <= 0) return 0;
-  const reachable = ALL_NODES
-    .some((n) => canUnlock(n.key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm)));
-  return reachable ? free : 0;
-}
+/** 道 Points that can actually be spent. See sim/points.ts: the tab badge reads it too. */
+const pointsWaiting = spendablePoints;
 
 /** 煉器 The piece worth pouring material into, if any of them can take a level now. */
 function refinable(s: State): string | null {

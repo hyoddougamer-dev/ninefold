@@ -1,7 +1,7 @@
 import { newState, validate, type State } from './state.ts';
 import { OPENING_PURSE } from './balance.ts';
 import { advance, layerCost } from './time.ts';
-import { work } from './crafts.ts';
+import { held, needsOf, settle, workSeconds, workshopOpen, type Stood } from './crafts.ts';
 import { RECIPE_BY_KEY, levelOf } from '../data/crafts.ts';
 import { LAYERS_PER_REALM } from './balance.ts';
 import { isSealed, open, seal } from './seal.ts';
@@ -48,14 +48,34 @@ export interface Return {
   readonly crafts: Away | null;
 }
 
-/** 業 The workshop's absence, for the card that welcomes a cultivator back. */
+/**
+ * 業 The workshop's absence, for the card that welcomes a cultivator back.
+ *
+ * It used to be there only when something was made, so the night the workshop waited for
+ * ore, or had no task at all, said nothing; and a thirty-hour absence read "made 12,126"
+ * with no word that it had rested for the last eighteen of them. Now it says why it
+ * stood still and for how long, whenever it did. Nothing in it is ever a loss: what was
+ * made stays made, and a rest is what the twelve-hour window always was.
+ */
 export interface Away {
-  readonly task: string;
+  /** The recipe that was set, or null when the workshop had no task. */
+  readonly task: string | null;
   readonly made: number;
   readonly xp: number;
   readonly from: number;
   readonly to: number;
+  /** 停 Why it stood still before the player came back, or null if it never did. */
+  readonly stood: Stood | null;
+  /** 時 How long it stood still, in seconds, up to the moment the app opened. */
+  readonly still: number;
+  /** 待 The first thing it was waiting for, when it waited for something: a pouch key or 'mat'. */
+  readonly missing: string | null;
+  /** 眠 The hours it works after a visit, for the line that says it rested. */
+  readonly hours: number;
 }
+
+/** 業 Any absence shorter than this is a glance away, and a rest that short says nothing. */
+const STILL_WORTH_SAYING = 60;
 
 /**
  * 封 Set once this phone has written a sealed save. From then on a plain save in storage
@@ -142,10 +162,18 @@ export function load(now: number): Return {
 
   const before = raw ? validate(raw, now) : newState(now);
   const secondsAway = Math.max(0, now - before.at);
-  const after = work(advance(before, now), now);
+  const advanced = advance(before, now);
+  const settled = settle(advanced, now);
+  const after = settled.state;
   const task = before.crafts.task;
   const r = task ? RECIPE_BY_KEY[task] : undefined;
   const made = r ? (after.crafts.made[r.key] ?? 0) - (before.crafts.made[r.key] ?? 0) : 0;
+  const still = settled.stood && settled.stoodFrom !== null
+    ? Math.max(0, now - Math.max(settled.stoodFrom, before.at)) : 0;
+  // 待 What it was waiting for, read off the state it stopped in.
+  const missing = r && settled.stood === 'needs'
+    ? needsOf(after, r).find(([k, n]) => held(after, k) < n)?.[0] ?? null : null;
+  const said = made > 0 || (settled.stood !== null && still >= STILL_WORTH_SAYING);
 
   const layersOf = (s: State) => (s.realm - 1) * 9 + s.layer;
 
@@ -157,10 +185,15 @@ export function load(now: number): Return {
     qiClimbed: climbed,
     layersOpened: Math.max(0, layersOf(after) - layersOf(before)),
     realmsClimbed: Math.max(0, after.realm - before.realm),
-    crafts: r && made > 0 ? {
-      task: r.key, made,
-      xp: (after.crafts.xp[r.skill] ?? 0) - (before.crafts.xp[r.skill] ?? 0),
-      from: levelOf(before.crafts.xp[r.skill] ?? 0), to: levelOf(after.crafts.xp[r.skill] ?? 0),
+    // 業 Said whenever the workshop is open and either made something or stood still,
+    // including the nights it made nothing at all.
+    crafts: workshopOpen(before) && said ? {
+      task: r ? r.key : null, made,
+      xp: r ? (after.crafts.xp[r.skill] ?? 0) - (before.crafts.xp[r.skill] ?? 0) : 0,
+      from: r ? levelOf(before.crafts.xp[r.skill] ?? 0) : 0,
+      to: r ? levelOf(after.crafts.xp[r.skill] ?? 0) : 0,
+      stood: settled.stood, still, missing,
+      hours: Math.round(workSeconds(advanced) / 3600),
     } : null,
   };
 }

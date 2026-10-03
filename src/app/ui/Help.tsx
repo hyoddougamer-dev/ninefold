@@ -1,4 +1,4 @@
-import { FIGURE, GUIDE, HELP } from '../copy.ts';
+import { FIGURE, GUIDE, HELP, KEYS } from '../copy.ts';
 
 /**
  * 引 How to play, in four promises.
@@ -31,6 +31,17 @@ export function Help({ onClose, onReopenGuide, onWhom }: {
       {[HELP.opens, HELP.hunt].filter(Boolean).map((line) => (
         <p key={line} className="faint" style={{ fontSize: 13.5, margin: 0 }}>{line}</p>
       ))}
+      {/* 鍵 The keys, on a device that has them. The block is drawn always and shown only
+          to a fine pointer (see .howto .hkeys), so a phone never reads a list of keys it
+          does not have. */}
+      <section className="hkeys" aria-label={KEYS.head}>
+        <h3>{KEYS.head}</h3>
+        <dl>
+          {KEYS.rows.map(([k, says]) => (
+            <div key={k + says}><dt><kbd>{k}</kbd></dt><dd>{says}</dd></div>
+          ))}
+        </dl>
+      </section>
       {onReopenGuide && (
         <div className="card" style={{ marginTop: 4 }}>
           <p className="faint" style={{ margin: '0 0 10px', fontSize: 13 }}>{GUIDE.reopenNote}</p>

@@ -512,7 +512,8 @@ export function floorPay(floor: number): number {
  * and closing it again, and it **ends**, which is the part that matters. A multiplier
  * that simply held would be farmed by leaving the phone face-up on a charger, and the
  * game would be trivialised by its owner without a single decision being made. A sitting
- * lasts FOCUS_HOLD and then it is over; to have another one, leave and come back.
+ * lasts FOCUS_HOLD and then it is over; to have another one, leave and come back, or press
+ * 坐 Sit again, which is the same thing without the leaving (the app restarts the visit).
  *
  * So a visit is worth about half an hour of extra gathering, however long the screen
  * stays on, and six visits a day is worth a few hours. The tower is what carries the
