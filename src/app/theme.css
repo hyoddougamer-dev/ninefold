@@ -3415,3 +3415,92 @@ button.gs-new .cjk { margin: 0; }
 
 /* 習 A note that is a list (familiarity's five marks) keeps its line breaks. */
 .termtip i { white-space: pre-line; }
+
+/* ── 便 Quality of life, batch B. Every block is scoped to its own screen. ─────────── */
+
+/* 洞天 收 Take all and plant again, above the beds. */
+.cavebulk { display: flex; flex-direction: column; gap: 8px; margin: 0 0 10px; }
+.cavebulk > .act { width: 100%; padding: 12px 10px; font-size: 14px; }
+.cavebulk .act span { margin-left: 5px; }
+.cavebulk .cbrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cavebulk .cbrow b { color: var(--gold); font-weight: 600; font-size: 13px; min-width: 0; }
+.cavebulk .cbrow .act { flex: none; width: auto; padding: 9px 14px; font-size: 13px; min-height: 40px; }
+.cavebulk .cbsay { margin: 0; font-size: 12px; line-height: 1.5; }
+
+/* 修 盡 Buy all, under the four boxes. */
+.act.buyall { width: 100%; margin-top: 9px; padding: 11px 12px; font-size: 14px; }
+.act.buyall span { margin-left: 5px; }
+.act.buyall i { font-style: normal; font-size: 11.5px; color: var(--faint); margin-left: 6px; letter-spacing: 0; }
+
+/* 爐 The furnace heading shares its row with the ×1 or Max switch, as 修 does. */
+.furnacerow { margin-top: 22px; }
+.pill .price .lot { display: block; font-style: normal; font-size: 10.5px; color: var(--gold); letter-spacing: .06em; }
+
+/* 器 ▲ Wear all upgrades, 煉 Fuse all groups. */
+.gearbulk { margin: 0 0 10px; }
+.gearbulk .act { width: 100%; padding: 12px; font-size: 14.5px; }
+.gearbulk .act span { margin-left: 4px; }
+.gearbulk .act .up { color: inherit; margin: 0 4px 0 0; }
+.gearbulk .act i { font-style: normal; font-size: 12px; margin-left: 7px; opacity: .8; }
+.gearbulk p { margin: 6px 2px 0; font-size: 12px; line-height: 1.5; }
+
+/* 器 篩 The chest's third row, by lines, and the kept filters above the rows. */
+.chestfilter.lines { margin-top: -6px; }
+.chestfilter.lines button .cjk { color: var(--gold); }
+.chestfilter.lines button[aria-pressed='true'] { border-color: var(--gold); color: var(--gold); }
+.chestfilter.presets .preset { flex: none; display: inline-flex; align-items: stretch;
+                               border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.chestfilter.presets .preset button { border: 0; border-radius: 0; }
+.chestfilter.presets .preset .forget { padding-inline: 10px; color: var(--faint); border-left: 1px solid var(--line); }
+.chestfilter.presets .preset[data-on] { border-color: var(--jade); }
+.chestfilter.presets .preset[data-on] button:first-child { color: var(--jade); }
+.chestfilter.keepf { margin-top: -4px; align-items: center; }
+.chestfilter.keepf button { border-style: dashed; }
+.chestfilter.keepf button:disabled { opacity: .45; }
+.chestfilter.keepf i { font-style: normal; font-size: 11.5px; flex: none; }
+.keepname { display: flex; gap: 6px; align-items: center; margin: -4px 0 10px; }
+.keepname input { flex: 1; min-width: 0; background: var(--panel2); border: 1px solid var(--line);
+                  border-radius: 9px; color: var(--text); font: 13px/1.3 inherit; padding: 9px 11px; }
+.keepname input:focus { outline: none; border-color: var(--jade); }
+.keepname .act.small { flex: none; width: auto; padding: 9px 12px; font-size: 13px; }
+
+/* 鬥 ▲ The drop is better than what is worn, and 著 Wear it, on the verdict. */
+.spoil .dropup { display: block; margin: 1px 0 3px; font-style: normal; font-size: 12.5px; color: var(--jade); }
+/* 著 Wear it sits beside Collect: with Again and Auto under them the four make a square. */
+.verdict .vacts .wearit { color: var(--jade); border-color: rgba(127,180,149,.55); }
+.verdict .vacts .wearit span { margin-left: 6px; }
+.verdict .vacts:has(.wearit) .collect:nth-last-child(3) { grid-column: auto; }
+.verdict .vacts:has(.wearit) .collect:nth-last-child(2) { grid-column: auto; }
+
+/* 鑑 承 Read as worn: said under the lines when the slot's levels are counted in. */
+.itemsheet .verdict .carried { margin: 8px 0 0; font-size: 12px; color: var(--gold); }
+
+/* 圍 Drive again, and the row for as many as the qi pays for. */
+.drivesheet .driveagain { display: flex; flex-direction: column; gap: 8px; }
+.drivesheet .driveagain .act { width: 100%; }
+.drivesheet .driveagain .act span { margin-left: 5px; }
+.drivesheet .driveagain p { margin: -2px 0 2px; text-align: center; font-size: 12px; }
+.drivesheet .size.most { border-style: dashed; }
+.drivesheet .size.most .n { color: var(--gold); }
+
+/* 狩 自 Auto on a Known beast's row, under 圍 the drive tag and drawn like it. */
+.beast .rowtags { flex: none; display: flex; flex-direction: column; gap: 6px; margin-left: 9px; }
+.beast .rowtags .drivetag { margin-left: 0; }
+/* 窄 At 320 the row is a grid (see 窄 above): the two tags sit side by side on its first line. */
+@media (max-width: 380px) {
+  .beast:has(.bleaves) > .rowtags { grid-column: 4; grid-row: 1; flex-direction: row; margin-left: 0; }
+}
+.beast .autotag { flex: none; width: 38px; min-height: 38px; border-radius: 9px;
+                  display: flex; flex-direction: column; align-items: center; justify-content: center;
+                  gap: 1px; cursor: pointer; padding: 4px 0;
+                  color: var(--gold); border: 1px solid rgba(212,175,86,.4); background: var(--panel); }
+.beast .autotag:hover { border-color: var(--gold); }
+.beast .autotag b { font-size: 15px; font-weight: 400; line-height: 1; }
+.beast .autotag i { font-style: normal; font-family: Archivo, sans-serif; font-size: 8.5px;
+                    letter-spacing: .1em; text-transform: uppercase; line-height: 1; }
+
+/* 錄 What a beast leaves, by school and by place on the body, on its bestiary card. */
+.card3 .bschools { flex-direction: column; align-items: center; gap: 1px; }
+.card3 .bschools em { display: flex; align-items: baseline; gap: 4px; max-width: 100%; }
+.card3 .bschools em small { font-size: 9.5px; color: var(--faint); white-space: nowrap;
+                            overflow: hidden; text-overflow: ellipsis; min-width: 0; }

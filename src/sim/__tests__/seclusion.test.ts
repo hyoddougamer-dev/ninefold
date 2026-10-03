@@ -5,7 +5,7 @@ import { freePoints } from '../points.ts';
 import { verify } from '../verify.ts';
 import { opensAt } from '../unlocks.ts';
 import {
-  canSeclude, conquer, demonDue, demonLeft, demonOf, demonPower, demonsFor, repel, seclude,
+  canSeclude, conquer, conquerTwice, demonDue, demonLeft, demonOf, demonPower, demonsFor, repel, seclude,
 } from '../seclusion.ts';
 import {
   DEMONS, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, SECLUSION,
@@ -73,9 +73,11 @@ describe('閉關 seclusion and 心魔 the heart demon', () => {
     const due = later(seclude(sixth(true)), SECLUSION);
     const won = conquer(due);
     expect(won.demons).toBe(1);
-    expect(won.secludedAt).toBe(0);
     expect(freePoints(won) - freePoints(due)).toBe(DEMON_DAO);
-    expect(canSeclude(won)).toBe(true);
+    // 關 The realm has demons left, so the door shuts again at once, by itself.
+    expect(won.secludedAt).toBe(won.at);
+    expect(demonLeft(won)).toBe(SECLUSION);
+    expect(demonDue(later(won, SECLUSION))).toBe(true);
 
     const lost = repel(due);
     expect({ ...lost, secludedAt: 0 }).toEqual({ ...due, secludedAt: 0 });
@@ -86,6 +88,25 @@ describe('閉關 seclusion and 心魔 the heart demon', () => {
     const early = seclude(sixth(true));
     expect(conquer(early)).toBe(early);
     expect(repel(early)).toBe(early);
+  });
+
+  it('shuts the door again by itself only while the realm still has a demon left', () => {
+    // The realm's last demon: the door stays open, and nothing can shut it until the next realm.
+    const last = later(seclude({ ...sixth(true), demons: demonsFor(6) - 1 }), SECLUSION);
+    const done = conquer(last);
+    expect(done.demons).toBe(demonsFor(6));
+    expect(done.secludedAt).toBe(0);
+    expect(canSeclude(done)).toBe(false);
+    // 鎖魂 Counting twice past the last one leaves it open too; one short shuts it.
+    const two = later(seclude({ ...sixth(true), demons: demonsFor(6) - 3 }), SECLUSION);
+    expect(conquerTwice(two).secludedAt).toBe(two.at);
+    expect(conquerTwice(last).secludedAt).toBe(0);
+    // 榜 And the ranked server takes a night of it: shut, fallen, shut again, fallen.
+    let s = seclude({ ...sixth(true), demons: 0 });
+    const before = s;
+    for (let n = 0; n < 3; n++) { s = later(s, SECLUSION); s = conquer(s); }
+    expect(s.demons).toBe(3);
+    expect(verify(before, s, s.at - before.at).why).not.toContain('too-fast');
   });
 
   it('lets out two a realm from the fourth, nine in a life', () => {

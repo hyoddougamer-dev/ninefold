@@ -16,7 +16,9 @@ import { furnace, tower } from '../../art/trials.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
-import { HUNT, TRIALS, UNIT } from '../copy.ts';
+import { CULTIVATE, HUNT, TRIALS, UNIT } from '../copy.ts';
+import { useBuyMax } from '../prefs.ts';
+import { brewMax } from '../../sim/trials.ts';
 
 /**
  * 塔 and 爐: the two halves of what qi buys once a realm is full.
@@ -29,8 +31,10 @@ import { HUNT, TRIALS, UNIT } from '../copy.ts';
 export function Trials({ state, onFloor, onBrew }: {
   state: State;
   onFloor: (floor: number) => void;
-  onBrew: (line: (typeof LINES)[number]) => void;
+  /** 爐 One pill, or with ×Max as many as can be paid for (the same ×1/Max as 修). */
+  onBrew: (line: (typeof LINES)[number], max?: boolean) => void;
 }) {
+  const [many, pickMany] = useBuyMax();
   void towerOpen;
   const floor = standingFloor(state);
   const beast = floorBeast(floor);
@@ -115,7 +119,16 @@ export function Trials({ state, onFloor, onBrew }: {
         <span className="mono" style={{ color: 'var(--gold)', whiteSpace: 'nowrap', flex: 'none' }}>{TRIALS.seals(held)}</span>
       </div>
 
-      <h2 className="heading">{TRIALS.furnaceHead}</h2>
+      {/* 盡 The same ×1 or Max as 修 the upgrades, remembered with it: one choice, two places. */}
+      <div className="spendrow furnacerow">
+        <h2 className="heading">{TRIALS.furnaceHead}</h2>
+        {lit && (
+          <div className="buymode" role="group" aria-label={CULTIVATE.buyMode}>
+            <button data-on={!many} onClick={() => pickMany(false)}>{CULTIVATE.buyOne}</button>
+            <button data-on={many} onClick={() => pickMany(true)}>{CULTIVATE.buyMax}</button>
+          </div>
+        )}
+      </div>
       {!lit && (
         <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
           {TRIALS.furnaceShut(realmOf(opensAt('furnace')).han, realmOf(opensAt('furnace')).name)}
@@ -141,8 +154,12 @@ export function Trials({ state, onFloor, onBrew }: {
           // 缺 The qi half was never marked. At the summit every pill sat greyed out
           // with both prices in the same gold, and nothing said which one was missing.
           const shortQi = state.qi < cost.qi;
+          // 盡 In Max mode the pill shows what one tap will brew, and for how much.
+          const lot = many && affordable ? brewMax(state, line) : null;
+          const lotQi = lot && lot.n > 1 ? lot.qi : cost.qi;
+          const lotMat = lot && lot.n > 1 ? lot.materials : cost.materials;
           return (
-            <button key={line} className="pill" disabled={!affordable} onClick={() => onBrew(line)}>
+            <button key={line} className="pill" disabled={!affordable} onClick={() => onBrew(line, many)}>
               <span className="ic"><Emblem family="pill" subject={line} icon={info.icon} size={24} alt={info.name} /></span>
               <span className="pname">
                 <b className="cjk">{pill.han}</b>
@@ -150,9 +167,10 @@ export function Trials({ state, onFloor, onBrew }: {
                 <em>{info.effect} · {TRIALS.held(taken)}</em>
               </span>
               <span className="price">
-                <b style={shortQi ? { color: 'var(--cinnabar)' } : undefined}>{num(cost.qi)}</b>
+                {lot && lot.n > 1 && <i className="lot">{CULTIVATE.lot(lot.n)}</i>}
+                <b style={shortQi ? { color: 'var(--cinnabar)' } : undefined}>{num(lotQi)}</b>
                 <i className="faint tag">qi</i>
-                <b style={{ color: short ? 'var(--cinnabar)' : 'var(--gold)' }}>{num(cost.materials)}</b>
+                <b style={{ color: short ? 'var(--cinnabar)' : 'var(--gold)' }}>{num(lotMat)}</b>
                 <i className="faint tag">材 {UNIT.material}</i>
               </span>
             </button>

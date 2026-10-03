@@ -3,7 +3,7 @@ import {
   type Affix, type Item, type Rarity,
 } from '../data/gear.ts';
 import { power, rate as rateOf, type State } from './state.ts';
-import { carryRefine } from './chest.ts';
+import { carryRefine, equip } from './chest.ts';
 import { callingKey } from './schools.ts';
 
 /**
@@ -104,13 +104,26 @@ export interface LineDelta {
  *
  * Values are the *effective* ones, with 煉 refining already folded in, because that is
  * what the piece is actually worth to the person holding it.
+ *
+ * 承 And the piece being looked at is read **as it would be once on**: putting it on takes
+ * the slot's refining levels with it (carryRefine). rekaris, on the Discord: a worn piece
+ * with +50% on every line from its levels read as better than a strict upgrade, because
+ * the upgrade's lines were read bare while the worn piece's were read refined. 力 and 氣
+ * were already measured with the levels carried (ifWorn); the lines now are too.
  */
 export function compare(item: Item, worn?: Item): readonly LineDelta[] {
   // valueOf already folds 煉 refining in, which is the whole reason it lives in the
   // data file: nothing is allowed to read a roll without it.
+  const on = worn ? carryRefine(item, worn).on : item;
   return AFFIXES
-    .map((a) => ({ affix: a, theirs: valueOf(item, a), mine: worn ? valueOf(worn, a) : 0 }))
+    .map((a) => ({ affix: a, theirs: valueOf(on, a), mine: worn ? valueOf(worn, a) : 0 }))
     .filter((d) => d.theirs > 0 || d.mine > 0);
+}
+
+/** 承 The refining levels a piece would take from the slot when it goes on, beyond its own. */
+export function levelsCarried(item: Item, worn?: Item): number {
+  if (!worn) return 0;
+  return Math.max(0, Math.floor(worn.refine ?? 0) - Math.floor(item.refine ?? 0));
 }
 
 /** How many lines a piece of this rank carries: one primary and the rank's secondaries. */
@@ -217,6 +230,51 @@ export function gearLift(s: State): { power: number; rate: number } {
     power: power(s) / Math.max(1e-12, power(bare)),
     rate: rateOf(s) / Math.max(1e-12, rateOf(bare)),
   };
+}
+
+/**
+ * ▲ Whether the chest marks a piece ▲: the sim says it raises power or qi and lowers
+ * neither, read with 承 the levels it would take from the slot, and it keeps the class.
+ * The one rule the chest, the verdict's drop and 著 Wear all upgrades all draw from.
+ */
+export function marksUp(s: State, item: Item): boolean {
+  const m = swing(s, item);
+  return m.better && !m.costsClass;
+}
+
+/** 套 Whether a piece is named by any saved loadout, so a bulk swap leaves it where it is. */
+export function inLoadout(s: State, item: Item): boolean {
+  return s.sets.some((set) => Object.values(set.ids).includes(item.id));
+}
+
+/**
+ * ▲ 著 Wear all upgrades: what pressing the button puts on.
+ *
+ * One place at a time, the biggest 力 gain first and then 氣, each read against the body
+ * as it stands after the last swap, because one piece going on can change what the next
+ * one does (a set, a class). Never a 鎖 locked piece, never one a 套 loadout names, and
+ * never one that costs the class: exactly the pieces the chest draws ▲ on. It stops when
+ * nothing is ▲ any more, which it must, because every swap raises a number and lowers none.
+ */
+export function wearBetter(s: State): { state: State; worn: number } {
+  let out = s;
+  let worn = 0;
+  for (let i = 0; i < 24; i++) {
+    let best: { item: Item; m: Swing } | null = null;
+    for (const item of out.chest) {
+      if (item.locked || inLoadout(out, item)) continue;
+      const m = swing(out, item);
+      if (!m.better || m.costsClass) continue;
+      if (!best || m.power > best.m.power + 1e-12
+        || (Math.abs(m.power - best.m.power) <= 1e-12 && m.rate > best.m.rate)) best = { item, m };
+    }
+    if (!best) break;
+    // The same swap the sheet's 著 button makes, levels traded on the way (承).
+    const next = equip(out.worn, out.chest, best.item, templateOf(best.item).slot);
+    out = { ...out, worn: next.worn, chest: [...next.chest] };
+    worn++;
+  }
+  return { state: out, worn };
 }
 
 /** What a worn piece is doing for you: the body with it, against the body without it. */

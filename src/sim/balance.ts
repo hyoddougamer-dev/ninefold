@@ -1336,6 +1336,14 @@ export const PILL_DISCOUNT_FLOOR = 0.3;
 /** 圍 The drive sizes offered. One is always free and always there; these are the bought ones. */
 export const DRIVE_SIZES = [10, 50, 200] as const;
 
+/**
+ * 盡 The most one "as many as your qi pays for" drive takes. It is not a price and moves
+ * no curve: the price per kill is the same at any size, and a drive of this many is a
+ * handful of taps of the 200 row. It is the arithmetic guard, because a drive rolls
+ * every kill's drop one by one, and a summit cultivator's qi would pay for millions.
+ */
+export const DRIVE_MOST = 2000;
+
 /** 緣 How long after one meeting before the next can arrive, in seconds. */
 export const MEET_GAP = 3 * 3600;
 

@@ -1890,3 +1890,76 @@ export const CRAFTS = {
   awayLine: (n: number, name: string, from: number, to: number, skill: string) =>
     to > from ? `The workshop made ${n} \u00d7 ${name}. ${skill} ${from} \u2192 ${to}.` : `The workshop made ${n} \u00d7 ${name}.`,
 };
+
+// \u2500\u2500 \u4fbf Quality of life, batch B (2026-10-03) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+/**
+ * \u4fbf The bulk buttons and remembered choices from the quality-of-life call. Every one is
+ * the single tap in a loop (see src/sim), so the copy only has to say what it will do
+ * before it is pressed and what it leaves alone. Kept in one block so it reads, and
+ * merges, as one piece.
+ */
+export const QOL = {
+  cave: {
+    takeReplant: 'Take all and plant again',
+    takeAll: 'Take all',
+    /** Under the two take buttons: what is ripe and what it pays. */
+    ripe: (n: number, qi: string) => `${n} ripe \u00b7 ${qi} qi`,
+    replantSays: 'Each ripe bed is sown again with the same herb. If you cannot pay for that seed, the herb in season goes in, or the bed stays empty.',
+    plantEmpty: (n: number) => (n === 1 ? 'Plant in the empty bed' : `Plant in all ${n} empty beds`),
+    /** Over the seed list when one herb is going into every empty bed. */
+    pickForAll: (n: number) => `Choose one herb for ${n === 1 ? 'the empty bed' : `all ${n} empty beds`}.`,
+  },
+  gear: {
+    wearAll: 'Wear all upgrades',
+    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. Locked pieces, loadout pieces and any that would change your class stay put.',
+    wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
+    fuseAll: 'Fuse all groups',
+    fuseAllSays: 'Three into one, again and again, until no three match. Locked and forged pieces are never fused.',
+    fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
+    /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
+    carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,
+    /** \u7be9 The chest's third filter: by lines. */
+    lines: 'Lines',
+    anyLine: 'Any line',
+    linesSays: 'A piece shows only if it has every line you pick.',
+    none: 'Nothing in the chest matches this filter.',
+    /** \u5b58 Saved filters, up to three, on this device. */
+    saveFilter: 'Save this filter',
+    filterName: 'Name this filter',
+    filterDefault: (n: number) => `Filter ${n}`,
+    keepIt: 'Keep',
+    cancel: 'Not now',
+    forget: 'Forget',
+    forgetOne: (name: string) => `Forget the filter ${name}`,
+    filtersFull: 'Three filters are kept. Forget one to keep another.',
+    savedHead: 'Saved filters',
+  },
+  /** \u5668 A piece's slot, in English, beside its name wherever a beast's drops are listed. */
+  slotted: (name: string, slot: string) => (name.toLowerCase().includes(slot.toLowerCase()) ? name : `${name} \u00b7 ${slot}`),
+  arena: {
+    better: 'Better than what you wear',
+    wearIt: 'Wear it',
+    wornNow: 'Worn',
+    nextFloor: 'Next floor',
+    keyNext: 'R',
+  },
+  drive: {
+    again: 'Drive again',
+    most: 'As many as your qi pays for',
+    mostCap: (n: number) => `up to ${n} at once`,
+    againSays: (n: number, qi: string) => `${n} kills for ${qi} qi, at today's price.`,
+  },
+  hunt: {
+    auto: 'Auto',
+    autoSays: (name: string) => `Hunt the ${name} on its own, until you stop it or a fight is lost`,
+  },
+  seclusion: {
+    shutsAgain: 'When a demon falls and this realm still has one left, the door shuts again by itself.',
+    shutAgain: 'The door has shut again by itself. The next one comes in eight hours.',
+  },
+  buy: {
+    all: 'Buy all',
+    allSays: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}, cheapest first`,
+    bought: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'}`,
+  },
+};

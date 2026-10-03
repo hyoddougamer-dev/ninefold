@@ -3,17 +3,18 @@ import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from './Plate.tsx';
 import type { Beast } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { DRIVE_SIZES, canAffordDrive, drive, driveCost, type Drive as Result } from '../../sim/hunt.ts';
+import { DRIVE_SIZES, canAffordDrive, drive, driveCost, driveMax, type Drive as Result } from '../../sim/hunt.ts';
+import { DRIVE_MOST } from '../../sim/balance.ts';
 import { lootFrom } from '../../sim/combat.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import { MARK_INFO } from '../../sim/record.ts';
 import { duration, num } from '../../sim/format.ts';
-import { RARITY_INFO, templateOf } from '../../data/gear.ts';
+import { RARITY_INFO, SLOT_INFO, templateOf } from '../../data/gear.ts';
 import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
-import { DRIVE, HUNT } from '../copy.ts';
+import { DRIVE, HUNT, QOL } from '../copy.ts';
 
 /**
  * 圍 The drive, on the screen.
@@ -35,8 +36,21 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
   onClose: () => void;
 }) {
   const [done, setDone] = useState<Result | null>(null);
+  /** 再 The size of the last drive, so Drive again repeats it ('max' is worked out again). */
+  const [last, setLast] = useState<number | 'max'>(10);
   const r = realmOf(beast.realm);
   const per = lootTaken(state, lootFrom(state, beast));
+  // 盡 The last row: as many as the qi in hand pays for, up to DRIVE_MOST.
+  const most = driveMax(state, beast);
+  const go = (size: number | 'max') => {
+    const n = size === 'max' ? driveMax(state, beast) : size;
+    if (n <= 0 || !canAffordDrive(state, beast, n)) return;
+    const result = drive(state, beast, n, seed);
+    setLast(size);
+    setDone(result);
+    onTake(result);
+  };
+  const againN = last === 'max' ? most : last;
 
   if (done) {
     return (
@@ -73,12 +87,20 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
               <b className="cjk" style={{ color: RARITY_INFO[done.best.rarity].colour }}>
                 {templateOf(done.best).han}
               </b>
-              <i>{templateOf(done.best).name} · {DRIVE.bestOf(done.dropsRolled)}</i>
+              <i>{QOL.slotted(templateOf(done.best).name, SLOT_INFO[templateOf(done.best).slot].name)} · {DRIVE.bestOf(done.dropsRolled)}</i>
             </span>
           </div>
         )}
 
-        <button className="act" onClick={onClose}>續 <span>{DRIVE.back}</span></button>
+        {/* 再 The same drive again, at today's price, without walking back through the sizes. */}
+        <div className="driveagain">
+          <button className="act" data-qol="drive-again" disabled={againN <= 0 || !canAffordDrive(state, beast, againN)}
+            onClick={() => go(last)}>
+            再 <span>{QOL.drive.again}</span>
+          </button>
+          {againN > 0 && <p className="faint">{QOL.drive.againSays(againN, num(driveCost(state, againN, beast)))}</p>}
+          <button className="act ghost" onClick={onClose}>續 <span>{DRIVE.back}</span></button>
+        </div>
       </div>
     );
   }
@@ -102,11 +124,7 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
           const can = canAffordDrive(state, beast, n);
           return (
             <button key={n} className="size" disabled={!can}
-              onClick={() => {
-                const result = drive(state, beast, n, seed);
-                setDone(result);
-                onTake(result);
-              }}>
+              onClick={() => go(n)}>
               <span className="n mono">{n}</span>
               <span className="what">
                 <b>{DRIVE.kills(n)}</b>
@@ -118,6 +136,17 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
             </button>
           );
         })}
+        {/* 盡 As many as the qi in hand pays for. The price per kill is the same as above. */}
+        <button className="size most" data-qol="drive-most" disabled={most <= 0} onClick={() => go('max')}>
+          <span className="n mono">{most > 0 ? most : '0'}</span>
+          <span className="what">
+            <b>{QOL.drive.most}</b>
+            <i>{most > 0 ? DRIVE.willPay(num(per * most)) : QOL.drive.mostCap(DRIVE_MOST)}</i>
+          </span>
+          <span className="price mono">
+            {num(most > 0 ? driveCost(state, most, beast) : 0)}<em>{DRIVE.cost(duration((most > 0 ? driveCost(state, most, beast) : 0) / rate(state)))}</em>
+          </span>
+        </button>
       </div>
 
       <p className="faint blurb">{DRIVE.free}</p>

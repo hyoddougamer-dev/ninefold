@@ -7,7 +7,7 @@ import { DEEP_INFO, MARK_INFO, deepOf, knownIn, marksOf } from '../../sim/record
 import { isOpen } from '../../sim/unlocks.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
-import { schoolOfShape } from '../../data/gear.ts';
+import { ARCHETYPES, SLOT_INFO, schoolOfShape } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
@@ -75,9 +75,13 @@ export function Bestiary({ state }: { state: State }) {
                         {b.leaves.map((a, i) => {
                           const key = schoolOfShape(a);
                           const sc = SCHOOL_INFO[key];
+                          // 器 And which place on the body it goes, in English. rekaris, on the
+                          // Discord: *"I didn't realize there is a Fortune-school crown."*
+                          const arch = ARCHETYPES.find((x) => x.key === a);
                           return (
-                            <em key={`${a}${i}`} className="cjk" style={{ color: sc.colour }}>
-                              <Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} />
+                            <em key={`${a}${i}`} style={{ color: sc.colour }}>
+                              <span className="cjk"><Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} /></span>
+                              {arch && <small>{SLOT_INFO[arch.slot].name}</small>}
                             </em>
                           );
                         })}

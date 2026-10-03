@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RANKS } from '../copy.ts';
+import { useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
 import { cleanName } from '../../net/names.ts';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
@@ -32,7 +33,8 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
   // 期 It opens on the week, where everybody starts level on Monday. Raziel, on the
   // Discord (2026-10-02), asked whether a new player could ever catch one five months in:
   // on the Heaven List, no, and on This Week, in their first week.
-  const [tab, setTab] = useState<Board>('week');
+  // 記 The board last looked at, remembered on the device.
+  const [tab, setTab] = useRemembered<Board>('ranks.board', 'week', (x): x is Board => typeof x === 'string' && x in RANKS.boards);
   const [rows, setRows] = useState<readonly Row[] | null>(null);
   const [me, setMe] = useState<Mine | null>(null);
   const [failed, setFailed] = useState(false);
