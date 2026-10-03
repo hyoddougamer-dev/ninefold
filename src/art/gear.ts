@@ -103,7 +103,7 @@ function frame(S: number, colour: string, glow: number, spin: number, uid: strin
  * around it, which is where it always was. Mid-tones sit in the ink palette on purpose:
  * nothing here emits light except the four materials that are meant to glow.
  */
-interface Material { readonly hi: string; readonly mid: string; readonly lo: string; readonly mark: string; readonly glow?: string }
+interface Material { readonly hi: string; readonly mid: string; readonly lo: string; readonly mark: string; readonly glow?: string; readonly edge?: string }
 export const MATERIALS: Readonly<Record<number, Material>> = {
   1: { hi: '#D2D5DA', mid: '#8E939A', lo: '#474B52', mark: 'none' },                    // 凡鐵 iron
   2: { hi: '#FBF3E2', mid: '#D8CBAA', lo: '#8F8062', mark: 'cracks' },                  // 枯骨 bone
@@ -112,7 +112,11 @@ export const MATERIALS: Readonly<Record<number, Material>> = {
   5: { hi: '#D2F5E2', mid: '#6DB894', lo: '#245E45', mark: 'jade', glow: '#8FE0B8' },    // 碧玉 jade
   6: { hi: '#FFE2A8', mid: '#E6983F', lo: '#7E3412', mark: 'ember', glow: '#FFB35C' },   // 落星 star metal
   7: { hi: '#E4EAFF', mid: '#8C9EDB', lo: '#353F78', mark: 'script', glow: '#B8C8FF' },  // 雷紋 thunder steel
-  8: { hi: '#F29A84', mid: '#B43F37', lo: '#4E1210', mark: 'scales', glow: '#FF7A5C' },  // 龍骸 dragon scale
+  // 龍骸 Lifted a long way from the first plum: #B43F37 to #4E1210 inside a 天 Heaven frame
+  // (#D2604E) with a red glow was red on red on dark, and on a phone the sword read as a
+  // smudge. The scales are now drawn light on the metal rather than dark in it, and the
+  // object carries a dark keyline so it stands off its own frame's glow.
+  8: { hi: '#FFE1D4', mid: '#E57A63', lo: '#9A3328', mark: 'scales', glow: '#FFB59E', edge: '#1A0805' },
   9: { hi: '#FFFFFF', mid: '#E7DDF0', lo: '#9A84B2', mark: 'husk', glow: '#F4E9FF' },    // 仙蛻 immortal husk
 };
 
@@ -128,7 +132,7 @@ function materialMark(mark: string, uid: string): string {
     case 'ember': return [[170, 160], [330, 260], [240, 380], [390, 150]]
       .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="16" fill="#FFF1C9" opacity=".85"/>`).join('');
     case 'script': return '<path d="M110 140h60v40h-40v40h70M260 120v90h50M330 260h60v50h-50M150 330h80v40M300 380h70" stroke="#E9EEFF" stroke-width="9" fill="none" opacity=".7"/>';
-    case 'scales': return `<pattern id="sc${uid}" width="56" height="40" patternUnits="userSpaceOnUse"><path d="M0 40A28 28 0 0 1 56 40" fill="none" stroke="#3A0B08" stroke-width="7" opacity=".7"/></pattern><rect width="512" height="512" fill="url(#sc${uid})"/>`;
+    case 'scales': return `<pattern id="sc${uid}" width="56" height="40" patternUnits="userSpaceOnUse"><path d="M0 40A28 28 0 0 1 56 40" fill="none" stroke="#FFF1EA" stroke-width="6" opacity=".42"/></pattern><rect width="512" height="512" fill="url(#sc${uid})"/>`;
     case 'husk': return '<rect width="512" height="512" fill="#FFFFFF" opacity=".18"/>';
     default: return '';
   }
@@ -175,7 +179,7 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
     `</defs>` +
     (m.glow ? `<circle cx="${S / 2}" cy="${S / 2}" r="${f(inner * 0.62)}" fill="url(#mh${mid})"/>` : '') +
     `<g transform="translate(${f(off)} ${f(off)}) scale(${(inner / 512).toFixed(4)})">` +
-    `<g fill="url(#mg${mid})">${body}</g><g mask="url(#mm${mid})">${materialMark(m.mark, mid)}</g></g>`;
+    `<g fill="url(#mg${mid})"${m.edge ? ` stroke="${m.edge}" stroke-width="22" paint-order="stroke" stroke-linejoin="round"` : ''}>${body}</g><g mask="url(#mm${mid})">${materialMark(m.mark, mid)}</g></g>`;
 
   return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" role="img" ` +
     `aria-label="${tpl.name}, ${rar.name}, ${rs.name} set, ${SCHOOL_INFO[schoolOf(item)].short}">` +

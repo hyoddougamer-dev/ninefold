@@ -1797,6 +1797,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .place[data-tall='true'] { aspect-ratio: 200 / 160; }
 .place[data-tall='false'] { aspect-ratio: 200 / 200; }
 .place[data-wide='true'] { aspect-ratio: 200 / 180; }
+/* 並 塔 the tower beside its floor on a wide screen. Scoped to the trials screen's own
+   wrapper: .place is the furnace's frame as well, and that one keeps its own width. */
+@media (min-width: 1100px) {
+  .towerduo { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 14px; align-items: start; }
+  .towerduo > .card { margin-top: 0; }
+}
 
 /* ── 梯 the climb, drawn ──────────────────────────────────────────────────── */
 
