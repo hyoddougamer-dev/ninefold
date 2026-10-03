@@ -665,8 +665,7 @@
         "· On small phones the day count no longer gets cut off, and the ≡ button no longer covers prices when you scroll.",
         "· The save panel says what is true whether you play as a guest or signed in.",
         "· Gear power shows two decimals, the bar says when a warden is waiting, and the Tower shows how much stronger a floor is instead of a misleading 2%.",
-        "· The card-trade price and the tribulation counts now read the same everywhere.",
-        "· The ranked server now counts melting properly, so heavy Auto melters are never held back."
+        "· The card-trade price and the tribulation counts now read the same everywhere."
       ],
       "gallery": [
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/second-piece.webp?v=1",
