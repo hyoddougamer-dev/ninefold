@@ -86,6 +86,9 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
     const r = RECIPE_BY_KEY[key];
     if (!r) return;
     setView('work'); setSkill(r.skill); setGroup(r.group); setFilter('all'); setFind(r.name); setLit(r.key);
+    // 鑄 The realm row starts again at Now, or a Go to a piece of this realm could land on
+    // a list still showing realm 2 with the lit row filtered out of it.
+    setTier('near');
   };
   useEffect(() => {
     if (!lit) return;
@@ -162,7 +165,7 @@ export function Crafts({ state, onTask, onCarry, onUse, onPlace }: {
           return (
             <button key={k.key} className="cskill" data-on={k.key === skill} data-shut={!on}
               data-run={running?.skill === k.key}
-              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); setFind(''); setFilter('all'); }}>
+              onClick={() => { setSkill(k.key); setGroup(null); setLooking(null); setFind(''); setFilter('all'); setTier('near'); }}>
               <Seal skill={k.key} han={k.seal} />
               <span className="cs-name">{k.name}</span>
               <span className="cs-sub">

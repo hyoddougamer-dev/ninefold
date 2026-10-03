@@ -31,7 +31,7 @@ import type { Meeting } from '../../sim/meet.ts';
 import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, RANKS } from '../copy.ts';
 import { advice } from '../advice.ts';
 import { pace } from '../../sim/pace.ts';
-import { DISMISSED, guide } from '../guide.ts';
+import { DISMISSED, guide, heldAtFirstRung } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { useMemo, useRef, useState } from 'react';
 
@@ -176,8 +176,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           you do with them runs down the right. See .c-hero in theme.css. */}
       <div className="c-hero">
       <div className="row">
-        <span className="faint" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-          修 Cultivate · day {day}
+        {/* 日 The day count never truncates: the line wraps before "day", and the number
+            stays with its word. At 320 wide day 121 read "DAY 1…". */}
+        <span className="faint c-title" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
+          修 Cultivate · <span className="c-day">day {day}</span>
         </span>
         {/* 註 修 is the screen a player is on for most of the game and it had two
             answerable characters on it, both of them inside 梯 the ladder. Every other
@@ -203,7 +205,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             with the eight other rungs around it. One number in one place. */}
         {top && (
           <span className="faint mono" style={{ fontSize: 13 }}>
-            劫 {state.tribulation} · {CULTIVATE.marks(state.tribulation)}
+            {/* 劫 The crossings already made, which are the marks held: one number, said
+                as what it is. The heading below names the crossing still to come. */}
+            劫 {CULTIVATE.crossed(state.tribulation)} · {CULTIVATE.marks(state.tribulation)}
           </span>
         )}
       </div>
@@ -276,7 +280,14 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           only direction this is allowed to be wrong in. */}
       {!top && (
         <p className="pace mono" onClick={onRealm}>
-          {PACE.rungLeft(num(p.rungLeft), duration(p.rungSeconds))}
+          {/* 守 At the ceiling the bar is full and the rung is the warden, so "0 qi to go ·
+              about 0s" was a countdown to something that was already there. It says
+              who is waiting instead. 囊 And a fresh cultivator's first rung waits for the
+              first purchase (see clockUntil), which it says rather than freezing at 0s. */}
+          {standing ? PACE.wardenWaits(w.han, w.name)
+            : ready ? PACE.breakOpen
+            : heldAtFirstRung(state) ? PACE.held
+            : PACE.rungLeft(num(p.rungLeft), duration(p.rungSeconds))}
         </p>
       )}
 
@@ -296,7 +307,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {standing && (
         <>
           <h2 className="heading">
-            {top ? `${CULTIVATE.tribulationHead} ${state.tribulation + 1}` : CULTIVATE.wardenHead}
+            {top ? CULTIVATE.tribulationNext(state.tribulation + 1) : CULTIVATE.wardenHead}
           </h2>
           <div className="card">
             <div className="row">

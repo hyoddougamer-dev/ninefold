@@ -3,14 +3,16 @@ import { exportSave, importSave, saveFileName, wipe } from '../../sim/save.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { SAVE } from '../copy.ts';
-import { remembered } from '../../net/cloud.ts';
+import { remembered, type Who } from '../../net/cloud.ts';
 
 /**
  * 存 The save, in the player's own hands.
  *
- * There is no account and no cloud. The save lives in one browser's storage on one
- * phone, which means clearing the browser's data, losing the phone or changing phones
- * costs three months. The game cannot fix that on its own, but it can make it one tap
+ * Unless the player signs in under 榜 Ranks, there is no cloud copy. The save lives in one
+ * browser's storage on one phone, which means clearing the browser's data, losing the
+ * phone or changing phones costs three months. What the panel says depends on which of
+ * the three the player is: nobody, a ranked guest (a cloud copy only this device can
+ * open), or an email (a cloud copy any device can open). The game cannot fix that on its own, but it can make it one tap
  * to hold a copy, and one paste to get it back.
  *
  * Copy comes before Download on purpose. A download is the nicer flow and it is the one
@@ -18,8 +20,10 @@ import { remembered } from '../../net/cloud.ts';
  * page is not allowed to hand you a file, and it fails *silently*. Copying to the
  * clipboard works everywhere, so it is the one offered first and the one described.
  */
-export function SavePanel({ state, onRestore, onClose }: {
+export function SavePanel({ state, who, onRestore, onClose }: {
   state: State;
+  /** 雲 Who the rankings know this device as, once read; null before that or never. */
+  who: Who | null;
   onRestore: (s: State) => void;
   onClose: () => void;
 }) {
@@ -85,7 +89,8 @@ export function SavePanel({ state, onRestore, onClose }: {
         <dt>{SAVE.gear}</dt><dd>{num(state.chest.length)} in the chest</dd>
       </dl>
 
-      <p className="says">{remembered() ? SAVE.whyCloud : SAVE.why}</p>
+      <p className="says">{who?.email ? SAVE.whyEmail(who.email) : who?.guest ? SAVE.whyGuest
+        : remembered() ? SAVE.whyCloud : SAVE.why}</p>
 
       <div className="saverow">
         <button className="act" onClick={copy}>複 <span>{SAVE.copy}</span></button>

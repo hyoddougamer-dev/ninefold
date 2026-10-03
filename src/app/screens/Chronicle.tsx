@@ -11,6 +11,7 @@ import { pillsTaken } from '../../sim/furnace.ts';
 import { daoSpent } from '../../sim/dao.ts';
 import { BEASTS } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
+import { heavenAt } from '../../data/heavens.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
@@ -33,13 +34,18 @@ import { HEART_PATH } from '../../sim/balance.ts';
  */
 export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
   const r = realmOf(state.realm);
+  // 境外 Above the summit the cultivator stands in a heaven, and 修 Cultivate says so at the
+  // top of its screen. The stele said "standing in Tribulation" beside it, which is the
+  // ninth realm's name, so the two pages disagreed about where the player is.
+  const heaven = heavenAt(state.tribulation);
   const held = tally(state);
   const next = closest(state);
   const rungs = (state.realm - 1) * LAYERS_PER_REALM + state.layer + 1;
 
   const figures: readonly { han: string; label: string; value: string }[] = [
     { han: '日', label: CHRONICLE.day, value: `${Math.floor(daysIn(state)) + 1}` },
-    { han: '境', label: CHRONICLE.realm, value: `${r.han} ${state.realm}` },
+    // 譯 The realm's characters stood alone here ("元嬰 4"); its English name leads now.
+    { han: '境', label: CHRONICLE.realmNamed(r.name), value: `${state.realm} / 9` },
     { han: '階', label: CHRONICLE.rungs, value: `${Math.min(rungs, LAYERS)} / ${LAYERS}` },
     { han: '力', label: CHRONICLE.power, value: num(power(state)) },
     { han: '氣', label: CHRONICLE.rate, value: `${num(rate(state))} / s` },
@@ -70,8 +76,8 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
       <div className="stele">
         <span className="who"><Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} /></span>
         <span className="said">
-          <b className="cjk" style={{ color: r.colour }}>{r.han}</b>
-          <i>{CHRONICLE.standing(Math.floor(daysIn(state)) + 1, r.name)}</i>
+          <b className="cjk" style={{ color: heaven?.colour ?? r.colour }}>{heaven?.han ?? r.han}</b>
+          <i>{CHRONICLE.standing(Math.floor(daysIn(state)) + 1, heaven?.name ?? r.name)}</i>
           {next && (
             <em>
               {CHRONICLE.nearest(next.han, next.name)}
