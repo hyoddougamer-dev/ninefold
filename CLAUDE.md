@@ -224,9 +224,12 @@ onto fights rather than a system of its own.
   after every deploy). hCaptcha is built in and **off** until both the `HCAPTCHA_SECRET`
   secret and the `HCAPTCHA_SITEKEY` repository variable exist; one without the other would
   lock guests out, so the workflow waits for both.
-- Supabase refuses custom email templates on the free plan without its own SMTP, so the
-  sign-in email is a link with no code. Inside the APK that link opens the browser, so
-  testers there play as guests.
+- The sign-in email carries a 6-digit code beside the link (live since 2026-10-03), sent
+  through Brevo's SMTP from ninefold.game@gmail.com: the `SMTP_PASS` secret and the
+  `SMTP_SENDER`, `SMTP_HOST` (smtp-relay.brevo.com), `SMTP_PORT` (587) and `SMTP_USER`
+  variables, read by `tools/auth-config.mjs`. Supabase refuses custom templates without
+  that server. Inside the APK the link opens the browser, so the code is how testers there
+  sign in. A variable pasted with a line break was refused once; the config trims them.
 - Auth settings take a few seconds to apply after the PATCH says 200; the workflow waits
   for `/auth/v1/settings` before attacking.
 - Deleting real rows on the live database is refused by the safety check unless Bruno asks
