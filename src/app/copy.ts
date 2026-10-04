@@ -1342,6 +1342,13 @@ export const GEAR = {
   } as Record<string, string>,
   /** 拾 A drop chance is added in points, so it reads as points. */
   points: (x: number) => `+${Math.round(x * 10) / 10} pts`,
+  /**
+   * 彎 What the pieces add up to, beside what it does. A tester read ×1.35 under a body
+   * whose pieces said +200% and could not tell which was true (2026-10-04). Both are:
+   * the sum goes in, the bend comes out, and the line under them says so.
+   */
+  sum: (x: number) => `+${Math.round(x)}%`,
+  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. Drop chance is added in points, never past ${top}. Power never bends.`,
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',

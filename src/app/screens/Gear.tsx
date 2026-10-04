@@ -24,6 +24,7 @@ import { CULTIVATE, GEAR, QOL, UNIT } from '../copy.ts';
 import { oneOf, useRemembered } from '../prefs.ts';
 import { gearLift, swing, upOf, wearBetter } from '../../sim/inspect.ts';
 import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
+import { FIND_TOP } from '../../sim/balance.ts';
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
@@ -162,6 +163,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               <div key={a}>
                 <span className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></span>
                 <span>{GEAR.other[a]}</span>
+                {a !== 'capacity' && <span className="oesum mono">{GEAR.sum(totals[a])}<i aria-hidden="true">→</i></span>}
                 <em className="mono">
                   {a === 'luck' ? `×${gearLuck(state).toFixed(2)}`
                     : a === 'find' ? GEAR.points(gearFind(state) * 100)
@@ -173,6 +175,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               </div>
             ))}
           </div>
+          <p className="oenote">{GEAR.bends(Math.round(FIND_TOP * 100))}</p>
         </details>
       )}
 

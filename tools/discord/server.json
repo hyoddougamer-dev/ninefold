@@ -834,12 +834,13 @@
       "title": "筆 Update · Fixes from your reports",
       "color": "#B88A5A",
       "body": [
-        "A round of fixes, almost all from rekaris's reports overnight. Thank you, and keep them coming!"
+        "A round of fixes, almost all from rekaris's reports overnight. Thank you, and keep them coming!",
+        "And thank you, rekaris, for the long answer under 深 *Deeper hunts*. It is shaping the design, and the polls stay open all week."
       ],
       "fields": [
         [
           "塔 The tower",
-          "A floor's qi no longer depends on what you wear. It pays six hours of your gathering (counted without gear) from your realm's warden floor up, and each floor below that pays 20% less. Only 天師 Celestial Master adds to it. The floor card says exactly what the next floor pays, and swapping loadouts after a climb no longer risks your ranking."
+          "A floor's qi no longer depends on what you wear. It pays six hours of your gathering (counted without gear) from your realm's warden floor up, and each floor below that pays 20% less. Only 天師 Celestial Master adds to it. The floor card says exactly what the next floor pays, and swapping loadouts after a climb no longer risks your ranking. A big climb no longer gets a save flagged either: the server now counts a floor's qi as the payment it is."
         ],
         [
           "煉 Your refining is safe",
@@ -858,6 +859,10 @@
           "· Filter the hunt list by the slot and school a beast leaves (Fortune + Ring)\n· *Strongest* and *Most material* keep finished beasts in their place\n· Saved chest filters sit in one tidy row, up to eight, with a 鎖 *Locked* chip"
         ],
         [
+          "彎 Gear numbers",
+          "*Other effects of your gear* now shows what your pieces add up to beside what it does, with a line on why they differ. +116% on your pieces and ×1.38 on the screen are both true: the first goes in, the second comes out."
+        ],
+        [
           "音 Sound",
           "Sliders from 0 to 100 for sound and for music, each with its own mute."
         ],
@@ -870,7 +875,8 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-tower.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-refine.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-wearall.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-huntfilter.webp?v=1"
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-huntfilter.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-bends.webp?v=1"
       ],
       "footer": "師 Shibaki"
     }
@@ -2101,6 +2107,30 @@
       ],
       "reply": [
         "Fair point about the hard cap, thank you. I'll change the craft mastery bonus so it keeps growing with every recipe you master but more slowly, instead of stopping dead at 15%, so someone who wants to be the immortal blacksmith always has a reason to keep going.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Saves being flagged for climbing the tower",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you for spotting this. It was a server bug, not anything you did. Two things were wrong: the server checked a new floor against what you were wearing when the game synced, so climbing and then putting qi gear back on looked impossible, and it didn't count a floor's qi as a payment, so a big climb read as gathering faster than anyone can. Both are fixed in today's update, and the flags this caused are being cleared by hand. Nobody's game was touched.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you for writing all of this out. On the numbers you're right: the list only showed what each line does after it bends, never what your pieces add up to, so they looked like they contradicted each other. From today it shows both side by side, with a line saying why they differ.",
+        "On the classes I agree with your rule: a class should be the best at what it says it does. Pure Sword out-climbing Sword Immortal and Celestial Master in the tower, their own place, is a balance problem, and so is a Sword piece carrying far more power than an Arts piece carries arts. I'm measuring every class against pure Sword in the tower next, and I'll post the numbers and the changes here before anything goes in.",
         "· 師 Shibaki"
       ]
     }
