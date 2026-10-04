@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -21,8 +21,9 @@ import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
 import { QuarryBand, WeekTag } from '../ui/Week.tsx';
 import { isQuarry, weekLeft, weekOf } from '../../sim/week.ts';
-import { ARCHETYPES, RARITIES, RARITY_INFO, SLOT_INFO, schoolOf } from '../../data/gear.ts';
-import { SCHOOL_INFO } from '../../data/schools.ts';
+import { ARCHETYPES, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, schoolOf, type Slot } from '../../data/gear.ts';
+import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
+import { oneOf, useRemembered } from '../prefs.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
@@ -79,7 +80,10 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
    * enemy in the list to either be the strongest, or the one dropping the most materials,
    * now it is neither."* The order below is right for somebody learning the hunt and wrong
    * for somebody farming it, so both are offered and the choice stays on the device.
-   * Whatever the order, a beast with nothing left to earn still folds away at the bottom.
+   *
+   * 序 And the order asked for is the order shown. A finished beast used to fold away at
+   * the bottom whatever the order, so Strongest put the strongest beast last once it was
+   * mastered, which is exactly the one a farmer wants. Only 印 Next mark folds.
    */
   const [order, setOrder] = useState<HuntOrder>(() => {
     try { const o = localStorage.getItem(ORDER_KEY); return o === 'strong' || o === 'material' ? o : 'mark'; } catch { return 'mark'; }
@@ -94,8 +98,8 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
     return all.sort((a, b) => {
       // A mark still to earn first, then only the deep marks left, then nothing left.
       const left = (x: typeof a) => stage(state.killed[x.key] ?? 0);
-      if (order === 'strong') return left(a) - left(b) || beastPower(b) - beastPower(a);
-      if (order === 'material') return left(a) - left(b) || (pay.get(b.key) ?? 0) - (pay.get(a.key) ?? 0) || beastPower(b) - beastPower(a);
+      if (order === 'strong') return beastPower(b) - beastPower(a);
+      if (order === 'material') return (pay.get(b.key) ?? 0) - (pay.get(a.key) ?? 0) || beastPower(b) - beastPower(a);
       // 弱 Weakest first inside a realm, not alphabetical. At the first realm the
       // alphabet put 澤蛙 the frog (the hardest of the three) at the top, so a new
       // cultivator's first sight of 狩 was the one beast furthest out of reach.
@@ -117,7 +121,43 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
   // earned too. rekaris, on the Discord: *"My beasts are marked as 'finished' despite the
   // new milestones."*
   const finished = (b: (typeof BEASTS)[number]) => stage(state.killed[b.key] ?? 0) === 2;
-  const open = sorted.filter((b) => !finished(b));
+
+  /**
+   * 篩 And by what a beast leaves: the place on the body and the school. rekaris, on the
+   * Discord: *"Fortune + Ring -> enemies that drop a fortune ring."* A beast shows if one
+   * piece it leaves is both. Remembered on the device, like the chest's filters.
+   */
+  const [want, setWant] = useRemembered<'any' | Slot>('hunt.slot', 'any', oneOf(['any', ...SLOTS] as const));
+  const [kin, setKin] = useRemembered<'any' | School>('hunt.school', 'any', oneOf(['any', ...SCHOOLS] as const));
+  const leavesOf = (b: (typeof BEASTS)[number]) => b.leaves.flatMap((a) => {
+    const arch = ARCHETYPES.find((x) => x.key === a);
+    if (!arch) return [];
+    const piece = { id: 'l', template: `${a}${Math.min(b.realm, state.realm)}`, rarity: RARITIES[0], rolls: [] };
+    return [{ slot: arch.slot, school: schoolOf(piece) }];
+  });
+  const offeredSlots = gearOpen ? SLOTS.filter((x) => x === want || sorted.some((b) => leavesOf(b).some((l) => l.slot === x))) : [];
+  const offeredSchools = gearOpen ? SCHOOLS.filter((x) => x === kin || sorted.some((b) => leavesOf(b).some((l) => l.school === x))) : [];
+  const filtering = gearOpen && (want !== 'any' || kin !== 'any');
+  // 見 A chip picked further along a row that scrolls sideways is scrolled to, so a filter
+  // remembered from last time is in sight and not hidden off the edge of a phone.
+  const filterRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    filterRef.current?.querySelectorAll<HTMLElement>('.hfrow').forEach((row) => {
+      const on = row.querySelector<HTMLElement>('button[aria-pressed="true"]');
+      if (!on) return;
+      const left = on.offsetLeft;              // .hfrow is positioned, so this is within the row
+      if (left < row.scrollLeft || left + on.offsetWidth > row.scrollLeft + row.clientWidth) {
+        row.scrollLeft = Math.max(0, left + on.offsetWidth - row.clientWidth + 8);
+      }
+    });
+  }, [want, kin, gearOpen]);
+  const shown = filtering
+    ? sorted.filter((b) => leavesOf(b).some((l) => (want === 'any' || l.slot === want) && (kin === 'any' || l.school === kin)))
+    : sorted;
+
+  // 序 Only the learning order folds; the two farming orders keep every beast in place.
+  const folds = order === 'mark';
+  const open = shown.filter((b) => !folds || !finished(b));
   /**
    * 算 Each beast's odds, once. oddsRaw fights forty-one times to answer, and the count in
    * the heading and the figure on every row both need it: asked twice, the hunt screen
@@ -129,7 +169,7 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sorted, ...fightDeps(state)]);
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
-  const done = sorted.filter(finished);
+  const done = folds ? shown.filter(finished) : [];
   const list = showDone ? [...open, ...done] : open;
 
   return (
@@ -185,6 +225,31 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
           ))}
         </div>
       </div>
+      {/* 篩 What it leaves: two rows, a place and a school, under the order. */}
+      {gearOpen && sorted.length > 0 && (
+        <div className="huntfilter" data-qol="hunt-filter" ref={filterRef}>
+          <div className="hfrow" role="group" aria-label={QOL.hunt.byPlace}>
+            <span className="hflab">{QOL.hunt.leavesLabel}</span>
+            <button type="button" aria-pressed={want === 'any'} onClick={() => setWant('any')}>{QOL.hunt.anyPlace}</button>
+            {offeredSlots.map((x) => (
+              <button key={x} type="button" aria-pressed={want === x} onClick={() => setWant(want === x ? 'any' : x)}>
+                <span className="cjk">{SLOT_INFO[x].han}</span> {SLOT_INFO[x].name}
+              </button>
+            ))}
+          </div>
+          <div className="hfrow" role="group" aria-label={QOL.hunt.bySchool}>
+            <span className="hflab" aria-hidden="true" />
+            <button type="button" aria-pressed={kin === 'any'} onClick={() => setKin('any')}>{QOL.hunt.anySchool}</button>
+            {offeredSchools.map((x) => (
+              <button key={x} type="button" aria-pressed={kin === x} onClick={() => setKin(kin === x ? 'any' : x)}
+                style={{ ['--hue' as string]: SCHOOL_INFO[x].colour }}>
+                <span className="cjk">{SCHOOL_INFO[x].seal}</span> {SCHOOL_INFO[x].short}
+              </button>
+            ))}
+          </div>
+          {filtering && <p className="faint hfsays">{shown.length === 0 ? QOL.hunt.noneLeave : QOL.hunt.leaveThat(shown.length, sorted.length)}</p>}
+        </div>
+      )}
       <div className="stack">
         {list.map((b, i) => {
           const r = realmOf(b.realm);
@@ -208,7 +273,7 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
           return (
             /* 指 The sort already puts the beast worth pressing at the top, so that is
                the row 引 the guide points its arrow at. */
-            <button key={b.key} className="beast" data-done={finished(b)}
+            <button key={b.key} className="beast" data-done={finished(b)} data-farm={!folds || undefined}
               data-coach={i === 0 ? 'beast-first' : undefined}
               onClick={() => onFight(b.key)}>
               {/* 牌 The plate, not the seal: thirty-six paintings exist now, and the

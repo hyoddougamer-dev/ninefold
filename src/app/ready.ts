@@ -11,7 +11,7 @@ import { quarryOf, quarryOwed, weekLeft } from '../sim/week.ts';
 import { standingFloor, towerOpen } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
 import { limitFor } from '../sim/stash.ts';
-import { swing } from '../sim/inspect.ts';
+import { marksUp } from '../sim/inspect.ts';
 import { isOpen } from '../sim/unlocks.ts';
 import { MELT_CAP } from '../sim/balance.ts';
 import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
@@ -77,7 +77,7 @@ export const QUARRY_READY = 0.35;
 
 export function heavyOf(s: State): Heavy {
   const ups = isOpen(s.realm, 'gear')
-    ? s.chest.filter((item) => { const m = swing(s, item); return m.better && !m.costsClass; }).length
+    ? s.chest.filter((item) => marksUp(s, item)).length
     : 0;
   const floor = towerOpen(s)
     ? odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) : 0;
