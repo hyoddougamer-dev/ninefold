@@ -519,9 +519,16 @@ export const TRIALS = {
    */
   hours: (span: string, bonus?: string) =>
     `This floor pays ${span} of your gathering without gear, once${bonus ? `, ${bonus} more as Celestial Master` : ''}. What you wear never changes it.`,
-  /** 吸 Why a floor under your realm's warden pays less, and where the full pay starts. */
-  below: (full: string, from: number, less: string) =>
-    `The full ${full} starts at floor ${from}, your realm's warden. Each floor below that pays ${less} less than the one above it.`,
+  /**
+   * 吸 Where the most is paid and how a floor under it falls off. The floor is your realm's
+   * warden, so it moves when you break through, and the card says so: the same floor read
+   * before and after a breakthrough pays differently, and nothing else on the screen says why.
+   */
+  below: (most: string, from: number, less: string) =>
+    `The most a floor pays is ${most}, at floor ${from}, your realm's warden, which moves up nine floors when you break through. Each floor below it pays ${less} less than the one above.`,
+  /** 吸 The same, for a floor at or above your realm's warden: a little less each floor, down to the least. */
+  above: (most: string, from: number, least: string) =>
+    `The most a floor pays is ${most}, at floor ${from}, your realm's warden, which moves up nine floors when you break through. Each floor above it pays a little less than the one before, never under ${least}.`,
   /** 吸 What a floor far below pays, where a count of seconds would read as a glitch. */
   little: 'less than a minute',
 
@@ -600,7 +607,8 @@ export const ADVICE = {
   brewForDragon: (han: string, pct: number) =>
     `The Dragon is at ${pct}%. A ${han} raises that, and the power stays with you afterwards.`,
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
-  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays material and qi, once.`,
+  floorWaiting: (floor: number, span: string) =>
+    `Floor ${floor} of the tower looks winnable. It pays material and ${span} of your gathering, once.`,
   huntForMaterial: 'Everything else is at its cap. Hunt for 材 material, which is what 妖丹 cores cost.',
   cappedSoSpend: 'Nothing left to buy in this realm. The tower and the furnace are where qi goes now.',
   cappedSoClimb: 'Nothing left to buy in this realm. The tower is where the next thing comes from.',
@@ -995,7 +1003,7 @@ export const ITEM = {
   /** 解 What each line that moves a number does, in a sentence. */
   axisSays: {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
-    rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
+    rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling that rises as you climb.',
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop, and better rolls on what drops. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
@@ -1331,7 +1339,7 @@ export const GEAR = {
   powerSays: (x: number) => (x >= 1.95
     ? `You hit about ${Math.round(x)} times as hard.`
     : `You hit ${Math.round((x - 1) * 100)}% harder.`),
-  qiSays: 'Qi from gear has a ceiling. Power has none.',
+  qiSays: 'Qi from gear has a ceiling, and it rises as you climb. Power has none.',
   nothingWorn: 'Nothing worn yet. Beasts drop gear, and what you wear makes you hit harder.',
   otherEffects: 'Other effects of your gear',
   /** 譯 The rest of the axes, each with its English beside it. */
@@ -1351,7 +1359,7 @@ export const GEAR = {
    * the sum goes in, the bend comes out, and the line under them says so.
    */
   sum: (x: number) => `+${Math.round(x)}%`,
-  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. Drop chance is added in points, never past ${top}. Power never bends.`,
+  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. The qi bend moves up with every layer you open, so each realm's own pieces still count, and an old body slowly reads a little less. Drop chance is added in points, never past ${top}. Power never bends.`,
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',

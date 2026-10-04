@@ -83,7 +83,9 @@ export const PRE_JOIN_CREDIT = 3 * 86_400;
  * the harness's own active cultivator needs about a third of it, so three days at the
  * full budget held twenty days of honest play. A first sync is the one moment there is
  * nothing on the server to compare with, so it is held to a pace the fastest honest
- * cultivator measured (SUSPECT_WEEK) could keep; anything more waits and counts later.
+ * cultivator measured could keep; anything more waits and counts later. It stayed at
+ * 0.55 when SUSPECT_WEEK came down to 0.52: a first sync waiting is a cost to an honest
+ * newcomer, and the week behind it still flags a fast clock.
  */
 export const FIRST_PACE = 0.55;
 
@@ -112,11 +114,17 @@ export const BURST_CAP = 12 * 3600;
 
 /**
  * 疑 The fastest the harness's own cultivators ever went, needed seconds per real second,
- * with some room on top: 1.38 over a day and 0.44 over a week, both by the one who plays
+ * with some room on top: 1.32 over a day and 0.46 over a week, both by the one who plays
  * every waking hour, walked 120 days. Faster than that is flagged.
+ *
+ * 塔 The week came down from 0.55 with the tower's taper above the warden floor
+ * (2026-10-04, TOWER_QI_ABOVE). The fastest honest week fell from 0.49 to 0.46, and the
+ * weeks that had given a clock run three times as fast away were its tower lumps: at 0.55
+ * that clock was ranked for 45 days and never flagged. At 0.52 it is flagged on day 21
+ * as before, and the room above the fastest honest week is the same twelfth it was.
  */
 export const SUSPECT_DAY = 1.6;
-export const SUSPECT_WEEK = 0.55;
+export const SUSPECT_WEEK = 0.52;
 
 /** 擊 The fastest a hand can take fights one after another: a fight is at least this long on the screen. */
 export const MIN_FIGHT_SECONDS = 1.2;

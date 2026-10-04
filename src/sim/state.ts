@@ -1,6 +1,6 @@
 import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS,
-  uncappedRate,
+  gearQiRate,
   TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER,
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FOCUS_MAX, OPENING_PURSE,
@@ -554,12 +554,12 @@ export function rateBonus(s: State): number {
   // 頂 Gear and the tree are the two uncapped things that touch the qi rate, and together
   // they bend toward a ceiling: see UNCAPPED_RATE_CEILING for the twenty-day game they
   // made. The capped upgrades and 雷印 the marks are outside it on purpose.
+  // 氣膝 The gear's bend is read on the rung, so a realm's own pieces still count: see
+  // QI_KNEE_FIRST.
   // 備 bodyTotals is read once per body and tree, and this is asked thousands of times.
-  const uncapped = (1 + bodyTotals(s).rate / 100)
-    * rateMultiplier(s.unlocked);
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
-    * uncappedRate(uncapped)
+    * gearQiRate(bodyTotals(s).rate / 100, rateMultiplier(s.unlocked), layersOpened(s))
     * markBonus(s.tribulation);
 }
 

@@ -597,6 +597,64 @@ export const TOWER_QI_HOURS = 6;
 export const TOWER_QI_BELOW = 0.8;
 
 /**
+ * 吸 What a floor above your realm's warden pays: a little less than the one before it,
+ * and never less than TOWER_QI_LEAST of the six hours.
+ *
+ *   hours = TOWER_QI_HOURS × (LEAST + (1 − LEAST) × ABOVE^(floor − warden floor))
+ *
+ * so in the fifth realm floor 45 pays 6 hours, 46 pays 5.4, 50 pays 4.0, 55 pays 3.3,
+ * and from about floor 60 up a floor pays 3. Testers said the tower was the whole fifth
+ * realm, and it was (2026-10-04): every floor from the warden up paid the full six, a
+ * geared cultivator beats thirty of them the day the tower opens, and the climbers in
+ * tools/habits.ts took 137 to 181 hours of gathering from it in the fifth realm, 29 to
+ * 48% of all that realm's qi. Their biggest single visit was 49 to 100 hours when a
+ * rung cost 10 to 28. Bruno chose to smooth it: a big first climb is still a reward, but
+ * not half a realm.
+ *
+ * Why it levels out rather than falling for ever, which was tried first. Every climber
+ * stands twenty to forty floors above their own warden in every realm after the fifth
+ * too (floors 75 to 87 in the sixth, 109 to 121 in the ninth), and the endgame stands
+ * further still. A taper with no floor under it cut the fifth realm and starved every
+ * realm after it: at 0.97 a floor and nothing under it, the later realms' tower share
+ * fell from 10 to 15% to 3 to 5%, the ninth realm came up to five days later than now
+ * and eighty crossings took 634 days instead of 547. Holding half the pay keeps the
+ * tower worth climbing in every realm, and the step down from six to three hours is
+ * what keeps the fifth realm's backlog from paying full.
+ *
+ * Measured with tools/habits.ts, every unit of qi traced to its source, before (flat
+ * six from the warden up) and with this, the biggest visit in hours of the rate on the
+ * bar:
+ *
+ *   habit            realm 5 tower share   biggest visit (h)   ninth realm (day)
+ *                    before   now          before   now        before   now
+ *   once a day        28.6    15.3          49.4    41.4        65.0    71.0
+ *   active            43.4    23.6          81.5    58.5        41.7    46.7
+ *   every hour        47.4    23.0          99.8    67.7        28.0    30.4
+ *   drives it all     46.6    23.3          85.8    60.7        43.3    47.8
+ *   walks 神          37.9    21.8          48.8    40.8        41.5    46.3
+ *   crafts it all     48.0    23.7          86.1    60.9        41.7    47.0
+ *   runs auto         48.0    27.0          94.4    64.9        31.5    36.0
+ *
+ * The fifth realm now lasts 2.8 to 8 days instead of 1.6 to 7, and the later realms
+ * keep a tower share of 4 to 8%. The cost is real and it is the point: the qi the tower
+ * stops handing over in a lump is gathered instead, so the ninth realm comes 2.4 to 6
+ * days later. It is a slope and not a knife edge: ABOVE at 0.72 and 0.88, and LEAST at
+ * 0.45 and 0.55 (a tenth either side), move any habit's ninth-realm day by 1.8 days at
+ * the most and most of them by under one, and none walls. Eighty crossings take 554
+ * days (547 before), and with every Dragon a tenth heavier 854 (846), the slowest
+ * crossing 13 days.
+ *
+ * The floor is still read off your realm's warden, so it moves up nine floors at every
+ * breakthrough. A floor well above the next warden pays a little more after the
+ * breakthrough than before it, as one just under the old warden pays less; the card says
+ * where the most is paid, so neither is a surprise.
+ */
+export const TOWER_QI_ABOVE = 0.8;
+
+/** 吸 The least a floor above your realm's warden pays, as a share of TOWER_QI_HOURS. See TOWER_QI_ABOVE. */
+export const TOWER_QI_LEAST = 0.5;
+
+/**
  * 道 Why 神 the Spirit branch stopped selling the qi rate.
  *
  * The tree's two big branches were written with the same numbers: 15, 20, 30, 45, 80:
@@ -638,6 +696,100 @@ export const TREE_FOCUS_SHARE = 0.5;
 export const TREE_RATE_CEILING = 1.25;
 
 /**
+ * 緩 The tree's own bend, and the start of every body's: 道 the tree on its own bends
+ * toward this, and it is where gear starts from.
+ *
+ * A hard clamp would be the easy version and it is the wrong one: a cultivator at the
+ * ceiling wearing 器 氣 +279% has two hundred and forty wasted points, and every 氣 roll
+ * they find afterwards does nothing at all. A stat that silently stops working is worse
+ * than a stat that was never there.
+ *
+ * So the gain bends instead. `c·x / (c + x)` gives back nearly all of a small bonus,
+ * gives back less and less of a large one, and can never reach the ceiling however much
+ * is piled on. Every roll is always worth something and nothing is ever worth too much.
+ *
+ * Until 2026-10-04 gear went into this same bend, multiplied with the tree, and that is
+ * what made the qi line dead past the third realm: see QI_KNEE_FIRST. The tree alone
+ * still bends here exactly as it did, so the cultivators who wear nothing never moved.
+ */
+export const TREE_BEND_ROOF = 1.35;
+
+export function uncappedRate(raw: number): number {
+  const c = TREE_BEND_ROOF - 1;
+  const x = Math.max(0, raw - 1);
+  return 1 + (c * x) / (c + x);
+}
+
+/**
+ * 氣膝 The qi knee, and why it climbs.
+ *
+ * Gear's qi bent into the tree's own bend, roof x1.35 and knee +35%, and a realm-5 body
+ * already wore +310%: one more typical qi line was worth +0.67% of the whole rate in the
+ * third realm, +0.26% in the fifth and +0.09% in the ninth, a twentieth of what it was
+ * in the second. Testers saw it and said so (2026-10-04): the qi line sits in a weird
+ * place on its curve. No flat number can stay worth half a per cent in every realm
+ * under a modest roof (at realm 9's +1054% that would need a roof of about x3.8), so the
+ * goal is a roll the size the realm drops.
+ *
+ * So the gear's qi fills the room left above the tree with a bend of its own, whose knee
+ * (the worn qi that fills half the room) climbs a ninth of a realm at every rung:
+ *
+ *   total = Te + (R(n) − Te) × g / (k(n) + g)
+ *   Te    = uncappedRate(tree), exactly as before
+ *   k(n)  = QI_KNEE_FIRST × QI_KNEE_GROWTH^(n / 9)
+ *   R(n)  = QI_ROOF_FIRST + (QI_ROOF_TOP − QI_ROOF_FIRST) × n / 80
+ *
+ * g is the worn qi as a fraction and n the rungs opened. The growth 1.4 is measured, not
+ * picked: the typical worn qi line grows from +15% in the third realm to +141% in the
+ * ninth, about x1.45 a realm. One typical line of the realm is now worth +0.79% to +1.03%
+ * of the rate in every realm from the third to the ninth, and a tenth more of what is
+ * worn +0.58% to +0.71% from the second on (tools/qicurve.ts, every habit by name).
+ *
+ * Moved a ninth at a time and never in a step: a knee that jumped at the breakthrough
+ * made the rate dip by up to half a per cent when 突破 was pressed. Moved every rung, the
+ * bend slides less than the rung's own x1.02, so the rate rises on every rung for every
+ * worn amount (the worst rung +1.6%, and players.test.ts walks all eighty).
+ *
+ * The roof rises with the climb, still capped, because with it held at x1.45 the typical
+ * lift fell from the seventh realm on and the endgame took eleven days longer. Days barely
+ * moved: every habit inside two days of before at the ninth realm (once a day +2, casual
+ * +1.3, everybody else between −0.5 and +0.2), and the two that wear nothing not at all.
+ * The neighbours (knee 0.28 and 0.34, roofs a hundredth either side) stay inside −1.7 to
+ * +5 days, so it is a slope and not a knife edge. The price, said plainly: a body that is
+ * well under the realm's knee (the casual one that never climbs) reads a little less
+ * than before, because if a roll is worth something, not having it is worth something.
+ */
+export const QI_KNEE_FIRST = 0.31;
+export const QI_KNEE_GROWTH = 1.4;
+/** 氣頂 The roof on the first rung, rising evenly to QI_ROOF_TOP on the last. See QI_KNEE_FIRST. */
+export const QI_ROOF_FIRST = 1.38;
+/** 氣頂 The roof on the last rung: the hard ceiling on gear and the tree together. */
+export const QI_ROOF_TOP = 1.52;
+
+/** 氣膝 The worn qi, as a fraction, that fills half the room on this rung. */
+export function qiKnee(rung: number): number {
+  const n = Math.min(LAYERS - 1, Math.max(0, rung));
+  return QI_KNEE_FIRST * QI_KNEE_GROWTH ** (n / LAYERS_PER_REALM);
+}
+
+/** 氣頂 What gear and the tree together bend toward on this rung, and never reach. */
+export function qiRoof(rung: number): number {
+  const n = Math.min(LAYERS - 1, Math.max(0, rung));
+  return QI_ROOF_FIRST + (QI_ROOF_TOP - QI_ROOF_FIRST) * n / (LAYERS - 1);
+}
+
+/**
+ * 氣 Gear's qi and the tree together, on a rung: the one multiplier `rate()` takes from
+ * everything uncapped. `worn` is the worn qi as a fraction (+310% is 3.1), `tree` the
+ * tree's own multiplier. See QI_KNEE_FIRST for the shape and the measurement.
+ */
+export function gearQiRate(worn: number, tree: number, rung: number): number {
+  const te = uncappedRate(tree);
+  const g = Math.max(0, worn);
+  return te + (qiRoof(rung) - te) * g / (qiKnee(rung) + g);
+}
+
+/**
  * 頂 The ceiling on everything uncapped, together.
  *
  * The tree was half of it. 器 gear was the other half, and worse: with the drops picked
@@ -657,31 +809,17 @@ export const TREE_RATE_CEILING = 1.25;
  * The law was already written and nothing enforced it: *everything that multiplies
  * gathering is behind the realm cap; everything uncapped buys power, fortune or knowledge
  * instead.* So this is the enforcement. Gear and the tree, multiplied together, may not
- * move the qi rate past this, and `rate()` clamps them rather than trusting anybody to
- * remember.
+ * move the qi rate past this, and `rate()` bends them toward it rather than trusting
+ * anybody to remember.
+ *
+ * It was x1.35 from the start. Since the qi knee began to climb (2026-10-04) the roof
+ * rises rung by rung, which is behind the realm cap like every rung, and this is the top
+ * of it, on the last rung only and reached by nobody: x1.5198 at +10000% worn.
  *
  * 雷印 the thunder marks are deliberately outside it. They are the endgame's own ladder,
  * they are capped by the pool's two days apiece, and they are meant to multiply.
  */
-export const UNCAPPED_RATE_CEILING = 1.35;
-
-/**
- * 緩 And it is approached, never hit.
- *
- * A hard clamp would be the easy version and it is the wrong one: a cultivator at the
- * ceiling wearing 器 氣 +279% has two hundred and forty wasted points, and every 氣 roll
- * they find afterwards does nothing at all. A stat that silently stops working is worse
- * than a stat that was never there.
- *
- * So the gain bends instead. `c·x / (c + x)` gives back nearly all of a small bonus,
- * gives back less and less of a large one, and can never reach the ceiling however much
- * is piled on. Every roll is always worth something and nothing is ever worth too much.
- */
-export function uncappedRate(raw: number): number {
-  const c = UNCAPPED_RATE_CEILING - 1;
-  const x = Math.max(0, raw - 1);
-  return 1 + (c * x) / (c + x);
-}
+export const UNCAPPED_RATE_CEILING = QI_ROOF_TOP;
 
 /** No gap between realms may carry more than this share of the whole run. */
 export const MAX_GAP = 0.35;

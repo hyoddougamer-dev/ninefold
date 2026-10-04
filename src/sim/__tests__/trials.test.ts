@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LINES, PILL_GRADES, PILL_LINES, pillOf } from '../../data/alchemy.ts';
-import { LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_BELOW, TOWER_QI_HOURS, levelCap } from '../balance.ts';
+import { LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_ABOVE, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST, levelCap } from '../balance.ts';
 import { ARCHETYPES, TEMPLATE_BY_KEY, callingOf, type Item, type Slot, type Worn } from '../../data/gear.ts';
 import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { WARDEN_EDGE, odds, referencePower } from '../combat.ts';
@@ -288,17 +288,31 @@ describe('吸 what a floor pays in qi', () => {
       `${floorHours(45, 5).toFixed(2)}h, the same qi for all three bodies\n`);
   });
 
-  it('starts the whole six hours at your realm warden floor and pays a fifth less below it', () => {
+  it('pays the whole six hours on your realm warden floor and less either side of it', () => {
     expect(fullFloor(5)).toBe(45);
     expect(fullFloor(9)).toBe(81);
     expect(floorHours(45, 5)).toBe(TOWER_QI_HOURS);
-    expect(floorHours(500, 5)).toBe(TOWER_QI_HOURS);
     expect(floorHours(44, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW, 9);
     expect(floorHours(36, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW ** 9, 9);
-    // A floor never pays more for the cultivator having climbed further up the mountain.
-    for (let f = 1; f < 100; f++) expect(floorHours(f, 6)).toBeLessThanOrEqual(floorHours(f, 5));
+    // 吸 Above it, a little less each floor, levelling out at the least and never under it.
+    expect(floorHours(46, 5)).toBeCloseTo(TOWER_QI_HOURS * (TOWER_QI_LEAST + (1 - TOWER_QI_LEAST) * TOWER_QI_ABOVE), 9);
+    for (let f = 45; f < 150; f++) {
+      expect(floorHours(f + 1, 5), `floor ${f + 1}`).toBeLessThan(floorHours(f, 5));
+      expect(floorHours(f + 1, 5), `floor ${f + 1}`).toBeGreaterThanOrEqual(TOWER_QI_HOURS * TOWER_QI_LEAST);
+    }
+    expect(floorHours(500, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_LEAST, 6);
+    // No floor anywhere, for any realm, pays more than the warden floor's six hours.
+    for (let r = 5; r <= 9; r++) for (let f = 1; f < 300; f++) expect(floorHours(f, r)).toBeLessThanOrEqual(TOWER_QI_HOURS);
+    // A breakthrough moves the warden floor up nine: a floor under the old warden only
+    // ever pays less for it, and one above the new warden a little more, never past six.
+    for (let f = 1; f < fullFloor(5); f++) expect(floorHours(f, 6)).toBeLessThanOrEqual(floorHours(f, 5));
+    for (let f = fullFloor(6); f < 300; f++) expect(floorHours(f, 6)).toBeGreaterThanOrEqual(floorHours(f, 5));
+    console.log(`\n  吸 fifth realm: floor 44 pays ${floorHours(44, 5).toFixed(2)}h, 45 ${floorHours(45, 5).toFixed(2)}h, ` +
+      `46 ${floorHours(46, 5).toFixed(2)}h, 50 ${floorHours(50, 5).toFixed(2)}h, 55 ${floorHours(55, 5).toFixed(2)}h, ` +
+      `75 ${floorHours(75, 5).toFixed(2)}h; floors 45 to 77 together ` +
+      `${Array.from({ length: 33 }, (_, i) => floorHours(45 + i, 5)).reduce((a, b) => a + b, 0).toFixed(0)}h (198h before 2026-10-04)\n`);
     // And the qi is the hours at the rate with nothing worn.
-    expect(floorQi(fifth, 50)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
+    expect(floorQi(fifth, 50)).toBeCloseTo(towerRate(fifth) * 3600 * floorHours(50, 5), 4);
   });
 
   it('pays 天師 the Celestial Master a quarter again, and nothing else a body wears moves it', () => {

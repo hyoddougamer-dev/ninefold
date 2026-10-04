@@ -7,7 +7,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_BELOW, TOWER_QI_HOURS } from '../../sim/balance.ts';
+import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorHours, floorPower, fullFloor, seals } from '../../sim/tower.ts';
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
@@ -112,7 +112,12 @@ export function Trials({ state, onFloor, onBrew }: {
             number whatever is worn, so it is said before the fight rather than after. */}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
           {TRIALS.hours(span(hours * classTowerQi(state)), classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
-          {hours < TOWER_QI_HOURS && <>{' '}{TRIALS.below(span(TOWER_QI_HOURS), fullFloor(state.realm), `${Math.round((1 - TOWER_QI_BELOW) * 100)}%`)}</>}
+          {' '}
+          {/* 吸 Where the most is paid, and which way this floor falls off it: below the
+              warden a fifth a floor, above it a little each floor down to the least. */}
+          {floor < fullFloor(state.realm)
+            ? TRIALS.below(span(TOWER_QI_HOURS), fullFloor(state.realm), `${Math.round((1 - TOWER_QI_BELOW) * 100)}%`)
+            : TRIALS.above(span(TOWER_QI_HOURS), fullFloor(state.realm), span(TOWER_QI_HOURS * TOWER_QI_LEAST))}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
         <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>
