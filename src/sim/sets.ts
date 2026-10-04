@@ -14,8 +14,20 @@ import { SET_LIMIT, cleanSetName, type GearSet, type State } from './state.ts';
  * full chest must leave alone, and a set only remembers which piece went where.
  */
 
-/** 鎖 Lock or unlock a piece, wherever it is: in the chest or on the body. */
+/** 套 The loadouts that name a piece, by name. A piece any of them names stays locked. */
+export function loadoutsOf(s: Pick<State, 'sets'>, id: string): readonly string[] {
+  return s.sets.filter((set) => Object.values(set.ids).includes(id)).map((set) => set.name);
+}
+
+/**
+ * 鎖 Lock or unlock a piece, wherever it is: in the chest or on the body.
+ *
+ * 套 A piece a loadout names cannot be unlocked: the unlock was the one door left open,
+ * and through it a loadout's sword went out with the commons on the next bulk melt. It
+ * has to come out of the loadout first (save the loadout again without it, or forget it).
+ */
 export function setLocked(s: State, id: string, on: boolean): State {
+  if (!on && loadoutsOf(s, id).length > 0) return s;
   const flip = (x: Item): Item => {
     if (x.id !== id) return x;
     if (on) return { ...x, locked: true };

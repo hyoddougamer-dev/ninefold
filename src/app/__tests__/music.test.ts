@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, statSync } from 'node:fs';
-import { MUSIC_LEVELS, PLAYLIST, TRACKS, moodFor } from '../music.ts';
+import { MUSIC_TOP, PLAYLIST, TRACKS, moodFor, musicGain } from '../music.ts';
 
 describe('樂 the music', () => {
   it('cultivates to the cultivation tracks, hunts to the hunt', () => {
@@ -34,8 +34,9 @@ describe('樂 the music', () => {
     }
   });
 
-  it('can be switched off, and is quieter than the sound when on', () => {
-    expect(MUSIC_LEVELS[0].volume).toBe(0);
-    expect(Math.max(...MUSIC_LEVELS.map((l) => l.volume))).toBeLessThan(1);
+  it('can be turned all the way down, and is quieter than the sound at the top', () => {
+    expect(musicGain(0)).toBe(0);
+    expect(musicGain(100)).toBe(MUSIC_TOP);
+    expect(MUSIC_TOP).toBeLessThan(1);
   });
 });

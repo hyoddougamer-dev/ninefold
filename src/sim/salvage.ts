@@ -6,6 +6,7 @@ import { salvageBonus } from './awaken.ts';
 import { rate, type State } from './state.ts';
 import { classMelt } from './schools.ts';
 import { FORGED, metalKey } from '../data/crafts.ts';
+import { holdsLevels } from './chest.ts';
 
 /**
  * 拆 Breaking a piece down.
@@ -92,8 +93,10 @@ export function meltQuote(s: State, pieces: readonly Item[]): { qi: number; mate
 /** Everything in the chest at or below a rank. What is worn is not in the chest. */
 export function salvageable(chest: readonly Item[], upTo: Rarity): readonly Item[] {
   const top = RARITIES.indexOf(upTo);
-  // 鎖 A locked piece is never in the pile, whatever rank the button reaches.
-  return chest.filter((x) => RARITIES.indexOf(x.rarity) <= top && !x.locked);
+  // 鎖 A locked piece is never in the pile, whatever rank the button reaches. 承 Nor one
+  // holding refining levels: those are melted only from the piece's own sheet, where the
+  // player can see what goes with it (see holdsLevels).
+  return chest.filter((x) => RARITIES.indexOf(x.rarity) <= top && !x.locked && !holdsLevels(x));
 }
 
 /**

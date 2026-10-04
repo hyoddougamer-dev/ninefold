@@ -20,6 +20,18 @@ import { chestSlots } from './awaken.ts';
 
 export { CHEST_LIMIT, FUSE_COUNT };
 
+/**
+ * 承 Whether a piece holds refining levels of its own. Those levels were paid for in
+ * material and live nowhere else, so no bulk action may take the piece: not the melt by
+ * rank, not a fusion, not a full chest. The testers' path (the Discord, 2026-10-04):
+ * taken off, the place filled by another piece, and the piece melted with the commons.
+ * Melting it from its own sheet still works, because that is the player choosing it, and
+ * the sheet says so.
+ */
+export function holdsLevels(item: Item): boolean {
+  return Math.floor(item.refine ?? 0) > 0;
+}
+
 export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean {
   return chest.length >= limit;
 }
@@ -58,10 +70,11 @@ export function addToChest(
 
   // 鎖 A locked piece is never the one that goes. If every piece is locked, the new one
   // goes instead, which is what a full chest always did with a piece no better than its
-  // worst: nothing the player chose to keep is ever taken.
+  // worst: nothing the player chose to keep is ever taken. 承 Nor a piece holding refining
+  // levels, which were paid for and live nowhere else.
   let worstAt = -1;
   for (let i = 0; i < chest.length; i++) {
-    if (chest[i].locked) continue;
+    if (chest[i].locked || holdsLevels(chest[i])) continue;
     if (worstAt < 0 || itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
   }
   const worst = worstAt >= 0 ? chest[worstAt] : undefined;
@@ -72,8 +85,39 @@ export function addToChest(
   return { chest: next, dropped: worst };
 }
 
-export function removeFromChest(chest: readonly Item[], id: string): readonly Item[] {
-  return chest.filter((x) => x.id !== id);
+/**
+ * Takes exactly one piece out of the chest: this very piece if it is there, else the
+ * first with its id. It used to drop every piece with the id, and two fused pieces could
+ * share one, so wearing one twin melted the other and whatever it had been refined to.
+ */
+export function removeFromChest(chest: readonly Item[], id: string, which?: Item): readonly Item[] {
+  let at = which ? chest.indexOf(which) : -1;
+  if (at < 0) at = chest.findIndex((x) => x.id === id);
+  if (at < 0) return chest;
+  return [...chest.slice(0, at), ...chest.slice(at + 1)];
+}
+
+/**
+ * 號 A name for a piece no other piece holds: `base`, or `base` with a count after it.
+ * Kept to the 64 characters a save allows for an id.
+ */
+export function freshId(base: string, taken: ReadonlySet<string>): string {
+  const root = base.slice(0, 58);
+  if (!taken.has(root)) return root;
+  for (let n = 2; ; n++) {
+    const id = `${root}~${n}`;
+    if (!taken.has(id)) return id;
+  }
+}
+
+/** A short, stable fingerprint of a string (FNV-1a), for ids made from other ids. */
+function print(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(36);
 }
 
 /**
@@ -112,7 +156,7 @@ export function equip(worn: Worn, chest: readonly Item[], item: Item, slot: Slot
   worn: Worn; chest: readonly Item[];
 } {
   const { on, off } = carryRefine(item, worn[slot]);
-  const without = removeFromChest(chest, item.id);
+  const without = removeFromChest(chest, item.id, item);
   return {
     worn: { ...worn, [slot]: on },
     chest: off ? [...without, off] : without,
@@ -140,8 +184,9 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
   const tally = new Map<string, number>();
   for (const it of chest) {
     // 業 A forged piece is finished: it is never one of three. See sim/crafts.ts.
-    // 鎖 Nor is a locked one: fusing melts three pieces into one.
-    if (it.from === FORGED || it.locked) continue;
+    // 鎖 Nor is a locked one: fusing melts three pieces into one. 承 Nor one holding
+    // refining levels, which a fusion would melt with it.
+    if (!fusesAway(it)) continue;
     const key = `${it.template}|${it.rarity}`;
     tally.set(key, (tally.get(key) ?? 0) + 1);
   }
@@ -153,6 +198,11 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
   return out.sort((a, b) => b.count - a.count);
 }
 
+/** Whether a fusion may melt this piece: not forged, not locked, holding no levels. */
+function fusesAway(it: Item): boolean {
+  return it.from !== FORGED && !it.locked && !holdsLevels(it);
+}
+
 /**
  * Three become one, a rank higher, and the roll quality survives the melt.
  *
@@ -162,16 +212,19 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
  */
 export function fuse(
   chest: readonly Item[], template: string, rarity: Rarity, quality = 1,
+  /** Ids held elsewhere (the body), which the new piece must not take either. */
+  taken: Iterable<string> = [],
 ): { chest: readonly Item[]; made: Item | null } {
   const up = nextRarity(rarity);
   const tpl = TEMPLATE_BY_KEY[template];
   if (!up || !tpl) return { chest, made: null };
 
-  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && x.from !== FORGED && !x.locked);
+  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && fusesAway(x));
   if (matching.length < FUSE_COUNT) return { chest, made: null };
 
   const eaten = matching.slice(0, FUSE_COUNT);
-  const eatenIds = new Set(eaten.map((x) => x.id));
+  // By the piece itself, not its id: a twin with the same id is not one of the three.
+  const eatenOnes = new Set<Item>(eaten);
 
   // Quality carries across: the average of what went in, measured against its own rank's
   // base, so three lucky pieces make a better one than three unlucky ones.
@@ -195,8 +248,13 @@ export function fuse(
       value: roundValue(affix, baseValue(tpl, up, affix) * SECONDARY_SHARE * rolled),
     }));
 
+  // 號 Named after the three that went in, so two fusions never make one name: it used
+  // to be built from the chest's size and the roll, and two fusions a day apart could
+  // match, which is how one twin's refining went with the other.
+  const left = chest.filter((x) => !eatenOnes.has(x));
+  const ids = new Set([...left.map((x) => x.id), ...taken]);
   const made: Item = {
-    id: `fuse-${template}-${up}-${chest.length}-${Math.round(rolled * 1000)}`,
+    id: freshId(`fu-${template}-${up}-${print(eaten.map((x) => x.id).join('|'))}`, ids),
     template,
     rarity: up,
     rolls: [
@@ -205,7 +263,7 @@ export function fuse(
     ],
   };
 
-  return { chest: [...chest.filter((x) => !eatenIds.has(x.id)), made], made };
+  return { chest: [...left, made], made };
 }
 
 /**

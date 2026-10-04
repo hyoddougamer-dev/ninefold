@@ -168,6 +168,9 @@ export function verdictOf(w: Swing): Verdict {
  * the eight lines were ever asked.
  */
 export function verdictByLines(v: Verdict, lines: readonly LineDelta[]): Verdict {
+  // ▲ An upgrade gives up nothing: a piece that raises power and drops the 運 you wear is
+  // a trade, the same rule the chest's ▲ keeps (linesHeld).
+  if (v === 'up') return lines.every(holds) ? 'up' : 'trade';
   if (v !== 'same') return v;
   const more = lines.some((d) => d.affix !== 'power' && d.affix !== 'rate' && d.theirs > d.mine * 1.001);
   const less = lines.some((d) => d.affix !== 'power' && d.affix !== 'rate' && d.theirs < d.mine * 0.999);
@@ -232,14 +235,33 @@ export function gearLift(s: State): { power: number; rate: number } {
   };
 }
 
+/** One line held: the new piece gives at least what the worn one gives on it. */
+const holds = (d: LineDelta): boolean => d.mine <= 0 || d.theirs >= d.mine * 0.999;
+
+/**
+ * ▲ Whether a piece keeps every line the worn one has: each is matched or beaten by the
+ * new piece read as worn (承 with the slot's levels carried). Found from the Discord
+ * (2026-10-04): ▲ only ever asked power and qi, so 著 Wear all upgrades could swap a ring
+ * with 運 luck on it for one with a little more power and no 運 at all.
+ */
+export function linesHeld(s: State, item: Item): boolean {
+  const worn = s.worn[templateOf(item).slot];
+  return !worn || compare(item, worn).every(holds);
+}
+
 /**
  * ▲ Whether the chest marks a piece ▲: the sim says it raises power or qi and lowers
- * neither, read with 承 the levels it would take from the slot, and it keeps the class.
- * The one rule the chest, the verdict's drop and 著 Wear all upgrades all draw from.
+ * neither, read with 承 the levels it would take from the slot, it keeps the class, and
+ * it gives up no line the worn piece has. A strict upgrade, and nothing less. The one
+ * rule the chest, the verdict's drop and 著 Wear all upgrades all draw from.
  */
 export function marksUp(s: State, item: Item): boolean {
-  const m = swing(s, item);
-  return m.better && !m.costsClass;
+  return upOf(s, item, swing(s, item));
+}
+
+/** marksUp, for a caller that already has the swing. */
+export function upOf(s: State, item: Item, m: Swing): boolean {
+  return m.better && !m.costsClass && linesHeld(s, item);
 }
 
 /** 套 Whether a piece is named by any saved loadout, so a bulk swap leaves it where it is. */
@@ -252,8 +274,8 @@ export function inLoadout(s: State, item: Item): boolean {
  *
  * One place at a time, the biggest 力 gain first and then 氣, each read against the body
  * as it stands after the last swap, because one piece going on can change what the next
- * one does (a set, a class). Never a 鎖 locked piece, never one a 套 loadout names, and
- * never one that costs the class: exactly the pieces the chest draws ▲ on. It stops when
+ * one does (a set, a class). Never a 鎖 locked piece, never one a 套 loadout names, never
+ * one that costs the class or gives up a line: exactly the pieces the chest draws ▲ on. It stops when
  * nothing is ▲ any more, which it must, because every swap raises a number and lowers none.
  */
 export function wearBetter(s: State): { state: State; worn: number } {
@@ -264,7 +286,7 @@ export function wearBetter(s: State): { state: State; worn: number } {
     for (const item of out.chest) {
       if (item.locked || inLoadout(out, item)) continue;
       const m = swing(out, item);
-      if (!m.better || m.costsClass) continue;
+      if (!upOf(out, item, m)) continue;
       if (!best || m.power > best.m.power + 1e-12
         || (Math.abs(m.power - best.m.power) <= 1e-12 && m.rate > best.m.rate)) best = { item, m };
     }

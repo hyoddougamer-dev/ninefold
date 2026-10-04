@@ -61,7 +61,8 @@ export function stash(s: State, found: Item | null): Stashed {
  * this one function, so what the curves measure is what the button does.
  */
 export function fuseIn(s: State, template: string, rarity: Rarity): { state: State; made: Item | null } {
-  const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s));
+  const worn = Object.values(s.worn).filter((x): x is Item => !!x).map((x) => x.id);
+  const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s), worn);
   return out.made ? { state: { ...s, chest: [...out.chest] }, made: out.made } : { state: s, made: null };
 }
 

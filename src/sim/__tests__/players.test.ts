@@ -4,12 +4,11 @@ import {
 } from '../balance.ts';
 import { setBonus, wornTotals } from '../../data/gear.ts';
 import { affinity, rateMultiplier } from '../dao.ts';
-import { newState, power, rate, type State } from '../state.ts';
+import { newState, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { clearFloor, floorQi } from '../trials.ts';
-import { floorPower } from '../tower.ts';
-import { TOWER_QI_HOURS } from '../balance.ts';
+import { clearFloor, floorQi, towerRate } from '../trials.ts';
+import { TOWER_QI_BELOW, TOWER_QI_HOURS } from '../balance.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -128,16 +127,16 @@ describe('勤 what being there buys you', () => {
   });
 
   it('pays a tower floor in hours of gathering, once and never again', () => {
-    const s: State = { ...newState(T0), realm: 5, layer: 4, tower: 30, materials: 0 };
-    const won = clearFloor(s, 31);
+    const s: State = { ...newState(T0), realm: 5, layer: 4, tower: 44, materials: 0 };
+    const won = clearFloor(s, 45);
     const hours = (won.qi - s.qi) / rate(s) / 3600;
-    console.log(`  tower floor 31 pays ${num(won.qi - s.qi)} qi: ${hours.toFixed(1)} hours of ` +
+    console.log(`  tower floor 45 pays ${num(won.qi - s.qi)} qi: ${hours.toFixed(1)} hours of ` +
       `this cultivator's own gathering, and ${num(won.materials)} 材`);
-    expect(hours).toBeGreaterThan(1);
+    expect(hours).toBeCloseTo(TOWER_QI_HOURS, 4);
     expect(won.materials).toBeGreaterThan(0);
     // The same floor a second time pays nothing: there is no floor to farm.
-    expect(clearFloor(won, 31)).toBe(won);
-    expect(clearFloor(won, 30)).toBe(won);
+    expect(clearFloor(won, 45)).toBe(won);
+    expect(clearFloor(won, 44)).toBe(won);
   });
 
   /**
@@ -146,25 +145,29 @@ describe('勤 what being there buys you', () => {
    * 塔 opens at the fifth realm, so a cultivator arriving there has a back catalogue of
    * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
    * and eighteen hours** of gathering, measured, which made the fifth realm the
-   * shortest in the whole run, shorter than the fourth. A reward for opening a system is
-   * right; a reward that rewrites the curve is not.
+   * shortest in the whole run. A reward for opening a system is right; a reward that
+   * rewrites the curve is not. So the six hours start at your realm's warden floor, and
+   * every floor below it pays a fifth less.
    */
-  it('pays a floor for how much of a fight it was', () => {
+  it('pays a floor by where it stands against your realm, and the first floors nothing', () => {
     const mighty: State = {
       ...newState(T0), realm: 9, layer: 8, tower: 0,
       levels: { technique: 54, method: 54, pills: 54, cores: 54 },
     };
     const trivial = floorQi(mighty, 1);
-    const real = floorQi(mighty, 80);
-    const full = rate(mighty) * 3600 * TOWER_QI_HOURS;
-    console.log(`  the same cultivator is paid ${num(real)} qi for a floor at their own power ` +
+    const real = floorQi(mighty, 81);
+    const full = towerRate(mighty) * 3600 * TOWER_QI_HOURS;
+    console.log(`  the same cultivator is paid ${num(real)} qi for the ninth realm's warden floor ` +
       `and ${num(trivial)} for the first floor in the tower\n`);
 
-    expect(real).toBeCloseTo(full * Math.min(1, floorPower(80) / power(mighty)), 4);
+    expect(real).toBeCloseTo(full, 4);
+    expect(floorQi(mighty, 200)).toBeCloseTo(full, 4);
+    expect(floorQi(mighty, 80)).toBeCloseTo(full * TOWER_QI_BELOW, 4);
     expect(trivial).toBeLessThan(real / 1000);
-    // A floor at or above your power is always worth the whole six hours.
-    expect(floorQi({ ...newState(T0), realm: 5, layer: 4 }, 60)).toBeCloseTo(
-      rate({ ...newState(T0), realm: 5, layer: 4 }) * 3600 * TOWER_QI_HOURS, 4);
+    // The fifth realm's warden floor and everything above it is worth the whole six hours.
+    const fifth = { ...newState(T0), realm: 5, layer: 4 };
+    expect(floorQi(fifth, 45)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
+    expect(floorQi(fifth, 60)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
   });
 
   /**

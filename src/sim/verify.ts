@@ -28,7 +28,7 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
+import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, PAIR_TOWER_QI, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -46,11 +46,14 @@ import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
-import { floorBeast, floorPower } from './tower.ts';
+import { floorBeast, floorHours, floorPower } from './tower.ts';
+import { opensAt } from './unlocks.ts';
+import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
-import { templateOf, type Item } from '../data/gear.ts';
+import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
+import { equip } from './chest.ts';
 
 /**
  * 始 No save can have begun before the game existed, so a first sync is measured from
@@ -217,6 +220,43 @@ export function anchorFloor(before: State, marks: number): number {
  */
 export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
 
+/**
+ * 塔 The most qi the floors climbed between two saves could have paid.
+ *
+ * 誤 A tester found it (2026-10-04): the tower opens at the fifth realm, every floor
+ * below the cultivator's strength falls in a few minutes, and each one pays hours. The
+ * floors were left to the burst allowance, which is a few minutes against a sync five
+ * minutes long, so the climb waited, and against the day behind it the pace read as
+ * faster than anybody honest: flagged, for the game's own payment. Each floor is a fight
+ * the save has to be able to win (towerVerdict), so its pay is allowed for as itself.
+ *
+ * A floor pays floorHours at the rate with nothing worn (trials.ts), 天師 the Celestial
+ * Master a quarter again. The server does not know which realm it fell in, so each floor
+ * is read at whichever realm between the two saves paid it most, the rate there with only
+ * what could have been owned there (rateOn). Reading every floor at the earliest realm's
+ * hours and the latest realm's rate let a week that crossed a realm pay for itself twice.
+ * A phone still on the build before 2026-10-04 paid some floors more than this, and waits
+ * a little.
+ */
+export function towerQi(before: State, after: State, first: boolean): number {
+  // A first sync has its own allowance (FIRST_PACE, FIRST_SITTING), and a month of floors
+  // brought to it would buy a month of anything else.
+  if (first) return 0;
+  const lo = Math.max(0, Math.floor(before.tower));
+  const hi = Math.max(lo, Math.floor(after.tower));
+  if (hi === lo) return 0;
+  const bare = { ...after, worn: {} as State['worn'] };
+  const realms: { realm: number; rate: number }[] = [];
+  for (let r = Math.max(before.realm, opensAt('tower')); r <= after.realm; r++) {
+    // The furthest rung of that realm the pair reached: its last, or where the later save stands.
+    const top = r === after.realm ? after.layer : 8;
+    realms.push({ realm: r, rate: rateOn(bare, Math.min(LAYERS - 1, (r - 1) * 9 + top)) });
+  }
+  let qi = 0;
+  for (let f = lo + 1; f <= hi; f++) qi += Math.max(0, ...realms.map((x) => floorHours(f, x.realm) * x.rate));
+  return qi * 3600 * PAIR_TOWER_QI;
+}
+
 /** 道 The most 道 the road and the vault could have paid between two saves. */
 function metCeiling(before: State, after: State, dt: number, first = false): number {
   const road = after.met.filter((k) => !before.met.includes(k)).reduce((n, k) => {
@@ -313,7 +353,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
-  // 得 One-off payments (a tower floor is six hours of qi at once, a meeting two) arrive in
+  // 得 One-off payments (a tower floor is up to six hours of qi at once, a meeting two) arrive in
   // bursts, so a short gap can hold more than its own seconds. They are allowed for as a
   // burst on top of the real time: BURST times the gap, never more than BURST_CAP. A
   // burst bigger than that is not refused for ever, only until real time catches up: the
@@ -329,7 +369,11 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 期 And the week's quarry pays QUARRY_HOURS of gathering at once, 金剛 the Vajra's half
   // again at most, the week it is first taken: a lump, allowed for as itself.
   const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0) ? QUARRY_HOURS * 3600 * PAIR_BOUNTY / focus : 0;
-  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry;
+  // 塔 And the floors climbed paid their qi once, a lump as well. It is allowed for as the
+  // seconds it would take at the fastest rate there was, the fewest it can be worth: the
+  // server cannot know when each floor fell, and towerQi is a ceiling, not a measurement.
+  const tower = towerQi(before, after, first) / rEnd;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 
@@ -354,11 +398,12 @@ export function verify(before: State, after: State, seconds: number, first = fal
     const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
     if (!beatable(faced, wardenOf(9))) why.push('warden');
   }
-  // 塔 And the highest floor claimed has to be one this build can take.
+  // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
+  // the save holds. See towerVerdict.
   if (after.tower > before.tower && after.tower > 0) {
-    const f = after.tower;
-    if (power(after) > 0 && floorPower(f) / power(after) > 4) why.push('tower');
-    else if (!beatable(after, floorBeast(f), floorPower(f))) why.push('tower');
+    const v = towerVerdict(after, after.tower);
+    if (v === 'strike') why.push('tower');
+    else if (v === 'wait' && !why.includes('too-fast')) why.push('too-fast');
   }
 
   // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to
@@ -402,8 +447,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.
+  //
+  // 塔 Over a day, a whole tower climbed at once is a sprint the game itself paid for, so
+  // the floors' share comes off before the day's pace is read. Over a week it stays in:
+  // SUSPECT_WEEK was measured on cultivators who climb, so their floors are already in
+  // it, and towerQi is a ceiling a long window would let a fast clock hide under.
   const pace = need / Math.max(1, dt);
-  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && pace > SUSPECT_DAY);
+  const sprint = Math.max(0, need - tower) / Math.max(1, dt);
+  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
@@ -412,6 +463,79 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
   return { ok: why.length === 0, why, used, strike, suspect, pace };
 }
+
+/**
+ * 套 Every body this save can walk into a fight in: what is worn, each saved 套 loadout
+ * put on the way the game puts one on (wearSet), and the strongest the chest can dress
+ * without a loadout, for the cultivator who swapped by hand.
+ */
+export function bodiesHeld(s: State): State[] {
+  return [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+}
+
+/**
+ * 箱 The body the chest dresses best for 力 power, one place at a time, through equip()
+ * so 承 refining moves exactly as it does on the screen. Greedy, so it can miss a class
+ * two places make together; the wait in towerVerdict covers what it misses.
+ */
+function strongestFromChest(s: State): State {
+  let body = s;
+  for (const slot of SLOTS) {
+    let best = body;
+    let most = power(body);
+    for (const item of body.chest) {
+      if (!TEMPLATE_BY_KEY[item.template] || templateOf(item).slot !== slot) continue;
+      const next = equip(body.worn, body.chest, item, slot);
+      const tried = { ...body, worn: next.worn, chest: [...next.chest] };
+      const p = power(tried);
+      if (p > most) { most = p; best = tried; }
+    }
+    body = best;
+  }
+  return body;
+}
+
+/**
+ * 塔 Whether a claimed floor could have fallen to this save, read against the strongest
+ * body it holds.
+ *
+ * It used to read only what was worn at the sync. A cultivator who climbed in one 套
+ * loadout and then put on another (the 器 Artificer's for refining, the 運 Fortune
+ * Seeker's for hunting) before the next sync was struck for a floor they had honestly
+ * taken, and a strike is the one verdict an honest player must never see. Measured on the
+ * active cultivator's first ninety days: of 47 syncs that brought new floors, climbing and
+ * then taking the climbing loadout off was struck 46 times. So every body the save holds
+ * is tried, and the floor stands if any of them can take it: 0 strikes, all 47 accepted.
+ *
+ * Past TOWER_FORGED times the strongest of them it is no fight at all: no roll of the
+ * dice and no class closes a gap that wide, so it was written into the save, and it is a
+ * strike. Short of that, a floor no body beats now is a matter of time rather than proof:
+ * the pieces it fell to may sit loose in the chest, in no loadout, so it waits, and counts
+ * once the cultivator is strong enough again. Nothing is lost by waiting.
+ */
+export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' {
+  const bodies = bodiesHeld(s);
+  const strongest = Math.max(...bodies.map(power));
+  const standing = floorPower(floor);
+  if (strongest > 0 && standing / strongest > TOWER_FORGED) return 'strike';
+  return bodies.some((b) => beatable(b, floorBeast(floor), standing)) ? 'ok' : 'wait';
+}
+
+/**
+ * 塔 How many times stronger than the strongest body a save holds a claimed floor may be
+ * before it is a forgery rather than a wait.
+ *
+ * It was 4, inline, until 2026-10-04, and 4 was a knife edge. 力 the number on the screen
+ * is not the whole fight (the stance, the sequence, 破甲 and 破煞 all count beside it), and
+ * the highest floor an honest cultivator can win at any odds stands well past it:
+ * measured every three days of every climbing habit, up to ×4.19 its own power (active),
+ * ×3.47 to ×4.12 for the rest, and the highest floor actually held up to ×2.94. A lucky
+ * honest win there was a strike. At 8 the bound sits twice past the furthest honest reach,
+ * and everything short of it that no body can win now waits instead (towerVerdict). An
+ * edited floor is not near it: floor 500, claimed by the active cultivator at its
+ * strongest of the first ninety days, is ×10^31.
+ */
+export const TOWER_FORGED = 8;
 
 /**
  * 初 What a first sync is measured from: a cultivator who began when the save says they

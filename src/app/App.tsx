@@ -83,8 +83,9 @@ import { fuseAllIn } from '../sim/stash.ts';
 /** 版 Filled in by the build (vite.config.ts). */
 declare const __BUILD__: string;
 import { haptics } from './haptics.ts';
-import { LEVELS, cycleSound, soundLevel, sfx } from './sound.ts';
-import { MUSIC_LEVELS, cycleMusic, moodFor, musicLevel, setMood, unlockMusic } from './music.ts';
+import { sfx } from './sound.ts';
+import { moodFor, setMood, unlockMusic } from './music.ts';
+import { Volumes } from './ui/Volume.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
 import { DISMISSED, clockUntil, guide } from './guide.ts';
@@ -199,8 +200,6 @@ export function App() {
   // 鑑 The piece being looked at, and whether it is the one on the body.
   const [inspect, setInspect] = useState<{ item: Item; wearing: boolean } | null>(null);
   const [fresh, setFresh] = useState(false);
-  const [sound, setSound] = useState(soundLevel);
-  const [music, setMusic] = useState(musicLevel);
   /** 突破 The breakthrough moment: the realm just left, held for its animation. */
   const [bloom, setBloom] = useState<number | null>(null);
   /** 鎖 A tab the realm has not opened yet, held for the panel that says so. */
@@ -854,12 +853,6 @@ export function App() {
     lastRealm.current = state.realm;
   }, [state.realm, ready]);
 
-  const toggleMute = useCallback(() => {
-    const next = cycleSound();
-    setSound(next);
-    if (LEVELS[next].volume > 0) sfx.tap();
-  }, []);
-
   // 樂 The music starts on the first touch, the only moment a browser allows it, and
   // follows the player: the hunt, a big fight, the heavens, or cultivating.
   useEffect(() => {
@@ -873,7 +866,6 @@ export function App() {
   const fightKind = battle ? (battle.beast.warden || battle.demon ? 'boss' : 'beast') : null;
   const heavens = state.tribulation > 0;
   useEffect(() => { setMood(moodFor({ tab, fight: fightKind, heavens })); }, [tab, fightKind, heavens]);
-  const toggleMusic = useCallback(() => { setMusic(cycleMusic()); sfx.tap(); }, []);
 
   /** 拆 Melting one piece, from the sheet where it can be looked at first. */
   const onSalvage = useCallback((id: string) => {
@@ -1268,12 +1260,8 @@ export function App() {
             <a href={MENU.discord} target="_blank" rel="noopener noreferrer" onClick={() => { setMenu(false); sfx.tap(); }}>
               <b className="cjk">報</b><span>{MENU.report}</span>
             </a>
-            <button onClick={toggleMute} data-on={LEVELS[sound].volume > 0}>
-              <b>{LEVELS[sound].icon}</b><span>{LEVELS[sound].label}</span>
-            </button>
-            <button onClick={toggleMusic} data-on={MUSIC_LEVELS[music].volume > 0}>
-              <b>{MUSIC_LEVELS[music].icon}</b><span>{MUSIC_LEVELS[music].label}</span>
-            </button>
+            {/* 量 Sound and music: a slider and a mute each (ui/Volume.tsx). */}
+            <Volumes />
             <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
           </div>
         )}

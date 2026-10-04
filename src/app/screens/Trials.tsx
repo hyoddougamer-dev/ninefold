@@ -7,8 +7,9 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import { power, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_HOURS } from '../../sim/balance.ts';
-import { SEAL_LOOT, floorBeast, floorPower, seals } from '../../sim/tower.ts';
+import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_BELOW, TOWER_QI_HOURS } from '../../sim/balance.ts';
+import { SEAL_LOOT, floorBeast, floorHours, floorPower, fullFloor, seals } from '../../sim/tower.ts';
+import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
 import { pillsTaken } from '../../sim/furnace.ts';
@@ -54,6 +55,9 @@ export function Trials({ state, onFloor, onBrew }: {
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
   const lit = isOpen(state.realm, 'furnace');
+  // 吸 Hours of gathering this floor pays, and how they read when they are next to none.
+  const hours = floorHours(floor, state.realm);
+  const span = (h: number) => (h * 3600 < 60 ? TRIALS.little : duration(h * 3600));
 
   return (
     <>
@@ -104,8 +108,11 @@ export function Trials({ state, onFloor, onBrew }: {
             )}
           </span>
         </div>
+        {/* 吸 What this floor pays in hours, read off the floor and the realm: the same
+            number whatever is worn, so it is said before the fight rather than after. */}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
-          {TRIALS.hours(duration(TOWER_QI_HOURS * 3600))}
+          {TRIALS.hours(span(hours * classTowerQi(state)), classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
+          {hours < TOWER_QI_HOURS && <>{' '}{TRIALS.below(span(TOWER_QI_HOURS), fullFloor(state.realm), `${Math.round((1 - TOWER_QI_BELOW) * 100)}%`)}</>}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
         <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>

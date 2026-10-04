@@ -44,14 +44,14 @@ import {
   TRIBULATION_FOOTING, TRIBULATION_GAIN, PILL_AHEAD, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot, lootFrom, seenBounty } from '../src/sim/combat.ts';
-import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
+import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower, fullFloor } from '../src/sim/tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
 } from '../src/sim/furnace.ts';
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
 import { verify, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
@@ -66,7 +66,6 @@ import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
   DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
-import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
 import { STEPS } from '../src/app/guide.ts';
 import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
@@ -456,7 +455,7 @@ const SYSTEMS: readonly System[] = [
   { han: '守貢', name: 'The wall, and why it is a slope', status: 'done', at: 'wall',
     line: `A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth ${BARELY_SAVES} days of the climb.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
-    line: `One floor, one beast, no top. The material economy and ${TOWER_QI_HOURS} hours of gathering a floor.` },
+    line: `One floor, one beast, no top. The material economy, and ${TOWER_QI_HOURS} hours of gathering without gear for every floor from your realm's warden up.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
   { han: '碑', name: 'The stele', status: 'done', at: 'stele',
@@ -473,7 +472,7 @@ const SYSTEMS: readonly System[] = [
   { han: '示', name: 'Telling a stuck player why', status: 'done', at: 'record',
     line: 'One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.' },
   { han: '音', name: 'Sound', status: 'done',
-    line: `${LEVELS.length} volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.` },
+    line: 'A slider from 0 to 100 for the sound and another for the music, each with its own mute, and a cue for every action including the tower, the furnace and a mark earned.' },
 
   { han: '新', name: 'Teaching each system', status: 'done', at: 'refine',
     line: `${NOTICES.length} cards that arrive once, when the thing they explain first becomes true, and never block the game.` },
@@ -3213,9 +3212,13 @@ const page = `<meta charset="utf-8">
         simply held would be farmed by leaving the phone on a charger. To sit again, leave
         and come back, or press 坐 Sit again.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
-        <i>${TOWER_QI_HOURS} hours of your own gathering, once, and never again. There is no
-        floor to farm. This is the one place in the game where fighting moves the bar
-        instead of only moving your power.</i></span></div>
+        <i>${TOWER_QI_HOURS} hours of your gathering, counted without gear, once and never
+        again, for any floor from your realm's warden up (floor ${fullFloor(5)} in the fifth
+        realm). Each floor below that pays ${Math.round((1 - TOWER_QI_BELOW) * 100)}% less than the
+        one above it, so the floors far beneath you are an errand for material. What you wear
+        never moves it; only 天師 the Celestial Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%.
+        There is no floor to farm. This is the one place in the game where fighting moves
+        the bar instead of only moving your power.</i></span></div>
     </div>
     <div class="rule"><b>And nothing anywhere pays less for being away.</b> The qi gathers
       at full rate with the phone closed, every second of it, whatever else changes. 入定
@@ -4496,6 +4499,11 @@ const page = `<meta charset="utf-8">
         on it: upgrades capped by that realm, gear no earlier than its realm, 入定 at its
         deepest. On top: a burst of ${BURST} times the gap, never more than ${BURST_CAP / 3600} hours,
         for the payments that arrive all at once, and ${Math.round((SLACK - 1) * 100)}% for rounding.
+        塔 A tower floor is a payment the server can count, so the floors climbed are allowed for
+        as themselves: each at the most it could have paid in any realm the two saves span. Over a
+        day they come off the pace as well, because a whole tower climbed in a few minutes once
+        read as faster than anybody honest (2026-10-04); over a week they stay in, where the
+        honest pace was measured with them.
         The same file, <code>sim/verify.ts</code>, runs in the tests and on the server.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">待</b> <em>Too fast is "not yet", never "no"</em>
         <i>A save ahead of real time is not refused for ever: the server keeps measuring
@@ -4522,7 +4530,7 @@ const page = `<meta charset="utf-8">
     <p class="t">Every habit walked 120 days, and the fastest it ever went over each window,
       in seconds needed at the best rate per second that passed. A long window is slow
       because nobody sits at the deepest 入定 all day; a single visit is fast because a
-      tower floor pays six hours at once. The thresholds sit above the fastest row.</p>
+      tower floor pays up to six hours at once. The thresholds sit above the fastest row.</p>
     <table class="tbl"><thead><tr><th>Cultivator</th><th>a visit</th><th>6 hours</th><th>a day</th><th>a week</th></tr></thead>
       <tbody>
         ${PACE.map((r) => `<tr><td>${r.name}</td>${r.cells.map((c, i) => `<td${c === PACE_MAX[i] ? ' class="hi"' : ''}>${c.toFixed(2)}</td>`).join('')}</tr>`).join('')}

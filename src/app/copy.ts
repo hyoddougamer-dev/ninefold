@@ -103,6 +103,9 @@ export const JUICE = {
   learned: '道 learned',
 };
 
+/** 層 The layer a cultivator is on, from the layers opened in the realm: the climb bar's number. */
+export const standing = (opened: number): number => Math.min(9, Math.max(0, Math.floor(opened)) + 1);
+
 /**
  * 榜 The rankings, and the one sign-in the game asks for.
  *
@@ -178,8 +181,15 @@ export const RANKS = {
   cloudTake: 'Continue from the cloud',
   cloudKeep: 'Keep this one',
   cloudNote: 'The one not chosen is kept as the spare copy, so it can still be restored from the Menu.',
-  where: (realm: number, layer: number) => `realm ${realm}, layer ${layer}`,
-  climbCell: (climb: number, marks: number) => marks > 0 ? `summit · 雷 ${marks}` : `realm ${Math.floor(climb / 9) + 1} · ${climb % 9}/9`,
+  /**
+   * 層 Where a cultivator stands, said the way the climb bar says it: the layer being
+   * worked on, which is one more than the layers opened. The board and the cloud's
+   * question said the count opened, so a player on layer 5 read 4/9 there and 5/9 in
+   * the game (the Discord, 2026-10-04). `opened` is State.layer, 0 to 8.
+   */
+  where: (realm: number, opened: number) => `realm ${realm}, layer ${standing(opened)}`,
+  climbCell: (climb: number, marks: number) => marks > 0 ? `summit · 雷 ${marks}`
+    : `realm ${Math.floor(climb / 9) + 1} · layer ${standing(climb % 9)}/9`,
   gainCell: (n: number) => `+${n} layers`,
   towerCell: (n: number) => `floor ${n}`,
   haveOne: 'I already have a cultivator',
@@ -386,6 +396,13 @@ export const MENU = {
   credits: 'Credits',
   cards: 'Your Enlightenment cards',
   report: 'Report a bug',
+  /** 量 The two sliders in the menu, each with a mute. */
+  sound: 'Sound',
+  music: 'Music',
+  mute: (what: string) => `Mute the ${what.toLowerCase()}`,
+  unmute: (what: string) => `Turn the ${what.toLowerCase()} back on`,
+  volumeOf: (what: string) => `${what} volume`,
+  off: 'off',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
 };
@@ -492,8 +509,18 @@ export const TRIALS = {
   sealWorth: (pct: string) => `Every nine floors is a seal. Seals give you ${pct} more material from everything.`,
   climb: 'Climb',
   pays: (mats: string, qi: string) => `pays ${mats} 材 · ${qi} qi`,
-  /** The qi a floor pays, said in the unit that means something: your own time. */
-  hours: (span: string) => `A floor pays ${span} of your own gathering, once: the biggest thing a fight ever puts into the bar.`,
+  /**
+   * 吸 The qi this floor pays, said in the unit that means something: your own time. It is
+   * counted without gear, so what is worn can never move it, and the card says so.
+   * `bonus` is the Celestial Master's share when that class is worn, as "25%".
+   */
+  hours: (span: string, bonus?: string) =>
+    `This floor pays ${span} of your gathering without gear, once${bonus ? `, ${bonus} more as Celestial Master` : ''}. What you wear never changes it.`,
+  /** 吸 Why a floor under your realm's warden pays less, and where the full pay starts. */
+  below: (full: string, from: number, less: string) =>
+    `The full ${full} starts at floor ${from}, your realm's warden. Each floor below that pays ${less} less than the one above it.`,
+  /** 吸 What a floor far below pays, where a count of seconds would read as a glitch. */
+  little: 'less than a minute',
 
   furnaceHead: '爐 The Furnace',
   furnaceShut: (han: string, name: string) =>
@@ -570,7 +597,7 @@ export const ADVICE = {
   brewForDragon: (han: string, pct: number) =>
     `The Dragon is at ${pct}%. A ${han} raises that, and the power stays with you afterwards.`,
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
-  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays hours of gathering, once.`,
+  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays material and qi, once.`,
   huntForMaterial: 'Everything else is at its cap. Hunt for 材 material, which is what 妖丹 cores cost.',
   cappedSoSpend: 'Nothing left to buy in this realm. The tower and the furnace are where qi goes now.',
   cappedSoClimb: 'Nothing left to buy in this realm. The tower is where the next thing comes from.',
@@ -890,6 +917,8 @@ export const DRIVE = {
 export const ITEM = {
   /** 拆 The single melt, on the sheet where the piece can actually be looked at. */
   salvage: 'Melt it down',
+  /** 承 Under the single melt of a piece that holds refining levels: they melt with it. */
+  meltLevels: (n: number) => `Its ${n} refining ${n === 1 ? 'level goes' : 'levels go'} with it. The bulk melt and fusion never take a refined piece; only this button does.`,
 
   what: 'What it gives',
   against: (name: string) => `Against the ${name} you are wearing`,
@@ -940,6 +969,8 @@ export const ITEM = {
   lock: 'Lock',
   unlock: 'Unlock',
   lockedSays: 'Locked: it is never melted, never fused, and a full chest leaves it alone.',
+  /** 套 Why Unlock is shut on a piece a loadout names. */
+  inLoadout: (names: readonly string[]) => `In loadout ${names.join(', ')}: take it out of the loadout first. Save that loadout again without it, or forget the loadout.`,
   detail: 'Every effect, in detail',
   /** 頂 Why the 氣 line reads bigger than what it does. */
   qiCeiling: 'Qi from gear bends toward a ceiling, so this adds less than it reads.',
@@ -1311,11 +1342,18 @@ export const GEAR = {
   } as Record<string, string>,
   /** 拾 A drop chance is added in points, so it reads as points. */
   points: (x: number) => `+${Math.round(x * 10) / 10} pts`,
+  /**
+   * 彎 What the pieces add up to, beside what it does. A tester read ×1.35 under a body
+   * whose pieces said +200% and could not tell which was true (2026-10-04). Both are:
+   * the sum goes in, the bend comes out, and the line under them says so.
+   */
+  sum: (x: number) => `+${Math.round(x)}%`,
+  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. Drop chance is added in points, never past ${top}. Power never bends.`,
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',
   /** ▲ What the mark on a tile means, said once under the grid. */
-  legend: 'better than what you wear in that place, and shown first.',
+  legend: 'better than what you wear in that place, and at least as good on every line it has. Shown first.',
   /**
    * 拆 Melting gear down.
    *
@@ -2084,10 +2122,10 @@ export const QOL = {
   },
   gear: {
     wearAll: 'Wear all upgrades',
-    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. Locked pieces, loadout pieces and any that would change your class stay put.',
+    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. A \u25b2 piece is at least as good on every line you wear now. Locked pieces, loadout pieces and any that would change your class stay put.',
     wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
     fuseAll: 'Fuse all groups',
-    fuseAllSays: 'Three into one, again and again, until no three match. Locked and forged pieces are never fused.',
+    fuseAllSays: 'Three into one, again and again, until no three match. Locked, refined and forged pieces are never fused.',
     fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
     /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
     carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,
@@ -2096,7 +2134,7 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
-    /** \u5b58 Saved filters, up to three, on this device. */
+    /** \u5b58 Saved filters, up to eight, on this device. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,
@@ -2104,7 +2142,9 @@ export const QOL = {
     cancel: 'Not now',
     forget: 'Forget',
     forgetOne: (name: string) => `Forget the filter ${name}`,
-    filtersFull: 'Three filters are kept. Forget one to keep another.',
+    filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
+    /** \u9396 The chest's first row: only the pieces kept on purpose. */
+    lockedOnly: 'Locked',
     savedHead: 'Saved filters',
   },
   /** \u5668 A piece's slot, in English, beside its name wherever a beast's drops are listed. */
@@ -2125,6 +2165,14 @@ export const QOL = {
   hunt: {
     auto: 'Auto',
     autoSays: (name: string) => `Hunt the ${name} on its own, until you stop it or a fight is lost`,
+    /** 篩 The hunt list's filter, by the piece a beast leaves. */
+    leavesLabel: 'Leaves',
+    byPlace: 'Show beasts that leave a piece for this place',
+    bySchool: 'Show beasts that leave a piece of this school',
+    anyPlace: 'Any piece',
+    anySchool: 'Any school',
+    leaveThat: (n: number, of: number) => `${n} of the ${of} beasts you can hunt leave that.`,
+    noneLeave: 'No beast you can hunt leaves that yet. Tap Any piece or Any school to see them all.',
   },
   seclusion: {
     shutsAgain: 'When a demon falls and this realm still has one left, the door shuts again by itself.',
