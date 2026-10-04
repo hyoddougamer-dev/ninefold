@@ -11,9 +11,11 @@ import { realm as realmOf } from '../data/realms.ts';
 import { huntable } from '../data/bestiary.ts';
 import { beastPower } from '../sim/combat.ts';
 import { MARK_INFO, nextMark } from '../sim/record.ts';
-import { floorBeast, floorPower } from '../sim/tower.ts';
+import { floorBeast, floorHours, floorPower } from '../sim/tower.ts';
+import { classTowerQi } from '../sim/schools.ts';
+import { duration } from '../sim/format.ts';
 import { pillOf } from '../data/alchemy.ts';
-import { ADVICE, WEEK } from './copy.ts';
+import { ADVICE, TRIALS, WEEK } from './copy.ts';
 import { spendablePoints } from '../sim/points.ts';
 import { cardDue as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
@@ -189,7 +191,9 @@ export function advice(s: State): Advice | null {
   if (towerOpen(s)) {
     const floor = standingFloor(s);
     if (odds(s, floorBeast(floor), floorPower(floor)) > 0.65) {
-      return { han: '塔', text: ADVICE.floorWaiting(floor), tab: 'trials' };
+      // 吸 The same hours the tower card says, so the line and the card never disagree.
+      const hours = floorHours(floor, s.realm) * classTowerQi(s);
+      return { han: '塔', text: ADVICE.floorWaiting(floor, hours * 3600 < 60 ? TRIALS.little : duration(hours * 3600)), tab: 'trials' };
     }
   }
   // 妖丹 does not count as uncapped before the realm that sells it: otherwise a first
