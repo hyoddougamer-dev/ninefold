@@ -39,7 +39,8 @@ import { CHEST_LIMIT, FUSE_COUNT } from '../src/sim/chest.ts';
 import {
   HUNT_SHARE, LADDER_FIRST, LADDER_GROWTH_FIRST, LADDER_GROWTH_LAST, LAYERS, LAYER_BONUS,
   LAYERS_PER_REALM, LEVELS_PER_REALM, MARK_DAYS, TARGET_DAYS, TREE_RATE_CEILING,
-  UNCAPPED_RATE_CEILING,
+  UNCAPPED_RATE_CEILING, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, TREE_BEND_ROOF,
+  gearQiRate, qiKnee, qiRoof, uncappedRate,
   TRIBULATION_CHALLENGE,
   TRIBULATION_FOOTING, TRIBULATION_GAIN, PILL_AHEAD, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
@@ -3264,11 +3265,42 @@ const page = `<meta charset="utf-8">
       the drops finally picked up and worn, the active cultivator finished on
       <b>day 38</b> and the hourly one on <b>day 20</b>, against a promise of ninety; the
       claim above was false and nothing could see it, because nothing had ever equipped a
-      piece. Gear and 道 the tree together now bend toward
-      <b>×${UNCAPPED_RATE_CEILING}</b> and can never reach it. It is a bend and not a wall
-      on purpose. A cultivator at a hard clamp has two hundred wasted points, and every
-      氣 roll they find afterwards does nothing. A stat that silently stops working is
-      worse than a stat that was never there.</div>
+      piece. Gear and 道 the tree together now bend toward a roof that rises with the
+      climb, from <b>×${QI_ROOF_FIRST}</b> on the first rung to <b>×${QI_ROOF_TOP}</b> on
+      the last, and can never reach it. It is a bend and not a wall on purpose. A
+      cultivator at a hard clamp has two hundred wasted points, and every 氣 roll they find
+      afterwards does nothing. A stat that silently stops working is worse than a stat
+      that was never there.</div>
+    <h3>氣膝 The qi knee climbs with the ladder</h3>
+    <p class="t">For a long time gear's qi went into the tree's own bend: roof
+      ×${TREE_BEND_ROOF}, knee +35%. A fifth-realm body already wore +310%, so one more
+      typical qi line was worth two thirds of a per cent of the rate in the third realm and
+      under a tenth of one in the ninth. Testers saw it (2026-10-04).</p>
+    <p class="t">Now the tree still bends exactly as it did, and gear fills the room above
+      it with a bend of its own. Its knee is the worn qi that fills half the room. It
+      starts at +${Math.round(QI_KNEE_FIRST * 100)}% and grows ×${QI_KNEE_GROWTH} a realm,
+      a ninth of that at every rung. ×${QI_KNEE_GROWTH} is what a typical qi line grows by
+      from the third realm to the ninth. So a realm's own pieces keep counting: one is
+      worth three quarters of a per cent to one per cent of the rate in every realm from
+      the third on. The bend never slides further than the rung's own ×${LAYER_BONUS}, so
+      the rate rises on every rung for every body, and the same body reads a little less
+      as you climb:</p>
+    <table>
+      <tr><th>first rung of</th><th style="text-align:right">knee</th>
+          <th style="text-align:right">roof</th><th style="text-align:right">+100% worn</th>
+          <th style="text-align:right">+310% worn</th><th style="text-align:right">+1000% worn</th></tr>
+      ${[1, 3, 5, 7, 9].map((realm) => {
+        const n = (realm - 1) * LAYERS_PER_REALM;
+        const lift = (g: number) => (gearQiRate(g, 1.1, n) / uncappedRate(1.1)).toFixed(3);
+        return `<tr><td>realm ${realm}</td><td class="mono" style="text-align:right">+${Math.round(qiKnee(n) * 100)}%</td>`
+          + `<td class="mono" style="text-align:right">×${qiRoof(n).toFixed(3)}</td>`
+          + `<td class="mono" style="text-align:right">×${lift(1)}</td><td class="mono" style="text-align:right">×${lift(3.1)}</td>`
+          + `<td class="mono" style="text-align:right">×${lift(10)}</td></tr>`;
+      }).join('')}
+    </table>
+    <p class="cap">What the gear screen's 氣 number reads for the same body at the start of
+      each realm, with the 劍 root of the tree (×1.1). The qi rate itself never goes down:
+      the rungs between add far more than the bend gives back.</p>
   </section>
 
   <section class="sec" id="wall">
@@ -5007,7 +5039,8 @@ const page = `<meta charset="utf-8">
         gathering is behind the realm cap; everything uncapped buys power, fortune or
         knowledge instead. It was written down long before anything enforced it, and both
         器 gear and 道 the tree quietly broke it for months, so <code>rate()</code> now bends them
-        toward ×${UNCAPPED_RATE_CEILING} rather than trusting anybody to remember.</i></span></div>
+        toward a roof that rises with the ladder and never passes ×${UNCAPPED_RATE_CEILING},
+        rather than trusting anybody to remember.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">文</b> <em>All the prose is in one file</em>
         <i>src/app/copy.ts. Text scattered across six screens cannot be reviewed, and this
         is the file a translation would replace.</i></span></div>

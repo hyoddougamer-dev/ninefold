@@ -1000,7 +1000,7 @@ export const ITEM = {
   /** 解 What each line that moves a number does, in a sentence. */
   axisSays: {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
-    rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling.',
+    rate: 'Qi a second, while you are away too. What gear adds bends toward a ceiling that rises as you climb.',
     capacity: 'More places in the chest.',
     luck: 'Rarer gear from every drop, and better rolls on what drops. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
@@ -1336,7 +1336,7 @@ export const GEAR = {
   powerSays: (x: number) => (x >= 1.95
     ? `You hit about ${Math.round(x)} times as hard.`
     : `You hit ${Math.round((x - 1) * 100)}% harder.`),
-  qiSays: 'Qi from gear has a ceiling. Power has none.',
+  qiSays: 'Qi from gear has a ceiling, and it rises as you climb. Power has none.',
   nothingWorn: 'Nothing worn yet. Beasts drop gear, and what you wear makes you hit harder.',
   otherEffects: 'Other effects of your gear',
   /** 譯 The rest of the axes, each with its English beside it. */
@@ -1356,7 +1356,7 @@ export const GEAR = {
    * the sum goes in, the bend comes out, and the line under them says so.
    */
   sum: (x: number) => `+${Math.round(x)}%`,
-  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. Drop chance is added in points, never past ${top}. Power never bends.`,
+  bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. The qi bend moves up with every layer you open, so each realm's own pieces still count, and an old body slowly reads a little less. Drop chance is added in points, never past ${top}. Power never bends.`,
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',
