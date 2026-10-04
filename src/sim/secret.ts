@@ -183,9 +183,12 @@ function thirdAt(s: State, step: number): Room | null {
   const shrineLeft = SHRINE_DAO_PER_REALM * Math.min(9, s.realm) - (s.vaultDao ?? 0) > 0;
   if ((first === 'shrine' || second === 'shrine') && shrineLeft) return { kind: 'shrine' };
   if (step < 2) return null;
+  // 匣 A box is offered only when the pouch can keep at least half of what it holds: a box
+  // of one herb, for a hand that has never gathered, is not a third door worth a room.
   const box = boxAt(s, step);
+  const nominal = (BOX_HOURS * Math.floor(step / 2) * 3600) / 7;
   const pool: RoomKind[] = ['brazier'];
-  if (box.herb || box.ore) pool.push('box');
+  if ([box.herb, box.ore].some((x) => x && x[1] >= nominal / 2)) pool.push('box');
   if (trailOpen(s)) pool.push('trail');
   return { kind: pool[(seed >>> 16) % pool.length] } as Room;
 }

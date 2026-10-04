@@ -1688,6 +1688,11 @@ export const NOTICE = {
     text: '妖丹 is the one upgrade priced in 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
+  platform: {
+    title: '擂台 Three challengers a week',
+    text: 'On 塔 Trials. They stand against your own power, so the build wins them, not the number. '
+      + 'A win pays hours of gathering; a loss costs nothing, and the dice are set for the week.',
+  },
   tower: {
     title: 'Only the next floor is ever open',
     text: 'It never runs out, and losing costs nothing. Sweep the low floors for material. '

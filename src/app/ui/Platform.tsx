@@ -12,7 +12,7 @@ import { stanceChoices } from '../../sim/arts.ts';
 import { effectiveBeastPower } from '../../sim/combat.ts';
 import { TEMPER_EDGE } from '../../sim/balance.ts';
 import { weekLeft } from '../../sim/week.ts';
-import type { State } from '../../sim/state.ts';
+import { power, type State } from '../../sim/state.ts';
 import { fightDeps } from '../memo.ts';
 import { PLATFORM } from '../copy.ts';
 import { Plate } from './Plate.tsx';
@@ -110,7 +110,9 @@ export function Platform({ state, onChallenge, onStance }: {
             <span className="plodds mono">
               {beaten ? <><b className="pltick">{'✓'}</b><i>{PLATFORM.paid(PLATFORM_HOURS[tier])}</i></>
                 : standing && read ? <>
-                  <b style={{ color: tone }}>{read.raw > 0 || best ? pct(stanceOdds) : '—'}</b>
+                  {/* 誠 Out of reach is not two per cent, here as on the tower: it says how far off. */}
+                  <b style={{ color: read.raw > 0 || best ? tone : 'var(--faint)' }}>{read.raw > 0 || best ? pct(stanceOdds)
+                    : `×${(brings / Math.max(1e-9, power(state))).toFixed(1)}`}</b>
                   <i>{best ? PLATFORM.inStance(`${best.han} ${best.name}`) : read.raw > 0 ? PLATFORM.odds : PLATFORM.toReach}</i>
                   {best && <i className="plnow">{PLATFORM.asYouStand(pct(read.now))}</i>}
                 </>
