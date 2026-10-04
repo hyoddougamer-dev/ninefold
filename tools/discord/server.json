@@ -826,6 +826,59 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-ladder.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-04",
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Fixes from your reports",
+      "color": "#B88A5A",
+      "body": [
+        "A round of fixes, almost all from rekaris's reports overnight. Thank you, and keep them coming!",
+        "And thank you, rekaris, for the long answer under 深 *Deeper hunts*. It is shaping the design, and the polls stay open all week."
+      ],
+      "fields": [
+        [
+          "塔 The tower",
+          "A floor's qi no longer depends on what you wear. It pays six hours of your gathering (counted without gear) from your realm's warden floor up, and each floor below that pays 20% less. Only 天師 Celestial Master adds to it. The floor card says exactly what the next floor pays, and swapping loadouts after a climb no longer risks your ranking. A big climb no longer gets a save flagged either: the server now counts a floor's qi as the payment it is."
+        ],
+        [
+          "煉 Your refining is safe",
+          "Bulk melt, fusion and a full chest never take a refined piece any more, and the sheet warns before you melt one yourself. Two fused pieces can no longer end up sharing a name, which could make one of them vanish."
+        ],
+        [
+          "套 Loadouts",
+          "A piece a loadout uses stays locked until you take it out of the loadout, so melting can't break a loadout by accident."
+        ],
+        [
+          "▲ Upgrades",
+          "▲ and *Wear all upgrades* now only mark a piece that is at least as good on every line you wear, so they never suggest losing a line you built for."
+        ],
+        [
+          "篩 Finding things",
+          "· Filter the hunt list by the slot and school a beast leaves (Fortune + Ring)\n· *Strongest* and *Most material* keep finished beasts in their place\n· Saved chest filters sit in one tidy row, up to eight, with a 鎖 *Locked* chip"
+        ],
+        [
+          "彎 Gear numbers",
+          "*Other effects of your gear* now shows what your pieces add up to beside what it does, with a line on why they differ. +116% on your pieces and ×1.38 on the screen are both true: the first goes in, the second comes out."
+        ],
+        [
+          "音 Sound",
+          "Sliders from 0 to 100 for sound and for music, each with its own mute."
+        ],
+        [
+          "榜 Rankings",
+          "The board now shows the same layer the game shows. It was one behind."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-tower.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-refine.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-wearall.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-huntfilter.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-bends.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -931,7 +984,7 @@
       ],
       "fields": [
         ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +1% 材 material from every beast."],
-        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
+        ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi: never less than four hours of your own gathering. It moves every Monday."]
@@ -957,8 +1010,8 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces. Every piece shows its school's seal in the corner. The chest filters by place, by school and by lines (a piece must carry every line you pick), and keeps up to three filters you name."],
-        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all. ▲ **Wear all upgrades** puts every ▲ on at once."],
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Every piece shows its school's seal in the corner. The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name."],
+        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once. A piece that holds refining levels is never taken by the bulk melt, a fusion or a full chest; only its own sheet can melt it."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
@@ -1094,7 +1147,7 @@
       "body": [
         "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, six hours of your own gathering in qi. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC).",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, qi: six hours of your gathering counted without gear, from your realm's warden floor up (floor 45 in the fifth realm, 54 in the sixth). Each floor below that pays 20% less than the one above it, so the first floors pay almost nothing. What you wear never changes it; only 天師 Celestial Master adds 25%. The floor card shows what the next floor pays before you climb. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC).",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
@@ -1895,6 +1948,189 @@
       "reply": [
         "Good question, and you were right: the game didn't tell you. Feeding the crow gives you a piece of gear, rolled with a bit of extra luck. With a full chest it went in the same way a drop does, and your weakest piece (or the crow's, if it was the weaker one) melted into qi or material. None of that was on screen.",
         "Since today's update the encounter card stays after you answer and says exactly what came of it: what you gave, what you got, which piece and where it went, with a button to it in Gear. The stele also notes who left you a piece. Thanks for asking!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "You were right, and it was worse than weird: taking gear off could make a floor pay up to ten times more. Fixed in today's update.",
+        "A floor now pays by the floor and your realm only: six hours of your gathering counted without gear from your realm's warden floor up, 20% less for each floor below. What you wear never changes it, and only 天師 Celestial Master adds 25%. Thanks for catching it!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower description seems to be wrong",
+      "tags": [
+        "Bug",
+        "Text",
+        "Fixed"
+      ],
+      "reply": [
+        "Right again, thank you. The text promised 6h on every floor, which was only true near your strength. Since today's update the floor card says exactly what the next floor pays and why the early floors pay less.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you for flagging this, it was real and I'm sorry about your levels. I found two ways it could happen: a refined piece taken off and later melted (by the bulk melt or a full chest) took its levels with it, and two fused pieces could end up with the same internal name, so wearing one made the other disappear.",
+        "Both are fixed in today's update: bulk melt, fusion and a full chest never take a refined piece, the sheet warns before you melt one yourself, and every fused piece gets a name of its own.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "The heaven rank doesn't seem correct",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thanks for checking so carefully. Your save was fine: the board showed how many layers you had opened, while the game shows the layer you are on, so it always looked one behind. Since today's update both say the same thing. As for the top of the board, every save there is checked by the server against real time; the tower from realm 5 really is a big source of qi, which is what you saw.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does \"weaker beast\" stat affect?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "It works on almost every fight: hunts, the week's quarry, Auto and drives, the wardens of realms 1 to 8, every tower floor and the beasts at the secret realm's gates. It does not work on your heart demon or on the realm-9 Dragon at the tribulation. Good question, thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Do not fold the \"completed\" beasts",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Agreed, thank you. Since today's update *Strongest* and *Most material* keep every beast in its place, finished or not. Only *Next mark* folds the finished ones away, since that order is about what's left to do. You can also filter the hunt by the slot and school a beast leaves now.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add sliders for volume control",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, thank you! The menu has a slider from 0 to 100 for sound and another for music, each with its own mute.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When gear is compared to the equipped piece, it is being compared against the refined stats",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "You were right that ▲ wasn't a strict upgrade. Since today's update ▲ and *Wear all upgrades* only mark a piece that is at least as good on every line you wear now, so a weapon missing your fusion quality line no longer counts. Thanks for following up!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Qi gain bonus on gear is in a weird place",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you, this is a fair point and the numbers back you up: the qi line bends so hard that the third piece adds almost nothing. I want wearing qi in every slot to be a real build, so I'll measure a gentler curve that reaches the same ceiling only with six pieces, and post it here before it changes.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Make \"Quality\" of the gear visible",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Good idea, thank you. ▲ is now a strict upgrade, which covers part of it, and I'll look at showing each piece's quality on its tile so two pieces with the same lines can be told apart at a glance.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow customization of auto-melting when the bag is full",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Thank you, and I like that you thought about how it fits with crafting. For now a full chest never takes a locked, loadout or refined piece any more. A filter for what a full chest melts is on the list, and it'll be designed together with what forging becomes, as you suggested.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Spring Qi reward feel a bit low",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Thanks for this. You're right that once the Path points are taken, the vault turns into a qi bonus with little choice in it. I'll design more choices for the rooms (buffs that last, something for the crafts) and post the design here first.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Autofight trivializes combat",
+      "reply": [
+        "Thank you both, speculaether and rekaris, for a really good discussion. I think you landed on the heart of it: fights are too easy for power to matter, and qi has too few different sources. The first answer is up for your opinion right now: 深 *Deeper hunts* in this forum, with five quick polls. More sources of qi that compete for your resources (crafting, the cave, hard manual fights) are next, and I'll show each one here before it goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "Fair point about the hard cap, thank you. I'll change the craft mastery bonus so it keeps growing with every recipe you master but more slowly, instead of stopping dead at 15%, so someone who wants to be the immortal blacksmith always has a reason to keep going.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Saves being flagged for climbing the tower",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you for spotting this. It was a server bug, not anything you did. Two things were wrong: the server checked a new floor against what you were wearing when the game synced, so climbing and then putting qi gear back on looked impossible, and it didn't count a floor's qi as a payment, so a big climb read as gathering faster than anyone can. Both are fixed in today's update, and the flags this caused are being cleared by hand. Nobody's game was touched.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you for writing all of this out. On the numbers you're right: the list only showed what each line does after it bends, never what your pieces add up to, so they looked like they contradicted each other. From today it shows both side by side, with a line saying why they differ.",
+        "On the classes I agree with your rule: a class should be the best at what it says it does. Pure Sword out-climbing Sword Immortal and Celestial Master in the tower, their own place, is a balance problem, and so is a Sword piece carrying far more power than an Arts piece carries arts. I'm measuring every class against pure Sword in the tower next, and I'll post the numbers and the changes here before anything goes in.",
         "· 師 Shibaki"
       ]
     }
