@@ -311,6 +311,10 @@
     return `${Math.round(d / 86400)} d`;
   };
   const day = (iso) => (iso ? new Date(iso).toLocaleDateString('pt-PT') : '·');
+  const when = (iso) => new Date(iso).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  // 清 A flag taken off says so, and when, in the list itself: the note only says why.
+  const flag = (p) => (p.held ? '<span class="pill bad">marcado</span>'
+    : p.cleared ? `<span class="pill on">limpo a ${when(p.cleared)}</span>` : '<span class="pill off">limpo</span>');
   const where = (p) => (p.marks > 0 ? `topo · 雷 ${p.marks}` : `${p.realm} · ${p.layer}/9`);
   const activity = (p) => {
     const age = p.last_seen ? Date.now() - new Date(p.last_seen).getTime() : Infinity;
@@ -340,8 +344,8 @@
         <td class="num">${where(p)}</td><td class="num">${p.tower}</td><td class="num">${since(p.started)}</td>
         <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${refusals(p)}</td><td class="num">${since(p.last_seen)}</td>
         <td>${day(p.joined)}</td><td>${p.email ? 'email' : 'convidado'}</td>
-        <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td>
-        <td class="obs">${esc(p.note || '')}${p.cleared ? `<span class="clr">marcação limpa a ${day(p.cleared)}</span>` : ''}</td>
+        <td>${flag(p)}</td>
+        <td class="obs">${esc(p.note || '')}${p.cleared ? `<span class="clr">marcação limpa a ${when(p.cleared)}</span>` : ''}</td>
         <td><button type="button" class="small" data-edit="${esc(p.name)}">${open === p.name ? 'Fechar' : 'Obs.'}</button></td></tr>`
     }).join('') || '<tr><td colspan="14" class="empty">Ninguém com esse nome.</td></tr>';
     const p = people.find((x) => x.name === open);
@@ -352,7 +356,7 @@
   // 註 One player open at a time: a note, and, for a flagged player, taking the flag off.
   let open = null;
   function editor(p) {
-    return `<div class="head"><b>${esc(p.name)}</b> ${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}
+    return `<div class="head"><b>${esc(p.name)}</b> ${flag(p)}
         <button type="button" class="small" data-edit="${esc(p.name)}">Fechar</button></div>
       <textarea id="note" maxlength="500" placeholder="O que se passou, ou o que foi alterado (fica guardado com o jogador)">${esc(p.note || '')}</textarea>
       <div class="row">
