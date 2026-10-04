@@ -879,6 +879,46 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/fix-bends.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-04-classes",
+      "pin": false,
+      "channel": "devlog",
+      "title": "職 Update · Every class the best at what it says",
+      "color": "#B88A5A",
+      "body": [
+        "Thanks to rekaris for putting the classes side by side. We measured all twenty-one against each other, and four pair classes were not the best at their own job. Now they are, and the Sword Saint has a job of its own."
+      ],
+      "fields": [
+        [
+          "劍仙 Sword Immortal",
+          "The tower's floors count 35% weaker (it was 10%). It now climbs at least as high as pure Sword in every realm."
+        ],
+        [
+          "武神 War God",
+          "Wardens count 30% weaker (it was 12%), the most of any class against a warden."
+        ],
+        [
+          "鑄劍師 Swordsmith",
+          "100% more 材 material from kills and floors (it was 15%), the most material of any class."
+        ],
+        [
+          "甲匠 Armourer",
+          "The chest holds 100 more (it was 10), the most room of any class."
+        ],
+        [
+          "劍聖 Sword Saint",
+          "Now the class for the 渡劫 tribulation: the Dragon counts 2% weaker every time it comes back, so your marks come sooner. The fastest class to forty marks."
+        ],
+        [
+          "榜 Rankings",
+          "A new thunder mark was checked against the next Dragon instead of the one you beat, so an honest crossing could be struck. Fixed, and the tower now reads a climb through your class as well."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/pairs-chart.webp?v=2"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2131,6 +2171,18 @@
       "reply": [
         "Thank you for writing all of this out. On the numbers you're right: the list only showed what each line does after it bends, never what your pieces add up to, so they looked like they contradicted each other. From today it shows both side by side, with a line saying why they differ.",
         "On the classes I agree with your rule: a class should be the best at what it says it does. Pure Sword out-climbing Sword Immortal and Celestial Master in the tower, their own place, is a balance problem, and so is a Sword piece carrying far more power than an Arts piece carries arts. I'm measuring every class against pure Sword in the tower next, and I'll post the numbers and the changes here before anything goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "A correction, and the changes. We measured all twenty-one classes against each other. You were right about Sword Immortal and Sword Saint, and I was wrong to agree about Celestial Master: it earns the most tower qi of any class, about 25% more than pure Sword over a run. The extra floors pure Sword reaches fall in the fifth realm, where a floor pays at that realm's rate, and from then on both climb the same new floors each realm.",
+        "Today's update makes Sword Immortal, War God, Swordsmith and Armourer the best at what they say, and gives the Sword Saint the Dragon: it is now the fastest class to forty marks. Pure Sword stays the strongest single body, which is what a pure Sword build is for. Thank you for pushing on this, it made the classes better.",
         "· 師 Shibaki"
       ]
     }
