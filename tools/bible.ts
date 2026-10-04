@@ -4499,6 +4499,11 @@ const page = `<meta charset="utf-8">
         on it: upgrades capped by that realm, gear no earlier than its realm, 入定 at its
         deepest. On top: a burst of ${BURST} times the gap, never more than ${BURST_CAP / 3600} hours,
         for the payments that arrive all at once, and ${Math.round((SLACK - 1) * 100)}% for rounding.
+        塔 A tower floor is a payment the server can count, so the floors climbed are allowed for
+        as themselves: each at the most it could have paid in any realm the two saves span. Over a
+        day they come off the pace as well, because a whole tower climbed in a few minutes once
+        read as faster than anybody honest (2026-10-04); over a week they stay in, where the
+        honest pace was measured with them.
         The same file, <code>sim/verify.ts</code>, runs in the tests and on the server.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">待</b> <em>Too fast is "not yet", never "no"</em>
         <i>A save ahead of real time is not refused for ever: the server keeps measuring

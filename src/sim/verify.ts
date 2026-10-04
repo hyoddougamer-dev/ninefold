@@ -28,7 +28,7 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
+import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, PAIR_TOWER_QI, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -46,7 +46,8 @@ import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
-import { floorBeast, floorPower } from './tower.ts';
+import { floorBeast, floorHours, floorPower } from './tower.ts';
+import { opensAt } from './unlocks.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -219,6 +220,43 @@ export function anchorFloor(before: State, marks: number): number {
  */
 export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
 
+/**
+ * 塔 The most qi the floors climbed between two saves could have paid.
+ *
+ * 誤 A tester found it (2026-10-04): the tower opens at the fifth realm, every floor
+ * below the cultivator's strength falls in a few minutes, and each one pays hours. The
+ * floors were left to the burst allowance, which is a few minutes against a sync five
+ * minutes long, so the climb waited, and against the day behind it the pace read as
+ * faster than anybody honest: flagged, for the game's own payment. Each floor is a fight
+ * the save has to be able to win (towerVerdict), so its pay is allowed for as itself.
+ *
+ * A floor pays floorHours at the rate with nothing worn (trials.ts), 天師 the Celestial
+ * Master a quarter again. The server does not know which realm it fell in, so each floor
+ * is read at whichever realm between the two saves paid it most, the rate there with only
+ * what could have been owned there (rateOn). Reading every floor at the earliest realm's
+ * hours and the latest realm's rate let a week that crossed a realm pay for itself twice.
+ * A phone still on the build before 2026-10-04 paid some floors more than this, and waits
+ * a little.
+ */
+export function towerQi(before: State, after: State, first: boolean): number {
+  // A first sync has its own allowance (FIRST_PACE, FIRST_SITTING), and a month of floors
+  // brought to it would buy a month of anything else.
+  if (first) return 0;
+  const lo = Math.max(0, Math.floor(before.tower));
+  const hi = Math.max(lo, Math.floor(after.tower));
+  if (hi === lo) return 0;
+  const bare = { ...after, worn: {} as State['worn'] };
+  const realms: { realm: number; rate: number }[] = [];
+  for (let r = Math.max(before.realm, opensAt('tower')); r <= after.realm; r++) {
+    // The furthest rung of that realm the pair reached: its last, or where the later save stands.
+    const top = r === after.realm ? after.layer : 8;
+    realms.push({ realm: r, rate: rateOn(bare, Math.min(LAYERS - 1, (r - 1) * 9 + top)) });
+  }
+  let qi = 0;
+  for (let f = lo + 1; f <= hi; f++) qi += Math.max(0, ...realms.map((x) => floorHours(f, x.realm) * x.rate));
+  return qi * 3600 * PAIR_TOWER_QI;
+}
+
 /** 道 The most 道 the road and the vault could have paid between two saves. */
 function metCeiling(before: State, after: State, dt: number, first = false): number {
   const road = after.met.filter((k) => !before.met.includes(k)).reduce((n, k) => {
@@ -331,7 +369,11 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 期 And the week's quarry pays QUARRY_HOURS of gathering at once, 金剛 the Vajra's half
   // again at most, the week it is first taken: a lump, allowed for as itself.
   const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0) ? QUARRY_HOURS * 3600 * PAIR_BOUNTY / focus : 0;
-  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry;
+  // 塔 And the floors climbed paid their qi once, a lump as well. It is allowed for as the
+  // seconds it would take at the fastest rate there was, the fewest it can be worth: the
+  // server cannot know when each floor fell, and towerQi is a ceiling, not a measurement.
+  const tower = towerQi(before, after, first) / rEnd;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 
@@ -405,8 +447,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
 
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.
+  //
+  // 塔 Over a day, a whole tower climbed at once is a sprint the game itself paid for, so
+  // the floors' share comes off before the day's pace is read. Over a week it stays in:
+  // SUSPECT_WEEK was measured on cultivators who climb, so their floors are already in
+  // it, and towerQi is a ceiling a long window would let a fast clock hide under.
   const pace = need / Math.max(1, dt);
-  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && pace > SUSPECT_DAY);
+  const sprint = Math.max(0, need - tower) / Math.max(1, dt);
+  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
