@@ -25,6 +25,10 @@ import { oneOf, useRemembered } from '../prefs.ts';
 import { gearLift, swing, upOf, wearBetter } from '../../sim/inspect.ts';
 import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
 import { FIND_TOP } from '../../sim/balance.ts';
+import { fortuneOf } from '../../sim/fortune.ts';
+import { dropChance } from '../../sim/drops.ts';
+import { BEASTS } from '../../data/bestiary.ts';
+import { GLOSS } from '../glossary.ts';
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
@@ -83,6 +87,22 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const S = 200;
   // 總 What everything worn does, from the sim: the body against itself with nothing on.
   const lift = gearLift(state);
+  /**
+   * 拾 The drop-chance note ends on this body's own numbers: what its points do to the
+   * beast it is most likely hunting, read from the same chance the sim rolls against.
+   * With 造化 Creation every beast drops already, and the note's own last line says so.
+   */
+  const findNote = (() => {
+    const row = GLOSS[`axis:${AFFIX_INFO.find.han}`];
+    const f = fortuneOf(state);
+    const beast = BEASTS.find((b) => b.realm === state.realm && !b.warden);
+    if (!row || !beast || f.always) return undefined;
+    const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
+    const mine = gearFind(state);
+    const rest = (f.chance ?? 0) - mine;
+    return { ...row, note: `${row.note}\n${GEAR.findYours(String(Math.round(mine * 1000) / 10), beast.name,
+      pct(dropChance(beast, rest)), pct(dropChance(beast, rest + mine)))}` };
+  })();
   const worn = SLOTS.some((slot) => state.worn[slot]);
   // 篩 The chest's filter lives here: it is a way of looking, not a fact about the save.
   // 記 Remembered on the device, so a tab away and back, or a reload, keeps it.
@@ -138,13 +158,13 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 harder", and the two read as two different numbers. */}
             <b className="mono"><small>×</small>{lift.power >= 10 ? Math.round(lift.power)
               : lift.power >= 1.95 ? lift.power.toFixed(1) : lift.power.toFixed(2)}</b>
-            <span className="ll"><span className="cjk">力</span> {GEAR.powerFrom}</span>
+            <span className="ll"><span className="cjk"><Term han="力" sense="axis" plain /></span> {GEAR.powerFrom}</span>
             <span className="ls">{GEAR.powerSays(lift.power)}</span>
           </div>
           <div className="lq">
             <span className="lghost cjk" aria-hidden="true">氣</span>
             <b className="mono"><small>×</small>{lift.rate.toFixed(2)}</b>
-            <span className="ll"><span className="cjk">氣</span> {GEAR.qiFrom}</span>
+            <span className="ll"><span className="cjk"><Term han="氣" sense="axis" plain /></span> {GEAR.qiFrom}</span>
             <span className="ls">{GEAR.qiSays}</span>
           </div>
         </div>
@@ -161,7 +181,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 運 +200% read ×3.00 on a body whose drops were ×1.55 rarer. */}
             {(['luck', 'find', 'sunder', 'art', 'capacity', 'refine'] as const).filter((a) => totals[a] > 0).map((a) => (
               <div key={a}>
-                <span className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain /></span>
+                <span className="cjk"><Term han={AFFIX_INFO[a].han} sense="axis" plain
+                  entry={a === 'find' ? findNote : undefined} /></span>
                 <span>{GEAR.other[a]}</span>
                 {a !== 'capacity' && <span className="oesum mono">{GEAR.sum(totals[a])}<i aria-hidden="true">→</i></span>}
                 <em className="mono">

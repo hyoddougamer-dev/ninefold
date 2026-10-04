@@ -317,6 +317,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                    border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12px;
                    letter-spacing: .06em; color: var(--jade); cursor: pointer; }
 .termtip .termgo:hover, .termtip .termgo:focus-visible { background: rgba(127,180,149,.12); }
+/* 式 A gear line's formula, at the foot of its note: smaller, fainter, under a rule. */
+.termtip .termmath { display: block; margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--line);
+                     font-family: inherit; font-size: 11.5px; line-height: 1.55; font-variant-numeric: tabular-nums;
+                     color: var(--faint); opacity: .85;
+                     white-space: pre-line; overflow-wrap: anywhere; }
 
 /* 出口 The one way out, fixed to the viewport so it can never scroll away.
    Above .help (13), .arena and every sheet, because it has to be reachable from all
@@ -3213,6 +3218,10 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
                border: 1.5px solid rgba(58, 50, 38, .9); background: #120F0B; }
 .crafts .cic img.emblem { display: block; }
 .crafts .cic .plate, .crafts .cic > * { max-width: 100%; }
+/* 職 A forged piece's school, top left, in the school's colour: the seal 器's tiles carry. */
+.crafts .cr-gearic { position: relative; }
+.crafts .cr-gearic .cr-school { position: absolute; left: 3px; top: 1px; font-size: 10.5px; line-height: 1;
+                                font-family: 'Noto Serif SC', serif; opacity: .95; pointer-events: none; }
 
 .crafts .ctask { margin-bottom: 14px; }
 .crafts .ctask[data-idle='true'] { border-style: dashed; }

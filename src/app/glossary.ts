@@ -6,6 +6,7 @@ import { STANCES } from '../data/arts.ts';
 import { PATHS, PATH_INFO } from '../data/techniques.ts';
 import { SYSTEMS } from '../sim/unlocks.ts';
 import { CRAFT_FEED_LEVEL, FATE_FULL } from '../sim/balance.ts';
+import { lineMath, lineNote } from './lines.ts';
 import { FEEDER } from '../sim/crafts.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
@@ -42,6 +43,8 @@ export interface Term {
   readonly colour?: string;
   /** An icon key, where the game draws this thing rather than only naming it. */
   readonly art?: string;
+  /** 式 A formula, set apart at the foot of the note for whoever wants it. */
+  readonly math?: string;
 }
 
 export interface Group {
@@ -116,7 +119,7 @@ export const GROUPS: readonly Group[] = [
   },
   {
     title: KEY.axesHead, blurb: KEY.axesBlurb, sense: 'axis',
-    rows: AFFIXES.map((a) => ({ han: AFFIX_INFO[a].han, name: AFFIX_INFO[a].label })),
+    rows: AFFIXES.map((a) => ({ han: AFFIX_INFO[a].han, name: AFFIX_INFO[a].label, note: lineNote(a), math: lineMath(a) })),
   },
   {
     title: KEY.slotsHead, blurb: KEY.slotsBlurb, sense: 'slot',

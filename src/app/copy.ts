@@ -20,11 +20,14 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, OPENING_PURSE, QUARRY_HOURS, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QUARRY_HOURS, SUNDER_BEND, UNCAPPED_RATE_CEILING, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
 import { RARITY_INFO } from '../data/gear.ts';
+
+/** 式 A balance constant as a formula prints it: 0.35, never 0.35000000000000009. */
+const trim = (x: number) => String(Math.round(x * 1000) / 1000);
 
 /**
  * 引 How to play, and now only the part that cannot be shown.
@@ -1352,6 +1355,51 @@ export const GEAR = {
    */
   sum: (x: number) => `+${Math.round(x)}%`,
   bends: (top: number) => `On the left, what your pieces add up to. On the right, what it does: these lines bend, so each % adds a little less than the one before. Drop chance is added in points, never past ${top}. Power never bends.`,
+  /**
+   * 註 What a line's character says when it is tapped, on 器 and in 釋 the key. rekaris, on
+   * the Discord (2026-10-04), asked what each line does and where it stops, and was told the
+   * note would say. So each note is the same four things in the same order: what the line
+   * does, its cap where it has one, how it bends said by example, and then the formula, set
+   * apart in the note's last line for whoever wants it. The examples are worked out by the
+   * sim's own bends (glossary.ts), and the formulas print balance.ts, never a copy of it.
+   */
+  line: {
+    power: () => 'Power decides every fight. More of it, and the beasts above you fall sooner.\n'
+      + 'It has no cap and it never bends: every % counts in full.',
+    rate: (top: number, small: string, big: string) => 'Qi a second, while you are away too.\n'
+      + `Gear and the 道 Path tree together never lift it past ×${top}. `
+      + `It bends toward that: +50% gives ${small}, +200% only ${big}.`,
+    luck: (small: string, big: string) => 'Rarer gear from every drop, and better rolls on what drops.\n'
+      + `No cap, but it bends: +100% gives ${small}, +300% only ${big}.`,
+    find: (top: number, base: string, pts: string, after: string) =>
+      'How often a beast leaves a piece. It is added in points to the beast\u2019s own chance.\n'
+      + `Never past ${top} points. +100% on your pieces is ${pts} points: a beast\u2019s ${base} becomes ${after}.\n`
+      + 'With 造化 Creation every beast drops already, so it is the chance of a second piece.',
+    sunder: (small: string, big: string) => 'Beasts count as weaker against you. Never the Dragon of the tribulation.\n'
+      + `No cap, but it bends hard: +100% takes ${small} off a beast, +300% only ${big}.`,
+    art: (small: string, big: string) => 'Your arts strike harder when they fire, and 龜息 Turtle Breath heals more.\n'
+      + `No cap, but it bends: +100% gives ${small}, +300% only ${big}. Never against the Dragon.`,
+    refine: (top: number, small: string, big: string) => 'A fusion keeps more of the quality of the three pieces it eats.\n'
+      + `It bends: +100% gives ${small}, +300% only ${big}. `
+      + `A fused piece stops at ×${top} its rank\u2019s usual roll.`,
+    capacity: () => 'More places in the chest. A flat count, added in full.',
+  },
+  /** 式 The formula under each note. s is what the pieces add up to, the left column. */
+  math: {
+    power: 'power × (1 + s/100)',
+    rate: `x = (1 + s/100) × tree − 1, qi × (1 + ${trim(UNCAPPED_RATE_CEILING - 1)}x / (${trim(UNCAPPED_RATE_CEILING - 1)} + x))`,
+    luck: `rare odds × (1 + ${trim(LUCK_BEND)} · ln(1 + s/100))`,
+    find: `chance + ${trim(FIND_TOP * 100)} × (1 − 1 / (1 + s/100)) points`,
+    sunder: `beast × 1 / (1 + ${trim(SUNDER_BEND)} · ln(1 + s/100))`,
+    art: `art × (1 + ${trim(ART_BEND)} · ln(1 + s/100))`,
+    refine: `quality × (1 + ${trim(FUSE_BEND)} · ln(1 + s/100)), at most ×${trim(FUSE_TOP)}`,
+    capacity: 'chest + s',
+  } as Record<string, string>,
+  /** 拾 The player's own drop chance, said on 器 under the note's worked example. */
+  findYours: (pts: string, beast: string, before: string, after: string) =>
+    `Yours: +${pts} points, so the ${beast}\u2019s ${before} becomes ${after}.`,
+  /** 式 How the formula line is introduced, so it reads as optional. */
+  mathHead: 'The formula, s being your pieces\u2019 total in %:',
   /** 篩 The chest's filters. */
   all: 'All',
   betterOnly: 'Better',
@@ -1884,6 +1932,14 @@ export const CRAFTS = {
   /** 物 The note on a thing's icon in a recipe: which craft makes it. */
   madeBy: (han: string, skill: string, recipe: string) => `Made in ${han} ${skill}: ${recipe}.`,
   goMake: (recipe: string) => `Go to ${recipe}`,
+  /**
+   * 職 A forged piece's school, drawn on its picture as the seal the tiles in 器 carry.
+   * rekaris, on the Discord: a forged piece could not be held up against a hunted one.
+   */
+  schoolName: (school: string) => `${school} school`,
+  schoolNote: (school: string, han: string, line: string, says: string) =>
+    `Leads with ${han} ${line}: a ${school} piece, the same as one a beast leaves.\n`
+    + `Three worn wake the school, five make it full. ${says}`,
   quality: 'Quality',
   familiar: (marks: number) => `習 familiarity ${'\u25cf'.repeat(marks)}${'\u25cb'.repeat(5 - marks)}`,
   /**

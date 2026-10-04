@@ -4,7 +4,9 @@ import {
   type Recipe, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, plateOf } from '../../data/bestiary.ts';
-import { RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
+import { AFFIX_INFO, RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
+import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
+import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, marksOf, masteryOf, needsOf, placed,
@@ -448,8 +450,24 @@ function Out({ r, size }: { r: Recipe; size: number }) {
       <Emblem family="craft" subject={toolArt(r.makes.skill)} icon={t.icon} size={Math.round(size * 0.72)} alt={t.name} /></span>;
   }
   const tpl = TEMPLATE_BY_KEY[r.makes.template];
-  return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
-    <Svg html={icon(tpl?.icon ?? 'ancient-sword', Math.round(size * 0.62))} /></span>;
+  const picture = <span className="cic cr-gearic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
+    <Svg html={icon(tpl?.icon ?? 'ancient-sword', Math.round(size * 0.62))} />
+    {tpl && <span className="cr-school cjk" aria-hidden="true"
+      style={{ color: SCHOOL_INFO[schoolOfAxis(tpl.affix)].colour }}>{SCHOOL_INFO[schoolOfAxis(tpl.affix)].seal}</span>}
+  </span>;
+  if (!tpl) return picture;
+  // 職 The school, top left, as the tiles in 器 carry it, so a forged piece can be held up
+  // against a hunted one at a glance. A forged piece leads with its shape's own line, so
+  // the shape's school is the piece's. The picture is the note: tap it for the name.
+  const sc = schoolOfAxis(tpl.affix);
+  const line = AFFIX_INFO[tpl.affix];
+  return (
+    <Term han={SCHOOL_INFO[sc].seal} bare
+      entry={{ han: SCHOOL_INFO[sc].seal, name: CRAFTS.schoolName(SCHOOL_INFO[sc].short),
+        note: CRAFTS.schoolNote(SCHOOL_INFO[sc].short, line.han, line.label, schoolSays(sc)) }}>
+      {picture}
+    </Term>
+  );
 }
 
 /** One material or made thing: a beast's painting for its part, an emblem for the rest. */
