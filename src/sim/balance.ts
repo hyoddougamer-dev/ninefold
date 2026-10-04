@@ -542,13 +542,59 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
 }
 
 /**
- * 吸 What a tower floor is worth in qi, in hours of your own gathering.
+ * 吸 What a tower floor is worth in qi, in hours of your gathering counted without gear.
  *
  * The tower is the one place where fighting turns into *progress* rather than only into
  * power. A floor pays this once and never again. There is no floor to farm, so it can
  * be generous without ever becoming a loop that feeds itself.
+ *
+ * 衣 Counted without gear because a reward the clothes can move is a reward somebody
+ * strips for (2026-10-04). Worn 氣 lines lift the rate about a fifth (×1.12 to ×1.24
+ * across the habits, measured, the ceiling holding it there), so six hours of the bare
+ * rate is about five of the rate a geared cultivator sees on the bar. It stays six
+ * rather than being raised to make up the difference: at seven five habits of six
+ * reached the ninth realm about a day earlier than before, measured, and at six none
+ * moved by more than two days either way. The table is beside TOWER_QI_BELOW.
  */
 export const TOWER_QI_HOURS = 6;
+
+/**
+ * 吸 What a floor below your realm's warden pays, as a share of the floor above it.
+ *
+ * 塔 opens at the fifth realm with forty-odd floors already beneath a cultivator who
+ * arrives there. Paid in full, that first sitting was worth **ten days and eighteen
+ * hours** of gathering, which made the fifth realm the shortest in the run. So the
+ * whole six hours start at the floor your own warden stands on (floor 45 in the fifth
+ * realm, 81 in the ninth) and every floor below it pays a fifth less than the one above:
+ * one floor down 4.8 hours, a realm down 0.8, the first realm's floors nothing worth
+ * counting. A fifth because it is the reference's own step between two floors (0.79 to
+ * 0.82, see referenceAt), so a floor's pay falls as fast as its beast's power does.
+ *
+ * It used to scale by the floor's power against the cultivator's own, and own power
+ * counts gear, so taking a piece off raised the pay of every floor outgrown: a sweep from
+ * floor 1 at the fifth realm paid 52 hours worn and 80.6 choosing pieces floor by floor.
+ * This reads the floor and the realm and nothing else.
+ *
+ * Measured with tools/habits.ts, ninth-realm day before and after (old rule, then six
+ * hours with 0.8 from the warden floor), and the alternatives that were tried:
+ *
+ *   habit            before  0.8 (this)  0.7    from the rung  seven hours
+ *   once a day        64.0     65.0      68.0      65.0         63.0
+ *   active            42.3     41.7      41.8      40.5         40.7
+ *   every hour        27.6     28.0      27.6      26.8         26.4
+ *   drives it all     42.8     43.3      43.7      42.7         42.0
+ *   walks 神          39.8     41.5      42.2      41.0         41.0
+ *   crafts it all     41.5     41.7      42.2      41.5         40.8
+ *
+ * Full pay from the cultivator's own rung rather than the realm's warden paid the
+ * fifth-realm sweep 131 hours instead of 52 and brought the active cultivator in 1.8
+ * days early; from the warden it pays 86. 0.7 and 0.8 differ by a day or two at most,
+ * and neither walls anything: this is a slope, not a knife edge. The endgame barely
+ * notices: 80 crossings took 530 days before and 528 to 548 across every variant, and
+ * with every Dragon a tenth heavier (the longhaul test's push) 812 before and 846 now,
+ * the slowest crossing 12 days instead of 11. It slows, it does not wall.
+ */
+export const TOWER_QI_BELOW = 0.8;
 
 /**
  * 道 Why 神 the Spirit branch stopped selling the qi rate.

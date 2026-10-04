@@ -1,5 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, floorPay } from './balance.ts';
+import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, TOWER_QI_BELOW, TOWER_QI_HOURS, floorPay } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
 
 /**
@@ -48,6 +48,25 @@ export function floorBeast(floor: number): Beast {
 /** How much material a floor pays, the first time it falls. */
 export function floorLoot(floor: number): number {
   return Math.round(floorPay(floor));
+}
+
+/**
+ * 吸 The first floor that pays its whole six hours to a cultivator of this realm: the
+ * floor its own warden stands on. The fifth realm's is floor 45, the ninth's floor 81.
+ */
+export function fullFloor(realm: number): number {
+  return Math.max(1, Math.floor(realm)) * FLOORS_PER_REALM;
+}
+
+/**
+ * 吸 How many hours of gathering a floor pays, read off the floor and the realm alone.
+ *
+ * TOWER_QI_HOURS from your realm's warden floor up, and TOWER_QI_BELOW of the floor above
+ * for every floor under it. Nothing worn enters, so the card can say it before the
+ * fight and taking a piece off cannot raise it. The measurements are in balance.ts.
+ */
+export function floorHours(floor: number, realm: number): number {
+  return TOWER_QI_HOURS * TOWER_QI_BELOW ** Math.max(0, fullFloor(realm) - floor);
 }
 
 /**

@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { LINES, PILL_GRADES, PILL_LINES, pillOf } from '../../data/alchemy.ts';
-import { LAYERS_PER_REALM, PILL_AHEAD, PILL_PACE, levelCap } from '../balance.ts';
+import { LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_BELOW, TOWER_QI_HOURS, levelCap } from '../balance.ts';
+import { ARCHETYPES, TEMPLATE_BY_KEY, callingOf, type Item, type Slot, type Worn } from '../../data/gear.ts';
+import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { WARDEN_EDGE, odds, referencePower } from '../combat.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import {
-  FLOORS_PER_REALM, floorBeast, floorLoot, floorPower, lootBonus, seals,
+  FLOORS_PER_REALM, floorBeast, floorHours, floorLoot, floorPower, fullFloor, lootBonus, seals,
 } from '../tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
 } from '../furnace.ts';
-import { brew, canBrew, clearFloor, floorMaterial, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
+import { brew, canBrew, clearFloor, floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen, towerRate } from '../trials.ts';
 import { isOpen, opensAt } from '../unlocks.ts';
 import { newState, power, validate, type State } from '../state.ts';
 import { num } from '../format.ts';
@@ -242,5 +244,68 @@ describe('爐 the Furnace', () => {
     expect(pillsTaken(held.brewed)).toBeGreaterThan(0);
     // 爐 And before the furnace exists there are no pills at all, whatever the save says.
     expect(pillsTaken(validate({ ...forged, realm: 5 }, T0 + 10).brewed)).toBe(0);
+  });
+});
+
+/**
+ * 吸 衣 What a floor pays in qi, and the one thing it must never read: the clothes.
+ *
+ * A tester took gear off and watched the pay of an outgrown floor climb (2026-10-04),
+ * because the pay was scaled by the cultivator's own power and paid at the rate with gear
+ * on. Now the floor and the realm decide the hours, the rate is the bare one, and 天師
+ * the Celestial Master is the only thing a body adds.
+ */
+describe('吸 what a floor pays in qi', () => {
+  /** One piece of a school in a place, the first shape that has both. */
+  const pieceOf = (school: School, slot: Slot, value = 40): Item => {
+    const a = ARCHETYPES.find((x) => x.slot === slot && SCHOOL_INFO[school].axes.includes(x.affix))!;
+    const tpl = TEMPLATE_BY_KEY[`${a.key}6`];
+    return { id: `${school}-${slot}`, template: tpl.key, rarity: 'earth', rolls: [{ affix: tpl.affix, value }] };
+  };
+  const can = (sc: School, slot: Slot) => ARCHETYPES.some((x) => x.slot === slot && SCHOOL_INFO[sc].axes.includes(x.affix));
+  const SIX: Slot[] = ['weapon', 'robe', 'crown', 'boots', 'talisman', 'ring'];
+  /** Three of one school and three of another, so the pair wakes. */
+  const pairWorn = (a: School, b: School): Worn => {
+    const out: Worn = {};
+    let na = 0, nb = 0;
+    for (const slot of SIX) {
+      if (na < 3 && can(a, slot)) { out[slot] = pieceOf(a, slot); na++; } else if (nb < 3 && can(b, slot)) { out[slot] = pieceOf(b, slot); nb++; }
+    }
+    return out;
+  };
+  const fifth: State = { ...atCap(5), layer: 4, tower: 30 };
+
+  it('pays the same whatever is worn, so stripping buys nothing', () => {
+    const sword = { ...fifth, worn: Object.fromEntries(SIX.filter((s) => can('sword', s)).map((s) => [s, pieceOf('sword', s, 300)])) } as State;
+    const qi = { ...fifth, worn: Object.fromEntries(SIX.filter((s) => can('qi', s)).map((s) => [s, pieceOf('qi', s, 300)])) } as State;
+    expect(power(sword)).toBeGreaterThan(power(fifth) * 2);
+    for (const floor of [1, 20, 31, 41, 44, 45, 60]) {
+      expect(floorQi(sword, floor), `floor ${floor}`).toBeCloseTo(floorQi(fifth, floor), 6);
+      expect(floorQi(qi, floor), `floor ${floor}`).toBeCloseTo(floorQi(fifth, floor), 6);
+    }
+    console.log(`\n  fifth realm, nothing worn, six 劍 pieces or six 氣 pieces: floor 31 pays ` +
+      `${floorHours(31, 5).toFixed(2)}h, floor 41 ${floorHours(41, 5).toFixed(2)}h, floor 45 ` +
+      `${floorHours(45, 5).toFixed(2)}h, the same qi for all three bodies\n`);
+  });
+
+  it('starts the whole six hours at your realm warden floor and pays a fifth less below it', () => {
+    expect(fullFloor(5)).toBe(45);
+    expect(fullFloor(9)).toBe(81);
+    expect(floorHours(45, 5)).toBe(TOWER_QI_HOURS);
+    expect(floorHours(500, 5)).toBe(TOWER_QI_HOURS);
+    expect(floorHours(44, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW, 9);
+    expect(floorHours(36, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW ** 9, 9);
+    // A floor never pays more for the cultivator having climbed further up the mountain.
+    for (let f = 1; f < 100; f++) expect(floorHours(f, 6)).toBeLessThanOrEqual(floorHours(f, 5));
+    // And the qi is the hours at the rate with nothing worn.
+    expect(floorQi(fifth, 50)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
+  });
+
+  it('pays 天師 the Celestial Master a quarter again, and nothing else a body wears moves it', () => {
+    const celestial = { ...fifth, worn: pairWorn('qi', 'arts') };
+    const wargod = { ...fifth, worn: pairWorn('sword', 'body') };
+    expect(callingOf(celestial.worn).pair?.key).toBe('celestial');
+    expect(floorQi(celestial, 45)).toBeCloseTo(floorQi(fifth, 45) * PAIR_TOWER_QI, 4);
+    expect(floorQi(wargod, 45)).toBeCloseTo(floorQi(fifth, 45), 6);
   });
 });

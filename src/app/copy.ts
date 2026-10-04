@@ -492,8 +492,18 @@ export const TRIALS = {
   sealWorth: (pct: string) => `Every nine floors is a seal. Seals give you ${pct} more material from everything.`,
   climb: 'Climb',
   pays: (mats: string, qi: string) => `pays ${mats} 材 · ${qi} qi`,
-  /** The qi a floor pays, said in the unit that means something: your own time. */
-  hours: (span: string) => `A floor pays ${span} of your own gathering, once: the biggest thing a fight ever puts into the bar.`,
+  /**
+   * 吸 The qi this floor pays, said in the unit that means something: your own time. It is
+   * counted without gear, so what is worn can never move it, and the card says so.
+   * `bonus` is the Celestial Master's share when that class is worn, as "25%".
+   */
+  hours: (span: string, bonus?: string) =>
+    `This floor pays ${span} of your gathering without gear, once${bonus ? `, ${bonus} more as Celestial Master` : ''}. What you wear never changes it.`,
+  /** 吸 Why a floor under your realm's warden pays less, and where the full pay starts. */
+  below: (full: string, from: number, less: string) =>
+    `The full ${full} starts at floor ${from}, your realm's warden. Each floor below that pays ${less} less than the one above it.`,
+  /** 吸 What a floor far below pays, where a count of seconds would read as a glitch. */
+  little: 'less than a minute',
 
   furnaceHead: '爐 The Furnace',
   furnaceShut: (han: string, name: string) =>
@@ -570,7 +580,7 @@ export const ADVICE = {
   brewForDragon: (han: string, pct: number) =>
     `The Dragon is at ${pct}%. A ${han} raises that, and the power stays with you afterwards.`,
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
-  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays hours of gathering, once.`,
+  floorWaiting: (floor: number) => `Floor ${floor} of the tower looks winnable. It pays material and qi, once.`,
   huntForMaterial: 'Everything else is at its cap. Hunt for 材 material, which is what 妖丹 cores cost.',
   cappedSoSpend: 'Nothing left to buy in this realm. The tower and the furnace are where qi goes now.',
   cappedSoClimb: 'Nothing left to buy in this realm. The tower is where the next thing comes from.',

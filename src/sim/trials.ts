@@ -1,10 +1,9 @@
 import { furnaceDiscount } from './crafts.ts';
 import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
-import { floorLoot, floorPower, lootBonus, nextFloor } from './tower.ts';
-import { TOWER_QI_HOURS } from './balance.ts';
+import { floorHours, floorLoot, lootBonus, nextFloor } from './tower.ts';
 import { recordMaterial } from './record.ts';
-import { power, rate, type State } from './state.ts';
+import { rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
 import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
@@ -31,26 +30,33 @@ export function towerOpen(s: State): boolean {
 }
 
 /**
+ * 吸 The rate a floor is paid at: this cultivator's gathering with nothing worn.
+ *
+ * The levels, the pills, the tree and the marks all count, because none of them can be
+ * taken off. The gear's 氣 lines do not, so the pay never moves when the clothes do.
+ */
+export function towerRate(s: State): number {
+  return rate({ ...s, worn: BARE });
+}
+const BARE = {} as State['worn'];
+
+/**
  * 吸 What a floor gives up when it falls: material, and hours of gathering.
  *
- * Six hours, scaled by how much of a fight the floor actually was.
+ * 誤 It used to be six hours of the rate *with* gear on, scaled by the floor's power
+ * against the cultivator's *own* power, gear and all. A tester found what that meant
+ * (2026-10-04): taking a piece off raised the pay of every floor already outgrown, so a
+ * sweep from the first floor at the fifth realm paid 52 hours worn and 80.6 choosing
+ * what to wear floor by floor, ×1.55, measured. Clothes moved the reward, and the card
+ * said six hours while the early floors paid none.
  *
- * Without the scaling the tower paid its whole back catalogue at once. 塔 opens at the
- * fifth realm, and a cultivator arriving there swept forty-three floors in a single
- * sitting and walked away with **ten days and eighteen hours** of gathering, measured,
- * which made the fifth realm the shortest in the run, shorter than the fourth. A reward
- * for opening a system is right; a reward that rewrites the curve is not.
- *
- * So a floor at your own power pays the full six hours and a floor a tenth of it pays a
- * tenth. Sweeping what is far below you is a quick errand for material; pushing into
- * something that can actually beat you is what pays in qi. Nothing changes for the floor
- * you are really climbing. It is always near your power, and it always pays in full.
+ * Now the floor and the realm decide the hours (floorHours in tower.ts), the rate is the
+ * one with nothing on (towerRate), and 天師 the Celestial Master is the one thing a build
+ * adds. What the card says before the fight is what the fight pays.
  */
 export function floorQi(s: State, floor = standingFloor(s)): number {
-  const mine = power(s);
-  const standing = mine > 0 ? Math.min(1, floorPower(floor) / mine) : 1;
-  // 天師 The Celestial Master is paid half again for a floor. A payment, never the rate.
-  return rate(s) * 3600 * TOWER_QI_HOURS * standing * classTowerQi(s);
+  // 天師 The Celestial Master is paid a quarter again for a floor. A payment, never the rate.
+  return towerRate(s) * 3600 * floorHours(floor, s.realm) * classTowerQi(s);
 }
 
 /**
