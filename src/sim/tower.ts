@@ -1,5 +1,5 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, TOWER_QI_BELOW, TOWER_QI_HOURS, floorPay } from './balance.ts';
+import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, TOWER_QI_ABOVE, TOWER_QI_BELOW, TOWER_QI_LEAST, TOWER_QI_HOURS, floorPay } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
 
 /**
@@ -51,7 +51,7 @@ export function floorLoot(floor: number): number {
 }
 
 /**
- * 吸 The first floor that pays its whole six hours to a cultivator of this realm: the
+ * 吸 The floor that pays the most to a cultivator of this realm, the whole six hours: the
  * floor its own warden stands on. The fifth realm's is floor 45, the ninth's floor 81.
  */
 export function fullFloor(realm: number): number {
@@ -61,12 +61,17 @@ export function fullFloor(realm: number): number {
 /**
  * 吸 How many hours of gathering a floor pays, read off the floor and the realm alone.
  *
- * TOWER_QI_HOURS from your realm's warden floor up, and TOWER_QI_BELOW of the floor above
- * for every floor under it. Nothing worn enters, so the card can say it before the
- * fight and taking a piece off cannot raise it. The measurements are in balance.ts.
+ * TOWER_QI_HOURS on your realm's warden floor. Under it, TOWER_QI_BELOW of the floor above
+ * for every floor. Over it, a little less each floor (TOWER_QI_ABOVE of what lies over the
+ * least) and never under TOWER_QI_LEAST of the six hours. Nothing worn enters, so the card
+ * can say it before the fight and taking a piece off cannot raise it. The measurements
+ * are in balance.ts.
  */
 export function floorHours(floor: number, realm: number): number {
-  return TOWER_QI_HOURS * TOWER_QI_BELOW ** Math.max(0, fullFloor(realm) - floor);
+  const from = fullFloor(realm);
+  return floor < from
+    ? TOWER_QI_HOURS * TOWER_QI_BELOW ** (from - floor)
+    : TOWER_QI_HOURS * (TOWER_QI_LEAST + (1 - TOWER_QI_LEAST) * TOWER_QI_ABOVE ** (floor - from));
 }
 
 /**

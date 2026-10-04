@@ -51,7 +51,7 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
 import { verify, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
@@ -455,7 +455,7 @@ const SYSTEMS: readonly System[] = [
   { han: '守貢', name: 'The wall, and why it is a slope', status: 'done', at: 'wall',
     line: `A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth ${BARELY_SAVES} days of the climb.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
-    line: `One floor, one beast, no top. The material economy, and ${TOWER_QI_HOURS} hours of gathering without gear for every floor from your realm's warden up.` },
+    line: `One floor, one beast, no top. The material economy, and up to ${TOWER_QI_HOURS} hours of gathering without gear a floor: the most on your realm's warden floor, never under ${TOWER_QI_HOURS * TOWER_QI_LEAST} above it.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
   { han: '碑', name: 'The stele', status: 'done', at: 'stele',
@@ -3213,10 +3213,13 @@ const page = `<meta charset="utf-8">
         and come back, or press 坐 Sit again.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
         <i>${TOWER_QI_HOURS} hours of your gathering, counted without gear, once and never
-        again, for any floor from your realm's warden up (floor ${fullFloor(5)} in the fifth
-        realm). Each floor below that pays ${Math.round((1 - TOWER_QI_BELOW) * 100)}% less than the
-        one above it, so the floors far beneath you are an errand for material. What you wear
-        never moves it; only 天師 the Celestial Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%.
+        again, for your realm's warden floor (floor ${fullFloor(5)} in the fifth realm). Each
+        floor below it pays ${Math.round((1 - TOWER_QI_BELOW) * 100)}% less than the one above, so
+        the floors far beneath you are an errand for material. Each floor above it pays a
+        little less than the one before, never under ${TOWER_QI_HOURS * TOWER_QI_LEAST} hours. A
+        geared cultivator beats thirty floors above the warden the day the tower opens, and at
+        a full ${TOWER_QI_HOURS} each that was half the fifth realm's qi. What you wear never
+        moves it; only 天師 the Celestial Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%.
         There is no floor to farm. This is the one place in the game where fighting moves
         the bar instead of only moving your power.</i></span></div>
     </div>

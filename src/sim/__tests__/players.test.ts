@@ -8,7 +8,7 @@ import { newState, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { clearFloor, floorQi, towerRate } from '../trials.ts';
-import { TOWER_QI_BELOW, TOWER_QI_HOURS } from '../balance.ts';
+import { TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../balance.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -146,8 +146,10 @@ describe('勤 what being there buys you', () => {
    * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
    * and eighteen hours** of gathering, measured, which made the fifth realm the
    * shortest in the whole run. A reward for opening a system is right; a reward that
-   * rewrites the curve is not. So the six hours start at your realm's warden floor, and
-   * every floor below it pays a fifth less.
+   * rewrites the curve is not. So the six hours are paid on your realm's warden floor,
+   * every floor below it pays a fifth less, and every floor above it a little less again,
+   * down to half (2026-10-04: a geared cultivator beats thirty floors above the warden the
+   * day the tower opens, and at six hours each that was half the fifth realm's qi).
    */
   it('pays a floor by where it stands against your realm, and the first floors nothing', () => {
     const mighty: State = {
@@ -161,13 +163,16 @@ describe('勤 what being there buys you', () => {
       `and ${num(trivial)} for the first floor in the tower\n`);
 
     expect(real).toBeCloseTo(full, 4);
-    expect(floorQi(mighty, 200)).toBeCloseTo(full, 4);
+    expect(floorQi(mighty, 200) / (full * TOWER_QI_LEAST)).toBeCloseTo(1, 9);
     expect(floorQi(mighty, 80)).toBeCloseTo(full * TOWER_QI_BELOW, 4);
     expect(trivial).toBeLessThan(real / 1000);
-    // The fifth realm's warden floor and everything above it is worth the whole six hours.
+    // The fifth realm's warden floor is worth the whole six hours, and the floors above it
+    // less, never under half.
     const fifth = { ...newState(T0), realm: 5, layer: 4 };
-    expect(floorQi(fifth, 45)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
-    expect(floorQi(fifth, 60)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
+    const six = towerRate(fifth) * 3600 * TOWER_QI_HOURS;
+    expect(floorQi(fifth, 45)).toBeCloseTo(six, 4);
+    expect(floorQi(fifth, 60)).toBeLessThan(six);
+    expect(floorQi(fifth, 60)).toBeGreaterThanOrEqual(six * TOWER_QI_LEAST);
   });
 
   /**
