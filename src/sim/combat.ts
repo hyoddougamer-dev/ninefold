@@ -15,7 +15,7 @@ import { pillBane } from './furnace.ts';
 import { lootTaken } from './trials.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import {
-  classArts, classBounty, classForm, classMend, classTower, classWarden, gearArt, gearSunder,
+  classArts, classBounty, classDragon, classMend, classTower, classWarden, gearArt, gearSunder,
 } from './schools.ts';
 import { BOON_BLOOD, BOON_LOTUS, QUARRY_HOURS } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
@@ -160,7 +160,6 @@ interface Setup {
   readonly sequence: ReturnType<typeof sequenceOf>;
   readonly pp: number;
   readonly bp0: number;
-  readonly formFloor: number;
   readonly artStrike: number;
   readonly mend: number;
   readonly playerPower: number;
@@ -183,8 +182,6 @@ function setup(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): Setup 
     // A tower floor brings its own power; everywhere else the beast brings its own.
     bp0: (standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing))
       * (b.key === DEMON_KEY ? kit.demon : 1),
-    // 劍聖 The Sword Saint's form never rolls below its middle.
-    formFloor: classForm(s),
     artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
     // 羅漢 The Arhat mends a little every round, as 續 Endure does.
     // 蓮 And the lotus seed from the monk on the road, for somebody who walked kindly.
@@ -207,8 +204,7 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
   let took = 0;              // what the beast dealt last round, for 傀儡 and 鏡
 
   const d = dice(seed);
-  // The dice are still read under a form floor, so every other roll lands where it would have.
-  const myForm = Math.max(1 - FORM + d() * FORM * 2, u.formFloor);
+  const myForm = 1 - FORM + d() * FORM * 2;
   const itsForm = 1 - FORM + d() * FORM * 2;
   beastPower *= itsForm;
 
@@ -510,7 +506,13 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
     // 劫 The tribulation is lightning, not a beast. 破甲 and 破煞 thin what has blood in
     // it; neither has any hold on heaven, and if they did the endgame would be a pill
     // you swallow once rather than a ladder you climb.
-    return tribulationPower(s, base);
+    //
+    // 劍聖 The one thing that does reach it is the Sword Saint, and that is the whole of the
+    // class: the Dragon counts PAIR_DRAGON of itself against one. It is a class, so it is a
+    // choice and it is bounded, and it is read here, before the fight, so evenDragon and
+    // the anchor it sets read the Dragon the Saint actually met. That is what keeps the
+    // lead at the same size every crossing rather than spent on the first one.
+    return tribulationPower(s, base) * classDragon(s);
   }
   // 破 The body's sunder line, bent; 劍仙 the tower's floors; 武神 the wardens.
   const tower = standing !== undefined ? classTower(s) : 1;

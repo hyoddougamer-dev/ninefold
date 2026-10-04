@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AUTO_HABIT, HABITS, play } from '../../../tools/habits.ts';
-import { playEndgame } from '../../../tools/endgame.ts';
+import { arrivalOf, playEndgame } from '../../../tools/endgame.ts';
 import { rate } from '../time.ts';
 import { TOWER_FORGED, anchorFloor, bodiesHeld, firstSync, towerVerdict, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
 import { floorBeast, floorPower } from '../tower.ts';
@@ -8,7 +8,8 @@ import { saveSet } from '../sets.ts';
 import { RUN_DAO_CEILING } from '../../data/secret.ts';
 import { validate } from '../state.ts';
 import { fuse } from '../chest.ts';
-import { FUSE_TOP, focusAt } from '../balance.ts';
+import { FUSE_TOP, PAIR_DRAGON, focusAt } from '../balance.ts';
+import { classDragon, classTower } from '../schools.ts';
 import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
 import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, power, type State } from '../state.ts';
@@ -446,5 +447,93 @@ describe('套 a floor is read against the strongest body the save holds', () => 
     console.log(`    floor ${f} waits at x${(floorPower(f) / strongest).toFixed(2)}; floor 500 is x${(floorPower(500) / strongest).toExponential(1)} the strongest body`);
     expect(forged.strike).toBe(true);
     expect(forged.why).toContain('tower');
+  });
+});
+
+/**
+ * 劍仙 A floor counts PAIR_TOWER of itself against a Sword Immortal, so an honest one wins
+ * floors well past its bare power. towerVerdict reads a body's reach through its own class,
+ * or the class the tower is for would be the one the server came closest to striking.
+ */
+describe('劍仙 a Sword Immortal climbs past its bare power, and is never struck for it', () => {
+  const active = HABITS.find((h) => h.name === 'active')!;
+  const immortal = { ...active, name: 'active swordimmortal', calling: 'swordimmortal' as const };
+  const shots: State[] = [];
+  let next = 0;
+  play(immortal, 120, (day, s) => {
+    if (day < next || s.realm < 5 || classTower(s) === 1) return;
+    next = day + 4;
+    shots.push(structuredClone(s));
+  });
+  const wins = (s: State, f: number) => bodiesHeld(s).some((b) => beatable(b, floorBeast(f), floorPower(f)));
+
+  it('wears the class in the tower often enough to measure something', () => {
+    console.log(`    ${shots.length} visits as a Sword Immortal from the fifth realm`);
+    expect(shots.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('takes its highest floor, waits on the next, and still strikes floor 500', () => {
+    let furthest = 0;
+    for (const s of shots) {
+      let f = Math.max(1, s.tower);
+      while (wins(s, f + 1)) f++;
+      const bare = Math.max(...bodiesHeld(s).map(power));
+      furthest = Math.max(furthest, floorPower(f) / bare);
+      expect(towerVerdict(s, f), `realm ${s.realm} floor ${f}`).toBe('ok');
+      expect(towerVerdict(s, f + 1), `realm ${s.realm} floor ${f + 1}`).toBe('wait');
+      expect(towerVerdict(s, 500)).toBe('strike');
+    }
+    console.log(`    its highest honest floor stood up to x${furthest.toFixed(2)} its bare power`);
+    // The class does what it says: it wins floors a bare reading of power would not allow.
+    expect(furthest).toBeGreaterThan(3);
+  });
+});
+
+/**
+ * 劫 A crossing is read against the Dragon that fell. The check used to stand it on the
+ * anchor the crossing left behind, which is the next Dragon's, and struck every honest
+ * mark. 劍聖 And a Sword Saint meets that Dragon at PAIR_DRAGON of itself, which the
+ * anchor remembers.
+ */
+describe('劫 an honest crossing is never struck, a Sword Saint\'s included', () => {
+  const DAYS_A_MARK = 10 * DAY;
+  const honest = (start: State | undefined, marks: number) => {
+    const out: string[] = [];
+    let prev = playEndgame(1, 'pill', start).end;
+    for (let n = 2; n <= marks; n++) {
+      const next = playEndgame(n, 'pill', start).end;
+      const v = verify(prev, next, DAYS_A_MARK);
+      if (v.why.includes('warden') || v.why.includes('anchor')) out.push(`mark ${n}: ${v.why.join(',')}`);
+      prev = next;
+    }
+    // Two marks between one sync and the next: the last Dragon is read off the floor.
+    const one = playEndgame(1, 'pill', start).end;
+    const three = playEndgame(3, 'pill', start).end;
+    const v = verify(one, three, 2 * DAYS_A_MARK);
+    if (v.why.includes('warden') || v.why.includes('anchor')) out.push(`marks 2 and 3 at once: ${v.why.join(',')}`);
+    return out;
+  };
+
+  it('the active cultivator, mark by mark', () => {
+    expect(honest(undefined, 6)).toEqual([]);
+  });
+
+  it('a Sword Saint, who meets every Dragon thinner', () => {
+    const active = HABITS.find((h) => h.name === 'active')!;
+    const start = arrivalOf(play({ ...active, name: 'active swordsaint', calling: 'swordsaint' }).state);
+    expect(classDragon(start)).toBe(PAIR_DRAGON);
+    expect(honest(start, 6)).toEqual([]);
+  });
+
+  it('and a mark no body the save holds could have won is still a strike', () => {
+    const top = playEndgame(3).end;
+    const later = top.at + 30 * DAY;
+    const forged = {
+      ...top, at: later, tribulation: top.tribulation + 1, tribulationAt: anchorFloor(top, top.tribulation + 1) * 2,
+      worn: {}, chest: [], sets: [],
+    };
+    const v = verify(top, validate(forged, later), later - top.at);
+    expect(v.why).toContain('warden');
+    expect(v.strike).toBe(true);
   });
 });

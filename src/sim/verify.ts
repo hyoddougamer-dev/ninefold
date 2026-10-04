@@ -28,7 +28,10 @@
  * same file runs in the tests, in the harnesses, and in the server's sync function, so
  * the rule cannot be one thing on the phone and another on the server.
  */
-import { FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_MELT, PAIR_TOWER_QI, QUARRY_HOURS, TRIBULATION_CHALLENGE } from './balance.ts';
+import {
+  FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_TOWER_QI, QUARRY_HOURS,
+  TRIBULATION_CHALLENGE,
+} from './balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -48,6 +51,7 @@ import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorHours, floorPower } from './tower.ts';
 import { opensAt } from './unlocks.ts';
+import { classTower } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -200,14 +204,20 @@ function pillsBetween(a: State, b: State): number {
  * before it (or on the ladder, if that was higher), and a heaven opened multiplies it by
  * what the new room is worth. The even-odds reading can only ever raise it further, so
  * this is a floor an honest crossing always clears.
+ *
+ * 劍聖 The Dragon that fell is the one the cultivator met, and a Sword Saint meets it at
+ * PAIR_DRAGON of itself, so that is the least it is counted as here. The server cannot
+ * know which body crossed; allowing every body the Saint's share eases the floor by that
+ * share a crossing, and the anchor still grows by TRIBULATION_CHALLENGE times it.
  */
 export function anchorFloor(before: State, marks: number): number {
   const base = beastPower(wardenOf(9));
+  const met = Math.min(1, PAIR_DRAGON);
   let at = before.tribulationAt;
   for (let m = before.tribulation; m < marks; m++) {
     const dragon = Math.max(base * tribulationScale(m), at * TRIBULATION_CHALLENGE);
     const step = heavensOpened(m + 1) > heavensOpened(m) ? heavenStep() : 1;
-    at = Math.max(at, dragon) * step;
+    at = Math.max(at, dragon * met) * step;
   }
   return at;
 }
@@ -394,9 +404,22 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // fit in the seconds between them, at the fastest each one can ever be worked.
   if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
   // 劫 Every mark is a Dragon beaten, and the last one has to be beatable by this build.
+  //
+  // 誤 It stood on the wrong anchor until 2026-10-04: `after` carries the anchor the
+  // crossing left, which is what the *next* Dragon stands on, at least TRIBULATION_CHALLENGE
+  // above the one that fell. So every honest crossing was read against a Dragon nearly
+  // twice what it beat, and struck. The Dragon that fell stood on the anchor before the
+  // last crossing; the least that can have been is anchorFloor, so that is what it is
+  // read on. And it is fought in every body the save holds, with the best kit the crafts
+  // could have carried, as the wardens and the tower are: 劍聖 a Sword Saint who crossed and
+  // then dressed for the tower is a cultivator who beat that Dragon.
   if (newMarks > 0) {
-    const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
-    if (!beatable(faced, wardenOf(9))) why.push('warden');
+    const faced = {
+      ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1,
+      tribulationAt: anchorFloor(before, after.tribulation - 1),
+    };
+    const dragon = wardenOf(9);
+    if (!bodiesHeld(faced).some((b) => beatable(b, dragon, undefined, bestKit(b, dragon, 'warden')))) why.push('warden');
   }
   // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
   // the save holds. See towerVerdict.
@@ -507,17 +530,21 @@ function strongestFromChest(s: State): State {
  * then taking the climbing loadout off was struck 46 times. So every body the save holds
  * is tried, and the floor stands if any of them can take it: 0 strikes, all 47 accepted.
  *
- * Past TOWER_FORGED times the strongest of them it is no fight at all: no roll of the
- * dice and no class closes a gap that wide, so it was written into the save, and it is a
+ * Past TOWER_FORGED times the furthest any of them reaches (its power, over the share of
+ * a floor its class counts) it is no fight at all: no roll of the dice closes a gap that
+ * wide, so it was written into the save, and it is a
  * strike. Short of that, a floor no body beats now is a matter of time rather than proof:
  * the pieces it fell to may sit loose in the chest, in no loadout, so it waits, and counts
  * once the cultivator is strong enough again. Nothing is lost by waiting.
  */
 export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' {
   const bodies = bodiesHeld(s);
-  const strongest = Math.max(...bodies.map(power));
+  // 劍仙 A floor counts PAIR_TOWER of itself against a Sword Immortal, so what a body can
+  // reach is its power over that share: read as bare power, an honest Immortal's highest
+  // floor stood ×6.85 past it. See TOWER_FORGED.
+  const reach = Math.max(...bodies.map((b) => power(b) / classTower(b)));
   const standing = floorPower(floor);
-  if (strongest > 0 && standing / strongest > TOWER_FORGED) return 'strike';
+  if (reach > 0 && standing / reach > TOWER_FORGED) return 'strike';
   return bodies.some((b) => beatable(b, floorBeast(floor), standing)) ? 'ok' : 'wait';
 }
 
@@ -534,8 +561,19 @@ export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' 
  * and everything short of it that no body can win now waits instead (towerVerdict). An
  * edited floor is not near it: floor 500, claimed by the active cultivator at its
  * strongest of the first ninety days, is ×10^31.
+ *
+ * 量 Measured again the same day, when 劍仙 the Sword Immortal's floors went to 0.65 of
+ * themselves (balance.ts PAIR_TOWER). Twice past the furthest reach was no longer true:
+ *
+ *   every habit, every three days from the fifth realm      up to ×4.25 (drives it all)
+ *   the realm 5 to 9 bodies of every class, average rolls   up to ×5.48 (法 Arts, 羅漢 Arhat)
+ *   a Sword Immortal, read as bare power                    up to ×6.85, a breath under 8
+ *   the same, read through its own floors (classTower)      up to ×4.45
+ *
+ * So a body's reach is read through its class (towerVerdict), and the bound is 12, twice
+ * past ×5.48 again. Floor 500 is still ×10^31.
  */
-export const TOWER_FORGED = 8;
+export const TOWER_FORGED = 12;
 
 /**
  * 初 What a first sync is measured from: a cultivator who began when the save says they

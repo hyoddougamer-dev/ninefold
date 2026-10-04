@@ -51,10 +51,10 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
-import { verify, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
+import { verify, TOWER_FORGED, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
 import { BRANCHES, climb } from './climb.ts';
 import { playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
@@ -150,9 +150,21 @@ const CLASS_SAYS = (() => {
   const fast = [...CLASS_RUNS].sort((a, b) => a.realm9 - b.realm9)[0];
   const slow = [...CLASS_RUNS].sort((a, b) => b.realm9 - a.realm9)[0];
   const least = [...CLASS_RUNS].sort((a, b) => a.held - b.held)[0];
+  const marks = (r: (typeof CLASS_RUNS)[number]) => r.crossings.reduce((a, d) => a + d, 0);
+  const cross = [...CLASS_RUNS].sort((a, b) => marks(a) - marks(b));
   return `The fastest up is the ${classCalled(fast.build)}, on day ${fast.realm9.toFixed(0)}, and the slowest the `
     + `${classCalled(slow.build)}, on day ${slow.realm9.toFixed(0)}. The hardest to put together is the `
-    + `${classCalled(least.build)}, worn on ${Math.round(least.held * 100)}% of the days.`;
+    + `${classCalled(least.build)}, worn on ${Math.round(least.held * 100)}% of the days. Past the summit the `
+    + `${classCalled(cross[0].build)} takes forty marks in ${marks(cross[0])} days, and the next fastest, the `
+    + `${classCalled(cross[1].build)}, in ${marks(cross[1])}.`;
+})();
+/** 劍聖 The Saint's forty marks, and the fastest of everybody else's, for the claims table. */
+const SAINT_MARKS = (() => {
+  const marks = (r: (typeof CLASS_RUNS)[number]) => r.crossings.reduce((a, d) => a + d, 0);
+  const saint = CLASS_RUNS.find((r) => r.build === 'swordsaint')!;
+  const sword = CLASS_RUNS.find((r) => r.build === 'sword')!;
+  const rest = CLASS_RUNS.filter((r) => r.build !== 'swordsaint').sort((a, b) => marks(a) - marks(b))[0];
+  return { saint: marks(saint), sword: marks(sword), rest: marks(rest), restName: classCalled(rest.build) };
 })();
 const pc = (x: number) => `${Math.round(x * 1000) / 10}%`;
 
@@ -4736,11 +4748,54 @@ const page = `<meta charset="utf-8">
         return `<tr><td><span class="cseal" style="color:${x.colour}">${x.han}</span> ${x.name}</td>
         <td style="text-align:right"${r.realm9 === best ? ' class="cfast"' : ''}>day ${r.realm9.toFixed(0)}</td>
         <td style="text-align:right">${Math.round(r.held * 100)}%</td>
-        <td style="text-align:right">${r.crossings.reduce((a, d) => a + d, 0)} days</td>
+        <td style="text-align:right"${r.crossings.reduce((a, d) => a + d, 0) === Math.min(...CLASS_RUNS.map((q) => q.crossings.reduce((a, d) => a + d, 0))) ? ' class="cfast"' : ''}>${r.crossings.reduce((a, d) => a + d, 0)} days</td>
         <td style="text-align:right">${Math.max(...r.crossings)} days</td></tr>`; }).join('')}
     </table>
     <p class="t">"Worn" is the share of days the body actually wore the class, because a
       class needs the drops to fall. ${CLASS_SAYS}</p>
+
+    <h3>準 Every class the best at what it says</h3>
+    <p class="t">rekaris, on the Discord (2026-10-04): <i>"A class should be the best at what
+      it's supposed to be doing, otherwise it's bloat."</i> Measured on one body dressed in
+      all twenty-one classes at realms 6 and 9, earth and heaven: four were not. Six Sword
+      pieces carry about ×1.4 the power of any Sword pair, and one tower floor asks only ×1.22
+      of the one below, so a perk worth half a floor never showed. Each moved to the least
+      that puts it first at its own claim, and none of them is read by the qi rate.</p>
+    <table>
+      <tr><th>class</th><th>its claim</th><th>was</th><th>now</th><th>measured</th></tr>
+      <tr><td>劍仙 Sword Immortal</td><td>the tower</td><td>floors ×0.90</td><td>${pairSays('swordimmortal')}</td>
+        <td>2nd or 3rd, a floor or two under pure Sword; now ties or beats it in all six cells</td></tr>
+      <tr><td>武神 War God</td><td>the wardens</td><td>wardens ×0.88</td><td>${pairSays('wargod')}</td>
+        <td>2nd (×0.85 to ×0.89 pure Sword's margin); now 1st (×1.06 to ×1.12)</td></tr>
+      <tr><td>鑄劍師 Swordsmith</td><td>材 material</td><td>×1.15</td><td>${pairSays('swordsmith')}</td>
+        <td>5th or 6th over a whole run; now 1st (×1.12 earth, ×1.37 heaven)</td></tr>
+      <tr><td>甲匠 Armourer</td><td>the chest</td><td>10 places</td><td>${pairSays('armourer')}</td>
+        <td>2nd to a full Artificer by 4 to 82 places; now 1st at every realm measured</td></tr>
+      <tr><td>劍聖 Sword Saint</td><td>the Dragon</td><td>form never below its middle</td><td>${pairSays('swordsaint')}</td>
+        <td>forty marks in ${SAINT_MARKS.saint} days, against pure Sword's ${SAINT_MARKS.sword} and ${SAINT_MARKS.restName}'s ${SAINT_MARKS.rest}</td></tr>
+    </table>
+    <p class="t"><b>劍聖 Why the Saint's number is so small.</b> Its old perk, a form roll
+      that never fell below its middle, made it the best at nothing: form is a fifth of one
+      factor, and 鏡 Mirror rarely reads it against anything stronger. Bruno chose what the
+      class is for: the Dragon. The Dragon is anchored to the one the cultivator met at even
+      odds, so whatever a body is worth cancels out of both sides and six Sword pieces cross no
+      sooner than anybody. A perk on power would cancel the same way. This one is read on the
+      Dragon's side, and the anchor remembers the Dragon the Saint actually met, so it counts
+      again at every crossing, like a lower footing for one class. Measured on the same run,
+      forty marks took 240 days at ×1.00, 212 at ×0.99, 191 at ×0.98 and 163 at ×0.97. At
+      ×0.94 and below it is 138, and the Saint walks over every Dragon as fast as the pool fills. At
+      ×0.98 it leads every class by about a fifth and walks over 8 of 40 against 3 to 5; stood
+      a tenth heavier, it slows to 11 days a mark and walls nothing. In front of any one
+      Dragon, six Sword pieces still hit harder; across the crossings, the Saint is first.</p>
+    <p class="t"><b>盾 What the server had to learn.</b> A floor counts ${Math.round(PAIR_TOWER * 100)}% of
+      itself against a Sword Immortal, so an honest one wins floors up to ×6.85 its bare power,
+      and the forged-floor line was ×8. The server now reads a body's reach through its class:
+      ×4.45 at most for the Immortal, ×5.48 for any body measured. The line is
+      ×${TOWER_FORGED}, twice past that again, and floor 500 is still a strike. Measuring the
+      Saint found an older fault as well. A new mark was checked against the Dragon the
+      crossing stood up next, nearly twice the one that fell, so every honest crossing was
+      struck. It is read
+      on the anchor before the crossing now, in every body the save holds.</p>
 
     <h3>圖 On the screen</h3>
     <p class="t">Under the ring on 器, the class, what it gives at the step it is at, how far
