@@ -2,14 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { AUTO_HABIT, HABITS, play } from '../../../tools/habits.ts';
 import { playEndgame } from '../../../tools/endgame.ts';
 import { rate } from '../time.ts';
-import { anchorFloor, firstSync, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
+import { TOWER_FORGED, anchorFloor, bodiesHeld, firstSync, towerVerdict, verify, GAME_EPOCH, PRE_JOIN_CREDIT } from '../verify.ts';
+import { floorBeast, floorPower } from '../tower.ts';
+import { saveSet } from '../sets.ts';
 import { RUN_DAO_CEILING } from '../../data/secret.ts';
 import { validate } from '../state.ts';
 import { fuse } from '../chest.ts';
 import { FUSE_TOP, focusAt } from '../balance.ts';
 import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
-import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, type State } from '../state.ts';
+import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, power, type State } from '../state.ts';
 import { beatable, odds, oddsRaw, takeKill } from '../combat.ts';
 import { huntable, wardenOf } from '../../data/bestiary.ts';
 
@@ -379,5 +381,70 @@ describe('驗 every edit a player can make fails', () => {
     const s = newState(GAME_EPOCH + DAY);
     const { before, seconds, first } = firstSync(s, s.at + 60);
     expect(verify(before, advance(s, s.at + 60), seconds, first).ok).toBe(true);
+  });
+});
+
+/**
+ * 套 A climber who changes clothes after climbing.
+ *
+ * The server used to read a new floor against what was worn at the sync, so a cultivator
+ * who climbed and then put on a loadout that does not fight (or took everything off) was
+ * struck for a floor honestly taken. It now reads the strongest body the save holds.
+ */
+describe('套 a floor is read against the strongest body the save holds', () => {
+  const shots = WALKED.get('active')!;
+  /** Everything worn taken off into the chest: the body that cannot fight. */
+  const strip = (s: State): State => {
+    const pieces = Object.values(s.worn).filter((x) => x !== undefined);
+    return { ...s, worn: {}, chest: [...s.chest, ...pieces] };
+  };
+  /** Consecutive syncs where floors were climbed inside one realm, by a body that mattered. */
+  const pairs = shots.slice(1).map((next, i) => ({ base: shots[i].s, next: next.s }))
+    .filter(({ base, next }) => next.tower > base.tower && next.realm === base.realm
+      && Object.keys(next.worn).length >= 4 && verify(base, next, next.at - base.at).ok)
+    .filter(({ next }) => !beatable(strip(next), floorBeast(next.tower), floorPower(next.tower)));
+
+  it('finds honest climbs that the bare body could not have won, so it measures something', () => {
+    console.log(`    ${pairs.length} syncs where the active cultivator climbed a floor its bare body loses`);
+    expect(pairs.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('never strikes an honest climber who put another loadout on after climbing', () => {
+    for (const { base, next } of pairs) {
+      const gap = next.at - base.at;
+      // The body it climbed in, saved as a loadout, and then taken off.
+      const saved = strip(saveSet(next, 0, 'Climb'));
+      const v = verify(base, saved, gap);
+      expect(v.strike, `floor ${next.tower}: ${v.why.join(',')}`).toBe(false);
+      expect(v.ok, `floor ${next.tower}: ${v.why.join(',')}`).toBe(true);
+      // And swapped by hand, no loadout at all: the pieces sit loose in the chest.
+      const loose = verify(base, strip(next), gap);
+      expect(loose.strike, `floor ${next.tower} by hand: ${loose.why.join(',')}`).toBe(false);
+    }
+  });
+
+  it('reads every body the save holds, and the strongest of them wins the floor', () => {
+    const { next } = pairs[0];
+    const saved = strip(saveSet(next, 0, 'Climb'));
+    expect(towerVerdict(saved, next.tower)).toBe('ok');
+    expect(bodiesHeld(saved).length).toBe(3);
+  });
+
+  it('waits on a floor out of reach but not out of the question, and strikes a forged one', () => {
+    const { base, next } = pairs[pairs.length - 1];
+    const gap = next.at - base.at;
+    const strongest = Math.max(...bodiesHeld(next).map(power));
+    // The first floor none of its bodies can win: a lucky win the sampled fights missed.
+    let f = next.tower + 1;
+    while (bodiesHeld(next).some((b) => beatable(b, floorBeast(f), floorPower(f)))) f++;
+    expect(floorPower(f) / strongest).toBeLessThan(TOWER_FORGED);
+    const early = verify(base, { ...next, tower: f }, gap);
+    expect(early.strike).toBe(false);
+    expect(early.why).not.toContain('tower');
+    // Edited: no body comes near it, worn or saved, so it is a strike.
+    const forged = verify(base, { ...saveSet(next, 0, 'Climb'), tower: 500 }, gap);
+    console.log(`    floor ${f} waits at x${(floorPower(f) / strongest).toFixed(2)}; floor 500 is x${(floorPower(500) / strongest).toExponential(1)} the strongest body`);
+    expect(forged.strike).toBe(true);
+    expect(forged.why).toContain('tower');
   });
 });

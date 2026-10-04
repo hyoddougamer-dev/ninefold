@@ -47,10 +47,12 @@ import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower } from './tower.ts';
+import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
-import { templateOf, type Item } from '../data/gear.ts';
+import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
+import { equip } from './chest.ts';
 
 /**
  * 始 No save can have begun before the game existed, so a first sync is measured from
@@ -313,7 +315,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
-  // 得 One-off payments (a tower floor is six hours of qi at once, a meeting two) arrive in
+  // 得 One-off payments (a tower floor is up to six hours of qi at once, a meeting two) arrive in
   // bursts, so a short gap can hold more than its own seconds. They are allowed for as a
   // burst on top of the real time: BURST times the gap, never more than BURST_CAP. A
   // burst bigger than that is not refused for ever, only until real time catches up: the
@@ -354,11 +356,12 @@ export function verify(before: State, after: State, seconds: number, first = fal
     const faced = { ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1 };
     if (!beatable(faced, wardenOf(9))) why.push('warden');
   }
-  // 塔 And the highest floor claimed has to be one this build can take.
+  // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
+  // the save holds. See towerVerdict.
   if (after.tower > before.tower && after.tower > 0) {
-    const f = after.tower;
-    if (power(after) > 0 && floorPower(f) / power(after) > 4) why.push('tower');
-    else if (!beatable(after, floorBeast(f), floorPower(f))) why.push('tower');
+    const v = towerVerdict(after, after.tower);
+    if (v === 'strike') why.push('tower');
+    else if (v === 'wait' && !why.includes('too-fast')) why.push('too-fast');
   }
 
   // 劫 The Dragon's anchor only grows while the marks do: one that shrank was edited, to
@@ -412,6 +415,79 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
   return { ok: why.length === 0, why, used, strike, suspect, pace };
 }
+
+/**
+ * 套 Every body this save can walk into a fight in: what is worn, each saved 套 loadout
+ * put on the way the game puts one on (wearSet), and the strongest the chest can dress
+ * without a loadout, for the cultivator who swapped by hand.
+ */
+export function bodiesHeld(s: State): State[] {
+  return [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+}
+
+/**
+ * 箱 The body the chest dresses best for 力 power, one place at a time, through equip()
+ * so 承 refining moves exactly as it does on the screen. Greedy, so it can miss a class
+ * two places make together; the wait in towerVerdict covers what it misses.
+ */
+function strongestFromChest(s: State): State {
+  let body = s;
+  for (const slot of SLOTS) {
+    let best = body;
+    let most = power(body);
+    for (const item of body.chest) {
+      if (!TEMPLATE_BY_KEY[item.template] || templateOf(item).slot !== slot) continue;
+      const next = equip(body.worn, body.chest, item, slot);
+      const tried = { ...body, worn: next.worn, chest: [...next.chest] };
+      const p = power(tried);
+      if (p > most) { most = p; best = tried; }
+    }
+    body = best;
+  }
+  return body;
+}
+
+/**
+ * 塔 Whether a claimed floor could have fallen to this save, read against the strongest
+ * body it holds.
+ *
+ * It used to read only what was worn at the sync. A cultivator who climbed in one 套
+ * loadout and then put on another (the 器 Artificer's for refining, the 運 Fortune
+ * Seeker's for hunting) before the next sync was struck for a floor they had honestly
+ * taken, and a strike is the one verdict an honest player must never see. Measured on the
+ * active cultivator's first ninety days: of 47 syncs that brought new floors, climbing and
+ * then taking the climbing loadout off was struck 46 times. So every body the save holds
+ * is tried, and the floor stands if any of them can take it: 0 strikes, all 47 accepted.
+ *
+ * Past TOWER_FORGED times the strongest of them it is no fight at all: no roll of the
+ * dice and no class closes a gap that wide, so it was written into the save, and it is a
+ * strike. Short of that, a floor no body beats now is a matter of time rather than proof:
+ * the pieces it fell to may sit loose in the chest, in no loadout, so it waits, and counts
+ * once the cultivator is strong enough again. Nothing is lost by waiting.
+ */
+export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' {
+  const bodies = bodiesHeld(s);
+  const strongest = Math.max(...bodies.map(power));
+  const standing = floorPower(floor);
+  if (strongest > 0 && standing / strongest > TOWER_FORGED) return 'strike';
+  return bodies.some((b) => beatable(b, floorBeast(floor), standing)) ? 'ok' : 'wait';
+}
+
+/**
+ * 塔 How many times stronger than the strongest body a save holds a claimed floor may be
+ * before it is a forgery rather than a wait.
+ *
+ * It was 4, inline, until 2026-10-04, and 4 was a knife edge. 力 the number on the screen
+ * is not the whole fight (the stance, the sequence, 破甲 and 破煞 all count beside it), and
+ * the highest floor an honest cultivator can win at any odds stands well past it:
+ * measured every three days of every climbing habit, up to ×4.19 its own power (active),
+ * ×3.47 to ×4.12 for the rest, and the highest floor actually held up to ×2.94. A lucky
+ * honest win there was a strike. At 8 the bound sits twice past the furthest honest reach,
+ * and everything short of it that no body can win now waits instead (towerVerdict). An
+ * edited floor is not near it: floor 500, claimed by the active cultivator at its
+ * strongest of the first ninety days, is ×10^31.
+ */
+export const TOWER_FORGED = 8;
 
 /**
  * 初 What a first sync is measured from: a cultivator who began when the save says they
