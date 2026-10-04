@@ -85,11 +85,16 @@
   td.obs { white-space: normal; min-width: 180px; max-width: 280px; font-size: 13px; color: var(--faint); }
   td.num .why { display: block; font-size: 12px; color: var(--red); }
   td.obs .clr { display: block; color: var(--jade); font-size: 12px; }
-  .ed td { background: rgba(212,175,86,.05); white-space: normal; }
-  .ed textarea { width: 100%; min-height: 70px; font: inherit; color: var(--text); background: var(--ground);
+  /* 註 The open player sits above the table, not inside it: a row inside a table wider than a
+     phone opened off the screen, to the left of the Obs. button that opened it. */
+  .editbox { margin: 0 0 12px; padding: 12px 14px; border: 1px solid var(--gold, #D4AF56); border-radius: 10px;
+    background: rgba(212,175,86,.05); display: grid; gap: 8px; }
+  .editbox .head { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .editbox textarea { width: 100%; box-sizing: border-box; min-height: 80px; font: inherit; color: var(--text); background: var(--ground);
     border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
-  .ed .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-  .ed .row .said { font-size: 13px; color: var(--faint); }
+  .editbox .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .editbox .said { font-size: 13px; color: var(--faint); }
+  td button.who { all: unset; cursor: pointer; font-weight: 700; text-decoration: underline dotted; }
   button.warn { border-color: var(--red); color: var(--red); }
   button.small { padding: 4px 10px; font-size: 13px; }
 </style>
@@ -155,6 +160,7 @@
         <button type="button" id="csv">Descarregar CSV</button>
         <span class="count" id="count"></span>
       </div>
+      <div id="editbox" class="editbox" hidden></div>
       <div class="tablewrap"><table>
         <thead><tr>
           <th data-k="name">Nome</th>
@@ -330,26 +336,30 @@
     document.querySelectorAll('th[data-k]').forEach((th) => { if (th.dataset.k === sortBy) th.dataset.dir = dir; else delete th.dataset.dir; });
     $('rows').innerHTML = list.map((p) => {
       const [label, tone] = activity(p);
-      return `<tr><td><b>${esc(p.name)}</b></td><td><span class="pill ${tone}">${label}</span></td>
+      return `<tr><td><button type="button" class="who" data-edit="${esc(p.name)}">${esc(p.name)}</button></td><td><span class="pill ${tone}">${label}</span></td>
         <td class="num">${where(p)}</td><td class="num">${p.tower}</td><td class="num">${since(p.started)}</td>
         <td class="num">${p.days}</td><td class="num">${p.syncs7}</td><td class="num">${refusals(p)}</td><td class="num">${since(p.last_seen)}</td>
         <td>${day(p.joined)}</td><td>${p.email ? 'email' : 'convidado'}</td>
         <td>${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}</td>
         <td class="obs">${esc(p.note || '')}${p.cleared ? `<span class="clr">marcação limpa a ${day(p.cleared)}</span>` : ''}</td>
         <td><button type="button" class="small" data-edit="${esc(p.name)}">${open === p.name ? 'Fechar' : 'Obs.'}</button></td></tr>`
-        + (open === p.name ? editor(p) : '');
     }).join('') || '<tr><td colspan="14" class="empty">Ninguém com esse nome.</td></tr>';
+    const p = people.find((x) => x.name === open);
+    const box = $('editbox');
+    box.hidden = !p;
+    box.innerHTML = p ? editor(p) : '';
   }
   // 註 One player open at a time: a note, and, for a flagged player, taking the flag off.
   let open = null;
   function editor(p) {
-    return `<tr class="ed"><td colspan="14">
+    return `<div class="head"><b>${esc(p.name)}</b> ${p.held ? '<span class="pill bad">marcado</span>' : '<span class="pill off">limpo</span>'}
+        <button type="button" class="small" data-edit="${esc(p.name)}">Fechar</button></div>
       <textarea id="note" maxlength="500" placeholder="O que se passou, ou o que foi alterado (fica guardado com o jogador)">${esc(p.note || '')}</textarea>
       <div class="row">
         <button type="button" id="savenote">Guardar nota</button>
         ${p.held ? '<button type="button" class="warn" id="clear">Limpar a marcação</button>' : ''}
         <span class="said" id="said">${p.held ? 'Limpar a marcação tira-lhe os avisos do anti-cheat. Escreve na nota porquê.' : ''}</span>
-      </div></td></tr>`;
+      </div>`;
   }
   async function act(fn) {
     const note = $('note').value.trim();
@@ -362,13 +372,20 @@
       setTimeout(() => { open = null; drawPeople(); }, 700);
     } catch (e) { $('said').textContent = 'Não deu para guardar agora. Tenta outra vez.'; }
   }
-  $('rows').addEventListener('click', (e) => {
+  const onPick = (e) => {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.edit) { open = open === b.dataset.edit ? null : b.dataset.edit; drawPeople(); return; }
+    if (b.dataset.edit) {
+      open = open === b.dataset.edit ? null : b.dataset.edit;
+      drawPeople();
+      if (open) $('editbox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
     if (b.id === 'savenote') act('panel_note');
     if (b.id === 'clear') act('panel_clear');
-  });
+  };
+  $('rows').addEventListener('click', onPick);
+  $('editbox').addEventListener('click', onPick);
   function table() {
     const head = ['Nome', 'Atividade', 'Reino', 'Camada', 'Marcas', 'Torre', 'Começou', 'Dias com jogo', 'Sincronizações 7 dias', 'Recusadas 24 h', 'Sincronizações 24 h', 'Motivo mais comum', 'Última vez', 'No ranking desde', 'Conta', 'Anti-cheat', 'Observações', 'Marcação limpa'];
     const rows = shown().map((p) => [p.name, activity(p)[0], p.realm, p.layer, p.marks, p.tower, day(p.started), p.days, p.syncs7,
