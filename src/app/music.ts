@@ -1,3 +1,5 @@
+import { gainOf, readPct } from './sound.ts';
+
 /**
  * 樂 Music: Bruno's own tracks, one mood per place in the game.
  *
@@ -76,23 +78,37 @@ export function moodFor(p: Place): Mood {
 }
 
 const KEY = 'ninefold.music';
+const PCT_KEY = 'ninefold.music.pct';
+const MUTE_KEY = 'ninefold.music.mute';
 
-/** 量 Off, quiet, on: the same three steps as the sound, and its own button. */
-export const MUSIC_LEVELS = [
-  { volume: 0, icon: '♪', label: 'Music off' },
-  { volume: 0.28, icon: '♪', label: 'Music quiet' },
-  { volume: 0.55, icon: '♫', label: 'Music on' },
-] as const;
+/**
+ * 量 Its own slider and its own mute, apart from the sound of the game (see sound.ts for
+ * why a slider, and why it is read on a square). At 100 the music sits at MUSIC_TOP,
+ * under the cues, which is where "on" always had it. The old steps carry over at the
+ * loudness they had: on is 100, quiet the point whose square gives the old 0.28, off a mute.
+ */
+export const MUSIC_TOP = 0.55;
+export const MUSIC_OLD_QUIET = 71;
+export const musicGain = (pct: number): number => MUSIC_TOP * gainOf(pct);
 
-let level = MUSIC_LEVELS.length - 1;
+let pct = 100;
+let muted = false;
 try {
-  const raw = localStorage.getItem(KEY);
-  const held = raw === null ? null : Number(raw);
-  if (held !== null && Number.isInteger(held) && held >= 0 && held < MUSIC_LEVELS.length) level = held;
+  const held = readPct(localStorage.getItem(PCT_KEY));
+  if (held !== null) {
+    pct = held;
+    muted = localStorage.getItem(MUTE_KEY) === '1';
+  } else {
+    const raw = localStorage.getItem(KEY);
+    const step = raw === null ? null : Number(raw);
+    if (step === 0) muted = true;
+    else if (step === 1) pct = MUSIC_OLD_QUIET;
+  }
 } catch { /* storage blocked: default to on */ }
 
-export function musicLevel(): number {
-  return level;
+/** The music's volume, 0 to 100, and whether it is muted. */
+export function musicVolume(): { pct: number; muted: boolean } {
+  return { pct, muted };
 }
 
 /** How long a change of mood takes, and how early a track hands over to the next. */
@@ -117,7 +133,7 @@ function build(): boolean {
   try {
     ctx = new Ctor();
     master = ctx.createGain();
-    master.gain.value = MUSIC_LEVELS[level].volume;
+    master.gain.value = silent() ? 0 : musicGain(pct);
     master.connect(ctx.destination);
     const deck = (): Deck => {
       const el = new Audio();
@@ -137,7 +153,7 @@ function build(): boolean {
   }
 }
 
-const silent = () => MUSIC_LEVELS[level].volume === 0;
+const silent = () => muted || pct === 0;
 const playing = () => !!decks && decks[on].track !== null && !decks[on].el.paused;
 
 /** 接 A track about to end hands over to the next one in its mood, overlapping. */
@@ -242,23 +258,39 @@ function hush(): string {
   return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
 }
 
-/** Steps to the next level and returns it, so the button can say what it became. */
-export function cycleMusic(): number {
-  level = (level + 1) % MUSIC_LEVELS.length;
-  try { localStorage.setItem(KEY, String(level)); } catch { /* nothing to do */ }
-  const volume = MUSIC_LEVELS[level].volume;
-  if (volume === 0) {
+/**
+ * Puts the music at the volume and mute now held: quiet to silent pauses it, silent to
+ * audible picks the same track up where it stopped, and a move between two audible
+ * levels only slides the gain.
+ */
+function apply(): void {
+  try {
+    localStorage.setItem(PCT_KEY, String(pct));
+    localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
+  } catch { /* nothing to do */ }
+  if (silent()) {
     decks?.forEach((d) => d.el.pause());
     if (ctx && ctx.state === 'running') void ctx.suspend();
   } else if (touched && build()) {
-    master!.gain.setTargetAtTime(volume, ctx!.currentTime, 0.2);
+    master!.gain.setTargetAtTime(musicGain(pct), ctx!.currentTime, 0.05);
     if (ctx!.state !== 'running') void ctx!.resume();
     // 續 Back on, the same track carries on where it stopped rather than from 0:00.
     const d = decks![on];
-    if (d.track !== null && PLAYLIST[mood].includes(d.track)) d.el.play().catch(() => {});
+    if (d.track !== null && PLAYLIST[mood].includes(d.track)) { if (d.el.paused) d.el.play().catch(() => {}); }
     else start(mood, false);
   }
-  return level;
+}
+
+/** Sets the music's volume, 0 to 100. Moving the slider is wanting to hear it, so it unmutes. */
+export function setMusicVolume(next: number): void {
+  pct = Math.round(Math.max(0, Math.min(100, Number.isFinite(next) ? next : pct)));
+  if (pct > 0) muted = false;
+  apply();
+}
+
+export function setMusicMuted(on: boolean): void {
+  muted = on;
+  apply();
 }
 
 /** 隱 Hidden, the music stops; back, it carries on where it was. */

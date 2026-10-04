@@ -15,7 +15,7 @@ import {
   AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
-import { chestLimit, itemWorth } from './chest.ts';
+import { chestLimit, freshId, holdsLevels, itemWorth } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import {
   owed as cardsOwed, refineFactor as cardRefineFactor, valid as validAwakened,
@@ -745,13 +745,17 @@ export function validate(raw: unknown, now: number): State {
     if (n > 0) killed[k] = n;
   }
 
+  const sets = validSets(o.sets);
+  const inSets = new Set(sets.flatMap((x) => Object.values(x.ids)));
   const item = (raw: unknown, used: Set<string>): Item | null => {
     const o = (raw ?? {}) as Record<string, unknown>;
     const tpl = typeof o.template === 'string' ? TEMPLATE_BY_KEY[o.template] : undefined;
     if (!tpl) return null;                                    // a piece that does not exist is not a piece
     const rarity = RARITIES.includes(o.rarity as Rarity) ? (o.rarity as Rarity) : 'common';
-    const id = typeof o.id === 'string' && o.id.length <= 64 ? o.id : `${tpl.key}-${used.size}`;
-    if (used.has(id)) return null;                            // two things may not be one thing
+    // 號 Two things may not be one thing, but a second piece with a name already taken is
+    // still a piece: it is renamed, never dropped. Fused pieces could share a name once
+    // (chest.ts fuse), and dropping the twin here deleted it on the next load.
+    const id = freshId(typeof o.id === 'string' && o.id.length > 0 && o.id.length <= 64 ? o.id : `${tpl.key}-${used.size}`, used);
     used.add(id);
 
     // Lines are validated one at a time: a line on an axis that does not exist is not a
@@ -780,8 +784,10 @@ export function validate(raw: unknown, now: number): State {
     // names something real: a beast, or one of the two places that are not a kill.
     const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED)
       ? { from: o.from } : {};
-    // 鎖 A lock is a yes or nothing; any other value is no lock.
-    const locked = o.locked === true ? { locked: true as const } : {};
+    // 鎖 A lock is a yes or nothing; any other value is no lock. 套 And a piece a loadout
+    // names is locked whatever the save says, because a loadout whose piece can be melted
+    // out from under it is not a loadout (see sets.ts setLocked).
+    const locked = o.locked === true || inSets.has(id) ? { locked: true as const } : {};
     return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from, ...locked }
       : { id, template: tpl.key, rarity, rolls, ...from, ...locked };
   };
@@ -855,7 +861,8 @@ export function validate(raw: unknown, now: number): State {
   const chest: Item[] = carried.length <= allowance ? carried
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
-      .map((it, i) => ({ it, i, worth: itemWorth(it), kept: it.locked ? 1 : 0 }))
+      // 承 And so is one holding refining levels, which were paid for and live nowhere else.
+      .map((it, i) => ({ it, i, worth: itemWorth(it), kept: it.locked || holdsLevels(it) ? 1 : 0 }))
       .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)
       .slice(0, allowance)
       .sort((a, b) => a.i - b.i)
@@ -912,7 +919,7 @@ export function validate(raw: unknown, now: number): State {
     melt: clamp(num(o.melt, MELT_CAP), 0, MELT_CAP),
     // 套 At most SET_LIMIT sets, each a short name and a piece id per place on the body.
     // A set naming a piece that is gone is kept: it says so when it is put on.
-    sets: validSets(o.sets),
+    sets,
     // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
     // enough to claim five hundred floors of the tower in thirty seconds.
     brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },

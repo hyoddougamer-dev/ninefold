@@ -66,7 +66,6 @@ import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
 import {
   DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
-import { LEVELS } from '../src/app/sound.ts';
 import { NOTICES } from '../src/app/notices.ts';
 import { STEPS } from '../src/app/guide.ts';
 import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
@@ -473,7 +472,7 @@ const SYSTEMS: readonly System[] = [
   { han: '示', name: 'Telling a stuck player why', status: 'done', at: 'record',
     line: 'One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.' },
   { han: '音', name: 'Sound', status: 'done',
-    line: `${LEVELS.length} volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.` },
+    line: 'A slider from 0 to 100 for the sound and another for the music, each with its own mute, and a cue for every action including the tower, the furnace and a mark earned.' },
 
   { han: '新', name: 'Teaching each system', status: 'done', at: 'refine',
     line: `${NOTICES.length} cards that arrive once, when the thing they explain first becomes true, and never block the game.` },

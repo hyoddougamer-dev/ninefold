@@ -29,48 +29,79 @@
  */
 
 const KEY = 'ninefold.volume';
+const PCT_KEY = 'ninefold.volume.pct';
+const MUTE_KEY = 'ninefold.volume.mute';
 
 /**
- * 量 Three steps, not a slider.
+ * 量 A slider and a mute, where three steps used to be.
  *
- * A slider on a phone is a drag inside a scrolling sheet, which is a fight. Three states
- * on the one button that was already there covers what anybody actually wants: off,
- * quiet enough for a room with other people in it, and on.
+ * Off, quiet and on were chosen because a slider on a phone was thought to be a fight.
+ * It was the other way round for the people playing: rekaris, on the Discord, said
+ * *"quiet"* was still loud, and there was nothing below it but silence. So the volume is
+ * 0 to 100 now, and the mute is its own switch, so muting keeps the level to come back to.
+ *
+ * The slider is read on a square, not a line: an ear hears loudness roughly as the
+ * square of the gain, so half way along sounds like half as loud rather than nearly
+ * full. The old steps carry over at the loudness they had: on is 100, quiet is the
+ * point whose square is the old 0.4, and off is a mute.
  */
-export const LEVELS = [
-  { volume: 0, icon: '🔇', label: 'Sound off' },
-  { volume: 0.4, icon: '🔈', label: 'Sound quiet' },
-  { volume: 1, icon: '🔊', label: 'Sound on' },
-] as const;
+export const OLD_QUIET = 63;
+export const gainOf = (pct: number): number => (Math.max(0, Math.min(100, pct)) / 100) ** 2;
 
-let level = LEVELS.length - 1;
+/** A stored volume, if it is one: a number from 0 to 100, rounded. */
+export function readPct(raw: string | null): number | null {
+  if (raw === null || raw.trim() === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null;
+}
+
+let pct = 100;
+let muted = false;
 
 try {
-  const raw = localStorage.getItem(KEY);
-  // `Number(null)` is 0, not NaN, so a missing key read as "silent" and the game
-  // started muted for everybody. The null has to be ruled out before the number is.
-  const held = raw === null ? null : Number(raw);
-  if (held !== null && Number.isInteger(held) && held >= 0 && held < LEVELS.length) level = held;
-  // The old key held a boolean mute. Honour it once so nobody's silence is undone.
-  else if (localStorage.getItem('ninefold.muted') === '1') level = 0;
+  const held = readPct(localStorage.getItem(PCT_KEY));
+  if (held !== null) {
+    pct = held;
+    muted = localStorage.getItem(MUTE_KEY) === '1';
+  } else {
+    // 舊 The three steps' key. `Number(null)` is 0, not NaN, so a missing key read as
+    // "silent" once and the game started muted for everybody: the null is ruled out first.
+    const raw = localStorage.getItem(KEY);
+    const step = raw === null ? null : Number(raw);
+    if (step === 0) muted = true;
+    else if (step === 1) pct = OLD_QUIET;
+    // The oldest key held a boolean mute. Honour it once so nobody's silence is undone.
+    else if (step === null && localStorage.getItem('ninefold.muted') === '1') muted = true;
+  }
 } catch { /* storage blocked: default to audible */ }
 
-export function soundLevel(): number {
-  return level;
+/** The sound's volume, 0 to 100, and whether it is muted. */
+export function soundVolume(): { pct: number; muted: boolean } {
+  return { pct, muted };
 }
 
 export function isMuted(): boolean {
-  return LEVELS[level].volume === 0;
+  return muted || pct === 0;
 }
 
-/** Steps to the next level and returns it, so the button can say what it became. */
-export function cycleSound(): number {
-  level = (level + 1) % LEVELS.length;
+function store(): void {
   try {
-    localStorage.setItem(KEY, String(level));
+    localStorage.setItem(PCT_KEY, String(pct));
+    localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
   } catch { /* nothing to do */ }
-  if (bus) bus.master.gain.value = LEVELS[level].volume;
-  return level;
+  if (bus) bus.master.gain.value = isMuted() ? 0 : gainOf(pct);
+}
+
+/** Sets the volume, 0 to 100. Moving the slider is wanting to hear it, so it unmutes. */
+export function setSoundVolume(next: number): void {
+  pct = Math.round(Math.max(0, Math.min(100, Number.isFinite(next) ? next : pct)));
+  if (pct > 0) muted = false;
+  store();
+}
+
+export function setSoundMuted(on: boolean): void {
+  muted = on;
+  store();
 }
 
 // ─────────────────────────────────────────────────────────────── the room ──
@@ -136,13 +167,13 @@ export function stageOn(ctx: BaseAudioContext, volume: number): Bus {
 }
 
 function stage(): Stage | null {
-  if (LEVELS[level].volume === 0) return null;
+  if (isMuted()) return null;
   if (!live) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return null;
     try {
       live = new Ctor();
-      bus = stageOn(live, LEVELS[level].volume);
+      bus = stageOn(live, gainOf(pct));
     } catch {
       return null;
     }

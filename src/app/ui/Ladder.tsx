@@ -7,7 +7,7 @@ import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
-import { LADDER } from '../copy.ts';
+import { LADDER, standing } from '../copy.ts';
 
 /**
  * 梯 The climb, drawn.
@@ -63,7 +63,7 @@ export function Ladder({ state }: { state: State }) {
 
       <div className="lrow">
         <span className="lab mono">
-          <Term han="層" /> {LADDER.layers(Math.min(opened + 1, LAYERS_PER_REALM), LAYERS_PER_REALM)}
+          <Term han="層" /> {LADDER.layers(standing(opened), LAYERS_PER_REALM)}
         </span>
         <span className="rungs">
           {Array.from({ length: LAYERS_PER_REALM }, (_, i) => (

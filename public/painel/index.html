@@ -253,7 +253,8 @@
     if (!rows.length) { $('board').innerHTML = '<p class="empty">Ainda ninguém neste ranking.</p>'; return; }
     const cell = (r) => board === 'tower' ? `andar ${r.tower}`
       : board === 'week' ? `+${r.gain} camadas`
-        : r.marks > 0 ? `topo · 雷 ${r.marks}` : `reino ${Math.floor(r.climb / 9) + 1} · ${r.climb % 9}/9`;
+        // 層 The layer being worked on, as the game's climb bar says it: the layers opened plus one.
+        : r.marks > 0 ? `topo · 雷 ${r.marks}` : `reino ${Math.floor(r.climb / 9) + 1} · camada ${Math.min(9, r.climb % 9 + 1)}/9`;
     const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     $('board').innerHTML = rows.map((r) => `<li><span class="n">${r.rank}</span>
       <span class="who">${esc(r.name)}${r.title ? `<em>${esc(r.title)}</em>` : ''}</span><span class="v">${cell(r)}</span></li>`).join('');

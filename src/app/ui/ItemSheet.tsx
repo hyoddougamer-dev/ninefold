@@ -18,6 +18,7 @@ import type { State } from '../../sim/state.ts';
 import { CLASS, ITEM, QOL, UNIT } from '../copy.ts';
 import { meltQuote } from '../../sim/salvage.ts';
 import { num } from '../../sim/format.ts';
+import { loadoutsOf } from '../../sim/sets.ts';
 
 /**
  * 鑑 What a piece is, and what it would do.
@@ -68,6 +69,8 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   // left empty, which is what it is doing for you right now.
   const move: Swing = wearing ? wornSwing(state, item) : swing(state, item);
   const refine = Math.floor(item.refine ?? 0);
+  // 套 The loadouts that name this piece: while any does, it cannot be unlocked.
+  const held = loadoutsOf(state, item.id);
   // 算 The nearest fight is every beast's odds, so it is worked out when a fight could
   // have changed and not on every tick of the clock.
   const { trial, oddsBefore, oddsAfter } = useMemo(() => {
@@ -203,12 +206,15 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
             著 <span>{verdict === 'up' || verdict === 'trade' ? (worn ? ITEM.swap : ITEM.wear) : ITEM.anyway}</span>
           </button>
         )}
-        {/* 鎖 Kept on purpose: no melt, no fusion, and a full chest leaves it alone. */}
+        {/* 鎖 Kept on purpose: no melt, no fusion, and a full chest leaves it alone. 套 A
+            piece a loadout names stays locked, and the line under the buttons says why. */}
         <button className="act ghost lockbtn" data-on={item.locked ? 'true' : undefined} aria-pressed={!!item.locked}
+          disabled={item.locked && held.length > 0}
           onClick={() => onLock(!item.locked)}>鎖 <span>{item.locked ? ITEM.unlock : ITEM.lock}</span></button>
         <button className="act ghost" onClick={onClose}>退 <span>{ITEM.close}</span></button>
       </div>
       {item.locked && <p className="faint lockedsays">{ITEM.lockedSays}</p>}
+      {item.locked && held.length > 0 && <p className="faint lockedsays" data-qol="in-loadout">{ITEM.inLoadout(held)}</p>}
 
       {/* 細 Everything the answer was worked out from, for anyone who wants to check it.
           Open from the start where the screen has room for it. rekaris, on the Discord:
@@ -268,6 +274,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
       {/* 拆 Melting the piece, on the one screen where a player is actually looking at
           it and can see what they would be giving up. It is never offered for the piece
           on the body: taking it off first is one tap and is the honest order. */}
+      {!wearing && !item.locked && refine > 0 && <p className="faint meltlevels">{ITEM.meltLevels(refine)}</p>}
       {!wearing && !item.locked && (
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>

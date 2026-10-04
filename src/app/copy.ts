@@ -103,6 +103,9 @@ export const JUICE = {
   learned: '道 learned',
 };
 
+/** 層 The layer a cultivator is on, from the layers opened in the realm: the climb bar's number. */
+export const standing = (opened: number): number => Math.min(9, Math.max(0, Math.floor(opened)) + 1);
+
 /**
  * 榜 The rankings, and the one sign-in the game asks for.
  *
@@ -178,8 +181,15 @@ export const RANKS = {
   cloudTake: 'Continue from the cloud',
   cloudKeep: 'Keep this one',
   cloudNote: 'The one not chosen is kept as the spare copy, so it can still be restored from the Menu.',
-  where: (realm: number, layer: number) => `realm ${realm}, layer ${layer}`,
-  climbCell: (climb: number, marks: number) => marks > 0 ? `summit · 雷 ${marks}` : `realm ${Math.floor(climb / 9) + 1} · ${climb % 9}/9`,
+  /**
+   * 層 Where a cultivator stands, said the way the climb bar says it: the layer being
+   * worked on, which is one more than the layers opened. The board and the cloud's
+   * question said the count opened, so a player on layer 5 read 4/9 there and 5/9 in
+   * the game (the Discord, 2026-10-04). `opened` is State.layer, 0 to 8.
+   */
+  where: (realm: number, opened: number) => `realm ${realm}, layer ${standing(opened)}`,
+  climbCell: (climb: number, marks: number) => marks > 0 ? `summit · 雷 ${marks}`
+    : `realm ${Math.floor(climb / 9) + 1} · layer ${standing(climb % 9)}/9`,
   gainCell: (n: number) => `+${n} layers`,
   towerCell: (n: number) => `floor ${n}`,
   haveOne: 'I already have a cultivator',
@@ -386,6 +396,13 @@ export const MENU = {
   credits: 'Credits',
   cards: 'Your Enlightenment cards',
   report: 'Report a bug',
+  /** 量 The two sliders in the menu, each with a mute. */
+  sound: 'Sound',
+  music: 'Music',
+  mute: (what: string) => `Mute the ${what.toLowerCase()}`,
+  unmute: (what: string) => `Turn the ${what.toLowerCase()} back on`,
+  volumeOf: (what: string) => `${what} volume`,
+  off: 'off',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
 };
@@ -900,6 +917,8 @@ export const DRIVE = {
 export const ITEM = {
   /** 拆 The single melt, on the sheet where the piece can actually be looked at. */
   salvage: 'Melt it down',
+  /** 承 Under the single melt of a piece that holds refining levels: they melt with it. */
+  meltLevels: (n: number) => `Its ${n} refining ${n === 1 ? 'level goes' : 'levels go'} with it. The bulk melt and fusion never take a refined piece; only this button does.`,
 
   what: 'What it gives',
   against: (name: string) => `Against the ${name} you are wearing`,
@@ -950,6 +969,8 @@ export const ITEM = {
   lock: 'Lock',
   unlock: 'Unlock',
   lockedSays: 'Locked: it is never melted, never fused, and a full chest leaves it alone.',
+  /** 套 Why Unlock is shut on a piece a loadout names. */
+  inLoadout: (names: readonly string[]) => `In loadout ${names.join(', ')}: take it out of the loadout first. Save that loadout again without it, or forget the loadout.`,
   detail: 'Every effect, in detail',
   /** 頂 Why the 氣 line reads bigger than what it does. */
   qiCeiling: 'Qi from gear bends toward a ceiling, so this adds less than it reads.',
@@ -1325,7 +1346,7 @@ export const GEAR = {
   all: 'All',
   betterOnly: 'Better',
   /** ▲ What the mark on a tile means, said once under the grid. */
-  legend: 'better than what you wear in that place, and shown first.',
+  legend: 'better than what you wear in that place, and at least as good on every line it has. Shown first.',
   /**
    * 拆 Melting gear down.
    *
@@ -2094,10 +2115,10 @@ export const QOL = {
   },
   gear: {
     wearAll: 'Wear all upgrades',
-    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. Locked pieces, loadout pieces and any that would change your class stay put.',
+    wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. A \u25b2 piece is at least as good on every line you wear now. Locked pieces, loadout pieces and any that would change your class stay put.',
     wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
     fuseAll: 'Fuse all groups',
-    fuseAllSays: 'Three into one, again and again, until no three match. Locked and forged pieces are never fused.',
+    fuseAllSays: 'Three into one, again and again, until no three match. Locked, refined and forged pieces are never fused.',
     fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
     /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
     carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,
@@ -2106,7 +2127,7 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
-    /** \u5b58 Saved filters, up to three, on this device. */
+    /** \u5b58 Saved filters, up to eight, on this device. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,
@@ -2114,7 +2135,9 @@ export const QOL = {
     cancel: 'Not now',
     forget: 'Forget',
     forgetOne: (name: string) => `Forget the filter ${name}`,
-    filtersFull: 'Three filters are kept. Forget one to keep another.',
+    filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
+    /** \u9396 The chest's first row: only the pieces kept on purpose. */
+    lockedOnly: 'Locked',
     savedHead: 'Saved filters',
   },
   /** \u5668 A piece's slot, in English, beside its name wherever a beast's drops are listed. */
@@ -2135,6 +2158,14 @@ export const QOL = {
   hunt: {
     auto: 'Auto',
     autoSays: (name: string) => `Hunt the ${name} on its own, until you stop it or a fight is lost`,
+    /** 篩 The hunt list's filter, by the piece a beast leaves. */
+    leavesLabel: 'Leaves',
+    byPlace: 'Show beasts that leave a piece for this place',
+    bySchool: 'Show beasts that leave a piece of this school',
+    anyPlace: 'Any piece',
+    anySchool: 'Any school',
+    leaveThat: (n: number, of: number) => `${n} of the ${of} beasts you can hunt leave that.`,
+    noneLeave: 'No beast you can hunt leaves that yet. Tap Any piece or Any school to see them all.',
   },
   seclusion: {
     shutsAgain: 'When a demon falls and this realm still has one left, the door shuts again by itself.',

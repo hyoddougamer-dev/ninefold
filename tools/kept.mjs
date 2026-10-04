@@ -569,6 +569,9 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320']]) {
 for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   const ripe = now() - 13 * 3600;
   const page = await open(w, h, { realm: 5, layer: 4, tower: 0, materials: 1e6,
+    // ▲ A worn sword with no 破 line, so the chest's better sword is a strict upgrade: the
+    // default one carries 破 sunder, which no chest sword has, and ▲ never gives a line up.
+    worn: { weapon: piece('w-on', 'sword3', 'earth', 22), robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
     beds: [{ herb: 'moss', at: ripe }, { herb: 'orchid', at: ripe }, { herb: null, at: 0 }],
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
       'fuse', 'whom', 'workshop', 'cave', 'secret', 'seclusion', 'refine', 'record', 'deep'] });
@@ -773,6 +776,116 @@ for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   await page.click('.sitagain');
   await page.clock.runFor(5000);
   check(await page.$('.sitline .sitchip') !== null, 'qol: Sit again starts a new sitting');
+  await page.close();
+}
+
+// ── 守 What the testers lost, 2026-10-04: levels, a loadout's piece, a layer, an order, a ▲ ──
+for (const [w, h, tag] of [[400, 860, 'k400'], [1366, 768, 'kpc']]) {
+  const sunder = { ...piece('w-on', 'sword3', 'earth', 22), rolls: [{ affix: 'power', value: 22 }, { affix: 'sunder', value: 3 }] };
+  const page = await open(w, h, {
+    worn: { weapon: { ...sunder, locked: true }, robe: piece('r-on', 'robe3', 'mystic', 9, 'rate') },
+    sets: [{ name: 'Boss killer', ids: { weapon: 'w-on' } }],
+    // No qi to spend, so the climb bar stands where the save says (layer 4 opened).
+    qi: 0,
+    // 序 The rat finished (past 絕), the rest still earning.
+    killed: { rat: 6000, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },
+    chest: [
+      // ▲ More power and no 破: not ▲ now. The same with 破 kept: ▲.
+      piece('c-loud', 'sword3', 'earth', 30),
+      { ...piece('c-strict', 'sword3', 'earth', 31), rolls: [{ affix: 'power', value: 31 }, { affix: 'sunder', value: 3.2 }] },
+      // 承 A piece taken off with its levels: the bulk melt must leave it.
+      { ...piece('c-honed', 'leather2', 'spirit', 5), refine: 7 },
+      piece('c-junk1', 'sword2'), piece('c-junk2', 'leather2'),
+    ],
+  });
+  await clearAll(page);
+  // 層 The climb bar names the layer being worked on: four opened is layer 5. The board and
+  // the cloud's question now say the same (src/app/__tests__/standing.test.ts).
+  const bar = await page.textContent('.ladder').catch(() => '');
+  check(/layer 5\/9/.test(bar ?? ''), `${tag}: the climb bar says layer 5/9 with four layers opened ("${(bar ?? '').replace(/\s+/g, ' ').slice(0, 80)}")`);
+
+  await tab(page, '器');
+
+  // ▲ Only the strict upgrade is ▲, and Wear all says so.
+  const ups = await page.$$eval('.chest .chestit[data-better="true"]', (els) => els.map((e) => e.getAttribute('aria-label')));
+  // (The leather boots go on a bare place, so they are ▲ as well; the swords are the question.)
+  const swords = ups.filter((l) => /^[^,]*(Sword|Saber|Crescent|Spear|Trident)/.test(l ?? ''));
+  check(swords.length === 1 && /power 31/.test(swords[0] ?? ''),
+    `${tag}: ▲ only on the sword that keeps every line the worn one has (${swords.join(' | ')})`);
+  const note = await page.textContent('.gearbulk p').catch(() => '');
+  check(/at least as good on every line/.test(note ?? ''), `${tag}: Wear all upgrades says what ▲ means ("${(note ?? '').slice(0, 70)}")`);
+
+  // 套 The loadout's sword: Unlock is shut, and the sheet says why.
+  await page.click('.orb >> nth=0');
+  await page.waitForSelector('.itemsheet .lockbtn', { timeout: 3000 }).catch(() => {});
+  const shut = await page.$eval('.itemsheet .lockbtn', (e) => e.disabled).catch(() => null);
+  const why = await page.textContent('[data-qol="in-loadout"]').catch(() => '');
+  check(shut === true && /In loadout Boss killer: take it out of the loadout first/.test(why ?? ''),
+    `${tag}: a loadout's piece cannot be unlocked, and the sheet says why ("${(why ?? '').slice(0, 60)}")`);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+
+  // 承 The refined piece's own sheet warns that its levels go with a melt; the bulk melt leaves it.
+  const honed = await page.$('.chest .chestit[aria-label*="Leather Boots, Spirit"]');
+  if (honed) {
+    await honed.click();
+    await page.waitForTimeout(300);
+    const line = await page.textContent('.itemsheet .meltlevels').catch(() => '');
+    check(/7 refining levels go with it/.test(line ?? ''), `${tag}: a refined piece's melt says its levels go with it ("${line}")`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+  } else check(false, `${tag}: the refined piece is in the chest`);
+  const heaven = await page.$('.rk[aria-label^="Heaven"]');
+  if (heaven) await heaven.click();
+  await page.waitForTimeout(200);
+  await page.click('button.melt.wide');
+  await page.waitForTimeout(500);
+  const left = await page.$$eval('.chest .chestit', (els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
+  check(left.some((l) => /Leather Boots, Spirit/.test(l)), `${tag}: melting up to Heaven leaves the refined piece (${left.join(' | ')})`);
+
+  // 序 Strongest keeps a finished beast in its place; Next mark folds it.
+  await tab(page, '狩');
+  await page.click('.huntorder button:has-text("Strongest")');
+  await page.waitForTimeout(300);
+  const rows = await page.$$eval('.stack > .beast', (els) => els.map((e) => [e.querySelector('.bname b')?.textContent, e.dataset.done]));
+  const odds = await page.$$eval('.stack > .beast .bname i .nw:first-child', (els) => els.map((e) => e.textContent));
+  check(rows.length > 0 && !(await page.$('.folded')), `${tag}: under Strongest nothing is folded away (${rows.length} rows)`);
+  check(rows.some(([, d]) => d === 'true'), `${tag}: and a finished beast stands in the list (${rows.filter(([, d]) => d === 'true').map(([n]) => n).join(' ')})`);
+  await page.click('.huntorder button:has-text("Next mark")');
+  await page.waitForTimeout(300);
+  check(!!(await page.$('.folded')), `${tag}: Next mark still folds the finished ones`);
+  void odds;
+
+  // 篩 Leaves: Fortune and Ring shows only beasts that leave a fortune ring, and is remembered.
+  const all = await page.$$eval('.stack > .beast', (els) => els.length);
+  await page.click('.huntfilter .hfrow >> nth=0 >> button:has-text("Ring")').catch(() => {});
+  await page.click('.huntfilter .hfrow >> nth=1 >> button:has-text("Fortune")').catch(() => {});
+  await page.waitForTimeout(300);
+  const leaves = await page.$$eval('.stack > .beast', (els) => els.map((e) => [...e.querySelectorAll('.bleaves em')].map((x) => x.textContent)));
+  check(leaves.length > 0 && leaves.length < all + 1 && leaves.every((l) => l.some((t) => /運/.test(t) && /Ring/.test(t))),
+    `${tag}: Leaves · Fortune · Ring shows only beasts that leave a fortune ring (${leaves.length})`);
+  await saved(page);
+  await clearAll(page);
+  await tab(page, '狩');
+  const kept = await page.$$eval('.huntfilter button[aria-pressed="true"]', (els) => els.map((e) => e.textContent.trim()));
+  check(kept.some((t) => /Ring/.test(t)) && kept.some((t) => /Fortune/.test(t)), `${tag}: the hunt filter is kept after a reload (${kept.join(', ')})`);
+  check(await overflow(page) <= 0, `${tag}: the hunt filter does not push the screen sideways`);
+  await page.click('.huntfilter button:has-text("Any piece")');
+  await page.click('.huntfilter button:has-text("Any school")');
+
+  await tab(page, '修');
+  // 量 Sound and music: a slider and a mute each, remembered.
+  await page.click('.mainswitch');
+  await page.waitForTimeout(300);
+  const sliders = await page.$$('.switchmenu .vol input[type="range"]');
+  check(sliders.length === 2, `${tag}: the menu has a slider for the sound and one for the music (${sliders.length})`);
+  if (sliders.length === 2) {
+    await sliders[0].fill('25');
+    await page.click('.switchmenu .vol >> nth=1 >> .vmute');
+    await page.waitForTimeout(200);
+    const stored = await page.evaluate(() => [localStorage.getItem('ninefold.volume.pct'), localStorage.getItem('ninefold.music.mute'), localStorage.getItem('ninefold.music.pct')]);
+    check(stored[0] === '25' && stored[1] === '1' && stored[2] === '100', `${tag}: the levels and the mute are remembered (${stored.join(', ')})`);
+  }
   await page.close();
 }
 
