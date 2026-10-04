@@ -919,6 +919,51 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/pairs-chart.webp?v=2"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-05",
+      "pin": false,
+      "channel": "devlog",
+      "title": "泉 Update · New ways to earn qi",
+      "color": "#7FB495",
+      "body": [
+        "Two new sources of qi that ask you to choose and to fight, and a tower that no longer pays half a realm in one sitting. Thank you rekaris and speculaether for the conversation that led here, and for every report this week."
+      ],
+      "fields": [
+        [
+          "秘境 The secret realm's rooms",
+          "The spring now fills while the door is shut, 4 minutes of your gathering an hour, up to a day. Each reward room offers its share three ways: 泉 drink it now, 香 burn it as incense for half as much again over time (+30% gathering while it burns, away or not), or a third door: 道, a piece of gear, a craftsman's box of herbs and ore, or a trail for the Platform."
+        ],
+        [
+          "擂台 The Platform",
+          "From the fourth realm, on 塔 Trials. Three challengers a week at ×1.3, ×1.8 and ×2.5 your power, paying 2, 4 and 6 hours of your gathering, once each. The week's temper makes them stronger unless your stance or an art answers it. The dice are set for the week, so the same build meets the same fight: change something to win. Losing costs nothing, and it is never on Auto."
+        ],
+        [
+          "塔 The tower",
+          "Floors above your realm's warden now pay a little less each, never under 3 hours, so a first big climb is still a reward but no longer half a realm at once. The floor card says exactly what the next floor pays."
+        ],
+        [
+          "氣 Qi pieces",
+          "The qi bend now climbs with you: its ceiling rises from ×1.38 to ×1.52 as you open layers, and each realm's own qi pieces still count instead of doing nothing past the third realm."
+        ],
+        [
+          "註 Notes and seals",
+          "Tap any gear line for what it does, its cap, how it bends and the formula. Forged pieces show their school in the workshop."
+        ],
+        [
+          "榜 Rankings",
+          "The rankings screen says why a save is not ranked, instead of a plain \"Not synced yet\"."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-vault.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-platform.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-tower.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-qicurve.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-notes.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-workshop.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2283,6 +2328,36 @@
       ],
       "reply": [
         "That's a fair design point, thank you. Refining already follows the place on your body when you change pieces, but it is stored on the piece, and that is exactly where both bugs came from. A record of its own per place is the cleaner way, and I'll look at moving it there.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Spring Qi reward feel a bit low",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "As promised: in today's update the vault's rooms are a choice. The spring fills while you are away, and each room offers its share as qi now, as incense that pays half as much again over time, or as something else: 道, a piece of gear, a craftsman's box, or a trail for the Platform. Thank you for the push.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Autofight trivializes combat",
+      "reply": [
+        "The first fights where power and your build matter are in today's update: 擂台 the Platform, three challengers a week above your own power, paying hours of qi, with dice set for the week so you have to change your stance, arts or gear to win. Never on Auto. Thank you both again, it came straight out of this thread.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Qi gain bonus on gear is in a weird place",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Done in today's update, thank you. The qi bend now climbs with you, its ceiling rising from ×1.38 to ×1.52, so a realm's own qi pieces still count all the way up instead of doing nothing past the third realm.",
         "· 師 Shibaki"
       ]
     }
