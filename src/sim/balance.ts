@@ -900,23 +900,69 @@ export const ARTS_STRIKE: readonly [number, number] = [1.15, 1.30];
 /** 運 體 器 Their own lines count this much more on the body. */
 export const CLASS_AMP: readonly [number, number] = [1.5, 2];
 
-/** 合 The first ten pair perks. The five the sixth school makes are below them. */
-export const PAIR_TOWER = 0.90;        // 劍仙 the tower's floors count this much of themselves
+/**
+ * 合 The first ten pair perks. The five the sixth school makes are below them.
+ *
+ * 量 rekaris, on the Discord (2026-10-04): *"A class should be the best at what it's
+ * supposed to be doing, otherwise it's bloat."* Measured on the same body in every class,
+ * four were not: six Sword pieces carry about x1.4 the power of any Sword pair, and one
+ * tower floor asks only x1.22 of the one below, so a perk worth half a floor never showed.
+ * Each was moved to the least that makes it first at its own claim, at realms 6 and 9,
+ * earth and heaven alike:
+ *
+ *   劍仙 floors 0.90 to 0.65    ties or beats pure Sword's top floor in all six cells
+ *   武神 wardens 0.88 to 0.70   the widest margin over a warden (x1.06 to x1.12 Sword's)
+ *   鑄劍師 material 1.15 to 2   the most 材 over a whole run (x1.12 earth, x1.37 heaven)
+ *   甲匠 chest 10 to 100        the most places, past a full Artificer's doubled lines
+ *
+ * None of the four is read by rate(): the economic law holds.
+ */
+export const PAIR_TOWER = 0.65;        // 劍仙 the tower's floors count this much of themselves
 export const PAIR_DRIVE = 0.75;        // 俠客 what a drive costs
-export const PAIR_WARDEN = 0.88;       // 武神 a warden counts this much of itself
-export const PAIR_MATERIAL = 1.15;     // 鑄劍師 材 from kills and floors
+export const PAIR_WARDEN = 0.70;       // 武神 a warden counts this much of itself
+export const PAIR_MATERIAL = 2.0;      // 鑄劍師 材 from kills and floors
 export const PAIR_SPRING = 1.5;        // 尋仙 qi from a spring in the secret realm
 export const PAIR_BOUNTY = 1.5;        // 金剛 見 first sights and 期 the week's quarry
 export const PAIR_PILLS = 0.85;        // 丹師 what a pill costs
 export const PAIR_DROP = 0.08;         // 獵王 added to a beast's chance of leaving a piece
 export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
-export const PAIR_CHEST = 10;          // 甲匠 places in the chest
+export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
-export const PAIR_FORM = 1;            // 劍聖 the lowest your form can roll, against its middle
+export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself
 export const PAIR_TOWER_QI = 1.25;     // 天師 qi from a tower floor
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
 export const PAIR_HERBS = 1.3;         // 陣師 what a ripe bed pays
+
+/**
+ * 劍聖 Why the Sword Saint's number is so small, and why it is the strongest perk there is.
+ *
+ * It was PAIR_FORM, "your form never rolls below its middle", and no value of it made the
+ * class the best at anything: form is a fifth of one factor, and 鏡 Mirror rarely reads it
+ * against anything stronger. Bruno chose what the class is for (2026-10-04): the Dragon.
+ *
+ * The Dragon is anchored. Every crossing stands the next one TRIBULATION_FOOTING above the
+ * Dragon the cultivator met at even odds (evenDragon), so whatever a body is worth cancels
+ * out of both sides, and six Sword pieces cross no sooner than any other body. A perk that
+ * multiplied power would cancel the same way. This one is read on the Dragon's side, after
+ * the anchor, and evenDragon reads the Dragon the Saint actually met, so it is counted
+ * again at every crossing: it works like a lower footing for one class. That is why a
+ * small number is a large effect. Measured on the active cultivator told to become each
+ * class (tools/classes.ts), days to forty crossings:
+ *
+ *     pure Sword 244   丹師 Alchemist 224 (the fastest of the rest)
+ *     劍聖 at 1.00 240   0.99 212   0.98 191   0.97 163   0.96 152   0.94 and below 138
+ *
+ * Below 0.97 the Saint walks over the Dragon a third of the time or more and crosses as
+ * fast as the pool fills, which is a race, not a ladder. At 0.98 it leads every class by
+ * a fifth (eighty crossings: 454 days against pure Sword's 551) and walks over 8 of 40
+ * against 3 to 5. Stood a tenth heavier (playEndgame's `heavier`), it slows to 11 days a
+ * mark and walls nothing.
+ *
+ * It never touches the qi rate, and the server reads it: verify.ts anchorFloor allows the
+ * anchor a Saint leaves, and the new-mark check fights the Dragon in every body the save
+ * holds.
+ */
 
 /**
  * 運拾破煉 The four lines that did nothing.

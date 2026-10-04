@@ -1,7 +1,7 @@
 import { PAIRS, SCHOOLS, SCHOOL_INFO, type Pair, type School } from '../data/schools.ts';
 import {
   ARTIFICER_REFINE, ARTS_STRIKE, CLASS_AMP, FORTUNE_BOND, PAIR_BOUNTY, PAIR_CHEST, PAIR_DRIVE, PAIR_DROP,
-  PAIR_FORM, PAIR_HERBS, PAIR_MATERIAL, PAIR_MEET, PAIR_MELT, PAIR_MEND, PAIR_PILLS, PAIR_SPRING,
+  PAIR_DRAGON, PAIR_HERBS, PAIR_MATERIAL, PAIR_MEET, PAIR_MELT, PAIR_MEND, PAIR_PILLS, PAIR_SPRING,
   PAIR_TOWER, PAIR_TOWER_QI, PAIR_WARDEN, QI_UPGRADES,
   SWORD_POWER,
 } from '../sim/balance.ts';
@@ -40,7 +40,7 @@ const PAIR_SIZE: Record<Pair, number> = {
   swordimmortal: PAIR_TOWER, wanderer: PAIR_DRIVE, wargod: PAIR_WARDEN, swordsmith: PAIR_MATERIAL,
   seeker: PAIR_SPRING, vajra: PAIR_BOUNTY, alchemist: PAIR_PILLS, huntking: PAIR_DROP,
   treasuresmith: PAIR_MELT, armourer: PAIR_CHEST,
-  swordsaint: PAIR_FORM, celestial: PAIR_TOWER_QI, diviner: PAIR_MEET, arhat: PAIR_MEND, formation: PAIR_HERBS,
+  swordsaint: PAIR_DRAGON, celestial: PAIR_TOWER_QI, diviner: PAIR_MEET, arhat: PAIR_MEND, formation: PAIR_HERBS,
 };
 
 export function pairSays(p: Pair): string {
