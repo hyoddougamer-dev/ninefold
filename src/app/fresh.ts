@@ -13,7 +13,7 @@ export const TAB_OF: Readonly<Record<System, Place>> = {
   hunt: 'hunt', gear: 'gear', refine: 'gear', fuse: 'gear', cave: 'cultivate', crafts: 'crafts',
   arts: 'dao', cores: 'cultivate', secret: 'hunt', deep: 'hunt', tree: 'dao', keystones: 'dao',
   seclusion: 'cultivate', alchemy: 'crafts', tower: 'trials', record: 'hunt', sigils: 'crafts',
-  bestiary: 'hunt', arrays: 'crafts', furnace: 'trials', tribulation: 'cultivate',
+  bestiary: 'hunt', arrays: 'crafts', furnace: 'trials', tribulation: 'cultivate', platform: 'trials',
 };
 
 /**

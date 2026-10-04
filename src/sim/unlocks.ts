@@ -83,12 +83,12 @@
  * late arrives *full*.
  */
 
-import { CRAFT_FEED_LEVEL } from './balance.ts';
+import { CRAFT_FEED_LEVEL, PLATFORM_REALM } from './balance.ts';
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
   | 'record' | 'bestiary' | 'furnace' | 'refine' | 'tribulation' | 'deep' | 'seclusion'
-  | 'crafts' | 'alchemy' | 'sigils' | 'arrays';
+  | 'crafts' | 'alchemy' | 'sigils' | 'arrays' | 'platform';
 
 export interface SystemInfo {
   readonly key: System;
@@ -155,6 +155,10 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // and a fight waiting behind it. See sim/seclusion.ts.
   { key: 'seclusion', han: '閉關', name: 'Seclusion', realm: 4,
     gives: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, as strong as you are, without what you know. Beat it for a 道 point. Nine in a life, and a loss costs nothing.' },
+  // 擂台 The Platform stands beside the demon: a fight that asks for the build rather than
+  // for 力, paying qi every week. It is drawn on 塔 Trials, which opens here for it.
+  { key: 'platform', han: '擂台', name: 'The Platform', realm: PLATFORM_REALM,
+    gives: 'Three challengers a week, measured against your own power. The dice are set for the week, so the way past a loss is to change your stance, your arts or what you carry. A win pays hours of gathering; a loss costs nothing.' },
   { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
     gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,

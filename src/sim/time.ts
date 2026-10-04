@@ -1,4 +1,4 @@
-import { LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt } from './balance.ts';
+import { INCENSE_BONUS, LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt } from './balance.ts';
 import { layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 import { classMelt } from './schools.ts';
@@ -57,19 +57,40 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
   if (!Number.isFinite(now) || dt <= 0) return { ...s, at: Math.max(s.at, now) };
 
   let { realm, layer, qi, wardenFell } = s;
+  /**
+   * 香 Incense from the vault burns until this instant, open or shut, and adds INCENSE_BONUS
+   * of the standing rate while it does. Added, never multiplied by 入定: the sitting deepens
+   * what you gather, the incense is a stick that burns beside it. The interval is walked in
+   * two pieces where the stick goes out, so a layer that opens either side of that instant
+   * is paid at the rate that was really burning.
+   */
+  const until = s.incenseUntil ?? 0;
+  let clock = s.at;
 
-  for (let guard = 0; guard <= LAYERS + 1; guard++) {
-    const r = rate({ ...s, realm, layer }) * Math.max(1, focus);
+  for (let guard = 0; guard <= LAYERS + 3; guard++) {
+    const burning = clock < until;
+    const base = rate({ ...s, realm, layer });
+    const r = base * (Math.max(1, focus) + (burning ? INCENSE_BONUS : 0));
+    // The stretch this rate holds for: the whole gap, or up to where the stick goes out.
+    const span = burning ? Math.min(dt, until - clock) : dt;
     const cost = layerCost(realm, layer, s.unlocked);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
 
     // At the ceiling, qi banks and time ends here. Only 突破 leaves a realm.
     if (ceiling && !auto) {
-      const remaining = cost - qi;
-      const seconds = remaining / r;
-      if (!Number.isFinite(seconds) || seconds > dt) { qi += r * dt; break; }
-      qi = cost + r * (dt - seconds);
-      break;
+      qi += r * span;
+      dt -= span;
+      clock += span;
+      if (dt <= 0) break;
+      continue;
+    }
+    const reach = Math.max(0, cost - qi) / r;
+    if (burning && span < dt && (!Number.isFinite(reach) || reach > span)) {
+      // 香 The stick goes out before this rung is paid for: bank what it burned, walk on.
+      qi += r * span;
+      dt -= span;
+      clock += span;
+      continue;
     }
 
     // 溢 The overflow is carried, not thrown away, and for a long time it was thrown away.
@@ -84,11 +105,12 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
     //
     // A melt of ten pieces worth fifty thousand qi against a five-thousand rung bought
     // one layer and burned forty-five thousand. That is the whole of what he was seeing.
-    const seconds = Math.max(0, cost - qi) / r;
+    const seconds = reach;
     if (!Number.isFinite(seconds) || seconds > dt) { qi += r * dt; break; }
 
     qi = Math.max(0, qi - cost);
     dt -= seconds;
+    clock += seconds;
     if (++layer >= LAYERS_PER_REALM) {
       layer = 0;
       realm += 1;

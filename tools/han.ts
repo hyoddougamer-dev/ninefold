@@ -26,6 +26,7 @@ import { HERBS } from '../src/data/herbs.ts';
 import { ALL_CARDS } from '../src/data/awakening.ts';
 import { MEETINGS } from '../src/data/meetings.ts';
 import { ROOM_INFO } from '../src/data/secret.ts';
+import { TEMPERS } from '../src/data/platform.ts';
 import { REALM_SETS, TEMPLATE_BY_KEY } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO } from '../src/data/techniques.ts';
 import { PAIRS, SCHOOL_INFO } from '../src/data/schools.ts';
@@ -67,6 +68,7 @@ for (const h of HERBS) put(h.han, h.name);
 for (const c of ALL_CARDS) put(c.han, c.name);
 for (const m of MEETINGS) put(m.han, m.name);
 for (const k of Object.values(ROOM_INFO)) put(k.han, k.name);
+for (const t of TEMPERS) put(t.han, t.name);
 for (const x of REALM_SETS) put(x.han, x.name);
 // 系 A tile's lower-left corner is the lineage's first character standing for the whole
 // lineage, so 凡 there is Mortal Iron, not the Common rank that shares its character.

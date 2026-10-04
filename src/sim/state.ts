@@ -26,7 +26,7 @@ import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
 import { bodyTotals, classPower, classUpgrades } from './schools.ts';
-import { weekOf } from './week.ts';
+import { WEEK, periodOf, weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
 import { EMPTY, validBeds, type Bed } from '../data/herbs.ts';
@@ -34,10 +34,13 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT as SECRET_OPENS_AT, RUN_DAO_CEILING, roomsFor, validTake,
   type Take,
 } from '../data/secret.ts';
-import { BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, MELT_CAP, SECLUSION, SHRINE_DAO_PER_REALM } from './balance.ts';
+import {
+  BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
+  SHRINE_DAO_PER_REALM, SPRING_HOLD,
+} from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
-import { FORGED, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
+import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -233,6 +236,28 @@ export interface State {
   /** 鑰 The day (epoch seconds / 86 400) a Realm Key last opened the door. See useKey. */
   keyDay: number;
   /**
+   * 泉 The vault's spring: seconds of shut time it holds (at most SPRING_HOLD), counted up
+   * to `springAt`. What it holds now is derived (springNow in sim/secret.ts), and so is what
+   * each room's share of it is: the rooms are not stored.
+   */
+  spring: number;
+  springAt: number;
+  /**
+   * 香 The instant the incense burning in the vault's burner runs out, or 0. A stick lit
+   * while one burns waits behind it, so one instant is the whole queue; advance() pays
+   * INCENSE_BONUS of the standing rate for every second before it.
+   */
+  incenseUntil: number;
+  /** 跡 A challenger's trail taken in the vault: the next 擂台 challenger begins wounded. */
+  trail: boolean;
+  /**
+   * 擂台 The Platform: which period the challengers beaten were counted in (a week and the
+   * realm, see periodOf) and how many of its three have fallen. A new period reads as none.
+   */
+  platform: { readonly period: number; readonly beaten: number };
+  /** 擂 Every challenger ever beaten. It only grows, and 驗 the server bounds it by the weeks. */
+  bouts: number;
+  /**
    * 記 What the last run gave, in total, so the end of one can say so.
    *
    * It is a record and not loot in flight: every room paid into the save the moment it
@@ -394,6 +419,8 @@ export function newState(now: number): State {
     met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
     runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0,
+    spring: 0, springAt: now, incenseUntil: 0, trail: false,
+    platform: { period: -1, beaten: 0 }, bouts: 0,
     quarryWeek: -1,
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },
@@ -874,10 +901,11 @@ export function validate(raw: unknown, now: number): State {
   // cut, so holding one is what widens the ceiling, placed or lifted out.
   const doorGap = (crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
 
+  const savedAt = clamp(num(o.at, now), startedAt, now);
   const out: State = {
     v: 1,
     startedAt,
-    at: clamp(num(o.at, now), startedAt, now),
+    at: savedAt,
     realm,
     layer,
     qi: Math.max(0, num(o.qi, 0)),
@@ -956,7 +984,23 @@ export function validate(raw: unknown, now: number): State {
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     // 鑰 A day, never one ahead of the save's own clock.
     keyDay: clamp(Math.floor(num(o.keyDay, 0)), 0, Math.floor(now / 86_400)),
-    lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES),
+    // 泉 The spring holds a day of shut time at most, counted to an instant the cultivator
+    // has lived. A save from before the spring starts it from the last run, empty: the
+    // hours since that run are what it has filled with, which is the rule.
+    spring: clamp(num(o.spring, 0), 0, SPRING_HOLD),
+    springAt: clamp(num(o.springAt, num(o.runAt, 0) || startedAt), startedAt, savedAt),
+    // 香 A day of burning queued at most, and none before the vault exists.
+    incenseUntil: realm >= SECRET_OPENS_AT ? clamp(num(o.incenseUntil, 0), 0, savedAt + INCENSE_HOLD) : 0,
+    // 擂 A trail, the period and its count, and the bouts, only once the Platform stands. The
+    // count is three a period at most, and the period never one the save has not reached.
+    trail: realm >= PLATFORM_REALM && o.trail === true,
+    platform: realm >= PLATFORM_REALM ? {
+      period: clamp(Math.floor(num((o.platform as Record<string, unknown> | undefined)?.period, -1)), -1, periodOf(savedAt, realm)),
+      beaten: clamp(Math.floor(num((o.platform as Record<string, unknown> | undefined)?.beaten, 0)), 0, PLATFORM_EDGE.length),
+    } : { period: -1, beaten: 0 },
+    bouts: realm >= PLATFORM_REALM
+      ? clamp(Math.floor(num(o.bouts, 0)), 0, PLATFORM_EDGE.length * (Math.floor(elapsed / WEEK) + 9 + 1)) : 0,
+    lastRun: validTake(o.lastRun, (k) => k in TEMPLATE_BY_KEY, RARITIES, (k) => k in ITEM_BY_KEY),
     // 期 A week the cultivator has not lived through yet is not a week they took the
     // quarry's qi in, so the ceiling is this instant's own week. -1 is never, which is
     // what any save written before the rotation existed comes back as.

@@ -18,7 +18,10 @@ import { blowLine, verdictLine } from './blows.ts';
 import { Svg } from './Svg.tsx';
 import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { ARENA, CRAFTS, SECLUSION, UNIT, meltPays } from '../copy.ts';
+import { ARENA, CRAFTS, PLATFORM, SECLUSION, UNIT, meltPays } from '../copy.ts';
+import {
+  PLATFORM_EDGE, PLATFORM_HOURS, answerOf, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
+} from '../../sim/platform.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
@@ -66,6 +69,8 @@ export interface Battle {
   readonly qi?: number;
   /** 心魔 The heart demon: the cultivator's own shape, darkened, and never a kill. */
   readonly demon?: boolean;
+  /** 擂 A challenger on the Platform, by position: never a kill, never a drop, on the week's dice. */
+  readonly challenger?: Tier;
   readonly beast: Beast;
   readonly outcome: Outcome;
   /** Two beats to a round: even is the cultivator striking, odd is the beast. */
@@ -176,12 +181,24 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   const took = battle.kit && tookPart(battle.kit, !!outcome.revived);
   const spentNames = took ? names([took.elixir, took.sigil]) : null;
   const unneeded = battle.kit && took && battle.kit.elixir !== took.elixir ? names([battle.kit.elixir]) : null;
+  /** 擂 A challenger, which is neither a kill nor a floor: the verdict says what it is. */
+  const tier = battle.challenger;
+  const platform = tier !== undefined;
+  const ordinal = platform ? PLATFORM.ordinal[tier] : '';
   const say = over
-    ? (battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
+    ? (platform ? (outcome.won ? { han: '勝', text: PLATFORM.won(ordinal) } : { han: '再來', text: PLATFORM.lost })
+      : battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
         realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
     : blowLine(f.striker, f.round);
   /** 心魔 A beast of the world, which is what a kill, a bounty and the week are paid for. */
-  const worldly = battle.floor === undefined && !battle.demon;
+  const worldly = battle.floor === undefined && !battle.demon && !platform;
+  // 擂 What a challenger pays, read before the win is written, and where the week stands after it.
+  const platformQi = platform && outcome.won ? challengerPays(state, tier) : 0;
+  const platformDown = platform ? beatenNow(state) + (outcome.won ? 1 : 0) : 0;
+  const temper = platform ? temperOf(state) : null;
+  const nextUp = platform && platformDown < PLATFORM_EDGE.length ? (platformDown as Tier) : null;
+  const nextShape = nextUp !== null ? challengerOf(state, nextUp) : null;
+  const answer = temper ? answerOf(state, temper) : null;
   /**
    * 熟 Whether this kill is the one that earns a mark. It is asked of the state *before*
    * the kill is written, so the arena is describing the fight it just played rather than
@@ -217,6 +234,9 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   const take = () => {
     if (outcome.won && battle.demon) {
       float(SECLUSION.pays(DEMON_DAO), 'jade');
+      burst('jade', null, 12, 64);
+    } else if (outcome.won && platform) {
+      float(`+${num(platformQi)} qi`, 'jade');
       burst('jade', null, 12, 64);
     } else if (outcome.won) {
       const mat = battle.floor !== undefined
@@ -352,7 +372,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
             <b className="cjk" style={{ color: br.colour }}>
               {battle.floor === undefined ? beast.han : `${battle.floor}層`}
             </b>
-            <span className="en">{battle.floor === undefined ? beast.name : ARENA.floor(battle.floor)}</span>
+            <span className="en">{platform ? PLATFORM.who(ordinal)
+              : battle.floor === undefined ? beast.name : ARENA.floor(battle.floor)}</span>
           </span>
           {/* What it *brings*, not what the table says it is worth. A tower floor
               carries its own power and the 渡劫 Dragon rises every crossing, so the
@@ -402,7 +423,33 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
             </div>
           )}
           {reshut && <p className="kitline"><b className="cjk">關</b> {QOL.seclusion.shutAgain}</p>}
-          {outcome.won && !battle.demon && (
+          {/* 擂 A challenger pays hours of gathering and nothing else, and the week's count,
+              its temper and what stands next are said under it. A loss says that it cost
+              nothing and that the dice are set: pressing again unchanged is the same fight. */}
+          {outcome.won && platform && (
+            <div className="gains">
+              <span className="gain qi" style={{ animationDelay: '.25s' }}>+{num(platformQi)} <b>qi</b></span>
+              <span className="gain" style={{ animationDelay: '.4s' }}>{PLATFORM.hours(PLATFORM_HOURS[tier])}</span>
+            </div>
+          )}
+          {platform && temper && (
+            <div className="platbox">
+              <b className="cjk">擂</b>
+              <span>
+                <em>{outcome.won ? PLATFORM.count(platformDown) : `${beast.han} ${beast.name}`}</em>
+                <i>
+                  {answer
+                    ? PLATFORM.answeredLine(`${temper.han} ${temper.name}`, `${answer.han} ${answer.name}`)
+                    : PLATFORM.unansweredLine(`${temper.han} ${temper.name}`)}{' '}
+                  {!outcome.won ? PLATFORM.dice
+                    : nextShape && nextUp !== null
+                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, String(PLATFORM_EDGE[nextUp]), PLATFORM_HOURS[nextUp])
+                      : PLATFORM.done}
+                </i>
+              </span>
+            </div>
+          )}
+          {outcome.won && !battle.demon && !platform && (
             <div className="gains">
               <span className="gain" style={{ animationDelay: '.25s' }}>
                 +{num(battle.floor !== undefined
@@ -508,10 +555,12 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                 <kbd>{ARENA.keyAgain}</kbd>
               </button>
             )}
-            {/* 登 The next floor, on the pace of Again and on its key. A lost floor has none. */}
+            {/* 登 The next floor, on the pace of Again and on its key. A lost floor has none.
+                擂 For a challenger it is the next challenger, and only after a win. */}
             {onNext && outcome.won && (
               <button className="act ghost again nextfloor" onClick={() => { take(); onNext(); }}>
-                登 <span>{QOL.arena.nextFloor}</span>
+                {platform ? '擂' : '登'} <span>{platform && nextUp !== null
+                  ? PLATFORM.nextButton(PLATFORM.ordinal[nextUp]) : QOL.arena.nextFloor}</span>
                 <kbd>{QOL.arena.keyNext}</kbd>
               </button>
             )}

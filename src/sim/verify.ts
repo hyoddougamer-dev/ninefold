@@ -29,9 +29,13 @@
  * the rule cannot be one thing on the phone and another on the server.
  */
 import {
-  FOCUS_MAX, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_TOWER_QI, QUARRY_HOURS,
-  TRIBULATION_CHALLENGE,
+  BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
+  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
+  SPRING_HOLD, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
+import { WEEK } from './week.ts';
+import { beatenNow, challengerOf, type Tier } from './platform.ts';
+import { classSpring } from './schools.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -315,6 +319,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const down = layersOpened(after) < layersOpened(before)
     || after.tribulation < before.tribulation
     || after.tower < before.tower
+    // 擂 Every challenger ever beaten: a count that only grows.
+    || (after.bouts ?? 0) < (before.bouts ?? 0)
     || after.demons < before.demons
     // 鑰 The day the last Realm Key turned only moves forward.
     || (after.keyDay ?? 0) < (before.keyDay ?? 0)
@@ -383,7 +389,19 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // seconds it would take at the fastest rate there was, the fewest it can be worth: the
   // server cannot know when each floor fell, and towerQi is a ceiling, not a measurement.
   const tower = towerQi(before, after, first) / rEnd;
-  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower;
+  // 泉 The vault's spring fills with time and nothing else: a day held, plus what dt could
+  // fill, each second of it worth at most INCENSE_WORTH (burned rather than drunk), the
+  // week's blessed room and 尋仙 the Immortal Seeker's deeper draught. It used to hide inside
+  // BURST; counted as itself it is independent of how many runs were walked, so the door
+  // gap, the Realm Key and the Hidden Door Array need no qi term at all. A first sync has
+  // its own allowance (FIRST_PACE, FIRST_SITTING), as for the floors.
+  const spring = first ? 0 : vaultSeconds(dt) / focus;
+  // 擂 Each challenger beaten paid at most PLATFORM_HOURS' largest at the bare rate, the
+  // Vajra's half again at most: a lump, allowed for as itself, as the quarry is.
+  const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
+  const platform = first ? 0 : (bouts * Math.max(...PLATFORM_HOURS) * 3600 * PAIR_BOUNTY) / focus;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower
+    + spring + platform;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 
@@ -462,6 +480,24 @@ export function verify(before: State, after: State, seconds: number, first = fal
     why.push('road');
   }
 
+  // 擂 Three challengers a period, and a period is a week or a realm: more new bouts than
+  // the weeks and the realms between the two saves allow is a matter of time, and waits.
+  const periods = Math.floor(dt / WEEK) + 1 + Math.max(0, after.realm - before.realm) + 1;
+  if (bouts > PLATFORM_EDGE.length * periods && !why.includes('too-fast')) why.push('too-fast');
+  // 擂 And the highest challenger claimed this period has to be one some body the save
+  // holds can beat, with the best kit, a trail and the temper answered. It is measured
+  // against that body's own power, so an edited 力 cannot win it; a no only waits, because
+  // the stance and the kit in hand at the fight are not in the save.
+  if (bouts > 0 && !why.includes('too-fast') && !platformBeatable(after)) why.push('too-fast');
+  // 香 The incense queued and the spring held only ever grow by what time fills: a stick
+  // relit by hand to burn for ever is more incense than any spring could have given.
+  if (!first && !why.includes('too-fast')) {
+    // Read without 尋仙 first, which is nearly every pair; only a pair that would wait is
+    // read again with the Seeker's step, if either save holds a body that is one.
+    const grew = (k: number) => vaultStock(after, k) > (vaultStock(before, k) + dt * vaultRate(k)) * 1.001 + 60;
+    if (grew(1) && grew(Math.max(seeker(before), seeker(after)))) why.push('too-fast');
+  }
+
   // 心魔 A heart demon waits a night behind a shut door, so more of them than the nights
   // since the last sync (one already waiting allowed for) is a matter of time: it waits.
   // 鎖魂 A Soul-Lock Sigil makes one count twice, so two a night is honest.
@@ -485,6 +521,57 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // quarter of an hour.
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
   return { ok: why.length === 0, why, used, strike, suspect, pace };
+}
+
+/**
+ * 泉 Seconds of gathering the vault's spring can have paid across a gap of dt: a day held
+ * and dt filled, each second worth SPRING_FILL, burned rather than drunk (INCENSE_WORTH),
+ * in the week's blessed room (BLESSED_ROOM) by an Immortal Seeker (PAIR_SPRING). Generous
+ * on purpose: every factor at its largest at once is more than any one run can be.
+ */
+export function vaultSeconds(dt: number): number {
+  return (SPRING_HOLD + Math.max(0, dt)) * SPRING_FILL * INCENSE_WORTH * BLESSED_ROOM * PAIR_SPRING;
+}
+
+/**
+ * 香 What the vault holds in a save, in seconds of gathering at its most generous: the
+ * spring as it stands now (a day at most) and the incense still queued. Between two saves it
+ * can only grow by what the spring could fill (vaultRate per second); drinking, burning
+ * and the third doors only ever take from it.
+ */
+export function vaultStock(s: State, seekerStep = PAIR_SPRING): number {
+  const spring = Math.min(SPRING_HOLD, Math.max(0, s.spring ?? 0) + Math.max(0, s.at - (s.springAt ?? s.at)));
+  const queued = Math.max(0, (s.incenseUntil ?? 0) - s.at);
+  return spring * vaultRate(seekerStep) + queued * INCENSE_BONUS;
+}
+
+/** 香 How fast the stock can grow: a second of fill, at its most generous. */
+function vaultRate(seekerStep: number): number {
+  return SPRING_FILL * INCENSE_WORTH * BLESSED_ROOM * seekerStep;
+}
+
+/** 尋仙 The Immortal Seeker's step, if any body the save holds is one. */
+function seeker(s: State): number {
+  return bodiesHeld(s).some((b) => classSpring(b) > 1) ? PAIR_SPRING : 1;
+}
+
+
+/**
+ * 擂 Whether the highest challenger this save claims for its period could have fallen to
+ * some body it holds: the best kit its crafts could carry, a trail taken, and the temper
+ * answered. A save whose period has turned claims nothing that can still be read, and
+ * passes: its bouts were counted against the weeks above.
+ */
+export function platformBeatable(s: State): boolean {
+  const n = beatenNow(s);
+  if (n <= 0) return true;
+  const tier = (n - 1) as Tier;
+  return bodiesHeld(s).some((b) => {
+    const shape = challengerOf(b, tier);
+    // The temper answered: the challenger at its edge alone.
+    const standing = power(b) * PLATFORM_EDGE[tier];
+    return beatable(b, shape, standing, { ...bestKit(b, shape, 'platform'), wound: TRAIL_WOUND });
+  });
 }
 
 /**

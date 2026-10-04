@@ -17,7 +17,9 @@ import { furnace, tower } from '../../art/trials.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
 import { Term } from '../ui/Term.tsx';
-import { CULTIVATE, HUNT, TRIALS, UNIT } from '../copy.ts';
+import { CULTIVATE, HUNT, PLATFORM, TRIALS, UNIT } from '../copy.ts';
+import { Platform } from '../ui/Platform.tsx';
+import { platformOpen, type Tier } from '../../sim/platform.ts';
 import { useBuyMax } from '../prefs.ts';
 import { brewMax } from '../../sim/trials.ts';
 
@@ -29,14 +31,17 @@ import { brewMax } from '../../sim/trials.ts';
  * touches the qi rate, which is the rule the whole economy stands on, and the screen
  * says so at the bottom rather than leaving the player to work it out.
  */
-export function Trials({ state, onFloor, onBrew }: {
+export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
   state: State;
   onFloor: (floor: number) => void;
   /** 爐 One pill, or with ×Max as many as can be paid for (the same ×1/Max as 修). */
   onBrew: (line: (typeof LINES)[number], max?: boolean) => void;
+  /** 擂 The challenger standing on the Platform. */
+  onChallenge?: (tier: Tier) => void;
+  /** 守 Stand in a stance that answers the week's temper, from the Platform's card. */
+  onStance?: (key: string) => void;
 }) {
   const [many, pickMany] = useBuyMax();
-  void towerOpen;
   const floor = standingFloor(state);
   const beast = floorBeast(floor);
   const standing = floorPower(floor);
@@ -72,6 +77,14 @@ export function Trials({ state, onFloor, onBrew }: {
       </p>
 
       <h2 className="heading">{TRIALS.towerHead}</h2>
+      {/* 塔 擂 The screen opens with the Platform at the fourth realm, a realm before the
+          tower stands: until then the tower says when it comes, and nothing else. */}
+      {!towerOpen(state) && (
+        <p className="faint" style={{ margin: '0 0 8px', fontSize: 12.5 }}>
+          {TRIALS.towerShut(realmOf(opensAt('tower')).han, realmOf(opensAt('tower')).name)}
+        </p>
+      )}
+      {towerOpen(state) && <>
       {/* 塔 The tower drawn as far up as it has been climbed: one tier to a 塔印 seal,
           so the silhouette is the progress and not an illustration beside it. */}
       {/* 並 On a wide screen the drawing and the floor stand side by side: stacked, the
@@ -125,6 +138,15 @@ export function Trials({ state, onFloor, onBrew }: {
         <span className="faint">{TRIALS.sealWorth(`${Math.round(SEAL_LOOT * 100)}%`)}</span>
         <span className="mono" style={{ color: 'var(--gold)', whiteSpace: 'nowrap', flex: 'none' }}>{TRIALS.seals(held)}</span>
       </div>
+      </>}
+
+      {/* 擂台 Under the tower: the week's three challengers. */}
+      {platformOpen(state) && onChallenge && onStance && (
+        <>
+          <h2 className="heading"><span className="cjk">擂台</span> {PLATFORM.head}</h2>
+          <Platform state={state} onChallenge={onChallenge} onStance={onStance} />
+        </>
+      )}
 
       {/* 盡 The same ×1 or Max as 修 the upgrades, remembered with it: one choice, two places. */}
       <div className="spendrow furnacerow">

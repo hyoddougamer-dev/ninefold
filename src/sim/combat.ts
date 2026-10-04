@@ -198,9 +198,10 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
 
   let beastPower = bp0;      // 纏 and 鶴唳 shave this as the fight runs
   let ph = pp * HEALTH_PER_POWER;
-  let bh = bp0 * HEALTH_PER_POWER;
+  const bh0 = bp0 * HEALTH_PER_POWER;
+  // 跡 A challenger whose trail was followed comes to the platform already hurt.
+  let bh = bh0 * (1 - Math.max(0, Math.min(1, kit.wound ?? 0)));
   const ph0 = ph;
-  const bh0 = bh;
   let took = 0;              // what the beast dealt last round, for 傀儡 and 鏡
 
   const d = dice(seed);
@@ -515,7 +516,9 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number): numb
     return tribulationPower(s, base) * classDragon(s);
   }
   // 破 The body's sunder line, bent; 劍仙 the tower's floors; 武神 the wardens.
-  const tower = standing !== undefined ? classTower(s) : 1;
+  // 擂 A challenger on the Platform brings its own power too, but it is not a floor: the
+  // Sword Immortal's hold on the tower does not reach it.
+  const tower = standing !== undefined && b.challenger === undefined ? classTower(s) : 1;
   const warden = standing === undefined && b.warden ? classWarden(s) : 1;
   // 血 The blood method from the road, for somebody who walked hard. The Dragon is
   // returned above, before this line, so it never reaches the tribulation.
