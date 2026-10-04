@@ -55,6 +55,8 @@ export const BANNERS = [
   { key: 'news-qol', seal: '便', over: '告 Announcement', title: 'Make Ninefold Easier', sub: 'Your quality-of-life ideas come first this week', bg: 'realm/8', fig: 'self/man-8' },
   // 筆 The update that answers the call: what the testers asked for, in the game.
   { key: 'devlog-4', seal: '便', over: '筆 Dev log · 04', title: 'Fewer Taps, Clearer Screens', sub: 'Your quality-of-life ideas, in the game', bg: 'realm/6', fig: 'self/woman-6' },
+  // 深 The question about deeper hunts, before anything is built.
+  { key: 'ideas-deep', seal: '深', over: '議 Your opinion · A proposal', title: 'Deeper Hunts', sub: 'The same beast, further down', bg: 'realm/7', fig: 'cut/gargoyle' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
