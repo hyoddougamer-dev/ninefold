@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { ARCHETYPES, TEMPLATE_BY_KEY, callingOf, schoolOf, type Item, type Slot, type Worn } from '../../data/gear.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO, pairOf, type School } from '../../data/schools.ts';
 import { BEASTS } from '../../data/bestiary.ts';
-import { MAX_MARK_DAYS, SCHOOL_FULL, SCHOOL_WAKES } from '../balance.ts';
+import { MAX_MARK_DAYS, PAIR_DRAGON, SCHOOL_FULL, SCHOOL_WAKES } from '../balance.ts';
 import {
   classBond, classDrive, classMaterial, classMelt, classPills, classPower, classRefine,
   classTower, classUpgrades, classWarden, gearFind, gearFuse, gearLuck, gearSunder,
-  classArts, classForm, classHerbs, classMeet, classMend, classTowerQi, gearArt,
+  classArts, classDragon, classHerbs, classMeet, classMend, classTowerQi, gearArt,
 } from '../schools.ts';
 import { effectiveBeastPower, fight } from '../combat.ts';
 import { costsClass, ifWorn, swing, verdictOf, wornSwing } from '../inspect.ts';
@@ -93,14 +93,14 @@ describe('職 what each class does', () => {
   it('pays the sixth school and its five pairs', () => {
     expect(classArts(pure('arts'))).toBeGreaterThan(classArts(none));
     const checks: [string, (s: State) => number, 'down' | 'up'][] = [
-      ['swordsaint', classForm, 'up'], ['celestial', classTowerQi, 'up'], ['diviner', classMeet, 'up'],
+      ['swordsaint', classDragon, 'down'], ['celestial', classTowerQi, 'up'], ['diviner', classMeet, 'up'],
       ['arhat', classMend, 'up'], ['formation', classHerbs, 'up'],
     ];
-    for (const [key, f] of checks) {
+    for (const [key, f, dir] of checks) {
       const p = PAIRS.find((x) => x.key === key)!;
       const s = pairBody(p.a, p.b);
       expect(callingOf(s.worn).pair?.key, key).toBe(key);
-      expect(f(s), key).toBeGreaterThan(f(none));
+      if (dir === 'down') expect(f(s), key).toBeLessThan(f(none)); else expect(f(s), key).toBeGreaterThan(f(none));
     }
   });
 
@@ -134,6 +134,20 @@ describe('職 what each class does', () => {
     const s = { ...at({}), realm: 9, killed: { fox: 1, ape: 1, tiger: 1 }, sequence: ['ape', 'tiger', 'fox'] } as State;
     const lined = { ...s, worn: { ring: { id: 'r', template: 'flamering9', rarity: 'heaven', rolls: [{ affix: 'art', value: 120 }] } } } as State;
     expect(fight(lined, dragon, 3).rounds[0].playerDamage).toBeCloseTo(fight(s, dragon, 3).rounds[0].playerDamage, 6);
+  });
+
+  it('劍聖 thins the Dragon of the tribulation by PAIR_DRAGON, and nothing else', () => {
+    const p = PAIRS.find((x) => x.key === 'swordsaint')!;
+    const saint = { ...pairBody(p.a, p.b), realm: 9 } as State;
+    const dragon = BEASTS.find((b) => b.key === 'dragon')!;
+    expect(effectiveBeastPower(saint, dragon) / effectiveBeastPower({ ...saint, worn: {} }, dragon)).toBeCloseTo(PAIR_DRAGON, 9);
+    // Below the summit the same animal is a beast like any other, and the class does nothing.
+    const below = { ...saint, realm: 8 } as State;
+    const immortal = PAIRS.find((x) => x.key === 'swordimmortal')!;
+    const other = { ...pairBody(immortal.a, immortal.b), realm: 8 } as State;
+    expect(classDragon(other)).toBe(1);
+    expect(effectiveBeastPower(below, dragon) / effectiveBeastPower(other, dragon))
+      .toBeCloseTo(gearSunder(below) / gearSunder(other), 9);
   });
 
   it('never lets 破 touch the Dragon', () => {
@@ -174,6 +188,7 @@ describe('職 the sheet never calls a piece that costs the class an upgrade', ()
 describe('職 every class, played out', () => {
   let plain = 0;
   const rows: string[] = [];
+  const crossed = new Map<string, number>();
   it('plays the plain cultivator for the yardstick', async () => {
     await new Promise((r) => setTimeout(r, 0));
     plain = playPlain();
@@ -184,6 +199,7 @@ describe('職 every class, played out', () => {
       // Let the worker breathe between the long runs, or its own messages time out.
       await new Promise((r) => setTimeout(r, 0));
       const r = playClass(build);
+      crossed.set(build, r.crossings.reduce((a, x) => a + x, 0));
       rows.push(`    ${build.padEnd(14)} realm 9 on day ${r.realm9.toFixed(1).padStart(5)}   class held ${String(Math.round(100 * r.held)).padStart(3)}%` +
         `   40 crossings ${String(r.crossings.reduce((a, x) => a + x, 0)).padStart(4)} days, longest ${Math.max(...r.crossings)}`);
       expect(r.held, `${build} is reachable`).toBeGreaterThan(0);
@@ -196,5 +212,11 @@ describe('職 every class, played out', () => {
   it('prints the table', () => {
     console.log(`\n  職 every class, played by the active cultivator (plain: realm 9 on day ${plain.toFixed(1)}):\n${rows.join('\n')}\n`);
     expect(rows).toHaveLength(BUILDS.length);
+  });
+  it('劍聖 the Sword Saint, whose class is the Dragon, crosses forty sooner than any other', () => {
+    expect(crossed.size).toBe(BUILDS.length);
+    const saint = crossed.get('swordsaint')!;
+    const rest = [...crossed].filter(([b]) => b !== 'swordsaint').map(([, d]) => d);
+    expect(saint).toBeLessThan(Math.min(...rest));
   });
 });

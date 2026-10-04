@@ -3,7 +3,7 @@ import type { Pair, School } from '../data/schools.ts';
 import {
   ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
   PAIR_DRIVE, PAIR_DROP, PAIR_MATERIAL, PAIR_MELT, PAIR_PILLS, PAIR_SPRING, PAIR_TOWER,
-  PAIR_FORM, PAIR_HERBS, PAIR_MEET, PAIR_MEND, PAIR_TOWER_QI,
+  PAIR_DRAGON, PAIR_HERBS, PAIR_MEET, PAIR_MEND, PAIR_TOWER_QI,
   PAIR_WARDEN, QI_UPGRADES, SUNDER_BEND, SWORD_POWER,
 } from './balance.ts';
 import { affinity } from './dao.ts';
@@ -67,8 +67,8 @@ export function classBounty(s: Body): number { return pairIs(s, 'vajra') ? PAIR_
 export function classPills(s: Body): number { return pairIs(s, 'alchemist') ? PAIR_PILLS : 1; }
 export function classDrop(s: Body): number { return pairIs(s, 'huntking') ? PAIR_DROP : 0; }
 export function classMelt(s: Body): number { return pairIs(s, 'treasuresmith') ? PAIR_MELT : 1; }
-/** 劍聖 The lowest a fight's form can roll for this body, against its middle; 0 is no floor. */
-export function classForm(s: Body): number { return pairIs(s, 'swordsaint') ? PAIR_FORM : 0; }
+/** 劍聖 How much of itself the Dragon of the tribulation counts against this body. */
+export function classDragon(s: Body): number { return pairIs(s, 'swordsaint') ? PAIR_DRAGON : 1; }
 export function classTowerQi(s: Body): number { return pairIs(s, 'celestial') ? PAIR_TOWER_QI : 1; }
 export function classMeet(s: Body): number { return pairIs(s, 'diviner') ? PAIR_MEET : 1; }
 /** 羅漢 Health recovered every round, as a share of the whole. */
