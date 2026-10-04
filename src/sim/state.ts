@@ -99,8 +99,13 @@ export interface GearSet {
   readonly ids: Partial<Record<Slot, string>>;
 }
 
-/** 套 How many sets a cultivator may keep. */
-export const SET_LIMIT = 3;
+/**
+ * 套 How many sets a cultivator may keep. Three until 2026-10-05: rekaris asked for more,
+ * and the price of a set is already paid in chest places and in keeping its pieces up, so
+ * Bruno raised it to five. The server tries every body a save holds (verify.ts bodiesHeld),
+ * five sets as cheaply as three.
+ */
+export const SET_LIMIT = 5;
 
 /** 名 A loadout's name, cleaned once for the save and for the screen: no control characters, 24 at most. */
 export function cleanSetName(raw: string): string {

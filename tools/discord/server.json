@@ -947,6 +947,10 @@
           "The qi bend now climbs with you: its ceiling rises from ×1.38 to ×1.52 as you open layers, and each realm's own qi pieces still count instead of doing nothing past the third realm."
         ],
         [
+          "套 Loadouts",
+          "Keep up to five loadouts now, up from three. Their pieces already cost chest places to keep, so more of them is yours to choose."
+        ],
+        [
           "註 Notes and seals",
           "Tap any gear line for what it does, its cap, how it bends and the formula. Forged pieces show their school in the workshop."
         ],
@@ -1095,7 +1099,7 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (three at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Every piece shows its school's seal in the corner. The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name."],
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Every piece shows its school's seal in the corner. The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name."],
         ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once. A piece that holds refining levels is never taken by the bulk melt, a fusion or a full chest; only its own sheet can melt it."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
@@ -2358,6 +2362,18 @@
       ],
       "reply": [
         "Done in today's update, thank you. The qi bend now climbs with you, its ceiling rising from ×1.38 to ×1.52, so a realm's own qi pieces still count all the way up instead of doing nothing past the third realm.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "I would appreciate more Loadout slots, but I am not sure if it's a good, balanced idea.",
+      "tags": [
+        "Idea",
+        "Question"
+      ],
+      "reply": [
+        "Done in today's update: you can keep five loadouts now. Thanks for making the case so clearly.",
         "· 師 Shibaki"
       ]
     }
