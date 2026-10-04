@@ -839,7 +839,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>600 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>617 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -3121,7 +3121,7 @@
     <span class="body"><b class="cjk">示</b> <em><a href="#record">Telling a stuck player why</a></em><i>One line on 修 Cultivate, computed from the state, that names the thing blocking you and takes you to it.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">音</b> <em>Sound</em><i>3 volume steps on the one button, and a cue for every action including the tower, the furnace and a mark earned.</i></span>
+    <span class="body"><b class="cjk">音</b> <em>Sound</em><i>A slider from 0 to 100 for the sound and another for the music, each with its own mute, and a cue for every action including the tower, the furnace and a mark earned.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">新</b> <em><a href="#refine">Teaching each system</a></em><i>8 cards that arrive once, when the thing they explain first becomes true, and never block the game.</i></span>
@@ -6133,6 +6133,11 @@
         on it: upgrades capped by that realm, gear no earlier than its realm, 入定 at its
         deepest. On top: a burst of 2.5 times the gap, never more than 12 hours,
         for the payments that arrive all at once, and 15% for rounding.
+        塔 A tower floor is a payment the server can count, so the floors climbed are allowed for
+        as themselves: each at the most it could have paid in any realm the two saves span. Over a
+        day they come off the pace as well, because a whole tower climbed in a few minutes once
+        read as faster than anybody honest (2026-10-04); over a week they stay in, where the
+        honest pace was measured with them.
         The same file, <code>sim/verify.ts</code>, runs in the tests and on the server.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">待</b> <em>Too fast is "not yet", never "no"</em>
         <i>A save ahead of real time is not refused for ever: the server keeps measuring
