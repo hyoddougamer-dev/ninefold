@@ -77,27 +77,28 @@ export function classHerbs(s: Body): number { return pairIs(s, 'formation') ? PA
 
 // ── 運拾破煉 the four lines, bent ──────────────────────────────────────────────
 
+/**
+ * 彎 The bends themselves, on a line's total as the screen prints it (+46.9% is 46.9).
+ * The body reads them through the functions below, and 註 the gear notes quote them by
+ * example, so a note's "+100% gives ×1.35" is this function and cannot drift from play.
+ */
+const frac = (sum: number) => Math.max(0, sum) / 100;
+export const bendLuck = (sum: number): number => 1 + LUCK_BEND * Math.log1p(frac(sum));
+export const bendFind = (sum: number): number => FIND_TOP * (1 - 1 / (1 + frac(sum)));
+export const bendSunder = (sum: number): number => 1 / (1 + SUNDER_BEND * Math.log1p(frac(sum)));
+export const bendArt = (sum: number): number => 1 + ART_BEND * Math.log1p(frac(sum));
+export const bendFuse = (sum: number): number => 1 + FUSE_BEND * Math.log1p(frac(sum));
+
 /** 運 What the body's rarer-drops line does to the rare end of the table. */
-export function gearLuck(s: Body): number {
-  return 1 + LUCK_BEND * Math.log1p(Math.max(0, bodyTotals(s).luck) / 100);
-}
+export function gearLuck(s: Body): number { return bendLuck(bodyTotals(s).luck); }
 /** 拾 What the body's drop-chance line adds to a beast's chance of leaving a piece. */
-export function gearFind(s: Body): number {
-  const f = Math.max(0, bodyTotals(s).find) / 100;
-  return FIND_TOP * (1 - 1 / (1 + f));
-}
+export function gearFind(s: Body): number { return bendFind(bodyTotals(s).find); }
 /** 破 How much of itself a beast counts against this body. Never the Dragon. */
-export function gearSunder(s: Body): number {
-  return 1 / (1 + SUNDER_BEND * Math.log1p(Math.max(0, bodyTotals(s).sunder) / 100));
-}
+export function gearSunder(s: Body): number { return bendSunder(bodyTotals(s).sunder); }
 /** 法 What an art strikes for, from the body's arts line. */
-export function gearArt(s: Body): number {
-  return 1 + ART_BEND * Math.log1p(Math.max(0, bodyTotals(s).art) / 100);
-}
+export function gearArt(s: Body): number { return bendArt(bodyTotals(s).art); }
 /** 煉 How much of its quality a fusion keeps. */
-export function gearFuse(s: Body): number {
-  return 1 + FUSE_BEND * Math.log1p(Math.max(0, bodyTotals(s).refine) / 100);
-}
+export function gearFuse(s: Body): number { return bendFuse(bodyTotals(s).refine); }
 
 /**
  * 榜 The class as one short word for the boards: a school with its step ("sword:2"), a
