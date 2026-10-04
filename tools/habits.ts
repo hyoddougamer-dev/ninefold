@@ -676,12 +676,12 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
      */
     /**
      * 泉 香 And the rooms, taken the way the design measured them (2026-10-04): a shrine's 道
-     * whenever one is offered, a brazier's piece of gear whenever one is (as this harness
-     * always took it, and 職 the classes need the shapes a brazier lifts: without it five
-     * of them could never be put together), and otherwise the room's share drunk in the
-     * first and third reward rooms and burned in the second and fourth, drunk whenever the
-     * burner is full. Never the box or the trail over the qi. A gate is always tried:
-     * losing costs nothing.
+     * whenever one is offered, the first brazier of a run for its piece of gear (職 the
+     * classes need the shapes a brazier lifts: with none, five of them could never be put
+     * together; with every one, the spring went into gear and the vault paid next to no
+     * qi), and otherwise the room's share drunk in the first and third reward rooms and
+     * burned in the second and fourth, drunk whenever the burner is full. Never the box or
+     * the trail over the qi. A gate is always tried: losing costs nothing.
      */
     if (canEnter(s)) {
       s = enterSecret(s);
@@ -691,7 +691,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
         const at = (kind: string) => doors.findIndex((d) => d.kind === kind);
         const shrine = doors.findIndex((d) => secretGift(s, d, step).dao > 0);
         const burn = Math.floor(step / 2) % 2 === 1 && at('incense') >= 0;
-        const which = doors.length === 1 ? 0 : shrine >= 0 ? shrine : at('brazier') >= 0 ? at('brazier')
+        const gear = at('brazier') >= 0 && !s.lastRun.items.length;
+        const which = doors.length === 1 ? 0 : shrine >= 0 ? shrine : gear ? at('brazier')
           : burn ? at('incense') : at('spring');
         const before = s.qi;
         const drinking = doors[which]?.kind === 'spring';

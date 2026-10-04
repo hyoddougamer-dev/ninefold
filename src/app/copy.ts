@@ -1286,7 +1286,7 @@ export const SECRET = {
   burnerFull: (left: string) => `香 The burner is full (${left} of incense waiting), so this room offers none. Nothing is wasted.`,
   boxHolds: (bits: string) => bits,
   boxEmpty: 'Nothing the workshop can keep: the pouch is full of it.',
-  trailSays: 'The next challenger begins a tenth down. One trail at a time.',
+  trailSays: 'One trail at a time, spent by the next challenger you beat.',
   /** 龕 A shrine's and a brazier's line: what the third door gives, and that the room is spent for it. */
   shrineGives: (n: number) => `+${n} 道 \u00b7 the room is spent`,
   brazierGives: 'a piece of gear \u00b7 the room is spent',

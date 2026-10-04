@@ -119,7 +119,7 @@ for (const w of [400, 320]) {
     }), undefined, 2400);
     await page.waitForSelector('.secret .ways .way');
     // The rooms scroll inside their own sheet, so the page is made tall enough to hold them.
-    const tall = await page.$eval('.secret .later', (e) => e.getBoundingClientRect().bottom + 40);
+    const tall = Math.ceil(await page.$eval('.secret .later', (e) => e.getBoundingClientRect().bottom + 40));
     await page.setViewportSize({ width: w, height: Math.min(2400, tall) });
     await page.waitForTimeout(200);
     await shot(page, `a-vault-room-${w}`, false);

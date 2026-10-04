@@ -84,6 +84,15 @@ import { portrait } from '../src/art/aura.ts';
 import { arenaScene } from '../src/art/scene.ts';
 import { gearTile } from '../src/art/gear.ts';
 import { chamber } from '../src/art/secret.ts';
+import * as QS_VAULT from '../src/sim/secret.ts';
+import * as QS_PLATFORM from '../src/sim/platform.ts';
+import {
+  INCENSE_BONUS as QS_BONUS, INCENSE_WORTH as QS_WORTH, SPRING_FILL as QS_FILL, SPRING_HOLD as QS_HOLD,
+  TEMPER_EDGE as QS_TEMPER_EDGE, springShare as QS_SPRING_SHARE,
+} from '../src/sim/balance.ts';
+import { rate as QS_RATE } from '../src/sim/time.ts';
+import { ITEM_BY_KEY as QS_ITEMS } from '../src/data/crafts.ts';
+import { TEMPERS } from '../src/data/platform.ts';
 import { PLATE_CSS, liftArt, writePlates } from './lift.ts';
 import { PICTURES, pictureOf, type Painted } from '../src/data/pictures.ts';
 import { FIGURES, figureKey } from '../src/data/figures.ts';
@@ -542,7 +551,9 @@ const SYSTEMS: readonly System[] = [
   { han: '洞天', name: 'A place you own', status: 'done', at: 'cave',
     line: `${BEDS} beds. 材 goes into the ground and comes up as qi over real hours, and a ripe bed waits for ever. Worked from both ends by hand, so it pays for opening the app rather than for owning it. Every seed says what it ripens into and what that is an hour, so the one decision the beds exist for is made with the numbers visible.` },
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
-    line: `${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate with one guardian. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave. Four shapes and five measurements before the wall held.` },
+    line: `${SECRET_ROOMS} rooms, every other one a gate with one guardian, and between them a spring that fills while the door is shut: each room's share drunk now, burned as incense, or spent on a third door. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave and from which room.` },
+  { han: '擂台', name: 'Three challengers a week', status: 'done', at: 'qisrc',
+    line: 'From the fourth realm, on 塔 Trials: three challengers a period at ×1.3, ×1.8 and ×2.5 of your own power, the week\u2019s temper on top unless answered, the dice set for the period. A win pays hours of gathering; a loss costs nothing. Never Auto, never driven.' },
 
   { han: '期', name: 'The one thing that never runs out', status: 'done', at: 'week',
     line: `Everything else in the game arrives once, the last of it around the seventh week. One mark rides the calendar instead: a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching, all three derived from the week and the save alone. No server, no clock to cheat, and it may never touch the qi rate. Measured, the cultivator who never fights finishes on the same day with it as without.` },
@@ -1351,10 +1362,80 @@ const SECRET_VAULTS = (['spring', 'shrine', 'brazier', 'beast'] as const).map((k
 /** 出 The way out, which is the panel the end of a run wears. */
 const SECRET_OUT = `<span class="art">${chamber({ kind: 'out', step: SECRET_ROOMS, realm: 6 })}</span>`;
 
-const SECRET_ROOMS_TABLE = (['spring', 'shrine', 'brazier'] as const).map((k) => `
+const SECRET_ROOMS_TABLE = (['spring', 'incense', 'shrine', 'brazier', 'box', 'trail'] as const).map((k) => `
   <tr><td><span class="s">${icon(ROOM_INFO[k].icon, 20)}</span>
     <b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</td>
     <td>${ROOM_INFO[k].says}</td></tr>`).join('');
+
+
+/**
+ * 泉 香 擂 The vault's rooms and the Platform, 2026-10-04, read off the harness's own active
+ * cultivator the first visit it stands in the sixth realm: the doors and the card below are
+ * the screen's own numbers for that save, from the sim functions the screen calls.
+ */
+const QS_BODY: State = (() => {
+  let got: State | null = null;
+  play(HABITS.find((h) => h.name === 'active')!, 30, (_d, s) => {
+    if (!got && s.realm === 6 && s.layer >= 5) got = structuredClone(s);
+  });
+  return got!;
+})();
+/** The room a mid-run walker stands in: room 3 of 7, the first room drunk, a full spring at the door. */
+const QS_ROOM: State = { ...QS_BODY, runStep: 2, spring: (1 - QS_SPRING_SHARE(0, 4)) * QS_HOLD, springAt: QS_BODY.at,
+  incenseUntil: 0 };
+const QS_DOORS = QS_VAULT.doorsAt(QS_ROOM, 2).map((room) => {
+  const g = QS_VAULT.giftOf(QS_ROOM, room, 2);
+  const info = ROOM_INFO[room.kind];
+  const line = room.kind === 'spring' ? `+${num(g.qi)} qi · ${duration(g.worth)} of your gathering`
+    : room.kind === 'incense' ? `+30% gathering for ${duration(g.burn)} · ${num(g.burn * 0.3 * QS_RATE(QS_ROOM))} qi in all`
+      : room.kind === 'box' ? [g.box?.herb, g.box?.ore].filter(Boolean).map((x) => `${QS_ITEMS[x![0]]?.han ?? ''} ${QS_ITEMS[x![0]]?.name ?? x![0]} ×${num(x![1])}`).join(' · ')
+        : room.kind === 'shrine' ? `+${g.dao} 道 · the room is spent`
+          : room.kind === 'brazier' ? 'a piece of gear · the room is spent' : 'the next challenger begins a tenth down';
+  const tag = ({ spring: 'Now', incense: 'Later', shrine: 'Path', brazier: 'Gear', box: 'Workshop', trail: 'Platform' } as Record<string, string>)[room.kind] ?? '';
+  return `<div class="qway" data-kind="${room.kind}">
+    <span class="art">${chamber({ kind: room.kind, step: 2, realm: 6 })}</span>
+    <span class="body"><b><span class="cjk">${info.han}</span> ${info.name} <u>${tag}</u></b>
+      <i>${info.says}</i><em>${line}</em></span></div>`;
+}).join('');
+/** 香 and 匣 跡 the two new panels, beside the spring, at room three. */
+const QS_PANELS = (['incense', 'box', 'trail'] as const).map((k) => `
+  <figure class="vault"><span class="art">${chamber({ kind: k, step: 2, realm: 6 })}</span>
+    <figcaption><b class="cjk">${ROOM_INFO[k].han}</b> ${ROOM_INFO[k].name}</figcaption></figure>`).join('');
+
+/** 擂台 The card on 塔 Trials for the same save, the first challenger down this week. */
+const QS_PLAT: State = { ...QS_BODY, platform: { period: QS_PLATFORM.periodNow(QS_BODY), beaten: 1 } };
+const QS_TEMPER = QS_PLATFORM.temperOf(QS_PLAT);
+const QS_ANSWER = QS_PLATFORM.answered(QS_PLAT, QS_TEMPER) ? null : QS_PLATFORM.answerHeld(QS_PLAT, QS_TEMPER);
+const QS_ANSWER_NAME = (() => { const st = STANCES.find((x) => x.key === QS_ANSWER); return st ? `${st.han} ${st.name}` : ''; })();
+const QS_ROWS = ([0, 1, 2] as const).map((tier) => {
+  const shape = QS_PLATFORM.challengerOf(QS_PLAT, tier);
+  const beaten = tier < 1;
+  const standing = tier === 1;
+  const asIs = standing ? QS_PLATFORM.challengeOdds(QS_PLAT, tier) : 0;
+  const inAns = standing && QS_ANSWER ? QS_PLATFORM.challengeOdds({ ...QS_PLAT, stance: QS_ANSWER }, tier) : 0;
+  const right = beaten ? `<b class="ok">✓</b><i>${QS_PLATFORM.PLATFORM_HOURS[tier]} h paid</i>`
+    : standing ? `<b>${Math.round(Math.max(asIs, inAns) * 100)}%</b><i>${inAns > asIs ? `in ${QS_ANSWER_NAME}` : 'odds'}</i>${inAns > asIs ? `<i class="low">${Math.round(asIs * 100)}% as you stand</i>` : ''}`
+      : '<b>·</b><i>waits</i>';
+  return `<div class="qrow" data-state="${beaten ? 'beaten' : standing ? 'standing' : 'waits'}">
+    <span class="nm"><b><span class="cjk">${['一', '二', '三'][tier]} ${shape.han}</span> ${shape.name}</b>
+      <i>×${QS_PLATFORM.PLATFORM_EDGE[tier]} your power${beaten ? ' · beaten this week' : ''}</i>
+      ${beaten ? '' : `<em>pays ${QS_PLATFORM.PLATFORM_HOURS[tier]} h of gathering · ${num(QS_PLATFORM.challengerPays(QS_PLAT, tier))} qi</em>`}</span>
+    <span class="od">${right}</span></div>`;
+}).join('');
+
+/** 量 The ninth-realm day of every habit before the two systems, measured on the branch they were built on. */
+const QS_BEFORE: Record<string, number> = {
+  'never fights': 115.0, 'barely fights': 97.0, 'once a day': 65.0, casual: 63.7, active: 41.7,
+  'every hour': 28.0, 'drives it all': 43.3, 'walks 神': 41.5, 'crafts it all': 41.7,
+};
+const QS_TABLE = RUNS.map((r) => {
+  const q = r.qi;
+  const pct = (x: number) => (q.gained > 0 ? `${(100 * x / q.gained).toFixed(1)}%` : '·');
+  const per = r.periods ? r.bouts.map((b) => (b / r.periods).toFixed(2)).join(' / ') : 'never fights';
+  return `<tr><td>${r.habit.name}</td><td class="n">${QS_BEFORE[r.habit.name]?.toFixed(1) ?? '·'}</td>
+    <td class="n">${r.arrival[8]?.toFixed(1) ?? '·'}</td><td class="n">${pct(q.drunk)}</td><td class="n">${pct(q.incense)}</td>
+    <td class="n">${pct(q.platform)}</td><td class="n">${per}</td></tr>`;
+}).join('');
 
 const PACE = paceTable();
 const PACE_MAX = [0, 1, 2, 3].map((i) => Math.max(...PACE.map((r) => r.cells[i])));
@@ -1594,6 +1675,44 @@ const page = `<meta charset="utf-8">
   #proposals .meet .pick:last-child { background:none; color:var(--faint);
         border:1px solid var(--line); }
 
+  /* 泉 擂 the vault's rooms and the Platform, scoped to their section */
+  #qisrc .mk { background:var(--panel2); border:1px solid var(--line); border-radius:13px; padding:16px; margin:14px 0 6px; }
+  #qisrc .mk .lab { margin:0 0 10px; font-size:12px; color:var(--faint); font-family:Rajdhani,sans-serif;
+        font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+  #qisrc .cap { margin:10px 0 0; font-size:12.5px; color:var(--faint); line-height:1.55; }
+  #qisrc .qways { display:grid; gap:10px; }
+  @media(min-width:760px){ #qisrc .qways { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+  #qisrc .qway { border:1px solid var(--line); border-radius:13px; overflow:hidden; background:var(--panel); min-width:0; }
+  #qisrc .qway .art { display:block; height:104px; }
+  #qisrc .qway .art svg { display:block; width:100%; height:100%; }
+  #qisrc .qway .body { display:block; padding:10px 13px 12px; }
+  #qisrc .qway b { display:block; font-size:15px; }
+  #qisrc .qway b .cjk { color:var(--jade); font-weight:400; margin-right:4px; }
+  #qisrc .qway[data-kind="incense"] b .cjk { color:#A994D8; }
+  #qisrc .qway b u { text-decoration:none; margin-left:6px; font-size:10px; letter-spacing:.14em;
+        text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:99px; padding:1px 7px; }
+  #qisrc .qway i { display:block; font-style:normal; font-size:13px; color:var(--faint); margin-top:4px; line-height:1.5; }
+  #qisrc .qway em { display:block; font-style:normal; font-size:12.5px; color:var(--gold); margin-top:6px; }
+  #qisrc .vaults { display:grid; gap:10px; margin:10px 0 6px; }
+  @media(min-width:640px){ #qisrc .vaults { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+  #qisrc .vault { margin:0; background:var(--panel2); border:1px solid var(--line); border-radius:13px; overflow:hidden; }
+  #qisrc .vault .art { display:block; height:110px; }
+  #qisrc .vault .art svg { display:block; width:100%; height:100%; }
+  #qisrc .vault figcaption { padding:9px 12px 11px; font-size:13px; }
+  #qisrc .vault figcaption b.cjk { color:var(--jade); font-weight:400; margin-right:5px; }
+  #qisrc .qplat .qrow { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px; align-items:center;
+        padding:10px 0; border-top:1px solid var(--line); }
+  #qisrc .qplat .qrow[data-state="beaten"] { opacity:.6; }
+  #qisrc .qplat .nm b { display:block; font-size:15px; }
+  #qisrc .qplat .nm b .cjk { color:var(--cinnabar); font-weight:400; margin-right:3px; }
+  #qisrc .qplat .nm i { display:block; font-style:normal; font-size:12.5px; color:var(--faint); }
+  #qisrc .qplat .nm em { display:block; font-style:normal; font-size:12.5px; color:var(--gold); margin-top:2px; }
+  #qisrc .qplat .od { text-align:right; }
+  #qisrc .qplat .od b { display:block; font-family:Rajdhani,sans-serif; font-size:19px; }
+  #qisrc .qplat .od b.ok { color:var(--jade); }
+  #qisrc .qplat .od i { display:block; font-style:normal; font-size:10px; letter-spacing:.12em;
+        text-transform:uppercase; color:var(--faint); }
+  #qisrc .qplat .od i.low { color:var(--cinnabar); }
   /* ── 樣 the mockups: the real screens, drawn on the page ───────────────── */
   /* Every rule is scoped to the section. The first draft was not, and its .ladder
      collided with the realm-ladder cards further down the page, which is the same
@@ -2049,6 +2168,7 @@ const page = `<meta charset="utf-8">
       <a href="#salvage"><b>拆</b> Melting gear</a>
       <a href="#idle"><b>閒</b> Where the qi goes</a>
       <a href="#heavens"><b>境外</b> Beyond the ninth</a>
+      <a href="#qisrc"><b>泉 擂</b> Two more sources of qi</a>
       <a href="#week"><b>期</b> The week</a>
       <a href="#clock"><b>曆</b> The content clock</a>
       <a href="#ladder"><b>階</b> The ladder</a>
@@ -2961,8 +3081,8 @@ const page = `<meta charset="utf-8">
   <section class="sec" id="secret">
     <h2><span class="h">秘境</span> A run with an ending</h2>
     <p class="t">A door that opens every ${DOOR_GAP / 3600} hours and then waits for
-      ever. ${SECRET_ROOMS} rooms, two ways on at each, and every other one is a gate
-      with a single guardian and no way past it. Everything else in this game is a loop
+      ever. ${SECRET_ROOMS} rooms, and every other one is a gate with a single guardian
+      and no way past it; the rooms between share 泉 the spring (see <a href="#qisrc">泉 擂</a>). Everything else in this game is a loop
       with no ending, which is why three minutes of it can feel like nothing
       happened.</p>
     <div class="spath">${SECRET_PATH}</div>
@@ -3036,6 +3156,95 @@ const page = `<meta charset="utf-8">
       them; a ceiling walker gets all ${SECRET_ROOMS}.</p>
     <table class="tbl cavetbl"><thead><tr><th>Room</th><th>What is behind it</th></tr></thead>
       <tbody>${SECRET_ROOMS_TABLE}</tbody></table>
+  </section>
+
+  <section class="sec" id="qisrc">
+    <h2><span class="h">泉 擂</span> Two more sources of qi, each a decision</h2>
+    <p class="t">Testers said the tower was the one place fighting paid qi, that the spring
+      paid little, and that qi had too few sources. Measured, a spring paid four to fourteen
+      minutes of gathering in a fixed room, and once a realm's shrine had given its 道 the run
+      was two doors that both said "qi". Two systems answer it (2026-10-04), and both are a
+      decision rather than a payment: <b>泉 the vault's rooms</b> (now, later, or for
+      something else) and <b>擂台 the Platform</b> (three challengers a week, by hand).</p>
+
+    <h3>泉 The spring fills while the door is shut</h3>
+    <p class="t">It gathers ${(QS_FILL * 60).toFixed(0)} minutes of your own gathering for
+      every hour the door stands shut, a day at most: ${duration(QS_HOLD * QS_FILL)} of
+      gathering when full. It is the cave's rule, a full spring waits for ever, so nothing is
+      taken for being away. The reward rooms share it, the deeper ones more (10, 20, 30 and
+      40% in seven rooms; the deeper vault shares it six ways), the week's blessed room
+      doubles its share, and rooms not reached stay in the spring. One run a day or three draw
+      on the same spring, so the door gap, 鑰 the Realm Key and 秘門 the Hidden Door Array no
+      longer multiply the qi: they bring 道, gear, boxes and trails sooner.</p>
+    <p class="t">Every reward room offers its share three ways, and whichever is taken the
+      room is spent: <b>泉 drink it now</b>; <b>香 burn it as incense</b>, half as much again
+      (×${QS_WORTH}) as +${Math.round(QS_BONUS * 100)}% to standing gathering while it burns,
+      open or shut, never multiplied by 入定 the sitting, one burner and a day queued at most,
+      paid inside <code>advance()</code> so every harness sees it; or <b>the third door</b>:
+      龕 道 while the shrine's share lasts (exactly as often as before), 爐 a piece of gear, 匣
+      a craftsman's box (an hour of the realm's herbs and ore for every room past the first,
+      no experience, never more than the pouch keeps) or 跡 a challenger's trail. No room pays
+      材: material comes off beasts and from nowhere else.</p>
+
+    <div class="mk"><p class="lab">樣 Room 3 of 7, the harness's active cultivator at the
+      sixth realm, a full spring at the door and the first room drunk</p>
+      <div class="qways">${QS_DOORS}</div>
+      <p class="cap">The real panels of <code>art/secret.ts</code> and the screen's own
+        numbers (<code>giftOf</code>) for that save. What changed: a room used to be two
+        caches; now its share of the spring is priced once, in minutes of your own
+        gathering, and the three doors are three ways to spend it. 香 and 匣 跡 are new
+        panels in the hand of the old ones: a censer with three sticks and their smoke, a
+        lidded box with a sprig in it, prints going in under the last arch.</p></div>
+    <div class="vaults">${QS_PANELS}</div>
+
+    <h3>擂台 The Platform: three challengers a week, by hand</h3>
+    <p class="t">From the fourth realm, on 塔 Trials (which opens with it, a realm before the
+      tower). Three challengers a period, and a period is a week or a realm: each stands at
+      ×1.3, ×1.8 and ×2.5 of your own 力 in the shape of a beast of your realm (the third, of
+      the realm above), and is thinned like any beast by 破甲 sunder, 破煞 bane, the tree and
+      the classes. The week's temper (${TEMPERS.map((t) => `${t.han} ${t.name}`).join(', ')})
+      stands it ×${QS_TEMPER_EDGE} again unless the stance or one art in the sequence answers
+      it, and every temper has an answer held by the fourth realm. <b>The dice are set for
+      the period</b>: one seed per period and challenger, so the same body meets the same
+      fight and the way past a loss is to change the stance, the arts, what is carried or a
+      piece. A win pays 2, 4 and 6 hours of gathering without gear (the tower's
+      <code>towerRate</code>), once each a period. A loss costs nothing, and the card and the
+      verdict both say so. Never on 狩 the hunt list, never Known, never driven, no Auto, and
+      Again is the next challenger.</p>
+    <div class="mk"><p class="lab">樣 The card on 塔 for the same save, the first challenger
+      down this week, in the stance and arts the harness set, a ${QS_TEMPER.han} ${QS_TEMPER.name} week</p>
+      <div class="qplat">${QS_ROWS}</div>
+      <p class="cap">Odds read off the fight itself (<code>challengeOdds</code>), as the
+        cultivator stands and in the first held stance that answers the temper; the card in
+        the game puts a button beside them that stands in it. Real screens of both systems,
+        at 400 and 320 pixels, are in the report that came with this change.</p></div>
+
+    <h3>量 What it did to the climb, every habit</h3>
+    <p class="t">Measured with <code>tools/habits.ts</code>, which now walks the new vault
+      (a shrine's 道 when offered, the first brazier of a run for its piece, otherwise drunk in the first and third
+      reward rooms and burned in the second and fourth) and climbs the Platform once a period
+      in the three held stances with the best odds. Shares are of all the qi gained over the
+      climb.</p>
+    <table class="tbl"><thead><tr><th>Habit</th><th class="n">Realm 9, before</th>
+      <th class="n">Realm 9, now</th><th class="n">泉 drunk</th><th class="n">香 burned</th>
+      <th class="n">擂 Platform</th><th class="n">Wins a period, I / II / III</th></tr></thead>
+      <tbody>${QS_TABLE}</tbody></table>
+    <p class="t">The ninth realm comes about two days sooner for everybody who builds, five
+      for the cultivator who barely fights, and not at all for the one who never does; every
+      wall <code>players.test.ts</code> holds still holds. The vault is 4 to 7% of a climb for
+      a daily walker, about the cave's share, and the Platform 2 to 6% for anybody who builds,
+      under the tower. It is paired with a slower tower on purpose.</p>
+
+    <h3>驗 What the server reads</h3>
+    <p class="t">New save fields, all validated: the spring and the instant it was counted
+      (a day at most), the instant the incense runs out (a day ahead at most), a trail, the
+      period and its count (three at most) and every challenger ever beaten. The spring is
+      allowed for as a lump beside the melt and the quarry, a day held plus what the gap
+      could fill, each second at its most generous; the bouts only grow, at most three a
+      week or a realm crossed, each a lump of six hours, and the highest claimed is fought
+      against every body the save holds with the best kit, a trail and the temper answered.
+      An incense relit by hand to burn for ever is a vault that grew faster than time, and
+      waits. None of it ever strikes: a no is a wait.</p>
   </section>
 
   <section class="sec" id="week">
