@@ -35,6 +35,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const SPEC = JSON.parse(readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'));
+// 問 Every poll under a post is one more message the bot leaves, asked once.
+const POLLS = (SPEC.posts ?? []).reduce((n, p) => n + (p.polls?.length ?? 0), 0);
 const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
@@ -157,7 +159,7 @@ function fakeDiscord({ admin = true } = {}) {
         const inThread = state.threads.find((t) => t.id === m[1]);
         if (inThread?.thread_metadata.archived) return refuse(400, 'Thread is archived');
         if (!inThread && !botMaySend(channel(m[1]))) return refuse(403, 'Missing Permissions');
-        const msg = { id: id(), author: { id: BOT }, pinned: false, content: body.content ?? '', allowed_mentions: body.allowed_mentions, embeds: (body.embeds ?? []).map((e) => JSON.parse(JSON.stringify(e))) };
+        const msg = { id: id(), author: { id: BOT }, pinned: false, content: body.content ?? '', allowed_mentions: body.allowed_mentions, embeds: (body.embeds ?? []).map((e) => JSON.parse(JSON.stringify(e))), ...(body.poll ? { poll: JSON.parse(JSON.stringify(body.poll)) } : {}) };
         state.messages[m[1]].push(msg); return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'PATCH') {
@@ -314,7 +316,7 @@ await scenario({}, async (port, env, state) => {
     && Object.values(state.messages).flat().filter(bannered).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
     'every post with a banner wears it on top, above its words');
   const all3 = [...SPEC.messages, ...SPEC.posts];
-  check(Object.values(state.messages).flat().every((m) => {
+  check(Object.values(state.messages).flat().filter((m) => !m.poll).every((m) => {
     const spec = all3.find((x) => m.embeds.some((e) => e.title === x.title));
     const after = m.embeds.slice(m.embeds.findIndex((e) => e.title) + 1);
     return after.length === (spec.gallery ?? []).length && after.every((e, i) => e.image.url === spec.gallery[i]);
@@ -386,7 +388,10 @@ await scenario({}, async (port, env, state) => {
   check(JSON.stringify(tagNames(state.threads.find((t) => t.name === retag.title))) === JSON.stringify([...retag.tags].sort()),
     "a post's tags follow server.json, archived or not");
   await runSetup(port, env);   // and back to server.json as it is, for what follows
-  check(Object.values(state.messages).flat().length - SPEC.posts.length === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
+  check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
+  const asked = Object.values(state.messages).flat().filter((m) => m.poll).map((m) => m.poll.question.text);
+  check(SPEC.posts.flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
+    && asked.length === POLLS, `each of the ${POLLS} polls is asked once, under its post`);
 
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
   bugs.topic = 'someone typed here';
@@ -402,7 +407,7 @@ await scenario({}, async (port, env, state) => {
   writeFileSync(specPath, JSON.stringify(edited));
   const fourth = await runSetup(port, { ...env, DISCORD_SPEC: specPath });
   const first0 = Object.values(state.messages).flat().find((m) => m.embeds.some((e) => e.title === SPEC.messages[0].title));
-  check(/edited/.test(fourth.out) && first0.embeds.find((e) => e.title).description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length,
+  check(/edited/.test(fourth.out) && first0.embeds.find((e) => e.title).description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length + POLLS,
     'a post changed in server.json is edited in place, not posted again');
   check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
     && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),

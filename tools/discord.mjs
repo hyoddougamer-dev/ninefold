@@ -527,6 +527,25 @@ async function run() {
         thread.flags = (thread.flags ?? 0) | 2;
         log(`  "${p.title}" pinned`);
       }
+      // 問 Polls under a post: one message each, Discord's own poll, asked once and found
+      // again by its question, so a second run asks nobody twice. A poll cannot be edited
+      // once it is up, so changing one in server.json asks it again as a new question.
+      if (p.polls?.length) {
+        const said = await call('GET', `/channels/${thread.id}/messages?limit=100`);
+        for (const q of p.polls) {
+          if (said.some((m) => m.author?.id === me.id && m.poll?.question?.text === q.question)) continue;
+          await wake(thread);
+          await call('POST', `/channels/${thread.id}/messages`, {
+            poll: {
+              question: { text: q.question },
+              answers: q.answers.map(([emoji, text]) => ({ poll_media: emoji ? { text, emoji: { name: emoji } } : { text } })),
+              duration: q.hours ?? 168,
+              allow_multiselect: !!q.multi,
+            },
+          });
+          log(`  "${p.title}" asks: ${q.question}`);
+        }
+      }
     });
   }
 

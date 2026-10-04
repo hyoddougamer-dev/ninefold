@@ -809,6 +809,23 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/meet-receipt.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-deep",
+      "pin": false,
+      "channel": "news",
+      "title": "深 We need your opinion: deeper hunts",
+      "color": "#7FA8D9",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-deep.webp?v=1",
+      "body": [
+        "We've designed a way to give power a use every day, without touching qi: hunting the same beast **deeper**, for better gear and more material, with traits you build against.",
+        "",
+        "It's a proposal, not the game yet. Everything is explained with pictures in {#ideas}, in **深 Deeper hunts: what do you think?**, with five quick polls. Two minutes of your time decides how we build it. Thank you!"
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-ladder.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1270,6 +1287,150 @@
         ]
       ],
       "footer": "師 Shibaki · every reply is read"
+    },
+    {
+      "key": "ideas-deep",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": false,
+      "title": "深 Deeper hunts: what do you think?",
+      "color": "#7FA8D9",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-deep.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-ladder.webp?v=1",
+      "body": [
+        "**This is a proposal, not the game yet.** Before we build it, we want to know what you think. Thank you, rekaris, for the posts that started it.",
+        "",
+        "Right now, once you can beat a realm's warden, power stops mattering: every beast falls in one blow, so the best gear is qi gear. Deeper hunts would give power a use every day, without touching qi."
+      ],
+      "fields": [
+        [
+          "深 How it works",
+          "Win against a beast and the next **depth** of that same beast opens, at twice its power. Every depth pays **+20% 材 material**, drops gear a little more often and ranks it a little higher. It never pays qi, and losing costs nothing: every depth you won stays won. Your deepest win on each beast is your record."
+        ],
+        [
+          "性 Something to build for",
+          "From depth 3, each beast shows a trait that makes it count **eight times** its power until you answer it:\n· 堅 **Armoured**: wear 體 Body pieces\n· 幽 **Spectral**: wear 法 Arts pieces\n· 猛 **Savage**: fight it in the 守 Guard stance\nThree pieces of the right school halve it, five clear it. Your 套 loadouts make the swap one tap."
+        ],
+        [
+          "自 Auto and drives",
+          "Auto and drives hunt at the depth you leave the beast on. Going deeper is always your own choice, because that's the moment to read the trait and change your gear."
+        ],
+        [
+          "📊 What we measured",
+          "Nobody climbs the realms faster or slower because of it (within about a day, for every way of playing). A player who wears power and answers the trait gets about **half again more material and better pieces** from the same hunting."
+        ],
+        [
+          "❓ Tell us",
+          "Vote in the five quick polls below, and reply here with anything else: what you'd change, what worries you, what you'd love to find down there. Every reply is read."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-traits.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-screens.webp?v=1"
+      ],
+      "footer": "師 Shibaki · a proposal, measured, not built yet",
+      "polls": [
+        {
+          "question": "Would you hunt beasts deeper for better gear and more material?",
+          "answers": [
+            [
+              "🔥",
+              "Yes, it sounds fun"
+            ],
+            [
+              "🎯",
+              "Only to farm a piece I want"
+            ],
+            [
+              "🤔",
+              "Not sure yet"
+            ],
+            [
+              "🙅",
+              "No, I'd rather not"
+            ]
+          ]
+        },
+        {
+          "question": "How hard should a trait be when you haven't built for it?",
+          "answers": [
+            [
+              "🟢",
+              "A bit harder (×4)"
+            ],
+            [
+              "🟡",
+              "Much harder (×8, the proposal)"
+            ],
+            [
+              "🔴",
+              "A wall until you answer it (×16)"
+            ]
+          ]
+        },
+        {
+          "question": "Should Auto go deeper on its own?",
+          "answers": [
+            [
+              "✋",
+              "No, I choose the depth (the proposal)"
+            ],
+            [
+              "⬇️",
+              "Yes, until its first loss"
+            ],
+            [
+              "⚙️",
+              "Let me choose in the settings"
+            ]
+          ]
+        },
+        {
+          "question": "Which would you enjoy building for? Pick any.",
+          "multi": true,
+          "answers": [
+            [
+              "🛡️",
+              "Armoured: Body pieces"
+            ],
+            [
+              "👻",
+              "Spectral: Arts pieces"
+            ],
+            [
+              "🐂",
+              "Savage: the Guard stance"
+            ],
+            [
+              "🔥",
+              "Elements instead (fire, water…)"
+            ],
+            [
+              "➕",
+              "More traits later on"
+            ]
+          ]
+        },
+        {
+          "question": "Would you like a board for the deepest depth reached?",
+          "answers": [
+            [
+              "🏆",
+              "Yes"
+            ],
+            [
+              "🤷",
+              "I don't mind"
+            ],
+            [
+              "🙅",
+              "No"
+            ]
+          ]
+        }
+      ]
     }
   ],
   "threads": [
