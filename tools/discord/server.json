@@ -2209,6 +2209,74 @@
         "Yes. The flags are cleared now, for you and for everyone else this hit. Open the game and it syncs within five minutes; a climb held only for time is ranked as the hours pass. The game will also say what is wrong instead of a plain \"Not synced yet\" in the next update. If anyone is still off the board tomorrow, tell us here.",
         "· 師 Shibaki"
       ]
+    },
+    {
+      "forum": "ideas",
+      "title": "I would appreciate more Loadout slots, but I am not sure if it's a good, balanced idea.",
+      "tags": [
+        "Idea",
+        "Question"
+      ],
+      "reply": [
+        "Thanks, you made both sides of the case well, and I agree with the second one: the chest space and the upkeep are already the price of keeping a set. I'll look at raising the limit above three and say here what we settle on.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow fusing heaven-rank items",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Good idea, thank you. Three heaven pieces fusing into one heaven piece, with your fusion quality on top, makes sense: right now the heaven drops crowd out the earth pieces you would rather keep. I'll design it so *Fuse all* never feeds a piece back into itself, and post it here before it goes in.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Crafted equipment should show its school",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Agreed, thank you. The craft tab will show each piece's school with the same seal the gear tiles carry, so you can compare a forged piece with a hunted one at a glance.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Resetting some realm cards is only possible at layer 9/9",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "Yes, that's intended. A trade costs days of your own gathering (half a day for the newest card, more the further back it is), and the bar only holds that much once a realm is full at 9/9, so it is something you save up for rather than a quick undo. Thanks for checking!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "On the hover: good idea, thank you. I'll add to each line's note what it does, its hard cap (25 points for drop chance, for example) and how it bends, with the formula for anyone who wants it, and drop chance will say what its points add to a beast's chance. Kept in the note, so nobody has to read it who doesn't want to.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "That's a fair design point, thank you. Refining already follows the place on your body when you change pieces, but it is stored on the piece, and that is exactly where both bugs came from. A record of its own per place is the cleaner way, and I'll look at moving it there.",
+        "· 師 Shibaki"
+      ]
     }
   ]
 }
