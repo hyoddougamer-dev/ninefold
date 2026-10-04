@@ -413,6 +413,9 @@ export function App() {
   const [who, setWho] = useState<cloud.Who | null>(null);
   const [synced, setSynced] = useState<cloud.Synced | null>(null);
   const [syncedAt, setSyncedAt] = useState<number | null>(null);
+  // 拒 Why the last sync came back empty, if it did: a closed account and an unreachable
+  // server used to read alike, as "Not synced yet", for a day (speculaether, 2026-10-04).
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
   const [title, setTitle] = useState<string | null>(null);
   const [place, setPlace] = useState<number | null>(null);
@@ -422,12 +425,15 @@ export function App() {
     pushing.current = true;
     try {
       const r = await cloud.sync(latest.current, name);
-      if (!('error' in r)) {
+      if ('error' in r) {
+        if (r.error !== 'too-soon') setSyncError(r.error);
+      } else {
+        setSyncError(null);
         setSynced(r); setSyncedAt(Date.now() / 1000);
         cloud.mine().then((m) => setTitle(m?.title ?? null)).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
-    } catch { /* offline: the next one will do */ }
+    } catch { setSyncError('offline'); /* the next one will do */ }
     pushing.current = false;
   }, []);
   useEffect(() => {
@@ -1473,6 +1479,7 @@ export function App() {
           who={who}
           synced={synced}
           syncedAt={syncedAt}
+          syncError={syncError}
           onEnter={async (w, name) => {
             setWho(w); sfx.mark();
             // 雲 An email account may already hold a cultivator from another device: look

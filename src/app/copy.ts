@@ -158,7 +158,10 @@ export const RANKS = {
     /** 疑 Not an accusation. rekaris saw the old line ("faster than anybody honest") after
      *  melting with Auto before the melting allowance existed: the speed was the game's. */
     suspect: 'Your climb went faster than the game expects, so it is off the boards until we take a look. Your game is not touched, and this is not a strike.',
-    never: 'Not synced yet.',
+    never: 'Not synced yet. The game tries every five minutes while it is open.',
+    /** 拒 The server answered, but not with a verdict. Never left at "Not synced yet". */
+    unreached: 'The ranked server could not take this save just now. Your game goes on as it was, and it tries again every five minutes.',
+    closed: 'This account is off the boards after saves the server could not accept. Your game is not touched. If you think that is a mistake, tell us in 報-bugs on the Discord and we will look.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
   nameRule: 'Letters, numbers and CJK only, and not a title or a 修士 name.',
