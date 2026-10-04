@@ -2185,6 +2185,30 @@
         "Today's update makes Sword Immortal, War God, Swordsmith and Armourer the best at what they say, and gives the Sword Saint the Dragon: it is now the fastest class to forty marks. Pure Sword stays the strongest single body, which is what a pure Sword build is for. Thank you for pushing on this, it made the classes better.",
         "· 師 Shibaki"
       ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Perpetually \"Not synced yet\"",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you for reporting this, and sorry. A server bug read tower climbs as impossible, and after three of those the server stopped accepting the saves, which the game only showed as \"Not synced yet\". The bug was fixed today and your account has been cleared by hand, so nothing is held against you. Open the game and it should sync within five minutes. If it still says \"Not synced yet\" after that, tell us here and we'll look straight away.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Saves being flagged for climbing the tower",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Yes. The flags are cleared now, for you and for everyone else this hit. Open the game and it syncs within five minutes; a climb held only for time is ranked as the hours pass. The game will also say what is wrong instead of a plain \"Not synced yet\" in the next update. If anyone is still off the board tomorrow, tell us here.",
+        "· 師 Shibaki"
+      ]
     }
   ]
 }
