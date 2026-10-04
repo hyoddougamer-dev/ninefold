@@ -4,7 +4,7 @@ import { MEET_POINT_CEILING } from '../../data/meetings.ts';
 import {
   beastAt, canEnter, doorIn, doorsAt, enter, giftOf, inside, isGate, leave, open,
 } from '../secret.ts';
-import { depthScale, roomsFor } from '../../data/secret.ts';
+import { springShare, roomsFor } from '../../data/secret.ts';
 import { newState, validate, type State } from '../state.ts';
 
 const T0 = 1_700_000_000;
@@ -40,10 +40,17 @@ describe('秘境 the secret realm', () => {
     expect(isGate(0)).toBe(false);
     for (let step = 0; step < ROOMS; step++) {
       const doors = doorsAt(s, step);
-      expect(doors.length).toBe(isGate(step) ? 1 : 2);
-      if (isGate(step)) expect(doors[0].kind).toBe('beast');
-      // 擇 Two doors are always two different things, or it is not a choice.
-      else expect(doors[0].kind).not.toBe(doors[1].kind);
+      if (isGate(step)) {
+        expect(doors.length).toBe(1);
+        expect(doors[0].kind).toBe('beast');
+        continue;
+      }
+      // 泉 A reward room always offers its share drunk now, and the doors are always
+      // different things, or it is not a choice.
+      expect(doors[0].kind).toBe('spring');
+      expect(doors.length).toBeGreaterThanOrEqual(2);
+      expect(doors.length).toBeLessThanOrEqual(3);
+      expect(new Set(doors.map((d) => d.kind)).size).toBe(doors.length);
     }
   });
 
@@ -154,10 +161,10 @@ describe('秘境 the secret realm', () => {
     for (let step = 0; step < ROOMS; step++) {
       expect(doorsAt(a, step).map((d) => d.kind)).toEqual(doorsAt(b, step).map((d) => d.kind));
     }
-    const next = { ...a, runs: a.runs + 1 };
-    const same = [0, 2, 4, 6].every((step) =>
-      doorsAt(a, step)[0].kind === doorsAt(next, step)[0].kind);
-    expect(same, 'the next run should not be the same path').toBe(false);
+    // The third doors are what the seed draws; across a few runs they do not repeat.
+    const path = (x: State) => [0, 2, 4, 6].map((step) => doorsAt(x, step).map((d) => d.kind).join('+')).join(' ');
+    const paths = new Set([0, 1, 2, 3, 4, 5].map((n) => path({ ...a, runs: a.runs + n })));
+    expect(paths.size, 'the next run should not be the same path').toBeGreaterThan(1);
   });
 
   it('ramps the three gates out of your realm and into the one above', () => {
@@ -204,10 +211,13 @@ describe('深 the deeper vault', () => {
     expect(inside(shallow)).toBe(false);
   });
 
-  it('pays the deepest room the most, because that is what a run is for', () => {
-    // 深 depthScale already rises with the step, so four more rooms are four richer
-    // ones rather than four more of the same.
-    expect(depthScale(DEEP_ROOMS - 1)).toBeGreaterThan(depthScale(ROOMS - 1));
+  it('gives the deepest room the most of the spring, because that is what a run is for', () => {
+    // 深 springShare rises with the room, on either path, and the shares make the whole.
+    for (const n of [Math.ceil(ROOMS / 2), Math.ceil(DEEP_ROOMS / 2)]) {
+      for (let k = 1; k < n; k++) expect(springShare(k, n)).toBeGreaterThan(springShare(k - 1, n));
+      const all = [...Array(n).keys()].reduce((t, k) => t + springShare(k, n), 0);
+      expect(all).toBeCloseTo(1, 9);
+    }
   });
 
   it('refuses a fifth-realm save that claims to be standing in a deep room', () => {

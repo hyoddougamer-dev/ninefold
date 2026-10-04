@@ -22,20 +22,31 @@
  */
 
 import {
-  BLESSED_ROOM, DEEP_ROOMS, DOOR_GAP, ROOMS, ROOM_DEPTH, SHRINE_DEEP_POINTS, SPRING_MINUTES,
+  BLESSED_ROOM, DEEP_ROOMS, DOOR_GAP, ROOMS, SHRINE_DEEP_POINTS, springShare,
 } from '../sim/balance.ts';
 import { opensAt } from '../sim/unlocks.ts';
 
-/** What is behind a door. One thing each, so a door fits on a line. */
+/**
+ * What is behind a door. One thing each, so a door fits on a line.
+ *
+ * 泉 香 A reward room offers its share of the spring two ways, now or burned slowly, and a
+ * third door that spends the same share on something for another system (2026-10-04).
+ */
 export type Room =
-  /** 獸 A beast, one realm above you. Beat it and it pays like a hunt. */
+  /** 獸 A beast, one realm above you. Beat it and the way on opens. */
   | { kind: 'beast' }
-  /** 泉 A spring, in minutes of your own standing gathering. */
+  /** 泉 Drink the room's share of the spring: qi, at once. */
   | { kind: 'spring' }
-  /** 龕 A shrine, cold for a long time. 道 points. */
+  /** 香 Burn the room's share as incense: half as much again, slowly. */
+  | { kind: 'incense' }
+  /** 龕 A shrine, cold for a long time. 道 points, while the realm's share lasts. */
   | { kind: 'shrine' }
   /** 爐 A brazier with something left in it. A piece of gear. */
-  | { kind: 'brazier' };
+  | { kind: 'brazier' }
+  /** 匣 A craftsman's box: herbs and ore of this realm, for the workshop. */
+  | { kind: 'box' }
+  /** 跡 A challenger's trail: the next 擂台 challenger begins the fight hurt. */
+  | { kind: 'trail' };
 
 export type RoomKind = Room['kind'];
 
@@ -49,13 +60,19 @@ export interface KindInfo {
 
 export const ROOM_INFO: Readonly<Record<RoomKind, KindInfo>> = {
   beast: { han: '獸', name: 'Something in the dark', icon: 'centipede',
-    says: 'A beast from a realm above this one. Beat it and it pays like a hunt.' },
-  spring: { han: '泉', name: 'A spring that has not been drunk', icon: 'icicles-aura',
-    says: 'Qi, counted in minutes of your own gathering, and more of it the deeper you are.' },
+    says: 'A beast from a realm above this one. Beat it and the way on opens.' },
+  spring: { han: '泉', name: 'Drink it now', icon: 'icicles-aura',
+    says: 'Qi in hand at once, this room\u2019s share of the spring.' },
+  incense: { han: '香', name: 'Burn it as incense', icon: 'incense',
+    says: 'Half as much again, but slowly: your gathering runs faster while it burns, away or not.' },
   shrine: { han: '龕', name: 'A shrine, long cold', icon: 'crystal-shrine',
-    says: 'A 道 point, sometimes two, for whoever sweeps it.' },
+    says: 'A 道 point, sometimes two, for whoever sweeps it. It costs this room\u2019s share of the spring.' },
   brazier: { han: '爐', name: 'A brazier with something left in it', icon: 'cauldron',
-    says: 'A piece of gear, rolled off this realm and lifted.' },
+    says: 'A piece of gear, rolled off this realm and lifted. It costs this room\u2019s share of the spring.' },
+  box: { han: '匣', name: 'Take the craftsman\u2019s box', icon: 'covered-jar',
+    says: 'Herbs and ore of this realm, for the workshop. No experience with it.' },
+  trail: { han: '跡', name: 'Follow the challenger\u2019s trail', icon: 'footprint',
+    says: 'Where the next challenger on 擂台 the Platform was hurt: it begins that fight a tenth down.' },
 };
 
 /**
@@ -74,30 +91,26 @@ export const roomsFor = (realm: number) => (realm >= DEEP_AT ? DEEP_ROOMS : ROOM
 export const OPENS_AT = opensAt('secret');
 
 /**
- * 深 What a room pays, by how deep it is.
+ * 深 What a room's share of the spring is, by how deep it is (springShare in balance.ts).
  *
- * The last room is worth about three times the first, so walking the whole path is the
- * point and a run abandoned at room two is worth a fraction of one finished. That is
- * the shape a run needs: the reason to keep going is that it gets better.
- *
- * 量 The numbers here were cut by more than half after the first measurement, and one
- * whole room kind was taken out. A run is content and not a faucet, and what it is for
- * is having a beginning and an end.
+ * The last reward room holds four times the first, so walking the whole path is the point
+ * and a run abandoned at room two is worth a fraction of one finished. That is the shape a
+ * run needs: the reason to keep going is that it gets better. It used to be a fixed number
+ * of minutes per room (SPRING_MINUTES and ROOM_DEPTH); since 2026-10-04 the rooms share a
+ * spring that fills while the door is shut, so what a run is worth is time, not walks.
  *
  * 藏 The cache was the leak, and it took three measurements to see it. It paid 材
  * material, and material to a cultivator who does not hunt is exactly what the wall
  * between idle and active is built to withhold: a hundred and twenty runs handed one
  * over a thousand beasts' worth of it, and the wall sat at 1.59 against a rule of 1.5
  * however hard everything else was cut. **Material comes off beasts and from nowhere
- * else.** What is left pays qi, 道 points and gear, and none of those is something a
- * non-hunter can turn into the power a warden asks for.
+ * else.** What is left pays qi, 道 points, gear, herbs and ore, and none of those is
+ * something a non-hunter can turn into the power a warden asks for.
  */
-export function depthScale(step: number): number {
-  return 1 + step * ROOM_DEPTH;
-}
+export { springShare };
 
-/** 泉 A spring pays SPRING_MINUTES of standing gathering, before depth: see balance.ts. */
-export { SPRING_MINUTES };
+/** 泉 How many of a path's rooms are reward rooms: every other one, the first included. */
+export const rewardRooms = (realm: number) => Math.ceil(roomsFor(realm) / 2);
 
 /** 龕 A shrine pays one 道 point, and two in the last room of whatever path you walk. */
 export const shrineDeep = (realm: number) => roomsFor(realm) - 1;
@@ -116,7 +129,7 @@ export const shrineDeep = (realm: number) => roomsFor(realm) - 1;
  * the sentence at the end, which is exactly the point of keeping it separate.
  */
 export interface Take {
-  /** 氣 Qi taken, in total. */
+  /** 氣 Qi taken, in total: drunk, and whatever a full chest melted. */
   readonly qi: number;
   /** 道 Points taken. */
   readonly dao: number;
@@ -128,9 +141,20 @@ export interface Take {
   readonly gates: number;
   /** Whether a guardian is what ended it. */
   readonly beaten: boolean;
+  /** 香 Seconds of incense lit. */
+  readonly burn?: number;
+  /** 匣 What the boxes held, by pouch key. */
+  readonly box?: Readonly<Record<string, number>>;
+  /** 跡 Whether a trail was taken. */
+  readonly trail?: boolean;
+  /** 室 Which reward room took which way, so the end of a run can say where each came from. */
+  readonly picks?: readonly { readonly step: number; readonly kind: RoomKind }[];
 }
 
-export const NO_TAKE: Take = { qi: 0, dao: 0, items: [], rooms: 0, gates: 0, beaten: false };
+export const NO_TAKE: Take = { qi: 0, dao: 0, items: [], rooms: 0, gates: 0, beaten: false,
+  burn: 0, box: {}, trail: false, picks: [] };
+
+const KINDS_TAKEN: readonly RoomKind[] = ['spring', 'incense', 'shrine', 'brazier', 'box', 'trail'];
 
 /**
  * A save is input, and a record of a run is input like everything else.
@@ -140,7 +164,7 @@ export const NO_TAKE: Take = { qi: 0, dao: 0, items: [], rooms: 0, gates: 0, bea
  * other at runtime.
  */
 export function validTake(raw: unknown, keys: (k: string) => boolean,
-  rarities: readonly string[]): Take {
+  rarities: readonly string[], pouchKeys: (k: string) => boolean = () => false): Take {
   const o = (raw ?? {}) as Record<string, unknown>;
   const n = (x: unknown, hi: number) =>
     (typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(hi, Math.floor(x))) : 0);
@@ -152,9 +176,18 @@ export function validTake(raw: unknown, keys: (k: string) => boolean,
       ? it.rarity : null;
     return template && rarity ? [{ template, rarity }] : [];
   });
+  const rawBox = (o.box && typeof o.box === 'object' && !Array.isArray(o.box) ? o.box : {}) as Record<string, unknown>;
+  const box = Object.fromEntries(Object.entries(rawBox).slice(0, 4)
+    .filter(([k]) => pouchKeys(k)).map(([k, v]) => [k, n(v, 1e9)]).filter(([, v]) => (v as number) > 0));
+  const picks = (Array.isArray(o.picks) ? o.picks : []).slice(0, DEEP_ROOMS).flatMap((raw) => {
+    const p = (raw ?? {}) as Record<string, unknown>;
+    const kind = KINDS_TAKEN.find((k) => k === p.kind);
+    return kind ? [{ step: n(p.step, DEEP_ROOMS - 1), kind }] : [];
+  });
   return {
     qi: n(o.qi, 1e18), dao: n(o.dao, DEEP_ROOMS * 2), items,
     rooms: n(o.rooms, DEEP_ROOMS), gates: n(o.gates, DEEP_ROOMS), beaten: o.beaten === true,
+    burn: n(o.burn, 2 * 86_400), box, trail: o.trail === true, picks,
   };
 }
 

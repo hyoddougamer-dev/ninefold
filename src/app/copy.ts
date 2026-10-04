@@ -532,6 +532,9 @@ export const TRIALS = {
   /** 吸 What a floor far below pays, where a count of seconds would read as a glitch. */
   little: 'less than a minute',
 
+  /** 塔 The tower before its realm, under 擂台 the Platform that opens the screen. */
+  towerShut: (han: string, name: string) =>
+    `The tower opens at ${han} ${name}: one floor, one beast, no top, and every floor pays.`,
   furnaceHead: '爐 The Furnace',
   furnaceShut: (han: string, name: string) =>
     `The furnace opens at ${han} ${name}. It turns qi and 材 material into pills that make you stronger for good.`,
@@ -1274,10 +1277,30 @@ export const CAVE = {
  * point of banking every room on the spot is that there is nothing to lose.
  */
 export const SECRET = {
-  /** 龕 A shrine past its realm's share of 道 (SHRINE_DAO_PER_REALM). */
-  shrineSpent: 'this realm\u2019s 道 Path points are taken, so it pays qi',
-  /** The door's own line once the realm's shrine points are taken, so it never promises 道 above the qi it pays. */
-  shrineSpentSays: 'Its 道 is spent for this realm. What is left in it is qi.',
+  /**
+   * 泉 The spring, said above the doors of a room: what it holds and what this room's
+   * share of it is, in the unit that means something, your own time.
+   */
+  springFirst: (filled: string, full: boolean, holds: string, room: string) =>
+    `Filled for ${filled}${full ? ', the most it holds' : ' of the day it can hold'}: ${holds} of your gathering across the rooms, more in the deeper ones. This room: ${room}.`,
+  springLeft: (holds: string, room: string) =>
+    `The spring holds ${holds} of your gathering for the rooms still ahead, more in the deeper ones. This room: ${room}.`,
+  springEmpty: 'The spring is dry: it fills again while the door is shut, a day at most. Every door here still opens.',
+  /** 泉 On the card outside the door. */
+  springDoor: (holds: string, full: boolean) =>
+    `The spring holds ${holds} of your gathering${full ? ', the most it can' : ' and fills while the door is shut'}.`,
+  /** The short word on each door, so the three ways read as now, later, or something else. */
+  tags: { spring: 'Now', incense: 'Later', shrine: 'Path', brazier: 'Gear', box: 'Workshop', trail: 'Platform' } as Record<string, string>,
+  drink: (qi: string, span: string) => `+${qi} qi \u00b7 ${span} of your gathering`,
+  burn: (pct: string, span: string, qi: string) => `+${pct} gathering for ${span} \u00b7 ${qi} qi in all`,
+  /** 香 Why a room offers no incense: the burner holds a day at most, so nothing is wasted. */
+  burnerFull: (left: string) => `香 The burner is full (${left} of incense waiting), so this room offers none. Nothing is wasted.`,
+  boxHolds: (bits: string) => bits,
+  boxEmpty: 'Nothing the workshop can keep: the pouch is full of it.',
+  trailSays: 'One trail at a time, spent by the next challenger you beat.',
+  /** 龕 A shrine's and a brazier's line: what the third door gives, and that the room is spent for it. */
+  shrineGives: (n: number) => `+${n} 道 \u00b7 the room is spent`,
+  brazierGives: 'a piece of gear \u00b7 the room is spent',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
   useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
@@ -1293,7 +1316,7 @@ export const SECRET = {
   beast: (power: string, pct: number, above: boolean) =>
     `力 ${power}, ${above ? 'a realm above you' : 'the strongest thing this realm has'}. ${pct}% to put it down.`,
   apiece: 'a piece of gear',
-  law: 'Everything you take is yours the moment you take it. A beast that puts you down ends the run and takes nothing back.',
+  law: 'Take one and the room is spent. Everything you take is yours the moment you take it, and the rooms you do not reach stay in the spring for next time. A beast that puts you down ends the run and takes nothing back.',
   out: 'Walk out and keep everything',
   /**
    * 記 The running total, on the screen while the run is still being walked.
@@ -1312,7 +1335,17 @@ export const SECRET = {
   endDone: 'You walked the whole thing',
   endBeaten: 'A guardian put you down',
   endBeatenSays: 'The run ends here. Everything below was banked the moment you took it, and none of it goes back.',
-  endSays: 'Everything below was yours the moment you took it.',
+  endSays: 'Every room was paid the moment you took it. The spring starts filling again now, a day at most.',
+  /** 記 Where each of a run's takings came from, by room. */
+  roomsList: (steps: readonly number[]) => {
+    const n = steps.map((x) => x + 1);
+    if (n.length === 1) return `room ${n[0]}`;
+    return `rooms ${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`;
+  },
+  tallyDrunk: (rooms: string) => `qi, drunk from the spring in ${rooms}`,
+  tallyBurn: (span: string, rooms: string) => `香 incense on your gathering for ${span}, burned in ${rooms}. It burns while you are away.`,
+  tallyBox: (rest: string, rooms: string) => `${rest} from ${rooms}, in the workshop\u2019s pouch`,
+  tallyTrail: '跡 a challenger\u2019s trail: the next one on 擂台 the Platform begins a tenth down.',
   tallyRooms: (n: number, of: number) => `${n} of ${of} rooms`,
   tallyGates: (n: number) => `${n} ${n === 1 ? 'guardian' : 'guardians'} put down`,
   tallyQi: 'qi',
@@ -1324,7 +1357,76 @@ export const SECRET = {
   /** 釋 What the character means, for the key and the tooltip. */
   // 數 It said "seven rooms", and the door at the summit says eleven. The count grows
   // with the realm, so the sentence does not name one.
-  what: 'A row of rooms with two ways on at each. Every other room is a gate: two strong beasts, and you beat one to go on. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
+  what: 'A row of rooms. Every other room is a gate: one strong beast, and you beat it to go on. The rooms between share the spring, which fills while the door is shut: drink your share now, burn it as incense for more later, or spend it on the third door. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
+  /** 釋 The vault's own words, for the key and the tooltip. */
+  springWhat: 'The vault\u2019s spring fills while its door is shut, four minutes of your gathering an hour and a day at most. The rooms share it, the deeper ones more.',
+  incenseWhat: 'A room\u2019s share of the spring, burned slowly: half as much again, as +30% to your standing gathering while it burns, open or shut. One burner; the next stick waits behind.',
+  boxWhat: 'A craftsman\u2019s box: herbs and ore of your realm for the workshop, from a room of the vault. No experience comes with it.',
+  trailWhat: 'A challenger\u2019s trail, found in the vault: the next challenger on 擂台 the Platform begins its fight a tenth down.',
+};
+
+/**
+ * 香 Incense from the vault, said on 修 beside 入定 the sitting: what it adds and how long
+ * it has left. It is the first thing in the game that moves the rate for a while, so the
+ * screen says for how long, every moment it burns.
+ */
+export const INCENSE = {
+  chip: (pct: string) => `+${pct}`,
+  now: (rate: string) => `${rate} qi / s now (香 included)`,
+  line: (pct: string, left: string) => `Incense +${pct} \u00b7 ${left} left`,
+  says: 'From the secret realm. It burns on while you are away, and the next stick you light waits behind this one.',
+};
+
+/**
+ * 擂台 The Platform: three challengers a week, on 塔 Trials under the tower, and the
+ * arena's word on each fight. Every line that could be read as a cost says that a loss
+ * costs nothing, and the card and the verdict both say the dice are set for the week.
+ */
+export const PLATFORM = {
+  head: 'The Platform',
+  period: (left: string) => `Three challengers this week \u00b7 new ones in ${left}, or when you break through`,
+  allDown: (left: string) => `All three are down this week. New ones come in ${left}, or when you break through.`,
+  /** 性 The week's temper, and what it does unanswered. */
+  temper: (says: string, edge: string) => `this week: it stands \u00d7${edge} again against anybody ${says}.`,
+  temperSays: {
+    armoured: 'who cannot break its shell',
+    nimble: 'it can outpace',
+    mending: 'who lets it heal',
+    frenzied: 'who cannot weather it',
+  } as Record<string, string>,
+  answeredBy: (list: string) => `Answered by ${list}.`,
+  youAnswer: 'You answer it as you stand.',
+  ordinal: ['First', 'Second', 'Third'] as const,
+  edge: (x: string) => `\u00d7${x} your power`,
+  beaten: 'beaten this week',
+  paid: (h: number) => `${h} h paid`,
+  pays: (h: number, qi: string) => `pays ${h} h of gathering \u00b7 ${qi} qi`,
+  waits: 'comes up when the one before it falls',
+  waitsShort: 'waits',
+  standsAt: (power: string) => `力 ${power}`,
+  inStance: (name: string) => `in ${name}`,
+  asYouStand: (pct: string) => `${pct} as you stand`,
+  odds: 'odds',
+  toReach: 'to reach',
+  standIn: (name: string) => `Stand in ${name}`,
+  challenge: 'Challenge',
+  trail: '跡 You hold a trail from the vault: this challenger begins a tenth down.',
+  law: 'Losing costs nothing, and it waits for you all week. The dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry and it is a new one. Never on Auto, never driven.',
+  /** 鬥 The arena's word on a challenger. */
+  who: (ordinal: string) => `${ordinal} challenger`,
+  won: (ordinal: string) => `The ${ordinal.toLowerCase()} challenger steps down from the platform.`,
+  lost: 'It holds the platform. Losing costs nothing, and it will be there all week.',
+  hours: (h: number) => `${h} h of gathering`,
+  count: (n: number) => `${['None', 'One', 'Two', 'Three'][n] ?? n} of three this week`,
+  next: (ordinal: string, name: string, edge: string, h: number) =>
+    `The ${ordinal.toLowerCase()}, ${name}, stands at \u00d7${edge} your power and pays ${h} h. It waits until the week turns.`,
+  done: 'All three are down. New ones come when the week turns, or when you break through.',
+  dice: 'The dice are set for the week: pressing again with nothing changed is the same fight. Change your stance, your arts or what you carry, and it is a new one.',
+  nextButton: (ordinal: string) => `The ${ordinal.toLowerCase()}`,
+  answeredLine: (temper: string, by: string) => `${temper}, answered by ${by}.`,
+  unansweredLine: (temper: string) => `${temper}, unanswered: it stood \u00d71.3 again.`,
+  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays hours of gathering, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
+  temperWhat: 'The week\u2019s temper on 擂台 the Platform: unanswered, a challenger stands \u00d71.3 again. A stance or one art in your sequence answers it.',
 };
 
 export const GEAR = {
@@ -1596,6 +1698,11 @@ export const NOTICE = {
     title: '材 Material is the other currency',
     text: '妖丹 is the one upgrade priced in 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
+  },
+  platform: {
+    title: '擂台 Three challengers a week',
+    text: 'On 塔 Trials. They stand against your own power, so the build wins them, not the number. '
+      + 'A win pays hours of gathering; a loss costs nothing, and the dice are set for the week.',
   },
   tower: {
     title: 'Only the next floor is ever open',

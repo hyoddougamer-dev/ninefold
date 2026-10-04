@@ -889,6 +889,90 @@ for (const [w, h, tag] of [[400, 860, 'k400'], [1366, 768, 'kpc']]) {
   await page.close();
 }
 
+// ── 泉 香 擂台 The vault's rooms and the Platform, 2026-10-04: now, later, or something else ──
+for (const [w, h, tag] of [[320, 860, 'q320'], [400, 860, 'q400']]) {
+  const at = Math.floor(Date.now() / 1000);
+  const strong = { technique: 40, method: 30, pills: 30, cores: 40 };
+  // 秘境 Standing in room 3 of 7, the first room drunk, a full day's spring behind the door.
+  let page = await open(w, h, {
+    realm: 5, layer: 4, levels: strong, stance: 'endure', sequence: ['crane', 'tiger'],
+    awakened: ['feast', 'wolf', 'slaughter', 'platform'],
+    killed: { rat: 150, hound: 20, frog: 20, beetle: 30, boar: 4, fox: 1, ape: 1, crane: 1, tiger: 1 },
+    runStep: 2, runAt: at - 86400, runs: 3, spring: 0.9 * 86400, springAt: at,
+    lastRun: { qi: 1e6, dao: 0, items: [], rooms: 2, gates: 1, beaten: false, picks: [{ step: 0, kind: 'spring' }] },
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
+      'fuse', 'whom', 'workshop', 'platform', 'seclusion', 'cap', 'secret', 'cave', 'record', 'cores'],
+  });
+  await page.waitForSelector('.secret .ways .way');
+  const kinds = await page.$$eval('.secret .ways .way', (els) => els.map((e) => e.getAttribute('data-kind')));
+  check(kinds[0] === 'spring' && kinds[1] === 'incense' && kinds.length >= 2,
+    `${tag}: a reward room offers its share drunk now and burned later (${kinds.join(', ')})`);
+  const spring = await page.$eval('.secret .springline', (e) => e.textContent).catch(() => '');
+  check(/This room: \d/.test(spring ?? ''), `${tag}: the spring says what it holds and this room's share`);
+  check(await overflow(page) <= 0 && await page.$eval('.secret', (e) => e.scrollWidth - e.clientWidth) <= 0,
+    `${tag}: the rooms do not push the screen sideways`);
+  if (OUT) await page.screenshot({ path: `${OUT}/${tag}-vault-room.png` });
+  // 香 2 burns this room's share; the walker moves on to the gate.
+  await page.keyboard.press('2');
+  await page.waitForTimeout(300);
+  const over = await page.$eval('.secret .over', (e) => e.textContent).catch(() => '');
+  check(/Room 4 of 7/.test(over ?? ''), `${tag}: 2 takes the second door, and the room is spent (${over})`);
+  // 退 Walk out: the end of the run says what was burned, and 修 says how long it burns.
+  await page.click('.secret .later');
+  await page.waitForSelector('.runend .endcard', { timeout: 3000 }).catch(() => {});
+  const end = await page.$eval('.runend .endcard', (e) => e.textContent).catch(() => '');
+  check(/incense on your gathering for .+ burned in room 3/.test(end ?? ''), `${tag}: the end of the run names the incense and its room`);
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.runend')), `${tag}: Enter closes the end of the run`);
+  await tab(page, '修');
+  const burning = await page.$eval('.qi .incline .incense', (e) => e.textContent).catch(() => '');
+  check(/Incense \+30% · \d+:\d\d(:\d\d)? left/.test(burning ?? ''), `${tag}: 修 says the incense and how long it burns (${burning})`);
+  const now = await page.$eval('.qi .rnow', (e) => e.textContent).catch(() => '');
+  check(/香 included/.test(now ?? ''), `${tag}: the rate now says the incense is in it`);
+  if (OUT) await page.screenshot({ path: `${OUT}/${tag}-incense.png` });
+  await page.close();
+
+  // 擂台 The Platform on 塔 Trials at the fourth realm, a realm before the tower.
+  page = await open(w, h, {
+    realm: 4, layer: 6, levels: { technique: 30, method: 24, pills: 24, cores: 34 }, stance: 'guard', sequence: ['crane'],
+    killed: { rat: 150, hound: 20, frog: 20, beetle: 30, boar: 4, fox: 1, ape: 1, crane: 1 },
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
+      'fuse', 'whom', 'workshop', 'platform', 'seclusion', 'cap', 'secret', 'cave', 'record', 'cores'],
+  });
+  await tab(page, '塔');
+  const rows = await page.$$('.platcard .plrow');
+  check(rows.length === 3, `${tag}: three challengers stand on the Platform (${rows.length})`);
+  const law = await page.$eval('.platcard .pllaw', (e) => e.textContent).catch(() => '');
+  check(/Losing costs nothing/.test(law ?? '') && /dice are set for the week/.test(law ?? ''),
+    `${tag}: the card says a loss costs nothing and the dice are set`);
+  const shut = await page.$eval('.sheet', (e) => e.textContent).catch(() => '');
+  check(/The tower opens at/.test(shut ?? ''), `${tag}: the tower says when it comes`);
+  check(await overflow(page) <= 0, `${tag}: the Platform does not push the screen sideways`);
+  if (OUT) await page.screenshot({ path: `${OUT}/${tag}-platform.png`, fullPage: true });
+  await page.click('.platcard .plgo');
+  await page.waitForSelector('.arena', { timeout: 4000 }).catch(() => {});
+  await page.keyboard.press('Space');
+  await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
+  const won = (await page.$eval('.arena', (e) => e.getAttribute('data-won')).catch(() => null)) === 'true';
+  const said = await page.$eval('.verdict', (e) => e.textContent).catch(() => '');
+  check(won ? /First challenger|first challenger steps down/.test(said ?? '') : /Losing costs nothing/.test(said ?? ''),
+    `${tag}: the verdict says what a challenger is (${won ? 'won' : 'lost'})`);
+  check(!(await page.$('.verdict .vacts .auto')), `${tag}: a challenger never offers Auto`);
+  const again = await page.$eval('.verdict .vacts .again', (e) => e.textContent).catch(() => null);
+  check(won ? /The second/.test(again ?? '') : again === null,
+    `${tag}: Again is the next challenger after a win, and nothing after a loss`);
+  if (OUT) await page.screenshot({ path: `${OUT}/${tag}-challenger.png` });
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(400);
+  check(!(await page.$('.arena')), `${tag}: Enter collects`);
+  if (won) {
+    const first = await page.$eval('.platcard .plrow', (e) => e.getAttribute('data-state')).catch(() => '');
+    check(first === 'beaten', `${tag}: the first challenger reads beaten once it fell`);
+  }
+  await page.close();
+}
+
 await browser.close();
 console.log(problems.length ? `\n鎖 ${problems.length} broken: ${problems.join('; ')}\n`
   : '\n鎖 kept, found and ordered as asked, on a phone and on a computer.\n');

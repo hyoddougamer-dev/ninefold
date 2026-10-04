@@ -40,6 +40,14 @@ export function weekOf(at: number): number {
   return Math.max(0, Math.floor((at + 3 * DAY) / WEEK));
 }
 
+/**
+ * 擂 The Platform's period: the week, and the realm, so a breakthrough starts a new one.
+ * A realm is 1 to 9, so the two fit in one number and a later period is always larger.
+ */
+export function periodOf(at: number, realm: number): number {
+  return weekOf(at) * 10 + Math.max(1, Math.min(9, Math.floor(realm)));
+}
+
 /** Seconds until the week turns. Never zero: a week that just turned has a whole one left. */
 export function weekLeft(s: State): number {
   return (weekOf(s.at) + 1) * WEEK - 3 * DAY - s.at;

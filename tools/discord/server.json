@@ -1146,10 +1146,16 @@
       "body": [
         "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
         "",
-        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, two ways on at each, and every other room is a beast a realm above you. Nothing is carried in, so losing takes nothing back."
+        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, and every other room is a guardian a realm above you. Nothing is carried in, so losing takes nothing back.",
+        "",
+        "**泉 The spring** fills while the door is shut: four minutes of your gathering for every hour, a day at most (1 h 36 min of gathering when full). The rooms between the guardians share it, the deeper ones more (10, 20, 30 and 40% in seven rooms). Each room offers its share three ways, and whichever you take, the room is spent:"
       ],
       "fields": [
-        ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day."],
+        ["▸ 泉 Drink it now", "Its share as qi, at once. For when the next layer is close."],
+        ["▸ 香 Burn it as incense", "Half as much again, slowly: +30% to your standing gathering while it burns, open or shut. One burner, and the next stick waits behind the one burning, a day at most. 修 says how long it has left."],
+        ["▸ The third door", "龕 a 道 point while your realm's shrine share lasts, 爐 a piece of gear, 匣 a craftsman's box (an hour of this realm's herbs and ore for every room past the first, no experience), or 跡 a challenger's trail: the next challenger on 擂台 the Platform begins a tenth down."],
+        ["▸ Rooms you do not reach", "Stay in the spring for next time. A guardian that puts you down takes nothing, those rooms included. One run a day or three, the spring is the same: it fills with time, not with walks."],
+        ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day. A door opened early finds a spring that has filled less."],
         ["▸ 秘境深 The Deeper Vault", "From the seventh realm the path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
         ["▸ This week", "Each week one herb is worth planting and one room of the vault pays double. It changes every Monday."]
       ]
@@ -1186,6 +1192,8 @@
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
       "body": [
         "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
+        "",
+        "**擂台 The Platform** (fourth realm, on 塔 Trials). Three challengers a week, and three new ones when you break through. They stand at ×1.3, ×1.8 and ×2.5 of your own power, so the build wins them, not the number: 破甲 sunder, 破煞 bane, the tree and your class thin them as they thin any beast. The week's temper (堅 Armoured, 捷 Nimble, 癒 Mending or 狂 Frenzied) stands them ×1.3 again unless your stance or one art in your sequence answers it, and the card names the answers. A win pays 2, 4 and 6 hours of your gathering counted without gear, once each a week. A loss costs nothing, and the dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry. Never on Auto, never driven.",
         "",
         "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, qi: up to six hours of your gathering counted without gear. The six hours are paid on your realm's warden floor (floor 45 in the fifth realm, 54 in the sixth). Each floor below it pays 20% less than the one above, so the first floors pay almost nothing. Each floor above it pays a little less than the one before, never under three hours: in the fifth realm floor 46 pays 5.4 hours, floor 50 about 4, and from floor 60 up about 3. The warden floor moves up nine at every breakthrough, so the same floor can pay differently after one. What you wear never changes it; only 天師 Celestial Master adds 25%. The floor card shows what the next floor pays before you climb. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC).",
         "",
@@ -1286,7 +1294,7 @@
         ["▸ 練氣 Realm 1", "狩 Hunting · 妖丹 Beast Cores · 錄 The Record"],
         ["▸ 築基 Realm 2", "器 Gear · 煉器 Refining · 洞天 The Cave · 勢 Stances and Arts · 道 The Path · 業 The Workshop: 藥 Herbs, 礦 Veins, 解 Rendering, 鑄 Forging"],
         ["▸ 金丹 Realm 3", "煉 Fusing · 秘境 The Secret Realm"],
-        ["▸ 元嬰 Realm 4", "樞 The Keystones · 閉關 Seclusion"],
+        ["▸ 元嬰 Realm 4", "樞 The Keystones · 閉關 Seclusion · 擂台 The Platform"],
         ["▸ 化神 Realm 5", "塔 The Endless Tower · 丹 Alchemy"],
         ["▸ 煉虛 Realm 6", "圖鑑 The Bestiary · 符 Sigil Writing"],
         ["▸ 合體 Realm 7", "秘境深 The Deeper Vault · 陣 Arrays"],

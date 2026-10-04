@@ -1674,7 +1674,7 @@ export const ROOMS = 7;
  * the rooms, the gates and the tally all exist. The path simply goes further.
  *
  * 關 Four more rooms, and two more gates with them, since a gate is every other room.
- * They are the deepest rooms in the game, so 深 depthScale pays them the most, and the
+ * They are the deepest rooms in the game, so 深 springShare gives them the most, and the
  * gate ramp already runs out of your own realm and into the one above: the deeper gates
  * are the strongest things the realm above has. A cultivator who opens the door at the
  * seventh realm and walks all eleven has done something a sixth-realm cultivator could
@@ -1685,11 +1685,71 @@ export const DEEP_ROOMS = 11;
 /** How long after a run before the door opens again, in seconds. */
 export const DOOR_GAP = 8 * 3600;
 
-/** 深 What each room deeper adds to what a room pays: the last is about three times the first. */
-export const ROOM_DEPTH = 0.4;
+/**
+ * 泉 What the vault's spring gathers, as a share of standing gathering, for every second its
+ * door stands shut: four minutes an hour. It replaced SPRING_MINUTES and ROOM_DEPTH on
+ * 2026-10-04, when a spring was a fixed four to fourteen minutes in one room and the run,
+ * once the shrine's 道 was spent, was two doors that both said "qi".
+ *
+ * Measured with tools/habits.ts, the whole vault (drunk and burned, see INCENSE_WORTH) is
+ * 5 to 9% of a run for a daily walker, about the cave's share, which was the target; the
+ * old spring and the shrine's overflow were 1 to 4%. One run a day and three a day draw on
+ * the same spring, so the door gap, 鑰 the Realm Key and 秘門 the Hidden Door Array no
+ * longer multiply the qi: they bring the 道, the gear, the boxes and the trails sooner.
+ * At three minutes an hour the climb would be close to where it was before.
+ */
+export const SPRING_FILL = 4 / 60;
+/** 泉 The most shut time the spring holds: a day. It waits full, it never empties itself. */
+export const SPRING_HOLD = 24 * 3600;
+/**
+ * 深 The share of the spring reward room k of n holds (k from 0): deeper is more. In seven
+ * rooms the four reward rooms take 10, 20, 30 and 40%; in eleven, six rooms share it.
+ */
+export const springShare = (k: number, n: number): number => (k + 1) / ((n * (n + 1)) / 2);
+/**
+ * 香 What burning a room's share as incense adds to standing gathering while it burns, and
+ * what a stick is worth against drinking the same share: half as much again, slowly. It is
+ * added to the standing rate only (never multiplied by 入定 sitting), one burner holds at
+ * most INCENSE_HOLD of burning, and every stick is bounded by the spring, which is bounded
+ * by time, so it can never be stacked into a standing raise: at most about eleven hours of
+ * +30% a day if every room is burned.
+ */
+export const INCENSE_BONUS = 0.3;
+export const INCENSE_WORTH = 1.5;
+/** 香 The most burning time that can stand queued behind the burner. */
+export const INCENSE_HOLD = 24 * 3600;
+/**
+ * 匣 Hours of the paths and of the veins a craftsman's box holds, for every reward room
+ * deeper than the first: the realm's herbs and ore at the craft's own pace, with no
+ * experience. Herbs and ore take only time, so the box hands a non-hunter nothing a hunter
+ * is walled behind: no beast part, no 材.
+ */
+export const BOX_HOURS = 1;
+/** 跡 The share of its health the next 擂台 challenger has already lost when a trail was taken. */
+export const TRAIL_WOUND = 0.1;
 
-/** 泉 A spring pays this many minutes of standing gathering, before depth. */
-export const SPRING_MINUTES = 4;
+/**
+ * 擂台 The Platform: three challengers a period, measured against the cultivator's own 力.
+ *
+ * A period is a week of the 期 calendar, and a breakthrough starts a new one. Each
+ * challenger stands at its edge of the cultivator's own power and is thinned like a beast
+ * (破甲 sunder, 破煞 bane, the tree's weakness, the classes), so the build is what wins,
+ * not 力. The dice are set for the period, so pressing again with nothing changed loses
+ * again: measured with the design harness, the third challenger falls in 15 to 60% of
+ * weeks for somebody who builds, not "eventually, by tapping". With a free reroll every
+ * builder took all three every week, which is why the dice are set.
+ *
+ * A win pays hours of gathering without gear (towerRate), so clothes cannot move the pay
+ * and the card can say it before the fight: about 3 to 6% of a run for anybody who
+ * builds, under the tower.
+ */
+export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
+/** 擂 What each challenger pays, once a period, in hours of gathering without gear. */
+export const PLATFORM_HOURS = [2, 4, 6] as const;
+/** 擂 What an unanswered temper adds to the challenger. */
+export const TEMPER_EDGE = 1.3;
+/** 擂 The realm the Platform opens in (and its line in sim/unlocks.ts SYSTEMS). */
+export const PLATFORM_REALM = 4;
 
 /** 龕 A shrine pays this many 道 points, and the deep one in the last room of a path pays more. */
 export const SHRINE_POINTS = 1;

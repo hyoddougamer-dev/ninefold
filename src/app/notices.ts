@@ -8,6 +8,7 @@ import { SLOTS } from '../data/gear.ts';
 import { isOpen } from '../sim/unlocks.ts';
 import { CORE_CAP_EXTRA, LEVELS_PER_REALM } from '../sim/balance.ts';
 import { NOTICE } from './copy.ts';
+import { platformOpen } from '../sim/platform.ts';
 
 /**
  * 新 The cards that arrive once.
@@ -52,6 +53,11 @@ export const NOTICES: readonly Notice[] = [
     key: 'tower', han: '塔', title: NOTICE.tower.title, text: NOTICE.tower.text, tab: 'trials',
     when: (s) => isOpen(s.realm, 'tower') && s.tower === 0
       && odds(s, floorBeast(standingFloor(s)), floorPower(standingFloor(s))) > 0.6,
+  },
+  {
+    // 擂台 The Platform opens a realm before the tower, on the screen the tower will share.
+    key: 'platform', han: '擂台', title: NOTICE.platform.title, text: NOTICE.platform.text, tab: 'trials',
+    when: (s) => platformOpen(s) && (s.bouts ?? 0) === 0,
   },
   {
     key: 'furnace', han: '爐', title: NOTICE.furnace.title, text: NOTICE.furnace.text, tab: 'trials',

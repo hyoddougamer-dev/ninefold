@@ -34,6 +34,11 @@ import {
   canEnter, doorsAt, enter as enterSecret, giftOf as secretGift, roomsFor,
   inside as insideSecret, leave as leaveSecret, open as openDoor,
 } from '../src/sim/secret.ts';
+import {
+  answered, beatChallenger, challengeFight, challengeOdds, challengerOf, periodNow, standingTier,
+} from '../src/sim/platform.ts';
+import { layerCost } from '../src/sim/time.ts';
+import { stanceChoices } from '../src/sim/arts.ts';
 import { TRIOS, cardDue as awakeningDue, take as takeAwakening } from '../src/sim/awaken.ts';
 import { dropFor, noteFate, secondDropFor } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
@@ -207,6 +212,16 @@ export interface Run {
   readonly reached: number;
   readonly done: boolean;
   readonly power: number;
+  /**
+   * 氣源 Where the qi came from, for the three sources this harness can name: 泉 the vault's
+   * spring drunk, 香 its incense burned, 擂 the Platform's challengers. `gained` is every
+   * unit gathered or paid over the run (what is held at the end, every rung the ladder
+   * took, and everything spent), so each is a share of the whole.
+   */
+  readonly qi: { readonly gained: number; readonly drunk: number; readonly incense: number; readonly platform: number };
+  /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
+  readonly bouts: readonly number[];
+  readonly periods: number;
 }
 
 /**
@@ -451,16 +466,38 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   let arrangedOn = -1;
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = 991;
+  // 氣源 The ledger: every rung the clock paid for, every unit spent, and the three named sources.
+  const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0 };
+  const bouts = [0, 0, 0];
+  let periods = 0, lastPeriod = -1;
+  const tried = new Set<string>();
+  /** Qi that left the save on an action (a purchase, a pill, a drive, a price on the road). */
+  const spend = (next: State): State => { led.spent += Math.max(0, s.qi - next.qi); return next; };
+  /** 梯 The clock, with the rungs it opened counted and 香 the incense it paid set apart. */
+  const tickTo = (to: number, focus = 1) => {
+    const burning = (s.incenseUntil ?? 0) > s.at;
+    const next = advance(s, to, false, focus);
+    let rungs = 0;
+    for (let n = layersOpened(s); n < layersOpened(next); n++) rungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
+    led.ladder += rungs;
+    if (burning) {
+      const cold = advance({ ...s, incenseUntil: 0 }, to, false, focus);
+      let coldRungs = 0;
+      for (let n = layersOpened(s); n < layersOpened(cold); n++) coldRungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
+      led.incense += Math.max(0, (next.qi + rungs) - (cold.qi + coldRungs));
+    }
+    s = next;
+  };
 
   while ((t - T0) / DAY < maxDays && layersOpened(s) < LAYERS - 1) {
     // 入定 the part of the visit spent looking at it, walked in steps so the ramp counts.
     const open = h.minutes * 60;
     const deeper = focusBonus(s.unlocked);
     for (let k = 1; k <= 10 && open > 0; k++) {
-      s = advance(s, t + (open * k) / 10, false, focusAt((open * k) / 10, deeper));
+      tickTo(t + (open * k) / 10, focusAt((open * k) / 10, deeper));
     }
     t += tick;
-    s = advance(s, t);
+    tickTo(t);
     if (h.crafts) s = work(s, t);
 
     watch?.((t - T0) / DAY, s);
@@ -470,7 +507,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // 緣 The person on the road. Every cultivator who opens the game meets them, so the
     // harness answers too: the qi, material, 道 and gear they give used to be missing from
     // every curve on the page (found by the coherence audit).
-    s = meetOnce(s, ++seed);
+    s = spend(meetOnce(s, ++seed));
 
     if (h.build) {
       const stance = [...STANCES].reverse().find((x) => x.realm <= s.realm);
@@ -497,7 +534,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       if (h.crafts) s = carryBest(s, wardenOf(s.realm), 'warden');
       for (let i = 0; i < 40; i++) {
         if (odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.5 || !canCondense(s)) break;
-        s = condense(s);
+        s = spend(condense(s));
       }
     }
 
@@ -548,6 +585,41 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       s = seclude(s);
     }
 
+    /**
+     * 擂台 The Platform, the way somebody who fights plays it: once a period, each challenger
+     * still standing, tried in the held stances with the best odds against it (three at
+     * most, once each, because the dice are set and the same body loses the same way), the
+     * kit carried as it is. Somebody who never fights never climbs onto it.
+     */
+    if (h.hunts > 0 && standingTier(s) !== null) {
+      if (periodNow(s) !== lastPeriod) { lastPeriod = periodNow(s); periods++; tried.clear(); }
+      for (let guard = 0; guard < 3; guard++) {
+        const tier = standingTier(s);
+        if (tier === null) break;
+        const kit = (x: State) => (h.crafts ? kitFor(x, challengerOf(x, tier), 'platform') : { kit: NO_KIT, spends: false, used: NOT_USED });
+        const bodies = stanceChoices(s.realm, s.layer).map((x) => ({ ...s, stance: x.key }) as State);
+        const ranked = bodies.map((x) => ({ x, o: challengeOdds(x, tier, kit(x).kit) }))
+          .sort((a, b) => b.o - a.o || Number(answered(b.x)) - Number(answered(a.x)));
+        let won = false;
+        for (const { x } of ranked.slice(0, 3)) {
+          const key = `${tier}:${x.stance}:${s.trail}`;
+          if (tried.has(key)) continue;
+          tried.add(key);
+          const k = kit(x);
+          if (challengeFight(x, tier, k.kit).won) {
+            const before = s.qi;
+            s = beatChallenger(s, tier);
+            if (k.spends) s = spendKit(s, k.used);
+            led.platform += s.qi - before;
+            bouts[tier]++;
+            won = true;
+            break;
+          }
+        }
+        if (!won) break;
+      }
+    }
+
     // 期 The week's quarry first, when the odds are good: a real player hunts the beast
     // that pays this week. The harness never did, so 期 was a reward nothing measured.
     if (h.hunts > 0 && quarryOwed(s)) {
@@ -589,6 +661,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
         : [...DRIVE_SIZES].reverse().find((x) => s.qi - driveCost(s, x, b) >= keep);
       if (!n) break;
       const d = drive(s, b, n, ++seed);
+      led.spent += d.qiSpent;
       s = d.state;
       fights += n;
     }
@@ -601,19 +674,30 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
      * of one finished, so walking all seven rooms is the most a run can ever be worth
      * to a habit, and the most is what a harness should be measuring.
      */
+    /**
+     * 泉 香 And the rooms, taken the way the design measured them (2026-10-04): a shrine's 道
+     * whenever one is offered, the first brazier of a run for its piece of gear (職 the
+     * classes need the shapes a brazier lifts: with none, five of them could never be put
+     * together; with every one, the spring went into gear and the vault paid next to no
+     * qi), and otherwise the room's share drunk in the first and third reward rooms and
+     * burned in the second and fourth, drunk whenever the burner is full. Never the box or
+     * the trail over the qi. A gate is always tried: losing costs nothing.
+     */
     if (canEnter(s)) {
       s = enterSecret(s);
       for (let r = 0; r < roomsFor(s.realm) + 2 && insideSecret(s); r++) {
-        // 擇 The door with the better of the two on offer, read the way a player reads
-        // it: a fight they are likely to win is worth more than a cache, and one they
-        // are likely to lose is worth nothing at all.
-        const doors = doorsAt(s, s.runStep);
-        const worth = doors.map((d) => {
-          const g = secretGift(s, d, s.runStep);
-          if (g.fight) return odds(s, g.fight) > 0.7 ? 3 : 0;
-          return g.dao ? 4 : g.item ? 2 : 1;
-        });
-        s = openDoor(s, (worth[1] > worth[0] ? 1 : 0), ++seed);
+        const step = s.runStep;
+        const doors = doorsAt(s, step);
+        const at = (kind: string) => doors.findIndex((d) => d.kind === kind);
+        const shrine = doors.findIndex((d) => secretGift(s, d, step).dao > 0);
+        const burn = Math.floor(step / 2) % 2 === 1 && at('incense') >= 0;
+        const gear = at('brazier') >= 0 && !s.lastRun.items.length;
+        const which = doors.length === 1 ? 0 : shrine >= 0 ? shrine : gear ? at('brazier')
+          : burn ? at('incense') : at('spring');
+        const before = s.qi;
+        const drinking = doors[which]?.kind === 'spring';
+        s = openDoor(s, which as 0 | 1 | 2, ++seed);
+        if (drinking) led.drunk += Math.max(0, s.qi - before);
       }
       if (insideSecret(s)) s = leaveSecret(s);
     }
@@ -688,14 +772,14 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
 
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
     // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
-    s = buyAll(s, () => true).state;
+    s = spend(buyAll(s, () => true).state);
     // 爐 Pills when the warden is out of reach, and none once it is beatable: qi brewed
     // is qi that did not open a layer.
     if (h.furnace && (h.brews ?? 'stuck') === 'stuck') for (let g = 0; g < 400; g++) {
       if (odds(s, wardenOf(s.realm)) > 0.6) break;
       const line = (['body', 'bane'] as const).find((l) => canBrew(s, l));
       if (!line) break;
-      s = brew(s, line);
+      s = spend(brew(s, line));
     }
     // 塔 The other policy: brew toward the floor that will not fall, because a floor is
     // six hours of gathering and a pill is a share of one rung.
@@ -704,13 +788,15 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       if (odds(s, floorBeast(f), floorPower(f)) > 0.65) break;
       const line = (['bane', 'body'] as const).find((l) => canBrew(s, l));
       if (!line) break;
-      s = brew(s, line);
+      s = spend(brew(s, line));
     }
   }
 
   return {
     habit: h, days: (t - T0) / DAY, arrival, layerDay, state: s, fights,
     reached: s.realm, done: layersOpened(s) >= LAYERS - 1, power: power(s),
+    qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform },
+    bouts, periods,
   };
 }
 

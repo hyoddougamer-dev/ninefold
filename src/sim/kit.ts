@@ -19,5 +19,10 @@ export interface Kit {
   readonly revive: boolean;
   /** 心魔 The heart demon's power is multiplied by this. */
   readonly demon: number;
+  /**
+   * 跡 The share of its health the other side has already lost when the fight begins: a
+   * 擂台 challenger whose trail was taken in the vault (TRAIL_WOUND). Zero everywhere else.
+   */
+  readonly wound?: number;
 }
-export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1 };
+export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0 };
