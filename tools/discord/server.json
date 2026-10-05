@@ -1051,6 +1051,44 @@
         "Thank you for playing, and for every report this week."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-06",
+      "pin": false,
+      "channel": "devlog",
+      "title": "天 Update · Fair pay for the Celestial Master and the Platform",
+      "color": "#8FB49B",
+      "body": [
+        "The tower's fixed pay, carried through to the rest: the Celestial Master now earns what it promises, and the Platform and the week's quarry pay the same for everyone in a realm. Thank you rekaris for both reports, and everyone who played this week."
+      ],
+      "fields": [
+        [
+          "天師 Celestial Master",
+          "A tower floor now pays the Master two and a half times its qi, instead of a quarter more. Measured over five runs per class, the Master was taking the least qi out of the tower of the three tower classes; now it takes the most, by an eighth, and reaches the ninth realm about two and a half days sooner. The Sword Immortal still climbs highest and soonest."
+        ],
+        [
+          "擂台 The Platform",
+          "Each challenger now pays a fixed sum of qi read off your realm: the same for everyone in it, whatever you wear, whatever rate you bought, and whenever in the realm you fight. The third pays three times the first, the card shows every sum before you fight, and 金剛 the Vajra still adds half again. Fought at the start of a realm, a challenger pays more than before; fought late, after buying a lot of rate, less. Over a whole climb it comes out the same."
+        ],
+        [
+          "期 The week's quarry",
+          "Its first kill pays a fixed sum for your realm too, so putting on qi gear for the kill no longer changes it."
+        ],
+        [
+          "拒 Small fixes",
+          "A pill or a sigil is no longer spent when the reward is refused (a challenger won just as the week turned). A vault door opens the one you tapped, even if the row changed under your finger. 空囊 Empty Pouch can't be learnt while your chest holds more than its 12 places, and says so. The Sword school's line now says what it always did: all your power ×1.1, or ×1.2 at the full."
+        ],
+        [
+          "疑 Fair play",
+          "Nobody is banned by a machine any more. A save the server can't explain is kept off the boards and looked at by a person before anything is decided, and an honest player is put back."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-celestial.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-platform.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-pouch.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1159,7 +1197,7 @@
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
-        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays qi: never less than four hours of your own gathering. It moves every Monday."]
+        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
       ]
     },
     {
@@ -1206,7 +1244,7 @@
         "The item sheet tells you before you wear anything: *Wearing it makes you a Vajra*, or *ends your Wanderer*. The 器 Gear screen shows your class and how many pieces the next step needs."
       ],
       "fields": [
-        ["劍 Sword Cultivator · 劍修", "Leads with 力 Power. Power +10%, or +20% at the full."],
+        ["劍 Sword Cultivator · 劍修", "Leads with 力 Power. All your power ×1.1, or ×1.2 at the full, on top of everything else."],
         ["氣 Qi Cultivator · 氣修", "Leads with 氣 Qi rate. The four upgrades cost 8% less, or 15% at the full."],
         ["運 Fortune Seeker · 運修", "Leads with 運 Rarer gear, 拾 Drop chance. Your 運 rarer gear and 拾 drop chance lines count ×1.5, or ×2 at the full. A bond fills in 9 wins, or 8 at the full."],
         ["體 Body Cultivator · 體修", "Leads with 破 Beasts weaker. Your 破 beasts weaker lines count ×1.5, or ×2 at the full."],
@@ -1241,7 +1279,7 @@
         ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more, and its allowance refills 30% faster."],
         ["甲匠 Armourer · 體 Body + 器 Artificer", "The chest holds 100 more."],
         ["劍聖 Sword Saint · 劍 Sword + 法 Arts", "The 渡劫 tribulation's Dragon counts 2% weaker every time it comes back, so your marks come sooner."],
-        ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay 25% more qi."],
+        ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay two and a half times the qi (150% more)."],
         ["卜師 Diviner · 運 Fortune + 法 Arts", "Meetings on the road pay 50% more."],
         ["羅漢 Arhat · 體 Body + 法 Arts", "You recover 4% of your health every round of a fight."],
         ["陣師 Formation Master · 器 Artificer + 法 Arts", "Ripe beds in the cave pay 30% more qi."]
@@ -1325,9 +1363,9 @@
       "body": [
         "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
         "",
-        "**擂台 The Platform** (fourth realm, on 塔 Trials). Three challengers a week, and three new ones when you break through. They stand at ×1.3, ×1.8 and ×2.5 of your own power, so the build wins them, not the number: 破甲 sunder, 破煞 bane, the tree and your class thin them as they thin any beast. The week's temper (堅 Armoured, 捷 Nimble, 癒 Mending or 狂 Frenzied) stands them ×1.3 again unless your stance or one art in your sequence answers it, and the card names the answers. A win pays 2, 4 and 6 hours of your gathering counted without gear, once each a week. A loss costs nothing, and the dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry. Never on Auto, never driven.",
+        "**擂台 The Platform** (fourth realm, on 塔 Trials). Three challengers a week, and three new ones when you break through. They stand at ×1.3, ×1.8 and ×2.5 of your own power, so the build wins them, not the number: 破甲 sunder, 破煞 bane, the tree and your class thin them as they thin any beast. The week's temper (堅 Armoured, 捷 Nimble, 癒 Mending or 狂 Frenzied) stands them ×1.3 again unless your stance or one art in your sequence answers it, and the card names the answers. A win pays a fixed sum of qi read off your realm, once each a week: the third pays three times the first, and every sum is the same for everyone in the realm, whatever they wear, whatever rate they bought and whenever they fight. The card shows each sum before you fight. A loss costs nothing, and the dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry. Never on Auto, never driven.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master adds 25%. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill at the ninth realm about five.",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: two and a half times as much. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill at the ninth realm about five.",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
@@ -2597,6 +2635,40 @@
       ],
       "reply": [
         "Thank you for laying out both sides so clearly. It is a big change to how every piece rolls, so we want to think it through properly before saying yes or no: we'll measure what it does to the classes and the builds and post a proposal here before anything changes.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Celestial Master, as promised. We measured it over five runs per class: the Master took the least qi out of the tower of the three (5.3e12, against 8.7e12 for pure Sword and 9.5e12 for the Sword Immortal), exactly the snowball you described. Since this update a floor pays the Master two and a half times its qi instead of a quarter more. He now takes the most qi out of the tower (10.7e12) and reaches the ninth realm on day 42.8 instead of 45.4, while the Sword Immortal still climbs highest and soonest. Each is the best at what it says. Thank you for pushing on it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform rewards",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Done in today's update, the way you suggested. Each challenger now pays a fixed sum of qi read off your realm, the same for everyone in it, whatever you wear, whatever rate you bought and whenever you fight; the week's quarry too. We measured every kind of player before and after: the ninth realm moves by less than about a day for anyone. Fought early in a realm, a challenger pays more than before; fought late, less. Thank you for spotting it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider equalizing equipment stats",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "We measured it, as promised. A line's size never depended on the school: a power line is the same number on a Sword piece and an Arts piece. What the school decides is which line leads at full size, so a Sword piece carries about twice the power of a Fortune, Body, Artificer or Arts piece. We played every class with equal pieces (every lead drawn from the same pool): no class moved by more than about two days to the ninth realm, which is close to the noise between runs, and the Fortune, Body, Artificer and Arts schools lost the lines their own bonuses multiply. So we're keeping school-shaped pieces.",
+        "You were right about one thing that was simply badly worded: the Sword school was always a multiplier on all of your power, never added to the gear's percentage. Since this update it says so: all your power ×1.1, or ×1.2 at the full, on top of everything else. Thank you for pushing on it.",
         "· 師 Shibaki"
       ]
     }
