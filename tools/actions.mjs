@@ -257,10 +257,15 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
   await tab(page, '器');
   await act(page, '器 wearing a piece from the chest',
     async () => {
+      // 中 Centred first: the Gear screen is long, and an edge scroll leaves the tile under
+      // the fixed tab bar, where the tap lands on the bar (as han.ts found for the hunt).
+      await page.$eval('.chestit', (e) => e.scrollIntoView({ block: 'center' }));
       await page.click('.chestit', { timeout: 5000 });
       await page.waitForTimeout(500);
-      const wear = await page.$('.isheet button.act, .itemsheet button.act, button:has-text("著")');
-      if (wear) await wear.click();
+      // 著 The piece's own Wear button, never 著 Wear all upgrades on the screen behind the
+      // sheet: that one comes first in the page, and a tap aimed at it lands on the sheet.
+      const wear = (await page.$$('button:has-text("著"):not([data-qol="wear-all"])')).pop();
+      if (wear) { await wear.evaluate((e) => e.scrollIntoView({ block: 'center' })); await wear.click({ timeout: 5000 }); }
       await page.waitForTimeout(400);
     },
     (a, b) => Object.keys(b.worn).length > Object.keys(a.worn).length
@@ -269,7 +274,7 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
   await act(page, '煉 fusing three of a kind',
     async () => {
       const fuse = await page.$('button.fuserow');
-      if (fuse) { await fuse.click(); await page.waitForTimeout(600); }
+      if (fuse) { await fuse.evaluate((e) => e.scrollIntoView({ block: 'center' })); await fuse.click(); await page.waitForTimeout(600); }
       else fail('煉', 'no fuse group on the screen, though the chest holds three of a kind');
     },
     (a, b) => b.chest.length < a.chest.length || 'the chest did not shrink');
@@ -280,9 +285,9 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       // which three it fused depend on the rolls. Reaching up to 天 makes the melt
       // cover whatever is left, so the check does not lean on the order.
       const top = await page.$('.melting .rk:last-of-type');
-      if (top) { await top.click(); await page.waitForTimeout(200); }
+      if (top) { await top.evaluate((e) => e.scrollIntoView({ block: 'center' })); await top.click(); await page.waitForTimeout(200); }
       const melt = await page.$('button.melt');
-      if (melt) { await melt.click(); await page.waitForTimeout(500); }
+      if (melt) { await melt.evaluate((e) => e.scrollIntoView({ block: 'center' })); await melt.click(); await page.waitForTimeout(500); }
     },
     /**
      * 氣 The qi is never allowed into a check, on any act.

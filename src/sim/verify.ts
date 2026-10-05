@@ -29,7 +29,7 @@
  * the rule cannot be one thing on the phone and another on the server.
  */
 import {
-  BLESSED_ROOM, CRAFT_ARRAY_DOOR, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
+  BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
   ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
@@ -49,10 +49,11 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestKit, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
-import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
+import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
+import { forkTrees } from './fork.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -332,8 +333,10 @@ function metCeiling(before: State, after: State, dt: number, first = false): num
   if (!first && before.at >= DAO_BANK_STRICT_FROM) {
     return road + Math.max(0, (after.vaultDao ?? 0) - (before.vaultDao ?? 0));
   }
-  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
-  const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its
+  // gap, and at the array's deepest step (CRAFT_ARRAY_DEPTH_TOP): the depth is the save's
+  // own claim, so the server allows the most it can honestly be.
+  const gap = shortestDoorGap(after.crafts.pouch, DOOR_GAP);
   // 鑰 And a Realm Key can open it once more a day: see useKey in sim/secret.ts.
   return road + (Math.ceil(Math.max(0, dt) / gap) + Math.ceil(Math.max(0, dt) / 86_400) + 2) * RUN_DAO_CEILING;
 }
@@ -359,7 +362,13 @@ function gearFits(s: State): boolean {
  * offered, `seconds` the server time between them. For a first sync, pass
  * `firstSync(after, now)` as `before`.
  */
-export function verify(before: State, after: State, seconds: number, first = false): Verdict {
+/**
+ * `held` is the highest floor the server has already ranked for this account. A floor at
+ * or under it was won and checked once, so it is never read again: since 2026-10-05 the
+ * floors past the Dragon's stand harder (TOWER_PAST_DRAGON), and a floor a cultivator won
+ * before that, brought back on a new device, must not wait for a fight it already won.
+ */
+export function verify(before: State, after: State, seconds: number, first = false, held = 0): Verdict {
   const why: Why[] = [];
   const dt = Math.max(0, seconds);
 
@@ -428,10 +437,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
   const platform = first ? 0 : bouts * challengerQi(top, 2) * PAIR_BOUNTY;
 
+  // 岔 A fork swapped for its twin inside the window leaves no trace in either save, so the
+  // layers are priced on the cheapest tree the save could have stood on (sim/fork.ts).
+  const layerTrees = forkTrees(after.unlocked);
   let pocket = before.qi + quarry + seen + tower + platform;
   let need = 0;
   for (let n = from; n < to && n < LAYERS - 1; n++) {
-    const cost = layerCost(Math.floor(n / 9) + 1, n % 9, after.unlocked);
+    const cost = Math.min(...layerTrees.map((t) => layerCost(Math.floor(n / 9) + 1, n % 9, t)));
     need += Math.max(0, cost - pocket) / rateAt(n);
     pocket = Math.max(0, pocket - cost);
   }
@@ -511,7 +523,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   }
   // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
   // the save holds. See towerVerdict.
-  if (after.tower > before.tower && after.tower > 0) {
+  if (after.tower > Math.max(before.tower, held) && after.tower > 0) {
     const v = towerVerdict(after, after.tower);
     if (v === 'strike') why.push('tower');
     else if (v === 'wait' && !why.includes('too-fast')) why.push('too-fast');
@@ -655,7 +667,11 @@ export function platformBeatable(s: State): boolean {
  * without a loadout, for the cultivator who swapped by hand.
  */
 export function bodiesHeld(s: State): State[] {
-  return [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+  const own = [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+  // 岔 And each of them on the tree with a held fork swapped, since the fight may have
+  // been won the day before the swap (sim/fork.ts).
+  const trees = forkTrees(s.unlocked).slice(1);
+  return trees.length ? [...own, ...trees.flatMap((t) => own.map((b) => ({ ...b, unlocked: [...t] })))] : own;
 }
 
 /**

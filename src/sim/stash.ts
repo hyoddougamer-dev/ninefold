@@ -3,6 +3,8 @@ import { addToChest, chestLimit, fusable, fuse, fuseThree, fusedQuality } from '
 import { dropsRankUp, fuseQuality } from './dao.ts';
 import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
+import { keptByFilter } from './filters.ts';
+import { taskBody } from './sets.ts';
 import type { State } from './state.ts';
 import { FORGED } from '../data/crafts.ts';
 
@@ -58,7 +60,8 @@ export interface Stashed {
 export function stash(s: State, found: Item | null): Stashed {
   if (!found) return { state: s, item: null, dropped: null, melted: 0, meltedMaterial: 0 };
   const item = lifted(s, found);
-  const kept = addToChest(s.chest, item, limitFor(s));
+  // 熔 A full chest spares what a kept filter shows (sim/filters.ts).
+  const kept = addToChest(s.chest, item, limitFor(s), (it) => keptByFilter(s.filters, it));
   const m = kept.dropped ? melt(s, [kept.dropped]) : null;
   const state = { ...(m ? m.state : s), chest: [...kept.chest] };
   return {
@@ -67,9 +70,12 @@ export function stash(s: State, found: Item | null): Stashed {
   };
 }
 
-/** 煉 What this cultivator multiplies a fusion's quality by: 巧手 on the tree, 煉 on the body. */
+/**
+ * 煉 What this cultivator multiplies a fusion's quality by: 巧手 on the tree, 煉 on the body.
+ * 套 The body is the fusing loadout's when one is given (sets.ts taskBody), what is worn when not.
+ */
 export function fusionQuality(s: State): number {
-  return fuseQuality(s.unlocked) * gearFuse(s);
+  return fuseQuality(s.unlocked) * gearFuse(taskBody(s, 'fuse'));
 }
 
 /** 質 What a fusion of this group would come out at, read before the tap (sim/chest.ts). */

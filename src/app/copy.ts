@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -534,6 +534,12 @@ export const TRIALS = {
    */
   least: (span: string, until: number, summit: number, most: string) =>
     `Today that is ${span} of your gathering. Every floor up to ${until} pays this much, and each floor above that pays more, up to floor ${summit}. From there every floor pays ${most} qi.`,
+  /**
+   * 塔 Past the Dragon's floor (rekaris, 2026-10-05: "The Tower difficulty needs to be
+   * higher"). `pct` is TOWER_PAST_DRAGON as "4%", `dragon` the Dragon's floor.
+   */
+  pastDragon: (pct: string, dragon: number) =>
+    `Past floor ${dragon}, the Dragon's, each floor is a step ${pct} steeper than below it, and pays ${pct} more material for it.`,
   /** 吸 The same, standing at or above the summit floor, where every floor pays the most. */
   summit: (span: string, summit: number) =>
     `Today that is ${span} of your gathering. From floor ${summit} up every floor pays this much, and no floor pays more.`,
@@ -1025,6 +1031,9 @@ export const ITEM = {
    * 質 A piece a fusion made, in place of who left it: its quality against a usual roll of
    * its rank, and at Heaven that it will not be fused again (sim/chest.ts fusesAt).
    */
+  /** 質 Every piece's quality, on its sheet: a found one rolls in a band, a fused one says so above. */
+  quality: (rank: string, quality: number) =>
+    `Quality ×${quality.toFixed(2)}: its main line against a usual ${rank} roll of its realm. A drop rolls ×${(1 - VARIANCE).toFixed(2)} to ×${(1 + VARIANCE + LUCK_ROLL_TOP).toFixed(2)}.`,
   fusedFrom: (rank: string, quality: number, top: number, heaven: boolean) =>
     `Made by a fusion, at ×${quality.toFixed(2)} of a usual ${rank} roll (a fusion stops at ×${top}).`
     + (heaven ? ' A fused Heaven piece is never fused again.' : ''),
@@ -1525,8 +1534,9 @@ export const GEAR = {
     art: (small: string, big: string) => 'Your arts strike harder when they fire, and 龜息 Turtle Breath heals more.\n'
       + `No cap, but it bends: +100% gives ${small}, +300% only ${big}. Never against the Dragon.`,
     refine: (top: number, small: string, big: string) => 'A fusion keeps more of the quality of the three pieces it eats.\n'
-      + `It bends: +100% gives ${small}, +300% only ${big}. `
-      + `A fused piece stops at ×${top} its rank\u2019s usual roll.`,
+      + `It bends: +100% gives ${small}, +300% only ${big}, with no cap of its own. `
+      + `It multiplies the average quality of the three pieces, and the piece made stops at ×${top} its rank\u2019s usual roll, `
+      + `so a line past ×${top} still lifts three low rolls up to that ceiling.`,
     capacity: () => 'More places in the chest. A flat count, added in full.',
   },
   /** 式 The formula under each note. s is what the pieces add up to, the left column. */
@@ -1585,6 +1595,24 @@ export const GEAR = {
   loadoutNameField: 'Loadout name',
   loadoutDefault: (n: number) => `Loadout ${n}`,
   setMissing: (n: number) => (n === 1 ? '1 piece of that loadout is gone' : `${n} pieces of that loadout are gone`),
+  /**
+   * 套 A loadout given a task (speculaether and rekaris, on the Discord): the game reads it
+   * for that task and leaves what is worn on the body.
+   */
+  tasksSay: 'Give a loadout a task and the game reads it for that task, without changing what you wear.',
+  taskName: { fuse: 'Fuse', melt: 'Melt', refine: 'Refine' } as Record<'fuse' | 'melt' | 'refine', string>,
+  taskHan: { fuse: '煉', melt: '拆', refine: '煉器' } as Record<'fuse' | 'melt' | 'refine', string>,
+  taskGive: (name: string, task: string) => `Use ${name} for ${task}`,
+  taskTake: (name: string, task: string) => `${name} is used for ${task}. Tap to use what you wear instead`,
+  taskVerb: { fuse: 'fusing', melt: 'melting', refine: 'refining' } as Record<'fuse' | 'melt' | 'refine', string>,
+  /** 套 On the control itself: which body its numbers come from. */
+  taskFuse: (name: string) => `Fusing reads loadout ${name}: its 煉 fusion line, not what you wear.`,
+  taskMelt: (name: string) => `Melting reads loadout ${name}: its class, not what you wear.`,
+  taskRefine: (name: string) => `Refining reads loadout ${name}: its class sets the price, not what you wear.`,
+  /** 質 A tile's quality, said once under the chest and in each tile's own note. */
+  qualityNote: 'quality: how its main line compares with a usual roll of its rank',
+  qualityLegend: 'on a tile is its quality: how its main line compares with a usual roll of its rank. '
+    + `A drop rolls ×${(1 - VARIANCE).toFixed(2)} to ×${(1 + VARIANCE + LUCK_ROLL_TOP).toFixed(2)}; a fusion can make more.`,
   lockedWord: 'locked',
   anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
@@ -1698,6 +1726,33 @@ export const CLASS = {
     pairsBlurb: 'Three pieces of each of two schools wake both, and the class where they meet adds its own perk.',
     close: 'Close',
   },
+  /**
+   * 較 Compare classes. rekaris, on the Discord: nobody can tell which class is stronger
+   * without building every set by hand. The sheet builds them from the chest instead.
+   */
+  compare: {
+    open: 'Compare classes',
+    title: 'Compare classes',
+    blurb: 'The strongest outfit your pieces can make for every class, from your chest and what you wear. Tap one to put it on. Refining stays with the place on the body, as it always does.',
+    none: 'Your pieces cannot make a class yet. Five of one school bring it to its full. Three and three of two schools make one of the fifteen classes.',
+    head: 'Class',
+    power: 'Power',
+    floor: 'Floor',
+    qi: 'Qi/s',
+    /** 塔 What the floor column counts. */
+    floorSays: (next: number) => `Floor is the highest floor of 塔 the tower this outfit beats now, from floor ${next} up. Losing a fight costs nothing.`,
+    shut: 'The tower is not open yet, so only power and qi are compared.',
+    noFloor: 'none',
+    reading: 'reading',
+    best: 'The best in each column is in gold.',
+    full: (school: string) => `${school} at its full`,
+    pairOf: (a: string, b: string) => `${a} and ${b}`,
+    now: 'Worn now',
+    noClass: 'No class',
+    worn: 'worn',
+    wear: (name: string) => `Put on the strongest ${name} outfit`,
+    close: 'Close',
+  },
 };
 
 export const DAO = {
@@ -1747,8 +1802,19 @@ export const DAO = {
   overCap: (held: number, cap: number) =>
     `藏 Your chest holds ${held} pieces; this caps it at ${cap}. Melt or fuse some first.`,
   overCapButton: 'Chest full',
-  closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
+  closes: (han: string, name: string) => `Take this and ${han} ${name} closes. Once one of the two is yours, you can swap it for the other once a day.`,
+  /** 岔 On a held fork: which side was not taken. */
+  chose: (han: string, name: string) => `You hold this side of the fork. The other is ${han} ${name}.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
+  /**
+   * 岔 Swapping a held fork for its twin, once a day (speculaether, 2026-10-05). `wait` is
+   * how long until the next swap, as "5h 12m".
+   */
+  swap: (han: string, name: string) => `岔 Swap for ${han} ${name}`,
+  swapSays: 'A fork you hold can be swapped for the other side once a day. The points stay spent, and nothing else on the Path changes.',
+  swapWait: (wait: string) => `The next swap is in ${wait}.`,
+  swapShut: 'The other side is a keystone, and the keystones are not open yet.',
+  swapFull: (held: number, cap: number) => `空囊 Empty Pouch holds ${cap} pieces and your chest holds ${held}. Melt or fuse some first.`,
   learned: 'learned',
   costs: (n: number) => `costs ${n} 道`,
 };
@@ -2130,7 +2196,9 @@ export const CRAFTS = {
     return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
       + marks.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
       + (graded ? '\nEvery mark also lifts the rank a little.' : '')
-      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} ${pct(CRAFT_MASTERY_SPEED)}% faster, up to ${pct(CRAFT_MASTERY_CAP)}%: ${pct(mastery)}% now.`;
+      // 熟 No stop since 2026-10-05 (CRAFT_MASTERY_BAND): every recipe mastered adds, more slowly.
+      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} faster: ${pct(CRAFT_MASTERY_SPEED)}% each for the first ${CRAFT_MASTERY_BAND}, `
+      + `half that for each of the next ${CRAFT_MASTERY_BAND}, and half again for every ${CRAFT_MASTERY_BAND} after. ${Number((mastery * 100).toFixed(1))}% now.`;
   },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
@@ -2157,6 +2225,18 @@ export const CRAFTS = {
   arraysHead: (placed: number, slots: number) => `陣 The cave floor · ${placed} of ${slots} places`,
   arraysNone: 'No array cut yet.',
   arraysMore: (level: number) => `Another place at Arrays ${level}.`,
+  /**
+   * 深 An array's depth, on its line in the floor and in the recipe list. speculaether, on
+   * the Discord (2026-10-05): a second copy of an array did nothing. Every
+   * CRAFT_ARRAY_DEPTH_EVERY copies now deepen it a step.
+   */
+  arrayDepth: (depth: number, steps: number, toNext: number) => depth >= steps
+    ? `深 Depth ${depth} of ${steps}, as deep as it goes`
+    : `深 Depth ${depth} of ${steps} · ${toNext} more to the next`,
+  arrayDepthNote: (every: number, steps: number, top: number, cut: number) =>
+    `Every ${every} copies of the same array you cut deepen it one step, up to ${steps}. `
+    + `Each step adds ${Math.round((top - 1) / steps * 100)}% to what it does, so at full depth it does ×${top}. `
+    + `Copies are kept and never spent. You have cut ${cut.toLocaleString('en')}.`,
   close: 'Close',
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
@@ -2363,7 +2443,7 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
-    /** \u5b58 Saved filters, up to eight, on this device. */
+    /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,
@@ -2371,6 +2451,13 @@ export const QOL = {
     cancel: 'Not now',
     forget: 'Forget',
     forgetOne: (name: string) => `Forget the filter ${name}`,
+    /** 鎖 A kept filter: a full chest never melts what it shows (rekaris, on the Discord). */
+    keepWord: 'Keep',
+    keptWord: 'Kept',
+    keepOne: (name: string) => `Keep what ${name} shows: a full chest never melts it`,
+    unkeepOne: (name: string) => `Stop keeping what ${name} shows`,
+    keptSays: 'A full chest never melts a piece a kept filter shows. It melts the worst piece none of them shows, or the new piece when every piece is kept.',
+    keepWhy: 'Mark a filter Keep and a full chest never melts what it shows.',
     filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
     /** \u9396 The chest's first row: only the pieces kept on purpose. */
     lockedOnly: 'Locked',

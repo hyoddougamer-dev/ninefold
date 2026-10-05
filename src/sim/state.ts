@@ -5,7 +5,7 @@ import {
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FOCUS_MAX, OPENING_PURSE,
   FATE_FULL, FUSE_TOP, BEDS, CORE_STEP, FLOORS_PER_REALM, SECONDARY_SHARE, SECONDARIES,
-  UPGRADE_NUMBERS, floorPay,
+  UPGRADE_NUMBERS, towerLoot,
 } from './balance.ts';
 import { pct } from './format.ts';
 import { BEASTS } from '../data/bestiary.ts';
@@ -25,7 +25,7 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
-import { bodyTotals, classPower, classUpgrades } from './schools.ts';
+import { bodyTotals, classPower, classQiRoof, classUpgrades } from './schools.ts';
 import { WEEK, periodOf, weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
@@ -35,12 +35,13 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
+  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
-import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
+import { NO_CRAFTS, shortestDoorGap, validCrafts, type Crafts } from './crafts.ts';
+import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
+import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -110,6 +111,25 @@ export const SET_LIMIT = 5;
 /** 名 A loadout's name, cleaned once for the save and for the screen: no control characters, 24 at most. */
 export function cleanSetName(raw: string): string {
   return raw.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24);
+}
+
+/**
+ * 套 The three things done to gear that read a body: 煉 fusing (the fusion line), 拆
+ * melting (寶匠 the Treasure Smith) and 煉器 refining (器 the Artificer). Each can be given
+ * a loadout. See State.tasks.
+ */
+export const TASKS = ['fuse', 'melt', 'refine'] as const;
+export type Task = (typeof TASKS)[number];
+
+/** 套 A task's loadout is an index into the sets that exists, or nothing. */
+function validTasks(raw: unknown, sets: number): Partial<Record<Task, number>> {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const out: Partial<Record<Task, number>> = {};
+  for (const t of TASKS) {
+    const i = o[t];
+    if (typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < sets) out[t] = i;
+  }
+  return out;
 }
 
 function validSets(raw: unknown): readonly GearSet[] {
@@ -186,6 +206,19 @@ export interface State {
    * holds a copy of anything. See sim/sets.ts.
    */
   sets: readonly GearSet[];
+  /**
+   * 套 Which loadout each gear task reads, by its place in `sets`. speculaether, on the
+   * Discord: one outfit for fusing, one for crafting, one for qi, changed by hand every
+   * time. A task given a loadout reads that loadout's body for its numbers, and what is
+   * worn stays worn; a task given none reads what is worn, as it always did. See sets.ts
+   * taskBody.
+   */
+  tasks: Partial<Record<Task, number>>;
+  /**
+   * 存 The chest's saved filters, and 熔 which of them a full chest must spare. See
+   * sim/filters.ts.
+   */
+  filters: readonly ChestFilter[];
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
   /**
@@ -240,6 +273,8 @@ export interface State {
   runs: number;
   /** 鑰 The day (epoch seconds / 86 400) a Realm Key last opened the door. See useKey. */
   keyDay: number;
+  /** 岔 When a fork on the 道 Path was last swapped for its twin, in seconds. See sim/fork.ts. */
+  forkAt: number;
   /**
    * 泉 The vault's spring: seconds of shut time it holds (at most SPRING_HOLD), counted up
    * to `springAt`. What it holds now is derived (springNow in sim/secret.ts), and so is what
@@ -419,11 +454,13 @@ export function newState(now: number): State {
     tower: 0,
     melt: MELT_CAP,
     sets: [],
+    tasks: {},
+    filters: [],
     brewed: { ...NO_PILLS },
     awakened: [],
     met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
-    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0,
+    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0, forkAt: 0,
     spring: 0, springAt: now, incenseUntil: 0, trail: false,
     platform: { period: -1, beaten: 0 }, bouts: 0,
     quarryWeek: -1,
@@ -591,7 +628,7 @@ export function rateBonus(s: State): number {
   // 備 bodyTotals is read once per body and tree, and this is asked thousands of times.
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
-    * gearQiRate(bodyTotals(s).rate / 100, rateMultiplier(s.unlocked), layersOpened(s))
+    * gearQiRate(bodyTotals(s).rate / 100, rateMultiplier(s.unlocked), layersOpened(s), classQiRoof(s))
     * markBonus(s.tribulation);
 }
 
@@ -778,6 +815,7 @@ export function validate(raw: unknown, now: number): State {
   }
 
   const sets = validSets(o.sets);
+  const filters = validFilters(o.filters);
   const inSets = new Set(sets.flatMap((x) => Object.values(x.ids)));
   const item = (raw: unknown, used: Set<string>): Item | null => {
     const o = (raw ?? {}) as Record<string, unknown>;
@@ -900,7 +938,9 @@ export function validate(raw: unknown, now: number): State {
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
       // 承 And so is one holding refining levels, which were paid for and live nowhere else.
-      .map((it, i) => ({ it, i, worth: itemWorth(it), kept: it.locked || holdsLevels(it) ? 1 : 0 }))
+      // 熔 Then one a kept filter shows, which a full chest spares too (sim/filters.ts).
+      .map((it, i) => ({ it, i, worth: itemWorth(it),
+        kept: it.locked || holdsLevels(it) ? 2 : keptByFilter(filters, it) ? 1 : 0 }))
       .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)
       .slice(0, allowance)
       .sort((a, b) => a.i - b.i)
@@ -909,8 +949,9 @@ export function validate(raw: unknown, now: number): State {
   const elapsed = Math.max(0, now - startedAt);
   const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
   // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
-  // cut, so holding one is what widens the ceiling, placed or lifted out.
-  const doorGap = (crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  // cut, so holding one is what widens the ceiling, placed or lifted out, and at its
+  // deepest step (shortestDoorGap), since it may have been that deep all along.
+  const doorGap = shortestDoorGap(crafts.pouch, DOOR_GAP);
 
   const savedAt = clamp(num(o.at, now), startedAt, now);
   const out: State = {
@@ -959,6 +1000,10 @@ export function validate(raw: unknown, now: number): State {
     // 套 At most SET_LIMIT sets, each a short name and a piece id per place on the body.
     // A set naming a piece that is gone is kept: it says so when it is put on.
     sets,
+    // 套 A task names a loadout that exists, or none.
+    tasks: validTasks(o.tasks, sets.length),
+    // 存 At most FILTER_LIMIT filters, each naming a real place, school and lines.
+    filters,
     // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
     // enough to claim five hundred floors of the tower in thirty seconds.
     brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },
@@ -995,6 +1040,8 @@ export function validate(raw: unknown, now: number): State {
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     // 鑰 A day, never one ahead of the save's own clock.
     keyDay: clamp(Math.floor(num(o.keyDay, 0)), 0, Math.floor(now / 86_400)),
+    // 岔 An instant the cultivator has lived, or none.
+    forkAt: clamp(num(o.forkAt, 0), 0, now),
     // 泉 The spring holds a day of shut time at most, counted to an instant the cultivator
     // has lived. A save from before the spring starts it from the last run, empty: the
     // hours since that run are what it has filled with, which is the rule.
@@ -1083,7 +1130,7 @@ export function validate(raw: unknown, now: number): State {
    * put together, and ten thousand times that is a generous ceiling that still moves
    * with the cultivator rather than standing still while they climb past it.
    */
-  const floorsWorth = floorPay(Math.max(1, out.tower));
+  const floorsWorth = towerLoot(Math.max(1, out.tower));
   const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
 
   /**

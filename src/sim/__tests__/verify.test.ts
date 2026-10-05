@@ -1,3 +1,4 @@
+import { forkTrees } from '../fork.ts';
 import { describe, expect, it } from 'vitest';
 import { AUTO_HABIT, HABITS, play } from '../../../tools/habits.ts';
 import { arrivalOf, playEndgame } from '../../../tools/endgame.ts';
@@ -434,7 +435,8 @@ describe('套 a floor is read against the strongest body the save holds', () => 
     const { next } = pairs[0];
     const saved = strip(saveSet(next, 0, 'Climb'));
     expect(towerVerdict(saved, next.tower)).toBe('ok');
-    expect(bodiesHeld(saved).length).toBe(3);
+    // Worn, the one loadout and the chest's best, each on every tree a held fork allows.
+    expect(bodiesHeld(saved).length).toBe(3 * forkTrees(saved.unlocked).length);
   });
 
   it('waits on a floor out of reach but not out of the question, and strikes a forged one', () => {

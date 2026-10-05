@@ -1480,6 +1480,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 .ndetail { background: var(--panel); border: 1px solid var(--hue); border-radius: 11px;
            padding: 13px 14px; margin-top: 12px; }
+/* 岔 Swapping a held fork for its twin, under the node's own button. */
+.ndetail .forkswap { margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--line);
+                     display: grid; gap: 6px; }
+.ndetail .forkswap p { margin: 0; font-size: 12.5px; line-height: 1.55; }
+.ndetail .forkswap .gold { color: var(--gold); }
+.ndetail .forkswap .act { width: auto; justify-self: start; padding: 9px 16px; font-size: 14px; }
 .xclose { background: none; border: 0; color: var(--faint); font: inherit; font-size: 15px;
           cursor: pointer; padding: 0 2px; }
 
@@ -1543,11 +1549,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .calling .cschools em b { color: var(--text); font-weight: 600; }
 .calling .cschools em[data-on="true"] { color: var(--text); }
 .calling .cnext { font-size: 11.5px; color: var(--faint); }
-.calling .cbook { justify-self: start; margin-top: 4px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+.calling .cbtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.calling :is(.cbook, .ccompare) { padding: 5px 10px; border-radius: 999px; cursor: pointer;
                   border: 1px solid rgba(212,175,86,.45); background: rgba(212,175,86,.07); color: var(--gold);
                   font: inherit; font-size: 12px; }
-.calling .cbook .cjk { margin-right: 2px; }
-.calling .cbook:hover { background: rgba(212,175,86,.14); }
+.calling :is(.cbook, .ccompare) .cjk { margin-right: 2px; }
+.calling :is(.cbook, .ccompare):hover { background: rgba(212,175,86,.14); }
+/* 較 The comparison is the louder of the two: it answers the question a class line raises. */
+.calling .ccompare { background: rgba(212,175,86,.16); border-color: var(--gild-strong); }
 
 /* 改 The cards already taken. A .help sheet for its frame; everything inside starts cb-. */
 .handline { display: block; width: 100%; margin-top: 10px; padding: 9px 12px; border-radius: 10px; text-align: left;
@@ -1618,6 +1627,53 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @media (min-width: 900px) {
   .schoolbook .sb-pairs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .schoolbook .sb-pairs h3, .schoolbook .sb-pairs > p { grid-column: 1 / -1; }
+}
+
+/* 較 Compare classes. A .help sheet for its frame, like 譜; everything inside is its own
+   and starts cc-. A row is a class: a two-colour tag for its schools, the name, then three
+   numbers under a header that names each, and the class's own sentence underneath. The
+   numbers are narrow on purpose so the name keeps its room on a 320px phone. */
+.classcompare { gap: 12px; --cc-cols: 4px minmax(0, 1fr) 46px 46px; }
+.classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 46px 36px 46px; }
+.classcompare h2 { padding-right: 56px; }
+.classcompare h2 .cjk { color: var(--gold); }
+.classcompare .cc-blurb { margin: -4px 0 0; font-size: 13px; line-height: 1.5; }
+.classcompare .cc-empty { margin: 0; font-size: 13.5px; line-height: 1.5; padding: 12px; border-radius: 10px;
+                          border: 1px dashed var(--line); color: var(--faint); }
+.classcompare .cc-table { display: grid; gap: 6px; }
+.classcompare .cc-head, .classcompare .cc-row { display: grid; grid-template-columns: var(--cc-cols);
+                                                column-gap: 6px; align-items: center; }
+.classcompare .cc-head { padding: 0 9px; font-size: 11px; color: var(--faint); align-items: end; }
+.classcompare .cc-head > span:nth-child(n+3) { display: grid; justify-items: end; line-height: 1.15; text-align: right; }
+.classcompare .cc-head .cjk { color: var(--gold); font-size: 13px; }
+.classcompare .cc-head > span:nth-child(n+3) .cjk { display: block; }
+.classcompare .cc-row { width: 100%; text-align: left; font: inherit; color: var(--text); row-gap: 3px;
+                        padding: 8px 9px; border-radius: 10px; border: 1px solid var(--line);
+                        background: var(--panel); cursor: pointer; }
+.classcompare button.cc-row:hover { border-color: rgba(212,175,86,.45); }
+.classcompare .cc-row[data-worn] { cursor: default; border-color: var(--gild-strong); }
+.classcompare .cc-row[data-now] { background: none; border-style: dashed; border-color: var(--line); }
+.classcompare .cc-tag { grid-row: 1 / span 3; align-self: stretch; border-radius: 2px;
+                        background: linear-gradient(var(--a) 50%, var(--b) 50%); }
+.classcompare .cc-name { min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
+.classcompare .cc-name .cjk { color: var(--a); font-weight: 400; white-space: nowrap; }
+/* The schools line runs under the whole row, so "Sword and Qi" never breaks inside the name's column. */
+.classcompare .cc-from { grid-column: 2 / -1; font-size: 11px; color: var(--faint); }
+.classcompare .cc-from em { font-style: normal; color: var(--gold); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; }
+.classcompare .cc-num { text-align: right; font-size: 13px; white-space: nowrap; }
+.classcompare .cc-num[data-best] { color: var(--gold); font-weight: 700; }
+.classcompare .cc-num[data-none], .classcompare .cc-num[data-wait] { color: var(--faint); font-size: 10.5px; }
+.classcompare .cc-says { grid-column: 2 / -1; font-size: 11.5px; line-height: 1.4; color: var(--faint); }
+.classcompare .cc-foot { margin: 0; font-size: 12px; line-height: 1.5; }
+@media (max-width: 360px) {
+  .classcompare { --cc-cols: 4px minmax(0, 1fr) 42px 42px; }
+  .classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 40px 28px 42px; }
+  .classcompare .cc-head, .classcompare .cc-row { column-gap: 5px; }
+}
+@media (min-width: 900px) {
+  .classcompare { --cc-cols: 4px minmax(0, 1fr) 72px 72px; }
+  .classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 72px 60px 72px; }
+  .classcompare .cc-table, .classcompare .cc-blurb, .classcompare .cc-foot { max-width: 760px; }
 }
 
 /* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */
@@ -3323,6 +3379,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
 .crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
 .crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
+/* 深 An array's depth, under what it does: the pips gold, the words as quiet as the line above. */
+.crafts .cr-depth { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
+.crafts .cr-depth .cr-pips { color: var(--gold); letter-spacing: 1px; }
+.crafts .cr-depth .term { display: inline; text-align: left; }
+/* 窄 On a 320 phone the button takes its own line under the array, so the words keep the width. */
+@media (max-width: 360px) {
+  .crafts .cfloor .cf-row { flex-wrap: wrap; }
+  .crafts .cfloor .cf-row > .cf-body { flex-basis: calc(100% - 42px); }
+  .crafts .cfloor .cf-row > button { margin-left: 42px; }
+}
+.crafts .cfloor .cf-body, .crafts .clook .cf-body { flex: 1; min-width: 0; font-size: 12.5px; display: flex; flex-direction: column; gap: 2px; }
 .crafts .cr-needs { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; }
 .crafts .cr-needs > span { display: inline-flex; align-items: center; gap: 4px; }
 .crafts .cr-needs > span[data-short='true'] { color: var(--cinnabar); }
@@ -3410,8 +3477,37 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 button.gs-new { width: 100%; display: flex; align-items: center; gap: 8px; font: inherit; cursor: pointer; border: 1px dashed var(--gild); border-radius: 10px; background: none;
                 color: var(--gold); padding: 9px 12px; text-align: left; font-size: 13px; }
 button.gs-new .cjk { margin: 0; }
-/* 鎖 A locked piece in the chest: a clasp at the foot of the tile. */
-.chestit .lockmark { position: absolute; bottom: -6px; left: 50%; margin-left: -9px; width: 18px; height: 18px;
+/* 套 A loadout's tasks: three small chips under its row, lit when it is the one a task reads.
+   Its own block, sharing nothing with the chest's filters or the kept filters. */
+.gtasksays { font-size: 12px; margin: -4px 0 8px; line-height: 1.5; }
+.gsetblock { display: flex; flex-direction: column; gap: 4px; }
+.gstasks { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 4px; }
+.gstasks .gst { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 10px;
+                background: none; border: 1px dashed var(--line); border-radius: 99px; cursor: pointer;
+                font: inherit; font-size: 11.5px; color: var(--faint); }
+.gstasks .gst .cjk { color: var(--gold); opacity: .75; }
+.gstasks .gst[aria-pressed='true'] { border: 1px solid var(--gold); color: var(--gold); background: rgba(212,175,86,.09); }
+.gstasks .gst[aria-pressed='true'] .cjk { opacity: 1; }
+.gstasks .gst-tick { font-size: 10px; }
+.gstasks .gst:hover { color: var(--text); }
+/* 套 On the fuse, melt and refine controls: which loadout they read. */
+.gtaskuse { font-size: 12px; margin: 6px 0 8px; color: var(--gold); line-height: 1.5; }
+.gtaskuse .cjk { margin-right: 2px; }
+/* 質 Under the chest: what the number at the foot of a tile is. */
+.chestlegend.quality b { color: var(--text); font-weight: 600; }
+/* 質 The item sheet: a found piece's quality, under who left it. */
+.itemsheet .origin .iquality { display: block; color: var(--text); margin: 2px 0 4px; font-size: 12.5px; }
+/* 鎖 Keep, inside a kept filter's pill: a full chest never melts what it shows. */
+.gearpresets .gp-hold { padding: 0 8px; border-left: 1px solid var(--line); font-size: 11.5px; }
+.gearpresets .gp-hold .cjk { color: var(--gold); opacity: .7; }
+.gearpresets .gp-hold[aria-pressed='true'] { color: var(--gold); background: rgba(212,175,86,.1); }
+.gearpresets .gp-hold[aria-pressed='true'] .cjk { opacity: 1; }
+.gearpresets .gp[data-kept] { border-color: var(--gold); }
+.gearpresets .gp[data-kept][data-on] { border-color: var(--jade); }
+.gearpresets .gp-says { font-style: normal; font-size: 11.5px; flex-basis: 100%; line-height: 1.5; }
+/* 鎖 A locked piece in the chest: a clasp at the head of the tile. It sat at the foot until
+   質 the quality took the foot's free middle; the head's middle is free on every tile. */
+.chestit .lockmark { position: absolute; top: -6px; left: 50%; margin-left: -9px; width: 18px; height: 18px;
                      border-radius: 50%; background: var(--gold); color: #1a150e; font: 10px/18px 'Noto Serif SC', serif;
                      text-align: center; box-shadow: 0 0 0 2px var(--ground); pointer-events: none; }
 .lockbtn[data-on='true'] { border-color: var(--gold); color: var(--gold); }

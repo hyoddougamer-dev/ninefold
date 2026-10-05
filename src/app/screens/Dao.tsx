@@ -13,6 +13,8 @@ import { Loadout } from '../ui/Loadout.tsx';
 import { Term } from '../ui/Term.tsx';
 import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points.ts';
 import { capRefuses } from '../../sim/stash.ts';
+import { forkTwin, forkWait, swapStatus } from '../../sim/fork.ts';
+import { duration } from '../../sim/format.ts';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -121,9 +123,11 @@ const EDGES: { a: Placed; b: Placed }[] = (() => {
 
 type Half = 'tree' | 'build';
 
-export function Dao({ state, onUnlock, onStance, onSequence }: {
+export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
   state: State;
   onUnlock: (key: string) => void;
+  /** 岔 Swap a held fork for its twin. */
+  onSwap: (key: string) => void;
   onStance: (key: string | null) => void;
   onSequence: (keys: string[]) => void;
 }) {
@@ -230,6 +234,11 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           capstones={caps}
           onLearn={() => { onUnlock(chosen.key); setPicked(null); }}
           onClose={() => setPicked(null)}
+          swap={swapStatus(state, chosen.key, state.at, keys)}
+          swapWait={forkWait(state, state.at)}
+          swapCap={forkTwin(chosen.key)
+            ? capRefuses({ ...state, unlocked: state.unlocked.filter((k) => k !== chosen.key) }, forkTwin(chosen.key)!.key) ?? 0 : 0}
+          onSwap={() => { onSwap(chosen.key); setPicked(forkTwin(chosen.key)?.key ?? null); }}
         />
       )}
 
@@ -326,7 +335,7 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
    in four harnesses. It lives in sim/points.ts now, once, because 悟道 the cards hand
    points over too and a count in six places is a count that will disagree in five. */
 
-function Detail({ node, status, overCap, held, keystones, capstones, onLearn, onClose }: {
+function Detail({ node, status, overCap, held, keystones, capstones, onLearn, onClose, swap, swapWait, swapCap, onSwap }: {
   node: Node;
   status: Status;
   /** 空囊 The chest this node would leave, when the chest holds more than that; else null. */
@@ -339,6 +348,13 @@ function Detail({ node, status, overCap, held, keystones, capstones, onLearn, on
   capstones: boolean;
   onLearn: () => void;
   onClose: () => void;
+  /** 岔 Whether this held fork can be swapped for its twin now, and if not why. */
+  swap: 'ok' | 'wait' | 'shut' | 'full' | 'no';
+  /** Seconds until the next swap. */
+  swapWait: number;
+  /** 空囊 The chest Empty Pouch would allow, for the `full` reason. */
+  swapCap: number;
+  onSwap: () => void;
 }) {
   const info = PATH_INFO[node.path];
   const twin = node.excludes ? NODE_BY_KEY[node.excludes] : null;
@@ -375,7 +391,7 @@ function Detail({ node, status, overCap, held, keystones, capstones, onLearn, on
       )}
       {twin && (
         <p className="faint" style={{ margin: '5px 0 0', fontSize: 12.5 }}>
-          {status === 'shut' ? DAO.closed(twin.han) : DAO.closes(twin.han, twin.name)}
+          {status === 'shut' ? DAO.closed(twin.han) : status === 'have' ? DAO.chose(twin.han, twin.name) : DAO.closes(twin.han, twin.name)}
         </p>
       )}
       <div className="row" style={{ marginTop: 11 }}>
@@ -388,6 +404,18 @@ function Detail({ node, status, overCap, held, keystones, capstones, onLearn, on
           <span>{status === 'have' ? 'Learned' : status === 'full' ? DAO.overCapButton : status === 'poor' ? 'Not enough' : status === 'shut' ? 'Closed' : status === 'locked' ? 'Locked' : 'Learn'}</span>
         </button>
       </div>
+      {/* 岔 A fork you hold can become its twin, once a day. */}
+      {status === 'have' && twin && swap !== 'no' && (
+        <div className="forkswap">
+          <p className="faint">{DAO.swapSays}</p>
+          {swap === 'wait' && <p className="gold">{DAO.swapWait(duration(swapWait))}</p>}
+          {swap === 'shut' && <p className="gold">{DAO.swapShut}</p>}
+          {swap === 'full' && <p className="gold">{DAO.swapFull(held, swapCap)}</p>}
+          <button className="act ghost" disabled={swap !== 'ok'} onClick={onSwap}>
+            {DAO.swap(twin.han, twin.name)}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

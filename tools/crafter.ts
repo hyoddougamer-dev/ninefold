@@ -52,7 +52,9 @@ function runnable(s: State, span: number, rs: readonly Recipe[]): Recipe[] {
   return rs.filter((r) => {
     if (!canSet(s, r)) return false;
     if (r.makes.kind === 'gear' && s.chest.length >= limitFor(s) - 2) return false;
-    // An array is cut once and kept: a second one is only worth making for a slot to fill.
+    // An array is kept: a second copy deepens it (CRAFT_ARRAY_DEPTH_EVERY), which the
+    // levelling below reaches by cutting the best one again and again, so here, where the
+    // question is only what fills the floor, a copy already held is passed over.
     const it = itemOf(r);
     if (it && ITEM_BY_KEY[it]?.kind === 'array' && stock(s, it) > 0) return false;
     if (r.makes.kind === 'tool' && (s.crafts.tools[r.makes.skill] ?? 0) >= r.makes.step) return false;
@@ -116,9 +118,9 @@ export function pickTask(s: State, span: number): string | null {
   const tools = RECIPES.filter((r) => r.makes.kind === 'tool' && canSet(s, r)).sort((a, b) => a.level - b.level);
   for (const r of tools) { const t = feed(s, r, span); if (t) return t; }
   // 級 Then the craft furthest behind: its best rate that will keep running, or else
-  // whatever feeds the best recipe it has. Arrays level like any other craft: an array is
-  // cut for the floor once, but making another is how Arrays climbs, the way a player
-  // levels it, so here any array it can make and pay for counts.
+  // whatever feeds the best recipe it has. Arrays level like any other craft: making
+  // another copy is how Arrays climbs, the way a player levels it, and since 2026-10-05
+  // every ten copies deepen that array too, so here any array it can make and pay for counts.
   const open = SKILL_KEYS.filter((k) => skillOpen(s, k))
     .sort((a, b) => levelIn(s, a) - levelIn(s, b));
   for (const k of open) {

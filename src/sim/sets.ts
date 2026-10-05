@@ -1,6 +1,6 @@
-import { SLOTS, templateOf, type Item, type Slot } from '../data/gear.ts';
+import { SLOTS, templateOf, type Item, type Slot, type Worn } from '../data/gear.ts';
 import { equip } from './chest.ts';
-import { SET_LIMIT, cleanSetName, type GearSet, type State } from './state.ts';
+import { SET_LIMIT, TASKS, cleanSetName, type GearSet, type State, type Task } from './state.ts';
 
 /**
  * 鎖 套 Keeping pieces, and putting a whole body of them on at once.
@@ -75,10 +75,70 @@ export function renameSet(s: State, index: number, name: string): State {
   return { ...s, sets };
 }
 
-/** 套 Forget set `index`. Its pieces stay where they are, still locked. */
+/**
+ * 套 Forget set `index`. Its pieces stay where they are, still locked. A task it was given
+ * goes back to what is worn, and the tasks of the sets after it follow them down a place.
+ */
 export function clearSet(s: State, index: number): State {
   if (index < 0 || index >= s.sets.length) return s;
-  return { ...s, sets: s.sets.filter((_, i) => i !== index) };
+  const tasks: Partial<Record<Task, number>> = {};
+  for (const t of TASKS) {
+    const i = s.tasks[t];
+    if (i === undefined || i === index) continue;
+    tasks[t] = i > index ? i - 1 : i;
+  }
+  return { ...s, sets: s.sets.filter((_, i) => i !== index), tasks };
+}
+
+/**
+ * 套 Give task `task` to set `index`, or back to what is worn with null. speculaether, on
+ * the Discord: *"equipment is overloaded"*, one outfit for fusing, one for melting, one
+ * for qi, swapped by hand each time. rekaris answered that slots kept for one job would
+ * take the choice away, so nothing is kept for a job: any loadout can be given one.
+ */
+export function assignTask(s: State, task: Task, index: number | null): State {
+  if (!TASKS.includes(task)) return s;
+  if (index !== null && !s.sets[index]) return s;
+  if ((s.tasks[task] ?? null) === index) return s;
+  const tasks = { ...s.tasks };
+  if (index === null) delete tasks[task];
+  else tasks[task] = index;
+  return { ...s, tasks };
+}
+
+/** 套 The tasks set `index` has been given, in the order of TASKS. */
+export function tasksOf(s: Pick<State, 'tasks'>, index: number): readonly Task[] {
+  return TASKS.filter((t) => s.tasks[t] === index);
+}
+
+/** 套 The bodies a task reads, kept per loadout, chest and body: all three are replaced, never changed. */
+const BODIES = new WeakMap<object, WeakMap<object, WeakMap<object, Map<number, Worn>>>>();
+
+/**
+ * 套 The body a task reads its numbers off: the loadout given to it, as wearSet would put
+ * it on over what is worn now, or what is worn when it has none. Nothing is put on: what
+ * is worn stays worn, and only the task's numbers come from the other body. A place the
+ * loadout leaves empty, or whose piece is gone, reads what is worn there, as wearing the
+ * loadout would. 驗 It is one of bodiesHeld's bodies by construction, so the server has
+ * already allowed for every number it can give.
+ */
+export function taskBody(
+  s: Pick<State, 'worn' | 'unlocked' | 'sets' | 'chest' | 'tasks'>, task: Task,
+): Pick<State, 'worn' | 'unlocked'> {
+  const index = s.tasks?.[task];
+  if (index === undefined || !s.sets?.[index]) return s;
+  let byChest = BODIES.get(s.sets);
+  if (!byChest) { byChest = new WeakMap(); BODIES.set(s.sets, byChest); }
+  let byWorn = byChest.get(s.chest);
+  if (!byWorn) { byWorn = new WeakMap(); byChest.set(s.chest, byWorn); }
+  let byIndex = byWorn.get(s.worn);
+  if (!byIndex) { byIndex = new Map(); byWorn.set(s.worn, byIndex); }
+  let worn = byIndex.get(index);
+  if (!worn) {
+    worn = wearSet(s as State, index).state.worn;
+    byIndex.set(index, worn);
+  }
+  return { worn, unlocked: s.unlocked };
 }
 
 export interface PutOn {
@@ -96,11 +156,20 @@ export interface PutOn {
 export function wearSet(s: State, index: number): PutOn {
   const set = s.sets[index];
   if (!set) return { state: s, missing: 0 };
+  return wearPieces(s, set.ids);
+}
+
+/**
+ * 套 Put these pieces on, one place each, by id: the path a loadout takes and 較 the class
+ * comparison's tap takes too (sim/compare.ts), so a body put on from either is the same
+ * body, refining and all.
+ */
+export function wearPieces(s: State, ids: Readonly<Partial<Record<Slot, string>>>): PutOn {
   let worn = s.worn;
   let chest: readonly Item[] = s.chest;
   let missing = 0;
   for (const slot of SLOTS) {
-    const id = set.ids[slot];
+    const id = ids[slot];
     if (!id || worn[slot]?.id === id) continue;
     const item = chest.find((x) => x.id === id);
     if (!item || templateOf(item).slot !== slot) { missing += 1; continue; }

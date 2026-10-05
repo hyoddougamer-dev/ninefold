@@ -659,6 +659,64 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
  * earlier: a climb is paid the sum of its floors, whoever climbs them and whenever.
  */
 export const TOWER_QI_RUNG = 0.2;
+
+/**
+ * 塔 How much stronger each floor past the Dragon's (the eighty-first) stands than the
+ * floor under it, on top of the curve every beast reads (floorPower in tower.ts), and how
+ * much more material it pays for it (towerLoot).
+ *
+ * 誤 Why (rekaris, Discord, 2026-10-05: "The Tower difficulty needs to be higher"). A
+ * floor pays a fixed sum that grows about a fifth a floor, as fast as the beast on it.
+ * Past floor 95 the qi of one floor bought the power for the next, and the next, so a
+ * strong save climbed for nothing: on his real save, from floor 108 to 119 and from the
+ * eighth realm's fourth layer to the ninth's fourth, with no time passing (tools/freeclimb.ts).
+ * It was the tower first and the Celestial Master second: without the Master's share the
+ * same save still climbed three layers for nothing, and the harness's every-hour
+ * cultivator three; with it, nine and seven.
+ *
+ * The harness never saw it, because it measured the days to the ninth realm, which a
+ * loop at the top of the tower hardly moves, and because it spends its qi evenly where a
+ * person puts a floor's pay straight into power. So the rule since: every change to the
+ * tower is read on the real saves of the ranked server as well as on the harness, as the
+ * most layers any save climbs with no time passing. Two is healthy.
+ *
+ *   past the Dragon     rekaris, no time   worst harness   ninth realm (active, day)
+ *   ×1.00 (before)      +11 floors +9      +4 layers        43.0
+ *   ×1.03               +2 floors  +2      +2               45.3
+ *   ×1.04               none               +2               45.3
+ *   ×1.05               none               +2               46.2
+ *
+ * It slows rather than walls, either side. Paying less instead (half of every floor past
+ * the sixty-first) stopped the loop as well, but it made the Celestial Master the class
+ * that takes the least qi out of the tower, the opposite of what it says. Harder floors
+ * keep every floor's pay as it was and keep the Master the tower's qi class and the Sword
+ * Immortal its fastest climber. Floors already won stay won, on the server too (verify's
+ * `held`).
+ */
+export const TOWER_PAST_DRAGON = 1.04;
+
+/**
+ * 岔 How long after swapping one fork of the 道 Path for its twin before the next swap.
+ *
+ * speculaether (Discord, 2026-10-05): "Don't refund points: once bought, a path node is
+ * yours forever. But, allow turning off a path node with a one-day cooldown." Each branch
+ * has one fork at its fifth step: Heavy Plate or 捨甲 Forsake Armour, Spirit Travel or
+ * 忘機 Forget the Mechanism, Heaven's Favour or 空囊 Empty Pouch. The keystone half of each
+ * takes something away, and a keystone bought for one stretch of the climb could cripple
+ * the next. So a bought fork can be traded for its twin, points kept, once a day: a
+ * decision you live with for a day rather than a switch flipped for every fight.
+ */
+export const FORK_SWAP_GAP = 86_400;
+
+/** 塔 What TOWER_PAST_DRAGON has added to a floor by this height: 1 up to the Dragon's floor. */
+export function pastDragon(floor: number): number {
+  return TOWER_PAST_DRAGON ** Math.max(0, floor - LAYERS);
+}
+
+/** 材 What a tower floor pays in material: the curve, and a floor past the Dragon's what it costs. */
+export function towerLoot(floor: number): number {
+  return floorPay(floor) * pastDragon(floor);
+}
 /** 吸 The floor that pays TOWER_QI_RUNG of the last rung, and the most any floor pays. See TOWER_QI_RUNG. */
 export const TOWER_QI_SUMMIT = 121;
 /** 吸 How many floors a climber rises while a realm's nine rungs open: eleven. See TOWER_QI_RUNG. */
@@ -778,6 +836,29 @@ export const QI_ROOF_FIRST = 1.38;
 /** 氣頂 The roof on the last rung: the hard ceiling on gear and the tree together. */
 export const QI_ROOF_TOP = 1.52;
 
+/**
+ * 氣滿 How much higher the roof stands for a body wearing six Qi pieces (the Qi school at
+ * its full), added to qiRoof. Still a roof, so the law holds: nothing uncapped raises the
+ * qi rate past a ceiling.
+ *
+ * razielmorgenstern (Discord, 2026-10-04): "from my tests, i go to 1.18 from nearly any set
+ * whatsoever. Is there any real advantage for the Qi school apart the four upgrades?" and
+ * "Having a higher cap unlocked when you have a full set would be great". We said we would
+ * measure it. The active cultivator dressed in the full Qi school, walked 400 days:
+ *
+ *   full-Qi lift     ninth realm   whole ladder
+ *   none (before)    day 44.0      day 52.3
+ *   +0.05            day 43.3      day 51.5
+ *   +0.10            day 42.2      day 50.2
+ *   +0.15            day 41.2      day 49.0
+ *
+ * A slope, not a knife edge. At +0.10 the full Qi school is the quickest way up the
+ * ladder for a cultivator who only wants to sit and gather (the Sword Immortal, the
+ * quickest otherwise, reaches the ninth realm on day 43.0), which is what the school is
+ * for; the plain active cultivator, who wears no class, is on day 45.5 and does not move.
+ */
+export const QI_FULL_ROOF = 0.1;
+
 /** 氣膝 The worn qi, as a fraction, that fills half the room on this rung. */
 export function qiKnee(rung: number): number {
   const n = Math.min(LAYERS - 1, Math.max(0, rung));
@@ -795,10 +876,10 @@ export function qiRoof(rung: number): number {
  * everything uncapped. `worn` is the worn qi as a fraction (+310% is 3.1), `tree` the
  * tree's own multiplier. See QI_KNEE_FIRST for the shape and the measurement.
  */
-export function gearQiRate(worn: number, tree: number, rung: number): number {
+export function gearQiRate(worn: number, tree: number, rung: number, lift = 0): number {
   const te = uncappedRate(tree);
   const g = Math.max(0, worn);
-  return te + (qiRoof(rung) - te) * g / (qiKnee(rung) + g);
+  return te + (qiRoof(rung) + lift - te) * g / (qiKnee(rung) + g);
 }
 
 /**
@@ -1084,9 +1165,9 @@ export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
 export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
 export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself
-export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
+export const PAIR_TOWER_QI = 2;        // 天師 qi from a tower floor
 /*
- * 天師 Why the Celestial Master's number is two and a half (2026-10-05, was 1.25).
+ * 天師 Why the Celestial Master's number is two (2026-10-05: 1.25, then 2.5, then 2).
  *
  * A floor pays a fixed sum that climbs steeply with the floor, so a few floors more are
  * worth far more than a quarter on each: rekaris asked whether the strongest climber would
@@ -1105,6 +1186,20 @@ export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
  * it highest and soonest: each is the best at what it says. A floor's pay is a lump, never
  * a rate, so the economic law holds; the server credits it only to a save that wears the
  * Master or keeps him as a loadout (verify.ts wearsMaster).
+ *
+ * 誤 Two since the same evening. The tower paid for its own next floor past floor 95, and
+ * the Master's share tripled it: on rekaris's real save nine layers with no time passing,
+ * three without the Master (see TOWER_PAST_DRAGON). With the floors past the Dragon's
+ * standing harder, read with tools/freeclimb.ts on the ranked server's saves and on the
+ * harness, and with tools/celestial.ts:
+ *
+ *                 most layers for nothing   tower qi (Master / Immortal)   ninth realm
+ *   天師 at 2.5   3 (every hour)            —                              —
+ *   天師 at 2.25  3 (every hour)            3.77e12 / 3.28e12              day 45.1
+ *   天師 at 2.0   2                         3.73e12 / 3.28e12              day 45.3
+ *
+ * At 2 no save climbs more than two layers for nothing, and the Master still takes the
+ * most qi out of the tower, by a seventh.
  */
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
@@ -1918,9 +2013,10 @@ export const MARKS_PER_HEAVEN = 3;
  * 1,550 hours is about three months of a workshop that runs sixteen hours a day, which is
  * a visit in the morning and one at night. RuneScape's table puts level 92 at half the
  * experience, so the last seven levels are as long as the first ninety-two. Tools, arrays
- * and familiarity take up to half off that at the end (a third from the tool and the
- * array, the rest from the marks and a craft mastered); the realm gate adds much of it
- * back, because the best recipes wait for the realm their material comes from.
+ * and familiarity take up to two thirds off that at the end (two fifths from the tool and
+ * the deepest array, the rest from the marks and a craft mastered; three quarters in
+ * Forging, whose 160 recipes master furthest); the realm gate adds much of it back,
+ * because the best recipes wait for the realm their material comes from.
  */
 export const CRAFT_HOURS_TO_CAP = 1550;
 
@@ -2015,16 +2111,27 @@ export const CRAFT_MARK_SUB = 0.10;
 
 /**
  * 熟 Mastery of a whole craft: every recipe of it made CRAFT_MARKS' last count of times
- * (all five marks) makes that whole craft CRAFT_MASTERY_SPEED faster, up to
- * CRAFT_MASTERY_CAP. A reason to finish recipes that are not the best one any more.
- * Never qi. Measured over a whole climb, counted per craft: the strong crafter masters
- * its first herb recipe on its first day and ends the climb with 2 to 16 recipes a craft
- * (Rendering, with thirty-six, reaches the cap on day 39); once a day ends with 0 to 7.
- * Counted across all seven crafts instead, the cap bound by day 5.5, which made it a
- * flat bonus rather than something a craft earns.
+ * (all five marks) makes that whole craft faster. A reason to finish recipes that are not
+ * the best one any more. Never qi. Measured over a whole climb, counted per craft: the
+ * strong crafter masters its first herb recipe on its first day and ends the climb with 2
+ * to 16 recipes a craft; once a day ends with 0 to 7. Counted across all seven crafts
+ * instead, fifteen recipes came by day 5.5, which made it a flat bonus rather than
+ * something a craft earns.
+ *
+ * 無頂 It used to stop dead at fifteen recipes and 15%. rekaris, on the Discord
+ * (2026-10-05): *"slapping on a hard limit is a needless frustration"*. So there is no
+ * stop: the first CRAFT_MASTERY_BAND recipes give CRAFT_MASTERY_SPEED each, as they always
+ * did, and every band of that many after it gives each recipe half what the band before
+ * did. Every recipe mastered always adds something, and the sum can never pass twice the
+ * first band, CRAFT_MASTERY_BOUND: 30%. A plain half a percent each after fifteen would
+ * have been 87% in Forging, which has 160 recipes. What each craft can reach with every
+ * recipe it has: Herb Gathering, Vein Delving 11%, Sigil Writing and Arrays 9%, Alchemy
+ * 22.5%, Rendering 24%, Forging 30% less a hair. `XP_PER_SECOND_MAX` in sim/crafts.ts is
+ * read at each craft's own most, so 驗 the server always allows for it.
  */
 export const CRAFT_MASTERY_SPEED = 0.01;
-export const CRAFT_MASTERY_CAP = 0.15;
+export const CRAFT_MASTERY_BAND = 15;
+export const CRAFT_MASTERY_BOUND = 2 * CRAFT_MASTERY_BAND * CRAFT_MASTERY_SPEED;
 
 /**
  * 品 Quality, the five ranks gear already has, rolled on everything a craft makes that
@@ -2053,6 +2160,43 @@ export const CRAFT_ARRAY_GUARD = 0.05;   // 護法: this much less taken from wa
 export const CRAFT_ARRAY_DOOR = 1800;    // 秘門: the vault door, this many seconds sooner
 export const CRAFT_ARRAY_XP = 0.05;      // 天地: every craft earns this much more
 export const CRAFT_ARRAY_QUALITY = 6;    // 九宮: this much on the quality score
+
+/**
+ * 陣 How many times heavier an array is than the recipe it was: its seconds on the cave
+ * floor and every metal, stone and part it asks for, multiplied together, the way a pill
+ * and a sigil were made heavy (CRAFT_KIT_WORK).
+ *
+ * speculaether, on the Discord (2026-10-05): *"Making multiple arrays is needed to level up
+ * array-making but doesn't do anything"*, and rekaris agreed. An array was 40 seconds on
+ * the floor and two to five minutes with its metals and stone: levelling the craft meant
+ * cutting thousands of copies that did nothing. At 30 the first array, Dew-Catching, is
+ * 55 minutes with no tool and 52 with the tools of its realm, and the last, Heaven-Earth,
+ * 145 and 102 (77 on average, tooled): the late ones ask for more metal, stone and parts,
+ * and do more. 25 would have left the first two under fifty minutes.
+ * tools/kitwork.ts reads every one (arrayWork). The experience follows the seconds, as it
+ * does for a pill (data/crafts.ts solves it from CRAFT_HOURS_TO_CAP), so the hours to 99
+ * are the hours they were, and the marks count a heavy make as 30 light ones.
+ */
+export const CRAFT_ARRAY_WORK = 30;
+
+/**
+ * 深 Depth: what a second copy of an array is for. Every CRAFT_ARRAY_DEPTH_EVERY copies of
+ * the same array ever cut deepen it one step, up to CRAFT_ARRAY_DEPTH_STEPS, and at full
+ * depth its effect is CRAFT_ARRAY_DEPTH_TOP times what it was: Dew-Catching 10% faster
+ * becomes 15%, the Hidden Door half an hour sooner becomes 45 minutes, the Guardian's 5%
+ * becomes 7.5%. Each step is a tenth of the effect, so the first copies after the first
+ * count as much as the last.
+ *
+ * Capped, like everything an array does: the deepest Fire-Taming is a fifth faster at the
+ * furnace and the anvil, never more, and nothing an array does touches the qi rate. Fifty
+ * copies at an hour or more each is weeks of a workshop's evenings, so depth is the long
+ * goal of the craft rather than a thing it gets on the way. 驗 the server reads the
+ * deepest step wherever it reads an array (the vault door, the Guardian, the experience a
+ * second), since a save names its own copies and the deepest is the most it can be.
+ */
+export const CRAFT_ARRAY_DEPTH_EVERY = 10;
+export const CRAFT_ARRAY_DEPTH_STEPS = 5;
+export const CRAFT_ARRAY_DEPTH_TOP = 1.5;
 
 /**
  * 戰 What a carried elixir or sigil does in a fight. They are carried into the next
