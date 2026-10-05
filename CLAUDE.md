@@ -76,8 +76,8 @@ Each of these cost real time once. They are written down so they cost it once.
 - **Read the container clock with `date -u`.** Elapsed time has been misjudged by
   tens of minutes without it.
 - **To see something that happens minutes in, drive the clock.** `page.clock.install()`
-  and `page.clock.runFor(ms)` move the built game's own clock, so 入定 ending at fifteen
-  minutes is readable off the real screen in a second. Waiting it out is not the only
+  and `page.clock.runFor(ms)` move the built game's own clock, so 入定 ending at thirty
+  minutes (FOCUS_HOLD) is readable off the real screen in a second. Waiting it out is not the only
   option and nobody was ever going to catch it by watching.
 - **A `.notice` card blocks pointer events.** Dismiss it before clicking anything.
 - **`pgrep -f <name>` matches the waiting loop's own command line**, so an
