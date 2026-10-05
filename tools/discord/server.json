@@ -1036,6 +1036,21 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-deep-vote",
+      "pin": false,
+      "channel": "news",
+      "title": "深 Six days left to vote: deeper hunts",
+      "color": "#7FA8D9",
+      "body": [
+        "Only two of you have voted so far, and these five polls decide whether deeper hunts get built, and how.",
+        "",
+        "Open **深 Deeper hunts: what do you think?** in {#ideas} and tap an answer under each poll. It takes a minute, the polls close on **11 October**, and a \"No\" or \"Not sure yet\" helps us just as much as a yes. If none of the answers fits, write what you would rather have in the post.",
+        "",
+        "Thank you for playing, and for every report this week."
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
