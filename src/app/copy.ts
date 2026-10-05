@@ -315,7 +315,7 @@ export const CULTIVATE = {
    * não deveria ser um valor fixo consoante stats?"* He is right, and the game agreed
    * with him without telling him: the **standing** rate is fixed by the layers opened
    * and what has been bought, and the only thing that moves is 入定 the sitting, which
-   * climbs to ×3 over three minutes and ends after fifteen. The screen showed the two of
+   * climbs to ×3 over three minutes and ends after FOCUS_HOLD. The screen showed the two of
    * them multiplied together as one number and named neither.
    *
    * So the standing rate leads and the sitting rides alongside it, which is the same

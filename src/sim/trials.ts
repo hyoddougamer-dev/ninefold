@@ -43,7 +43,7 @@ const BARE = {} as State['worn'];
 
 /**
  * 吸 What a floor gives up in qi when it falls: the floor's own fixed sum (floorQiPay in
- * tower.ts), and 天師 the Celestial Master's quarter again, which is the one thing a build adds.
+ * tower.ts), and 天師 the Celestial Master's PAIR_TOWER_QI, which is the one thing a build adds.
  *
  * 誤 It was hours of gathering, and twice the hours read the climber. First the rate with
  * gear on and the floor's power against the cultivator's own (2026-10-04: taking a piece
@@ -54,7 +54,7 @@ const BARE = {} as State['worn'];
  * else does, so what the card says before the fight is what the fight pays, to anybody.
  */
 export function floorQi(s: State, floor = standingFloor(s)): number {
-  // 天師 The Celestial Master is paid a quarter again for a floor. A payment, never the rate.
+  // 天師 The Celestial Master is paid PAIR_TOWER_QI times a floor. A payment, never the rate.
   return floorQiPay(floor) * classTowerQi(s);
 }
 

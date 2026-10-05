@@ -94,8 +94,8 @@ describe('塔 a whole tower climbed at once is honest', () => {
 });
 
 /**
- * 天師 The Master's pay is two and a half times a floor's (2026-10-05), so the server credits
- * it only to a save that wears the Master or keeps him as a loadout.
+ * 天師 The Master's pay is PAIR_TOWER_QI times a floor's, so the server credits it only to a
+ * save that wears the Master or keeps him as a loadout (2026-10-05).
  */
 describe('天師 the Master\'s pay is credited to the Master', () => {
   const piece = (school: School, slot: Slot, i: number): Item => {
