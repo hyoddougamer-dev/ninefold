@@ -302,6 +302,9 @@ async function walk(realm: number) {
     await hunt.click().catch(() => {});
     await page.waitForTimeout(400);
     const row = await page.$('[data-coach="beast-first"]') ?? (await page.$$('button.beast'))[0];
+    // A row taller than what is left of the screen hangs under the tab bar, and its middle
+    // is then 榜 Rankings, not the beast: brought into view first, as a thumb would.
+    await row?.scrollIntoViewIfNeeded().catch(() => {});
     const box = await row?.boundingBox();
     if (box) {
       await page.mouse.click(box.x + box.width - 12, box.y + box.height / 2);
