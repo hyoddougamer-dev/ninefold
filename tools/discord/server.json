@@ -1110,6 +1110,27 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fix-2026-10-05-miss",
+      "pin": false,
+      "channel": "devlog",
+      "title": "狐 Fix · A beast never misses two rounds running",
+      "color": "#C9A45C",
+      "body": [
+        "A fix that went out straight away, because it let any fight be won."
+      ],
+      "fields": [
+        [
+          "疾 Swift with Fox Shadow and Dragon Might",
+          "Swift runs your sequence twice a round, so a sequence holding both Fox Shadow and Dragon Might made the beast miss every single round. It never landed a blow, and when the rounds ran out the fight went to whoever had lost less of their health, so any tower floor, warden or tribulation could be won. A beast now never misses two rounds running, and both arts say so. Nothing else about Swift or the arts changes."
+        ],
+        [
+          "榜 The boards",
+          "Climbs made this way were never ranked: the server holds every save at its last honest point. Nothing in your game is taken away, and if your rank is held because of this, we'll sort it out with you directly."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
