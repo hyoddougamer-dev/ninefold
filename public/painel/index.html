@@ -97,6 +97,21 @@
   td button.who { all: unset; cursor: pointer; font-weight: 700; text-decoration: underline dotted; }
   button.warn { border-color: var(--red); color: var(--red); }
   button.small { padding: 4px 10px; font-size: 13px; }
+  /* 疑 The Batota tab: one card a player, what they tried in plain words, newest first. */
+  .cheats { display: grid; gap: 10px; }
+  .cheat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+  .cheat.hot { border-color: var(--red); }
+  .cheat .head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .cheat .head b { font-size: 16px; }
+  .cheat .head .meta { font-size: 13px; color: var(--faint); margin-left: auto; }
+  .cheat ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+  .cheat ul small { color: var(--faint); }
+  .cheat .verdict { font-size: 13px; color: var(--faint); border-left: 2px solid var(--line); padding-left: 8px; }
+  .cheat .verdict.bad { border-color: var(--red); color: var(--text); }
+  .cheat details { font-size: 13px; color: var(--faint); }
+  /* The boards' li is a grid card; the tab's lists are plain lines. */
+  .cheat li { display: list-item; border: 0; padding: 0; background: none; }
+  .cheat details li { list-style: none; margin-left: -18px; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -153,6 +168,14 @@
       <button type="button" id="forget" hidden>Esquecer a chave neste browser</button>
     </form>
     <p id="keyerr" class="err" hidden></p>
+    <div class="tabs" role="tablist" id="privtabs" hidden>
+      <button type="button" role="tab" data-v="people" aria-selected="true">師 Jogadores</button>
+      <button type="button" role="tab" data-v="cheats" aria-selected="false">疑 Batota <span id="cheatcount"></span></button>
+    </div>
+    <div id="cheats-view" hidden>
+      <p class="help">Quem o verificador recusou por ser impossível, ou marcou por ir mais depressa do que qualquer jogador honesto medido, e o que tentou. Ninguém é banido pela máquina: com 3 recusas impossíveis o jogador sai dos rankings e fica aqui à espera que tu decidas. "Limpar a marcação" na lista de jogadores devolve-o aos rankings.</p>
+      <div class="cheats" id="cheats"></div>
+    </div>
     <div id="players-view" hidden>
       <div class="tools">
         <input id="find" type="search" placeholder="Procurar um nome" aria-label="Procurar um nome">
@@ -401,20 +424,25 @@
     $('keyerr').hidden = true;
     try {
       people = await rpc('panel_players', { key: k });
+      cheats = await rpc('panel_cheats', { key: k }).catch(() => []);
       setKey(k);
       $('key').value = '';
       $('keyform').querySelector('button[type=submit]').textContent = 'Atualizar lista';
       $('forget').hidden = false;
-      $('players-view').hidden = false;
+      $('privtabs').hidden = false;
+      showView(view);
       drawPeople();
+      drawCheats();
     } catch (e) {
       $('players-view').hidden = true;
+      $('cheats-view').hidden = true;
+      $('privtabs').hidden = true;
       $('keyerr').textContent = /400|401|403/.test(String(e.message)) ? 'Essa chave não abre o painel.' : 'O servidor não respondeu agora. Tenta daqui a um minuto.';
       $('keyerr').hidden = false;
     }
   }
   $('keyform').addEventListener('submit', (e) => { e.preventDefault(); const k = $('key').value.trim() || getKey(); if (k) openPanel(k); });
-  $('forget').addEventListener('click', () => { setKey(''); people = []; $('players-view').hidden = true; $('forget').hidden = true;
+  $('forget').addEventListener('click', () => { setKey(''); people = []; cheats = []; $('players-view').hidden = true; $('cheats-view').hidden = true; $('privtabs').hidden = true; $('forget').hidden = true;
     $('keyform').querySelector('button[type=submit]').textContent = 'Abrir'; });
   $('find').addEventListener('input', drawPeople);
   document.querySelectorAll('th[data-k]').forEach((th) => th.addEventListener('click', () => {
@@ -434,8 +462,58 @@
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
+  // 疑 What each reason means, in plain words. A refusal for one of these is an impossibility:
+  // the save claims something no honest game can make. 'too-fast' alone only waits.
+  const TRIED = {
+    tower: ['Torre impossível', 'subiu a um piso da torre que nenhum corpo que tem consegue vencer', true],
+    gear: ['Peças impossíveis', 'tem peças de um reino que ainda não alcançou (save editado)', true],
+    dao: ['Pontos 道 a mais', 'gastou mais pontos 道 do que alguma vez ganhou', true],
+    road: ['Resposta reescrita', 'mudou uma resposta já dada num encontro do caminho, para levar outro prémio', true],
+    anchor: ['Dragão encolhido', 'encolheu o Dragão da tribulação, para a próxima travessia ser fácil', true],
+    warden: ['Guardião impossível', 'passou um reino cujo guardião este corpo não vence', true],
+    'too-many-kills': ['Mortes a mais', 'mais lutas do que o tempo permite', true],
+    'too-fast': ['Depressa demais', 'avançou mais do que o tempo permite (fica à espera; sozinho não é prova)', false],
+    newrun: ['Save novo à frente', 'apareceu com um save novo (outra data de início) muito à frente do último verificado', false],
+  };
+  const tried = (t) => {
+    const [label, what] = TRIED[t.why] ?? [t.why, 'motivo sem descrição'];
+    return `<li><b>${esc(label)}</b> · ${esc(what)} <small>· ${t.n}× · ${t.n > 1 ? `de ${when(t.first)} a ` : ''}${when(t.last)}</small></li>`;
+  };
+  const verdict = (c) => {
+    const proof = c.tried.filter((t) => TRIED[t.why]?.[2]);
+    if (proof.length) return ['bad', `Batota provável: ${proof.map((t) => TRIED[t.why]?.[0] ?? t.why).join(', ')}. Cada uma destas é algo que um jogo honesto não consegue fazer.`];
+    if (c.tried.some((t) => t.why === 'newrun')) return ['', 'Save novo muito à frente do anterior: pode ser outro jogo num segundo aparelho, ou o save antigo com a data de início mudada. Compara o reino e a torre com o que tinha.'];
+    if (c.fast > 0) return ['', `Só rapidez: ${c.fast} ${c.fast === 1 ? 'sincronização mais rápida' : 'sincronizações mais rápidas'} do que qualquer honesto medido${c.pace ? ` (ritmo ${Number(c.pace).toFixed(2)})` : ''}. Pode ser batota (relógio acelerado) ou um jogador muito ativo: vê as datas.`];
+    return ['', 'Nada que prove batota.'];
+  };
+  const status = (c) => (c.banned ? '<span class="pill bad">banido</span>'
+    : c.suspect || c.strikes > 0 ? `<span class="pill bad">fora dos rankings · ${c.strikes} recusa${c.strikes === 1 ? '' : 's'}</span>`
+    : c.cleared ? `<span class="pill on">limpo a ${when(c.cleared)}</span>` : '<span class="pill off">limpo</span>');
+  let cheats = [];
+  function drawCheats() {
+    $('cheatcount').textContent = cheats.length ? `· ${cheats.filter((c) => c.suspect || c.banned || c.strikes > 0).length}` : '';
+    $('cheats').innerHTML = cheats.map((c) => {
+      const [tone, line] = verdict(c);
+      return `<article class="cheat${tone ? ' hot' : ''}">
+        <div class="head"><b>${esc(c.name)}</b> ${status(c)}<span class="meta">${c.realm} · ${c.layer}/9 · torre ${c.tower} · visto há ${since(c.last_seen)}</span></div>
+        <p class="verdict ${tone}">${esc(line)}</p>
+        ${c.tried.length ? `<ul>${c.tried.map(tried).join('')}</ul>` : ''}
+        ${c.recent.length ? `<details><summary>${c.recent.length === 1 ? 'A última tentativa' : `As últimas ${c.recent.length} tentativas`}</summary><ul>${c.recent.map((r) =>
+          `<li>${when(r.at)} · ${r.strike ? 'recusada' : 'marcada'} · ${esc((r.why || []).filter((w) => w !== 'went-down' && w !== 'shape').map((w) => TRIED[w]?.[0] ?? w).join(', ') || 'rapidez')}${r.pace ? ` · ritmo ${Number(r.pace).toFixed(2)}` : ''}</li>`).join('')}</ul></details>` : ''}
+        ${c.note ? `<p class="verdict">Nota: ${esc(c.note)}</p>` : ''}
+      </article>`;
+    }).join('') || '<p class="empty">Ninguém. O verificador não recusou nem marcou ninguém.</p>';
+  }
+  let view = 'people';
+  function showView(v) {
+    view = v;
+    document.querySelectorAll('#privtabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === v)));
+    $('players-view').hidden = v !== 'people';
+    $('cheats-view').hidden = v !== 'cheats';
+  }
+  $('privtabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-v]'); if (b) showView(b.dataset.v); });
   if (getKey()) openPanel(getKey());
-  setInterval(() => { if (getKey() && !$('players-view').hidden && !open) openPanel(getKey()); }, 120_000);
+  setInterval(() => { if (getKey() && !$('privtabs').hidden && !open) openPanel(getKey()); }, 120_000);
 </script>
 </body>
 </html>

@@ -173,10 +173,23 @@ describe('榜 the ranked schema', () => {
     await db.exec('set role service_role');
     const got = await db.query(`select barred_for('${E}') as b`);
     await db.exec('reset role');
-    expect((got.rows[0] as any).b).toEqual({ strikes: 2, banned: false });
+    expect((got.rows[0] as any).b).toEqual({ strikes: 2, banned: false, suspect: false });
     // Nobody but the server can read it.
     await expect(as(E, `select * from barred`)).rejects.toThrow(/permission denied/);
     await expect(as(E, `select barred_for('${E}')`)).rejects.toThrow(/permission denied/);
+  });
+
+  it('a flagged player who deletes the account and names the new one keeps the flag and the strikes', async () => {
+    const F = 'aaaaaaaa-7777-7777-7777-777777777777';
+    const G = 'bbbbbbbb-8888-8888-8888-888888888888';
+    await db.exec(`insert into auth.users values ('${F}', 'fast@example.com');
+      insert into profiles (id, name, strikes, suspect, banned) values ('${F}', 'Foxtrot', 1, true, false);`);
+    await as(F, `select delete_me()`);
+    // Back on the same email: set_name makes the profile before any sync, and it carries them.
+    await db.exec(`insert into auth.users values ('${G}', 'FAST@example.com')`);
+    await as(G, `select set_name('Golf')`);
+    const p = (await db.query(`select strikes, suspect, banned from profiles where id = '${G}'`)).rows[0] as any;
+    expect(p).toEqual({ strikes: 1, suspect: true, banned: false });
   });
 
   it('the panel reads counts, never a row, and only the server takes a pulse', async () => {
@@ -205,6 +218,7 @@ describe('榜 the ranked schema', () => {
     // and the later migrations that redefine its functions, as they stand on the server
     await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
     await db.exec(readFileSync(`${MIGRATIONS}/20261003000000_panel_refusals.sql`, 'utf8'));
+    await db.exec(readFileSync(`${MIGRATIONS}/20261005140000_review.sql`, 'utf8'));
     // 拒 Gamma's day: two syncs refused for too-fast (one with it twice, from both windows),
     // one for the tower, one that went through, and a refusal two days old that is not today's.
     await db.exec(`insert into sync_log (user_id, at, ok, why) values
@@ -224,6 +238,20 @@ describe('榜 the ranked schema', () => {
     expect(rows.find((r: any) => r.name === 'Gamma')).toMatchObject({ syncs_day: 4, refused_day: 3, refused_why: 'too-fast' });
     // A player with nothing refused today has a count of nothing and no reason.
     expect(rows.find((r: any) => r.name === '修士 Alpha')).toMatchObject({ refused_day: 0, refused_why: null });
+    // 疑 The Batota tab: who the verifier refused or flagged, and what each one tried.
+    await expect(as(null, `select panel_cheats('guess')`)).rejects.toThrow(/wrong key/);
+    await db.exec(`insert into sync_log (user_id, at, ok, why, strike, suspect, pace) values
+      ('${C}', now() - interval '5 hours', false, '{tower}', true, false, 0.3),
+      ('${C}', now() - interval '6 hours', false, '{gear,tower}', true, false, 0.3),
+      ('${C}', now() - interval '7 hours', true, '{}', false, true, 0.71),
+      ('${C}', now() - interval '8 hours', false, '{went-down,road}', false, false, 0.1)`);
+    const cheats = ((await as(null, `select panel_cheats('test-key') as c`)).rows[0] as any).c;
+    const g = cheats.find((r: any) => r.name === 'Gamma');
+    expect(g).toMatchObject({ struck: 2, fast: 1 });
+    expect(g.pace).toBeCloseTo(0.71, 2);
+    expect(g.tried.map((t: any) => [t.why, t.n])).toEqual([['tower', 2], ['gear', 1]]);
+    expect(g.recent).toHaveLength(3);
+    expect(JSON.stringify(cheats)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}-/);
     await db.exec(`delete from sync_log where user_id = '${C}'`);
 
     // 清 A flag taken off, and a note, only with the key.
