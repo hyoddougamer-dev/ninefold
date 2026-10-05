@@ -93,6 +93,9 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   const leftBy = item.from === FUSED
     ? ITEM.fusedFrom(rar.name, qualityOf(item), FUSE_TOP, item.rarity === 'heaven')
     : ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
+  // 質 And every other piece says its quality too (rekaris, on the Discord): two pieces with
+  // the same lines differ by it, and it used to be named only on a fused one.
+  const quality = item.from === FUSED ? null : ITEM.quality(rar.name, qualityOf(item));
   const says = item.rolls.map((r) => r.affix).filter((a) => a in ITEM.axisSays);
   // 職 The class now, and the class with this piece on: the same function both times.
   const school = schoolOf(item);
@@ -185,6 +188,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
       {/* 源 Who left it, and the line its lineage has always had. */}
       <div className="origin">
         {leftBy && <b>{leftBy}</b>}
+        {quality && <span className="iquality">{quality}</span>}
         <q>{realmSet(tpl.realm).lore}</q>
       </div>
 

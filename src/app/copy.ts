@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -1031,6 +1031,9 @@ export const ITEM = {
    * 質 A piece a fusion made, in place of who left it: its quality against a usual roll of
    * its rank, and at Heaven that it will not be fused again (sim/chest.ts fusesAt).
    */
+  /** 質 Every piece's quality, on its sheet: a found one rolls in a band, a fused one says so above. */
+  quality: (rank: string, quality: number) =>
+    `Quality ×${quality.toFixed(2)}: its main line against a usual ${rank} roll of its realm. A drop rolls ×${(1 - VARIANCE).toFixed(2)} to ×${(1 + VARIANCE + LUCK_ROLL_TOP).toFixed(2)}.`,
   fusedFrom: (rank: string, quality: number, top: number, heaven: boolean) =>
     `Made by a fusion, at ×${quality.toFixed(2)} of a usual ${rank} roll (a fusion stops at ×${top}).`
     + (heaven ? ' A fused Heaven piece is never fused again.' : ''),
@@ -1591,6 +1594,24 @@ export const GEAR = {
   loadoutNameField: 'Loadout name',
   loadoutDefault: (n: number) => `Loadout ${n}`,
   setMissing: (n: number) => (n === 1 ? '1 piece of that loadout is gone' : `${n} pieces of that loadout are gone`),
+  /**
+   * 套 A loadout given a task (speculaether and rekaris, on the Discord): the game reads it
+   * for that task and leaves what is worn on the body.
+   */
+  tasksSay: 'Give a loadout a task and the game reads it for that task, without changing what you wear.',
+  taskName: { fuse: 'Fuse', melt: 'Melt', refine: 'Refine' } as Record<'fuse' | 'melt' | 'refine', string>,
+  taskHan: { fuse: '煉', melt: '拆', refine: '煉器' } as Record<'fuse' | 'melt' | 'refine', string>,
+  taskGive: (name: string, task: string) => `Use ${name} for ${task}`,
+  taskTake: (name: string, task: string) => `${name} is used for ${task}. Tap to use what you wear instead`,
+  taskVerb: { fuse: 'fusing', melt: 'melting', refine: 'refining' } as Record<'fuse' | 'melt' | 'refine', string>,
+  /** 套 On the control itself: which body its numbers come from. */
+  taskFuse: (name: string) => `Fusing reads loadout ${name}: its 煉 fusion line, not what you wear.`,
+  taskMelt: (name: string) => `Melting reads loadout ${name}: its class, not what you wear.`,
+  taskRefine: (name: string) => `Refining reads loadout ${name}: its class sets the price, not what you wear.`,
+  /** 質 A tile's quality, said once under the chest and in each tile's own note. */
+  qualityNote: 'quality: how its main line compares with a usual roll of its rank',
+  qualityLegend: 'on a tile is its quality: how its main line compares with a usual roll of its rank. '
+    + `A drop rolls ×${(1 - VARIANCE).toFixed(2)} to ×${(1 + VARIANCE + LUCK_ROLL_TOP).toFixed(2)}; a fusion can make more.`,
   lockedWord: 'locked',
   anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
@@ -2410,7 +2431,7 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
-    /** \u5b58 Saved filters, up to eight, on this device. */
+    /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,
@@ -2418,6 +2439,13 @@ export const QOL = {
     cancel: 'Not now',
     forget: 'Forget',
     forgetOne: (name: string) => `Forget the filter ${name}`,
+    /** 鎖 A kept filter: a full chest never melts what it shows (rekaris, on the Discord). */
+    keepWord: 'Keep',
+    keptWord: 'Kept',
+    keepOne: (name: string) => `Keep what ${name} shows: a full chest never melts it`,
+    unkeepOne: (name: string) => `Stop keeping what ${name} shows`,
+    keptSays: 'A full chest never melts a piece a kept filter shows. It melts the worst piece none of them shows, or the new piece when every piece is kept.',
+    keepWhy: 'Mark a filter Keep and a full chest never melts what it shows.',
     filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
     /** \u9396 The chest's first row: only the pieces kept on purpose. */
     lockedOnly: 'Locked',

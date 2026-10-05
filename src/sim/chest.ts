@@ -71,16 +71,18 @@ export interface Kept {
  */
 export function addToChest(
   chest: readonly Item[], item: Item, limit = CHEST_LIMIT,
+  /** 熔 Pieces a full chest must leave alone besides the locked ones: a kept filter's (sim/filters.ts). */
+  spare: (it: Item) => boolean = () => false,
 ): Kept {
   if (!chestFull(chest, limit)) return { chest: [...chest, item], dropped: null };
 
   // 鎖 A locked piece is never the one that goes. If every piece is locked, the new one
   // goes instead, which is what a full chest always did with a piece no better than its
   // worst: nothing the player chose to keep is ever taken. 承 Nor a piece holding refining
-  // levels, which were paid for and live nowhere else.
+  // levels, which were paid for and live nowhere else. 熔 Nor one a kept filter shows.
   let worstAt = -1;
   for (let i = 0; i < chest.length; i++) {
-    if (chest[i].locked || holdsLevels(chest[i])) continue;
+    if (chest[i].locked || holdsLevels(chest[i]) || spare(chest[i])) continue;
     if (worstAt < 0 || itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
   }
   const worst = worstAt >= 0 ? chest[worstAt] : undefined;

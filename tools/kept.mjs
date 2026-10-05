@@ -114,7 +114,8 @@ for (const [w, h, tag] of [[400, 860, 'p400'], [320, 640, 'p320'], [1366, 768, '
     const hidden = await page.$$eval('.chestfilter', (rows) => rows.filter((r) => r.scrollWidth > r.clientWidth + 1).length);
     check(hidden === 0, `${tag}: no filter row hides chips past its edge (${hidden})`);
     const tip = await page.$eval('.chest .chestit [title]', (e) => e.getAttribute('title')).catch(() => '');
-    check(/school$/.test(tip ?? ''), `${tag}: hovering a tile names it, its rank and its school ("${tip}")`);
+    // 質 And its quality after the school, since the tile shows it at its foot.
+    check(/school · ×\d\.\d\d quality/.test(tip ?? ''), `${tag}: hovering a tile names it, its rank, its school and its quality ("${tip}")`);
   }
   await shot(page, `${tag}-gear`);
 

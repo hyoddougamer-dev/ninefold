@@ -9,6 +9,7 @@ import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
 import { classMaterial, classPills, classRefine, classTowerQi } from './schools.ts';
+import { taskBody } from './sets.ts';
 
 /**
  * 塔, 爐 and 煉器: everything that has no ceiling.
@@ -156,7 +157,8 @@ export function refinePrice(s: State, slot: Slot): number | null {
   if (!item) return null;
   // 悟道 火候 and 薪火 make every level cheaper, for ever. Rounded up, so a discount
   // can never make a level free however many of them are taken.
-  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened) * classRefine(s)));
+  // 套 器 The Artificer's price is read off the refining loadout when one is given (sets.ts taskBody).
+  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened) * classRefine(taskBody(s, 'refine'))));
 }
 
 export function canRefine(s: State, slot: Slot): boolean {

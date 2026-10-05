@@ -2,6 +2,7 @@ import { INCENSE_BONUS, LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt 
 import { layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 import { classMelt } from './schools.ts';
+import { taskBody } from './sets.ts';
 
 // 氣 The rate and the layer count live in state.ts, because the tribulation's pool is
 // measured in days of gathering and so has to read the rate from inside the state.
@@ -120,7 +121,8 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
 
   // 拆 The melting allowance fills with the time that passed, open or shut; 寶匠 the
   // Treasure Smith fills it faster, so the class still pays once a day's allowance is spent.
-  const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL * classMelt(s));
+  // 套 Read off the melting loadout when one is given, as melting itself is (salvage.ts).
+  const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL * classMelt(taskBody(s, 'melt')));
   return { ...s, at: now, realm, layer, qi, wardenFell, melt };
 }
 

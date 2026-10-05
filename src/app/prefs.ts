@@ -1,8 +1,10 @@
 import { useState } from 'react';
 
 /**
- * 記 Choices remembered on this device: the chest's filters, the melt rank, the workshop's
- * craft and list, the rankings tab, the ×1 or Max of buying and brewing.
+ * 記 Choices remembered on this device: the chest's filter rows as they are lit, the melt
+ * rank, the workshop's craft and list, the rankings tab, the ×1 or Max of buying and brewing.
+ * 存 The saved filters left for the save once a kept one could decide what a full chest
+ * melts (sim/filters.ts).
  *
  * A way of looking is not a fact about the cultivator, so none of it goes in the save and
  * none of it reaches the ranked server. It lives in this browser's own storage, read and

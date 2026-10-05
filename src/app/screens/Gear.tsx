@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fightDeps } from '../memo.ts';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
@@ -6,7 +6,7 @@ import {
   type Affix, type Item, type Rarity, type Slot,
 } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
-import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
+import { FUSE_COUNT, chestLimit, fusable, qualityOf } from '../../sim/chest.ts';
 import { fuseQuote } from '../../sim/stash.ts';
 import { AFFIXES } from '../../data/gear.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
@@ -22,7 +22,7 @@ import { Svg } from '../ui/Svg.tsx';
 import { Calling } from '../ui/Calling.tsx';
 import { Term } from '../ui/Term.tsx';
 import { CULTIVATE, GEAR, QOL, UNIT } from '../copy.ts';
-import { oneOf, useRemembered } from '../prefs.ts';
+import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { gearLift, swing, upOf, wearBetter } from '../../sim/inspect.ts';
 import { gearArt, gearFind, gearFuse, gearLuck, gearSunder } from '../../sim/schools.ts';
 import { FIND_TOP } from '../../sim/balance.ts';
@@ -33,8 +33,9 @@ import { GLOSS } from '../glossary.ts';
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
-import { isWorn } from '../../sim/sets.ts';
-import { SET_LIMIT } from '../../sim/state.ts';
+import { isWorn, tasksOf } from '../../sim/sets.ts';
+import { SET_LIMIT, TASKS, type Task } from '../../sim/state.ts';
+import { FILTER_LIMIT, PLACES, keepable, type ChestFilter, type Place } from '../../sim/filters.ts';
 
 /**
  * 器 The gear screen: the ring.
@@ -46,8 +47,17 @@ import { SET_LIMIT } from '../../sim/state.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onRenameSet, onBook, onCompare, onWearAll, onFuseAll }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onRenameSet, onBook, onCompare, onWearAll, onFuseAll,
+  onAssignTask, onSaveFilter, onForgetFilter, onKeepFilter, onAdoptFilters }: {
   state: State;
+  /** 套 Give a task to loadout `index`, or back to what is worn with null (sim/sets.ts assignTask). */
+  onAssignTask?: (task: Task, index: number | null) => void;
+  /** 存 Keep the filter now lit, forget one, or mark one Keep (sim/filters.ts). */
+  onSaveFilter?: (f: Omit<ChestFilter, 'keep'>) => void;
+  onForgetFilter?: (index: number) => void;
+  onKeepFilter?: (index: number, on: boolean) => void;
+  /** 存 The filters this device kept before they moved into the save, taken in once. */
+  onAdoptFilters?: (fromDevice: unknown) => void;
   /** ▲ 著 Put on every ▲ piece (sim/inspect.ts wearBetter). */
   onWearAll?: () => void;
   /** 煉 Fuse every group of three, until none is left (sim/stash.ts fuseAllIn). */
@@ -142,16 +152,33 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
    * 篩 And by lines, a third. rekaris, on the Discord: *"boots that are Artificer school and
    * have fusion%, drop% and drop rarity%."* A piece shows only if it carries every line
    * picked here, and the three rows together can be kept as a named filter (up to
-   * PRESET_LIMIT: rekaris asked for more than the three it began with).
+   * FILTER_LIMIT: rekaris asked for more than the three it began with).
    */
   const [lines, setLines] = useRemembered<readonly Affix[]>('chest.lines', [], isAffixList);
-  const [presets, setPresets] = useRemembered<readonly Preset[]>('chest.presets', [], isPresets);
+  // 存 The kept filters are the cultivator's now, in the save, because 鎖 a kept one decides
+  // what a full chest melts (sim/filters.ts). The ones this device kept before are taken in
+  // once and the device's copy is let go.
+  const presets = state.filters;
+  useEffect(() => {
+    const old = recall<unknown>('chest.presets', null, (x): x is unknown => Array.isArray(x));
+    if (!old || !onAdoptFilters) return;
+    onAdoptFilters(old);
+    keep('chest.presets', null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   /** 存 The name being typed for a filter about to be kept, or null when not saving. */
   const [presetName, setPresetName] = useState<string | null>(null);
   // ▲ What 著 Wear all upgrades would put on, worked out when the chest or a fight input moves.
   const wearAll = useMemo(() => wearBetter(state).worn,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.chest, state.sets, ...fightDeps(state)]);
+  /** 套 The tasks a loadout can be given here: melting always, fusing and refining once they open. */
+  const openTasks = TASKS.filter((t) => t === 'melt' || isOpen(state.realm, t));
+  /** 套 The loadout a task reads, by name, or null when it reads what is worn. */
+  const taskSet = (t: Task) => {
+    const i = state.tasks[t];
+    return i === undefined ? null : state.sets[i]?.name ?? null;
+  };
   /** 名 Which loadout is being renamed, if any. */
   const [naming, setNaming] = useState<number | null>(null);
   // 拆 What the melt would take, so the button can say so before it is pressed.
@@ -278,6 +305,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         <>
           <h2 className="heading">{GEAR.loadoutHead}</h2>
           <p className="faint" style={{ fontSize: 12.5, margin: '0 0 8px' }}>{GEAR.loadouts}</p>
+          {/* 套 A loadout given a task: speculaether, on the Discord, kept one outfit to fuse
+              in, one to melt in and one for qi, and changed between them by hand. */}
+          {state.sets.length > 0 && onAssignTask && <p className="faint gtasksays">{GEAR.tasksSay}</p>}
           <div className="gsets">
             {state.sets.map((set, i) => {
               const on = isWorn(state, i);
@@ -298,8 +328,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                   </div>
                 );
               }
+              const given = tasksOf(state, i);
               return (
-                <div key={i} className="gset" data-on={on}>
+                <div key={i} className="gsetblock">
+                <div className="gset" data-on={on}>
                   <button className="gs-wear" disabled={on} onClick={() => onWearSet(i)}
                     aria-label={on ? GEAR.loadoutOn(set.name) : GEAR.loadoutWear(set.name)}>
                     <b>{set.name}</b>
@@ -311,6 +343,25 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     aria-label={GEAR.loadoutResave(set.name)} title={GEAR.loadoutResave(set.name)}>{GEAR.loadoutSaveShort}</button>
                   <button className="gs-clear" onClick={() => onClearSet(i)}
                     aria-label={GEAR.loadoutForget(set.name)} title={GEAR.loadoutForget(set.name)}>×</button>
+                </div>
+                {/* 套 The tasks this loadout can be given: lit when it has one. A tap gives it the
+                    task (from whichever loadout had it), a tap on a lit one gives it back to what
+                    is worn. */}
+                {onAssignTask && (
+                  <div className="gstasks" role="group" aria-label={GEAR.tasksSay}>
+                    {openTasks.map((t) => {
+                      const mine = given.includes(t);
+                      const label = mine ? GEAR.taskTake(set.name, GEAR.taskVerb[t]) : GEAR.taskGive(set.name, GEAR.taskVerb[t]);
+                      return (
+                        <button key={t} type="button" className="gst" aria-pressed={mine} title={label} aria-label={label}
+                          onClick={() => onAssignTask(t, mine ? null : i)}>
+                          {mine && <span className="gst-tick" aria-hidden="true">✓</span>}
+                          <span className="cjk">{GEAR.taskHan[t]}</span> {GEAR.taskName[t]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 </div>
               );
             })}
@@ -331,6 +382,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             <span className="mono" style={{ fontSize: 13, color: 'var(--gold)' }}>材 {num(state.materials)} {UNIT.material}</span>
           </div>
           <p className="faint" style={{ fontSize: 12.5, margin: '4px 0 8px' }}>{GEAR.refine}</p>
+          {taskSet('refine') && <p className="gtaskuse"><span className="cjk">套</span> {GEAR.taskRefine(taskSet('refine')!)}</p>}
           <div className="stack">
             {SLOTS.filter((slot) => state.worn[slot]).map((slot) => {
               const item = state.worn[slot]!;
@@ -429,6 +481,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       {groups.length > 0 && (
         <>
           <h2 className="heading">{GEAR.fuse}</h2>
+          {taskSet('fuse') && <p className="gtaskuse"><span className="cjk">套</span> {GEAR.taskFuse(taskSet('fuse')!)}</p>}
           {/* 煉 Every group in one tap once there are two or more: the single rows stay. */}
           {onFuseAll && groups.length >= 2 && (
             <div className="gearbulk">
@@ -500,6 +553,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           {quote.materials > 0 && (
             <p className="faint allowance">{GEAR.allowance(num(meltWorth))}</p>
           )}
+          {taskSet('melt') && <p className="gtaskuse"><span className="cjk">套</span> {GEAR.taskMelt(taskSet('melt')!)}</p>}
         </div>
       )}
 
@@ -539,8 +593,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         const offered = AFFIXES.filter((a) => lines.includes(a) || read.some((r) => has(r.item, a)));
         const toggle = (a: Affix) => setLines(lines.includes(a) ? lines.filter((x) => x !== a) : [...lines, a]);
         const filtered = place !== 'all' || school !== 'any' || lines.length > 0;
-        const apply = (p: Preset) => { setOnly(p.slot); setKin(p.school); setLines(p.lines); };
-        const isOn = (p: Preset) => p.slot === place && p.school === school
+        const apply = (p: ChestFilter) => { setOnly(p.slot); setKin(p.school); setLines(p.lines); };
+        const isOn = (p: ChestFilter) => p.slot === place && p.school === school
           && p.lines.length === lines.length && p.lines.every((a) => lines.includes(a));
         // 存 Keeping is offered for a filter that is on and not kept already.
         const canKeep = filtered && !presets.some(isOn);
@@ -609,27 +663,40 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             {(presets.length > 0 || canKeep) && (presetName === null ? (
               <div className="gearpresets" role="group" aria-label={QOL.gear.savedHead}>
                 {presets.map((p, i) => (
-                  <span key={`${p.name}${i}`} className="gp" data-on={isOn(p) || undefined}>
+                  <span key={`${p.name}${i}`} className="gp" data-on={isOn(p) || undefined} data-kept={p.keep || undefined}>
                     <button type="button" className="gp-use" aria-pressed={isOn(p)} onClick={() => apply(p)}>
                       <span className="cjk">存</span> {p.name}
                     </button>
+                    {/* 鎖 Keep: a full chest never melts what this filter shows (sim/filters.ts).
+                        ▲ Better changes with every piece put on, so it is never offered. */}
+                    {onKeepFilter && keepable(p) && (
+                      <button type="button" className="gp-hold" aria-pressed={!!p.keep}
+                        aria-label={p.keep ? QOL.gear.unkeepOne(p.name) : QOL.gear.keepOne(p.name)}
+                        title={p.keep ? QOL.gear.unkeepOne(p.name) : QOL.gear.keepOne(p.name)}
+                        onClick={() => onKeepFilter(i, !p.keep)}>
+                        <span className="cjk">鎖</span> {p.keep ? QOL.gear.keptWord : QOL.gear.keepWord}
+                      </button>
+                    )}
                     <button type="button" className="gp-forget" aria-label={QOL.gear.forgetOne(p.name)}
-                      onClick={() => setPresets(presets.filter((_, j) => j !== i))}>✕</button>
+                      onClick={() => onForgetFilter?.(i)}>✕</button>
                   </span>
                 ))}
                 {canKeep && (
-                  <button type="button" className="gp-keep" disabled={presets.length >= PRESET_LIMIT}
+                  <button type="button" className="gp-keep" disabled={presets.length >= FILTER_LIMIT}
                     onClick={() => setPresetName(QOL.gear.filterDefault(presets.length + 1))}>
                     <span className="cjk">存</span> {QOL.gear.saveFilter}
                   </button>
                 )}
-                {canKeep && presets.length >= PRESET_LIMIT && <i className="faint gp-full">{QOL.gear.filtersFull(PRESET_LIMIT)}</i>}
+                {canKeep && presets.length >= FILTER_LIMIT && <i className="faint gp-full">{QOL.gear.filtersFull(FILTER_LIMIT)}</i>}
+                {presets.length > 0 && onKeepFilter && (
+                  <i className="faint gp-says">{presets.some((p) => p.keep) ? QOL.gear.keptSays : QOL.gear.keepWhy}</i>
+                )}
               </div>
             ) : (
               <form className="keepname" onSubmit={(e) => {
                 e.preventDefault();
                 const name = presetName.trim().slice(0, 24) || QOL.gear.filterDefault(presets.length + 1);
-                setPresets([...presets, { name, slot: place, school, lines: [...lines] }].slice(0, PRESET_LIMIT));
+                onSaveFilter?.({ name, slot: place, school, lines: [...lines] });
                 setPresetName(null);
               }}>
                 <input value={presetName} maxLength={24} aria-label={QOL.gear.filterName} autoFocus
@@ -643,6 +710,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               {pick.map(({ item, move }, index) => {
                 const tpl = templateOf(item);
                 const primary = primaryOf(item);
+                // 質 rekaris, on the Discord: two pieces with the same lines, one better by a
+                // number nothing showed. It is on every tile now, at the foot.
+                const q = qualityOf(item);
                 return (
                   <button key={item.id} className="chestit" data-better={move.better}
                           onClick={() => onInspect(item, false)}
@@ -650,10 +720,10 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                           // 譯 The tile carries no number now, so the screen reader is told
                           // what the eye is shown: the name, the rank, and whether it is better.
                           aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
-                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}${move.better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
-                    {/* 註 On a computer the pointer reads the tile out: name, rank and school. */}
-                    <span title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ${SCHOOL_INFO[schoolOf(item)].short} school`}>
-                      <Svg html={gearTile(item, { size: 56 })} />
+                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}, ×${q.toFixed(2)} ${GEAR.qualityNote}${move.better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
+                    {/* 註 On a computer the pointer reads the tile out: name, rank, school and quality. */}
+                    <span title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ${SCHOOL_INFO[schoolOf(item)].short} school · ×${q.toFixed(2)} ${GEAR.qualityNote}`}>
+                      <Svg html={gearTile(item, { size: 56, quality: q })} />
                     </span>
                     {move.better && <span className="upmark" aria-hidden="true">▲</span>}
                     {item.locked && <span className="lockmark" aria-hidden="true">鎖</span>}
@@ -662,6 +732,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               })}
             </div>
             {ups > 0 && <p className="faint chestlegend"><b>▲</b> {GEAR.legend}</p>}
+            {pick.length > 0 && <p className="faint chestlegend quality"><b className="mono">×1.00</b> {GEAR.qualityLegend}</p>}
           </>
         );
       })()}
@@ -684,29 +755,6 @@ function loadoutName(state: State): string {
   return GEAR.loadoutDefault(state.sets.length + 1);
 }
 
-/** 篩 The first row's choices: everything, ▲, 鎖 locked, or one place on the body. */
-type Place = 'all' | 'better' | 'locked' | Slot;
-const PLACES: readonly Place[] = ['all', 'better', 'locked', ...SLOTS];
-
-/** 存 How many chest filters a device keeps. rekaris asked for more than three; a sane top. */
-const PRESET_LIMIT = 8;
-
-/** 存 A chest filter kept on the device: the three rows and a name. */
-interface Preset {
-  readonly name: string;
-  readonly slot: Place;
-  readonly school: 'any' | School;
-  readonly lines: readonly Affix[];
-}
-
 function isAffixList(x: unknown): x is readonly Affix[] {
   return Array.isArray(x) && x.length <= AFFIXES.length && x.every((a) => (AFFIXES as readonly unknown[]).includes(a));
-}
-
-function isPresets(x: unknown): x is readonly Preset[] {
-  const slot = oneOf(PLACES);
-  const school = oneOf(['any', ...SCHOOLS] as const);
-  return Array.isArray(x) && x.length <= PRESET_LIMIT && x.every((p) => !!p && typeof p === 'object'
-    && typeof (p as Preset).name === 'string' && (p as Preset).name.length <= 24
-    && slot((p as Preset).slot) && school((p as Preset).school) && isAffixList((p as Preset).lines));
 }

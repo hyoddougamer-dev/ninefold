@@ -40,6 +40,7 @@ import {
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, shortestDoorGap, validCrafts, type Crafts } from './crafts.ts';
+import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
 import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
@@ -110,6 +111,25 @@ export const SET_LIMIT = 5;
 /** 名 A loadout's name, cleaned once for the save and for the screen: no control characters, 24 at most. */
 export function cleanSetName(raw: string): string {
   return raw.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 24);
+}
+
+/**
+ * 套 The three things done to gear that read a body: 煉 fusing (the fusion line), 拆
+ * melting (寶匠 the Treasure Smith) and 煉器 refining (器 the Artificer). Each can be given
+ * a loadout. See State.tasks.
+ */
+export const TASKS = ['fuse', 'melt', 'refine'] as const;
+export type Task = (typeof TASKS)[number];
+
+/** 套 A task's loadout is an index into the sets that exists, or nothing. */
+function validTasks(raw: unknown, sets: number): Partial<Record<Task, number>> {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  const out: Partial<Record<Task, number>> = {};
+  for (const t of TASKS) {
+    const i = o[t];
+    if (typeof i === 'number' && Number.isInteger(i) && i >= 0 && i < sets) out[t] = i;
+  }
+  return out;
 }
 
 function validSets(raw: unknown): readonly GearSet[] {
@@ -186,6 +206,19 @@ export interface State {
    * holds a copy of anything. See sim/sets.ts.
    */
   sets: readonly GearSet[];
+  /**
+   * 套 Which loadout each gear task reads, by its place in `sets`. speculaether, on the
+   * Discord: one outfit for fusing, one for crafting, one for qi, changed by hand every
+   * time. A task given a loadout reads that loadout's body for its numbers, and what is
+   * worn stays worn; a task given none reads what is worn, as it always did. See sets.ts
+   * taskBody.
+   */
+  tasks: Partial<Record<Task, number>>;
+  /**
+   * 存 The chest's saved filters, and 熔 which of them a full chest must spare. See
+   * sim/filters.ts.
+   */
+  filters: readonly ChestFilter[];
   /** 丹 Pills brewed, by line. The one thing no realm caps. */
   brewed: Brewed;
   /**
@@ -419,6 +452,8 @@ export function newState(now: number): State {
     tower: 0,
     melt: MELT_CAP,
     sets: [],
+    tasks: {},
+    filters: [],
     brewed: { ...NO_PILLS },
     awakened: [],
     met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
@@ -778,6 +813,7 @@ export function validate(raw: unknown, now: number): State {
   }
 
   const sets = validSets(o.sets);
+  const filters = validFilters(o.filters);
   const inSets = new Set(sets.flatMap((x) => Object.values(x.ids)));
   const item = (raw: unknown, used: Set<string>): Item | null => {
     const o = (raw ?? {}) as Record<string, unknown>;
@@ -900,7 +936,9 @@ export function validate(raw: unknown, now: number): State {
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
       // 承 And so is one holding refining levels, which were paid for and live nowhere else.
-      .map((it, i) => ({ it, i, worth: itemWorth(it), kept: it.locked || holdsLevels(it) ? 1 : 0 }))
+      // 熔 Then one a kept filter shows, which a full chest spares too (sim/filters.ts).
+      .map((it, i) => ({ it, i, worth: itemWorth(it),
+        kept: it.locked || holdsLevels(it) ? 2 : keptByFilter(filters, it) ? 1 : 0 }))
       .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)
       .slice(0, allowance)
       .sort((a, b) => a.i - b.i)
@@ -960,6 +998,10 @@ export function validate(raw: unknown, now: number): State {
     // 套 At most SET_LIMIT sets, each a short name and a piece id per place on the body.
     // A set naming a piece that is gone is kept: it says so when it is put on.
     sets,
+    // 套 A task names a loadout that exists, or none.
+    tasks: validTasks(o.tasks, sets.length),
+    // 存 At most FILTER_LIMIT filters, each naming a real place, school and lines.
+    filters,
     // 爐 No pill before the furnace exists: 3,000 of them in a fifth-realm save was power
     // enough to claim five hundred floors of the tower in thirty seconds.
     brewed: isOpen(realm, 'furnace') ? validBrewed(o.brewed) : { ...NO_PILLS },

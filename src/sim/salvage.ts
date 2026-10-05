@@ -11,6 +11,7 @@ import { rate, type State } from './state.ts';
 import { classMelt } from './schools.ts';
 import { FORGED, metalKey } from '../data/crafts.ts';
 import { holdsLevels } from './chest.ts';
+import { taskBody } from './sets.ts';
 
 /**
  * 拆 Breaking a piece down.
@@ -23,9 +24,10 @@ import { holdsLevels } from './chest.ts';
 /**
  * 拆 What melting pays on this body: the cards that lift it, and 寶匠 the Treasure
  * Smith. One function, so the button, the sheet and the sim can never quote apart.
+ * 套 The body is the melting loadout's when one is given (sets.ts taskBody).
  */
-export function meltFactor(s: Pick<State, 'awakened' | 'worn' | 'unlocked'>): number {
-  return salvageBonus(s.awakened) * classMelt(s);
+export function meltFactor(s: Pick<State, 'awakened' | 'worn' | 'unlocked' | 'sets' | 'chest' | 'tasks'>): number {
+  return salvageBonus(s.awakened) * classMelt(taskBody(s, 'melt'));
 }
 
 export function salvageValue(item: Item, factor = 1): number {
