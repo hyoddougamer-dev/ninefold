@@ -29,7 +29,7 @@
  * the rule cannot be one thing on the phone and another on the server.
  */
 import {
-  BLESSED_ROOM, CRAFT_ARRAY_DOOR, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
+  BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
   ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
@@ -49,9 +49,9 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestKit, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
-import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
+import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
@@ -332,8 +332,10 @@ function metCeiling(before: State, after: State, dt: number, first = false): num
   if (!first && before.at >= DAO_BANK_STRICT_FROM) {
     return road + Math.max(0, (after.vaultDao ?? 0) - (before.vaultDao ?? 0));
   }
-  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its gap.
-  const gap = (after.crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  // 秘門 The Hidden Door Array opens the door sooner, so a save holding one is read at its
+  // gap, and at the array's deepest step (CRAFT_ARRAY_DEPTH_TOP): the depth is the save's
+  // own claim, so the server allows the most it can honestly be.
+  const gap = shortestDoorGap(after.crafts.pouch, DOOR_GAP);
   // 鑰 And a Realm Key can open it once more a day: see useKey in sim/secret.ts.
   return road + (Math.ceil(Math.max(0, dt) / gap) + Math.ceil(Math.max(0, dt) / 86_400) + 2) * RUN_DAO_CEILING;
 }

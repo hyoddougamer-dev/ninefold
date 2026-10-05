@@ -1,19 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
   ITEMS, ITEM_BY_KEY, PARTS, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_KEYS, XP_TABLE, levelOf, partKey,
-  FORGED, splitKey, type SkillKey,
+  FORGED, arrayDoes, splitKey, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import {
   CRAFT_RENDER_KNOWN, CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
-  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP,
-  CRAFT_MASTERY_SPEED, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
+  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND,
+  CRAFT_MASTERY_BOUND, CRAFT_MASTERY_SPEED, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
+  CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD,
+  CRAFT_ARRAY_SPEED, CRAFT_ARRAY_WORK, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS,
 } from '../balance.ts';
 import {
   NO_CRAFTS, arraySlots, blocked, carry, demonsLeft, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
   secondsOf, setTask, spendKit, takeSeeking, tookPart, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
   markApplies, marksOf, masteryOf, needsOf, skillOpen, subsOf, twiceOf, recipesOf,
+  arrayStrength, depthOf, depthStrength, doorGapFor, masteryFor, masteryMost, toNextDepth, xpOf,
   type Crafts,
 } from '../crafts.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -25,7 +28,8 @@ import { verify } from '../verify.ts';
 import { floorBeast, floorPower } from '../tower.ts';
 import { demonOf, demonPower, demonsFor } from '../seclusion.ts';
 import { isOpen } from '../unlocks.ts';
-import { kitWork } from '../../../tools/kitwork.ts';
+import { arrayWork, kitWork } from '../../../tools/kitwork.ts';
+import { DOOR_GAP } from '../../data/secret.ts';
 
 const T0 = 1_700_000_000;
 const HOUR = 3600;
@@ -157,7 +161,8 @@ describe('丹符 a pill and a sigil are an hour of work', () => {
       expect(r.seconds / CRAFT_KIT_WORK, r.key).toBeGreaterThanOrEqual(CRAFT_SECONDS[r.skill]);
       for (const [k, n] of r.needs) expect(n % CRAFT_KIT_WORK, `${r.key} ${k}`).toBe(0);
     }
-    for (const r of RECIPES.filter((x) => x.skill !== 'alchemy' && x.skill !== 'sigil')) expect(r.weight, r.key).toBe(1);
+    // 陣 Arrays are heavy too since the same day, by CRAFT_ARRAY_WORK: see their own block.
+    for (const r of RECIPES.filter((x) => x.skill !== 'alchemy' && x.skill !== 'sigil' && x.skill !== 'array')) expect(r.weight, r.key).toBe(1);
   });
 
   it('takes about an hour a make with the tools of its realm, and never under fifty minutes', () => {
@@ -255,15 +260,35 @@ describe('習 familiarity', () => {
     expect(twiceOf(made(arr.key, CRAFT_MARKS[4]), arr)).toBe(0);
   });
 
-  it('makes a whole craft faster for every recipe of it mastered, up to CRAFT_MASTERY_CAP', () => {
+  it('makes a whole craft faster for every recipe of it mastered, and never stops dead', () => {
     const herbs = recipesOf('herb');
     const all = (n: number) => crafter(9, { herb: 99 }, { made: Object.fromEntries(herbs.slice(0, n).map((r) => [r.key, CRAFT_MARKS[4]])) });
     expect(masteryOf(all(0), 'herb')).toBe(0);
     expect(masteryOf(all(3), 'herb')).toBeCloseTo(3 * CRAFT_MASTERY_SPEED, 9);
     expect(masteryOf(all(3), 'vein')).toBe(0);
+    // 無頂 rekaris (2026-10-05): no hard stop. Every recipe adds, the first fifteen what they
+    // always did, and the sum never reaches CRAFT_MASTERY_BOUND.
+    expect(masteryFor(CRAFT_MASTERY_BAND)).toBeCloseTo(CRAFT_MASTERY_BAND * CRAFT_MASTERY_SPEED, 9);
+    for (let n = 1; n <= 400; n++) {
+      expect(masteryFor(n), `${n}`).toBeGreaterThan(masteryFor(n - 1));
+      expect(masteryFor(n), `${n}`).toBeLessThan(CRAFT_MASTERY_BOUND);
+    }
+    expect(masteryFor(CRAFT_MASTERY_BAND + 1) - masteryFor(CRAFT_MASTERY_BAND)).toBeCloseTo(CRAFT_MASTERY_SPEED / 2, 9);
     const forge = recipesOf('forge');
     const smith = crafter(9, { forge: 99 }, { made: Object.fromEntries(forge.map((r) => [r.key, CRAFT_MARKS[4]])) });
-    expect(masteryOf(smith, 'forge')).toBe(CRAFT_MASTERY_CAP);
+    expect(masteryOf(smith, 'forge')).toBeCloseTo(masteryMost('forge'), 9);
+    expect(masteryOf(smith, 'forge')).toBeGreaterThan(0.15);
+    console.log('    熟 mastery with every recipe of a craft: ' + SKILL_KEYS.map((k) =>
+      `${k} ${recipesOf(k).length} → ${(masteryMost(k) * 100).toFixed(1)}%`).join(' · ') + ` (never ${CRAFT_MASTERY_BOUND * 100}%)`);
+  });
+
+  it('counts a heavy make as the light makes it is, for every heavy craft alike', () => {
+    for (const r of RECIPES) {
+      const last = r.marks[r.marks.length - 1];
+      // The last mark is the light count's worth of work, never less, and never a whole make more.
+      expect(last * r.weight, r.key).toBeGreaterThanOrEqual(CRAFT_MARKS[CRAFT_MARKS.length - 1]);
+      expect((last - 1) * r.weight, r.key).toBeLessThan(CRAFT_MARKS[CRAFT_MARKS.length - 1]);
+    }
   });
 });
 
@@ -446,6 +471,144 @@ describe('戰 what is carried into a fight', () => {
     for (let i = 0; i < 40; i++) s = takeSeeking(s, 'sigil:seeking');
     expect(s.crafts.seek).toBe(20);
     expect(s.crafts.pouch['sigil:seeking']).toBe(30);
+  });
+});
+
+/**
+ * 陣 speculaether (2026-10-05): *"Making multiple arrays is needed to level up array-making
+ * but doesn't do anything."* An array is CRAFT_ARRAY_WORK times heavier now, and every
+ * CRAFT_ARRAY_DEPTH_EVERY copies cut deepen it a step.
+ */
+describe('陣 an array is an hour of work, and its copies deepen it', () => {
+  const arrays = RECIPES.filter((r) => r.skill === 'array');
+  const every = { herb: 99, vein: 99, render: 99, forge: 99, alchemy: 99, sigil: 99, array: 99 };
+  const cutTo = (key: string, copies: number, over: Partial<Crafts> = {}) => crafter(9, every, {
+    pouch: { [`array:${key}`]: 1 }, made: { [`array:${key}`]: copies }, cut: { [`array:${key}`]: copies }, ...over });
+
+  it('multiplies the time and every need of every array, and the experience follows', () => {
+    expect(arrays.length).toBe(9);
+    for (const r of arrays) {
+      expect(r.weight, r.key).toBe(CRAFT_ARRAY_WORK);
+      expect(r.seconds, r.key).toBe(CRAFT_SECONDS.array * CRAFT_ARRAY_WORK);
+      for (const [k, n] of r.needs) expect(n % CRAFT_ARRAY_WORK, `${r.key} ${k}`).toBe(0);
+    }
+    const per = (r: (typeof RECIPES)[number]) => r.xp / r.seconds / (1 + r.level / 8);
+    for (const r of arrays) expect(per(r) / per(arrays[0]), r.key).toBeCloseTo(1, 2);
+  });
+
+  it('takes about an hour a copy with the tools of its realm, and never under fifty minutes', () => {
+    const rows = arrayWork();
+    for (const w of rows) {
+      expect(w.tooled, w.key).toBeGreaterThanOrEqual(50);
+      expect(w.bare, w.key).toBeLessThanOrEqual(150);
+    }
+    console.log('    陣 a copy: ' + rows.map((w) => `${w.key.slice(6)} ${w.bare.toFixed(0)}/${w.tooled.toFixed(0)}`).join(' · ')
+      + ' min (no tool / its realm\'s tools)');
+  });
+
+  it('deepens a step every CRAFT_ARRAY_DEPTH_EVERY copies, up to CRAFT_ARRAY_DEPTH_STEPS, at CRAFT_ARRAY_DEPTH_TOP', () => {
+    expect(depthOf(cutTo('dew', 1), 'dew')).toBe(0);
+    expect(toNextDepth(cutTo('dew', 1), 'dew')).toBe(CRAFT_ARRAY_DEPTH_EVERY - 1);
+    expect(depthOf(cutTo('dew', CRAFT_ARRAY_DEPTH_EVERY * 3 + 2), 'dew')).toBe(3);
+    expect(toNextDepth(cutTo('dew', CRAFT_ARRAY_DEPTH_EVERY * 3 + 2), 'dew')).toBe(CRAFT_ARRAY_DEPTH_EVERY - 2);
+    expect(depthOf(cutTo('dew', 10_000), 'dew')).toBe(CRAFT_ARRAY_DEPTH_STEPS);
+    expect(toNextDepth(cutTo('dew', 10_000), 'dew')).toBe(0);
+    expect(depthStrength(0)).toBe(1);
+    expect(depthStrength(CRAFT_ARRAY_DEPTH_STEPS)).toBeCloseTo(CRAFT_ARRAY_DEPTH_TOP, 9);
+    expect(depthStrength(99)).toBeCloseTo(CRAFT_ARRAY_DEPTH_TOP, 9);
+    // Nothing until it is in the floor.
+    expect(arrayStrength(cutTo('dew', 50), 'dew')).toBe(0);
+    expect(arrayStrength(placeArray(cutTo('dew', 50), 'dew', true), 'dew')).toBeCloseTo(CRAFT_ARRAY_DEPTH_TOP, 9);
+  });
+
+  it('does more at depth, in the numbers the screen says', () => {
+    const deep = (key: string, copies: number) => placeArray(cutTo(key, copies), key, true);
+    const full = CRAFT_ARRAY_DEPTH_EVERY * CRAFT_ARRAY_DEPTH_STEPS;
+    // 聚露 10% faster becomes 15%.
+    const moss = RECIPE_BY_KEY['herb:moss'];
+    const bare = secondsOf(cutTo('dew', 0), moss);
+    expect(secondsOf(deep('dew', 1), moss) / bare).toBeCloseTo(1 - CRAFT_ARRAY_SPEED, 9);
+    expect(secondsOf(deep('dew', full), moss) / bare).toBeCloseTo(1 - CRAFT_ARRAY_SPEED * CRAFT_ARRAY_DEPTH_TOP, 9);
+    expect(arrayDoes('dew')).toContain('10%');
+    expect(arrayDoes('dew', CRAFT_ARRAY_DEPTH_TOP)).toContain('15%');
+    // 秘門 half an hour becomes 45 minutes.
+    expect(DOOR_GAP - doorGapFor(deep('hiddendoor', 1), DOOR_GAP)).toBe(CRAFT_ARRAY_DOOR);
+    expect(DOOR_GAP - doorGapFor(deep('hiddendoor', full), DOOR_GAP)).toBeCloseTo(CRAFT_ARRAY_DOOR * CRAFT_ARRAY_DEPTH_TOP, 6);
+    expect(arrayDoes('hiddendoor')).toContain('30 minutes');
+    expect(arrayDoes('hiddendoor', CRAFT_ARRAY_DEPTH_TOP)).toContain('45 minutes');
+    // 護法 5% less becomes 7.5%.
+    const w = wardenOf(8);
+    expect(kitFor(deep('guardian', 1), w, 'warden').kit.taken).toBeCloseTo(1 - CRAFT_ARRAY_GUARD, 9);
+    expect(kitFor(deep('guardian', full), w, 'warden').kit.taken).toBeCloseTo(1 - CRAFT_ARRAY_GUARD * CRAFT_ARRAY_DEPTH_TOP, 9);
+    expect(arrayDoes('guardian', CRAFT_ARRAY_DEPTH_TOP)).toContain('7.5%');
+    // 長守 four hours become six.
+    expect(arrayDoes('longwatch', CRAFT_ARRAY_DEPTH_TOP)).toContain(`${CRAFT_LONG_WATCH_HOURS * CRAFT_ARRAY_DEPTH_TOP} hours`);
+    // 天地 every craft earns 7.5% more.
+    const r = RECIPE_BY_KEY['vein:gold'];
+    expect(xpOf(deep('heavenearth', full), r) / r.xp).toBeCloseTo(1.075, 9);
+    for (const a of arrays) {
+      const key = a.key.slice('array:'.length);
+      expect(arrayDoes(key), key).toBe(ITEM_BY_KEY[`array:${key}`].does);
+      expect(arrayDoes(key, CRAFT_ARRAY_DEPTH_TOP), key).not.toBe(arrayDoes(key));
+    }
+  });
+
+  it('counts every copy the workshop cuts, and never touches the qi', () => {
+    let s = setTask(crafter(9, every, { pouch: { metal1: 1e6, moss: 1e6 } }), 'array:dew', T0);
+    s = work(s, T0 + CRAFT_WORK_HOURS * HOUR);
+    expect(s.crafts.made['array:dew']).toBeGreaterThan(3);
+    expect(s.crafts.cut['array:dew']).toBe(s.crafts.made['array:dew']);
+    expect(s.crafts.pouch['array:dew']).toBe(s.crafts.made['array:dew']);
+    expect(s.qi).toBe(crafter(9, every).qi);
+  });
+
+  it('holds a save to the copies its experience paid for, and gives an old save its light copies at their worth', () => {
+    const dew = RECIPE_BY_KEY['array:dew'];
+    const now = T0 + 1e9;
+    const at = { realm: 9, killed: {}, startedAt: T0 };
+    // Forged: fifty copies claimed on the experience of two.
+    const forged = validCrafts({ xp: { forge: XP_TABLE[99], array: 2 * dew.xp }, pouch: { 'array:dew': 1 },
+      made: { 'array:dew': 60 }, cut: { 'array:dew': 50, 'array:nothing': 9, moss: 4 } }, at, now);
+    expect(forged.cut['array:dew']).toBe(2);
+    expect(Object.keys(forged.cut)).toEqual(['array:dew']);
+    // Never more copies than makes.
+    const fewer = validCrafts({ xp: { forge: XP_TABLE[99], array: XP_TABLE[60] }, made: { 'array:dew': 3 }, cut: { 'array:dew': 30 } }, at, now);
+    expect(fewer.cut['array:dew']).toBe(3);
+    // 舊 A save from before depth: 700 light copies of Dew-Catching are 700 / CRAFT_ARRAY_WORK now.
+    const old = validCrafts({ xp: { forge: XP_TABLE[99], array: 700 * dew.xp / dew.weight + XP_TABLE[2] }, made: { 'array:dew': 700 } }, at, now);
+    expect(old.made['array:dew']).toBe(700);
+    expect(old.cut['array:dew']).toBe(Math.floor(700 / CRAFT_ARRAY_WORK));
+    // And a save that has its copies keeps them, round and round.
+    const again = validCrafts(JSON.parse(JSON.stringify(old)), at, now);
+    expect(again.cut).toEqual(old.cut);
+  });
+
+  it('is read at its deepest by the server, so an honest deep array is never too fast', () => {
+    // 經 The most a second can pay, with every array and every mastery at its deepest.
+    for (const k of SKILL_KEYS) {
+      const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED * CRAFT_ARRAY_DEPTH_TOP)
+        * (1 - CRAFT_MARK_FASTER) * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - masteryMost(k));
+      const best = Math.max(...recipesOf(k).map((r) => r.xp / (r.seconds * fastest)));
+      expect(XP_PER_SECOND_MAX[k], k).toBeGreaterThanOrEqual(best);
+    }
+    // A cultivator with the deepest arrays, every tool, every recipe of Forging mastered,
+    // works twelve hours of the fastest metal and is not too fast for the server.
+    const forge = recipesOf('forge');
+    const made = Object.fromEntries(forge.map((r) => [r.key, r.marks[r.marks.length - 1]]));
+    const full = CRAFT_ARRAY_DEPTH_EVERY * CRAFT_ARRAY_DEPTH_STEPS;
+    let s = crafter(9, { ...every, forge: 60 }, {
+      tools: { herb: 6, vein: 6, render: 6, forge: 6, alchemy: 6, sigil: 6, array: 6 }, made,
+      pouch: { 'array:firetame': 1, 'array:heavenearth': 1,
+        ...Object.fromEntries(ITEMS.filter((x) => x.kind === 'ore' || x.kind === 'part').map((x) => [x.key, 1e7])) },
+      cut: { 'array:firetame': full, 'array:heavenearth': full },
+    });
+    s = placeArray(placeArray(s, 'firetame', true), 'heavenearth', true);
+    const best = forge.filter((r) => r.group === 'Smelting' && blocked(s, r) === null)
+      .reduce((a, r) => (xpOf(s, r) / secondsOf(s, r) > xpOf(s, a) / secondsOf(s, a) ? r : a));
+    const before = { ...setTask(s, best.key, T0), at: T0 };
+    const after = { ...work(before, T0 + CRAFT_WORK_HOURS * HOUR), at: T0 + CRAFT_WORK_HOURS * HOUR };
+    expect(after.crafts.xp.forge).toBeGreaterThan(before.crafts.xp.forge);
+    expect(verify(before, after, CRAFT_WORK_HOURS * HOUR).why).not.toContain('too-fast');
   });
 });
 

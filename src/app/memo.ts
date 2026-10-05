@@ -14,6 +14,7 @@ export function fightDeps(s: State): readonly unknown[] {
   // taking one left the odds on the screen where they were until something else moved.
   // 心魔 The demons put down are counted too.
   // 攜 And what is carried: the kit changes the odds of a warden, a demon and a vault gate.
+  // 深 And how deep the Guardian Array is cut, which changes how much a warden takes.
   return [s.realm, s.layer, s.levels, s.stance, s.sequence, s.worn, s.awakened, s.unlocked,
-    s.brewed, s.tribulation, s.killed, s.chose, s.demons, s.crafts.carry, s.crafts.pouch, s.crafts.arrays];
+    s.brewed, s.tribulation, s.killed, s.chose, s.demons, s.crafts.carry, s.crafts.pouch, s.crafts.arrays, s.crafts.cut];
 }

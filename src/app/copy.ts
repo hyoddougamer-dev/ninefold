@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -2136,7 +2136,9 @@ export const CRAFTS = {
     return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
       + marks.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
       + (graded ? '\nEvery mark also lifts the rank a little.' : '')
-      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} ${pct(CRAFT_MASTERY_SPEED)}% faster, up to ${pct(CRAFT_MASTERY_CAP)}%: ${pct(mastery)}% now.`;
+      // 熟 No stop since 2026-10-05 (CRAFT_MASTERY_BAND): every recipe mastered adds, more slowly.
+      + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} faster: ${pct(CRAFT_MASTERY_SPEED)}% each for the first ${CRAFT_MASTERY_BAND}, `
+      + `half that for each of the next ${CRAFT_MASTERY_BAND}, and half again for every ${CRAFT_MASTERY_BAND} after. ${Number((mastery * 100).toFixed(1))}% now.`;
   },
   makes: (n: number) => `${n} made`,
   pouch: '儲物袋 The pouch',
@@ -2163,6 +2165,18 @@ export const CRAFTS = {
   arraysHead: (placed: number, slots: number) => `陣 The cave floor · ${placed} of ${slots} places`,
   arraysNone: 'No array cut yet.',
   arraysMore: (level: number) => `Another place at Arrays ${level}.`,
+  /**
+   * 深 An array's depth, on its line in the floor and in the recipe list. speculaether, on
+   * the Discord (2026-10-05): a second copy of an array did nothing. Every
+   * CRAFT_ARRAY_DEPTH_EVERY copies now deepen it a step.
+   */
+  arrayDepth: (depth: number, steps: number, toNext: number) => depth >= steps
+    ? `深 Depth ${depth} of ${steps}, as deep as it goes`
+    : `深 Depth ${depth} of ${steps} · ${toNext} more to the next`,
+  arrayDepthNote: (every: number, steps: number, top: number, cut: number) =>
+    `Every ${every} copies of the same array you cut deepen it one step, up to ${steps}. `
+    + `Each step adds ${Math.round((top - 1) / steps * 100)}% to what it does, so at full depth it does ×${top}. `
+    + `Copies are kept and never spent. You have cut ${cut.toLocaleString('en')}.`,
   close: 'Close',
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,

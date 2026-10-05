@@ -1089,27 +1089,6 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-pouch.webp?v=1"
       ],
       "footer": "師 Shibaki"
-    },
-    {
-      "key": "fix-2026-10-05-ranked",
-      "pin": false,
-      "channel": "devlog",
-      "title": "榜 Fix · Fast honest climbs stay on the boards",
-      "color": "#C9A45C",
-      "body": [
-        "A fix that went out straight away, because it kept honest players off the rankings. Thank you rekaris for reporting it, twice."
-      ],
-      "fields": [
-        [
-          "塔 The tower's qi",
-          "Climbing many floors at once and spending what they paid on layers and techniques could read as too fast to the server, and the climb was held for review. The server counted the floors' qi one way and the layers it bought another. It now counts every lump the game pays at once (tower floors, the Platform, the week's quarry and the first sight of a beast) as the qi it is, and prices your upgrades in the cheapest outfit you hold, since wearing the Qi school to buy them is honest play. If you were held for this, your next sync puts you back."
-        ],
-        [
-          "疑 The review line",
-          "Measured again for every way of playing over 120 days. Nobody who plays honestly comes near it, and a clock run three times as fast is still caught."
-        ]
-      ],
-      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1366,9 +1345,9 @@
         ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), forge 鑰 Realm Keys that open the secret realm's door (one a day), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
         ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending (2% of your health a round), Guarding (12% less taken) and Might (12% harder), 1.75 times that at 天 Heaven rank, for every realm, and three rare ones. A pill is about an hour of work, its herbs and parts included, and pays the experience of an hour. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding 15% less taken, Thunder 15% harder, Binding, Mirror 10% sent back, Five Thunders 25% harder), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece. A sigil is an hour of work or more. Every recipe in the game lists its own numbers."],
-        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
+        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
         ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."],
-        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, so its marks come at 1, 1, 2, 5 and 12): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil); better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%. Tap the dots on a recipe to see its own five."],
+        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, so its marks come at 1, 1, 2, 5 and 12; an array as 30, at 1, 4, 10, 27 and 67): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after. Tap the dots on a recipe to see its own five."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."]
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"]
@@ -2690,18 +2669,6 @@
       "reply": [
         "We measured it, as promised. A line's size never depended on the school: a power line is the same number on a Sword piece and an Arts piece. What the school decides is which line leads at full size, so a Sword piece carries about twice the power of a Fortune, Body, Artificer or Arts piece. We played every class with equal pieces (every lead drawn from the same pool): no class moved by more than about two days to the ninth realm, which is close to the noise between runs, and the Fortune, Body, Artificer and Arts schools lost the lines their own bonuses multiply. So we're keeping school-shaped pieces.",
         "You were right about one thing that was simply badly worded: the Sword school was always a multiplier on all of your power, never added to the gear's percentage. Since this update it says so: all your power ×1.1, or ×1.2 at the full, on top of everything else. Thank you for pushing on it.",
-        "· 師 Shibaki"
-      ]
-    },
-    {
-      "forum": "ideas",
-      "title": "The Tower difficulty needs to be higher",
-      "tags": [
-        "Balance"
-      ],
-      "reply": [
-        "Thank you, and you were right on both counts. Being taken off the rankings was our bug, not your climb: the server counted the tower's qi and the layers it bought in two different ways. It's fixed and live, so your next sync puts you back.",
-        "On the tower and on the simulations: you were right there too. We now test every balance change on real saves from the server, including yours, with a tool that asks the question you were asking: how far can this save climb without a second passing? On your save today it climbs eleven floors and a whole realm, so the tower pays for its own next floor. The fix is in testing and we'll post it with the numbers when it's ready.",
         "· 師 Shibaki"
       ]
     }

@@ -2000,9 +2000,10 @@ export const MARKS_PER_HEAVEN = 3;
  * 1,550 hours is about three months of a workshop that runs sixteen hours a day, which is
  * a visit in the morning and one at night. RuneScape's table puts level 92 at half the
  * experience, so the last seven levels are as long as the first ninety-two. Tools, arrays
- * and familiarity take up to half off that at the end (a third from the tool and the
- * array, the rest from the marks and a craft mastered); the realm gate adds much of it
- * back, because the best recipes wait for the realm their material comes from.
+ * and familiarity take up to two thirds off that at the end (two fifths from the tool and
+ * the deepest array, the rest from the marks and a craft mastered; three quarters in
+ * Forging, whose 160 recipes master furthest); the realm gate adds much of it back,
+ * because the best recipes wait for the realm their material comes from.
  */
 export const CRAFT_HOURS_TO_CAP = 1550;
 
@@ -2097,16 +2098,27 @@ export const CRAFT_MARK_SUB = 0.10;
 
 /**
  * 熟 Mastery of a whole craft: every recipe of it made CRAFT_MARKS' last count of times
- * (all five marks) makes that whole craft CRAFT_MASTERY_SPEED faster, up to
- * CRAFT_MASTERY_CAP. A reason to finish recipes that are not the best one any more.
- * Never qi. Measured over a whole climb, counted per craft: the strong crafter masters
- * its first herb recipe on its first day and ends the climb with 2 to 16 recipes a craft
- * (Rendering, with thirty-six, reaches the cap on day 39); once a day ends with 0 to 7.
- * Counted across all seven crafts instead, the cap bound by day 5.5, which made it a
- * flat bonus rather than something a craft earns.
+ * (all five marks) makes that whole craft faster. A reason to finish recipes that are not
+ * the best one any more. Never qi. Measured over a whole climb, counted per craft: the
+ * strong crafter masters its first herb recipe on its first day and ends the climb with 2
+ * to 16 recipes a craft; once a day ends with 0 to 7. Counted across all seven crafts
+ * instead, fifteen recipes came by day 5.5, which made it a flat bonus rather than
+ * something a craft earns.
+ *
+ * 無頂 It used to stop dead at fifteen recipes and 15%. rekaris, on the Discord
+ * (2026-10-05): *"slapping on a hard limit is a needless frustration"*. So there is no
+ * stop: the first CRAFT_MASTERY_BAND recipes give CRAFT_MASTERY_SPEED each, as they always
+ * did, and every band of that many after it gives each recipe half what the band before
+ * did. Every recipe mastered always adds something, and the sum can never pass twice the
+ * first band, CRAFT_MASTERY_BOUND: 30%. A plain half a percent each after fifteen would
+ * have been 87% in Forging, which has 160 recipes. What each craft can reach with every
+ * recipe it has: Herb Gathering, Vein Delving 11%, Sigil Writing and Arrays 9%, Alchemy
+ * 22.5%, Rendering 24%, Forging 30% less a hair. `XP_PER_SECOND_MAX` in sim/crafts.ts is
+ * read at each craft's own most, so 驗 the server always allows for it.
  */
 export const CRAFT_MASTERY_SPEED = 0.01;
-export const CRAFT_MASTERY_CAP = 0.15;
+export const CRAFT_MASTERY_BAND = 15;
+export const CRAFT_MASTERY_BOUND = 2 * CRAFT_MASTERY_BAND * CRAFT_MASTERY_SPEED;
 
 /**
  * 品 Quality, the five ranks gear already has, rolled on everything a craft makes that
@@ -2135,6 +2147,43 @@ export const CRAFT_ARRAY_GUARD = 0.05;   // 護法: this much less taken from wa
 export const CRAFT_ARRAY_DOOR = 1800;    // 秘門: the vault door, this many seconds sooner
 export const CRAFT_ARRAY_XP = 0.05;      // 天地: every craft earns this much more
 export const CRAFT_ARRAY_QUALITY = 6;    // 九宮: this much on the quality score
+
+/**
+ * 陣 How many times heavier an array is than the recipe it was: its seconds on the cave
+ * floor and every metal, stone and part it asks for, multiplied together, the way a pill
+ * and a sigil were made heavy (CRAFT_KIT_WORK).
+ *
+ * speculaether, on the Discord (2026-10-05): *"Making multiple arrays is needed to level up
+ * array-making but doesn't do anything"*, and rekaris agreed. An array was 40 seconds on
+ * the floor and two to five minutes with its metals and stone: levelling the craft meant
+ * cutting thousands of copies that did nothing. At 30 the first array, Dew-Catching, is
+ * 55 minutes with no tool and 52 with the tools of its realm, and the last, Heaven-Earth,
+ * 145 and 102 (77 on average, tooled): the late ones ask for more metal, stone and parts,
+ * and do more. 25 would have left the first two under fifty minutes.
+ * tools/kitwork.ts reads every one (arrayWork). The experience follows the seconds, as it
+ * does for a pill (data/crafts.ts solves it from CRAFT_HOURS_TO_CAP), so the hours to 99
+ * are the hours they were, and the marks count a heavy make as 30 light ones.
+ */
+export const CRAFT_ARRAY_WORK = 30;
+
+/**
+ * 深 Depth: what a second copy of an array is for. Every CRAFT_ARRAY_DEPTH_EVERY copies of
+ * the same array ever cut deepen it one step, up to CRAFT_ARRAY_DEPTH_STEPS, and at full
+ * depth its effect is CRAFT_ARRAY_DEPTH_TOP times what it was: Dew-Catching 10% faster
+ * becomes 15%, the Hidden Door half an hour sooner becomes 45 minutes, the Guardian's 5%
+ * becomes 7.5%. Each step is a tenth of the effect, so the first copies after the first
+ * count as much as the last.
+ *
+ * Capped, like everything an array does: the deepest Fire-Taming is a fifth faster at the
+ * furnace and the anvil, never more, and nothing an array does touches the qi rate. Fifty
+ * copies at an hour or more each is weeks of a workshop's evenings, so depth is the long
+ * goal of the craft rather than a thing it gets on the way. 驗 the server reads the
+ * deepest step wherever it reads an array (the vault door, the Guardian, the experience a
+ * second), since a save names its own copies and the deepest is the most it can be.
+ */
+export const CRAFT_ARRAY_DEPTH_EVERY = 10;
+export const CRAFT_ARRAY_DEPTH_STEPS = 5;
+export const CRAFT_ARRAY_DEPTH_TOP = 1.5;
 
 /**
  * 戰 What a carried elixir or sigil does in a fight. They are carried into the next
