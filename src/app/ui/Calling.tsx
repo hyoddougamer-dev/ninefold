@@ -11,7 +11,7 @@ import { pairSays, schoolSaysAt } from '../classes.ts';
  * how far is each school, and what would the next piece do. The class is derived from
  * the worn set on every render, never stored: take a piece off and it is gone.
  */
-export function Calling({ worn, onBook }: { worn: Worn; onBook?: () => void }) {
+export function Calling({ worn, onBook, onCompare }: { worn: Worn; onBook?: () => void; onCompare?: () => void }) {
   const c = callingOf(worn);
   const top = [...SCHOOLS].sort((a, b) => c.counts[b] - c.counts[a])[0];
   const pure = c.kind === 'pure' && c.school ? SCHOOL_INFO[c.school] : null;
@@ -48,11 +48,21 @@ export function Calling({ worn, onBook }: { worn: Worn; onBook?: () => void }) {
           ))}
         </span>
         {hint && <span className="cnext">{hint}</span>}
-        {/* 譜 Which piece is which school, so nobody has to learn the names by heart. */}
-        {onBook && (
-          <button className="cbook" onClick={onBook}>
-            <span className="cjk" aria-hidden="true">譜</span> {CLASS.book.open}
-          </button>
+        {(onBook || onCompare) && (
+          <span className="cbtns">
+            {/* 較 Which class the pieces make strongest, built from the chest (ui/Compare.tsx). */}
+            {onCompare && (
+              <button className="ccompare" onClick={onCompare}>
+                <span className="cjk" aria-hidden="true">較</span> {CLASS.compare.open}
+              </button>
+            )}
+            {/* 譜 Which piece is which school, so nobody has to learn the names by heart. */}
+            {onBook && (
+              <button className="cbook" onClick={onBook}>
+                <span className="cjk" aria-hidden="true">譜</span> {CLASS.book.open}
+              </button>
+            )}
+          </span>
         )}
       </div>
     </div>

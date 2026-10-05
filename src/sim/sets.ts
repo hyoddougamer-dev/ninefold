@@ -96,11 +96,20 @@ export interface PutOn {
 export function wearSet(s: State, index: number): PutOn {
   const set = s.sets[index];
   if (!set) return { state: s, missing: 0 };
+  return wearPieces(s, set.ids);
+}
+
+/**
+ * 套 Put these pieces on, one place each, by id: the path a loadout takes and 較 the class
+ * comparison's tap takes too (sim/compare.ts), so a body put on from either is the same
+ * body, refining and all.
+ */
+export function wearPieces(s: State, ids: Readonly<Partial<Record<Slot, string>>>): PutOn {
   let worn = s.worn;
   let chest: readonly Item[] = s.chest;
   let missing = 0;
   for (const slot of SLOTS) {
-    const id = set.ids[slot];
+    const id = ids[slot];
     if (!id || worn[slot]?.id === id) continue;
     const item = chest.find((x) => x.id === id);
     if (!item || templateOf(item).slot !== slot) { missing += 1; continue; }
