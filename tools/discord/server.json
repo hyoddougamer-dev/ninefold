@@ -1133,6 +1133,63 @@
       "footer": "師 Shibaki"
     },
     {
+      "key": "update-2026-10-06-tower",
+      "pin": false,
+      "channel": "devlog",
+      "title": "塔 Update · A tower that pays its way, and the gear you asked for",
+      "color": "#D4AF56",
+      "body": [
+        "The biggest update of the test so far, and nearly all of it came from your posts. Thank you rekaris, speculaether and razielmorgenstern."
+      ],
+      "fields": [
+        [
+          "塔 The tower past the Dragon",
+          "Past floor 81, the Dragon's, each floor is now a step 4% steeper and pays 4% more material. A floor's qi is the same as before. From about floor 95 a floor paid for the power to beat the next one, so a strong build climbed for nothing: on rekaris's save, eleven floors and a whole realm with no time passing. We now test the tower on real saves from the server as well as our own runs, and no save climbs more than two layers that way. Every floor you have won stays yours."
+        ],
+        [
+          "天師 Celestial Master",
+          "A floor pays the Master ×2 its qi instead of ×2.5, because that share was what tripled the climb. The Master still takes the most qi out of the tower of any class, about a seventh more than the Sword Immortal, who still climbs highest and soonest."
+        ],
+        [
+          "較 Compare classes",
+          "On 器 Gear, under your class. For every class your pieces can make: the strongest outfit, its power, the highest floor it beats and its qi a second. Tap one to put it on."
+        ],
+        [
+          "陣 Arrays and 熟 mastery",
+          "An array is about an hour of work now and pays an hour's experience, so the hours to 99 stay the same. Every 10 copies of the same array deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 15% faster, the Hidden Door 45 minutes sooner, the Guardian 7.5%. Mastering recipes no longer stops at 15%: 1% each for the first 15, half that for the next 15, and so on."
+        ],
+        [
+          "套 A loadout for each task",
+          "Give a saved loadout to Fuse, Melt or Refine and that task reads it instead of what you wear. No more changing clothes to fuse or melt."
+        ],
+        [
+          "品 Quality and 熔 Keep",
+          "Every chest tile shows its quality (×1.31): how its main line compares with a usual roll of its rank. The 鎖 lock moved to the top of the tile to make room. Mark a saved filter **Keep** and a full chest never melts a piece it shows."
+        ],
+        [
+          "氣 A full Qi set",
+          "Six Qi pieces raise the ceiling on qi from gear by 0.10, so a cultivator who only wants to sit and gather has a real build."
+        ],
+        [
+          "入定 Sitting and 岔 Path forks",
+          "A sitting already running keeps going when you switch tab or app, to its usual 30 minutes. Auto still stops while the game is hidden. And a fork you hold on the 道 Path (Heavy Plate or Forsake Armour, Spirit Travel or Forget the Mechanism, Heaven's Favour or Empty Pouch) can be swapped for the other side once a day from its card, with your points kept."
+        ],
+        [
+          "煉 And a note",
+          "The fusion-quality line can pass ×1.5: it multiplies the average quality of the three pieces, and the piece made stops at ×1.5. Its note now says so."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-tower-dragon.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-compare.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-arrays.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-loadtasks.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-quality.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-fork.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
       "key": "news-art",
       "pin": false,
       "channel": "news",
@@ -1355,7 +1412,7 @@
       "body": [
         "Qi gathers at the full rate whether you are here or not, all night, with the phone shut.",
         "",
-        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for half an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
+        "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for half an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Switch to another tab or app and the sitting goes on to its end, held at the depth it had, and that time is paid when you come back. Coming back after it has ended starts a new one, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
         "",
         "**Layers.** Qi fills the bar, and a full bar opens a layer by itself. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
         "",
@@ -1411,7 +1468,7 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Every piece shows its school's seal in the corner. The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name."],
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Give a loadout a task (煉 Fuse, 拆 Melt or 煉器 Refine) and that task reads the loadout instead of what you wear, without changing clothes. Every piece shows its school's seal in the corner and its quality at the foot (×1.00 is a usual roll of its rank). The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name. Mark a filter 鎖 Keep and a full chest never melts what it shows."],
         ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once. A piece that holds refining levels is never taken by the bulk melt, a fusion or a full chest; only its own sheet can melt it."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. At 天 Heaven, three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top (×1.5 of a usual roll at most), and a piece a fusion made is never fused again, so Fuse all takes each found piece once. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
@@ -1470,7 +1527,7 @@
         ["寶匠 Treasure Smith · 運 Fortune + 器 Artificer", "Melting pays 30% more, and its allowance refills 30% faster."],
         ["甲匠 Armourer · 體 Body + 器 Artificer", "The chest holds 100 more."],
         ["劍聖 Sword Saint · 劍 Sword + 法 Arts", "The 渡劫 tribulation's Dragon counts 2% weaker every time it comes back, so your marks come sooner."],
-        ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay two and a half times the qi (150% more)."],
+        ["天師 Celestial Master · 氣 Qi + 法 Arts", "Tower floors pay twice the qi (100% more)."],
         ["卜師 Diviner · 運 Fortune + 法 Arts", "Meetings on the road pay 50% more."],
         ["羅漢 Arhat · 體 Body + 法 Arts", "You recover 4% of your health every round of a fight."],
         ["陣師 Formation Master · 器 Artificer + 法 Arts", "Ripe beds in the cave pay 30% more qi."]
@@ -1490,7 +1547,7 @@
         "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the fifth realm."
       ],
       "fields": [
-        ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
+        ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door: you hold one side of the fork or the other. Once you hold one, you can swap it for the other side once a day from its card, and the points stay spent."],
         ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
         ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
         ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance is the chance of a second piece from the same kill (up to 50%), so drop chance lines still count and feed 煉 fusion."]
@@ -1536,9 +1593,9 @@
         ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft (each step is 5% faster), forge 鑰 Realm Keys that open the secret realm's door (one a day), and forge gear: the piece you choose, in the shape a beast teaches. A forged piece is bound. It cannot be fused, and melting it gives 2 metal back, never qi."],
         ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending (2% of your health a round), Guarding (12% less taken) and Might (12% harder), 1.75 times that at 天 Heaven rank, for every realm, and three rare ones. A pill is about an hour of work, its herbs and parts included, and pays the experience of an hour. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding 15% less taken, Thunder 15% harder, Binding, Mirror 10% sent back, Five Thunders 25% harder), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece. A sigil is an hour of work or more. Every recipe in the game lists its own numbers."],
-        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Cut once and kept for good, placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away."],
+        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
         ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."],
-        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, so its marks come at 1, 1, 2, 5 and 12): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil); better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft 1% faster, up to 15%. Tap the dots on a recipe to see its own five."],
+        ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, so its marks come at 1, 1, 2, 5 and 12; an array as 30, at 1, 4, 10, 27 and 67): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after. Tap the dots on a recipe to see its own five."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."]
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"]
@@ -1556,7 +1613,7 @@
         "",
         "**擂台 The Platform** (fourth realm, on 塔 Trials). Three challengers a week, and three new ones when you break through. They stand at ×1.3, ×1.8 and ×2.5 of your own power, so the build wins them, not the number: 破甲 sunder, 破煞 bane, the tree and your class thin them as they thin any beast. The week's temper (堅 Armoured, 捷 Nimble, 癒 Mending or 狂 Frenzied) stands them ×1.3 again unless your stance or one art in your sequence answers it, and the card names the answers. A win pays a fixed sum of qi read off your realm, once each a week: the third pays three times the first, and every sum is the same for everyone in the realm, whatever they wear, whatever rate they bought and whenever they fight. The card shows each sum before you fight. A loss costs nothing, and the dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry. Never on Auto, never driven.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: two and a half times as much. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill at the ninth realm about five.",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: twice as much. Past floor 81, the Dragon's, each floor is a step 4% steeper than the curve below it, and pays 4% more material for it. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill at the ninth realm about five.",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
@@ -2902,6 +2959,131 @@
       "reply": [
         "Thank you, and you were right on both counts. Being taken off the rankings was our bug, not your climb: the server counted the tower's qi and the layers it bought in two different ways. It's fixed and live, so your next sync puts you back.",
         "On the tower and on the simulations: you were right there too. We now test every balance change on real saves from the server, including yours, with a tool that asks the question you were asking: how far can this save climb without a second passing? On your save today it climbs eleven floors and a whole realm, so the tower pays for its own next floor. The fix is in testing and we'll post it with the numbers when it's ready.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Tower difficulty needs to be higher",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "You were right, and so were your follow-ups. The tower paid for its own next floor from about floor 95, and the Master's ×2.5 tripled it. Since today's update every floor past the Dragon's is a step 4% steeper (and pays 4% more material), and the Master takes ×2. We measured it on real saves from the server, yours included: none climbs more than two layers for nothing now.",
+        "Dragon Might was broken too: with Swift, Fox Shadow and Dragon Might the beast missed every round. That one went out as a fix straight away; a beast never misses two rounds running now. With it fixed, Turtle Breath and Swift land within three floors of any other build on your save, so we left them as they are. Thank you for pushing on all of it, and for the advice on testing.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider equalizing equipment stats",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Here are the numbers we owed you. A line's size depends on the stat, not the school: on a realm-8 Heaven piece power is 78%, arts 47%, rarer gear 55%, fusion 23%, beasts weaker 14%. The school only picks which line comes for sure: a Sword piece always brings 78% power, an Arts piece always brings 47% arts and only sometimes a power line. That is the \"twice\".",
+        "For the part that mattered most, telling which class is stronger without building them all: today's update adds 較 Compare classes on the Gear screen. It builds the strongest outfit your chest can make for every class and shows its power, the highest floor it beats and its qi a second. Thank you for keeping at it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Array",
+      "reply": [
+        "Done in today's update, as you both suggested. An array is about an hour of work and pays an hour's experience, and every 10 copies of the same array deepen it a step, up to 5, half as much again at full depth. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Equipment system is overloaded and overly coupled",
+      "reply": [
+        "Thank you both, you each had part of it. We kept the gear as it is, so the choice stays yours, and took away the chore: in today's update you can give a saved loadout to Fuse, Melt or Refine, and that task reads it instead of what you wear.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Toggle off path mechanism choices",
+      "reply": [
+        "Done in today's update, close to how you put it: a fork you hold can be swapped for the other side once a day from its card, and the points stay spent. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Fusion quality probably isn't capped at 1.5x.",
+      "tags": [
+        "Bug"
+      ],
+      "reply": [
+        "It was the description, thank you. The line can pass ×1.5 on purpose: it multiplies the average quality of the three pieces, and only the piece made stops at ×1.5, so a line past it still lifts three low rolls up to that ceiling. The note says so since today's update.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Make \"Quality\" of the gear visible",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update: every chest tile shows its quality, and every piece's sheet says it. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow customization of auto-melting when the bag is full",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update: mark a saved filter Keep and a full chest never melts a piece it shows. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "As promised: since today's update mastery has no hard stop. 1% for each of the first 15 recipes you master, half that for each of the next 15, and so on. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Qi gain bonus on gear is in a weird place",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "razielmorgenstern, as promised: since today's update six Qi pieces raise the ceiling on qi from gear by 0.10. Measured, the full Qi school is now the quickest way up for someone who only sits and gathers. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When changing tabs or application, the game goes \"offline\"",
+      "tags": [
+        "Bug"
+      ],
+      "reply": [
+        "Thank you for your patience on this one. Since today's update a sitting already running keeps going when you switch tab or app, to its usual 30 minutes, and is paid when you come back. Auto still stops while the game is hidden, since hunting while away is what the Drive is for.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Golden Immortal still loses Qi when they spend it",
+      "tags": [
+        "Bug"
+      ],
+      "reply": [
+        "Only flavour, and it shouldn't have read like a rule, thank you. Nothing about spending qi changes in the second heaven. The line says something else since today's update: \"Your qi runs gold now, and the old words for it stop fitting.\"",
         "· 師 Shibaki"
       ]
     }
