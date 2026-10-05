@@ -16,6 +16,10 @@
  *   3. per habit and realm, how much the third challenger's pay grows from the first visit
  *      of the realm to the last: what waiting buys.
  *
+ * Since 2026-10-05 both pay a fixed sum off that reference (PLATFORM_HOURS and QUARRY_HOURS of
+ * midRate), so every ratio in the second table reads 1.00 and every growth in the third and
+ * fourth reads x1.00 inside a realm: the table is what proves the pay no longer moves.
+ *
  * The harness is chaotic: one warden won a visit earlier moves a habit a day or two. So
  * SEEDS=991,7,13 plays each habit on several drop and fight dice and prints the mean, which
  * is what a change to the pay has to be read against. 991 alone is the default.
@@ -27,7 +31,7 @@ import { PLATFORM_HOURS, PLATFORM_REALM, challengerPays, periodNow } from '../sr
 import { quarryPaid } from '../src/sim/combat.ts';
 import { quarryOf, weekOf } from '../src/sim/week.ts';
 import {
-  BASE_RATE, LAYER_BONUS, LAYERS_PER_REALM, LEVELS_PER_REALM, QUARRY_HOURS, UPGRADE_NUMBERS, ladderAt,
+  BASE_RATE, LAYER_BONUS, LAYERS_PER_REALM, LEVELS_PER_REALM, QUARRY_HOURS, UPGRADE_NUMBERS, ladderAt, midRate,
 } from '../src/sim/balance.ts';
 import { classBounty } from '../src/sim/schools.ts';
 import type { State } from '../src/sim/state.ts';
@@ -42,10 +46,8 @@ export function bareRate(rung: number, level: number): number {
   return BASE_RATE * LAYER_BONUS ** rung * (UPGRADE_NUMBERS.method.gain * UPGRADE_NUMBERS.pills.gain) ** level;
 }
 
-/** 中 rekaris's reference: the middle of the realm's caps (33 in the sixth) on its middle rung. */
-export function midRate(realm: number): number {
-  return bareRate((realm - 1) * LAYERS_PER_REALM + (LAYERS_PER_REALM - 1) / 2, realm * LEVELS_PER_REALM - LEVELS_PER_REALM / 2);
-}
+/** 中 rekaris's reference, which the Platform and the quarry now pay off (midRate in balance.ts). */
+export { midRate };
 
 export interface Trace {
   readonly name: string;
@@ -54,7 +56,7 @@ export interface Trace {
   /** Per realm, the third challenger's pay on the first and the last visit spent in it (first seed). */
   readonly span: Record<number, { firstPay: number; lastPay: number }>;
   /**
-   * The same, inside one Platform period (a week and a realm) and one quarry week: what a
+   * The same, inside one Platform period (a week and a realm) and one quarry week in one realm: what a
    * cultivator could have been paid by waiting for the last visit of the period instead of
    * fighting on the first. Only the period's own challengers and quarry can be waited on.
    */
@@ -73,7 +75,7 @@ export function measure(only?: readonly string[], seeds: readonly (number | unde
     const runs = seeds.map((seed, i) => {
       const watch = i > 0 ? undefined : (_day: number, s: State) => {
         const q = quarryOf(s);
-        if (q && s.realm >= PLATFORM_REALM) note(byWeek, weekOf(s.at), quarryPaid(s, q));
+        if (q && s.realm >= PLATFORM_REALM) note(byWeek, weekOf(s.at) * 16 + s.realm, quarryPaid(s, q));
         if (s.realm < PLATFORM_REALM) return;
         const pay = challengerPays(s, 2);
         const r = (span[s.realm] ??= { firstPay: pay, lastPay: 0 });
@@ -135,7 +137,7 @@ export function report(traces: readonly Trace[]): string {
   }
   out.push('');
   out.push('habit             inside one period: last visit / first visit, median and max over periods (realm 4 on)');
-  out.push('                  Platform (third)       quarry (gear as worn)');
+  out.push('                  Platform (third)       quarry (a week in a realm)');
   for (const { name, periods } of traces) {
     const g = (xs: number[]) => (xs.length ? `x${median(xs).toFixed(2)}  x${Math.max(...xs).toFixed(2)}` : '-').padEnd(23);
     out.push(`${name.padEnd(16)}  ${g(periods.platform)}${g(periods.quarry)}`);

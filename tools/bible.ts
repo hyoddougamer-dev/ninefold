@@ -554,7 +554,7 @@ const SYSTEMS: readonly System[] = [
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
     line: `${SECRET_ROOMS} rooms, every other one a gate with one guardian, and between them a spring that fills while the door is shut: each room's share drunk now, burned as incense, or spent on a third door. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave and from which room.` },
   { han: '擂台', name: 'Three challengers a week', status: 'done', at: 'qisrc',
-    line: 'From the fourth realm, on 塔 Trials: three challengers a period at ×1.3, ×1.8 and ×2.5 of your own power, the week\u2019s temper on top unless answered, the dice set for the period. A win pays hours of gathering; a loss costs nothing. Never Auto, never driven.' },
+    line: 'From the fourth realm, on 塔 Trials: three challengers a period at ×1.3, ×1.8 and ×2.5 of your own power, the week\u2019s temper on top unless answered, the dice set for the period. A win pays a fixed sum of qi read off the realm; a loss costs nothing. Never Auto, never driven.' },
 
   { han: '期', name: 'The one thing that never runs out', status: 'done', at: 'week',
     line: `Everything else in the game arrives once, the last of it around the seventh week. One mark rides the calendar instead: a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching, all three derived from the week and the save alone. No server, no clock to cheat, and it may never touch the qi rate. Measured, the cultivator who never fights finishes on the same day with it as without.` },
@@ -1414,13 +1414,13 @@ const QS_ROWS = ([0, 1, 2] as const).map((tier) => {
   const standing = tier === 1;
   const asIs = standing ? QS_PLATFORM.challengeOdds(QS_PLAT, tier) : 0;
   const inAns = standing && QS_ANSWER ? QS_PLATFORM.challengeOdds({ ...QS_PLAT, stance: QS_ANSWER }, tier) : 0;
-  const right = beaten ? `<b class="ok">✓</b><i>${QS_PLATFORM.PLATFORM_HOURS[tier]} h paid</i>`
+  const right = beaten ? `<b class="ok">✓</b><i>${num(QS_PLATFORM.challengerPays(QS_PLAT, tier))} paid</i>`
     : standing ? `<b>${Math.round(Math.max(asIs, inAns) * 100)}%</b><i>${inAns > asIs ? `in ${QS_ANSWER_NAME}` : 'odds'}</i>${inAns > asIs ? `<i class="low">${Math.round(asIs * 100)}% as you stand</i>` : ''}`
       : '<b>·</b><i>waits</i>';
   return `<div class="qrow" data-state="${beaten ? 'beaten' : standing ? 'standing' : 'waits'}">
     <span class="nm"><b><span class="cjk">${['一', '二', '三'][tier]} ${shape.han}</span> ${shape.name}</b>
       <i>×${QS_PLATFORM.PLATFORM_EDGE[tier]} your power${beaten ? ' · beaten this week' : ''}</i>
-      ${beaten ? '' : `<em>pays ${QS_PLATFORM.PLATFORM_HOURS[tier]} h of gathering · ${num(QS_PLATFORM.challengerPays(QS_PLAT, tier))} qi</em>`}</span>
+      ${beaten ? '' : `<em>pays ${num(QS_PLATFORM.challengerPays(QS_PLAT, tier))} qi</em>`}</span>
     <span class="od">${right}</span></div>`;
 }).join('');
 
@@ -3208,8 +3208,11 @@ const page = `<meta charset="utf-8">
       it, and every temper has an answer held by the fourth realm. <b>The dice are set for
       the period</b>: one seed per period and challenger, so the same body meets the same
       fight and the way past a loss is to change the stance, the arts, what is carried or a
-      piece. A win pays 2, 4 and 6 hours of gathering without gear
-      (<code>towerRate</code>), once each a period. A loss costs nothing, and the card and the
+      piece. A win pays a fixed sum read off the realm, once each a period: ${QS_PLATFORM.PLATFORM_HOURS.join(', ')}
+      hours of the realm's middle rate (<code>midRate</code>, its middle rung with both qi
+      upgrades three under the cap), the same for everyone in the realm. Until 2026-10-05 it
+      was 2, 4 and 6 hours of the cultivator's own bare rate (<code>towerRate</code>), which
+      paid several times more to whoever bought rate first and fought late in the realm. A loss costs nothing, and the card and the
       verdict both say so. Never on 狩 the hunt list, never Known, never driven, no Auto, and
       Again is the next challenger.</p>
     <div class="mk"><p class="lab">樣 The card on 塔 for the same save, the first challenger

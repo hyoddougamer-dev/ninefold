@@ -7,7 +7,7 @@ import {
   REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
   floorPay, ladderBetween,
 } from './balance.ts';
-import { UPGRADE_INFO, crossTribulation, power, rate, tribulationPower, type State } from './state.ts';
+import { UPGRADE_INFO, crossTribulation, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -17,7 +17,7 @@ import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import {
   classArts, classBounty, classDragon, classMend, classTower, classWarden, gearArt, gearSunder,
 } from './schools.ts';
-import { BOON_BLOOD, BOON_LOTUS, QUARRY_HOURS } from './balance.ts';
+import { BOON_BLOOD, BOON_LOTUS, QUARRY_HOURS, midRate } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
@@ -553,6 +553,14 @@ export function seenPaid(s: State, b: Beast): number {
   return Math.round(seenBounty(b) * classBounty(s));
 }
 export function quarryPaid(s: State, b: Beast): number {
-  // 期 The greater of the quarry's own share and QUARRY_HOURS of this cultivator's gathering.
-  return Math.round(Math.max(quarryBounty(b), rate(s) * 3600 * QUARRY_HOURS) * classBounty(s));
+  return Math.round(quarryQi(s.realm, b) * classBounty(s));
+}
+/**
+ * 期 What the week's quarry pays in a realm, before any class: the greater of its own share
+ * and QUARRY_HOURS of the realm's middle rate. A fixed sum read off the realm the kill is
+ * made in, the same for everyone in it (2026-10-05): it used to be hours of the killer's
+ * own gathering, gear included, so putting on qi gear for the kill paid more.
+ */
+export function quarryQi(realm: number, b: Beast): number {
+  return Math.max(quarryBounty(b), midRate(realm) * 3600 * QUARRY_HOURS);
 }

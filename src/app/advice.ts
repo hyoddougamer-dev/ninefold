@@ -1,4 +1,4 @@
-import { currentWarden, effectiveBeastPower, odds } from '../sim/combat.ts';
+import { currentWarden, effectiveBeastPower, odds, quarryPaid } from '../sim/combat.ts';
 import {
   UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, upgradeCost,
   type State,
@@ -183,7 +183,7 @@ export function advice(s: State): Advice | null {
    */
   const quarry = quarryOf(s);
   if (quarry && quarryOwed(s) && odds(s, quarry) >= STUCK) {
-    return { han: '期', text: WEEK.advise(`${quarry.han} ${quarry.name}`), tab: 'hunt' };
+    return { han: '期', text: WEEK.advise(`${quarry.han} ${quarry.name}`, num(quarryPaid(s, quarry))), tab: 'hunt' };
   }
 
   // Nothing is blocking. Is there something plainly worth doing?

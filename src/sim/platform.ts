@@ -1,5 +1,5 @@
 import {
-  PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM, TEMPER_EDGE, TRAIL_WOUND,
+  PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM, TEMPER_EDGE, TRAIL_WOUND, midRate,
 } from './balance.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { TEMPERS, type Temper } from '../data/platform.ts';
@@ -8,7 +8,6 @@ import { periodOf, weekOf } from './week.ts';
 import { fight, odds, oddsRaw, type Outcome } from './combat.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { sequenceOf, stanceChoices, stanceOf } from './arts.ts';
-import { towerRate } from './trials.ts';
 import { classBounty } from './schools.ts';
 
 /**
@@ -28,9 +27,10 @@ import { classBounty } from './schools.ts';
  *   定 The dice are set for the period: one seed per period and challenger, so the same
  *     body meets the same fight. Losing costs nothing, and pressing again with nothing
  *     changed loses again, so the way past a loss is to change something.
- *   一 Each pays once a period, PLATFORM_HOURS of gathering with nothing worn (the
- *     tower's towerRate, so the card can say it before the fight and clothes cannot
- *     move it). No 材, no drop, no mark on 錄 the record: a challenger is not a hunt.
+ *   一 Each pays once a period a fixed sum read off the realm: PLATFORM_HOURS of the
+ *     realm's middle rate (midRate), the same for everyone in the realm whenever it
+ *     falls, so the card can say it before the fight and neither clothes nor a rate bought
+ *     first can move it. No 材, no drop, no mark on 錄 the record: a challenger is not a hunt.
  *   手 Never on the hunt list, never Known, never driven, never on Auto.
  *
  * Pure, like everything in sim/: the save holds the period and the count, and everything
@@ -124,18 +124,23 @@ export function challengerKit(s: State, kit: Kit = NO_KIT): Kit {
 }
 
 /**
- * 吸 How many hours of gathering a challenger pays this body: PLATFORM_HOURS, and half again
- * as 金剛 the Vajra (PAIR_BOUNTY), whose bounty used to stop at first sights and the week's
- * quarry. rekaris, on the Discord (2026-10-05): the Vajra did nothing for the Platform. The
- * server already allowed for it (verify.ts reads every bout at PAIR_BOUNTY).
+ * 吸 What a challenger pays in a realm, before any class: PLATFORM_HOURS of the realm's
+ * middle rate. A fixed sum read off the realm alone (rekaris, 2026-10-05): it used to be
+ * hours of the cultivator's own bare rate, so buying rate first and fighting late in the
+ * realm paid several times more for the same fight. The server credits a bout at this,
+ * the third's, 金剛 the Vajra's half again (verify.ts).
  */
-export function challengerHours(s: State, tier: Tier): number {
-  return PLATFORM_HOURS[tier] * classBounty(s);
+export function challengerQi(realm: number, tier: Tier): number {
+  return PLATFORM_HOURS[tier] * 3600 * midRate(realm);
 }
 
-/** 吸 What a challenger pays when it falls: those hours of gathering, with nothing worn. */
+/**
+ * 吸 What a challenger pays this body when it falls: the realm's sum, and half again as
+ * 金剛 the Vajra (PAIR_BOUNTY), whose bounty used to stop at first sights and the week's
+ * quarry. rekaris, on the Discord (2026-10-05): the Vajra did nothing for the Platform.
+ */
 export function challengerPays(s: State, tier: Tier): number {
-  return challengerHours(s, tier) * 3600 * towerRate(s);
+  return challengerQi(s.realm, tier) * classBounty(s);
 }
 
 /** 戰 The fight itself, on the period's dice. The arena plays this back; the harness reads it. */
@@ -150,7 +155,7 @@ export function challengeOdds(s: State, tier: Tier, kit: Kit = NO_KIT, raw = fal
 }
 
 /**
- * 勝 A challenger beaten: its hours paid, the period's count moved on, the trail spent.
+ * 勝 A challenger beaten: its sum paid, the period's count moved on, the trail spent.
  * Only the challenger standing can be beaten, and only once: anything else is refused.
  * A loss calls nothing, because a loss costs nothing.
  */

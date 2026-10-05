@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   BOX_HOURS, INCENSE_BONUS, INCENSE_HOLD, INCENSE_WORTH, PAIR_BOUNTY, PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM,
-  SPRING_FILL, SPRING_HOLD, TEMPER_EDGE, TRAIL_WOUND, springShare,
+  SPRING_FILL, SPRING_HOLD, TEMPER_EDGE, TRAIL_WOUND, midRate, springShare,
 } from '../balance.ts';
 import { ROOMS } from '../../data/secret.ts';
 import {
   burnAt, doorsAt, enter, giftOf, inside, isGate, leave, open, shareAt, springNow, SPRING_FULL,
 } from '../secret.ts';
 import {
-  answerHeld, answered, beatChallenger, beatenNow, challengeFight, challengeOdds, challengerHours, challengerOf, challengerPays,
+  answerHeld, answered, beatChallenger, beatenNow, challengeFight, challengeOdds, challengerOf, challengerPays, challengerQi,
   challengerPower, periodNow, standingTier, temperOf,
 } from '../platform.ts';
 import { TEMPERS } from '../../data/platform.ts';
@@ -17,7 +17,6 @@ import { advance, rate } from '../time.ts';
 import { breakThrough, newState, power, validate, type State } from '../state.ts';
 import { effectiveBeastPower } from '../combat.ts';
 import { kitWhere } from '../crafts.ts';
-import { towerRate } from '../trials.ts';
 import { WEEK, isBlessed } from '../week.ts';
 import { verify } from '../verify.ts';
 import { levelOf } from '../../data/crafts.ts';
@@ -215,14 +214,27 @@ describe('擂台 the Platform', () => {
     }
   });
 
-  it('pays hours of gathering without gear, whatever is worn', () => {
+  /**
+   * 定 rekaris (2026-10-05): hours of the cultivator's own rate paid more to whoever bought
+   * rate first and fought late in the realm. A fixed sum read off the realm now, the same
+   * for everyone in it: no gear, no levels bought, no rung climbed moves it.
+   */
+  it('pays a fixed sum read off the realm, whatever is worn, bought or climbed', () => {
     const bare = fighter();
     const dressed = fighter({ worn: { weapon: { id: 'w', template: 'sword5', rarity: 'heaven',
       rolls: [{ affix: 'power', value: 20 }, { affix: 'rate', value: 20 }] } } });
+    // The same realm entered with the last realm's caps, on its first rung: a body that
+    // bought nothing yet, against the bare one standing at the realm's caps on its last rung.
+    const fresh = fighter({ layer: 0, levels: { ...bare.levels, method: bare.levels.method - 6, pills: bare.levels.pills - 6 } });
+    expect(rate(bare)).toBeGreaterThan(rate(fresh) * 5);
     for (const tier of [0, 1, 2] as const) {
-      expect(challengerPays(bare, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * 3600 * towerRate(bare), 6);
-      expect(challengerPays(dressed, tier)).toBeCloseTo(challengerPays(bare, tier), 6);
+      expect(challengerPays(bare, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * 3600 * midRate(bare.realm), 6);
+      expect(challengerPays(bare, tier)).toBe(challengerQi(bare.realm, tier));
+      expect(challengerPays(dressed, tier)).toBe(challengerPays(bare, tier));
+      expect(challengerPays(fresh, tier)).toBe(challengerPays(bare, tier));
     }
+    // And the next realm pays its own, larger sum.
+    expect(challengerQi(bare.realm + 1, 0)).toBeGreaterThan(challengerQi(bare.realm, 2));
     const won = beatChallenger(bare, 0);
     expect(won.qi - bare.qi).toBeCloseTo(challengerPays(bare, 0), 3);
   });
@@ -247,8 +259,8 @@ describe('擂台 the Platform', () => {
     const vajra = fighter({ worn });
     expect(classBounty(vajra)).toBe(PAIR_BOUNTY);
     for (const tier of [0, 1, 2] as const) {
-      expect(challengerHours(vajra, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * PAIR_BOUNTY, 9);
-      expect(challengerPays(vajra, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * PAIR_BOUNTY * 3600 * towerRate(vajra), 6);
+      expect(challengerPays(vajra, tier)).toBeCloseTo(challengerQi(vajra.realm, tier) * PAIR_BOUNTY, 6);
+      expect(challengerPays(vajra, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * PAIR_BOUNTY * 3600 * midRate(vajra.realm), 6);
     }
     const won = beatChallenger(vajra, 0);
     expect(won.qi - vajra.qi).toBeCloseTo(challengerPays(vajra, 0), 3);

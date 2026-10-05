@@ -30,11 +30,11 @@
  */
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
-  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
-  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, QUARRY_HOURS, SPRING_FILL,
+  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE, midRate,
 } from './balance.ts';
 import { WEEK } from './week.ts';
-import { beatenNow, challengerOf, type Tier } from './platform.ts';
+import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
 import { classSpring } from './schools.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
@@ -416,9 +416,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 2026-10-03 left the Treasure Smith past that margin, so it is counted as itself now,
   // in the same deep-sitting seconds as the rest of the budget.
   const melted = (MELT_CAP + dt * MELT_FILL * PAIR_MELT) / focus;
-  // 期 And the week's quarry pays QUARRY_HOURS of gathering at once, 金剛 the Vajra's half
-  // again at most, the week it is first taken: a lump, allowed for as itself.
-  const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0) ? QUARRY_HOURS * 3600 * PAIR_BOUNTY / focus : 0;
+  // 期 And the week's quarry pays a fixed sum at once, QUARRY_HOURS of the realm's middle
+  // rate, 金剛 the Vajra's half again at most, the week it is first taken: a lump, allowed
+  // for as itself, as the seconds it would take at the fastest rate there was (the tower's
+  // way below). Read off the higher realm of the two saves, the most it can have paid.
+  const top = Math.max(before.realm, after.realm);
+  const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0)
+    ? QUARRY_HOURS * 3600 * midRate(top) * PAIR_BOUNTY / rEnd : 0;
   // 塔 And the floors climbed paid their qi once, a lump as well. It is allowed for as the
   // seconds it would take at the fastest rate there was, the fewest it can be worth: the
   // server cannot know when each floor fell, and towerQi is a ceiling, not a measurement.
@@ -430,10 +434,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // gap, the Realm Key and the Hidden Door Array need no qi term at all. A first sync has
   // its own allowance (FIRST_PACE, FIRST_SITTING), as for the floors.
   const spring = first ? 0 : vaultSeconds(dt) / focus;
-  // 擂 Each challenger beaten paid at most PLATFORM_HOURS' largest at the bare rate, the
-  // Vajra's half again at most: a lump, allowed for as itself, as the quarry is.
+  // 擂 Each challenger beaten paid a fixed sum read off the realm, the third's at most and
+  // the Vajra's half again at most: a lump, allowed for as itself, as the quarry is. It was
+  // hours of the bare rate until 2026-10-05, credited as time; it is qi now, so it is the
+  // seconds that qi takes at the fastest rate there was, and a body that bought no rate
+  // is credited the more time for the same fight, as it should be.
   const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
-  const platform = first ? 0 : (bouts * Math.max(...PLATFORM_HOURS) * 3600 * PAIR_BOUNTY) / focus;
+  const platform = first ? 0 : bouts * challengerQi(top, 2) * PAIR_BOUNTY / rEnd;
   const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower
     + spring + platform;
   const used = need / Math.max(1, have * SLACK);

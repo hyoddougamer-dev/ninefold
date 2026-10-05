@@ -5,16 +5,17 @@ import { ART_BY_KEY, STANCE_BY_KEY } from '../../data/arts.ts';
 import { kitFor } from '../../sim/crafts.ts';
 import { duration, num } from '../../sim/format.ts';
 import {
-  PLATFORM_EDGE, TIERS, answered, beatenNow, challengeOdds, challengerHours, challengerOf, challengerPays,
+  PLATFORM_EDGE, TIERS, answered, beatenNow, challengeOdds, challengerOf, challengerPays,
   challengerPower, standingTier, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { stanceChoices } from '../../sim/arts.ts';
 import { effectiveBeastPower } from '../../sim/combat.ts';
 import { TEMPER_EDGE } from '../../sim/balance.ts';
 import { weekLeft } from '../../sim/week.ts';
-import { power, type State } from '../../sim/state.ts';
+import { power, rate, type State } from '../../sim/state.ts';
+import { classBounty } from '../../sim/schools.ts';
 import { fightDeps } from '../memo.ts';
-import { PLATFORM } from '../copy.ts';
+import { PLATFORM, TRIALS } from '../copy.ts';
 import { Plate } from './Plate.tsx';
 import { Term } from './Term.tsx';
 
@@ -23,7 +24,7 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 /**
  * 擂台 The Platform, on 塔 Trials: the week's three challengers, its temper, and the one
- * challenger standing now with what it pays.
+ * challenger standing now with what it pays: a fixed sum read off the realm.
  *
  * 量 The card quotes the odds as the cultivator stands and, when a held stance would
  * answer the week's temper and do better, in that stance too, with a button that stands
@@ -71,6 +72,13 @@ export function Platform({ state, onChallenge, onStance }: {
   const list = answers.length > 1 ? `${answers.slice(0, -1).join(', ')} or ${answers[answers.length - 1]}` : answers[0] ?? '';
   const left = duration(weekLeft(state));
   const best = read?.best ? STANCE_BY_KEY[read.best.key] : null;
+  // 吸 The realm the sums are read off, and what the one standing is worth today in the
+  // cultivator's own time on the bar: only a reading, as on the tower's floor.
+  const home = realmOf(state.realm);
+  const bonus = classBounty(state);
+  const standingPays = up === null ? 0 : challengerPays(state, up);
+  const seconds = standingPays / Math.max(1e-9, rate(state));
+  const span = seconds < 60 ? TRIALS.little : duration(seconds);
 
   return (
     <div className="card platcard" data-coach="platform">
@@ -105,10 +113,10 @@ export function Platform({ state, onChallenge, onStance }: {
                   : standing ? <> {'·'} <Term han="力" /> {num(brings)}{best ? <> {PLATFORM.inStance(`${best.han} ${best.name}`)}</> : null}</>
                     : <> {'·'} {PLATFORM.waits}</>}
               </i>
-              {!beaten && <em className="mono">{PLATFORM.pays(challengerHours(state, tier), num(pays))}</em>}
+              {!beaten && <em className="mono">{PLATFORM.pays(num(pays))}</em>}
             </span>
             <span className="plodds mono">
-              {beaten ? <><b className="pltick">{'✓'}</b><i>{PLATFORM.paid(challengerHours(state, tier))}</i></>
+              {beaten ? <><b className="pltick">{'✓'}</b><i>{PLATFORM.paid(num(pays))}</i></>
                 : standing && read ? <>
                   {/* 誠 Out of reach is not two per cent, here as on the tower: it says how far off. */}
                   <b style={{ color: read.raw > 0 || best ? tone : 'var(--faint)' }}>{read.raw > 0 || best ? pct(stanceOdds)
@@ -121,6 +129,13 @@ export function Platform({ state, onChallenge, onStance }: {
           </div>
         );
       })}
+
+      {/* 吸 What every challenger pays, read off the realm and nothing else: the same sum for
+          everyone in it, so it is said before the fight rather than after (rekaris). */}
+      <p className="faint plfixed">
+        {PLATFORM.fixed(`${home.han} ${home.name}`, bonus > 1 ? `${Math.round((bonus - 1) * 100)}%` : undefined)}
+        {up !== null && <>{' '}{PLATFORM.today(span)}</>}
+      </p>
 
       {state.trail && up !== null && <p className="pltrail">{PLATFORM.trail}</p>}
 

@@ -125,14 +125,44 @@ describe('溢 luck lifts the roll, not only the rank', () => {
   });
 });
 
-describe('期 the week’s quarry pays at least hours of your own gathering', () => {
-  it('pays the greater of its own share and QUARRY_HOURS of the rate', async () => {
-    const { quarryPaid } = await import('../combat.ts');
-    const { rate } = await import('../state.ts');
-    const { QUARRY_HOURS } = await import('../balance.ts');
+describe('期 the week’s quarry pays a fixed sum read off the realm', () => {
+  it('pays the greater of its own share and QUARRY_HOURS of the realm\'s middle rate', async () => {
+    const { quarryPaid, quarryBounty } = await import('../combat.ts');
+    const { QUARRY_HOURS, midRate } = await import('../balance.ts');
     const s = at({ realm: 6, layer: 4 });
     const old = commonsOf(1)[0];
-    expect(quarryPaid(s, old)).toBeGreaterThanOrEqual(Math.round(rate(s) * 3600 * QUARRY_HOURS));
+    expect(quarryPaid(s, old)).toBe(Math.round(Math.max(quarryBounty(old), midRate(6) * 3600 * QUARRY_HOURS)));
+  });
+
+  /**
+   * 定 It used to be hours of the killer's own gathering, gear and all (2026-10-05), so qi
+   * gear put on for the kill, or a kill late in the realm, paid more. Neither does now.
+   */
+  it('pays the same whatever is worn and wherever in the realm the kill is made', async () => {
+    const { quarryPaid } = await import('../combat.ts');
+    const { rate } = await import('../state.ts');
+    const q = commonsOf(6)[0];
+    const early = at({ realm: 6, layer: 0 });
+    const late = at({ realm: 6, layer: 8 });
+    const dressed = { ...late, worn: { weapon: { id: 'w', template: 'sword5', rarity: 'heaven' as const,
+      rolls: [{ affix: 'rate' as const, value: 40 }] } } } as State;
+    expect(rate(dressed)).toBeGreaterThan(rate(early));
+    expect(quarryPaid(late, q)).toBe(quarryPaid(early, q));
+    expect(quarryPaid(dressed, q)).toBe(quarryPaid(early, q));
+    expect(quarryPaid(at({ realm: 7, layer: 0 }), q)).toBeGreaterThan(quarryPaid(late, q));
+  });
+
+  /**
+   * 驗 The server credits the quarry at QUARRY_HOURS of the realm's middle rate, never its
+   * own share, so that share must never be the larger for anything the week can point at.
+   */
+  it('never lets the quarry\'s own share outgrow the realm\'s sum, so the server\'s credit is exact', async () => {
+    const { quarryBounty } = await import('../combat.ts');
+    const { QUARRY_HOURS, midRate } = await import('../balance.ts');
+    const { huntable } = await import('../../data/bestiary.ts');
+    for (let r = 1; r <= 9; r++) {
+      for (const b of huntable(r, 8)) expect(quarryBounty(b), `${r} ${b.key}`).toBeLessThan(midRate(r) * 3600 * QUARRY_HOURS);
+    }
   });
 });
 
