@@ -215,6 +215,13 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
   let cursor = 0;
   const rounds: Round[] = [];
 
+  // 狐 Whether the beast was made to miss last round. A beast never misses two rounds
+  // running (2026-10-05): 疾 Swift runs the sequence twice a round, so Fox Shadow and
+  // Dragon Might in one three-art sequence made it miss every round, it never landed a
+  // blow, and the round cap handed the fight to whoever had lost the smaller share of
+  // their health. rekaris's real save beat floor 352 that way with a ten-thousand-
+  // trillionth of the floor's power, and five tribulations in three quarters of an hour.
+  let missedLast = false;
   for (let i = 0; i < ROUND_CAP && ph > 0 && bh > 0; i++) {
     const fired: string[] = [];
     let mine = 0;
@@ -264,6 +271,8 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
 
     bh -= mine;
 
+    if (missed && missedLast) missed = false;
+    missedLast = missed;
     let theirs = missed ? 0 : beastPower * blowRoll(d);
     if (stance?.key === 'guard') theirs *= STANCE_NUMBERS.guardTaken;
     if (stance?.key === 'fierce') theirs *= STANCE_NUMBERS.fierceTaken;
