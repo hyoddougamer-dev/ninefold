@@ -1206,7 +1206,7 @@
         "The item sheet tells you before you wear anything: *Wearing it makes you a Vajra*, or *ends your Wanderer*. The 器 Gear screen shows your class and how many pieces the next step needs."
       ],
       "fields": [
-        ["劍 Sword Cultivator · 劍修", "Leads with 力 Power. Power +10%, or +20% at the full."],
+        ["劍 Sword Cultivator · 劍修", "Leads with 力 Power. All your power ×1.1, or ×1.2 at the full, on top of everything else."],
         ["氣 Qi Cultivator · 氣修", "Leads with 氣 Qi rate. The four upgrades cost 8% less, or 15% at the full."],
         ["運 Fortune Seeker · 運修", "Leads with 運 Rarer gear, 拾 Drop chance. Your 運 rarer gear and 拾 drop chance lines count ×1.5, or ×2 at the full. A bond fills in 9 wins, or 8 at the full."],
         ["體 Body Cultivator · 體修", "Leads with 破 Beasts weaker. Your 破 beasts weaker lines count ×1.5, or ×2 at the full."],

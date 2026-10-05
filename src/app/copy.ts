@@ -1620,7 +1620,9 @@ export const CLASS = {
   pairOf: (a: string, b: string, gives: string) => `And ${a} and ${b} are both awake: ${gives}`,
   /** 列 What each school gives, at its first step and at its full. */
   school: {
-    sword: (w: number, f: number) => `Power +${pct(w)}, or +${pct(f)} at the full.`,
+    // 劍 A multiplier on all of your power, gear and levels included, never added to the gear's
+    // own percentage: rekaris read "+20%" as added (2026-10-05), and it is not.
+    sword: (w: number, f: number) => `All your power ×${w}, or ×${f} at the full, on top of everything else.`,
     qi: (w: number, f: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full.`,
     fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
@@ -1629,7 +1631,7 @@ export const CLASS = {
   },
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
   schoolAt: {
-    sword: (x: number) => `Power +${pct(x)}.`,
+    sword: (x: number) => `All your power ×${x}.`,
     qi: (x: number) => `The four upgrades cost ${pct(x)} less.`,
     fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
     body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
