@@ -534,6 +534,12 @@ export const TRIALS = {
    */
   least: (span: string, until: number, summit: number, most: string) =>
     `Today that is ${span} of your gathering. Every floor up to ${until} pays this much, and each floor above that pays more, up to floor ${summit}. From there every floor pays ${most} qi.`,
+  /**
+   * 塔 Past the Dragon's floor (rekaris, 2026-10-05: "The Tower difficulty needs to be
+   * higher"). `pct` is TOWER_PAST_DRAGON as "4%", `dragon` the Dragon's floor.
+   */
+  pastDragon: (pct: string, dragon: number) =>
+    `Past floor ${dragon}, the Dragon's, every floor stands ${pct} stronger than the one below it and pays ${pct} more material for it.`,
   /** 吸 The same, standing at or above the summit floor, where every floor pays the most. */
   summit: (span: string, summit: number) =>
     `Today that is ${span} of your gathering. From floor ${summit} up every floor pays this much, and no floor pays more.`,

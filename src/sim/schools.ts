@@ -4,7 +4,7 @@ import {
   ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
   PAIR_CHEST, PAIR_DRIVE, PAIR_DROP, PAIR_MATERIAL, PAIR_MELT, PAIR_PILLS, PAIR_SPRING, PAIR_TOWER,
   PAIR_DRAGON, PAIR_HERBS, PAIR_MEET, PAIR_MEND, PAIR_TOWER_QI,
-  PAIR_WARDEN, QI_UPGRADES, SUNDER_BEND, SWORD_POWER,
+  PAIR_WARDEN, QI_FULL_ROOF, QI_UPGRADES, SUNDER_BEND, SWORD_POWER,
 } from './balance.ts';
 import { affinity } from './dao.ts';
 import type { State } from './state.ts';
@@ -48,6 +48,8 @@ const step = (t: 0 | 1 | 2, by: readonly [number, number], none = 1) => (t === 0
 export function classPower(s: Body): number { return step(tierOf(s, 'sword'), SWORD_POWER); }
 /** 氣 What the four 修 upgrades cost, as a multiplier. */
 export function classUpgrades(s: Body): number { return step(tierOf(s, 'qi'), QI_UPGRADES); }
+/** 氣滿 How much higher the qi roof stands: QI_FULL_ROOF in the full Qi school, else 0. */
+export function classQiRoof(s: Body): number { return tierOf(s, 'qi') === 2 ? QI_FULL_ROOF : 0; }
 /** 運 How many wins fill a bond. */
 export function classBond(s: Body): number { return step(tierOf(s, 'fortune'), FORTUNE_BOND, FATE_FULL); }
 /** 器 What a refine level costs, as a multiplier. */

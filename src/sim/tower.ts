@@ -1,7 +1,7 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import {
   FLOORS_PER_REALM, LAYERS, LAYERS_PER_REALM, SEAL_LOOT, TOWER_QI_LEAST, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT,
-  floorPay, ladderAt, ladderBetween,
+  ladderAt, ladderBetween, pastDragon, towerLoot,
 } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
 import { opensAt } from './unlocks.ts';
@@ -35,7 +35,8 @@ export { FLOORS_PER_REALM };
  * the beasts read, one realm every nine floors, and never stops reading it.
  */
 export function floorPower(floor: number): number {
-  return referenceAt(Math.max(1, floor) / FLOORS_PER_REALM) * WARDEN_EDGE;
+  // 塔 Past the Dragon's floor each stands TOWER_PAST_DRAGON above the curve: see balance.ts.
+  return referenceAt(Math.max(1, floor) / FLOORS_PER_REALM) * WARDEN_EDGE * pastDragon(floor);
 }
 
 /**
@@ -51,7 +52,7 @@ export function floorBeast(floor: number): Beast {
 
 /** How much material a floor pays, the first time it falls. */
 export function floorLoot(floor: number): number {
-  return Math.round(floorPay(floor));
+  return Math.round(towerLoot(floor));
 }
 
 /**

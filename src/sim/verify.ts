@@ -359,7 +359,13 @@ function gearFits(s: State): boolean {
  * offered, `seconds` the server time between them. For a first sync, pass
  * `firstSync(after, now)` as `before`.
  */
-export function verify(before: State, after: State, seconds: number, first = false): Verdict {
+/**
+ * `held` is the highest floor the server has already ranked for this account. A floor at
+ * or under it was won and checked once, so it is never read again: since 2026-10-05 the
+ * floors past the Dragon's stand harder (TOWER_PAST_DRAGON), and a floor a cultivator won
+ * before that, brought back on a new device, must not wait for a fight it already won.
+ */
+export function verify(before: State, after: State, seconds: number, first = false, held = 0): Verdict {
   const why: Why[] = [];
   const dt = Math.max(0, seconds);
 
@@ -511,7 +517,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   }
   // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
   // the save holds. See towerVerdict.
-  if (after.tower > before.tower && after.tower > 0) {
+  if (after.tower > Math.max(before.tower, held) && after.tower > 0) {
     const v = towerVerdict(after, after.tower);
     if (v === 'strike') why.push('tower');
     else if (v === 'wait' && !why.includes('too-fast')) why.push('too-fast');

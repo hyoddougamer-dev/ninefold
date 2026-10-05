@@ -5,7 +5,7 @@ import {
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FOCUS_MAX, OPENING_PURSE,
   FATE_FULL, FUSE_TOP, BEDS, CORE_STEP, FLOORS_PER_REALM, SECONDARY_SHARE, SECONDARIES,
-  UPGRADE_NUMBERS, floorPay,
+  UPGRADE_NUMBERS, towerLoot,
 } from './balance.ts';
 import { pct } from './format.ts';
 import { BEASTS } from '../data/bestiary.ts';
@@ -25,7 +25,7 @@ import { NO_PILLS, brewed as validBrewed, pillPower, type Brewed } from './furna
 import { recordPower, realmsKnown } from './record.ts';
 import { clampRefine, refineCeiling } from './refine.ts';
 import { isOpen } from './unlocks.ts';
-import { bodyTotals, classPower, classUpgrades } from './schools.ts';
+import { bodyTotals, classPower, classQiRoof, classUpgrades } from './schools.ts';
 import { WEEK, periodOf, weekOf } from './week.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { MEET_POINT_CEILING, hasBoon, validRoad } from '../data/meetings.ts';
@@ -591,7 +591,7 @@ export function rateBonus(s: State): number {
   // 備 bodyTotals is read once per body and tree, and this is asked thousands of times.
   return UPGRADE_INFO.method.gain ** s.levels.method
     * UPGRADE_INFO.pills.gain ** s.levels.pills
-    * gearQiRate(bodyTotals(s).rate / 100, rateMultiplier(s.unlocked), layersOpened(s))
+    * gearQiRate(bodyTotals(s).rate / 100, rateMultiplier(s.unlocked), layersOpened(s), classQiRoof(s))
     * markBonus(s.tribulation);
 }
 
@@ -1083,7 +1083,7 @@ export function validate(raw: unknown, now: number): State {
    * put together, and ten thousand times that is a generous ceiling that still moves
    * with the cultivator rather than standing still while they climb past it.
    */
-  const floorsWorth = floorPay(Math.max(1, out.tower));
+  const floorsWorth = towerLoot(Math.max(1, out.tower));
   const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
 
   /**

@@ -7,7 +7,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import { power, rate, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_SUMMIT } from '../../sim/balance.ts';
+import { FLOORS_PER_REALM, LAYERS, ODDS_CEILING, ODDS_FLOOR, TOWER_PAST_DRAGON, TOWER_QI_SUMMIT } from '../../sim/balance.ts';
 import { SEAL_LOOT, floorBeast, floorPower, leastUntil, seals } from '../../sim/tower.ts';
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
@@ -147,7 +147,12 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
               ? TRIALS.rises(span, TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
               : TRIALS.summit(span, TOWER_QI_SUMMIT)}
         </p>
-        <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
+        <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>
+          {TRIALS.tower}
+          {/* 塔 Said once the climb is near the Dragon's floor, where it starts to count. */}
+          {floor > LAYERS - FLOORS_PER_REALM
+            ? ` ${TRIALS.pastDragon(`${Math.round((TOWER_PAST_DRAGON - 1) * 100)}%`, LAYERS)}` : ''}
+        </p>
         {/* 攜 The pills and sigils carried, and whether they go up: the climber's choice,
             because a hundred floors would otherwise spend an hour's pill on every one. */}
         {hands.length > 0 && onTowerKit && (

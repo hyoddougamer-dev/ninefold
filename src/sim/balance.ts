@@ -659,6 +659,51 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
  * earlier: a climb is paid the sum of its floors, whoever climbs them and whenever.
  */
 export const TOWER_QI_RUNG = 0.2;
+
+/**
+ * 塔 How much stronger each floor past the Dragon's (the eighty-first) stands than the
+ * floor under it, on top of the curve every beast reads (floorPower in tower.ts), and how
+ * much more material it pays for it (towerLoot).
+ *
+ * 誤 Why (rekaris, Discord, 2026-10-05: "The Tower difficulty needs to be higher"). A
+ * floor pays a fixed sum that grows about a fifth a floor, as fast as the beast on it.
+ * Past floor 95 the qi of one floor bought the power for the next, and the next, so a
+ * strong save climbed for nothing: on his real save, from floor 108 to 119 and from the
+ * eighth realm's fourth layer to the ninth's fourth, with no time passing (tools/freeclimb.ts).
+ * It was the tower first and the Celestial Master second: without the Master's share the
+ * same save still climbed three layers for nothing, and the harness's every-hour
+ * cultivator three; with it, nine and seven.
+ *
+ * The harness never saw it, because it measured the days to the ninth realm, which a
+ * loop at the top of the tower hardly moves, and because it spends its qi evenly where a
+ * person puts a floor's pay straight into power. So the rule since: every change to the
+ * tower is read on the real saves of the ranked server as well as on the harness, as the
+ * most layers any save climbs with no time passing. Two is healthy.
+ *
+ *   past the Dragon     rekaris, no time   worst harness   ninth realm (active, day)
+ *   ×1.00 (before)      +11 floors +9      +4 layers        43.0
+ *   ×1.03               +2 floors  +2      +2               45.3
+ *   ×1.04               none               +2               45.3
+ *   ×1.05               none               +2               46.2
+ *
+ * It slows rather than walls, either side. Paying less instead (half of every floor past
+ * the sixty-first) stopped the loop as well, but it made the Celestial Master the class
+ * that takes the least qi out of the tower, the opposite of what it says. Harder floors
+ * keep every floor's pay as it was and keep the Master the tower's qi class and the Sword
+ * Immortal its fastest climber. Floors already won stay won, on the server too (verify's
+ * `held`).
+ */
+export const TOWER_PAST_DRAGON = 1.04;
+
+/** 塔 What TOWER_PAST_DRAGON has added to a floor by this height: 1 up to the Dragon's floor. */
+export function pastDragon(floor: number): number {
+  return TOWER_PAST_DRAGON ** Math.max(0, floor - LAYERS);
+}
+
+/** 材 What a tower floor pays in material: the curve, and a floor past the Dragon's what it costs. */
+export function towerLoot(floor: number): number {
+  return floorPay(floor) * pastDragon(floor);
+}
 /** 吸 The floor that pays TOWER_QI_RUNG of the last rung, and the most any floor pays. See TOWER_QI_RUNG. */
 export const TOWER_QI_SUMMIT = 121;
 /** 吸 How many floors a climber rises while a realm's nine rungs open: eleven. See TOWER_QI_RUNG. */
@@ -778,6 +823,29 @@ export const QI_ROOF_FIRST = 1.38;
 /** 氣頂 The roof on the last rung: the hard ceiling on gear and the tree together. */
 export const QI_ROOF_TOP = 1.52;
 
+/**
+ * 氣滿 How much higher the roof stands for a body wearing six Qi pieces (the Qi school at
+ * its full), added to qiRoof. Still a roof, so the law holds: nothing uncapped raises the
+ * qi rate past a ceiling.
+ *
+ * razielmorgenstern (Discord, 2026-10-04): "from my tests, i go to 1.18 from nearly any set
+ * whatsoever. Is there any real advantage for the Qi school apart the four upgrades?" and
+ * "Having a higher cap unlocked when you have a full set would be great". We said we would
+ * measure it. The active cultivator dressed in the full Qi school, walked 400 days:
+ *
+ *   full-Qi lift     ninth realm   whole ladder
+ *   none (before)    day 44.0      day 52.3
+ *   +0.05            day 43.3      day 51.5
+ *   +0.10            day 42.2      day 50.2
+ *   +0.15            day 41.2      day 49.0
+ *
+ * A slope, not a knife edge. At +0.10 the full Qi school is the quickest way up the
+ * ladder for a cultivator who only wants to sit and gather (the Sword Immortal, the
+ * quickest otherwise, reaches the ninth realm on day 43.0), which is what the school is
+ * for; the plain active cultivator, who wears no class, is on day 45.5 and does not move.
+ */
+export const QI_FULL_ROOF = 0.1;
+
 /** 氣膝 The worn qi, as a fraction, that fills half the room on this rung. */
 export function qiKnee(rung: number): number {
   const n = Math.min(LAYERS - 1, Math.max(0, rung));
@@ -795,10 +863,10 @@ export function qiRoof(rung: number): number {
  * everything uncapped. `worn` is the worn qi as a fraction (+310% is 3.1), `tree` the
  * tree's own multiplier. See QI_KNEE_FIRST for the shape and the measurement.
  */
-export function gearQiRate(worn: number, tree: number, rung: number): number {
+export function gearQiRate(worn: number, tree: number, rung: number, lift = 0): number {
   const te = uncappedRate(tree);
   const g = Math.max(0, worn);
-  return te + (qiRoof(rung) - te) * g / (qiKnee(rung) + g);
+  return te + (qiRoof(rung) + lift - te) * g / (qiKnee(rung) + g);
 }
 
 /**
@@ -1084,9 +1152,9 @@ export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
 export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
 export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself
-export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
+export const PAIR_TOWER_QI = 2;        // 天師 qi from a tower floor
 /*
- * 天師 Why the Celestial Master's number is two and a half (2026-10-05, was 1.25).
+ * 天師 Why the Celestial Master's number is two (2026-10-05: 1.25, then 2.5, then 2).
  *
  * A floor pays a fixed sum that climbs steeply with the floor, so a few floors more are
  * worth far more than a quarter on each: rekaris asked whether the strongest climber would
@@ -1105,6 +1173,20 @@ export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
  * it highest and soonest: each is the best at what it says. A floor's pay is a lump, never
  * a rate, so the economic law holds; the server credits it only to a save that wears the
  * Master or keeps him as a loadout (verify.ts wearsMaster).
+ *
+ * 誤 Two since the same evening. The tower paid for its own next floor past floor 95, and
+ * the Master's share tripled it: on rekaris's real save nine layers with no time passing,
+ * three without the Master (see TOWER_PAST_DRAGON). With the floors past the Dragon's
+ * standing harder, read with tools/freeclimb.ts on the ranked server's saves and on the
+ * harness, and with tools/celestial.ts:
+ *
+ *                 most layers for nothing   tower qi (Master / Immortal)   ninth realm
+ *   天師 at 2.5   3 (every hour)            —                              —
+ *   天師 at 2.25  3 (every hour)            3.77e12 / 3.28e12              day 45.1
+ *   天師 at 2.0   2                         3.73e12 / 3.28e12              day 45.3
+ *
+ * At 2 no save climbs more than two layers for nothing, and the Master still takes the
+ * most qi out of the tower, by a seventh.
  */
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
