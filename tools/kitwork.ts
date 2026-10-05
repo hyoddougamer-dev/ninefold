@@ -1,5 +1,6 @@
 /**
- * 丹符 How long a pill and a sigil take to make, gathering included (2026-10-05).
+ * 丹符 How long a pill and a sigil take to make, gathering included (2026-10-05), and 陣 an
+ * array since the same day.
  *
  * rekaris asked for each pill and sigil to be *"at least an hour a piece"*. A make is its
  * own seconds at the furnace or the desk and every herb, ore, part and metal it asks for,
@@ -8,7 +9,8 @@
  * every craft the make passes through (TOOL_METALS: one step for each metal reached).
  * Arrays, familiarity and mastery are left out, so these are the long end.
  *
- * Read by src/sim/__tests__/crafts.test.ts and by CRAFT_KIT_WORK's comment in balance.ts.
+ * Read by src/sim/__tests__/crafts.test.ts and by the comments on CRAFT_KIT_WORK and
+ * CRAFT_ARRAY_WORK in balance.ts.
  */
 import { CRAFT_TOOL_STEP } from '../src/sim/balance.ts';
 import { RECIPES, TOOL_METALS, type Recipe } from '../src/data/crafts.ts';
@@ -41,16 +43,23 @@ export interface KitWork {
   readonly tooled: number;
 }
 
+const timed = (r: Recipe): KitWork => ({
+  key: r.key, name: r.name, realm: r.realm,
+  bare: workOf(r) / 60, tooled: workOf(r, stepAt(r.realm)) / 60,
+});
+
 /** Every pill and sigil, and how long one takes. */
 export function kitWork(): KitWork[] {
-  return RECIPES.filter((r) => r.skill === 'alchemy' || r.skill === 'sigil').map((r) => ({
-    key: r.key, name: r.name, realm: r.realm,
-    bare: workOf(r) / 60, tooled: workOf(r, stepAt(r.realm)) / 60,
-  }));
+  return RECIPES.filter((r) => r.skill === 'alchemy' || r.skill === 'sigil').map(timed);
+}
+
+/** 陣 Every array, and how long one copy takes (CRAFT_ARRAY_WORK, 2026-10-05). */
+export function arrayWork(): KitWork[] {
+  return RECIPES.filter((r) => r.skill === 'array').map(timed);
 }
 
 if (process.argv[1]?.endsWith('kitwork.ts')) {
-  for (const w of kitWork()) {
+  for (const w of [...kitWork(), ...arrayWork()]) {
     console.log(`${w.key.padEnd(22)} r${w.realm}  ${w.bare.toFixed(0).padStart(4)} min bare  ${w.tooled.toFixed(0).padStart(4)} min with its realm's tools`);
   }
 }

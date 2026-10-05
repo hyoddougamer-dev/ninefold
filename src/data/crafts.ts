@@ -26,7 +26,9 @@
 import { BEASTS, type Beast } from './bestiary.ts';
 import { ARCHETYPES, RARITY_INFO, REALM_SETS } from './gear.ts';
 import {
-  CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_MARKS, CRAFT_QUALITY_MULT, CRAFT_SECONDS, CRAFT_TOOL_STEPS,
+  CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SPEED, CRAFT_ARRAY_TWICE, CRAFT_ARRAY_WORK, CRAFT_ARRAY_XP,
+  CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
+  CRAFT_TOOL_STEPS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
@@ -248,8 +250,8 @@ export interface Recipe {
   readonly does?: string;
   /**
    * 丹符 How many light makes one make of this recipe is: CRAFT_KIT_WORK for a pill or a
-   * sigil, 1 for everything else. Its time and every need are already multiplied by it;
-   * the marks and the third mark's saving read it (see `marks`).
+   * sigil, CRAFT_ARRAY_WORK for an array, 1 for everything else. Its time and every need
+   * are already multiplied by it; the marks and the third mark's saving read it (see `marks`).
    */
   readonly weight: number;
   /** 熟 How many makes each of the five familiarity marks asks for: CRAFT_MARKS over the weight. */
@@ -261,12 +263,13 @@ const draft: Draft[] = [];
 const recipe = (r: Draft) => draft.push(r);
 
 /**
- * 丹符 A pill or a sigil made CRAFT_KIT_WORK times heavier: its seconds and every need
- * multiplied together, so the share of the work spent gathering is what it was.
+ * 丹符 A pill or a sigil made CRAFT_KIT_WORK times heavier (陣 an array CRAFT_ARRAY_WORK):
+ * its seconds and every need multiplied together, so the share of the work spent
+ * gathering is what it was.
  */
-const heavy = (r: Draft): Draft => ({
-  ...r, weight: CRAFT_KIT_WORK, seconds: r.seconds * CRAFT_KIT_WORK,
-  needs: r.needs.map(([k, n]) => [k, n * CRAFT_KIT_WORK] as const),
+const heavy = (r: Draft, weight: number = CRAFT_KIT_WORK): Draft => ({
+  ...r, weight, seconds: r.seconds * weight,
+  needs: r.needs.map(([k, n]) => [k, n * weight] as const),
 });
 
 for (const [key, han, name, level, realm] of HERBS) {
@@ -474,24 +477,55 @@ for (const [key, han, name, level, realm, extra, does, icon] of SIGILS) {
     needs: [['bark', 1 + Math.floor(realm / 4)], ['cinnabar', 1], ...extra], makes: { kind: 'item', item: k }, graded }));
 }
 
-/** 陣 Arrays: cut once, kept for ever, placed in the cave floor while there is room. */
-export const ARRAYS: readonly [string, string, string, number, number, (readonly [string, number])[], string, string][] = [
-  ['dew', '聚露陣', 'Dew-Catching Array', 1, 2, [[metalKey(1), 2], ['moss', 5]], 'Herb Gathering 10% faster.', 'spiral-bloom'],
-  ['earthvein', '地脈陣', 'Earth-Vein Array', 12, 2, [[metalKey(2), 2], ['stone', 5]], 'Vein Delving 10% faster.', 'quake-stomp'],
-  ['keenedge', '利刃陣', 'Keen-Edge Array', 23, 3, [[metalKey(3), 3], ['stone', 5], [partKey('mantis'), 2]], 'Rendering: one part in ten comes out twice.', 'crescent-blade'],
-  ['firetame', '馴火陣', 'Fire-Taming Array', 34, 4, [[metalKey(4), 3], ['stone', 8], [partKey('tiger'), 1]], 'Forging and Alchemy 10% faster.', 'flame-spin'],
-  ['guardian', '護法陣', 'Guardian Array', 45, 5, [[metalKey(5), 4], ['stone', 8], [partKey('turtle'), 2]], 'You take 5% less from wardens and heart demons.', 'pagoda'],
-  ['hiddendoor', '秘門陣', 'Hidden Door Array', 56, 6, [[metalKey(6), 4], ['stone', 10], [partKey('golem'), 1]], 'The vault door opens half an hour sooner.', 'vortex'],
-  ['longwatch', '長守陣', 'Long-Watch Array', 67, 7, [[metalKey(7), 4], ['stone', 12], [partKey('wraith'), 2]], 'The workshop keeps working four hours longer while you are away.', 'ouroboros'],
-  ['ninepalace', '九宮陣', 'Nine Palaces Array', 78, 8, [[metalKey(8), 4], ['stone', 15], [partKey('gargoyle'), 2]], 'Every craft rolls a step better on quality.', 'star-cycle'],
-  ['heavenearth', '天地陣', 'Heaven-Earth Array', 89, 9, [[metalKey(9), 4], ['stone', 20], [partKey('unicorn'), 2]], 'Every craft earns 5% more experience.', 'galaxy'],
+/**
+ * 陣 Arrays: placed in the cave floor while there is room, and deepened by cutting the same
+ * one again (CRAFT_ARRAY_DEPTH_EVERY). What each does is read off balance.ts at a strength,
+ * 1 for a first copy and up to CRAFT_ARRAY_DEPTH_TOP at full depth, so the line on the
+ * screen and the number the game uses are one number.
+ */
+export const ARRAYS: readonly [string, string, string, number, number, (readonly [string, number])[], string][] = [
+  ['dew', '聚露陣', 'Dew-Catching Array', 1, 2, [[metalKey(1), 2], ['moss', 5]], 'spiral-bloom'],
+  ['earthvein', '地脈陣', 'Earth-Vein Array', 12, 2, [[metalKey(2), 2], ['stone', 5]], 'quake-stomp'],
+  ['keenedge', '利刃陣', 'Keen-Edge Array', 23, 3, [[metalKey(3), 3], ['stone', 5], [partKey('mantis'), 2]], 'crescent-blade'],
+  ['firetame', '馴火陣', 'Fire-Taming Array', 34, 4, [[metalKey(4), 3], ['stone', 8], [partKey('tiger'), 1]], 'flame-spin'],
+  ['guardian', '護法陣', 'Guardian Array', 45, 5, [[metalKey(5), 4], ['stone', 8], [partKey('turtle'), 2]], 'pagoda'],
+  ['hiddendoor', '秘門陣', 'Hidden Door Array', 56, 6, [[metalKey(6), 4], ['stone', 10], [partKey('golem'), 1]], 'vortex'],
+  ['longwatch', '長守陣', 'Long-Watch Array', 67, 7, [[metalKey(7), 4], ['stone', 12], [partKey('wraith'), 2]], 'ouroboros'],
+  ['ninepalace', '九宮陣', 'Nine Palaces Array', 78, 8, [[metalKey(8), 4], ['stone', 15], [partKey('gargoyle'), 2]], 'star-cycle'],
+  ['heavenearth', '天地陣', 'Heaven-Earth Array', 89, 9, [[metalKey(9), 4], ['stone', 20], [partKey('unicorn'), 2]], 'galaxy'],
 ];
 export const arrayKey = (k: string) => `array:${k}`;
-for (const [key, han, name, level, realm, needs, does, icon] of ARRAYS) {
+
+/** 陣 A number as the screen writes it: 7.5, never 7.500000001. */
+const trim = (x: number) => `${Number(x.toFixed(1))}`;
+/**
+ * 陣 What an array does at a strength (1 for a first copy, CRAFT_ARRAY_DEPTH_TOP at full
+ * depth), in numbers: the line its item carries and the line the cave floor shows.
+ */
+export function arrayDoes(key: string, strength = 1): string {
+  const pc = (x: number) => `${trim(x * strength * 100)}%`;
+  switch (key) {
+    case 'dew': return `Herb Gathering ${pc(CRAFT_ARRAY_SPEED)} faster.`;
+    case 'earthvein': return `Vein Delving ${pc(CRAFT_ARRAY_SPEED)} faster.`;
+    case 'keenedge': return `Rendering: ${pc(CRAFT_ARRAY_TWICE)} of parts come out twice.`;
+    case 'firetame': return `Forging and Alchemy ${pc(CRAFT_ARRAY_SPEED)} faster.`;
+    case 'guardian': return `You take ${pc(CRAFT_ARRAY_GUARD)} less from wardens and heart demons.`;
+    case 'hiddendoor': return `The vault door opens ${trim(CRAFT_ARRAY_DOOR * strength / 60)} minutes sooner.`;
+    case 'longwatch': return `The workshop keeps working ${trim(CRAFT_LONG_WATCH_HOURS * strength)} hours longer while you are away.`;
+    case 'ninepalace': {
+      const marks = trim(CRAFT_ARRAY_QUALITY * strength / CRAFT_QUALITY.mark);
+      return `Every craft rolls its quality as if it had ${marks} more familiarity mark${marks === '1' ? '' : 's'}.`;
+    }
+    case 'heavenearth': return `Every craft earns ${pc(CRAFT_ARRAY_XP)} more experience.`;
+    default: return '';
+  }
+}
+
+for (const [key, han, name, level, realm, needs, icon] of ARRAYS) {
   const k = arrayKey(key);
-  item({ key: k, han, name, kind: 'array', realm, icon, does, paint: { family: 'craft', subject: `array-${key}` } });
-  recipe({ key: `array:${key}`, skill: 'array', group: 'Arrays', han, name, level, realm,
-    seconds: CRAFT_SECONDS.array, needs, makes: { kind: 'item', item: k }, graded: false });
+  item({ key: k, han, name, kind: 'array', realm, icon, does: arrayDoes(key), paint: { family: 'craft', subject: `array-${key}` } });
+  recipe(heavy({ key: `array:${key}`, skill: 'array', group: 'Arrays', han, name, level, realm,
+    seconds: CRAFT_SECONDS.array, needs, makes: { kind: 'item', item: k }, graded: false }, CRAFT_ARRAY_WORK));
 }
 
 /**

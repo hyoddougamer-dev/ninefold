@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ITEM_BY_KEY, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, XP_TABLE, rankOf, splitKey,
+  ITEM_BY_KEY, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, XP_TABLE, arrayDoes, rankOf, splitKey,
   type Recipe, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, plateOf } from '../../data/bestiary.ts';
@@ -9,10 +9,14 @@ import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
-  FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, markApplies, marksOf, masteryOf, needsOf, placed,
-  progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
+  FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
+  marksOf, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
+  workSeconds, xpOf,
 } from '../../sim/crafts.ts';
-import { CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
+import {
+  CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
+  CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX,
+} from '../../sim/balance.ts';
 import { TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -559,9 +563,11 @@ function Row({ state, r, on, lit, onStart, onGo }: {
           </span>
         )}
         {r.does && <i className="cr-does">{r.does}</i>}
-        {r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.does && !r.does && (
-          <i className="cr-does">{ITEM_BY_KEY[r.makes.item].does}</i>
-        )}
+        {r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.kind === 'array'
+          ? <Depth state={state} k={r.makes.item} />
+          : r.makes.kind === 'item' && ITEM_BY_KEY[r.makes.item]?.does && !r.does && (
+            <i className="cr-does">{ITEM_BY_KEY[r.makes.item].does}</i>
+          )}
         {q && (
           <span className="cr-q" title={CRAFTS.quality}>
             {q.map((p, i) => (p >= 0.005 ? (
@@ -578,6 +584,28 @@ function Row({ state, r, on, lit, onStart, onGo }: {
   );
 }
 
+/**
+ * 深 An array's line: what it does at the depth it is cut to, in numbers, and the depth,
+ * with how many copies to the next step. speculaether, on the Discord (2026-10-05): a
+ * second copy of an array did nothing. It deepens the array now (CRAFT_ARRAY_DEPTH_EVERY).
+ */
+function Depth({ state, k }: { state: State; k: string }) {
+  const key = k.slice('array:'.length);
+  const depth = depthOf(state, key);
+  const pips = '\u25cf'.repeat(depth) + '\u25cb'.repeat(CRAFT_ARRAY_DEPTH_STEPS - depth);
+  return (
+    <>
+      <i className="cr-does" data-array-does={key}>{arrayDoes(key, depthStrength(depth))}</i>
+      <i className="cr-depth" data-depth={depth}>
+        <Term han="深" bare entry={{ han: '深', name: 'Depth',
+          note: CRAFTS.arrayDepthNote(CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, cutOf(state, key)) }}>
+          <span><span className="cr-pips" aria-hidden="true">{pips}</span> {CRAFTS.arrayDepth(depth, CRAFT_ARRAY_DEPTH_STEPS, toNextDepth(state, key))}</span>
+        </Term>
+      </i>
+    </>
+  );
+}
+
 /** 陣 The cave floor: the places it has, what is cut into them, and what could be. */
 function Floor({ state, onPlace }: { state: State; onPlace: (key: string, on: boolean) => void }) {
   const slots = arraySlots(levelIn(state, 'array'));
@@ -591,11 +619,11 @@ function Floor({ state, onPlace }: { state: State; onPlace: (key: string, on: bo
         const it = ITEM_BY_KEY[k];
         const on = placed(state, k.slice('array:'.length));
         return (
-          <div key={k} className="row" style={{ marginTop: 8, gap: 10 }}>
+          <div key={k} className="row cf-row" style={{ marginTop: 8, gap: 10 }}>
             <Thing k={k} size={32} />
-            <span style={{ flex: 1, minWidth: 0, fontSize: 12.5 }}>
+            <span className="cf-body">
               <b><span className="cjk">{it.han}</span> {it.name}</b>
-              <i className="faint" style={{ display: 'block', fontStyle: 'normal' }}>{it.does}</i>
+              <Depth state={state} k={k} />
             </span>
             <button className="act small" disabled={!on && state.crafts.arrays.length >= slots}
               onClick={() => onPlace(k.slice('array:'.length), !on)}>{on ? CRAFTS.lift : CRAFTS.place}</button>
@@ -717,7 +745,9 @@ function Look({ state, look, onClose, onCarry, onUse, onPlace }: {
           </i>
         </span>
       </div>
-      {it.does && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{it.does}</p>}
+      {it.kind === 'array'
+        ? <div className="cf-body" style={{ margin: '8px 0 0' }}><Depth state={state} k={look} /></div>
+        : it.does && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>{it.does}</p>}
       <div className="row" style={{ marginTop: 10, gap: 8, justifyContent: 'flex-end' }}>
         {hand && state.crafts.carry[hand] !== look && (
           <button className="act small" onClick={() => onCarry(hand, look)}>{CRAFTS.carry}</button>

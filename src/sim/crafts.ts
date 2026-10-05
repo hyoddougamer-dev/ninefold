@@ -19,9 +19,10 @@
  * fused, and it melts back into its metal. See `unmake`.
  */
 import {
+  CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP,
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SLOTS, CRAFT_ARRAY_SPEED,
   CRAFT_ARRAY_TWICE, CRAFT_ARRAY_XP, CRAFT_FURNACE_DISCOUNT, CRAFT_KIT, CRAFT_LONG_WATCH_HOURS,
-  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP,
+  CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND,
   CRAFT_MASTERY_SPEED, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
   CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, DEMONS, DEMONS_PER_REALM, VARIANCE,
 } from './balance.ts';
@@ -62,6 +63,13 @@ export interface Crafts {
   readonly tools: Readonly<Record<SkillKey, number>>;
   /** 陣 The arrays cut into the floor, by item key. */
   readonly arrays: readonly string[];
+  /**
+   * 深 How many copies of each array have been cut, by item key: its depth is read off it
+   * (CRAFT_ARRAY_DEPTH_EVERY). Kept beside `made` rather than read from it because `made`
+   * also holds the light copies of before 2026-10-05, each a CRAFT_ARRAY_WORK'th of one
+   * now; a save from before is given its old copies at that worth (see validCrafts).
+   */
+  readonly cut: Readonly<Record<string, number>>;
   readonly carry: Carry;
   /** 尋 Sure drops waiting for the next beasts beaten on the hunt. */
   readonly seek: number;
@@ -75,7 +83,7 @@ const RECIPES_OF: Readonly<Record<SkillKey, readonly Recipe[]>> =
 
 export const NO_CRAFTS: Crafts = {
   xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
-  tools: zeroSkills(0), arrays: [], carry: { elixir: null, sigil: null }, seek: 0,
+  tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null }, seek: 0,
 };
 
 /* ── 讀 Reading the workshop ─────────────────────────────────────────────── */
@@ -183,13 +191,58 @@ export function masteredIn(s: State, skill: SkillKey): number {
   return n;
 }
 
-/** 熟 How much faster a craft's mastery makes every recipe of it, 0 to CRAFT_MASTERY_CAP. */
+/**
+ * 熟 How much faster `n` recipes mastered make their craft: CRAFT_MASTERY_SPEED each for
+ * the first CRAFT_MASTERY_BAND, and each band after that half what the one before gave a
+ * recipe. It rises with every recipe and never reaches CRAFT_MASTERY_BOUND.
+ */
+export function masteryFor(n: number): number {
+  let sum = 0, each = CRAFT_MASTERY_SPEED;
+  for (let left = Math.max(0, Math.floor(n)); left > 0; left -= CRAFT_MASTERY_BAND, each /= 2) {
+    sum += Math.min(left, CRAFT_MASTERY_BAND) * each;
+  }
+  return sum;
+}
+
+/** 熟 How much faster a craft's mastery makes every recipe of it: see masteryFor. */
 export function masteryOf(s: State, skill: SkillKey): number {
-  return Math.min(CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED * masteredIn(s, skill));
+  return masteryFor(masteredIn(s, skill));
+}
+
+/** 熟 The most a craft's mastery can ever be: every recipe it has, mastered. */
+export function masteryMost(skill: SkillKey): number {
+  return masteryFor(RECIPES_OF[skill].length);
 }
 
 export function placed(s: State, key: string): boolean {
   return s.crafts.arrays.includes(arrayKey(key));
+}
+
+/** 深 How many copies of an array have been cut. */
+export function cutOf(s: State, key: string): number {
+  return s.crafts.cut?.[arrayKey(key)] ?? 0;
+}
+
+/** 深 An array's depth, 0 to CRAFT_ARRAY_DEPTH_STEPS: one step every CRAFT_ARRAY_DEPTH_EVERY copies. */
+export function depthOf(s: State, key: string): number {
+  return Math.min(CRAFT_ARRAY_DEPTH_STEPS, Math.floor(cutOf(s, key) / CRAFT_ARRAY_DEPTH_EVERY));
+}
+
+/** 深 How many more copies to the next step, or 0 at full depth. */
+export function toNextDepth(s: State, key: string): number {
+  if (depthOf(s, key) >= CRAFT_ARRAY_DEPTH_STEPS) return 0;
+  return CRAFT_ARRAY_DEPTH_EVERY - (cutOf(s, key) % CRAFT_ARRAY_DEPTH_EVERY);
+}
+
+/** 深 What a depth multiplies an array's effect by: 1 at the first copy, CRAFT_ARRAY_DEPTH_TOP at full depth. */
+export function depthStrength(depth: number): number {
+  const d = Math.max(0, Math.min(CRAFT_ARRAY_DEPTH_STEPS, depth));
+  return 1 + (CRAFT_ARRAY_DEPTH_TOP - 1) * d / CRAFT_ARRAY_DEPTH_STEPS;
+}
+
+/** 陣 How strongly a placed array works for this cultivator: 0 when it is not in the floor. */
+export function arrayStrength(s: State, key: string): number {
+  return placed(s, key) ? depthStrength(depthOf(s, key)) : 0;
 }
 
 /** 陣 How many arrays the floor holds at this Arrays level. */
@@ -204,12 +257,11 @@ function toolFactor(s: State, skill: SkillKey): number {
   return 1 - CRAFT_TOOL_STEP * Math.max(0, Math.min(CRAFT_TOOL_STEPS, s.crafts.tools[skill] ?? 0));
 }
 
-/** 陣 And the arrays that speed a craft. */
+/** 陣 And the arrays that speed a craft, as deep as they are. */
 function arrayFactor(s: State, skill: SkillKey): number {
-  const fast = (skill === 'herb' && placed(s, 'dew'))
-    || (skill === 'vein' && placed(s, 'earthvein'))
-    || ((skill === 'forge' || skill === 'alchemy') && placed(s, 'firetame'));
-  return fast ? 1 - CRAFT_ARRAY_SPEED : 1;
+  const key = skill === 'herb' ? 'dew' : skill === 'vein' ? 'earthvein'
+    : skill === 'forge' || skill === 'alchemy' ? 'firetame' : null;
+  return key ? 1 - CRAFT_ARRAY_SPEED * arrayStrength(s, key) : 1;
 }
 
 /** 時 Seconds one make of this recipe takes, for this cultivator, now. */
@@ -222,12 +274,12 @@ export function secondsOf(s: State, r: Recipe): number {
 
 /** 經 The experience one make pays this cultivator. */
 export function xpOf(s: State, r: Recipe): number {
-  return r.xp * (placed(s, 'heavenearth') ? 1 + CRAFT_ARRAY_XP : 1);
+  return r.xp * (1 + CRAFT_ARRAY_XP * arrayStrength(s, 'heavenearth'));
 }
 
 /** 眠 How long the workshop keeps going after the last visit, in seconds. */
 export function workSeconds(s: State): number {
-  return (CRAFT_WORK_HOURS + (placed(s, 'longwatch') ? CRAFT_LONG_WATCH_HOURS : 0)) * 3600;
+  return (CRAFT_WORK_HOURS + CRAFT_LONG_WATCH_HOURS * arrayStrength(s, 'longwatch')) * 3600;
 }
 
 /**
@@ -261,10 +313,13 @@ export function canSet(s: State, r: Recipe): boolean {
 
 /* ── 品 Quality ─────────────────────────────────────────────────────────── */
 
-/** 品 The odds of each rank, from how far above the recipe and how familiar. */
-export function qualityOdds(above: number, marks: number, palace = false): readonly number[] {
+/**
+ * 品 The odds of each rank, from how far above the recipe and how familiar. `palace` is
+ * how strongly the Nine Palaces Array works (arrayStrength): 0 without it.
+ */
+export function qualityOdds(above: number, marks: number, palace = 0): readonly number[] {
   const q = CRAFT_QUALITY;
-  const score = Math.max(0, above) + marks * q.mark + (marks >= 4 ? q.mark : 0) + (palace ? CRAFT_ARRAY_QUALITY : 0);
+  const score = Math.max(0, above) + marks * q.mark + (marks >= 4 ? q.mark : 0) + CRAFT_ARRAY_QUALITY * palace;
   const w = [
     marks >= 5 ? 0 : 100,
     q.spiritBase + score * q.spiritPer,
@@ -277,7 +332,7 @@ export function qualityOdds(above: number, marks: number, palace = false): reado
 }
 
 export function qualityFor(s: State, r: Recipe): readonly number[] {
-  return qualityOdds(levelIn(s, r.skill) - r.level, marksOf(s, r), placed(s, 'ninepalace'));
+  return qualityOdds(levelIn(s, r.skill) - r.level, marksOf(s, r), arrayStrength(s, 'ninepalace'));
 }
 
 /* ── 定 Seeded rolls ─────────────────────────────────────────────────────── */
@@ -353,17 +408,20 @@ function makeOne(s: State, r: Recipe): State {
   if (r.makes.kind === 'item') {
     const chance = twiceOf(s, r);
     const twice = (chance > 0 && d() < chance)
-      || (r.skill === 'render' && placed(s, 'keenedge') && d() < CRAFT_ARRAY_TWICE);
+      || (r.skill === 'render' && placed(s, 'keenedge') && d() < CRAFT_ARRAY_TWICE * arrayStrength(s, 'keenedge'));
     addTo(pouch, pouchKey(r.makes.item, r.graded ? rank : undefined), twice ? 2 : 1);
   } else if (r.makes.kind === 'gear') {
     const piece = forged(s, r, r.makes.template, rank, d);
     if (piece) out = stash(out, piece).state;
   }
   const xp = Math.min(XP_CAP, (c.xp[r.skill] ?? 0) + xpOf(s, r));
+  // 深 An array cut is a copy toward its depth.
+  const item = r.makes.kind === 'item' ? r.makes.item : null;
+  const cut = item && ITEM_BY_KEY[item]?.kind === 'array' ? { ...c.cut, [item]: (c.cut[item] ?? 0) + 1 } : c.cut;
   return {
     ...out,
     crafts: {
-      ...c, pouch, tools,
+      ...c, pouch, tools, cut,
       made: { ...c.made, [r.key]: n + 1 },
       xp: { ...c.xp, [r.skill]: xp },
     },
@@ -630,7 +688,7 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (spends) usedSigil = g;
     spends = spends || before;
   }
-  if ((where === 'warden' || where === 'demon') && placed(s, 'guardian')) taken *= 1 - CRAFT_ARRAY_GUARD;
+  if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
   return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0 }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
 }
 
@@ -717,7 +775,8 @@ export function bestKit(s: State, b: Beast, where: Where): Kit {
     return { ...NO_KIT, strike, taken: Math.min(guard, ward), mend: brewed ? CRAFT_KIT.mend * top : 0, bind,
       reflect: mirror, revive: alch >= (RECIPE_BY_KEY['alchemy:nineturn']?.level ?? 99) && s.realm >= 9 };
   }
-  return { ...NO_KIT, strike, taken: Math.min(guard, 1 - CRAFT_KIT.warding * top) * (1 - CRAFT_ARRAY_GUARD),
+  // 深 The Guardian at its deepest: a save names its own copies, so the deepest is the most it can be.
+  return { ...NO_KIT, strike, taken: Math.min(guard, 1 - CRAFT_KIT.warding * top) * (1 - CRAFT_ARRAY_GUARD * CRAFT_ARRAY_DEPTH_TOP),
     mend: CRAFT_KIT.mend * top, bind: sig > 0, revive: alch >= 97,
     demon: where === 'demon' ? (1 - CRAFT_KIT.purity * top) * (1 - CRAFT_KIT.calmHeart * top) : 1 };
 }
@@ -729,9 +788,20 @@ export function furnaceDiscount(s: State): number {
   return 1 - CRAFT_FURNACE_DISCOUNT * (skillOpen(s, 'alchemy') ? Math.min(LEVEL_CAP, levelIn(s, 'alchemy')) : 0);
 }
 
-/** 秘門 The vault door's gap, in seconds, for this cultivator. */
+/** 秘門 The vault door's gap, in seconds, for this cultivator: the Hidden Door as deep as it is. */
 export function doorGapFor(s: State, gap: number): number {
-  return placed(s, 'hiddendoor') ? gap - CRAFT_ARRAY_DOOR : gap;
+  return gap - CRAFT_ARRAY_DOOR * arrayStrength(s, 'hiddendoor');
+}
+
+/**
+ * 秘門 The shortest the door's gap can have been for a save holding this pouch: a Hidden
+ * Door held at all is read at its deepest step. validate() and 驗 the server both read it
+ * as a ceiling on how often the vault can have been walked, so an honest deep array is
+ * never read as too fast, and a copy lifted out of the floor still counts, since it can
+ * go back in.
+ */
+export function shortestDoorGap(pouch: Readonly<Record<string, number>>, gap: number): number {
+  return (pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? gap - CRAFT_ARRAY_DOOR * CRAFT_ARRAY_DEPTH_TOP : gap;
 }
 
 /* ── 守 A save is input ──────────────────────────────────────────────────── */
@@ -742,11 +812,12 @@ export function doorGapFor(s: State, gap: number): number {
  * validate() and 驗 the server both read this; neither ever knows more than it does.
  */
 export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.fromEntries(SKILL_KEYS.map((k) => {
-  // The first mark, the four after it standing in as speed at most, and the craft mastered.
-  const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED) * (1 - CRAFT_MARK_FASTER)
-    * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - CRAFT_MASTERY_CAP);
+  // The first mark, the four after it standing in as speed at most, the craft mastered in
+  // every recipe it has, and the arrays at their deepest.
+  const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED * CRAFT_ARRAY_DEPTH_TOP)
+    * (1 - CRAFT_MARK_FASTER) * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - masteryMost(k));
   const best = Math.max(...RECIPES.filter((r) => r.skill === k).map((r) => r.xp / (r.seconds * fastest)));
-  return [k, best * (1 + CRAFT_ARRAY_XP)];
+  return [k, best * (1 + CRAFT_ARRAY_XP * CRAFT_ARRAY_DEPTH_TOP)];
 })) as Record<SkillKey, number>;
 
 const POUCH_LIMIT = 1e9;
@@ -829,6 +900,28 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     tools[k] = Math.floor(num(rawTools[k], 0, allowed));
   }
 
+  // 深 Copies cut of each array, toward its depth. Every copy is a make of its recipe, so
+  // never more than `made`; and every copy at today's weight paid the recipe's whole
+  // experience, so never more than the craft's experience pays for (at 99 the experience
+  // stops and the copies do not). A save from before depth has no `cut`: its old, light
+  // copies count at their worth, CRAFT_ARRAY_WORK of them to one now, which is the same
+  // experience and so fits the same bound.
+  const cut: Record<string, number> = {};
+  const cutMost = (r: Recipe) => Math.min(made[r.key] ?? 0, xp.array >= XP_CAP ? 1e8 : Math.ceil(xp.array / r.xp));
+  if (o.cut === undefined) {
+    for (const r of RECIPES_OF.array) {
+      const n = Math.floor(Math.min(cutMost(r), (made[r.key] ?? 0) / r.weight));
+      if (n > 0) cut[(r.makes as { item: string }).item] = n;
+    }
+  } else {
+    for (const [k, v] of Object.entries(rec(o.cut))) {
+      const r = MAKER[k];
+      if (!r || r.skill !== 'array') continue;
+      const n = Math.floor(num(v, 0, cutMost(r)));
+      if (n > 0) cut[k] = n;
+    }
+  }
+
   // 陣 Placed arrays: real ones, held, no repeats, no more than the floor has room for.
   const slots = open('array') ? arraySlots(level('array')) : 0;
   const arrays = (Array.isArray(o.arrays) ? o.arrays : [])
@@ -848,7 +941,7 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
   return {
     xp, task,
     since: num(o.since, s.startedAt, now, now),
-    pouch, made, tools, arrays, carry: carryOut,
+    pouch, made, tools, arrays, cut, carry: carryOut,
     // 尋 Sure drops come only from a Seeking Sigil or incense, so only a hand that can make one holds any.
     seek: seeks(level) ? Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)) : 0,
   };

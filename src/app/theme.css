@@ -3323,6 +3323,17 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
 .crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
 .crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
+/* 深 An array's depth, under what it does: the pips gold, the words as quiet as the line above. */
+.crafts .cr-depth { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
+.crafts .cr-depth .cr-pips { color: var(--gold); letter-spacing: 1px; }
+.crafts .cr-depth .term { display: inline; text-align: left; }
+/* 窄 On a 320 phone the button takes its own line under the array, so the words keep the width. */
+@media (max-width: 360px) {
+  .crafts .cfloor .cf-row { flex-wrap: wrap; }
+  .crafts .cfloor .cf-row > .cf-body { flex-basis: calc(100% - 42px); }
+  .crafts .cfloor .cf-row > button { margin-left: 42px; }
+}
+.crafts .cfloor .cf-body, .crafts .clook .cf-body { flex: 1; min-width: 0; font-size: 12.5px; display: flex; flex-direction: column; gap: 2px; }
 .crafts .cr-needs { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11.5px; }
 .crafts .cr-needs > span { display: inline-flex; align-items: center; gap: 4px; }
 .crafts .cr-needs > span[data-short='true'] { color: var(--cinnabar); }

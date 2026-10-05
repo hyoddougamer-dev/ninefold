@@ -35,12 +35,12 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, CRAFT_ARRAY_DOOR, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
+  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { NO_CRAFTS, validCrafts, type Crafts } from './crafts.ts';
-import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY, arrayKey } from '../data/crafts.ts';
+import { NO_CRAFTS, shortestDoorGap, validCrafts, type Crafts } from './crafts.ts';
+import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -909,8 +909,9 @@ export function validate(raw: unknown, now: number): State {
   const elapsed = Math.max(0, now - startedAt);
   const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
   // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
-  // cut, so holding one is what widens the ceiling, placed or lifted out.
-  const doorGap = (crafts.pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? DOOR_GAP - CRAFT_ARRAY_DOOR : DOOR_GAP;
+  // cut, so holding one is what widens the ceiling, placed or lifted out, and at its
+  // deepest step (shortestDoorGap), since it may have been that deep all along.
+  const doorGap = shortestDoorGap(crafts.pouch, DOOR_GAP);
 
   const savedAt = clamp(num(o.at, now), startedAt, now);
   const out: State = {
