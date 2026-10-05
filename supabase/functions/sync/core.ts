@@ -15,6 +15,7 @@ import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
 import { WEEK, weekOf } from '../../../src/sim/week.ts';
 import { callingKey } from '../../../src/sim/schools.ts';
+import { cleanName } from '../../../src/net/names.ts';
 
 /** 限 One sync every this many seconds per player. The phone syncs every few minutes. */
 export const MIN_GAP = 20;
@@ -114,7 +115,6 @@ export function defaultName(id: string): string {
 }
 
 export { TITLES, cleanName } from '../../../src/net/names.ts';
-import { cleanName } from '../../../src/net/names.ts';
 
 /**
  * 週 Where this week's gain is counted from, the first time a save verifies in it.

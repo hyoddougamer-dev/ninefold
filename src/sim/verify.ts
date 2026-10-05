@@ -29,13 +29,13 @@
  * the rule cannot be one thing on the phone and another on the server.
  */
 import {
-  BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
-  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
-  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  BLESSED_ROOM, CRAFT_ARRAY_DOOR, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
+  MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS,
+  QUARRY_HOURS, ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, type Tier } from './platform.ts';
-import { classSpring } from './schools.ts';
+import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -45,7 +45,6 @@ import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
-import { MEET_GAP, ROUND_CAP, SECLUSION } from './balance.ts';
 import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
@@ -53,9 +52,7 @@ import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
-import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
-import { classTower, classTowerQi } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
