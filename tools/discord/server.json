@@ -2659,6 +2659,18 @@
         "Done in today's update, the way you suggested. Each challenger now pays a fixed sum of qi read off your realm, the same for everyone in it, whatever you wear, whatever rate you bought and whenever you fight; the week's quarry too. We measured every kind of player before and after: the ninth realm moves by less than about a day for anyone. Fought early in a realm, a challenger pays more than before; fought late, less. Thank you for spotting it.",
         "· 師 Shibaki"
       ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider equalizing equipment stats",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "We measured it, as promised. A line's size never depended on the school: a power line is the same number on a Sword piece and an Arts piece. What the school decides is which line leads at full size, so a Sword piece carries about twice the power of a Fortune, Body, Artificer or Arts piece. We played every class with equal pieces (every lead drawn from the same pool): no class moved by more than about two days to the ninth realm, which is close to the noise between runs, and the Fortune, Body, Artificer and Arts schools lost the lines their own bonuses multiply. So we're keeping school-shaped pieces.",
+        "You were right about one thing that was simply badly worded: the Sword school was always a multiplier on all of your power, never added to the gear's percentage. Since this update it says so: all your power ×1.1, or ×1.2 at the full, on top of everything else. Thank you for pushing on it.",
+        "· 師 Shibaki"
+      ]
     }
   ]
 }
