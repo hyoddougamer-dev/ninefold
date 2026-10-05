@@ -94,7 +94,7 @@ export interface Art {
 
 export const ARTS: readonly Art[] = [
   { key: 'fox', realm: 1, han: '狐影', name: 'Fox Shadow', icon: 'fox-head',
-    text: "The beast's blow this round misses you entirely." },
+    text: "The beast's blow this round misses you entirely. A beast never misses two rounds running." },
   { key: 'ape', realm: 2, han: '猿臂', name: 'Ape Arm', icon: 'monkey',
     text: `This strike hits for ${pct(A.ape - 1)} more.` },
   { key: 'crane', realm: 3, han: '鶴唳', name: 'Crane Cry', icon: 'heron',
@@ -110,7 +110,7 @@ export const ARTS: readonly Art[] = [
   { key: 'serpent', realm: 8, han: '蛟騰', name: 'Serpent Rise', icon: 'sea-serpent',
     text: 'Triple damage, but only below half health.' },
   { key: 'dragon', realm: 9, han: '龍威', name: 'Dragon Might', icon: 'spiked-dragon-head',
-    text: `This strike hits ${pct(A.dragon - 1)} harder, and the beast's blow this round misses.` },
+    text: `This strike hits ${pct(A.dragon - 1)} harder, and the beast's blow this round misses. A beast never misses two rounds running.` },
 ];
 
 export const ART_BY_KEY: Readonly<Record<string, Art>> =
