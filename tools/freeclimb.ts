@@ -36,9 +36,9 @@ import { HABITS, play } from './habits.ts';
  */
 export interface Free { floors: number; layers: number; from: string; to: string }
 
-export function freeClimb(start: State, guard = 100_000): Free {
+export function freeClimb(start: State, guard = 100_000, master = wearsMaster(start)): Free {
   let s = start;
-  const pay = wearsMaster(start) ? PAIR_TOWER_QI : 1;
+  const pay = master ? PAIR_TOWER_QI : 1;
   let floors = 0;
   for (let i = 0; i < guard; i++) {
     if (towerVerdict(s, s.tower + 1) === 'ok') {

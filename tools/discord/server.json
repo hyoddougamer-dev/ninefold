@@ -1089,6 +1089,27 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-pouch.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fix-2026-10-05-ranked",
+      "pin": false,
+      "channel": "devlog",
+      "title": "榜 Fix · Fast honest climbs stay on the boards",
+      "color": "#C9A45C",
+      "body": [
+        "A fix that went out straight away, because it kept honest players off the rankings. Thank you rekaris for reporting it, twice."
+      ],
+      "fields": [
+        [
+          "塔 The tower's qi",
+          "Climbing many floors at once and spending what they paid on layers and techniques could read as too fast to the server, and the climb was held for review. The server counted the floors' qi one way and the layers it bought another. It now counts every lump the game pays at once (tower floors, the Platform, the week's quarry and the first sight of a beast) as the qi it is, and prices your upgrades in the cheapest outfit you hold, since wearing the Qi school to buy them is honest play. If you were held for this, your next sync puts you back."
+        ],
+        [
+          "疑 The review line",
+          "Measured again for every way of playing over 120 days. Nobody who plays honestly comes near it, and a clock run three times as fast is still caught."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2669,6 +2690,18 @@
       "reply": [
         "We measured it, as promised. A line's size never depended on the school: a power line is the same number on a Sword piece and an Arts piece. What the school decides is which line leads at full size, so a Sword piece carries about twice the power of a Fortune, Body, Artificer or Arts piece. We played every class with equal pieces (every lead drawn from the same pool): no class moved by more than about two days to the ninth realm, which is close to the noise between runs, and the Fortune, Body, Artificer and Arts schools lost the lines their own bonuses multiply. So we're keeping school-shaped pieces.",
         "You were right about one thing that was simply badly worded: the Sword school was always a multiplier on all of your power, never added to the gear's percentage. Since this update it says so: all your power ×1.1, or ×1.2 at the full, on top of everything else. Thank you for pushing on it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Tower difficulty needs to be higher",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you, and you were right on both counts. Being taken off the rankings was our bug, not your climb: the server counted the tower's qi and the layers it bought in two different ways. It's fixed and live, so your next sync puts you back.",
+        "On the tower and on the simulations: you were right there too. We now test every balance change on real saves from the server, including yours, with a tool that asks the question you were asking: how far can this save climb without a second passing? On your save today it climbs eleven floors and a whole realm, so the tower pays for its own next floor. The fix is in testing and we'll post it with the numbers when it's ready.",
         "· 師 Shibaki"
       ]
     }
