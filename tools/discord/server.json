@@ -2559,6 +2559,17 @@
         "Thank you for laying out both sides so clearly. It is a big change to how every piece rolls, so we want to think it through properly before saying yes or no: we'll measure what it does to the classes and the builds and post a proposal here before anything changes.",
         "· 師 Shibaki"
       ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Celestial Master, as promised. We measured it over five runs per class: the Master took the least qi out of the tower of the three (5.3e12, against 8.7e12 for pure Sword and 9.5e12 for the Sword Immortal), exactly the snowball you described. Since this update a floor pays the Master two and a half times its qi instead of a quarter more. He now takes the most qi out of the tower (10.7e12) and reaches the ninth realm on day 42.8 instead of 45.4, while the Sword Immortal still climbs highest and soonest. Each is the best at what it says. Thank you for pushing on it.",
+        "· 師 Shibaki"
+      ]
     }
   ]
 }
