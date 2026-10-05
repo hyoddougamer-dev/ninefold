@@ -1131,6 +1131,63 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-06-tower",
+      "pin": false,
+      "channel": "devlog",
+      "title": "塔 Update · A tower that pays its way, and the gear you asked for",
+      "color": "#D4AF56",
+      "body": [
+        "The biggest update of the test so far, and nearly all of it came from your posts. Thank you rekaris, speculaether and razielmorgenstern."
+      ],
+      "fields": [
+        [
+          "塔 The tower past the Dragon",
+          "Past floor 81, the Dragon's, each floor is now a step 4% steeper and pays 4% more material. A floor's qi is the same as before. From about floor 95 a floor paid for the power to beat the next one, so a strong build climbed for nothing: on rekaris's save, eleven floors and a whole realm with no time passing. We now test the tower on real saves from the server as well as our own runs, and no save climbs more than two layers that way. Every floor you have won stays yours."
+        ],
+        [
+          "天師 Celestial Master",
+          "A floor pays the Master ×2 its qi instead of ×2.5, because that share was what tripled the climb. The Master still takes the most qi out of the tower of any class, about a seventh more than the Sword Immortal, who still climbs highest and soonest."
+        ],
+        [
+          "較 Compare classes",
+          "On 器 Gear, under your class. For every class your pieces can make: the strongest outfit, its power, the highest floor it beats and its qi a second. Tap one to put it on."
+        ],
+        [
+          "陣 Arrays and 熟 mastery",
+          "An array is about an hour of work now and pays an hour's experience, so the hours to 99 stay the same. Every 10 copies of the same array deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 15% faster, the Hidden Door 45 minutes sooner, the Guardian 7.5%. Mastering recipes no longer stops at 15%: 1% each for the first 15, half that for the next 15, and so on."
+        ],
+        [
+          "套 A loadout for each task",
+          "Give a saved loadout to Fuse, Melt or Refine and that task reads it instead of what you wear. No more changing clothes to fuse or melt."
+        ],
+        [
+          "品 Quality and 熔 Keep",
+          "Every chest tile shows its quality (×1.31): how its main line compares with a usual roll of its rank. The 鎖 lock moved to the top of the tile to make room. Mark a saved filter **Keep** and a full chest never melts a piece it shows."
+        ],
+        [
+          "氣 A full Qi set",
+          "Six Qi pieces raise the ceiling on qi from gear by 0.10, so a cultivator who only wants to sit and gather has a real build."
+        ],
+        [
+          "入定 Sitting and 岔 Path forks",
+          "A sitting already running keeps going when you switch tab or app, to its usual 30 minutes. Auto still stops while the game is hidden. And a fork you hold on the 道 Path (Heavy Plate or Forsake Armour, Spirit Travel or Forget the Mechanism, Heaven's Favour or Empty Pouch) can be swapped for the other side once a day from its card, with your points kept."
+        ],
+        [
+          "煉 And a note",
+          "The fusion-quality line can pass ×1.5: it multiplies the average quality of the three pieces, and the piece made stops at ×1.5. Its note now says so."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-tower-dragon.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-compare.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-arrays.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-loadtasks.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-quality.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-fork.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2723,6 +2780,120 @@
       "reply": [
         "Thank you, and you were right on both counts. Being taken off the rankings was our bug, not your climb: the server counted the tower's qi and the layers it bought in two different ways. It's fixed and live, so your next sync puts you back.",
         "On the tower and on the simulations: you were right there too. We now test every balance change on real saves from the server, including yours, with a tool that asks the question you were asking: how far can this save climb without a second passing? On your save today it climbs eleven floors and a whole realm, so the tower pays for its own next floor. The fix is in testing and we'll post it with the numbers when it's ready.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Tower difficulty needs to be higher",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "You were right, and so were your follow-ups. The tower paid for its own next floor from about floor 95, and the Master's ×2.5 tripled it. Since today's update every floor past the Dragon's is a step 4% steeper (and pays 4% more material), and the Master takes ×2. We measured it on real saves from the server, yours included: none climbs more than two layers for nothing now.",
+        "Dragon Might was broken too: with Swift, Fox Shadow and Dragon Might the beast missed every round. That one went out as a fix straight away; a beast never misses two rounds running now. With it fixed, Turtle Breath and Swift land within three floors of any other build on your save, so we left them as they are. Thank you for pushing on all of it, and for the advice on testing.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider equalizing equipment stats",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Here are the numbers we owed you. A line's size depends on the stat, not the school: on a realm-8 Heaven piece power is 78%, arts 47%, rarer gear 55%, fusion 23%, beasts weaker 14%. The school only picks which line comes for sure: a Sword piece always brings 78% power, an Arts piece always brings 47% arts and only sometimes a power line. That is the \"twice\".",
+        "For the part that mattered most, telling which class is stronger without building them all: today's update adds 較 Compare classes on the Gear screen. It builds the strongest outfit your chest can make for every class and shows its power, the highest floor it beats and its qi a second. Thank you for keeping at it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Array",
+      "reply": [
+        "Done in today's update, as you both suggested. An array is about an hour of work and pays an hour's experience, and every 10 copies of the same array deepen it a step, up to 5, half as much again at full depth. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Equipment system is overloaded and overly coupled",
+      "reply": [
+        "Thank you both, you each had part of it. We kept the gear as it is, so the choice stays yours, and took away the chore: in today's update you can give a saved loadout to Fuse, Melt or Refine, and that task reads it instead of what you wear.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Toggle off path mechanism choices",
+      "reply": [
+        "Done in today's update, close to how you put it: a fork you hold can be swapped for the other side once a day from its card, and the points stay spent. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Fusion quality probably isn't capped at 1.5x.",
+      "tags": [
+        "Bug"
+      ],
+      "reply": [
+        "It was the description, thank you. The line can pass ×1.5 on purpose: it multiplies the average quality of the three pieces, and only the piece made stops at ×1.5, so a line past it still lifts three low rolls up to that ceiling. The note says so since today's update.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Make \"Quality\" of the gear visible",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update: every chest tile shows its quality, and every piece's sheet says it. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow customization of auto-melting when the bag is full",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update: mark a saved filter Keep and a full chest never melts a piece it shows. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "As promised: since today's update mastery has no hard stop. 1% for each of the first 15 recipes you master, half that for each of the next 15, and so on. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Qi gain bonus on gear is in a weird place",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "razielmorgenstern, as promised: since today's update six Qi pieces raise the ceiling on qi from gear by 0.10. Measured, the full Qi school is now the quickest way up for someone who only sits and gathers. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When changing tabs or application, the game goes \"offline\"",
+      "tags": [
+        "Bug"
+      ],
+      "reply": [
+        "Thank you for your patience on this one. Since today's update a sitting already running keeps going when you switch tab or app, to its usual 30 minutes, and is paid when you come back. Auto still stops while the game is hidden, since hunting while away is what the Drive is for.",
         "· 師 Shibaki"
       ]
     }
