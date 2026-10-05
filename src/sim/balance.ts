@@ -695,6 +695,19 @@ export const TOWER_QI_RUNG = 0.2;
  */
 export const TOWER_PAST_DRAGON = 1.04;
 
+/**
+ * 岔 How long after swapping one fork of the 道 Path for its twin before the next swap.
+ *
+ * speculaether (Discord, 2026-10-05): "Don't refund points: once bought, a path node is
+ * yours forever. But, allow turning off a path node with a one-day cooldown." Each branch
+ * has one fork at its fifth step: Heavy Plate or 捨甲 Forsake Armour, Spirit Travel or
+ * 忘機 Forget the Mechanism, Heaven's Favour or 空囊 Empty Pouch. The keystone half of each
+ * takes something away, and a keystone bought for one stretch of the climb could cripple
+ * the next. So a bought fork can be traded for its twin, points kept, once a day: a
+ * decision you live with for a day rather than a switch flipped for every fight.
+ */
+export const FORK_SWAP_GAP = 86_400;
+
 /** 塔 What TOWER_PAST_DRAGON has added to a floor by this height: 1 up to the Dragon's floor. */
 export function pastDragon(floor: number): number {
   return TOWER_PAST_DRAGON ** Math.max(0, floor - LAYERS);

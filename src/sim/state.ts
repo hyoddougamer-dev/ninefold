@@ -273,6 +273,8 @@ export interface State {
   runs: number;
   /** 鑰 The day (epoch seconds / 86 400) a Realm Key last opened the door. See useKey. */
   keyDay: number;
+  /** 岔 When a fork on the 道 Path was last swapped for its twin, in seconds. See sim/fork.ts. */
+  forkAt: number;
   /**
    * 泉 The vault's spring: seconds of shut time it holds (at most SPRING_HOLD), counted up
    * to `springAt`. What it holds now is derived (springNow in sim/secret.ts), and so is what
@@ -458,7 +460,7 @@ export function newState(now: number): State {
     awakened: [],
     met: [], metAt: 0, metPoints: 0, vaultDao: 0, chose: {},
     beds: Array.from({ length: BEDS }, () => EMPTY), reaped: 0,
-    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0,
+    runStep: -1, runAt: 0, runs: 0, lastRun: NO_TAKE, keyDay: 0, forkAt: 0,
     spring: 0, springAt: now, incenseUntil: 0, trail: false,
     platform: { period: -1, beaten: 0 }, bouts: 0,
     quarryWeek: -1,
@@ -1038,6 +1040,8 @@ export function validate(raw: unknown, now: number): State {
     runs: clamp(Math.floor(num(o.runs, 0)), 0, 1e6),
     // 鑰 A day, never one ahead of the save's own clock.
     keyDay: clamp(Math.floor(num(o.keyDay, 0)), 0, Math.floor(now / 86_400)),
+    // 岔 An instant the cultivator has lived, or none.
+    forkAt: clamp(num(o.forkAt, 0), 0, now),
     // 泉 The spring holds a day of shut time at most, counted to an instant the cultivator
     // has lived. A save from before the spring starts it from the last run, empty: the
     // hours since that run are what it has filled with, which is the rule.

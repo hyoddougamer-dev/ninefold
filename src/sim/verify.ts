@@ -53,6 +53,7 @@ import { XP_PER_SECOND_MAX, bestKit, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
+import { forkTrees } from './fork.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -436,10 +437,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
   const platform = first ? 0 : bouts * challengerQi(top, 2) * PAIR_BOUNTY;
 
+  // 岔 A fork swapped for its twin inside the window leaves no trace in either save, so the
+  // layers are priced on the cheapest tree the save could have stood on (sim/fork.ts).
+  const layerTrees = forkTrees(after.unlocked);
   let pocket = before.qi + quarry + seen + tower + platform;
   let need = 0;
   for (let n = from; n < to && n < LAYERS - 1; n++) {
-    const cost = layerCost(Math.floor(n / 9) + 1, n % 9, after.unlocked);
+    const cost = Math.min(...layerTrees.map((t) => layerCost(Math.floor(n / 9) + 1, n % 9, t)));
     need += Math.max(0, cost - pocket) / rateAt(n);
     pocket = Math.max(0, pocket - cost);
   }
@@ -663,7 +667,11 @@ export function platformBeatable(s: State): boolean {
  * without a loadout, for the cultivator who swapped by hand.
  */
 export function bodiesHeld(s: State): State[] {
-  return [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+  const own = [s, ...s.sets.map((_, i) => wearSet(s, i).state), strongestFromChest(s)];
+  // 岔 And each of them on the tree with a held fork swapped, since the fight may have
+  // been won the day before the swap (sim/fork.ts).
+  const trees = forkTrees(s.unlocked).slice(1);
+  return trees.length ? [...own, ...trees.flatMap((t) => own.map((b) => ({ ...b, unlocked: [...t] })))] : own;
 }
 
 /**

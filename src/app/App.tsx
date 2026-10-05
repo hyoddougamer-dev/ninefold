@@ -35,6 +35,7 @@ import { AWAKEN, GEAR } from './copy.ts';
 import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
+import { swapFork } from '../sim/fork.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
 import { assignTask, clearSet, renameSet, saveSet, setLocked as lockPiece, wearPieces, wearSet } from '../sim/sets.ts';
 import { adoptFilters, forgetFilter, keepFilter, saveFilter } from '../sim/filters.ts';
@@ -992,6 +993,13 @@ export function App() {
     haptics.strike();
   }, []);
 
+  // 岔 A held fork of the Path becomes its twin, once a day (sim/fork.ts).
+  const onSwap = useCallback((key: string) => {
+    setState((s) => swapFork(s, key, s.at, isOpen(s.realm, 'keystones')));
+    sfx.buy();
+    haptics.strike();
+  }, []);
+
   // A new version of the page is a new version of the game. Nobody installs anything
   // again; they are told, and they choose when.
   useEffect(() => { watchForUpdates(() => setFresh(true)); }, []);
@@ -1335,7 +1343,7 @@ export function App() {
           />
         )}
         {tab === 'dao' && (
-          <Dao state={state} onUnlock={onUnlock} onStance={onStance} onSequence={onSequence} />
+          <Dao state={state} onUnlock={onUnlock} onSwap={onSwap} onStance={onStance} onSequence={onSequence} />
         )}
       </div>
 

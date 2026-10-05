@@ -1341,7 +1341,7 @@
         "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the fifth realm."
       ],
       "fields": [
-        ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door."],
+        ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door: you hold one side of the fork or the other. Once you hold one, you can swap it for the other side once a day from its card, and the points stay spent."],
         ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
         ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
         ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance is the chance of a second piece from the same kill (up to 50%), so drop chance lines still count and feed 煉 fusion."]

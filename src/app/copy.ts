@@ -1802,8 +1802,19 @@ export const DAO = {
   overCap: (held: number, cap: number) =>
     `藏 Your chest holds ${held} pieces; this caps it at ${cap}. Melt or fuse some first.`,
   overCapButton: 'Chest full',
-  closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
+  closes: (han: string, name: string) => `Take this and ${han} ${name} closes. Once one of the two is yours, you can swap it for the other once a day.`,
+  /** 岔 On a held fork: which side was not taken. */
+  chose: (han: string, name: string) => `You hold this side of the fork. The other is ${han} ${name}.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
+  /**
+   * 岔 Swapping a held fork for its twin, once a day (speculaether, 2026-10-05). `wait` is
+   * how long until the next swap, as "5h 12m".
+   */
+  swap: (han: string, name: string) => `岔 Swap for ${han} ${name}`,
+  swapSays: 'A fork you hold can be swapped for the other side once a day. The points stay spent, and nothing else on the Path changes.',
+  swapWait: (wait: string) => `The next swap is in ${wait}.`,
+  swapShut: 'The other side is a keystone, and the keystones are not open yet.',
+  swapFull: (held: number, cap: number) => `空囊 Empty Pouch holds ${cap} pieces and your chest holds ${held}. Melt or fuse some first.`,
   learned: 'learned',
   costs: (n: number) => `costs ${n} 道`,
 };

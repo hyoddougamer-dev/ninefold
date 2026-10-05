@@ -4,7 +4,7 @@ import type { Slot } from './gear.ts';
 /**
  * 道 The technique tree.
  *
- * Three paths, eight nodes each, and a fork in each that closes for good, so no tree
+ * Three paths, eight nodes each, and a fork in each where only one side is held at a time (swapped once a day, sim/fork.ts), so no tree
  * holds everything. How fast the points come, and when each branch's last node opens,
  * is in sim/dao.ts and balance.ts (SHRINE_DAO_PER_REALM, CAPSTONE_REALM).
  *

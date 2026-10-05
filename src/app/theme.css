@@ -1480,6 +1480,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 
 .ndetail { background: var(--panel); border: 1px solid var(--hue); border-radius: 11px;
            padding: 13px 14px; margin-top: 12px; }
+/* 岔 Swapping a held fork for its twin, under the node's own button. */
+.ndetail .forkswap { margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--line);
+                     display: grid; gap: 6px; }
+.ndetail .forkswap p { margin: 0; font-size: 12.5px; line-height: 1.55; }
+.ndetail .forkswap .gold { color: var(--gold); }
+.ndetail .forkswap .act { width: auto; justify-self: start; padding: 9px 16px; font-size: 14px; }
 .xclose { background: none; border: 0; color: var(--faint); font: inherit; font-size: 15px;
           cursor: pointer; padding: 0 2px; }
 
