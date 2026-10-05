@@ -7,6 +7,8 @@ import { FUSE_COUNT, fuse } from '../chest.ts';
 import { meltFactor, meltQuote, salvage, salvageUpTo, salvageValue, salvageWorth, salvageable } from '../salvage.ts';
 import { newState, type State } from '../state.ts';
 import { num } from '../format.ts';
+import { HABITS } from '../../../tools/habits.ts';
+import { meltShares } from '../../../tools/meltshare.ts';
 
 const T0 = 1_700_000_000;
 
@@ -128,5 +130,29 @@ describe('拆 melting gear down', () => {
 
     expect(salvage(s, ['nothing-like-this'])).toBe(s);
     expect(salvage(s, [])).toBe(s);
+  });
+});
+
+/**
+ * 材 rekaris (2026-10-05): forty kills at the sixth realm paid 740k material and their drops,
+ * melted past the allowance as a Treasure Smith, 37k: a 5% gain. Before MELT_MATERIAL the
+ * melt read the bare table while the kills gathered the seals and the record, so the share
+ * fell from 6% at the second realm to 1% at the ninth. Now it rides the same multipliers.
+ */
+describe('材 what melting pays past the allowance, against the kills', () => {
+  const active = HABITS.find((h) => h.name === 'active')!;
+  const rows = meltShares(active, 200);
+
+  it('reads every realm with gear, so it measures something', () => {
+    console.log(`    active: ${rows.map((r) => `r${r.realm} ${(r.share * 100).toFixed(0)}%`).join(' · ')}`);
+    expect(rows.length).toBeGreaterThanOrEqual(7);
+    expect(rows.every((r) => r.pieces > 0)).toBe(true);
+  });
+
+  it('is a noticeable share of the kills at every realm and never the larger half', () => {
+    for (const r of rows) {
+      expect(r.share, `realm ${r.realm}`).toBeGreaterThan(0.12);
+      expect(r.share, `realm ${r.realm}`).toBeLessThan(0.4);
+    }
   });
 });

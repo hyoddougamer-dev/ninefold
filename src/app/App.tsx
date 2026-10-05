@@ -77,7 +77,7 @@ import { MARKS } from '../sim/balance.ts';
 import { BRAND, BUILD, JUICE, RANKS, RETURN, TABS_COPY } from './copy.ts';
 // 便 The quality-of-life batch B: bulk buttons, the next floor, wear it from the verdict.
 import { QOL } from './copy.ts';
-import { recall, keep, oneOf } from './prefs.ts';
+import { recall, keep, oneOf, useRemembered } from './prefs.ts';
 import { RARITIES } from '../data/gear.ts';
 import { brewMax } from '../sim/trials.ts';
 import { wearBetter } from '../sim/inspect.ts';
@@ -486,6 +486,13 @@ export function App() {
     };
   }, [ready]);
 
+  /**
+   * 攜 塔 Whether what is carried goes up the tower. The climber's choice, made on the
+   * floor's card and remembered on this device: a hundred floors a visit would otherwise
+   * spend an hour's pill on each one, the low ones that needed nothing included.
+   */
+  const [towerKit, setTowerKit] = useRemembered('towerKit', false, (x): x is boolean => typeof x === 'boolean');
+
   /** 擊 When the last fight started, and a fight asked for before the pace allowed it. */
   const lastStart = useRef(0);
   const queued = useRef<{ beast: Beast; floor?: number; demon?: boolean; challenger?: Tier } | null>(null);
@@ -523,8 +530,12 @@ export function App() {
       const platform = challenger !== undefined;
       const standing = platform ? challengerPower(state, challenger)
         : demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
-      // 業 What is carried goes into a warden, a heart demon or a challenger, never a floor or a common.
-      const carried = kitFor(state, beast, kitWhere(state, beast, standing));
+      // 業 What is carried goes into a warden, a heart demon or a challenger, and into a floor
+      // when the climber has chosen it on the tower's card. Never a common.
+      const where = kitWhere(state, beast, standing);
+      const carried = where === 'tower'
+        ? kitFor(state, beast, towerKit ? 'tower' : null)
+        : kitFor(state, beast, where);
       // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt, and only
       // when it changes something: a piece that was falling anyway (造化, or a fate bar
       // come due) leaves the sure drop waiting for a beast that would have left nothing.
@@ -560,7 +571,7 @@ export function App() {
         extra: drops && !sought ? secondDropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null,
       };
     });
-  }, [state]);
+  }, [state, towerKit]);
 
   /** 心魔 The demon behind the door, only when it is waiting. */
   const faceDemon = useCallback(() => {
@@ -636,9 +647,10 @@ export function App() {
       // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
       setState((s) => (outcome.won ? spent(locked ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
-      // 塔 A floor counts once. It pays material and hours of gathering.
+      // 塔 A floor counts once. It pays material and hours of gathering, and spends what was
+      // carried up to it, if the climber chose to carry it.
       sfx.floor();
-      setState((s) => clearFloor(s, floor));
+      setState((s) => spent(clearFloor(s, floor)));
     } else if (outcome.won) {
       const id = ++taps.current;
       setState((s) => {
@@ -1238,7 +1250,8 @@ export function App() {
           />
         )}
         {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew}
-          onChallenge={challenge} onStance={onStance} />}
+          onChallenge={challenge} onStance={onStance} towerKit={towerKit}
+          onTowerKit={(on) => { setTowerKit(on); sfx.tap(); }} />}
         {tab === 'crafts' && (
           <Crafts state={state}
             onGo={(where) => { setTab(where); sfx.tap(); }}

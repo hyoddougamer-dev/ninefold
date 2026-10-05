@@ -8,12 +8,12 @@ import { TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import {
   CRAFT_RENDER_KNOWN, CRAFT_HOURS_TO_CAP, CRAFT_LONG_WATCH_HOURS, CRAFT_WORK_HOURS, LAYERS_PER_REALM,
   CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP,
-  CRAFT_MASTERY_SPEED,
+  CRAFT_MASTERY_SPEED, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
 } from '../balance.ts';
 import {
   NO_CRAFTS, arraySlots, blocked, carry, demonsLeft, kitFor, kitWhere, placeArray, qualityOdds, knownAt,
   secondsOf, setTask, spendKit, takeSeeking, tookPart, validCrafts, work, XP_PER_SECOND_MAX, bestKit,
-  markApplies, masteryOf, skillOpen, subsOf, twiceOf, recipesOf,
+  markApplies, marksOf, masteryOf, needsOf, skillOpen, subsOf, twiceOf, recipesOf,
   type Crafts,
 } from '../crafts.ts';
 import { newState, rate, validate, type State } from '../state.ts';
@@ -25,6 +25,7 @@ import { verify } from '../verify.ts';
 import { floorBeast, floorPower } from '../tower.ts';
 import { demonOf, demonPower, demonsFor } from '../seclusion.ts';
 import { isOpen } from '../unlocks.ts';
+import { kitWork } from '../../../tools/kitwork.ts';
 
 const T0 = 1_700_000_000;
 const HOUR = 3600;
@@ -140,14 +141,100 @@ describe('開 the workshop opens with the climb', () => {
   });
 });
 
+/**
+ * 丹符 rekaris (2026-10-05): a pill and a sigil cost next to nothing, so there was no reason
+ * not to carry one into every fight. They are CRAFT_KIT_WORK times heavier now, and the
+ * experience and the marks follow, so levelling takes the hours it did.
+ */
+describe('丹符 a pill and a sigil are an hour of work', () => {
+  const kit = RECIPES.filter((r) => r.skill === 'alchemy' || r.skill === 'sigil');
+
+  it('multiplies the time and every need of every pill and sigil, and nothing else', () => {
+    expect(kit.length).toBeGreaterThanOrEqual(39);
+    for (const r of kit) {
+      expect(r.weight, r.key).toBe(CRAFT_KIT_WORK);
+      expect(r.seconds % CRAFT_KIT_WORK, r.key).toBe(0);
+      expect(r.seconds / CRAFT_KIT_WORK, r.key).toBeGreaterThanOrEqual(CRAFT_SECONDS[r.skill]);
+      for (const [k, n] of r.needs) expect(n % CRAFT_KIT_WORK, `${r.key} ${k}`).toBe(0);
+    }
+    for (const r of RECIPES.filter((x) => x.skill !== 'alchemy' && x.skill !== 'sigil')) expect(r.weight, r.key).toBe(1);
+  });
+
+  it('takes about an hour a make with the tools of its realm, and never under fifty minutes', () => {
+    const rows = kitWork();
+    for (const w of rows) {
+      expect(w.tooled, w.key).toBeGreaterThanOrEqual(50);
+      expect(w.bare, w.key).toBeLessThanOrEqual(150);
+    }
+    const pills = rows.filter((w) => /^alchemy:(mend|guard|might)\d$/.test(w.key));
+    const mean = pills.reduce((a, w) => a + w.tooled, 0) / pills.length;
+    console.log(`    a line pill: ${pills[0].bare.toFixed(0)} min with no tool, ${mean.toFixed(0)} on average with its realm's tools`);
+    expect(mean).toBeGreaterThan(55);
+    expect(mean).toBeLessThan(75);
+  });
+
+  it('pays experience in proportion to its time, heavy or light, so the hours to 99 do not move', () => {
+    // Every alchemy recipe pays the same experience a second at the same level, heavy or light.
+    const per = (r: (typeof RECIPES)[number]) => r.xp / r.seconds / (1 + r.level / 8);
+    const forge = RECIPES.filter((r) => r.skill === 'alchemy');
+    for (const r of forge) expect(per(r) / per(forge[0]), r.key).toBeCloseTo(1, 2);
+  });
+
+  it('earns its marks in the hours a light recipe does, and its third mark takes a heavy make off', () => {
+    const r = RECIPE_BY_KEY['alchemy:might5'];
+    for (let i = 0; i < r.marks.length; i++) {
+      expect(r.marks[i] * CRAFT_KIT_WORK).toBeGreaterThanOrEqual(CRAFT_MARKS[i]);
+      expect((r.marks[i] - 1) * CRAFT_KIT_WORK).toBeLessThan(CRAFT_MARKS[i]);
+    }
+    const s = crafter(9, { alchemy: 99 }, { made: { [r.key]: r.marks[2] } });
+    expect(marksOf(s, r)).toBeGreaterThanOrEqual(3);
+    expect(needsOf(s, r)[0][1]).toBe(r.needs[0][1] - CRAFT_KIT_WORK);
+  });
+
+  it('says its numbers: every pill and sigil that changes a fight names them, read off CRAFT_KIT', () => {
+    const pct = (x: number) => `${Number((x * 100).toFixed(1))}%`;
+    const top = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
+    expect(ITEM_BY_KEY.might5.does).toContain(pct(CRAFT_KIT.might));
+    expect(ITEM_BY_KEY.might5.does).toContain(pct(CRAFT_KIT.might * top));
+    expect(ITEM_BY_KEY.mend3.does).toContain(pct(CRAFT_KIT.mend));
+    expect(ITEM_BY_KEY.guard9.does).toContain(pct(CRAFT_KIT.guard));
+    expect(ITEM_BY_KEY.calmheart.does).toContain(pct(CRAFT_KIT.calmHeart));
+    expect(ITEM_BY_KEY['sigil:warding'].does).toContain(pct(CRAFT_KIT.warding));
+    expect(ITEM_BY_KEY['sigil:thunder'].does).toContain(pct(CRAFT_KIT.thunder));
+    expect(ITEM_BY_KEY['sigil:fivethunder'].does).toContain(pct(CRAFT_KIT.fiveThunders));
+    expect(ITEM_BY_KEY['sigil:mirror'].does).toContain(pct(CRAFT_KIT.mirror));
+    expect(ITEM_BY_KEY['sigil:purity'].does).toContain(pct(CRAFT_KIT.purity));
+    expect(ITEM_BY_KEY['sigil:heavenseal'].does).toContain(pct(CRAFT_KIT.warding));
+    // And the fade for a fight above the realm it was made for.
+    expect(ITEM_BY_KEY.might5.does).toContain(`×${CRAFT_KIT.fade}`);
+    for (const it of ITEMS.filter((x) => x.kind === 'elixir' || x.kind === 'sigil')) expect(it.does, it.key).toBeTruthy();
+  });
+
+  it('never trims a pouch of old, light pills for being honest', () => {
+    const mend = RECIPE_BY_KEY['alchemy:mend1'];
+    // Forty old pills, each paid a 180th of what a make pays now.
+    const xp = 40 * mend.xp / mend.weight + XP_TABLE[1];
+    const back = validCrafts({ xp: { herb: XP_TABLE[CRAFT_FEED_LEVEL], alchemy: Math.max(xp, XP_TABLE[1]) }, pouch: { 'mend1@0': 40 }, made: { [mend.key]: 40 } },
+      { realm: 5, killed: {}, startedAt: T0 }, T0 + 1e9);
+    expect(back.pouch['mend1@0']).toBe(40);
+    expect(back.made[mend.key]).toBe(40);
+  });
+});
+
 describe('習 familiarity', () => {
   const made = (r: string, n: number) => crafter(9, { herb: 99, vein: 99, render: 99, forge: 99, alchemy: 99, sigil: 99, array: 99 }, { made: { [r]: n } });
 
   it('gives something at every mark on every recipe', () => {
     for (const r of RECIPES) {
-      for (let i = 2; i <= CRAFT_MARKS.length; i++) {
-        const before = made(r.key, CRAFT_MARKS[i - 2]);
-        const after = made(r.key, CRAFT_MARKS[i - 1]);
+      // 丹符 A pill or a sigil reaches its marks sooner (Recipe.marks), each a heavy make.
+      for (let i = 2; i <= r.marks.length; i++) {
+        const before = made(r.key, r.marks[i - 2]);
+        const after = made(r.key, r.marks[i - 1]);
+        if (r.marks[i - 2] === r.marks[i - 1]) {
+          // Two marks earned by one make: both give, side by side.
+          expect(marksOf(after, r), `${r.key} mark ${i}`).toBeGreaterThanOrEqual(i);
+          continue;
+        }
         const gained = markApplies(r, i)
           || subsOf(after, r).fast > subsOf(before, r).fast || twiceOf(after, r) > twiceOf(before, r);
         expect(gained, `${r.key} mark ${i}`).toBe(true);
@@ -330,13 +417,20 @@ describe('戰 what is carried into a fight', () => {
     expect(d.used.sigil).toBe('sigil:purity@4');
   });
 
-  it('never goes into the Dragon, a tower floor or a common beast', () => {
+  it('never goes into the Dragon or a common beast, and goes up the tower (since 2026-10-05)', () => {
     const s = carry(hard(9), 'elixir', 'might9@4');
     expect(kitWhere(s, wardenOf(9))).toBeNull();
-    const f = 400;
-    expect(kitWhere(s, floorBeast(f), floorPower(f))).toBeNull();
     expect(kitWhere(s, commonsOf(9)[0])).toBeNull();
     expect(kitWhere(s, demonOf(s), demonPower(s))).toBe('demon');
+    // 塔 A floor is a hard fight: the might pill strikes harder there, read in the climber's
+    // realm, so floor 400 (which stands past every realm) does not fade it to nothing.
+    const f = 400;
+    expect(kitWhere(s, floorBeast(f), floorPower(f))).toBe('tower');
+    const up = kitFor(s, floorBeast(f), 'tower');
+    expect(up.spends).toBe(true);
+    expect(up.kit.strike).toBeCloseTo(1 + CRAFT_KIT.might * CRAFT_QUALITY_MULT[4], 9);
+    // A floor's shape can be a first-realm beast; the tier still reads the climber's realm.
+    expect(kitFor(s, commonsOf(1)[0], 'tower').kit.strike).toBeCloseTo(up.kit.strike, 9);
   });
 
   it('fades against a realm above what it was made for', () => {
@@ -472,7 +566,11 @@ describe('守 a save is input', () => {
     expect(back.pouch).not.toHaveProperty('might9@4');
     expect(back.pouch).not.toHaveProperty('sigil:heavenseal@4');
     expect(back.pouch).not.toHaveProperty('array:heavenearth');
-    expect(back.pouch['mend1@4']).toBeLessThanOrEqual(Math.ceil(XP_TABLE[12] / RECIPE_BY_KEY['alchemy:mend1'].xp) * 2 + 1);
+    // 丹符 Read at the experience a make paid before pills went heavy (CRAFT_KIT_WORK), so an
+    // honest pouch of the old, light pills is never trimmed.
+    const mend = RECIPE_BY_KEY['alchemy:mend1'];
+    expect(back.pouch['mend1@4']).toBeLessThanOrEqual(Math.ceil(XP_TABLE[12] / (mend.xp / mend.weight)) * 2 + 1);
+    expect(back.pouch['mend1@4']).toBeLessThan(1e6);
     // A craft at 99 stops earning and keeps making, so its pouch is not held to the experience.
     expect(back.pouch.moss).toBe(1e8);
   });

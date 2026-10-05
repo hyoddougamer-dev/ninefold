@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOX_HOURS, INCENSE_BONUS, INCENSE_HOLD, INCENSE_WORTH, PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM,
+  BOX_HOURS, INCENSE_BONUS, INCENSE_HOLD, INCENSE_WORTH, PAIR_BOUNTY, PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM,
   SPRING_FILL, SPRING_HOLD, TEMPER_EDGE, TRAIL_WOUND, springShare,
 } from '../balance.ts';
 import { ROOMS } from '../../data/secret.ts';
@@ -8,7 +8,7 @@ import {
   burnAt, doorsAt, enter, giftOf, inside, isGate, leave, open, shareAt, springNow, SPRING_FULL,
 } from '../secret.ts';
 import {
-  answerHeld, answered, beatChallenger, beatenNow, challengeFight, challengeOdds, challengerOf, challengerPays,
+  answerHeld, answered, beatChallenger, beatenNow, challengeFight, challengeOdds, challengerHours, challengerOf, challengerPays,
   challengerPower, periodNow, standingTier, temperOf,
 } from '../platform.ts';
 import { TEMPERS } from '../../data/platform.ts';
@@ -21,6 +21,9 @@ import { towerRate } from '../trials.ts';
 import { WEEK, isBlessed } from '../week.ts';
 import { verify } from '../verify.ts';
 import { levelOf } from '../../data/crafts.ts';
+import { ARCHETYPES, TEMPLATE_BY_KEY, type Worn } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
+import { classBounty } from '../schools.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -222,6 +225,38 @@ describe('擂台 the Platform', () => {
     }
     const won = beatChallenger(bare, 0);
     expect(won.qi - bare.qi).toBeCloseTo(challengerPays(bare, 0), 3);
+  });
+
+  /**
+   * 金剛 rekaris (2026-10-05): the Vajra's half again stopped at first sights and the week's
+   * quarry, and never reached the Platform. It does now, and the server already read every
+   * bout at PAIR_BOUNTY, so an honest Vajra's week is never held for it.
+   */
+  it('pays a Vajra half again, as its first sights and its quarry are paid', () => {
+    const worn: Worn = {};
+    for (const [school, n] of [['qi', 3], ['body', 3]] as const) {
+      let left: number = n;
+      for (const a of ARCHETYPES) {
+        if (left === 0) break;
+        if (worn[a.slot] || !SCHOOL_INFO[school].axes.includes(a.affix)) continue;
+        const tpl = TEMPLATE_BY_KEY[`${a.key}5`];
+        worn[a.slot] = { id: `${school}-${a.slot}`, template: tpl.key, rarity: 'earth', rolls: [{ affix: tpl.affix, value: 40 }] };
+        left -= 1;
+      }
+    }
+    const vajra = fighter({ worn });
+    expect(classBounty(vajra)).toBe(PAIR_BOUNTY);
+    for (const tier of [0, 1, 2] as const) {
+      expect(challengerHours(vajra, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * PAIR_BOUNTY, 9);
+      expect(challengerPays(vajra, tier)).toBeCloseTo(PLATFORM_HOURS[tier] * PAIR_BOUNTY * 3600 * towerRate(vajra), 6);
+    }
+    const won = beatChallenger(vajra, 0);
+    expect(won.qi - vajra.qi).toBeCloseTo(challengerPays(vajra, 0), 3);
+    // And the server allows for it: a week of three Vajra bouts, honestly paid, is not too fast.
+    const before = vajra;
+    let after = beatChallenger(beatChallenger(beatChallenger(vajra, 0), 1), 2);
+    after = { ...after, at: before.at + 3600 };
+    expect(verify(before, after, 3600).why).not.toContain('too-fast');
   });
 
   it('is a hard fight like a warden: the kit goes in, the tower’s class does not', () => {
