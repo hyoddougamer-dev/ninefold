@@ -5,10 +5,10 @@ import { Emblem } from '../ui/Emblem.tsx';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
-import { power, type State } from '../../sim/state.ts';
+import { power, rate, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../../sim/balance.ts';
-import { SEAL_LOOT, floorBeast, floorHours, floorPower, fullFloor, seals } from '../../sim/tower.ts';
+import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_SUMMIT } from '../../sim/balance.ts';
+import { SEAL_LOOT, floorBeast, floorPower, leastUntil, seals } from '../../sim/tower.ts';
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
@@ -72,9 +72,11 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
   const lit = isOpen(state.realm, 'furnace');
-  // 吸 Hours of gathering this floor pays, and how they read when they are next to none.
-  const hours = floorHours(floor, state.realm);
-  const span = (h: number) => (h * 3600 < 60 ? TRIALS.little : duration(h * 3600));
+  // 吸 What this floor's fixed sum is worth to this cultivator today, in their own time on
+  // the bar. Only a reading: the sum is the floor's, and the time shrinks as they grow.
+  const paid = floorQi(state, floor);
+  const seconds = paid / Math.max(1e-9, rate(state));
+  const span = seconds < 60 ? TRIALS.little : duration(seconds);
 
   return (
     <>
@@ -129,20 +131,21 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
           <span className="mono" style={{ color: 'var(--gold)' }}>
             {TRIALS.pays(
               num(floorMaterial(state, floor)),
-              num(floorQi(state, floor)),
+              num(paid),
             )}
           </span>
         </div>
-        {/* 吸 What this floor pays in hours, read off the floor and the realm: the same
-            number whatever is worn, so it is said before the fight rather than after. */}
+        {/* 吸 What every floor pays, read off the floor and nothing else: the same sum for
+            everyone, so it is said before the fight rather than after. */}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
-          {TRIALS.hours(span(hours * classTowerQi(state)), classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
+          {TRIALS.fixed(classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
           {' '}
-          {/* 吸 Where the most is paid, and which way this floor falls off it: below the
-              warden a fifth a floor, above it a little each floor down to the least. */}
-          {floor < fullFloor(state.realm)
-            ? TRIALS.below(span(TOWER_QI_HOURS), fullFloor(state.realm), `${Math.round((1 - TOWER_QI_BELOW) * 100)}%`)
-            : TRIALS.above(span(TOWER_QI_HOURS), fullFloor(state.realm), span(TOWER_QI_HOURS * TOWER_QI_LEAST))}
+          {/* 吸 What it is worth today, and how the sums climb to the summit floor. */}
+          {floor <= leastUntil()
+            ? TRIALS.least(span, leastUntil(), TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+            : floor < TOWER_QI_SUMMIT
+              ? TRIALS.rises(span, TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+              : TRIALS.summit(span, TOWER_QI_SUMMIT)}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
         {/* 攜 The pills and sigils carried, and whether they go up: the climber's choice,

@@ -1,6 +1,10 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
-import { FLOORS_PER_REALM, LAYERS, SEAL_LOOT, TOWER_QI_ABOVE, TOWER_QI_BELOW, TOWER_QI_LEAST, TOWER_QI_HOURS, floorPay } from './balance.ts';
+import {
+  FLOORS_PER_REALM, LAYERS, LAYERS_PER_REALM, SEAL_LOOT, TOWER_QI_LEAST, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT,
+  floorPay, ladderAt, ladderBetween,
+} from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
+import { opensAt } from './unlocks.ts';
 
 /**
  * 無盡塔 The Endless Tower.
@@ -51,27 +55,41 @@ export function floorLoot(floor: number): number {
 }
 
 /**
- * 吸 The floor that pays the most to a cultivator of this realm, the whole six hours: the
- * floor its own warden stands on. The fifth realm's is floor 45, the ninth's floor 81.
+ * 吸 The rung whose price a floor pays a share of: the rung a climber stands on when that
+ * floor falls, read off a straight line through the measured climb (TOWER_QI_SUMMIT and
+ * TOWER_QI_REALM_FLOORS in balance.ts). It never goes under the first rung or over the last.
  */
-export function fullFloor(realm: number): number {
-  return Math.max(1, Math.floor(realm)) * FLOORS_PER_REALM;
+export function floorRung(floor: number): number {
+  const below = Math.max(0, TOWER_QI_SUMMIT - Math.max(1, floor));
+  return Math.max(0, LAYERS - 1 - (below * LAYERS_PER_REALM) / TOWER_QI_REALM_FLOORS);
 }
 
 /**
- * 吸 How many hours of gathering a floor pays, read off the floor and the realm alone.
+ * 吸 What a floor pays in qi, the first time it falls: a fixed sum, read off the floor and
+ * nothing else. Not the realm, not the gathering, not what is worn, not when.
  *
- * TOWER_QI_HOURS on your realm's warden floor. Under it, TOWER_QI_BELOW of the floor above
- * for every floor. Over it, a little less each floor (TOWER_QI_ABOVE of what lies over the
- * least) and never under TOWER_QI_LEAST of the six hours. Nothing worn enters, so the card
- * can say it before the fight and taking a piece off cannot raise it. The measurements
- * are in balance.ts.
+ * TOWER_QI_RUNG of the price of floorRung's rung, so a floor near where a climber stands
+ * pays about that share of their own next rung in every realm, and every floor above the
+ * summit floor pays what the summit floor does. 天師 the Celestial Master's quarter again
+ * is added where the floor is cleared (floorQi in trials.ts): it is the one thing a build adds.
  */
-export function floorHours(floor: number, realm: number): number {
-  const from = fullFloor(realm);
-  return floor < from
-    ? TOWER_QI_HOURS * TOWER_QI_BELOW ** (from - floor)
-    : TOWER_QI_HOURS * (TOWER_QI_LEAST + (1 - TOWER_QI_LEAST) * TOWER_QI_ABOVE ** (floor - from));
+export function floorQiPay(floor: number): number {
+  return Math.max(towerLeast(), TOWER_QI_RUNG * ladderBetween(floorRung(floor)));
+}
+
+/**
+ * 吸 The least any floor pays: TOWER_QI_LEAST of the first rung of the realm the tower opens
+ * in, so the floors a newcomer sweeps the day it opens are worth opening it for.
+ */
+export function towerLeast(): number {
+  return TOWER_QI_LEAST * ladderAt((opensAt('tower') - 1) * LAYERS_PER_REALM);
+}
+
+/** 吸 The last floor that pays only the least: every floor above it pays more than the one below. */
+export function leastUntil(): number {
+  let f = 1;
+  while (f < TOWER_QI_SUMMIT && TOWER_QI_RUNG * ladderBetween(floorRung(f + 1)) <= towerLeast()) f++;
+  return f;
 }
 
 /**

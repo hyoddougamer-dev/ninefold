@@ -224,6 +224,20 @@ export interface Run {
   /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
   readonly bouts: readonly number[];
   readonly periods: number;
+  /**
+   * 塔 The tower's qi, traced: every floor's pay as it landed, by the realm it fell in, beside
+   * everything gathered in that realm (`gained[r]`, the same sum as qi.gained, counted from the
+   * day realm r was reached to the day r + 1 was). `biggest[r]` is the largest single visit's
+   * floors in that realm, in hours of the rate on the bar and in rungs of the rung then
+   * standing. `floors[f]` is the rung (layersOpened) floor f fell at.
+   */
+  readonly tower: {
+    readonly qi: number;
+    readonly byRealm: readonly number[];
+    readonly gained: readonly number[];
+    readonly biggest: readonly { readonly hours: number; readonly rungs: number }[];
+    readonly floors: readonly number[];
+  };
 }
 
 /**
@@ -469,7 +483,11 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = 991;
   // 氣源 The ledger: every rung the clock paid for, every unit spent, and the three named sources.
-  const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0 };
+  const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0, tower: 0 };
+  const towerBy: number[] = new Array(11).fill(0);
+  const gainedAt: number[] = new Array(11).fill(0);
+  const biggest = Array.from({ length: 11 }, () => ({ hours: 0, rungs: 0 }));
+  const floorRung: number[] = [];
   const bouts = [0, 0, 0];
   let periods = 0, lastPeriod = -1;
   const tried = new Set<string>();
@@ -560,7 +578,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       const want = trio.find((c) => c.effect.kind === (h.cards ?? 'salvage')) ?? trio[0];
       s = { ...s, awakened: [...takeAwakening(s.realm, s.awakened, want.key, s.tribulation)] };
     }
-    while (arrival.length < s.realm) arrival.push((t - T0) / DAY);
+    while (arrival.length < s.realm) {
+      arrival.push((t - T0) / DAY);
+      gainedAt[arrival.length] = s.qi + led.ladder + led.spent;
+    }
     while (layerDay.length <= layersOpened(s)) layerDay.push((t - T0) / DAY);
 
     // 職 Somebody building a class looks at the whole chest once a visit, not only at
@@ -765,21 +786,32 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       s = refine(s, slot);
     }
 
-    if (h.tower) for (let i = 0; i < 40; i++) {
-      const f = standingFloor(s);
-      if (odds(s, floorBeast(f), floorPower(f)) >= 0.65) {
-        s = clearFloor(s, f);
+    if (h.tower) {
+      let visit = 0;
+      for (let i = 0; i < 40; i++) {
+        const f = standingFloor(s);
+        const before = s.qi;
+        if (odds(s, floorBeast(f), floorPower(f)) >= 0.65) {
+          s = clearFloor(s, f);
+        } else {
+          // 攜 塔 Somebody who crafts takes the kit up for the floor that will not fall without
+          // it, and only for that one: a floor won spends what took part (since 2026-10-05).
+          if (!h.crafts || NO_TOWER_KIT) break;
+          s = carryBest(s, floorBeast(f), 'tower', floorPower(f));
+          const k = kitFor(s, floorBeast(f), 'tower');
+          if (!k.spends || odds(s, floorBeast(f), floorPower(f), k.kit) < 0.65) break;
+          s = spendKit(clearFloor(s, f), k.used);
+        }
+        visit += s.qi - before;
+        floorRung[f] = layersOpened(s);
         fights++;
-        continue;
       }
-      // 攜 塔 Somebody who crafts takes the kit up for the floor that will not fall without
-      // it, and only for that one: a floor won spends what took part (since 2026-10-05).
-      if (!h.crafts || NO_TOWER_KIT) break;
-      s = carryBest(s, floorBeast(f), 'tower', floorPower(f));
-      const k = kitFor(s, floorBeast(f), 'tower');
-      if (!k.spends || odds(s, floorBeast(f), floorPower(f), k.kit) < 0.65) break;
-      s = spendKit(clearFloor(s, f), k.used);
-      fights++;
+      led.tower += visit;
+      towerBy[s.realm] += visit;
+      const b = biggest[s.realm];
+      b.hours = Math.max(b.hours, visit / (rate(s) * 3600));
+      const rung = layerCost(s.realm, s.layer, s.unlocked);
+      if (Number.isFinite(rung)) b.rungs = Math.max(b.rungs, visit / rung);
     }
 
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
@@ -809,6 +841,15 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     reached: s.realm, done: layersOpened(s) >= LAYERS - 1, power: power(s),
     qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform },
     bouts, periods,
+    tower: (() => {
+      const total = s.qi + led.ladder + led.spent;
+      const gained = towerBy.map((_, r) => {
+        if (r < 1 || r > arrival.length) return 0;
+        const end = r < arrival.length ? gainedAt[r + 1] : total;
+        return end - gainedAt[r];
+      });
+      return { qi: led.tower, byRealm: towerBy, gained, biggest, floors: floorRung };
+    })(),
   };
 }
 
