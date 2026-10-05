@@ -5312,7 +5312,7 @@ function paceTable(): { name: string; cells: number[] }[] {
       cells: gaps.map((g) => {
         let m = 0;
         for (let i = g; i < shots.length; i++) {
-          m = Math.max(m, verify(shots[i - g].s, shots[i].s, (shots[i].d - shots[i - g].d) * 86_400).sprint);
+          m = Math.max(m, verify(shots[i - g].s, shots[i].s, (shots[i].d - shots[i - g].d) * 86_400).pace);
         }
         return m;
       }),
