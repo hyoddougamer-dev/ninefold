@@ -159,7 +159,8 @@ export type Why =
   | 'dao'            // more 道 spent than earned
   | 'anchor'         // the Dragon's anchor shrank: edited to make the next crossing easy
   | 'road'           // an answer given on the road was changed afterwards, to take a boon
-  | 'shape';         // another run of the game than the one verified (startedAt); never a strike
+  | 'shape'          // another run of the game than the one verified (startedAt); never a strike
+  | 'newrun';        // a run of its own far past the account's last verified save (sync core); review, never a strike
 
 export interface Verdict {
   readonly ok: boolean;

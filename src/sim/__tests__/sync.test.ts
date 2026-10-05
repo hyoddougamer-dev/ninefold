@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, sync, weekStart, MIN_GAP, STRIKES_TO_BAN, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
+import { cleanName, sync, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { GAME_EPOCH } from '../verify.ts';
+import { GAME_EPOCH, type Verdict } from '../verify.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
 import type { State } from '../state.ts';
@@ -12,10 +12,10 @@ import type { State } from '../state.ts';
  */
 function memory() {
   const profiles = new Map<string, Profile>();
-  const barred = new Map<string, { strikes: number; banned: boolean }>();
+  const barred = new Map<string, { strikes: number; banned: boolean; suspect?: boolean }>();
   const saves = new Map<string, Saved>();
   const standings = new Map<string, Standing>();
-  const logs: { id: string; ok: boolean }[] = [];
+  const logs: { id: string; ok: boolean; v: Verdict | null }[] = [];
   let closed = 0;
   const claims = new Map<string, number>();
   const store: Store = {
@@ -39,7 +39,7 @@ function memory() {
     async writeProfile(id, p) { profiles.set(id, p); },
     async writeSaved(id, s) { saves.set(id, structuredClone(s)); },
     async writeStanding(id, s) { standings.set(id, s); },
-    async log(id, v) { logs.push({ id, ok: v?.ok ?? false }); },
+    async log(id, v) { logs.push({ id, ok: v?.ok ?? false, v }); },
     async closeWeek(w) { closed = Math.max(closed, w); },
     async lastClosed() { return closed; },
   };
@@ -101,32 +101,60 @@ describe('同步 the ranked sync', () => {
     expect(m.saves.get('u3')!.latest).toBeTruthy();
   });
 
-  it('three impossibilities and the player is off the boards', async () => {
+  it('three impossibilities and the player is off the boards for review, never banned', async () => {
     const m = memory();
     const a = shots[10].s;
     await sync(m.store, 'u4', a, a.at + 10, undefined, GAME_EPOCH);
     const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
-    for (let i = 1; i <= STRIKES_TO_BAN; i++) {
+    for (let i = 1; i <= STRIKES_TO_REVIEW; i++) {
       await sync(m.store, 'u4', { ...a, at: a.at + i * 100, chest: [...a.chest, sword] }, a.at + i * 100, undefined, GAME_EPOCH);
     }
-    expect(m.profiles.get('u4')!.banned).toBe(true);
-    const r = await sync(m.store, 'u4', a, a.at + 10_000, undefined, GAME_EPOCH);
-    expect(r.status).toBe(403);
+    const p = m.profiles.get('u4')!;
+    expect(p.strikes).toBe(STRIKES_TO_REVIEW);
+    expect(p.suspect).toBe(true);     // off the boards (board() leaves suspects off)
+    expect(p.banned).toBe(false);     // but never banned by the machine
+    // It goes on syncing, and an honest save after it is still kept as the cloud copy.
+    const r = await sync(m.store, 'u4', { ...a, at: a.at + 10_000 }, a.at + 10_000, undefined, GAME_EPOCH);
+    expect(r.status).toBe(200);
+    // Every refused sync is in the log with what it tried, for the panel.
+    expect(m.logs.filter((x) => x.v?.strike).every((x) => x.v!.why.includes('gear'))).toBe(true);
   });
 
-  it('a banned player who deletes the account and signs in again on the same email is still banned', async () => {
+  it('a player who deletes the account and signs in again on the same email keeps what was against it', async () => {
     const m = memory();
     const a = shots[10].s;
     // What delete_me() leaves behind for the new account's email (see the schema test).
-    m.barred.set('u5', { strikes: STRIKES_TO_BAN, banned: true });
+    m.barred.set('u5', { strikes: STRIKES_TO_REVIEW, banned: true });
     const r = await sync(m.store, 'u5', a, a.at + 10, undefined, GAME_EPOCH);
     expect(r.status).toBe(403);
-    // Two strikes carried over: one more impossibility and it is a ban.
-    m.barred.set('u6', { strikes: STRIKES_TO_BAN - 1, banned: false });
+    // Two strikes carried over: one more impossibility and it is kept for review.
+    m.barred.set('u6', { strikes: STRIKES_TO_REVIEW - 1, banned: false });
     await sync(m.store, 'u6', a, a.at + 10, undefined, GAME_EPOCH);
     const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
     await sync(m.store, 'u6', { ...a, at: a.at + 100, chest: [...a.chest, sword] }, a.at + 100, undefined, GAME_EPOCH);
-    expect(m.profiles.get('u6')!.banned).toBe(true);
+    expect(m.profiles.get('u6')!.suspect).toBe(true);
+    expect(m.profiles.get('u6')!.banned).toBe(false);
+    // And a flag for review alone carries over too.
+    m.barred.set('u7', { strikes: 0, banned: false, suspect: true });
+    await sync(m.store, 'u7', a, a.at + 10, undefined, GAME_EPOCH);
+    expect(m.profiles.get('u7')!.suspect).toBe(true);
+  });
+
+  it('a new run far past the last verified save is kept for review and earns no week credit', async () => {
+    const m = memory();
+    const early = shots[3].s;
+    await sync(m.store, 'u8', early, early.at + 10, undefined, GAME_EPOCH);
+    const later = shots[shots.length - 1].s;
+    const leap = { ...later, startedAt: later.startedAt + 1 };
+    const r = await sync(m.store, 'u8', leap, later.at + 10, undefined, early.startedAt - 30 * 86_400);
+    expect(r.status === 200 && r.body.ranked, 'the leap verified, so the rule was reached').toBe(true);
+    {
+      expect(m.profiles.get('u8')!.suspect).toBe(true);
+      expect(m.logs.at(-1)!.v!.why).toContain('newrun');
+      const st = m.standings.get('u8')!;
+      expect(st.climb + st.marks - st.weekFrom).toBe(0);
+    }
+    expect(NEW_RUN_LEAP).toBeGreaterThan(0);
   });
 
   it('a new device’s empty save never overwrites a cultivator further along in the cloud', async () => {

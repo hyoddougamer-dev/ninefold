@@ -18,8 +18,22 @@ import { callingKey } from '../../../src/sim/schools.ts';
 
 /** 限 One sync every this many seconds per player. The phone syncs every few minutes. */
 export const MIN_GAP = 20;
-/** 罰 Impossibilities before a player is kept off the boards for good. */
-export const STRIKES_TO_BAN = 3;
+/**
+ * 罰 Impossibilities before a player is kept off the boards for review. Never a ban: Bruno,
+ * 2026-10-05, "sem banir ninguém diretamente". The account goes on syncing, its saves are
+ * kept as its cloud copy, and the panel's 疑 Batota tab says what each refused sync tried;
+ * a person decides. A ban the database already holds still stands (profile.banned).
+ */
+export const STRIKES_TO_REVIEW = 3;
+/** 罰 What mark() is told the ban line is: never reached. */
+const NEVER = 2_000_000_000;
+/**
+ * 新 A run of its own (another startedAt) that verifies more than this many layers past the
+ * account's last verified save is kept for review. An honest wiped phone starts behind; one
+ * this far ahead was most likely the old save with a new start date, measured as a first
+ * sync (the audit of 2026-10-05 had a casual account pass as the hourly cultivator).
+ */
+export const NEW_RUN_LEAP = 9;
 
 /** A verified save held back as the start of a longer window. */
 export interface Anchor { state: unknown; at: number }
@@ -58,7 +72,7 @@ export interface Store {
    * 罰 The strikes and ban a deleted account on this player's email left behind, or null.
    * See 20260928000000_barred.sql.
    */
-  barred(id: string): Promise<{ strikes: number; banned: boolean } | null>;
+  barred(id: string): Promise<{ strikes: number; banned: boolean; suspect?: boolean } | null>;
   saved(id: string): Promise<Saved | null>;
   standing(id: string): Promise<Standing | null>;
   /** Create the profile; throws if the name is taken. */
@@ -144,7 +158,7 @@ export async function sync(
   if (!profile) {
     // 罰 A new account starts clean, unless its email carried strikes out of a deleted one.
     const was = await store.barred(id);
-    const fresh = { strikes: was?.strikes ?? 0, suspect: false, banned: was?.banned ?? false };
+    const fresh = { strikes: was?.strikes ?? 0, suspect: was?.suspect ?? false, banned: was?.banned ?? false };
     const wanted = cleanName(name);
     try {
       profile = { name: wanted ?? defaultName(id), ...fresh };
@@ -192,6 +206,12 @@ export async function sync(
       if (!wv.ok && wv.why.includes('too-fast')) v = { ...v, ok: false, why: [...v.why, 'too-fast'], used: Math.max(v.used, wv.used) };
     }
   }
+  // 新 A new run far past the last verified save: ranked like any, but kept for review and
+  // given no week-board credit for the leap (below), with 'newrun' in the log for the panel.
+  if (v.ok && newRun && prev && ahead(after) > ahead(prev) + NEW_RUN_LEAP) {
+    suspect = true;
+    v = { ...v, why: [...v.why, 'newrun'] };
+  }
   v = { ...v, suspect };
   await store.log(id, v, now);
 
@@ -212,7 +232,12 @@ export async function sync(
   };
   await store.writeSaved(id, next);
 
-  if (v.strike || v.suspect) profile = await store.mark(id, v.strike, v.suspect, STRIKES_TO_BAN);
+  // 罰 Strikes are counted; at STRIKES_TO_REVIEW the player is kept off the boards for
+  // review rather than banned.
+  if (v.strike || v.suspect) {
+    const review = v.strike && profile.strikes + 1 >= STRIKES_TO_REVIEW;
+    profile = await store.mark(id, v.strike, v.suspect || review, NEVER);
+  }
 
   let standing = await store.standing(id);
   if (v.ok) {
@@ -228,7 +253,9 @@ export async function sync(
       climbedAt: rose ? now : old!.climbedAt,
       towerAt: !old || after.tower > old.tower ? now : old.towerAt,
       week,
-      weekFrom: fresh ? weekStart(old, climb + marks, saved?.verifiedAt ?? null, now) : old!.weekFrom,
+      // 新 A new run's leap is not this week's gain: the week counts from where it arrived.
+      weekFrom: newRun ? climb + marks
+        : fresh ? weekStart(old, climb + marks, saved?.verifiedAt ?? null, now) : old!.weekFrom,
       calling: callingKey(after),
     };
     await store.writeStanding(id, standing);

@@ -63,7 +63,7 @@ function store(): Store {
     async barred(id) {
       const { data, error } = await db.rpc('barred_for', { uid: id });
       if (error) throw error;
-      return (data as { strikes: number; banned: boolean } | null) ?? null;
+      return (data as { strikes: number; banned: boolean; suspect?: boolean } | null) ?? null;
     },
     async saved(id) {
       const { data } = await db.from('saves')
