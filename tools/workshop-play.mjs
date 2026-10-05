@@ -123,6 +123,9 @@ async function warden(strong, sigil) {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/fight-${tag}.png` });
   if (!chip.includes('Carried in')) fail(where, 'the arena does not say what was carried in');
   const v = await verdict(page, tag);
+  // 空 Each run is there for one branch: a strong cultivator that lost would pass the loss's
+  // checks, and the win would go unmeasured without a word.
+  if (v.won !== strong) fail(where, `${strong ? 'lost' : 'won'}, so the ${strong ? 'win' : 'loss'} this run is for was never checked`);
   const after = await hands(page);
   const elixirs = Number(/Scorpion-Tail Pill ×(\d+)/.exec(after)?.[1]);
   const said = v.text.includes('spent') ? 'spent' : v.text.includes('kept') ? 'kept' : 'nothing';
@@ -171,6 +174,7 @@ await warden(true, 'sigil:purity@1');
   // A win always leaves a piece. The sure drop is spent only when the piece would not have
   // fallen by itself (造化, a fate bar come due), so either way is right as long as a piece fell.
   const kept = after.includes('1 sure drop');
+  if (!won) fail(where, 'a strong cultivator lost to a common, so the sure drop was never put to a win');
   if (won && !piece) fail(where, 'a win with a sure drop waiting showed no piece');
   if (!won && !kept) fail(where, 'a loss spent the sure drop');
   pass(`seek: ${!won ? 'lost, the sure drop still waits'

@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QUARRY_HOURS, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_CAP, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -315,7 +315,7 @@ export const CULTIVATE = {
    * não deveria ser um valor fixo consoante stats?"* He is right, and the game agreed
    * with him without telling him: the **standing** rate is fixed by the layers opened
    * and what has been bought, and the only thing that moves is 入定 the sitting, which
-   * climbs to ×3 over three minutes and ends after fifteen. The screen showed the two of
+   * climbs to ×3 over three minutes and ends after FOCUS_HOLD. The screen showed the two of
    * them multiplied together as one number and named neither.
    *
    * So the standing rate leads and the sitting rides alongside it, which is the same
@@ -518,7 +518,7 @@ export const TRIALS = {
   /**
    * 吸 What every floor pays in qi: a fixed sum read off the floor, and the same for everyone
    * whenever it falls (rekaris and speculaether, 2026-10-05). `bonus` is the Celestial
-   * Master's share when that class is worn, as "25%".
+   * Master's share when that class is worn, as "150%".
    */
   fixed: (bonus?: string) =>
     `Every floor pays a fixed sum of qi. It is the same for everyone, whenever the floor falls: what you wear, how fast you gather and your realm never change it${bonus ? `. As Celestial Master you are paid ${bonus} more` : ''}.`,
@@ -1252,8 +1252,11 @@ export const WEEK = {
   season: (name: string) => `${name} is in season: a bed of it pays half again.`,
   /** 室 The mark in the vault. */
   blessed: (n: number, of: number) => `Room ${n} of ${of} pays double this week.`,
-  /** 示 The line the advice gives when the week is pointing at something worth doing. */
-  advise: (name: string) => `${name} is this week\u2019s quarry: double material, and the first kill pays at least ${QUARRY_HOURS} hours of your gathering.`,
+  /**
+   * 示 The line the advice gives when the week is pointing at something worth doing. The
+   * qi is a fixed sum read off the realm (2026-10-05): what is worn for the kill never moves it.
+   */
+  advise: (name: string, qi: string) => `${name} is this week\u2019s quarry: double material, and the first kill pays ${qi} qi, a fixed sum for your realm and the same for everyone in it.`,
 };
 
 export const CAVE = {
@@ -1424,8 +1427,17 @@ export const PLATFORM = {
   ordinal: ['First', 'Second', 'Third'] as const,
   edge: (x: string) => `\u00d7${x} your power`,
   beaten: 'beaten this week',
-  paid: (h: number) => `${h} h paid`,
-  pays: (h: number, qi: string) => `pays ${h} h of gathering \u00b7 ${qi} qi`,
+  paid: (qi: string) => `${qi} paid`,
+  pays: (qi: string) => `pays ${qi} qi`,
+  /**
+   * 吸 What every challenger pays: a fixed sum read off the realm, the same for everyone in
+   * it whenever it falls (rekaris, 2026-10-05), as the tower's floors are (TRIALS.fixed).
+   * `bonus` is 金剛 the Vajra's share when that class is worn, as "50%".
+   */
+  fixed: (realm: string, bonus?: string) =>
+    `Each challenger pays a fixed sum of qi read off your realm, ${realm}. It is the same for everyone in the realm, whenever it falls: what you wear and how fast you gather never change it${bonus ? `. As 金剛 Vajra you are paid ${bonus} more` : ''}.`,
+  /** 吸 What the one standing is worth today, in the cultivator's own time: only a reading. */
+  today: (span: string) => `Today the one standing is worth ${span} of your gathering.`,
   waits: 'comes up when the one before it falls',
   waitsShort: 'waits',
   standsAt: (power: string) => `力 ${power}`,
@@ -1441,16 +1453,17 @@ export const PLATFORM = {
   who: (ordinal: string) => `${ordinal} challenger`,
   won: (ordinal: string) => `The ${ordinal.toLowerCase()} challenger steps down from the platform.`,
   lost: 'It holds the platform. Losing costs nothing, and it will be there all week.',
-  hours: (h: number) => `${h} h of gathering`,
+  /** 吸 Beside a win's qi: where the sum came from, so it never reads as a share of the rate. */
+  fixedChip: 'fixed for your realm',
   count: (n: number) => `${['None', 'One', 'Two', 'Three'][n] ?? n} of three this week`,
-  next: (ordinal: string, name: string, edge: string, h: number) =>
-    `The ${ordinal.toLowerCase()}, ${name}, stands at \u00d7${edge} your power and pays ${h} h. It waits until the week turns.`,
+  next: (ordinal: string, name: string, edge: string, qi: string) =>
+    `The ${ordinal.toLowerCase()}, ${name}, stands at \u00d7${edge} your power and pays ${qi} qi. It waits until the week turns.`,
   done: 'All three are down. New ones come when the week turns, or when you break through.',
   dice: 'The dice are set for the week: pressing again with nothing changed is the same fight. Change your stance, your arts or what you carry, and it is a new one.',
   nextButton: (ordinal: string) => `The ${ordinal.toLowerCase()}`,
   answeredLine: (temper: string, by: string) => `${temper}, answered by ${by}.`,
   unansweredLine: (temper: string) => `${temper}, unanswered: it stood \u00d71.3 again.`,
-  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays hours of gathering, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
+  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
   temperWhat: 'The week\u2019s temper on 擂台 the Platform: unanswered, a challenger stands \u00d71.3 again. A stance or one art in your sequence answers it.',
 };
 
@@ -1620,7 +1633,9 @@ export const CLASS = {
   pairOf: (a: string, b: string, gives: string) => `And ${a} and ${b} are both awake: ${gives}`,
   /** 列 What each school gives, at its first step and at its full. */
   school: {
-    sword: (w: number, f: number) => `Power +${pct(w)}, or +${pct(f)} at the full.`,
+    // 劍 A multiplier on all of your power, gear and levels included, never added to the gear's
+    // own percentage: rekaris read "+20%" as added (2026-10-05), and it is not.
+    sword: (w: number, f: number) => `All your power ×${w}, or ×${f} at the full, on top of everything else.`,
     qi: (w: number, f: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full.`,
     fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
@@ -1629,7 +1644,7 @@ export const CLASS = {
   },
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
   schoolAt: {
-    sword: (x: number) => `Power +${pct(x)}.`,
+    sword: (x: number) => `All your power ×${x}.`,
     qi: (x: number) => `The four upgrades cost ${pct(x)} less.`,
     fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
     body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
@@ -1724,6 +1739,14 @@ export const DAO = {
   /** 極 Why a branch's last node is dark before CAPSTONE_REALM, the fifth. */
   capstoneShut: (han: string, name: string) =>
     `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
+  /**
+   * 空囊 Why a node that caps the chest cannot be learned yet. Buying it over a fuller
+   * chest would leave the chest over its own limit, so it waits, and the sheet says what
+   * the player can do about it rather than only that it is shut.
+   */
+  overCap: (held: number, cap: number) =>
+    `藏 Your chest holds ${held} pieces; this caps it at ${cap}. Melt or fuse some first.`,
+  overCapButton: 'Chest full',
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
@@ -1772,7 +1795,7 @@ export const NOTICE = {
   platform: {
     title: '擂台 Three challengers a week',
     text: 'On 塔 Trials. They stand against your own power, so the build wins them, not the number. '
-      + 'A win pays hours of gathering; a loss costs nothing, and the dice are set for the week.',
+      + 'A win pays a fixed sum of qi, the same for everyone in your realm; a loss costs nothing, and the dice are set for the week.',
   },
   tower: {
     title: 'Only the next floor is ever open',
@@ -2272,10 +2295,11 @@ export const KEYS = {
 
 /** 道 A node of the tree as a button: what the screen reader says, and what a key opens. */
 export const NODE = {
-  label: (name: string, han: string, status: 'have' | 'open' | 'poor' | 'locked' | 'shut', cost: number) =>
+  label: (name: string, han: string, status: 'have' | 'open' | 'full' | 'poor' | 'locked' | 'shut', cost: number) =>
     `${name} ${han}, ${{
       have: 'learned',
       open: `can be learned for ${cost} 道`,
+      full: 'your chest holds more than it would allow',
       poor: `costs ${cost} 道, more than you hold`,
       locked: 'not reachable yet',
       shut: 'closed by the node beside it',

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { fuseIn, limitFor, stash } from '../sim/stash.ts';
+import { capRefuses, fuseIn, limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -25,7 +25,7 @@ import {
 } from '../sim/platform.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
-  carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, tookPart, work,
+  carry, kitFor, kitWhere, placeArray, setTask, spendOnWin, spendSeek, takeSeeking, tookPart, work,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
 import { splitKey } from '../data/crafts.ts';
@@ -59,7 +59,7 @@ import { cardDue as awakeningDue, cardOf, take as takeAwakening } from '../sim/a
 import { answerWithReceipt, meetingDue, type Receipt } from '../sim/meet.ts';
 import { harvest as harvestBed, plant as plantSeed } from '../sim/cave.ts';
 import {
-  enter as enterSecret, inside as insideSecret, leave as leaveSecret, open as openDoor, useKey,
+  enter as enterSecret, inside as insideSecret, leave as leaveSecret, openByKind, useKey,
 } from '../sim/secret.ts';
 import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
@@ -633,24 +633,26 @@ export function App() {
   const closeFight = useCallback((wear = false) => {
     if (!battle) return;
     const { beast, outcome, drop, extra, floor, demon, kit, sought, challenger } = battle;
-    // 業 A won fight spends what took part in it; a lost one keeps it.
-    const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
+    // 業 A won fight spends what took part in it; a lost one keeps it. Only when the reward
+    // landed, though: a reward the sim refused (the week turned under a challenger) pays
+    // nothing, so it spends nothing (spendOnWin).
+    const spent = (s: State, next: State) => (outcome.won && kit ? spendOnWin(s, next, tookPart(kit, !!outcome.revived)) : next);
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
     const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
     if (challenger !== undefined) {
       // 擂 Down, its hours are paid and the next one steps up; standing, nothing happens at
       // all. Not a kill: no material, no drop, no mark on the record.
-      if (outcome.won) setState((s) => spent(beatChallenger(s, challenger)));
+      if (outcome.won) setState((s) => spent(s, beatChallenger(s, challenger)));
     } else if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
       // hour. Neither is a kill: the demon is never counted in the record.
       // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
-      setState((s) => (outcome.won ? spent(locked ? conquerTwice(s) : conquer(s)) : repel(s)));
+      setState((s) => (outcome.won ? spent(s, locked ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
       // 塔 A floor counts once. It pays material and hours of gathering, and spends what was
       // carried up to it, if the climber chose to carry it.
       sfx.floor();
-      setState((s) => spent(clearFloor(s, floor)));
+      setState((s) => spent(s, clearFloor(s, floor)));
     } else if (outcome.won) {
       const id = ++taps.current;
       setState((s) => {
@@ -670,7 +672,7 @@ export function App() {
           first = { ...first, worn: on.worn, chest: [...on.chest] };
         }
         const taken = extra ? stash(first, extra).state : first;
-        return spent(sought ? spendSeek(taken) : taken);
+        return spent(s, sought ? spendSeek(taken) : taken);
       });
     }
     setBattle(null);
@@ -940,6 +942,8 @@ export function App() {
     setState((s) => {
       const free = freeOf(s);
       if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))) return s;
+      // 空囊 Not over a chest fuller than the node would let it be. The sheet says why.
+      if (capRefuses(s, key) !== null) return s;
       once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
       return { ...s, unlocked: [...s.unlocked, key] };
     });
@@ -1671,8 +1675,8 @@ export function App() {
       {insideSecret(state) && (
         <Secret
           state={state}
-          onOpen={(which) => {
-            setState((s) => openDoor(s, which, (s.at ^ (s.runs * 40503) ^ (s.runStep * 7)) | 0));
+          onOpen={(door) => {
+            setState((s) => openByKind(s, door, (s.at ^ (s.runs * 40503) ^ (s.runStep * 7)) | 0));
             sfx.strike();
           }}
           onLeave={() => { setState((s) => leaveSecret(s)); sfx.tap(); }}

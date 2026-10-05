@@ -20,7 +20,7 @@ import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { ARENA, CRAFTS, PLATFORM, SECLUSION, UNIT, meltPays } from '../copy.ts';
 import {
-  PLATFORM_EDGE, answerOf, beatenNow, challengerHours, challengerOf, challengerPays, temperOf, type Tier,
+  PLATFORM_EDGE, answerOf, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
@@ -423,13 +423,13 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
             </div>
           )}
           {reshut && <p className="kitline"><b className="cjk">關</b> {QOL.seclusion.shutAgain}</p>}
-          {/* 擂 A challenger pays hours of gathering and nothing else, and the week's count,
+          {/* 擂 A challenger pays a fixed sum read off the realm and nothing else, and the week's count,
               its temper and what stands next are said under it. A loss says that it cost
               nothing and that the dice are set: pressing again unchanged is the same fight. */}
           {outcome.won && platform && (
             <div className="gains">
               <span className="gain qi" style={{ animationDelay: '.25s' }}>+{num(platformQi)} <b>qi</b></span>
-              <span className="gain" style={{ animationDelay: '.4s' }}>{PLATFORM.hours(challengerHours(state, tier))}</span>
+              <span className="gain" style={{ animationDelay: '.4s' }}>{PLATFORM.fixedChip}</span>
             </div>
           )}
           {platform && temper && (
@@ -443,7 +443,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                     : PLATFORM.unansweredLine(`${temper.han} ${temper.name}`)}{' '}
                   {!outcome.won ? PLATFORM.dice
                     : nextShape && nextUp !== null
-                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, String(PLATFORM_EDGE[nextUp]), challengerHours(state, nextUp))
+                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, String(PLATFORM_EDGE[nextUp]), num(challengerPays(state, nextUp)))
                       : PLATFORM.done}
                 </i>
               </span>

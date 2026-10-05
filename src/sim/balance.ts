@@ -995,15 +995,20 @@ export const QUARRY_LOOT = 2;
  */
 export const QUARRY_BOUNTY = 0.1;
 /**
- * 期 And never less than this many hours of the cultivator's own gathering. The share
- * above follows the quarry's own realm, so late in the climb a realm-three owl paid a
- * few hundredths of a second (6.7e5 against 4.9e7 qi a second). Measured over three seeds
- * with a harness that takes the quarry when its odds are good (realm-9 day): once a day
- * 69.0 to 65.3, casual 69.6 to 67.4, active 44.1 to 43.5, every hour 29.8 to 29.4. The
+ * 期 And never less than this many hours of the realm's middle rate (REALM_MID_RUNG). The
+ * share above follows the quarry's own realm, so late in the climb a realm-three owl paid
+ * a few hundredths of a second (6.7e5 against 4.9e7 qi a second). Measured over three
+ * seeds with a harness that takes the quarry when its odds are good (realm-9 day): once a
+ * day 69.0 to 65.3, casual 69.6 to 67.4, active 44.1 to 43.5, every hour 29.8 to 29.4. The
  * light hands gain most, which is who a weekly reward is for. Once a week and a lump,
  * never a rate.
+ *
+ * 定 Until 2026-10-05 it was four hours of the cultivator's own gathering, gear and all, so
+ * putting on qi gear for the kill paid more, and so did killing it late in a realm. It is a
+ * fixed sum read off the realm now, as the Platform's is (PLATFORM_HOURS): two hours of the
+ * realm's middle rate. Measured with tools/platformpay.ts over eight seeds, see there.
  */
-export const QUARRY_HOURS = 4;
+export const QUARRY_HOURS = 2;
 
 /**
  * 緣 The bond with one beast: how many wins fill it, and what a full one promises.
@@ -1079,7 +1084,28 @@ export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
 export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
 export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself
-export const PAIR_TOWER_QI = 1.25;     // 天師 qi from a tower floor
+export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
+/*
+ * 天師 Why the Celestial Master's number is two and a half (2026-10-05, was 1.25).
+ *
+ * A floor pays a fixed sum that climbs steeply with the floor, so a few floors more are
+ * worth far more than a quarter on each: rekaris asked whether the strongest climber would
+ * out-earn the Master, and it did. tools/celestial.ts, the active cultivator told to wear
+ * each class, five rolls of the dice each, the tower's qi over the whole climb:
+ *
+ *                     tower qi   ninth realm   top floor that day
+ *   劍仙 Sword Immortal  9.51e12    day 40.7         110
+ *   劍修 pure Sword      8.73e12    day 43.5         110
+ *   天師 at 1.25         5.25e12    day 45.4         104   (the least of the three)
+ *   天師 at 2.0          9.30e12    day 44.6
+ *   天師 at 2.5          1.07e13    day 42.8         105   (the most, by an eighth)
+ *   天師 at 3.0          1.44e13    day 42.5               (half again: past its claim)
+ *
+ * At 2.5 the Master takes the most qi out of the tower and the Sword Immortal still climbs
+ * it highest and soonest: each is the best at what it says. A floor's pay is a lump, never
+ * a rate, so the economic law holds; the server credits it only to a save that wears the
+ * Master or keeps him as a loadout (verify.ts wearsMaster).
+ */
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
 export const PAIR_HERBS = 1.3;         // 陣師 what a ripe bed pays
@@ -1177,6 +1203,28 @@ export const UPGRADE_NUMBERS = {
   pills: { share: 0.45, gain: 1.14 },      // 吐納 qi per second
   cores: { share: 3, gain: 1.08 },         // 妖丹 power, priced in material
 } as const;
+
+/**
+ * 中 Where a realm's middle stands, for the sums read off a realm rather than off the
+ * cultivator (擂 the Platform's challengers and 期 the week's quarry): REALM_MID_RUNG rungs
+ * into the realm, and REALM_MID_SHORT levels of 功法 and 吐納 under the realm's cap.
+ * rekaris's reference (2026-10-05): 33 levels on the fifth rung of the sixth realm.
+ */
+export const REALM_MID_RUNG = (LAYERS_PER_REALM - 1) / 2;
+export const REALM_MID_SHORT = LEVELS_PER_REALM / 2;
+
+/**
+ * 中 The realm's middle rate: the bare gathering on its middle rung with both qi upgrades
+ * REALM_MID_SHORT under the cap. No gear, no tree, no marks, no class: a number read off
+ * the realm alone, so whatever pays a multiple of it pays the same to everyone in the realm.
+ * It is never a rate anybody gathers at, only a measure, so it cannot raise the qi rate.
+ */
+export function midRate(realm: number): number {
+  const r = Math.max(1, Math.min(9, Math.round(realm)));
+  const growth = UPGRADE_NUMBERS.method.gain * UPGRADE_NUMBERS.pills.gain;
+  return BASE_RATE * LAYER_BONUS ** ((r - 1) * LAYERS_PER_REALM + REALM_MID_RUNG)
+    * growth ** (r * LEVELS_PER_REALM - REALM_MID_SHORT);
+}
 
 /** What 妖丹 costs in materials at a given level. Materials are earned by hand, not by
  *  waiting, so this is the one price that does not ride the mountain. */
@@ -1756,8 +1804,36 @@ export const TRAIL_WOUND = 0.1;
  * builds, under the tower.
  */
 export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
-/** 擂 What each challenger pays, once a period, in hours of gathering without gear. */
-export const PLATFORM_HOURS = [2, 4, 6] as const;
+/**
+ * 擂 What each challenger pays, once a period: this many hours of the realm's middle rate
+ * (REALM_MID_RUNG), a fixed sum read off the realm and the same for everyone in it.
+ *
+ * 定 Until 2026-10-05 it was 2, 4 and 6 hours of the cultivator's own bare rate (towerRate:
+ * levels, layers, the tree, the marks), so the same challenger in the same realm paid
+ * several times more to whoever bought rate first and fought late in the realm (x7.7 from
+ * the first rung with the last realm's caps to the last rung with this one's). rekaris
+ * asked for a fixed pay read off the realm, as the tower's floors now pay. Halved with it,
+ * because the middle of the realm stands above where most bouts were fought.
+ *
+ * Measured with tools/platformpay.ts over eight seeds (991, 7, 13, 29, 41, 57, 83, 101),
+ * this and QUARRY_HOURS together: the ninth realm's day, and the share of all qi each paid.
+ *
+ *                    day 9 before  after     Platform before  after    quarry before  after
+ *   barely fights        92.8      93.0           1.0%        0.9%         2.4%       1.8%
+ *   once a day           71.3      70.0           5.4%        5.0%         2.1%       1.3%
+ *   casual               63.0      62.1           4.6%        2.6%         1.9%       0.8%
+ *   active               43.4      43.4           2.9%        2.8%         1.0%       0.5%
+ *   every hour           27.1      27.8           3.1%        2.1%         1.0%       0.3%
+ *   drives it all        44.2      44.5           3.1%        2.9%         1.0%       0.5%
+ *   walks 神             46.3      46.0           5.8%        3.3%         2.1%       0.8%
+ *   crafts it all        43.6      43.8           2.6%        2.7%         0.9%       0.5%
+ *   runs auto            29.0      30.4           3.9%        2.4%         1.4%       0.4%
+ *
+ * The Platform alone moved no habit by more than 0.7 of a day; the quarry's two hours
+ * moved them from 1.3 sooner (once a day) to 1.4 later (runs auto). Every challenger and
+ * every quarry now pays exactly its reference, and waiting inside a realm buys x1.00.
+ */
+export const PLATFORM_HOURS = [1, 2, 3] as const;
 /** 擂 What an unanswered temper adds to the challenger. */
 export const TEMPER_EDGE = 1.3;
 /** 擂 The realm the Platform opens in (and its line in sim/unlocks.ts SYSTEMS). */

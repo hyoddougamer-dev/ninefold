@@ -70,7 +70,7 @@ export function floorRung(floor: number): number {
  *
  * TOWER_QI_RUNG of the price of floorRung's rung, so a floor near where a climber stands
  * pays about that share of their own next rung in every realm, and every floor above the
- * summit floor pays what the summit floor does. 天師 the Celestial Master's quarter again
+ * summit floor pays what the summit floor does. 天師 the Celestial Master's PAIR_TOWER_QI
  * is added where the floor is cleared (floorQi in trials.ts): it is the one thing a build adds.
  */
 export function floorQiPay(floor: number): number {

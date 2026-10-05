@@ -12,6 +12,7 @@ import { DAO, NODE } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
 import { Term } from '../ui/Term.tsx';
 import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points.ts';
+import { capRefuses } from '../../sim/stash.ts';
 
 /**
  * 道 The technique tree, drawn as a tree.
@@ -34,15 +35,17 @@ const COLS: Record<Path, number> = { sword: 62, spirit: 180, fortune: 298 };
 const W = 360;
 const TOP = 26;        // where the root sits
 
-type Status = 'have' | 'open' | 'poor' | 'shut' | 'locked';
+type Status = 'have' | 'open' | 'full' | 'poor' | 'shut' | 'locked';
 
 function statusOf(
-  node: Node, unlocked: readonly string[], free: number, keystones: boolean, capstones = true,
+  node: Node, unlocked: readonly string[], free: number, keystones: boolean, capstones = true, full = false,
 ): Status {
   if (unlocked.includes(node.key)) return 'have';
   const twin = node.excludes ? NODE_BY_KEY[node.excludes] : null;
   if (twin && unlocked.includes(twin.key)) return 'shut';
-  if (canUnlock(node.key, unlocked, free, keystones, capstones)) return 'open';
+  // 空囊 Reachable and paid for, and waiting on the chest: not lit as learnable, because
+  // the button would refuse it.
+  if (canUnlock(node.key, unlocked, free, keystones, capstones)) return full ? 'full' : 'open';
   // 樞 A keystone below its realm reads as locked, not as unaffordable: the difference
   // matters, because one of them is a thing you can fix by saving up.
   if (canUnlock(node.key, unlocked, Infinity, keystones, capstones)) return 'poor';
@@ -144,6 +147,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
   const keys = isOpen(state.realm, 'keystones');
   // 極 And each branch's last node waits for CAPSTONE_REALM, the fifth.
   const caps = capstonesOpen(state.realm);
+  // 空囊 The chest each node would leave, where the chest already holds more than it.
+  const over = new Map(ALL_NODES.map((n) => [n.key, capRefuses(state, n.key)]));
+  const statusFor = (node: Node) => statusOf(node, state.unlocked, free, keys, caps, over.get(node.key) != null);
   const chosen = picked ? NODE_BY_KEY[picked] : null;
   const taken = ALL_NODES.filter((n) => state.unlocked.includes(n.key)).length;
 
@@ -217,7 +223,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
       {chosen && (
         <Detail
           node={chosen}
-          status={statusOf(chosen, state.unlocked, free, keys, caps)}
+          status={statusFor(chosen)}
+          overCap={over.get(chosen.key) ?? null}
+          held={state.chest.length}
           keystones={keys}
           capstones={caps}
           onLearn={() => { onUnlock(chosen.key); setPicked(null); }}
@@ -232,8 +240,8 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
             const lit = state.unlocked.includes(a.node.key) && state.unlocked.includes(b.node.key);
             const bridge = a.node.path !== b.node.path
               && a.node.key !== ROOT.key && b.node.key !== ROOT.key;
-            const dead = statusOf(b.node, state.unlocked, free, keys, caps) === 'shut'
-              || statusOf(a.node, state.unlocked, free, keys, caps) === 'shut';
+            const dead = statusFor(b.node) === 'shut'
+              || statusFor(a.node) === 'shut';
             return (
               <line
                 key={`${a.node.key}-${b.node.key}`}
@@ -247,9 +255,9 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
           })}
 
           {PLACED.map(({ node, x, y }) => {
-            const status = statusOf(node, state.unlocked, free, keys, caps);
+            const status = statusFor(node);
             // 指 The first node that can be learned right now, for 引 the guide's ring.
-            const first = status === 'open' && PLACED.find((p) => statusOf(p.node, state.unlocked, free, keys, caps) === 'open')?.node.key === node.key;
+            const first = status === 'open' && PLACED.find((p) => statusFor(p.node) === 'open')?.node.key === node.key;
             const on = status === 'have';
             const open = status === 'open';
             const colour = hue(node);
@@ -318,9 +326,13 @@ export function Dao({ state, onUnlock, onStance, onSequence }: {
    in four harnesses. It lives in sim/points.ts now, once, because 悟道 the cards hand
    points over too and a count in six places is a count that will disagree in five. */
 
-function Detail({ node, status, keystones, capstones, onLearn, onClose }: {
+function Detail({ node, status, overCap, held, keystones, capstones, onLearn, onClose }: {
   node: Node;
   status: Status;
+  /** 空囊 The chest this node would leave, when the chest holds more than that; else null. */
+  overCap: number | null;
+  /** How many pieces the chest holds now. */
+  held: number;
   /** 樞 Whether the three that cost you something are open yet. See unlocks.ts. */
   keystones: boolean;
   /** 極 Whether each branch's last node is open yet. */
@@ -356,6 +368,11 @@ function Detail({ node, status, keystones, capstones, onLearn, onClose }: {
           {DAO.capstoneShut(realmOf(CAPSTONE_REALM).han, realmOf(CAPSTONE_REALM).name)}
         </p>
       )}
+      {overCap !== null && status !== 'have' && status !== 'shut' && (
+        <p className="overcap" style={{ margin: '5px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>
+          {DAO.overCap(held, overCap)}
+        </p>
+      )}
       {twin && (
         <p className="faint" style={{ margin: '5px 0 0', fontSize: 12.5 }}>
           {status === 'shut' ? DAO.closed(twin.han) : DAO.closes(twin.han, twin.name)}
@@ -368,7 +385,7 @@ function Detail({ node, status, keystones, capstones, onLearn, onClose }: {
         <button className="act" data-coach={status === 'open' ? 'dao-unlock' : undefined} style={{ width: 'auto', padding: '9px 20px', fontSize: 15 }}
                 disabled={status !== 'open'} onClick={onLearn}>
           {status === 'have' ? '已' : '習'}{' '}
-          <span>{status === 'have' ? 'Learned' : status === 'poor' ? 'Not enough' : status === 'shut' ? 'Closed' : status === 'locked' ? 'Locked' : 'Learn'}</span>
+          <span>{status === 'have' ? 'Learned' : status === 'full' ? DAO.overCapButton : status === 'poor' ? 'Not enough' : status === 'shut' ? 'Closed' : status === 'locked' ? 'Locked' : 'Learn'}</span>
         </button>
       </div>
     </div>

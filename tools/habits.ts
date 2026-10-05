@@ -18,13 +18,13 @@ import {
   newState, power, upgradeCost, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
-import { fight, odds, takeKill } from '../src/sim/combat.ts';
+import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { isOpen } from '../src/sim/unlocks.ts';
 import { STANCES } from '../src/data/arts.ts';
-import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor } from '../src/sim/trials.ts';
+import { brew, canBrew, canRefine, clearFloor, refine, refinePrice, standingFloor, towerRate } from '../src/sim/trials.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { ALL_NODES, type Path } from '../src/data/techniques.ts';
 import { canUnlock, capstonesOpen, focusBonus } from '../src/sim/dao.ts';
@@ -74,8 +74,8 @@ export interface Habit {
    * touched on 0% of visits and multiplies a finished cultivator's power by ×1.00, and
    * the obvious reading is that the system is dead. That reading is about the policy and
    * not about the game. A pill makes beasts read weaker, 塔 the tower is the one place
-   * during the climb where a beaten beast pays **qi**, and a floor is worth six hours of
-   * gathering. So there is a second policy the game plainly allows and nothing was
+   * during the climb where a beaten beast pays **qi**, and a floor pays a fixed sum of it
+   * (floorQiPay). So there is a second policy the game plainly allows and nothing was
    * playing: brew whenever it buys a floor.
    */
   readonly brews?: 'stuck' | 'tower';
@@ -222,7 +222,22 @@ export interface Run {
    * unit gathered or paid over the run (what is held at the end, every rung the ladder
    * took, and everything spent), so each is a share of the whole.
    */
-  readonly qi: { readonly gained: number; readonly drunk: number; readonly incense: number; readonly platform: number };
+  readonly qi: {
+    readonly gained: number; readonly drunk: number; readonly incense: number; readonly platform: number;
+    /** 期 What the week's quarry paid on top of the kill, every week it was taken (tools/platformpay.ts). */
+    readonly quarry: number;
+  };
+  /**
+   * 擂 Every challenger beaten, as it fell: the day, where the cultivator stood, what it paid,
+   * and the rate with nothing worn at that moment. tools/platformpay.ts reads it to see how
+   * much the same challenger pays depending on when it is fought.
+   */
+  readonly beats: readonly {
+    readonly day: number; readonly realm: number; readonly layer: number; readonly tier: number;
+    readonly method: number; readonly pills: number; readonly paid: number; readonly bare: number;
+  }[];
+  /** 期 Every week's quarry taken: the day, the realm, what it paid on top of the kill. */
+  readonly quarries: readonly { readonly day: number; readonly realm: number; readonly paid: number }[];
   /** 擂 Challengers beaten, by position (first, second, third), and periods the Platform stood. */
   readonly bouts: readonly number[];
   readonly periods: number;
@@ -485,7 +500,17 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   // 器 The drops are seeded, so the same habit always finds the same gear.
   let seed = h.seed ?? 991;
   // 氣源 The ledger: every rung the clock paid for, every unit spent, and the three named sources.
-  const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0, tower: 0 };
+  const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0, tower: 0, quarry: 0 };
+  const beats: Run['beats'][number][] = [];
+  const quarries: Run['quarries'][number][] = [];
+  /** 期 The quarry's own pay, read off the body that took it, whenever a kill or a drive took it. */
+  const quarried = (prev: State, next: State) => {
+    const q = quarryOf(prev);
+    if (!q || next.quarryWeek === prev.quarryWeek) return next;
+    led.quarry += quarryPaid(prev, q);
+    quarries.push({ day: (t - T0) / DAY, realm: prev.realm, paid: quarryPaid(prev, q) });
+    return next;
+  };
   const towerBy: number[] = new Array(11).fill(0);
   const gainedAt: number[] = new Array(11).fill(0);
   const biggest = Array.from({ length: 11 }, () => ({ hours: 0, rungs: 0 }));
@@ -636,6 +661,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
             s = beatChallenger(s, tier);
             if (k.spends) s = spendKit(s, k.used);
             led.platform += s.qi - before;
+            beats.push({ day: (t - T0) / DAY, realm: s.realm, layer: s.layer, tier, method: s.levels.method,
+              pills: s.levels.pills, paid: s.qi - before, bare: towerRate(s) });
             bouts[tier]++;
             won = true;
             break;
@@ -650,7 +677,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     if (h.hunts > 0 && quarryOwed(s)) {
       const q = quarryOf(s);
       if (q && odds(s, q) > 0.7) {
-        s = takeKill(s, q);
+        s = quarried(s, takeKill(s, q));
         if (h.gear) s = takeDrop(s, q, ++seed, h.calling);
         fights++;
       }
@@ -661,7 +688,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       const b = (h.crafts && i === 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined)
         ?? quarryFor(s, h.calling);
       if (!b) break;
-      s = takeKill(s, b);
+      s = quarried(s, takeKill(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);
       if (h.gear) s = fuseAll(s, h.calling);
       fights++;
@@ -687,7 +714,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       if (!n) break;
       const d = drive(s, b, n, ++seed);
       led.spent += d.qiSpent;
-      s = d.state;
+      s = quarried(s, d.state);
       fights += n;
     }
 
@@ -827,8 +854,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       if (!line) break;
       s = spend(brew(s, line));
     }
-    // 塔 The other policy: brew toward the floor that will not fall, because a floor is
-    // six hours of gathering and a pill is a share of one rung.
+    // 塔 The other policy: brew toward the floor that will not fall, because a floor pays
+    // TOWER_QI_RUNG of a rung and a pill is a share of one rung.
     if (h.furnace && h.brews === 'tower') for (let g = 0; g < 400; g++) {
       const f = standingFloor(s);
       if (odds(s, floorBeast(f), floorPower(f)) > 0.65) break;
@@ -841,8 +868,9 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   return {
     habit: h, days: (t - T0) / DAY, arrival, layerDay, state: s, fights,
     reached: s.realm, done: layersOpened(s) >= LAYERS - 1, power: power(s),
-    qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform },
-    bouts, periods,
+    qi: { gained: s.qi + led.ladder + led.spent, drunk: led.drunk, incense: led.incense, platform: led.platform,
+      quarry: led.quarry },
+    beats, quarries, bouts, periods,
     tower: (() => {
       const total = s.qi + led.ladder + led.spent;
       const gained = towerBy.map((_, r) => {

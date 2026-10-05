@@ -678,6 +678,16 @@ export function spendKit(s: State, used: Used): State {
 }
 
 /**
+ * 業 A won fight's reward, and its kit spent only if the reward landed. `after` is what
+ * the reward made of `before`: a reward that refused (a Platform challenger beaten just as
+ * the week turned, a floor already counted, a demon no longer due) hands back the same
+ * state, and a fight that paid nothing has spent nothing either. A loss never calls this.
+ */
+export function spendOnWin(before: State, after: State, used: Used): State {
+  return after === before ? before : spendKit(after, used);
+}
+
+/**
  * 戰 The strongest kit this cultivator's crafts could possibly put into a fight: Heaven
  * rank of the best elixir and sigil their levels and realm allow. 驗 the server reads it,
  * because it sees a warden beaten and not what was carried into the fight.

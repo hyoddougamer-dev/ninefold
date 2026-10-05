@@ -2,7 +2,7 @@ import { callingOf, schoolTier, wornTotals, type GearTotals } from '../data/gear
 import type { Pair, School } from '../data/schools.ts';
 import {
   ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
-  PAIR_DRIVE, PAIR_DROP, PAIR_MATERIAL, PAIR_MELT, PAIR_PILLS, PAIR_SPRING, PAIR_TOWER,
+  PAIR_CHEST, PAIR_DRIVE, PAIR_DROP, PAIR_MATERIAL, PAIR_MELT, PAIR_PILLS, PAIR_SPRING, PAIR_TOWER,
   PAIR_DRAGON, PAIR_HERBS, PAIR_MEET, PAIR_MEND, PAIR_TOWER_QI,
   PAIR_WARDEN, QI_UPGRADES, SUNDER_BEND, SWORD_POWER,
 } from './balance.ts';
@@ -58,22 +58,36 @@ export function classArts(s: Body): number { return step(tierOf(s, 'arts'), ARTS
 
 // ── the fifteen pairs ─────────────────────────────────────────────────────────────
 
-export function classTower(s: Body): number { return pairIs(s, 'swordimmortal') ? PAIR_TOWER : 1; }
-export function classDrive(s: Body): number { return pairIs(s, 'wanderer') ? PAIR_DRIVE : 1; }
-export function classWarden(s: Body): number { return pairIs(s, 'wargod') ? PAIR_WARDEN : 1; }
-export function classMaterial(s: Body): number { return pairIs(s, 'swordsmith') ? PAIR_MATERIAL : 1; }
-export function classSpring(s: Body): number { return pairIs(s, 'seeker') ? PAIR_SPRING : 1; }
-export function classBounty(s: Body): number { return pairIs(s, 'vajra') ? PAIR_BOUNTY : 1; }
-export function classPills(s: Body): number { return pairIs(s, 'alchemist') ? PAIR_PILLS : 1; }
-export function classDrop(s: Body): number { return pairIs(s, 'huntking') ? PAIR_DROP : 0; }
-export function classMelt(s: Body): number { return pairIs(s, 'treasuresmith') ? PAIR_MELT : 1; }
+/**
+ * 合 Each pair's perk, as the number it pays. One table, read by the functions below and
+ * by the sentence the player reads (pairSays in classes.ts), so the two cannot drift.
+ * 甲匠 the Armourer's places are counted where the chest is (wornTotals, chest.ts).
+ */
+export const PAIR_VALUE: Readonly<Record<Pair, number>> = {
+  swordimmortal: PAIR_TOWER, wanderer: PAIR_DRIVE, wargod: PAIR_WARDEN, swordsmith: PAIR_MATERIAL,
+  seeker: PAIR_SPRING, vajra: PAIR_BOUNTY, alchemist: PAIR_PILLS, huntking: PAIR_DROP,
+  treasuresmith: PAIR_MELT, armourer: PAIR_CHEST,
+  swordsaint: PAIR_DRAGON, celestial: PAIR_TOWER_QI, diviner: PAIR_MEET, arhat: PAIR_MEND, formation: PAIR_HERBS,
+};
+/** A pair's own number on the body that is that pair, and `none` on any other. */
+const perk = (s: Body, key: Pair, none = 1) => (pairIs(s, key) ? PAIR_VALUE[key] : none);
+
+export function classTower(s: Body): number { return perk(s, 'swordimmortal'); }
+export function classDrive(s: Body): number { return perk(s, 'wanderer'); }
+export function classWarden(s: Body): number { return perk(s, 'wargod'); }
+export function classMaterial(s: Body): number { return perk(s, 'swordsmith'); }
+export function classSpring(s: Body): number { return perk(s, 'seeker'); }
+export function classBounty(s: Body): number { return perk(s, 'vajra'); }
+export function classPills(s: Body): number { return perk(s, 'alchemist'); }
+export function classDrop(s: Body): number { return perk(s, 'huntking', 0); }
+export function classMelt(s: Body): number { return perk(s, 'treasuresmith'); }
 /** 劍聖 How much of itself the Dragon of the tribulation counts against this body. */
-export function classDragon(s: Body): number { return pairIs(s, 'swordsaint') ? PAIR_DRAGON : 1; }
-export function classTowerQi(s: Body): number { return pairIs(s, 'celestial') ? PAIR_TOWER_QI : 1; }
-export function classMeet(s: Body): number { return pairIs(s, 'diviner') ? PAIR_MEET : 1; }
+export function classDragon(s: Body): number { return perk(s, 'swordsaint'); }
+export function classTowerQi(s: Body): number { return perk(s, 'celestial'); }
+export function classMeet(s: Body): number { return perk(s, 'diviner'); }
 /** 羅漢 Health recovered every round, as a share of the whole. */
-export function classMend(s: Body): number { return pairIs(s, 'arhat') ? PAIR_MEND : 0; }
-export function classHerbs(s: Body): number { return pairIs(s, 'formation') ? PAIR_HERBS : 1; }
+export function classMend(s: Body): number { return perk(s, 'arhat', 0); }
+export function classHerbs(s: Body): number { return perk(s, 'formation'); }
 
 // ── 運拾破煉 the four lines, bent ──────────────────────────────────────────────
 
