@@ -22,6 +22,18 @@ export function limitFor(s: State): number {
 }
 
 /**
+ * 空囊 The chest's size once node `key` is learned, when the chest already holds more
+ * than that, or null when the node leaves room enough. Empty Pouch caps the chest at 12,
+ * and a chest of thirty would sit over its limit with nothing to say why. So it is refused
+ * rather than repaired, the way 改 a card trade is refused over chest places (retrade.ts):
+ * the player melts or fuses first, and chooses which pieces go.
+ */
+export function capRefuses(s: State, key: string): number | null {
+  const room = limitFor({ ...s, unlocked: [...s.unlocked, key] });
+  return s.chest.length > room && room < limitFor(s) ? room : null;
+}
+
+/**
  * 空囊 A drop a rank higher, when the tree says so. A drop, not a forged piece: the forge
  * shows its odds on the recipe, and a piece that came out a rank above them would make
  * those odds wrong on the one screen that quotes them.

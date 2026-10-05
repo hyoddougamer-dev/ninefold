@@ -81,7 +81,8 @@ function giftLine(state: State, kind: RoomKind, gift: Gift): string | null {
  */
 export function Secret({ state, onOpen, onLeave }: {
   state: State;
-  onOpen: (which: 0 | 1 | 2) => void;
+  /** 門 The door by what it is and the room it is in, never by its place in the row. */
+  onOpen: (door: { step: number; kind: RoomKind }) => void;
   onLeave: () => void;
 }) {
   const step = state.runStep;
@@ -139,16 +140,15 @@ export function Secret({ state, onOpen, onLeave }: {
       )}
 
       <div className="ways">
-        {doors.map((room, i) => {
-          const which = i as 0 | 1 | 2;
+        {doors.map((room) => {
           const gift = giftOf(state, room, step);
           const info = ROOM_INFO[room.kind];
           const chance = gift.fight ? Math.round(odds(state, gift.fight, undefined, kitFor(state, gift.fight, 'vault').kit) * 100) : 0;
           const line = giftLine(state, room.kind, gift);
           const tag = SECRET.tags[room.kind];
           return (
-            <button key={`${room.kind}${which}`} className="way" data-fight={!!gift.fight || undefined}
-              data-kind={room.kind} onClick={() => onOpen(which)}>
+            <button key={room.kind} className="way" data-fight={!!gift.fight || undefined}
+              data-kind={room.kind} onClick={() => onOpen({ step, kind: room.kind })}>
               <Svg className="vault" html={chamber({ kind: room.kind, step, realm: state.realm })} />
               <span className="body">
                 <b>
