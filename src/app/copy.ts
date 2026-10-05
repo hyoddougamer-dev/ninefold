@@ -1704,6 +1704,33 @@ export const CLASS = {
     pairsBlurb: 'Three pieces of each of two schools wake both, and the class where they meet adds its own perk.',
     close: 'Close',
   },
+  /**
+   * 較 Compare classes. rekaris, on the Discord: nobody can tell which class is stronger
+   * without building every set by hand. The sheet builds them from the chest instead.
+   */
+  compare: {
+    open: 'Compare classes',
+    title: 'Compare classes',
+    blurb: 'The strongest outfit your pieces can make for every class, from your chest and what you wear. Tap one to put it on. Refining stays with the place on the body, as it always does.',
+    none: 'Your pieces cannot make a class yet. Five of one school bring it to its full. Three and three of two schools make one of the fifteen classes.',
+    head: 'Class',
+    power: 'Power',
+    floor: 'Floor',
+    qi: 'Qi/s',
+    /** 塔 What the floor column counts. */
+    floorSays: (next: number) => `Floor is the highest floor of 塔 the tower this outfit beats now, from floor ${next} up. Losing a fight costs nothing.`,
+    shut: 'The tower is not open yet, so only power and qi are compared.',
+    noFloor: 'none',
+    reading: 'reading',
+    best: 'The best in each column is in gold.',
+    full: (school: string) => `${school} at its full`,
+    pairOf: (a: string, b: string) => `${a} and ${b}`,
+    now: 'Worn now',
+    noClass: 'No class',
+    worn: 'worn',
+    wear: (name: string) => `Put on the strongest ${name} outfit`,
+    close: 'Close',
+  },
 };
 
 export const DAO = {

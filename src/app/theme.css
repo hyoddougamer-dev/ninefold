@@ -1543,11 +1543,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .calling .cschools em b { color: var(--text); font-weight: 600; }
 .calling .cschools em[data-on="true"] { color: var(--text); }
 .calling .cnext { font-size: 11.5px; color: var(--faint); }
-.calling .cbook { justify-self: start; margin-top: 4px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+.calling .cbtns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.calling :is(.cbook, .ccompare) { padding: 5px 10px; border-radius: 999px; cursor: pointer;
                   border: 1px solid rgba(212,175,86,.45); background: rgba(212,175,86,.07); color: var(--gold);
                   font: inherit; font-size: 12px; }
-.calling .cbook .cjk { margin-right: 2px; }
-.calling .cbook:hover { background: rgba(212,175,86,.14); }
+.calling :is(.cbook, .ccompare) .cjk { margin-right: 2px; }
+.calling :is(.cbook, .ccompare):hover { background: rgba(212,175,86,.14); }
+/* 較 The comparison is the louder of the two: it answers the question a class line raises. */
+.calling .ccompare { background: rgba(212,175,86,.16); border-color: var(--gild-strong); }
 
 /* 改 The cards already taken. A .help sheet for its frame; everything inside starts cb-. */
 .handline { display: block; width: 100%; margin-top: 10px; padding: 9px 12px; border-radius: 10px; text-align: left;
@@ -1618,6 +1621,53 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @media (min-width: 900px) {
   .schoolbook .sb-pairs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .schoolbook .sb-pairs h3, .schoolbook .sb-pairs > p { grid-column: 1 / -1; }
+}
+
+/* 較 Compare classes. A .help sheet for its frame, like 譜; everything inside is its own
+   and starts cc-. A row is a class: a two-colour tag for its schools, the name, then three
+   numbers under a header that names each, and the class's own sentence underneath. The
+   numbers are narrow on purpose so the name keeps its room on a 320px phone. */
+.classcompare { gap: 12px; --cc-cols: 4px minmax(0, 1fr) 46px 46px; }
+.classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 46px 36px 46px; }
+.classcompare h2 { padding-right: 56px; }
+.classcompare h2 .cjk { color: var(--gold); }
+.classcompare .cc-blurb { margin: -4px 0 0; font-size: 13px; line-height: 1.5; }
+.classcompare .cc-empty { margin: 0; font-size: 13.5px; line-height: 1.5; padding: 12px; border-radius: 10px;
+                          border: 1px dashed var(--line); color: var(--faint); }
+.classcompare .cc-table { display: grid; gap: 6px; }
+.classcompare .cc-head, .classcompare .cc-row { display: grid; grid-template-columns: var(--cc-cols);
+                                                column-gap: 6px; align-items: center; }
+.classcompare .cc-head { padding: 0 9px; font-size: 11px; color: var(--faint); align-items: end; }
+.classcompare .cc-head > span:nth-child(n+3) { display: grid; justify-items: end; line-height: 1.15; text-align: right; }
+.classcompare .cc-head .cjk { color: var(--gold); font-size: 13px; }
+.classcompare .cc-head > span:nth-child(n+3) .cjk { display: block; }
+.classcompare .cc-row { width: 100%; text-align: left; font: inherit; color: var(--text); row-gap: 3px;
+                        padding: 8px 9px; border-radius: 10px; border: 1px solid var(--line);
+                        background: var(--panel); cursor: pointer; }
+.classcompare button.cc-row:hover { border-color: rgba(212,175,86,.45); }
+.classcompare .cc-row[data-worn] { cursor: default; border-color: var(--gild-strong); }
+.classcompare .cc-row[data-now] { background: none; border-style: dashed; border-color: var(--line); }
+.classcompare .cc-tag { grid-row: 1 / span 3; align-self: stretch; border-radius: 2px;
+                        background: linear-gradient(var(--a) 50%, var(--b) 50%); }
+.classcompare .cc-name { min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
+.classcompare .cc-name .cjk { color: var(--a); font-weight: 400; white-space: nowrap; }
+/* The schools line runs under the whole row, so "Sword and Qi" never breaks inside the name's column. */
+.classcompare .cc-from { grid-column: 2 / -1; font-size: 11px; color: var(--faint); }
+.classcompare .cc-from em { font-style: normal; color: var(--gold); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; }
+.classcompare .cc-num { text-align: right; font-size: 13px; white-space: nowrap; }
+.classcompare .cc-num[data-best] { color: var(--gold); font-weight: 700; }
+.classcompare .cc-num[data-none], .classcompare .cc-num[data-wait] { color: var(--faint); font-size: 10.5px; }
+.classcompare .cc-says { grid-column: 2 / -1; font-size: 11.5px; line-height: 1.4; color: var(--faint); }
+.classcompare .cc-foot { margin: 0; font-size: 12px; line-height: 1.5; }
+@media (max-width: 360px) {
+  .classcompare { --cc-cols: 4px minmax(0, 1fr) 42px 42px; }
+  .classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 40px 28px 42px; }
+  .classcompare .cc-head, .classcompare .cc-row { column-gap: 5px; }
+}
+@media (min-width: 900px) {
+  .classcompare { --cc-cols: 4px minmax(0, 1fr) 72px 72px; }
+  .classcompare[data-tower] { --cc-cols: 4px minmax(0, 1fr) 72px 60px 72px; }
+  .classcompare .cc-table, .classcompare .cc-blurb, .classcompare .cc-foot { max-width: 760px; }
 }
 
 /* 系 A worn lineage: how many pieces, what the steps pay, and what the next one wants. */

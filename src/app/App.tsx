@@ -35,7 +35,7 @@ import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { clearSet, renameSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
+import { clearSet, renameSet, saveSet, setLocked as lockPiece, wearPieces, wearSet } from '../sim/sets.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -67,6 +67,7 @@ import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Cards } from './ui/Cards.tsx';
 import { retrade } from '../sim/retrade.ts';
 import { Schools } from './ui/Schools.tsx';
+import { Compare } from './ui/Compare.tsx';
 import { Coach } from './ui/Coach.tsx';
 import { Chronicle } from './screens/Chronicle.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
@@ -175,6 +176,8 @@ export function App() {
   const [key, setKey] = useState(false);
   /** 譜 The page of which piece is which school, opened from the class on 器. */
   const [book, setBook] = useState(false);
+  /** 較 The class comparison, opened from the class line on 器. */
+  const [comparing, setComparing] = useState(false);
   /** 改 The cards already taken, where one can be traded. */
   const [cards, setCards] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
@@ -1013,7 +1016,7 @@ export function App() {
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
   /** 收 What hides the corner Menu. The vault, the tally and the cards keep it, as they always did. */
-  const shade = help || prologue || ranks || !!cloudPick || key || book || cards || stele || credits || saving || realmPage || menu || !!driving
+  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || stele || credits || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   /**
@@ -1078,6 +1081,7 @@ export function App() {
   const panelOut = saving ? () => { setSaving(false); sfx.tap(); }
     : key ? () => { setKey(false); sfx.tap(); }
     : book ? () => { setBook(false); sfx.tap(); }
+    : comparing ? () => { setComparing(false); sfx.tap(); }
     : cards ? () => { setCards(false); sfx.tap(); }
     : help ? () => { setHelp(false); sfx.tap(); }
     : ranks ? () => { setRanks(false); sfx.tap(); }
@@ -1283,6 +1287,7 @@ export function App() {
             onClearSet={(i) => { setState((s) => clearSet(s, i)); sfx.tap(); }}
             onRenameSet={(i, name) => { setState((s) => renameSet(s, i, name)); sfx.tap(); }}
             onBook={() => { setBook(true); sfx.tap(); }}
+            onCompare={() => { setComparing(true); sfx.tap(); }}
             onWearAll={onWearAll} onFuseAll={onFuseAll}
           />
         )}
@@ -1587,6 +1592,21 @@ export function App() {
       )}
       {key && <Key onClose={() => { setKey(false); sfx.tap(); }} />}
       {book && <Schools state={state} onClose={() => { setBook(false); sfx.tap(); }} />}
+      {/* 較 A tap on a row puts that outfit on through wearPieces, the path a loadout takes,
+          so 承 refining moves with the place on the body as it does on the gear screen. */}
+      {comparing && (
+        <Compare state={state}
+          onWear={(ids) => {
+            const id = ++taps.current;
+            setState((s) => {
+              const r = wearPieces(s, ids);
+              if (r.missing > 0) once(id, () => float(GEAR.setMissing(r.missing), 'gold'));
+              return r.state;
+            });
+            sfx.buy(); haptics.strike();
+          }}
+          onClose={() => { setComparing(false); sfx.tap(); }} />
+      )}
       {cards && (
         <Cards state={state} onClose={() => { setCards(false); sfx.tap(); }}
           onTrade={(i, key) => {

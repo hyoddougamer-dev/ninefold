@@ -46,7 +46,7 @@ import { SET_LIMIT } from '../../sim/state.ts';
  * An empty slot is drawn dashed and faint on purpose: you have to see that it is empty
  * as fast as you see what is full.
  */
-export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onRenameSet, onBook, onWearAll, onFuseAll }: {
+export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, onSalvageAll, onSaveSet, onWearSet, onClearSet, onRenameSet, onBook, onCompare, onWearAll, onFuseAll }: {
   state: State;
   /** ▲ 著 Put on every ▲ piece (sim/inspect.ts wearBetter). */
   onWearAll?: () => void;
@@ -71,6 +71,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onRenameSet: (index: number, name: string) => void;
   /** 譜 Open the page of which piece is which school. */
   onBook: () => void;
+  /** 較 Open the comparison of every class the chest can make. */
+  onCompare?: () => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
   // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
@@ -256,7 +258,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       </div>
 
       {/* 職 The class the body wears: read off it, never stored. */}
-      <Calling worn={state.worn} onBook={onBook} />
+      <Calling worn={state.worn} onBook={onBook} onCompare={onCompare} />
 
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
