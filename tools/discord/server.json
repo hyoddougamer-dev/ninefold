@@ -1110,6 +1110,176 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fix-2026-10-05-miss",
+      "pin": false,
+      "channel": "devlog",
+      "title": "狐 Fix · A beast never misses two rounds running",
+      "color": "#C9A45C",
+      "body": [
+        "A fix that went out straight away, because it let any fight be won."
+      ],
+      "fields": [
+        [
+          "疾 Swift with Fox Shadow and Dragon Might",
+          "Swift runs your sequence twice a round, so a sequence holding both Fox Shadow and Dragon Might made the beast miss every single round. It never landed a blow, and when the rounds ran out the fight went to whoever had lost less of their health, so any tower floor, warden or tribulation could be won. A beast now never misses two rounds running, and both arts say so. If you fight with Swift and Fox Shadow, as most of you do, a beast now lands a blow at least every other round, so the floor or two at the very edge of your reach may need a little more power. Every floor you have already won stays yours."
+        ],
+        [
+          "榜 The boards",
+          "Climbs made this way were never ranked: the server holds every save at its last honest point. Nothing in your game is taken away, and if your rank is held because of this, we'll sort it out with you directly."
+        ]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-art",
+      "pin": false,
+      "channel": "news",
+      "title": "畫 Does the look matter? AI art, and what you'd rather see",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-art.webp?v=1",
+      "body": [
+        "**An honest question, and I'd like honest answers.** I make Ninefold on my own, in my spare time. The paintings you see (the beasts, the realms, the heavens, the figures in the arena) are **made with AI**, because paying an artist for well over a hundred pictures is out of reach for now.",
+        "",
+        "I know some of you don't like AI art, and some of you care a lot about how a game looks. I'd rather ask than guess. The picture below shows the same Spirit Fox and the same Tower in six looks the game could wear. Here is what each one would mean."
+      ],
+      "fields": [
+        [
+          "A 🖼️ Painted (today)",
+          "What you play now. Rich and moody, one mood across every realm. Made with AI, and small details can drift from one painting to the next."
+        ],
+        [
+          "B ✏️ Line icons (Lucide)",
+          "A free, open set of icons made for apps. Crisp at any size and very light. But it has no fox, no dragon and no pagoda (that's a cat and a castle in the picture), so the game would start to look like a tool."
+        ],
+        [
+          "C 🎲 Game icons",
+          "Thousands of free silhouettes drawn by many artists and credited (game-icons.net). The gear tiles already use them. Clear and readable, but you will have seen the same shapes in other games."
+        ],
+        [
+          "D 🖌️ Ink brush",
+          "The same shapes, drawn by the game itself as ink on paper, with a red seal. No AI, and close to the xianxia mood. Simpler than a painting: no faces, no light."
+        ],
+        [
+          "E 👾 Pixel art",
+          "Shown here by shrinking the current paintings, so it gives the feel and not the real thing. Real pixel art is drawn by hand: slower to make, but something one person can keep consistent."
+        ],
+        [
+          "F 🀄 Characters only",
+          "The beast's or the place's character in a seal, with its English name beside it. The lightest and most honest, but harder to read if Chinese characters mean nothing to you."
+        ],
+        [
+          "🔀 Mixing is possible",
+          "For example painted realms behind ink-brush beasts, or painted art only for the big moments. Whatever you pick, nothing changes in the numbers, and any change would come one screen at a time, shown to you first."
+        ],
+        [
+          "❓ Vote, then talk",
+          "Four quick polls are just below. To say more, open **畫 The look: your examples and opinions** in {#ideas}: a game whose look you love (a screenshot is perfect), what bothers you in today's art, a style I didn't show. \"The look doesn't matter to me\" helps just as much. I read every reply."
+        ]
+      ],
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/art-styles.webp?v=1",
+      "footer": "師 Shibaki · thank you for being honest with me",
+      "polls": [
+        {
+          "question": "How much does the look matter to you in an idle game?",
+          "answers": [
+            [
+              "🎨",
+              "A lot: it's part of why I stay"
+            ],
+            [
+              "👍",
+              "Some: it should be pleasant to look at"
+            ],
+            [
+              "📊",
+              "Little: I'm here for the numbers"
+            ]
+          ]
+        },
+        {
+          "question": "Which look would you play? Pick any.",
+          "multi": true,
+          "answers": [
+            [
+              "🖼️",
+              "A · Painted (today)"
+            ],
+            [
+              "✏️",
+              "B · Line icons"
+            ],
+            [
+              "🎲",
+              "C · Game icons"
+            ],
+            [
+              "🖌️",
+              "D · Ink brush"
+            ],
+            [
+              "👾",
+              "E · Pixel art"
+            ],
+            [
+              "🀄",
+              "F · Characters only"
+            ],
+            [
+              "🔀",
+              "A mix (say which in ideas)"
+            ]
+          ]
+        },
+        {
+          "question": "How do you feel about AI art in Ninefold?",
+          "answers": [
+            [
+              "✅",
+              "Fine with me"
+            ],
+            [
+              "🤝",
+              "Fine for now, until real art is possible"
+            ],
+            [
+              "😕",
+              "I'd rather have simpler art without AI"
+            ],
+            [
+              "🚫",
+              "It would stop me playing or sharing it"
+            ]
+          ]
+        },
+        {
+          "question": "What matters most in how a game looks? Pick any.",
+          "multi": true,
+          "answers": [
+            [
+              "🐉",
+              "Every beast looks like itself"
+            ],
+            [
+              "🧩",
+              "One style everywhere"
+            ],
+            [
+              "📱",
+              "Easy to read on a phone"
+            ],
+            [
+              "⛩️",
+              "It feels like xianxia"
+            ],
+            [
+              "✨",
+              "Effects and animation"
+            ]
+          ]
+        }
+      ]
     }
   ],
   "posts": [
@@ -1723,6 +1893,36 @@
           ]
         }
       ]
+    },
+    {
+      "key": "ideas-art",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": false,
+      "title": "畫 The look: your examples and opinions",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-art.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/art-styles.webp?v=1",
+      "body": [
+        "This is the place to talk about how Ninefold looks. The six looks, what each would mean and the polls are in {#news}, in **畫 Does the look matter?**. Here, say what a poll can't."
+      ],
+      "fields": [
+        [
+          "🖼️ Show me",
+          "A game whose look you love, idle or not, and what you love about it. A screenshot or a link is perfect."
+        ],
+        [
+          "💬 Tell me",
+          "What works or bothers you in today's paintings. Whether AI art changes how you see the game, either way. A look I didn't show. Which mix you'd pick."
+        ],
+        [
+          "🤝 Keep it kind",
+          "Every opinion is welcome here, including \"I don't mind\". Answer each other, argue the case, and I'll read all of it before anything changes."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "threads": [
