@@ -32,8 +32,14 @@ const FLOOR = 104;
 /** The light a room is lit by: the thing behind the door, in one colour. */
 const LIGHT: Record<RoomKind | 'out', string> = {
   spring: '#7FB495',
+  // 香 Incense burns violet: the one colour no other door in the vault is lit by.
+  incense: '#A994D8',
   shrine: '#D4AF56',
   brazier: '#D07C4A',
+  // 匣 The box is lit like old wood and lamp oil, warmer and duller than the shrine's gold.
+  box: '#C9A266',
+  // 跡 The trail is the challenger's own colour, rust, a step softer than a gate's.
+  trail: '#C8835E',
   beast: '#D2604E',
   out: '#EDE3D2',
 };
@@ -119,6 +125,74 @@ function brazier(c: string): string {
 }
 
 /**
+ * 香 A censer: a bowl on a low foot, three sticks lit in it, and the smoke going up in
+ * three slow curls. The smoke is the point: it is what says "this keeps going after you
+ * have walked on".
+ */
+function incense(c: string): string {
+  const cx = W / 2;
+  const rim = FLOOR - 22;
+  const sticks = [-8, 0, 8].map((dx, i) => {
+    const top = rim - 22 - (i === 1 ? 4 : 0);
+    return `<line x1="${cx + dx}" y1="${rim}" x2="${cx + dx}" y2="${top}" stroke="${c}" stroke-opacity=".7" stroke-width="1.4"/>
+      <circle cx="${cx + dx}" cy="${top}" r="2" fill="#F4C66B" opacity=".95"/>
+      <path d="M${cx + dx} ${top - 3} q 6 -8 0 -16 q -6 -8 0 -16 q 6 -8 1 -15" fill="none" stroke="${c}"
+        stroke-opacity="${(0.55 - i * 0.08).toFixed(2)}" stroke-width="1.6" stroke-linecap="round"/>`;
+  }).join('');
+  return `<g>
+    <ellipse cx="${cx}" cy="${FLOOR - 3}" rx="34" ry="6" fill="${c}" opacity=".18"/>
+    ${sticks}
+    <path d="M${cx - 24} ${rim} L${cx + 24} ${rim} L${cx + 18} ${rim + 12} L${cx - 18} ${rim + 12} Z"
+      fill="#17140F" stroke="${c}" stroke-opacity=".6"/>
+    <rect x="${cx - 26}" y="${rim - 3}" width="52" height="4" rx="2" fill="${c}" opacity=".55"/>
+    <path d="M${cx - 10} ${rim + 12} L${cx - 13} ${FLOOR - 2} L${cx + 13} ${FLOOR - 2} L${cx + 10} ${rim + 12} Z"
+      fill="#17140F" stroke="${c}" stroke-opacity=".4"/>
+  </g>`;
+}
+
+/**
+ * 匣 A craftsman's box: dark wood, the lid lifted a little, a brass catch, and a sprig of
+ * the realm's herb standing out of it, so it reads as the workshop's and not as treasure.
+ */
+function box(c: string): string {
+  const cx = W / 2;
+  const top = FLOOR - 30;
+  return `<g>
+    <ellipse cx="${cx}" cy="${FLOOR - 2}" rx="40" ry="5" fill="${c}" opacity=".16"/>
+    <path d="M${cx - 6} ${top - 2} Q${cx - 12} ${top - 18} ${cx - 4} ${top - 30} M${cx - 8} ${top - 14} Q${cx - 2} ${top - 18} ${cx + 2} ${top - 16}"
+      fill="none" stroke="#7FB495" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+    <rect x="${cx - 30}" y="${top}" width="60" height="28" rx="2" fill="#120F0B" stroke="${c}" stroke-opacity=".7"/>
+    <path d="M${cx - 32} ${top + 1} L${cx - 26} ${top - 9} L${cx + 28} ${top - 13} L${cx + 32} ${top - 2} Z"
+      fill="#17140F" stroke="${c}" stroke-opacity=".7"/>
+    <path d="M${cx + 14} ${top - 11} l 8 -5 l 4 6" fill="none" stroke="${c}" stroke-opacity=".7" stroke-width="1.6"/>
+    <rect x="${cx - 4}" y="${top + 8}" width="8" height="10" rx="1" fill="${c}" opacity=".75"/>
+    <line x1="${cx - 30}" y1="${top + 22}" x2="${cx + 30}" y2="${top + 22}" stroke="${c}" stroke-opacity=".25"/>
+  </g>`;
+}
+
+/**
+ * 跡 A trail: prints in the dust of the floor, going in under the last arch and smaller
+ * as they go, with a dark drop beside two of them. Something hurt walked this way.
+ */
+function trail(c: string): string {
+  const cx = W / 2;
+  const prints = [0, 1, 2, 3, 4].map((i) => {
+    const k = i / 4;
+    const y = FLOOR - 4 - k * 30;
+    const x = cx + (i % 2 ? 9 : -9) * (1 - k * 0.5);
+    const r = 4.2 - k * 2;
+    return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(r * 0.8).toFixed(1)}" ry="${r.toFixed(1)}" fill="${c}" opacity="${(0.75 - k * 0.4).toFixed(2)}"/>
+      ${[-1, 0, 1].map((t) => `<circle cx="${(x + t * r * 0.6).toFixed(1)}" cy="${(y - r * 1.3).toFixed(1)}" r="${(r * 0.28).toFixed(1)}" fill="${c}" opacity="${(0.7 - k * 0.4).toFixed(2)}"/>`).join('')}`;
+  }).join('');
+  return `<g>
+    <ellipse cx="${cx}" cy="${FLOOR - 16}" rx="40" ry="20" fill="${c}" opacity=".08"/>
+    ${prints}
+    <circle cx="${cx + 18}" cy="${FLOOR - 9}" r="2" fill="#8E2F24" opacity=".85"/>
+    <circle cx="${cx - 14}" cy="${FLOOR - 24}" r="1.5" fill="#8E2F24" opacity=".75"/>
+  </g>`;
+}
+
+/**
  * 關 A gate: the way on, barred, and something awake in front of it.
  *
  * A guardian is not a room with a prize in it, so it is not drawn as one. Five bars
@@ -172,9 +246,12 @@ export function chamber({ kind, step, realm }: ChamberOptions): string {
   const deep = mix(r.colour, '#0D0B08', 0.9);
 
   const middle = kind === 'spring' ? spring(lit)
+    : kind === 'incense' ? incense(lit)
     : kind === 'shrine' ? shrine(lit)
       : kind === 'brazier' ? brazier(lit)
-        : kind === 'out' ? out(lit) : gate(lit);
+        : kind === 'box' ? box(lit)
+          : kind === 'trail' ? trail(lit)
+            : kind === 'out' ? out(lit) : gate(lit);
 
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" aria-hidden="true">
     <defs>

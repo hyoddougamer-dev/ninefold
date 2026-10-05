@@ -45,7 +45,12 @@ describe('開 what each realm opens', () => {
     }
     expect(opensIn(1).map((x) => x.key).sort()).toEqual([...FIRST].sort());
     // And from the third realm it is one thing at a time, so nothing arrives in a heap.
-    for (let r = 3; r <= 9; r++) expect(opensIn(r).length).toBeLessThanOrEqual(2);
+    // 擂台 The fourth realm is the one exception: 樞 the keystones are a decision about
+    // points rather than a thing to do, and the Platform is the second fight beside 閉關
+    // the demon, so the realm hands over two things to do and one to decide.
+    for (let r = 3; r <= 9; r++) {
+      expect(opensIn(r).filter((x) => x.key !== 'keystones').length).toBeLessThanOrEqual(2);
+    }
   });
 
   it('shuts every gate below its realm, and opens it for good above', () => {

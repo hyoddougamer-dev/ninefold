@@ -23,6 +23,8 @@ import { AFFIX_INFO, REALM_SETS } from '../src/data/gear.ts';
 import { REALMS } from '../src/data/realms.ts';
 import { ALL_NODES, PATH_INFO } from '../src/data/techniques.ts';
 import { blowLine, verdictLine } from '../src/app/ui/blows.ts';
+import { AFFIXES } from '../src/data/gear.ts';
+import { lineNote } from '../src/app/lines.ts';
 
 /** Every string the modules hold, whatever shape they hold it in. */
 function harvest(value: unknown, out: string[] = []): string[] {
@@ -49,6 +51,10 @@ const lines = [
   ...ALL_NODES.map((n) => n.text),
   ...REALM_SETS.map((s) => s.lore),
   ...Object.values(AFFIX_INFO).map((a) => a.label),
+  // 註 The gear line notes, worked out by the sim's own bends, and the two lines around them.
+  ...AFFIXES.map(lineNote),
+  COPY.GEAR.findYours('3.3', 'Plated Boar', '18%', '21.3%'),
+  COPY.CRAFTS.schoolNote('Sword', '力', 'power', 'Power +5%, or +12% at the full.'),
   ...Object.values(PATH_INFO).map((p) => p.blurb),
   ...[0, 1, 2, 3].flatMap((i) => [blowLine('player', i).text, blowLine('beast', i).text]),
   verdictLine(true, false).text, verdictLine(true, true).text, verdictLine(false, false).text,

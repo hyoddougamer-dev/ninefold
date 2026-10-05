@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
-  FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, UNCAPPED_RATE_CEILING, focusAt, uncappedRate,
+  FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LAYERS, LAYER_BONUS, QI_ROOF_TOP, UNCAPPED_RATE_CEILING, focusAt,
+  gearQiRate, qiRoof, uncappedRate,
 } from '../balance.ts';
-import { setBonus, wornTotals } from '../../data/gear.ts';
-import { affinity, rateMultiplier } from '../dao.ts';
-import { newState, rate, type State } from '../state.ts';
+import { rateMultiplier } from '../dao.ts';
+import { bodyTotals } from '../schools.ts';
+import { layersOpened, newState, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { clearFloor, floorQi, towerRate } from '../trials.ts';
-import { TOWER_QI_BELOW, TOWER_QI_HOURS } from '../balance.ts';
+import { TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../balance.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -146,8 +147,10 @@ describe('勤 what being there buys you', () => {
    * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
    * and eighteen hours** of gathering, measured, which made the fifth realm the
    * shortest in the whole run. A reward for opening a system is right; a reward that
-   * rewrites the curve is not. So the six hours start at your realm's warden floor, and
-   * every floor below it pays a fifth less.
+   * rewrites the curve is not. So the six hours are paid on your realm's warden floor,
+   * every floor below it pays a fifth less, and every floor above it a little less again,
+   * down to half (2026-10-04: a geared cultivator beats thirty floors above the warden the
+   * day the tower opens, and at six hours each that was half the fifth realm's qi).
    */
   it('pays a floor by where it stands against your realm, and the first floors nothing', () => {
     const mighty: State = {
@@ -161,13 +164,16 @@ describe('勤 what being there buys you', () => {
       `and ${num(trivial)} for the first floor in the tower\n`);
 
     expect(real).toBeCloseTo(full, 4);
-    expect(floorQi(mighty, 200)).toBeCloseTo(full, 4);
+    expect(floorQi(mighty, 200) / (full * TOWER_QI_LEAST)).toBeCloseTo(1, 9);
     expect(floorQi(mighty, 80)).toBeCloseTo(full * TOWER_QI_BELOW, 4);
     expect(trivial).toBeLessThan(real / 1000);
-    // The fifth realm's warden floor and everything above it is worth the whole six hours.
+    // The fifth realm's warden floor is worth the whole six hours, and the floors above it
+    // less, never under half.
     const fifth = { ...newState(T0), realm: 5, layer: 4 };
-    expect(floorQi(fifth, 45)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
-    expect(floorQi(fifth, 60)).toBeCloseTo(towerRate(fifth) * 3600 * TOWER_QI_HOURS, 4);
+    const six = towerRate(fifth) * 3600 * TOWER_QI_HOURS;
+    expect(floorQi(fifth, 45)).toBeCloseTo(six, 4);
+    expect(floorQi(fifth, 60)).toBeLessThan(six);
+    expect(floorQi(fifth, 60)).toBeGreaterThanOrEqual(six * TOWER_QI_LEAST);
   });
 
   /**
@@ -181,24 +187,83 @@ describe('勤 what being there buys you', () => {
    */
   it('lets no amount of gear or tree push the rate past its ceiling', () => {
     const rows = runs.map((r) => {
-      const worn = wornTotals(r.state.worn, (x) => affinity(r.state.unlocked, x));
-      const raw = setBonus(r.state.worn, (x) => affinity(r.state.unlocked, x)).rate
-        * rateMultiplier(r.state.unlocked);
-      return { name: r.habit.name, worn: worn.rate, raw, kept: uncappedRate(raw) };
+      const worn = bodyTotals(r.state).rate / 100;
+      const tree = rateMultiplier(r.state.unlocked);
+      const rung = layersOpened(r.state);
+      return { name: r.habit.name, worn, tree, rung, kept: gearQiRate(worn, tree, rung) };
     });
     console.log(`\n  頂 what the uncapped sources ask for, and what they are given `
       + `(ceiling x${UNCAPPED_RATE_CEILING}):\n`
-      + rows.map((r) => `    ${r.name.padEnd(12)} 器 氣 +${r.worn.toFixed(0)}%`
-        + `  asks x${r.raw.toFixed(2)}  keeps x${r.kept.toFixed(3)}`).join('\n') + '\n');
+      + rows.map((r) => `    ${r.name.padEnd(13)} 器 氣 +${(r.worn * 100).toFixed(0)}%  道 x${r.tree.toFixed(2)}`
+        + `  rung ${r.rung}  roof x${qiRoof(r.rung).toFixed(3)}  keeps x${r.kept.toFixed(3)}`).join('\n') + '\n');
 
+    // A harness that reached nothing passes: every cultivator is in it.
+    expect(rows.length).toBe(HABITS.length);
+    expect(rows.length).toBeGreaterThanOrEqual(9);
     for (const r of rows) {
+      expect(r.kept).toBeLessThan(qiRoof(r.rung));
       expect(r.kept).toBeLessThan(UNCAPPED_RATE_CEILING);
       // And it is a bend, not a wall: more is always worth a little more.
-      expect(uncappedRate(r.raw * 1.5)).toBeGreaterThan(r.kept);
+      expect(gearQiRate(r.worn * 1.5 + 0.01, r.tree, r.rung)).toBeGreaterThan(r.kept);
     }
-    // Absurd gear cannot break it either.
-    expect(uncappedRate(1000)).toBeLessThan(UNCAPPED_RATE_CEILING);
+    // Absurd gear cannot break it either, on the last rung with the whole tree.
+    expect(gearQiRate(1000, 1.3, LAYERS - 1)).toBeLessThan(QI_ROOF_TOP);
+    expect(UNCAPPED_RATE_CEILING).toBe(QI_ROOF_TOP);
+    // Nothing worn is the tree alone, exactly as it was before the knee climbed, so the
+    // cultivators who wear nothing never moved.
+    for (const tree of [1, 1.1, 1.25]) for (const rung of [0, 40, 80]) {
+      expect(gearQiRate(0, tree, rung)).toBe(uncappedRate(tree));
+    }
     expect(uncappedRate(1)).toBe(1);
+  });
+
+  /**
+   * 氣膝 The qi knee climbs a ninth of a realm at every rung, and the roof with it. A bend
+   * that slid further than the rung's own x1.02 would make the qi rate fall when a layer
+   * opens, which is the one moment that is meant to be a reward. Measured before it was
+   * built (tools/qicurve.ts): the worst rung rises +1.6%. This walks all eighty, worn 0 to
+   * +3000% and trees x1.0 to x1.3, and holds the worst to +1.5%.
+   */
+  it('raises the qi rate on every rung, whatever is worn', () => {
+    let worst = Infinity;
+    let checked = 0;
+    for (let n = 0; n < LAYERS - 1; n++) {
+      for (let w = 0; w <= 3000; w += 10) {
+        for (const tree of [1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3]) {
+          const g = w / 100;
+          const up = LAYER_BONUS * gearQiRate(g, tree, n + 1) / gearQiRate(g, tree, n);
+          worst = Math.min(worst, up);
+          checked++;
+        }
+      }
+    }
+    console.log(`\n  氣膝 the worst rung, of ${checked}: the qi rate x${worst.toFixed(4)}\n`);
+    expect(checked).toBe(80 * 301 * 7);
+    expect(worst).toBeGreaterThan(1.015);
+  });
+
+  /**
+   * 氣膝 And what it was for: a qi roll keeps mattering past the third realm. Before the
+   * knee climbed, a tenth more of what a ninth-realm body wears moved its rate by under a
+   * tenth of a per cent. Read off every gear habit by name, at the end of the run.
+   */
+  it('keeps a tenth more qi worth half a per cent at the ninth realm', () => {
+    const geared = runs.filter((r) => r.habit.gear);
+    expect(geared.length).toBeGreaterThanOrEqual(7);
+    const rows = geared.map((r) => {
+      const worn = bodyTotals(r.state).rate / 100;
+      const tree = rateMultiplier(r.state.unlocked);
+      const rung = layersOpened(r.state);
+      return { name: r.habit.name, realm: r.state.realm, worn,
+        more: gearQiRate(worn * 1.1, tree, rung) / gearQiRate(worn, tree, rung) };
+    });
+    console.log('\n  氣膝 a tenth more of what is worn, at the end:\n' + rows.map((r) =>
+      `    ${r.name.padEnd(13)} realm ${r.realm}  氣 +${(r.worn * 100).toFixed(0)}%  `
+      + `+${((r.more - 1) * 100).toFixed(2)}% of the rate`).join('\n') + '\n');
+    for (const r of rows) {
+      expect(r.realm).toBe(9);
+      expect(r.more).toBeGreaterThan(1.005);
+    }
   });
 
   it('gives the furnace and the tower to a fighter, and barely either to a waiter', () => {

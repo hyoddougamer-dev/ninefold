@@ -20,11 +20,12 @@ import { wasEdited } from '../../sim/save.ts';
  * every row against its own clock (sim/verify.ts); this screen only shows them and says,
  * in words, where the player's own climb stands.
  */
-export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
+export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, onClose }: {
   who: Who | null;
   /** What the last sync said, and when. */
   synced: Synced | null;
   syncedAt: number | null;
+  syncError?: string | null;
   /** Called once a player is signed in, with the name they chose, so the app syncs at once. */
   onEnter: (w: Who, name: string) => void;
   onSignOut: () => void;
@@ -54,7 +55,7 @@ export function Ranks({ who, synced, syncedAt, onEnter, onSignOut, onClose }: {
       <h2>{RANKS.title}</h2>
       {who ? (
         <>
-          <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} />
+          <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
           {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
           <div className="rtabs" role="tablist">
             {(Object.keys(RANKS.boards) as Board[]).map((k) => (
@@ -111,14 +112,16 @@ function ago(seconds: number): string {
   return `${Math.round(seconds / 3600)} hours`;
 }
 
-function Status({ synced, syncedAt, suspect }: { synced: Synced | null; syncedAt: number | null; suspect: boolean }) {
-  const line = suspect || synced?.suspect ? RANKS.status.suspect
+function Status({ synced, syncedAt, suspect, error }: { synced: Synced | null; syncedAt: number | null; suspect: boolean; error: string | null }) {
+  const line = error === 'banned' ? RANKS.status.closed
+    : suspect || synced?.suspect ? RANKS.status.suspect
+    : !synced && error ? RANKS.status.unreached
     : !synced ? RANKS.status.never
       : synced.state === 'verified' ? RANKS.status.verified(ago(Date.now() / 1000 - (syncedAt ?? Date.now() / 1000)))
         : synced.state === 'waiting' ? RANKS.status.waiting(synced.behindHours >= 1 ? `${Math.round(synced.behindHours)} h` : 'a little')
           : synced.state === 'behind' ? RANKS.status.behind
             : RANKS.status.refused;
-  const tone = suspect || synced?.suspect || synced?.state === 'refused' ? 'bad'
+  const tone = error === 'banned' || suspect || synced?.suspect || synced?.state === 'refused' ? 'bad'
     : synced?.state === 'verified' ? 'good' : 'wait';
   return <p className="rstatus" data-tone={tone}>{line}</p>;
 }

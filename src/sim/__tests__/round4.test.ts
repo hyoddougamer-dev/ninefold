@@ -5,7 +5,7 @@ import { CAPSTONE_REALM, SECOND_DROP_CAP, SHRINE_DAO_PER_REALM } from '../balanc
 import { CAPSTONE_TIER, canUnlock, capstonesOpen } from '../dao.ts';
 import { secondChance, secondDropFor } from '../fate.ts';
 import { fortuneOf } from '../fortune.ts';
-import { giftOf } from '../secret.ts';
+import { doorsAt, giftOf } from '../secret.ts';
 import { newState, validate, type State } from '../state.ts';
 
 /**
@@ -57,7 +57,7 @@ describe('造化 a second piece once Creation makes the first certain', () => {
   });
 });
 
-describe('龕 the vault pays 道 up to its realm, then pays qi', () => {
+describe('龕 the vault pays 道 up to its realm, and then offers the spring instead', () => {
   const shrine = { kind: 'shrine' } as const;
 
   it('pays points while the realm has some left, and never past it', () => {
@@ -67,11 +67,16 @@ describe('龕 the vault pays 道 up to its realm, then pays qi', () => {
     expect(g.qi).toBe(0);
   });
 
-  it('pays like a spring once the realm has given its share', () => {
-    const s = at({ realm: 3, vaultDao: SHRINE_DAO_PER_REALM * 3 });
-    const g = giftOf(s, shrine as never, 0);
-    expect(g.dao).toBe(0);
-    expect(g.qi).toBeGreaterThan(0);
+  it('stops offering a shrine once the realm has given its share, and the room still pays', () => {
+    // 泉 Since 2026-10-04 every reward room offers its share of the spring, so a spent
+    // shrine is simply not a door: no door ever promises 道 it cannot pay.
+    const s = { ...at({ realm: 3, vaultDao: SHRINE_DAO_PER_REALM * 3 }), runStep: 0 };
+    for (let n = 0; n < 12; n++) {
+      const doors = doorsAt({ ...s, runs: n }, 0);
+      expect(doors.some((d) => d.kind === 'shrine')).toBe(false);
+      expect(doors[0].kind).toBe('spring');
+    }
+    expect(giftOf(s, shrine as never, 0).dao).toBe(0);
   });
 
   it('reads an old save with no count as none paid, and caps a forged count at the realm', () => {

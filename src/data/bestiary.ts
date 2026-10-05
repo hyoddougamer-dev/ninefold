@@ -47,6 +47,12 @@ export interface Beast {
   /** Wardens bar the breakthrough; commons are free hunting. */
   readonly warden?: true;
   /**
+   * 擂 A challenger on 擂台 the Platform, in this beast's shape: which of the period's three
+   * it is (0, 1 or 2). Never in the table: built by sim/platform.ts, never hunted, never
+   * counted on 錄 the record, never driven.
+   */
+  readonly challenger?: 0 | 1 | 2;
+  /**
    * 牌 The key this creature's painting is filed under, when it is not its own.
    *
    * 境外 A heaven's Dragon is built by `currentWarden` out of the ninth realm's dragon

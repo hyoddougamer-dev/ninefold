@@ -20,6 +20,9 @@ import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
 import { dropFor, noteFate, secondDropFor } from '../sim/fate.ts';
 import { brew, clearFloor, floorQi, refine, standingFloor } from '../sim/trials.ts';
 import { floorBeast, floorPower } from '../sim/tower.ts';
+import {
+  beatChallenger, challengerKit, challengerOf, challengerPower, challengerSeed, standingTier, type Tier,
+} from '../sim/platform.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
   carry, kitFor, kitWhere, placeArray, setTask, spendKit, spendSeek, takeSeeking, tookPart, work,
@@ -112,7 +115,7 @@ import { weekOf } from '../sim/week.ts';
 const TABS = [
   { key: 'cultivate', han: '修', label: 'Cultivate', needs: null },
   { key: 'hunt', han: '狩', label: 'Hunt', needs: 'hunt' },
-  { key: 'trials', han: '塔', label: 'Trials', needs: 'tower' },
+  { key: 'trials', han: '塔', label: 'Trials', needs: 'platform' },
   { key: 'gear', han: '器', label: 'Gear', needs: 'gear' },
   { key: 'crafts', han: '業', label: 'Crafts', needs: 'crafts' },
   { key: 'dao', han: '道', label: 'Path', needs: 'arts' },
@@ -413,6 +416,9 @@ export function App() {
   const [who, setWho] = useState<cloud.Who | null>(null);
   const [synced, setSynced] = useState<cloud.Synced | null>(null);
   const [syncedAt, setSyncedAt] = useState<number | null>(null);
+  // 拒 Why the last sync came back empty, if it did: a closed account and an unreachable
+  // server used to read alike, as "Not synced yet", for a day (speculaether, 2026-10-04).
+  const [syncError, setSyncError] = useState<string | null>(null);
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
   const [title, setTitle] = useState<string | null>(null);
   const [place, setPlace] = useState<number | null>(null);
@@ -422,12 +428,15 @@ export function App() {
     pushing.current = true;
     try {
       const r = await cloud.sync(latest.current, name);
-      if (!('error' in r)) {
+      if ('error' in r) {
+        if (r.error !== 'too-soon') setSyncError(r.error);
+      } else {
+        setSyncError(null);
         setSynced(r); setSyncedAt(Date.now() / 1000);
         cloud.mine().then((m) => setTitle(m?.title ?? null)).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
-    } catch { /* offline: the next one will do */ }
+    } catch { setSyncError('offline'); /* the next one will do */ }
     pushing.current = false;
   }, []);
   useEffect(() => {
@@ -479,10 +488,10 @@ export function App() {
 
   /** 擊 When the last fight started, and a fight asked for before the pace allowed it. */
   const lastStart = useRef(0);
-  const queued = useRef<{ beast: Beast; floor?: number; demon?: boolean } | null>(null);
+  const queued = useRef<{ beast: Beast; floor?: number; demon?: boolean; challenger?: Tier } | null>(null);
   const [tick, setTick] = useState(0);
 
-  const startFight = useCallback((beast: Beast, floor?: number, demon?: boolean) => {
+  const startFight = useCallback((beast: Beast, floor?: number, demon?: boolean, challenger?: Tier) => {
     // 守 A warden is only ever reachable at the end of its own realm. The screens have
     // always declined to draw it anywhere else, and that is exactly the kind of guard
     // that a second screen forgets, so it is asked of the sim here, once.
@@ -491,8 +500,10 @@ export function App() {
     // MIN_FIGHT_SECONDS as bought with qi, and a burst of them as a cheat; with a skip, R
     // and the auto-hunt a fight could otherwise start every few hundred milliseconds. A
     // fight asked for too soon is queued, and starts the moment the pace allows.
+    // 擂 And only the challenger standing now, as with the warden: the sim is asked, once.
+    if (challenger !== undefined && standingTier(state) !== challenger) return;
     if (Date.now() < lastStart.current + PACE_MS) {
-      queued.current = { beast, floor, demon };
+      queued.current = { beast, floor, demon, challenger };
       setTick((t) => t + 1);
       return;
     }
@@ -507,14 +518,17 @@ export function App() {
       // One seed for the fight and its drop, so the same kill always gives the same
       // item: closing the app and reopening it cannot re-roll a poor piece.
       const seed = Math.floor(now() * 1000) >>> 0;
-      // 心魔 The demon stands on the cultivator's own power; a floor on its own.
-      const standing = demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
-      // 業 What is carried goes into a warden, a heart demon, never a floor or a common.
+      // 心魔 The demon stands on the cultivator's own power; a floor on its own; 擂 a
+      // challenger on the cultivator's power at its edge, the week's temper read.
+      const platform = challenger !== undefined;
+      const standing = platform ? challengerPower(state, challenger)
+        : demon ? demonPower(state) : floor === undefined ? undefined : floorPower(floor);
+      // 業 What is carried goes into a warden, a heart demon or a challenger, never a floor or a common.
       const carried = kitFor(state, beast, kitWhere(state, beast, standing));
       // 尋 A sure drop waiting from a Seeking Sigil goes on a common of the hunt, and only
       // when it changes something: a piece that was falling anyway (造化, or a fate bar
       // come due) leaves the sure drop waiting for a beast that would have left nothing.
-      const drops = !demon && floor === undefined && isOpen(state.realm, 'gear');
+      const drops = !demon && !platform && floor === undefined && isOpen(state.realm, 'gear');
       const plain = drops ? dropFor(state, beast, seed ^ 0x9e3779b9, fortuneOf(state), state.layer) : null;
       const sought = drops && !plain && !beast.warden && state.crafts.seek > 0;
       return {
@@ -522,10 +536,15 @@ export function App() {
         beast,
         floor,
         demon,
+        challenger,
         kit: carried.spends ? carried.used : undefined,
         sought,
         qi: floor === undefined ? undefined : floorQi(state, floor),
-        outcome: fight(state, beast, seed, standing, carried.kit),
+        // 定 擂 A challenger is fought on the period's dice, and a trail taken in the vault
+        // has it begin hurt: the same body meets the same fight all week.
+        outcome: platform
+          ? fight(state, beast, challengerSeed(state, challenger), standing, challengerKit(state, carried.kit))
+          : fight(state, beast, seed, standing, carried.kit),
         beat: 0,
         over: false,
         // A tower floor pays in materials, not in gear. Gear comes from the world.
@@ -547,6 +566,12 @@ export function App() {
   const faceDemon = useCallback(() => {
     if (!demonDue(state)) return;
     startFight(demonOf(state), undefined, true);
+  }, [state, startFight]);
+
+  /** 擂 The challenger standing on the Platform, and only ever that one. */
+  const challenge = useCallback((tier: Tier) => {
+    if (standingTier(state) !== tier) return;
+    startFight(challengerOf(state, tier), undefined, false, tier);
   }, [state, startFight]);
 
   /** 塔 The next floor of the tower, and only ever the next one. */
@@ -596,12 +621,16 @@ export function App() {
 
   const closeFight = useCallback((wear = false) => {
     if (!battle) return;
-    const { beast, outcome, drop, extra, floor, demon, kit, sought } = battle;
+    const { beast, outcome, drop, extra, floor, demon, kit, sought, challenger } = battle;
     // 業 A won fight spends what took part in it; a lost one keeps it.
     const spent = (s: State) => (outcome.won && kit ? spendKit(s, tookPart(kit, !!outcome.revived)) : s);
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
     const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
-    if (demon) {
+    if (challenger !== undefined) {
+      // 擂 Down, its hours are paid and the next one steps up; standing, nothing happens at
+      // all. Not a kill: no material, no drop, no mark on the record.
+      if (outcome.won) setState((s) => spent(beatChallenger(s, challenger)));
+    } else if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
       // hour. Neither is a kill: the demon is never counted in the record.
       // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
@@ -653,7 +682,7 @@ export function App() {
    * fight would be rolled on the old one. So it is remembered, and started by the effect
    * below once the kill is in the state.
    */
-  const canAgain = !!battle && !battle.demon && battle.floor === undefined
+  const canAgain = !!battle && !battle.demon && battle.floor === undefined && battle.challenger === undefined
     && !(battle.beast.warden && battle.outcome.won);
   // 續 The verdict stays up until the pace allows the next fight, and the next fight
   // starts before the browser paints (a layout effect), so going again never flashes
@@ -678,19 +707,28 @@ export function App() {
    * the same pace, so nothing about a climb is faster than tapping 登 Climb each time. A
    * floor that was lost offers only the way out.
    */
-  const canNext = !!battle && battle.floor !== undefined && !battle.demon && battle.outcome.won;
+  // 擂 For a challenger it is the next challenger, and only after a win: a plain Again would
+  // be the same fight on the same dice.
+  const nextTier = battle?.challenger !== undefined && battle.challenger < 2 ? (battle.challenger + 1) as Tier : null;
+  const canNext = !!battle && !battle.demon && battle.outcome.won
+    && (battle.floor !== undefined || nextTier !== null);
   const climbNext = useCallback(() => {
-    if (!battle?.over || battle.floor === undefined || !battle.outcome.won || holding.current) return;
+    if (!battle?.over || !battle.outcome.won || holding.current) return;
+    if (battle.floor === undefined && nextTier === null) return;
     const wait = lastStart.current + PACE_MS - Date.now();
     if (wait > 0) {
       holding.current = true;
       setTimeout(() => { holding.current = false; nextRef.current(); }, wait + 5);
       return;
     }
-    const f = battle.floor + 1;
-    queued.current = { beast: floorBeast(f), floor: f };
+    if (battle.floor !== undefined) {
+      const f = battle.floor + 1;
+      queued.current = { beast: floorBeast(f), floor: f };
+    } else if (nextTier !== null) {
+      queued.current = { beast: challengerOf(state, nextTier), challenger: nextTier };
+    }
     closeFight();
-  }, [battle, closeFight]);
+  }, [battle, closeFight, nextTier, state]);
   const nextRef = useRef(climbNext);
   nextRef.current = climbNext;
   useLayoutEffect(() => {
@@ -702,7 +740,10 @@ export function App() {
     }
     const q = queued.current;
     queued.current = null;
-    startFight(q.beast, q.floor, q.demon);
+    // 擂 A queued challenger is rebuilt off the state the win landed in, so it is fought on
+    // that state's power and dice, and refused if it is no longer the one standing.
+    if (q.challenger !== undefined) startFight(challengerOf(state, q.challenger), undefined, false, q.challenger);
+    else startFight(q.beast, q.floor, q.demon);
   }, [battle, startFight, tick]);
 
   /**
@@ -1081,10 +1122,12 @@ export function App() {
         if (go || esc) { e.preventDefault(); press('.bloom .act'); }
         return;
       }
-      // 秘境 1 or ← takes the left door, 2 or → the right one. Nothing else: walking out
-      // ends a run, so it is never a key that could be pressed by accident.
+      // 秘境 1, 2 and 3 take the doors in the order they stand, ← the first and → the
+      // second. Nothing else: walking out ends a run, so it is never a key that could be
+      // pressed by accident.
       if (insideSecret(state)) {
-        const door = e.key === '1' || e.key === 'ArrowLeft' ? 0 : e.key === '2' || e.key === 'ArrowRight' ? 1 : -1;
+        const door = e.key === '1' || e.key === 'ArrowLeft' ? 0 : e.key === '2' || e.key === 'ArrowRight' ? 1
+          : e.key === '3' ? 2 : -1;
         if (door >= 0) {
           e.preventDefault();
           document.querySelectorAll<HTMLButtonElement>('.secret .ways .way')[door]?.click();
@@ -1194,7 +1237,8 @@ export function App() {
             onKey={() => { setState((s) => enterSecret(useKey(s))); sfx.buy(); haptics.strike(); }}
           />
         )}
-        {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew} />}
+        {tab === 'trials' && <Trials state={state} onFloor={climbTower} onBrew={onBrew}
+          onChallenge={challenge} onStance={onStance} />}
         {tab === 'crafts' && (
           <Crafts state={state}
             onGo={(where) => { setTab(where); sfx.tap(); }}
@@ -1401,6 +1445,7 @@ export function App() {
           onWearDrop={() => closeFight(true)}
           onSkip={skipFight}
           auto={auto && auto.beast.key === battle.beast.key && battle.floor === undefined && !battle.demon
+            && battle.challenger === undefined
             ? { kills: auto.kills, gained: Math.max(0, state.materials - auto.from) } : null}
           onAuto={canAgain && battle.outcome.won && !auto && autoLeft === 0 ? startAuto : undefined}
           autoLeft={canAgain && battle.outcome.won && !auto ? autoLeft : 0}
@@ -1473,6 +1518,7 @@ export function App() {
           who={who}
           synced={synced}
           syncedAt={syncedAt}
+          syncError={syncError}
           onEnter={async (w, name) => {
             setWho(w); sfx.mark();
             // 雲 An email account may already hold a cultivator from another device: look

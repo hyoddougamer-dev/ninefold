@@ -226,6 +226,52 @@ async function fightFirst(page) {
   await page.close();
 }
 
+// ── 泉 擂 The vault's third door, and the next challenger on R ─────────────────────
+{
+  const at = Math.floor(Date.now() / 1000);
+  const page = await open(400, 860, {
+    realm: 5, layer: 4, levels: { technique: 40, method: 30, pills: 30, cores: 40 }, stance: 'endure',
+    sequence: ['crane', 'tiger'], awakened: ['feast', 'wolf', 'slaughter', 'platform'],
+    killed: { rat: 150, hound: 20, frog: 20, beetle: 30, boar: 4, fox: 1, ape: 1, crane: 1, tiger: 1 },
+    runStep: 2, runAt: at - 86400, runs: 3, spring: 0.9 * 86400, springAt: at,
+    seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage',
+      'fuse', 'whom', 'workshop', 'platform', 'seclusion', 'cap', 'secret', 'cave', 'record', 'cores'],
+  });
+  await page.waitForSelector('.secret .ways .way');
+  const third = await page.$$eval('.secret .ways .way', (els) => els[2]?.getAttribute('data-kind') ?? null);
+  await page.keyboard.press('3');
+  await page.waitForTimeout(300);
+  const took = await page.$eval('.secret .sofar b', (e) => e.textContent).catch(() => '');
+  const over = await page.$eval('.secret .over', (e) => e.textContent).catch(() => '');
+  check(!!third && /Room 4 of 7/.test(over ?? ''), `3 takes the vault's third door (${third}: ${took})`);
+  await page.click('.secret .later');
+  await page.waitForSelector('.runend', { timeout: 3000 }).catch(() => {});
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  check(!(await page.$('.runend')), 'Esc closes the end of the run');
+
+  await page.click('nav.tabs button:has-text("塔")');
+  await page.waitForSelector('.platcard .plgo');
+  await page.click('.platcard .plgo');
+  await page.waitForSelector('.arena', { timeout: 4000 }).catch(() => {});
+  await page.keyboard.press('Space');
+  await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
+  const won = (await page.$eval('.arena', (e) => e.getAttribute('data-won')).catch(() => null)) === 'true';
+  if (won) {
+    await page.keyboard.press('r');
+    await page.waitForFunction(() => !!document.querySelector('.arena') && !document.querySelector('.verdict'),
+      null, { timeout: 2500 }).catch(() => {});
+    const who = await page.$eval('.who.r .en', (e) => e.textContent).catch(() => '');
+    check(/Second challenger/.test(who ?? ''), `R after a won challenger fights the second one (${who})`);
+    await page.keyboard.press('Space');
+    await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
+  } else check(!(await page.$('.verdict .vacts .again')), 'a lost challenger offers no Again for R to press');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  check(!(await page.$('.arena')), 'Esc leaves a challenger\'s verdict');
+  await page.close();
+}
+
 await browser.close();
 console.log(problems.length ? `\n鍵 ${problems.length} broken: ${problems.join('; ')}\n`
   : '\n鍵 every key does what its button does, and the mouse is answered where it rests.\n');

@@ -100,7 +100,7 @@ describe('套 a saved set', () => {
     let s = body();
     for (let i = 0; i < SET_LIMIT + 2; i++) s = saveSet(s, i, `S${i}`);
     expect(s.sets).toHaveLength(SET_LIMIT);
-    expect(clearSet(s, 0).sets.map((x) => x.name)).toEqual(['S1', 'S2']);
+    expect(clearSet(s, 0).sets.map((x) => x.name)).toEqual(Array.from({ length: SET_LIMIT - 1 }, (_, i) => `S${i + 1}`));
   });
 
   it('is validated as input: names short and clean, ids real strings, no more than the limit', () => {

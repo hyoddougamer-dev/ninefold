@@ -516,14 +516,17 @@ export function spendSeek(s: State): State {
   return s.crafts.seek > 0 ? { ...s, crafts: { ...s.crafts, seek: s.crafts.seek - 1 } } : s;
 }
 
-export type Where = 'warden' | 'demon' | 'vault';
+export type Where = 'warden' | 'demon' | 'vault' | 'platform';
 
 /**
  * 戰 Which fights a kit may enter. Never the Dragon above the ninth realm, never a tower
- * floor (those are not a Where), and never a common beast on the hunt.
+ * floor (those are not a Where), and never a common beast on the hunt. 擂 A challenger on
+ * the Platform is a hard fight like a warden: what is carried changes it, which is one of
+ * the ways past a loss when the dice are set for the period.
  */
 export function kitWhere(s: State, b: Beast, standing?: number): Where | null {
   if (b.key === 'heartdemon') return 'demon';
+  if (b.challenger !== undefined) return 'platform';
   if (standing !== undefined) return null;
   if (b.warden && !(b.key === 'dragon' && s.realm === 9)) return 'warden';
   return null;
@@ -607,7 +610,7 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     spends = spends || before;
   }
   if ((where === 'warden' || where === 'demon') && placed(s, 'guardian')) taken *= 1 - CRAFT_ARRAY_GUARD;
-  return { kit: { strike, taken, mend, bind, reflect, revive, demon }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
+  return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0 }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
 }
 
 /**
@@ -802,6 +805,28 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
 /** 尋 Whether these levels could make anything that leaves a sure drop. */
 function seeks(level: (k: SkillKey) => number): boolean {
   return level('sigil') >= RECIPE_BY_KEY['sigil:seeking'].level || level('alchemy') >= RECIPE_BY_KEY['alchemy:seekincense'].level;
+}
+
+/**
+ * 匣 How many more of a gathered thing the pouch may take before validate() would trim it
+ * on the next load: the same bound validCrafts holds every pouch to. 秘境 the vault's
+ * craftsman's box reads it, so a box never hands over herbs the save then deletes.
+ */
+export function pouchRoom(s: State, key: string): number {
+  const r = MAKER[key];
+  if (!r) return 0;
+  const xp = s.crafts.xp[r.skill] ?? 0;
+  if (!skillOpen(s, r.skill) || levelOf(xp) < r.level || s.realm < r.realm) return 0;
+  const most = xp >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp / r.xp) * 2 + 1;
+  return Math.max(0, Math.floor(Math.min(POUCH_LIMIT, most) - (s.crafts.pouch[key] ?? 0)));
+}
+
+/** 匣 The best thing of a gathering craft this cultivator can make now: its recipe, or null. */
+export function bestGather(s: State, skill: 'herb' | 'vein'): Recipe | null {
+  if (!skillOpen(s, skill)) return null;
+  const lv = levelIn(s, skill);
+  const can = RECIPES_OF[skill].filter((r) => r.level <= lv && r.realm <= s.realm);
+  return can.length ? can.reduce((a, b) => (b.level > a.level ? b : a)) : null;
 }
 
 /** Every recipe of a craft, in the order the screen and the guide list them. */

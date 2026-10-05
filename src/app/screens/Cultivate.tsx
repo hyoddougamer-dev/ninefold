@@ -37,11 +37,17 @@ import { pace } from '../../sim/pace.ts';
 import { DISMISSED, guide, heldAtFirstRung } from '../guide.ts';
 import { isOpen } from '../../sim/unlocks.ts';
 import { useMemo, useRef, useState } from 'react';
-import { READY, SIT } from '../copy.ts';
+import { INCENSE, READY, SIT } from '../copy.ts';
+import { INCENSE_BONUS } from '../../sim/balance.ts';
+import { incenseLeft } from '../../sim/secret.ts';
 import type { Waiting } from '../ready.ts';
 
 /** 入定 A sitting's time left as a clock, 14:05, which is how a countdown is read. */
 const clockOf = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+/** 香 A clock that can run past the hour, 1:35:58, for incense that burns for hours. */
+const longClock = (s: number) => (s >= 3600
+  ? `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+  : clockOf(s));
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
@@ -135,6 +141,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
   // 入定 As deep as this cultivator's sitting goes: 神 the Spirit branch takes it past three.
   const deepest = FOCUS_MAX + focusBonus(state.unlocked);
+  // 香 Seconds of incense still burning.
+  const burning = incenseLeft(state);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // 攜 Quoted with what is carried, because that is the fight that will be fought.
@@ -282,9 +290,16 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               <Term han="入定" /> ×{focus.toFixed(1)}
             </span>
           )}
+          {/* 香 Incense from the vault, beside the sitting and never inside it: it adds to
+              the standing rate, it does not multiply what the sitting deepens. */}
+          {burning > 0 && (
+            <span className="incchip"><Term han="香" /> {INCENSE.chip(`${Math.round(INCENSE_BONUS * 100)}%`)}</span>
+          )}
         </div>
-        {focus > 1.15 && (
-          <div className="rnow mono">{num(rate(state) * focus)} qi / s now</div>
+        {(focus > 1.15 || burning > 0) && (
+          <div className="rnow mono">{burning > 0
+            ? INCENSE.now(num(rate(state) * (focus + INCENSE_BONUS)))
+            : `${num(rate(state) * focus)} qi / s now`}</div>
         )}
         {/* 入定 Which part of the sitting this is, said every moment of it: deepening or
             holding with the time it has left, or over with what starts the next one.
@@ -294,6 +309,15 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           <div className="sitline" data-full={focus >= deepest - 0.001}>
             <span className="sitchip mono"><Term han="入定" /> {SIT.chip(focus.toFixed(1), clockOf(sitLeft))}</span>
             <p className="faint">{focus >= deepest - 0.001 ? CULTIVATE.deepFull : SIT.rising}</p>
+          </div>
+        )}
+        {/* 香 How long the incense has left, every moment it burns, and that it burns on
+            while the app is shut: it is the first thing that moves the rate for a while,
+            so the screen says for how long. */}
+        {burning > 0 && (
+          <div className="incline">
+            <span className="incense mono"><Term han="香" /> {INCENSE.line(`${Math.round(INCENSE_BONUS * 100)}%`, longClock(burning))}</span>
+            <p className="faint">{INCENSE.says}</p>
           </div>
         )}
         {satOut && (
