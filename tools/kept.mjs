@@ -973,6 +973,74 @@ for (const [w, h, tag] of [[320, 860, 'q320'], [400, 860, 'q400']]) {
   await page.close();
 }
 
+// 天 Heaven into Heaven (rekaris, 2026-10-04): three found Heaven pieces of one template
+// fuse into one Heaven piece, its own row says what it will come out at, and a piece a
+// fusion made is never counted or fused again. Four found Winged Robes and one fused,
+// three found Diadems, three Earth Ringed Stars for the row that still climbs a rank.
+const heavenFuse = {
+  realm: 9, layer: 6, levels: { technique: 80, method: 80, pills: 80, cores: 90 },
+  killed: { rat: 370, hound: 370, frog: 370, fox: 1, serpent: 340, mantis: 340, bat: 340, ape: 1, beetle: 310,
+    owl: 310, raven: 310, crane: 1, boar: 280, wolf: 280, vulture: 280, tiger: 1, crab: 250, jellyfish: 250,
+    lizard: 250, turtle: 1, centipede: 220, scorpion: 220, worm: 220, golem: 1, ogre: 190, goblin: 190,
+    wraith: 190, direwolf: 1, skeleton: 160, gargoyle: 160, minotaur: 160, jiao: 1, harpy: 130, unicorn: 130,
+    squid: 130 },
+  sequence: ['crane', 'tiger', 'wolf'], tower: 140,
+  worn: {},
+  chest: [
+    ...[86.2, 96.3, 81.1, 102.2].map((v, i) => ({ ...piece(`hw${i}`, 'wings9', 'heaven', v, 'rate'), from: 'harpy' })),
+    { ...piece('hw-fused', 'wings9', 'heaven', 120, 'rate'), from: 'fused' },
+    ...[90.4, 78.6, 98].map((v, i) => ({ ...piece(`hd${i}`, 'diadem9', 'heaven', v, 'rate'), from: 'unicorn' })),
+    ...[54.6, 57.7, 51].map((v, i) => ({ ...piece(`es${i}`, 'starring9', 'earth', v, 'rate'), from: 'unicorn' })),
+  ],
+  seen: ['guide', 'whom', 'marks', 'reach', 'tree', 'stance', 'gear', 'salvage', 'fuse', 'refine', 'cores',
+    'record', 'arts', 'tower', 'keystones', 'bestiary', 'cave', 'secret', 'seclusion', 'workshop', 'deep',
+    'alchemy', 'sigils', 'platform', 'cap', 'furnace', 'pool', 'tribulation', 'heavens'],
+};
+for (const [w, h, tag] of [[400, 860, 'h400'], [320, 640, 'h320']]) {
+  const page = await open(w, h, heavenFuse);
+  await tab(page, '器');
+  for (let i = 0; i < 6; i++) {
+    const b = await page.$('.notice button, .awaken .later');
+    if (!b) break;
+    await b.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(250);
+  }
+  const line = await page.$eval('.fusesame', (e) => e.textContent).catch(() => '');
+  check(/Heaven into Heaven/.test(line ?? '') && /never fused again/.test(line ?? ''),
+    `${tag}: a line over the Heaven rows says what is different about them`);
+  const rows = await page.$$eval('.fuserow[data-same] .bname i', (xs) => xs.map((x) => x.textContent));
+  const climb = await page.$$eval('.fuserow:not([data-same]) .bname i', (xs) => xs.map((x) => x.textContent));
+  check(rows.length === 2 && climb.length === 1, `${tag}: two Heaven rows after the one that climbs a rank (${rows.length}, ${climb.length})`);
+  const robe = rows.find((r) => /Winged Robe/.test(r ?? '')) ?? '';
+  const quote = /comes out ×(\d\.\d\d)/.exec(robe)?.[1];
+  check(/· 4 found · /.test(robe) && !!quote,
+    `${tag}: the Robe row counts only the four found and says what it makes ("${robe}")`);
+  const edge = await page.$$eval('.fuserow', (xs) => Math.max(...xs.map((x) => x.getBoundingClientRect().right)));
+  check(edge <= w && await overflow(page) <= 0, `${tag}: the fuse rows stay on the screen (${Math.round(edge)} of ${w})`);
+  await shot(page, `${tag}-heaven-fuse`);
+
+  const was = await page.$$eval('.chestit', (xs) => xs.map((x) => x.getAttribute('aria-label')));
+  await page.click('.fuserow[data-same]:has-text("Winged Robe")');
+  await page.waitForTimeout(700);
+  const now = await page.$$eval('.chestit', (xs) => xs.map((x) => x.getAttribute('aria-label')));
+  const left = [...was];
+  const made = now.filter((l) => { const i = left.indexOf(l); if (i >= 0) { left.splice(i, 1); return false; } return true; });
+  const after = await page.$$eval('.fuserow[data-same] .bname i', (xs) => xs.map((x) => x.textContent));
+  check(was.length - now.length === 2 && made.length === 1 && after.length === 1 && /Diadem/.test(after[0] ?? ''),
+    `${tag}: one tap makes one Heaven Robe from three, and the Robe row is gone (${made.join('')})`);
+  if (made.length === 1) {
+    await page.click(`.chestit[aria-label="${made[0]}"]`);
+    await page.waitForSelector('.itemsheet', { timeout: 4000 }).catch(() => {});
+    const origin = await page.$eval('.itemsheet .origin', (e) => e.textContent).catch(() => '');
+    check(new RegExp(`Made by a fusion, at ×${quote} of a usual Heaven roll`).test(origin ?? '') && /never fused again/.test(origin ?? ''),
+      `${tag}: the piece it made says so, at the ×${quote} the row promised`);
+    await shot(page, `${tag}-heaven-made`);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+  }
+  await page.close();
+}
+
 await browser.close();
 console.log(problems.length ? `\n鎖 ${problems.length} broken: ${problems.join('; ')}\n`
   : '\n鎖 kept, found and ordered as asked, on a phone and on a computer.\n');

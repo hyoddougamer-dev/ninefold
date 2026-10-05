@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { MELT_CAP, MELT_FILL, PAIR_MELT } from '../balance.ts';
+import { MELT_CAP, MELT_FILL, MELT_MATERIAL, PAIR_MELT } from '../balance.ts';
 import { ARCHETYPES, TEMPLATE_BY_KEY, type Item, type Worn } from '../../data/gear.ts';
 import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { classMelt } from '../schools.ts';
-import { melt, meltMaterial, salvage, salvageValue, meltFactor } from '../salvage.ts';
+import { melt, meltMaterial, meltSpill, salvage, salvageValue, meltFactor } from '../salvage.ts';
 import { stash } from '../stash.ts';
 import { newState, rate, validate, type State } from '../state.ts';
 import { advance } from '../time.ts';
@@ -35,9 +35,11 @@ describe('拆 the melting allowance', () => {
     const p = piece('a', 2);
     const m = melt(s, [p]);
     expect(m.qi).toBe(0);
-    expect(m.materials).toBe(meltMaterial(p));
+    expect(m.materials).toBe(Math.round(meltSpill(s, p)));
     expect(m.state.qi).toBe(s.qi);
-    expect(m.state.materials).toBe(s.materials + meltMaterial(p));
+    expect(m.state.materials).toBe(s.materials + Math.round(meltSpill(s, p)));
+    // 材 MELT_MATERIAL of the table's piece, on a body with no seals, record or cards.
+    expect(m.materials).toBe(Math.round(meltMaterial(p) * MELT_MATERIAL));
   });
 
   it('can never pay more qi than the allowance, however much is melted', () => {
@@ -57,7 +59,7 @@ describe('拆 the melting allowance', () => {
 
   it('melts the same way through the chest button and a full chest', () => {
     const s = { ...at(2, 0), chest: [piece('c', 2)] };
-    expect(salvage(s, ['c']).materials).toBe(s.materials + meltMaterial(piece('c', 2)));
+    expect(salvage(s, ['c']).materials).toBe(s.materials + Math.round(meltSpill(s, piece('c', 2))));
     const full = { ...at(2, 0), chest: Array.from({ length: 40 }, (_, i) => ({ ...piece(`f${i}`, 2), rarity: 'common' as const })) };
     const st = stash(full, piece('new', 3));
     if (st.dropped) {
@@ -110,8 +112,8 @@ describe('寶匠 the Treasure Smith past the allowance', () => {
 
   it('melts more material once the allowance is spent', () => {
     const p = piece('a', 2);
-    expect(melt(smith(), [p]).materials).toBe(Math.round(meltMaterial(p) * PAIR_MELT));
-    expect(melt(at(2, 0), [p]).materials).toBe(meltMaterial(p));
+    expect(melt(smith(), [p]).materials).toBe(Math.round(meltSpill(smith(), p) * PAIR_MELT));
+    expect(melt(at(2, 0), [p]).materials).toBe(Math.round(meltSpill(at(2, 0), p)));
   });
 
   it('still never fills past the cap', () => {

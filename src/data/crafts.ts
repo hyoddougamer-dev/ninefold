@@ -24,8 +24,10 @@
  * arrives beside a step of the climb, and no craft can run ahead of the mountain.
  */
 import { BEASTS, type Beast } from './bestiary.ts';
-import { ARCHETYPES, REALM_SETS } from './gear.ts';
-import { CRAFT_HOURS_TO_CAP, CRAFT_SECONDS, CRAFT_TOOL_STEPS } from '../sim/balance.ts';
+import { ARCHETYPES, RARITY_INFO, REALM_SETS } from './gear.ts';
+import {
+  CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_MARKS, CRAFT_QUALITY_MULT, CRAFT_SECONDS, CRAFT_TOOL_STEPS,
+} from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
 export type SkillKey = 'herb' | 'vein' | 'render' | 'forge' | 'alchemy' | 'sigil' | 'array';
@@ -244,10 +246,28 @@ export interface Recipe {
   readonly makes: Makes;
   readonly graded: boolean;
   readonly does?: string;
+  /**
+   * 丹符 How many light makes one make of this recipe is: CRAFT_KIT_WORK for a pill or a
+   * sigil, 1 for everything else. Its time and every need are already multiplied by it;
+   * the marks and the third mark's saving read it (see `marks`).
+   */
+  readonly weight: number;
+  /** 熟 How many makes each of the five familiarity marks asks for: CRAFT_MARKS over the weight. */
+  readonly marks: readonly number[];
 }
 
-const draft: Omit<Recipe, 'xp'>[] = [];
-const recipe = (r: Omit<Recipe, 'xp'>) => draft.push(r);
+type Draft = Omit<Recipe, 'xp' | 'weight' | 'marks'> & { readonly weight?: number };
+const draft: Draft[] = [];
+const recipe = (r: Draft) => draft.push(r);
+
+/**
+ * 丹符 A pill or a sigil made CRAFT_KIT_WORK times heavier: its seconds and every need
+ * multiplied together, so the share of the work spent gathering is what it was.
+ */
+const heavy = (r: Draft): Draft => ({
+  ...r, weight: CRAFT_KIT_WORK, seconds: r.seconds * CRAFT_KIT_WORK,
+  needs: r.needs.map(([k, n]) => [k, n * CRAFT_KIT_WORK] as const),
+});
 
 for (const [key, han, name, level, realm] of HERBS) {
   recipe({ key: `herb:${key}`, skill: 'herb', group: 'Paths', han, name, level, realm,
@@ -378,10 +398,22 @@ export const ELIXIR_LINES = [
 export type ElixirLine = (typeof ELIXIR_LINES)[number]['key'];
 export const elixirKey = (line: ElixirLine, tier: number) => `${line}${tier}`;
 
+/**
+ * 數 What a pill or a sigil does, with its numbers. rekaris, on the Discord (2026-10-05):
+ * *"None of them list any actual number and percentages."* Every number here is read off
+ * CRAFT_KIT, CRAFT_QUALITY_MULT and the rank names, never typed, so a change to the
+ * balance is a change to the sentence.
+ */
+const pct = (x: number) => `${Number((x * 100).toFixed(1))}%`;
+const TOP_MULT = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
+/** "(21% at Heaven rank)": the same effect at the best rank a make can roll. */
+const atTop = (x: number) => `(${pct(x * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank)`;
+/** What a thing made for one realm is worth in a fight above it. See fade() in sim/crafts.ts. */
+const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.`;
 const ELIXIR_DOES: Record<ElixirLine, string> = {
-  mend: 'Mends a little of your health every round of one hard fight.',
-  guard: 'You take less in one hard fight.',
-  might: 'You strike harder in one hard fight.',
+  mend: `Mends ${pct(CRAFT_KIT.mend)} of your health every round of one hard fight ${atTop(CRAFT_KIT.mend)}.`,
+  guard: `You take ${pct(CRAFT_KIT.guard)} less in one hard fight ${atTop(CRAFT_KIT.guard)}.`,
+  might: `You strike ${pct(CRAFT_KIT.might)} harder in one hard fight ${atTop(CRAFT_KIT.might)}.`,
 };
 for (const line of ELIXIR_LINES) {
   for (let tier = 1; tier <= 9; tier++) {
@@ -390,11 +422,11 @@ for (const line of ELIXIR_LINES) {
     const key = elixirKey(line.key, tier);
     item({ key, han, name, kind: 'elixir', realm: tier, icon: line.icon, graded: true,
       paint: { family: 'craft', subject: `elixir-${line.key}-${Math.ceil(tier / 3)}` },
-      does: `${ELIXIR_DOES[line.key]} Made for realm ${tier}.` });
-    recipe({ key: `alchemy:${key}`, skill: 'alchemy', group: line.name, han, name,
+      does: `${ELIXIR_DOES[line.key]} ${madeFor(tier)}` });
+    recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: line.name, han, name,
       level: tierLevel(tier) + line.step, realm: tier, seconds: CRAFT_SECONDS.alchemy,
       needs: [[TIER_HERB[tier - 1], 2], [partKey(beast.key), 1]],
-      makes: { kind: 'item', item: key }, graded: true });
+      makes: { kind: 'item', item: key }, graded: true }));
   }
 }
 
@@ -403,37 +435,43 @@ const SPECIALS: readonly [string, string, string, number, number, (readonly [str
   ['seekincense', '尋寶香', 'Treasure-Seeking Incense', 18, 2, [['orchid', 2], [partKey('bat'), 1]],
     'Burn it, and the next beast you beat by hand on the hunt that would have left nothing leaves a piece.', 'incense'],
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
-    'Carried into seclusion: your heart demon stands a tenth weaker.', 'meditation'],
+    `Carried into seclusion: your heart demon stands ${pct(CRAFT_KIT.calmHeart)} weaker ${atTop(CRAFT_KIT.calmHeart)}.`, 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
     'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it.', 'dragon-orb'],
 ];
 for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   item({ key, han, name, kind: 'elixir', realm, icon, graded: key !== 'seekincense', does,
     paint: { family: 'craft', subject: `elixir-${key}` } });
-  recipe({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Special', han, name, level, realm,
+  recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Special', han, name, level, realm,
     seconds: key === 'nineturn' ? CRAFT_SECONDS.alchemy * 2.5 : CRAFT_SECONDS.alchemy, needs,
-    makes: { kind: 'item', item: key }, graded: key !== 'seekincense' });
+    makes: { kind: 'item', item: key }, graded: key !== 'seekincense' }));
 }
 
 /** 符 Sigils: paper, cinnabar and a beast's ink. The last word of each is what it does. */
 export const SIGILS: readonly [string, string, string, number, number, (readonly [string, number])[], string, string][] = [
-  ['warding', '護身符', 'Warding Sigil', 1, 1, [], 'You take less in one hard fight.', 'wax-seal'],
+  ['warding', '護身符', 'Warding Sigil', 1, 1, [],
+    `You take ${pct(CRAFT_KIT.warding)} less in one hard fight ${atTop(CRAFT_KIT.warding)}. ${madeFor(1)}`, 'wax-seal'],
   ['seeking', '尋物符', 'Seeking Sigil', 12, 2, [[partKey('fox'), 1]], 'Use it, and the next beast you beat by hand on the hunt that would have left nothing leaves a piece.', 'scroll-unfurled'],
-  ['thunder', '雷符', 'Thunder Sigil', 23, 3, [[partKey('raven'), 1]], 'You strike harder in one hard fight.', 'lightning-helix'],
-  ['binding', '縛妖符', 'Binding Sigil', 34, 4, [[partKey('vulture'), 1]], 'The beast loses its first blow.', 'tied-scroll'],
-  ['mirror', '照妖符', 'Mirror Sigil', 45, 5, [[partKey('crab'), 1]], 'A tenth of every blow you take goes back to the beast.', 'crystal-ball'],
-  ['purity', '清心符', 'Purity Sigil', 56, 6, [['jade', 1], [partKey('jellyfish'), 1]], 'Your heart demon stands weaker.', 'yin-yang'],
-  ['fivethunder', '五雷符', 'Five Thunders Sigil', 67, 7, [[partKey('tiger'), 1], ['thunderore', 1]], 'You strike much harder in one hard fight.', 'lightning-helix'],
+  ['thunder', '雷符', 'Thunder Sigil', 23, 3, [[partKey('raven'), 1]],
+    `You strike ${pct(CRAFT_KIT.thunder)} harder in one hard fight ${atTop(CRAFT_KIT.thunder)}. ${madeFor(3)}`, 'lightning-helix'],
+  ['binding', '縛妖符', 'Binding Sigil', 34, 4, [[partKey('vulture'), 1]], 'The beast loses its first blow in one hard fight, at any rank and any realm.', 'tied-scroll'],
+  ['mirror', '照妖符', 'Mirror Sigil', 45, 5, [[partKey('crab'), 1]],
+    `${pct(CRAFT_KIT.mirror)} of every blow you take in one hard fight goes back to the beast ${atTop(CRAFT_KIT.mirror)}. ${madeFor(5)}`, 'crystal-ball'],
+  ['purity', '清心符', 'Purity Sigil', 56, 6, [['jade', 1], [partKey('jellyfish'), 1]],
+    `Your heart demon stands ${pct(CRAFT_KIT.purity)} weaker ${atTop(CRAFT_KIT.purity)}.`, 'yin-yang'],
+  ['fivethunder', '五雷符', 'Five Thunders Sigil', 67, 7, [[partKey('tiger'), 1], ['thunderore', 1]],
+    `You strike ${pct(CRAFT_KIT.fiveThunders)} harder in one hard fight ${atTop(CRAFT_KIT.fiveThunders)}. ${madeFor(7)}`, 'lightning-helix'],
   ['soullock', '鎖魂符', 'Soul-Lock Sigil', 78, 8, [[partKey('wraith'), 2]], 'If your heart demon falls while you carry it, it counts twice.', 'skull-signet'],
-  ['heavenseal', '天罡符', 'Heaven Seal Sigil', 89, 9, [[partKey('harpy'), 1], ['gold', 1]], 'Warding and Thunder at once.', 'winged-scepter'],
+  ['heavenseal', '天罡符', 'Heaven Seal Sigil', 89, 9, [[partKey('harpy'), 1], ['gold', 1]],
+    `Warding and Thunder at once: you take ${pct(CRAFT_KIT.warding)} less and strike ${pct(CRAFT_KIT.thunder)} harder in one hard fight (${pct(CRAFT_KIT.warding * TOP_MULT)} and ${pct(CRAFT_KIT.thunder * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank).`, 'winged-scepter'],
 ];
 export const sigilKey = (k: string) => `sigil:${k}`;
 for (const [key, han, name, level, realm, extra, does, icon] of SIGILS) {
   const k = sigilKey(key);
   const graded = key !== 'seeking';
   item({ key: k, han, name, kind: 'sigil', realm, icon, graded, does, paint: { family: 'craft', subject: `sigil-${key}` } });
-  recipe({ key: `sigil:${key}`, skill: 'sigil', group: 'Sigils', han, name, level, realm, seconds: CRAFT_SECONDS.sigil,
-    needs: [['bark', 1 + Math.floor(realm / 4)], ['cinnabar', 1], ...extra], makes: { kind: 'item', item: k }, graded });
+  recipe(heavy({ key: `sigil:${key}`, skill: 'sigil', group: 'Sigils', han, name, level, realm, seconds: CRAFT_SECONDS.sigil,
+    needs: [['bark', 1 + Math.floor(realm / 4)], ['cinnabar', 1], ...extra], makes: { kind: 'item', item: k }, graded }));
 }
 
 /** 陣 Arrays: cut once, kept for ever, placed in the cave floor while there is room. */
@@ -478,7 +516,11 @@ export const RECIPES: readonly Recipe[] = (() => {
   }
   // Rounded to a tenth: a whole number is too coarse at the first levels, where a
   // recipe pays one or two.
-  return draft.map((r) => ({ ...r, xp: Math.max(0.1, Math.round(scale[r.skill] * r.seconds * growth(r.level) * 10) / 10) }));
+  return draft.map((r) => {
+    const weight = r.weight ?? 1;
+    return { ...r, weight, marks: CRAFT_MARKS.map((m) => Math.max(1, Math.ceil(m / weight))),
+      xp: Math.max(0.1, Math.round(scale[r.skill] * r.seconds * growth(r.level) * 10) / 10) };
+  });
 })();
 export const RECIPE_BY_KEY: Readonly<Record<string, Recipe>> = Object.fromEntries(RECIPES.map((r) => [r.key, r]));
 

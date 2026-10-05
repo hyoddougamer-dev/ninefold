@@ -45,14 +45,14 @@ import {
   TRIBULATION_FOOTING, TRIBULATION_GAIN, PILL_AHEAD, ladderAt, levelCap, realmCost, OPENING_PURSE,
 } from '../src/sim/balance.ts';
 import { FORM, REFERENCE_BELOW, beastPower, loot, lootFrom, seenBounty } from '../src/sim/combat.ts';
-import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower, fullFloor } from '../src/sim/tower.ts';
+import { FLOORS_PER_REALM, SEAL_LOOT, floorLoot, floorPower } from '../src/sim/tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER, PILL_SHARE, pillCost, pillsTaken,
 } from '../src/sim/furnace.ts';
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_LEAST, TOWER_QI_RUNG, TOWER_QI_SUMMIT, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
 import { verify, TOWER_FORGED, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
@@ -473,11 +473,11 @@ const SYSTEMS: readonly System[] = [
   { han: '開', name: 'What each realm opens', status: 'done', at: 'opens',
     line: 'Nine realms, and every one of them hands over something that was not there before. No resets anywhere: the game is purely vertical.' },
   { han: '勤', name: 'Playing versus waiting', status: 'done', at: 'habits',
-    line: `A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays hours. Somebody who never fights still gets there, ${WAITER_COST} days later.` },
+    line: `A warden asks for 妖丹, sitting with it gathers deeper, and a tower floor pays a lump of qi. Somebody who never fights still gets there, ${WAITER_COST} days later.` },
   { han: '守貢', name: 'The wall, and why it is a slope', status: 'done', at: 'wall',
     line: `A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth ${BARELY_SAVES} days of the climb.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
-    line: `One floor, one beast, no top. The material economy, and up to ${TOWER_QI_HOURS} hours of gathering without gear a floor: the most on your realm's warden floor, never under ${TOWER_QI_HOURS * TOWER_QI_LEAST} above it.` },
+    line: `One floor, one beast, no top. The material economy, and a fixed sum of qi a floor, read off the floor alone and the same for everybody: ${TOWER_QI_RUNG} of the price of the rung a climber stands on when it falls, never under ${TOWER_QI_LEAST} of the fifth realm's first rung, and the most from floor ${TOWER_QI_SUMMIT} up.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
   { han: '碑', name: 'The stele', status: 'done', at: 'stele',
@@ -3208,8 +3208,8 @@ const page = `<meta charset="utf-8">
       it, and every temper has an answer held by the fourth realm. <b>The dice are set for
       the period</b>: one seed per period and challenger, so the same body meets the same
       fight and the way past a loss is to change the stance, the arts, what is carried or a
-      piece. A win pays 2, 4 and 6 hours of gathering without gear (the tower's
-      <code>towerRate</code>), once each a period. A loss costs nothing, and the card and the
+      piece. A win pays 2, 4 and 6 hours of gathering without gear
+      (<code>towerRate</code>), once each a period. A loss costs nothing, and the card and the
       verdict both say so. Never on 狩 the hunt list, never Known, never driven, no Auto, and
       Again is the next challenger.</p>
     <div class="mk"><p class="lab">樣 The card on 塔 for the same save, the first challenger
@@ -3433,17 +3433,20 @@ const page = `<meta charset="utf-8">
         holds, and ends after ${FOCUS_HOLD / 60} minutes. It ends on purpose: a multiplier that
         simply held would be farmed by leaving the phone on a charger. To sit again, leave
         and come back, or press 坐 Sit again.</i></span></div>
-      <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays hours</em>
-        <i>${TOWER_QI_HOURS} hours of your gathering, counted without gear, once and never
-        again, for your realm's warden floor (floor ${fullFloor(5)} in the fifth realm). Each
-        floor below it pays ${Math.round((1 - TOWER_QI_BELOW) * 100)}% less than the one above, so
-        the floors far beneath you are an errand for material. Each floor above it pays a
-        little less than the one before, never under ${TOWER_QI_HOURS * TOWER_QI_LEAST} hours. A
-        geared cultivator beats thirty floors above the warden the day the tower opens, and at
-        a full ${TOWER_QI_HOURS} each that was half the fifth realm's qi. What you wear never
-        moves it; only 天師 the Celestial Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%.
-        There is no floor to farm. This is the one place in the game where fighting moves
-        the bar instead of only moving your power.</i></span></div>
+      <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays a fixed sum</em>
+        <i>Every floor pays the same qi to everybody, once, whenever it falls:
+        ${TOWER_QI_RUNG} of the price of the rung a climber stands on when that floor falls
+        (floor 70 a share of a fifth-realm rung, floor 100 of a seventh-realm one), never
+        under ${Math.round(TOWER_QI_LEAST * 100)}% of the fifth realm's first rung, and the most
+        from floor ${TOWER_QI_SUMMIT} up. It used to be hours of your own gathering, so
+        buying rate first paid more, and a floor beaten a realm early or far above your warden
+        paid less. A floor falls only once, so each of those was a mistake that could not be
+        undone. Now nothing you wear, gather or wait for moves it; only 天師 the Celestial
+        Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%. The floors a newcomer clears the day
+        the tower opens (up to the sixtieth or seventieth) pay two to three rungs of the fifth
+        realm together, so opening it is a reward, and the tower no longer swallows that realm:
+        the biggest single visit in the harness is about two rungs, where it was up to six. There is no floor to farm. This is the one place in the
+        game where fighting moves the bar instead of only moving your power.</i></span></div>
     </div>
     <div class="rule"><b>And nothing anywhere pays less for being away.</b> The qi gathers
       at full rate with the phone closed, every second of it, whatever else changes. 入定
@@ -4755,11 +4758,11 @@ const page = `<meta charset="utf-8">
         on it: upgrades capped by that realm, gear no earlier than its realm, 入定 at its
         deepest. On top: a burst of ${BURST} times the gap, never more than ${BURST_CAP / 3600} hours,
         for the payments that arrive all at once, and ${Math.round((SLACK - 1) * 100)}% for rounding.
-        塔 A tower floor is a payment the server can count, so the floors climbed are allowed for
-        as themselves: each at the most it could have paid in any realm the two saves span. Over a
-        day they come off the pace as well, because a whole tower climbed in a few minutes once
-        read as faster than anybody honest (2026-10-04); over a week they stay in, where the
-        honest pace was measured with them.
+        塔 A tower floor is a payment the server can count to the unit, because it pays a fixed
+        sum read off the floor, so the floors climbed are allowed for as exactly what they pay.
+        They come off the pace as well, over a day and over a week: a whole tower climbed in a few
+        minutes once read as faster than anybody honest (2026-10-04), and with the floors in, the
+        strongest honest climbers' weeks read the same as a clock run three times as fast.
         The same file, <code>sim/verify.ts</code>, runs in the tests and on the server.</i></span></div>
       <div class="row"><span class="body"><b class="cjk">待</b> <em>Too fast is "not yet", never "no"</em>
         <i>A save ahead of real time is not refused for ever: the server keeps measuring
@@ -4784,9 +4787,11 @@ const page = `<meta charset="utf-8">
 
     <h3>The fastest honest pace, measured for this page</h3>
     <p class="t">Every habit walked 120 days, and the fastest it ever went over each window,
-      in seconds needed at the best rate per second that passed. A long window is slow
-      because nobody sits at the deepest 入定 all day; a single visit is fast because a
-      tower floor pays up to six hours at once. The thresholds sit above the fastest row.</p>
+      in seconds needed at the best rate per second that passed, with the tower floors'
+      exact sum taken off (a floor pays a fixed sum, so the server knows it to the unit). A
+      long window is slow because nobody sits at the deepest 入定 all day; a single visit is
+      fast because a sitting's deeper gathering and the visit's lumps all land inside it.
+      The thresholds sit above the fastest row.</p>
     <table class="tbl"><thead><tr><th>Cultivator</th><th>a visit</th><th>6 hours</th><th>a day</th><th>a week</th></tr></thead>
       <tbody>
         ${PACE.map((r) => `<tr><td>${r.name}</td>${r.cells.map((c, i) => `<td${c === PACE_MAX[i] ? ' class="hi"' : ''}>${c.toFixed(2)}</td>`).join('')}</tr>`).join('')}
@@ -5304,7 +5309,7 @@ function paceTable(): { name: string; cells: number[] }[] {
       cells: gaps.map((g) => {
         let m = 0;
         for (let i = g; i < shots.length; i++) {
-          m = Math.max(m, verify(shots[i - g].s, shots[i].s, (shots[i].d - shots[i - g].d) * 86_400).pace);
+          m = Math.max(m, verify(shots[i - g].s, shots[i].s, (shots[i].d - shots[i - g].d) * 86_400).sprint);
         }
         return m;
       }),

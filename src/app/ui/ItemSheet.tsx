@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import {
-  AFFIX_INFO, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, refinedBy, schoolOf, templateOf,
+  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, refinedBy, schoolOf, templateOf,
   type Affix, type Calling, type Item,
 } from '../../data/gear.ts';
 import { fightDeps } from '../memo.ts';
@@ -19,6 +19,8 @@ import { CLASS, ITEM, QOL, UNIT } from '../copy.ts';
 import { meltQuote } from '../../sim/salvage.ts';
 import { num } from '../../sim/format.ts';
 import { loadoutsOf } from '../../sim/sets.ts';
+import { qualityOf } from '../../sim/chest.ts';
+import { FUSE_TOP } from '../../sim/balance.ts';
 
 /**
  * 鑑 What a piece is, and what it would do.
@@ -87,7 +89,10 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   // Which of the two spoke, and which way: the sentence under the verdict says why.
   const fight = verdict === byNumbers ? null : oddsAfter > oddsBefore ? 'wins' : 'loses';
   const pct = (x: number) => `${Math.round(Math.max(0, Math.min(1, x)) * 100)}%`;
-  const leftBy = ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
+  // 質 A piece a fusion made says so, and how good it came out, where a found one says who left it.
+  const leftBy = item.from === FUSED
+    ? ITEM.fusedFrom(rar.name, qualityOf(item), FUSE_TOP, item.rarity === 'heaven')
+    : ITEM.leftBy(item.from, BEASTS.find((b) => b.key === item.from)?.name ?? null);
   const says = item.rolls.map((r) => r.affix).filter((a) => a in ITEM.axisSays);
   // 職 The class now, and the class with this piece on: the same function both times.
   const school = schoolOf(item);

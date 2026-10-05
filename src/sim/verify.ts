@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
   PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
-  SPRING_HOLD, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, type Tier } from './platform.ts';
@@ -45,16 +45,16 @@ import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
-import { MEET_GAP, SECLUSION } from './balance.ts';
+import { MEET_GAP, ROUND_CAP, SECLUSION } from './balance.ts';
 import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
+import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
-import { floorBeast, floorHours, floorPower } from './tower.ts';
-import { opensAt } from './unlocks.ts';
+import { floorBeast, floorPower, floorQiPay } from './tower.ts';
 import { classTower } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
@@ -122,13 +122,29 @@ export const BURST_CAP = 12 * 3600;
  * every waking hour, walked 120 days. Faster than that is flagged.
  *
  * 塔 The week came down from 0.55 with the tower's taper above the warden floor
- * (2026-10-04, TOWER_QI_ABOVE). The fastest honest week fell from 0.49 to 0.46, and the
+ * (2026-10-04, retired 2026-10-05). The fastest honest week fell from 0.49 to 0.46, and the
  * weeks that had given a clock run three times as fast away were its tower lumps: at 0.55
  * that clock was ranked for 45 days and never flagged. At 0.52 it is flagged on day 21
  * as before, and the room above the fastest honest week is the same twelfth it was.
+ *
+ * 塔 And the week stopped counting the floors on 2026-10-05, when a floor started paying a
+ * fixed sum read off the floor (TOWER_QI_RUNG, TOWER_QI_LEAST). The sum is exact now, not a
+ * ceiling, so it comes off the week as it comes off the day, and the week reads everything
+ * else. With the floors in, the strongest honest weeks rose past 0.50 (the one who plays
+ * every hour, the one who leaves Auto on, measured on the first proposal for the sum),
+ * as high as a clock run three times as fast
+ * (0.59): nothing could have told them apart. With the floors out, measured over 120 days,
+ * the fastest honest week is 0.43 (every hour) and a clock run three times as fast reads
+ * 0.56. The line is 0.49: a seventh above the fastest honest week, more room than the
+ * tenth the old line left (0.47 under 0.52 on the same day's build), and the three-times
+ * clock still flagged on game day 22, as before. A clock run twice as fast (0.47) now sits
+ * between the fastest honest week and the line, where the old line caught it by a
+ * fiftieth; catching it here would cost honest room, so it is left to a sharper measure
+ * (the save's own rate rather than the best rate anybody could have had). It no longer
+ * moves when the tower's pay does.
  */
 export const SUSPECT_DAY = 1.6;
-export const SUSPECT_WEEK = 0.52;
+export const SUSPECT_WEEK = 0.49;
 
 /** 擊 The fastest a hand can take fights one after another: a fight is at least this long on the screen. */
 export const MIN_FIGHT_SECONDS = 1.2;
@@ -154,6 +170,8 @@ export interface Verdict {
   readonly strike: boolean;
   /** Seconds the gains needed at the best rate, per second that passed. */
   readonly pace: number;
+  /** The same with the tower floors' exact sum taken off: the pace SUSPECT_DAY and SUSPECT_WEEK read. */
+  readonly sprint: number;
   /** Faster than any honest cultivator measured, over a day or more: flagged for review. */
   readonly suspect: boolean;
 }
@@ -246,19 +264,17 @@ export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
  * 塔 The most qi the floors climbed between two saves could have paid.
  *
  * 誤 A tester found it (2026-10-04): the tower opens at the fifth realm, every floor
- * below the cultivator's strength falls in a few minutes, and each one pays hours. The
+ * below the cultivator's strength falls in a few minutes, and each one pays a lump. The
  * floors were left to the burst allowance, which is a few minutes against a sync five
  * minutes long, so the climb waited, and against the day behind it the pace read as
  * faster than anybody honest: flagged, for the game's own payment. Each floor is a fight
  * the save has to be able to win (towerVerdict), so its pay is allowed for as itself.
  *
- * A floor pays floorHours at the rate with nothing worn (trials.ts), 天師 the Celestial
- * Master a quarter again. The server does not know which realm it fell in, so each floor
- * is read at whichever realm between the two saves paid it most, the rate there with only
- * what could have been owned there (rateOn). Reading every floor at the earliest realm's
- * hours and the latest realm's rate let a week that crossed a realm pay for itself twice.
- * A phone still on the build before 2026-10-04 paid some floors more than this, and waits
- * a little.
+ * A floor pays a fixed sum read off the floor alone (floorQiPay in tower.ts, 2026-10-05),
+ * 天師 the Celestial Master a quarter again, so this is no longer a ceiling guessed from
+ * the realms and the rates between two saves: it is the sum itself, every new floor at
+ * the Master's pay. A phone still on the build before 2026-10-05 paid some floors more
+ * than this (its own hours), and waits a little.
  */
 export function towerQi(before: State, after: State, first: boolean): number {
   // A first sync has its own allowance (FIRST_PACE, FIRST_SITTING), and a month of floors
@@ -266,17 +282,12 @@ export function towerQi(before: State, after: State, first: boolean): number {
   if (first) return 0;
   const lo = Math.max(0, Math.floor(before.tower));
   const hi = Math.max(lo, Math.floor(after.tower));
-  if (hi === lo) return 0;
-  const bare = { ...after, worn: {} as State['worn'] };
-  const realms: { realm: number; rate: number }[] = [];
-  for (let r = Math.max(before.realm, opensAt('tower')); r <= after.realm; r++) {
-    // The furthest rung of that realm the pair reached: its last, or where the later save stands.
-    const top = r === after.realm ? after.layer : 8;
-    realms.push({ realm: r, rate: rateOn(bare, Math.min(LAYERS - 1, (r - 1) * 9 + top)) });
-  }
-  let qi = 0;
-  for (let f = lo + 1; f <= hi; f++) qi += Math.max(0, ...realms.map((x) => floorHours(f, x.realm) * x.rate));
-  return qi * 3600 * PAIR_TOWER_QI;
+  // Every floor above the summit floor pays what it does, so those are counted at once:
+  // an edited save claiming a billion floors is one multiplication, never a billion steps.
+  const flat = Math.min(hi, Math.max(lo, TOWER_QI_SUMMIT));
+  let qi = Math.max(0, hi - flat) * floorQiPay(TOWER_QI_SUMMIT);
+  for (let f = lo + 1; f <= flat; f++) qi += floorQiPay(f);
+  return qi * PAIR_TOWER_QI;
 }
 
 /** 道 The most 道 the road and the vault could have paid between two saves. */
@@ -515,20 +526,20 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.
   //
-  // 塔 Over a day, a whole tower climbed at once is a sprint the game itself paid for, so
-  // the floors' share comes off before the day's pace is read. Over a week it stays in:
-  // SUSPECT_WEEK was measured on cultivators who climb, so their floors are already in
-  // it, and towerQi is a ceiling a long window would let a fast clock hide under.
+  // 塔 A whole tower climbed at once is a sprint the game itself paid for, so the floors'
+  // sum comes off before the pace is read, over a day and over a week. It used to stay in
+  // over a week, while towerQi was a ceiling a long window could hide a fast clock under;
+  // a floor pays a fixed sum now (2026-10-05), so towerQi is that sum exactly.
   const pace = need / Math.max(1, dt);
   const sprint = Math.max(0, need - tower) / Math.max(1, dt);
-  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
+  const suspect = (dt >= 7 * 86_400 && sprint > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
   // cloud's. It used to be a strike, and an honest player on two phones was banned in a
   // quarter of an hour.
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
-  return { ok: why.length === 0, why, used, strike, suspect, pace };
+  return { ok: why.length === 0, why, used, strike, suspect, pace, sprint };
 }
 
 /**
@@ -634,13 +645,35 @@ function strongestFromChest(s: State): State {
  */
 export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' {
   const bodies = bodiesHeld(s);
+  // 攜 With the strongest kit its crafts could have carried up, as for the wardens: a pill
+  // or a sigil may go up the tower since 2026-10-05, and the server never sees which did.
+  const shape = floorBeast(floor);
+  const kits = bodies.map((b) => bestKit(b, shape, 'tower'));
   // 劍仙 A floor counts PAIR_TOWER of itself against a Sword Immortal, so what a body can
   // reach is its power over that share: read as bare power, an honest Immortal's highest
-  // floor stood ×6.85 past it. See TOWER_FORGED.
-  const reach = Math.max(...bodies.map((b) => power(b) / classTower(b)));
+  // floor stood ×6.85 past it. See TOWER_FORGED. And the kit carries it further (kitReach).
+  const reach = Math.max(...bodies.map((b, i) => (power(b) / classTower(b)) * kitReach(kits[i])));
   const standing = floorPower(floor);
   if (reach > 0 && standing / reach > TOWER_FORGED) return 'strike';
-  return bodies.some((b) => beatable(b, floorBeast(floor), standing)) ? 'ok' : 'wait';
+  return bodies.some((b, i) => beatable(b, shape, standing, kits[i])) ? 'ok' : 'wait';
+}
+
+/**
+ * 攜 How much further than its power a kit can carry a body, for the forgery bound only.
+ *
+ * In a fight both sides' health and blows scale with their power, so a power ratio enters
+ * twice: striking S harder (or sending R of every blow back) and taking T less is worth
+ * √((S + R) / T) of power, a revive to full doubles the health (√2), and mending M of the
+ * whole every round for ROUND_CAP rounds is worth at most √(1 + M × ROUND_CAP). It is a
+ * ceiling, never an estimate, read off bestKit, which is a ceiling too: the bound only
+ * has to stay as far past an honest kit-assisted climber as it stood past a bare one.
+ * Measured with tools/towerkit.ts (2026-10-05), every climbing habit with both crafts at
+ * 99: the furthest floor any kit makes beatable stands under ×5.4 of this reach, where
+ * power alone read it up to ×16.6, past TOWER_FORGED, and would have struck it.
+ */
+export function kitReach(k: Kit): number {
+  return Math.sqrt((k.strike + k.reflect) / Math.max(1e-9, k.taken)) * (k.revive ? Math.SQRT2 : 1)
+    * Math.sqrt(1 + k.mend * ROUND_CAP);
 }
 
 /**
@@ -667,6 +700,13 @@ export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' 
  *
  * So a body's reach is read through its class (towerVerdict), and the bound is 12, twice
  * past ×5.48 again. Floor 500 is still ×10^31.
+ *
+ * 攜 And through its kit, since a pill and a sigil may go up the tower (2026-10-05). For a
+ * hand with Alchemy and Sigil Writing at 99, the furthest floor the best kit makes
+ * beatable at all stood up to ×16.6 past its power (drives it all, ninth realm: a 九轉
+ * revive, a Heaven Seal and a mend, one lucky fight in thousands), past the line itself.
+ * Read through kitReach, every climbing habit stays under ×5.4, twice inside the line
+ * again, and floor 500 is no nearer.
  */
 export const TOWER_FORGED = 12;
 

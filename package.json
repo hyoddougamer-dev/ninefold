@@ -29,6 +29,7 @@
     "early": "tsx tools/early.ts",
     "read": "tsx tools/read.ts",
     "qi": "tsx tools/qi.ts",
+    "towerpay": "tsx tools/towerpay.ts",
     "artsheet": "tsx tools/artsheet.ts",
     "artprops": "tsx tools/artprops.ts",
     "pictures": "tsx tools/pictures.ts",

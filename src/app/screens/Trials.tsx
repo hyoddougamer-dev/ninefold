@@ -5,10 +5,10 @@ import { Emblem } from '../ui/Emblem.tsx';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
-import { power, type State } from '../../sim/state.ts';
+import { power, rate, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../../sim/balance.ts';
-import { SEAL_LOOT, floorBeast, floorHours, floorPower, fullFloor, seals } from '../../sim/tower.ts';
+import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_SUMMIT } from '../../sim/balance.ts';
+import { SEAL_LOOT, floorBeast, floorPower, leastUntil, seals } from '../../sim/tower.ts';
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
@@ -22,6 +22,8 @@ import { Platform } from '../ui/Platform.tsx';
 import { platformOpen, type Tier } from '../../sim/platform.ts';
 import { useBuyMax } from '../prefs.ts';
 import { brewMax } from '../../sim/trials.ts';
+import { kitFor, skillOpen } from '../../sim/crafts.ts';
+import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 
 /**
  * 塔 and 爐: the two halves of what qi buys once a realm is full.
@@ -31,8 +33,11 @@ import { brewMax } from '../../sim/trials.ts';
  * touches the qi rate, which is the rule the whole economy stands on, and the screen
  * says so at the bottom rather than leaving the player to work it out.
  */
-export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
+export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit = false, onTowerKit }: {
   state: State;
+  /** 攜 Whether what is carried goes up the tower, and the switch that says so. */
+  towerKit?: boolean;
+  onTowerKit?: (on: boolean) => void;
   onFloor: (floor: number) => void;
   /** 爐 One pill, or with ×Max as many as can be paid for (the same ×1/Max as 修). */
   onBrew: (line: (typeof LINES)[number], max?: boolean) => void;
@@ -47,8 +52,15 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
   const standing = floorPower(floor);
   // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
   const brings = effectiveBeastPower(state, beast, standing);
+  // 攜 What is carried, by name, and whether it goes up: the odds are the fight's own.
+  const hands = [state.crafts.carry.elixir, state.crafts.carry.sigil]
+    .filter((k): k is string => !!k && (state.crafts.pouch[k] ?? 0) > 0);
+  const carried = kitFor(state, beast, towerKit ? 'tower' : null);
+  const kitNames = hands.map((k) => ITEM_BY_KEY[splitKey(k).key]?.name ?? k).join(' · ');
+  const crafts = skillOpen(state, 'alchemy') || skillOpen(state, 'sigil');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const raw = useMemo(() => oddsRaw(state, beast, standing), [floor, ...fightDeps(state)]);
+  const raw = useMemo(() => oddsRaw(state, beast, standing, carried.kit),
+    [floor, towerKit, state.crafts.carry, state.crafts.pouch, ...fightDeps(state)]);
   // 誠 Out of reach is not two per cent, here as on 狩 the hunt. The floor under the quoted
   // odds put "2% odds" on a floor whose beast stood 375,000 times stronger; a floor that
   // wins none of its sampled fights says how far off it is instead.
@@ -60,9 +72,11 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
   const menu = furnaceMenu(state);
   const held = seals(state.tower);
   const lit = isOpen(state.realm, 'furnace');
-  // 吸 Hours of gathering this floor pays, and how they read when they are next to none.
-  const hours = floorHours(floor, state.realm);
-  const span = (h: number) => (h * 3600 < 60 ? TRIALS.little : duration(h * 3600));
+  // 吸 What this floor's fixed sum is worth to this cultivator today, in their own time on
+  // the bar. Only a reading: the sum is the floor's, and the time shrinks as they grow.
+  const paid = floorQi(state, floor);
+  const seconds = paid / Math.max(1e-9, rate(state));
+  const span = seconds < 60 ? TRIALS.little : duration(seconds);
 
   return (
     <>
@@ -117,22 +131,37 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
           <span className="mono" style={{ color: 'var(--gold)' }}>
             {TRIALS.pays(
               num(floorMaterial(state, floor)),
-              num(floorQi(state, floor)),
+              num(paid),
             )}
           </span>
         </div>
-        {/* 吸 What this floor pays in hours, read off the floor and the realm: the same
-            number whatever is worn, so it is said before the fight rather than after. */}
+        {/* 吸 What every floor pays, read off the floor and nothing else: the same sum for
+            everyone, so it is said before the fight rather than after. */}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
-          {TRIALS.hours(span(hours * classTowerQi(state)), classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
+          {TRIALS.fixed(classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
           {' '}
-          {/* 吸 Where the most is paid, and which way this floor falls off it: below the
-              warden a fifth a floor, above it a little each floor down to the least. */}
-          {floor < fullFloor(state.realm)
-            ? TRIALS.below(span(TOWER_QI_HOURS), fullFloor(state.realm), `${Math.round((1 - TOWER_QI_BELOW) * 100)}%`)
-            : TRIALS.above(span(TOWER_QI_HOURS), fullFloor(state.realm), span(TOWER_QI_HOURS * TOWER_QI_LEAST))}
+          {/* 吸 What it is worth today, and how the sums climb to the summit floor. */}
+          {floor <= leastUntil()
+            ? TRIALS.least(span, leastUntil(), TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+            : floor < TOWER_QI_SUMMIT
+              ? TRIALS.rises(span, TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+              : TRIALS.summit(span, TOWER_QI_SUMMIT)}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
+        {/* 攜 The pills and sigils carried, and whether they go up: the climber's choice,
+            because a hundred floors would otherwise spend an hour's pill on every one. */}
+        {hands.length > 0 && onTowerKit && (
+          <div className="towerkit">
+            <p><b className="cjk">攜</b> {towerKit ? TRIALS.kitOn(kitNames) : TRIALS.kitOff(kitNames)}</p>
+            <div className="tk-switch" role="group" aria-label={TRIALS.kitSwitch}>
+              <button data-on={!towerKit} onClick={() => onTowerKit(false)}>{TRIALS.kitLeave}</button>
+              <button data-on={towerKit} onClick={() => onTowerKit(true)}>{TRIALS.kitTake}</button>
+            </div>
+          </div>
+        )}
+        {hands.length === 0 && crafts && (
+          <p className="faint towerkit-none"><b className="cjk">攜</b> {TRIALS.kitNone}</p>
+        )}
         <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>
           登 <span>{TRIALS.climb}</span>
         </button>

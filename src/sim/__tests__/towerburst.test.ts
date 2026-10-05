@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { towerQi, verify } from '../verify.ts';
-import { PAIR_TOWER_QI, TOWER_QI_HOURS } from '../balance.ts';
-import { towerRate } from '../trials.ts';
+import { PAIR_TOWER_QI } from '../balance.ts';
 import { advance } from '../time.ts';
 import { beatable } from '../combat.ts';
-import { floorBeast, floorPower } from '../tower.ts';
+import { floorBeast, floorPower, floorQiPay } from '../tower.ts';
 import { clearFloor, standingFloor, towerOpen } from '../trials.ts';
 import type { State } from '../state.ts';
+import { num } from '../format.ts';
 
 /**
  * 塔 A climb that pays a day of qi in five minutes.
  *
  * A tester found it (2026-10-04): the tower opens at the fifth realm, every floor below
- * the cultivator's strength falls at once, and each pays hours of gathering. The game
+ * the cultivator's strength falls at once, and each pays a lump of qi. The game
  * syncs every five minutes, so the server saw a day's qi arrive in five, and flagged the
  * climb as faster than anybody honest. It was the game's own payment, so it is counted as
  * itself now, the way the week's quarry is.
@@ -69,15 +69,20 @@ describe('塔 a whole tower climbed at once is honest', () => {
     }
   });
 
-  it('allows the floors what they paid, and no more than six hours each', () => {
+  it('allows the floors exactly the sum they can pay, and the Celestial Master\'s at most', () => {
     for (const { shot, after } of cases) {
       const paid = after.qi - advance(shot.s, shot.s.at + SYNC).qi;
       const allowed = towerQi(shot.s, after, false);
+      let sum = 0;
+      for (let f = shot.s.tower + 1; f <= after.tower; f++) sum += floorQiPay(f);
       expect(allowed).toBeGreaterThanOrEqual(paid * 0.999);
-      expect(allowed).toBeLessThanOrEqual((after.tower - shot.s.tower) * TOWER_QI_HOURS * 3600 * PAIR_TOWER_QI * towerRate(after) * 1.001);
+      expect(allowed).toBeCloseTo(sum * PAIR_TOWER_QI, -3);
     }
     const { shot, after } = cases[0];
-    console.log(`    floors ${shot.s.tower}→${after.tower} at realm ${shot.s.realm}: ${(towerQi(shot.s, after, false) / towerRate(after) / 3600).toFixed(1)} h allowed`);
+    console.log(`    floors ${shot.s.tower}→${after.tower} at realm ${shot.s.realm}: ${num(towerQi(shot.s, after, false))} qi allowed`);
+    // Floors above the summit pay what the summit floor does, and are counted at once.
+    const far = { ...after, tower: 1e9 };
+    expect(towerQi({ ...after, tower: 200 }, far, false)).toBeCloseTo((1e9 - 200) * floorQiPay(200) * PAIR_TOWER_QI, -6);
     // And a first sync brings none: it has its own allowance.
     expect(towerQi(shot.s, after, true)).toBe(0);
   });
