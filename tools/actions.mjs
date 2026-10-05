@@ -262,8 +262,10 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       await page.$eval('.chestit', (e) => e.scrollIntoView({ block: 'center' }));
       await page.click('.chestit', { timeout: 5000 });
       await page.waitForTimeout(500);
-      const wear = await page.$('.isheet button.act, .itemsheet button.act, button:has-text("著")');
-      if (wear) await wear.click();
+      // 著 The piece's own Wear button, never 著 Wear all upgrades on the screen behind the
+      // sheet: that one comes first in the page, and a tap aimed at it lands on the sheet.
+      const wear = (await page.$$('button:has-text("著"):not([data-qol="wear-all"])')).pop();
+      if (wear) { await wear.evaluate((e) => e.scrollIntoView({ block: 'center' })); await wear.click({ timeout: 5000 }); }
       await page.waitForTimeout(400);
     },
     (a, b) => Object.keys(b.worn).length > Object.keys(a.worn).length
