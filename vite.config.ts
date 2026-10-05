@@ -1,4 +1,6 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -47,6 +49,11 @@ const noCrossOrigin = {
 
 export default defineConfig({
   plugins: [react(), noCrossOrigin],
+  /**
+   * 驗 The agent worktrees under .claude are whole old copies of the repository, tests and
+   * all. Collected, they were a thousand stale files run beside the real sixty-odd.
+   */
+  test: { exclude: [...configDefaults.exclude, '.claude/**'] },
   define: { __ART_HASH__: JSON.stringify(artHashes()), __BUILD__: JSON.stringify(buildId()) },
   // Relative, because the same build is served from a web host and from inside the APK.
   base: './',
