@@ -60,7 +60,7 @@ export const HEAVENS: readonly Heaven[] = [
     gains: 'The first name above the ninth realm. Nobody who knew you is still alive.' },
   { n: 2, han: '金仙', name: 'Golden Immortal', colour: '#AE83AD',
     dragon: { han: '金龍', name: 'Golden Dragon', icon: 'dragon-spiral' },
-    gains: 'Your qi runs gold, and it no longer leaves you when you spend it.' },
+    gains: 'Your qi runs gold now, and the old words for it stop fitting.' },
   { n: 3, han: '太乙', name: 'Supreme Unity', colour: '#BA909F',
     dragon: { han: '九嬰', name: 'Nine-Headed Hydra', icon: 'hydra' },
     gains: 'One body, nine heads. Cutting one off has never once helped.' },
