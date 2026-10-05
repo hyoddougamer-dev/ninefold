@@ -57,6 +57,8 @@ export const BANNERS = [
   { key: 'devlog-4', seal: '便', over: '筆 Dev log · 04', title: 'Fewer Taps, Clearer Screens', sub: 'Your quality-of-life ideas, in the game', bg: 'realm/6', fig: 'self/woman-6' },
   // 深 The question about deeper hunts, before anything is built.
   { key: 'ideas-deep', seal: '深', over: '議 Your opinion · A proposal', title: 'Deeper Hunts', sub: 'The same beast, further down', bg: 'realm/7', fig: 'cut/gargoyle' },
+  // 畫 The question about how the game looks, asked honestly, with the art being AI-made.
+  { key: 'ideas-art', seal: '畫', over: '議 Your opinion · The look', title: 'Does the Look Matter?', sub: 'Six ways the game could wear its art', bg: 'realm/5', fig: 'cut/crane' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
