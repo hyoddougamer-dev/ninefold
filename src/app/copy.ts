@@ -1534,8 +1534,9 @@ export const GEAR = {
     art: (small: string, big: string) => 'Your arts strike harder when they fire, and 龜息 Turtle Breath heals more.\n'
       + `No cap, but it bends: +100% gives ${small}, +300% only ${big}. Never against the Dragon.`,
     refine: (top: number, small: string, big: string) => 'A fusion keeps more of the quality of the three pieces it eats.\n'
-      + `It bends: +100% gives ${small}, +300% only ${big}. `
-      + `A fused piece stops at ×${top} its rank\u2019s usual roll.`,
+      + `It bends: +100% gives ${small}, +300% only ${big}, with no cap of its own. `
+      + `It multiplies the average quality of the three pieces, and the piece made stops at ×${top} its rank\u2019s usual roll, `
+      + `so a line past ×${top} still lifts three low rolls up to that ceiling.`,
     capacity: () => 'More places in the chest. A flat count, added in full.',
   },
   /** 式 The formula under each note. s is what the pieces add up to, the left column. */
