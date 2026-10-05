@@ -543,12 +543,12 @@ export const TRIALS = {
    * 攜 The pills and sigils carried, and whether they go up the tower (2026-10-05). The
    * climber chooses, because every floor won spends what took part in it.
    */
-  kitOn: (names: string) => `Up the tower with you: ${names}. A won floor spends whichever took part; a lost one keeps both.`,
+  kitOn: (names: string) => `Carried up the tower with you: ${names}. A won floor spends whichever took part; a lost one keeps both.`,
   kitOff: (names: string) => `Carried: ${names}. Left below unless you choose Take up.`,
   kitSwitch: 'Take what you carry up the tower',
   kitLeave: 'Leave',
   kitTake: 'Take up',
-  kitNone: 'Pills and sigils can go up the tower too: carry one from 業 Crafts.',
+  kitNone: 'Carried: nothing yet. Pills and sigils can go up the tower too: carry one from 業 Crafts.',
 
   /** 塔 The tower before its realm, under 擂台 the Platform that opens the screen. */
   towerShut: (han: string, name: string) =>

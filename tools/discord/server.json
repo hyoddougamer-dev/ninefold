@@ -968,6 +968,49 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/new-workshop.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-05-tower",
+      "pin": false,
+      "channel": "devlog",
+      "title": "塔 Update · A fair tower, and pills worth making",
+      "color": "#D4AF56",
+      "body": [
+        "One update for everything you reported this morning. Thank you rekaris and speculaether for pushing on the tower until it was right, and for every post this week."
+      ],
+      "fields": [
+        [
+          "塔 The tower",
+          "Every floor now pays a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Floors 1 to 61 pay 8.9M each, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. There is no reason to wait, strip or buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master adds 25%. Floors you have already beaten stay yours."
+        ],
+        [
+          "丹符 Pills and sigils",
+          "A pill or a sigil is now about an hour of work, herbs and parts included, and pays the experience of an hour, so the hours to level 99 do not change. Every recipe lists its numbers: how much harder you strike or how much less you take, what it is at Heaven rank, and how it fades in a fight above its realm. What you already made stays in your pouch."
+        ],
+        [
+          "攜 Up the tower",
+          "An elixir and a sigil you carry can now go up the tower: choose Take up on the floor's card. A won floor spends whichever took part; a lost one keeps both. A pill made for your realm is worth a floor or two, the 九轉 Nine-Turn Pill at the ninth realm about five."
+        ],
+        [
+          "金剛 The Vajra",
+          "Its half again now reaches 擂台 the Platform too: the three challengers pay 3, 6 and 9 hours of your gathering instead of 2, 4 and 6."
+        ],
+        [
+          "天 Heaven into Heaven",
+          "At Heaven, three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top, ×1.5 of a usual roll at most. A piece a fusion made is never fused again, so Fuse all takes each found piece once."
+        ],
+        [
+          "拆 Melting and a full chest",
+          "A piece melted past the allowance now gives three times the material, and it grows with your seals and material cards like a kill does. A full chest melts the weakest piece counting its quality too, so of two pieces with the same lines the better one stays."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-tower.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-kit.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-vajra.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-heaven.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2374,6 +2417,135 @@
       ],
       "reply": [
         "Done in today's update: you can keep five loadouts now. Thanks for making the case so clearly.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "You were right, and this time it is what you asked for. In today's update a floor pays a fixed sum of qi read off the floor number alone: not your power, not your gathering, not your realm, and not when you beat it. Only 天師 Celestial Master adds its 25%.",
+        "Floors 1 to 61 pay 8.9M each and higher floors only ever pay more, up to 1.29T from floor 121, so there is nothing to gain by waiting, stripping or buying breathwork first. Thank you for laying both problems out so clearly.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Revert tower nerf",
+      "reply": [
+        "Thank you, you and rekaris were right. The penalty is gone in today's update: a floor pays the same fixed sum of qi whoever beats it and whenever, and a higher floor never pays less. The early floors pay 8.9M each, so opening the tower at realm 5 is a big reward again, two or three layers' worth on the first day, and then you climb as high as your build takes you.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Alchemy, Sigils and Arrays need trivial amounts of materials",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Done in today's update, thank you. A pill or a sigil is now about an hour of work, herbs and parts included, and pays the experience of an hour, so the hours to 99 stay the same. Arrays are as they were, as you suggested. Pills and sigils can also go up the tower now, so they have somewhere to be spent.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add more information to the descriptions of alchemy and sigil crafting recipes",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, thank you. Every pill and sigil now says its numbers on the recipe, for example: \"You strike 12% harder in one hard fight (21% at Heaven rank). Made for realm 5; ×0.5 for each realm a fight stands above it.\"",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Varja doesn't increase platform yields, intended?",
+      "tags": [
+        "Question"
+      ],
+      "reply": [
+        "Not intended, thank you for catching it. Since today's update the Vajra's +50% reaches the Platform too: its three challengers pay 3, 6 and 9 hours of your gathering instead of 2, 4 and 6, and the class line says so.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider allowing pills and sigils in the tower",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, thank you. The floor's card has a Take up choice: what you carry goes up with you, a won floor spends whichever took part and a lost one keeps both. We measured every pill and sigil before letting them in, and nothing wins a floor on its own: a pill for your realm is worth a floor or two, and the strongest, the Nine-Turn Pill at the ninth realm, about five.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Melting material reward is low",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you for measuring it, your 5% matched ours. In today's update a piece melted past the allowance gives three times the material, and it now grows with your seals, record and material cards the way a kill does. Melting now adds 8 to 34% to what your kills bring, instead of 1 to 6%. Melting's qi is unchanged.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform rewards",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you, this is the same problem you found in the tower and the same fix would work. It is not in today's update: the Platform resets every week and every realm, so it is less of a trap than a floor that falls once, but buying breathwork first still pays more, and that is not right. We are measuring a pay read off the realm alone and will post the numbers here before it changes.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The new spring incense is a little hard to understand when it comes to Immortal Seeker",
+      "reply": [
+        "Good question. The Seeker's 50% goes into the share itself, so whatever you take is half as much again: drunk, it is 50% more qi; burned, it is incense that lasts 50% longer. The incense is always +30% gathering; only how long it burns changes.",
+        "And yes, how full the spring is matters: a room's share is a part of what the spring holds when you open it, so a fuller spring means more qi now or a longer burn. The burner holds a day of incense at most, and a room only offers incense that fits. Thanks for asking!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow fusing heaven-rank items",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, as you described it. Three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top (×1.5 of a usual roll at most), and a piece a fusion made is never fused again, so Fuse all takes each found piece once and cannot fold the chest into one. A full chest also weighs a piece's quality now, so the better of two Heaven pieces is the one it keeps. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "On Celestial Master: you were right, and I was wrong to be so sure. We played it out with today's update, same cultivator, only the class changed: Sword Immortal reaches the ninth realm on day 39.7, pure Sword on day 41.7 and Celestial Master on day 44.2. It still takes the most qi out of each floor, but the stronger body takes those floors days sooner, and that matters more. So Celestial Master is not yet the tower class it says it is. I'll work out what it should be and post it here before it changes. Thank you for not letting it go.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The Qi gain bonus on gear is in a weird place",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "speculaether and razielmorgenstern, thank you, both fair points. The bend is there because qi from gear multiplies with refining and with every better drop, so a straight line would keep growing past anything we can measure. Since this morning's update it bends later and its ceiling rises with you, from ×1.38 to ×1.52 as you open layers, so qi pieces past the first two now add something real. A higher ceiling for a full Qi set is a good idea and I'll measure it.",
         "· 師 Shibaki"
       ]
     }
