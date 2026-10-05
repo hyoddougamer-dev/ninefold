@@ -1,9 +1,10 @@
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import {
-  FLOORS_PER_REALM, LAYERS, LAYERS_PER_REALM, SEAL_LOOT, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT,
-  floorPay, ladderBetween,
+  FLOORS_PER_REALM, LAYERS, LAYERS_PER_REALM, SEAL_LOOT, TOWER_QI_LEAST, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT,
+  floorPay, ladderAt, ladderBetween,
 } from './balance.ts';
 import { WARDEN_EDGE, referenceAt } from './combat.ts';
+import { opensAt } from './unlocks.ts';
 
 /**
  * 無盡塔 The Endless Tower.
@@ -73,7 +74,22 @@ export function floorRung(floor: number): number {
  * is added where the floor is cleared (floorQi in trials.ts): it is the one thing a build adds.
  */
 export function floorQiPay(floor: number): number {
-  return TOWER_QI_RUNG * ladderBetween(floorRung(floor));
+  return Math.max(towerLeast(), TOWER_QI_RUNG * ladderBetween(floorRung(floor)));
+}
+
+/**
+ * 吸 The least any floor pays: TOWER_QI_LEAST of the first rung of the realm the tower opens
+ * in, so the floors a newcomer sweeps the day it opens are worth opening it for.
+ */
+export function towerLeast(): number {
+  return TOWER_QI_LEAST * ladderAt((opensAt('tower') - 1) * LAYERS_PER_REALM);
+}
+
+/** 吸 The last floor that pays only the least: every floor above it pays more than the one below. */
+export function leastUntil(): number {
+  let f = 1;
+  while (f < TOWER_QI_SUMMIT && TOWER_QI_RUNG * ladderBetween(floorRung(f + 1)) <= towerLeast()) f++;
+  return f;
 }
 
 /**

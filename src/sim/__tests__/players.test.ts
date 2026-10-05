@@ -10,7 +10,7 @@ import { advance } from '../time.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { clearFloor, floorQi } from '../trials.ts';
 import { TOWER_QI_RUNG, TOWER_QI_SUMMIT, ladderBetween } from '../balance.ts';
-import { floorQiPay } from '../tower.ts';
+import { floorQiPay, leastUntil, towerLeast } from '../tower.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -159,12 +159,15 @@ describe('勤 what being there buys you', () => {
       expect(floorQi(mighty, floor), `floor ${floor}`).toBe(floorQi(fresh, floor));
       expect(floorQi(fresh, floor), `floor ${floor}`).toBe(floorQiPay(floor));
     }
-    // Higher floors pay more, up to the summit floor, and every floor above it the same.
-    for (let f = 25; f < TOWER_QI_SUMMIT; f++) expect(floorQiPay(f + 1), `floor ${f + 1}`).toBeGreaterThan(floorQiPay(f));
+    // A higher floor never pays less: the least up to leastUntil, more each floor from there
+    // to the summit floor, and every floor above it the same.
+    for (let f = 1; f < 400; f++) expect(floorQiPay(f + 1), `floor ${f + 1}`).toBeGreaterThanOrEqual(floorQiPay(f));
+    for (let f = leastUntil(); f < TOWER_QI_SUMMIT; f++) expect(floorQiPay(f + 1), `floor ${f + 1}`).toBeGreaterThan(floorQiPay(f));
     expect(floorQiPay(TOWER_QI_SUMMIT)).toBeCloseTo(TOWER_QI_RUNG * ladderBetween(80), -3);
     expect(floorQiPay(10_000)).toBe(floorQiPay(TOWER_QI_SUMMIT));
-    // The first floors are an errand for material: next to nothing against the fifth realm.
-    expect(floorQi(fresh, 1)).toBeLessThan(floorQi(fresh, 81) / 1e6);
+    // The first floors pay the least, and the least is the same for every one of them.
+    expect(floorQi(fresh, 1)).toBe(towerLeast());
+    expect(floorQi(fresh, 1)).toBeLessThan(floorQi(fresh, 81) / 50);
     console.log(`  floor 45 pays ${num(floorQiPay(45))} qi, floor 81 ${num(floorQiPay(81))}, floor ` +
       `${TOWER_QI_SUMMIT} and every floor above it ${num(floorQiPay(TOWER_QI_SUMMIT))}, to everybody\n`);
   });

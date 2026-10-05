@@ -188,11 +188,11 @@ describe('職 the sheet never calls a piece that costs the class an upgrade', ()
  * 塔 The slowest may take a fifth longer than the plain cultivator, where it was 15% until
  * 2026-10-05. A tower floor now pays a fixed sum read off the floor (TOWER_QI_RUNG), so a
  * build that climbs higher is paid more by it, and the classes that trade power for
- * something else climb lower. Measured, the slowest class (運修 the Fortune Seeker,
- * 器修 the Artificer or 寶匠 the Treasure Smith) took 1.14 to 1.21 times the plain
- * cultivator's days with the pay pushed a tenth either side and beyond, against 1.08 when
- * a floor paid hours of the climber's own gathering. It is a slope, not a wall: the
- * slowest arrives about day 50.
+ * something else climb lower. Measured, the slowest class (寶匠 the Treasure Smith, 器修
+ * the Artificer or 運修 the Fortune Seeker) took 1.14 times the plain cultivator's days,
+ * 1.13 to 1.16 with the pay pushed a tenth either side and up to 1.21 in the first
+ * proposal without TOWER_QI_LEAST, against 1.08 when a floor paid hours of the climber's
+ * own gathering. It is a slope, not a wall: the slowest arrives about day 49.
  */
 describe('職 every class, played out', () => {
   let plain = 0;

@@ -52,7 +52,7 @@ import {
 import { daoEarned, daoFree, POINTS_PER_BESTIARY,
 } from '../src/sim/dao.ts';
 import { layersOpened } from '../src/sim/time.ts';
-import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_RUNG, TOWER_QI_SUMMIT, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
+import { CORE_CAP_EXTRA, CORE_QI_RUNGS, FOCUS_HOLD, FOCUS_MAX, FOCUS_RAMP, LEVELS_PER_HEAVEN, PAIR_TOWER, PAIR_TOWER_QI, SALVAGE_SHARE_FIRST, SALVAGE_SHARE_LAST, TOWER_QI_LEAST, TOWER_QI_RUNG, TOWER_QI_SUMMIT, WARDEN_TRIBUTE } from '../src/sim/balance.ts';
 import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
 import { verify, TOWER_FORGED, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
@@ -477,7 +477,7 @@ const SYSTEMS: readonly System[] = [
   { han: '守貢', name: 'The wall, and why it is a slope', status: 'done', at: 'wall',
     line: `A warden pays a tribute rather than a harvest, so it can no longer fund the core that beats the next one, and 凝丹 lets a core be forced out of raw qi, so nobody is ever stopped. Two beasts a day is worth ${BARELY_SAVES} days of the climb.` },
   { han: '塔', name: 'The Endless Tower', status: 'done', at: 'tower',
-    line: `One floor, one beast, no top. The material economy, and a fixed sum of qi a floor, read off the floor alone and the same for everybody: ${TOWER_QI_RUNG} of the price of the rung a climber stands on when it falls, and the most from floor ${TOWER_QI_SUMMIT} up.` },
+    line: `One floor, one beast, no top. The material economy, and a fixed sum of qi a floor, read off the floor alone and the same for everybody: ${TOWER_QI_RUNG} of the price of the rung a climber stands on when it falls, never under ${TOWER_QI_LEAST} of the fifth realm's first rung, and the most from floor ${TOWER_QI_SUMMIT} up.` },
   { han: '爐', name: 'The Furnace', status: 'done', at: 'furnace',
     line: `27 named pills on three lines. The only uncapped thing qi buys, and it may never touch the qi rate.` },
   { han: '碑', name: 'The stele', status: 'done', at: 'stele',
@@ -3436,15 +3436,16 @@ const page = `<meta charset="utf-8">
       <div class="row"><span class="body"><b class="cjk">塔</b> <em>A tower floor pays a fixed sum</em>
         <i>Every floor pays the same qi to everybody, once, whenever it falls:
         ${TOWER_QI_RUNG} of the price of the rung a climber stands on when that floor falls
-        (floor 70 a share of a fifth-realm rung, floor 100 of a seventh-realm one), and the
-        most from floor ${TOWER_QI_SUMMIT} up. It used to be hours of your own gathering, so
+        (floor 70 a share of a fifth-realm rung, floor 100 of a seventh-realm one), never
+        under ${Math.round(TOWER_QI_LEAST * 100)}% of the fifth realm's first rung, and the most
+        from floor ${TOWER_QI_SUMMIT} up. It used to be hours of your own gathering, so
         buying rate first paid more, and a floor beaten a realm early or far above your warden
         paid less. A floor falls only once, so each of those was a mistake that could not be
         undone. Now nothing you wear, gather or wait for moves it; only 天師 the Celestial
-        Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%. The first sixty floors together
-        are worth a fifth of the fifth realm's first rung, so the tower no longer swallows
-        that realm: the biggest single visit in the harness is under two rungs, where it was
-        up to six. There is no floor to farm. This is the one place in the
+        Master adds ${Math.round((PAIR_TOWER_QI - 1) * 100)}%. The floors a newcomer clears the day
+        the tower opens (up to the sixtieth or seventieth) pay two to three rungs of the fifth
+        realm together, so opening it is a reward, and the tower no longer swallows that realm:
+        the biggest single visit in the harness is about two rungs, where it was up to six. There is no floor to farm. This is the one place in the
         game where fighting moves the bar instead of only moving your power.</i></span></div>
     </div>
     <div class="rule"><b>And nothing anywhere pays less for being away.</b> The qi gathers

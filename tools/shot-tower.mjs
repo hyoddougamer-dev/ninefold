@@ -2,8 +2,8 @@
  * 圖 塔 The tower card, photographed off the real build, for the fixed pay of a floor.
  *
  * One fifth-realm cultivator standing on three floors: well under the fifth realm's warden
- * floor (31), on it (45) and above it (61), which is where the old card said three
- * different things. Each is a fabricated save loaded with the game's scripts blocked, so
+ * floor (31), on it (45) and above it (67), which is where the old card said three
+ * different things, and where the new one says the least, the least, and a rising sum. Each is a fabricated save loaded with the game's scripts blocked, so
  * the state shown is the state the save says. Phone widths 400 and 320. Run against a
  * build from before the change and one after to put the two cards side by side.
  *
@@ -74,7 +74,7 @@ async function open(width, save) {
 }
 
 for (const w of [400, 320]) {
-  for (const [name, tower] of [['below', 30], ['warden', 44], ['above', 60]]) {
+  for (const [name, tower] of [['below', 30], ['warden', 44], ['above', 66]]) {
     const page = await open(w, cultivator(tower));
     await page.click('nav.tabs button:has-text("塔")');
     await page.waitForSelector('.towerduo .card');

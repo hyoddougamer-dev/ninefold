@@ -8,7 +8,7 @@ import { effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
 import { power, rate, type State } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
 import { FLOORS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, TOWER_QI_SUMMIT } from '../../sim/balance.ts';
-import { SEAL_LOOT, floorBeast, floorPower, seals } from '../../sim/tower.ts';
+import { SEAL_LOOT, floorBeast, floorPower, leastUntil, seals } from '../../sim/tower.ts';
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
@@ -141,9 +141,11 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
           {TRIALS.fixed(classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
           {' '}
           {/* 吸 What it is worth today, and how the sums climb to the summit floor. */}
-          {floor < TOWER_QI_SUMMIT
-            ? TRIALS.rises(span, TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
-            : TRIALS.summit(span, TOWER_QI_SUMMIT)}
+          {floor <= leastUntil()
+            ? TRIALS.least(span, leastUntil(), TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+            : floor < TOWER_QI_SUMMIT
+              ? TRIALS.rises(span, TOWER_QI_SUMMIT, num(floorQi(state, TOWER_QI_SUMMIT)))
+              : TRIALS.summit(span, TOWER_QI_SUMMIT)}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
         {/* 攜 The pills and sigils carried, and whether they go up: the climber's choice,

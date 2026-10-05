@@ -128,17 +128,23 @@ export const BURST_CAP = 12 * 3600;
  * as before, and the room above the fastest honest week is the same twelfth it was.
  *
  * 塔 And the week stopped counting the floors on 2026-10-05, when a floor started paying a
- * fixed sum (TOWER_QI_RUNG). The sum is exact now, not a ceiling, so it comes off the week
- * as it comes off the day, and the week reads everything else. With the floors in, the
- * strongest honest climbers' weeks rose to 0.50 to 0.55 (the one who leaves Auto on, the
- * one who plays every hour), as high as a clock run three times as fast (0.54) or twice
- * (0.57): nothing could have told them apart. With the floors out, the fastest honest week
- * is 0.43 (every hour, 120 days) and the clocks read 0.49 and 0.51, so the line is 0.47:
- * a tenth above the fastest honest week, and both clocks are still flagged. It no longer
+ * fixed sum read off the floor (TOWER_QI_RUNG, TOWER_QI_LEAST). The sum is exact now, not a
+ * ceiling, so it comes off the week as it comes off the day, and the week reads everything
+ * else. With the floors in, the strongest honest weeks rose past 0.50 (the one who plays
+ * every hour, the one who leaves Auto on, measured on the first proposal for the sum),
+ * as high as a clock run three times as fast
+ * (0.59): nothing could have told them apart. With the floors out, measured over 120 days,
+ * the fastest honest week is 0.43 (every hour) and a clock run three times as fast reads
+ * 0.56. The line is 0.49: a seventh above the fastest honest week, more room than the
+ * tenth the old line left (0.47 under 0.52 on the same day's build), and the three-times
+ * clock still flagged on game day 22, as before. A clock run twice as fast (0.47) now sits
+ * between the fastest honest week and the line, where the old line caught it by a
+ * fiftieth; catching it here would cost honest room, so it is left to a sharper measure
+ * (the save's own rate rather than the best rate anybody could have had). It no longer
  * moves when the tower's pay does.
  */
 export const SUSPECT_DAY = 1.6;
-export const SUSPECT_WEEK = 0.47;
+export const SUSPECT_WEEK = 0.49;
 
 /** 擊 The fastest a hand can take fights one after another: a fight is at least this long on the screen. */
 export const MIN_FIGHT_SECONDS = 1.2;

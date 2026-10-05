@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { LINES, PILL_GRADES, PILL_LINES, pillOf } from '../../data/alchemy.ts';
 import {
-  LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT, ladderBetween, levelCap,
+  LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_LEAST, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT, ladderAt, ladderBetween, levelCap,
 } from '../balance.ts';
 import { ARCHETYPES, TEMPLATE_BY_KEY, callingOf, type Item, type Slot, type Worn } from '../../data/gear.ts';
 import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { WARDEN_EDGE, odds, referencePower } from '../combat.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import {
-  FLOORS_PER_REALM, floorBeast, floorLoot, floorPower, floorQiPay, floorRung, lootBonus, seals,
+  FLOORS_PER_REALM, floorBeast, floorLoot, floorPower, floorQiPay, floorRung, leastUntil, lootBonus, seals, towerLeast,
 } from '../tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
@@ -297,7 +297,12 @@ describe('吸 what a floor pays in qi', () => {
     expect(floorRung(TOWER_QI_SUMMIT - TOWER_QI_REALM_FLOORS)).toBeCloseTo(80 - LAYERS_PER_REALM, 9);
     expect(floorRung(1)).toBe(0);
     expect(floorRung(TOWER_QI_SUMMIT + 500)).toBe(80);
-    for (let f = 1; f < 400; f++) expect(floorQiPay(f)).toBeCloseTo(TOWER_QI_RUNG * ladderBetween(floorRung(f)), -1);
+    for (let f = 1; f < 400; f++) expect(floorQiPay(f)).toBeCloseTo(Math.max(towerLeast(), TOWER_QI_RUNG * ladderBetween(floorRung(f))), -1);
+    // 吸 The least: a share of the first rung of the realm the tower opens in, paid by every
+    // floor up to leastUntil, so the floors swept the day it opens are a real reward.
+    expect(towerLeast()).toBeCloseTo(TOWER_QI_LEAST * ladderAt((opensAt('tower') - 1) * LAYERS_PER_REALM), 6);
+    for (let f = 1; f <= leastUntil(); f++) expect(floorQiPay(f)).toBe(towerLeast());
+    expect(floorQiPay(leastUntil() + 1)).toBeGreaterThan(towerLeast());
     // 吸 Nothing about the climber enters: not the realm, not the rate bought, not the day.
     // So there is never a reason to wait for a floor, or to buy gathering before it.
     const early = { ...fifth, levels: { ...fifth.levels, method: 0, pills: 0 } };

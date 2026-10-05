@@ -527,7 +527,13 @@ export const TRIALS = {
    * The time is only a reading: it shrinks as you grow, and the sum does not.
    */
   rises: (span: string, summit: number, most: string) =>
-    `Today that is ${span} of your gathering. Each floor pays more than the one below it, up to floor ${summit}. From there every floor pays ${most} qi.`,
+    `Today that is ${span} of your gathering. Each floor above this one pays more, up to floor ${summit}. From there every floor pays ${most} qi.`,
+  /**
+   * 吸 The same, on a floor that pays only the least: every floor up to `until` pays it, so
+   * the floors swept the day the tower opens are worth opening it for.
+   */
+  least: (span: string, until: number, summit: number, most: string) =>
+    `Today that is ${span} of your gathering. Every floor up to ${until} pays this much, and each floor above that pays more, up to floor ${summit}. From there every floor pays ${most} qi.`,
   /** 吸 The same, standing at or above the summit floor, where every floor pays the most. */
   summit: (span: string, summit: number) =>
     `Today that is ${span} of your gathering. From floor ${summit} up every floor pays this much, and no floor pays more.`,
