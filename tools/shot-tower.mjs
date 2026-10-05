@@ -33,8 +33,12 @@ function cultivator(tower, over = {}) {
     realm: 5, layer: 4, qi: 4.1e7, materials: 2.4e6, wardenFell: false,
     levels: { technique: 27, method: 27, pills: 27, cores: 33 },
     killed,
-    worn: { weapon: { id: 'w', template: 'sword5', rarity: 'earth', refine: 6,
-      rolls: [{ affix: 'power', value: 22 }, { affix: 'rate', value: 8 }] } },
+    // 天師 CELESTIAL=1 dresses the Celestial Master (three Qi places, three Arts), to see his pay.
+    worn: process.env.CELESTIAL
+      ? Object.fromEntries([['weapon', 'fan5'], ['robe', 'robe5'], ['crown', 'band5'], ['boots', 'windfoot5'],
+        ['talisman', 'beads5'], ['ring', 'flamering5']].map(([slot, template]) => [slot, { id: slot, template, rarity: 'earth', rolls: [] }]))
+      : { weapon: { id: 'w', template: 'sword5', rarity: 'earth', refine: 6,
+        rolls: [{ affix: 'power', value: 22 }, { affix: 'rate', value: 8 }] } },
     chest: [],
     unlocked: ['root', 'opening', 'edge'],
     self: 'woman', stance: 'steady', sequence: ['crane', 'tiger'],

@@ -1079,7 +1079,28 @@ export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
 export const PAIR_CHEST = 100;         // 甲匠 places in the chest
 /** 法 The five pairs the sixth school makes. */
 export const PAIR_DRAGON = 0.98;       // 劍聖 the tribulation's Dragon counts this much of itself
-export const PAIR_TOWER_QI = 1.25;     // 天師 qi from a tower floor
+export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
+/*
+ * 天師 Why the Celestial Master's number is two and a half (2026-10-05, was 1.25).
+ *
+ * A floor pays a fixed sum that climbs steeply with the floor, so a few floors more are
+ * worth far more than a quarter on each: rekaris asked whether the strongest climber would
+ * out-earn the Master, and it did. tools/celestial.ts, the active cultivator told to wear
+ * each class, five rolls of the dice each, the tower's qi over the whole climb:
+ *
+ *                     tower qi   ninth realm   top floor that day
+ *   劍仙 Sword Immortal  9.51e12    day 40.7         110
+ *   劍修 pure Sword      8.73e12    day 43.5         110
+ *   天師 at 1.25         5.25e12    day 45.4         104   (the least of the three)
+ *   天師 at 2.0          9.30e12    day 44.6
+ *   天師 at 2.5          1.07e13    day 42.8         105   (the most, by an eighth)
+ *   天師 at 3.0          1.44e13    day 42.5               (half again: past its claim)
+ *
+ * At 2.5 the Master takes the most qi out of the tower and the Sword Immortal still climbs
+ * it highest and soonest: each is the best at what it says. A floor's pay is a lump, never
+ * a rate, so the economic law holds; the server credits it only to a save that holds the
+ * pieces to wear the Master (verify.ts towerQi).
+ */
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole
 export const PAIR_HERBS = 1.3;         // 陣師 what a ripe bed pays

@@ -518,7 +518,7 @@ export const TRIALS = {
   /**
    * 吸 What every floor pays in qi: a fixed sum read off the floor, and the same for everyone
    * whenever it falls (rekaris and speculaether, 2026-10-05). `bonus` is the Celestial
-   * Master's share when that class is worn, as "25%".
+   * Master's share when that class is worn, as "150%".
    */
   fixed: (bonus?: string) =>
     `Every floor pays a fixed sum of qi. It is the same for everyone, whenever the floor falls: what you wear, how fast you gather and your realm never change it${bonus ? `. As Celestial Master you are paid ${bonus} more` : ''}.`,
