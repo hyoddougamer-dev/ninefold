@@ -1011,6 +1011,31 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-heaven.webp?v=1"
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fix-2026-10-05-chest",
+      "pin": false,
+      "channel": "devlog",
+      "title": "藏 Fix · Your chest keeps every piece",
+      "color": "#C9A45C",
+      "body": [
+        "A fix that went out straight away, because the game could lose pieces. We found it in our own audit today, before anyone had to report it."
+      ],
+      "fields": [
+        [
+          "藏 The chest",
+          "Opening the game could quietly remove pieces from a full chest. A low piece with a chest-slot line counted as 0.9 of a place instead of 1, and leaving 甲匠 the Armourer, changing loadout or buying 空囊 Empty Pouch could leave the chest over its limit, which the next load trimmed. A reload now never takes a piece. We're sorry to anyone who lost pieces this way: we can't bring them back from here, but it can't happen again."
+        ],
+        [
+          "二機 Two devices",
+          "Playing one account on two devices (the Android app and Chrome, or a phone and a tablet) could count as a cheat when each device answered a meeting on the road differently. It no longer does: the copy that is behind simply waits."
+        ],
+        [
+          "塔 A line of text",
+          "The realm card now says what a tower floor really pays: a fixed sum of qi, the same for everyone."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
