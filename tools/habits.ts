@@ -189,6 +189,8 @@ export const AUTO_HABIT: Habit = { name: 'runs auto', gear: true, checks: 6, min
 
 /** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
 const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
+/** 攜 塔 The kit kept off the tower, for measuring what it is worth there: NF_NO_TOWER_KIT=1 */
+const NO_TOWER_KIT = process.env.NF_NO_TOWER_KIT === '1';
 
 const ARTS_BY_REALM: Record<string, number> = { crane: 3, tiger: 4, wolf: 7 };
 /** Which warden leaves each of those arts. */
@@ -788,9 +790,18 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       let visit = 0;
       for (let i = 0; i < 40; i++) {
         const f = standingFloor(s);
-        if (odds(s, floorBeast(f), floorPower(f)) < 0.65) break;
         const before = s.qi;
-        s = clearFloor(s, f);
+        if (odds(s, floorBeast(f), floorPower(f)) >= 0.65) {
+          s = clearFloor(s, f);
+        } else {
+          // 攜 塔 Somebody who crafts takes the kit up for the floor that will not fall without
+          // it, and only for that one: a floor won spends what took part (since 2026-10-05).
+          if (!h.crafts || NO_TOWER_KIT) break;
+          s = carryBest(s, floorBeast(f), 'tower', floorPower(f));
+          const k = kitFor(s, floorBeast(f), 'tower');
+          if (!k.spends || odds(s, floorBeast(f), floorPower(f), k.kit) < 0.65) break;
+          s = spendKit(clearFloor(s, f), k.used);
+        }
         visit += s.qi - before;
         floorRung[f] = layersOpened(s);
         fights++;

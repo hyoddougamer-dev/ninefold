@@ -22,6 +22,8 @@ import { Platform } from '../ui/Platform.tsx';
 import { platformOpen, type Tier } from '../../sim/platform.ts';
 import { useBuyMax } from '../prefs.ts';
 import { brewMax } from '../../sim/trials.ts';
+import { kitFor, skillOpen } from '../../sim/crafts.ts';
+import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 
 /**
  * 塔 and 爐: the two halves of what qi buys once a realm is full.
@@ -31,8 +33,11 @@ import { brewMax } from '../../sim/trials.ts';
  * touches the qi rate, which is the rule the whole economy stands on, and the screen
  * says so at the bottom rather than leaving the player to work it out.
  */
-export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
+export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit = false, onTowerKit }: {
   state: State;
+  /** 攜 Whether what is carried goes up the tower, and the switch that says so. */
+  towerKit?: boolean;
+  onTowerKit?: (on: boolean) => void;
   onFloor: (floor: number) => void;
   /** 爐 One pill, or with ×Max as many as can be paid for (the same ×1/Max as 修). */
   onBrew: (line: (typeof LINES)[number], max?: boolean) => void;
@@ -47,8 +52,15 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
   const standing = floorPower(floor);
   // What it brings once 破煞 and 破甲 are counted, which is the number the fight uses.
   const brings = effectiveBeastPower(state, beast, standing);
+  // 攜 What is carried, by name, and whether it goes up: the odds are the fight's own.
+  const hands = [state.crafts.carry.elixir, state.crafts.carry.sigil]
+    .filter((k): k is string => !!k && (state.crafts.pouch[k] ?? 0) > 0);
+  const carried = kitFor(state, beast, towerKit ? 'tower' : null);
+  const kitNames = hands.map((k) => ITEM_BY_KEY[splitKey(k).key]?.name ?? k).join(' · ');
+  const crafts = skillOpen(state, 'alchemy') || skillOpen(state, 'sigil');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const raw = useMemo(() => oddsRaw(state, beast, standing), [floor, ...fightDeps(state)]);
+  const raw = useMemo(() => oddsRaw(state, beast, standing, carried.kit),
+    [floor, towerKit, state.crafts.carry, state.crafts.pouch, ...fightDeps(state)]);
   // 誠 Out of reach is not two per cent, here as on 狩 the hunt. The floor under the quoted
   // odds put "2% odds" on a floor whose beast stood 375,000 times stronger; a floor that
   // wins none of its sampled fights says how far off it is instead.
@@ -134,6 +146,20 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance }: {
             : TRIALS.summit(span, TOWER_QI_SUMMIT)}
         </p>
         <p className="faint" style={{ margin: '8px 0 12px', fontSize: 12.5 }}>{TRIALS.tower}</p>
+        {/* 攜 The pills and sigils carried, and whether they go up: the climber's choice,
+            because a hundred floors would otherwise spend an hour's pill on every one. */}
+        {hands.length > 0 && onTowerKit && (
+          <div className="towerkit">
+            <p><b className="cjk">攜</b> {towerKit ? TRIALS.kitOn(kitNames) : TRIALS.kitOff(kitNames)}</p>
+            <div className="tk-switch" role="group" aria-label={TRIALS.kitSwitch}>
+              <button data-on={!towerKit} onClick={() => onTowerKit(false)}>{TRIALS.kitLeave}</button>
+              <button data-on={towerKit} onClick={() => onTowerKit(true)}>{TRIALS.kitTake}</button>
+            </div>
+          </div>
+        )}
+        {hands.length === 0 && crafts && (
+          <p className="faint towerkit-none"><b className="cjk">攜</b> {TRIALS.kitNone}</p>
+        )}
         <button className="act" data-tone="cinnabar" onClick={() => onFloor(floor)}>
           登 <span>{TRIALS.climb}</span>
         </button>

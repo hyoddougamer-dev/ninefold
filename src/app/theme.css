@@ -3464,6 +3464,10 @@ button.gs-new .cjk { margin: 0; }
 .gearbulk .act .up { color: inherit; margin: 0 4px 0 0; }
 .gearbulk .act i { font-style: normal; font-size: 12px; margin-left: 7px; opacity: .8; }
 .gearbulk p { margin: 6px 2px 0; font-size: 12px; line-height: 1.5; }
+/* 天 Heaven into Heaven: the line over its rows, and a rim in the rank's own colour so a
+   Heaven row reads apart from the rows that climb a rank. Scoped to the fuse row only. */
+.fusesame { margin: 12px 2px 8px; font-size: 12px; line-height: 1.5; }
+.fuserow[data-same] { border-color: color-mix(in srgb, #D2604E 55%, var(--gild)); }
 
 /* 器 篩 The chest's third row, by lines, and the kept filters above the rows. */
 .chestfilter.lines { margin-top: -6px; }
@@ -3840,3 +3844,16 @@ nav.tabs .tabkey { display: none; }
   .platcard .plodds i { display: inline; }
   .platcard .placts { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* 攜 塔 The pills and sigils carried, on the tower's card, and the switch that takes them up
+   (2026-10-05). Its own names: the furnace's ×1/Max is .buymode, and this is not that. */
+.towerkit { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 10px; margin: 0 0 12px;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; }
+/* 窄 At 320 the words take the whole row and the switch goes under them, never a column of one word. */
+.towerkit p { margin: 0; flex: 1 1 190px; min-width: 0; font-size: 12.5px; color: var(--faint); }
+.towerkit p b.cjk, .towerkit-none b.cjk { color: var(--gold); margin-right: 3px; }
+.towerkit .tk-switch { display: inline-flex; flex: none; border: 1px solid var(--gild); border-radius: 99px; overflow: hidden; }
+.towerkit .tk-switch button { font: 600 11px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  padding: 9px 10px; background: transparent; color: var(--faint); border: 0; white-space: nowrap; }
+.towerkit .tk-switch button[data-on='true'] { background: rgba(212,175,86,.16); color: var(--gold); }
+.towerkit-none { margin: 0 0 12px; font-size: 12px; }

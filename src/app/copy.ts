@@ -533,6 +533,16 @@ export const TRIALS = {
     `Today that is ${span} of your gathering. From floor ${summit} up every floor pays this much, and no floor pays more.`,
   /** 吸 What a floor far below pays, where a count of seconds would read as a glitch. */
   little: 'less than a minute',
+  /**
+   * 攜 The pills and sigils carried, and whether they go up the tower (2026-10-05). The
+   * climber chooses, because every floor won spends what took part in it.
+   */
+  kitOn: (names: string) => `Up the tower with you: ${names}. A won floor spends whichever took part; a lost one keeps both.`,
+  kitOff: (names: string) => `Carried: ${names}. Left below unless you choose Take up.`,
+  kitSwitch: 'Take what you carry up the tower',
+  kitLeave: 'Leave',
+  kitTake: 'Take up',
+  kitNone: 'Pills and sigils can go up the tower too: carry one from 業 Crafts.',
 
   /** 塔 The tower before its realm, under 擂台 the Platform that opens the screen. */
   towerShut: (han: string, name: string) =>
@@ -1005,6 +1015,13 @@ export const ITEM = {
     if (from === 'forge') return 'Forged by your own hand. It is finished: it cannot be fused, and it melts back into its metal.';
     return beast ? `Left by the ${beast}.` : null;
   },
+  /**
+   * 質 A piece a fusion made, in place of who left it: its quality against a usual roll of
+   * its rank, and at Heaven that it will not be fused again (sim/chest.ts fusesAt).
+   */
+  fusedFrom: (rank: string, quality: number, top: number, heaven: boolean) =>
+    `Made by a fusion, at ×${quality.toFixed(2)} of a usual ${rank} roll (a fusion stops at ×${top}).`
+    + (heaven ? ' A fused Heaven piece is never fused again.' : ''),
   /** 解 What each line that moves a number does, in a sentence. */
   axisSays: {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
@@ -1620,7 +1637,7 @@ export const CLASS = {
     wargod: (x: number) => `Wardens count ${pct(x)} weaker.`,
     swordsmith: (x: number) => `${pct(x)} more 材 material from kills and floors.`,
     seeker: (x: number) => `Springs in the secret realm give ${pct(x)} more qi.`,
-    vajra: (x: number) => `First sights and the week's quarry pay ${pct(x)} more qi.`,
+    vajra: (x: number) => `First sights, the week's quarry and the Platform pay ${pct(x)} more qi.`,
     alchemist: (x: number) => `Pills cost ${pct(x)} less.`,
     huntking: (x: number) => `Beasts leave a piece ${Math.round(x * 100)} points more often.`,
     treasuresmith: (x: number) => `Melting pays ${pct(x)} more, and its allowance refills ${pct(x)} faster.`,
@@ -2064,7 +2081,8 @@ export const CRAFTS = {
    * the pouch gets another chance of two, and gear, a tool or an array gets faster (see
    * CRAFT_MARK_SUB). `doubles` is whether a make can come out twice at all.
    */
-  familiarNote: (made: number, graded: boolean, fewer: boolean, doubles: boolean, craft: string, mastery: number) => {
+  familiarNote: (made: number, graded: boolean, fewer: number, doubles: boolean, craft: string, mastery: number,
+    marks: readonly number[] = CRAFT_MARKS) => {
     const pct = (x: number) => Math.round(x * 100);
     const instead = doubles
       ? `another 1 in ${Math.round(1 / CRAFT_MARK_SUB)} comes out twice`
@@ -2073,14 +2091,15 @@ export const CRAFTS = {
       `${pct(CRAFT_MARK_FASTER)}% faster`,
       // A piece of gear, a tool or an array is made once: it gets faster instead.
       doubles ? `1 make in ${Math.round(1 / CRAFT_MARK_TWICE)} comes out twice` : `${pct(CRAFT_MARK_SUB)}% faster again (it is made one at a time)`,
-      fewer ? 'one less of the first thing it needs' : instead,
+      // 丹符 A pill or a sigil is a heavy make (CRAFT_KIT_WORK), and its third mark takes that many off.
+      fewer > 1 ? `${fewer.toLocaleString('en')} fewer of the first thing it needs` : fewer === 1 ? 'one less of the first thing it needs' : instead,
       graded ? 'better odds of a high rank' : instead,
       graded ? 'never comes out Common' : instead,
     ];
-    const next = CRAFT_MARKS.find((m) => made < m);
-    const top = CRAFT_MARKS[CRAFT_MARKS.length - 1].toLocaleString('en');
+    const next = marks.find((m) => made < m);
+    const top = marks[marks.length - 1].toLocaleString('en');
     return `Made ${made.toLocaleString('en')} times. ${next ? `${(next - made).toLocaleString('en')} more for the next mark.` : 'Every mark earned.'}\n`
-      + CRAFT_MARKS.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
+      + marks.map((m, i) => `${made >= m ? '\u25cf' : '\u25cb'} ${m.toLocaleString('en')}: ${gives[i]}`).join('\n')
       + (graded ? '\nEvery mark also lifts the rank a little.' : '')
       + `\nEvery ${craft} recipe made ${top} times makes all of ${craft} ${pct(CRAFT_MASTERY_SPEED)}% faster, up to ${pct(CRAFT_MASTERY_CAP)}%: ${pct(mastery)}% now.`;
   },
@@ -2096,7 +2115,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon or vault gate. A win spends whichever took part; a loss keeps both. Never the Dragon, never the tower.',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. A win spends whichever took part; a loss keeps both. Never the tribulation’s Dragon.',
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   carryNone: 'Nothing',
@@ -2298,7 +2317,14 @@ export const QOL = {
     wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. A \u25b2 piece is at least as good on every line you wear now. Locked pieces, loadout pieces and any that would change your class stay put.',
     wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
     fuseAll: 'Fuse all groups',
-    fuseAllSays: 'Three into one, again and again, until no three match. Locked, refined and forged pieces are never fused.',
+    fuseAllSays: 'Three into one, again and again, until no three match. At Heaven it fuses only pieces you found, so nothing it makes is fused again. Locked, refined and forged pieces are never fused.',
+    /**
+     * 天 Heaven into Heaven (rekaris, on the Discord, 2026-10-04): three found Heaven pieces
+     * make one, with the fusion quality on top. The line over the Heaven rows, and each
+     * row's own words, with the quality it will come out at.
+     */
+    heavenSays: `天 Heaven into Heaven: three you found make one, with your fusion quality on top, ×${trim(FUSE_TOP)} at most. A fused piece is never fused again.`,
+    heavenRow: (name: string, count: number, quality: number) => `${name} · ${count} found · comes out ×${quality.toFixed(2)}`,
     fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
     /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
     carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,

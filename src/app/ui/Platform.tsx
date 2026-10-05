@@ -5,7 +5,7 @@ import { ART_BY_KEY, STANCE_BY_KEY } from '../../data/arts.ts';
 import { kitFor } from '../../sim/crafts.ts';
 import { duration, num } from '../../sim/format.ts';
 import {
-  PLATFORM_EDGE, PLATFORM_HOURS, TIERS, answered, beatenNow, challengeOdds, challengerOf, challengerPays,
+  PLATFORM_EDGE, TIERS, answered, beatenNow, challengeOdds, challengerHours, challengerOf, challengerPays,
   challengerPower, standingTier, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { stanceChoices } from '../../sim/arts.ts';
@@ -105,10 +105,10 @@ export function Platform({ state, onChallenge, onStance }: {
                   : standing ? <> {'·'} <Term han="力" /> {num(brings)}{best ? <> {PLATFORM.inStance(`${best.han} ${best.name}`)}</> : null}</>
                     : <> {'·'} {PLATFORM.waits}</>}
               </i>
-              {!beaten && <em className="mono">{PLATFORM.pays(PLATFORM_HOURS[tier], num(pays))}</em>}
+              {!beaten && <em className="mono">{PLATFORM.pays(challengerHours(state, tier), num(pays))}</em>}
             </span>
             <span className="plodds mono">
-              {beaten ? <><b className="pltick">{'✓'}</b><i>{PLATFORM.paid(PLATFORM_HOURS[tier])}</i></>
+              {beaten ? <><b className="pltick">{'✓'}</b><i>{PLATFORM.paid(challengerHours(state, tier))}</i></>
                 : standing && read ? <>
                   {/* 誠 Out of reach is not two per cent, here as on the tower: it says how far off. */}
                   <b style={{ color: read.raw > 0 || best ? tone : 'var(--faint)' }}>{read.raw > 0 || best ? pct(stanceOdds)

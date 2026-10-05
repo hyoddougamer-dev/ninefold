@@ -1,6 +1,10 @@
 import {
-  COMMON_DEPTH_FIRST, HUNT_SHARE, LAYERS_PER_REALM, floorPay, ladderAt, salvageShare,
+  COMMON_DEPTH_FIRST, FLOORS_PER_REALM, HUNT_SHARE, LAYERS_PER_REALM, MELT_MATERIAL, SEAL_LOOT, floorPay, ladderAt,
+  salvageShare,
 } from './balance.ts';
+import { recordMaterial } from './record.ts';
+import { materialBonus } from './awaken.ts';
+import { isOpen } from './unlocks.ts';
 import { RARITIES, RARITY_INFO, templateOf, type Item, type Rarity } from '../data/gear.ts';
 import { salvageBonus } from './awaken.ts';
 import { rate, type State } from './state.ts';
@@ -47,6 +51,22 @@ export function meltMaterial(item: Item): number {
   return Math.max(1, Math.round(floorPay(depth) * HUNT_SHARE * RARITY_INFO[item.rarity].mult));
 }
 
+/**
+ * 材 What a piece melts into on this body once the allowance is spent: the table's piece
+ * (meltMaterial), MELT_MATERIAL of it, through what every kill's material passes through
+ * as well: the tower's seals, 錄 the record and the cards that pay material. 鑄劍師 the
+ * Swordsmith's double is for kills and floors and stays there; 寶匠 the Treasure Smith's
+ * lift is melting's own and is applied by melt(). See MELT_MATERIAL for why.
+ */
+export function meltSpill(s: Pick<State, 'realm' | 'tower' | 'killed' | 'awakened'>, item: Item): number {
+  const record = isOpen(s.realm, 'record') ? recordMaterial(s.killed) : 1;
+  // 塔印 The seals, as lootBonus in tower.ts reads them. Not imported from there: tower.ts
+  // reads combat.ts, and salvage.ts sits under state.ts, so the import closed a circle that
+  // left combat.ts reading the upgrades before they existed.
+  const seals = 1 + SEAL_LOOT * Math.floor(Math.max(0, s.tower) / FLOORS_PER_REALM);
+  return meltMaterial(item) * MELT_MATERIAL * seals * record * materialBonus(s.awakened);
+}
+
 /** What melting a pile pays: qi out of the allowance, and the rest as 材 material. */
 export interface Melted {
   readonly state: State;
@@ -74,7 +94,7 @@ export function melt(s: State, pieces: readonly Item[]): Melted {
     qi += paid;
     // The cards and 寶匠 lift the spill as well, or a melting build would stop paying the
     // moment the allowance ran out (rekaris, 2026-10-02).
-    if (paid < worth) materials += Math.round(meltMaterial(p) * factor * (1 - paid / worth));
+    if (paid < worth) materials += Math.round(meltSpill(s, p) * factor * (1 - paid / worth));
   }
   const used = r > 0 ? qi / r : 0;
   return {

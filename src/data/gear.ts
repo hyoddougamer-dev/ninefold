@@ -32,6 +32,9 @@ export const SLOT_INFO: Record<Slot, { han: string; name: string; empty: string 
 /** 五階 The five-step rarity ladder. The frame carries it, never the object. */
 export type Rarity = 'common' | 'spirit' | 'mystic' | 'earth' | 'heaven';
 
+/** 源 What `Item.from` says of a piece a fusion made. */
+export const FUSED = 'fused';
+
 export const RARITIES: readonly Rarity[] = ['common', 'spirit', 'mystic', 'earth', 'heaven'];
 
 export interface RarityInfo {
@@ -332,8 +335,10 @@ export interface Item {
   /** 煉 How many times it has been refined. Every line on it is multiplied by this. */
   readonly refine?: number;
   /**
-   * 源 Who left it: a beast's key, or `secret` or `road` for the rooms and the meetings.
-   * Only ever read to say so on the item sheet, never by a number.
+   * 源 Who left it: a beast's key, or `secret` or `road` for the rooms and the meetings,
+   * `forge` for a forged piece and `fused` for one a fusion made. Never read by a number:
+   * the sheet says it, and 天 a Heaven fusion takes only a piece that was found (see
+   * sim/chest.ts wasFound).
    */
   readonly from?: string;
   /**

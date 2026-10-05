@@ -334,6 +334,29 @@ export const CORE_QI_RUNGS = 6;
 export const MELT_FILL = 0.375;
 export const MELT_CAP = 6 * 3600;
 
+/**
+ * 材 How much material a piece melts into once the allowance is spent, as a multiple of
+ * the table's piece (meltMaterial in sim/salvage.ts), which since this date also passes
+ * through the seals, the record and the material cards, as every kill's material does.
+ *
+ * rekaris, on the Discord (2026-10-05): *"Realm 6, 40 centipede kills: 740k material; 40
+ * kills worth of drops melted at allowance empty with Treasure Smith: 37k, a 5% gain."*
+ * Measured with the habits (tools/meltshare.ts: 400 kills of the strongest safe beast at
+ * each realm, every drop melted with the allowance empty), the melt was 6 to 8% of the
+ * kills' material at the second realm and 0.3 to 1% at the ninth, because the kills
+ * gathered the tower's seals and the record and the melt read the bare table. A raise by
+ * one number would have been generous early and still nothing late, so the melt now rides
+ * the same multipliers as the kills, and this number sets its share. At 3, measured the
+ * same way, realms 3 to 9: 17 to 34% for the cultivators who take the melting cards (once
+ * a day, active, every hour, crafts it all), 8 to 25% for those who take others (casual,
+ * drives it all, walks 神); a noticeable second source that never outweighs the kills. The
+ * habits melt once a visit and rarely empty the allowance, so the ninth realm did not
+ * move for any of them (every hour 28.9, active 44.0, once a day 70.0, before and after).
+ * 自 The auto-hunt, which does empty it: ninth realm 31.2 to 31.3 days, and its power at
+ * the end ×1.24, the material going where material goes (煉器 refining), never into qi.
+ */
+export const MELT_MATERIAL = 3;
+
 export const SALVAGE_SHARE_FIRST = 0.30;
 export const SALVAGE_SHARE_LAST = 0.04;
 
@@ -1044,7 +1067,7 @@ export const PAIR_DRIVE = 0.75;        // 俠客 what a drive costs
 export const PAIR_WARDEN = 0.70;       // 武神 a warden counts this much of itself
 export const PAIR_MATERIAL = 2.0;      // 鑄劍師 材 from kills and floors
 export const PAIR_SPRING = 1.5;        // 尋仙 qi from a spring in the secret realm
-export const PAIR_BOUNTY = 1.5;        // 金剛 見 first sights and 期 the week's quarry
+export const PAIR_BOUNTY = 1.5;        // 金剛 見 first sights, 期 the week's quarry and 擂 the Platform (since 2026-10-05)
 export const PAIR_PILLS = 0.85;        // 丹師 what a pill costs
 export const PAIR_DROP = 0.08;         // 獵王 added to a beast's chance of leaving a piece
 export const PAIR_MELT = 1.3;          // 寶匠 qi from melting
@@ -1826,6 +1849,34 @@ export const CRAFT_SECONDS: Readonly<Record<string, number>> = {
 };
 
 /**
+ * 丹符 How many times heavier a pill or a sigil is than the recipe it was: its own time at
+ * the furnace or the desk and every herb, ore and part it asks for, multiplied together,
+ * so the share of a make spent gathering stays what it was.
+ *
+ * rekaris, on the Discord (2026-10-05): *"If pills and sigils are as cheap as they are,
+ * there is no reason not to have them for every single fight. Increase their requirements
+ * manifold, so each pill and sigil requires considerable time (at least an hour a piece)
+ * and is a proper investment. This would also require increasing the experience the
+ * recipe grants, otherwise leveling it will take months."* A Mending pill was 8 seconds at
+ * the furnace, two herbs and a part: 25 seconds of work. At 180 it is 24 minutes at the
+ * furnace, 360 herbs and 180 parts: 75 minutes with no tool, 52 to 71 with the tools a
+ * cultivator can have forged by the pill's realm. A sigil is 63 to 135, 60 to 99 tooled
+ * (tools/kitwork.ts reads every recipe; 150 left the late pills at 44 minutes tooled,
+ * under the hour asked for). The experience follows the seconds (data/crafts.ts solves
+ * it from CRAFT_HOURS_TO_CAP), so a make pays 180 times what it did and the hours to 99
+ * are the hours they were. The familiarity marks count a heavy make as 180 light ones
+ * (Recipe.marks), so a mark still takes the hours it did, and the third mark takes 180
+ * off the first thing rather than one.
+ *
+ * Measured over a whole climb with the crafter (2026-10-05, `crafts it all`, day 50):
+ * pills and sigils made 134,102 before and 1,047 after; Alchemy 67 to 70 and Sigil
+ * Writing 57 to 61, the seven crafts added up 467 to 461, as the herbs they now eat level
+ * the gathering. The ninth realm on day 44.0 before and after; every other habit unmoved,
+ * since only it crafts.
+ */
+export const CRAFT_KIT_WORK = 180;
+
+/**
  * 眠 How long the workshop keeps working after the last visit, in hours.
  *
  * Twelve, so a visit in the morning and one at night keep it busy all day, and a week away
@@ -1927,10 +1978,22 @@ export const CRAFT_ARRAY_QUALITY = 6;    // 九宮: this much on the quality sco
  * fight that is a warden, a heart demon or a beast of the vault, and spent only if it is
  * won: a lost fight keeps them, because a lost fight costs nothing.
  *
- * 劫 Never the Dragon, and never a tower floor. The Dragon is anchored to the power that
- * faced it, and the tower pays qi by the floor, so anything that carried a cultivator up
- * either of them would be a lever on the endgame or on the qi. Both were measured before
- * this rule and both were the reason for it.
+ * 劫 Never the Dragon. It is anchored to the power that faced it, so anything that carried
+ * a cultivator over it would be a lever on the endgame.
+ *
+ * 塔 The tower, since 2026-10-05, when the climber chooses it on the floor's card. rekaris:
+ * *"Pills and Sigils provide combat edge that has no use right now. All combat challenges
+ * are trivial except the tower, where these cannot be used."* It was shut because a floor
+ * pays qi, and it opened once a pill cost an hour (CRAFT_KIT_WORK): a floor falls once, so
+ * what a kit buys there is a few floors sooner, each paid for with an hour at the furnace.
+ * Measured with tools/towerkit.ts, every climbing habit every three days, the highest floor
+ * at the harness's odds of 0.65 with nothing carried against the best pairing the realm
+ * allows: up to 4 or 5 floors more at Common rank and 5 or 6 at Heaven, 1.9 to 2.2 on
+ * average, about 4% of the floor reached. Before the ninth realm it is a floor or two
+ * (縛 Binding, 力 Might, 五雷 Five Thunders), and the most is 九轉 the Nine-Turn Pill at the
+ * ninth with a Heaven Seal Sigil: four or five floors. No pairing is a win past the build,
+ * so nothing is left out. `crafts it all`, which takes them up only for a floor that will
+ * not fall without them, reaches the ninth realm on day 44.0 either way.
  *
  * 級 A tier-N elixir is made for realm-N fights. Carried into a harder realm it works at
  * half strength a realm, so the recipes have to keep climbing with the cultivator.
