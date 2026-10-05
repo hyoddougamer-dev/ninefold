@@ -1098,8 +1098,8 @@ export const PAIR_TOWER_QI = 2.5;      // 天師 qi from a tower floor
  *
  * At 2.5 the Master takes the most qi out of the tower and the Sword Immortal still climbs
  * it highest and soonest: each is the best at what it says. A floor's pay is a lump, never
- * a rate, so the economic law holds; the server credits it only to a save that holds the
- * pieces to wear the Master (verify.ts towerQi).
+ * a rate, so the economic law holds; the server credits it only to a save that wears the
+ * Master or keeps him as a loadout (verify.ts wearsMaster).
  */
 export const PAIR_MEET = 1.5;          // 卜師 what a meeting on the road pays
 export const PAIR_MEND = 0.04;         // 羅漢 health recovered every round, of the whole

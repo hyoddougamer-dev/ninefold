@@ -30,7 +30,7 @@
  */
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
-  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, SCHOOL_WAKES, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
+  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
   SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
@@ -55,13 +55,12 @@ import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
-import { classTower } from './schools.ts';
+import { classTower, classTowerQi } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
-import { SLOTS, TEMPLATE_BY_KEY, schoolOf, templateOf, type Item } from '../data/gear.ts';
-import type { School } from '../data/schools.ts';
+import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
 import { equip } from './chest.ts';
 
 /**
@@ -289,31 +288,21 @@ export function towerQi(before: State, after: State, first: boolean): number {
   const flat = Math.min(hi, Math.max(lo, TOWER_QI_SUMMIT));
   let qi = Math.max(0, hi - flat) * floorQiPay(TOWER_QI_SUMMIT);
   for (let f = lo + 1; f <= flat; f++) qi += floorQiPay(f);
-  return qi * (holdsPair(before, 'qi', 'arts') || holdsPair(after, 'qi', 'arts') ? PAIR_TOWER_QI : 1);
+  return qi * (wearsMaster(before) || wearsMaster(after) ? PAIR_TOWER_QI : 1);
 }
 
 /**
- * 天師 Whether a save holds the pieces to wear a pair (three places of one school and three
- * of the other), from what it wears and what is in its chest. The Master's pay is two and
- * a half times a floor's (PAIR_TOWER_QI), so crediting it to every save would leave a
- * cheat one and a half tower's worth of room; a save that could not have worn the Master
- * at either end of the window is credited a floor's own pay.
+ * 天師 Whether a save wears the Celestial Master, or holds a loadout that does. The Master's
+ * pay is two and a half times a floor's (PAIR_TOWER_QI), so crediting it to every save would
+ * leave a cheat one and a half tower's worth of room. Six loose pieces in the chest were
+ * enough in the first reading (the audit of 2026-10-05), so only what is worn and what a
+ * loadout puts on count; a save that does neither at either end of the window is credited
+ * a floor's own pay. Measured on an honest Master with the Arts half taken off both ends of
+ * every window: no wait, no flag.
  */
-export function holdsPair(s: State, a: School, b: School): boolean {
-  const has = SLOTS.map((slot) => {
-    const pieces = [s.worn[slot], ...s.chest].filter((it): it is Item =>
-      !!it && !!TEMPLATE_BY_KEY[it.template] && templateOf(it).slot === slot);
-    return { a: pieces.some((it) => schoolOf(it) === a), b: pieces.some((it) => schoolOf(it) === b) };
-  });
-  // Six places, each given to one school or the other: 2^6 ways, three of each wanted.
-  for (let mask = 0; mask < 1 << SLOTS.length; mask++) {
-    let na = 0, nb = 0;
-    for (let i = 0; i < SLOTS.length; i++) {
-      if (mask & (1 << i)) { if (has[i].a) na++; } else if (has[i].b) nb++;
-    }
-    if (na >= SCHOOL_WAKES && nb >= SCHOOL_WAKES) return true;
-  }
-  return false;
+export function wearsMaster(s: State): boolean {
+  if (classTowerQi(s) > 1) return true;
+  return s.sets.some((_, i) => classTowerQi(wearSet(s, i).state) > 1);
 }
 
 /** 道 The most 道 the road and the vault could have paid between two saves. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { holdsPair, towerQi, verify } from '../verify.ts';
+import { towerQi, verify, wearsMaster } from '../verify.ts';
+import { saveSet } from '../sets.ts';
 import { PAIR_TOWER_QI } from '../balance.ts';
 import { advance } from '../time.ts';
 import { beatable } from '../combat.ts';
@@ -77,7 +78,7 @@ describe('塔 a whole tower climbed at once is honest', () => {
       const allowed = towerQi(shot.s, after, false);
       let sum = 0;
       for (let f = shot.s.tower + 1; f <= after.tower; f++) sum += floorQiPay(f);
-      const master = holdsPair(shot.s, 'qi', 'arts') || holdsPair(after, 'qi', 'arts') ? PAIR_TOWER_QI : 1;
+      const master = wearsMaster(shot.s) || wearsMaster(after) ? PAIR_TOWER_QI : 1;
       expect(allowed).toBeGreaterThanOrEqual(paid * 0.999);
       expect(allowed).toBeCloseTo(sum * master, -3);
     }
@@ -85,7 +86,7 @@ describe('塔 a whole tower climbed at once is honest', () => {
     console.log(`    floors ${shot.s.tower}→${after.tower} at realm ${shot.s.realm}: ${num(towerQi(shot.s, after, false))} qi allowed`);
     // Floors above the summit pay what the summit floor does, and are counted at once.
     const far = { ...after, tower: 1e9 };
-    const master = holdsPair(after, 'qi', 'arts') ? PAIR_TOWER_QI : 1;
+    const master = wearsMaster(after) ? PAIR_TOWER_QI : 1;
     expect(towerQi({ ...after, tower: 200 }, far, false)).toBeCloseTo((1e9 - 200) * floorQiPay(200) * master, -6);
     // And a first sync brings none: it has its own allowance.
     expect(towerQi(shot.s, after, true)).toBe(0);
@@ -94,7 +95,7 @@ describe('塔 a whole tower climbed at once is honest', () => {
 
 /**
  * 天師 The Master's pay is two and a half times a floor's (2026-10-05), so the server credits
- * it only to a save that holds the pieces to wear the Master, worn or in the chest.
+ * it only to a save that wears the Master or keeps him as a loadout.
  */
 describe('天師 the Master\'s pay is credited to the Master', () => {
   const piece = (school: School, slot: Slot, i: number): Item => {
@@ -105,23 +106,28 @@ describe('天師 the Master\'s pay is credited to the Master', () => {
   const base = cases[0].shot.s;
   const qiArts = (slots: readonly Slot[]) => Object.fromEntries(slots.map((slot, i) => [slot, piece(i < 3 ? 'qi' : 'arts', slot, i)]));
 
-  it('knows a body that wears the Master, and one that could from its chest', () => {
-    const worn = { ...base, worn: qiArts(SLOTS), chest: [] } as State;
-    expect(holdsPair(worn, 'qi', 'arts')).toBe(true);
-    const inChest = { ...base, worn: {}, chest: SLOTS.map((slot, i) => piece(i < 3 ? 'qi' : 'arts', slot, i)) } as State;
-    expect(holdsPair(inChest, 'qi', 'arts')).toBe(true);
-    // Five Qi places and one Arts place make no Master, however they are shuffled.
-    const five = { ...base, worn: Object.fromEntries(SLOTS.map((slot, i) => [slot, piece(i < 5 ? 'qi' : 'arts', slot, i)])), chest: [] } as State;
-    expect(holdsPair(five, 'qi', 'arts')).toBe(false);
+  it('knows a body that wears the Master or keeps him as a loadout, and never loose pieces', () => {
+    const worn = { ...base, worn: qiArts(SLOTS), chest: [], sets: [] } as State;
+    expect(wearsMaster(worn)).toBe(true);
+    // Six loose pieces in the chest are not the Master (the audit of 2026-10-05).
+    const loose = { ...base, worn: {}, chest: SLOTS.map((slot, i) => piece(i < 3 ? 'qi' : 'arts', slot, i)), sets: [] } as State;
+    expect(wearsMaster(loose)).toBe(false);
+    // But kept as a loadout and taken off, he is.
+    const kept = saveSet(worn, 0, 'Master');
+    const off = { ...kept, worn: {}, chest: [...kept.chest, ...Object.values(kept.worn)] } as State;
+    expect(wearsMaster(off)).toBe(true);
+    // Five Qi places and one Arts place make no Master.
+    const five = { ...base, worn: Object.fromEntries(SLOTS.map((slot, i) => [slot, piece(i < 5 ? 'qi' : 'arts', slot, i)])), chest: [], sets: [] } as State;
+    expect(wearsMaster(five)).toBe(false);
   });
 
   it('credits the Master his pay, and anybody else a floor\'s own', () => {
     const lo = { ...base, tower: 40 };
     let sum = 0;
     for (let f = 41; f <= 80; f++) sum += floorQiPay(f);
-    const master = { ...lo, worn: qiArts(SLOTS), chest: [] } as State;
+    const master = { ...lo, worn: qiArts(SLOTS), chest: [], sets: [] } as State;
     expect(towerQi(master, { ...master, tower: 80 }, false)).toBeCloseTo(sum * PAIR_TOWER_QI, -3);
-    const plain = { ...lo, worn: {}, chest: [] } as State;
+    const plain = { ...lo, worn: {}, chest: [], sets: [] } as State;
     expect(towerQi(plain, { ...plain, tower: 80 }, false)).toBeCloseTo(sum, -3);
   });
 });
