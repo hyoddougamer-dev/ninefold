@@ -1051,6 +1051,44 @@
         "Thank you for playing, and for every report this week."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-06",
+      "pin": false,
+      "channel": "devlog",
+      "title": "天 Update · Fair pay for the Celestial Master and the Platform",
+      "color": "#8FB49B",
+      "body": [
+        "The tower's fixed pay, carried through to the rest: the Celestial Master now earns what it promises, and the Platform and the week's quarry pay the same for everyone in a realm. Thank you rekaris for both reports, and everyone who played this week."
+      ],
+      "fields": [
+        [
+          "天師 Celestial Master",
+          "A tower floor now pays the Master two and a half times its qi, instead of a quarter more. Measured over five runs per class, the Master was taking the least qi out of the tower of the three tower classes; now it takes the most, by an eighth, and reaches the ninth realm about two and a half days sooner. The Sword Immortal still climbs highest and soonest."
+        ],
+        [
+          "擂台 The Platform",
+          "Each challenger now pays a fixed sum of qi read off your realm: the same for everyone in it, whatever you wear, whatever rate you bought, and whenever in the realm you fight. The third pays three times the first, the card shows every sum before you fight, and 金剛 the Vajra still adds half again. Fought at the start of a realm, a challenger pays more than before; fought late, after buying a lot of rate, less. Over a whole climb it comes out the same."
+        ],
+        [
+          "期 The week's quarry",
+          "Its first kill pays a fixed sum for your realm too, so putting on qi gear for the kill no longer changes it."
+        ],
+        [
+          "拒 Small fixes",
+          "A pill or a sigil is no longer spent when the reward is refused (a challenger won just as the week turned). A vault door opens the one you tapped, even if the row changed under your finger. 空囊 Empty Pouch can't be learnt while your chest holds more than its 12 places, and says so. The Sword school's line now says what it always did: all your power ×1.1, or ×1.2 at the full."
+        ],
+        [
+          "疑 Fair play",
+          "Nobody is banned by a machine any more. A save the server can't explain is kept off the boards and looked at by a person before anything is decided, and an honest player is put back."
+        ]
+      ],
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-celestial.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-platform.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/upd-pouch.webp?v=1"
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -2608,6 +2646,17 @@
       ],
       "reply": [
         "Celestial Master, as promised. We measured it over five runs per class: the Master took the least qi out of the tower of the three (5.3e12, against 8.7e12 for pure Sword and 9.5e12 for the Sword Immortal), exactly the snowball you described. Since this update a floor pays the Master two and a half times its qi instead of a quarter more. He now takes the most qi out of the tower (10.7e12) and reaches the ninth realm on day 42.8 instead of 45.4, while the Sword Immortal still climbs highest and soonest. Each is the best at what it says. Thank you for pushing on it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform rewards",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Done in today's update, the way you suggested. Each challenger now pays a fixed sum of qi read off your realm, the same for everyone in it, whatever you wear, whatever rate you bought and whenever you fight; the week's quarry too. We measured every kind of player before and after: the ninth realm moves by less than about a day for anyone. Fought early in a realm, a challenger pays more than before; fought late, less. Thank you for spotting it.",
         "· 師 Shibaki"
       ]
     }
