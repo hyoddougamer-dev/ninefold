@@ -256,8 +256,12 @@ async function fightFirst(page) {
   await page.waitForSelector('.arena', { timeout: 4000 }).catch(() => {});
   await page.keyboard.press('Space');
   await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
+  // 空 Won or lost, each branch checks something; a challenger never fought would have
+  // passed the lost one, which asks only that a button is absent.
+  const fought = !!(await page.$('.verdict'));
+  check(fought, 'the Platform\'s first challenger is fought to a verdict');
   const won = (await page.$eval('.arena', (e) => e.getAttribute('data-won')).catch(() => null)) === 'true';
-  if (won) {
+  if (fought && won) {
     await page.keyboard.press('r');
     await page.waitForFunction(() => !!document.querySelector('.arena') && !document.querySelector('.verdict'),
       null, { timeout: 2500 }).catch(() => {});
@@ -265,7 +269,7 @@ async function fightFirst(page) {
     check(/Second challenger/.test(who ?? ''), `R after a won challenger fights the second one (${who})`);
     await page.keyboard.press('Space');
     await page.waitForSelector('.verdict', { timeout: 3000 }).catch(() => {});
-  } else check(!(await page.$('.verdict .vacts .again')), 'a lost challenger offers no Again for R to press');
+  } else if (fought) check(!(await page.$('.verdict .vacts .again')), 'a lost challenger offers no Again for R to press');
   await page.keyboard.press('Escape');
   await page.waitForTimeout(400);
   check(!(await page.$('.arena')), 'Esc leaves a challenger\'s verdict');

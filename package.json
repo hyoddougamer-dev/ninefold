@@ -23,7 +23,7 @@
     "sitting": "node tools/sitting.mjs",
     "kept": "node tools/kept.mjs",
     "actions": "tsx tools/actions.mjs",
-    "tips": "node tools/tips.mjs",
+    "tips": "tsx tools/tips.mjs",
     "keys": "node tools/keys.mjs",
     "han": "tsx tools/han.ts",
     "early": "tsx tools/early.ts",
