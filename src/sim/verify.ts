@@ -30,8 +30,8 @@
  */
 import {
   BLESSED_ROOM, CRAFT_ARRAY_DOOR, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
-  MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, QUARRY_HOURS,
-  ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE, midRate,
+  MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
+  ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
@@ -41,7 +41,7 @@ import {
   newState, type State,
 } from './state.ts';
 import { layerCost } from './time.ts';
-import { beastPower, beatable } from './combat.ts';
+import { beastPower, beatable, quarryQi, seenBounty } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
@@ -115,33 +115,39 @@ export const BURST_CAP = 12 * 3600;
 
 /**
  * 疑 The fastest the harness's own cultivators ever went, needed seconds per real second,
- * with some room on top: 1.32 over a day and 0.46 over a week, both by the one who plays
- * every waking hour, walked 120 days. Faster than that is flagged.
+ * with room on top. Faster than that is flagged, never struck.
  *
- * 塔 The week came down from 0.55 with the tower's taper above the warden floor
- * (2026-10-04, retired 2026-10-05). The fastest honest week fell from 0.49 to 0.46, and the
- * weeks that had given a clock run three times as fast away were its tower lumps: at 0.55
- * that clock was ranked for 45 days and never flagged. At 0.52 it is flagged on day 21
- * as before, and the room above the fastest honest week is the same twelfth it was.
+ * 得 Measured again on 2026-10-05, when the lumps (the floors, the quarry, the Platform,
+ * the first sights) went into the pocket as qi instead of seconds at the end's rate
+ * (see verify). Every habit walked 120 days, the peak over any day and any week:
  *
- * 塔 And the week stopped counting the floors on 2026-10-05, when a floor started paying a
- * fixed sum read off the floor (TOWER_QI_RUNG, TOWER_QI_LEAST). The sum is exact now, not a
- * ceiling, so it comes off the week as it comes off the day, and the week reads everything
- * else. With the floors in, the strongest honest weeks rose past 0.50 (the one who plays
- * every hour, the one who leaves Auto on, measured on the first proposal for the sum),
- * as high as a clock run three times as fast
- * (0.59): nothing could have told them apart. With the floors out, measured over 120 days,
- * the fastest honest week is 0.43 (every hour) and a clock run three times as fast reads
- * 0.56. The line is 0.49: a seventh above the fastest honest week, more room than the
- * tenth the old line left (0.47 under 0.52 on the same day's build), and the three-times
- * clock still flagged on game day 22, as before. A clock run twice as fast (0.47) now sits
- * between the fastest honest week and the line, where the old line caught it by a
- * fiftieth; catching it here would cost honest room, so it is left to a sharper measure
- * (the save's own rate rather than the best rate anybody could have had). It no longer
- * moves when the tower's pay does.
+ *   habit            day     week   | clock ×2: day   week | clock ×3: day   week
+ *   active           0.49    0.30    |           0.87   0.37 |           1.22   0.37
+ *   every hour       0.70    0.34    |           1.21   0.36 |           1.57   0.34
+ *   drives it all    0.49    0.29    |           0.85   0.36 |           1.20   0.38
+ *   crafts it all    0.47    0.29    |           0.87   0.37 |           1.19   0.37
+ *   walks 神         0.39    0.24    |           0.67   0.30 |           0.92   0.31
+ *   once a day       0.44    0.32    |           0.83   0.43 |           1.20   0.47
+ *   runs auto        0.58    0.30    |           1.00   0.34 |           1.40   0.33
+ *
+ * The real testers' saves read under it too: 0.55 over 34 hours at the most (the
+ * ranked-read of 2026-10-05). The day's line is 0.9, nearly a third above the fastest
+ * honest day, because a person who knows the game well beats the harness by a margin the
+ * harness cannot show (rekaris, Discord: "AI agents tend to be very bad at giving you
+ * accurate data"). The server reads a day as it rolls its anchors, not at the peak, and
+ * there the active cultivator's clock run three times as fast reads 0.997 at the most:
+ * 1.0 would have been a knife edge, 0.9 catches it with a tenth to spare. The
+ * week's is 0.40, a fifth above the fastest honest week. A week now catches less than it
+ * did, because what made a fast clock's week stand out was mostly the lumps it was paid
+ * in seconds; the day catches what the week no longer does.
+ *
+ * The old lines (1.6 and 0.49) read the floors as seconds at the fastest rate there was
+ * and the layers they opened at each layer's own: an honest Celestial Master who climbed
+ * ten floors and opened seven layers in nine minutes read as a sprint and was kept off
+ * the boards.
  */
-export const SUSPECT_DAY = 1.6;
-export const SUSPECT_WEEK = 0.49;
+export const SUSPECT_DAY = 0.9;
+export const SUSPECT_WEEK = 0.40;
 
 /** 擊 The fastest a hand can take fights one after another: a fight is at least this long on the screen. */
 export const MIN_FIGHT_SECONDS = 1.2;
@@ -166,10 +172,12 @@ export interface Verdict {
   readonly used: number;
   /** A cheat, as opposed to a restore or a second device: counts toward a player's strikes. */
   readonly strike: boolean;
-  /** Seconds the gains needed at the best rate, per second that passed. */
+  /**
+   * Seconds the gains needed at the best rate, per second that passed, with the lumps the
+   * game paid at once (floors, the quarry, the Platform) already in the pocket: the pace
+   * SUSPECT_DAY and SUSPECT_WEEK read.
+   */
   readonly pace: number;
-  /** The same with the tower floors' exact sum taken off: the pace SUSPECT_DAY and SUSPECT_WEEK read. */
-  readonly sprint: number;
   /** Faster than any honest cultivator measured, over a day or more: flagged for review. */
   readonly suspect: boolean;
 }
@@ -177,16 +185,27 @@ export interface Verdict {
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 const kills = (s: State) => sum(Object.values(s.killed));
 
-/** What the qi-priced levels bought between the two cost, level by level. */
+/**
+ * What the qi-priced levels bought between the two cost, level by level, in the cheapest
+ * body either save holds (what is worn, or a loadout).
+ *
+ * 誤 It priced them in what the later save wore until 2026-10-05. 氣 The Qi school buys
+ * upgrades cheaper, and putting its loadout on to buy and the climbing one back after is
+ * honest play, so a Celestial Master who did just that was charged a tenth more than they
+ * paid and waited (rekaris, Discord).
+ */
 function levelsBetween(a: State, b: State): number {
-  let q = 0;
-  for (const u of UPGRADES) {
-    if (UPGRADE_INFO[u].currency !== 'qi') continue;
-    for (let l = a.levels[u]; l < b.levels[u]; l++) {
-      q += upgradeCost({ ...b, levels: { ...b.levels, [u]: l } }, u);
+  const bodies = [b, ...b.sets.map((_, i) => wearSet(b, i).state), a, ...a.sets.map((_, i) => wearSet(a, i).state)];
+  return Math.min(...bodies.map((body) => {
+    let q = 0;
+    for (const u of UPGRADES) {
+      if (UPGRADE_INFO[u].currency !== 'qi') continue;
+      for (let l = a.levels[u]; l < b.levels[u]; l++) {
+        q += upgradeCost({ ...b, worn: body.worn, levels: { ...b.levels, [u]: l } }, u);
+      }
     }
-  }
-  return q;
+    return q;
+  }));
 }
 
 /**
@@ -377,7 +396,39 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const handFights = dt / MIN_FIGHT_SECONDS;
   const drove = Math.max(0, newKills - handFights);
 
-  let pocket = before.qi;
+  // 得 The lumps the game pays at once: the week's quarry, a first sight, each challenger
+  // beaten and every floor climbed. Each is a fixed sum of qi, so each goes into the pocket as qi, and the
+  // layers it opened cost no time at all.
+  //
+  // 誤 They were credited as seconds at the fastest rate there was (the end's) until
+  // 2026-10-05, while the layers they paid for were charged at each layer's own, slower
+  // rate. A floor's qi spent on the layers just above it was therefore read as several
+  // times more seconds than it had been credited, and an honest Celestial Master who
+  // climbed ten floors and opened seven layers with what they paid, in nine minutes, read
+  // over a day as a sprint past SUSPECT_DAY and was kept off the boards (rekaris, Discord).
+  //
+  // 期 The quarry: QUARRY_HOURS of the realm's middle rate, 金剛 the Vajra's half again at
+  // most, the week it is first taken, read off the higher realm of the two saves.
+  const top = Math.max(before.realm, after.realm);
+  const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0)
+    ? Math.max(0, ...BEASTS.filter((b) => !b.warden && b.realm <= top).map((b) => quarryQi(top, b))) * PAIR_BOUNTY : 0;
+  // 見 Every beast seen for the first time paid its first sight, the Vajra's half again at
+  // most. It hid inside BURST until 2026-10-05, which a new realm's five first sights in
+  // one sync outgrow.
+  // A first sync has its own allowance, and only a beast of a realm the save stands in counts.
+  const seen = first ? 0 : BEASTS
+    .filter((b) => b.realm <= top && !(before.killed[b.key] ?? 0) && (after.killed[b.key] ?? 0) > 0)
+    .reduce((q, b) => q + seenBounty(b) * PAIR_BOUNTY, 0);
+  // 塔 The floors: the fixed sum of every floor between the two saves, the Master's when
+  // either save wears one (towerQi). Each is a fight the save has to be able to win
+  // (towerVerdict, below), so the sum is exact rather than a ceiling.
+  const tower = towerQi(before, after, first);
+  // 擂 The Platform: each challenger beaten paid a fixed sum read off the realm, the third's
+  // at most and the Vajra's half again at most. A first sync has its own allowance.
+  const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
+  const platform = first ? 0 : bouts * challengerQi(top, 2) * PAIR_BOUNTY;
+
+  let pocket = before.qi + quarry + seen + tower + platform;
   let need = 0;
   for (let n = from; n < to && n < LAYERS - 1; n++) {
     const cost = layerCost(Math.floor(n / 9) + 1, n % 9, after.unlocked);
@@ -413,17 +464,6 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 2026-10-03 left the Treasure Smith past that margin, so it is counted as itself now,
   // in the same deep-sitting seconds as the rest of the budget.
   const melted = (MELT_CAP + dt * MELT_FILL * PAIR_MELT) / focus;
-  // 期 And the week's quarry pays a fixed sum at once, QUARRY_HOURS of the realm's middle
-  // rate, 金剛 the Vajra's half again at most, the week it is first taken: a lump, allowed
-  // for as itself, as the seconds it would take at the fastest rate there was (the tower's
-  // way below). Read off the higher realm of the two saves, the most it can have paid.
-  const top = Math.max(before.realm, after.realm);
-  const quarry = (after.quarryWeek ?? 0) > (before.quarryWeek ?? 0)
-    ? QUARRY_HOURS * 3600 * midRate(top) * PAIR_BOUNTY / rEnd : 0;
-  // 塔 And the floors climbed paid their qi once, a lump as well. It is allowed for as the
-  // seconds it would take at the fastest rate there was, the fewest it can be worth: the
-  // server cannot know when each floor fell, and towerQi is a ceiling, not a measurement.
-  const tower = towerQi(before, after, first) / rEnd;
   // 泉 The vault's spring fills with time and nothing else: a day held, plus what dt could
   // fill, each second of it worth at most INCENSE_WORTH (burned rather than drunk), the
   // week's blessed room and 尋仙 the Immortal Seeker's deeper draught. It used to hide inside
@@ -431,15 +471,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // gap, the Realm Key and the Hidden Door Array need no qi term at all. A first sync has
   // its own allowance (FIRST_PACE, FIRST_SITTING), as for the floors.
   const spring = first ? 0 : vaultSeconds(dt) / focus;
-  // 擂 Each challenger beaten paid a fixed sum read off the realm, the third's at most and
-  // the Vajra's half again at most: a lump, allowed for as itself, as the quarry is. It was
-  // hours of the bare rate until 2026-10-05, credited as time; it is qi now, so it is the
-  // seconds that qi takes at the fastest rate there was, and a body that bought no rate
-  // is credited the more time for the same fight, as it should be.
-  const bouts = Math.max(0, (after.bouts ?? 0) - (before.bouts ?? 0));
-  const platform = first ? 0 : bouts * challengerQi(top, 2) * PAIR_BOUNTY / rEnd;
-  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + quarry + tower
-    + spring + platform;
+  const have = (first ? dt * FIRST_PACE + FIRST_SITTING : dt + Math.min(dt * BURST, BURST_CAP)) + melted + spring;
   const used = need / Math.max(1, have * SLACK);
   if (used > 1) why.push('too-fast');
 
@@ -546,12 +578,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.
   //
   // 塔 A whole tower climbed at once is a sprint the game itself paid for, so the floors'
-  // sum comes off before the pace is read, over a day and over a week. It used to stay in
-  // over a week, while towerQi was a ceiling a long window could hide a fast clock under;
-  // a floor pays a fixed sum now (2026-10-05), so towerQi is that sum exactly.
+  // sum is already in the pocket (above) before the pace is read, over a day and over a
+  // week, and the pace is what the cultivator's own gathering had to cover.
   const pace = need / Math.max(1, dt);
-  const sprint = Math.max(0, need - tower) / Math.max(1, dt);
-  const suspect = (dt >= 7 * 86_400 && sprint > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
+  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && pace > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
@@ -565,7 +595,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const diverged = why.includes('went-down');
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape'
     && !(diverged && (w === 'road' || w === 'anchor')));
-  return { ok: why.length === 0, why, used, strike, suspect, pace, sprint };
+  return { ok: why.length === 0, why, used, strike, suspect, pace };
 }
 
 /**
