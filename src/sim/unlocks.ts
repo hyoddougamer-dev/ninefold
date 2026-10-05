@@ -162,7 +162,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
   { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
     gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
-    gives: 'One floor, one beast, no top. Material, and six hours of gathering a floor.' },
+    gives: 'One floor, one beast, no top. Material, and a fixed sum of qi a floor, the same for everyone.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'sigils', han: '符', name: 'Sigil Writing', realm: 6,

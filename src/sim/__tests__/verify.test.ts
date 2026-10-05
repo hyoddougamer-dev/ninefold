@@ -10,7 +10,7 @@ import { validate } from '../state.ts';
 import { fuse } from '../chest.ts';
 import { FUSE_TOP, PAIR_DRAGON, focusAt } from '../balance.ts';
 import { classDragon, classTower } from '../schools.ts';
-import { TEMPLATE_BY_KEY, baseValue } from '../../data/gear.ts';
+import { TEMPLATE_BY_KEY, baseValue, roundValue } from '../../data/gear.ts';
 import { advance } from '../time.ts';
 import { UPGRADES, breakThrough, buy, canBreakThrough, canBuy, canFightWarden, capOf, newState, power, type State } from '../state.ts';
 import { beatable, odds, oddsRaw, takeKill } from '../combat.ts';
@@ -283,8 +283,14 @@ describe('盾 what 驗 the audit found, closed', () => {
       { affix: 'power', value: 120 }, { affix: 'rate', value: 120 }] }] };
     const it = validate(forged, early.at).chest[0];
     const tpl = TEMPLATE_BY_KEY.sword1;
-    expect(it.rolls[0].value).toBeLessThanOrEqual(baseValue(tpl, 'heaven', 'power') * FUSE_TOP * 1.001);
-    expect(it.rolls[1].value).toBeLessThanOrEqual(baseValue(tpl, 'heaven', 'rate') * 0.6 * FUSE_TOP * 1.001);
+    // At the cap the game's own rounding is allowed (roundValue), and nothing past it.
+    const top = (affix: 'power' | 'rate', share: number) => {
+      const most = baseValue(tpl, 'heaven', affix) * share * FUSE_TOP * 1.001;
+      return Math.max(most, roundValue(affix, most));
+    };
+    expect(it.rolls[0].value).toBeLessThanOrEqual(top('power', 1));
+    expect(it.rolls[1].value).toBeLessThanOrEqual(top('rate', 0.6));
+    expect(it.rolls[0].value).toBeLessThan(120);
   });
 
   it('a fusion never compounds past its ceiling, however good the hands', () => {

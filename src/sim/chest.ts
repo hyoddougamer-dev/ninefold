@@ -1,9 +1,12 @@
 import { FORGED } from '../data/crafts.ts';
 import {
-  FUSED, RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
-  type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
+  FUSED, RARITIES, RARITY_INFO, REALM_SETS, SLOTS, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, schoolOf,
+  templateOf, wornTotals, type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
-import { CHEST_LIMIT, FUSE_COUNT, FUSE_TOP, SECONDARIES, SECONDARY_SHARE } from './balance.ts';
+import type { School } from '../data/schools.ts';
+import {
+  CHEST_LIMIT, CLASS_AMP, FUSE_COUNT, FUSE_TOP, PAIR_CHEST, SCHOOL_WAKES, SECONDARIES, SECONDARY_SHARE,
+} from './balance.ts';
 import { chestCap, extraChestSlots } from './dao.ts';
 import { chestSlots } from './awaken.ts';
 
@@ -346,4 +349,51 @@ export function chestLimit(
   // a node that closes a door has to actually close it.
   return cap ?? CHEST_LIMIT + extraChestSlots(unlocked)
     + Math.floor(Math.max(0, gearSlots)) + chestSlots(awakened);
+}
+
+/**
+ * 職 Whether these pieces could dress a pair: three places of one school and three of the
+ * other, each place filled from the pieces that fit it. Six places, each given to one
+ * school or the other: 2^6 ways.
+ */
+export function couldWearPair(pieces: readonly Item[], a: School, b: School): boolean {
+  const has = SLOTS.map((slot) => {
+    const fit = pieces.filter((it) => TEMPLATE_BY_KEY[it.template] && templateOf(it).slot === slot);
+    return { a: fit.some((it) => schoolOf(it) === a), b: fit.some((it) => schoolOf(it) === b) };
+  });
+  for (let mask = 0; mask < 1 << SLOTS.length; mask++) {
+    let na = 0, nb = 0;
+    for (let i = 0; i < SLOTS.length; i++) {
+      if (mask & (1 << i)) { if (has[i].a) na++; } else if (has[i].b) nb++;
+    }
+    if (na >= SCHOOL_WAKES && nb >= SCHOOL_WAKES) return true;
+  }
+  return false;
+}
+
+/** 套 The most 藏 places any full realm set adds. */
+const SET_ROOM_MOST = Math.max(0, ...REALM_SETS.map((rs) =>
+  rs.steps.reduce((n, step) => n + (step.effects.capacity ?? 0), 0)));
+
+/**
+ * 藏 The most places these pieces could ever have made the chest, however they were worn:
+ * every 藏 line held, worn or carried, at the largest class amplifier, the fullest set,
+ * 甲匠 the Armourer's hundred when the pieces could dress him, and the tree and the cards,
+ * ignoring 空囊 the keystone's cap. validate() trims a chest only past this.
+ *
+ * A chest can honestly hold more than its limit: put on a piece that brings fewer places,
+ * leave the Armourer, change loadout, buy the keystone that caps the chest. Nothing is
+ * lost on the screen when that happens, and the next load must not lose it either: on
+ * 2026-10-05 an Armourer with 141 pieces changed one weapon and the reload kept 48.
+ */
+export function chestCeiling(
+  unlocked: readonly string[], held: readonly Item[], awakened: readonly string[],
+  affinityOf: (slot: Slot) => number,
+): number {
+  const lines = held.reduce((n, it) => n + Math.max(0, wornTotals(
+    { [TEMPLATE_BY_KEY[it.template]?.slot ?? 'weapon']: it } as Worn, affinityOf,
+  ).capacity), 0);
+  const armourer = couldWearPair(held, 'body', 'artificer') ? PAIR_CHEST : 0;
+  const room = lines * Math.max(1, ...CLASS_AMP) + SET_ROOM_MOST + armourer;
+  return CHEST_LIMIT + extraChestSlots(unlocked) + chestSlots(awakened) + Math.ceil(room);
 }
