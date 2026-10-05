@@ -192,7 +192,9 @@ export async function sync(
     ({ before, seconds, first } = firstSync(after, now, joinedAt));
     newRun = prev !== null;
   }
-  let v = verify(before, after, seconds, first);
+  // 塔 The floors this account already holds on the board were checked when they were won.
+  const held = (await store.standing(id))?.tower ?? 0;
+  let v = verify(before, after, seconds, first, held);
 
   // 窗 And against the day and the week behind it, where there is one from this run.
   let suspect = v.suspect;
@@ -201,7 +203,7 @@ export async function sync(
       if (!w) continue;
       const from = validate(w.state, now);
       if (from.startedAt !== after.startedAt) continue;
-      const wv = verify(from, after, now - w.at);
+      const wv = verify(from, after, now - w.at, false, held);
       suspect = suspect || wv.suspect;
       if (!wv.ok && wv.why.includes('too-fast')) v = { ...v, ok: false, why: [...v.why, 'too-fast'], used: Math.max(v.used, wv.used) };
     }
