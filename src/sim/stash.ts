@@ -1,5 +1,5 @@
 import { RARITIES, type Item, type Rarity } from '../data/gear.ts';
-import { addToChest, chestLimit, fusable, fuse } from './chest.ts';
+import { addToChest, chestLimit, fusable, fuse, fuseThree, fusedQuality } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
 import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
@@ -55,6 +55,16 @@ export function stash(s: State, found: Item | null): Stashed {
   };
 }
 
+/** 煉 What this cultivator multiplies a fusion's quality by: 巧手 on the tree, 煉 on the body. */
+export function fusionQuality(s: State): number {
+  return fuseQuality(s.unlocked) * gearFuse(s);
+}
+
+/** 質 What a fusion of this group would come out at, read before the tap (sim/chest.ts). */
+export function fuseQuote(s: State, template: string, rarity: Rarity): number {
+  return fusedQuality(fuseThree(s.chest, template, rarity), fusionQuality(s));
+}
+
 /**
  * 煉 Three become one, with everything this cultivator brings to a fusion: 巧手 Deft
  * Hands on the tree and the 煉 line on the body. The game's button and the harnesses call
@@ -62,7 +72,7 @@ export function stash(s: State, found: Item | null): Stashed {
  */
 export function fuseIn(s: State, template: string, rarity: Rarity): { state: State; made: Item | null } {
   const worn = Object.values(s.worn).filter((x): x is Item => !!x).map((x) => x.id);
-  const out = fuse(s.chest, template, rarity, fuseQuality(s.unlocked) * gearFuse(s), worn);
+  const out = fuse(s.chest, template, rarity, fusionQuality(s), worn);
   return out.made ? { state: { ...s, chest: [...out.chest] }, made: out.made } : { state: s, made: null };
 }
 
@@ -72,6 +82,11 @@ export function fuseIn(s: State, template: string, rarity: Rarity): { state: Sta
  * make the third of a new group). fusable() already leaves out 鎖 locked and 業 forged
  * pieces, so neither is ever melted into anything. It is fuseIn() in a loop, the harness's
  * own loop, so the pieces it makes are the pieces the single taps make.
+ *
+ * 天 It ends. Below Heaven every fusion climbs a rank and the top rank is a wall; at
+ * Heaven a fusion takes only pieces that were found and makes one that was not (chest.ts
+ * fusesAt), so each found piece is fused at most once and a made piece never comes back
+ * in. rekaris asked for exactly that: Fuse all must not fold a chest into one piece.
  */
 export function fuseAllIn(s: State): { state: State; made: readonly Item[] } {
   let out = s;
