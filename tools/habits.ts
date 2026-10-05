@@ -106,6 +106,8 @@ export interface Habit {
    * building a class does. `classes.test.ts` plays all fifteen.
    */
   readonly calling?: School | Pair;
+  /** 種 Where the drops' and fights' dice start (991 unless given), to read a habit over several rolls. */
+  readonly seed?: number;
   /**
    * 業 Whether they work the workshop, and carry what it makes into every hard fight.
    *
@@ -481,7 +483,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   let fights = 0;
   let arrangedOn = -1;
   // 器 The drops are seeded, so the same habit always finds the same gear.
-  let seed = 991;
+  let seed = h.seed ?? 991;
   // 氣源 The ledger: every rung the clock paid for, every unit spent, and the three named sources.
   const led = { ladder: 0, spent: 0, drunk: 0, incense: 0, platform: 0, tower: 0 };
   const towerBy: number[] = new Array(11).fill(0);

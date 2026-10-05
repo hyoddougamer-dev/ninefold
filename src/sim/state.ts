@@ -12,10 +12,10 @@ import { BEASTS } from '../data/bestiary.ts';
 const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
-  AFFIXES, FUSED, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
+  AFFIXES, FUSED, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
-import { chestLimit, freshId, holdsLevels, itemWorth } from './chest.ts';
+import { chestCeiling, chestLimit, freshId, holdsLevels, itemWorth } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import {
   owed as cardsOwed, refineFactor as cardRefineFactor, valid as validAwakened,
@@ -804,7 +804,11 @@ export function validate(raw: unknown, now: number): State {
       // 限 Each line is capped at what its own rank and realm could ever make, a primary at
       // the fusion ceiling of its base and a secondary at the same of its 60%. A flat 120
       // let six realm-one pieces carry fifteen times the power of any honest set.
-      const top = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : SECONDARY_SHARE) * FUSE_TOP * 1.001;
+      // The game rounds every roll (roundValue: a flat line is at least 1, a percentage to a
+      // tenth), so the cap is rounded the same way, or an honest 藏 1 came back as 0.9 and a
+      // full chest lost a piece on every load (2026-10-05).
+      const most = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : SECONDARY_SHARE) * FUSE_TOP * 1.001;
+      const top = Math.max(most, roundValue(affix, most));
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
@@ -889,7 +893,9 @@ export function validate(raw: unknown, now: number): State {
   const roomCarried = carried.reduce((n, it) => n + wornTotals(
     { [TEMPLATE_BY_KEY[it.template].slot]: it } as Worn, (x) => affinity(unlocked, x),
   ).capacity, 0);
-  const allowance = Math.max(slots, Math.floor(slots + roomCarried));
+  const allowance = Math.max(slots, Math.floor(slots + roomCarried),
+    chestCeiling(unlocked, [...SLOTS.flatMap((x) => (worn[x] ? [worn[x]!] : [])), ...carried], awakened,
+      (x) => affinity(unlocked, x)));
   const chest: Item[] = carried.length <= allowance ? carried
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.

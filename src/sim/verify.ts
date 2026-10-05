@@ -538,7 +538,14 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
   // cloud's. It used to be a strike, and an honest player on two phones was banned in a
   // quarter of an hour.
-  const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
+  // 'road' and 'anchor' are the same story when the save also went down: two copies of
+  // one run (an APK and a browser, a phone and a tablet) each lived on, each met its own
+  // road and its own Dragon, and the older one is just not progress. Struck, two honest
+  // devices on one account were banned on game day 33 (the audit of 2026-10-05). A
+  // straight successor that rewrites an answer or shrinks the anchor is still struck.
+  const diverged = why.includes('went-down');
+  const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape'
+    && !(diverged && (w === 'road' || w === 'anchor')));
   return { ok: why.length === 0, why, used, strike, suspect, pace, sprint };
 }
 
