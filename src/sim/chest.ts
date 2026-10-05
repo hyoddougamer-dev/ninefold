@@ -39,13 +39,16 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
 /**
  * 值 How good a piece is, roughly, for deciding which of two to keep.
  *
- * Rank, realm and refining, not the roll values, because eight axes on different scales
- * cannot be added together into a number that means anything. This is only ever used to
- * answer "is the thing that just dropped better than the worst thing in the chest", and
- * for that it is right far more often than it is wrong.
+ * Rank, realm, refining and 質 quality, not the raw roll values, because eight axes on
+ * different scales cannot be added together into a number that means anything. Quality
+ * can: it is the first line against what its own rank and realm usually roll, so it reads
+ * the same on every piece in the game. Without it a full chest could melt a ×1.30 fused
+ * Heaven piece before a ×0.96 drop of the same realm, because both weighed the same.
+ * This is only ever used to answer "is the thing that just dropped better than the worst
+ * thing in the chest", and for that it is right far more often than it is wrong.
  */
 export function itemWorth(item: Item): number {
-  return RARITY_INFO[item.rarity].mult * templateOf(item).realm * refinedBy(item);
+  return RARITY_INFO[item.rarity].mult * templateOf(item).realm * refinedBy(item) * qualityOf(item);
 }
 
 export interface Kept {

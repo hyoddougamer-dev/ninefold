@@ -82,13 +82,71 @@ describe('藏 the chest', () => {
     expect(roomy.dropped).toBeNull();
   });
 
-  it('weighs a piece by rank, realm and refining, and by nothing else', () => {
+  it('weighs a piece by rank, realm, refining and quality, and by nothing else', () => {
     // Seven axes on different scales cannot be added into a number that means anything,
-    // so worth is the three things that are comparable across every piece in the game.
+    // so worth is the four things that are comparable across every piece in the game.
     expect(itemWorth(mk('sword9', 'heaven', 0))).toBeGreaterThan(itemWorth(mk('sword9', 'earth', 0)));
     expect(itemWorth(mk('sword9', 'common', 0))).toBeGreaterThan(itemWorth(mk('sword1', 'common', 0)));
     const plain = mk('sword5', 'mystic', 0);
     expect(itemWorth({ ...plain, refine: 8 })).toBeGreaterThan(itemWorth(plain));
+    const strong = { ...plain, rolls: [{ ...plain.rolls[0], value: plain.rolls[0].value * 1.3 }] };
+    expect(qualityOf(strong)).toBeCloseTo(1.3, 2);
+    expect(itemWorth(strong)).toBeCloseTo(itemWorth(plain) * qualityOf(strong), 6);
+    // A secondary line is not read: only the first, against its own rank's base.
+    const extra = { ...plain, rolls: [...plain.rolls, { affix: plain.rolls[0].affix, value: 999 }] };
+    expect(itemWorth(extra)).toBe(itemWorth(plain));
+  });
+
+  it('melts the weaker roll first when a full chest holds two of the same piece', () => {
+    // 質 The case that asked for it: a ×1.30 fused Heaven piece and a ×0.96 Heaven drop of
+    // the same template weighed the same, so a full chest could melt the fused one first.
+    const at = (n: number, q: number, extra: Partial<Item> = {}): Item => {
+      const it = mk('sword9', 'heaven', n);
+      return { ...it, rolls: [{ ...it.rolls[0], value: it.rolls[0].value * q }], ...extra };
+    };
+    const fused = at(1, 1.3, { from: FUSED });
+    const weak = at(2, 0.96, { from: 'rat' });
+    const filler = Array.from({ length: CHEST_LIMIT - 2 }, (_, i) => at(10 + i, 1.1));
+    const drop = at(99, 1.0, { from: 'rat' });
+
+    // Either order in the chest: the ×0.96 piece is the one that goes.
+    for (const chest of [[fused, weak, ...filler], [weak, fused, ...filler], [...filler, fused, weak]]) {
+      const kept = addToChest(chest, drop);
+      expect(kept.dropped?.id).toBe(weak.id);
+      expect(kept.chest.some((x) => x.id === fused.id)).toBe(true);
+      expect(kept.chest.some((x) => x.id === drop.id)).toBe(true);
+    }
+
+    // A drop weaker than the weakest held is the one that melts.
+    const poor = at(98, 0.9, { from: 'rat' });
+    expect(addToChest([fused, weak, ...filler], poor).dropped?.id).toBe(poor.id);
+
+    // 鎖 承 The protections hold: a locked piece (and a loadout's, which saving locks) or
+    // one holding refining levels is never the one, however weak its roll. The next
+    // weakest goes instead.
+    const lockedWeak = { ...weak, locked: true as const };
+    const refinedWeak = { ...at(3, 0.85, { from: 'rat' }), refine: 2 };
+    const guarded = [fused, lockedWeak, refinedWeak, ...filler];
+    const out = addToChest(guarded, at(95, 1.2, { from: 'rat' }));
+    expect(out.dropped?.id).not.toBe(lockedWeak.id);
+    expect(out.dropped?.id).not.toBe(refinedWeak.id);
+    expect(out.dropped?.id).not.toBe(fused.id);
+    expect(out.dropped?.id).toMatch(/^sword9-heaven-1\d$/);
+    expect(out.chest).toContain(lockedWeak);
+    expect(out.chest).toContain(refinedWeak);
+
+    // Every piece kept: the new one goes, nothing chosen is taken.
+    const allKept = [fused, weak, ...filler].map((x) => ({ ...x, locked: true as const }));
+    expect(addToChest(allKept, at(97, 1.5)).dropped?.id).toBe('sword9-heaven-97');
+
+    // And a save past its chest's room keeps the better roll too (state.ts validate).
+    // Two past the room: the ×0.96 and the ×1.00 are the two that go.
+    const over = validate({ ...newState(0), realm: 9, chest: [weak, fused, ...filler, drop, at(96, 1.2)] }, 0);
+    expect(over.chest).toHaveLength(CHEST_LIMIT);
+    expect(over.chest.some((x) => x.id === fused.id)).toBe(true);
+    expect(over.chest.some((x) => x.id === 'sword9-heaven-96')).toBe(true);
+    expect(over.chest.some((x) => x.id === weak.id)).toBe(false);
+    expect(over.chest.some((x) => x.id === drop.id)).toBe(false);
   });
 
   it('equipping swaps, so it can never overflow a full chest', () => {
