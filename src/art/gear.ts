@@ -33,6 +33,17 @@ export interface TileOptions {
   readonly spin?: number;
   /** The school's seal in the top-left corner. On by default from 40px, where it can be read. */
   readonly school?: boolean;
+  /**
+   * 質 The piece's quality (sim/chest.ts qualityOf), drawn at the foot between the realm and
+   * the rank. rekaris, on the Discord: two pieces with the same lines differed by a number
+   * nothing showed. The chest asks for it; a tile drawn anywhere else stays as it was.
+   */
+  readonly quality?: number;
+}
+
+/** 質 The colour a quality is written in: gold from ×1.2, faint under ×0.95, ink between. */
+function qualityTone(q: number): string {
+  return q >= 1.2 ? '#D4AF56' : q < 0.95 ? '#9C907C' : '#EDE3D2';
 }
 
 function frame(S: number, colour: string, glow: number, spin: number, uid: string): string {
@@ -189,6 +200,17 @@ export function gearTile(item: Item | undefined, opts: TileOptions = {}): string
     `fill="${rc}" fill-opacity=".85" font-family="'Noto Serif SC',serif">${rs.han.slice(0, 1)}</text>` +
     `<text x="${S - 4}" y="${S - 3.5}" text-anchor="end" font-size="${f(S * 0.18)}" ` +
     `fill="${rar.colour}" fill-opacity=".9" font-family="'Noto Serif SC',serif">${rar.han}</text>` +
+    // 質 The quality, at the foot between the two glyphs: the one free place on a tile, since
+    // the top right is the ▲ of a better piece. A dark edge keeps it off the frame's glow.
+    (opts.quality !== undefined && Number.isFinite(opts.quality)
+      // 寬 Its width is set, not left to the font: a phone without Rajdhani drew it in a
+      // wide sans, and at 320px the number ran into both glyphs.
+      ? `<text x="${S / 2}" y="${S - 3.5}" text-anchor="middle" font-size="${f(S * 0.18)}" font-weight="700" ` +
+        `textLength="${f(S * 0.4)}" lengthAdjust="spacingAndGlyphs" ` +
+        `font-family="Rajdhani,'Archivo Narrow',sans-serif" fill="${qualityTone(opts.quality)}" ` +
+        `stroke="#14110D" stroke-width="${f(S * 0.06)}" stroke-linejoin="round" paint-order="stroke">` +
+        `<tspan font-size="75%">×</tspan>${opts.quality.toFixed(2)}</text>`
+      : '') +
     // 職 The school, top left. rekaris, on the Discord: *"I would appreciate it if it was
     // possible to instantly know what set/class a gear is (sword/fortune/...) from the icon
     // itself ... there are still two empty corners."* The top right is the ▲ of a better

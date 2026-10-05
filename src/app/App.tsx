@@ -12,7 +12,8 @@ import { keepSpare, load, save, untouched} from '../sim/save.ts';
 import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
-import { FOCUS_HOLD, LAYERS_PER_REALM, focusAt } from '../sim/balance.ts';
+import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
+import { begin, endOf, focusOf, hide, isOver, show, spans, type Sitting } from './sitting.ts';
 import { capstonesOpen, focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
@@ -35,7 +36,8 @@ import { marksOf } from '../sim/record.ts';
 import type { Line } from '../data/alchemy.ts';
 import { canUnlock } from '../sim/dao.ts';
 import { salvage, salvageUpTo } from '../sim/salvage.ts';
-import { clearSet, renameSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
+import { assignTask, clearSet, renameSet, saveSet, setLocked as lockPiece, wearSet } from '../sim/sets.ts';
+import { adoptFilters, forgetFilter, keepFilter, saveFilter } from '../sim/filters.ts';
 import { Dao } from './screens/Dao.tsx';
 import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
@@ -131,6 +133,20 @@ const READY_AT: Partial<Record<Waiting['key'], string>> = {
 };
 
 const now = () => Date.now() / 1000;
+
+/**
+ * 入定 Run the clock from the save's own instant to `t`, at the depth the sitting gives each
+ * stretch of it (sitting.ts spans), and settle the workshop to the same instant.
+ */
+function payTo(s: State, t: number, sit: Sitting | null, deeper: number): State {
+  let next = s;
+  for (const span of spans(sit, s.at, t, deeper)) {
+    // 囊 A fresh cultivator's first rung waits for the first purchase; the time it
+    // waits is owed, not lost, and arrives on the tick after. See clockUntil.
+    next = advance(next, clockUntil(next, span.until, span.focus), false, span.focus);
+  }
+  return work(next, t);
+}
 
 /**
  * 擊 The least time between two fights starting, in the app. The ranked server allows one
@@ -249,13 +265,13 @@ export function App() {
     effect();
   };
   /**
-   * 入定 When this visit started, or null while the app is in the background.
+   * 入定 This visit's sitting, or null before one has begun (see sitting.ts).
    *
    * It is deliberately *not* in the save. Being away must never cost anything. That is
    * the promise, so this can only ever add, and a save that came back claiming a deep
    * meditation would be claiming hours nobody sat through.
    */
-  const since = useRef<number | null>(null);
+  const sitting = useRef<Sitting | null>(null);
   /**
    * 出 The run ended, so the tally goes up.
    *
@@ -315,12 +331,35 @@ export function App() {
   // (a `blur`) with the game still in plain sight beside it, and coming back started the
   // sitting again from nothing. The sitting still ends after half an hour, so a
   // game left on a second screen is paid the same as one looked at.
+  //
+  // 隱 Off screen, the sitting goes on. rekaris, on the Discord: *"When changing tabs or
+  // application, the game goes offline."* Hiding the game used to end the sitting at once.
+  // Now a sitting already running keeps going behind a hidden tab, held at the depth it had,
+  // until its own end, and the hidden stretch is paid when the game comes back (sitting.ts).
+  // Coming back after it has ended begins a new one, which is what coming back always did.
   useEffect(() => {
     if (!ready) return;
-    const enter = () => { if (since.current === null) since.current = now(); };
-    const leave = () => { since.current = null; setFocus(1); setSatOut(false); setSitLeft(0); };
+    // The hidden stretch is paid with the sitting as it was while hidden, before it moves on.
+    const settle = (sit: Sitting | null) => {
+      const t = now();
+      setState((s) => payTo(s, t, sit, focusBonus(tree.current)));
+    };
+    const leave = () => {
+      const sit = sitting.current;
+      if (!sit || sit.hiddenAt !== null) return;
+      settle(sit);
+      sitting.current = hide(sit, now());
+    };
+    const enter = () => {
+      const sit = sitting.current;
+      if (document.hidden) return;
+      if (sit && sit.hiddenAt === null) return;
+      if (sit) settle(sit);
+      const t = now();
+      sitting.current = !sit || isOver(sit, t) ? begin(t) : show(sit, t);
+    };
     const onVisibility = () => (document.hidden ? leave() : enter());
-    since.current = null;
+    sitting.current = null;
     enter();
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', leave);
@@ -344,20 +383,19 @@ export function App() {
       // 道 神 the Spirit branch deepens the sitting; everything else leaves it at
       // FOCUS_MAX. It reads a ref rather than the state, because this interval is set up
       // once and would otherwise hold the tree the player had when it started.
-      const open = since.current === null ? 0 : now() - since.current;
-      const deep = since.current === null ? 1 : focusAt(open, focusBonus(tree.current));
-      setFocus(deep);
+      const sit = sitting.current;
+      const deeper = focusBonus(tree.current);
+      const at = now();
+      setFocus(focusOf(sit, at, deeper));
       // 入定 Whether this visit's sitting has run out, which `focus` alone cannot say:
       // it reads 1 both before the sitting begins and after it ends, and those are two
       // very different things to put on a screen.
-      setSatOut(open >= FOCUS_HOLD);
-      setSitLeft(since.current === null ? 0 : Math.max(0, Math.ceil(FOCUS_HOLD - open)));
+      setSatOut(!!sit && isOver(sit, at));
+      setSitLeft(sit ? Math.max(0, Math.ceil(endOf(sit) - at)) : 0);
       setState((s) => {
         // 業 And the workshop, settled to the same instant. It reads its own clock.
-        const t = now();
-        // 囊 A fresh cultivator's first rung waits for the first purchase; the time it
-        // waits is owed, not lost, and arrives on the tick after. See clockUntil.
-        const next = work(advance(s, clockUntil(s, t, deep), false, deep), t);
+        // 隱 Paid with the sitting this tick was handed, up to its end and ×1 after it.
+        const next = payTo(s, now(), sit, deeper);
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -1212,7 +1250,7 @@ export function App() {
             satOut={satOut}
             sitLeft={sitLeft}
             // 坐 Exactly what coming back to the game does: a new sitting from now.
-            onSitAgain={() => { since.current = now(); setSatOut(false); setSitLeft(FOCUS_HOLD); sfx.tap(); }}
+            onSitAgain={() => { sitting.current = begin(now()); setSatOut(false); setSitLeft(FOCUS_HOLD); sfx.tap(); }}
             waiting={waiting}
             onReady={goReady}
             opened={opened}
@@ -1284,6 +1322,11 @@ export function App() {
             onRenameSet={(i, name) => { setState((s) => renameSet(s, i, name)); sfx.tap(); }}
             onBook={() => { setBook(true); sfx.tap(); }}
             onWearAll={onWearAll} onFuseAll={onFuseAll}
+            onAssignTask={(t, i) => { setState((s) => assignTask(s, t, i)); sfx.tap(); haptics.tap(); }}
+            onSaveFilter={(f) => { setState((s) => saveFilter(s, f)); sfx.tap(); }}
+            onForgetFilter={(i) => { setState((s) => forgetFilter(s, i)); sfx.tap(); }}
+            onKeepFilter={(i, on) => { setState((s) => keepFilter(s, i, on)); sfx.tap(); haptics.tap(); }}
+            onAdoptFilters={(old) => setState((s) => adoptFilters(s, old))}
           />
         )}
         {tab === 'dao' && (
