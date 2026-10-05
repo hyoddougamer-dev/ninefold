@@ -461,6 +461,19 @@ export function open(s: State, which: 0 | 1 | 2, seed: number): State {
   return next >= roomsFor(out.realm) ? leave(out) : { ...out, runStep: next };
 }
 
+/**
+ * 門 The door the player tapped, named by what it is and the room it is in, never by its
+ * place in the row. The row is read again at the tap, and it can change between the frame
+ * and the finger: 香 incense starts or stops fitting as the burner burns down or fills,
+ * and the third door reads the pouch and the Platform. A door that moved along the row is
+ * still the one that was tapped; one no longer offered is refused, and nothing happens.
+ */
+export function openByKind(s: State, door: { readonly step: number; readonly kind: RoomKind }, seed: number): State {
+  if (!inside(s) || s.runStep !== door.step) return s;
+  const which = doorsAt(s, door.step).findIndex((d) => d.kind === door.kind);
+  return which < 0 ? s : open(s, which as 0 | 1 | 2, seed);
+}
+
 export {
   DOOR_GAP, OPENS_AT, ROOMS, ROOM_INFO, rewardRooms, roomsFor, springShare, type Room, type RoomKind,
 };

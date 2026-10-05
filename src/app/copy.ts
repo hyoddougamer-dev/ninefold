@@ -1724,6 +1724,14 @@ export const DAO = {
   /** 極 Why a branch's last node is dark before CAPSTONE_REALM, the fifth. */
   capstoneShut: (han: string, name: string) =>
     `極 The last node of each branch opens in ${han} ${name}. Points you save until then wait for it.`,
+  /**
+   * 空囊 Why a node that caps the chest cannot be learned yet. Buying it over a fuller
+   * chest would leave the chest over its own limit, so it waits, and the sheet says what
+   * the player can do about it rather than only that it is shut.
+   */
+  overCap: (held: number, cap: number) =>
+    `藏 Your chest holds ${held} pieces; this caps it at ${cap}. Melt or fuse some first.`,
+  overCapButton: 'Chest full',
   closes: (han: string, name: string) => `Take this and ${han} ${name} closes for good.`,
   closed: (han: string) => `Closed. You took ${han} instead.`,
   learned: 'learned',
@@ -2272,10 +2280,11 @@ export const KEYS = {
 
 /** 道 A node of the tree as a button: what the screen reader says, and what a key opens. */
 export const NODE = {
-  label: (name: string, han: string, status: 'have' | 'open' | 'poor' | 'locked' | 'shut', cost: number) =>
+  label: (name: string, han: string, status: 'have' | 'open' | 'full' | 'poor' | 'locked' | 'shut', cost: number) =>
     `${name} ${han}, ${{
       have: 'learned',
       open: `can be learned for ${cost} 道`,
+      full: 'your chest holds more than it would allow',
       poor: `costs ${cost} 道, more than you hold`,
       locked: 'not reachable yet',
       shut: 'closed by the node beside it',
