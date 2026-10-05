@@ -9,6 +9,7 @@ import { fight, odds, oddsRaw, type Outcome } from './combat.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import { sequenceOf, stanceChoices, stanceOf } from './arts.ts';
 import { towerRate } from './trials.ts';
+import { classBounty } from './schools.ts';
 
 /**
  * 擂台 The Platform: three challengers a period, by hand.
@@ -122,9 +123,19 @@ export function challengerKit(s: State, kit: Kit = NO_KIT): Kit {
   return s.trail ? { ...kit, wound: TRAIL_WOUND } : kit;
 }
 
-/** 吸 What a challenger pays when it falls: hours of gathering with nothing worn. */
+/**
+ * 吸 How many hours of gathering a challenger pays this body: PLATFORM_HOURS, and half again
+ * as 金剛 the Vajra (PAIR_BOUNTY), whose bounty used to stop at first sights and the week's
+ * quarry. rekaris, on the Discord (2026-10-05): the Vajra did nothing for the Platform. The
+ * server already allowed for it (verify.ts reads every bout at PAIR_BOUNTY).
+ */
+export function challengerHours(s: State, tier: Tier): number {
+  return PLATFORM_HOURS[tier] * classBounty(s);
+}
+
+/** 吸 What a challenger pays when it falls: those hours of gathering, with nothing worn. */
 export function challengerPays(s: State, tier: Tier): number {
-  return PLATFORM_HOURS[tier] * 3600 * towerRate(s);
+  return challengerHours(s, tier) * 3600 * towerRate(s);
 }
 
 /** 戰 The fight itself, on the period's dice. The arena plays this back; the harness reads it. */

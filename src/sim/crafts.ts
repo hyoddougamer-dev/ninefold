@@ -131,10 +131,13 @@ export function held(s: State, key: string): number {
   return s.crafts.pouch[key] ?? 0;
 }
 
-/** 熟 How many of a recipe's five marks it has. */
+/**
+ * 熟 How many of a recipe's five marks it has. A pill or a sigil counts each make as
+ * CRAFT_KIT_WORK light ones (Recipe.marks), so a mark takes the hours it always did.
+ */
 export function marksOf(s: State, r: Recipe): number {
   const n = s.crafts.made[r.key] ?? 0;
-  return CRAFT_MARKS.filter((m) => n >= m).length;
+  return r.marks.filter((m) => n >= m).length;
 }
 
 /** 熟 Whether a recipe's make can come out twice: a thing for the pouch, never an array. */
@@ -150,7 +153,7 @@ export function doubles(r: Recipe): boolean {
 export function markApplies(r: Recipe, i: number): boolean {
   if (i === 1) return true;
   if (i === 2) return doubles(r);
-  if (i === 3) return r.needs.length > 0 && r.needs[0][1] > 1;
+  if (i === 3) return r.needs.length > 0 && r.needs[0][1] > r.weight;
   return !!r.graded;
 }
 
@@ -175,9 +178,8 @@ export function twiceOf(s: State, r: Recipe): number {
 
 /** 熟 How many of a craft's recipes have every mark: the count its mastery is read from. */
 export function masteredIn(s: State, skill: SkillKey): number {
-  const top = CRAFT_MARKS[CRAFT_MARKS.length - 1];
   let n = 0;
-  for (const r of RECIPES_OF[skill]) if ((s.crafts.made[r.key] ?? 0) >= top) n++;
+  for (const r of RECIPES_OF[skill]) if ((s.crafts.made[r.key] ?? 0) >= r.marks[r.marks.length - 1]) n++;
   return n;
 }
 
@@ -228,10 +230,13 @@ export function workSeconds(s: State): number {
   return (CRAFT_WORK_HOURS + (placed(s, 'longwatch') ? CRAFT_LONG_WATCH_HOURS : 0)) * 3600;
 }
 
-/** 熟 What a make needs, with the third mark's one fewer of the first thing. */
+/**
+ * 熟 What a make needs, with the third mark's one fewer of the first thing: one light
+ * make's worth, so a pill or a sigil (Recipe.weight) asks for that many fewer.
+ */
 export function needsOf(s: State, r: Recipe): readonly (readonly [string, number])[] {
   const less = marksOf(s, r) >= 3;
-  return r.needs.map(([k, n], i) => [k, i === 0 && less && n > 1 ? n - 1 : n] as const);
+  return r.needs.map(([k, n], i) => [k, i === 0 && less && n > r.weight ? n - r.weight : n] as const);
 }
 
 export type Blocked = 'shut' | 'level' | 'realm' | 'needs' | 'remains' | 'chest' | 'tool' | null;
@@ -516,20 +521,36 @@ export function spendSeek(s: State): State {
   return s.crafts.seek > 0 ? { ...s, crafts: { ...s.crafts, seek: s.crafts.seek - 1 } } : s;
 }
 
-export type Where = 'warden' | 'demon' | 'vault' | 'platform';
+export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower';
 
 /**
- * 戰 Which fights a kit may enter. Never the Dragon above the ninth realm, never a tower
- * floor (those are not a Where), and never a common beast on the hunt. 擂 A challenger on
- * the Platform is a hard fight like a warden: what is carried changes it, which is one of
- * the ways past a loss when the dice are set for the period.
+ * 戰 Which fights a kit may enter. Never the Dragon above the ninth realm and never a
+ * common beast on the hunt. 擂 A challenger on the Platform is a hard fight like a warden:
+ * what is carried changes it, which is one of the ways past a loss when the dice are set
+ * for the period. 塔 A tower floor is one too since 2026-10-05 (see CRAFT_KIT), and there
+ * the climber chooses it on the floor's card, since a hundred floors would otherwise spend
+ * an hour's pill on every one of them.
  */
 export function kitWhere(s: State, b: Beast, standing?: number): Where | null {
   if (b.key === 'heartdemon') return 'demon';
   if (b.challenger !== undefined) return 'platform';
-  if (standing !== undefined) return null;
+  if (standing !== undefined) return 'tower';
   if (b.warden && !(b.key === 'dragon' && s.realm === 9)) return 'warden';
   return null;
+}
+
+
+/**
+ * 級 The realm a fight is read in, for a kit's tier: the beast's own, and the cultivator's
+ * for 心魔 the demon and 塔 a floor. A floor's beast stands at the tower's own power, nine
+ * floors to a realm and on past the ninth, so read by the floor a climber at the fifth
+ * realm meets seventh- and ninth-realm fights, and their own realm's pill worked at a
+ * quarter of itself or less: measured with tools/towerkit.ts (2026-10-05), a pill or a
+ * sigil made for the realm moved the floor reached by nothing before the ninth realm. A
+ * pill is made for the climber's realm, so up the tower it is read there.
+ */
+function fightRealmOf(s: State, b: Beast, where: Where): number {
+  return where === 'demon' || where === 'tower' ? s.realm : b.realm;
 }
 
 /** 級 What a tier-N thing is worth in a realm-M fight: full at or below its tier, half a realm above. */
@@ -563,7 +584,7 @@ export const NOT_USED: Used = { elixir: null, sigil: null };
  */
 export function kitFor(s: State, b: Beast, where: Where | null): Carried {
   if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
-  const fightRealm = Math.max(1, Math.min(9, where === 'demon' ? s.realm : b.realm));
+  const fightRealm = Math.max(1, Math.min(9, fightRealmOf(s, b, where)));
   let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0;
   let bind = false, revive = false, spends = false;
   let usedElixir: string | null = null, usedSigil: string | null = null;
@@ -666,13 +687,26 @@ export function bestKit(s: State, b: Beast, where: Where): Kit {
   const sig = skillOpen(s, 'sigil') ? levelIn(s, 'sigil') : 0;
   const top = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
   const tier = Math.max(0, ...[1, 2, 3, 4, 5, 6, 7, 8, 9].filter((t) => tierLevel(t) + 6 <= alch && t <= s.realm));
-  const fightRealm = where === 'demon' ? s.realm : b.realm;
-  const f = tier > 0 ? fade(tier, fightRealm) : 0;
+  const f = tier > 0 ? fade(tier, fightRealmOf(s, b, where)) : 0;
   const five = sig >= (RECIPE_BY_KEY['sigil:fivethunder']?.level ?? 99) && s.realm >= 7;
   const thunder = sig >= (RECIPE_BY_KEY['sigil:thunder']?.level ?? 99);
   const strike = (1 + CRAFT_KIT.might * top * f)
     * (1 + (five ? CRAFT_KIT.fiveThunders : thunder ? CRAFT_KIT.thunder : 0) * top);
   const guard = tier > 0 ? 1 - CRAFT_KIT.guard * top * f : 1;
+  if (where === 'tower') {
+    // 塔 Up the tower only what these levels could have made, and no Guardian Array, which
+    // works on wardens and demons alone. The wardens' reading below is looser (a mend and a
+    // Warding Sigil for anybody) and stays so; a floor's verdict is also the line between
+    // waiting and counting, so it is read as the levels allow (tools/towerkit.ts).
+    // A level is 1 before anything is made, so the first recipes ask for experience earned.
+    const wrote = sig > 0 && (s.crafts.xp.sigil ?? 0) > 0;
+    const brewed = alch > 0 && (s.crafts.xp.alchemy ?? 0) > 0;
+    const ward = wrote ? 1 - CRAFT_KIT.warding * top : 1;
+    const bind = sig >= (RECIPE_BY_KEY['sigil:binding']?.level ?? 99) && s.realm >= 4;
+    const mirror = sig >= (RECIPE_BY_KEY['sigil:mirror']?.level ?? 99) && s.realm >= 5 ? CRAFT_KIT.mirror * top : 0;
+    return { ...NO_KIT, strike, taken: Math.min(guard, ward), mend: brewed ? CRAFT_KIT.mend * top : 0, bind,
+      reflect: mirror, revive: alch >= (RECIPE_BY_KEY['alchemy:nineturn']?.level ?? 99) && s.realm >= 9 };
+  }
   return { ...NO_KIT, strike, taken: Math.min(guard, 1 - CRAFT_KIT.warding * top) * (1 - CRAFT_ARRAY_GUARD),
     mend: CRAFT_KIT.mend * top, bind: sig > 0, revive: alch >= 97,
     demon: where === 'demon' ? (1 - CRAFT_KIT.purity * top) * (1 - CRAFT_KIT.calmHeart * top) : 1 };
@@ -706,6 +740,14 @@ export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.from
 })) as Record<SkillKey, number>;
 
 const POUCH_LIMIT = 1e9;
+
+/**
+ * 守 The experience one make paid at its lightest: a pill or a sigil before 2026-10-05
+ * paid a CRAFT_KIT_WORK'th of what it pays now. The bounds below are read with it, so a
+ * pouch filled with the old, light pills is never trimmed for being honest: nothing is
+ * taken away from a save for a rebalance it did not ask for.
+ */
+const lightXp = (r: Recipe) => r.xp / r.weight;
 /** The recipe that makes each item: one each, so a pouch key names the craft behind it. */
 const MAKER: Readonly<Record<string, Recipe>> = Object.fromEntries(
   RECIPES.filter((r) => r.makes.kind === 'item').map((r) => [(r.makes as { item: string }).item, r]));
@@ -748,7 +790,7 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     const r = MAKER[key];
     if (!r || !open(r.skill) || level(r.skill) < r.level || s.realm < r.realm) continue;
     // At 99 the experience stops and the makes do not, so a finished craft is not held to it.
-    const most = xp[r.skill] >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp[r.skill] / r.xp) * 2 + 1;
+    const most = xp[r.skill] >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp[r.skill] / lightXp(r)) * 2 + 1;
     const n = Math.floor(num(v, 0, Math.min(POUCH_LIMIT, most)));
     if (n > 0) { pouch[k] = n; entries++; }
   }
@@ -762,7 +804,7 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     // And only recipes this level and realm could have made at all, as the pouch above:
     // a level never falls, so an honest save never holds a count it could not have made.
     if (!r || !open(r.skill) || level(r.skill) < r.level || s.realm < r.realm) continue;
-    const most = xp[r.skill] >= XP_CAP ? 1e8 : Math.ceil(xp[r.skill] / r.xp);
+    const most = xp[r.skill] >= XP_CAP ? 1e8 : Math.ceil(xp[r.skill] / lightXp(r));
     const n = Math.floor(num(v, 0, most));
     if (n > 0) made[k] = n;
   }
@@ -817,7 +859,7 @@ export function pouchRoom(s: State, key: string): number {
   if (!r) return 0;
   const xp = s.crafts.xp[r.skill] ?? 0;
   if (!skillOpen(s, r.skill) || levelOf(xp) < r.level || s.realm < r.realm) return 0;
-  const most = xp >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp / r.xp) * 2 + 1;
+  const most = xp >= XP_CAP ? POUCH_LIMIT : Math.ceil(xp / lightXp(r)) * 2 + 1;
   return Math.max(0, Math.floor(Math.min(POUCH_LIMIT, most) - (s.crafts.pouch[key] ?? 0)));
 }
 

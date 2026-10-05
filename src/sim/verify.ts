@@ -45,12 +45,13 @@ import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
-import { MEET_GAP, SECLUSION } from './balance.ts';
+import { MEET_GAP, ROUND_CAP, SECLUSION } from './balance.ts';
 import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
+import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorHours, floorPower } from './tower.ts';
@@ -634,13 +635,35 @@ function strongestFromChest(s: State): State {
  */
 export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' {
   const bodies = bodiesHeld(s);
+  // 攜 With the strongest kit its crafts could have carried up, as for the wardens: a pill
+  // or a sigil may go up the tower since 2026-10-05, and the server never sees which did.
+  const shape = floorBeast(floor);
+  const kits = bodies.map((b) => bestKit(b, shape, 'tower'));
   // 劍仙 A floor counts PAIR_TOWER of itself against a Sword Immortal, so what a body can
   // reach is its power over that share: read as bare power, an honest Immortal's highest
-  // floor stood ×6.85 past it. See TOWER_FORGED.
-  const reach = Math.max(...bodies.map((b) => power(b) / classTower(b)));
+  // floor stood ×6.85 past it. See TOWER_FORGED. And the kit carries it further (kitReach).
+  const reach = Math.max(...bodies.map((b, i) => (power(b) / classTower(b)) * kitReach(kits[i])));
   const standing = floorPower(floor);
   if (reach > 0 && standing / reach > TOWER_FORGED) return 'strike';
-  return bodies.some((b) => beatable(b, floorBeast(floor), standing)) ? 'ok' : 'wait';
+  return bodies.some((b, i) => beatable(b, shape, standing, kits[i])) ? 'ok' : 'wait';
+}
+
+/**
+ * 攜 How much further than its power a kit can carry a body, for the forgery bound only.
+ *
+ * In a fight both sides' health and blows scale with their power, so a power ratio enters
+ * twice: striking S harder (or sending R of every blow back) and taking T less is worth
+ * √((S + R) / T) of power, a revive to full doubles the health (√2), and mending M of the
+ * whole every round for ROUND_CAP rounds is worth at most √(1 + M × ROUND_CAP). It is a
+ * ceiling, never an estimate, read off bestKit, which is a ceiling too: the bound only
+ * has to stay as far past an honest kit-assisted climber as it stood past a bare one.
+ * Measured with tools/towerkit.ts (2026-10-05), every climbing habit with both crafts at
+ * 99: the furthest floor any kit makes beatable stands under ×5.4 of this reach, where
+ * power alone read it up to ×16.6, past TOWER_FORGED, and would have struck it.
+ */
+export function kitReach(k: Kit): number {
+  return Math.sqrt((k.strike + k.reflect) / Math.max(1e-9, k.taken)) * (k.revive ? Math.SQRT2 : 1)
+    * Math.sqrt(1 + k.mend * ROUND_CAP);
 }
 
 /**
@@ -667,6 +690,13 @@ export function towerVerdict(s: State, floor: number): 'ok' | 'wait' | 'strike' 
  *
  * So a body's reach is read through its class (towerVerdict), and the bound is 12, twice
  * past ×5.48 again. Floor 500 is still ×10^31.
+ *
+ * 攜 And through its kit, since a pill and a sigil may go up the tower (2026-10-05). For a
+ * hand with Alchemy and Sigil Writing at 99, the furthest floor the best kit makes
+ * beatable at all stood up to ×16.6 past its power (drives it all, ninth realm: a 九轉
+ * revive, a Heaven Seal and a mend, one lucky fight in thousands), past the line itself.
+ * Read through kitReach, every climbing habit stays under ×5.4, twice inside the line
+ * again, and floor 500 is no nearer.
  */
 export const TOWER_FORGED = 12;
 

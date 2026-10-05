@@ -9,7 +9,7 @@ import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
-  FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, marksOf, masteryOf, needsOf, placed,
+  FEEDER, arraySlots, blocked, carrySlot, doubles, furnaceDiscount, held, levelIn, markApplies, marksOf, masteryOf, needsOf, placed,
   progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, totalLevel, workSeconds, xpOf,
 } from '../../sim/crafts.ts';
 import { CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP, CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX } from '../../sim/balance.ts';
@@ -542,7 +542,7 @@ function Row({ state, r, on, lit, onStart, onGo }: {
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
           {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare
             entry={{ han: '習', name: 'Familiarity', note: CRAFTS.familiarNote(state.crafts.made[r.key] ?? 0, !!r.graded,
-              (r.needs[0]?.[1] ?? 0) > 1, doubles(r), SKILL_BY_KEY[r.skill].name, masteryOf(state, r.skill)) }}>
+              markApplies(r, 3) ? r.weight : 0, doubles(r), SKILL_BY_KEY[r.skill].name, masteryOf(state, r.skill), r.marks) }}>
             <span className="cr-fam">{CRAFTS.familiar(marks)}</span></Term></>}
         </i>
         {(r.needs.length > 0 || (r.remains && !known(state, r.remains))) && (
