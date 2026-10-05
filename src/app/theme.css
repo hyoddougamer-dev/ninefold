@@ -3464,6 +3464,10 @@ button.gs-new .cjk { margin: 0; }
 .gearbulk .act .up { color: inherit; margin: 0 4px 0 0; }
 .gearbulk .act i { font-style: normal; font-size: 12px; margin-left: 7px; opacity: .8; }
 .gearbulk p { margin: 6px 2px 0; font-size: 12px; line-height: 1.5; }
+/* 天 Heaven into Heaven: the line over its rows, and a rim in the rank's own colour so a
+   Heaven row reads apart from the rows that climb a rank. Scoped to the fuse row only. */
+.fusesame { margin: 12px 2px 8px; font-size: 12px; line-height: 1.5; }
+.fuserow[data-same] { border-color: color-mix(in srgb, #D2604E 55%, var(--gild)); }
 
 /* 器 篩 The chest's third row, by lines, and the kept filters above the rows. */
 .chestfilter.lines { margin-top: -6px; }

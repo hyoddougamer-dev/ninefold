@@ -12,7 +12,7 @@ import { BEASTS } from '../data/bestiary.ts';
 const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
-  AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
+  AFFIXES, FUSED, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, wornTotals,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { chestLimit, freshId, holdsLevels, itemWorth } from './chest.ts';
@@ -814,7 +814,7 @@ export function validate(raw: unknown, now: number): State {
     const refine = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
     // 源 Who left it is a word on the sheet and nothing else, so it is kept only when it
     // names something real: a beast, or one of the two places that are not a kill.
-    const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED)
+    const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED || o.from === FUSED)
       ? { from: o.from } : {};
     // 鎖 A lock is a yes or nothing; any other value is no lock. 套 And a piece a loadout
     // names is locked whatever the save says, because a loadout whose piece can be melted

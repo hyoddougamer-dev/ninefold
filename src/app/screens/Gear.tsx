@@ -7,6 +7,7 @@ import {
 } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { FUSE_COUNT, chestLimit, fusable } from '../../sim/chest.ts';
+import { fuseQuote } from '../../sim/stash.ts';
 import { AFFIXES } from '../../data/gear.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -83,6 +84,30 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   const best = wornRarity(state.worn);
   // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
   const groups = isOpen(state.realm, 'fuse') ? fusable(state.chest) : [];
+  /* 煉 The same row 狩 uses (a seal, a name, a figure on the right) shared on purpose
+     rather than by accident, and carrying its own name so that restyling one screen
+     cannot silently restyle the other. 天 A Heaven row says what it will make. */
+  const fuseRow = (g: (typeof groups)[number]) => {
+    const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
+    const rar = RARITY_INFO[g.rarity];
+    const same = g.rarity === 'heaven';
+    return (
+      <button key={`${g.template}-${g.rarity}`} className="beast fuserow"
+        data-same={same || undefined}
+        onClick={() => onFuse(g.template, g.rarity)}>
+        <span className="seal" style={{ width: 44, height: 44 }}>
+          <Svg html={gearTile({ id: 'x', template: g.template, rarity: g.rarity, rolls: [] }, { size: 44 })} />
+        </span>
+        <span className="bname">
+          <b style={{ color: rar.colour }}>{tpl.han}</b>
+          <i>{same ? QOL.gear.heavenRow(tpl.name, g.count, fuseQuote(state, g.template, g.rarity)) : `${tpl.name} · ${g.count} in the chest`}</i>
+        </span>
+        <span className="odds" style={{ color: 'var(--jade)' }}>
+          {FUSE_COUNT}→1<em>fuse</em>
+        </span>
+      </button>
+    );
+  };
   const limit = chestLimit(state.unlocked, totals.capacity, state.awakened);
   const S = 200;
   // 總 What everything worn does, from the sim: the body against itself with nothing on.
@@ -412,29 +437,18 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             </div>
           )}
           <div className="stack">
-            {groups.map((g) => {
-              const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
-              const rar = RARITY_INFO[g.rarity];
-              return (
-                /* 煉 The same row 狩 uses (a seal, a name, a figure on the right) shared
-                   on purpose rather than by accident, and carrying its own name so that
-                   restyling one screen cannot silently restyle the other. */
-                <button key={`${g.template}-${g.rarity}`} className="beast fuserow"
-                  onClick={() => onFuse(g.template, g.rarity)}>
-                  <span className="seal" style={{ width: 44, height: 44 }}>
-                    <Svg html={gearTile({ id: 'x', template: g.template, rarity: g.rarity, rolls: [] }, { size: 44 })} />
-                  </span>
-                  <span className="bname">
-                    <b style={{ color: rar.colour }}>{tpl.han}</b>
-                    <i>{tpl.name} · {g.count} in the chest</i>
-                  </span>
-                  <span className="odds" style={{ color: 'var(--jade)' }}>
-                    {FUSE_COUNT}→1<em>fuse</em>
-                  </span>
-                </button>
-              );
-            })}
+            {groups.filter((g) => g.rarity !== 'heaven').map(fuseRow)}
           </div>
+          {/* 天 Heaven into Heaven, after the groups that climb a rank, under one line that
+              says what is different about them: only found pieces, and only once. */}
+          {groups.some((g) => g.rarity === 'heaven') && (
+            <>
+              <p className="faint fusesame">{QOL.gear.heavenSays}</p>
+              <div className="stack">
+                {groups.filter((g) => g.rarity === 'heaven').map(fuseRow)}
+              </div>
+            </>
+          )}
         </>
       )}
 

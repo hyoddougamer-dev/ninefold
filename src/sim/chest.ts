@@ -1,6 +1,6 @@
 import { FORGED } from '../data/crafts.ts';
 import {
-  RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
+  FUSED, RARITIES, RARITY_INFO, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, templateOf,
   type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { CHEST_LIMIT, FUSE_COUNT, FUSE_TOP, SECONDARIES, SECONDARY_SHARE } from './balance.ts';
@@ -179,6 +179,41 @@ export function nextRarity(rarity: Rarity): Rarity | null {
   return i >= 0 && i < RARITIES.length - 1 ? RARITIES[i + 1] : null;
 }
 
+/** The top rank, which a fusion keeps rather than raises: see fusesInto. */
+const TOP_RANK: Rarity = RARITIES[RARITIES.length - 1];
+
+/**
+ * 天 What three of a rank fuse into: the rank above, and at 天 Heaven, Heaven again.
+ *
+ * rekaris, on the Discord (2026-10-04): a cultivator with luck and drop chance fills
+ * the chest with Heaven pieces that fell, and every one is weaker than a fused one.
+ * Three found Heaven pieces now make one Heaven piece, with the fusion quality on top
+ * and FUSE_TOP over it, the same as every rank below. Nothing gets a new rank: the
+ * fusion only ever moves a piece along the band its own rank already allowed.
+ */
+export function fusesInto(rarity: Rarity): Rarity | null {
+  return nextRarity(rarity) ?? (rarity === TOP_RANK ? TOP_RANK : null);
+}
+
+/**
+ * 源 Whether a piece was found: left by a beast, a room or a meeting, and never made by
+ * a fusion or the forge. A piece from before the drops said where they came from says
+ * nothing, and is counted as not found, so a doubt always keeps a piece.
+ */
+export function wasFound(it: Item): boolean {
+  return typeof it.from === 'string' && it.from !== FORGED && it.from !== FUSED;
+}
+
+/**
+ * 天 Whether a fusion at this rank may take this piece. Below Heaven, any piece that
+ * fuses away at all. At Heaven only a found one: a fused Heaven piece is never fused
+ * again, so 煉 Fuse all cannot feed a piece back into itself and fold a chest of Heaven
+ * into one, and the best piece a fusion made is never melted into a worse one.
+ */
+function fusesAt(it: Item, rarity: Rarity): boolean {
+  return fusesAway(it) && (rarity !== TOP_RANK || wasFound(it));
+}
+
 /** Groups of three-or-more identical pieces (same template, same rank) in the chest. */
 export function fusable(chest: readonly Item[]): readonly { template: string; rarity: Rarity; count: number }[] {
   const tally = new Map<string, number>();
@@ -186,14 +221,14 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
     // 業 A forged piece is finished: it is never one of three. See sim/crafts.ts.
     // 鎖 Nor is a locked one: fusing melts three pieces into one. 承 Nor one holding
     // refining levels, which a fusion would melt with it.
-    if (!fusesAway(it)) continue;
+    if (!fusesAt(it, it.rarity)) continue;
     const key = `${it.template}|${it.rarity}`;
     tally.set(key, (tally.get(key) ?? 0) + 1);
   }
   const out: { template: string; rarity: Rarity; count: number }[] = [];
   for (const [key, count] of tally) {
     const [template, rarity] = key.split('|') as [string, Rarity];
-    if (count >= FUSE_COUNT && nextRarity(rarity)) out.push({ template, rarity, count });
+    if (count >= FUSE_COUNT && fusesInto(rarity)) out.push({ template, rarity, count });
   }
   return out.sort((a, b) => b.count - a.count);
 }
@@ -204,7 +239,35 @@ function fusesAway(it: Item): boolean {
 }
 
 /**
- * Three become one, a rank higher, and the roll quality survives the melt.
+ * 質 What a fusion of these three comes out at, against its own rank's base: the average
+ * quality of what went in, times what 巧手 and the 煉 line add, never above FUSE_TOP.
+ * The 煉 row reads it before the tap, so the number on the button is the number made.
+ */
+export function fusedQuality(three: readonly Item[], quality = 1): number {
+  if (three.length === 0) return 0;
+  return Math.min(FUSE_TOP,
+    three.reduce((sum, x) => sum + qualityOf(x), 0) / three.length * quality);  // 巧手 Deft Hands lifts this; FUSE_TOP caps it
+}
+
+/**
+ * 質 A piece's quality: its first line against what its own rank and realm usually roll.
+ * Derived, never stored. A drop rolls about 0.85 to 1.35 of it; a fusion stops at FUSE_TOP.
+ */
+export function qualityOf(item: Item): number {
+  const tpl = TEMPLATE_BY_KEY[item.template];
+  const base = tpl ? baseValue(tpl, item.rarity, tpl.affix) : 0;
+  return base > 0 ? (item.rolls[0]?.value ?? 0) / base : 1;
+}
+
+/** 質 The three a fusion of this group would take: the first three it may, in chest order. */
+export function fuseThree(chest: readonly Item[], template: string, rarity: Rarity): readonly Item[] {
+  return chest.filter((x) => x.template === template && x.rarity === rarity && fusesAt(x, rarity))
+    .slice(0, FUSE_COUNT);
+}
+
+/**
+ * Three become one, a rank higher, and the roll quality survives the melt. 天 At Heaven,
+ * three found pieces become one Heaven piece (see fusesInto).
  *
  * The new piece keeps the average quality of what went in, measured against its own
  * rank's base. Three lucky 靈 make a better 玄 than three unlucky ones, so a good roll
@@ -215,11 +278,11 @@ export function fuse(
   /** Ids held elsewhere (the body), which the new piece must not take either. */
   taken: Iterable<string> = [],
 ): { chest: readonly Item[]; made: Item | null } {
-  const up = nextRarity(rarity);
+  const up = fusesInto(rarity);
   const tpl = TEMPLATE_BY_KEY[template];
   if (!up || !tpl) return { chest, made: null };
 
-  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && fusesAway(x));
+  const matching = chest.filter((x) => x.template === template && x.rarity === rarity && fusesAt(x, rarity));
   if (matching.length < FUSE_COUNT) return { chest, made: null };
 
   const eaten = matching.slice(0, FUSE_COUNT);
@@ -228,10 +291,7 @@ export function fuse(
 
   // Quality carries across: the average of what went in, measured against its own rank's
   // base, so three lucky pieces make a better one than three unlucky ones.
-  const base = baseValue(tpl, rarity, tpl.affix);
-  const rolled = Math.min(FUSE_TOP, (base > 0
-    ? eaten.reduce((sum, x) => sum + (x.rolls[0]?.value ?? 0), 0) / FUSE_COUNT / base
-    : 1) * quality);                           // 巧手 Deft Hands lifts this; FUSE_TOP caps it
+  const rolled = fusedQuality(eaten, quality);
 
   // And so does the flavour: the new piece's extra lines are the ones that turned up
   // most often in the three that were melted, so a set of luck pieces fuses into a luck
@@ -261,6 +321,8 @@ export function fuse(
       { affix: tpl.affix, value: roundValue(tpl.affix, baseValue(tpl, up, tpl.affix) * rolled) },
       ...inherited,
     ],
+    // 源 Made, not found: the sheet says so, and a Heaven fusion never takes it again.
+    from: FUSED,
   };
 
   return { chest: [...left, made], made };

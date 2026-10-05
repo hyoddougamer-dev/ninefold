@@ -1006,6 +1006,13 @@ export const ITEM = {
     if (from === 'forge') return 'Forged by your own hand. It is finished: it cannot be fused, and it melts back into its metal.';
     return beast ? `Left by the ${beast}.` : null;
   },
+  /**
+   * 質 A piece a fusion made, in place of who left it: its quality against a usual roll of
+   * its rank, and at Heaven that it will not be fused again (sim/chest.ts fusesAt).
+   */
+  fusedFrom: (rank: string, quality: number, top: number, heaven: boolean) =>
+    `Made by a fusion, at ×${quality.toFixed(2)} of a usual ${rank} roll (a fusion stops at ×${top}).`
+    + (heaven ? ' A fused Heaven piece is never fused again.' : ''),
   /** 解 What each line that moves a number does, in a sentence. */
   axisSays: {
     power: 'Power decides every fight. More of it, and the beasts above you fall sooner.',
@@ -2299,7 +2306,14 @@ export const QOL = {
     wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. A \u25b2 piece is at least as good on every line you wear now. Locked pieces, loadout pieces and any that would change your class stay put.',
     wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
     fuseAll: 'Fuse all groups',
-    fuseAllSays: 'Three into one, again and again, until no three match. Locked, refined and forged pieces are never fused.',
+    fuseAllSays: 'Three into one, again and again, until no three match. At Heaven it fuses only pieces you found, so nothing it makes is fused again. Locked, refined and forged pieces are never fused.',
+    /**
+     * 天 Heaven into Heaven (rekaris, on the Discord, 2026-10-04): three found Heaven pieces
+     * make one, with the fusion quality on top. The line over the Heaven rows, and each
+     * row's own words, with the quality it will come out at.
+     */
+    heavenSays: `天 Heaven into Heaven: three you found make one, with your fusion quality on top, ×${trim(FUSE_TOP)} at most. A fused piece is never fused again.`,
+    heavenRow: (name: string, count: number, quality: number) => `${name} · ${count} found · comes out ×${quality.toFixed(2)}`,
     fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
     /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
     carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,

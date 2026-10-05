@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
   ARCHETYPES, GEAR, RARITIES, RARITY_INFO, SLOTS, TEMPLATE_BY_KEY, archetypesOf,
-  baseValue, setBonus, type Item, type Rarity,
+  FUSED, baseValue, setBonus, type Item, type Rarity,
 } from '../../data/gear.ts';
 import {
-  CHEST_LIMIT, FUSE_COUNT, addToChest, equip, fusable, fuse, itemWorth, unequip,
+  CHEST_LIMIT, FUSE_COUNT, addToChest, equip, fusable, fuse, itemWorth, qualityOf, unequip,
 } from '../chest.ts';
+import { fuseAllIn } from '../stash.ts';
+import { FUSE_TOP } from '../balance.ts';
 import { rollDrop } from '../drops.ts';
 import { newState, power, validate } from '../state.ts';
 
@@ -122,14 +124,73 @@ describe('煉 fusion', () => {
     expect(primary(made!)).toBeGreaterThan(primary(chest[0]));
   });
 
-  it('will not fuse two, and will not fuse past the top rank', () => {
+  it('will not fuse two, and at Heaven will not fuse a piece nobody can say was found', () => {
     const two = [0, 1].map((i) => mk('crescent5', 'spirit', i));
     expect(fuse(two, 'crescent5', 'spirit').made).toBeNull();
     expect(fusable(two)).toHaveLength(0);
 
+    // A piece with no word of where it came from (from before the drops said) is kept.
     const top = [0, 1, 2].map((i) => mk('crescent5', 'heaven', i));
     expect(fuse(top, 'crescent5', 'heaven').made).toBeNull();
     expect(fusable(top)).toHaveLength(0);
+  });
+
+  /**
+   * 天 Heaven into Heaven (rekaris, on the Discord, 2026-10-04): three found Heaven
+   * pieces make one Heaven piece, with the fusion quality on top and FUSE_TOP over it,
+   * and a piece a fusion made never goes in again, so Fuse all cannot fold a chest of
+   * Heaven into one piece.
+   */
+  it('fuses three found Heaven pieces into one, once, and never past FUSE_TOP', () => {
+    const tpl = TEMPLATE_BY_KEY.crescent5;
+    const found = (i: number, mult: number): Item => ({
+      ...mk('crescent5', 'heaven', i), from: 'rat',
+      rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) * mult }],
+    });
+    const three = [found(0, 1.0), found(1, 1.1), found(2, 1.2)];
+    expect(fusable(three)).toEqual([{ template: 'crescent5', rarity: 'heaven', count: 3 }]);
+
+    const plain = fuse(three, 'crescent5', 'heaven').made!;
+    expect(plain.rarity).toBe('heaven');
+    expect(plain.from).toBe(FUSED);
+    expect(qualityOf(plain)).toBeCloseTo(1.1, 2);              // the average, times 1
+    expect(qualityOf(fuse(three, 'crescent5', 'heaven', 1.2).made!)).toBeCloseTo(1.32, 2);
+    expect(qualityOf(fuse(three, 'crescent5', 'heaven', 9).made!)).toBeCloseTo(FUSE_TOP, 2);
+
+    // The made piece is never one of three: two more found ones do not make a group.
+    const after = [...fuse(three, 'crescent5', 'heaven').chest, found(3, 1), found(4, 1)];
+    expect(fusable(after)).toHaveLength(0);
+    // And a Heaven piece fused up from Earth is not one of three either.
+    const fromEarth = fuse([0, 1, 2].map((i) => mk('crescent5', 'earth', i)), 'crescent5', 'earth').made!;
+    expect(fusable([fromEarth, found(5, 1), found(6, 1)])).toHaveLength(0);
+  });
+
+  it('Fuse all goes round the Heaven pieces once, and never folds them into one', () => {
+    const tpl = TEMPLATE_BY_KEY.crescent5;
+    const chest: Item[] = Array.from({ length: 27 }, (_, i) => ({
+      ...mk('crescent5', 'heaven', i), from: 'rat',
+      rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) }],
+    }));
+    const s = { ...newState(0), realm: 9, chest };
+    const out = fuseAllIn(s);
+    // Twenty-seven found pieces make nine, not three and not one.
+    expect(out.state.chest).toHaveLength(9);
+    expect(out.made).toHaveLength(9);
+    expect(out.state.chest.every((x) => x.rarity === 'heaven' && x.from === FUSED)).toBe(true);
+    // A second press finds nothing to do.
+    expect(fuseAllIn(out.state).made).toHaveLength(0);
+  });
+
+  it('keeps every fused Heaven piece inside what validate() allows', () => {
+    const tpl = TEMPLATE_BY_KEY.crescent9;
+    const three = [0, 1, 2].map((i): Item => ({
+      ...mk('crescent9', 'heaven', i), from: 'rat',
+      rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) * 1.35 }],
+    }));
+    const made = fuse(three, 'crescent9', 'heaven', 5).made!;
+    const v = validate({ ...newState(0), realm: 9, chest: [made] }, 0);
+    expect(v.chest[0].rolls[0].value).toBe(made.rolls[0].value);
+    expect(v.chest[0].from).toBe(FUSED);
   });
 
   it('carries the roll quality across, so a lucky roll is never wasted', () => {
