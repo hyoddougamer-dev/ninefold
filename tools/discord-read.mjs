@@ -55,13 +55,24 @@ for (const key of FORUMS) {
     out.push(`### ${t.name}`);
     out.push(`- tags: ${tagNames || 'none'} · by ${first?.author?.username ?? '?'}${first?.author?.bot ? ' (bot)' : ''} · ${day(t.thread_metadata?.create_timestamp)} · ${msgs.length} messages${t.thread_metadata?.archived ? ' · archived' : ''}`);
     for (const [i, m] of msgs.entries()) {
-      const text = [m.content, ...(m.embeds ?? []).map((e) => [e.title, e.description].filter(Boolean).join(': '))].filter(Boolean).join(' / ');
+      const text = [m.content, ...(m.embeds ?? []).map((e) => [e.title, e.description].filter(Boolean).join(': ')), pollOf(m)].filter(Boolean).join(' / ');
       const files = (m.attachments ?? []).length ? ` [${m.attachments.length} image/file]` : '';
       out.push(`${i === 0 ? '>' : '  -'} **${m.author?.username ?? '?'}**: ${clip(text.replace(/\s+/g, ' ').trim(), i === 0 ? 4000 : 4000)}${files}`);
     }
     out.push('');
   }
 }
+// 問 A Discord poll, as words: the question, each answer with its votes, and when it closes.
+// The poll lives on the message (m.poll); its counts are results.answer_counts, by answer id.
+function pollOf(m) {
+  if (!m.poll) return '';
+  const counts = Object.fromEntries((m.poll.results?.answer_counts ?? []).map((c) => [c.id, c.count]));
+  const answers = (m.poll.answers ?? []).map((a) => `${a.poll_media?.text ?? '?'} (${counts[a.answer_id] ?? 0})`);
+  const total = Object.values(counts).reduce((n, c) => n + c, 0);
+  const state = m.poll.results?.is_finalized ? 'closed' : `closes ${day(m.poll.expiry)}`;
+  return `[poll] ${m.poll.question?.text ?? '?'}: ${answers.join(' · ')} · ${total} votes · ${state}`;
+}
+
 // 談 The channels people talk in. Never the team's own, and never the ones only the
 // developer and the bot write in.
 const TALK = ['general', 'screenshots', 'rankings'];
