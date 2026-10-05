@@ -407,6 +407,26 @@ async function run() {
   // 告 The messages, each found by its title among the bot's own and edited in place.
   // {#key} in a body or a field becomes a link to that channel.
   const linked = (text) => text.replace(/\{#(\w+)\}/g, (_, k) => (channelId[k] ? `<#${channelId[k]}>` : `#${k}`));
+  // 問 Polls under a post: one message each, Discord's own poll, asked once and found
+  // again by its question, so a second run asks nobody twice. A poll cannot be edited
+  // once it is up, so changing one in server.json asks it again as a new question. A
+  // forum post and a channel post ask the same way; the channel looks after its own post.
+  const ask = async (where, m, said, before = async () => {}) => {
+    const there = await call('GET', said);
+    for (const q of m.polls) {
+      if (there.some((x) => x.author?.id === me.id && x.poll?.question?.text === q.question)) continue;
+      await before();
+      await call('POST', `/channels/${where}/messages`, {
+        poll: {
+          question: { text: q.question },
+          answers: q.answers.map(([emoji, text]) => ({ poll_media: emoji ? { text, emoji: { name: emoji } } : { text } })),
+          duration: q.hours ?? 168,
+          allow_multiselect: !!q.multi,
+        },
+      });
+      log(`  "${m.title}" asks: ${q.question}`);
+    }
+  };
   // 旗 A post with a banner is two embeds: the banner alone on top, then the words.
   const embedsOf = (m) => {
     const embed = { title: m.title, description: linked(m.body.join('\n')), color: colour(m.color) };
@@ -445,6 +465,7 @@ async function run() {
         }
       }
       if (m.pin && !(mine?.pinned)) await call('PUT', `/channels/${where}/pins/${id}`);
+      if (m.polls?.length) await ask(where, m, `/channels/${where}/messages?after=${id}&limit=100`);
       // 告眾 A post that went up before it could tell everybody gets one short line after
       // it that does, found again among the bot's messages after the post, so it is said once.
       if (m.nudge && mine && !(mine.content ?? '').includes('@everyone')) {
@@ -527,25 +548,7 @@ async function run() {
         thread.flags = (thread.flags ?? 0) | 2;
         log(`  "${p.title}" pinned`);
       }
-      // 問 Polls under a post: one message each, Discord's own poll, asked once and found
-      // again by its question, so a second run asks nobody twice. A poll cannot be edited
-      // once it is up, so changing one in server.json asks it again as a new question.
-      if (p.polls?.length) {
-        const said = await call('GET', `/channels/${thread.id}/messages?limit=100`);
-        for (const q of p.polls) {
-          if (said.some((m) => m.author?.id === me.id && m.poll?.question?.text === q.question)) continue;
-          await wake(thread);
-          await call('POST', `/channels/${thread.id}/messages`, {
-            poll: {
-              question: { text: q.question },
-              answers: q.answers.map(([emoji, text]) => ({ poll_media: emoji ? { text, emoji: { name: emoji } } : { text } })),
-              duration: q.hours ?? 168,
-              allow_multiselect: !!q.multi,
-            },
-          });
-          log(`  "${p.title}" asks: ${q.question}`);
-        }
-      }
+      if (p.polls?.length) await ask(thread.id, p, `/channels/${thread.id}/messages?limit=100`, () => wake(thread));
     });
   }
 

@@ -35,8 +35,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const SPEC = JSON.parse(readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'));
-// 問 Every poll under a post is one more message the bot leaves, asked once.
-const POLLS = (SPEC.posts ?? []).reduce((n, p) => n + (p.polls?.length ?? 0), 0);
+// 問 Every poll under a post, in a forum or a channel, is one more message the bot leaves, asked once.
+const POLLS = [...SPEC.messages, ...(SPEC.posts ?? [])].reduce((n, p) => n + (p.polls?.length ?? 0), 0);
 const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
@@ -305,7 +305,7 @@ await scenario({}, async (port, env, state) => {
   check(state.guild.verification_level === 2 && state.guild.safety_alerts_channel_id === state.channels.find((c) => c.name.endsWith('team'))?.id,
     'a fresh Discord account waits five minutes before it can speak, and raid alerts reach the team');
   const inThreads = new Set(state.threads.map((t) => t.id));
-  const posted = Object.entries(state.messages).filter(([c]) => !inThreads.has(c)).flatMap(([, list]) => list);
+  const posted = Object.entries(state.messages).filter(([c]) => !inThreads.has(c)).flatMap(([, list]) => list).filter((m) => !m.poll);
   check(posted.length === SPEC.messages.length && posted.filter((m) => m.pinned).length === SPEC.messages.filter((m) => m.pin).length,
     `the ${SPEC.messages.length} posts go up, the ${SPEC.messages.filter((m) => m.pin).length} meant to be pinned pinned`);
   check(posted.every((m) => !/\{#\w+\}/.test(JSON.stringify(m.embeds))) && posted.some((m) => /<#\d+>/.test(m.embeds.find((e) => e.title).description)), 'channel names in the posts are real links');
@@ -390,7 +390,7 @@ await scenario({}, async (port, env, state) => {
   await runSetup(port, env);   // and back to server.json as it is, for what follows
   check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
   const asked = Object.values(state.messages).flat().filter((m) => m.poll).map((m) => m.poll.question.text);
-  check(SPEC.posts.flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
+  check([...SPEC.messages, ...SPEC.posts].flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
     && asked.length === POLLS, `each of the ${POLLS} polls is asked once, under its post`);
 
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
@@ -465,7 +465,7 @@ await scenario({}, async (port, env, state) => {
   const loud = new Set((SPEC.announce ?? []).map((k) => state.channels.find((c) => c.name === all.find((x) => x.key === k).name).id));
   const tops = Object.entries(state.messages).filter(([c]) => state.channels.some((x) => x.id === c));
   const pings = (m) => m.content.includes('@everyone') && (m.allowed_mentions?.parse ?? []).includes('everyone');
-  check(tops.every(([c, list]) => list.every((m) => pings(m) === loud.has(c))) && tops.some(([c, list]) => loud.has(c) && list.length),
+  check(tops.every(([c, list]) => list.filter((m) => !m.poll).every((m) => pings(m) === loud.has(c))) && tops.some(([c, list]) => loud.has(c) && list.length),
     'a new announcement or dev log tells @everyone, and nothing else does');
   // The live server: the nudged posts went up before they could say it.
   const nudged = SPEC.messages.filter((m) => m.nudge);

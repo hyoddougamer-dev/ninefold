@@ -1193,18 +1193,150 @@
       "key": "news-art",
       "pin": false,
       "channel": "news",
-      "title": "畫 We need your opinion: how should Ninefold look?",
+      "title": "畫 Does the look matter? AI art, and what you'd rather see",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-art.webp?v=1",
       "body": [
-        "The game's paintings are made with AI, because an artist for over a hundred pictures is out of reach for now. Some of you may mind that, and we'd rather ask than guess.",
+        "**An honest question, and I'd like honest answers.** I make Ninefold on my own, in my spare time. The paintings you see (the beasts, the realms, the heavens, the figures in the arena) are **made with AI**, because paying an artist for well over a hundred pictures is out of reach for now.",
         "",
-        "We drew the same beast and the same tower in six looks, from today's paintings to ink brush, pixel art and plain icons. Open **畫 Does the look matter?** in {#ideas}, vote in three quick polls, and show us a game whose look you love. Thank you!"
+        "I know some of you don't like AI art, and some of you care a lot about how a game looks. I'd rather ask than guess. The picture below shows the same Spirit Fox and the same Tower in six looks the game could wear. Here is what each one would mean."
       ],
-      "gallery": [
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/art-styles.webp?v=1"
+      "fields": [
+        [
+          "A 🖼️ Painted (today)",
+          "What you play now. Rich and moody, one mood across every realm. Made with AI, and small details can drift from one painting to the next."
+        ],
+        [
+          "B ✏️ Line icons (Lucide)",
+          "A free, open set of icons made for apps. Crisp at any size and very light. But it has no fox, no dragon and no pagoda (that's a cat and a castle in the picture), so the game would start to look like a tool."
+        ],
+        [
+          "C 🎲 Game icons",
+          "Thousands of free silhouettes drawn by many artists and credited (game-icons.net). The gear tiles already use them. Clear and readable, but you will have seen the same shapes in other games."
+        ],
+        [
+          "D 🖌️ Ink brush",
+          "The same shapes, drawn by the game itself as ink on paper, with a red seal. No AI, and close to the xianxia mood. Simpler than a painting: no faces, no light."
+        ],
+        [
+          "E 👾 Pixel art",
+          "Shown here by shrinking the current paintings, so it gives the feel and not the real thing. Real pixel art is drawn by hand: slower to make, but something one person can keep consistent."
+        ],
+        [
+          "F 🀄 Characters only",
+          "The beast's or the place's character in a seal, with its English name beside it. The lightest and most honest, but harder to read if Chinese characters mean nothing to you."
+        ],
+        [
+          "🔀 Mixing is possible",
+          "For example painted realms behind ink-brush beasts, or painted art only for the big moments. Whatever you pick, nothing changes in the numbers, and any change would come one screen at a time, shown to you first."
+        ],
+        [
+          "❓ Vote, then talk",
+          "Four quick polls are just below. To say more, open **畫 The look: your examples and opinions** in {#ideas}: a game whose look you love (a screenshot is perfect), what bothers you in today's art, a style I didn't show. \"The look doesn't matter to me\" helps just as much. I read every reply."
+        ]
       ],
-      "footer": "師 Shibaki"
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/art-styles.webp?v=1",
+      "footer": "師 Shibaki · thank you for being honest with me",
+      "polls": [
+        {
+          "question": "How much does the look matter to you in an idle game?",
+          "answers": [
+            [
+              "🎨",
+              "A lot: it's part of why I stay"
+            ],
+            [
+              "👍",
+              "Some: it should be pleasant to look at"
+            ],
+            [
+              "📊",
+              "Little: I'm here for the numbers"
+            ]
+          ]
+        },
+        {
+          "question": "Which look would you play? Pick any.",
+          "multi": true,
+          "answers": [
+            [
+              "🖼️",
+              "A · Painted (today)"
+            ],
+            [
+              "✏️",
+              "B · Line icons"
+            ],
+            [
+              "🎲",
+              "C · Game icons"
+            ],
+            [
+              "🖌️",
+              "D · Ink brush"
+            ],
+            [
+              "👾",
+              "E · Pixel art"
+            ],
+            [
+              "🀄",
+              "F · Characters only"
+            ],
+            [
+              "🔀",
+              "A mix (say which in ideas)"
+            ]
+          ]
+        },
+        {
+          "question": "How do you feel about AI art in Ninefold?",
+          "answers": [
+            [
+              "✅",
+              "Fine with me"
+            ],
+            [
+              "🤝",
+              "Fine for now, until real art is possible"
+            ],
+            [
+              "😕",
+              "I'd rather have simpler art without AI"
+            ],
+            [
+              "🚫",
+              "It would stop me playing or sharing it"
+            ]
+          ]
+        },
+        {
+          "question": "What matters most in how a game looks? Pick any.",
+          "multi": true,
+          "answers": [
+            [
+              "🐉",
+              "Every beast looks like itself"
+            ],
+            [
+              "🧩",
+              "One style everywhere"
+            ],
+            [
+              "📱",
+              "Easy to read on a phone"
+            ],
+            [
+              "⛩️",
+              "It feels like xianxia"
+            ],
+            [
+              "✨",
+              "Effects and animation"
+            ]
+          ]
+        }
+      ]
     }
   ],
   "posts": [
@@ -1826,124 +1958,28 @@
         "Idea"
       ],
       "pin": false,
-      "title": "畫 Does the look matter? AI art, and what you'd rather see",
+      "title": "畫 The look: your examples and opinions",
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-art.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/art-styles.webp?v=1",
       "body": [
-        "**An honest question, and we want honest answers.** Ninefold is made by one person, in spare time. The paintings you see (the beasts, the realms, the heavens, the figures in the arena) are **made with AI**, because commissioning an artist for well over a hundred pictures is out of reach for now.",
-        "",
-        "We know some of you don't like AI art, and some of you care a lot about how a game looks. We would rather ask than guess. The picture above shows the same Spirit Fox and the same Tower in six looks the game could wear. Here is what each one would mean."
+        "This is the place to talk about how Ninefold looks. The six looks, what each would mean and the polls are in {#news}, in **畫 Does the look matter?**. Here, say what a poll can't."
       ],
       "fields": [
         [
-          "A 🖼️ Painted (today)",
-          "What you play now. Rich and moody, one mood across every realm. Made with AI, and small details can drift from one painting to the next."
+          "🖼️ Show me",
+          "A game whose look you love, idle or not, and what you love about it. A screenshot or a link is perfect."
         ],
         [
-          "B ✏️ Line icons (Lucide)",
-          "A free, open set of icons made for apps. Crisp at any size and very light. But it has no fox, no dragon and no pagoda (that's a cat and a castle in the picture), so the game would start to look like a tool."
+          "💬 Tell me",
+          "What works or bothers you in today's paintings. Whether AI art changes how you see the game, either way. A look I didn't show. Which mix you'd pick."
         ],
         [
-          "C 🎲 Game icons",
-          "Thousands of free silhouettes drawn by many artists and credited (game-icons.net). We already use them on the gear tiles. Clear and readable, but you will have seen the same shapes in other games."
-        ],
-        [
-          "D 🖌️ Ink brush",
-          "The same shapes, drawn by the game itself as ink on paper, with a red seal. Our own, no AI, and close to the xianxia mood. Simpler than a painting: no faces, no light."
-        ],
-        [
-          "E 👾 Pixel art",
-          "Shown here by shrinking our own paintings, so it gives the feel and not the real thing. Real pixel art is drawn by hand: slower to make, but something one person can keep consistent."
-        ],
-        [
-          "F 🀄 Characters only",
-          "The beast's or the place's character in a seal, with its English name beside it. The lightest and most honest, but harder to read if Chinese characters mean nothing to you."
-        ],
-        [
-          "🔀 Mixing is possible",
-          "For example painted realms behind ink-brush beasts, or painted art only for the big moments. Whatever you pick, nothing changes in the numbers, and any change would come a screen at a time, shown here first."
-        ],
-        [
-          "❓ Tell us, and show us",
-          "Vote in the three quick polls below. Then reply here with anything that helps:\n· a game whose look you love (a screenshot is perfect)\n· what bothers you in today's art, if anything\n· whether AI art would stop you playing or sharing Ninefold\n· a style we didn't show\nA \"the look doesn't matter to me\" helps just as much. Every reply is read."
+          "🤝 Keep it kind",
+          "Every opinion is welcome here, including \"I don't mind\". Answer each other, argue the case, and I'll read all of it before anything changes."
         ]
       ],
-      "footer": "師 Shibaki · thank you for being honest with us",
-      "polls": [
-        {
-          "question": "How much does the look matter to you in an idle game?",
-          "answers": [
-            [
-              "🎨",
-              "A lot: it's part of why I stay"
-            ],
-            [
-              "👍",
-              "Some: it should be pleasant to look at"
-            ],
-            [
-              "📊",
-              "Little: I'm here for the numbers"
-            ]
-          ]
-        },
-        {
-          "question": "Which look would you play? Pick any.",
-          "multi": true,
-          "answers": [
-            [
-              "🖼️",
-              "A · Painted (today)"
-            ],
-            [
-              "✏️",
-              "B · Line icons"
-            ],
-            [
-              "🎲",
-              "C · Game icons"
-            ],
-            [
-              "🖌️",
-              "D · Ink brush"
-            ],
-            [
-              "👾",
-              "E · Pixel art"
-            ],
-            [
-              "🀄",
-              "F · Characters only"
-            ],
-            [
-              "🔀",
-              "A mix (say which in a reply)"
-            ]
-          ]
-        },
-        {
-          "question": "How do you feel about AI art in Ninefold?",
-          "answers": [
-            [
-              "✅",
-              "Fine with me"
-            ],
-            [
-              "🤝",
-              "Fine for now, until real art is possible"
-            ],
-            [
-              "😕",
-              "I'd rather have simpler art without AI"
-            ],
-            [
-              "🚫",
-              "It would stop me playing or sharing it"
-            ]
-          ]
-        }
-      ]
+      "footer": "師 Shibaki"
     }
   ],
   "threads": [
