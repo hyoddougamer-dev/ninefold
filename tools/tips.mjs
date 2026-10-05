@@ -25,15 +25,25 @@
  *     npm run tips
  */
 import { chromium } from 'playwright';
+import { isOpen } from '../src/sim/unlocks.ts';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.PLAYWRIGHT_CHROMIUM
   ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const SAVE_KEY = 'ninefold.save.v1';
-/** Every screen a character can be tapped on, by the tab that opens it. */
-const TABS = [['修', 'cultivate'], ['狩', 'hunt'], ['塔', 'trials'], ['器', 'gear'], ['業', 'crafts'], ['道', 'dao']];
+/** Every screen a character can be tapped on, by the tab that opens it and what opens the tab (App.tsx TABS). */
+const TABS = [['修', 'cultivate', null], ['狩', 'hunt', 'hunt'], ['塔', 'trials', 'platform'], ['器', 'gear', 'gear'],
+  ['業', 'crafts', 'crafts'], ['道', 'dao', 'arts']];
 /** Which cultivators to walk. Narrowed while chasing one screen: TIPS_REALMS=2,3 */
 const REALMS = (process.env.TIPS_REALMS ?? '2,3,6,9').split(',').map(Number);
+/**
+ * 空 The fewest notes each cultivator's walk must open, as han.ts asserts its places. A
+ * walk stopped by a card it never got past opened nothing, found nothing wrong and printed
+ * a tick. Far under the real count (55, 77, 144 and 208 on 2026-10-05), so it catches a
+ * walk that saw nothing and is not edited every time a screen gains a character.
+ */
+const FLOOR = { 2: 40, 3: 55, 6: 100, 9: 150 };
+const FLOOR_ELSE = 30;
 
 const problems = [];
 const fail = (where, what) => { problems.push(`${where}: ${what}`); console.log(`  ✗ ${where}  ${what}`); };
@@ -123,17 +133,24 @@ async function walk(realm) {
   await clear(page);
 
   let opened = 0;
-  for (const [han, name] of TABS) {
+  for (const [han, name, needs] of TABS) {
     // 掩 A notice card arrives whenever something unlocks, it sits over the tab bar and
     // it eats the tap. Realms 2 and 3 unlock something on nearly every screen, so
     // without this the tab never changes and the walk silently repeats 狩 the hunt.
     await clear(page);
     const tab = await page.$(`nav.tabs button:has-text("${han}")`);
-    if (!tab) continue;
+    if (!tab) { fail(`realm ${realm} ${name}`, 'there is no such tab'); continue; }
     // 鎖 A tab this cultivator has not reached yet answers with the realm that opens it,
     // drawn as a full-screen .shut card. Tapping one and leaving it there was covering
     // every tab after it, so the walk only ever saw 狩 the hunt from the third tab on.
-    if (await tab.getAttribute('data-shut') === 'true') { console.log(`  ${han} ${name}: not open this realm`); continue; }
+    // A tab shut that the realm has opened is a screen this walk never read: a fault.
+    const due = needs === null || isOpen(realm, needs);
+    if (await tab.getAttribute('data-shut') === 'true') {
+      if (due) fail(`realm ${realm} ${name}`, 'the tab is shut, and this realm opens it');
+      else console.log(`  ${han} ${name}: not open this realm`);
+      continue;
+    }
+    if (!due) fail(`realm ${realm} ${name}`, 'the tab is open before its realm');
     await tab.click().catch(() => {});
     await page.waitForTimeout(450);
     await clear(page);
@@ -149,13 +166,14 @@ async function walk(realm) {
         const on = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
         return `disabled=${b.disabled} tapWouldHit=${on === b || b.contains(on) ? 'the tab' : String(on?.className || on?.tagName)}`;
       }, han);
-      console.log(`  ${han} ${name}: did not open, still on ${screen} (${why})`);
+      fail(`realm ${realm} ${name}`, `did not open, still on ${screen} (${why})`);
       continue;
     }
     const n = await page.$$eval('.term', (e) => e.length);
+    if (!n) fail(`realm ${realm} ${name}`, 'the screen opened with no character on it to tap');
     for (let i = 0; i < n; i++) {
       const t = (await page.$$('.term'))[i];
-      if (!t) continue;
+      if (!t) { fail(`realm ${realm} ${name} #${i}`, `the character went before it was tapped (${n} were counted)`); continue; }
       const label = (await t.textContent())?.trim() ?? '?';
       const where = `realm ${realm} ${name} ${label}#${i}`;
       // 捲 Bring the character onto the screen the way a thumb would, and then wait for
@@ -188,6 +206,8 @@ async function walk(realm) {
     console.log(`  ${han} ${name}: ${n} characters`);
   }
   console.log(`realm ${realm}: ${opened} notes opened`);
+  const least = FLOOR[realm] ?? FLOOR_ELSE;
+  if (opened < least) fail(`realm ${realm}`, `only ${opened} notes opened, and there should be well over ${least}`);
   await page.close();
 }
 

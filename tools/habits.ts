@@ -74,8 +74,8 @@ export interface Habit {
    * touched on 0% of visits and multiplies a finished cultivator's power by ×1.00, and
    * the obvious reading is that the system is dead. That reading is about the policy and
    * not about the game. A pill makes beasts read weaker, 塔 the tower is the one place
-   * during the climb where a beaten beast pays **qi**, and a floor is worth six hours of
-   * gathering. So there is a second policy the game plainly allows and nothing was
+   * during the climb where a beaten beast pays **qi**, and a floor pays a fixed sum of it
+   * (floorQiPay). So there is a second policy the game plainly allows and nothing was
    * playing: brew whenever it buys a floor.
    */
   readonly brews?: 'stuck' | 'tower';
@@ -854,8 +854,8 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
       if (!line) break;
       s = spend(brew(s, line));
     }
-    // 塔 The other policy: brew toward the floor that will not fall, because a floor is
-    // six hours of gathering and a pill is a share of one rung.
+    // 塔 The other policy: brew toward the floor that will not fall, because a floor pays
+    // TOWER_QI_RUNG of a rung and a pill is a share of one rung.
     if (h.furnace && h.brews === 'tower') for (let g = 0; g < 400; g++) {
       const f = standingFloor(s);
       if (odds(s, floorBeast(f), floorPower(f)) > 0.65) break;

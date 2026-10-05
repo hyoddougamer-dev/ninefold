@@ -332,7 +332,7 @@ describe('吸 what a floor pays in qi', () => {
       `${((100 * most) / (7 * pill)).toFixed(1)}% of the seven 煉體 that lift a body over a floor\n`);
   });
 
-  it('pays 天師 the Celestial Master a quarter again, and nothing else a body wears moves it', () => {
+  it('pays 天師 the Celestial Master PAIR_TOWER_QI times a floor, and nothing else a body wears moves it', () => {
     const celestial = { ...fifth, worn: pairWorn('qi', 'arts') };
     const wargod = { ...fifth, worn: pairWorn('sword', 'body') };
     expect(callingOf(celestial.worn).pair?.key).toBe('celestial');

@@ -29,13 +29,13 @@
  * the rule cannot be one thing on the phone and another on the server.
  */
 import {
-  BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
-  PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, QUARRY_HOURS, SPRING_FILL,
-  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE, midRate,
+  BLESSED_ROOM, CRAFT_ARRAY_DOOR, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
+  MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, QUARRY_HOURS,
+  ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE, midRate,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
-import { classSpring } from './schools.ts';
+import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
   newState, type State,
@@ -45,7 +45,6 @@ import { beastPower, beatable } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
 import { meetingOf } from '../data/meetings.ts';
 import { DOOR_GAP, RUN_DAO_CEILING } from '../data/secret.ts';
-import { MEET_GAP, ROUND_CAP, SECLUSION } from './balance.ts';
 import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
@@ -53,9 +52,7 @@ import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
-import { CRAFT_ARRAY_DOOR } from './balance.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
-import { classTower, classTowerQi } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
 import { LINES } from '../data/alchemy.ts';
@@ -88,7 +85,7 @@ export const PRE_JOIN_CREDIT = 3 * 86_400;
  * full budget held twenty days of honest play. A first sync is the one moment there is
  * nothing on the server to compare with, so it is held to a pace the fastest honest
  * cultivator measured could keep; anything more waits and counts later. It stayed at
- * 0.55 when SUSPECT_WEEK came down to 0.52: a first sync waiting is a cost to an honest
+ * 0.55 when SUSPECT_WEEK came down under it: a first sync waiting is a cost to an honest
  * newcomer, and the week behind it still flags a fast clock.
  */
 export const FIRST_PACE = 0.55;
@@ -272,7 +269,7 @@ export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
  * the save has to be able to win (towerVerdict), so its pay is allowed for as itself.
  *
  * A floor pays a fixed sum read off the floor alone (floorQiPay in tower.ts, 2026-10-05),
- * 天師 the Celestial Master a quarter again, so this is no longer a ceiling guessed from
+ * 天師 the Celestial Master PAIR_TOWER_QI times it, so this is no longer a ceiling guessed from
  * the realms and the rates between two saves: it is the sum itself, every new floor at
  * the Master's pay. A phone still on the build before 2026-10-05 paid some floors more
  * than this (its own hours), and waits a little.
@@ -293,8 +290,8 @@ export function towerQi(before: State, after: State, first: boolean): number {
 
 /**
  * 天師 Whether a save wears the Celestial Master, or holds a loadout that does. The Master's
- * pay is two and a half times a floor's (PAIR_TOWER_QI), so crediting it to every save would
- * leave a cheat one and a half tower's worth of room. Six loose pieces in the chest were
+ * pay is PAIR_TOWER_QI times a floor's, so crediting it to every save would leave a cheat
+ * all of the difference as room. Six loose pieces in the chest were
  * enough in the first reading (the audit of 2026-10-05), so only what is worn and what a
  * loadout puts on count; a save that does neither at either end of the window is credited
  * a floor's own pay. Measured on an honest Master with the Arts half taken off both ends of
@@ -403,7 +400,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
-  // 得 One-off payments (a tower floor is up to six hours of qi at once, a meeting two) arrive in
+  // 得 One-off payments (a tower floor's fixed sum at once, a meeting's reward) arrive in
   // bursts, so a short gap can hold more than its own seconds. They are allowed for as a
   // burst on top of the real time: BURST times the gap, never more than BURST_CAP. A
   // burst bigger than that is not refused for ever, only until real time catches up: the
