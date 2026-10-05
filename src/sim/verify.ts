@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MELT_CAP, MELT_FILL, PAIR_BOUNTY,
   PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE, PLATFORM_HOURS, QUARRY_HOURS, SPRING_FILL,
-  SPRING_HOLD, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, type Tier } from './platform.ts';
@@ -53,8 +53,7 @@ import { driveFloor } from './hunt.ts';
 import { XP_PER_SECOND_MAX, bestKit } from './crafts.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS, arrayKey } from '../data/crafts.ts';
 import { CRAFT_ARRAY_DOOR } from './balance.ts';
-import { floorBeast, floorHours, floorPower } from './tower.ts';
-import { opensAt } from './unlocks.ts';
+import { floorBeast, floorPower, floorQiPay } from './tower.ts';
 import { classTower } from './schools.ts';
 import { wearSet } from './sets.ts';
 import { pillCost } from './furnace.ts';
@@ -122,13 +121,23 @@ export const BURST_CAP = 12 * 3600;
  * every waking hour, walked 120 days. Faster than that is flagged.
  *
  * 塔 The week came down from 0.55 with the tower's taper above the warden floor
- * (2026-10-04, TOWER_QI_ABOVE). The fastest honest week fell from 0.49 to 0.46, and the
+ * (2026-10-04, retired 2026-10-05). The fastest honest week fell from 0.49 to 0.46, and the
  * weeks that had given a clock run three times as fast away were its tower lumps: at 0.55
  * that clock was ranked for 45 days and never flagged. At 0.52 it is flagged on day 21
  * as before, and the room above the fastest honest week is the same twelfth it was.
+ *
+ * 塔 And the week stopped counting the floors on 2026-10-05, when a floor started paying a
+ * fixed sum (TOWER_QI_RUNG). The sum is exact now, not a ceiling, so it comes off the week
+ * as it comes off the day, and the week reads everything else. With the floors in, the
+ * strongest honest climbers' weeks rose to 0.50 to 0.55 (the one who leaves Auto on, the
+ * one who plays every hour), as high as a clock run three times as fast (0.54) or twice
+ * (0.57): nothing could have told them apart. With the floors out, the fastest honest week
+ * is 0.43 (every hour, 120 days) and the clocks read 0.49 and 0.51, so the line is 0.47:
+ * a tenth above the fastest honest week, and both clocks are still flagged. It no longer
+ * moves when the tower's pay does.
  */
 export const SUSPECT_DAY = 1.6;
-export const SUSPECT_WEEK = 0.52;
+export const SUSPECT_WEEK = 0.47;
 
 /** 擊 The fastest a hand can take fights one after another: a fight is at least this long on the screen. */
 export const MIN_FIGHT_SECONDS = 1.2;
@@ -154,6 +163,8 @@ export interface Verdict {
   readonly strike: boolean;
   /** Seconds the gains needed at the best rate, per second that passed. */
   readonly pace: number;
+  /** The same with the tower floors' exact sum taken off: the pace SUSPECT_DAY and SUSPECT_WEEK read. */
+  readonly sprint: number;
   /** Faster than any honest cultivator measured, over a day or more: flagged for review. */
   readonly suspect: boolean;
 }
@@ -246,19 +257,17 @@ export const DAO_BANK_STRICT_FROM = 1_791_158_400; // 2026-10-05T00:00:00Z
  * 塔 The most qi the floors climbed between two saves could have paid.
  *
  * 誤 A tester found it (2026-10-04): the tower opens at the fifth realm, every floor
- * below the cultivator's strength falls in a few minutes, and each one pays hours. The
+ * below the cultivator's strength falls in a few minutes, and each one pays a lump. The
  * floors were left to the burst allowance, which is a few minutes against a sync five
  * minutes long, so the climb waited, and against the day behind it the pace read as
  * faster than anybody honest: flagged, for the game's own payment. Each floor is a fight
  * the save has to be able to win (towerVerdict), so its pay is allowed for as itself.
  *
- * A floor pays floorHours at the rate with nothing worn (trials.ts), 天師 the Celestial
- * Master a quarter again. The server does not know which realm it fell in, so each floor
- * is read at whichever realm between the two saves paid it most, the rate there with only
- * what could have been owned there (rateOn). Reading every floor at the earliest realm's
- * hours and the latest realm's rate let a week that crossed a realm pay for itself twice.
- * A phone still on the build before 2026-10-04 paid some floors more than this, and waits
- * a little.
+ * A floor pays a fixed sum read off the floor alone (floorQiPay in tower.ts, 2026-10-05),
+ * 天師 the Celestial Master a quarter again, so this is no longer a ceiling guessed from
+ * the realms and the rates between two saves: it is the sum itself, every new floor at
+ * the Master's pay. A phone still on the build before 2026-10-05 paid some floors more
+ * than this (its own hours), and waits a little.
  */
 export function towerQi(before: State, after: State, first: boolean): number {
   // A first sync has its own allowance (FIRST_PACE, FIRST_SITTING), and a month of floors
@@ -266,17 +275,12 @@ export function towerQi(before: State, after: State, first: boolean): number {
   if (first) return 0;
   const lo = Math.max(0, Math.floor(before.tower));
   const hi = Math.max(lo, Math.floor(after.tower));
-  if (hi === lo) return 0;
-  const bare = { ...after, worn: {} as State['worn'] };
-  const realms: { realm: number; rate: number }[] = [];
-  for (let r = Math.max(before.realm, opensAt('tower')); r <= after.realm; r++) {
-    // The furthest rung of that realm the pair reached: its last, or where the later save stands.
-    const top = r === after.realm ? after.layer : 8;
-    realms.push({ realm: r, rate: rateOn(bare, Math.min(LAYERS - 1, (r - 1) * 9 + top)) });
-  }
-  let qi = 0;
-  for (let f = lo + 1; f <= hi; f++) qi += Math.max(0, ...realms.map((x) => floorHours(f, x.realm) * x.rate));
-  return qi * 3600 * PAIR_TOWER_QI;
+  // Every floor above the summit floor pays what it does, so those are counted at once:
+  // an edited save claiming a billion floors is one multiplication, never a billion steps.
+  const flat = Math.min(hi, Math.max(lo, TOWER_QI_SUMMIT));
+  let qi = Math.max(0, hi - flat) * floorQiPay(TOWER_QI_SUMMIT);
+  for (let f = lo + 1; f <= flat; f++) qi += floorQiPay(f);
+  return qi * PAIR_TOWER_QI;
 }
 
 /** 道 The most 道 the road and the vault could have paid between two saves. */
@@ -515,20 +519,20 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 疑 Possible, but faster over a day or a week than any honest cultivator was ever
   // measured to go. Not refused: flagged, and kept off the public boards until looked at.
   //
-  // 塔 Over a day, a whole tower climbed at once is a sprint the game itself paid for, so
-  // the floors' share comes off before the day's pace is read. Over a week it stays in:
-  // SUSPECT_WEEK was measured on cultivators who climb, so their floors are already in
-  // it, and towerQi is a ceiling a long window would let a fast clock hide under.
+  // 塔 A whole tower climbed at once is a sprint the game itself paid for, so the floors'
+  // sum comes off before the pace is read, over a day and over a week. It used to stay in
+  // over a week, while towerQi was a ceiling a long window could hide a fast clock under;
+  // a floor pays a fixed sum now (2026-10-05), so towerQi is that sum exactly.
   const pace = need / Math.max(1, dt);
   const sprint = Math.max(0, need - tower) / Math.max(1, dt);
-  const suspect = (dt >= 7 * 86_400 && pace > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
+  const suspect = (dt >= 7 * 86_400 && sprint > SUSPECT_WEEK) || (dt >= 86_400 && dt < 7 * 86_400 && sprint > SUSPECT_DAY);
 
   // A strike is an impossibility, never a matter of time: too fast only means "not yet".
   // 'shape' is another run: a second device, a wiped save, the local copy kept over the
   // cloud's. It used to be a strike, and an honest player on two phones was banned in a
   // quarter of an hour.
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape');
-  return { ok: why.length === 0, why, used, strike, suspect, pace };
+  return { ok: why.length === 0, why, used, strike, suspect, pace, sprint };
 }
 
 /**

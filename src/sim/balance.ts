@@ -542,117 +542,101 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
 }
 
 /**
- * 吸 What a tower floor is worth in qi, in hours of your gathering counted without gear.
+ * 吸 What a tower floor pays in qi: a fixed sum, read off the floor and nothing else.
  *
- * The tower is the one place where fighting turns into *progress* rather than only into
- * power. A floor pays this once and never again. There is no floor to farm, so it can
- * be generous without ever becoming a loop that feeds itself.
+ * Floor f pays TOWER_QI_RUNG of the price of the rung a climber stands on when floor f
+ * falls. That rung is read off a straight line through the measured climb: the summit's
+ * rung (the eightieth, the last that has a price) at floor TOWER_QI_SUMMIT, and one realm's
+ * nine rungs lower for every TOWER_QI_REALM_FLOORS floors below it. Above the summit floor
+ * every floor pays what the summit floor does.
  *
- * 衣 Counted without gear because a reward the clothes can move is a reward somebody
- * strips for (2026-10-04). Worn 氣 lines lift the rate about a fifth (×1.12 to ×1.24
- * across the habits, measured, the ceiling holding it there), so six hours of the bare
- * rate is about five of the rate a geared cultivator sees on the bar. It stays six
- * rather than being raised to make up the difference: at seven five habits of six
- * reached the ninth realm about a day earlier than before, measured, and at six none
- * moved by more than two days either way. The table is beside TOWER_QI_BELOW.
+ *   rung(f) = 80 − 9 × (TOWER_QI_SUMMIT − f) / TOWER_QI_REALM_FLOORS, never under 0
+ *   qi(f)   = TOWER_QI_RUNG × ladderBetween(rung(f)), 天師 the Celestial Master × PAIR_TOWER_QI
+ *
+ * so floor 45 pays a quarter of rung 17.8 (the second realm's top, 141k qi), floor 70 of
+ * a fifth-realm rung (86M), floor 100 of a seventh-realm one (47.6B), and floor 121 and
+ * every floor above it a quarter of the last rung of the ninth (1.62T). The first
+ * twenty-odd floors stand under the first rung and pay 16 qi each. The card can say the
+ * number before the fight, and it is the same number for everybody.
+ *
+ * 誤 Why it stopped being hours of your own gathering (rekaris and speculaether, Discord,
+ * 2026-10-05; Bruno agreed the same day). A floor paid six hours of the rate
+ * with nothing worn, full on your realm's warden floor, a fifth less for every floor under
+ * it and tapering to three hours above it. So the pay read the climber: buying rate
+ * upgrades before climbing paid more, a floor beaten a realm early paid a fifth of what it
+ * would have paid later, and a floor beaten high paid half. A floor falls once, so every
+ * one of those was a choice that could not be undone and that nobody could see the right
+ * answer to: climb now for less, or wait a realm for more. With a fixed sum there is
+ * nothing to wait for and nothing to buy first: the same floor pays the same qi whenever
+ * and by whomever it falls, and the only way to more is up.
+ *
+ * Why these numbers. The line is the active cultivator's own climb (tools/habits.ts),
+ * which stands on floor 72 as rung 40 opens, 90 at 54, 101 at 63, 112 at 72 and 120 at
+ * 79: eleven floors to a realm, and the summit near floor 121. A floor near where the
+ * climber stands therefore pays about TOWER_QI_RUNG of their own next rung, in every
+ * realm alike, so the tower is the same size of reward from the fifth realm to the
+ * ninth. Floors far below pay next to nothing (the first sixty floors together are a
+ * fifth of the fifth realm's first rung, where the sweep on arrival used to pay four to
+ * six rungs), and a floor far above pays more, because a climber who reaches it is that
+ * much stronger than the line.
+ *
+ * Why it stops growing at the summit. Above the ladder the qi rate grows by a mark at a
+ * time and the furnace sells power for qi at a price that holds (PILL_AHEAD). A floor
+ * that paid more the higher it stood would buy the pills for the next floor once it paid
+ * about seven pills' worth, and the tower would climb itself: at a sum growing like the
+ * Dragon it did, measured, from floor 120 to 304 in ten crossings. Flat, the most a floor
+ * can pay is under a sixtieth of the seven pills that lift a cultivator over it. The endgame
+ * harness hardly needed the tower's qi: played from the same arrival, forty crossings took
+ * 257 days with no qi at all above the summit and 256 with the old hours.
+ *
+ * Measured with tools/towerpay.ts (tools/habits.ts with every floor's pay traced to the
+ * realm it fell in), before (hours of the bare rate, tapered) and now. The share is the
+ * tower's part of all the qi gathered in that realm; the visit is the most one visit's
+ * floors paid in the fifth realm, in rungs of the rung then standing:
+ *
+ *   habit           ninth realm (day)   realm 5 share   biggest visit   realms 6 to 9 share
+ *                   before   now        before   now    before   now    before    now
+ *   once a day       70.0    72.0        13.0    1.9     1.20   0.06    4 to 6    2 to 9
+ *   active           44.0    43.0        20.7   13.4     3.84   0.48    5 to 7    9 to 13
+ *   every hour       28.9    26.9        23.6   17.3     6.22   0.90    6 to 7   14 to 18
+ *   drives it all    44.7    43.8        20.3   15.0     4.82   0.43    6 to 7    8 to 13
+ *   walks 神         42.8    46.3        21.8    2.5     4.39   0.06    6 to 9    2 to 5
+ *   crafts it all    44.0    42.7        22.6   10.5     5.50   0.40    6 to 7    9 to 14
+ *   runs auto        31.2    26.5        26.0   17.6     6.22   0.61    5 to 9   12 to 34
+ *
+ * No single visit anywhere pays two rungs (the most is 1.6, Auto in the seventh realm).
+ * The fifth realm is a realm again, not a lump. The cost is the spread: a fixed sum per
+ * floor pays whoever climbs highest the most, so a build that trades power for something
+ * else gets less from the tower than it did. The Spirit walker arrives three and a half
+ * days later, most classes built around something other than power (the Treasure Smith,
+ * the Alchemist, the Celestial Master, the Qi school, the Artificer) two to five days
+ * later, and the builds for power one to four days sooner (see classes.test.ts).
+ *
+ * It is a slope, not a knife edge: TOWER_QI_RUNG at 0.225 and 0.275 (a tenth either side)
+ * puts the ninth realm at 72.0 and 71.0 (once a day), 41.5 and 41.2 (active), 27.3 and
+ * 26.2, 44.2 and 43.7, 46.0 and 46.2, 43.0 and 42.3, and 28.5 and 26.5 (Auto): two days
+ * at the most, and Auto's own runs wander that much between neighbouring values.
+ * Eighty crossings take 574 days (561 before), 585 and 577 a tenth either side, and 865
+ * with every Dragon a tenth heavier (792), the slowest crossing 13 days (12): it slows,
+ * it does not wall. The heavier run is where the old hours counted: from the same arrival
+ * it takes 855 to 858 days with any fixed sum or none, because a sum read off the floor
+ * does not grow with the marks the way the rate does.
+ *
+ * The rush (rekaris: few levels, strong gear, climb as far as possible at the fifth
+ * realm). The hourly cultivator stands at the fifth realm's door strong enough for floor
+ * 60, and those sixty floors pay a fifth of the realm's first rung. Twice its power reaches
+ * floor 63 (two fifths of a rung), ten times 72 (two rungs, a tenth of the realm), thirty
+ * times 77 (five rungs, a third), and only a hundred times its power, floor 83, buys the
+ * whole realm at once. The old rule paid the same cultivator four rungs on arrival
+ * without a step more power, and a rusher who had bought no gathering next to nothing.
+ * And a rush only moves the qi earlier: a climb is paid the sum of its floors, whoever
+ * climbs them and whenever.
  */
-export const TOWER_QI_HOURS = 6;
-
-/**
- * 吸 What a floor below your realm's warden pays, as a share of the floor above it.
- *
- * 塔 opens at the fifth realm with forty-odd floors already beneath a cultivator who
- * arrives there. Paid in full, that first sitting was worth **ten days and eighteen
- * hours** of gathering, which made the fifth realm the shortest in the run. So the
- * whole six hours start at the floor your own warden stands on (floor 45 in the fifth
- * realm, 81 in the ninth) and every floor below it pays a fifth less than the one above:
- * one floor down 4.8 hours, a realm down 0.8, the first realm's floors nothing worth
- * counting. A fifth because it is the reference's own step between two floors (0.79 to
- * 0.82, see referenceAt), so a floor's pay falls as fast as its beast's power does.
- *
- * It used to scale by the floor's power against the cultivator's own, and own power
- * counts gear, so taking a piece off raised the pay of every floor outgrown: a sweep from
- * floor 1 at the fifth realm paid 52 hours worn and 80.6 choosing pieces floor by floor.
- * This reads the floor and the realm and nothing else.
- *
- * Measured with tools/habits.ts, ninth-realm day before and after (old rule, then six
- * hours with 0.8 from the warden floor), and the alternatives that were tried:
- *
- *   habit            before  0.8 (this)  0.7    from the rung  seven hours
- *   once a day        64.0     65.0      68.0      65.0         63.0
- *   active            42.3     41.7      41.8      40.5         40.7
- *   every hour        27.6     28.0      27.6      26.8         26.4
- *   drives it all     42.8     43.3      43.7      42.7         42.0
- *   walks 神          39.8     41.5      42.2      41.0         41.0
- *   crafts it all     41.5     41.7      42.2      41.5         40.8
- *
- * Full pay from the cultivator's own rung rather than the realm's warden paid the
- * fifth-realm sweep 131 hours instead of 52 and brought the active cultivator in 1.8
- * days early; from the warden it pays 86. 0.7 and 0.8 differ by a day or two at most,
- * and neither walls anything: this is a slope, not a knife edge. The endgame barely
- * notices: 80 crossings took 530 days before and 528 to 548 across every variant, and
- * with every Dragon a tenth heavier (the longhaul test's push) 812 before and 846 now,
- * the slowest crossing 12 days instead of 11. It slows, it does not wall.
- */
-export const TOWER_QI_BELOW = 0.8;
-
-/**
- * 吸 What a floor above your realm's warden pays: a little less than the one before it,
- * and never less than TOWER_QI_LEAST of the six hours.
- *
- *   hours = TOWER_QI_HOURS × (LEAST + (1 − LEAST) × ABOVE^(floor − warden floor))
- *
- * so in the fifth realm floor 45 pays 6 hours, 46 pays 5.4, 50 pays 4.0, 55 pays 3.3,
- * and from about floor 60 up a floor pays 3. Testers said the tower was the whole fifth
- * realm, and it was (2026-10-04): every floor from the warden up paid the full six, a
- * geared cultivator beats thirty of them the day the tower opens, and the climbers in
- * tools/habits.ts took 137 to 181 hours of gathering from it in the fifth realm, 29 to
- * 48% of all that realm's qi. Their biggest single visit was 49 to 100 hours when a
- * rung cost 10 to 28. Bruno chose to smooth it: a big first climb is still a reward, but
- * not half a realm.
- *
- * Why it levels out rather than falling for ever, which was tried first. Every climber
- * stands twenty to forty floors above their own warden in every realm after the fifth
- * too (floors 75 to 87 in the sixth, 109 to 121 in the ninth), and the endgame stands
- * further still. A taper with no floor under it cut the fifth realm and starved every
- * realm after it: at 0.97 a floor and nothing under it, the later realms' tower share
- * fell from 10 to 15% to 3 to 5%, the ninth realm came up to five days later than now
- * and eighty crossings took 634 days instead of 547. Holding half the pay keeps the
- * tower worth climbing in every realm, and the step down from six to three hours is
- * what keeps the fifth realm's backlog from paying full.
- *
- * Measured with tools/habits.ts, every unit of qi traced to its source, before (flat
- * six from the warden up) and with this, the biggest visit in hours of the rate on the
- * bar:
- *
- *   habit            realm 5 tower share   biggest visit (h)   ninth realm (day)
- *                    before   now          before   now        before   now
- *   once a day        28.6    15.3          49.4    41.4        65.0    71.0
- *   active            43.4    23.6          81.5    58.5        41.7    46.7
- *   every hour        47.4    23.0          99.8    67.7        28.0    30.4
- *   drives it all     46.6    23.3          85.8    60.7        43.3    47.8
- *   walks 神          37.9    21.8          48.8    40.8        41.5    46.3
- *   crafts it all     48.0    23.7          86.1    60.9        41.7    47.0
- *   runs auto         48.0    27.0          94.4    64.9        31.5    36.0
- *
- * The fifth realm now lasts 2.8 to 8 days instead of 1.6 to 7, and the later realms
- * keep a tower share of 4 to 8%. The cost is real and it is the point: the qi the tower
- * stops handing over in a lump is gathered instead, so the ninth realm comes 2.4 to 6
- * days later. It is a slope and not a knife edge: ABOVE at 0.72 and 0.88, and LEAST at
- * 0.45 and 0.55 (a tenth either side), move any habit's ninth-realm day by 1.8 days at
- * the most and most of them by under one, and none walls. Eighty crossings take 554
- * days (547 before), and with every Dragon a tenth heavier 854 (846), the slowest
- * crossing 13 days.
- *
- * The floor is still read off your realm's warden, so it moves up nine floors at every
- * breakthrough. A floor well above the next warden pays a little more after the
- * breakthrough than before it, as one just under the old warden pays less; the card says
- * where the most is paid, so neither is a surprise.
- */
-export const TOWER_QI_ABOVE = 0.8;
-
-/** 吸 The least a floor above your realm's warden pays, as a share of TOWER_QI_HOURS. See TOWER_QI_ABOVE. */
-export const TOWER_QI_LEAST = 0.5;
+export const TOWER_QI_RUNG = 0.25;
+/** 吸 The floor that pays TOWER_QI_RUNG of the last rung, and the most any floor pays. See TOWER_QI_RUNG. */
+export const TOWER_QI_SUMMIT = 121;
+/** 吸 How many floors a climber rises while a realm's nine rungs open: eleven. See TOWER_QI_RUNG. */
+export const TOWER_QI_REALM_FLOORS = 11;
 
 /**
  * 道 Why 神 the Spirit branch stopped selling the qi rate.

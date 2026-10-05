@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { LINES, PILL_GRADES, PILL_LINES, pillOf } from '../../data/alchemy.ts';
-import { LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_ABOVE, TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST, levelCap } from '../balance.ts';
+import {
+  LAYERS_PER_REALM, PAIR_TOWER_QI, PILL_AHEAD, PILL_PACE, TOWER_QI_REALM_FLOORS, TOWER_QI_RUNG, TOWER_QI_SUMMIT, ladderBetween, levelCap,
+} from '../balance.ts';
 import { ARCHETYPES, TEMPLATE_BY_KEY, callingOf, type Item, type Slot, type Worn } from '../../data/gear.ts';
 import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { WARDEN_EDGE, odds, referencePower } from '../combat.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import {
-  FLOORS_PER_REALM, floorBeast, floorHours, floorLoot, floorPower, fullFloor, lootBonus, seals,
+  FLOORS_PER_REALM, floorBeast, floorLoot, floorPower, floorQiPay, floorRung, lootBonus, seals,
 } from '../tower.ts';
 import {
   PILL_BANE_FLOOR, PILL_POWER, pillBane, pillCost, pillFortune, pillPower, pillsTaken,
 } from '../furnace.ts';
-import { brew, canBrew, clearFloor, floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen, towerRate } from '../trials.ts';
+import { brew, canBrew, clearFloor, floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
 import { isOpen, opensAt } from '../unlocks.ts';
 import { newState, power, validate, type State } from '../state.ts';
 import { num } from '../format.ts';
@@ -284,35 +286,45 @@ describe('吸 what a floor pays in qi', () => {
       expect(floorQi(qi, floor), `floor ${floor}`).toBeCloseTo(floorQi(fifth, floor), 6);
     }
     console.log(`\n  fifth realm, nothing worn, six 劍 pieces or six 氣 pieces: floor 31 pays ` +
-      `${floorHours(31, 5).toFixed(2)}h, floor 41 ${floorHours(41, 5).toFixed(2)}h, floor 45 ` +
-      `${floorHours(45, 5).toFixed(2)}h, the same qi for all three bodies\n`);
+      `${num(floorQi(fifth, 31))} qi, floor 45 ${num(floorQi(fifth, 45))}, floor 60 ` +
+      `${num(floorQi(fifth, 60))}, the same qi for all three bodies\n`);
   });
 
-  it('pays the whole six hours on your realm warden floor and less either side of it', () => {
-    expect(fullFloor(5)).toBe(45);
-    expect(fullFloor(9)).toBe(81);
-    expect(floorHours(45, 5)).toBe(TOWER_QI_HOURS);
-    expect(floorHours(44, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW, 9);
-    expect(floorHours(36, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_BELOW ** 9, 9);
-    // 吸 Above it, a little less each floor, levelling out at the least and never under it.
-    expect(floorHours(46, 5)).toBeCloseTo(TOWER_QI_HOURS * (TOWER_QI_LEAST + (1 - TOWER_QI_LEAST) * TOWER_QI_ABOVE), 9);
-    for (let f = 45; f < 150; f++) {
-      expect(floorHours(f + 1, 5), `floor ${f + 1}`).toBeLessThan(floorHours(f, 5));
-      expect(floorHours(f + 1, 5), `floor ${f + 1}`).toBeGreaterThanOrEqual(TOWER_QI_HOURS * TOWER_QI_LEAST);
+  it('pays a fixed sum read off the floor: a share of the rung its climber stands on', () => {
+    // The line through the measured climb: the last rung at the summit floor, a realm's
+    // nine rungs lower for every TOWER_QI_REALM_FLOORS floors below it, never under rung 0.
+    expect(floorRung(TOWER_QI_SUMMIT)).toBe(80);
+    expect(floorRung(TOWER_QI_SUMMIT - TOWER_QI_REALM_FLOORS)).toBeCloseTo(80 - LAYERS_PER_REALM, 9);
+    expect(floorRung(1)).toBe(0);
+    expect(floorRung(TOWER_QI_SUMMIT + 500)).toBe(80);
+    for (let f = 1; f < 400; f++) expect(floorQiPay(f)).toBeCloseTo(TOWER_QI_RUNG * ladderBetween(floorRung(f)), -1);
+    // 吸 Nothing about the climber enters: not the realm, not the rate bought, not the day.
+    // So there is never a reason to wait for a floor, or to buy gathering before it.
+    const early = { ...fifth, levels: { ...fifth.levels, method: 0, pills: 0 } };
+    const later = { ...atCap(9), layer: 8, tower: 30, at: fifth.at + 60 * 86_400 };
+    for (const floor of [1, 31, 45, 60, 81, 100, TOWER_QI_SUMMIT, 200]) {
+      expect(floorQi(early, floor), `floor ${floor}`).toBe(floorQi(fifth, floor));
+      expect(floorQi(later, floor), `floor ${floor}`).toBe(floorQi(fifth, floor));
     }
-    expect(floorHours(500, 5)).toBeCloseTo(TOWER_QI_HOURS * TOWER_QI_LEAST, 6);
-    // No floor anywhere, for any realm, pays more than the warden floor's six hours.
-    for (let r = 5; r <= 9; r++) for (let f = 1; f < 300; f++) expect(floorHours(f, r)).toBeLessThanOrEqual(TOWER_QI_HOURS);
-    // A breakthrough moves the warden floor up nine: a floor under the old warden only
-    // ever pays less for it, and one above the new warden a little more, never past six.
-    for (let f = 1; f < fullFloor(5); f++) expect(floorHours(f, 6)).toBeLessThanOrEqual(floorHours(f, 5));
-    for (let f = fullFloor(6); f < 300; f++) expect(floorHours(f, 6)).toBeGreaterThanOrEqual(floorHours(f, 5));
-    console.log(`\n  吸 fifth realm: floor 44 pays ${floorHours(44, 5).toFixed(2)}h, 45 ${floorHours(45, 5).toFixed(2)}h, ` +
-      `46 ${floorHours(46, 5).toFixed(2)}h, 50 ${floorHours(50, 5).toFixed(2)}h, 55 ${floorHours(55, 5).toFixed(2)}h, ` +
-      `75 ${floorHours(75, 5).toFixed(2)}h; floors 45 to 77 together ` +
-      `${Array.from({ length: 33 }, (_, i) => floorHours(45 + i, 5)).reduce((a, b) => a + b, 0).toFixed(0)}h (198h before 2026-10-04)\n`);
-    // And the qi is the hours at the rate with nothing worn.
-    expect(floorQi(fifth, 50)).toBeCloseTo(towerRate(fifth) * 3600 * floorHours(50, 5), 4);
+    console.log(`\n  吸 every floor, to everybody: 45 pays ${num(floorQiPay(45))} qi, 60 ${num(floorQiPay(60))}, ` +
+      `70 ${num(floorQiPay(70))}, 81 ${num(floorQiPay(81))}, 100 ${num(floorQiPay(100))}, ` +
+      `${TOWER_QI_SUMMIT} and above ${num(floorQiPay(TOWER_QI_SUMMIT))}\n`);
+  });
+
+  /**
+   * 吸 And it never pays enough to buy its own next floor. Above the ladder the furnace sells
+   * 煉體 at a price that holds (PILL_AHEAD), and seven of them lift a body over a floor; a
+   * floor that paid that much would climb the tower by itself. So the sum stops growing at
+   * the summit floor, and the most any floor pays is a small share of those seven pills.
+   */
+  it('never pays enough to buy the pills for the next floor', () => {
+    const held = { body: 10_000, bane: 0, fortune: 0 };
+    const pill = pillCost(held, 'body', 0).qi;
+    const most = Math.max(...Array.from({ length: 2000 }, (_, i) => floorQiPay(i + 1))) * PAIR_TOWER_QI;
+    expect(most).toBe(floorQiPay(TOWER_QI_SUMMIT) * PAIR_TOWER_QI);
+    expect(most).toBeLessThan((7 * pill) / 20);
+    console.log(`\n  吸 the most a floor pays, ${num(most)} qi as Celestial Master, is ` +
+      `${((100 * most) / (7 * pill)).toFixed(1)}% of the seven 煉體 that lift a body over a floor\n`);
   });
 
   it('pays 天師 the Celestial Master a quarter again, and nothing else a body wears moves it', () => {

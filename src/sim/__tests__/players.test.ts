@@ -8,8 +8,9 @@ import { bodyTotals } from '../schools.ts';
 import { layersOpened, newState, rate, type State } from '../state.ts';
 import { advance } from '../time.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { clearFloor, floorQi, towerRate } from '../trials.ts';
-import { TOWER_QI_BELOW, TOWER_QI_HOURS, TOWER_QI_LEAST } from '../balance.ts';
+import { clearFloor, floorQi } from '../trials.ts';
+import { TOWER_QI_RUNG, TOWER_QI_SUMMIT, ladderBetween } from '../balance.ts';
+import { floorQiPay } from '../tower.ts';
 import { pillsTaken } from '../furnace.ts';
 import { num } from '../format.ts';
 import { playAll } from '../../../tools/habits.ts';
@@ -127,13 +128,11 @@ describe('勤 what being there buys you', () => {
       `${num(there.qi)} · ${FOCUS_MAX}x, and never less than 1x\n`);
   });
 
-  it('pays a tower floor in hours of gathering, once and never again', () => {
+  it('pays a tower floor a fixed sum of qi, once and never again', () => {
     const s: State = { ...newState(T0), realm: 5, layer: 4, tower: 44, materials: 0 };
     const won = clearFloor(s, 45);
-    const hours = (won.qi - s.qi) / rate(s) / 3600;
-    console.log(`  tower floor 45 pays ${num(won.qi - s.qi)} qi: ${hours.toFixed(1)} hours of ` +
-      `this cultivator's own gathering, and ${num(won.materials)} 材`);
-    expect(hours).toBeCloseTo(TOWER_QI_HOURS, 4);
+    console.log(`  tower floor 45 pays ${num(won.qi - s.qi)} qi, to anybody, and ${num(won.materials)} 材`);
+    expect(won.qi - s.qi).toBeCloseTo(floorQiPay(45), 4);
     expect(won.materials).toBeGreaterThan(0);
     // The same floor a second time pays nothing: there is no floor to farm.
     expect(clearFloor(won, 45)).toBe(won);
@@ -141,39 +140,33 @@ describe('勤 what being there buys you', () => {
   });
 
   /**
-   * 吸 And it pays for the fight, not for the sweep.
+   * 吸 And it pays for the floor, never for the climber (rekaris and speculaether, 2026-10-05).
    *
-   * 塔 opens at the fifth realm, so a cultivator arriving there has a back catalogue of
-   * forty-odd trivial floors waiting. Paid flat, that first sitting was worth **ten days
-   * and eighteen hours** of gathering, measured, which made the fifth realm the
-   * shortest in the whole run. A reward for opening a system is right; a reward that
-   * rewrites the curve is not. So the six hours are paid on your realm's warden floor,
-   * every floor below it pays a fifth less, and every floor above it a little less again,
-   * down to half (2026-10-04: a geared cultivator beats thirty floors above the warden the
-   * day the tower opens, and at six hours each that was half the fifth realm's qi).
+   * It was hours of the climber's own gathering, read against their realm's warden floor,
+   * so buying rate first paid more, a floor beaten a realm early paid a fifth of what it
+   * would later, and a floor beaten high paid half. A floor falls once. Now the same floor
+   * pays the same sum to a newcomer of the fifth realm with nothing bought and to a
+   * finished cultivator of the ninth, whenever either beats it.
    */
-  it('pays a floor by where it stands against your realm, and the first floors nothing', () => {
+  it('pays a floor the same to everybody, whatever their realm, rate or day', () => {
+    const fresh: State = { ...newState(T0), realm: 5, layer: 0, tower: 0 };
     const mighty: State = {
-      ...newState(T0), realm: 9, layer: 8, tower: 0,
+      ...newState(T0), realm: 9, layer: 8, tower: 0, at: T0 + 90 * 86_400,
       levels: { technique: 54, method: 54, pills: 54, cores: 54 },
     };
-    const trivial = floorQi(mighty, 1);
-    const real = floorQi(mighty, 81);
-    const full = towerRate(mighty) * 3600 * TOWER_QI_HOURS;
-    console.log(`  the same cultivator is paid ${num(real)} qi for the ninth realm's warden floor ` +
-      `and ${num(trivial)} for the first floor in the tower\n`);
-
-    expect(real).toBeCloseTo(full, 4);
-    expect(floorQi(mighty, 200) / (full * TOWER_QI_LEAST)).toBeCloseTo(1, 9);
-    expect(floorQi(mighty, 80)).toBeCloseTo(full * TOWER_QI_BELOW, 4);
-    expect(trivial).toBeLessThan(real / 1000);
-    // The fifth realm's warden floor is worth the whole six hours, and the floors above it
-    // less, never under half.
-    const fifth = { ...newState(T0), realm: 5, layer: 4 };
-    const six = towerRate(fifth) * 3600 * TOWER_QI_HOURS;
-    expect(floorQi(fifth, 45)).toBeCloseTo(six, 4);
-    expect(floorQi(fifth, 60)).toBeLessThan(six);
-    expect(floorQi(fifth, 60)).toBeGreaterThanOrEqual(six * TOWER_QI_LEAST);
+    expect(rate(mighty)).toBeGreaterThan(rate(fresh) * 1e6);
+    for (const floor of [1, 45, 60, 81, 100, TOWER_QI_SUMMIT, 300]) {
+      expect(floorQi(mighty, floor), `floor ${floor}`).toBe(floorQi(fresh, floor));
+      expect(floorQi(fresh, floor), `floor ${floor}`).toBe(floorQiPay(floor));
+    }
+    // Higher floors pay more, up to the summit floor, and every floor above it the same.
+    for (let f = 25; f < TOWER_QI_SUMMIT; f++) expect(floorQiPay(f + 1), `floor ${f + 1}`).toBeGreaterThan(floorQiPay(f));
+    expect(floorQiPay(TOWER_QI_SUMMIT)).toBeCloseTo(TOWER_QI_RUNG * ladderBetween(80), -3);
+    expect(floorQiPay(10_000)).toBe(floorQiPay(TOWER_QI_SUMMIT));
+    // The first floors are an errand for material: next to nothing against the fifth realm.
+    expect(floorQi(fresh, 1)).toBeLessThan(floorQi(fresh, 81) / 1e6);
+    console.log(`  floor 45 pays ${num(floorQiPay(45))} qi, floor 81 ${num(floorQiPay(81))}, floor ` +
+      `${TOWER_QI_SUMMIT} and every floor above it ${num(floorQiPay(TOWER_QI_SUMMIT))}, to everybody\n`);
   });
 
   /**

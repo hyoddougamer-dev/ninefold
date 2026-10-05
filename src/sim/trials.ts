@@ -1,7 +1,7 @@
 import { furnaceDiscount } from './crafts.ts';
 import { LINES, pillOf, type Line } from '../data/alchemy.ts';
 import { pillCost } from './furnace.ts';
-import { floorHours, floorLoot, lootBonus, nextFloor } from './tower.ts';
+import { floorLoot, floorQiPay, lootBonus, nextFloor } from './tower.ts';
 import { recordMaterial } from './record.ts';
 import { rate, type State } from './state.ts';
 import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
@@ -30,10 +30,11 @@ export function towerOpen(s: State): boolean {
 }
 
 /**
- * 吸 The rate a floor is paid at: this cultivator's gathering with nothing worn.
+ * 吸 This cultivator's gathering with nothing worn: what 擂台 the Platform pays its hours of.
  *
  * The levels, the pills, the tree and the marks all count, because none of them can be
- * taken off. The gear's 氣 lines do not, so the pay never moves when the clothes do.
+ * taken off. The gear's 氣 lines do not, so the pay never moves when the clothes do. The
+ * tower used to pay in it too, until 2026-10-05: see floorQi.
  */
 export function towerRate(s: State): number {
   return rate({ ...s, worn: BARE });
@@ -41,22 +42,20 @@ export function towerRate(s: State): number {
 const BARE = {} as State['worn'];
 
 /**
- * 吸 What a floor gives up when it falls: material, and hours of gathering.
+ * 吸 What a floor gives up in qi when it falls: the floor's own fixed sum (floorQiPay in
+ * tower.ts), and 天師 the Celestial Master's quarter again, which is the one thing a build adds.
  *
- * 誤 It used to be six hours of the rate *with* gear on, scaled by the floor's power
- * against the cultivator's *own* power, gear and all. A tester found what that meant
- * (2026-10-04): taking a piece off raised the pay of every floor already outgrown, so a
- * sweep from the first floor at the fifth realm paid 52 hours worn and 80.6 choosing
- * what to wear floor by floor, ×1.55, measured. Clothes moved the reward, and the card
- * said six hours while the early floors paid none.
- *
- * Now the floor and the realm decide the hours (floorHours in tower.ts), the rate is the
- * one with nothing on (towerRate), and 天師 the Celestial Master is the one thing a build
- * adds. What the card says before the fight is what the fight pays.
+ * 誤 It was hours of gathering, and twice the hours read the climber. First the rate with
+ * gear on and the floor's power against the cultivator's own (2026-10-04: taking a piece
+ * off raised the pay of every floor outgrown, ×1.55 on a sweep from the first floor).
+ * Then the rate with nothing worn and the realm (rekaris and speculaether, 2026-10-05):
+ * buying rate before climbing paid more, a floor beaten a realm early paid less, a floor
+ * beaten high paid half, and a floor falls only once. Now the floor decides and nothing
+ * else does, so what the card says before the fight is what the fight pays, to anybody.
  */
 export function floorQi(s: State, floor = standingFloor(s)): number {
   // 天師 The Celestial Master is paid a quarter again for a floor. A payment, never the rate.
-  return towerRate(s) * 3600 * floorHours(floor, s.realm) * classTowerQi(s);
+  return floorQiPay(floor) * classTowerQi(s);
 }
 
 /**
