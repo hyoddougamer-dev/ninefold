@@ -1387,6 +1387,35 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-06-walls",
+      "pin": false,
+      "channel": "devlog",
+      "title": "壁 Update · Walls at every gate, elites, and pills that break them",
+      "color": "#C0533F",
+      "body": [
+        "Many of you told me the nine realms ask for nothing: the warden falls the moment it comes out, and the workshop's pills sit in the pouch. This update gives every gate a wall and gives what you craft a job at it. Thank you for saying it plainly."
+      ],
+      "fields": [
+        [
+          "瓶頸 A bottleneck at every gate",
+          "From the third realm, the warden comes to the gate stronger than it used to be: ×4 in the third realm, up to ×72 in the eighth. Every day it loosens by 30%, back down to where it stood before. Nobody is ever stuck: if you only wait, it opens. Its card says how strong it stands, when it is back, and what breaks it sooner. The tribulation's Dragon is unchanged."
+        ],
+        [
+          "破境 Elixirs and sigils break it",
+          "Carry an elixir and a sigil from 業 the workshop into your realm's warden and each one also breaks a day of the bottleneck (1.75 days at Heaven rank, less for one made for an older realm). As before, a win spends whichever took part and a loss keeps both."
+        ],
+        [
+          "霸 Elites",
+          "The last beast of each realm, from the second, is now an elite: it stands far above the rest of the realm, it never loosens, and it leaves three times the 材 material. Its row on the hunt says so. Elites are never the week's quarry or a door in 秘境."
+        ],
+        [
+          "爐 Pills with numbers",
+          "Every furnace pill now says what one does and what all of yours come to: power ×2.03, beasts at 86%, rare gear ×1.24. The ninth bane pill was called the Dragonslaying Pill and never touched the Dragon, so it is now 斬妖丹, the Beast-Severing Pill."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1472,6 +1501,7 @@
         ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi\n盡 Buy all buys every level you can pay for, cheapest first"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
         ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
+        ["▸ 瓶頸 The bottleneck", "From the third realm the warden comes to the gate far stronger than the realm: ×4 in the third, up to ×72 in the eighth. Every day it loosens by 30%, back to where it would stand without the wall, so waiting alone always opens it. Beast cores, gear, the Path and the workshop's elixirs and sigils get you over it sooner. Its card on 修 Cultivate says how strong it stands and when it is back. The tribulation's Dragon has no bottleneck."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
       ]
     },
@@ -1494,8 +1524,9 @@
         ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +1% 材 material from every beast."],
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
+        ["▸ 霸 Elites", "From the second realm, the last beast of each realm is an elite, marked on its row. It stands far above the rest of its realm and never gets weaker with time, and it leaves three times the 材 material. It is the hunt for a strong build, never the week's quarry and never a door in 秘境."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
-        ["▸ 期 The week's quarry", "One beast each week pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
+        ["▸ 期 The week's quarry", "One beast each week (never an elite) pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
       ]
     },
     {
@@ -1644,7 +1675,7 @@
         ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending (2% of your health a round), Guarding (12% less taken) and Might (12% harder), 1.75 times that at 天 Heaven rank, for every realm, and three rare ones. A pill is about an hour of work, its herbs and parts included, and pays the experience of an hour. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding 15% less taken, Thunder 15% harder, Binding, Mirror 10% sent back, Five Thunders 25% harder), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece. A sigil is an hour of work or more. Every recipe in the game lists its own numbers."],
         ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
-        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it."],
+        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. A thing made for an earlier realm is worth half as much for each realm above it. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank), so a crafter gets through a fresh gate days sooner."],
         ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, so its marks come at 1, 1, 2, 5 and 12; an array as 30, at 1, 4, 10, 27 and 67): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Where a mark has nothing to give a recipe, it gives another 1 in 10 twice, or another 10% faster. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after. Tap the dots on a recipe to see its own five."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."]
       ],
@@ -1684,6 +1715,7 @@
         "**The Heavens.** Thunder marks open nine heavens above the summit, and each one offers a 悟道 card: one of three, your choice."
       ],
       "fields": [
+        ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: every beast 1.5% weaker each, never under 40% of itself, and never the Dragon. 聚寶 Fortune: +4% chance at rare gear each. Each pill on the furnace says what all of yours come to now."],
         ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
         ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit."]
       ]

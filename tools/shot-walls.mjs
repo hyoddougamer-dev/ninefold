@@ -40,12 +40,13 @@ function cultivator(hours, crafts, realm = 5) {
   for (const [k, l] of Object.entries(levels)) xp[k] = XP[l] + Math.floor((XP[l + 1] - XP[l]) * 0.45);
   return {
     v: 1, at, startedAt: at - 30 * 86400, realm, layer: realm === 9 ? 3 : 8, gateAt: realm === 9 ? 0 : at - hours * 3600,
-    qi: 10 ** (realm + 2), materials: 10 ** (realm + 2), wardenFell: false,
+    qi: 10 ** (realm === 9 ? 15 : realm + 2), materials: 10 ** (realm === 9 ? 10 : realm + 2), wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: Math.max(0, cap - 6) }, killed,
     worn: { weapon: { id: 'w', template: `sword${realm}`, rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
     chest: [], self: 'woman', stance: 'swift', sequence: ['crane'], tribulation: 0, tribulationAt: 0,
     tower: 40, brewed: { body: 24, bane: 18, fortune: 6 }, quarryWeek: 99999,
-    awakened: ['feast', 'wolf', 'slaughter', 'platform'],
+    awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought']
+      .slice(0, [0, 0, 2, 2, 4, 4, 6, 6, 8, 8][realm]),
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones',
            'bestiary', 'salvage', 'fuse', 'whom', 'cave', 'secret', 'crafts'],
     crafts: {

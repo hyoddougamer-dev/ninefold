@@ -3240,6 +3240,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .beast:has(.bleaves) > .drivetag { grid-column: 4; grid-row: 1; }
   .beast:has(.bleaves) .bname > i,
   .beast:has(.bleaves) .bname > .wtag,
+  .beast:has(.bleaves) .bname > .etag,
   .beast:has(.bleaves) .bname > .marks { grid-column: 2 / -1; justify-self: start; }
   .beast:has(.bleaves) > .bleaves,
   .beast:has(.bleaves) > .bfate { grid-column: 1 / -1; }
