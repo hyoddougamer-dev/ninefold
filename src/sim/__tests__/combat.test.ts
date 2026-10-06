@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf, wardenOf } from '../../data/bestiary.ts';
 import { LAYERS_PER_REALM, ladderAt, levelCap } from '../balance.ts';
 import {
-  beastPower, fight, odds, oddsRaw, referencePower, seenBounty, takeKill,
+  beastPower, bottleneck, fight, isElite, odds, oddsRaw, referencePower, seenBounty, takeKill,
 } from '../combat.ts';
 import { focusAt } from '../balance.ts';
 import { buy, canBuy, newState, power, type State } from '../state.ts';
@@ -22,7 +22,10 @@ const T0 = 1_700_000_000;
  * whole finding that rebuilt the curve.
  */
 function bare(realm: number): State {
-  return { ...newState(T0), realm, layer: LAYERS_PER_REALM - 1 };
+  // 瓶頸 At a gate met long ago (gateAt 1), so the warden stands where wardens stood before
+  // the walls: the floor every cultivator gets to by waiting. The wall itself is read
+  // below, in '壁 a fresh gate is a wall'.
+  return { ...newState(T0), realm, layer: LAYERS_PER_REALM - 1, gateAt: 1 };
 }
 
 /**
@@ -90,9 +93,37 @@ describe('戰 the beasts', () => {
     });
     console.log(`\n${rows.join('\n')}\n`);
 
-    for (let r = 2; r <= 9; r++) {
+    // 劫 The ninth is the Dragon, on its own anchor (tribulationPower), so it is left out.
+    for (let r = 2; r <= 8; r++) {
       expect(beastPower(wardenOf(r))).toBeGreaterThan(beastPower(wardenOf(r - 1)));
     }
+  });
+
+  /**
+   * 壁 The walls (REALM_WALL, BOTTLENECK_LOOSEN). The day the warden comes to the gate it
+   * stands where a cultivator with the realm's gear and the Path stands, so the levels and
+   * a stance alone do not open it from the third realm; every day after, a share of the
+   * wall falls away, down to where wardens stood before, so waiting opens it too.
+   */
+  it('壁 a fresh gate is a wall, and it loosens with the days to what it was', () => {
+    for (const r of [3, 5, 8]) {
+      const g = wardenOf(r);
+      const fresh = { ...built(r), gateAt: T0, at: T0 };
+      const later = (days: number) => ({ ...fresh, at: T0 + days * 86_400 });
+      expect(odds(fresh, g)).toBeLessThan(0.15);
+      expect(bottleneck(fresh, g)).toBe(1);
+      // It only ever loosens, and it reaches the old floor and stops there.
+      let last = 1;
+      for (const d of [1, 2, 4, 8, 16, 32]) {
+        const b = bottleneck(later(d), g);
+        expect(b).toBeLessThanOrEqual(last);
+        last = b;
+      }
+      expect(odds(later(40), g)).toBeGreaterThan(0.5);
+      expect(bottleneck(later(400), g)).toBeCloseTo(bottleneck({ ...fresh, gateAt: 1 }, g), 9);
+    }
+    // The Dragon has no bottleneck: it is its own ladder.
+    expect(bottleneck({ ...bare(9), gateAt: T0, at: T0 }, wardenOf(9))).toBe(1);
   });
 
   it('a warden is not beaten by qi alone. It is beaten by 妖丹 and a build', () => {
@@ -178,7 +209,8 @@ describe('戰 the beasts', () => {
     // long the fight runs.
     for (const r of [1, 3, 5, 7, 9]) {
       const s = invested(r);
-      for (const c of commonsOf(r)) expect(odds(s, c)).toBeGreaterThan(0.45);
+      // 精 Not the elite, the last beast of a realm from the second: it is the hard hunt.
+      for (const c of commonsOf(r).filter((x) => !isElite(x))) expect(odds(s, c)).toBeGreaterThan(0.45);
       const powers = commonsOf(r).map((c) => beastPower(c));
       expect(Math.max(...powers) / Math.min(...powers)).toBeGreaterThan(1.5);
     }

@@ -497,7 +497,9 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // server sees the warden beaten, never what was in the other hand.
   for (let r = before.realm; r < after.realm; r++) {
     const w = wardenOf(r);
-    const there = { ...after, realm: r, layer: 8 };
+    // 瓶頸 Read fully loosened: a gate waited out is as honest as one built through, and
+    // the server cannot see the days in between.
+    const there = { ...after, realm: r, layer: 8, gateAt: 1 };
     if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
   // 業 One task at a time, so the experience every craft gained between two saves has to

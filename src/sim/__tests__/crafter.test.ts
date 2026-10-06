@@ -52,6 +52,10 @@ describe('業 a crafter played for a whole climb', () => {
    * a beast for Rendering, which is a quarter of a once-a-day player's hunting, and with
    * that errand switched off the two landed on the same day. So the bound is the one the
    * dev log states, two days, inclusive.
+   *
+   * 精 When the elites came to pay triple (2026-10-06) the errand, which took the first of
+   * a visit's four hunts, cost five days, and none of them at a gate. The harness now does
+   * the learning kill on the way, as the game does: 84 against 85.
    */
   it.each(['active', 'once a day'])('neither buys nor taxes the climb: %s, within two days of the same cultivator without it', (name) => {
     const base = HABITS.find((x) => x.name === name)!;

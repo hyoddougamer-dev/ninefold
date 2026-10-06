@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP } from '../sim/balance.ts';
+import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -255,6 +255,18 @@ export const CULTIVATE = {
   buyMax: 'Max',
   lot: (n: number) => `×${n}`,
   wardenHead: "妖 The realm's warden",
+  /**
+   * 瓶頸 The wall, said where the warden is: how far above itself it stands, when it is
+   * back, and what breaks it sooner. Nothing is lost while it loosens.
+   */
+  bottleneck: (over: number, days: number) =>
+    `瓶頸 Bottleneck: the warden stands ×${over < 10 ? over.toFixed(1) : Math.round(over)} above its old strength. `
+    + `It loosens every day and is back to it in ${days < 1 ? 'under a day' : `${Math.ceil(days)} ${Math.ceil(days) === 1 ? 'day' : 'days'}`}. Nothing is lost while you wait.`,
+  breachCarried: (days: number) =>
+    `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it in this fight, and is spent only if you win.`,
+  breachHeld: (days: number) =>
+    `Your pouch could break up to ${days.toFixed(1)} days of it: carry an elixir and a sigil from 業 the workshop.`,
+  breachNone: 'An elixir or a sigil from 業 the workshop breaks days of it, and cores, 爐 pills and gear raise you to meet it.',
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
@@ -564,6 +576,11 @@ export const TRIALS = {
     `The furnace opens at ${han} ${name}. It turns qi and 材 material into pills that make you stronger for good.`,
   furnace: 'Pills cost qi and 材 material together. What you brew is yours for good, and nothing here has a cap.',
   held: (n: number) => (n === 1 ? '1 taken' : `${n} taken`),
+  /** 數 What everything taken of a line comes to now, so a pill reads as a number. */
+  now: (line: 'body' | 'bane' | 'fortune', worth: number) =>
+    line === 'body' ? `power ×${worth.toFixed(2)} now`
+      : line === 'bane' ? `beasts at ${Math.round(worth * 100)}% now, never under ${Math.round(PILL_BANE_FLOOR * 100)}%`
+      : `rare gear ×${worth.toFixed(2)} now`,
   needMaterial: 'You need more 材 material. The tower pays it.',
   /** 爐 The other half, which only the material half used to say. */
   needQi: 'A price in red is more qi than you hold. Qi gathers on its own, so these come back within reach.',
@@ -578,6 +595,9 @@ export const TRIALS = {
  * decides.
  */
 export const ADVICE = {
+  /** 瓶頸 Blocked at a fresh wall with something in the pouch that breaks it. */
+  breach: (days: number) =>
+    `The warden is still in its 瓶頸 bottleneck. Carry an elixir and a sigil from 業 the workshop: they break up to ${days.toFixed(1)} days of it.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -848,6 +868,8 @@ export const HUNT = {
    *  percentage, but how many times your own power the beast is. It is the one number
    *  that tells three unwinnable fights apart. */
   toReach: 'stronger',
+  /** 霸 The last beast of a realm from the second, standing above the rest of it (ELITE_WALL). */
+  elite: (loot: number) => ({ han: '霸', name: 'Elite', note: `×${loot} 材, harder than the rest` }),
   /**
    * 誠 How many beasts, and how many of them can be beaten now.
    *
@@ -2222,7 +2244,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. A win spends whichever took part; a loss keeps both. Never the tribulation’s Dragon.',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps both. Never the tribulation’s Dragon.',
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   carryNone: 'Nothing',
@@ -2453,6 +2475,14 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
+    /**
+     * \u7a97 The foot of a long chest: it draws its first pieces, and more as it is scrolled.
+     * rekaris, on the Discord (2026-10-06): 1,800 pieces froze the screen.
+     */
+    showMore: (n: number) => `Show ${n} more`,
+    moreLeft: (left: number) => `${left.toLocaleString('en')} left`,
+    moreLabel: (n: number, left: number) => `Show ${n} more pieces. ${left.toLocaleString('en')} not shown yet.`,
+    moreGroupsLabel: (n: number, left: number) => `Show ${n} more groups to fuse. ${left.toLocaleString('en')} not shown yet.`,
     /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',

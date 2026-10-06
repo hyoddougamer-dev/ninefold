@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
-import { beastPower, effectiveBeastPower, lootFrom, oddsRaw } from '../../sim/combat.ts';
-import { ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
+import { beastPower, effectiveBeastPower, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
+import { ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import {
@@ -290,6 +290,11 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
                 {/* 期 And the same chip on the row, because the band at the top is not
                     where somebody scrolling a list of twenty-five is looking. */}
                 {isQuarry(state, b) && <WeekTag left={weekLeft(state)} />}
+                {/* 霸 The elite says so, because its power reads like a mistake otherwise. */}
+                {isElite(b) && (
+                  <span className="etag"><b className="cjk">{HUNT.elite(ELITE_LOOT).han}</b>
+                    <i>{HUNT.elite(ELITE_LOOT).name} · {HUNT.elite(ELITE_LOOT).note}</i></span>
+                )}
                 {/* 註 The pips are the characters, so they are the tappable ones. A
                     second copy of 見 in the sentence beside them was the screen naming
                     the same thing twice on the same line. */}

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { allowedShare, walkAll } from '../../../tools/idle.ts';
+import { wallOf } from '../combat.ts';
+import { BOTTLENECK_LOOSEN } from '../balance.ts';
 
 /**
  * 閒 What a realm lets you buy, and how long it leaves you with nothing to press.
@@ -74,12 +76,17 @@ describe('閒 where a realm\'s qi goes', () => {
     }
 
     /**
-     * 守 And from the fourth realm up there is no wait at all for anybody, because a
-     * warden no longer walks off when you spend the qi that beats it. See wardenStands.
+     * 守 From the fourth realm up a warden no longer walks off when you spend the qi that
+     * beats it (see wardenStands), so the only wait left is 壁 the wall itself, and that one
+     * is meant. It is bounded all the same: never longer than the bottleneck takes to
+     * loosen to where the wardens stood before the walls (REALM_WALL, BOTTLENECK_LOOSEN),
+     * plus the visit that comes back to find it loosened. The ninth realm has no wall.
      */
     for (const run of runs) {
       for (const row of run.rows.filter((r) => r.realm >= 4)) {
-        expect(row.ceilingHours).toBe(0);
+        const loosen = Math.log(wallOf(row.realm)) / -Math.log(1 - BOTTLENECK_LOOSEN);
+        expect(row.ceilingHours, `${run.name} realm ${row.realm}`).toBeLessThanOrEqual(loosen * 24 + 24 / run.checks);
+        if (row.realm === 9) expect(row.ceilingHours).toBe(0);
       }
     }
 
@@ -124,10 +131,12 @@ describe('閒 where a realm\'s qi goes', () => {
       }
     }
 
-    // By the middle realms the wait at a full bar is a rounding error for everybody.
+    // 壁 By the middle realms the wait at a full bar is the wall and nothing else, and it
+    // stays the smaller part of a realm: under a fifth of it for everybody (2026-10-06,
+    // when the walls went up; before them it was a rounding error).
     for (const run of runs) {
       for (const row of run.rows.filter((r) => r.realm >= 5)) {
-        expect(row.stuckHours / row.hours).toBeLessThan(0.15);
+        expect(row.stuckHours / row.hours).toBeLessThan(0.2);
       }
     }
   }, 120_000);

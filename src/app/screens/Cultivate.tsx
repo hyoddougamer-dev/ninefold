@@ -1,4 +1,4 @@
-import { kitFor, kitWhere } from '../../sim/crafts.ts';
+import { breachHeld, kitFor, kitWhere } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -6,7 +6,8 @@ import {
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
-import { crossNow, currentWarden, effectiveBeastPower, oddsRaw } from '../../sim/combat.ts';
+import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
+import { BOTTLENECK_LOOSEN } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
@@ -85,7 +86,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   set: (make: (s: State) => State) => void;
   onFight: () => void;
   /** 示 Where the advice points, when it points anywhere. */
-  onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear') => void;
+  onGo: (tab: 'hunt' | 'trials' | 'dao' | 'gear' | 'crafts') => void;
   /** 境 Open the page that says what this realm is. */
   onRealm: () => void;
   /** 悟道 True while a breakthrough still owes a card and the sheet is put aside. */
@@ -149,6 +150,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const wardenRaw = useMemo(() => oddsRaw(state, w, undefined, kitFor(state, w, kitWhere(state, w)).kit),
     [w, ...fightDeps(state)]);
   const wardenGap = dragon / Math.max(1e-9, power(state));
+  // 瓶頸 How far above its old self the warden still stands, and the days until it is not.
+  const over = bottleneck(state, w) * wallOf(w.realm);
+  const loosens = over > 1.01 ? Math.log(over) / -Math.log(1 - BOTTLENECK_LOOSEN) : 0;
+  const carriedBreach = loosens ? kitFor(state, w, 'warden').kit.breach ?? 0 : 0;
+  const heldBreach = loosens && !carriedBreach ? breachHeld(state, w) : 0;
   const tip = advice(state);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.
   const p = pace(state);
@@ -408,6 +414,15 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             <p className="faint" style={{ margin: '11px 0 12px', fontSize: 12.5 }}>
               {top ? CULTIVATE.tribulation : CULTIVATE.warden}
             </p>
+            {loosens > 0 && (
+              <p className="bneck" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                {CULTIVATE.bottleneck(over, loosens)}{' '}
+                <span className="faint">
+                  {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach)
+                    : heldBreach >= 0.1 ? CULTIVATE.breachHeld(heldBreach) : CULTIVATE.breachNone}
+                </span>
+              </p>
+            )}
             <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
               戰 <span>Fight</span>
             </button>

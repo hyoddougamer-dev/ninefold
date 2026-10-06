@@ -58,6 +58,8 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
   if (!Number.isFinite(now) || dt <= 0) return { ...s, at: Math.max(s.at, now) };
 
   let { realm, layer, qi, wardenFell } = s;
+  // 瓶頸 The instant the last rung is reached, which is when the warden comes to the gate.
+  let gateAt = s.gateAt ?? 0;
   /**
    * 香 Incense from the vault burns until this instant, open or shut, and adds INCENSE_BONUS
    * of the standing rate while it does. Added, never multiplied by 入定: the sitting deepens
@@ -116,14 +118,19 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
       layer = 0;
       realm += 1;
       wardenFell = false;
+      gateAt = 0;
     }
+    if (layer === LAYERS_PER_REALM - 1 && realm < 9 && !gateAt) gateAt = clock;
   }
 
   // 拆 The melting allowance fills with the time that passed, open or shut; 寶匠 the
   // Treasure Smith fills it faster, so the class still pays once a day's allowance is spent.
   // 套 Read off the melting loadout when one is given, as melting itself is (salvage.ts).
   const melt = Math.min(MELT_CAP, (s.melt ?? MELT_CAP) + (now - s.at) * MELT_FILL * classMelt(taskBody(s, 'melt')));
-  return { ...s, at: now, realm, layer, qi, wardenFell, melt };
+  // A gate reached some other way (a lump, a purchase) is dated now, at the latest.
+  if (layer === LAYERS_PER_REALM - 1 && realm < 9 && !gateAt) gateAt = now;
+  if (layer < LAYERS_PER_REALM - 1 || realm >= 9) gateAt = 0;
+  return { ...s, at: now, realm, layer, qi, wardenFell, melt, gateAt };
 }
 
 /**

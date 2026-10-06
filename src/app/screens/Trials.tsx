@@ -12,7 +12,7 @@ import { SEAL_LOOT, floorBeast, floorPower, leastUntil, seals } from '../../sim/
 import { classTowerQi } from '../../sim/schools.ts';
 import { floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../../sim/trials.ts';
 import { isOpen, opensAt } from '../../sim/unlocks.ts';
-import { pillsTaken } from '../../sim/furnace.ts';
+import { pillBane, pillFortune, pillPower, pillsTaken } from '../../sim/furnace.ts';
 import { furnace, tower } from '../../art/trials.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { Svg } from '../ui/Svg.tsx';
@@ -233,6 +233,7 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
                 <b className="cjk">{pill.han}</b>
                 <i>{pill.name}</i>
                 <em>{info.effect} · {TRIALS.held(taken)}</em>
+                {taken > 0 && <em className="faint">{TRIALS.now(line, (line === 'body' ? pillPower : line === 'bane' ? pillBane : pillFortune)(state.brewed))}</em>}
               </span>
               <span className="price">
                 {lot && lot.n > 1 && <i className="lot">{CULTIVATE.lot(lot.n)}</i>}

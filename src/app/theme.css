@@ -1378,6 +1378,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .chestit[data-better='true'] svg { filter: drop-shadow(0 0 5px rgba(127,180,149,.45)); }
 .chestlegend { font-size: 12px; margin: 10px 0 0; }
 .chestlegend b { color: var(--jade); }
+/* 窗 The foot of a chest drawn in part: the next tiles, and how many are still below. */
+.chestmore { width: 100%; margin: 12px 0 0; padding: 10px 12px; font-size: 13.5px;
+             display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.chestmore .cjk { color: var(--faint); }
+.chestmore i { font-style: normal; font-size: 12px; color: var(--faint); margin-left: 4px; }
 /* 篩 Filters: every place on the body that has something in the chest. */
 .chestfilter { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
                padding: 2px 2px 4px; margin: 0 -2px 10px; }
@@ -2789,6 +2794,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    block now, which is what the <b> above it already was. */
 .beast .bname i { display: block; }
 .beast .bname .wtag { display: inline-flex; margin: 4px 0 1px; }
+/* 霸 The elite's chip, the week's chip in cinnabar: a harder beast, not a rarer one. */
+.beast .bname .etag { display: inline-flex; align-items: center; gap: 6px; margin: 4px 6px 1px 0;
+        border: 1px solid color-mix(in srgb, var(--cinnabar) 55%, transparent);
+        background: color-mix(in srgb, var(--cinnabar) 12%, transparent);
+        border-radius: 8px; padding: 1px 7px; }
+.beast .bname .etag b { font-size: 12.5px; font-weight: 400; color: var(--cinnabar); line-height: 1.5; }
+.beast .bname .etag i { display: inline; font-style: normal; font-size: 10px; letter-spacing: .04em; color: var(--faint); }
+/* 瓶頸 The bottleneck line on the warden's card. */
+.c-side .card .bneck { border-left: 2px solid color-mix(in srgb, var(--cinnabar) 60%, transparent); padding-left: 9px; }
 
 /* 室 On the vault's path the blessed room is named under the seal rather than ringed.
    量 A ring was the first version and it was invisible: every room on that path wears a
@@ -3231,6 +3245,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   .beast:has(.bleaves) > .drivetag { grid-column: 4; grid-row: 1; }
   .beast:has(.bleaves) .bname > i,
   .beast:has(.bleaves) .bname > .wtag,
+  .beast:has(.bleaves) .bname > .etag,
   .beast:has(.bleaves) .bname > .marks { grid-column: 2 / -1; justify-self: start; }
   .beast:has(.bleaves) > .bleaves,
   .beast:has(.bleaves) > .bfate { grid-column: 1 / -1; }

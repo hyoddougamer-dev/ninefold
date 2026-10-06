@@ -59,6 +59,8 @@ export const BANNERS = [
   { key: 'ideas-deep', seal: '深', over: '議 Your opinion · A proposal', title: 'Deeper Hunts', sub: 'The same beast, further down', bg: 'realm/7', fig: 'cut/gargoyle' },
   // 畫 The question about how the game looks, asked honestly, with the art being AI-made.
   { key: 'ideas-art', seal: '畫', over: '議 Your opinion · The look', title: 'Does the Look Matter?', sub: 'Six ways the game could wear its art', bg: 'realm/5', fig: 'cut/crane' },
+  // 業 The walls, the seal with its pill, and the workshop's own sets: asked before the last two are built.
+  { key: 'ideas-forge', seal: '業', over: '議 Your opinion · A proposal', title: 'Walls, Seals and Sets', sub: 'Three ideas to make the workshop matter', bg: 'realm/6', fig: 'cut/golem' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',

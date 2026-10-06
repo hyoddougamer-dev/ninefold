@@ -689,11 +689,20 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
         fights++;
       }
     }
+    // 解 One kill a visit, at most, goes to a beast the knife does not know yet, and it is
+    // done on the way, never instead of the hunt: a learning kill is a few seconds on a
+    // beast already safe, and in the game Auto takes it among hundreds. It used to take
+    // the first of the visit's hunts, which made the errand a quarter of a once-a-day
+    // player's hunting, and once 精 the elites paid triple (2026-10-06) that quarter was
+    // worth three days of the climb that the workshop never cost a real player.
+    const learn = h.crafts && h.hunts > 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined;
+    if (learn) {
+      s = quarried(s, takeKill(s, learn));
+      if (h.gear) s = takeDrop(s, learn, ++seed, h.calling);
+      fights++;
+    }
     for (let i = 0; i < h.hunts; i++) {
-      // 解 One kill a visit, at most, goes to a beast the knife does not know yet: learning
-      // is done on the way, never instead of the hunt.
-      const b = (h.crafts && i === 0 ? toLearn(s, huntable(s.realm, s.layer).filter((x) => odds(s, x) > 0.7)) : undefined)
-        ?? quarryFor(s, h.calling);
+      const b = quarryFor(s, h.calling);
       if (!b) break;
       s = quarried(s, takeKill(s, b));
       if (h.gear) s = takeDrop(s, b, ++seed, h.calling);

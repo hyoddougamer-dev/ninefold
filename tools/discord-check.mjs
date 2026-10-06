@@ -465,8 +465,12 @@ await scenario({}, async (port, env, state) => {
   const loud = new Set((SPEC.announce ?? []).map((k) => state.channels.find((c) => c.name === all.find((x) => x.key === k).name).id));
   const tops = Object.entries(state.messages).filter(([c]) => state.channels.some((x) => x.id === c));
   const pings = (m) => m.content.includes('@everyone') && (m.allowed_mentions?.parse ?? []).includes('everyone');
-  check(tops.every(([c, list]) => list.filter((m) => !m.poll).every((m) => pings(m) === loud.has(c))) && tops.some(([c, list]) => loud.has(c) && list.length),
-    'a new announcement or dev log tells @everyone, and nothing else does');
+  // 靜 A message marked `quiet` in server.json is the one exception: it never pings.
+  const hush = new Set(SPEC.messages.filter((m) => m.quiet).map((m) => m.title));
+  const quiet = (m) => (m.embeds ?? []).some((e) => hush.has(e.title));
+  check(tops.every(([c, list]) => list.filter((m) => !m.poll).every((m) => pings(m) === (loud.has(c) && !quiet(m)))) && tops.some(([c, list]) => loud.has(c) && list.length),
+    'a new announcement or dev log tells @everyone, a quiet one does not, and nothing else does');
+  check(!hush.size || tops.some(([, list]) => list.some((m) => quiet(m) && !pings(m))), 'a quiet dev log goes up without a ping');
   // The live server: the nudged posts went up before they could say it.
   const nudged = SPEC.messages.filter((m) => m.nudge);
   for (const m of nudged) {
