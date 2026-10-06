@@ -1413,6 +1413,10 @@
         [
           "爐 Pills with numbers",
           "Every furnace pill now says what one does and what all of yours come to: power ×2.03, beasts at 86%, rare gear ×1.24. The ninth bane pill was called the Dragonslaying Pill and never touched the Dragon, so it is now 斬妖丹, the Beast-Severing Pill."
+        ],
+        [
+          "器 A big chest no longer freezes Gear",
+          "With a chest of well over a thousand pieces the Gear screen took seconds to open and kept the phone busy while it sat there. rekaris found it. It now opens in a fraction of a second and draws the chest 60 pieces at a time as you scroll. Fusion shows 12 groups at a time behind a Show more button; Heaven fusions always show."
         ]
       ],
       "footer": "師 Shibaki"
