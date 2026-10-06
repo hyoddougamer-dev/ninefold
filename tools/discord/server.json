@@ -1337,6 +1337,35 @@
           ]
         }
       ]
+    },
+    {
+      "key": "update-2026-10-06-place",
+      "pin": false,
+      "channel": "devlog",
+      "title": "承 Update · Refining by place, a fair thunder pool, a smarter full chest",
+      "color": "#C9A45C",
+      "body": [
+        "Four things you asked for, three of them from rekaris. Thank you for reading the game this closely."
+      ],
+      "fields": [
+        [
+          "承 Refining belongs to the place on your body",
+          "Each place (weapon, robe, crown, boots, talisman, ring) keeps its own refining level, and whatever you wear there has it. Taking a piece off, melting it or fusing it never takes a level away, so no piece has to be spared for its levels any more. Your levels moved over by themselves: each place got the most any of its pieces held, so nothing was lost."
+        ],
+        [
+          "雷池 The thunder pool reads your marks only",
+          "It held two days of your own gathering, so a Qi set made the pool bigger and the Dragon came later. Now it holds two days of gathering at the summit with your upgrades at their cap and nothing worn, and only your marks make it bigger. Qi gear fills it faster, as it should. Over forty crossings the endgame runs about 4% quicker, and no crossing got longer."
+        ],
+        [
+          "熔 A full chest weighs your kept filters first",
+          "A piece no kept filter shows always melts before one a kept filter shows, and a kept piece only ever makes room for a better kept one. Before, a chest full of kept pieces melted every new drop, the better ones too."
+        ],
+        [
+          "氣 The Qi school says all it does",
+          "At the full it also lifts the ceiling on qi from gear by ×0.1. It always did; now its line says so."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -3084,6 +3113,53 @@
       ],
       "reply": [
         "Only flavour, and it shouldn't have read like a rule, thank you. Nothing about spending qi changes in the second heaven. The line says something else since today's update: \"Your qi runs gold now, and the old words for it stop fitting.\"",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Thunderpool size is funky",
+      "tags": [
+        "Balance",
+        "Fixed"
+      ],
+      "reply": [
+        "You were right, and it was the same trap the tower's pay had. Since today's update the pool reads your marks alone: two days of gathering at the summit with your upgrades at their cap and nothing worn. A Qi set now fills it faster instead of making it bigger. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Qi class doesn't list the 0.1 increased cap in description",
+      "tags": [
+        "Text",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you, it was missing. Since today's update the Qi school's line says it: at the full, the ceiling on qi from gear stands ×0.1 higher.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "As promised: since today's update refining lives with the place on your body, in a record of its own, the way you suggested. Melting, fusing or taking a piece off can't touch it any more. Each place kept the most any of its pieces held, so nothing was lost. Thanks for the push!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow customization of auto-melting when the bag is full",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, the way you put it: a full chest melts the worst piece no kept filter shows first, and a piece a kept filter shows only ever makes room for a better one a kept filter shows. So your Heaven Power piece now pushes the Earth one out.",
         "· 師 Shibaki"
       ]
     }
