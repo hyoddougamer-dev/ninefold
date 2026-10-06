@@ -68,25 +68,38 @@ export interface Kept {
  * just fell because forty 凡 got there first is the game wasting the player's time, and
  * the player cannot even see it happen. Now the worst piece goes instead, and the arena
  * says which.
+ *
+ * 熔 "Worst" asks the kept filters first and itemWorth second. rekaris, on the Discord:
+ * *"I have Power filter, I get heaven rank Power-filter item, an Earth rank with lower
+ * quality should still get pushed out and melted, so the result is the truly best stuff I
+ * might want."* A kept filter used to spare what it showed outright, so a chest full of
+ * kept pieces melted every new one, the better ones too; and a piece it showed could still
+ * lose to a stronger piece no kept filter wanted. Now a piece no kept filter shows always
+ * goes before one a kept filter shows, and between two of the same kind the weaker goes.
  */
 export function addToChest(
   chest: readonly Item[], item: Item, limit = CHEST_LIMIT,
-  /** 熔 Pieces a full chest must leave alone besides the locked ones: a kept filter's (sim/filters.ts). */
-  spare: (it: Item) => boolean = () => false,
+  /** 熔 Pieces a full chest weighs above every other: a kept filter's (sim/filters.ts). */
+  kept: (it: Item) => boolean = () => false,
 ): Kept {
   if (!chestFull(chest, limit)) return { chest: [...chest, item], dropped: null };
+
+  // Whether `a` goes before `b`: outside the kept filters before inside, then the weaker.
+  const keeps = (it: Item) => (kept(it) ? 1 : 0);
+  const below = (a: Item, b: Item) =>
+    keeps(a) < keeps(b) || (keeps(a) === keeps(b) && itemWorth(a) < itemWorth(b));
 
   // 鎖 A locked piece is never the one that goes. If every piece is locked, the new one
   // goes instead, which is what a full chest always did with a piece no better than its
   // worst: nothing the player chose to keep is ever taken. 承 Nor a piece holding refining
-  // levels, which were paid for and live nowhere else. 熔 Nor one a kept filter shows.
+  // levels, which were paid for and live nowhere else.
   let worstAt = -1;
   for (let i = 0; i < chest.length; i++) {
-    if (chest[i].locked || holdsLevels(chest[i]) || spare(chest[i])) continue;
-    if (worstAt < 0 || itemWorth(chest[i]) < itemWorth(chest[worstAt])) worstAt = i;
+    if (chest[i].locked || holdsLevels(chest[i])) continue;
+    if (worstAt < 0 || below(chest[i], chest[worstAt])) worstAt = i;
   }
   const worst = worstAt >= 0 ? chest[worstAt] : undefined;
-  if (!worst || itemWorth(item) <= itemWorth(worst)) return { chest, dropped: item };
+  if (!worst || !below(worst, item)) return { chest, dropped: item };
 
   const next = chest.slice();
   next[worstAt] = item;

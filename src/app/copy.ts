@@ -1182,6 +1182,9 @@ export const MEET = {
       `${rank} ${name}. Your chest was full and held better, so it melted into ${pays}.`,
     pieceMadeRoom: (name: string, rank: string, old: string, pays: string) =>
       `${rank} ${name}, in your chest now. It was full, so your weakest piece, the ${old}, melted into ${pays}.`,
+    /** 熔 The piece that went was one no kept filter shows, so it was not always the weakest. */
+    pieceMadeRoomUnkept: (name: string, rank: string, old: string, pays: string) =>
+      `${rank} ${name}, in your chest now. It was full, so the ${old}, which no kept filter shows, melted into ${pays}.`,
     see: '器 See it in Gear',
     ok: 'Continue',
   },
@@ -2052,6 +2055,8 @@ export const ARENA = {
   /** 藏 A full chest keeps the better piece and melts the other into qi. Never lost. */
   chestFullNew: (pays: string) => `The chest is full and holds better. This one melts into ${pays}.`,
   chestFullOld: (name: string, pays: string) => `The chest is full, so your weakest piece, the ${name}, melts into ${pays} to make room.`,
+  /** 熔 The piece that went was one no kept filter shows, so it was not always the weakest. */
+  chestFullUnkept: (name: string, pays: string) => `The chest is full, so the ${name}, which no kept filter shows, melts into ${pays} to make room.`,
   /** 期 The week's quarry, the first kill of the week. */
   weekHead: 'The week\u2019s quarry',
   week: (qi: string) => `+${qi} qi for the first one this week. Every one this week pays double 材 material.`,
@@ -2454,13 +2459,16 @@ export const QOL = {
     cancel: 'Not now',
     forget: 'Forget',
     forgetOne: (name: string) => `Forget the filter ${name}`,
-    /** 鎖 A kept filter: a full chest never melts what it shows (rekaris, on the Discord). */
+    /**
+     * 鎖 A kept filter: a full chest melts what it shows last, and only for a better piece it
+     * shows (rekaris, on the Discord).
+     */
     keepWord: 'Keep',
     keptWord: 'Kept',
-    keepOne: (name: string) => `Keep what ${name} shows: a full chest never melts it`,
+    keepOne: (name: string) => `Keep what ${name} shows: a full chest melts it last`,
     unkeepOne: (name: string) => `Stop keeping what ${name} shows`,
-    keptSays: 'A full chest never melts a piece a kept filter shows. It melts the worst piece none of them shows, or the new piece when every piece is kept.',
-    keepWhy: 'Mark a filter Keep and a full chest never melts what it shows.',
+    keptSays: 'A full chest melts the worst piece no kept filter shows. A piece a kept filter shows only ever makes room for a better one a kept filter shows.',
+    keepWhy: 'Mark a filter Keep and a full chest melts what it shows last.',
     filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
     /** \u9396 The chest's first row: only the pieces kept on purpose. */
     lockedOnly: 'Locked',
