@@ -360,12 +360,19 @@ export function rate(s: State): number {
 }
 
 /**
- * 雷池 The thunder pool: two days of your own gathering, and the gate on the Dragon.
+ * 雷池 The thunder pool: two days of gathering at the summit, and the gate on the Dragon.
  *
  * Every other realm is left by filling a layer. The ninth has no layer left to fill, so
- * this is what stands in its place, and it is measured in *days of your own rate*
- * rather than in a fixed number, so it grows exactly as fast as you do and a crossing
- * never stops costing two days.
+ * this is what stands in its place, measured in days of a *standard* rate: the summit's,
+ * with 功法 method and 吐納 breathing at this heaven's cap, nothing worn, no Path, and the
+ * marks you hold. So it grows with the marks, as fast as the cultivator, and a crossing
+ * keeps costing about two days.
+ *
+ * It used to be two days of your own rate, and rekaris found what that did (2026-10-06):
+ * a Qi set made the pool bigger, so the Dragon came in 6h08 dressed for qi and in 3h22
+ * stripped. Anything worn or bought that raised the rate raised the gate with it, the
+ * trap the tower's pay had until it was read off the floor alone. Now the pool reads
+ * nothing you can change but the marks, and qi gear fills it faster, as it should.
  *
  * Without it the endgame had no clock at all. Power was the only gate, the furnace sold
  * power, and one day's qi bought a fortnight of crossings, measured, ten marks a day,
@@ -376,7 +383,12 @@ export function rate(s: State): number {
  * It also puts the furnace in real tension with the Dragon: qi brewed is qi not pooled.
  */
 export function tribulationPool(s: State): number {
-  return rate(s) * 86_400 * MARK_DAYS;
+  const at = { realm: 9, tribulation: s.tribulation } as State;
+  const standard = BASE_RATE * LAYER_BONUS ** (LAYERS - 1)
+    * UPGRADE_INFO.method.gain ** capOf(at, 'method')
+    * UPGRADE_INFO.pills.gain ** capOf(at, 'pills')
+    * markBonus(s.tribulation);
+  return standard * 86_400 * MARK_DAYS;
 }
 
 /** The Dragon is callable once the pool is full. What decides it is whether you can win. */

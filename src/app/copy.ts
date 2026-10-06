@@ -1899,7 +1899,8 @@ export const NOTICE = {
   },
   pool: {
     title: 'Fill the pool and the Dragon comes',
-    text: 'It holds two days of your own gathering, and crossing empties it again. Qi spent '
+    text: 'It holds two days of gathering at the summit, upgrades at their cap and nothing worn, and '
+      + 'only your marks make it bigger: qi gear fills it faster. Crossing empties it again. Qi spent '
       + 'in the furnace is qi that is not in the pool, which is the whole decision up here.',
   },
   read: 'Got it',

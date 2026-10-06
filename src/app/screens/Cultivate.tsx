@@ -122,7 +122,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const w = currentWarden(state);
   const dragon = effectiveBeastPower(state, w);
   // 雷池 Once the last rung is open there is no layer left to fill, so the bar becomes
-  // the thunder pool: two days of your own gathering, and the gate on the Dragon.
+  // the thunder pool: two days of gathering at the summit, and the gate on the Dragon.
   const top = ladderDone(state);
   // 境外 Which heaven this cultivator stands in, and the one after it.
   const heaven = heavenAt(state.tribulation);

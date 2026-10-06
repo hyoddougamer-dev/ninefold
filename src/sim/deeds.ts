@@ -247,7 +247,7 @@ export const DEEDS: readonly Deed[] = [
 
   {
     key: 'mark1', track: 'thunder', han: '雷印', name: 'The first crossing',
-    want: 1, line: `Fill 雷池 the pool, ${MARK_DAYS} days of your own gathering, and put the Dragon down.`,
+    want: 1, line: `Fill 雷池 the pool, ${MARK_DAYS} days of gathering at the summit, and put the Dragon down.`,
     at: (s) => Math.min(1, s.tribulation),
   },
   {
