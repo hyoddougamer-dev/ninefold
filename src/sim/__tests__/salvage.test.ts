@@ -12,8 +12,8 @@ import { meltShares } from '../../../tools/meltshare.ts';
 
 const T0 = 1_700_000_000;
 
-const piece = (id: string, realm: number, rarity: Rarity, refine = 0): Item => ({
-  id, template: `sword${realm}`, rarity, refine,
+const piece = (id: string, realm: number, rarity: Rarity): Item => ({
+  id, template: `sword${realm}`, rarity,
   rolls: [{ affix: 'power', value: 10 }],
 });
 
@@ -89,11 +89,16 @@ describe('拆 melting gear down', () => {
   });
 
   /**
-   * 煉器 And the other pump: material must not become qi. A refined piece melts for
-   * exactly what an unrefined one does, so the furnace has only the one door.
+   * 煉器 And the other pump: material must not become qi. A piece taken off a place
+   * refined twenty times melts for exactly what it would off a bare one, so the furnace
+   * has only the one door. 承 And the melt never reaches the levels: they are the place's.
    */
-  it('pays nothing for 煉器 refining', () => {
-    expect(salvageValue(piece('r', 6, 'earth', 20))).toBe(salvageValue(piece('s', 6, 'earth', 0)));
+  it('pays nothing for 煉器 refining, and never takes any', () => {
+    const bare: State = { ...newState(T0), realm: 6, chest: [piece('r', 6, 'earth')] };
+    const honed: State = { ...bare, refined: { weapon: 20 } };
+    expect(salvage(honed, ['r']).qi).toBe(salvage(bare, ['r']).qi);
+    expect(salvage(honed, ['r']).materials).toBe(salvage(bare, ['r']).materials);
+    expect(salvage(honed, ['r']).refined).toEqual({ weapon: 20 });
   });
 
   it('melts a chosen rank and everything below it, and nothing above', () => {

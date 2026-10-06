@@ -14,6 +14,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_KEY, SUPABASE_URL } from './config.ts';
 import { captchaToken } from './captcha.ts';
 import type { State } from '../sim/state.ts';
+import { outbound } from '../sim/save.ts';
 
 const FLAG = 'ninefold.ranked';
 
@@ -123,7 +124,7 @@ export interface Synced {
 /** 同 Offer this save to the server. It keeps it as the cloud copy and ranks what verifies. */
 export async function sync(s: State, name?: string): Promise<Synced | { error: string; wait?: number }> {
   const c = await client();
-  const { data, error } = await c.functions.invoke('sync', { body: { save: s, name } });
+  const { data, error } = await c.functions.invoke('sync', { body: { save: outbound(s), name } });
   if (error) {
     const ctx = (error as { context?: Response }).context;
     try {

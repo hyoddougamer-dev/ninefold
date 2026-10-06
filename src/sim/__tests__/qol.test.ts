@@ -5,7 +5,7 @@ import { templateOf, valueOf, type Item, type Rarity } from '../../data/gear.ts'
 import {
   againFor, emptyCount, harvest, harvestAll, harvestAndReplant, plant, plantAll, seedCost,
 } from '../cave.ts';
-import { compare, levelsCarried, marksUp, swing, verdictByLines, verdictOf, wearBetter } from '../inspect.ts';
+import { compare, marksUp, swing, verdictByLines, verdictOf, wearBetter } from '../inspect.ts';
 import { fusable } from '../chest.ts';
 import { fuseAllIn, fuseIn } from '../stash.ts';
 import { canAffordDrive, drive, driveCost, driveMax } from '../hunt.ts';
@@ -94,50 +94,48 @@ describe('洞天 收 take all and plant again', () => {
 
 describe('承 a piece is compared as it would be once worn', () => {
   // rekaris, on the Discord: the worn piece's refining made it read as better than a
-  // strict upgrade, because the upgrade was read bare.
-  const wornSword = piece('w', 'sword5', 'common', [{ affix: 'power', value: 8 }], { refine: 10 });
+  // strict upgrade, because the upgrade was read bare. The levels are the place's now, so
+  // both are read at the place's ten.
+  const wornSword = piece('w', 'sword5', 'common', [{ affix: 'power', value: 8 }]);
   const better = piece('c', 'sword5', 'mystic', [{ affix: 'power', value: 10 }]);
-  const wornLaurel = piece('wl', 'laurel5', 'common', [{ affix: 'luck', value: 4 }], { refine: 10 });
+  const wornLaurel = piece('wl', 'laurel5', 'common', [{ affix: 'luck', value: 4 }]);
   const luckier = piece('cl', 'laurel5', 'earth', [{ affix: 'luck', value: 6 }]);
 
-  it('reads the candidate with the slot\'s levels on every line', () => {
-    const rows = compare(better, wornSword);
+  it('reads both pieces at the place\'s levels on every line', () => {
+    const rows = compare(better, wornSword, 10);
     const p = rows.find((r) => r.affix === 'power')!;
-    // Bare, 10 against a refined 8 read as a loss. Worn, it carries the ten levels.
-    expect(p.theirs).toBeCloseTo(valueOf({ ...better, refine: 10 }, 'power'), 9);
+    expect(p.theirs).toBeCloseTo(valueOf(better, 'power', 10), 9);
+    expect(p.mine).toBeCloseTo(valueOf(wornSword, 'power', 10), 9);
     expect(p.theirs).toBeGreaterThan(p.mine);
-    expect(levelsCarried(better, wornSword)).toBe(10);
-    expect(levelsCarried(wornSword, better)).toBe(0);
   });
 
   it('marks the strict upgrade ▲, and the sheet calls it an upgrade', () => {
-    const s = hero({ worn: { weapon: wornSword } });
+    const s = hero({ worn: { weapon: wornSword }, refined: { weapon: 10 } });
     expect(marksUp(s, better)).toBe(true);
-    expect(verdictByLines(verdictOf(swing(s, better)), compare(better, wornSword))).toBe('up');
+    expect(verdictByLines(verdictOf(swing(s, better)), compare(better, wornSword, 10))).toBe('up');
     // A luck crown moves neither power nor qi, so its lines decide, and they read it worn.
-    const c = hero({ worn: { crown: wornLaurel } });
-    expect(verdictByLines(verdictOf(swing(c, luckier)), compare(luckier, wornLaurel))).toBe('up');
+    const c = hero({ worn: { crown: wornLaurel }, refined: { crown: 10 } });
+    expect(verdictByLines(verdictOf(swing(c, luckier)), compare(luckier, wornLaurel, 10))).toBe('up');
     // And a weaker piece is still weaker with the levels on it.
     const weak = piece('x', 'laurel5', 'common', [{ affix: 'luck', value: 2 }]);
-    expect(verdictByLines(verdictOf(swing(c, weak)), compare(weak, wornLaurel))).toBe('down');
+    expect(verdictByLines(verdictOf(swing(c, weak)), compare(weak, wornLaurel, 10))).toBe('down');
   });
 });
 
 describe('▲ 著 wear all upgrades', () => {
-  const worn = piece('w', 'sword5', 'common', [{ affix: 'power', value: 8 }], { refine: 4 });
+  const worn = piece('w', 'sword5', 'common', [{ affix: 'power', value: 8 }]);
   const up1 = piece('a', 'sword5', 'spirit', [{ affix: 'power', value: 12 }]);
   const up2 = piece('b', 'sword5', 'heaven', [{ affix: 'power', value: 30 }]);
   const boots = piece('k', 'greaves5', 'earth', [{ affix: 'power', value: 18 }]);
 
-  it('puts on the best ▲ for each place, levels traded, and stops when nothing is ▲', () => {
-    const s = hero({ worn: { weapon: worn }, chest: [up1, up2, boots] });
+  it('puts on the best ▲ for each place, the place keeping its levels, and stops when nothing is ▲', () => {
+    const s = hero({ worn: { weapon: worn }, chest: [up1, up2, boots], refined: { weapon: 4 } });
     const r = wearBetter(s);
     expect(r.worn).toBe(2);
     expect(r.state.worn.weapon?.id).toBe('b');
-    expect(r.state.worn.weapon?.refine).toBe(4);          // 承 the slot's levels came along
+    expect(r.state.refined).toEqual({ weapon: 4 });       // 承 the place keeps its levels
     expect(r.state.worn.boots?.id).toBe('k');
     expect(r.state.chest.map((x) => x.id).sort()).toEqual(['a', 'w']);
-    expect(r.state.chest.find((x) => x.id === 'w')?.refine).toBeUndefined();
     expect(r.state.chest.some((x) => marksUp(r.state, x))).toBe(false);
     expect(power(r.state)).toBeGreaterThan(power(s));
     // Nothing else in the save moves.

@@ -63,7 +63,7 @@ export function retrade(s: State, index: number, key: string): { state: State; r
   list[index] = key;
   const after: State = { ...s, awakened: list, qi: s.qi - cost };
   if (freePoints(after) < 0) return { state: s, refused: 'dao' };
-  const room = chestLimit(after.unlocked, wornTotals(after.worn, (x) => affinity(after.unlocked, x)).capacity, list);
+  const room = chestLimit(after.unlocked, wornTotals(after.worn, (x) => affinity(after.unlocked, x), after.refined).capacity, list);
   if (after.chest.length > room) return { state: s, refused: 'chest' };
   return { state: after, refused: null };
 }

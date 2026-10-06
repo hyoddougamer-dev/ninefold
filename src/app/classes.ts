@@ -1,5 +1,5 @@
 import { PAIRS, SCHOOLS, SCHOOL_INFO, type Pair, type School } from '../data/schools.ts';
-import { ARTIFICER_REFINE, ARTS_STRIKE, CLASS_AMP, FORTUNE_BOND, QI_UPGRADES, SWORD_POWER } from '../sim/balance.ts';
+import { ARTIFICER_REFINE, ARTS_STRIKE, CLASS_AMP, FORTUNE_BOND, QI_FULL_ROOF, QI_UPGRADES, SWORD_POWER } from '../sim/balance.ts';
 import { PAIR_VALUE } from '../sim/schools.ts';
 import { CLASS } from './copy.ts';
 
@@ -11,7 +11,7 @@ import { CLASS } from './copy.ts';
 export function schoolSays(sc: School): string {
   switch (sc) {
     case 'sword': return CLASS.school.sword(SWORD_POWER[0], SWORD_POWER[1]);
-    case 'qi': return CLASS.school.qi(QI_UPGRADES[0], QI_UPGRADES[1]);
+    case 'qi': return CLASS.school.qi(QI_UPGRADES[0], QI_UPGRADES[1], QI_FULL_ROOF);
     case 'fortune': return CLASS.school.fortune(FORTUNE_BOND[0], FORTUNE_BOND[1], CLASS_AMP[0], CLASS_AMP[1]);
     case 'body': return CLASS.school.body(CLASS_AMP[0], CLASS_AMP[1]);
     case 'artificer': return CLASS.school.artificer(ARTIFICER_REFINE[0], ARTIFICER_REFINE[1], CLASS_AMP[0], CLASS_AMP[1]);
@@ -24,7 +24,7 @@ export function schoolSaysAt(sc: School, tier: number): string {
   const i = tier >= 2 ? 1 : 0;
   switch (sc) {
     case 'sword': return CLASS.schoolAt.sword(SWORD_POWER[i]);
-    case 'qi': return CLASS.schoolAt.qi(QI_UPGRADES[i]);
+    case 'qi': return CLASS.schoolAt.qi(QI_UPGRADES[i], i === 1 ? QI_FULL_ROOF : 0);
     case 'fortune': return CLASS.schoolAt.fortune(FORTUNE_BOND[i], CLASS_AMP[i]);
     case 'body': return CLASS.schoolAt.body(CLASS_AMP[i]);
     case 'artificer': return CLASS.schoolAt.artificer(ARTIFICER_REFINE[i], CLASS_AMP[i]);

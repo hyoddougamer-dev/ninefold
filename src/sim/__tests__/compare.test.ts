@@ -9,8 +9,8 @@ import { nextFloor } from '../tower.ts';
 const T0 = 1_700_000_000;
 
 /** A piece of a shape, leading with the shape's own line. */
-const piece = (id: string, template: string, affix: Affix, value: number, rarity: Rarity = 'mystic', refine?: number): Item =>
-  ({ id, template, rarity, rolls: [{ affix, value }], ...(refine ? { refine } : {}) });
+const piece = (id: string, template: string, affix: Affix, value: number, rarity: Rarity = 'mystic'): Item =>
+  ({ id, template, rarity, rolls: [{ affix, value }] });
 
 /**
  * A fifth-realm chest with 劍 Sword pieces in every place, 氣 Qi pieces in every place and
@@ -20,8 +20,7 @@ const piece = (id: string, template: string, affix: Affix, value: number, rarity
  */
 function fixture(): State {
   const worn: Partial<Record<Slot, Item>> = {
-    // 承 Refined twice over: whatever goes on the weapon takes these levels.
-    weapon: piece('w-sword', 'sword5', 'power', 14, 'mystic', 12),
+    weapon: piece('w-sword', 'sword5', 'power', 14),
     robe: piece('w-robe', 'robe5', 'rate', 9),
   };
   const chest: Item[] = [
@@ -42,7 +41,8 @@ function fixture(): State {
     piece('kimono', 'kimono5', 'art', 8),
     piece('beads', 'beads5', 'art', 7),
   ];
-  return { ...newState(T0), realm: 5, layer: 4, worn, chest, tower: 8 };
+  // 承 The weapon's place is refined twelve times: whatever goes on there has the levels.
+  return { ...newState(T0), realm: 5, layer: 4, worn, chest, tower: 8, refined: { weapon: 12 } };
 }
 
 describe('較 compare classes', () => {
@@ -76,15 +76,9 @@ describe('較 compare classes', () => {
     }
   });
 
-  it('moves refining with the place on the body, as the gear screen does', () => {
-    for (const b of builds) {
-      const weapon = b.state.worn.weapon!;
-      expect(weapon.refine ?? 0).toBe(12);
-      if (weapon.id !== 'w-sword') {
-        expect(b.state.chest.find((x) => x.id === 'w-sword')?.refine ?? 0).toBe(0);
-      }
-    }
-    // The 劍 Sword body takes the stronger saber, and the saber takes the sword's levels.
+  it('keeps refining with the place on the body, as the gear screen does', () => {
+    for (const b of builds) expect(b.state.refined).toEqual({ weapon: 12 });
+    // The 劍 Sword body takes the stronger saber, and the saber has the place's levels.
     const sword = builds.find((b) => b.key === 'sword:2')!;
     expect(sword.ids.weapon).toBe('saber');
   });

@@ -886,7 +886,7 @@ export function App() {
     haptics.tap();
   }, []);
 
-  /** 煉器 Refining spends material on a piece you are already wearing. */
+  /** 煉器 Refining spends material on the place of a piece you are wearing; the level stays with the place. */
   const onRefine = useCallback((slot: Slot) => {
     const id = ++taps.current;
     setState((s) => {

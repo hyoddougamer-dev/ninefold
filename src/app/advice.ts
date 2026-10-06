@@ -20,7 +20,7 @@ import { cardDue as awakeningDue } from '../sim/awaken.ts';
 import { ripeCount as ripeBeds } from '../sim/cave.ts';
 import { canEnter as canEnterSecret } from '../sim/secret.ts';
 import { canRefine } from '../sim/trials.ts';
-import { clampRefine, refineCost } from '../sim/refine.ts';
+import { levelAt, refineCost } from '../sim/refine.ts';
 import { SLOTS, templateOf } from '../data/gear.ts';
 import { quarryOf, quarryOwed } from '../sim/week.ts';
 
@@ -246,7 +246,7 @@ export function advice(s: State): Advice | null {
     // 數 How many levels the material really buys, keeping back the core. Levels double,
     // so this is a short loop and never a long one.
     let spare = s.materials - coreRoom;
-    let level = clampRefine(s.worn[slot]!.refine);
+    let level = levelAt(s.refined, slot);
     let levels = 0;
     while (levels < 20 && spare >= refineCost(level)) { spare -= refineCost(level); level++; levels++; }
     if (levels >= PILING) return { han: '煉器', text: ADVICE.refine(piece, levels), tab: 'gear' };

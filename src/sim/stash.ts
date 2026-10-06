@@ -55,18 +55,24 @@ export interface Stashed {
   readonly melted: number;
   /** 材 What the cast-off melted into once the melting allowance was spent. */
   readonly meltedMaterial: number;
+  /**
+   * 熔 The piece that went was one no kept filter shows, while the player keeps some: it may
+   * have been stronger than the one that stayed, so the screen must not call it the weakest.
+   */
+  readonly unkept: boolean;
 }
 
 export function stash(s: State, found: Item | null): Stashed {
-  if (!found) return { state: s, item: null, dropped: null, melted: 0, meltedMaterial: 0 };
+  if (!found) return { state: s, item: null, dropped: null, melted: 0, meltedMaterial: 0, unkept: false };
   const item = lifted(s, found);
-  // 熔 A full chest spares what a kept filter shows (sim/filters.ts).
+  // 熔 A full chest melts what no kept filter shows first (sim/filters.ts).
   const kept = addToChest(s.chest, item, limitFor(s), (it) => keptByFilter(s.filters, it));
   const m = kept.dropped ? melt(s, [kept.dropped]) : null;
   const state = { ...(m ? m.state : s), chest: [...kept.chest] };
   return {
     state: kept.dropped ? returnMetal(state, [kept.dropped]) : state,
     item, dropped: kept.dropped, melted: m?.qi ?? 0, meltedMaterial: m?.materials ?? 0,
+    unkept: !!kept.dropped && s.filters.some((f) => f.keep) && !keptByFilter(s.filters, kept.dropped),
   };
 }
 

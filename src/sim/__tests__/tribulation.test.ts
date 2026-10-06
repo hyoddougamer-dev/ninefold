@@ -35,6 +35,16 @@ describe('渡劫 the ladder above the ladder', () => {
     expect(atTribulation({ ...top, qi: 1e30, realm: 8 })).toBe(false);
   });
 
+  // 雷池 rekaris, 2026-10-06: dressed for qi the Dragon came in 6h08, stripped in 3h22,
+  // because the pool was two days of your own rate. It reads the marks alone now.
+  it('sizes the pool by the marks alone, never by what is bought or worn', () => {
+    const top: State = { ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, tribulation: 4 };
+    const geared: State = { ...top, levels: { ...top.levels, method: 3, pills: 1 } };
+    expect(rate(geared)).toBeGreaterThan(rate(top));
+    expect(tribulationPool(geared)).toBe(tribulationPool(top));
+    expect(tribulationPool({ ...top, tribulation: 5 })).toBeGreaterThan(tribulationPool(top));
+  });
+
   it('grants the mark and stands the Dragon back up, harder', () => {
     const base: State = { ...newState(T0), realm: 9, layer: LAYERS_PER_REALM - 1, tribulation: 2 };
     const won: State = { ...base, qi: tribulationPool(base), wardenFell: true };
@@ -181,7 +191,7 @@ describe('渡劫 the ladder above the ladder', () => {
     const leans: Lean[] = ['none', 'pill', 'tower', 'material', 'luck', 'refine', 'salvage'];
     const runs = leans.map((lean) => {
       const g = play(40, lean);
-      const levels = SLOTS.reduce((n, x) => n + (g.end.worn[x]?.refine ?? 0), 0);
+      const levels = SLOTS.reduce((n, x) => n + (g.end.refined[x] ?? 0), 0);
       return { lean, days: g.days.reduce((a, b) => a + b, 0), floor: g.end.tower, levels,
         power: power(g.end), cards: g.end.awakened.length };
     });

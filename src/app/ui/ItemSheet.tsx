@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import {
-  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, refinedBy, schoolOf, templateOf,
+  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, SLOT_INFO, callingOf, realmSet, schoolOf, templateOf,
   type Affix, type Calling, type Item,
 } from '../../data/gear.ts';
 import { fightDeps } from '../memo.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import {
-  compare, ifBare, ifWorn, levelsCarried, linesOf, sizeOf, swing, verdictByLines, verdictOf, verdictWithFight, wornSwing, type Swing,
+  compare, ifBare, ifWorn, linesOf, sizeOf, swing, verdictByLines, verdictOf, verdictWithFight, wornSwing, type Swing,
 } from '../../sim/inspect.ts';
+import { levelAt, refineFactor } from '../../sim/refine.ts';
 import { nearestTrial, trialOdds } from '../../sim/reach.ts';
 import { BEASTS } from '../../data/bestiary.ts';
 import { REFINE_PER_LEVEL } from '../../data/gear.ts';
@@ -64,13 +65,12 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
   const slot = SLOT_INFO[tpl.slot];
   const worn = state.worn[tpl.slot];
   const against = wearing ? undefined : worn;
-  // 承 Read as it would be once on: it takes the slot's refining levels (see compare).
-  const lines = compare(item, against);
-  const carried = levelsCarried(item, against);
+  // 承 The place's refining: a piece worn there has it, so both pieces are read at it.
+  const level = levelAt(state.refined, tpl.slot);
+  const lines = compare(item, against, level);
   // 判 A chest piece is read against what is worn; a worn piece against the same place
   // left empty, which is what it is doing for you right now.
   const move: Swing = wearing ? wornSwing(state, item) : swing(state, item);
-  const refine = Math.floor(item.refine ?? 0);
   // 套 The loadouts that name this piece: while any does, it cannot be unlocked.
   const held = loadoutsOf(state, item.id);
   // 算 The nearest fight is every beast's odds, so it is worked out when a fight could
@@ -168,7 +168,7 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
             </span>
           ))}
         </div>
-        {carried > 0 && <p className="carried">{QOL.gear.carried(carried)}</p>}
+        {!wearing && level > 0 && <p className="carried">{QOL.gear.carried(level)}</p>}
         <p>{wearing ? ITEM.wornSays : ITEM.versus(verdict, worn ? templateOf(worn).name : null, move.costsClass, fight)}</p>
       </div>
 
@@ -246,9 +246,9 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
           </span>
         </div>
 
-        {refine > 0 && (
+        {level > 0 && (
           <p className="faint refined">
-            {ITEM.refined(refine, Math.round((refinedBy(item) - 1) * 100), Math.round(REFINE_PER_LEVEL * 100))}
+            {ITEM.refined(slot.name, level, Math.round((refineFactor(level) - 1) * 100), Math.round(REFINE_PER_LEVEL * 100))}
           </p>
         )}
 
@@ -282,8 +282,9 @@ export function ItemSheet({ state, item, wearing, onWear, onTakeOff, onSalvage, 
 
       {/* 拆 Melting the piece, on the one screen where a player is actually looking at
           it and can see what they would be giving up. It is never offered for the piece
-          on the body: taking it off first is one tap and is the honest order. */}
-      {!wearing && !item.locked && refine > 0 && <p className="faint meltlevels">{ITEM.meltLevels(refine)}</p>}
+          on the body: taking it off first is one tap and is the honest order. 承 It used
+          to warn that a refined piece's levels went with it. They are the place's now, so
+          a melt never takes any and there is nothing to warn about. */}
       {!wearing && !item.locked && (
         <button className="melt" onClick={onSalvage}>
           <b className="cjk">拆</b>

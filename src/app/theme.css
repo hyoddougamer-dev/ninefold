@@ -3497,7 +3497,7 @@ button.gs-new .cjk { margin: 0; }
 .chestlegend.quality b { color: var(--text); font-weight: 600; }
 /* 質 The item sheet: a found piece's quality, under who left it. */
 .itemsheet .origin .iquality { display: block; color: var(--text); margin: 2px 0 4px; font-size: 12.5px; }
-/* 鎖 Keep, inside a kept filter's pill: a full chest never melts what it shows. */
+/* 鎖 Keep, inside a kept filter's pill: a full chest melts what it shows last. */
 .gearpresets .gp-hold { padding: 0 8px; border-left: 1px solid var(--line); font-size: 11.5px; }
 .gearpresets .gp-hold .cjk { color: var(--gold); opacity: .7; }
 .gearpresets .gp-hold[aria-pressed='true'] { color: var(--gold); background: rgba(212,175,86,.1); }
@@ -3514,7 +3514,6 @@ button.gs-new .cjk { margin: 0; }
 .lockedsays { font-size: 12px; margin: 6px 0 0; text-align: center; }
 .itemsheet .lockbtn:disabled { opacity: .55; cursor: not-allowed; }
 .itemsheet .lockedsays[data-qol='in-loadout'] { color: var(--gold); }
-.itemsheet .meltlevels { font-size: 12px; margin: 14px 0 -6px; color: var(--cinnabar); }
 @media (max-width: 360px) {
   /* 序 Three words on a 320px phone: tighter, so the switch keeps the page's margin. */
   .huntorder button { padding: 7px 7px; letter-spacing: .03em; font-size: 10px; }

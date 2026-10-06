@@ -676,8 +676,9 @@ export function bodiesHeld(s: State): State[] {
 
 /**
  * 箱 The body the chest dresses best for 力 power, one place at a time, through equip()
- * so 承 refining moves exactly as it does on the screen. Greedy, so it can miss a class
- * two places make together; the wait in towerVerdict covers what it misses.
+ * as the screen does, 承 each piece at the refining of the place it goes in. Greedy, so
+ * it can miss a class two places make together; the wait in towerVerdict covers what it
+ * misses.
  */
 function strongestFromChest(s: State): State {
   let body = s;

@@ -3,13 +3,17 @@ import { SCHOOLS, type School } from '../data/schools.ts';
 import type { State } from './state.ts';
 
 /**
- * 篩 存 The chest's saved filters, and 熔 the ones a full chest must leave alone.
+ * 篩 存 The chest's saved filters, and 熔 the ones a full chest weighs first.
  *
  * rekaris, on the Discord: a full chest melts the piece it judges worst by its own measure,
  * and that may be the very piece he was hunting for. So a saved filter can be marked
- * **keep**: a full chest never melts a piece that matches a kept filter. It melts the worst
- * piece that matches none, and when every piece matches one, the new drop goes, which is
- * what a full chest has always done when nothing in it could go.
+ * **keep**: a full chest never melts a piece that matches a kept filter while a piece that
+ * matches none could go instead. It melts the worst piece that matches none.
+ *
+ * 熔 And when every piece it could melt matches one, it still keeps the better of two
+ * (rekaris again: a kept Heaven piece pushes out a kept Earth one, *"so the result is the
+ * truly best stuff I might want"*). It used to melt the new drop then, however good. A
+ * piece a kept filter shows is never pushed out by one no kept filter shows (chest.ts).
  *
  * The filters lived on the device until then, as a way of looking. A kept filter changes
  * what the game does with a drop, so it is a fact about the cultivator and the list moved
@@ -24,13 +28,13 @@ export const PLACES: readonly Place[] = ['all', 'better', 'locked', ...SLOTS];
 /** 存 How many filters a cultivator keeps. rekaris asked for more than three; a sane top. */
 export const FILTER_LIMIT = 8;
 
-/** 存 A saved chest filter: the three rows, a name, and whether a full chest must spare what it shows. */
+/** 存 A saved chest filter: the three rows, a name, and whether a full chest must weigh what it shows first. */
 export interface ChestFilter {
   readonly name: string;
   readonly slot: Place;
   readonly school: 'any' | School;
   readonly lines: readonly Affix[];
-  /** 熔 A full chest never melts a piece this filter shows. */
+  /** 熔 A full chest melts a piece this filter shows only to make room for a better one it shows. */
   readonly keep?: true;
 }
 
@@ -61,7 +65,7 @@ export function matchesFilter(f: Pick<ChestFilter, 'slot' | 'school' | 'lines'>,
   return f.lines.every((a) => item.rolls.some((r) => r.affix === a));
 }
 
-/** 熔 Whether any kept filter shows this piece, so a full chest must leave it. */
+/** 熔 Whether any kept filter shows this piece, so a full chest melts every other piece before it. */
 export function keptByFilter(filters: readonly ChestFilter[], item: Item): boolean {
   return filters.some((f) => f.keep && matchesFilter(f, item));
 }
@@ -98,7 +102,7 @@ export function forgetFilter(s: State, index: number): State {
   return { ...s, filters: s.filters.filter((_, i) => i !== index) };
 }
 
-/** 熔 Mark filter `index` as one a full chest must spare, or stop. A filter that cannot be kept is refused. */
+/** 熔 Mark filter `index` as one a full chest must weigh first, or stop. A filter that cannot be kept is refused. */
 export function keepFilter(s: State, index: number, on: boolean): State {
   const f = s.filters[index];
   if (!f || (on && !keepable(f)) || !!f.keep === on) return s;

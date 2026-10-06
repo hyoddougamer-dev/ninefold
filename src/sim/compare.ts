@@ -2,9 +2,7 @@ import {
   SLOTS, TEMPLATE_BY_KEY, callingOf, schoolOf, templateOf, valueOf, type Item, type Slot, type Worn,
 } from '../data/gear.ts';
 import { PAIRS, SCHOOLS, type Pair, type School } from '../data/schools.ts';
-import { carryRefine } from './chest.ts';
 import { beatable } from './combat.ts';
-import { refineFactor } from './refine.ts';
 import { callingKey } from './schools.ts';
 import { wearPieces } from './sets.ts';
 import { power, rate, type State } from './state.ts';
@@ -20,9 +18,9 @@ import { towerOpen } from './trials.ts';
  * reads each body with the game's own numbers: 力 power(), 氣 rate(), and the highest
  * floor of the tower beatable() says it can take.
  *
- * Every body is put on through wearPieces, the path a loadout takes, so 承 refining
- * moves with the place on the body exactly as it does on the gear screen, and the body
- * read here is the body a tap on the row puts on.
+ * Every body is put on through wearPieces, the path a loadout takes, and 承 each piece has
+ * the refining of the place it goes in, exactly as on the gear screen, so the body read
+ * here is the body a tap on the row puts on.
  *
  * A class is a school at its full (five or six pieces of it) or one of the fifteen pairs
  * (three and three). A school at its first step is the same school, weaker, and is left
@@ -75,13 +73,12 @@ function pool(s: State): readonly Item[] {
 
 /**
  * 序 A piece's first guess in its place, before the real numbers are read: its 力 power
- * and then its 氣 qi lines, at the refine level the place would give it (承 the higher of
- * its own and the worn piece's). Only an order to try them in and a cut-off.
+ * and then its 氣 qi lines. Only an order to try them in and a cut-off. 承 Read bare,
+ * because every piece of one place would wear that place's refining, which multiplies
+ * them all alike and so changes no order.
  */
-function guess(s: State, it: Item): number {
-  const bare = { ...it, refine: 0 };
-  const lvl = Math.max(it.refine ?? 0, s.worn[templateOf(it).slot]?.refine ?? 0);
-  return (valueOf(bare, 'power') * 1000 + valueOf(bare, 'rate')) * refineFactor(lvl);
+function guess(it: Item): number {
+  return valueOf(it, 'power') * 1000 + valueOf(it, 'rate');
 }
 
 const better = (a: { power: number; rate: number }, b: { power: number; rate: number }) =>
@@ -150,15 +147,15 @@ function buildAll(s: State): readonly ClassBuild[] {
     add(`${slot}|any`, it);
   }
   for (const [key, list] of byPlace) {
-    list.sort((x, y) => guess(s, y) - guess(s, x) || (x.id < y.id ? -1 : 1));
+    list.sort((x, y) => guess(y) - guess(x) || (x.id < y.id ? -1 : 1));
     byPlace.set(key, list.slice(0, COMPARE_PER_PLACE));
   }
 
   /*
-   * 承 Trying a body only needs what would be on it: each place takes the piece and, by
-   * carryRefine (the very function equip() calls), the higher of its refining and the
-   * worn piece's. The chest it leaves behind changes neither power() nor rate(), so it is
-   * made once per class, for the winner, by wearPieces. One read per set of pieces.
+   * 承 Trying a body only needs what would be on it: each place takes the piece, which has
+   * the place's refining as anything worn there does. The chest it leaves behind changes
+   * neither power() nor rate(), so it is made once per class, for the winner, by
+   * wearPieces. One read per set of pieces.
    */
   const seen = new Map<string, Read>();
   const read = (pick: Pick): Read => {
@@ -168,8 +165,7 @@ function buildAll(s: State): readonly ClassBuild[] {
     const worn: Worn = { ...s.worn };
     for (const slot of SLOTS) {
       const it = pick[slot];
-      if (!it || it === s.worn[slot]) continue;
-      worn[slot] = carryRefine(it, s.worn[slot]).on;
+      if (it) worn[slot] = it;
     }
     const body = { ...s, worn };
     const out: Read = { power: power(body), rate: rate(body), key: callingKey(body) };
@@ -213,7 +209,7 @@ function buildAll(s: State): readonly ClassBuild[] {
  * floor's fight read off a save. A cached reading is kept while every one is the same object.
  */
 const depsOf = (s: State): readonly unknown[] => [s.realm, s.layer, s.levels, s.stance, s.sequence, s.awakened,
-  s.unlocked, s.brewed, s.tribulation, s.killed, s.chose, s.demons, s.tower];
+  s.unlocked, s.brewed, s.tribulation, s.killed, s.chose, s.demons, s.tower, s.refined];
 
 /**
  * 算 Built once per chest and worn body, as bodyTotals is read once per body: both are

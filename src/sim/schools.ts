@@ -1,4 +1,4 @@
-import { callingOf, schoolTier, wornTotals, type GearTotals } from '../data/gear.ts';
+import { callingOf, schoolTier, wornTotals, type GearTotals, type Refined } from '../data/gear.ts';
 import type { Pair, School } from '../data/schools.ts';
 import {
   ARTIFICER_REFINE, ARTS_STRIKE, ART_BEND, FATE_FULL, FIND_TOP, FORTUNE_BOND, FUSE_BEND, LUCK_BEND, PAIR_BOUNTY,
@@ -18,20 +18,27 @@ import type { State } from './state.ts';
  * stored, so there is nothing to keep in step: take a piece off and the class is gone.
  */
 
-type Body = Pick<State, 'worn' | 'unlocked'>;
+/** 煉 The body: what is worn, the tree, and the refining of each place it is worn in. */
+type Body = Pick<State, 'worn' | 'unlocked' | 'refined'>;
+
+/** 煉 What a body built by hand without its places' levels reads: none. */
+const UNREFINED: Refined = Object.freeze({});
 
 /**
- * Every line on the body, affinity and class included. Read once per body and tree: both
- * are replaced rather than changed, so the pair of objects is the key.
+ * Every line on the body, affinity, refining and class included. Read once per body, tree
+ * and places' levels: all three are replaced rather than changed, so the objects are the key.
  */
-const TOTALS = new WeakMap<object, WeakMap<object, GearTotals>>();
+const TOTALS = new WeakMap<object, WeakMap<object, WeakMap<object, GearTotals>>>();
 export function bodyTotals(s: Body): GearTotals {
+  const refined = s.refined ?? UNREFINED;
   let byTree = TOTALS.get(s.worn);
   if (!byTree) { byTree = new WeakMap(); TOTALS.set(s.worn, byTree); }
-  const known = byTree.get(s.unlocked);
+  let byLevels = byTree.get(s.unlocked);
+  if (!byLevels) { byLevels = new WeakMap(); byTree.set(s.unlocked, byLevels); }
+  const known = byLevels.get(refined);
   if (known) return known;
-  const t = wornTotals(s.worn, (slot) => affinity(s.unlocked, slot));
-  byTree.set(s.unlocked, t);
+  const t = wornTotals(s.worn, (slot) => affinity(s.unlocked, slot), refined);
+  byLevels.set(refined, t);
   return t;
 }
 

@@ -11,7 +11,7 @@ import { fuseQuote } from '../../sim/stash.ts';
 import { AFFIXES } from '../../data/gear.ts';
 import { canRefine, refinePrice } from '../../sim/trials.ts';
 import { isOpen } from '../../sim/unlocks.ts';
-import { REFINE_LIMIT, clampRefine, refineFactor } from '../../sim/refine.ts';
+import { REFINE_LIMIT, levelAt, refineFactor } from '../../sim/refine.ts';
 import { num } from '../../sim/format.ts';
 import { affinity } from '../../sim/dao.ts';
 import type { State } from '../../sim/state.ts';
@@ -71,7 +71,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   /** 鑑 Open a piece. Wearing it is a button on the sheet, not a blind tap on a tile. */
   onInspect: (item: Item, wearing: boolean) => void;
   onFuse: (template: string, rarity: string) => void;
-  /** 煉器 Refining the piece in a slot. Paid in 材 material and never in qi. */
+  /** 煉器 Refining a place on the body, through the piece worn there. Paid in 材 material and never in qi. */
   onRefine: (slot: Slot) => void;
   /** 套 Loadouts: remember what is worn, put a remembered body back on, forget one. */
   onSaveSet: (index: number, name: string) => void;
@@ -84,7 +84,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   /** 較 Open the comparison of every class the chest can make. */
   onCompare?: () => void;
 }) {
-  const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot));
+  const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot), state.refined);
   // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
   const chestRead = useMemo(() => state.chest.map((item) => {
     const m = swing(state, item);
@@ -386,7 +386,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           <div className="stack">
             {SLOTS.filter((slot) => state.worn[slot]).map((slot) => {
               const item = state.worn[slot]!;
-              const level = clampRefine(item.refine);
+              const level = levelAt(state.refined, slot);
               const price = refinePrice(state, slot) ?? 0;
               const maxed = level >= REFINE_LIMIT;
               return (
@@ -667,7 +667,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <button type="button" className="gp-use" aria-pressed={isOn(p)} onClick={() => apply(p)}>
                       <span className="cjk">存</span> {p.name}
                     </button>
-                    {/* 鎖 Keep: a full chest never melts what this filter shows (sim/filters.ts).
+                    {/* 鎖 Keep: a full chest melts what this filter shows last (sim/filters.ts).
                         ▲ Better changes with every piece put on, so it is never offered. */}
                     {onKeepFilter && keepable(p) && (
                       <button type="button" className="gp-hold" aria-pressed={!!p.keep}

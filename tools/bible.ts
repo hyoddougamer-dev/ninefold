@@ -75,7 +75,7 @@ import { BASE_DROP_CHANCE, rollDrop } from '../src/sim/drops.ts';
 import { compare, linesOf, swing } from '../src/sim/inspect.ts';
 import { SYSTEMS as OPENED, opensAt, opensIn } from '../src/sim/unlocks.ts';
 import {
-  REFINE_DEPTH, REFINE_GAIN, REFINE_LIMIT, refineCost, refineFactor, refineSpent,
+  REFINE_DEPTH, REFINE_GAIN, REFINE_LIMIT, levelAt, refineCost, refineFactor, refineSpent,
 } from '../src/sim/refine.ts';
 import { CHEST_LIMIT as CHEST } from '../src/sim/chest.ts';
 
@@ -438,11 +438,12 @@ const OLD_RAT = num(lootFrom(NINTH, commonsOf(1)[0]));
 /** 鑑 A real trade, run through the real comparison, for the sheet the mockup draws. */
 const MOCK_WORN: Item = { id: 'w', template: 'sword3', rarity: 'spirit',
   rolls: [{ affix: 'power', value: 12.8 }, { affix: 'sunder', value: 2.3 }] };
-const MOCK_HELD: Item = { id: 'h', template: 'sword5', rarity: 'heaven', refine: 3,
+const MOCK_HELD: Item = { id: 'h', template: 'sword5', rarity: 'heaven',
   rolls: [{ affix: 'power', value: 32.5 }, { affix: 'rate', value: 18.2 },
     { affix: 'luck', value: 9.1 }, { affix: 'find', value: 2.9 }, { affix: 'capacity', value: 2 }] };
-const MOCK_HERO: State = { ...newState(0), realm: 5, layer: 4, worn: { weapon: MOCK_WORN } };
-const MOCK_LINES = compare(MOCK_HELD, MOCK_WORN);
+// 承 The weapon's place is refined three times, so both swords are read at 煉 3.
+const MOCK_HERO: State = { ...newState(0), realm: 5, layer: 4, worn: { weapon: MOCK_WORN }, refined: { weapon: 3 } };
+const MOCK_LINES = compare(MOCK_HELD, MOCK_WORN, levelAt(MOCK_HERO.refined, 'weapon'));
 const MOCK_SWING = swing(MOCK_HERO, MOCK_HELD);
 
 const pct = (v: number, a: Affix) =>
@@ -4416,9 +4417,9 @@ const page = `<meta charset="utf-8">
       cultivator playing normally finished the climb sitting on three billion of it with
       nothing to spend it on; one who tapped 狩 Hunt hard finished on two hundred and
       eighty billion. Material stopped meaning anything the moment the cores were full.</p>
-    <p class="t">So a piece you wear can be <b>refined</b>, with material, for ever. Every
-      level adds ${(REFINE_GAIN * 100).toFixed(0)}% to every line on that piece, and there
-      is no top level. The price is the only ceiling. It rides the tower's own pay curve,
+    <p class="t">So a place on the body can be <b>refined</b>, with material, for ever. Every
+      level adds ${(REFINE_GAIN * 100).toFixed(0)}% to every line on whatever is worn
+      there, and there is no top level. The price is the only ceiling. It rides the tower's own pay curve,
       ${REFINE_DEPTH} floors to a level, so it is meaningful at the first realm and still
       meaningful at the ninth.</p>
     <table>
@@ -4429,9 +4430,10 @@ const page = `<meta charset="utf-8">
     </table>
     <p class="t">A run's material roughly <b>doubles</b> what your gear is worth, and a run
       spent farming gets a little further up the same curve rather than somewhere else
-      entirely. <b>The levels follow the place on the body</b>: a new piece put on takes the
-      higher of the two, and the piece taken off keeps the lower. Material poured into one
-      sword is never lost to the next one (rekaris asked, 2026-10-02).</p>
+      entirely. <b>The levels belong to the place on the body</b>, in a record of their own:
+      whatever is worn there has them, and nothing done to a piece (taking it off, melting
+      it, fusing it) moves them. Material poured into one sword is never lost to the next
+      one (rekaris asked, 2026-10-02, and later asked for the record of its own).</p>
     <div class="rule"><b>And the chest stopped eating drops.</b> ${CHEST} slots, and a full
       one used to refuse everything that fell after the last, which a cultivator hunting
       properly manages inside one visit. Losing the 天 that just dropped because forty 凡
@@ -5084,14 +5086,24 @@ const page = `<meta charset="utf-8">
       seven proposals from a mockup. Measured before any of it, an active cultivator picked up
       158 pieces between the sixth realm and the ninth and wore three.</p>
 
-    <h3>承 Refining follows the place on the body</h3>
-    <p class="t">Putting a piece on over another trades their refining levels: the new piece
-      takes the higher count and the old one keeps the lower, so nothing is made or lost. It
-      was the reason no fresh drop could ever be worth wearing late in the climb: the old
-      piece, refined twenty times, was worth twice itself. The same cultivator now wears
-      eleven. The endgame's footing moved one step to hold, 1.59 to 1.58, because a
-      cultivator arrived at the Dragon about a third stronger. That footing is gone now:
-      see <a href="#top">渡劫</a>.</p>
+    <h3>承 Refining belongs to the place on the body</h3>
+    <p class="t">The refining levels are kept per place on the body, in a record of their
+      own (<code>State.refined</code>), and never on a piece. Whatever is worn in a place
+      has that place's levels; taking a piece off, melting it or fusing it never moves them.
+      Levels that stayed behind on the old piece were the reason no fresh drop could ever
+      be worth wearing late in the climb: the old piece, refined twenty times, was worth
+      twice itself. The
+      same cultivator now wears eleven. The endgame's footing moved one step to hold, 1.59
+      to 1.58, because a cultivator arrived at the Dragon about a third stronger. That
+      footing is gone now: see <a href="#top">渡劫</a>.</p>
+    <p class="t">Until 2026-10-06 the levels were on the pieces, and a piece put on over
+      another traded counts with it, the new one taking the higher. rekaris asked on the
+      Discord why a count shared by the whole body was stored on the gear, and said a
+      record of its own would be less prone to bugs. It had already cost two: a refined
+      piece taken off and melted took its levels with it, and two fused pieces with one
+      name traded levels by mistake. An old save loads with each place at the highest
+      count any piece of it held, worn or in the chest, which is the most the old rule
+      could ever have given it.</p>
 
     <h3>物 Each beast leaves what it is</h3>
     <p class="t">Every beast carries three shapes of gear, chosen by what it is: the plated
