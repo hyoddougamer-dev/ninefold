@@ -1420,6 +1420,113 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-forge",
+      "pin": false,
+      "channel": "news",
+      "title": "業 Walls, seals and sets: three ideas for the workshop",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-forge.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-ideas.webp?v=1",
+      "body": [
+        "**Many of you told me the same thing:** the nine realms ask for nothing, and the workshop's pills and sigils sit in the pouch. You were right. I measured it: today nobody *needs* the workshop to climb. It saves a casual player about three days, and an active one less than two.",
+        "",
+        "So here are three ideas that work together. The first is already built and comes with this update. The other two I want your opinion on before I build them. The picture below shows all three on real screens."
+      ],
+      "fields": [
+        [
+          "1 · 壁 Walls at the gate (in this update)",
+          "From the third realm, the warden comes out far stronger than the realm (×4 in the third, up to ×72 in the eighth) and loosens 30% every day. If you only wait, it always opens. An elixir or a sigil carried into it breaks a day of it. The last beast of each realm is an **elite**: far stronger, and three times the material."
+        ],
+        [
+          "2 · 封 The seal and the Breakthrough Pill (proposal)",
+          "In realms 5 to 8, the gate stays **sealed** for 1 to 2 days after the warden comes out, whatever your power. Wait it out, or carry a **破境丹 Breakthrough Pill** from Alchemy and go now. Measured: whoever uses the workshop climbs at today's pace; whoever ignores it loses 3 to 5 days; whoever only waits loses nothing."
+        ],
+        [
+          "3 · 百煉 Hundredfold sets (proposal)",
+          "Six-piece sets only the forge makes. You choose the shape, and **every line comes from what you put in the crucible**: cinnabar for power, the realm's herb for qi, starfall for rarer gear, jade for fusion, the elite's parts for beasts weaker, and more. More of a material gives a higher roll. The set makes your elixirs and sigils stronger, and a full Heaven set wakes a 器靈 Artifact Spirit (a light of your own and a title, looks only)."
+        ],
+        [
+          "⚒️ Hard on purpose",
+          "A Fallen Star set (realm 6) asks Forging 64 to start, 74 for Earth and **84 plus five practice pieces for Heaven**. Each piece needs 6 to 10 ingots, two parts of the realm's elite (so you have to beat it), one of its warden and three hours of work. A full Heaven set is a goal for months, not a shortcut: in my tests nobody finished one during the climb."
+        ],
+        [
+          "❓ Vote, then talk",
+          "Four quick polls are just below. To say more, open **業 The workshop: walls, seals and sets** in {#ideas}. Nothing past the walls gets built until I have read you."
+        ]
+      ],
+      "footer": "師 Shibaki · thank you for telling me what was missing",
+      "polls": [
+        {
+          "question": "Walls at the gate (in this update): how does it feel?",
+          "answers": [
+            [
+              "🧱",
+              "Good: a gate should ask something"
+            ],
+            [
+              "⏳",
+              "Fine, as long as waiting always works"
+            ],
+            [
+              "😕",
+              "I'd rather the gates stay easy"
+            ]
+          ]
+        },
+        {
+          "question": "The seal and the Breakthrough Pill (realms 5 to 8)?",
+          "answers": [
+            [
+              "✅",
+              "Build it"
+            ],
+            [
+              "🔧",
+              "Build it, but with shorter seals"
+            ],
+            [
+              "❌",
+              "No timer at the gate, please"
+            ]
+          ]
+        },
+        {
+          "question": "Hundredfold sets, lines chosen by material?",
+          "answers": [
+            [
+              "🔥",
+              "Yes, I want to design my gear"
+            ],
+            [
+              "🎲",
+              "I prefer gear that drops"
+            ],
+            [
+              "🤝",
+              "Both: drops for the climb, forged sets for the endgame"
+            ]
+          ]
+        },
+        {
+          "question": "How long should a Heaven Hundredfold set take?",
+          "answers": [
+            [
+              "🏔️",
+              "Months: it's the endgame chase"
+            ],
+            [
+              "🗓️",
+              "A few weeks"
+            ],
+            [
+              "⚡",
+              "Days: I want it during the climb"
+            ]
+          ]
+        }
+      ]
     }
   ],
   "posts": [
@@ -2063,6 +2170,40 @@
         [
           "🤝 Keep it kind",
           "Every opinion is welcome here, including \"I don't mind\". Answer each other, argue the case, and I'll read all of it before anything changes."
+        ]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "ideas-forge",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": false,
+      "title": "業 The workshop: walls, seals and sets",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-forge.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-mockup.webp?v=1",
+      "body": [
+        "This is the place to talk about the workshop. The three ideas, the numbers and the polls are in {#news}, in **業 Walls, seals and sets**. The picture below is a mockup of a Hundredfold piece being forged, line by line, with the game's own art and numbers."
+      ],
+      "fields": [
+        [
+          "🔨 The crucible",
+          "Which lines would you build for, and which materials should give them? Is three portions per line the right amount of control, or too much?"
+        ],
+        [
+          "⚖️ How hard",
+          "Forging 84 and five practice pieces for a Heaven Fallen Star set: too much, about right, not enough? Should the seal in realms 5 to 8 be shorter?"
+        ],
+        [
+          "💡 What I missed",
+          "A set bonus you'd rather have, a material that should give a different line, a reason you'd never forge. All of it helps."
+        ],
+        [
+          "🤝 Keep it kind",
+          "Every opinion is welcome, including \"I just want to idle\". Answer each other and argue the case; I'll read all of it before building anything."
         ]
       ],
       "footer": "師 Shibaki"
