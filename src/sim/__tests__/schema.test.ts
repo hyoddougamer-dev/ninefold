@@ -360,6 +360,50 @@ describe('榜 the ranked schema', () => {
     await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
   });
 
+  /**
+   * 認 Then Bruno chose to keep rekaris's climb as it is (2026-10-06): the next save the game
+   * offers becomes the verified one, and the sync after it, measured from there, frees them.
+   */
+  it('a rebase takes the next offered save as verified, and the one after it clears the mark', async () => {
+    const R = '99999999-9999-7777-7777-777777777777';
+    const D = '99999999-9999-8888-8888-888888888888';
+    await db.exec(`
+      insert into auth.users values ('${R}'), ('${D}');
+      insert into profiles (id, name, strikes, suspect) values ('${R}', 'Rekaris', 2, true), ('${D}', 'Delta', 2, true);
+      insert into saves (user_id, latest, latest_at, verified, verified_at, pinned) values
+        ('${R}', '{"tower": 125}', '2026-10-05T19:26:00Z', '{"tower": 125}', '2026-10-05T19:26:00Z', true),
+        ('${D}', '{"tower": 125}', '2026-10-05T19:26:00Z', '{"tower": 125}', '2026-10-05T19:26:00Z', true);
+    `);
+    await db.exec(readFileSync(`${MIGRATIONS}/20261006080000_rekaris_as_is.sql`, 'utf8'));
+    const read = async (id: string) => (await db.query(`
+      select p.strikes, p.suspect, s.latest, s.verified, s.verified_at, s.latest_at, s.day_state, s.week_state, s.pinned, s.rebase, n.note
+        from profiles p join saves s on s.user_id = p.id left join panel_notes n on n.user_id = p.id
+       where p.id = '${id}'`)).rows[0] as any;
+    expect(await read(R)).toMatchObject({ strikes: 0, suspect: false, pinned: false, rebase: true });
+    expect((await read(R)).note).toMatch(/floor 352/);
+    expect(await read(D)).toMatchObject({ strikes: 2, suspect: true, pinned: true, rebase: false, note: null });
+
+    // 認 The game's next sync, refused, written the way the sync function writes.
+    const upsert = (tower: number, verifiedAt: string) => db.exec(`insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync)
+      values ('${R}', '{"tower": ${tower}}', now(), '{"tower": 125}', '${verifiedAt}', now())
+      on conflict (user_id) do update set latest = excluded.latest, latest_at = excluded.latest_at,
+        verified = excluded.verified, verified_at = excluded.verified_at, last_sync = excluded.last_sync`);
+    await upsert(352, '2026-10-05T19:26:00Z');
+    await db.exec(`update profiles set strikes = strikes + 1 where id = '${R}'`);
+    const r = await read(R);
+    expect(r).toMatchObject({ latest: { tower: 352 }, verified: { tower: 352 }, day_state: { tower: 352 },
+      week_state: { tower: 352 }, rebase: false, pinned: true, strikes: 1 });
+    expect(r.verified_at).toEqual(r.latest_at);
+    // The one after verifies against it: the mark goes, and the copy moves freely again.
+    await db.exec(`update saves set latest = '{"tower": 352}', verified = '{"tower": 352}', verified_at = now() + interval '5 minutes'
+      where user_id = '${R}'`);
+    expect(await read(R)).toMatchObject({ pinned: false, rebase: false, strikes: 0, suspect: false });
+    // and the other pinned player still holds, unmoved by a refused write
+    await db.exec(`update saves set latest = '{"tower": 400}' where user_id = '${D}'`);
+    expect(await read(D)).toMatchObject({ latest: { tower: 125 }, pinned: true });
+    await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
+  });
+
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
