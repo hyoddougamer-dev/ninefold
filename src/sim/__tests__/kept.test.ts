@@ -12,7 +12,7 @@ import { newState, validate, type State } from '../state.ts';
  *
  *   承 Refining levels went with a piece taken off, and the bulk melt or a fusion then
  *      took the piece. Two fused pieces could share a name, and wearing one melted the
- *      other. Neither may happen without the player choosing it on the piece's own sheet.
+ *      other. The levels are the place's now (State.refined), so neither can happen.
  *   套 A loadout's piece could be unlocked and melted.
  *   ▲  An upgrade could give up a line the worn piece had.
  */
@@ -25,54 +25,56 @@ const piece = (id: string, template: string, rarity: Rarity,
 const hero = (over: Partial<State> = {}): State =>
   ({ ...newState(T0), realm: 6, layer: 4, at: T0, startedAt: T0 - 60 * 86_400, ...over } as State);
 
-/** Every refining level the cultivator holds, worn or in the chest. */
-const levels = (s: Pick<State, 'worn' | 'chest'>) =>
-  [...SLOTS.map((k) => s.worn[k]).filter(Boolean), ...s.chest]
-    .reduce((n, x) => n + Math.floor(x!.refine ?? 0), 0);
+/** Every refining level the cultivator holds: the places', the one place they live. */
+const levels = (s: Pick<State, 'refined'>) => SLOTS.reduce((n, k) => n + (s.refined[k] ?? 0), 0);
 
-describe('承 refining levels are never lost without the player choosing it', () => {
+describe('承 refining levels are never lost', () => {
   const sword = (id: string, value: number, extra: Partial<Item> = {}) =>
     piece(id, 'sword5', 'common', [{ affix: 'power', value }], extra);
 
-  it('a piece taken off keeps its levels, and no bulk melt, fusion or full chest takes it', () => {
-    const W = sword('w', 8, { refine: 10 });
+  it('a piece taken off leaves its levels with the place, so the melt, a fusion and a full chest may take it', () => {
+    const W = sword('w', 8);
     const N = sword('n', 11);
-    let s = hero({ worn: { weapon: W }, chest: [N, sword('c1', 4), sword('c2', 4)] });
+    let s = hero({ worn: { weapon: W }, chest: [N, sword('c1', 4), sword('c2', 4)], refined: { weapon: 10 } });
     const off = unequip(s.worn, s.chest, 'weapon');
     s = { ...s, worn: off.worn, chest: [...off.chest] };
-    // Another sword goes into the empty place by hand, and it starts at nothing.
+    expect(s.refined.weapon).toBe(10);
+    // Another sword goes into the empty place by hand, and it has the place's ten.
     const on = equip(s.worn, s.chest, N, 'weapon');
     s = { ...s, worn: on.worn, chest: [...on.chest] };
     expect(s.worn.weapon?.id).toBe('n');
-    expect(s.chest.find((x) => x.id === 'w')?.refine).toBe(10);
     expect(levels(s)).toBe(10);
 
-    // 拆 The bulk melt reaches every common, and leaves the refined one.
-    expect(salvageable(s.chest, 'heaven').map((x) => x.id)).not.toContain('w');
+    // 拆 The bulk melt reaches every common, the once-refined one too, and the levels stay.
+    expect(salvageable(s.chest, 'heaven').map((x) => x.id)).toContain('w');
     const melted = salvageUpTo(s, 'heaven');
-    expect(melted.chest.map((x) => x.id)).toEqual(['w']);
-    expect(levels(melted)).toBe(10);
+    expect(melted.chest).toHaveLength(0);
+    expect(melted.refined).toEqual({ weapon: 10 });
 
-    // 煉 Three commons of one shape, one of them refined: not a group, and Fuse all leaves it.
-    expect(fusable(s.chest)).toHaveLength(0);
-    expect(fuseIn(s, 'sword5', 'common').made).toBeNull();
-    expect(fuseAllIn(s).state).toBe(s);
+    // 煉 Three commons of one shape are a group like any other, and fusing it keeps them too.
+    expect(fusable(s.chest)).toHaveLength(1);
+    const fused = fuseIn(s, 'sword5', 'common');
+    expect(fused.made).not.toBeNull();
+    expect(fused.state.refined).toEqual({ weapon: 10 });
+    expect(fuseAllIn(s).state.refined).toEqual({ weapon: 10 });
 
-    // 藏 A full chest drops the new piece rather than the refined one, even when it is worse.
-    const full = addToChest([sword('r', 1, { refine: 3 })], sword('x', 9), 1);
-    expect(full.dropped?.id).toBe('x');
+    // 藏 A full chest drops the worse piece, whichever it is: no piece holds levels to spare.
+    const full = addToChest([sword('r', 1)], sword('x', 9), 1);
+    expect(full.dropped?.id).toBe('r');
 
-    // 拆 Melting it from its own sheet is the player's choice, and still works.
-    expect(salvage(s, ['w']).chest.some((x) => x.id === 'w')).toBe(false);
+    // 拆 Melting it from its own sheet takes the piece and nothing else.
+    expect(salvage(s, ['w']).refined).toEqual({ weapon: 10 });
   });
 
-  it('the place keeps the higher of the two counts when a piece goes on', () => {
-    const W = sword('w', 8, { refine: 10 });
-    const C = sword('c', 9, { refine: 4 });
-    const on = equip({ weapon: W }, [C], C, 'weapon');
+  it('a piece put on over another has the place\'s levels, read as the worn one is', () => {
+    const s = hero({ worn: { weapon: sword('w', 8) }, chest: [sword('c', 9)], refined: { weapon: 10 } });
+    const on = equip(s.worn, s.chest, s.chest[0], 'weapon');
     expect(on.worn.weapon?.id).toBe('c');
-    expect(on.worn.weapon?.refine).toBe(10);
-    expect(on.chest.map((x) => [x.id, x.refine])).toEqual([['w', 4]]);
+    const after = { ...s, worn: on.worn, chest: [...on.chest] };
+    expect(after.refined).toEqual({ weapon: 10 });
+    // 承 The comparison reads both at the place's ten, so neither is read bare.
+    expect(compare(s.chest[0], s.worn.weapon, 10).find((d) => d.affix === 'power'))
+      .toEqual({ affix: 'power', theirs: 9 * 1.04 ** 10, mine: 8 * 1.04 ** 10 });
   });
 
   it('two fusions never make one name, and wearing one twin leaves the other', () => {
@@ -91,7 +93,7 @@ describe('承 refining levels are never lost without the player choosing it', ()
   });
 
   it('equip takes exactly the one piece, even from a chest holding twins', () => {
-    const t1 = sword('twin', 9, { refine: 10 });
+    const t1 = sword('twin', 10);
     const t2 = sword('twin', 9);
     const on = equip({}, [t1, t2], t2, 'weapon');
     expect(on.chest).toEqual([t1]);
@@ -99,16 +101,16 @@ describe('承 refining levels are never lost without the player choosing it', ()
   });
 
   it('a save holding twins keeps both on load, the second renamed', () => {
-    const t1 = sword('twin', 9, { refine: 10 });
+    const t1 = sword('twin', 10);
     const t2 = sword('twin', 9);
-    const s = hero({ worn: { weapon: t1 }, chest: [t2, sword('other', 3)] });
+    const s = hero({ worn: { weapon: t1 }, chest: [t2, sword('other', 3)], refined: { weapon: 10 } });
     const v = validate(JSON.parse(JSON.stringify(s)), T0);
     expect(v.worn.weapon?.id).toBe('twin');
     expect(v.chest).toHaveLength(2);
     const ids = [v.worn.weapon!.id, ...v.chest.map((x) => x.id)];
     expect(new Set(ids).size).toBe(ids.length);
     expect(v.chest[0].id).not.toBe('twin');
-    expect(levels(v)).toBe(levels(s));
+    expect(levels(v)).toBe(10);
   });
 });
 
@@ -158,11 +160,11 @@ describe('▲ a strict upgrade', () => {
     expect(r.state.worn.ring?.id).toBe('s');
   });
 
-  it('reads the new piece with the levels it would carry', () => {
-    // Bare, 3.5 luck is under the worn 4 refined; carried, the place's levels lift it too.
-    const refined = { ...worn, refine: 6 };
+  it('reads the new piece at the place\'s levels, as the worn one is', () => {
+    // 承 Read bare against the worn ring refined six times, 4 luck would lose; both at the
+    // ring's place's six, it holds.
     const close = piece('c', 'plainring5', 'mystic', [{ affix: 'power', value: 12 }, { affix: 'luck', value: 4 }]);
-    const s = hero({ worn: { ring: refined }, chest: [close] });
+    const s = hero({ worn: { ring: worn }, chest: [close], refined: { ring: 6 } });
     expect(linesHeld(s, close)).toBe(true);
   });
 });

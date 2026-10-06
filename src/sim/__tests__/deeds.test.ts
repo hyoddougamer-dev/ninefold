@@ -46,7 +46,6 @@ function finished(): State {
     template: best.find((t: GearTemplate) => t.slot === slot)!.key,
     rarity: 'heaven' as const,
     rolls: [{ affix: 'power' as const, value: 40 }],
-    refine: 20,
   }]));
   return {
     ...newState(T0),
@@ -59,6 +58,8 @@ function finished(): State {
     killed: Object.fromEntries(BEASTS.map((b) => [b.key, 500])),
     unlocked: spentTree(),
     worn: worn as State['worn'],
+    // 承 Every place on the body refined twenty times.
+    refined: Object.fromEntries(SLOTS.map((slot) => [slot, 20])),
   };
 }
 

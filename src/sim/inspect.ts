@@ -3,7 +3,8 @@ import {
   type Affix, type Item, type Rarity,
 } from '../data/gear.ts';
 import { power, rate as rateOf, type State } from './state.ts';
-import { carryRefine, equip } from './chest.ts';
+import { equip } from './chest.ts';
+import { levelAt } from './refine.ts';
 import { callingKey } from './schools.ts';
 
 /**
@@ -25,12 +26,12 @@ import { callingKey } from './schools.ts';
  */
 
 /**
- * The save as it would be with this piece worn. Nothing else moves, except what putting
- * it on moves: 承 the refining levels of the piece it replaces come with the place.
+ * The save as it would be with this piece worn. Nothing else moves: 承 the place's
+ * refining is the place's, so the piece simply has it once it is on.
  */
 export function ifWorn(s: State, item: Item): State {
   const slot = templateOf(item).slot;
-  return { ...s, worn: { ...s.worn, [slot]: carryRefine(item, s.worn[slot]).on } };
+  return { ...s, worn: { ...s.worn, [slot]: item } };
 }
 
 /** The save as it would be with that slot empty. */
@@ -105,25 +106,17 @@ export interface LineDelta {
  * Values are the *effective* ones, with 煉 refining already folded in, because that is
  * what the piece is actually worth to the person holding it.
  *
- * 承 And the piece being looked at is read **as it would be once on**: putting it on takes
- * the slot's refining levels with it (carryRefine). rekaris, on the Discord: a worn piece
- * with +50% on every line from its levels read as better than a strict upgrade, because
- * the upgrade's lines were read bare while the worn piece's were read refined. 力 and 氣
- * were already measured with the levels carried (ifWorn); the lines now are too.
+ * 承 Both pieces are read at `level`, the refining of the place they share (levelAt in
+ * sim/refine.ts), because either one worn there has it. rekaris, on the Discord: a worn
+ * piece with +50% on every line from its levels read as better than a strict upgrade,
+ * because the upgrade's lines were read bare while the worn piece's were read refined. With
+ * the levels on the place there is one number to read both at, and no way to read them
+ * apart.
  */
-export function compare(item: Item, worn?: Item): readonly LineDelta[] {
-  // valueOf already folds 煉 refining in, which is the whole reason it lives in the
-  // data file: nothing is allowed to read a roll without it.
-  const on = worn ? carryRefine(item, worn).on : item;
+export function compare(item: Item, worn?: Item, level = 0): readonly LineDelta[] {
   return AFFIXES
-    .map((a) => ({ affix: a, theirs: valueOf(on, a), mine: worn ? valueOf(worn, a) : 0 }))
+    .map((a) => ({ affix: a, theirs: valueOf(item, a, level), mine: worn ? valueOf(worn, a, level) : 0 }))
     .filter((d) => d.theirs > 0 || d.mine > 0);
-}
-
-/** 承 The refining levels a piece would take from the slot when it goes on, beyond its own. */
-export function levelsCarried(item: Item, worn?: Item): number {
-  if (!worn) return 0;
-  return Math.max(0, Math.floor(worn.refine ?? 0) - Math.floor(item.refine ?? 0));
 }
 
 /** How many lines a piece of this rank carries: one primary and the rank's secondaries. */
@@ -240,18 +233,19 @@ const holds = (d: LineDelta): boolean => d.mine <= 0 || d.theirs >= d.mine * 0.9
 
 /**
  * ▲ Whether a piece keeps every line the worn one has: each is matched or beaten by the
- * new piece read as worn (承 with the slot's levels carried). Found from the Discord
- * (2026-10-04): ▲ only ever asked power and qi, so 著 Wear all upgrades could swap a ring
- * with 運 luck on it for one with a little more power and no 運 at all.
+ * new piece read as worn (承 at the place's refining, as the worn one is). Found from the
+ * Discord (2026-10-04): ▲ only ever asked power and qi, so 著 Wear all upgrades could swap
+ * a ring with 運 luck on it for one with a little more power and no 運 at all.
  */
 export function linesHeld(s: State, item: Item): boolean {
-  const worn = s.worn[templateOf(item).slot];
-  return !worn || compare(item, worn).every(holds);
+  const slot = templateOf(item).slot;
+  const worn = s.worn[slot];
+  return !worn || compare(item, worn, levelAt(s.refined, slot)).every(holds);
 }
 
 /**
  * ▲ Whether the chest marks a piece ▲: the sim says it raises power or qi and lowers
- * neither, read with 承 the levels it would take from the slot, it keeps the class, and
+ * neither, read with 承 the place's levels on it, it keeps the class, and
  * it gives up no line the worn piece has. A strict upgrade, and nothing less. The one
  * rule the chest, the verdict's drop and 著 Wear all upgrades all draw from.
  */
@@ -291,7 +285,7 @@ export function wearBetter(s: State): { state: State; worn: number } {
         || (Math.abs(m.power - best.m.power) <= 1e-12 && m.rate > best.m.rate)) best = { item, m };
     }
     if (!best) break;
-    // The same swap the sheet's 著 button makes, levels traded on the way (承).
+    // The same swap the sheet's 著 button makes; 承 the place keeps its levels.
     const next = equip(out.worn, out.chest, best.item, templateOf(best.item).slot);
     out = { ...out, worn: next.worn, chest: [...next.chest] };
     worn++;

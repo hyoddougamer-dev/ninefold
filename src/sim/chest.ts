@@ -1,8 +1,9 @@
 import { FORGED } from '../data/crafts.ts';
 import {
-  FUSED, RARITIES, RARITY_INFO, REALM_SETS, SLOTS, TEMPLATE_BY_KEY, baseValue, refinedBy, roundValue, schoolOf,
-  templateOf, wornTotals, type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
+  FUSED, RARITIES, RARITY_INFO, REALM_SETS, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, schoolOf,
+  templateOf, wornTotals, type Affix, type Item, type Rarity, type Refined, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
+import { refineFactor } from './refine.ts';
 import type { School } from '../data/schools.ts';
 import {
   CHEST_LIMIT, CLASS_AMP, FUSE_COUNT, FUSE_TOP, PAIR_CHEST, SCHOOL_WAKES, SECONDARIES, SECONDARY_SHARE,
@@ -23,17 +24,14 @@ import { chestSlots } from './awaken.ts';
 
 export { CHEST_LIMIT, FUSE_COUNT };
 
-/**
- * 承 Whether a piece holds refining levels of its own. Those levels were paid for in
- * material and live nowhere else, so no bulk action may take the piece: not the melt by
- * rank, not a fusion, not a full chest. The testers' path (the Discord, 2026-10-04):
- * taken off, the place filled by another piece, and the piece melted with the commons.
- * Melting it from its own sheet still works, because that is the player choosing it, and
- * the sheet says so.
+/*
+ * 承 No piece holds refining levels any more, so nothing here has to spare one for them.
+ * Until 2026-10-06 the levels lived on the piece, and the bulk melt, a fusion and a full
+ * chest all had to leave a refined piece alone, because melting it melted the levels: the
+ * testers' path (the Discord, 2026-10-04) was a refined piece taken off, its place filled,
+ * and the piece melted with the commons. The levels are the place's now (State.refined),
+ * and a piece in the chest is only a piece.
  */
-export function holdsLevels(item: Item): boolean {
-  return Math.floor(item.refine ?? 0) > 0;
-}
 
 export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean {
   return chest.length >= limit;
@@ -42,7 +40,8 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
 /**
  * 值 How good a piece is, roughly, for deciding which of two to keep.
  *
- * Rank, realm, refining and 質 quality, not the raw roll values, because eight axes on
+ * Rank, realm, 質 quality and the refining of the place it is read in (0 for a piece in
+ * the chest, which has none), not the raw roll values, because eight axes on
  * different scales cannot be added together into a number that means anything. Quality
  * can: it is the first line against what its own rank and realm usually roll, so it reads
  * the same on every piece in the game. Without it a full chest could melt a ×1.30 fused
@@ -50,8 +49,8 @@ export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean 
  * This is only ever used to answer "is the thing that just dropped better than the worst
  * thing in the chest", and for that it is right far more often than it is wrong.
  */
-export function itemWorth(item: Item): number {
-  return RARITY_INFO[item.rarity].mult * templateOf(item).realm * refinedBy(item) * qualityOf(item);
+export function itemWorth(item: Item, level = 0): number {
+  return RARITY_INFO[item.rarity].mult * templateOf(item).realm * refineFactor(level) * qualityOf(item);
 }
 
 export interface Kept {
@@ -91,11 +90,11 @@ export function addToChest(
 
   // 鎖 A locked piece is never the one that goes. If every piece is locked, the new one
   // goes instead, which is what a full chest always did with a piece no better than its
-  // worst: nothing the player chose to keep is ever taken. 承 Nor a piece holding refining
-  // levels, which were paid for and live nowhere else.
+  // worst: nothing the player chose to keep is ever taken. 承 A piece once refined no
+  // longer needs sparing: refining lives with the place on the body, not the piece.
   let worstAt = -1;
   for (let i = 0; i < chest.length; i++) {
-    if (chest[i].locked || holdsLevels(chest[i])) continue;
+    if (chest[i].locked) continue;
     if (worstAt < 0 || below(chest[i], chest[worstAt])) worstAt = i;
   }
   const worst = worstAt >= 0 ? chest[worstAt] : undefined;
@@ -109,7 +108,8 @@ export function addToChest(
 /**
  * Takes exactly one piece out of the chest: this very piece if it is there, else the
  * first with its id. It used to drop every piece with the id, and two fused pieces could
- * share one, so wearing one twin melted the other and whatever it had been refined to.
+ * share one, so wearing one twin melted the other (and, while refining lived on the piece,
+ * whatever it had been refined to).
  */
 export function removeFromChest(chest: readonly Item[], id: string, which?: Item): readonly Item[] {
   let at = which ? chest.indexOf(which) : -1;
@@ -142,44 +142,25 @@ function print(text: string): string {
 }
 
 /**
- * 承 What refining does when a piece is put on over another: the levels go with the
- * place on the body, not with the metal.
- *
- * Bruno chose this from the drop proposal. Measured before it, an active cultivator
- * picked up 158 pieces between the sixth realm and the ninth and wore three, and the
- * chest held no upgrade at all in the seventh, eighth or ninth: the old piece, refined
- * twenty times, was worth twice itself, and no fresh drop could catch it. With the
- * levels carried, the same chests held 8, 14 and 14.
- *
- * The two pieces trade levels rather than copy them: the one going on takes the higher
- * of the two counts and the one coming off keeps the lower. Nothing is made and nothing
- * is lost, so swapping back puts everything where it was, and two pieces can never
- * both hold the levels that were paid for once.
- */
-export function carryRefine(item: Item, previous: Item | undefined): { on: Item; off: Item | undefined } {
-  if (!previous) return { on: item, off: previous };
-  const a = Math.floor(item.refine ?? 0);
-  const b = Math.floor(previous.refine ?? 0);
-  const hi = Math.max(a, b), lo = Math.min(a, b);
-  const withLevel = (x: Item, n: number): Item => {
-    const { refine: _was, ...rest } = x;
-    return n > 0 ? { ...rest, refine: n } : rest;
-  };
-  return { on: withLevel(item, hi), off: withLevel(previous, lo) };
-}
-
-/**
  * Equipping swaps: whatever was in the slot goes back to the chest, and since the new
- * item just left it, the count never rises, so equipping can never overflow. 承 The
- * refining levels trade places on the way: see carryRefine.
+ * item just left it, the count never rises, so equipping can never overflow.
+ *
+ * 承 Refining is not touched, because it is not on either piece: it belongs to the place
+ * (State.refined), so the piece going on simply has the place's levels. Bruno chose that
+ * the levels follow the place from the drop proposal: measured before it, an active
+ * cultivator picked up 158 pieces between the sixth realm and the ninth and wore three,
+ * because the old piece, refined twenty times, was worth twice itself and no fresh drop
+ * could catch it. With the levels on the place, the same chests held 8, 14 and 14
+ * upgrades. It used to be done by trading levels between the two pieces on every swap
+ * (carryRefine), which is the copy rekaris said would breed bugs, and it did.
  */
 export function equip(worn: Worn, chest: readonly Item[], item: Item, slot: Slot): {
   worn: Worn; chest: readonly Item[];
 } {
-  const { on, off } = carryRefine(item, worn[slot]);
+  const off = worn[slot];
   const without = removeFromChest(chest, item.id, item);
   return {
-    worn: { ...worn, [slot]: on },
+    worn: { ...worn, [slot]: item },
     chest: off ? [...without, off] : without,
   };
 }
@@ -240,8 +221,8 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
   const tally = new Map<string, number>();
   for (const it of chest) {
     // 業 A forged piece is finished: it is never one of three. See sim/crafts.ts.
-    // 鎖 Nor is a locked one: fusing melts three pieces into one. 承 Nor one holding
-    // refining levels, which a fusion would melt with it.
+    // 鎖 Nor is a locked one: fusing melts three pieces into one. 承 Refining is not on a
+    // piece, so a fusion never melts any.
     if (!fusesAt(it, it.rarity)) continue;
     const key = `${it.template}|${it.rarity}`;
     tally.set(key, (tally.get(key) ?? 0) + 1);
@@ -254,9 +235,9 @@ export function fusable(chest: readonly Item[]): readonly { template: string; ra
   return out.sort((a, b) => b.count - a.count);
 }
 
-/** Whether a fusion may melt this piece: not forged, not locked, holding no levels. */
+/** Whether a fusion may melt this piece: not forged, not locked. */
 function fusesAway(it: Item): boolean {
-  return it.from !== FORGED && !it.locked && !holdsLevels(it);
+  return it.from !== FORGED && !it.locked;
 }
 
 /**
@@ -400,13 +381,16 @@ const SET_ROOM_MOST = Math.max(0, ...REALM_SETS.map((rs) =>
  * leave the Armourer, change loadout, buy the keystone that caps the chest. Nothing is
  * lost on the screen when that happens, and the next load must not lose it either: on
  * 2026-10-05 an Armourer with 141 pieces changed one weapon and the reload kept 48.
+ *
+ * 煉 Each piece is read at the refining of the place it would be worn in, since any piece
+ * put on there has those levels, and a refined place multiplies its 藏 line too.
  */
 export function chestCeiling(
   unlocked: readonly string[], held: readonly Item[], awakened: readonly string[],
-  affinityOf: (slot: Slot) => number,
+  affinityOf: (slot: Slot) => number, refined: Refined = {},
 ): number {
   const lines = held.reduce((n, it) => n + Math.max(0, wornTotals(
-    { [TEMPLATE_BY_KEY[it.template]?.slot ?? 'weapon']: it } as Worn, affinityOf,
+    { [TEMPLATE_BY_KEY[it.template]?.slot ?? 'weapon']: it } as Worn, affinityOf, refined,
   ).capacity), 0);
   const armourer = couldWearPair(held, 'body', 'artificer') ? PAIR_CHEST : 0;
   const room = lines * Math.max(1, ...CLASS_AMP) + SET_ROOM_MOST + armourer;

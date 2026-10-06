@@ -88,7 +88,8 @@ describe('藏 the chest', () => {
     expect(itemWorth(mk('sword9', 'heaven', 0))).toBeGreaterThan(itemWorth(mk('sword9', 'earth', 0)));
     expect(itemWorth(mk('sword9', 'common', 0))).toBeGreaterThan(itemWorth(mk('sword1', 'common', 0)));
     const plain = mk('sword5', 'mystic', 0);
-    expect(itemWorth({ ...plain, refine: 8 })).toBeGreaterThan(itemWorth(plain));
+    // 承 Refining is the place's, so it is handed in: a piece in the chest reads none.
+    expect(itemWorth(plain, 8)).toBeGreaterThan(itemWorth(plain));
     const strong = { ...plain, rolls: [{ ...plain.rolls[0], value: plain.rolls[0].value * 1.3 }] };
     expect(qualityOf(strong)).toBeCloseTo(1.3, 2);
     expect(itemWorth(strong)).toBeCloseTo(itemWorth(plain) * qualityOf(strong), 6);
@@ -121,19 +122,16 @@ describe('藏 the chest', () => {
     const poor = at(98, 0.9, { from: 'rat' });
     expect(addToChest([fused, weak, ...filler], poor).dropped?.id).toBe(poor.id);
 
-    // 鎖 承 The protections hold: a locked piece (and a loadout's, which saving locks) or
-    // one holding refining levels is never the one, however weak its roll. The next
-    // weakest goes instead.
+    // 鎖 The protection holds: a locked piece (and a loadout's, which saving locks) is never
+    // the one, however weak its roll. The next weakest goes instead. 承 A piece once
+    // refined needs no sparing any more: its levels are its place's, not its own.
     const lockedWeak = { ...weak, locked: true as const };
-    const refinedWeak = { ...at(3, 0.85, { from: 'rat' }), refine: 2 };
-    const guarded = [fused, lockedWeak, refinedWeak, ...filler];
+    const guarded = [fused, lockedWeak, ...filler];
     const out = addToChest(guarded, at(95, 1.2, { from: 'rat' }));
     expect(out.dropped?.id).not.toBe(lockedWeak.id);
-    expect(out.dropped?.id).not.toBe(refinedWeak.id);
     expect(out.dropped?.id).not.toBe(fused.id);
     expect(out.dropped?.id).toMatch(/^sword9-heaven-1\d$/);
     expect(out.chest).toContain(lockedWeak);
-    expect(out.chest).toContain(refinedWeak);
 
     // Every piece kept: the new one goes, nothing chosen is taken.
     const allKept = [fused, weak, ...filler].map((x) => ({ ...x, locked: true as const }));
@@ -364,10 +362,11 @@ describe('換 a chest over a limit that just fell', () => {
   const mantle = GEAR.find((g) => g.slot === 'robe' && g.affix === 'capacity' && g.realm === 9)!;
   const robe = GEAR.find((g) => g.slot === 'robe' && g.affix !== 'capacity' && g.realm === 9)!;
   const roomy: Item = { id: 'roomy', template: mantle.key, rarity: 'heaven',
-    rolls: [{ affix: 'capacity', value: 120 }], refine: 20 };
+    rolls: [{ affix: 'capacity', value: 120 }] };
 
   it('keeps every piece after the 藏 piece comes off', () => {
-    const base = { ...newState(T0), realm: 9 };
+    // 承 The robe's place is refined, so the mantle's 藏 line counts twenty levels' worth.
+    const base = { ...newState(T0), realm: 9, refined: { robe: 20 } };
     const worn = { robe: roomy };
     const filler = Array.from({ length: CHEST_LIMIT + 5 }, (_, i) => mk(robe.key, 'common', i));
     const before = validate({ ...base, worn, chest: filler }, T0 + 60);
@@ -392,37 +391,19 @@ describe('換 a chest over a limit that just fell', () => {
 });
 
 /**
- * 承 The levels go with the place on the body. Bruno chose it: before it, an active
- * cultivator's chest held no upgrade at all from the seventh realm on, because the old
- * refined piece was worth twice any fresh one.
+ * 承 The levels belong to the place on the body (State.refined), so a swap is only a swap:
+ * neither piece is changed on the way. The rest of the rule is in refined.test.ts.
  */
-describe('承 refining follows the piece you put on', () => {
-  const at = (id: string, template: string, refine = 0): Item =>
-    ({ id, template, rarity: 'mystic', rolls: [{ affix: 'power', value: 10 }], ...(refine ? { refine } : {}) });
+describe('承 a swap changes neither piece', () => {
+  const at = (id: string, template: string): Item =>
+    ({ id, template, rarity: 'mystic', rolls: [{ affix: 'power', value: 10 }] });
 
-  it('hands the levels to the new piece and leaves the old one bare', () => {
-    const old = at('old', 'sword3', 18);
+  it('puts the very piece on and the very old one back in the chest', () => {
+    const old = at('old', 'sword3');
     const fresh = at('new', 'sword6');
     const after = equip({ weapon: old }, [fresh], fresh, 'weapon');
-    expect(after.worn.weapon?.id).toBe('new');
-    expect(after.worn.weapon?.refine).toBe(18);
-    expect(after.chest.find((x) => x.id === 'old')?.refine).toBeUndefined();
-  });
-
-  it('trades rather than copies, so swapping back puts everything where it was', () => {
-    const a = at('a', 'sword3', 18);
-    const b = at('b', 'sword6', 5);
-    const one = equip({ weapon: a }, [b], b, 'weapon');
-    const two = equip(one.worn, one.chest, one.chest.find((x) => x.id === 'a')!, 'weapon');
-    const total = (xs: (Item | undefined)[]) => xs.reduce((n, x) => n + (x?.refine ?? 0), 0);
-    expect(total([one.worn.weapon, ...one.chest])).toBe(23);
-    expect(two.worn.weapon?.id).toBe('a');
-    expect(two.worn.weapon?.refine).toBe(18);
-    expect(two.chest.find((x) => x.id === 'b')?.refine).toBe(5);
-  });
-
-  it('puts nothing on a piece going into an empty place', () => {
-    const fresh = at('new', 'sword6');
-    expect(equip({}, [fresh], fresh, 'weapon').worn.weapon?.refine).toBeUndefined();
+    expect(after.worn.weapon).toBe(fresh);
+    expect(after.chest).toEqual([old]);
+    expect(after.chest[0]).toBe(old);
   });
 });

@@ -3514,7 +3514,6 @@ button.gs-new .cjk { margin: 0; }
 .lockedsays { font-size: 12px; margin: 6px 0 0; text-align: center; }
 .itemsheet .lockbtn:disabled { opacity: .55; cursor: not-allowed; }
 .itemsheet .lockedsays[data-qol='in-loadout'] { color: var(--gold); }
-.itemsheet .meltlevels { font-size: 12px; margin: 14px 0 -6px; color: var(--cinnabar); }
 @media (max-width: 360px) {
   /* 序 Three words on a 320px phone: tighter, so the switch keeps the page's margin. */
   .huntorder button { padding: 7px 7px; letter-spacing: .03em; font-size: 10px; }

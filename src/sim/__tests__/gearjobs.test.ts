@@ -224,13 +224,11 @@ describe('鎖 a kept filter and a full chest', () => {
       expect(out.chest.map((x) => x.id)).toEqual(['new', 'p']);
     });
 
-    it('still never melts a locked piece or one holding refining levels, kept or not', () => {
-      const chest = [
-        power('locked', 'common', 1, { locked: true }), power('refined', 'common', 1, { refine: 3 }), power('h', 'heaven'),
-      ];
-      expect(addToChest(chest, power('new', 'heaven', 1.2), 3, kept).dropped?.id).toBe('h');
-      const held = chest.slice(0, 2);
-      const out = addToChest(held, power('new', 'heaven', 1.2), 2, kept);
+    it('still never melts a locked piece, kept or not', () => {
+      const chest = [power('locked', 'common', 1, { locked: true }), power('h', 'heaven')];
+      expect(addToChest(chest, power('new', 'heaven', 1.2), 2, kept).dropped?.id).toBe('h');
+      const held = chest.slice(0, 1);
+      const out = addToChest(held, power('new', 'heaven', 1.2), 1, kept);
       expect(out.dropped?.id).toBe('new');
       expect(out.chest).toEqual(held);
     });

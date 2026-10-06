@@ -28,7 +28,7 @@ describe('久 the long haul', () => {
     g.days.forEach((d, i) => {
       total += d;
       if ((i + 1) % 10 === 0) {
-        const levels = i + 1 === 80 ? `   refine ${SLOTS.map((x) => g.end.worn[x]?.refine ?? 0).join(' ')}` : '';
+        const levels = i + 1 === 80 ? `   refine ${SLOTS.map((x) => g.end.refined[x] ?? 0).join(' ')}` : '';
         rows.push(`    劫 ${String(i + 1).padStart(3)}  ${String(total).padStart(4)} days in all` +
           `   longest so far ${Math.max(...g.days.slice(0, i + 1))}   tower ${g.floors[i]}${levels}`);
       }
@@ -37,7 +37,7 @@ describe('久 the long haul', () => {
 
     for (const d of g.days) expect(d).toBeLessThanOrEqual(MAX_MARK_DAYS);
     // 煉 And the refining really did go past the old limit, or this measures nothing.
-    expect(Math.max(...SLOTS.map((x) => g.end.worn[x]?.refine ?? 0))).toBeGreaterThan(99);
+    expect(Math.max(...SLOTS.map((x) => g.end.refined[x] ?? 0))).toBeGreaterThan(99);
   }, 300_000);
 
   /**

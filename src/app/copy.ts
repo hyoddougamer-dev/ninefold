@@ -612,7 +612,7 @@ export const ADVICE = {
    */
   refine: (han: string, levels: number) =>
     `Your 材 will take ${han} ${levels} ${levels === 1 ? 'level' : 'levels'} further in 器 Gear. `
-    + `Refining has no cap, and the levels follow what you wear.`,
+    + `Refining has no cap, and the levels stay with the place on your body.`,
   refineCapped: 'Your 妖丹 cores are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
   needMaterial: (short: number) =>
     `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
@@ -955,16 +955,15 @@ export const DRIVE = {
 export const ITEM = {
   /** 拆 The single melt, on the sheet where the piece can actually be looked at. */
   salvage: 'Melt it down',
-  /** 承 Under the single melt of a piece that holds refining levels: they melt with it. */
-  meltLevels: (n: number) => `Its ${n} refining ${n === 1 ? 'level goes' : 'levels go'} with it. The bulk melt and fusion never take a refined piece; only this button does.`,
 
   what: 'What it gives',
   against: (name: string) => `Against the ${name} you are wearing`,
   fromSet: (set: string, n: number) => `${set} set, realm ${n}`,
   lines: (n: number) => (n === 1 ? '1 line' : `${n} lines`),
-  refined: (level: number, gain: number, per: number) =>
-    `\u7149 Refined ${level} ${level === 1 ? 'time' : 'times'}. Every line on it is `
-    + `${gain}% higher than it rolled, and each refining adds another ${per}%.`,
+  /** \u627f The refining is the place's, so the sheet names the place, worn piece or not. */
+  refined: (place: string, level: number, gain: number, per: number) =>
+    `\u7149 The ${place.toLowerCase()} place on your body is refined ${level} ${level === 1 ? 'time' : 'times'}. `
+    + `Every line on what you wear there is ${gain}% higher, and each refining adds another ${per}%.`,
   times: (x: number) => {
     const pct = (x - 1) * 100;
     if (Math.abs(pct) < 0.05) return 'no change';
@@ -1637,13 +1636,15 @@ export const GEAR = {
 
   /**
    * 煉器 Refining. It has to say three things: what it costs, that it has no top, and
-   * that the levels belong to the piece rather than to you, because choosing which
-   * piece to pour a run's material into is the decision, and a decision you did not
-   * know you were making is not one.
+   * that the levels belong to the place on the body rather than to the piece, because
+   * choosing which place to pour a run's material into is the decision, and a decision
+   * you did not know you were making is not one. 承 Since 2026-10-06 that is all there is
+   * to it: no trade between two pieces to explain, and nothing a melt can take.
    */
   refineHead: '煉器 Refine',
-  refine: 'Material makes what you wear better, and there is no top level. Put on a new '
-    + 'piece and the higher of the two levels goes with you; the one you take off keeps the lower.',
+  refine: 'Material makes what you wear better, with no top level. The levels belong to the '
+    + 'place on your body and not to the piece. Whatever you wear there has them. Taking a piece '
+    + 'off, melting it or fusing it never takes them away.',
   refineAt: (level: number, pct: number) =>
     (level === 0 ? 'not refined yet' : `煉 ${level} · every line on it +${pct}%`),
   setNeed: (n: number) => `${n} more ${n === 1 ? 'piece' : 'pieces'} of this realm`,
@@ -1883,11 +1884,12 @@ export const NOTICE = {
   },
   refine: {
     // 承 rekaris, on the Discord (2026-10-02): the old card said the levels stay on the
-    // piece, and swapping a sword kept them. The levels follow the place on the body
-    // (sim/carryRefine), so the card says that.
+    // piece, and swapping a sword kept them. The levels belong to the place on the body
+    // (State.refined, since 2026-10-06), so the card says that.
     title: 'Refining is never thrown away',
-    text: 'Put on a new piece and it takes the higher of the two levels; the piece you take '
-      + 'off keeps the lower. Pour material in freely: an upgrade never wastes it.',
+    text: 'The levels belong to the place on your body and not to the piece. Whatever you wear '
+      + 'there has them. Taking a piece off, melting it or fusing it never takes them. Pour '
+      + 'material in freely: an upgrade never wastes it.',
   },
   workshop: {
     title: 'The workshop is open',
@@ -2435,7 +2437,7 @@ export const QOL = {
     wearAllSays: 'Puts on every \u25b2 piece, the biggest gain first. A \u25b2 piece is at least as good on every line you wear now. Locked pieces, loadout pieces and any that would change your class stay put.',
     wore: (n: number) => `Put on ${n} ${n === 1 ? 'piece' : 'pieces'}`,
     fuseAll: 'Fuse all groups',
-    fuseAllSays: 'Three into one, again and again, until no three match. At Heaven it fuses only pieces you found, so nothing it makes is fused again. Locked, refined and forged pieces are never fused.',
+    fuseAllSays: 'Three into one, again and again, until no three match. At Heaven it fuses only pieces you found, so nothing it makes is fused again. Locked and forged pieces are never fused. Your refining stays where it is.',
     /**
      * 天 Heaven into Heaven (rekaris, on the Discord, 2026-10-04): three found Heaven pieces
      * make one, with the fusion quality on top. The line over the Heaven rows, and each
@@ -2444,8 +2446,8 @@ export const QOL = {
     heavenSays: `天 Heaven into Heaven: three you found make one, with your fusion quality on top, ×${trim(FUSE_TOP)} at most. A fused piece is never fused again.`,
     heavenRow: (name: string, count: number, quality: number) => `${name} · ${count} found · comes out ×${quality.toFixed(2)}`,
     fused: (n: number) => `Fused ${n} ${n === 1 ? 'time' : 'times'}`,
-    /** \u627f On the item sheet, when the piece's lines are read with the slot's levels on. */
-    carried: (n: number) => `Read as worn: it takes this place's ${n} refining ${n === 1 ? 'level' : 'levels'} when it goes on.`,
+    /** \u627f On the item sheet, when the piece's lines are read with the place's levels on. */
+    carried: (n: number) => `Read as worn, with this place's ${n} refining ${n === 1 ? 'level' : 'levels'}: they belong to the place, so any piece you wear here has them.`,
     /** \u7be9 The chest's third filter: by lines. */
     lines: 'Lines',
     anyLine: 'Any line',

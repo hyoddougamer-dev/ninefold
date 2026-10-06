@@ -405,8 +405,8 @@ const kills = (s) => Object.values(s.killed).reduce((x, y) => x + y, 0);
       if (ref) { await ref.click(); await page.waitForTimeout(600); }
       else fail('煉器', 'the refine block offered nothing to press at the eighth realm');
     },
-    (a, b) => (b.worn.weapon?.refine ?? 0) > (a.worn.weapon?.refine ?? 0)
-      || b.materials < a.materials || 'the piece was not refined and no material was spent');
+    (a, b) => (b.refined?.weapon ?? 0) > (a.refined?.weapon ?? 0)
+      || b.materials < a.materials || 'the place was not refined and no material was spent');
   if (page.noise.length) fail('煉器', `console: ${[...new Set(page.noise)].slice(0, 2).join(' | ')}`);
   await page.close();
 }

@@ -1,4 +1,5 @@
 import { FLOOR_LOOT, FLOOR_LOOT_GROWTH, REFINE_DEPTH, REFINE_PER_LEVEL, floorPay } from './balance.ts';
+import type { Refined, Slot } from '../data/gear.ts';
 
 /**
  * 煉器 Refining: what 材 material is actually for.
@@ -10,11 +11,14 @@ import { FLOOR_LOOT, FLOOR_LOOT_GROWTH, REFINE_DEPTH, REFINE_PER_LEVEL, floorPay
  * spend it on, and one who tapped 狩 Hunt hard finished on two hundred and eighty
  * billion. Material stopped meaning anything the moment the cores were full.
  *
- * Refining is the sink, and it is bottomless: a piece has no top level, and the price is
- * the only ceiling. It also fixes the quieter fault in the gear loop: a 天 Heaven piece
- * found in the third realm used to be replaced and forgotten, because nothing could make
- * it grow. Now it can, and choosing *which* piece to pour a run's material into is a
- * decision the gear screen never used to ask.
+ * Refining is the sink, and it is bottomless: a place on the body has no top level, and
+ * the price is the only ceiling. It also fixes the quieter fault in the gear loop: a 天
+ * Heaven piece found in the third realm used to be replaced and forgotten, because nothing
+ * could make it grow. Now the place it is worn in grows, and choosing *which* place to pour
+ * a run's material into is a decision the gear screen never used to ask.
+ *
+ * 承 The levels are the place's (State.refined), never the piece's: see Refined in
+ * data/gear.ts for the two bugs that cost.
  *
  * It buys power and fortune, never the qi rate, so the standing rule holds: nothing
  * uncapped may ever raise gathering.
@@ -58,8 +62,9 @@ export function refineSpent(level: number): number {
 }
 
 /**
- * What a refined piece's lines are multiplied by. The one place it is worked out: 器
- * refinedBy reads it for every line on a piece, and the gear screen for its preview.
+ * What the lines of a piece worn in a place refined `level` times are multiplied by. The
+ * one place it is worked out: 器 valueOf and gearTotals read it for every line, and the
+ * gear screen for its preview.
  */
 export function refineFactor(level: number | undefined): number {
   return (1 + REFINE_PER_LEVEL) ** clampRefine(level);
@@ -68,6 +73,15 @@ export function refineFactor(level: number | undefined): number {
 export function clampRefine(level: number | undefined): number {
   if (typeof level !== 'number' || !Number.isFinite(level)) return 0;
   return Math.max(0, Math.min(REFINE_LIMIT, Math.floor(level)));
+}
+
+/**
+ * 承 The refining level of a place on the body. It belongs to the place and nothing else:
+ * whatever is worn there has it, and nothing done to a piece (taking it off, melting it,
+ * fusing it) moves it. See Refined in data/gear.ts.
+ */
+export function levelAt(refined: Refined | undefined, slot: Slot): number {
+  return clampRefine(refined?.[slot]);
 }
 
 /**

@@ -29,7 +29,7 @@ import { BEASTS, wardenOf } from '../data/bestiary.ts';
 import { MARKS } from './record.ts';
 import { seals } from './tower.ts';
 import { pillsTaken } from './furnace.ts';
-import { clampRefine } from './refine.ts';
+import { levelAt } from './refine.ts';
 import { daoSpent } from './dao.ts';
 import { NODES } from '../data/techniques.ts';
 import { RARITIES, SLOTS, templateOf } from '../data/gear.ts';
@@ -113,9 +113,9 @@ export function bestLineage(s: State): number {
   return Math.max(0, ...byRealm.values());
 }
 
-/** The deepest refine on anything worn. */
+/** The deepest refine on any place on the body. 承 The levels are the place's, worn or not. */
 export function bestRefine(s: State): number {
-  return Math.max(0, ...SLOTS.map((slot) => clampRefine(s.worn[slot]?.refine)));
+  return Math.max(0, ...SLOTS.map((slot) => levelAt(s.refined, slot)));
 }
 
 /** Days since the run began, which is the one number every other one is read against. */
@@ -226,7 +226,7 @@ export const DEEDS: readonly Deed[] = [
   },
   {
     key: 'refine10', track: 'gear', han: '煉器', name: 'Ten refinings',
-    want: 10, line: 'Take one piece to 煉 10 and keep it.', at: bestRefine,
+    want: 10, line: 'Refine one place on your body to 煉 10.', at: bestRefine,
   },
 
   {

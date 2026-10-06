@@ -115,8 +115,24 @@ function read(key: string): unknown {
   }
 }
 
+/**
+ * 承 The save as it leaves this game: each worn piece also carries its place's refining
+ * levels, as a piece did before they moved to State.refined (2026-10-06). A tab still
+ * running the old game, or the ranked server before its own deploy, reads levels off the
+ * worn pieces and nowhere else; without this it would read every place as unrefined, and
+ * a tab that wrote back would lose them. The new game never reads them off the piece
+ * except to migrate, where the place keeps the higher of the two, so they change nothing.
+ */
+export function outbound(s: State): State {
+  const worn = Object.fromEntries(Object.entries(s.worn).map(([slot, it]) => {
+    const level = s.refined[slot as keyof typeof s.refined] ?? 0;
+    return [slot, it && level > 0 ? { ...it, refine: level } : it];
+  }));
+  return { ...s, worn } as State;
+}
+
 function write(key: string, s: State): void {
-  localStorage.setItem(key, seal(JSON.stringify(s)));
+  localStorage.setItem(key, seal(JSON.stringify(outbound(s))));
   localStorage.setItem(SEALED, '1');
 }
 
@@ -248,7 +264,7 @@ export function wipe(): void {
  * is one the player put somewhere themselves.
  */
 export function exportSave(s: State): string {
-  return seal(JSON.stringify({ game: 'ninefold', exported: Math.round(Date.now() / 1000), state: s }));
+  return seal(JSON.stringify({ game: 'ninefold', exported: Math.round(Date.now() / 1000), state: outbound(s) }));
 }
 
 export interface Imported {

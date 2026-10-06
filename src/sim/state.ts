@@ -13,9 +13,9 @@ const BEAST_KEYS = new Set(BEASTS.map((x) => x.key));
 import { figureOf } from '../data/figures.ts';
 import {
   AFFIXES, FUSED, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, wornTotals,
-  type Affix, type Item, type Rarity, type Roll, type Slot, type Worn,
+  type Affix, type Item, type Rarity, type Refined, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
-import { chestCeiling, chestLimit, freshId, holdsLevels, itemWorth } from './chest.ts';
+import { chestCeiling, chestLimit, freshId, itemWorth } from './chest.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import {
   owed as cardsOwed, refineFactor as cardRefineFactor, valid as validAwakened,
@@ -166,6 +166,14 @@ export interface State {
   worn: Worn;
   /** 藏 What is in the chest, capped at CHEST_LIMIT plus whatever 運 has added. */
   chest: Item[];
+  /**
+   * 煉 The refining levels of each place on the body. They belong to the place: whatever
+   * is worn there has them, a place left empty keeps them for the next piece, and nothing
+   * done to a piece (taking it off, melting it, fusing it) moves them. Before 2026-10-06
+   * they were stored on the pieces; validate() moves an old save's onto the places. See
+   * Refined in data/gear.ts.
+   */
+  refined: Refined;
   /** 道 Technique nodes taken, in the order they were taken. */
   unlocked: string[];
   /**
@@ -456,6 +464,7 @@ export function newState(now: number): State {
     killed: {},
     worn: {},
     chest: [],
+    refined: {},
     unlocked: [],
     self: null,
     secludedAt: 0, demons: 0,
@@ -829,6 +838,11 @@ export function validate(raw: unknown, now: number): State {
   const sets = validSets(o.sets);
   const filters = validFilters(o.filters);
   const inSets = new Set(sets.flatMap((x) => Object.values(x.ids)));
+  /**
+   * 承 The refining levels a save from before 2026-10-06 kept on its pieces, by the place
+   * each piece is worn in: the most any one piece of that place held. See `refined` below.
+   */
+  const onPieces: Partial<Record<Slot, number>> = {};
   const item = (raw: unknown, used: Set<string>): Item | null => {
     const o = (raw ?? {}) as Record<string, unknown>;
     const tpl = typeof o.template === 'string' ? TEMPLATE_BY_KEY[o.template] : undefined;
@@ -862,10 +876,10 @@ export function validate(raw: unknown, now: number): State {
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
-    // 煉 Refining is levels on the piece, paid for in material. It is capped here at a
-    // number nothing reachable comes near, so a hand-edited save cannot claim a sword
-    // worth fifty thousand of itself.
-    const refine = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
+    // 煉 A piece holds no refining. An older save's levels on it are read once, for its
+    // place, and the piece comes out without them.
+    const level = clampRefine(typeof o.refine === 'number' ? o.refine : 0);
+    if (level > (onPieces[tpl.slot] ?? 0)) onPieces[tpl.slot] = level;
     // 源 Who left it is a word on the sheet and nothing else, so it is kept only when it
     // names something real: a beast, or one of the two places that are not a kill.
     const from = typeof o.from === 'string' && (BEAST_KEYS.has(o.from) || o.from === 'secret' || o.from === 'road' || o.from === FORGED || o.from === FUSED)
@@ -874,8 +888,7 @@ export function validate(raw: unknown, now: number): State {
     // names is locked whatever the save says, because a loadout whose piece can be melted
     // out from under it is not a loadout (see sets.ts setLocked).
     const locked = o.locked === true || inSets.has(id) ? { locked: true as const } : {};
-    return refine > 0 ? { id, template: tpl.key, rarity, rolls, refine, ...from, ...locked }
-      : { id, template: tpl.key, rarity, rolls, ...from, ...locked };
+    return { id, template: tpl.key, rarity, rolls, ...from, ...locked };
   };
 
   const used = new Set<string>();
@@ -884,6 +897,36 @@ export function validate(raw: unknown, now: number): State {
   for (const slot of SLOTS) {
     const it = item(rawWorn[slot], used);
     if (it && TEMPLATE_BY_KEY[it.template].slot === slot) worn[slot] = it;
+  }
+  // 藏 The chest's pieces are read here, before anything is measured, because an older
+  // save's refining is on them too, and the places' levels are part of every measure below.
+  // What the chest may keep of them is decided further down (see 換).
+  const carried: Item[] = [];
+  for (const raw of Array.isArray(o.chest) ? o.chest : []) {
+    if (carried.length >= CHEST_READ_LIMIT) break;
+    const it = item(raw, used);
+    if (it) carried.push(it);
+  }
+
+  /**
+   * 承 The places' refining levels.
+   *
+   * A save from before 2026-10-06 has no record of them: the levels were on the pieces, and
+   * when a piece went on over another the two traded them, the one going on taking the
+   * higher count. So the most a place could ever have given whatever was worn there is the
+   * highest count on any piece of that place, worn or in the chest, and that is what the
+   * place is given. Nothing is lost: every body the old rule could have put on is matched
+   * or beaten. A save with a record keeps it, and the higher of the two still wins, so a
+   * save written by an older copy of the game still open in another tab, with the levels
+   * back on its pieces, loses nothing either. Capped at REFINE_LIMIT here, and against the
+   * material at the end.
+   */
+  const rawRefined = (o.refined ?? {}) as Record<string, unknown>;
+  const refined: Partial<Record<Slot, number>> = {};
+  for (const slot of SLOTS) {
+    const n = Math.max(clampRefine(typeof rawRefined[slot] === 'number' ? rawRefined[slot] as number : 0),
+      onPieces[slot] ?? 0);
+    if (n > 0) refined[slot] = n;
   }
 
   /**
@@ -915,7 +958,7 @@ export function validate(raw: unknown, now: number): State {
     (x: unknown): x is string => typeof x === 'string') : [])]
     .slice(0, cardsOwed(realm, tribulation));
   const slots = chestLimit(unlocked,
-    wornTotals(worn, (x) => affinity(unlocked, x)).capacity, awakened);
+    wornTotals(worn, (x) => affinity(unlocked, x), refined).capacity, awakened);
 
   /**
    * 換 And a chest can be over that limit honestly, once, which the cap used to punish.
@@ -933,26 +976,22 @@ export function validate(raw: unknown, now: number): State {
    * allowed the room its own pieces carry on top of the limit. A forged save is still
    * bounded, by the pieces it holds rather than by a number it chose. And if anything
    * does have to go, it is the worst, which is the rule a full chest already keeps.
+   *
+   * 煉 A piece's 藏 line is read at its place's refining, which is what it carried worn.
    */
-  const carried: Item[] = [];
-  for (const raw of Array.isArray(o.chest) ? o.chest : []) {
-    if (carried.length >= CHEST_READ_LIMIT) break;
-    const it = item(raw, used);
-    if (it) carried.push(it);
-  }
   const roomCarried = carried.reduce((n, it) => n + wornTotals(
-    { [TEMPLATE_BY_KEY[it.template].slot]: it } as Worn, (x) => affinity(unlocked, x),
+    { [TEMPLATE_BY_KEY[it.template].slot]: it } as Worn, (x) => affinity(unlocked, x), refined,
   ).capacity, 0);
   const allowance = Math.max(slots, Math.floor(slots + roomCarried),
     chestCeiling(unlocked, [...SLOTS.flatMap((x) => (worn[x] ? [worn[x]!] : [])), ...carried], awakened,
-      (x) => affinity(unlocked, x)));
+      (x) => affinity(unlocked, x), refined));
   const chest: Item[] = carried.length <= allowance ? carried
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
-      // 承 And so is one holding refining levels, which were paid for and live nowhere else.
       // 熔 Then one a kept filter shows, which a full chest weighs first too (sim/filters.ts).
+      // 承 A refined piece no longer needs sparing: its levels were moved to its place above.
       .map((it, i) => ({ it, i, worth: itemWorth(it),
-        kept: it.locked || holdsLevels(it) ? 2 : keptByFilter(filters, it) ? 1 : 0 }))
+        kept: it.locked ? 2 : keptByFilter(filters, it) ? 1 : 0 }))
       .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)
       .slice(0, allowance)
       .sort((a, b) => a.i - b.i)
@@ -983,6 +1022,7 @@ export function validate(raw: unknown, now: number): State {
     killed,
     worn,
     chest,
+    refined,
     unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached
     // and the arts from the wardens put down. So a hand-edited save cannot put 龍威 in
@@ -1146,28 +1186,25 @@ export function validate(raw: unknown, now: number): State {
   const matCeiling = floorsWorth * 1e4 + gathered + 1e6;
 
   /**
-   * 煉 And a piece cannot be refined past what that much material could have paid for.
+   * 煉 And a place cannot be refined past what that much material could have paid for.
    * The flat limit this replaced was 99, and a real cultivator reaches it: see
-   * REFINE_LIMIT. Clamping here rather than in `item` is what lets the ceiling read the
-   * tower, which is not known yet when the gear is read.
+   * REFINE_LIMIT. Clamping here rather than with the places above is what lets the
+   * ceiling read the tower, which is not known yet when the gear is read.
    */
   // 悟道 The discount cards make a level cheaper, so a real cultivator holding them has
   // paid for levels the full price would put past this ceiling. The ceiling is read at
   // the price they actually paid, or the save that earned them would lose them.
   const refineCap = refineCeiling(matCeiling / cardRefineFactor(out.awakened));
-  const capped = (it: Item): Item => {
-    if (!it.refine || it.refine <= refineCap) return it;
-    const { refine: _was, ...rest } = it;
-    return refineCap > 0 ? { ...rest, refine: refineCap } : rest;
-  };
-  const cappedWorn: Worn = {};
-  for (const slot of SLOTS) if (out.worn[slot]) cappedWorn[slot] = capped(out.worn[slot]!);
+  const cappedRefined: Partial<Record<Slot, number>> = {};
+  for (const slot of SLOTS) {
+    const n = Math.min(refineCap, out.refined[slot] ?? 0);
+    if (n > 0) cappedRefined[slot] = n;
+  }
 
   return {
     ...out,
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
-    worn: cappedWorn,
-    chest: out.chest.map(capped),
+    refined: cappedRefined,
   };
 }

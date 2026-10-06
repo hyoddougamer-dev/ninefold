@@ -332,8 +332,10 @@ export interface Item {
   readonly rarity: Rarity;
   /** The first is the template's own line; the rest are rolled by rank. */
   readonly rolls: readonly Roll[];
-  /** 煉 How many times it has been refined. Every line on it is multiplied by this. */
-  readonly refine?: number;
+  /*
+   * 煉 No refining here. The levels belong to the place on the body (State.refined, see
+   * Refined below), and a piece has them only while it is worn there.
+   */
   /**
    * 源 Who left it: a beast's key, or `secret` or `road` for the rooms and the meetings,
    * `forge` for a forged piece and `fused` for one a fusion made. Never read by a number:
@@ -353,23 +355,18 @@ export interface Item {
 export { REFINE_PER_LEVEL } from '../sim/balance.ts';
 
 /**
- * 煉 What a piece's lines are multiplied by, from refining.
+ * 煉 What a piece gives on one axis, counting every line it carries, at a refining level.
  *
- * It is read here, beside the item, so that nothing can read a roll without it: a refined
- * piece has to be worth more everywhere at once, in the totals, on the screen and in the
- * comparison that says one piece beats another, or the number they refined stops being
- * the number the game uses. The arithmetic is refineFactor's in sim/refine.ts, and only
- * there, so the two can never disagree.
+ * The level is the place's, never the piece's: pass the level of the place it is worn in,
+ * or would be (levelAt in sim/refine.ts). Left out, it is the piece as it rolled, which is
+ * what a piece in the chest is until it goes on. The arithmetic is refineFactor's in
+ * sim/refine.ts and only there, so the totals, the screen and the comparison that says
+ * one piece beats another can never read a level two ways.
  */
-export function refinedBy(item: Item): number {
-  return refineFactor(item.refine);
-}
-
-/** What this piece gives on one axis, counting every line it carries, refining included. */
-export function valueOf(item: Item, affix: Affix): number {
+export function valueOf(item: Item, affix: Affix, level = 0): number {
   let total = 0;
   for (const r of item.rolls) if (r.affix === affix) total += r.value;
-  return total * refinedBy(item);
+  return total * refineFactor(level);
 }
 
 /** The line the piece is named by, which is what a one-line summary shows. */
@@ -418,6 +415,19 @@ export function ladderOf(archetype: string): readonly GearTemplate[] {
 export type Worn = Partial<Record<Slot, Item>>;
 
 /**
+ * 煉 The refining levels, one number per place on the body. A place never refined reads 0.
+ *
+ * rekaris, on the Discord: *"Why do you save refining count on the gear itself when its
+ * actually shared for everything? It would be much less bug-prone if you had refining
+ * levels linked to completely separate structure."* Both refining bugs came from the
+ * levels living on the piece: a refined piece taken off and melted took its levels with
+ * it, and two fused pieces with one name traded levels by mistake. Kept here, nothing
+ * done to a piece can reach them: whatever is worn in a place has that place's levels,
+ * and taking it off, melting it or fusing it changes nothing.
+ */
+export type Refined = Readonly<Partial<Record<Slot, number>>>;
+
+/**
  * What a whole set is worth: one multiplier for power, one for the qi rate.
  *
  * `affinityOf` is how the technique tree reaches gear without locking any of it away.
@@ -434,12 +444,14 @@ export type GearTotals = Record<Affix, number>;
 export function gearTotals(
   worn: Worn,
   affinityOf: (slot: Slot) => number = () => 1,
+  /** 煉 The places' levels: each piece is read at the level of the place it is worn in. */
+  refined: Refined = {},
 ): GearTotals {
   const totals = Object.fromEntries(AFFIXES.map((a) => [a, 0])) as GearTotals;
   for (const slot of SLOTS) {
     const it = worn[slot];
     if (!it) continue;
-    const mult = affinityOf(slot) * refinedBy(it);
+    const mult = affinityOf(slot) * refineFactor(refined[slot]);
     for (const roll of it.rolls) totals[roll.affix] += roll.value * mult;
   }
   return totals;
@@ -585,8 +597,9 @@ export function schoolTier(c: Calling, school: School): 0 | 1 | 2 {
 export function wornTotals(
   worn: Worn,
   affinityOf: (slot: Slot) => number = () => 1,
+  refined: Refined = {},
 ): GearTotals {
-  const gear = gearTotals(worn, affinityOf);
+  const gear = gearTotals(worn, affinityOf, refined);
   const sets = setTotals(worn);
   const out = Object.fromEntries(AFFIXES.map((a) => [a, gear[a] + sets[a]])) as GearTotals;
   const c = callingOf(worn);
@@ -603,8 +616,9 @@ export function wornTotals(
 export function setBonus(
   worn: Worn,
   affinityOf: (slot: Slot) => number = () => 1,
+  refined: Refined = {},
 ): { power: number; rate: number } {
-  const t = wornTotals(worn, affinityOf);
+  const t = wornTotals(worn, affinityOf, refined);
   return { power: 1 + t.power / 100, rate: 1 + t.rate / 100 };
 }
 

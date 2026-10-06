@@ -123,8 +123,8 @@ const BODIES = new WeakMap<object, WeakMap<object, WeakMap<object, Map<number, W
  * already allowed for every number it can give.
  */
 export function taskBody(
-  s: Pick<State, 'worn' | 'unlocked' | 'sets' | 'chest' | 'tasks'>, task: Task,
-): Pick<State, 'worn' | 'unlocked'> {
+  s: Pick<State, 'worn' | 'unlocked' | 'refined' | 'sets' | 'chest' | 'tasks'>, task: Task,
+): Pick<State, 'worn' | 'unlocked' | 'refined'> {
   const index = s.tasks?.[task];
   if (index === undefined || !s.sets?.[index]) return s;
   let byChest = BODIES.get(s.sets);
@@ -138,7 +138,8 @@ export function taskBody(
     worn = wearSet(s as State, index).state.worn;
     byIndex.set(index, worn);
   }
-  return { worn, unlocked: s.unlocked };
+  // 承 The places' levels are the same whichever loadout is on: they belong to the body.
+  return { worn, unlocked: s.unlocked, refined: s.refined };
 }
 
 export interface PutOn {
@@ -149,8 +150,8 @@ export interface PutOn {
 
 /**
  * 套 Put set `index` on. Each piece it names is taken from the chest and worn through
- * equip(), the same as a tap on its sheet, so 承 refining moves with the place on the body
- * exactly as it does by hand. A place the set leaves empty is left as it is, and so is a
+ * equip(), the same as a tap on its sheet, and 承 each has the refining of the place it
+ * goes in, exactly as by hand. A place the set leaves empty is left as it is, and so is a
  * place whose piece is gone: nothing is taken off into a chest that may have no room.
  */
 export function wearSet(s: State, index: number): PutOn {
@@ -162,7 +163,7 @@ export function wearSet(s: State, index: number): PutOn {
 /**
  * 套 Put these pieces on, one place each, by id: the path a loadout takes and 較 the class
  * comparison's tap takes too (sim/compare.ts), so a body put on from either is the same
- * body, refining and all.
+ * body, the places' refining and all.
  */
 export function wearPieces(s: State, ids: Readonly<Partial<Record<Slot, string>>>): PutOn {
   let worn = s.worn;
