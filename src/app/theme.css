@@ -206,8 +206,20 @@ button.act[data-tone='cinnabar'] { background: linear-gradient(180deg, #E0806C 0
     radial-gradient(1.4px 1.4px at 58% 90%, var(--hue) 45%, transparent 46%);
 }
 @keyframes motes { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+/* 雷池 The summit's pool, moving: her animated stack laid where the drawing seats her
+   (x 36, y 34, 128 of 200), the clouds drifting, the heaven's mist turning and the bolts
+   flickering. It was the one still picture in the climb (rekaris, 2026-10-06). */
+.portrait .poolfig { position: absolute; left: 18%; top: 17%; width: 64%; height: 64%; z-index: 2; pointer-events: none; }
+.portrait .pdrift { animation: pdrift 19s ease-in-out infinite alternate; }
+.portrait .pswirl { transform-box: view-box; transform-origin: 100px 98px; animation: pswirl 48s linear infinite; }
+.portrait .pbolt { animation: pbolt 3.4s linear infinite; }
+@keyframes pdrift { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+@keyframes pswirl { to { transform: rotate(360deg); } }
+@keyframes pbolt { 0%, 100% { opacity: 1; } 8% { opacity: .35; } 11% { opacity: .9; } 46% { opacity: .55; } 52% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .portrait::before, .portrait::after { animation: none; }
+  .portrait .pdrift, .portrait .pswirl, .portrait .pbolt { animation: none; }
 }
 
 .qi { text-align: center; margin-top: 2px; }

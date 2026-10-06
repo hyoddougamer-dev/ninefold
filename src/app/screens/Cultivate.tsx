@@ -272,7 +272,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         ['--busy' as string]: Math.max(0, Math.min(1, (state.realm - 3) / 5)),
       }}>
         {top
-          ? <Svg html={poolArt(Math.round(filled * 200) / 200, state.tribulation, 0.125, { who: state.self, sky: heaven?.colour })} />
+          ? <>
+            <Svg html={poolArt(Math.round(filled * 200) / 200, state.tribulation, 0.125, { who: state.self, sky: heaven?.colour, figure: false })} />
+            {/* 動 Her, as the moving stack the other realms show, laid where the pool's own
+                drawing seats her: rekaris found the summit the one still aura (2026-10-06). */}
+            <div className="poolfig"><Svg html={portraitLayers({ realm: 9, pulse, who: state.self })} /></div>
+          </>
           : <Svg html={portraitLayers({ realm: state.realm, pulse, who: state.self })} />}
       </div>
 

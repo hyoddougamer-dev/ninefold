@@ -189,7 +189,7 @@ export function furnace(realm: number, taken: number, pulse = 0): string {
  */
 export function pool(
   filled: number, marks: number, pulse = 0,
-  { who = null, sky }: { who?: string | null; sky?: string } = {},
+  { who = null, sky, figure: withFigure = true }: { who?: string | null; sky?: string; figure?: boolean } = {},
 ): string {
   const W = 200;
   // Square, because it takes 氣象 the portrait's own box on the cultivate screen and a
@@ -239,16 +239,29 @@ export function pool(
 
   // 修 Her, from the same function that draws her on every other realm, a little smaller
   // so the pool has room. Her aura comes with her.
-  const figure = portrait({ realm: 9, pulse, who }).replace(
+  // 動 The cultivate screen lays her on top as the animated stack every other realm
+  // gets (figure: false), so her aura turns here too; a still drawing keeps her inside.
+  const figure = !withFigure ? '' : portrait({ realm: 9, pulse, who }).replace(
     '<svg viewBox="0 0 200 200" width="100%" height="100%"',
     '<svg viewBox="0 0 200 200" x="36" y="34" width="128" height="128"');
 
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="The thunder pool, ${Math.round(f * 100)}% full, ${marks} marks">
     <defs>
-      <radialGradient id="psky" cx=".5" cy=".1" r=".75">
-        <stop offset="0" stop-color="${air}" stop-opacity="${(0.1 + 0.3 * f).toFixed(2)}"/>
+      <!-- 天 rekaris, 2026-10-06: the sky was a square painted to the edges, so the heaven's
+           colour stopped in a hard line on every side. It is a round glow now that is gone
+           before any edge, and a ring of the heaven's mist turns slowly through it. -->
+      <radialGradient id="psky" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="${air}" stop-opacity="${(0.16 + 0.34 * f).toFixed(2)}"/>
+        <stop offset=".55" stop-color="${air}" stop-opacity="${(0.08 + 0.18 * f).toFixed(2)}"/>
         <stop offset="1" stop-color="${air}" stop-opacity="0"/>
       </radialGradient>
+      <filter id="pmist" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+      <radialGradient id="pfade" cx=".5" cy=".5" r=".5">
+        <stop offset=".62" stop-color="#fff"/><stop offset="1" stop-color="#000"/>
+      </radialGradient>
+      <mask id="pedge" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+        <rect width="${W}" height="${H}" fill="url(#pfade)"/>
+      </mask>
       <radialGradient id="pwater">
         <stop offset="0" stop-color="${mix(c, '#FFFFFF', 0.55)}" stop-opacity=".95"/>
         <stop offset=".7" stop-color="${c}" stop-opacity=".55"/>
@@ -259,8 +272,14 @@ export function pool(
         <stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>
     </defs>
     <rect width="${W}" height="${H}" fill="url(#psky)"/>
-    <g filter="url(#pcloud)">${clouds}</g>
-    ${bolts}
+    <g mask="url(#pedge)">
+      <g class="pswirl" filter="url(#pmist)" opacity="${(0.22 + 0.3 * f).toFixed(2)}">
+        <path d="M${cx - 62} ${py - 70} A62 40 0 0 1 ${cx + 58} ${py - 84}" fill="none" stroke="${air}" stroke-width="7" stroke-linecap="round"/>
+        <path d="M${cx + 60} ${py - 52} A62 40 0 0 1 ${cx - 52} ${py - 34}" fill="none" stroke="${air}" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <g class="pdrift" filter="url(#pcloud)">${clouds}</g>
+    </g>
+    <g class="pbolt">${bolts}</g>
     <ellipse cx="${cx}" cy="${py}" rx="${rx + 14}" ry="${ry + 16}" fill="url(#pglow)"/>
     <!-- the rim: cut stone, and the dark floor of an empty pool inside it -->
     <ellipse cx="${cx}" cy="${py + 2}" rx="${rx}" ry="${ry}" fill="${mix(c, '#0D0B08', 0.86)}"
