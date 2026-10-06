@@ -160,6 +160,12 @@ export interface State {
   materials: number;
   /** Has the current realm's warden fallen? Until it has, there is no breakthrough. */
   wardenFell: boolean;
+  /**
+   * 瓶頸 When this realm's last rung was reached and its warden came to stand at the gate,
+   * in seconds; 0 while no warden stands. The wall loosens with every day after it (see
+   * BOTTLENECK_LOOSEN), so a cultivator who only waits still gets through.
+   */
+  gateAt: number;
   levels: Record<Upgrade, number>;
   killed: Record<string, number>;
   /** 器 What is on the body. */
@@ -452,6 +458,7 @@ export function crossTribulation(s: State, dragonPower: number, even: number): S
     tribulationAt: Math.max(s.tribulationAt, dragonPower, even * TRIBULATION_FOOTING) * step,
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
+    gateAt: 0,
   };
 }
 
@@ -459,7 +466,7 @@ export function newState(now: number): State {
   return {
     v: 1, at: now, startedAt: now,
     // 囊 The purse the first minute is bought with. See OPENING_PURSE.
-    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false,
+    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
     worn: {},
@@ -752,7 +759,7 @@ export function canBreakThrough(s: State): boolean {
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
   // 銀 The qi carries. See canBreakThrough for why it no longer burns.
-  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false };
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0 };
 }
 
 /**
@@ -1018,6 +1025,11 @@ export function validate(raw: unknown, now: number): State {
     // the count cannot tell which crossing, so there the flag is kept as it is.
     wardenFell: o.wardenFell === true
       && (realm === 9 || (killed[BEASTS.find((b) => b.warden && b.realm === realm)?.key ?? ''] ?? 0) > 0),
+    // 瓶頸 Only while a warden stands below the summit, and never in the future. A gate a save
+    // holds without a time (one from before the bottleneck) counts as one met long ago,
+    // fully loosened: nobody already standing there meets a wall they did not have.
+    gateAt: realm < 9 && layer >= LAYERS_PER_REALM - 1
+      ? (num(o.gateAt, 0) > 0 ? clamp(num(o.gateAt, 0), 1, now) : 1) : 0,
     levels,
     killed,
     worn,

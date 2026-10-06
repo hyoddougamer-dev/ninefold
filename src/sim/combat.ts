@@ -1,10 +1,10 @@
 import { deepMaterial } from './record.ts';
-import { commonsOf, type Beast, wardenOf } from '../data/bestiary.ts';
+import { commonsOf, isElite, type Beast, wardenOf } from '../data/bestiary.ts';
 import {
   ART_NUMBERS, BLOW_LOW, BLOW_SPREAD, COMMON_DEPTH_FIRST, COMMON_DEPTH_STEP, COMMON_STEPS,
-  CORES_FREE_REALMS, FIRST_STEPS, FORM, HEALTH_PER_POWER, HUNT_SHARE, LAYERS_PER_REALM,
+  BOTTLENECK_LOOSEN, CORES_FREE_REALMS, ELITE_LOOT, ELITE_WALL, FIRST_STEPS, FORM, HEALTH_PER_POWER, HUNT_SHARE, LAYERS_PER_REALM,
   LEVELS_PER_REALM, ODDS_CEILING, ODDS_FLOOR, OLD_BEAST_FLOOR, QUARRY_BOUNTY, QUARRY_LOOT,
-  REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
+  REALM_WALL, REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
   floorPay, ladderBetween,
 } from './balance.ts';
 import { UPGRADE_INFO, crossTribulation, power, tribulationPower, type State } from './state.ts';
@@ -23,6 +23,7 @@ import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 
 export { NO_KIT, type Kit };
+export { isElite };
 
 /**
  * 戰 Automatic combat, watched.
@@ -84,10 +85,31 @@ export const WARDEN_EDGE = UPGRADE_INFO.technique.gain ** REFERENCE_BELOW;
  */
 export function beastPower(b: Beast): number {
   const ref = referencePower(b.realm);
-  if (b.warden) return ref * WARDEN_EDGE;
+  // 劫 The ninth realm's warden is the Dragon, on its own anchor; nothing here moves it.
+  if (b.warden) return ref * WARDEN_EDGE * (b.realm < 9 ? wallOf(b.realm) : 1);
   const i = commonsOf(b.realm).findIndex((x) => x.key === b.key);
   const steps = b.realm === 1 ? FIRST_STEPS : COMMON_STEPS;
-  return ref * steps[Math.max(0, i) % steps.length];
+  const own = ref * steps[Math.max(0, i) % steps.length];
+  return isElite(b) ? Math.max(own, ref * WARDEN_EDGE * ELITE_WALL[b.realm - 1]) : own;
+}
+
+/** 壁 How far above the bare reference a realm's walls stand: REALM_WALL, in balance.ts. */
+export function wallOf(realm: number): number {
+  return REALM_WALL[Math.max(1, Math.min(9, realm)) - 1];
+}
+
+/**
+ * 瓶頸 How much of the wall is left: 1 the day the warden comes to the gate, falling by
+ * BOTTLENECK_LOOSEN a day to 1/wall, where wardens stood before the walls. Only the warden of
+ * the realm the cultivator stands in; a gate with no time (gateAt 1) is fully loosened.
+ * 破境 `breach` is the days an elixir or a sigil carried into the fight adds (Kit.breach).
+ */
+export function bottleneck(s: State, b: Beast, breach = 0): number {
+  if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 1;
+  const wall = wallOf(b.realm);
+  if (wall <= 1) return 1;
+  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  return Math.max(1, wall * (1 - BOTTLENECK_LOOSEN) ** days) / wall;
 }
 
 export interface Round {
@@ -180,7 +202,7 @@ function setup(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): Setup 
     sequence: sequenceOf(s),
     pp,
     // A tower floor brings its own power; everywhere else the beast brings its own.
-    bp0: (standing === undefined ? effectiveBeastPower(s, b) : effectiveBeastPower(s, b, standing))
+    bp0: (standing === undefined ? effectiveBeastPower(s, b, undefined, kit.breach ?? 0) : effectiveBeastPower(s, b, standing))
       * (b.key === DEMON_KEY ? kit.demon : 1),
     artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
     // 羅漢 The Arhat mends a little every round, as 續 Endure does.
@@ -313,7 +335,7 @@ export function beastDepth(b: Beast): number {
 
 export function loot(b: Beast): number {
   const depth = b.warden ? b.realm * LAYERS_PER_REALM : beastDepth(b);
-  const share = b.warden ? HUNT_SHARE * WARDEN_LOOT : HUNT_SHARE;
+  const share = b.warden ? HUNT_SHARE * WARDEN_LOOT : HUNT_SHARE * (isElite(b) ? ELITE_LOOT : 1);
   return Math.max(1, Math.round(floorPay(depth) * share));
 }
 
@@ -506,8 +528,8 @@ export function beatable(s: State, b: Beast, standing?: number, kit: Kit = NO_KI
  * game whose power depends on the cultivator facing it, and it is the reason the game
  * does not end at the top.
  */
-export function effectiveBeastPower(s: State, b: Beast, standing?: number): number {
-  const base = standing ?? beastPower(b);
+export function effectiveBeastPower(s: State, b: Beast, standing?: number, breach = 0): number {
+  const base = standing ?? beastPower(b) * bottleneck(s, b, breach);
   // 心魔 The heart demon is the cultivator's own power and nothing thins it: no sunder,
   // no bane, no blood method, no class. See sim/seclusion.ts.
   if (b.key === DEMON_KEY && standing !== undefined) return standing;

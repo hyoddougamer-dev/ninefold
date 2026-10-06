@@ -171,6 +171,16 @@ export function huntable(realm: number, layer = LAYERS_PER_REALM - 1): readonly 
   return BEASTS.filter((x) => !x.warden && beastOut(x, realm, layer));
 }
 
+/**
+ * 精 The last beast of a realm from the second: the hardest thing in it short of the gate,
+ * and the best hunt in it for whoever has built for it (ELITE_WALL, ELITE_LOOT).
+ */
+export function isElite(b: Beast): boolean {
+  if (b.warden || b.realm < 2) return false;
+  const commons = commonsOf(b.realm);
+  return commons.length > 0 && commons[commons.length - 1].key === b.key;
+}
+
 /** The commons of this realm still to come, in the order they arrive. */
 export function comingIn(realm: number, layer: number): readonly Beast[] {
   return commonsOf(realm).filter((x) => x.layer > layer).sort((a, c) => a.layer - c.layer);

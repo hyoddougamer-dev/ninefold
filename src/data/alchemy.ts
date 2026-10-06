@@ -16,7 +16,11 @@
  * find. Rate upgrades stay behind the realm cap where they belong.
  */
 
+import { PILL_BANE, PILL_FORTUNE, PILL_POWER } from '../sim/balance.ts';
+
 export type Line = 'body' | 'bane' | 'fortune';
+
+const pct = (x: number) => `${+(x * 100).toFixed(1)}%`;
 
 export const LINES: readonly Line[] = ['body', 'bane', 'fortune'];
 
@@ -33,19 +37,19 @@ export interface PillLine {
 export const PILL_LINES: Record<Line, PillLine> = {
   body: {
     key: 'body', han: '煉體', name: 'Body Tempering', icon: 'round-potion',
-    effect: '+3% power, for ever',
+    effect: `+${pct(PILL_POWER)} power each, for ever`,
     lore: 'Cinnabar and beast marrow, drawn down to a bead. It burns going in and the ' +
       'body it leaves is not the body it found.',
   },
   bane: {
     key: 'bane', han: '破煞', name: 'Bane Breaking', icon: 'cracked-shield',
-    effect: 'beasts read weaker',
+    effect: `every beast ${pct(1 - PILL_BANE)} weaker each, never the Dragon`,
     lore: 'Brewed from what the beasts themselves carried. What killed them thins their ' +
       'kin, never to nothing, but never back either.',
   },
   fortune: {
     key: 'fortune', han: '聚寶', name: 'Treasure Gathering', icon: 'gold-nuggets',
-    effect: 'better gear falls',
+    effect: `+${pct(PILL_FORTUNE)} chance at rare gear each`,
     lore: 'The old alchemists swore fortune was a substance like any other, and could be ' +
       'boiled. Nobody has disproved them.',
   },
@@ -84,7 +88,9 @@ export const PILL_GRADES: Record<Line, readonly PillGrade[]> = {
     { han: '伏魔丹', name: 'Devil-Binding Pill' },
     { han: '誅邪丹', name: 'Evil-Slaying Pill' },
     { han: '滅煞丹', name: 'Bane-Ending Pill' },
-    { han: '弒龍丹', name: 'Dragonslaying Pill' },
+    // 斬 It used to be the Dragonslaying Pill, and no 破煞 pill has any hold on the Dragon
+    // (sim/combat.ts, the tribulation). A name that promises what the pill cannot do is a lie.
+    { han: '斬妖丹', name: 'Beast-Severing Pill' },
   ],
   fortune: [
     { han: '拾遺散', name: 'Gleaning Powder' },

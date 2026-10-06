@@ -2789,6 +2789,15 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    block now, which is what the <b> above it already was. */
 .beast .bname i { display: block; }
 .beast .bname .wtag { display: inline-flex; margin: 4px 0 1px; }
+/* 霸 The elite's chip, the week's chip in cinnabar: a harder beast, not a rarer one. */
+.beast .bname .etag { display: inline-flex; align-items: center; gap: 6px; margin: 4px 6px 1px 0;
+        border: 1px solid color-mix(in srgb, var(--cinnabar) 55%, transparent);
+        background: color-mix(in srgb, var(--cinnabar) 12%, transparent);
+        border-radius: 8px; padding: 1px 7px; }
+.beast .bname .etag b { font-size: 12.5px; font-weight: 400; color: var(--cinnabar); line-height: 1.5; }
+.beast .bname .etag i { display: inline; font-style: normal; font-size: 10px; letter-spacing: .04em; color: var(--faint); }
+/* 瓶頸 The bottleneck line on the warden's card. */
+.c-side .card .bneck { border-left: 2px solid color-mix(in srgb, var(--cinnabar) 60%, transparent); padding-left: 9px; }
 
 /* 室 On the vault's path the blessed room is named under the seal rather than ringed.
    量 A ring was the first version and it was invisible: every room on that path wears a

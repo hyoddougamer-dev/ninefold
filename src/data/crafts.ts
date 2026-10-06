@@ -412,7 +412,9 @@ const TOP_MULT = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
 /** "(21% at Heaven rank)": the same effect at the best rank a make can roll. */
 const atTop = (x: number) => `(${pct(x * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank)`;
 /** What a thing made for one realm is worth in a fight above it. See fade() in sim/crafts.ts. */
-const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.`;
+const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.${breaks}`;
+/** 破境 What every carried thing also does at the warden: see Kit.breach. */
+const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank).`;
 const ELIXIR_DOES: Record<ElixirLine, string> = {
   mend: `Mends ${pct(CRAFT_KIT.mend)} of your health every round of one hard fight ${atTop(CRAFT_KIT.mend)}.`,
   guard: `You take ${pct(CRAFT_KIT.guard)} less in one hard fight ${atTop(CRAFT_KIT.guard)}.`,
@@ -457,7 +459,7 @@ export const SIGILS: readonly [string, string, string, number, number, (readonly
   ['seeking', '尋物符', 'Seeking Sigil', 12, 2, [[partKey('fox'), 1]], 'Use it, and the next beast you beat by hand on the hunt that would have left nothing leaves a piece.', 'scroll-unfurled'],
   ['thunder', '雷符', 'Thunder Sigil', 23, 3, [[partKey('raven'), 1]],
     `You strike ${pct(CRAFT_KIT.thunder)} harder in one hard fight ${atTop(CRAFT_KIT.thunder)}. ${madeFor(3)}`, 'lightning-helix'],
-  ['binding', '縛妖符', 'Binding Sigil', 34, 4, [[partKey('vulture'), 1]], 'The beast loses its first blow in one hard fight, at any rank and any realm.', 'tied-scroll'],
+  ['binding', '縛妖符', 'Binding Sigil', 34, 4, [[partKey('vulture'), 1]], `The beast loses its first blow in one hard fight, at any rank and any realm.${breaks}`, 'tied-scroll'],
   ['mirror', '照妖符', 'Mirror Sigil', 45, 5, [[partKey('crab'), 1]],
     `${pct(CRAFT_KIT.mirror)} of every blow you take in one hard fight goes back to the beast ${atTop(CRAFT_KIT.mirror)}. ${madeFor(5)}`, 'crystal-ball'],
   ['purity', '清心符', 'Purity Sigil', 56, 6, [['jade', 1], [partKey('jellyfish'), 1]],
@@ -466,7 +468,7 @@ export const SIGILS: readonly [string, string, string, number, number, (readonly
     `You strike ${pct(CRAFT_KIT.fiveThunders)} harder in one hard fight ${atTop(CRAFT_KIT.fiveThunders)}. ${madeFor(7)}`, 'lightning-helix'],
   ['soullock', '鎖魂符', 'Soul-Lock Sigil', 78, 8, [[partKey('wraith'), 2]], 'If your heart demon falls while you carry it, it counts twice.', 'skull-signet'],
   ['heavenseal', '天罡符', 'Heaven Seal Sigil', 89, 9, [[partKey('harpy'), 1], ['gold', 1]],
-    `Warding and Thunder at once: you take ${pct(CRAFT_KIT.warding)} less and strike ${pct(CRAFT_KIT.thunder)} harder in one hard fight (${pct(CRAFT_KIT.warding * TOP_MULT)} and ${pct(CRAFT_KIT.thunder * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank).`, 'winged-scepter'],
+    `Warding and Thunder at once: you take ${pct(CRAFT_KIT.warding)} less and strike ${pct(CRAFT_KIT.thunder)} harder in one hard fight (${pct(CRAFT_KIT.warding * TOP_MULT)} and ${pct(CRAFT_KIT.thunder * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank).${breaks}`, 'winged-scepter'],
 ];
 export const sigilKey = (k: string) => `sigil:${k}`;
 for (const [key, han, name, level, realm, extra, does, icon] of SIGILS) {

@@ -564,6 +564,22 @@ export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): S
   return { ...s, crafts: { ...s.crafts, carry: { ...s.crafts.carry, [hand]: key } } };
 }
 
+/**
+ * 破境 The most days of a warden's bottleneck the pouch could break, one of each hand at
+ * best: what the screen offers when nothing is carried yet, so "carry one" names a number.
+ */
+export function breachHeld(s: State, b: Beast): number {
+  let best = { elixir: 0, sigil: 0 };
+  for (const [key, n] of Object.entries(s.crafts.pouch)) {
+    const hand = n > 0 ? carrySlot(key) : null;
+    if (!hand) continue;
+    const alone = carry(carry(s, 'elixir', null), 'sigil', null);
+    const days = kitFor(carry(alone, hand, key), b, 'warden').kit.breach ?? 0;
+    if (days > best[hand]) best = { ...best, [hand]: days };
+  }
+  return best.elixir + best.sigil;
+}
+
 /** 尋 Use a Seeking Sigil or burn incense: the next beast beaten on the hunt leaves a piece. */
 export function takeSeeking(s: State, key: string): State {
   const k = splitKey(key).key;
@@ -643,7 +659,7 @@ export const NOT_USED: Used = { elixir: null, sigil: null };
 export function kitFor(s: State, b: Beast, where: Where | null): Carried {
   if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
   const fightRealm = Math.max(1, Math.min(9, fightRealmOf(s, b, where)));
-  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0;
+  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0;
   let bind = false, revive = false, spends = false;
   let usedElixir: string | null = null, usedSigil: string | null = null;
 
@@ -660,6 +676,8 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (key === 'calmheart' && where === 'demon') { demon *= 1 - CRAFT_KIT.calmHeart * q; spends = true; }
     if (key === 'nineturn') { revive = true; spends = true; }
     if (spends) usedElixir = e;
+    // 破境 Whatever an elixir does at a warden, it also breaks the bottleneck.
+    if (spends && where === 'warden') breach += CRAFT_KIT.breach * q * f;
   }
   const g = s.crafts.carry.sigil;
   if (g && (s.crafts.pouch[g] ?? 0) > 0) {
@@ -686,10 +704,11 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
         break;
     }
     if (spends) usedSigil = g;
+    if (spends && where === 'warden') breach += CRAFT_KIT.breach * q * f;
     spends = spends || before;
   }
   if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
-  return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0 }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
+  return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
 }
 
 /**
@@ -778,6 +797,7 @@ export function bestKit(s: State, b: Beast, where: Where): Kit {
   // 深 The Guardian at its deepest: a save names its own copies, so the deepest is the most it can be.
   return { ...NO_KIT, strike, taken: Math.min(guard, 1 - CRAFT_KIT.warding * top) * (1 - CRAFT_ARRAY_GUARD * CRAFT_ARRAY_DEPTH_TOP),
     mend: CRAFT_KIT.mend * top, bind: sig > 0, revive: alch >= 97,
+    breach: where === 'warden' ? CRAFT_KIT.breach * top * (f + (sig > 0 ? 1 : 0)) : 0,
     demon: where === 'demon' ? (1 - CRAFT_KIT.purity * top) * (1 - CRAFT_KIT.calmHeart * top) : 1 };
 }
 

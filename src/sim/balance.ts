@@ -1377,6 +1377,57 @@ export const CORES_FREE_REALMS = 2;
 export const COMMON_STEPS: readonly number[] = [0.45, 0.62, 0.84];
 
 /**
+ * 壁 The walls of the nine realms: how far above the bare reference each realm's warden
+ * and its last beast stand, as a multiple of it. Index 0 is the first realm.
+ *
+ * The reference counts the levels a realm sells and nothing else, and for a long time that
+ * was the whole of a cultivator's power. It stopped being so: 道 the Path multiplies power
+ * by up to three, worn gear and refining by two to seventeen, and 妖丹 cores bought past
+ * the cap by up to fourteen more. Measured on 2026-10-06 (tools/walls.ts), every cultivator
+ * who wears gear met each warden from the fourth realm at 98%, two to eleven hundred times
+ * stronger, and won every beast in a realm with the first blow from the fifth. Combat asked
+ * for nothing for fifty days, and so nothing that serves it (the furnace's pills, the
+ * workshop's elixirs and sigils, refining, the arts) had anything to do.
+ *
+ * So the warden of each realm, and its last beast, stand where a cultivator who wears that
+ * realm's gear and the Path stands at the gate, a little above: a wall, not a door. What
+ * gets a cultivator over it is everything the game already sells for it, and nothing new:
+ * cores condensed out of qi, the furnace's pills, an elixir and a sigil from the workshop,
+ * refining, the stance and the arts. Somebody who only waits still gets over, later, by
+ * the first two, which cost nothing but qi. Losing still costs nothing.
+ *
+ * The ninth realm's warden is the Dragon, which keeps its own anchor (tribulationPower), so
+ * its entry here is 1 and nothing reads it.
+ */
+export const REALM_WALL: readonly number[] = [1, 1, 4, 10, 18, 28, 44, 72, 1];
+
+/**
+ * 瓶頸 How much of a warden's wall falls away with each day a cultivator stands at the gate.
+ *
+ * A wall nobody could get over by waiting would break the one promise the game makes, that
+ * the time is never wasted. So the warden is a bottleneck in the old sense: the longer the
+ * cultivator sits against it, the thinner it gets, a share of what is left each day, until
+ * it stands where wardens stood before the walls. A build gets over it the day it arrives;
+ * waiting gets over it too, later.
+ */
+export const BOTTLENECK_LOOSEN = 0.3;
+
+/**
+ * 精 Where each realm's last beast stands, as a multiple of the bare reference: the realm's
+ * elite. It gates nothing, so it is set for the strongest builds rather than for everyone,
+ * measured off the active and hourly cultivators at that realm's gate (tools/walls.ts), and
+ * it never loosens. It is the hunt for whoever has built for it, paid ELITE_LOOT.
+ */
+export const ELITE_WALL: readonly number[] = [1, 3, 12, 30, 54, 84, 132, 216, 350];
+
+/**
+ * 精 What the last beast of a realm pays, against an ordinary one of its depth. It is the
+ * hardest thing in the realm short of the gate, so it is the best place in the realm to
+ * hunt, for whoever has built for it; the first beast of a realm stays the safe one.
+ */
+export const ELITE_LOOT = 3;
+
+/**
  * 初 And the first realm is spaced against the player, not against its own summit.
  *
  * Every realm is entered weak, measured, a cultivator arrives at 25%, 23%, 16%, 11%,
@@ -2234,6 +2285,10 @@ export const CRAFT_KIT = {
   mirror: 0.10,      // 照妖符: this share of every blow taken goes back
   purity: 0.15,      // 清心符: the heart demon this much weaker
   calmHeart: 0.10,   // 靜心丹: the same, from the furnace side
+  // 破境 Days of a warden's bottleneck each thing carried breaks (see BOTTLENECK_LOOSEN):
+  // an elixir and a sigil at Heaven rank break 3.5 days, which takes a fresh wall to a
+  // third of itself. This is what a crafter makes the walls with, rather than waits.
+  breach: 1,
 } as const;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */

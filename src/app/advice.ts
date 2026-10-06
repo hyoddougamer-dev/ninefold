@@ -1,4 +1,5 @@
-import { currentWarden, effectiveBeastPower, odds, quarryPaid } from '../sim/combat.ts';
+import { bottleneck, currentWarden, effectiveBeastPower, odds, quarryPaid, wallOf } from '../sim/combat.ts';
+import { breachHeld, kitFor } from '../sim/crafts.ts';
 import {
   UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, upgradeCost,
   type State,
@@ -42,7 +43,7 @@ export interface Advice {
   readonly han: string;
   readonly text: string;
   /** Which tab it is about, so the screen can point at it. */
-  readonly tab?: 'hunt' | 'trials' | 'dao' | 'gear';
+  readonly tab?: 'hunt' | 'trials' | 'dao' | 'gear' | 'crafts';
   /**
    * 尺 How close the player is, 0 to 1, when the line is about closing a gap.
    *
@@ -140,6 +141,13 @@ export function advice(s: State): Advice | null {
       return canBuy(s, 'technique')
         ? { han: '劍訣', text: ADVICE.buyTechnique }
         : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
+    }
+    // 瓶頸 A fresh wall, and the pouch holds what breaks it but the hands are empty of it.
+    // After cores and the technique, which are permanent; before everything that is a
+    // wait, because a carried pill is the one thing that gets through the gate today.
+    if (bottleneck(s, warden) > 1 / wallOf(warden.realm) && !(kitFor(s, warden, 'warden').kit.breach ?? 0)) {
+      const days = breachHeld(s, warden);
+      if (days >= 0.1) return { han: '瓶頸', text: ADVICE.breach(days), tab: 'crafts' };
     }
     // 煉器 Cores are full and the technique is at its cap, so the material coming off
     // the beasts has exactly one place left to go, and it is the one with no ceiling.

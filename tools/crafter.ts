@@ -14,7 +14,8 @@
  */
 import type { State } from '../src/sim/state.ts';
 import type { Beast } from '../src/data/bestiary.ts';
-import { odds } from '../src/sim/combat.ts';
+import { effectiveBeastPower, oddsRaw } from '../src/sim/combat.ts';
+import { power } from '../src/sim/state.ts';
 import {
   ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, canSet, carry, carrySlot, held, kitFor, levelIn,
   needsOf, placeArray, recipesOf, known, knownAt, secondsOf, setTask, skillOpen, work, workSeconds,
@@ -164,10 +165,19 @@ export function craftVisit(s: State, now: number, span: number): State {
 /**
  * 攜 Put the best thing they own in each hand for this fight, judged by the fight's own
  * odds: an elixir first, then a sigil beside it. Nothing carried if nothing helps.
+ *
+ * 破境 Judged by the odds before the screen's floor, and where those are nothing yet, by
+ * how far the kit closes the gap: a fresh wall reads 0% with or without a sigil, and a
+ * crafter carries one into it all the same, because each day of bottleneck it breaks is a
+ * day sooner through the gate.
  */
 export function carryBest(s: State, b: Beast, where: Where, standing?: number): State {
   const owned = Object.entries(s.crafts.pouch).filter(([, n]) => n > 0).map(([k]) => k);
-  const chance = (x: State) => odds(x, b, standing, kitFor(x, b, where).kit);
+  const chance = (x: State) => {
+    const kit = kitFor(x, b, where).kit;
+    const gap = power(x) * kit.strike / (kit.taken * effectiveBeastPower(x, b, standing, kit.breach ?? 0));
+    return oddsRaw(x, b, standing, kit) + 1e-6 * Math.min(1, gap);
+  };
   for (const hand of ['elixir', 'sigil'] as const) {
     let pick: State = carry(s, hand, null);
     let at = chance(pick);

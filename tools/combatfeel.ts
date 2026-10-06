@@ -11,7 +11,7 @@
  *     npx tsx tools/combatfeel.ts [habit]
  */
 import { HABITS, play } from './habits.ts';
-import { effectiveBeastPower, fight, odds } from '../src/sim/combat.ts';
+import { effectiveBeastPower, fight, isElite, odds } from '../src/sim/combat.ts';
 import { huntable, wardenOf } from '../src/data/bestiary.ts';
 import { power, type State } from '../src/sim/state.ts';
 
@@ -39,12 +39,15 @@ const row = (label: string, day: number, s: State) => {
     }
   }
   const w = wardenOf(s.realm);
-  const top = Math.max(...beasts.map((b) => effectiveBeastPower(s, b)));
+  const top = Math.max(...beasts.filter((b) => !isElite(b) || b.realm < s.realm).map((b) => effectiveBeastPower(s, b)));
+  const elite = beasts.find((b) => isElite(b) && b.realm === s.realm);
+  const eliteOdds = elite ? `${Math.round(100 * odds(s, elite))}%` : '-';
   console.log(`  ${label.padEnd(4)} realm ${s.realm}  day ${String(day.toFixed(1)).padStart(5)}  力 ${power(s).toExponential(2)}`
     + `  sure ${String(sure).padStart(2)}/${beasts.length}`
     + `  one blow ${String(Math.round(100 * oneBlow / n)).padStart(3)}%`
     + `  rounds ${(rounds / n).toFixed(1).padStart(4)}`
     + `  warden ${Math.round(100 * odds(s, w))}%`
+    + `  elite ${eliteOdds}`
     + `  you ÷ strongest ×${(power(s) / top).toFixed(1)}  ÷ warden ×${(power(s) / effectiveBeastPower(s, w)).toFixed(1)}`);
 };
 console.log(`鬥感 ${habit.name}, 20 fights a beast, ${last.toFixed(0)} days walked`);

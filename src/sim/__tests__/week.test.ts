@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEASTS, huntable, wardenOf } from '../../data/bestiary.ts';
+import { BEASTS, huntable, isElite, wardenOf } from '../../data/bestiary.ts';
 import { HERBS } from '../../data/herbs.ts';
 import { roomsFor } from '../../data/secret.ts';
 import { BLESSED_ROOM, QUARRY_LOOT, SEASON_HARVEST } from '../balance.ts';
@@ -44,10 +44,10 @@ describe('期 the week', () => {
     }
   });
 
-  it('moves, and comes to every beast a realm can reach', () => {
+  it('moves, and comes to every beast a realm can reach but its elites', () => {
     const seen = new Set<string>();
     for (let w = 0; w < 400; w++) seen.add(quarryOf(at(9, MONDAY + w * WEEK))!.key);
-    expect(seen.size).toBe(huntable(9, 8).length);
+    expect(seen.size).toBe(huntable(9, 8).filter((b) => !isElite(b)).length);
     console.log(`\n  ${seen.size} of ${BEASTS.filter((b) => !b.warden).length} commons ` +
       'come round as the quarry at the ninth realm\n');
     const rows: string[] = [];

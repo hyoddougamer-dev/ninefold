@@ -6,7 +6,7 @@ import {
 import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { REALM_KEY } from '../data/crafts.ts';
-import { beastPower, odds } from './combat.ts';
+import { beastPower, isElite, odds } from './combat.ts';
 
 import { rate } from './time.ts';
 import { rollDrop } from './drops.ts';
@@ -209,7 +209,10 @@ export function beastAt(s: State, step: number): Beast {
    * seven, which is what a secret realm should be worth to each of them.
    */
   const gate = Math.floor(step / 2);
+  // 精 Never the elite: the vault's doors were measured on the commons, and the elite is
+  // the realm's hard hunt, not a door.
   const sorted = (realm: number) => [...commonsOf(Math.max(1, Math.min(9, realm)))]
+    .filter((b) => !isElite(b))
     .sort((a, b) => beastPower(a) - beastPower(b));
   const mine = sorted(s.realm);
   const above = sorted(s.realm + 1);

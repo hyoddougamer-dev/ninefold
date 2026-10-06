@@ -1,4 +1,4 @@
-import { huntable, type Beast } from '../data/bestiary.ts';
+import { huntable, isElite, type Beast } from '../data/bestiary.ts';
 import { HERBS, type Herb } from '../data/herbs.ts';
 import { roomsFor } from '../data/secret.ts';
 import type { State } from './state.ts';
@@ -74,7 +74,8 @@ function hash(n: number): number {
  * is allowed to hand over a new quarry.
  */
 export function quarryOf(s: State): Beast | null {
-  const pool = huntable(s.realm, s.layer);
+  // 精 Never an elite: the week's errand is one every hunter can run, and an elite is a wall.
+  const pool = huntable(s.realm, s.layer).filter((b) => !isElite(b));
   if (!pool.length) return null;
   return pool[hash(weekOf(s.at) * 2_654_435_761) % pool.length] ?? null;
 }

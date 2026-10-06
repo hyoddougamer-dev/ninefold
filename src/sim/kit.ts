@@ -24,5 +24,11 @@ export interface Kit {
    * 擂台 challenger whose trail was taken in the vault (TRAIL_WOUND). Zero everywhere else.
    */
   readonly wound?: number;
+  /**
+   * 破境 Days of a bottleneck an elixir or a sigil breaks: carried into the warden of the
+   * realm the cultivator stands in, the wall stands as if the gate had loosened this many
+   * days longer (CRAFT_KIT.breach). Zero everywhere else.
+   */
+  readonly breach?: number;
 }
-export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0 };
+export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0 };
