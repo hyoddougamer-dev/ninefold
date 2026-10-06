@@ -10,7 +10,7 @@ import { advance } from '../time.ts';
 
 const T0 = 1_700_000_000;
 const piece = (id: string, realm: number): Item => ({
-  id, template: `sword${realm}`, rarity: 'spirit', refine: 0, rolls: [{ affix: 'power', value: 10 }],
+  id, template: `sword${realm}`, rarity: 'spirit', rolls: [{ affix: 'power', value: 10 }],
 });
 const at = (realm: number, melt: number): State => ({ ...newState(T0), realm, layer: 3, melt });
 

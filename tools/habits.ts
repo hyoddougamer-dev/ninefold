@@ -44,11 +44,18 @@ import { dropFor, noteFate, secondDropFor } from '../src/sim/fate.ts';
 import { fortuneOf } from '../src/sim/fortune.ts';
 import { salvageUpTo } from '../src/sim/salvage.ts';
 import { equip, fusable, itemWorth } from '../src/sim/chest.ts';
+import { levelAt } from '../src/sim/refine.ts';
 import { swing } from '../src/sim/inspect.ts';
 import { ARCHETYPES, RARITY_INFO, SLOTS, callingOf, schoolOf, templateOf, type Item, type Slot } from '../src/data/gear.ts';
 import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
 import { SCHOOL_WAKES } from '../src/sim/balance.ts';
 import type { Beast } from '../src/data/bestiary.ts';
+
+/**
+ * 承 What a worn piece is worth with its place's refining on it, for choosing the place
+ * the material goes into: the same order the loop kept while the levels were on the piece.
+ */
+const wornWorth = (s: State, slot: Slot) => itemWorth(s.worn[slot]!, levelAt(s.refined, slot));
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -808,7 +815,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     if (h.gear && isOpen(s.realm, 'refine')) for (let i = 0; i < 60; i++) {
       const keep = isOpen(s.realm, 'cores') && canBuy(s, 'cores') ? upgradeCost(s, 'cores') : 0;
       const slot = SLOTS.filter((x) => s.worn[x] && canRefine(s, x))
-        .sort((a, b) => itemWorth(s.worn[b]!) - itemWorth(s.worn[a]!))[0];
+        .sort((a, b) => wornWorth(s, b) - wornWorth(s, a))[0];
       if (!slot) break;
       const price = refinePrice(s, slot);
       if (price === null || s.materials - price < keep) break;

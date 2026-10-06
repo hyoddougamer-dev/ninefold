@@ -181,7 +181,7 @@ describe('渡劫 the ladder above the ladder', () => {
     const leans: Lean[] = ['none', 'pill', 'tower', 'material', 'luck', 'refine', 'salvage'];
     const runs = leans.map((lean) => {
       const g = play(40, lean);
-      const levels = SLOTS.reduce((n, x) => n + (g.end.worn[x]?.refine ?? 0), 0);
+      const levels = SLOTS.reduce((n, x) => n + (g.end.refined[x] ?? 0), 0);
       return { lean, days: g.days.reduce((a, b) => a + b, 0), floor: g.end.tower, levels,
         power: power(g.end), cards: g.end.awakened.length };
     });

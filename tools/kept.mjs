@@ -794,7 +794,8 @@ for (const [w, h, tag] of [[400, 860, 'k400'], [1366, 768, 'kpc']]) {
       // ▲ More power and no 破: not ▲ now. The same with 破 kept: ▲.
       piece('c-loud', 'sword3', 'earth', 30),
       { ...piece('c-strict', 'sword3', 'earth', 31), rolls: [{ affix: 'power', value: 31 }, { affix: 'sunder', value: 3.2 }] },
-      // 承 A piece taken off with its levels: the bulk melt must leave it.
+      // 承 A piece taken off with its levels, written the way a save from before 2026-10-06
+      // kept them: on the piece. The load moves them to the boots' place.
       { ...piece('c-honed', 'leather2', 'spirit', 5), refine: 7 },
       piece('c-junk1', 'sword2'), piece('c-junk2', 'leather2'),
     ],
@@ -826,23 +827,26 @@ for (const [w, h, tag] of [[400, 860, 'k400'], [1366, 768, 'kpc']]) {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
 
-  // 承 The refined piece's own sheet warns that its levels go with a melt; the bulk melt leaves it.
-  const honed = await page.$('.chest .chestit[aria-label*="Leather Boots, Spirit"]');
-  if (honed) {
-    await honed.click();
+  // 承 The levels are the boots' place's now: both boots' sheets read them, neither warns
+  // that a melt takes them, and the bulk melt takes the once-refined piece like any other.
+  for (const [label, who] of [['Leather Boots, Spirit', 'the once-refined boots'], ['Leather Boots, Common', 'boots never refined']]) {
+    const boots = await page.$(`.chest .chestit[aria-label*="${label}"]`);
+    if (!boots) { check(false, `${tag}: ${who} are in the chest`); continue; }
+    await boots.click();
     await page.waitForTimeout(300);
-    const line = await page.textContent('.itemsheet .meltlevels').catch(() => '');
-    check(/7 refining levels go with it/.test(line ?? ''), `${tag}: a refined piece's melt says its levels go with it ("${line}")`);
+    const line = await page.textContent('.itemsheet .carried').catch(() => '');
+    check(/this place's 7 refining levels/.test(line ?? ''), `${tag}: ${who} read the place's 7 levels ("${line}")`);
+    check(!(await page.$('.itemsheet .meltlevels')), `${tag}: ${who} carry no melt warning`);
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
-  } else check(false, `${tag}: the refined piece is in the chest`);
+  }
   const heaven = await page.$('.rk[aria-label^="Heaven"]');
   if (heaven) await heaven.click();
   await page.waitForTimeout(200);
   await page.click('button.melt.wide');
   await page.waitForTimeout(500);
   const left = await page.$$eval('.chest .chestit', (els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
-  check(left.some((l) => /Leather Boots, Spirit/.test(l)), `${tag}: melting up to Heaven leaves the refined piece (${left.join(' | ')})`);
+  check(!left.some((l) => /Leather Boots, Spirit/.test(l)), `${tag}: melting up to Heaven takes the once-refined piece too (${left.join(' | ')})`);
 
   // 序 Strongest keeps a finished beast in its place; Next mark folds it.
   await tab(page, '狩');

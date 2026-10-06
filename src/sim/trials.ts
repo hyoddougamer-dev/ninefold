@@ -4,7 +4,7 @@ import { pillCost } from './furnace.ts';
 import { floorLoot, floorQiPay, lootBonus, nextFloor } from './tower.ts';
 import { recordMaterial } from './record.ts';
 import { rate, type State } from './state.ts';
-import { REFINE_LIMIT, clampRefine, refineCost } from './refine.ts';
+import { REFINE_LIMIT, levelAt, refineCost } from './refine.ts';
 import { materialBonus, pillFactor, refineFactor, towerBonus } from './awaken.ts';
 import type { Slot } from '../data/gear.ts';
 import { isOpen } from './unlocks.ts';
@@ -146,19 +146,22 @@ export function brewMax(s: State, line: Line): { state: State; n: number; qi: nu
 }
 
 /**
- * 煉器 What refining the piece in a slot would cost, and whether it can be paid.
+ * 煉器 What refining a place on the body would cost, and whether it can be paid.
  *
  * Material only. Qi buys the mountain and the furnace; material buys the body of your
  * gear, and until this existed material stopped meaning anything the moment the cores
  * were full, measured, eight times more of it than the game had any use for.
+ *
+ * 承 The level is the place's (State.refined), so the price is too. A place with nothing
+ * on it is not offered: the screen refines what you wear, and a level poured into an
+ * empty place would show nowhere until a piece went on.
  */
 export function refinePrice(s: State, slot: Slot): number | null {
-  const item = s.worn[slot];
-  if (!item) return null;
+  if (!s.worn[slot]) return null;
   // 悟道 火候 and 薪火 make every level cheaper, for ever. Rounded up, so a discount
   // can never make a level free however many of them are taken.
   // 套 器 The Artificer's price is read off the refining loadout when one is given (sets.ts taskBody).
-  return Math.max(1, Math.ceil(refineCost(clampRefine(item.refine)) * refineFactor(s.awakened) * classRefine(taskBody(s, 'refine'))));
+  return Math.max(1, Math.ceil(refineCost(levelAt(s.refined, slot)) * refineFactor(s.awakened) * classRefine(taskBody(s, 'refine'))));
 }
 
 export function canRefine(s: State, slot: Slot): boolean {
@@ -169,14 +172,15 @@ export function canRefine(s: State, slot: Slot): boolean {
 
 export function refine(s: State, slot: Slot): State {
   if (!isOpen(s.realm, 'refine')) return s;
-  const item = s.worn[slot];
   const price = refinePrice(s, slot);
-  if (!item || price === null || s.materials < price) return s;
-  if (clampRefine(item.refine) >= REFINE_LIMIT) return s;
+  if (price === null || s.materials < price) return s;
+  const level = levelAt(s.refined, slot);
+  if (level >= REFINE_LIMIT) return s;
+  // 承 The place gains the level, not the piece: worn stays the same object.
   return {
     ...s,
     materials: s.materials - price,
-    worn: { ...s.worn, [slot]: { ...item, refine: clampRefine(item.refine) + 1 } },
+    refined: { ...s.refined, [slot]: level + 1 },
   };
 }
 

@@ -7,8 +7,8 @@ import { rate } from '../time.ts';
 const T0 = 1_700_000_000;
 
 const piece = (id: string, template: string, rarity: Rarity,
-  rolls: { affix: string; value: number }[], refine?: number): Item =>
-  ({ id, template, rarity, rolls: rolls as Item['rolls'], ...(refine ? { refine } : {}) });
+  rolls: { affix: string; value: number }[]): Item =>
+  ({ id, template, rarity, rolls: rolls as Item['rolls'] });
 
 const hero = (worn: Partial<Record<string, Item>> = {}): State =>
   ({ ...newState(T0), realm: 5, layer: 4, worn: worn as State['worn'] });
@@ -64,11 +64,12 @@ describe('鑑 what a piece would do', () => {
   });
 
   it('counts 煉 refining, because the player paid for it', () => {
+    // 承 The levels are the place's: the same piece is worth more going into a refined one.
     const plain = piece('a', 'sword5', 'spirit', [{ affix: 'power', value: 12 }]);
-    const honed = piece('b', 'sword5', 'spirit', [{ affix: 'power', value: 12 }], 10);
     const s = hero({});
-    expect(swing(s, honed).power).toBeGreaterThan(swing(s, plain).power);
-    expect(compare(honed)[0].theirs).toBeGreaterThan(compare(plain)[0].theirs);
+    const honed: State = { ...s, refined: { weapon: 10 } };
+    expect(swing(honed, plain).power).toBeGreaterThan(swing(s, plain).power);
+    expect(compare(plain, undefined, 10)[0].theirs).toBeGreaterThan(compare(plain)[0].theirs);
   });
 
   /**

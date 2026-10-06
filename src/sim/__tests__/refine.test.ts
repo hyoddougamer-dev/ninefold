@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  GEAR, RARITY_INFO, SLOTS, baseValue, refinedBy, setBonus, valueOf,
-  type Item, type Slot, type Worn,
+  GEAR, RARITY_INFO, SLOTS, baseValue, setBonus, valueOf,
+  type Item, type Refined, type Slot, type Worn,
 } from '../../data/gear.ts';
 import {
   REFINE_GAIN, REFINE_LIMIT, clampRefine, refineCeiling, refineCost, refineFactor, refineSpent,
 } from '../refine.ts';
 import { canRefine, refine, refinePrice } from '../trials.ts';
+import { equip } from '../chest.ts';
 import { newState, power, rate, validate, type State } from '../state.ts';
 import { levelCap } from '../balance.ts';
 import { floorLoot } from '../tower.ts';
@@ -17,17 +18,18 @@ import { playEndgame } from '../../../tools/endgame.ts';
 
 const T0 = 1_700_000_000;
 
-const piece = (slot: Slot, realm: number, level = 0): Item => {
+const piece = (slot: Slot, realm: number, id = 'x'): Item => {
   const tpl = GEAR.filter((g) => g.slot === slot && g.realm === realm)[0];
   return {
-    id: `${tpl.key}-x`, template: tpl.key, rarity: 'heaven',
+    id: `${tpl.key}-${id}`, template: tpl.key, rarity: 'heaven',
     rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) }],
-    ...(level ? { refine: level } : {}),
   };
 };
 
-const dressed = (level: number): Worn =>
-  Object.fromEntries(SLOTS.map((s) => [s, piece(s, 9, level)])) as Worn;
+/** A full 天 set, and every place on the body refined `level` times. */
+const dressed: Worn = Object.fromEntries(SLOTS.map((s) => [s, piece(s, 9)])) as Worn;
+const everywhere = (level: number): Refined => Object.fromEntries(SLOTS.map((s) => [s, level]));
+const setAt = (level: number) => setBonus(dressed, () => 1, everywhere(level));
 
 function atCap(realm: number, materials = 0): State {
   const cap = levelCap(realm);
@@ -46,32 +48,31 @@ describe('煉器 refining', () => {
     const rows = [0, 5, 10, 15, 20, 25, 30].map((n) =>
       `    level ${String(n).padStart(2)}   next ${num(refineCost(n)).padStart(8)} 材` +
       `   all of it ${num(refineSpent(n)).padStart(8)}   lines ×${refineFactor(n).toFixed(2)}`);
-    console.log(`\n  煉器 one piece, level by level:\n${rows.join('\n')}`);
-    console.log(`  a full 天 set: 力 ×${setBonus(dressed(0)).power.toFixed(2)} unrefined, ` +
-      `×${setBonus(dressed(20)).power.toFixed(2)} at 煉 20, ` +
-      `×${setBonus(dressed(30)).power.toFixed(2)} at 煉 30`);
+    console.log(`\n  煉器 one place, level by level:\n${rows.join('\n')}`);
+    console.log(`  a full 天 set: 力 ×${setAt(0).power.toFixed(2)} unrefined, ` +
+      `×${setAt(20).power.toFixed(2)} at 煉 20, ` +
+      `×${setAt(30).power.toFixed(2)} at 煉 30`);
     console.log(`  the tower's first ninety floors pay ${num(tower)} 材, which reaches about ` +
-      `煉 ${[...Array(40).keys()].filter((n) => refineSpent(n) * 6 <= tower).pop()} across six pieces\n`);
+      `煉 ${[...Array(40).keys()].filter((n) => refineSpent(n) * 6 <= tower).pop()} across six places\n`);
 
     // Bottomless, and always dearer than the last.
     for (let n = 1; n < 60; n++) expect(refineCost(n)).toBeGreaterThan(refineCost(n - 1));
     // A run's material roughly doubles what gear is worth. Not five times, not a tenth.
-    const gain = setBonus(dressed(22)).power / setBonus(dressed(0)).power;
+    const gain = setAt(22).power / setAt(0).power;
     expect(gain).toBeGreaterThan(1.5);
     expect(gain).toBeLessThan(2.5);
   });
 
   it('is read by every number that reads a roll', () => {
     const plain = piece('weapon', 9);
-    const refined = piece('weapon', 9, 10);
-    // A refined piece has to be worth more *everywhere at once*, or the level the player
+    // A refined place has to be worth more *everywhere at once*, or the level the player
     // paid for stops being the number the game uses.
-    expect(refinedBy(plain)).toBe(1);
-    expect(refinedBy(refined)).toBeCloseTo((1 + REFINE_GAIN) ** 10, 9);
-    expect(valueOf(refined, plain.rolls[0].affix))
-      .toBeCloseTo(valueOf(plain, plain.rolls[0].affix) * refinedBy(refined), 6);
-    expect(setBonus(dressed(10)).power).toBeGreaterThan(setBonus(dressed(0)).power);
-    expect(itemWorth(refined)).toBeGreaterThan(itemWorth(plain));
+    expect(refineFactor(0)).toBe(1);
+    expect(refineFactor(10)).toBeCloseTo((1 + REFINE_GAIN) ** 10, 9);
+    expect(valueOf(plain, plain.rolls[0].affix, 10))
+      .toBeCloseTo(valueOf(plain, plain.rolls[0].affix) * refineFactor(10), 6);
+    expect(setAt(10).power).toBeGreaterThan(setAt(0).power);
+    expect(itemWorth(plain, 10)).toBeGreaterThan(itemWorth(plain));
   });
 
   it('is paid in material, never in qi, and refuses rather than half-applying', () => {
@@ -84,7 +85,9 @@ describe('煉器 refining', () => {
 
     const rich = { ...poor, materials: 1e9 };
     const after = refine(rich, 'weapon');
-    expect(after.worn.weapon?.refine).toBe(1);
+    // 承 The place gains the level; the piece is the very same piece.
+    expect(after.refined.weapon).toBe(1);
+    expect(after.worn).toBe(rich.worn);
     expect(after.materials).toBe(rich.materials - refineCost(0));
     expect(power(after)).toBeGreaterThan(power(rich));
     // The rule the whole economy stands on.
@@ -92,17 +95,20 @@ describe('煉器 refining', () => {
     expect(after.qi).toBe(rich.qi);
   });
 
-  it('keeps the levels on the piece, not on the cultivator', () => {
-    // Which is the decision: a run's material poured into one sword is not in the next
-    // sword. The copy on the gear screen has to say so, and this is why.
-    const s: State = { ...atCap(9, 1e12), worn: { weapon: piece('weapon', 9) } };
+  it('keeps the levels on the place on the body, never on the piece', () => {
+    // 承 rekaris, on the Discord: a count shared by the whole body belongs in a record of
+    // its own. A run's material poured into the weapon's place is in every sword worn
+    // there, and nothing done to a sword moves it.
+    const s: State = { ...atCap(9, 1e12), worn: { weapon: piece('weapon', 9) }, chest: [piece('weapon', 9, 'y')] };
     let held = s;
     for (let i = 0; i < 8; i++) held = refine(held, 'weapon');
-    expect(held.worn.weapon?.refine).toBe(8);
+    expect(held.refined).toEqual({ weapon: 8 });
 
-    const swapped: State = { ...held, worn: { weapon: piece('weapon', 9) } };
-    expect(swapped.worn.weapon?.refine).toBeUndefined();
-    expect(power(swapped)).toBeLessThan(power(held));
+    const on = equip(held.worn, held.chest, held.chest[0], 'weapon');
+    const swapped: State = { ...held, worn: on.worn, chest: [...on.chest] };
+    expect(swapped.worn.weapon?.id).toBe(piece('weapon', 9, 'y').id);
+    expect(swapped.refined).toEqual({ weapon: 8 });
+    expect(power(swapped)).toBe(power(held));
   });
 
   it('will not let a save claim a piece it never paid for', () => {
@@ -112,27 +118,27 @@ describe('煉器 refining', () => {
     expect(clampRefine(1e9)).toBe(REFINE_LIMIT);
 
     const tpl = GEAR.filter((g) => g.slot === 'weapon' && g.realm === 9)[0];
-    const forged = {
-      ...newState(T0), v: 1, realm: 9,
-      worn: {
-        weapon: {
-          id: 'w', template: tpl.key, rarity: 'heaven' as const, refine: 99999,
-          rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) }],
-        },
-      },
-    };
+    const sword = { id: 'w', template: tpl.key, rarity: 'heaven' as const,
+      rolls: [{ affix: tpl.affix, value: baseValue(tpl, 'heaven', tpl.affix) }] };
+    // Claimed both ways: the place's record, and an old save's level on the piece.
+    const onPlace = { ...newState(T0), v: 1, realm: 9, worn: { weapon: sword }, refined: { weapon: 99999, robe: -3, ring: 'x' } };
+    const onPiece = { ...newState(T0), v: 1, realm: 9, worn: { weapon: { ...sword, refine: 99999 } } };
     // 頂 Not to the arithmetic guard any more, but to what this save could have paid
-    // for: a cultivator ten seconds old, with no tower, holds a piece at a level in the
+    // for: a cultivator ten seconds old, with no tower, holds a place at a level in the
     // teens at most, not one worth a hundred thousand of itself.
-    const back = validate(forged, T0 + 10).worn.weapon?.refine ?? 0;
-    expect(back).toBeLessThan(20);
-    expect(back).toBeLessThan(REFINE_LIMIT);
+    for (const forged of [onPlace, onPiece]) {
+      const back = validate(forged, T0 + 10);
+      expect(back.refined.weapon ?? 0).toBeLessThan(20);
+      expect(back.refined.weapon ?? 0).toBeLessThan(REFINE_LIMIT);
+      expect(Object.keys(back.refined)).toEqual(['weapon']);
+      expect('refine' in back.worn.weapon!).toBe(false);
+    }
     expect(RARITY_INFO.heaven.mult).toBeGreaterThan(0);
   });
 
   /**
    * 頂 The ceiling rides the tower, one level for every four floors, which is the same
-   * four floors a level costs. So the deeper the save, the deeper the piece may be.
+   * four floors a level costs. So the deeper the save, the deeper a place may be.
    */
   it('lets the ceiling climb with the tower', () => {
     const at = (floor: number) =>
@@ -153,9 +159,7 @@ describe('煉器 refining', () => {
   it('never takes a level from a cultivator who really paid for it', () => {
     const g = playEndgame(40, 'refine');
     const back = validate(JSON.parse(JSON.stringify(g.end)), g.end.at);
-    for (const slot of SLOTS) {
-      expect(back.worn[slot]?.refine).toBe(g.end.worn[slot]?.refine);
-    }
-    expect(Math.max(...SLOTS.map((x) => g.end.worn[x]?.refine ?? 0))).toBeGreaterThan(90);
+    expect(back.refined).toEqual(g.end.refined);
+    expect(Math.max(...SLOTS.map((x) => g.end.refined[x] ?? 0))).toBeGreaterThan(90);
   }, 60_000);
 });
