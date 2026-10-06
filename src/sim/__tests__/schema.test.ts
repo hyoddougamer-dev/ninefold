@@ -309,6 +309,57 @@ describe('榜 the ranked schema', () => {
     await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
   });
 
+  /**
+   * 還 rekaris taken back to the save that verified (Bruno, 2026-10-06). The cloud copy is
+   * pinned there: a refused sync from the old device cannot write over it, and the first
+   * save that verifies releases it and takes the strikes and the review off.
+   */
+  it('a pinned cloud copy outlasts refused syncs, and the first verified one frees it', async () => {
+    const R = '99999999-7777-7777-7777-777777777777';
+    const D = '99999999-8888-8888-8888-888888888888';
+    await db.exec(`
+      insert into auth.users values ('${R}'), ('${D}');
+      insert into profiles (id, name, strikes, suspect) values ('${R}', 'rekaris ', 30, true), ('${D}', 'Delta', 2, true);
+      insert into saves (user_id, latest, latest_at, verified, verified_at, day_state, day_at, week_state, week_at) values
+        ('${R}', '{"tower": 352}', '2026-10-06T06:47:00Z', '{"tower": 125}', '2026-10-05T19:26:00Z', '{"tower": 100}', '2026-10-05T10:00:00Z', '{"tower": 80}', '2026-09-30T10:00:00Z'),
+        ('${D}', '{"tower": 352}', '2026-10-06T06:47:00Z', '{"tower": 125}', '2026-10-05T19:26:00Z', '{"tower": 100}', '2026-10-05T10:00:00Z', '{"tower": 80}', '2026-09-30T10:00:00Z');
+    `);
+    await db.exec(readFileSync(`${MIGRATIONS}/20261006070000_restore_rekaris.sql`, 'utf8'));
+    const read = async (id: string) => (await db.query(`
+      select p.strikes, p.suspect, s.latest, s.latest_at, s.verified, s.verified_at, s.pinned, s.day_state, s.week_state, n.note
+        from profiles p join saves s on s.user_id = p.id left join panel_notes n on n.user_id = p.id
+       where p.id = '${id}'`)).rows[0] as any;
+    const r = await read(R);
+    expect(r).toMatchObject({ strikes: 0, suspect: false, latest: { tower: 125 }, pinned: true,
+      day_state: { tower: 125 }, week_state: { tower: 125 } });
+    expect(r.latest_at).toEqual(r.verified_at);
+    expect(r.note).toMatch(/floor 125/);
+    // 他 Nobody else is touched.
+    expect(await read(D)).toMatchObject({ strikes: 2, suspect: true, latest: { tower: 352 }, pinned: false, note: null });
+
+    // 拒 The old device syncs: refused, so verified stays, and the copy stays pinned.
+    await db.exec(`update saves set latest = '{"tower": 353}', latest_at = now(), last_sync = now() where user_id = '${R}'`);
+    await db.exec(`update profiles set strikes = strikes + 1 where id = '${R}'`);
+    expect(await read(R)).toMatchObject({ latest: { tower: 125 }, pinned: true, strikes: 1 });
+    // and the upsert the sync function writes takes the same road
+    await db.exec(`insert into saves (user_id, latest, latest_at, verified, verified_at) values
+      ('${R}', '{"tower": 354}', now(), '{"tower": 125}', '2026-10-05T19:26:00Z')
+      on conflict (user_id) do update set latest = excluded.latest, latest_at = excluded.latest_at,
+        verified = excluded.verified, verified_at = excluded.verified_at`);
+    expect(await read(R)).toMatchObject({ latest: { tower: 125 }, pinned: true });
+
+    // 還 The restored save verifies: it is the copy now, the pin is gone, and so is the flag.
+    await db.exec(`update profiles set suspect = true where id = '${R}'`);
+    await db.exec(`update saves set latest = '{"tower": 126}', latest_at = now(), verified = '{"tower": 126}', verified_at = now()
+      where user_id = '${R}'`);
+    expect(await read(R)).toMatchObject({ latest: { tower: 126 }, verified: { tower: 126 }, pinned: false, strikes: 0, suspect: false });
+    // Unpinned, the copy moves as it always did.
+    await db.exec(`update saves set latest = '{"tower": 127}' where user_id = '${R}'`);
+    expect(await read(R)).toMatchObject({ latest: { tower: 127 }, pinned: false });
+    await expect(as(A, `select saves_pin()`)).rejects.toThrow();
+    await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
+  });
+
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
