@@ -1337,6 +1337,35 @@
           ]
         }
       ]
+    },
+    {
+      "key": "update-2026-10-06-place",
+      "pin": false,
+      "channel": "devlog",
+      "title": "承 Update · Refining by place, a fair thunder pool, a smarter full chest",
+      "color": "#C9A45C",
+      "body": [
+        "Four things you asked for, three of them from rekaris. Thank you for reading the game this closely."
+      ],
+      "fields": [
+        [
+          "承 Refining belongs to the place on your body",
+          "Each place (weapon, robe, crown, boots, talisman, ring) keeps its own refining level, and whatever you wear there has it. Taking a piece off, melting it or fusing it never takes a level away, so no piece has to be spared for its levels any more. Your levels moved over by themselves: each place got the most any of its pieces held, so nothing was lost."
+        ],
+        [
+          "雷池 The thunder pool reads your marks only",
+          "It held two days of your own gathering, so a Qi set made the pool bigger and the Dragon came later. Now it holds two days of gathering at the summit with your upgrades at their cap and nothing worn, and only your marks make it bigger. Qi gear fills it faster, as it should. Over forty crossings the endgame runs about 4% quicker, and no crossing got longer."
+        ],
+        [
+          "熔 A full chest weighs your kept filters first",
+          "A piece no kept filter shows always melts before one a kept filter shows, and a kept piece only ever makes room for a better kept one. Before, a chest full of kept pieces melted every new drop, the better ones too."
+        ],
+        [
+          "氣 The Qi school says all it does",
+          "At the full it also lifts the ceiling on qi from gear by ×0.1. It always did; now its line says so."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -1468,8 +1497,8 @@
         ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
-        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Give a loadout a task (煉 Fuse, 拆 Melt or 煉器 Refine) and that task reads the loadout instead of what you wear, without changing clothes. Every piece shows its school's seal in the corner and its quality at the foot (×1.00 is a usual roll of its rank). The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name. Mark a filter 鎖 Keep and a full chest never melts what it shows."],
-        ["▸ 煉器 Refining", "Material makes a piece you wear better, for ever. No top level. Put on a new piece and it takes the higher of the two levels, and the piece you take off keeps the lower, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, levels and all, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once. A piece that holds refining levels is never taken by the bulk melt, a fusion or a full chest; only its own sheet can melt it."],
+        ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Give a loadout a task (煉 Fuse, 拆 Melt or 煉器 Refine) and that task reads the loadout instead of what you wear, without changing clothes. Every piece shows its school's seal in the corner and its quality at the foot (×1.00 is a usual roll of its rank). The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to eight filters you name. Mark a filter 鎖 Keep and a full chest melts what it shows last: it melts the worst piece no kept filter shows, and a piece a kept filter shows only ever makes room for a better one a kept filter shows."],
+        ["▸ 煉器 Refining", "Material makes what you wear better, for ever. No top level. The levels belong to the place on your body, not to the piece: whatever you wear in that place has them, and taking a piece off, melting it or fusing it never takes them away, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, with the place's levels, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once."],
         ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. At 天 Heaven, three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top (×1.5 of a usual roll at most), and a piece a fusion made is never fused again, so Fuse all takes each found piece once. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
       ]
     },
@@ -3084,6 +3113,64 @@
       ],
       "reply": [
         "Only flavour, and it shouldn't have read like a rule, thank you. Nothing about spending qi changes in the second heaven. The line says something else since today's update: \"Your qi runs gold now, and the old words for it stop fitting.\"",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Thunderpool size is funky",
+      "tags": [
+        "Balance",
+        "Fixed"
+      ],
+      "reply": [
+        "You were right, and it was the same trap the tower's pay had. Since today's update the pool reads your marks alone: two days of gathering at the summit with your upgrades at their cap and nothing worn. A Qi set now fills it faster instead of making it bigger. Thank you!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Qi class doesn't list the 0.1 increased cap in description",
+      "tags": [
+        "Text",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you, it was missing. Since today's update the Qi school's line says it: at the full, the ceiling on qi from gear stands ×0.1 higher.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "As promised: since today's update refining lives with the place on your body, in a record of its own, the way you suggested. Melting, fusing or taking a piece off can't touch it any more. Each place kept the most any of its pieces held, so nothing was lost. Thanks for the push!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow customization of auto-melting when the bag is full",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Done in today's update, the way you put it: a full chest melts the worst piece no kept filter shows first, and a piece a kept filter shows only ever makes room for a better one a kept filter shows. So your Heaven Power piece now pushes the Earth one out.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "My save is not ranked",
+      "tags": [
+        "Fixed"
+      ],
+      "reply": [
+        "Your climb stays as it is, floor 352 and all. You've given more feedback than anyone in this test, and that matters far more than a lead on the board. Your mark is cleared and your next syncs put you back on the rankings, with nothing to do on your side. Thank you, and please keep breaking things!",
         "· 師 Shibaki"
       ]
     }
