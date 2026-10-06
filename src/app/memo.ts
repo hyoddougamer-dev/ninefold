@@ -19,3 +19,20 @@ export function fightDeps(s: State): readonly unknown[] {
   return [s.realm, s.layer, s.levels, s.stance, s.sequence, s.worn, s.refined, s.awakened, s.unlocked,
     s.brewed, s.tribulation, s.killed, s.chose, s.demons, s.crafts.carry, s.crafts.pouch, s.crafts.arrays, s.crafts.cut];
 }
+
+/**
+ * 架 A useMemo that outlives the screen it is read on: one value, made again only when
+ * one of its inputs is no longer the very same thing. A tab away and back unmounts a
+ * screen and throws its memos away, and on a chest of 1,800 (rekaris, on the Discord,
+ * 2026-10-06) reading it again cost a second on a phone every time 器 was opened.
+ * Holds the last value only, so it keeps no more than the screen itself did.
+ */
+export function shelf<T>(): (deps: readonly unknown[], make: () => T) => T {
+  let last: { deps: readonly unknown[]; value: T } | null = null;
+  return (deps, make) => {
+    if (last && last.deps.length === deps.length && last.deps.every((d, i) => Object.is(d, deps[i]))) return last.value;
+    const value = make();
+    last = { deps, value };
+    return value;
+  };
+}

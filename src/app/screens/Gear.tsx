@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { fightDeps } from '../memo.ts';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { fightDeps, shelf } from '../memo.ts';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
   activeSets, callingOf, primaryOf, schoolOf, templateOf, wornRarity, wornTotals,
@@ -36,6 +36,29 @@ import { buysWith } from '../../sim/time.ts';
 import { isWorn, tasksOf } from '../../sim/sets.ts';
 import { SET_LIMIT, TASKS, type Task } from '../../sim/state.ts';
 import { FILTER_LIMIT, PLACES, keepable, type ChestFilter, type Place } from '../../sim/filters.ts';
+import type { Swing } from '../../sim/inspect.ts';
+
+/** 算 A chest piece and what putting it on would do, ▲ included. */
+interface ChestRead {
+  readonly item: Item;
+  readonly move: Swing;
+}
+
+/**
+ * 窗 How many tiles the chest draws at first, and how many more each time its foot is
+ * reached. Twelve rows of five on a phone, more than a screen and a half.
+ */
+const CHEST_PAGE = 60;
+
+/** 煉 How many fuse groups are drawn before a tap asks for more. */
+const FUSE_PAGE = 12;
+
+/** 架 What the chest reads, kept between visits to the screen (app/memo.ts shelf). */
+const READINGS = shelf<WeakMap<Item, ChestRead>>();
+const CHEST_READ = shelf<readonly ChestRead[]>();
+const SORTED = shelf<readonly ChestRead[]>();
+const TALLY = shelf<{ ups: number; locks: number; slots: Map<Slot, number>; schools: Map<School, number>; carried: Set<Affix> }>();
+const WEAR_ALL = shelf<number>();
 
 /**
  * 器 The gear screen: the ring.
@@ -85,41 +108,44 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   onCompare?: () => void;
 }) {
   const totals = wornTotals(state.worn, (slot) => affinity(state.unlocked, slot), state.refined);
-  // 算 Every chest piece put on in a copy of the save, once per change rather than per tick.
-  const chestRead = useMemo(() => state.chest.map((item) => {
+  /*
+   * 算 Every chest piece put on in a copy of the save. rekaris, on the Discord (2026-10-06):
+   * at 1,800 pieces this screen froze, and fusing down to 500 was the only way out. Each
+   * piece's reading is kept with the piece until something a fight reads moves, so a drop,
+   * a melt or a lock reads only what is new, and a tick of qi reads nothing at all. 架 On
+   * a shelf (app/memo.ts), so a tab away and back reads nothing either.
+   */
+  const readings = READINGS(fightDeps(state), () => new WeakMap<Item, ChestRead>());
+  const chestRead = CHEST_READ([state.chest, readings], () => state.chest.map((item) => {
+    const known = readings.get(item);
+    if (known) return known;
     const m = swing(state, item);
     // ▲ The strict rule (sim/inspect.ts upOf): no class lost and no line given up.
-    return { item, move: { ...m, better: upOf(state, item, m) } };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [state.chest, ...fightDeps(state)]);
+    const read: ChestRead = { item, move: { ...m, better: upOf(state, item, m) } };
+    readings.set(item, read);
+    return read;
+  }));
   const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
   // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
-  const groups = isOpen(state.realm, 'fuse') ? fusable(state.chest) : [];
-  /* 煉 The same row 狩 uses (a seal, a name, a figure on the right) shared on purpose
-     rather than by accident, and carrying its own name so that restyling one screen
-     cannot silently restyle the other. 天 A Heaven row says what it will make. */
-  const fuseRow = (g: (typeof groups)[number]) => {
-    const tpl = templateOf({ id: '', template: g.template, rarity: g.rarity, rolls: [] });
-    const rar = RARITY_INFO[g.rarity];
-    const same = g.rarity === 'heaven';
-    return (
-      <button key={`${g.template}-${g.rarity}`} className="beast fuserow"
-        data-same={same || undefined}
-        onClick={() => onFuse(g.template, g.rarity)}>
-        <span className="seal" style={{ width: 44, height: 44 }}>
-          <Svg html={gearTile({ id: 'x', template: g.template, rarity: g.rarity, rolls: [] }, { size: 44 })} />
-        </span>
-        <span className="bname">
-          <b style={{ color: rar.colour }}>{tpl.han}</b>
-          <i>{same ? QOL.gear.heavenRow(tpl.name, g.count, fuseQuote(state, g.template, g.rarity)) : `${tpl.name} · ${g.count} in the chest`}</i>
-        </span>
-        <span className="odds" style={{ color: 'var(--jade)' }}>
-          {FUSE_COUNT}→1<em>fuse</em>
-        </span>
-      </button>
-    );
-  };
+  // 算 Counted when the chest moves, not on every tick: a big chest has a hundred groups.
+  const groups = useMemo(() => (isOpen(state.realm, 'fuse') ? fusable(state.chest) : []),
+    [state.realm, state.chest]);
+  // 天 What each Heaven row will make, read off the body that fuses (sim/sets.ts taskBody).
+  const quotes = useMemo(() => new Map(groups.filter((g) => g.rarity === 'heaven')
+    .map((g) => [g.template, fuseQuote(state, g.template, g.rarity)])),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [groups, state.sets, state.tasks, ...fightDeps(state)]);
+  /*
+   * 窗 The groups that climb a rank, a page at a time: a chest of 1,800 made 142 of them,
+   * 5,400 elements above the chest itself. 煉 Fuse all groups still takes every one.
+   */
+  const climbing = useMemo(() => groups.filter((g) => g.rarity !== 'heaven'), [groups]);
+  const [fuseShown, setFuseShown] = useState(FUSE_PAGE);
+  const fuseRow = (g: (typeof groups)[number]) => (
+    <FuseRow key={`${g.template}-${g.rarity}`} template={g.template} rarity={g.rarity} count={g.count}
+      quote={quotes.get(g.template)} onFuse={onFuse} />
+  );
   const limit = chestLimit(state.unlocked, totals.capacity, state.awakened);
   const S = 200;
   // 總 What everything worn does, from the sim: the body against itself with nothing on.
@@ -168,10 +194,70 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   }, []);
   /** 存 The name being typed for a filter about to be kept, or null when not saving. */
   const [presetName, setPresetName] = useState<string | null>(null);
+  // 鑑 "Better" is what the sim says happens to 力 and 氣 when you put it on.
+  // It used to be the sum of the raw roll values, which answers nothing: a
+  // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
+  // so four small lines could out-triangle a piece that doubles your power.
+  // 職 A piece that costs the class is not marked ▲, because the sheet will not call it
+  // an upgrade either.
+  // 序 Upgrades first, the biggest first; then the rarest. A chest of forty is
+  // read from the top, so the top is where the news goes.
+  const read = SORTED([chestRead], () => [...chestRead].sort((a, b) => (Number(b.move.better) - Number(a.move.better))
+    || (a.move.better ? b.move.power - a.move.power : 0)
+    || (RARITIES.indexOf(b.item.rarity) - RARITIES.indexOf(a.item.rarity))
+    || (templateOf(b.item).realm - templateOf(a.item).realm)));
+  // 數 What the filter chips count, in one walk of the chest rather than one walk per chip.
+  const tally = TALLY([read], () => {
+    const slots = new Map<Slot, number>();
+    const schools = new Map<School, number>();
+    const carried = new Set<Affix>();
+    let ups = 0;
+    let locks = 0;
+    for (const r of read) {
+      if (r.move.better) ups++;
+      if (r.item.locked) locks++;
+      const slot = templateOf(r.item).slot;
+      slots.set(slot, (slots.get(slot) ?? 0) + 1);
+      const sc = schoolOf(r.item);
+      schools.set(sc, (schools.get(sc) ?? 0) + 1);
+      for (const roll of r.item.rolls) carried.add(roll.affix);
+    }
+    return { ups, locks, slots, schools, carried };
+  });
+  const { ups, locks } = tally;
+  const bySchool = (sc: School) => tally.schools.get(sc) ?? 0;
+  const bySlot = (slot: Slot) => tally.slots.get(slot) ?? 0;
+  const school = kin !== 'any' && bySchool(kin) === 0 ? 'any' : kin;
+  // 記 A remembered slot the chest no longer holds, or ▲ with nothing ▲, reads as All.
+  const place: Place = only === 'better' ? (ups > 0 ? 'better' : 'all')
+    : only === 'locked' ? (locks > 0 ? 'locked' : 'all')
+      : only !== 'all' && bySlot(only) === 0 ? 'all' : only;
+  const pick = useMemo(() => {
+    const has = (item: Item, a: Affix) => item.rolls.some((r) => r.affix === a);
+    return (place === 'better' ? read.filter((r) => r.move.better)
+      : place === 'locked' ? read.filter((r) => r.item.locked)
+        : place === 'all' ? read : read.filter((r) => templateOf(r.item).slot === place))
+      .filter((r) => school === 'any' || schoolOf(r.item) === school)
+      .filter((r) => lines.every((a) => has(r.item, a)));
+  }, [read, place, school, lines]);
+  /*
+   * 窗 The chest draws CHEST_PAGE tiles and more as its foot comes near, never the whole
+   * of a big one at once. 1,800 tiles were 72,000 elements on the page, and every tick of
+   * the clock walked all of them. A new filter starts from the top again.
+   */
+  const view = `${place}|${school}|${lines.join(',')}`;
+  const [drawn, setDrawn] = useState({ view, n: CHEST_PAGE });
+  const shown = drawn.view === view ? drawn.n : CHEST_PAGE;
+  const drawMore = useCallback(() => setDrawn((d) => ({ view, n: (d.view === view ? d.n : CHEST_PAGE) + CHEST_PAGE })), [view]);
+  // 鑑 A tap opens the sheet. Held in a ref so a tile's props stay the same from tick to tick.
+  const inspectRef = useRef(onInspect);
+  useLayoutEffect(() => { inspectRef.current = onInspect; });
+  const openPiece = useCallback((item: Item) => inspectRef.current(item, false), []);
   // ▲ What 著 Wear all upgrades would put on, worked out when the chest or a fight input moves.
-  const wearAll = useMemo(() => wearBetter(state).worn,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.chest, state.sets, ...fightDeps(state)]);
+  // With no ▲ in the chest it puts on nothing, which is known without asking: wearBetter
+  // reads every piece once per swap, and on a big chest that is most of a second on a phone.
+  const wearAll = WEAR_ALL([state.chest, state.sets, ups, ...fightDeps(state)],
+    () => (ups > 0 ? wearBetter(state).worn : 0));
   /** 套 The tasks a loadout can be given here: melting always, fusing and refining once they open. */
   const openTasks = TASKS.filter((t) => t === 'melt' || isOpen(state.realm, t));
   /** 套 The loadout a task reads, by name, or null when it reads what is worn. */
@@ -182,7 +268,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   /** 名 Which loadout is being renamed, if any. */
   const [naming, setNaming] = useState<number | null>(null);
   // 拆 What the melt would take, so the button can say so before it is pressed.
-  const melting = salvageable(state.chest, upTo);
+  const melting = useMemo(() => salvageable(state.chest, upTo), [state.chest, upTo]);
   // 實 With the cards' bonus, because that is what salvage() pays. Without it the button
   // quoted less than landed, up to nine tenths less with every melt card taken.
   // 拆 Through the melting allowance, the way salvage() pays it: qi first, material past it.
@@ -492,8 +578,13 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             </div>
           )}
           <div className="stack">
-            {groups.filter((g) => g.rarity !== 'heaven').map(fuseRow)}
+            {climbing.slice(0, fuseShown).map(fuseRow)}
           </div>
+          {climbing.length > fuseShown && (
+            <ChestMore n={Math.min(FUSE_PAGE, climbing.length - fuseShown)} left={climbing.length - fuseShown}
+              onMore={() => setFuseShown((n) => n + FUSE_PAGE)}
+              label={QOL.gear.moreGroupsLabel(Math.min(FUSE_PAGE, climbing.length - fuseShown), climbing.length - fuseShown)} />
+          )}
           {/* 天 Heaven into Heaven, after the groups that climb a rank, under one line that
               says what is different about them: only found pieces, and only once. */}
           {groups.some((g) => g.rarity === 'heaven') && (
@@ -560,37 +651,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       {state.chest.length === 0 ? (
         <p className="faint" style={{ fontSize: 13, margin: 0 }}>{GEAR.empty}</p>
       ) : (() => {
-        // 鑑 "Better" is what the sim says happens to 力 and 氣 when you put it on.
-        // It used to be the sum of the raw roll values, which answers nothing: a
-        // 藏 chest-slots roll and a 力 power roll are not the same kind of number,
-        // so four small lines could out-triangle a piece that doubles your power.
-        // 職 A piece that costs the class is not marked ▲, because the sheet will not call it
-        // an upgrade either.
-        const read = [...chestRead];
-        // 序 Upgrades first, the biggest first; then the rarest. A chest of forty is
-        // read from the top, so the top is where the news goes.
-        read.sort((a, b) => (Number(b.move.better) - Number(a.move.better))
-          || (a.move.better ? b.move.power - a.move.power : 0)
-          || (RARITIES.indexOf(b.item.rarity) - RARITIES.indexOf(a.item.rarity))
-          || (templateOf(b.item).realm - templateOf(a.item).realm));
-        const ups = read.filter((r) => r.move.better).length;
-        const bySchool = (sc: School) => read.filter((r) => schoolOf(r.item) === sc).length;
-        const school = kin !== 'any' && bySchool(kin) === 0 ? 'any' : kin;
-        const bySlot = (slot: Slot) => read.filter((r) => templateOf(r.item).slot === slot).length;
-        const locks = read.filter((r) => r.item.locked).length;
-        // 記 A remembered slot the chest no longer holds, or ▲ with nothing ▲, reads as All.
-        const place: Place = only === 'better' ? (ups > 0 ? 'better' : 'all')
-          : only === 'locked' ? (locks > 0 ? 'locked' : 'all')
-            : only !== 'all' && bySlot(only) === 0 ? 'all' : only;
-        const has = (item: Item, a: Affix) => item.rolls.some((r) => r.affix === a);
-        const pick = (place === 'better' ? read.filter((r) => r.move.better)
-          : place === 'locked' ? read.filter((r) => r.item.locked)
-            : place === 'all' ? read : read.filter((r) => templateOf(r.item).slot === place))
-          .filter((r) => school === 'any' || schoolOf(r.item) === school)
-          .filter((r) => lines.every((a) => has(r.item, a)));
         // 篩 The lines worth offering: every line some piece in the chest carries, and any
         // line already picked, so a pick can always be taken back.
-        const offered = AFFIXES.filter((a) => lines.includes(a) || read.some((r) => has(r.item, a)));
+        const offered = AFFIXES.filter((a) => lines.includes(a) || tally.carried.has(a));
         const toggle = (a: Affix) => setLines(lines.includes(a) ? lines.filter((x) => x !== a) : [...lines, a]);
         const filtered = place !== 'all' || school !== 'any' || lines.length > 0;
         const apply = (p: ChestFilter) => { setOnly(p.slot); setKin(p.school); setLines(p.lines); };
@@ -707,30 +770,14 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
             ))}
             {pick.length === 0 && <p className="faint chestlegend">{QOL.gear.none}</p>}
             <div className="chest">
-              {pick.map(({ item, move }, index) => {
-                const tpl = templateOf(item);
-                const primary = primaryOf(item);
-                // 質 rekaris, on the Discord: two pieces with the same lines, one better by a
-                // number nothing showed. It is on every tile now, at the foot.
-                const q = qualityOf(item);
-                return (
-                  <button key={item.id} className="chestit" data-better={move.better}
-                          onClick={() => onInspect(item, false)}
-                          data-coach={index === 0 ? 'chest-first' : undefined}
-                          // 譯 The tile carries no number now, so the screen reader is told
-                          // what the eye is shown: the name, the rank, and whether it is better.
-                          aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
-                            ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}, ×${q.toFixed(2)} ${GEAR.qualityNote}${move.better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
-                    {/* 註 On a computer the pointer reads the tile out: name, rank, school and quality. */}
-                    <span title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ${SCHOOL_INFO[schoolOf(item)].short} school · ×${q.toFixed(2)} ${GEAR.qualityNote}`}>
-                      <Svg html={gearTile(item, { size: 56, quality: q })} />
-                    </span>
-                    {move.better && <span className="upmark" aria-hidden="true">▲</span>}
-                    {item.locked && <span className="lockmark" aria-hidden="true">鎖</span>}
-                  </button>
-                );
-              })}
+              {pick.slice(0, shown).map(({ item, move }, index) => (
+                <ChestTile key={item.id} item={item} better={move.better} first={index === 0} onOpen={openPiece} />
+              ))}
             </div>
+            {pick.length > shown && (
+              <ChestMore n={Math.min(CHEST_PAGE, pick.length - shown)} left={pick.length - shown} auto onMore={drawMore}
+                label={QOL.gear.moreLabel(Math.min(CHEST_PAGE, pick.length - shown), pick.length - shown)} />
+            )}
             {ups > 0 && <p className="faint chestlegend"><b>▲</b> {GEAR.legend}</p>}
             {pick.length > 0 && <p className="faint chestlegend quality"><b className="mono">×1.00</b> {GEAR.qualityLegend}</p>}
           </>
@@ -746,6 +793,102 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
     </>
   );
 }
+
+/**
+ * 藏 One tile of the chest. Drawn again only when its piece or its ▲ changes: the clock
+ * ticks five times a second, and a chest of 1,800 used to draw every picture on every tick.
+ */
+const ChestTile = memo(function ChestTile({ item, better, first, onOpen }: {
+  item: Item;
+  better: boolean;
+  /** 導 The first tile is the one the coach points at. */
+  first: boolean;
+  onOpen: (item: Item) => void;
+}) {
+  const tpl = templateOf(item);
+  const primary = primaryOf(item);
+  // 質 rekaris, on the Discord: two pieces with the same lines, one better by a
+  // number nothing showed. It is on every tile now, at the foot.
+  const q = qualityOf(item);
+  return (
+    <button className="chestit" data-better={better}
+            onClick={() => onOpen(item)}
+            data-coach={first ? 'chest-first' : undefined}
+            // 譯 The tile carries no number now, so the screen reader is told
+            // what the eye is shown: the name, the rank, and whether it is better.
+            aria-label={`${tpl.name}, ${RARITY_INFO[item.rarity].name}${primary
+              ? `, ${AFFIX_INFO[primary.affix].label} ${Math.round(primary.value * 10) / 10}` : ''}, ×${q.toFixed(2)} ${GEAR.qualityNote}${better ? `, ${GEAR.better}` : ''}${item.locked ? `, ${GEAR.lockedWord}` : ''}`}>
+      {/* 註 On a computer the pointer reads the tile out: name, rank, school and quality. */}
+      <span title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ${SCHOOL_INFO[schoolOf(item)].short} school · ×${q.toFixed(2)} ${GEAR.qualityNote}`}>
+        <Svg html={gearTile(item, { size: 56, quality: q })} />
+      </span>
+      {better && <span className="upmark" aria-hidden="true">▲</span>}
+      {item.locked && <span className="lockmark" aria-hidden="true">鎖</span>}
+    </button>
+  );
+});
+
+/**
+ * 窗 The foot of a list drawn in part. The chest's draws the next tiles by itself as it
+ * comes within a screen of sight (`auto`), and is a button as well, for a tap and for a
+ * screen reader. The observer is made again after every page, so a foot still in sight
+ * asks once more. The fuse list's waits for a tap: it sits above the chest, and growing
+ * by itself would push the chest away from a thumb scrolling down to it.
+ */
+function ChestMore({ n, left, label, auto, onMore }: {
+  n: number; left: number; label: string; auto?: boolean; onMore: () => void;
+}) {
+  const foot = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const el = foot.current;
+    if (!auto || !el || typeof IntersectionObserver === 'undefined') return;
+    const near = new IntersectionObserver((seen) => { if (seen.some((e) => e.isIntersecting)) onMore(); },
+      { rootMargin: '0px 0px 800px 0px' });
+    near.observe(el);
+    return () => near.disconnect();
+  }, [auto, onMore, left]);
+  return (
+    <button ref={foot} type="button" className="act ghost chestmore" onClick={onMore} aria-label={label}>
+      <span className="cjk" aria-hidden="true">{auto ? '藏' : '煉'}</span> {QOL.gear.showMore(n)}
+      <i className="mono" aria-hidden="true">{QOL.gear.moreLeft(left)}</i>
+    </button>
+  );
+}
+
+/*
+ * 煉 The same row 狩 uses (a seal, a name, a figure on the right) shared on purpose
+ * rather than by accident, and carrying its own name so that restyling one screen
+ * cannot silently restyle the other. 天 A Heaven row says what it will make.
+ * 算 Drawn again only when its group changes: a big chest has a hundred of them.
+ */
+const FuseRow = memo(function FuseRow({ template, rarity, count, quote, onFuse }: {
+  template: string;
+  rarity: Rarity;
+  count: number;
+  /** 天 What a Heaven row comes out at; undefined for a row that climbs a rank. */
+  quote: number | undefined;
+  onFuse: (template: string, rarity: string) => void;
+}) {
+  const tpl = templateOf({ id: '', template, rarity, rolls: [] });
+  const rar = RARITY_INFO[rarity];
+  const same = rarity === 'heaven';
+  return (
+    <button className="beast fuserow"
+      data-same={same || undefined}
+      onClick={() => onFuse(template, rarity)}>
+      <span className="seal" style={{ width: 44, height: 44 }}>
+        <Svg html={gearTile({ id: 'x', template, rarity, rolls: [] }, { size: 44 })} />
+      </span>
+      <span className="bname">
+        <b style={{ color: rar.colour }}>{tpl.han}</b>
+        <i>{same ? QOL.gear.heavenRow(tpl.name, count, quote ?? 1) : `${tpl.name} · ${count} in the chest`}</i>
+      </span>
+      <span className="odds" style={{ color: 'var(--jade)' }}>
+        {FUSE_COUNT}→1<em>fuse</em>
+      </span>
+    </button>
+  );
+});
 
 /** 套 A new loadout is named after the class it makes, which is the thing it is for. */
 function loadoutName(state: State): string {
