@@ -667,7 +667,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                     <button type="button" className="gp-use" aria-pressed={isOn(p)} onClick={() => apply(p)}>
                       <span className="cjk">存</span> {p.name}
                     </button>
-                    {/* 鎖 Keep: a full chest never melts what this filter shows (sim/filters.ts).
+                    {/* 鎖 Keep: a full chest melts what this filter shows last (sim/filters.ts).
                         ▲ Better changes with every piece put on, so it is never offered. */}
                     {onKeepFilter && keepable(p) && (
                       <button type="button" className="gp-hold" aria-pressed={!!p.keep}

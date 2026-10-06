@@ -519,8 +519,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                     {overflow.dropped.id === overflow.item?.id
                       ? ARENA.chestFullNew(meltPays(num(overflow.melted), num(overflow.meltedMaterial),
                         overflow.melted > 0, overflow.meltedMaterial > 0))
-                      : ARENA.chestFullOld(templateOf(overflow.dropped).name, meltPays(num(overflow.melted),
-                        num(overflow.meltedMaterial), overflow.melted > 0, overflow.meltedMaterial > 0))}
+                      : (overflow.unkept ? ARENA.chestFullUnkept : ARENA.chestFullOld)(templateOf(overflow.dropped).name,
+                        meltPays(num(overflow.melted), num(overflow.meltedMaterial), overflow.melted > 0, overflow.meltedMaterial > 0))}
                   </em>
                 )}
               </span>

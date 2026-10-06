@@ -938,7 +938,7 @@ export function validate(raw: unknown, now: number): State {
     : carried
       // 鎖 A locked piece is the last a full chest gives up, the same rule addToChest keeps.
       // 承 And so is one holding refining levels, which were paid for and live nowhere else.
-      // 熔 Then one a kept filter shows, which a full chest spares too (sim/filters.ts).
+      // 熔 Then one a kept filter shows, which a full chest weighs first too (sim/filters.ts).
       .map((it, i) => ({ it, i, worth: itemWorth(it),
         kept: it.locked || holdsLevels(it) ? 2 : keptByFilter(filters, it) ? 1 : 0 }))
       .sort((a, b) => b.kept - a.kept || b.worth - a.worth || a.i - b.i)

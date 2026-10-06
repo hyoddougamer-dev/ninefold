@@ -126,7 +126,7 @@ export function MeetDone({ receipt, onClose, onSee }: {
     const pays = meltPays(num(f!.melted), num(f!.meltedMaterial), f!.melted > 0, f!.meltedMaterial > 0);
     pieceLine = !f!.dropped ? MEET.done.piece(name, rank)
       : f!.dropped.id === item.id ? MEET.done.pieceMelted(name, rank, pays)
-      : MEET.done.pieceMadeRoom(name, rank, templateOf(f!.dropped).name, pays);
+      : (f!.unkept ? MEET.done.pieceMadeRoomUnkept : MEET.done.pieceMadeRoom)(name, rank, templateOf(f!.dropped).name, pays);
   }
   const kept = item && f && (!f.dropped || f.dropped.id !== item.id);
   return (

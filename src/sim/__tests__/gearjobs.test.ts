@@ -156,7 +156,7 @@ describe('鎖 a kept filter and a full chest', () => {
     expect(keepable({ slot: 'all', school: 'any', lines: [] })).toBe(false);
   });
 
-  it('never melts a piece a kept filter shows: the worst piece none shows goes instead', () => {
+  it('melts the worst piece no kept filter shows before any piece one shows', () => {
     const worst = ring('worst');
     const chest = [worst, weapon('mid', 'earth')];
     const spare = (it: Item) => keptByFilter([keepRings], it);
@@ -165,7 +165,7 @@ describe('鎖 a kept filter and a full chest', () => {
     expect(addToChest(chest, weapon('new', 'heaven'), 2, spare).dropped?.id).toBe('mid');
   });
 
-  it('melts the new piece when every piece in the chest is kept, as a full chest always did', () => {
+  it('melts a new piece no kept filter shows when every piece in the chest is kept, however strong', () => {
     const chest = [ring('a'), ring('b')];
     const spare = (it: Item) => keptByFilter([keepRings], it);
     const out = addToChest(chest, weapon('new', 'heaven'), 2, spare);
@@ -181,6 +181,77 @@ describe('鎖 a kept filter and a full chest', () => {
     expect(out.dropped?.id).toBe('w');
     const plain = stash({ ...s, filters: [{ ...keepRings, keep: undefined }] as ChestFilter[] }, weapon('w', 'heaven'));
     expect(plain.dropped?.id).not.toBe('w');
+  });
+
+  /**
+   * 熔 rekaris, on the Discord: *"I have Power filter, I get heaven rank Power-filter item, an
+   * Earth rank with lower quality should still get pushed out and melted, so the result is the
+   * truly best stuff I might want."* Kept pieces are weighed against each other, and a piece
+   * outside the filter is never weighed as stronger than one inside it.
+   */
+  describe('熔 weighs the kept filters first, then strength', () => {
+    const keepPower: ChestFilter = { name: 'Power', slot: 'all', school: 'any', lines: ['power'], keep: true };
+    const kept = (it: Item) => keptByFilter([keepPower], it);
+    /** A 力 power sword at `quality` of its rank's usual roll. */
+    const power = (id: string, rarity: Item['rarity'], quality = 1, extra: Partial<Item> = {}): Item => {
+      const p = fair(id, 'sword6', rarity);
+      return { ...p, rolls: [{ ...p.rolls[0], value: p.rolls[0].value * quality }], ...extra };
+    };
+    /** A piece no Power filter shows: a 黃玉 Topaz, which rolls rate. */
+    const other = (id: string, rarity: Item['rarity']): Item => fair(id, 'topaz6', rarity);
+
+    it('pushes the Earth Power piece out for the Heaven one, where it used to melt the Heaven one', () => {
+      const chest = [power('h1', 'heaven'), power('earth', 'earth', 0.9), power('h2', 'heaven')];
+      expect(chest.every(kept)).toBe(true);
+      const out = addToChest(chest, power('new', 'heaven'), 3, kept);
+      expect(out.dropped?.id).toBe('earth');
+      expect(out.chest.map((x) => x.id)).toEqual(['h1', 'new', 'h2']);
+    });
+
+    it('keeps the stronger of two kept pieces by quality, and the one already there on a tie', () => {
+      const chest = [power('low', 'heaven', 0.95), power('high', 'heaven', 1.2)];
+      expect(addToChest(chest, power('new', 'heaven', 1.1), 2, kept).dropped?.id).toBe('low');
+      expect(addToChest(chest, power('same', 'heaven', 0.95), 2, kept).dropped?.id).toBe('same');
+      expect(addToChest(chest, power('worse', 'earth'), 2, kept).dropped?.id).toBe('worse');
+    });
+
+    it('never weighs a piece outside the filter as stronger than one inside it', () => {
+      // The Heaven Topaz is the strongest piece here and the new Common sword the weakest.
+      const chest = [other('topaz', 'heaven'), power('p', 'earth')];
+      expect(addToChest(chest, power('new', 'common'), 2).dropped?.id).toBe('new');
+      const out = addToChest(chest, power('new', 'common'), 2, kept);
+      expect(out.dropped?.id).toBe('topaz');
+      expect(out.chest.map((x) => x.id)).toEqual(['new', 'p']);
+    });
+
+    it('still never melts a locked piece or one holding refining levels, kept or not', () => {
+      const chest = [
+        power('locked', 'common', 1, { locked: true }), power('refined', 'common', 1, { refine: 3 }), power('h', 'heaven'),
+      ];
+      expect(addToChest(chest, power('new', 'heaven', 1.2), 3, kept).dropped?.id).toBe('h');
+      const held = chest.slice(0, 2);
+      const out = addToChest(held, power('new', 'heaven', 1.2), 2, kept);
+      expect(out.dropped?.id).toBe('new');
+      expect(out.chest).toEqual(held);
+    });
+
+    it('is what a drop does through stash(), with the filters the save holds', () => {
+      const many = [...Array.from({ length: 199 }, (_, i) => power(`h${i}`, 'heaven')), power('earth', 'earth', 0.9)];
+      const s = { ...at({ chest: many }), filters: [keepPower] };
+      const out = stash(s, power('new', 'heaven'));
+      expect(out.dropped?.id).toBe('earth');
+      expect(out.unkept).toBe(false);
+      expect(out.state.chest.some((x) => x.id === 'new')).toBe(true);
+      expect(out.state.chest.length).toBe(many.length);
+      // A piece no kept filter shows melts itself, however strong, rather than take a kept one's place.
+      expect(stash(s, other('topaz', 'heaven')).dropped?.id).toBe('topaz');
+      // 熔 And a stronger piece pushed out for a kept one is said to be unkept, not the weakest.
+      const mixed = { ...s, chest: [other('topaz', 'heaven'), ...many.slice(1)] };
+      const pushed = stash(mixed, power('weak', 'common'));
+      expect(pushed.dropped?.id).toBe('topaz');
+      expect(pushed.unkept).toBe(true);
+      expect(stash({ ...mixed, filters: [] }, power('weak', 'common')).unkept).toBe(false);
+    });
   });
 
   it('is kept, forgotten and validated as a save', () => {
