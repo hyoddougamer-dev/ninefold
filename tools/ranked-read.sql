@@ -19,7 +19,7 @@ select json_build_object(
     from sync_log l join profiles p on p.id = l.user_id where lower(btrim(p.name)) = 'rekaris'),
   'rekaris_titles', (select json_agg(t) from titles t join profiles p on p.id = t.user_id where lower(btrim(p.name)) = 'rekaris'),
   'saves', (select json_agg(json_build_object('name', p.name, 'latest', s.latest, 'verified', s.verified,
-      'verified_at', s.verified_at, 'pinned', s.pinned, 'latest_at', s.latest_at, 'day_state', s.day_state, 'day_at', s.day_at, 'week_state', s.week_state, 'week_at', s.week_at))
+      'verified_at', s.verified_at, 'pinned', s.pinned, 'rebase', s.rebase, 'latest_at', s.latest_at, 'day_state', s.day_state, 'day_at', s.day_at, 'week_state', s.week_state, 'week_at', s.week_at))
     from profiles p join saves s on s.user_id = p.id
    where p.name in ('Rekaris', 'Qin Mu', 'Raziel_Sama', 'esko', 'Hevon', '修士 059629D3', 'Gil'))
 ) as out;
