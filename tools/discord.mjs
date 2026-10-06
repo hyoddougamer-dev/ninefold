@@ -452,7 +452,9 @@ async function run() {
       let id;
       // 眾 A new post in a channel server.json names in `announce` tells everybody it is
       // there. Only on the first post: an edit never notifies, so it never pings twice.
-      const loud = (SPEC.announce ?? []).includes(m.channel);
+      // 靜 A message marked `quiet` never pings: two posts on one day ping once (Bruno,
+      // 2026-10-06, for the walls dev log beside the workshop announcement).
+      const loud = !m.quiet && (SPEC.announce ?? []).includes(m.channel);
       if (!mine) {
         id = (await call('POST', `/channels/${where}/messages`, loud
           ? { content: '@everyone', allowed_mentions: { parse: ['everyone'] }, embeds } : { embeds })).id;

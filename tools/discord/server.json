@@ -1390,6 +1390,7 @@
     },
     {
       "key": "update-2026-10-06-walls",
+      "quiet": true,
       "pin": false,
       "channel": "devlog",
       "title": "壁 Update · Walls at every gate, elites, and pills that break them",
