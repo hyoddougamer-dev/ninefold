@@ -2453,6 +2453,14 @@ export const QOL = {
     anyLine: 'Any line',
     linesSays: 'A piece shows only if it has every line you pick.',
     none: 'Nothing in the chest matches this filter.',
+    /**
+     * \u7a97 The foot of a long chest: it draws its first pieces, and more as it is scrolled.
+     * rekaris, on the Discord (2026-10-06): 1,800 pieces froze the screen.
+     */
+    showMore: (n: number) => `Show ${n} more`,
+    moreLeft: (left: number) => `${left.toLocaleString('en')} left`,
+    moreLabel: (n: number, left: number) => `Show ${n} more pieces. ${left.toLocaleString('en')} not shown yet.`,
+    moreGroupsLabel: (n: number, left: number) => `Show ${n} more groups to fuse. ${left.toLocaleString('en')} not shown yet.`,
     /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
