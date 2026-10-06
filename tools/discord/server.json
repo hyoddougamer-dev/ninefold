@@ -1429,27 +1429,43 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-forge.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-ideas.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-pace.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-need.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-wall.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-sets.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-starfall.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-timeline.webp?v=1"
+      ],
       "body": [
-        "**Many of you told me the same thing:** the nine realms ask for nothing, and the workshop's pills and sigils sit in the pouch. You were right. I measured it: today nobody *needs* the workshop to climb. It saves a casual player about three days, and an active one less than two.",
+        "**Many of you told me the same thing:** the nine realms ask for nothing, and the workshop's pills and sigils sit in the pouch. You were right, and I measured it: I took one system away at a time and counted the days. Gear decides the climb; the workshop is worth one to three days, and nobody *needs* it.",
         "",
-        "So here are three ideas that work together. The first is already built and comes with this update. The other two I want your opinion on before I build them. The picture below shows all three on real screens."
+        "So here are three ideas that work together. The first is built and comes with this update. The other two I want your opinion on before I build them. Every number below was measured in the simulator, and the pictures under this post show all of it."
       ],
       "fields": [
         [
           "1 · 壁 Walls at the gate (in this update)",
-          "From the third realm, the warden comes out far stronger than the realm (×4 in the third, up to ×72 in the eighth) and loosens 30% every day. If you only wait, it always opens. An elixir or a sigil carried into it breaks a day of it. The last beast of each realm is an **elite**: far stronger, and three times the material."
+          "From the third realm, the warden comes out far stronger than the realm, ×4 in the third and up to ×72 in the eighth, and loosens 30% every day. If you only wait, it always opens: 3.9 days in the third realm, 12 in the eighth. Each elixir or sigil you carry into it counts as a day already waited. The last beast of each realm from the second is an **elite**: far stronger, and three times the material."
         ],
         [
           "2 · 封 The seal and the Breakthrough Pill (proposal)",
-          "In realms 5 to 8, the gate stays **sealed** for 1 to 2 days after the warden comes out, whatever your power. Wait it out, or carry a **破境丹 Breakthrough Pill** from Alchemy and go now. Measured: whoever uses the workshop climbs at today's pace; whoever ignores it loses 3 to 5 days; whoever only waits loses nothing."
+          "In realms 5 to 8, the gate stays **sealed** for 1 to 2 days after the warden comes out, whatever your power. Wait it out, or carry a **破境丹 Breakthrough Pill** from Alchemy: it counts as 2 days (3.5 at Heaven rank), so the seal breaks at once and the wall stands lower. Measured: whoever uses the workshop climbs at today's pace, whoever ignores it loses 3 to 7 days, whoever only waits loses nothing."
         ],
         [
           "3 · 百煉 Hundredfold sets (proposal)",
-          "Six-piece sets only the forge makes. You choose the shape, and **every line comes from what you put in the crucible**: cinnabar for power, the realm's herb for qi, starfall for rarer gear, jade for fusion, the elite's parts for beasts weaker, and more. More of a material gives a higher roll. The set makes your elixirs and sigils stronger, and a full Heaven set wakes a 器靈 Artifact Spirit (a light of your own and a title, looks only)."
+          "**Nine sets, one for every realm**, six places each, made only at the forge. You choose the shape, and **every line comes from what you put in the crucible**: cinnabar for power, the realm's herb for qi, starfall for rarer gear, jade for fusion, thunder ore for arts, the elite's parts for beasts weaker. One, two or three portions put a line at the bottom, middle or top of its rank. Worn, a set gives its lineage bonus and the Hundredfold steps: your elixirs and sigils a quarter stronger at 2 pieces, a day more of every bottleneck at 4."
+        ],
+        [
+          "📜 Every set counts, for good",
+          "Finish a set once and it leaves a 譜 **codex bonus** that stays, each on a different part of the game: Mortal Iron more material from kills, Withered Bone weaker elites, Elder Bronze weaker vault gates, Frostsilver a weaker heart demon, Jadewater a faster workshop, Fallen Star faster bonds, Thunderscript shorter bottlenecks, Dragonwake weaker tower floors, Ascendant Husk weaker Platform challengers. Finished at Heaven, twice as strong; worn whole, double again. Six at Heaven wake a 器靈 Artifact Spirit (looks only)."
         ],
         [
           "⚒️ Hard on purpose",
-          "A Fallen Star set (realm 6) asks Forging 64 to start, 74 for Earth and **84 plus five practice pieces for Heaven**. Each piece needs 6 to 10 ingots, two parts of the realm's elite (so you have to beat it), one of its warden and three hours of work. A full Heaven set is a goal for months, not a shortcut: in my tests nobody finished one during the climb."
+          "Each piece needs its realm's ingots, two parts of the realm's elite (so you have to beat it), one of its warden and three hours of work. Heaven asks Forging 20 levels above the set's start and five pieces of it already made. In my tests the first sets reach Heaven in days, Jadewater around day 84, Fallen Star around day 170 for the most active crafter, and Dragonwake and Ascendant Husk not within six months. A goal for the long road, never a shortcut."
+        ],
+        [
+          "📊 The pictures, in order",
+          "① the three ideas on real screens ② the day each player reaches the ninth realm, today and with the ideas ③ what each system is worth today ④ the bottleneck, day by day ⑤ all nine sets with every bonus ⑥ one set in full, line by line ⑦ when each set opens, over half a year."
         ],
         [
           "❓ Vote, then talk",
@@ -2185,21 +2201,31 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-forge.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-mockup.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-crucible.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-sets.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-starfall.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-timeline.webp?v=1"
+      ],
       "body": [
-        "This is the place to talk about the workshop. The three ideas, the numbers and the polls are in {#news}, in **業 Walls, seals and sets**. The picture below is a mockup of a Hundredfold piece being forged, line by line, with the game's own art and numbers."
+        "This is the place to talk about the workshop. The three ideas, the numbers and the polls are in {#news}, in **業 Walls, seals and sets**. Below: a mockup of a Hundredfold piece being forged line by line, the crucible's eight materials, all nine sets, one set in full, and when each one opens."
       ],
       "fields": [
         [
           "🔨 The crucible",
-          "Which lines would you build for, and which materials should give them? Is three portions per line the right amount of control, or too much?"
+          "Which lines would you build for, and which materials should give them? Is three portions per line the right amount of control?"
+        ],
+        [
+          "📜 The codex",
+          "Nine sets, nine lasting bonuses, one per part of the game. Is there a bonus you'd rather have on a set, or a part of the game I left out?"
         ],
         [
           "⚖️ How hard",
-          "Forging 84 and five practice pieces for a Heaven Fallen Star set: too much, about right, not enough? Should the seal in realms 5 to 8 be shorter?"
+          "Heaven asks Forging 20 levels above the set's start and five practice pieces: Fallen Star around day 170 for the most active crafter in my tests. Too much, about right, not enough? Should the seal in realms 5 to 8 be shorter?"
         ],
         [
           "💡 What I missed",
-          "A set bonus you'd rather have, a material that should give a different line, a reason you'd never forge. All of it helps."
+          "A reason you'd never forge, a set you'd chase first, anything that feels like a chore. All of it helps."
         ],
         [
           "🤝 Keep it kind",

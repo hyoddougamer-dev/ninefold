@@ -32,7 +32,7 @@ const COLS = [
     note: 'Realms 5 to 8: the gate stays sealed for 1 to 2 days, whatever your power. Wait it out, or carry a 破境 Breakthrough Pill from the workshop and go now.' },
   { seal: '百', n: 3, name: 'Hundredfold sets', tag: 'Proposal',
     top: 'set-out', bottom: 'set-crucible',
-    note: 'Six-piece sets only the forge makes. You choose every line by what goes into the crucible. Hard on purpose: Heaven asks Forging 84 and five practice pieces.' },
+    note: 'Nine six-piece sets, one per realm, made only at the forge. You choose every line by what goes into the crucible, and each finished set leaves a bonus for good. Hard on purpose.' },
 ];
 
 const css = fonts('業壁封百煉破境');
