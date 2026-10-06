@@ -1366,6 +1366,27 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fix-2026-10-06-aura",
+      "pin": false,
+      "channel": "devlog",
+      "title": "雷池 Fix · The summit's sky, and an aura that moves",
+      "color": "#A077B8",
+      "body": [
+        "Two things rekaris spotted above the ninth realm. Thank you!"
+      ],
+      "fields": [
+        [
+          "天 No more hard edges",
+          "Above the ninth realm the heaven's colour was a square painted to the edges of the picture. It is a round glow now that fades out before any edge, with the heaven's mist turning slowly through it."
+        ],
+        [
+          "動 It moves",
+          "At the summit your cultivator was the one still picture in the game. Now the swords circle, the formation turns, the clouds drift and the bolts flicker, as on every other realm. If your device asks for reduced motion, it all stays still."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -3171,6 +3192,19 @@
       ],
       "reply": [
         "Your climb stays as it is, floor 352 and all. You've given more feedback than anyone in this test, and that matters far more than a lead on the board. Your mark is cleared and your next syncs put you back on the rankings, with nothing to do on your side. Thank you, and please keep breaking things!",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Immortal purple background has hard edges",
+      "tags": [
+        "Bug",
+        "Art",
+        "Fixed"
+      ],
+      "reply": [
+        "Both fixed in today's update, thank you. The heaven's colour is a round glow now that fades out before the edges, with its mist slowly turning, and at the summit your aura moves like it does everywhere else: the swords circling, the formation turning, the bolts flickering.",
         "· 師 Shibaki"
       ]
     }
