@@ -1536,6 +1536,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .othereff .oe .cjk { width: 18px; color: var(--faint); }
 .othereff .oe em { margin-left: auto; font-style: normal; font-family: Rajdhani, sans-serif;
                    font-weight: 600; font-size: 14px; }
+/* 運 The luck in all, set apart from the gear's own lines above it by a hairline. */
+.othereff .oe .oetotal { border-top: 1px solid var(--line); margin-top: 3px; padding-top: 5px; }
 /* 彎 The sum the pieces add up to, faint, then the bent effect it comes out as. */
 .othereff .oe .oesum { margin-left: auto; color: var(--faint); font-family: Rajdhani, sans-serif; font-size: 13px; white-space: nowrap; }
 .othereff .oe .oesum i { font-style: normal; margin-left: 6px; }

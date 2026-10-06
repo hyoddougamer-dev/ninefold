@@ -335,6 +335,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
                 </em>
               </div>
             ))}
+            <div key="total" className="oetotal">
+              <span className="cjk"><Term han="運" sense="axis" plain /></span>
+              <span>{GEAR.luckInAll}</span>
+              <em className="mono">{`×${(fortuneOf(state).luck ?? 1).toFixed(2)}`}</em>
+            </div>
           </div>
           <p className="oenote">{GEAR.bends(Math.round(FIND_TOP * 100))}</p>
         </details>
@@ -362,9 +367,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               className="orb"
               style={{ left: `${x}%`, top: `${y}%` }}
               onClick={() => item && onInspect(item, true)}
-              aria-label={item ? `${templateOf(item).name}` : `${SLOT_INFO[slot].name}, empty`}
+              aria-label={item ? `${templateOf(item).name}, ×${qualityOf(item).toFixed(2)} ${GEAR.qualityNote}` : `${SLOT_INFO[slot].name}, empty`}
             >
-              <Svg html={gearTile(item, { size: 54, slot })} />
+              {/* 質 rekaris, on the Discord (2026-10-06): the number was on every tile in the
+                  chest and on none of the ones worn. It is the same number, at the same foot. */}
+              <Svg html={gearTile(item, { size: 54, slot, quality: item ? qualityOf(item) : undefined })} />
             </button>
           );
         })}

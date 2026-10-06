@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
+import { ART_BEND, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
 import { pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
@@ -1066,7 +1066,8 @@ export const ITEM = {
     luck: 'Rarer gear from every drop, and better rolls on what drops. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
       + `With 造化 Creation every beast drops already, so it becomes the chance of a second piece.`,
-    sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
+    // \u7834 rekaris asked what it reaches (2026-10-05); it is every beast the fight sums, and the two it never thins.
+    sunder: 'Beasts count as weaker against you: on the hunt, in the tower, on the Platform and every realm\u2019s warden. Never your heart demon, and never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
   } as Record<string, string>,
@@ -1524,6 +1525,12 @@ export const GEAR = {
     refine: 'Fusion quality',
     art: 'Arts strike harder',
   } as Record<string, string>,
+  /**
+   * 運 The whole of it. rekaris asked on 2026-10-03 for the luck every source adds up to,
+   * and was told it would be on this screen that day. The row above reads the gear's own
+   * line; this one reads what a drop is actually rolled by.
+   */
+  luckInAll: 'Your luck in all, every source',
   /** 拾 A drop chance is added in points, so it reads as points. */
   points: (x: number) => `+${Math.round(x * 10) / 10} pts`,
   /**
@@ -1553,7 +1560,7 @@ export const GEAR = {
       'How often a beast leaves a piece. It is added in points to the beast\u2019s own chance.\n'
       + `Never past ${top} points. +100% on your pieces is ${pts} points: a beast\u2019s ${base} becomes ${after}.\n`
       + 'With 造化 Creation every beast drops already, so it is the chance of a second piece.',
-    sunder: (small: string, big: string) => 'Beasts count as weaker against you. Never the Dragon of the tribulation.\n'
+    sunder: (small: string, big: string) => 'Beasts count as weaker against you: on the hunt, in the tower, on the Platform and every realm\u2019s warden. Never your heart demon, and never the Dragon of the tribulation.\n'
       + `No cap, but it bends hard: +100% takes ${small} off a beast, +300% only ${big}.`,
     art: (small: string, big: string) => 'Your arts strike harder when they fire, and 龜息 Turtle Breath heals more.\n'
       + `No cap, but it bends: +100% gives ${small}, +300% only ${big}. Never against the Dragon.`,
@@ -1640,7 +1647,7 @@ export const GEAR = {
   lockedWord: 'locked',
   anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
-    + 'It refills as you gather, open or shut.',
+    + `It refills with time at ${Math.round(MELT_FILL * 1000) / 10}% of your standing qi rate, open or shut, and sitting does not speed it up.`,
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
   meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
@@ -1692,7 +1699,7 @@ export const CLASS = {
     sword: (w: number, f: number) => `All your power ×${w}, or ×${f} at the full, on top of everything else.`,
     // 氣滿 The full school also lifts the ceiling on qi from gear (QI_FULL_ROOF); rekaris
     // found it unsaid (2026-10-06).
-    qi: (w: number, f: number, roof: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full. At the full, the ceiling on qi from gear also stands ×${roof} higher.`,
+    qi: (w: number, f: number, roof: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full. At the full, the ceiling on qi from gear also stands ${roof} higher: on the first layer, ×${QI_ROOF_FIRST} becomes ×${Math.round((QI_ROOF_FIRST + roof) * 100) / 100}.`,
     fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
     artificer: (w: number, f: number, amp: number, full: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}, or ×${full} at the full.`,
@@ -1701,7 +1708,7 @@ export const CLASS = {
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
   schoolAt: {
     sword: (x: number) => `All your power ×${x}.`,
-    qi: (x: number, roof: number) => `The four upgrades cost ${pct(x)} less.${roof ? ` The ceiling on qi from gear stands ×${roof} higher.` : ''}`,
+    qi: (x: number, roof: number) => `The four upgrades cost ${pct(x)} less.${roof ? ` The ceiling on qi from gear stands ${roof} higher.` : ''}`,
     fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
     body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
     artificer: (x: number, amp: number) => `Refining costs ${pct(x)} less. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
@@ -2483,7 +2490,7 @@ export const QOL = {
     moreLeft: (left: number) => `${left.toLocaleString('en')} left`,
     moreLabel: (n: number, left: number) => `Show ${n} more pieces. ${left.toLocaleString('en')} not shown yet.`,
     moreGroupsLabel: (n: number, left: number) => `Show ${n} more groups to fuse. ${left.toLocaleString('en')} not shown yet.`,
-    /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
+    /** \u5b58 Saved filters, up to twenty-four (FILTER_LIMIT), kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,
