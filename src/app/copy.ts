@@ -2303,6 +2303,12 @@ export const CRAFTS = {
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
   gearOf: (realm: number) => `Showing the gear of realm ${realm}.`,
+  /** 百形 The forge's list by place on the body, and the shapes a warden teaches. */
+  slots: 'Which place on the body',
+  slotAll: 'All',
+  realmShort: (n: number) => `Realm ${n}`,
+  anyShapeLocked: (warden: string, realm: number) =>
+    `百形 Beat the ${warden} and the forge makes every shape of realm ${realm}, all fifty-four, not only the ones its beasts teach.`,
   /** 鑄 The row of realms above the forge's gear list. */
   tiers: 'Which realm',
   tierNow: 'Now',

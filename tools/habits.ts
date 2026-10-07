@@ -793,7 +793,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts) {
-      s = craftVisit(s, t, tick);
+      s = craftVisit(s, t, tick, h.calling);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];

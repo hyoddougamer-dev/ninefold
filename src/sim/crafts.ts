@@ -269,12 +269,17 @@ function arrayFactor(s: State, skill: SkillKey): number {
   return key ? 1 - CRAFT_ARRAY_SPEED * arrayStrength(s, key) : 1;
 }
 
-/** 時 Seconds one make of this recipe takes, for this cultivator, now. */
-export function secondsOf(s: State, r: Recipe): number {
+/**
+ * 時 Seconds one make of this recipe takes, for this cultivator, now. `mastery` is the
+ * craft's mastery when the caller already holds it: 百形 Forging has over five hundred
+ * recipes since every shape of a realm can be forged, and settle() asks this once a make,
+ * so it reads the mastery again only when the recipe it is making earns its last mark.
+ */
+export function secondsOf(s: State, r: Recipe, mastery: number = masteryOf(s, r.skill)): number {
   return r.seconds * toolFactor(s, r.skill) * arrayFactor(s, r.skill)
     * (marksOf(s, r) >= 1 ? 1 - CRAFT_MARK_FASTER : 1)
     * (1 - CRAFT_MARK_SUB) ** subsOf(s, r).fast
-    * (1 - masteryOf(s, r.skill));
+    * (1 - mastery);
 }
 
 /** 經 The experience one make pays this cultivator. */
@@ -493,8 +498,12 @@ export function settle(s: State, now: number): Settled {
   let stoodFrom: number | null = null;
   // 守 A day's worth of the fastest recipe is under thirty thousand makes; this is only a
   // guard against a clock that has gone somewhere a clock cannot go.
+  // 熟 Only this recipe's count moves while it is being made, so the craft's mastery can
+  // only change on the make that earns its last mark: it is read then, not every make.
+  let mastery = masteryOf(out, r.skill);
+  const last = r.marks[r.marks.length - 1];
   for (let guard = 0; guard < 200_000; guard++) {
-    const t = secondsOf(out, r);
+    const t = secondsOf(out, r, mastery);
     if (at + t > end) break;
     const b = blocked(out, r);
     if (b !== null) {
@@ -504,6 +513,7 @@ export function settle(s: State, now: number): Settled {
       break;
     }
     out = makeOne(out, r);
+    if ((out.crafts.made[r.key] ?? 0) === last) mastery = masteryOf(out, r.skill);
     at += t;
   }
   // The workshop stood still at its limit: the rest of the absence is not owed, and the

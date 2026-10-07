@@ -249,6 +249,11 @@ export interface Recipe {
   readonly graded: boolean;
   readonly does?: string;
   /**
+   * 百形 A shape no beast of its realm leaves, which the warden's lesson opens: the forge
+   * makes it once that realm's warden has fallen (see `remains`). Gear only.
+   */
+  readonly anyShape?: boolean;
+  /**
    * 丹符 How many light makes one make of this recipe is: CRAFT_KIT_WORK for a pill or a
    * sigil, CRAFT_ARRAY_WORK for an array, 1 for everything else. Its time and every need
    * are already multiplied by it; the marks and the third mark's saving read it (see `marks`).
@@ -366,17 +371,36 @@ recipe({ key: `forge:${REALM_KEY}`, skill: 'forge', group: 'Tools', han: '鑰', 
  */
 const ARCH = Object.fromEntries(ARCHETYPES.map((a) => [a.key, a]));
 const GEAR_STEP = [0, 2, 4, 7];
-for (const b of BEASTS) {
+const gearRecipe = (b: Beast, shape: string, anyShape = false) => {
+  const a = ARCH[shape];
+  if (!a) return;
   const set = REALM_SETS[b.realm - 1];
-  for (const shape of b.leaves) {
-    const a = ARCH[shape];
-    if (!a) continue;
-    recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
-      name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
-      seconds: CRAFT_SECONDS.forge * 1.5,
-      needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
-      makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true });
-  }
+  recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
+    name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
+    seconds: CRAFT_SECONDS.forge * 1.5,
+    needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
+    makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true,
+    ...(anyShape ? { anyShape: true, remains: b.key } : {}) });
+};
+for (const b of BEASTS) for (const shape of b.leaves) gearRecipe(b, shape);
+
+/**
+ * 百形 Every shape of a realm, once its warden has fallen.
+ *
+ * Each beast teaches the three shapes it leaves, so a realm's four beasts teach twelve of
+ * the fifty-four, and which twelve was never chosen for the six schools: measured on
+ * 2026-10-06, the fifth realm's own beasts reach four places of 法 Arts at most, and the
+ * ninth realm has no 體 Body shape at all, so a pure set of one school out of one realm was
+ * impossible whatever a cultivator did. So the warden teaches the rest: once it has fallen,
+ * the forge makes any shape of the realm in the realm's metal, at the warden's own price
+ * (its level, two of its parts, three ingots and the material). The drop tables do not
+ * change; a forged piece still cannot be fused and melts back into its metal, never qi.
+ */
+for (let realm = 1; realm <= 9; realm++) {
+  const warden = BEASTS.find((b) => b.warden && b.realm === realm);
+  if (!warden) continue;
+  const taught = new Set(BEASTS.filter((b) => b.realm === realm).flatMap((b) => b.leaves));
+  for (const a of ARCHETYPES) if (!taught.has(a.key)) gearRecipe(warden, a.key, true);
 }
 
 /**

@@ -23,6 +23,58 @@ import {
 } from '../src/sim/crafts.ts';
 import { splitKey, type Recipe, type SkillKey } from '../src/data/crafts.ts';
 import { limitFor } from '../src/sim/stash.ts';
+import { SLOTS, TEMPLATE_BY_KEY, callingOf, schoolOf } from '../src/data/gear.ts';
+import { PAIRS, schoolOfAxis, type Pair, type School } from '../src/data/schools.ts';
+import { SCHOOL_WAKES } from '../src/sim/balance.ts';
+
+/**
+ * 職 How many of each school a build wants on the body: the same rule tools/habits.ts plays.
+ */
+function quotas(build: School | Pair): Partial<Record<School, number>> {
+  const pair = PAIRS.find((p) => p.key === build);
+  return pair ? { [pair.a]: SCHOOL_WAKES, [pair.b]: SCHOOL_WAKES } : { [build as School]: SLOTS.length };
+}
+
+/**
+ * 百形 What a class-builder forges for the class: nothing (the crafter as it was), only the
+ * shapes the realm's beasts teach (as the forge was before 2026-10-07), or any shape of a
+ * realm whose warden has fallen. tools/anyshape.ts plays all three; the game is the last.
+ */
+export type Forging = 'none' | 'taught' | 'any';
+let forging: Forging = 'any';
+export function setForging(f: Forging): void { forging = f; }
+
+/**
+ * 職 鑄 The piece a class-builder forges next: for a place the body has nothing of a wanted
+ * school in, while that school is short, the newest shape of the school the forge can make
+ * and pay for (or feed), unless the chest already holds one of its realm. What a player
+ * after a set does at the anvil, with the recipe list grouped by place and school.
+ */
+function forFor(s: State, build: School | Pair, span: number): string | null {
+  const want = quotas(build);
+  const counts = callingOf(s.worn).counts;
+  const short = (sc: School) => (want[sc] ?? 0) > counts[sc];
+  if (forging === 'none' || !(Object.keys(want) as School[]).some(short)) return null;
+  for (const slot of SLOTS) {
+    const worn = s.worn[slot];
+    if (worn && want[schoolOf(worn)] !== undefined) continue;
+    const forged = RECIPES.filter((r) => {
+      if (r.makes.kind !== 'gear' || !canSet(s, r)) return false;
+      if (r.anyShape && (forging === 'taught' || !known(s, r.remains!))) return false;
+      const tpl = TEMPLATE_BY_KEY[r.makes.template];
+      return tpl?.slot === slot && short(schoolOfAxis(tpl.affix)) && r.realm >= s.realm - 1;
+    }).sort((a, b) => b.realm - a.realm || a.level - b.level);
+    for (const r of forged) {
+      const tpl = TEMPLATE_BY_KEY[(r.makes as { template: string }).template];
+      const have = s.chest.some((x) => TEMPLATE_BY_KEY[x.template]?.slot === slot
+        && schoolOf(x) === schoolOfAxis(tpl.affix) && TEMPLATE_BY_KEY[x.template].realm >= r.realm);
+      if (have) break;
+      const t = feed(s, r, span);
+      if (t) return t;
+    }
+  }
+  return null;
+}
 
 /** How many of the best kit they like to have in the pouch before levelling something else. */
 const STOCK = 3;
@@ -108,7 +160,7 @@ function feed(s: State, r: Recipe, span: number, depth = 0): string | null {
  * `span` is how long until they are back, so a task that would run dry in minutes is
  * passed over for one that keeps going, or for gathering what it is short of.
  */
-export function pickTask(s: State, span: number): string | null {
+export function pickTask(s: State, span: number, build?: School | Pair): string | null {
   // 戰 The kit first: a hard fight is where the crafts show, so the pouch never runs low.
   for (const r of kitTargets(s)) {
     const it = itemOf(r);
@@ -117,6 +169,8 @@ export function pickTask(s: State, span: number): string | null {
     const t = feed(s, r, span);
     if (t) return t;
   }
+  // 職 Somebody building a class forges the places their school is short of, next.
+  if (build) { const t = forFor(s, build, span); if (t) return t; }
   // 封 A gate that seals ahead, and an Alchemy level short of the Breakthrough Pill made for
   // it: the screen names the level on the recipe, and somebody who means to use the pill
   // levels Alchemy toward it before anything else is levelled.
@@ -166,7 +220,7 @@ export function toLearn(s: State, safe: readonly Beast[]): Beast | undefined {
  * 業 One visit to the workshop: settle what ran while they were away, cut what arrays
  * they can into the floor, and set it going on the next thing.
  */
-export function craftVisit(s: State, now: number, span: number): State {
+export function craftVisit(s: State, now: number, span: number, build?: School | Pair): State {
   if (!workshopOpen(s)) return s;
   s = work(s, now);
   const slots = arraySlots(levelIn(s, 'array'));
@@ -174,7 +228,7 @@ export function craftVisit(s: State, now: number, span: number): State {
     if (s.crafts.arrays.length >= slots) break;
     s = placeArray(s, key, true);
   }
-  const want = pickTask(s, Math.min(span, workSeconds(s)));
+  const want = pickTask(s, Math.min(span, workSeconds(s)), build);
   return want === s.crafts.task ? s : setTask(s, want, now);
 }
 

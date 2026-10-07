@@ -4,8 +4,8 @@ import {
   type Recipe, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, plateOf } from '../../data/bestiary.ts';
-import { AFFIX_INFO, RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
-import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
+import { AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Slot } from '../../data/gear.ts';
+import { SCHOOLS, SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
@@ -99,6 +99,9 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
   const [filter, setFilter] = useRemembered<'all' | 'ready' | 'next'>('crafts.filter', 'all', oneOf(['all', 'ready', 'next'] as const));
   const [tier, setTier] = useRemembered<number | 'near'>('crafts.tier', 'near',
     (x): x is number | 'near' => x === 'near' || (typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= 9));
+  // 百形 Which place on the body the forge's gear list shows: with every shape of a realm
+  // open there are fifty-four a realm, so the list is one place at a time, by school.
+  const [slotPick, setSlotPick] = useRemembered<Slot | 'all'>('crafts.slot', 'weapon', oneOf(['all', ...SLOTS] as const));
   const kinds = Object.keys(state.crafts.pouch).filter((k) => ITEM_BY_KEY[splitKey(k).key]).length;
   /**
    * 往 Take the player to the recipe that makes a thing, from the note on its icon. It is
@@ -135,12 +138,22 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
   // why I should not be able to craft lower-tier stuff."* The sim never refused it; only
   // this list did. A search reaches every realm already open.
   const needle = find.trim().toLowerCase();
+  const gearList = skill === 'forge' && shown === 'Gear' && !needle;
   const all = mine.filter((r) => (needle
       ? hay(r).includes(needle)
       : (groups.length < 2 || r.group === shown))
     && (r.makes.kind !== 'gear' || (needle ? r.realm <= state.realm
       : tier === 'near' ? r.realm <= state.realm && r.realm >= state.realm - 1
-      : r.realm === tier)));
+      : r.realm === tier))
+    // 百形 A shape the warden teaches waits, unlisted, until that warden has fallen: the
+    // line under the realm row says so once, rather than forty rows saying it each.
+    && !(r.anyShape && r.remains && !known(state, r.remains))
+    && (!gearList || slotPick === 'all' || r.makes.kind !== 'gear' || TEMPLATE_BY_KEY[r.makes.template]?.slot === slotPick))
+    .sort(gearList ? byPlace : () => 0);
+  // 百形 The realms the list shows whose wardens still stand, for the line under the rows.
+  const shownRealms = gearList ? (tier === 'near' ? [state.realm - 1, state.realm].filter((n) => n >= 1) : [tier]) : [];
+  const untaught = shownRealms.map((n) => BEASTS.find((b) => b.warden && b.realm === n)!)
+    .filter((w) => w && !known(state, w.key));
   const isLocked = (r: Recipe) => { const b = blocked(state, r); return b === 'level' || b === 'realm'; };
   const ready = all.filter((r) => blocked(state, r) === null);
   const locked = all.filter(isLocked);
@@ -281,17 +294,46 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
           ))}
         </div>
       )}
+      {open && gearList && (
+        <div className="cf-chips cslot" role="tablist" aria-label={CRAFTS.slots}>
+          {(['all', ...SLOTS] as const).map((k) => (
+            <button key={k} role="tab" aria-selected={slotPick === k} onClick={() => setSlotPick(k)}>
+              {k === 'all' ? CRAFTS.slotAll : <><span className="cjk" aria-hidden="true">{SLOT_INFO[k].han}</span> {SLOT_INFO[k].name}</>}
+            </button>
+          ))}
+        </div>
+      )}
       {open && shown === 'Gear' && !find && <p className="faint" style={{ margin: '0 0 8px', fontSize: 12 }}>
         {tier === 'near' ? CRAFTS.gearShown(state.realm) : CRAFTS.gearOf(tier)} {CRAFTS.forgedRule}</p>}
+      {open && gearList && untaught.map((w) => (
+        <p key={w.key} className="faint canyshape" style={{ margin: '0 0 8px', fontSize: 12 }}>
+          {CRAFTS.anyShapeLocked(w.name, w.realm)}</p>
+      ))}
 
       {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
       <div className="crecipes" data-preview={!open || undefined}>
         {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
           {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
-        {list.map((r) => (
-          <Row key={r.key} state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
-            onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
-        ))}
+        {list.map((r, i) => {
+          // 百形 A heading wherever the place or the school changes, so fifty-four shapes read
+          // as a few short runs: the realm too when the list holds two.
+          const head = gearList && r.makes.kind === 'gear' ? placeOf(r) : null;
+          const before = i > 0 && gearList ? placeOf(list[i - 1]) : null;
+          const fresh = head && (!before || before.key !== head.key);
+          return (
+            <div key={r.key} style={{ display: 'contents' }}>
+              {fresh && (
+                <p className="cgsub" style={{ '--c': SCHOOL_INFO[head.school].colour } as React.CSSProperties}>
+                  {shownRealms.length > 1 && <span className="mono">{CRAFTS.realmShort(head.realm)}</span>}
+                  {slotPick === 'all' && <span><b className="cjk">{SLOT_INFO[head.slot].han}</b> {SLOT_INFO[head.slot].name}</span>}
+                  <span><b className="cjk">{SCHOOL_INFO[head.school].seal}</b> {SCHOOL_INFO[head.school].short}</span>
+                </p>
+              )}
+              <Row state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
+                onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
+            </div>
+          );
+        })}
         {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
       </div>
       </div>
@@ -305,6 +347,23 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       </div>
     </div>
   );
+}
+
+/** 百形 Where a gear recipe sits in the forge's list: realm, place on the body, school. */
+function placeOf(r: Recipe): { key: string; realm: number; slot: Slot; school: (typeof SCHOOLS)[number] } | null {
+  if (r.makes.kind !== 'gear') return null;
+  const tpl = TEMPLATE_BY_KEY[r.makes.template];
+  if (!tpl) return null;
+  const school = schoolOfAxis(tpl.affix);
+  return { key: `${r.realm}:${tpl.slot}:${school}`, realm: r.realm, slot: tpl.slot, school };
+}
+
+/** 百形 The forge's gear in the order the list reads: newest realm, then place, then school. */
+function byPlace(a: Recipe, b: Recipe): number {
+  const A = placeOf(a), B = placeOf(b);
+  if (!A || !B) return (A ? 1 : 0) - (B ? 1 : 0);
+  return B.realm - A.realm || SLOTS.indexOf(A.slot) - SLOTS.indexOf(B.slot)
+    || SCHOOLS.indexOf(A.school) - SCHOOLS.indexOf(B.school) || a.level - b.level;
 }
 
 /** 印 A craft's painted seal, or its character while the painting is not there. */
