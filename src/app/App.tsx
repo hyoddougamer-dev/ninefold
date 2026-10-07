@@ -47,7 +47,7 @@ import { Prologue } from './ui/Prologue.tsx';
 import { CountUp } from './ui/CountUp.tsx';
 import { CloudPick, Ranks } from './ui/Ranks.tsx';
 import * as cloud from '../net/cloud.ts';
-import { layersOpened } from '../sim/state.ts';
+import { progressOf } from '../sim/echo.ts';
 import { importSave } from '../sim/save.ts';
 import { armJuice, burst, centreOf, float } from './juice.ts';
 import { Trials } from './screens/Trials.tsx';
@@ -498,7 +498,7 @@ export function App() {
         const got = await cloud.pull().catch(() => null);
         const there = got?.save ? importSave(JSON.stringify(got.save), now()).state : null;
         history.replaceState(null, '', location.pathname);
-        if (there && layersOpened(there) + there.tribulation > layersOpened(latest.current) + latest.current.tribulation) {
+        if (there && progressOf(there) > progressOf(latest.current)) {
           setCloudPick({ there, here: latest.current });
           return;
         }
@@ -1599,7 +1599,7 @@ export function App() {
             if (!w.guest) {
               const got = await cloud.pull().catch(() => null);
               const there = got?.save ? importSave(JSON.stringify(got.save), now()).state : null;
-              if (there && layersOpened(there) + there.tribulation > layersOpened(latest.current) + latest.current.tribulation) {
+              if (there && progressOf(there) > progressOf(latest.current)) {
                 setRanks(false);
                 setCloudPick({ there, here: latest.current });
                 return;

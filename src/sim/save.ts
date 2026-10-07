@@ -5,6 +5,7 @@ import { held, needsOf, settle, workSeconds, workshopOpen, type Stood } from './
 import { RECIPE_BY_KEY, levelOf } from '../data/crafts.ts';
 import { LAYERS_PER_REALM } from './balance.ts';
 import { isSealed, open, seal } from './seal.ts';
+import { progressOf } from './echo.ts';
 
 const KEY = 'ninefold.save.v1';
 /**
@@ -136,9 +137,13 @@ function write(key: string, s: State): void {
   localStorage.setItem(SEALED, '1');
 }
 
-/** How far up a state is, so two of them can be compared without trusting either. */
+/**
+ * How far up a state is, so two of them can be compared without trusting either.
+ * 轉世 Lives first: a reborn cultivator's spare copy is the life it left, deeper on the
+ * ladder, and read by the ladder alone the spare would undo the rebirth on the next load.
+ */
 function depth(s: State): number {
-  return (s.realm - 1) * 9 + s.layer;
+  return progressOf(s);
 }
 
 /**
@@ -288,7 +293,8 @@ export interface Imported {
  * said so. One definition, asked in both places.
  */
 export function untouched(s: State): boolean {
-  return s.realm === 1 && s.layer === 0
+  // 轉世 A reborn cultivator stands where a new one does, and has done more than anybody.
+  return s.realm === 1 && s.layer === 0 && (s.lives?.length ?? 0) === 0
     && s.qi <= OPENING_PURSE
     && s.tower === 0 && s.tribulation === 0
     && Object.values(s.levels).every((n) => n === 0)

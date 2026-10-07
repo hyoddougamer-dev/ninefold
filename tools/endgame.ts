@@ -11,7 +11,7 @@ import { crossNow, currentWarden, odds } from '../src/sim/combat.ts';
 import {
   buy, canBuy, canCross, tribulationPool, type State,
 } from '../src/sim/state.ts';
-import { rate } from '../src/sim/time.ts';
+import { gathering } from '../src/sim/time.ts';
 import { brew, canBrew, canRefine, clearFloor, pillPrice, refine, standingFloor } from '../src/sim/trials.ts';
 import { SLOTS } from '../src/data/gear.ts';
 import { cardDue, take as takeCard } from '../src/sim/awaken.ts';
@@ -130,7 +130,7 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
     let waited = 0;
     for (let day = 0; day < 400; day++) {
       if (odds(s, currentWarden(s)) > WILLING && canCross({ ...s, wardenFell: true })) break;
-      s = { ...s, qi: s.qi + rate(s) * 86_400 };
+      s = { ...s, qi: s.qi + gathering(s) * 86_400 };
       waited += 1;
 
       // The tower, while the next floor is worth trying. Losing costs nothing, so the
