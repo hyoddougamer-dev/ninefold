@@ -37,9 +37,11 @@ import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
 import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
-  UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, sealDays, sealLeft, tribulationScale, upgradeCost,
+  UPGRADES, UPGRADE_INFO, capOf, gathering, heavenStep, layersOpened, power, sealDays, sealLeft, tribulationScale, upgradeCost,
   newState, wardenStands, type State,
 } from './state.ts';
+import { echoFactor, livesExtend } from './echo.ts';
+import { bornFrom } from './rebirth.ts';
 import { layerCost } from './time.ts';
 import { beastPower, beatable, quarryQi, seenBounty } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
@@ -226,7 +228,8 @@ function rateOn(s: State, n: number): number {
   for (const u of UPGRADES) levels[u] = Math.min(levels[u], capOf(probe, u));
   const worn = Object.fromEntries(Object.entries(s.worn)
     .filter(([, x]) => x && (templateOf(x as Item)?.realm ?? 1) <= realm)) as State['worn'];
-  return rate({ ...probe, levels, worn });
+  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_CEILING at most.
+  return gathering({ ...probe, levels, worn });
 }
 
 /**
@@ -397,8 +400,15 @@ export function verify(before: State, after: State, seconds: number, first = fal
 
   if (after.startedAt !== before.startedAt) why.push('shape');
 
+  // 轉世 A life that ended since the last save: measured as the new life it began. See reborn().
+  const born = (after.lives?.length ?? 0) > (before.lives?.length ?? 0);
+  if (born && livesExtend(before.lives, after.lives) && !why.includes('shape')) return reborn(before, after, dt, first);
+
   // 下 Anything that can only ever grow, having shrunk, is a restore or a second device.
-  const down = layersOpened(after) < layersOpened(before)
+  // 世 And a record of lives that lost one, or that is not the record it was (two copies of
+  // one cultivator each reborn their own way), is another copy, never a strike.
+  const down = !livesExtend(before.lives, after.lives)
+    || layersOpened(after) < layersOpened(before)
     || after.tribulation < before.tribulation
     || after.tower < before.tower
     // 擂 Every challenger ever beaten: a count that only grows.
@@ -482,7 +492,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // cheaper each one got: 300 at once verified in thirty seconds. It is time, so it is
   // counted as time.
   const newMarks = Math.max(0, after.tribulation - before.tribulation);
-  need += newMarks * MARK_DAYS * 86_400 / focus;
+  // 宿慧 The Echo fills the pool faster, by ECHO_CEILING at the most.
+  need += newMarks * markSeconds(before, after, focus);
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
@@ -638,6 +649,42 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const strike = why.some((w) => w !== 'went-down' && w !== 'too-fast' && w !== 'shape'
     && !(diverged && (w === 'road' || w === 'anchor')));
   return { ok: why.length === 0, why, used, strike, suspect, pace };
+}
+
+/**
+ * 雷 The least time a mark can take: 雷池 the pool, MARK_DAYS of gathering, at the deepest
+ * sitting and 宿慧 the larger Echo of the two saves.
+ */
+function markSeconds(before: State, after: State, focus: number): number {
+  return MARK_DAYS * 86_400 / focus / Math.max(echoFactor(before.lives), echoFactor(after.lives));
+}
+
+/**
+ * 轉世 A pair across a rebirth: `before` is the last life the server saw, `after` a life
+ * that began since. Every rebirth is a life that crossed its marks, and every mark is the
+ * pool filled, which is time: the marks each new entry in the record claims past what
+ * `before` already held are paid first, out of the seconds that passed, at the fastest a
+ * mark can be crossed. What is left is the new life's own time, and the new life is
+ * verified as any climb is, from the state it was born as (bornFrom, the function the
+ * game itself is reborn through) to what it is now.
+ *
+ * So an edited record can do two things and no more: claim marks it would have had to
+ * wait for (it waits, like any gain the time does not cover), or claim an Echo it did not
+ * earn, which raises every bound here by ECHO_CEILING at most, because that is the most
+ * any record can give. The ended life's floors and Dragons are not read again: they were
+ * read when they were synced, and once a life ends the body that won them is gone.
+ */
+function reborn(before: State, after: State, dt: number, first: boolean): Verdict {
+  const focus = FOCUS_MAX + Math.max(focusBonus(before.unlocked), focusBonus(after.unlocked));
+  const fresh = after.lives.slice(before.lives?.length ?? 0);
+  let marks = 0;
+  fresh.forEach((l, i) => { marks += i === 0 ? Math.max(0, l.marks - before.tribulation) : l.marks; });
+  const old = marks * markSeconds(before, after, focus);
+  const at = Math.min(after.at, Math.max(before.at, fresh[fresh.length - 1].at));
+  const start = { ...bornFrom(before, after.lives, at), startedAt: after.startedAt };
+  const v = verify(start, after, Math.max(0, dt - old), first, 0);
+  const late = old > dt * SLACK && !v.why.includes('too-fast');
+  return late ? { ...v, ok: false, why: [...v.why, 'too-fast'] } : v;
 }
 
 /**

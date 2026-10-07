@@ -1,12 +1,12 @@
 import { INCENSE_BONUS, LAYERS, LAYERS_PER_REALM, MELT_CAP, MELT_FILL, ladderAt } from './balance.ts';
-import { layersOpened, rate, type State } from './state.ts';
+import { gathering, layersOpened, rate, type State } from './state.ts';
 import { layerCostFactor } from './dao.ts';
 import { classMelt } from './schools.ts';
 import { taskBody } from './sets.ts';
 
 // 氣 The rate and the layer count live in state.ts, because the tribulation's pool is
 // measured in days of gathering and so has to read the rate from inside the state.
-export { layersOpened, rate };
+export { gathering, layersOpened, rate };
 
 /**
  * What the layer under a cultivator's feet costs.
@@ -72,7 +72,8 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
 
   for (let guard = 0; guard <= LAYERS + 3; guard++) {
     const burning = clock < until;
-    const base = rate({ ...s, realm, layer });
+    // 宿慧 What is gathered, the Echo of the lives before included. See gathering.
+    const base = gathering({ ...s, realm, layer });
     const r = base * (Math.max(1, focus) + (burning ? INCENSE_BONUS : 0));
     // The stretch this rate holds for: the whole gap, or up to where the stick goes out.
     const span = burning ? Math.min(dt, until - clock) : dt;
@@ -195,7 +196,7 @@ export function affordableIn(
   // the one that is still true tomorrow. A player who is sitting gets there sooner than
   // the screen said, which is the only direction this is allowed to be wrong in.
   if (!Number.isFinite(here) || cost <= here) {
-    return { seconds: Math.max(0, cost - s.qi) / Math.max(1e-9, rate(s)), rungs: 0 };
+    return { seconds: Math.max(0, cost - s.qi) / Math.max(1e-9, gathering(s)), rungs: 0 };
   }
   let realm = s.realm;
   let layer = s.layer;

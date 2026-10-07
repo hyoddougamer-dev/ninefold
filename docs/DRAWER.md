@@ -115,3 +115,89 @@ sync reading the slot, `verify` reading the Law, new attacks in `tools/ranked.ts
 
 **Open (see the workbook):** how big the blessing is, whether qi is the only reward, the length
 of a season, who sets the Law, how a late joiner is treated, and what the main save gets.
+
+---
+
+## 轉世 Rebirth (built, on its own branch, waiting for Bruno)
+
+**Status:** built and measured on 2026-10-07, not released. Unlike everything else in this
+drawer it is in the code: `src/sim/rebirth.ts`, `src/sim/echo.ts`, `src/app/ui/Rebirth.tsx`,
+measured by `npm run rebirth` (tools/rebirth.ts). It is written down here because its numbers
+are a decision, and a decision has to live somewhere other than a conversation.
+
+**Bruno's brief.** *"From a certain realm onward you can reset, but the benefit of the reset
+depends on how far ahead you are."* Testers past the Dragon report nothing left but a clock of
+about five days a mark. One asked for an uncapped multiplier per reset (2x, 4x, 8x qi,
+stacking); measured, a stacked 2x cuts the climb to the summit by 45% and 8x by 82%, which is
+the economic law broken outright. The earlier abstract models (a Wheel, head-start realms)
+were rejected and are not revived.
+
+**As built.**
+- **Unlock:** the summit (the ninth realm's last rung) with the first Dragon crossed
+  (`REBIRTH_MARKS = 1`). Measured, that is 3 to 10 days after the summit for every habit.
+- **Depth** of a life: the 雷印 marks it crossed, and nothing else. The heaven is derived from
+  the marks; the tower is left out on purpose, because a floor is checked against the body
+  that won it and once a life ends that body is gone.
+- **宿慧 The Echo** a life leaves: `ECHO_STEP` (2.5%) for every doubling of its marks,
+  `log2(1 + marks)`: 1 mark +2.5%, 3 marks +5%, 7 +7.5%, 15 +10%, 31 +12.5%
+  (`ECHO_LIFE_MAX`, the most one life gives). All lives together: `ECHO_CEILING` = **+25%**.
+- **Where it applies:** qi gathered, in `advance()` through `gathering()`. `rate()` itself is
+  unchanged, so everything paid or priced as seconds of the rate (beds, meetings, the spring,
+  incense, melting, drives, retrades) and every lump (the tower, the quarry, the Platform)
+  does not move with it. The thunder pool is read off a standard rate, so the Echo fills it
+  faster too.
+- **What carries:** the Echo, a title per life (再世 Twice-Born, 三世 Thrice-Born, ... 十世),
+  the records already on the boards (the server keeps the best ever), who the cultivator is,
+  the notices read, the chest's filters, and three forward-only counters (vault runs, the
+  last Realm Key day, the week's quarry) so a week cannot pay twice. **Everything else
+  begins again.** No heirloom: a ninth-realm piece worn in the first realm either breaks the
+  server's gear check (a strike) or needs a new rescaling rule, and one more uncapped power
+  path is the opposite of what the endgame needs.
+- **Record:** `State.lives`, at most `LIVES_MAX` = 9 entries of `{ marks, at }` (seconds),
+  validated by `validLives`: whole marks from 1 to 300, instants in order inside the save's
+  life. The Echo, the title and the day a life began are derived from it, never stored.
+- **Server:** `verify()` reads a pair across a rebirth as the claimed marks paid out of the
+  time first (a mark is at least the pool at the deepest sitting and the larger Echo), then
+  the new life verified from `bornFrom`, the same function the game is reborn through. A
+  forged record can claim at most +25% of rate and waits for the marks it claims; two copies
+  reborn differently are another copy, never a strike. The sync core, the spare copy and the
+  cloud pick order saves by lives first (`progressOf`). **No Supabase schema change.**
+
+**Measured** (`npm run rebirth`, every life ending on its third mark; days to realm 9 /
+summit / third mark, and the summit's saving on the first life):
+
+| habit | life 1 | life 2 (+5%) | life 3 (+10%) | life 4 (+15%) | life 5 (+20%) | life 6 (+25%) |
+| --- | --- | --- | --- | --- | --- | --- |
+| active | 46/56/68 | 41/51/63 (-9%) | 42/51/62 (-8%) | 40/49/59 (-12%) | 39/47/57 (-15%) | 38/45/56 (-18%) |
+| every hour | 29/35/47 | 28/34/45 (-4%) | 27/32/43 (-8%) | 26/31/41 (-12%) | 26/31/42 (-12%) | 25/30/39 (-16%) |
+| casual | 65/77/90 | 61/73/85 (-6%) | 59/70/82 (-9%) | 57/69/79 (-11%) | 55/67/77 (-13%) | 53/63/73 (-18%) |
+| once a day | 70/84/101 | 69/83/102 (-1%) | 65/80/95 (-5%) | 65/77/92 (-8%) | 62/75/89 (-11%) | 59/72/86 (-14%) |
+| never fights | 121/134/155 | 108/122/140 (-9%) | 103/116/134 (-13%) | 106/117/135 (-13%) | 100/111/128 (-17%) | 100/110/126 (-18%) |
+
+- **To the ceiling:** ending every life on mark 3, life 6 carries +25% after 5 lives
+  (active 308 days, every hour 219, casual 413, once a day 479, never fights 692). On mark 7,
+  life 5 after 4 lives (312 / 252 / 395 / 447 / 668). On mark 1, **never**: nine lives give
+  +22.5%, so rushing the first Dragon over and over is not the road to it.
+- **The honest net:** one rebirth at mark 3 costs the active cultivator 63 days to be back at
+  mark 3, which staying would have spent reaching mark 14 (every hour: 45 days, mark 10;
+  casual 85, mark 17; once a day 102, mark 21; never fights 140, mark 15). The endgame is a
+  clock, so a rebirth always costs marks. What it gives instead is the Echo for every life
+  after, a title, the nine realms climbed again with everything the game has grown since,
+  and records the boards keep.
+- **Knife edge:** the ceiling pushed 10% higher (+27.5%) moves every habit's summit by
+  -2.3 to +1.0 days against +25% (casual -2.3, once a day -1.0, every hour -0.7, active +0.3,
+  never fights +1.0, the last two being a visit's granularity): smooth, nothing walled.
+- **Why 25%:** it is the qi bonus the earlier measurement put at about a fifth off a climb
+  (measured here: 14% to 18% at the summit), it is reached only after about a year of
+  play, and it is a roof: nothing past it moves the rate, so the law holds.
+
+**Composable with 季榜 The Hundred.** The Echo belongs to the Eternal save. A season is a
+fresh life under the season's Law and never reaches the Eternal, so the two never meet. If
+Bruno ever wants the Echo inside a season, the two bonuses add and share one ceiling
+(`ECHO_CEILING`), never multiply.
+
+**Open for Bruno.** (1) 期榜 the week board counts layers and marks past the account's best,
+so a reborn life earns no week credit until it passes its old life; a per-life week board
+would need a new column (a migration). (2) The unlock: the first mark, or later. (3) Whether
+the title should also show on the boards (it is derived, so the server could read it from
+the save without a schema change). (4) An heirloom, if he wants one, needs its own rule.

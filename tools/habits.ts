@@ -58,6 +58,8 @@ import type { Beast } from '../src/data/bestiary.ts';
 const wornWorth = (s: State, slot: Slot) => itemWorth(s.worn[slot]!, levelAt(s.refined, slot));
 
 const T0 = 1_700_000_000;
+/** 轉世 T0 under another name, for play() to count its days from a given start instead. */
+const EPOCH = T0;
 const DAY = 86_400;
 
 export interface Habit {
@@ -506,8 +508,16 @@ function spendTree(s: State, branch: Path | undefined): State {
  */
 export type Watcher = (day: number, s: State) => void;
 
-export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
-  let s = newState(T0);
+/**
+ * 轉世 `start` begins the walk from a given state instead of a new one (a reborn life, see
+ * tools/rebirth.ts), and the days are counted from its own instant. `gain` multiplies
+ * every second gathered, the way 宿慧 the Echo does, for pushing the Echo past its ceiling
+ * to see what a higher one would do; 1 for every curve the game is measured by.
+ */
+export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, gain = 1): Run {
+  // 轉世 Every day below is counted from here: T0, or the instant a given start stands at.
+  const T0 = start?.at ?? EPOCH;
+  let s = start ?? newState(T0);
   let t = T0;
   const tick = DAY / h.checks;
   const arrival = [0];
@@ -540,12 +550,12 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   /** 梯 The clock, with the rungs it opened counted and 香 the incense it paid set apart. */
   const tickTo = (to: number, focus = 1) => {
     const burning = (s.incenseUntil ?? 0) > s.at;
-    const next = advance(s, to, false, focus);
+    const next = advance(s, to, false, focus * gain);
     let rungs = 0;
     for (let n = layersOpened(s); n < layersOpened(next); n++) rungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
     led.ladder += rungs;
     if (burning) {
-      const cold = advance({ ...s, incenseUntil: 0 }, to, false, focus);
+      const cold = advance({ ...s, incenseUntil: 0 }, to, false, focus * gain);
       let coldRungs = 0;
       for (let n = layersOpened(s); n < layersOpened(cold); n++) coldRungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
       led.incense += Math.max(0, (next.qi + rungs) - (cold.qi + coldRungs));

@@ -1010,6 +1010,32 @@ export const TRIBULATION_GAIN = 0.728;
 export const MAX_MARK_DAYS = 14;
 
 /**
+ * 轉世 Rebirth: from the summit with a mark crossed, a cultivator may begin again, and how
+ * far ahead they were decides what the new life carries. Bruno: *"from a certain realm
+ * onward you can reset, but the benefit of the reset depends on how far ahead you are."*
+ *
+ * What carries is 宿慧 the Echo, a share added to the qi gathered (advance, never the tower,
+ * the vault or any other lump). A life's Echo is ECHO_STEP for every doubling of the marks
+ * it crossed (log2(1 + marks)), so the first mark is worth a step, three are worth two,
+ * seven three: further is always more, and every step costs twice the endgame the last one
+ * did. One life gives ECHO_LIFE_MAX at most, and all of them together ECHO_CEILING, which
+ * is the hard roof the economic law asks for: a stacked multiplier with no roof was
+ * measured (a tester asked for 2x per life) and a 2x cut the climb by 45%.
+ *
+ * See tools/rebirth.ts for the measurement and docs/DRAWER.md (轉世) for the numbers.
+ */
+/** 轉世 Marks a life must have crossed before it may end: the first Dragon. */
+export const REBIRTH_MARKS = 1;
+/** 宿慧 What each doubling of a life's marks adds to the qi gathered: 2.5%. */
+export const ECHO_STEP = 0.025;
+/** 宿慧 The most one life can add, five doublings (31 marks): 12.5%. */
+export const ECHO_LIFE_MAX = 0.125;
+/** 宿慧 The most every life together can ever add to the qi gathered: 25%. */
+export const ECHO_CEILING = 0.25;
+/** 世 How many lives a save may remember. Nine, as the realms are. */
+export const LIVES_MAX = 9;
+
+/**
  * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.
  */
 export const PILL_PACE = 3;

@@ -13,6 +13,7 @@
  */
 import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
+import { progressOf } from '../../../src/sim/echo.ts';
 import { WEEK, weekOf } from '../../../src/sim/week.ts';
 import { callingKey } from '../../../src/sim/schools.ts';
 import { cleanName } from '../../../src/net/names.ts';
@@ -179,7 +180,9 @@ export async function sync(
   // wiped phone, a second device, the local copy kept over the cloud's) that has got
   // further is a run of its own, measured from its start like a first sync; one that has
   // not is behind, and neither is ever a strike.
-  const ahead = (x: State) => layersOpened(x) + x.tribulation;
+  // 轉世 Lives first: a reborn cultivator in the first realm is ahead of the life it left,
+  // or the cloud copy would keep the old life and the next device would sign in to it.
+  const ahead = (x: State) => progressOf(x);
   let before: State;
   let seconds: number;
   let first = false;

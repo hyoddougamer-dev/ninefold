@@ -43,6 +43,7 @@ import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } f
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
 import { backHundred, bandTop } from './hundred.ts';
+import { echoFactor, validLives, type Life } from './echo.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -341,6 +342,12 @@ export interface State {
   crafts: Crafts;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
+  /**
+   * 世 The lives that ended before this one: the marks each crossed and the instant it
+   * ended. Empty for a first life. 宿慧 the Echo, the title and the day this life began are
+   * all derived from it. See sim/echo.ts and sim/rebirth.ts.
+   */
+  lives: readonly Life[];
 }
 
 /** What the marks already taken are worth. They multiply, to power and to qi alike. */
@@ -372,6 +379,17 @@ export function layersOpened(s: State): number {
 /** Qi per second, right now. The single source of the rate; nothing else computes it. */
 export function rate(s: State): number {
   return BASE_RATE * LAYER_BONUS ** layersOpened(s) * rateBonus(s);
+}
+
+/**
+ * 宿慧 Qi gathered per second: the rate, and 宿慧 the Echo of the lives before this one on
+ * top of it. This is what the bar fills at (advance) and what the screen calls the standing
+ * rate. Everything paid as seconds of the rate (a bed, a meeting, the spring, a melt) and
+ * everything priced in it (a drive, a retrade) keeps reading rate(): the Echo is a share of
+ * the cultivating and nothing else, which is what keeps it from reaching any lump.
+ */
+export function gathering(s: State): number {
+  return rate(s) * echoFactor(s.lives);
 }
 
 /**
@@ -496,6 +514,7 @@ export function newState(now: number): State {
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },
     seen: [],
+    lives: [],
   };
 }
 
@@ -1178,6 +1197,8 @@ export function validate(raw: unknown, now: number): State {
       .filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 32)
       .filter((x, i, all) => all.indexOf(x) === i)
       .slice(0, 32),
+    // 世 The lives before this one: at most LIVES_MAX, each a life that could have ended.
+    lives: validLives(o.lives, startedAt, now),
   };
 
   /**
@@ -1202,7 +1223,8 @@ export function validate(raw: unknown, now: number): State {
    * already an over-estimate of every second of it, and 入定 at its deepest is the most
    * any of those seconds could have been worth.
    */
-  const gathered = rate(out) * FOCUS_MAX * elapsed;
+  // 宿慧 Read at what is gathered, the Echo included: it is part of every second's qi.
+  const gathered = gathering(out) * FOCUS_MAX * elapsed;
   // What a cultivator is allowed to be standing on having spent nothing: the rung under
   // their feet, and at the summit 雷池 the pool, which the ladder has no way to take.
   const standing = tribulationPool(out) + ladderAt(Math.min(LAYERS - 1, layersOpened(out)));
