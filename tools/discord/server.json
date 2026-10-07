@@ -2059,7 +2059,13 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-deep.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-ladder.webp?v=1",
       "body": [
-        "**This is a proposal, not the game yet.** Before we build it, we want to know what you think. Thank you, rekaris, for the posts that started it.",
+        "**Decision, 7 October: we are not building this.** Thank you all for the votes, and rekaris above all, for the long answer and for taking it back when you thought again. The proposal stays below so you can see what was asked and why it was dropped.",
+        "",
+        "Two to four votes a poll is thin, but it points one way: nobody picked the proposal's own ×8 trait, and the two traits it was built on (Armoured and Spectral) got no votes at all. Your second answer said it better than I did: this is an idle game first, and a new layer of rules is the wrong answer to a numbers problem.",
+        "",
+        "The problem under it is real and stays on my list: past the first realms the hunt's beasts are too weak for power to matter. The smaller fix is the beasts' own power. I will measure it before I touch anything and show the numbers here. Hunts stay as they are until then. The polls stay open until 11 October, and anything else you want to say is still read.",
+        "",
+        "**The original proposal:** Before we build it, we want to know what you think. Thank you, rekaris, for the posts that started it.",
         "",
         "Right now, once you can beat a realm's warden, power stops mattering: every beast falls in one blow, so the best gear is qi gear. Deeper hunts would give power a use every day, without touching qi."
       ],
@@ -2089,7 +2095,7 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-traits.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/promo/deep-screens.webp?v=1"
       ],
-      "footer": "師 Shibaki · a proposal, measured, not built yet",
+      "footer": "師 Shibaki · decided: not building it",
       "polls": [
         {
           "question": "Would you hunt beasts deeper for better gear and more material?",
@@ -2274,6 +2280,18 @@
       "reply": [
         "Fixed ✅ Thank you for catching this on day one.",
         "There are two ways in now: install the game from Chrome (⋮ → *Install app*), or take the APK inside a zip, which gets past the phones where a bare .apk stops at 100%. Both are step by step with pictures in *裝 Installing on Android*, pinned at the top of the guides.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Gear page performance",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Fixed ✅ Thank you, rekaris. A chest of 1,800 pieces took about 7 seconds to open and froze the screen when you filtered. It opens in a fifth of a second now, and the list loads sixty pieces at a time as you scroll. It is in the last update.",
         "· 師 Shibaki"
       ]
     },
@@ -3122,6 +3140,54 @@
       ],
       "reply": [
         "Done in today's update, thank you. The floor's card has a Take up choice: what you carry goes up with you, a won floor spends whichever took part and a lost one keeps both. We measured every pill and sigil before letting them in, and nothing wins a floor on its own: a pill for your realm is worth a floor or two, and the strongest, the Nine-Turn Pill at the ninth realm, about five.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "Thank you for writing it down so clearly, and for the honest reasons: there is not much left to do, and you want to keep testing the nine realms without starting over. Both are fair.",
+        "I measured your proposal as written, and I cannot build it like that. A permanent ×2 on cultivation takes an active player to the summit in 31 days instead of 55, and the whole run to 80 marks about 42% shorter. Stacked, ×4 cuts the climb to the summit by 69% and ×8 by 82%. The game is balanced on one rule: nothing uncapped may raise the qi rate. A multiplier that doubles every time is exactly that, and it would turn the boards into a contest of who reset most.",
+        "What I take from it is the real problem: after the Dragon there is a clock and little else. I am designing a way to start again that has a reason to exist and leaves the pace of the main game alone. It is a design, not a promise. I will show it here before anything is built and ask what you think.",
+        "Meanwhile, thank you for staying. There is one wipe planned, at the end of this closed test.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "tags": [
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "Fair question, and you are right that none of it is free.",
+        "The Dragon is the one fight I set from your own power, so that no build is walled and none walks over it. Those sums are read before any pill or sigil is counted. If they counted too, every pill would be pure surplus on every crossing, and I measured what that does: with the Bane line alone, capped at 3% off the Dragon, a 40-crossing run goes from 251 days to 176, and with the pills fully on it falls to about 122. The marks would come twice as fast and the endgame would be a different, much shorter game.",
+        "That is a choice about the pace of the endgame, and I may be wrong about it. If you think the Dragon should answer pills, tell me what a crossing should cost then. In the next update every elixir and sigil says it does not reach the Dragon, so it is never a surprise.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What is the point of the beast pill if it doesnt affect dragon?",
+      "reply": [
+        "You are not missing something: it does very little, and I would rather say so. By the ninth realm every beast but the Dragon is already easy, so the pill's only use is the tower and the Platform. I measured it there: from none to 135 pills moves your best tower floor from 114 to 118. The tower's qi is flat past floor 121, so the extra floors only give material, which you say is not scarce.",
+        "So the honest answer is that the line is left over from when the beasts were the wall. I do not want to bolt a number on it just to give it a use. I will look at what it could do that is worth a decision and post the options here before anything changes.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Furnace pill descriptions improvement",
+      "tags": [
+        "Idea",
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "Both points are right. The Dragonslaying Pill was renamed in the last update: it is the Beast-Severing Pill now, because no pill reaches the Dragon.",
+        "The numbers were wrong too. The Bane line said 1.5% weaker each, but the sum is not flat: the first pill takes 0.9% off, each later one a little less, and beasts never fall under 40%. It says that now. The Fortune line says it is +4% luck each and that Earth and Heaven gain most, and every elixir and sigil says it does not reach the Dragon. All of it comes in the next update.",
         "· 師 Shibaki"
       ]
     },

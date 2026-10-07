@@ -414,7 +414,7 @@ const atTop = (x: number) => `(${pct(x * TOP_MULT)} at ${RARITY_INFO.heaven.name
 /** What a thing made for one realm is worth in a fight above it. See fade() in sim/crafts.ts. */
 const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.${breaks}`;
 /** 破境 What every carried thing also does at the warden: see Kit.breach. */
-const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank).`;
+const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank). Never in the tribulation’s Dragon fight.`;
 const ELIXIR_DOES: Record<ElixirLine, string> = {
   mend: `Mends ${pct(CRAFT_KIT.mend)} of your health every round of one hard fight ${atTop(CRAFT_KIT.mend)}.`,
   guard: `You take ${pct(CRAFT_KIT.guard)} less in one hard fight ${atTop(CRAFT_KIT.guard)}.`,
@@ -442,7 +442,7 @@ const SPECIALS: readonly [string, string, string, number, number, (readonly [str
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
     `Carried into seclusion: your heart demon stands ${pct(CRAFT_KIT.calmHeart)} weaker ${atTop(CRAFT_KIT.calmHeart)}.`, 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
-    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it.', 'dragon-orb'],
+    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it. Never in the tribulation’s Dragon fight.', 'dragon-orb'],
 ];
 for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   item({ key, han, name, kind: 'elixir', realm, icon, graded: key !== 'seekincense', does,

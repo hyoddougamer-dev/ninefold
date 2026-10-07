@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { CLASS, GEAR, ITEM } from '../copy.ts';
 import { MELT_FILL, QI_FULL_ROOF, QI_ROOF_FIRST } from '../../sim/balance.ts';
 import { FILTER_LIMIT } from '../../sim/filters.ts';
+import { PILL_LINES } from '../../data/alchemy.ts';
+import { ITEMS } from '../../data/crafts.ts';
+import { pillBane } from '../../sim/furnace.ts';
+import { PILL_BANE_FLOOR } from '../../sim/balance.ts';
 
 /**
  * 便 What the testers asked for on 2026-10-06 that was only a sentence or a constant: the
@@ -32,5 +36,19 @@ describe('便 the small fixes the Discord asked for', () => {
 
   it('keeps room for a long row of saved filters', () => {
     expect(FILTER_LIMIT).toBe(24);
+  });
+
+  it('says what the first Bane pill really takes off, not the rate it decays at', () => {
+    const first = 1 - pillBane({ body: 0, bane: 1, fortune: 0 } as never);
+    const said = PILL_LINES.bane.effect;
+    expect(said).toContain(`${+(first * 100).toFixed(1)}%`);
+    expect(said).toContain(`${+(PILL_BANE_FLOOR * 100).toFixed(1)}%`);
+    expect(said).toContain('never the Dragon');
+  });
+
+  it('tells every elixir and sigil that the tribulation’s Dragon is out of its reach', () => {
+    const made = Object.values(ITEMS).filter((i) => (i.kind === 'elixir' || i.kind === 'sigil') && i.does?.includes('hard fight'));
+    expect(made.length).toBeGreaterThan(20);
+    for (const i of made) expect(i.does ?? '', i.key).toContain('Dragon');
   });
 });
