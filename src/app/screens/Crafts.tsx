@@ -11,7 +11,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
   marksOf, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
-  workSeconds, xpOf,
+  unsealCarried, unsealHeld, workSeconds, xpOf, type Hand,
 } from '../../sim/crafts.ts';
 import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
@@ -20,7 +20,7 @@ import {
 import { TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
-import type { State } from '../../sim/state.ts';
+import { sealDays, sealLeft, wardenStands, type State } from '../../sim/state.ts';
 import { icon } from '../../art/icon.ts';
 import { Emblem } from '../ui/Emblem.tsx';
 import { Term } from '../ui/Term.tsx';
@@ -77,7 +77,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
   onTask: (key: string | null) => void;
   /** 業 Leave for another screen: the hunt for what the workshop waits on, the chest for room. */
   onGo?: (where: 'hunt' | 'gear') => void;
-  onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
+  onCarry: (hand: Hand, key: string | null) => void;
   onUse: (key: string) => void;
   onPlace: (key: string, on: boolean) => void;
 }) {
@@ -636,17 +636,24 @@ function Floor({ state, onPlace }: { state: State; onPlace: (key: string, on: bo
 }
 
 /** 攜 What is carried into the next hard fight, and the sure drops waiting on the hunt. */
-function Carry({ state, onCarry }: { state: State; onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void }) {
+function Carry({ state, onCarry }: { state: State; onCarry: (hand: Hand, key: string | null) => void }) {
   if (!skillOpen(state, 'alchemy') && !skillOpen(state, 'sigil') && state.crafts.seek === 0) return null;
-  const hand = (which: 'elixir' | 'sigil') => {
-    const k = state.crafts.carry[which];
+  // 破境丹 The third hand shows once a sealed gate is near (the fourth realm on), or once a
+  // pill is held or carried, so it is never an empty row for somebody who cannot use it.
+  const pillHand = skillOpen(state, 'alchemy') && (state.realm >= 4 || !!state.crafts.carry.pill);
+  const seal = sealDays(state.realm);
+  const left = sealLeft(state);
+  const counts = unsealCarried(state);
+  const held = unsealHeld(state);
+  const hand = (which: Hand) => {
+    const k = state.crafts.carry[which] ?? null;
     const it = k ? ITEM_BY_KEY[splitKey(k).key] : null;
     const q = k ? splitKey(k).quality : null;
     return (
       <div className="row" style={{ marginTop: 8, gap: 10 }}>
         {k ? <Thing k={k} size={32} /> : <span className="cic" style={{ width: 32, height: 32 }} />}
         <span style={{ flex: 1, minWidth: 0, fontSize: 12.5 }}>
-          <i className="faint" style={{ fontStyle: 'normal', display: 'block' }}>{which === 'elixir' ? CRAFTS.carryElixir : CRAFTS.carrySigil}</i>
+          <i className="faint" style={{ fontStyle: 'normal', display: 'block' }}>{which === 'elixir' ? CRAFTS.carryElixir : which === 'sigil' ? CRAFTS.carrySigil : CRAFTS.carryPill}</i>
           <b>{it ? `${q !== null ? `${RARITY_INFO[RARITIES[q]].han} ${RARITY_INFO[RARITIES[q]].name} ` : ''}${it.name} ×${state.crafts.pouch[k!] ?? 0}` : CRAFTS.carryNone}</b>
         </span>
         {k && <button className="act small ghost" onClick={() => onCarry(which, null)}>{CRAFTS.uncarry}</button>}
@@ -659,6 +666,14 @@ function Carry({ state, onCarry }: { state: State; onCarry: (hand: 'elixir' | 's
       <p className="faint" style={{ margin: '4px 0 0', fontSize: 12 }}>{CRAFTS.carrySays}</p>
       {skillOpen(state, 'alchemy') && hand('elixir')}
       {skillOpen(state, 'sigil') && hand('sigil')}
+      {pillHand && hand('pill')}
+      {pillHand && (
+        <p className="ccarry-seal" style={{ margin: '6px 0 0', fontSize: 12 }}>
+          {seal > 0 && left > 0
+            ? (counts > 0 ? CRAFTS.pillBreaks(counts, left) : held > 0 ? CRAFTS.pillHeld(held, left) : CRAFTS.pillNone(left))
+            : seal > 0 && counts > 0 && wardenStands(state) && !state.wardenFell ? CRAFTS.pillWall(counts) : CRAFTS.pillSays}
+        </p>
+      )}
       {state.crafts.seek > 0 && <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>{CRAFTS.seek(state.crafts.seek)}</p>}
     </div>
   );
@@ -671,7 +686,7 @@ function Pouch({ state, looking, setLooking, onCarry, onUse, onPlace }: {
   state: State;
   looking: string | null;
   setLooking: (k: string | null) => void;
-  onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
+  onCarry: (hand: Hand, key: string | null) => void;
   onUse: (key: string) => void;
   onPlace: (key: string, on: boolean) => void;
 }) {
@@ -684,7 +699,7 @@ function Pouch({ state, looking, setLooking, onCarry, onUse, onPlace }: {
     });
   if (keys.length === 0) return <p className="faint" style={{ fontSize: 12.5 }}>{CRAFTS.pouchEmpty}</p>;
   const look = looking && state.crafts.pouch[looking] ? looking : null;
-  const carried = new Set([state.crafts.carry.elixir, state.crafts.carry.sigil].filter(Boolean));
+  const carried = new Set([state.crafts.carry.elixir, state.crafts.carry.sigil, state.crafts.carry.pill].filter(Boolean));
   // 類 One shelf per kind, so a pouch of forty things reads as seven short rows, and the
   // detail opens under the shelf it was tapped on instead of at the foot of all of them.
   const shelves = KIND_ORDER.map((kind) => ({ kind, keys: keys.filter((k) => ITEM_BY_KEY[splitKey(k).key].kind === kind) }))
@@ -724,7 +739,7 @@ function Look({ state, look, onClose, onCarry, onUse, onPlace }: {
   state: State;
   look: string;
   onClose: () => void;
-  onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
+  onCarry: (hand: Hand, key: string | null) => void;
   onUse: (key: string) => void;
   onPlace: (key: string, on: boolean) => void;
 }) {

@@ -452,6 +452,39 @@ for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
     makes: { kind: 'item', item: key }, graded: key !== 'seekincense' }));
 }
 
+/**
+ * 破境丹 The Breakthrough Pills: one for each sealed gate (SEAL_DAYS, the fifth realm to the
+ * eighth), carried in their own hand into the realm's warden. Each counts as
+ * CRAFT_KIT.unseal days of the seal and of the bottleneck, by rank, so the seal breaks at
+ * once and the wall stands as if those days had been waited.
+ *
+ * 時 They have to be in the pouch the day the gate seals, so they are made from what a
+ * cultivator already has there: the herb of the realm below and cinnabar, both gathered a
+ * realm earlier, and an Alchemy level the crafters of tools/habits.ts reach before each of
+ * those gates (measured 2026-10-07: the hourly crafter, the one whose crafts lag furthest
+ * behind the climb, stands at Alchemy 46, 55, 59 and 62 at the four gates). Each level is
+ * one an Alchemy recipe already asks for, so the experience every recipe pays, which is
+ * solved from the levels (see RECIPES below), is what it was.
+ */
+export const BREAKTHROUGH_TIERS: readonly number[] = [5, 6, 7, 8];
+export const breakthroughKey = (tier: number) => `breakthrough${tier}`;
+const BREAKTHROUGH_LEVEL: Readonly<Record<number, number>> = { 5: 40, 6: 45, 7: 51, 8: 56 };
+const unsealTop = Number((CRAFT_KIT.unseal * TOP_MULT).toFixed(2));
+for (const tier of BREAKTHROUGH_TIERS) {
+  const set = REALM_SETS[tier - 1];
+  const key = breakthroughKey(tier);
+  const han = `${set.han}破境丹`;
+  const name = `${set.word} Breakthrough Pill`;
+  item({ key, han, name, kind: 'elixir', realm: tier, icon: 'beams-aura', graded: true,
+    does: `Carried into your realm’s warden, it counts as ${CRAFT_KIT.unseal} days of the gate’s 封 seal and of its 瓶頸 bottleneck `
+      + `(${unsealTop} at ${RARITY_INFO.heaven.name} rank). The seal breaks at once and the wall stands lower. `
+      + `Made for realm ${tier}; ×${CRAFT_KIT.fade} for each realm a gate stands above it. A win spends it, a loss keeps it.` });
+  recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Breakthrough', han, name,
+    level: BREAKTHROUGH_LEVEL[tier], realm: tier, seconds: CRAFT_SECONDS.alchemy,
+    needs: [[TIER_HERB[tier - 2], 2], ['cinnabar', 1]],
+    makes: { kind: 'item', item: key }, graded: true }));
+}
+
 /** 符 Sigils: paper, cinnabar and a beast's ink. The last word of each is what it does. */
 export const SIGILS: readonly [string, string, string, number, number, (readonly [string, number])[], string, string][] = [
   ['warding', '護身符', 'Warding Sigil', 1, 1, [],

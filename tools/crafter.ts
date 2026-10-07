@@ -15,9 +15,9 @@
 import type { State } from '../src/sim/state.ts';
 import type { Beast } from '../src/data/bestiary.ts';
 import { effectiveBeastPower, oddsRaw } from '../src/sim/combat.ts';
-import { power } from '../src/sim/state.ts';
+import { power, sealDays, sealed } from '../src/sim/state.ts';
 import {
-  ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, canSet, carry, carrySlot, held, kitFor, levelIn,
+  HANDS, ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, canSet, carry, carrySlot, held, kitFor, levelIn,
   needsOf, placeArray, recipesOf, known, knownAt, secondsOf, setTask, skillOpen, work, workSeconds,
   workshopOpen, xpOf, type Where,
 } from '../src/sim/crafts.ts';
@@ -71,6 +71,10 @@ const best = (s: State, rs: readonly Recipe[]) => rs.reduce<Recipe | null>((a, r
 function kitTargets(s: State): Recipe[] {
   const out: Recipe[] = [];
   const top = (rs: Recipe[]) => rs.filter((r) => canSet(s, r)).sort((a, b) => b.level - a.level)[0];
+  // 封 A realm whose gate seals: the Breakthrough Pill made for it comes before anything,
+  // because the seal is the one part of the gate no build opens.
+  const pill = sealDays(s.realm) > 0 ? top(RECIPES.filter((r) => r.key === `alchemy:breakthrough${s.realm}`)) : undefined;
+  if (pill) out.push(pill);
   const might = top(RECIPES.filter((r) => r.skill === 'alchemy' && /^alchemy:might\d$/.test(r.key)));
   const guard = top(RECIPES.filter((r) => r.skill === 'alchemy' && /^alchemy:guard\d$/.test(r.key)));
   const strike = top(RECIPES.filter((r) => ['sigil:heavenseal', 'sigil:fivethunder', 'sigil:thunder'].includes(r.key)));
@@ -108,9 +112,21 @@ export function pickTask(s: State, span: number): string | null {
   // 戰 The kit first: a hard fight is where the crafts show, so the pouch never runs low.
   for (const r of kitTargets(s)) {
     const it = itemOf(r);
-    if (!it || stock(s, it) >= STOCK) continue;
+    // 封 One Breakthrough Pill opens one gate, so one in the pouch is stock enough.
+    if (!it || stock(s, it) >= (it.startsWith('breakthrough') ? 1 : STOCK)) continue;
     const t = feed(s, r, span);
     if (t) return t;
+  }
+  // 封 A gate that seals ahead, and an Alchemy level short of the Breakthrough Pill made for
+  // it: the screen names the level on the recipe, and somebody who means to use the pill
+  // levels Alchemy toward it before anything else is levelled.
+  const ahead = [s.realm, s.realm + 1].find((r) => sealDays(r) > 0);
+  const pillAt = ahead ? RECIPES.find((r) => r.key === `alchemy:breakthrough${ahead}`) : undefined;
+  if (pillAt && skillOpen(s, 'alchemy') && levelIn(s, 'alchemy') < pillAt.level) {
+    const r = best(s, runnable(s, span, recipesOf('alchemy')));
+    if (r) return r.key;
+    const top = recipesOf('alchemy').filter((x) => canSet(s, x) && x.makes.kind === 'item').sort((a, b) => b.level - a.level);
+    for (const x of top.slice(0, 3)) { const t = feed(s, x, span); if (t) return t; }
   }
   // 陣 An array not yet cut and a tool not yet forged are each worth more than a level.
   const floor = RECIPES.filter((r) => r.skill === 'array' && canSet(s, r) && stock(s, itemOf(r)!) === 0)
@@ -176,9 +192,12 @@ export function carryBest(s: State, b: Beast, where: Where, standing?: number): 
   const chance = (x: State) => {
     const kit = kitFor(x, b, where).kit;
     const gap = power(x) * kit.strike / (kit.taken * effectiveBeastPower(x, b, standing, kit.breach ?? 0));
-    return oddsRaw(x, b, standing, kit) + 1e-6 * Math.min(1, gap);
+    // 封 A sealed gate is no fight at all, so whatever opens it comes first.
+    const open = where === 'warden' && sealed(x) ? 0 : 2;
+    return open + oddsRaw(x, b, standing, kit) + 1e-6 * Math.min(1, gap);
   };
-  for (const hand of ['elixir', 'sigil'] as const) {
+  // 破境丹 The pill's hand is the gate's alone; anywhere else it is left as it was.
+  for (const hand of HANDS.filter((x) => x !== 'pill' || where === 'warden')) {
     let pick: State = carry(s, hand, null);
     let at = chance(pick);
     for (const k of owned) {

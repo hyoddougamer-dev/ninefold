@@ -1413,6 +1413,37 @@ export const REALM_WALL: readonly number[] = [1, 1, 4, 10, 18, 28, 44, 72, 1];
 export const BOTTLENECK_LOOSEN = 0.3;
 
 /**
+ * 封 How many days the gate of each realm stays sealed after its warden comes out, whatever
+ * the cultivator's power. Index 0 is the first realm; only the fifth to the eighth have one.
+ *
+ * Bruno, 2026-10-06, announced to the players as a proposal and built the day after: the
+ * walls asked something of a build, and a build carried every active cultivator through
+ * them the day they arrived, so the workshop was still worth a day or two of the climb and
+ * nobody needed it. The seal is the part of the gate power cannot open. Waiting it out
+ * always works (nothing is ever taken from somebody for being away), and 破境丹 a
+ * Breakthrough Pill carried into the gate counts as CRAFT_KIT.unseal days of it, so the
+ * seal breaks at once and the wall stands that much lower.
+ *
+ * Measured with tools/seal.ts (2026-10-07), every habit with the workshop and without:
+ * the day the ninth realm opens, before the seal and after it.
+ *
+ *   habit            workshop ignored       workshop used
+ *   once a day       70.0  →  77.0  (+7)    72.0  →  72.0
+ *   casual           64.7  →  66.3  (+1.6)  61.7  →  61.7
+ *   active           45.8  →  49.3  (+3.5)  44.3  →  45.8
+ *   every hour       29.0  →  32.0  (+3)    28.8  →  28.8
+ *   barely fights   101.0  → 101.0          99.0  →  96.0
+ *   never fights    121.0  → 121.0   (every gate already holds them 8 to 12 days)
+ *
+ * Whoever uses the workshop climbs at the pace they did, within a day and a half; whoever
+ * fights and skips it waits out every seal, three to seven days in all; the casual
+ * cultivator, who banks the waiting qi into levels, loses less than two.
+ * The seal grows with the realm because a realm takes longer to climb the higher it is,
+ * so the same share of a realm is more days at the eighth than at the fifth.
+ */
+export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
+
+/**
  * 精 Where each realm's last beast stands, as a multiple of the bare reference: the realm's
  * elite. It gates nothing, so it is set for the strongest builds rather than for everyone,
  * measured off the active and hourly cultivators at that realm's gate (tools/walls.ts), and
@@ -2289,6 +2320,10 @@ export const CRAFT_KIT = {
   // an elixir and a sigil at Heaven rank break 3.5 days, which takes a fresh wall to a
   // third of itself. This is what a crafter makes the walls with, rather than waits.
   breach: 1,
+  // 破境丹 Days of the seal and of the bottleneck a Breakthrough Pill made for the realm
+  // counts as (see SEAL_DAYS): two at Common rank, 3.5 at Heaven, so any pill of the realm
+  // breaks its seal at once, and the wall stands as if those days had been waited.
+  unseal: 2,
 } as const;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */

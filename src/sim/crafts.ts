@@ -29,7 +29,7 @@ import {
 import { opensAt } from './unlocks.ts';
 import {
   ITEM_BY_KEY, LEVEL_CAP, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, SKILL_KEYS, TOOL_METALS, XP_CAP,
-  FORGED, arrayKey, levelOf, pouchKey, splitKey, tierLevel,
+  BREAKTHROUGH_TIERS, FORGED, arrayKey, breakthroughKey, levelOf, pouchKey, splitKey, tierLevel,
   type Recipe, type SkillKey,
 } from '../data/crafts.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -46,6 +46,11 @@ export interface Carry {
   readonly elixir: string | null;
   /** A pouch key: a sigil, with its rank. */
   readonly sigil: string | null;
+  /**
+   * 破境丹 A pouch key: a Breakthrough Pill, with its rank, carried in a hand of its own
+   * because it does one thing only, at one gate. Absent in a save from before the seal.
+   */
+  readonly pill?: string | null;
 }
 
 export interface Crafts {
@@ -83,7 +88,7 @@ const RECIPES_OF: Readonly<Record<SkillKey, readonly Recipe[]>> =
 
 export const NO_CRAFTS: Crafts = {
   xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
-  tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null }, seek: 0,
+  tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null, pill: null }, seek: 0,
 };
 
 /* ── 讀 Reading the workshop ─────────────────────────────────────────────── */
@@ -547,19 +552,25 @@ export function placeArray(s: State, key: string, on: boolean): State {
 
 const SIGIL_CARRIED = new Set(['warding', 'thunder', 'binding', 'mirror', 'purity', 'fivethunder', 'soullock', 'heavenseal']);
 const ELIXIR_CARRIED = new Set(['calmheart', 'nineturn']);
+const PILL_CARRIED = new Set(BREAKTHROUGH_TIERS.map(breakthroughKey));
+
+/** The three hands: an elixir, a sigil, and 破境丹 a Breakthrough Pill for the gate. */
+export type Hand = 'elixir' | 'sigil' | 'pill';
+export const HANDS: readonly Hand[] = ['elixir', 'sigil', 'pill'];
 
 /** Whether a pouch key can be carried into a fight, and in which hand. */
-export function carrySlot(key: string): 'elixir' | 'sigil' | null {
+export function carrySlot(key: string): Hand | null {
   const { key: k, quality } = splitKey(key);
   const it = ITEM_BY_KEY[k];
   if (!it || quality === null) return null;
+  if (PILL_CARRIED.has(k)) return 'pill';
   if (it.kind === 'elixir' && (/^(mend|guard|might)\d$/.test(k) || ELIXIR_CARRIED.has(k))) return 'elixir';
   if (it.kind === 'sigil' && SIGIL_CARRIED.has(k.slice('sigil:'.length))) return 'sigil';
   return null;
 }
 
 /** Carry a thing from the pouch into the next hard fight, or put it back (null). */
-export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): State {
+export function carry(s: State, hand: Hand, key: string | null): State {
   if (key !== null && (carrySlot(key) !== hand || (s.crafts.pouch[key] ?? 0) < 1)) return s;
   return { ...s, crafts: { ...s.crafts, carry: { ...s.crafts.carry, [hand]: key } } };
 }
@@ -569,15 +580,36 @@ export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): S
  * best: what the screen offers when nothing is carried yet, so "carry one" names a number.
  */
 export function breachHeld(s: State, b: Beast): number {
-  let best = { elixir: 0, sigil: 0 };
+  let best = { elixir: 0, sigil: 0, pill: 0 };
   for (const [key, n] of Object.entries(s.crafts.pouch)) {
     const hand = n > 0 ? carrySlot(key) : null;
     if (!hand) continue;
-    const alone = carry(carry(s, 'elixir', null), 'sigil', null);
+    const alone = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
     const days = kitFor(carry(alone, hand, key), b, 'warden').kit.breach ?? 0;
     if (days > best[hand]) best = { ...best, [hand]: days };
   }
-  return best.elixir + best.sigil;
+  return best.elixir + best.sigil + best.pill;
+}
+
+/**
+ * 封 The most days of the gate's seal the pouch could break: the best Breakthrough Pill
+ * held, read at this realm's warden. What the gate's card offers when none is carried.
+ */
+export function unsealHeld(s: State): number {
+  let best = 0;
+  const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
+  if (!b) return 0;
+  for (const [key, n] of Object.entries(s.crafts.pouch)) {
+    if (n <= 0 || carrySlot(key) !== 'pill') continue;
+    best = Math.max(best, kitFor(carry(s, 'pill', key), b, 'warden').kit.unseal ?? 0);
+  }
+  return best;
+}
+
+/** 封 Days of the seal the Breakthrough Pill carried counts as at this realm's gate, or 0. */
+export function unsealCarried(s: State): number {
+  const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
+  return b ? kitFor(s, b, 'warden').kit.unseal ?? 0 : 0;
 }
 
 /** 尋 Use a Seeking Sigil or burn incense: the next beast beaten on the hunt leaves a piece. */
@@ -636,6 +668,8 @@ function fade(tier: number, fightRealm: number): number {
 export interface Used {
   readonly elixir: string | null;
   readonly sigil: string | null;
+  /** 破境丹 The Breakthrough Pill, at a warden only. */
+  readonly pill?: string | null;
 }
 
 export interface Carried {
@@ -650,7 +684,7 @@ export interface Carried {
   readonly used: Used;
 }
 
-export const NOT_USED: Used = { elixir: null, sigil: null };
+export const NOT_USED: Used = { elixir: null, sigil: null, pill: null };
 
 /**
  * 戰 The kit a fight is fought with: what is carried, and the Guardian Array under the
@@ -659,9 +693,9 @@ export const NOT_USED: Used = { elixir: null, sigil: null };
 export function kitFor(s: State, b: Beast, where: Where | null): Carried {
   if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
   const fightRealm = Math.max(1, Math.min(9, fightRealmOf(s, b, where)));
-  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0;
+  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0, unseal = 0;
   let bind = false, revive = false, spends = false;
-  let usedElixir: string | null = null, usedSigil: string | null = null;
+  let usedElixir: string | null = null, usedSigil: string | null = null, usedPill: string | null = null;
 
   const e = s.crafts.carry.elixir;
   if (e && (s.crafts.pouch[e] ?? 0) > 0) {
@@ -707,8 +741,25 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (spends && where === 'warden') breach += CRAFT_KIT.breach * q * f;
     spends = spends || before;
   }
+  // 破境丹 The Breakthrough Pill does one thing, at the gate of a realm with a bottleneck or a
+  // seal: it counts as days of both. Anywhere else it takes no part and is never spent.
+  const p = s.crafts.carry.pill;
+  if (p && where === 'warden' && b.realm === s.realm && b.realm < 9 && (s.crafts.pouch[p] ?? 0) > 0) {
+    const { key, quality } = splitKey(p);
+    const it = ITEM_BY_KEY[key];
+    if (it && PILL_CARRIED.has(key)) {
+      const days = CRAFT_KIT.unseal * CRAFT_QUALITY_MULT[quality ?? 0] * fade(it.realm, fightRealm);
+      unseal += days;
+      breach += days;
+      usedPill = p;
+      spends = true;
+    }
+  }
   if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
-  return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
+  return {
+    kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal },
+    spends, used: { elixir: usedElixir, sigil: usedSigil, pill: usedPill },
+  };
 }
 
 /**
@@ -746,12 +797,13 @@ export function spendKit(s: State, used: Used): State {
   const c = s.crafts;
   const pouch = { ...c.pouch };
   let { elixir, sigil } = c.carry;
-  for (const k of [used.elixir, used.sigil]) {
+  let pill = c.carry.pill ?? null;
+  for (const k of [used.elixir, used.sigil, used.pill ?? null]) {
     if (!k || (pouch[k] ?? 0) < 1) continue;
     addTo(pouch, k, -1);
-    if (!pouch[k]) { if (elixir === k) elixir = null; if (sigil === k) sigil = null; }
+    if (!pouch[k]) { if (elixir === k) elixir = null; if (sigil === k) sigil = null; if (pill === k) pill = null; }
   }
-  return { ...s, crafts: { ...c, pouch, carry: { elixir, sigil } } };
+  return { ...s, crafts: { ...c, pouch, carry: { elixir, sigil, pill } } };
 }
 
 /**
@@ -799,6 +851,25 @@ export function bestKit(s: State, b: Beast, where: Where): Kit {
     mend: CRAFT_KIT.mend * top, bind: sig > 0, revive: alch >= 97,
     breach: where === 'warden' ? CRAFT_KIT.breach * top * (f + (sig > 0 ? 1 : 0)) : 0,
     demon: where === 'demon' ? (1 - CRAFT_KIT.purity * top) * (1 - CRAFT_KIT.calmHeart * top) : 1 };
+}
+
+/**
+ * 封 The most days of a realm's seal a Breakthrough Pill this save's Alchemy could have
+ * made would count as, at Heaven rank: the best tier its level and realm allow, read at
+ * that realm's gate. 驗 the server reads it, because it sees a sealed gate crossed and
+ * never what was carried into it, so it allows the most an honest pill can ever be.
+ */
+export function bestUnseal(s: State, realm: number): number {
+  if (!skillOpen(s, 'alchemy')) return 0;
+  const alch = levelIn(s, 'alchemy');
+  const top = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
+  let best = 0;
+  for (const tier of BREAKTHROUGH_TIERS) {
+    const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(tier)}`];
+    if (!r || tier > realm || tier > s.realm || alch < r.level) continue;
+    best = Math.max(best, CRAFT_KIT.unseal * top * fade(tier, realm));
+  }
+  return best;
 }
 
 /* ── 爐 What the crafts do elsewhere ─────────────────────────────────────── */
@@ -950,9 +1021,13 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     .slice(0, slots);
 
   const rawCarry = rec(o.carry);
-  const hand = (x: unknown, which: 'elixir' | 'sigil') =>
+  const hand = (x: unknown, which: Hand) =>
     typeof x === 'string' && carrySlot(x) === which && (pouch[x] ?? 0) > 0 ? x : null;
-  const carryOut: Carry = { elixir: hand(rawCarry.elixir, 'elixir'), sigil: hand(rawCarry.sigil, 'sigil') };
+  // 破境丹 The third hand holds only a Breakthrough Pill the pouch holds, which the pouch
+  // above only holds if this Alchemy level and realm could have made it.
+  const carryOut: Carry = {
+    elixir: hand(rawCarry.elixir, 'elixir'), sigil: hand(rawCarry.sigil, 'sigil'), pill: hand(rawCarry.pill, 'pill'),
+  };
 
   const task = typeof o.task === 'string' && RECIPE_BY_KEY[o.task]
     && open(RECIPE_BY_KEY[o.task].skill) && level(RECIPE_BY_KEY[o.task].skill) >= RECIPE_BY_KEY[o.task].level

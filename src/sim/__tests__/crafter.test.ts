@@ -3,6 +3,7 @@ import { HABITS, play } from '../../../tools/habits.ts';
 import { validate } from '../state.ts';
 import { levelIn, totalLevel } from '../crafts.ts';
 import { SKILL_KEYS } from '../../data/crafts.ts';
+import { SEAL_DAYS } from '../balance.ts';
 
 /**
  * 業 The crafter, played for a whole climb and read back as a save at every week.
@@ -56,13 +57,21 @@ describe('業 a crafter played for a whole climb', () => {
    * 精 When the elites came to pay triple (2026-10-06) the errand, which took the first of
    * a visit's four hunts, cost five days, and none of them at a gate. The harness now does
    * the learning kill on the way, as the game does: 84 against 85.
+   *
+   * 封 Since the seal (2026-10-07) the workshop is meant to buy something: the gates of
+   * realms 5 to 8 stay shut for SEAL_DAYS after the warden comes out, and a Breakthrough
+   * Pill opens them at once. So it is still never a tax (never two days behind the same
+   * cultivator without it), and what it buys is the seal's own days and no more: once a
+   * day reads 77 against 72, active 49.3 against 45.5 (tools/seal.ts).
    */
-  it.each(['active', 'once a day'])('neither buys nor taxes the climb: %s, within two days of the same cultivator without it', (name) => {
+  it.each(['active', 'once a day'])('never taxes the climb and buys no more than the seal: %s, against the same cultivator without it', (name) => {
     const base = HABITS.find((x) => x.name === name)!;
     const plain = play(base, 400);
     const crafted = name === h.name ? run : play({ ...base, crafts: true }, 400);
     console.log(`    ${name.padEnd(12)} plain day ${plain.days.toFixed(1)}  with the workshop day ${crafted.days.toFixed(1)}`);
     expect(crafted.done).toBe(true);
-    expect(Math.abs(plain.days - crafted.days)).toBeLessThanOrEqual(2);
+    expect(crafted.days - plain.days).toBeLessThanOrEqual(2);
+    const seal = SEAL_DAYS.reduce((a, b) => a + b, 0);
+    expect(plain.days - crafted.days).toBeLessThanOrEqual(seal + 2);
   }, 60_000);
 });
