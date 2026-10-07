@@ -1845,7 +1845,8 @@
       "fields": [
         ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: every beast 1.5% weaker each, never under 40% of itself, and never the Dragon. 聚寶 Fortune: +4% chance at rare gear each. Each pill on the furnace says what all of yours come to now."],
         ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
-        ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit."]
+        ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit. Or begin again: see 轉世 Rebirth below."],
+        ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +2.5% to every second of qi gathered for every doubling of the marks it crossed (1 mark +2.5%, 3 marks +5%, 7 marks +7.5%, 12.5% a life at most), never more than +25% across every life. The Echo is qi gathered only: never the tower, the vault or any other lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), who you are, and your chest filters, and the boards keep the best you ever reached. Everything else begins again. It is never forced and staying loses nothing. Measured: a life at the full Echo reaches the summit 14% to 18% sooner. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
       ]
     },
     {
@@ -1877,7 +1878,7 @@
         "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up."
       ],
       "fields": [
-        ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb.\n塔榜 The Tower: the highest floor."],
+        ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb. A 轉世 rebirth keeps your best on every board.\n塔榜 The Tower: the highest floor."],
         ["▸ On the Android app", "Sign in with your email like anywhere else, and type the 6-digit code from the email into the game. The app never needs to open the link."],
         ["▸ Without an account", "≡ Menu → *Your save* → *Copy the save*, and on the other device *Restore from a copy*. The copy is sealed and restores exactly as it was."],
         ["▸ 盾 Fair play", "Your save is sealed on your device: it reads as noise, and the game notices when one was changed by hand. That keeps the casual edit out. The real guard is the server: every climb on the boards is measured against how much real time has passed, so an edited save, a moved clock or a forged copy never reaches them. An edited save still plays on your device, because nothing is ever taken away. It is just never ranked."]

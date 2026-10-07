@@ -413,6 +413,7 @@ export const MENU = {
   stele: 'The stele',
   credits: 'Credits',
   cards: 'Your Enlightenment cards',
+  rebirth: 'Rebirth',
   report: 'Report a bug',
   /** 量 The two sliders in the menu, each with a mute. */
   sound: 'Sound',
@@ -1168,6 +1169,63 @@ export const AWAKEN = {
       default: return '';
     }
   },
+};
+
+/**
+ * 轉世 Rebirth: the quiet offer on 修, the page that explains it, and the line a new life
+ * opens with. Every number here is read off sim/rebirth.ts and balance.ts, never typed.
+ */
+export const REBIRTH = {
+  title: 'Rebirth',
+  what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A step for every doubling of a life’s marks, under one ceiling for every life together.',
+  lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
+  /** 修 The quiet card, when a life may end. */
+  offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
+  offerFull: 'A new life is open to you. Your Echo is already at its ceiling.',
+  /** 修 The Echo beside the standing rate. */
+  chip: (echo: string) => `Echo ${echo}`,
+  lifeDay: (life: number, day: number) => `life ${life} · day ${day}`,
+  blurb: 'A life may end at the summit once the first Dragon has fallen, and begin again in the first realm. The further it went, the more the next one carries.',
+  locked: (marks: number) => `Opens at the summit, once ${marks === 1 ? 'the first Dragon has' : `${marks} Dragons have`} fallen.`,
+  full: 'Nine lives are remembered, and no more.',
+  nowHead: 'This life',
+  lifeN: (n: number) => `Life ${n}`,
+  depth: (marks: number) => `${marks} ${marks === 1 ? 'mark' : 'marks'} crossed`,
+  inHeaven: (name: string) => `standing in ${name}`,
+  atSummit: 'at the summit',
+  climbing: (realm: string) => `climbing, in ${realm}`,
+  leaveHead: 'The Echo it would leave',
+  leaves: (echo: string) => `${echo} of every second of qi gathered`,
+  nextStep: (marks: number, echo: string) => `At ${marks} marks it would leave ${echo}: a step for every doubling.`,
+  lifeTop: 'A life leaves no more than this.',
+  echoHead: 'Your Echo',
+  echoNow: (now: string, ceiling: string) => `${now} now, of ${ceiling} that every life together can give`,
+  echoAfter: (after: string) => `${after} after this life`,
+  echoCapped: 'At its ceiling. A new life still gives a title and a fresh climb.',
+  carriesHead: 'Carries into the new life',
+  carries: [
+    ['宿慧', 'The Echo', 'qi gathered, under the ceiling'],
+    ['世', 'A title', 'one for every life lived'],
+    ['榜', 'Your records', 'the boards keep the best you reached'],
+    ['相', 'Who you are', 'and the chest’s filters'],
+  ] as readonly (readonly [string, string, string])[],
+  resetsHead: 'Begins again',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop. The marks and the heavens.',
+  staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
+  begin: 'Begin a new life',
+  sure: 'Tap again to end this life',
+  sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
+  cancel: 'Not now',
+  pastHead: 'Lives behind you',
+  past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,
+  /** After it is done. */
+  bornHead: (n: number) => `Life ${n} begins`,
+  born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
+  wear: 'You carry the title',
+  go: 'Begin',
+  close: 'Close',
+  menu: 'Rebirth',
 };
 
 /**

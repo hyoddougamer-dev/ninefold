@@ -68,6 +68,8 @@ import { Secret, Tally } from './ui/Secret.tsx';
 import { Drive } from './ui/Drive.tsx';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Cards } from './ui/Cards.tsx';
+import { Rebirth } from './ui/Rebirth.tsx';
+import { canReincarnate, reincarnate } from '../sim/rebirth.ts';
 import { retrade } from '../sim/retrade.ts';
 import { Schools } from './ui/Schools.tsx';
 import { Compare } from './ui/Compare.tsx';
@@ -197,6 +199,9 @@ export function App() {
   const [comparing, setComparing] = useState(false);
   /** 改 The cards already taken, where one can be traded. */
   const [cards, setCards] = useState(false);
+  /** 轉世 The page of a new life, and whether this visit has just begun one. */
+  const [rebirth, setRebirth] = useState(false);
+  const [born, setBorn] = useState(false);
   // 碑 The stele. A page you visit, not a loop you run, so it lives on the header rather
   // than taking a sixth place in a tab bar that has to fit on a phone.
   const [stele, setStele] = useState(false);
@@ -449,6 +454,13 @@ export function App() {
    */
   const latest = useRef(state);
   latest.current = state;
+  // 轉世 A new life is written at once, and the spare copy with it: the spare is the life
+  // left behind until then, and a main copy lost before the next clean load would bring it back.
+  useEffect(() => {
+    if (!born) return;
+    save(latest.current);
+    keepSpare(latest.current);
+  }, [born]);
 
   // ── 榜 The ranked server ────────────────────────────────────────────────
   // A player who has signed in is synced when the game opens, every five minutes, and
@@ -1062,7 +1074,7 @@ export function App() {
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
   /** 收 What hides the corner Menu. The vault, the tally and the cards keep it, as they always did. */
-  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || stele || credits || saving || realmPage || menu || !!driving
+  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || rebirth || stele || credits || saving || realmPage || menu || !!driving
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   /**
@@ -1129,6 +1141,7 @@ export function App() {
     : book ? () => { setBook(false); sfx.tap(); }
     : comparing ? () => { setComparing(false); sfx.tap(); }
     : cards ? () => { setCards(false); sfx.tap(); }
+    : rebirth ? () => { setRebirth(false); setBorn(false); sfx.tap(); }
     : help ? () => { setHelp(false); sfx.tap(); }
     : ranks ? () => { setRanks(false); sfx.tap(); }
     : inspect ? () => { setInspect(null); sfx.tap(); }
@@ -1273,6 +1286,7 @@ export function App() {
             owesCard={owesCard}
             onAwaken={() => { setAwakenShut(false); sfx.tap(); }}
             onCards={() => { setCards(true); sfx.tap(); }}
+            onRebirth={() => { setRebirth(true); sfx.tap(); }}
             onPlant={(which, key) => { setState((s) => plantSeed(s, which, key)); sfx.buy(); }}
             onHarvest={(which) => { setState((s) => harvestBed(s, which)); sfx.floor(); }}
             onDemon={faceDemon}
@@ -1367,6 +1381,9 @@ export function App() {
               ['釋', MENU.key, () => setKey(true)],
               ['碑', MENU.stele, () => setStele(true)],
               ['悟', MENU.cards, () => setCards(true)],
+              // 轉世 Only once it has ever been possible: before the summit it is a word for nothing.
+              ...((canReincarnate(state) || state.lives.length > 0)
+                ? [['轉', MENU.rebirth, () => setRebirth(true)] as const] : []),
               ['謝', MENU.credits, () => setCredits(true)],
             ] as const).map(([han, label, go]) => (
               <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
@@ -1657,6 +1674,17 @@ export function App() {
             sfx.buy(); haptics.strike();
           }}
           onClose={() => { setComparing(false); sfx.tap(); }} />
+      )}
+      {rebirth && (
+        <Rebirth state={state} born={born}
+          onClose={() => { setRebirth(false); setBorn(false); sfx.tap(); }}
+          onReborn={() => {
+            setState((s) => reincarnate(s, now()));
+            setBorn(true);
+            setTab('cultivate');
+            burst('gold', null, 22, 150);
+            sfx.breakthrough(); haptics.win();
+          }} />
       )}
       {cards && (
         <Cards state={state} onClose={() => { setCards(false); sfx.tap(); }}

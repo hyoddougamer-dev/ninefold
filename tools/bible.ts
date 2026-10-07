@@ -563,8 +563,8 @@ const SYSTEMS: readonly System[] = [
   { han: '氣查', name: 'The audit of the qi', status: 'done', at: 'audit',
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
-  { han: '轉世', name: 'Rebirth', status: 'planned',
-    line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
+  { han: '轉世', name: 'Rebirth', status: 'open',
+    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +2.5% qi gathered for every doubling of the marks it crossed, under +25% for every life together, and a title. Measured by npm run rebirth: a life at the full Echo reaches the summit 14% to 18% sooner. See docs/DRAWER.md.' },
 ];
 
 /** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
@@ -2294,9 +2294,10 @@ const page = `<meta charset="utf-8">
       dirigidos, campo a campo.</div>
 
     <h3>O que falta decidir</h3>
-    <p class="t">Nada está a meio. A única linha do quadro que não está fechada é
-      <b>轉世 Rebirth</b>, e está marcada como <em>planeada</em> só para a decisão ficar
-      escrita: 九境 é puramente vertical, nada faz reset, e todas as barras só sobem.</p>
+    <p class="t">A única linha do quadro que não está fechada é
+      <b>轉世 Rebirth</b>: está construída num ramo à parte e espera pela decisão. A partir
+      do cume, com uma marca, uma vida pode recomeçar no primeiro reino com um 宿慧 Eco de qi
+      que nunca passa de +25%.</p>
   </section>
 
   <section class="sec" id="mockups">
