@@ -609,7 +609,9 @@ describe('陣 an array is an hour of work, and its copies deepen it', () => {
     const after = { ...work(before, T0 + CRAFT_WORK_HOURS * HOUR), at: T0 + CRAFT_WORK_HOURS * HOUR };
     expect(after.crafts.xp.forge).toBeGreaterThan(before.crafts.xp.forge);
     expect(verify(before, after, CRAFT_WORK_HOURS * HOUR).why).not.toContain('too-fast');
-  });
+    // 707 Forging recipes since the forge makes every shape and the Hundredfold pieces: each
+    // one asks for the craft's mastery, so the walk over them is slow and the default 5 s is short.
+  }, 30_000);
 });
 
 describe('陣 arrays', () => {
