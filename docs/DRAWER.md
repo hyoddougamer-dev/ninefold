@@ -68,3 +68,50 @@ Seal commons with talismans, field a team of three, and let it fight other playe
 teams in a weekly league on the ranked server, with the five phases (五行) as the
 rock-paper-scissors. The most different and the most expensive: a new team combat, a new
 server league and new anti-cheat. Risk: it splits the game in two.
+
+---
+
+## 季榜 The Hundred (the competitive season)
+
+**Status:** approved by Bruno on 2026-10-07 as the design for **season 0**; to be adjusted after
+the player feedback is dealt with. Not built. The interactive workbook with every open question
+(21 of them, each with options and the evidence) is
+**https://claude.ai/artifact/Wa1BLrN6FSmjk6FMqgySNq**, and the earlier versions are
+v2 (starting realm, rejected) and v3 (**https://claude.ai/artifact/C3bxLCd76Y3shxuexUaRfD**,
+the one Bruno liked).
+
+**Why it exists.** Reincarnation, measured, does not shorten a climb: only a multiplier does.
+A reset with a bonus is the same game a month later. A season is a *reason to climb again*:
+a fresh life for 12 weeks, the same Law for everybody, its own board.
+
+**The idea.**
+- A season is 12 weeks. Everyone starts a fresh cultivator under the same Law.
+- The top 100 of a season carry a **title and a qi bonus into the next season only**, never
+  stacking and never reaching the Eternal (the main save).
+- Tiers: Champion (rank 1) +20% qi, Sage (2 to 10) +10%, Laurel (11 to 100) +5%.
+  The bolder alternative is +30/+15/+8.
+- The bonus is derived on the server from a verified close, never stored in the save.
+- A starting realm as the reward was **rejected** by Bruno: it starts a life higher up instead
+  of making it faster.
+
+**Why it keeps the economic law.** Capped, one season long, never stacking, and applied on a
+fresh life. Nothing uncapped raises the qi rate.
+
+**Measured (harness `play()` with a qi multiplier).** Days to realm 9 / summit: every hour
+29 / 36, active 46 / 56, casual 65 / 77, once a day 70 / 84, never fights 121 / 134. A qi bonus
+saves about 5% for +5%, 9% for +10%, 16% for +20%, 21% for +30%. So the Champion's +20% is about
+8 days for an active player, 42% of the gap between active and casual. Seasons stay an effort
+contest: under six example Laws the order of the habits never changed. Only qi Laws move pace
+(Thin Qi ×0.85 gives 52/73/79 days; Swift ×1.15 gives 40/56/65). The endgame is a clock of about
+5 days per mark whatever the habit, so a season never reaches it.
+
+**Ladder model (1000 players, 8 seasons, 25% churn).** No reward: top 10 repeats 14%, the
+champion repeats 0%, top 100 kept 56%, new active in the top 100 28%. With +20/+10/+5: 24%, 9%,
+60%, 25%. With +30/+15/+8: 29%, 14%, 61%, 24%. Healthy is a top 10 under 30%.
+
+**What it costs to build.** A second life needs a save slot (client `save.ts` and five call sites
+in `App.tsx`; today `saves` is keyed by `user_id` alone). Server: a migration, season standings,
+sync reading the slot, `verify` reading the Law, new attacks in `tools/ranked.ts`.
+
+**Open (see the workbook):** how big the blessing is, whether qi is the only reward, the length
+of a season, who sets the Law, how a late joiner is treated, and what the main save gets.
