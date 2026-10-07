@@ -18,11 +18,21 @@ import { effectiveBeastPower, oddsRaw } from '../src/sim/combat.ts';
 import { power } from '../src/sim/state.ts';
 import {
   ITEM_BY_KEY, RECIPES, SKILL_KEYS, arraySlots, canSet, carry, carrySlot, held, kitFor, levelIn,
-  needsOf, placeArray, recipesOf, known, knownAt, secondsOf, setTask, skillOpen, work, workSeconds,
+  needsOf, placeArray, recipesOf, known, knownAt, secondsOf, setOrder, setTask, skillOpen, work, workSeconds,
   workshopOpen, xpOf, type Where,
 } from '../src/sim/crafts.ts';
-import { splitKey, type Recipe, type SkillKey } from '../src/data/crafts.ts';
+import {
+  HUNDRED_RANKS, RECIPE_BY_KEY, hundredLevel, splitKey, type HundredRank, type Recipe, type SkillKey,
+} from '../src/data/crafts.ts';
+import { GEAR, SLOTS, type Affix } from '../src/data/gear.ts';
+import { HUNDRED_HEAVEN_MADE, SECONDARIES } from '../src/sim/balance.ts';
+import { CRUCIBLE } from '../src/data/hundred.ts';
+import {
+  lineAxes, materialReached, orderRecipe, piecesMade, placesMade, setOpen, type Order,
+} from '../src/sim/hundred.ts';
 import { limitFor } from '../src/sim/stash.ts';
+import { salvage } from '../src/sim/salvage.ts';
+import { itemWorth } from '../src/sim/chest.ts';
 
 /** How many of the best kit they like to have in the pouch before levelling something else. */
 const STOCK = 3;
@@ -104,7 +114,7 @@ function feed(s: State, r: Recipe, span: number, depth = 0): string | null {
  * `span` is how long until they are back, so a task that would run dry in minutes is
  * passed over for one that keeps going, or for gathering what it is short of.
  */
-export function pickTask(s: State, span: number): string | null {
+export function pickTask(s: State, span: number, forgeFirst = false): string | null {
   // 戰 The kit first: a hard fight is where the crafts show, so the pouch never runs low.
   for (const r of kitTargets(s)) {
     const it = itemOf(r);
@@ -112,6 +122,10 @@ export function pickTask(s: State, span: number): string | null {
     const t = feed(s, r, span);
     if (t) return t;
   }
+  // 百煉 Then the Hundredfold piece in the crucible, if there is one: it, or what feeds it.
+  const o = s.crafts.order;
+  const piece = o ? orderRecipe(o) : undefined;
+  if (piece) { const t = feed(s, piece, span); if (t) return t; }
   // 陣 An array not yet cut and a tool not yet forged are each worth more than a level.
   const floor = RECIPES.filter((r) => r.skill === 'array' && canSet(s, r) && stock(s, itemOf(r)!) === 0)
     .sort((a, b) => FLOOR_ORDER.indexOf(a.key.slice(6)) - FLOOR_ORDER.indexOf(b.key.slice(6)));
@@ -122,8 +136,9 @@ export function pickTask(s: State, span: number): string | null {
   // whatever feeds the best recipe it has. Arrays level like any other craft: making
   // another copy is how Arrays climbs, the way a player levels it, and since 2026-10-05
   // every ten copies deepen that array too, so here any array it can make and pay for counts.
+  // 百煉 Somebody chasing the sets levels the forge before the rest.
   const open = SKILL_KEYS.filter((k) => skillOpen(s, k))
-    .sort((a, b) => levelIn(s, a) - levelIn(s, b));
+    .sort((a, b) => (forgeFirst ? Number(b === 'forge') - Number(a === 'forge') : 0) || levelIn(s, a) - levelIn(s, b));
   for (const k of open) {
     const r = best(s, k === 'array'
       ? recipesOf('array').filter((x) => canSet(s, x) && lasts(s, x) >= 1)
@@ -150,7 +165,14 @@ export function toLearn(s: State, safe: readonly Beast[]): Beast | undefined {
  * 業 One visit to the workshop: settle what ran while they were away, cut what arrays
  * they can into the floor, and set it going on the next thing.
  */
-export function craftVisit(s: State, now: number, span: number): State {
+/**
+ * 百煉 How a crafter takes the Hundredfold sets: not at all, levelling Forging first like
+ * somebody chasing them ('forge'), or keeping all seven crafts level as the workshop's own
+ * crafter does and forging the sets as the levels come ('spread').
+ */
+export type SetChase = false | 'forge' | 'spread';
+
+export function craftVisit(s: State, now: number, span: number, hundred: SetChase = false): State {
   if (!workshopOpen(s)) return s;
   s = work(s, now);
   const slots = arraySlots(levelIn(s, 'array'));
@@ -158,8 +180,53 @@ export function craftVisit(s: State, now: number, span: number): State {
     if (s.crafts.arrays.length >= slots) break;
     s = placeArray(s, key, true);
   }
-  const want = pickTask(s, Math.min(span, workSeconds(s)));
-  return want === s.crafts.task ? s : setTask(s, want, now);
+  // 百煉 The crucible is filled with the next piece on the plan, if there is one.
+  const plan = hundred ? hundredPlan(s) : null;
+  // 藏 A set-chaser makes room for the piece: the least worth of what is not kept goes to the melt.
+  if (plan && s.chest.length >= limitFor(s) - 1) {
+    const spare = s.chest.filter((x) => !x.locked && !x.hundred)
+      .sort((a, b) => itemWorth(a) - itemWorth(b)).slice(0, s.chest.length - limitFor(s) + 3);
+    s = salvage(s, spare.map((x) => x.id));
+  }
+  const planned = plan ? { ...s, crafts: { ...s.crafts, order: plan } } : s;
+  const want = pickTask(planned, Math.min(span, workSeconds(s)), hundred === 'forge');
+  if (want === s.crafts.task && (!plan || sameOrder(plan, s.crafts.order))) return s;
+  if (plan && want && RECIPE_BY_KEY[want]?.makes.kind === 'hundred') return setOrder(s, plan, now);
+  return setTask(plan ? { ...s, crafts: { ...s.crafts, order: plan } } : s, want, now);
+}
+
+const sameOrder = (a: Order, b: Order | null | undefined) => !!b && JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * 百煉 The order of a Hundredfold crafter: the lowest realm's set first, each place made at
+ * the best rank the forge allows (Heaven once five of the set are made), the shape the one
+ * that leads with 力 power where there is one, and every line chosen for the fight, three
+ * portions each, from the materials the veins and the knife can give. Null when nothing is
+ * left to make or nothing can be made yet.
+ */
+export function hundredPlan(s: State): Order | null {
+  if (!skillOpen(s, 'forge')) return null;
+  const forge = levelIn(s, 'forge');
+  const ORDER: readonly Affix[] = ['power', 'sunder', 'art', 'rate', 'luck', 'refine', 'find', 'capacity'];
+  for (let realm = 1; realm <= s.realm; realm++) {
+    if (!setOpen(s.killed, realm)) continue;
+    const made = placesMade(s.crafts.made, realm);
+    const ranks = HUNDRED_RANKS.filter((r) => hundredLevel(realm, r) <= forge
+      && (r !== 'heaven' || piecesMade(s.crafts.made, realm) >= HUNDRED_HEAVEN_MADE));
+    for (let i = ranks.length - 1; i >= 0; i--) {
+      const rarity: HundredRank = ranks[i];
+      const at = HUNDRED_RANKS.indexOf(rarity);
+      for (const slot of SLOTS) {
+        if (made[slot] >= at) continue;
+        const shapes = GEAR.filter((g) => g.realm === realm && g.slot === slot);
+        const tpl = shapes.find((g) => g.affix === 'power') ?? shapes[0];
+        const axes = ORDER.filter((a) => lineAxes(tpl).includes(a) && materialReached(s, CRUCIBLE[a](realm)));
+        if (axes.length < SECONDARIES[rarity]) continue;
+        return { template: tpl.key, rarity, main: 3, lines: axes.slice(0, SECONDARIES[rarity]).map((affix) => ({ affix, n: 3 })) };
+      }
+    }
+  }
+  return null;
 }
 
 /**

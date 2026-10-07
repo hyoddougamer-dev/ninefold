@@ -4,7 +4,7 @@ import {
   type Recipe, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, plateOf } from '../../data/bestiary.ts';
-import { AFFIX_INFO, RARITIES, RARITY_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
+import { AFFIX_INFO, RARITIES, RARITY_INFO, SLOT_INFO, TEMPLATE_BY_KEY } from '../../data/gear.ts';
 import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -29,6 +29,8 @@ import { Svg } from '../ui/Svg.tsx';
 import { CRAFTS, WORKSHOP_FIX } from '../copy.ts';
 import { keep, oneOf, recall, useRemembered } from '../prefs.ts';
 import { pictureOf } from '../../data/pictures.ts';
+import { Hundred } from '../ui/Hundred.tsx';
+import type { Order } from '../../sim/hundred.ts';
 
 /** 開 The craft whose level opens this one before its realm, and at what level, if any. */
 const feederOf = (skill: SkillKey) => {
@@ -72,9 +74,11 @@ function hay(r: Recipe): string {
  * like every other bar in the game, so the screen and the save can never disagree about
  * how far along the make is.
  */
-export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo }: {
+export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo, onOrder }: {
   state: State;
   onTask: (key: string | null) => void;
+  /** 百煉 Fill the crucible and set the forge going on it, or empty it. */
+  onOrder?: (o: Order | null) => void;
   /** 業 Leave for another screen: the hunt for what the workshop waits on, the chest for room. */
   onGo?: (where: 'hunt' | 'gear') => void;
   onCarry: (hand: 'elixir' | 'sigil', key: string | null) => void;
@@ -135,7 +139,8 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
   // why I should not be able to craft lower-tier stuff."* The sim never refused it; only
   // this list did. A search reaches every realm already open.
   const needle = find.trim().toLowerCase();
-  const all = mine.filter((r) => (needle
+  // 百煉 The Hundredfold pieces are made from the crucible, never from a row of the list.
+  const all = mine.filter((r) => r.makes.kind !== 'hundred' && (needle
       ? hay(r).includes(needle)
       : (groups.length < 2 || r.group === shown))
     && (r.makes.kind !== 'gear' || (needle ? r.realm <= state.realm
@@ -259,7 +264,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
           ))}
         </div>
       )}
-      {mine.length > 10 && (
+      {mine.length > 10 && !(skill === 'forge' && shown === 'Hundredfold') && (
         <div className="cfilter">
           <input type="search" value={find} placeholder={CRAFTS.findHint} aria-label={CRAFTS.findHint}
             onChange={(e) => setFind(e.target.value)} />
@@ -285,6 +290,9 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
         {tier === 'near' ? CRAFTS.gearShown(state.realm) : CRAFTS.gearOf(tier)} {CRAFTS.forgedRule}</p>}
 
       {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
+      {open && skill === 'forge' && shown === 'Hundredfold' && !needle && onOrder
+        ? <Hundred state={state} onOrder={onOrder} />
+        : (
       <div className="crecipes" data-preview={!open || undefined}>
         {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
           {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
@@ -294,6 +302,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
         ))}
         {later > 0 && <p className="faint" style={{ margin: '2px 0 0', fontSize: 12 }}>{CRAFTS.later(later)}</p>}
       </div>
+        )}
       </div>
       </div>
 
@@ -452,6 +461,11 @@ function Out({ r, size }: { r: Recipe; size: number }) {
     const t = SKILL_BY_KEY[r.makes.skill].tool;
     return <span className="cic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
       <Emblem family="craft" subject={toolArt(r.makes.skill)} icon={t.icon} size={Math.round(size * 0.72)} alt={t.name} /></span>;
+  }
+  // 百煉 A Hundredfold piece: its place, in its realm's colour, until the crucible names the shape.
+  if (r.makes.kind === 'hundred') {
+    return <span className="cic cr-gearic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>
+      <Svg html={icon(SLOT_INFO[r.makes.slot].empty, Math.round(size * 0.62))} /></span>;
   }
   const tpl = TEMPLATE_BY_KEY[r.makes.template];
   const picture = <span className="cic cr-gearic" style={{ width: size, height: size, color: realmOf(r.realm).colour }}>

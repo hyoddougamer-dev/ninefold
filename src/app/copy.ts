@@ -2377,6 +2377,79 @@ export const WORKSHOP_FIX = {
 };
 
 /** 突破 What a realm hands over, said before the cards, and each one a way in. */
+/**
+ * 百煉 The Hundredfold sets and 譜 the codex, in the workshop's Forging panel (ui/Hundred.tsx).
+ * Every number in these lines is passed in, read off sim/balance.ts and sim/hundred.ts.
+ */
+export const HUNDRED = {
+  group: 'Hundredfold',
+  head: '百煉 Hundredfold sets',
+  intro: 'Nine sets, one for every realm, made only here. You choose the shape and the rank, and every line comes from what you put in the crucible: one, two or three portions put it at the bottom, middle or top of its rank.',
+  tabs: { crucible: 'Crucible', sets: 'Sets', codex: 'Codex' } as Record<'crucible' | 'sets' | 'codex', string>,
+  realm: 'Set',
+  place: 'Place',
+  shape: 'Shape',
+  rank: 'Rank',
+  main: 'Main line',
+  mainFrom: (ingots: string) => `from ${ingots}`,
+  line: (i: number) => `Line ${i}`,
+  pick: 'Choose a line',
+  portions: (n: number) => `${n} ${n === 1 ? 'portion' : 'portions'}`,
+  portionNote: (each: number) => `A portion is ${each} of the material for a piece of this realm.`,
+  out: 'What comes out',
+  versus: (p: string, q: string) => `Worn in place of yours: power ×${p}, qi ×${q}`,
+  versusEmpty: (p: string, q: string) => `Worn in an empty place: power ×${p}, qi ×${q}`,
+  needs: 'The crucible asks for',
+  takes: (time: string) => `${time} at the anvil`,
+  forge: 'Forge it',
+  forging: 'In the crucible now',
+  empty: 'Empty the crucible',
+  heldBack: 'Nothing is spent until the piece is made.',
+  why: {
+    level: (n: number) => `Forging ${n} first`,
+    heaven: (n: number, made: number) => `Heaven asks ${n} pieces of this set made first (${made} so far)`,
+    open: (elite: string, warden: string) => `Know the ${elite} (ten killed) and the ${warden} (one) first: their parts go into every piece`,
+    material: (name: string) => `${name} is not within your reach yet`,
+    chest: 'Your chest is full',
+    lines: 'Choose every line first',
+  },
+  setsNote: 'Each set is six places. Each place counts once, at the best rank you have made it.',
+  placeMade: (rank: string) => `made at ${rank}`,
+  placeNot: 'not made',
+  finished: (rank: string) => `Finished at ${rank}`,
+  unfinished: (n: number) => `${n} of 6 places made`,
+  wornNow: (n: number) => `${n} worn now`,
+  steps: '百煉 Worn together, Hundredfold pieces of one set add',
+  step2: (pct: number) => `elixirs and sigils carried do ${pct}% more`,
+  step4: (days: number) => `each thing carried into a warden breaks ${days} day more of its bottleneck`,
+  step6: (x: number) => `the set's codex bonus counts ×${x}`,
+  codexNote: (mystic: number, earth: number, heaven: number, worn: number) =>
+    `Finish a set once, all six places, and it leaves a bonus for good. Finished at Mystic it counts ×${mystic}, at Earth ×${earth}, at Heaven ×${heaven}; wearing the whole set doubles it again (×${worn}). Nothing here touches the qi rate.`,
+  codexSays: {
+    hunt: (pct: number) => `+${pct}% material from every kill`,
+    elite: (pct: number) => `elites stand ${pct}% weaker`,
+    vault: (pct: number) => `the vault's gates stand ${pct}% weaker`,
+    demon: (pct: number) => `the heart demon stands ${pct}% weaker`,
+    work: (pct: number) => `the workshop works ${pct}% faster`,
+    bond: (pct: number) => `+${pct}% bond for every win`,
+    gates: (days: number) => `each thing carried breaks ${days} day more of a bottleneck`,
+    tower: (pct: number) => `tower floors stand ${pct}% weaker`,
+    platform: (pct: number) => `Platform challengers stand ${pct}% weaker`,
+  },
+  codexNow: (v: string) => `Now ${v}`,
+  codexNone: 'Not earned yet: finish all six places of the set at any rank.',
+  codexAt: (rank: string) => `finished at ${rank}`,
+  /** The fourth step on a codex row: Heaven, with the whole set worn, which is also its cap. */
+  codexWhole: 'Heaven, worn whole',
+  unreached: 'not within your reach yet',
+  levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
+  spiritHead: '器靈 Artifact Spirit',
+  spiritNote: 'Wear all six pieces of one set, every one Hundredfold and Heaven, and its spirit wakes around you. It is a light and a name, and nothing else.',
+  spiritAwake: (set: string) => `The spirit of ${set} is awake`,
+  spiritAsleep: 'Asleep: no set is worn whole at Heaven.',
+  spiritLine: (set: string) => `器靈 The spirit of ${set} walks with you`,
+};
+
 export const OPENED = {
   head: 'Opened in this realm',
   /** The tab a system lives on, at the end of its row. */

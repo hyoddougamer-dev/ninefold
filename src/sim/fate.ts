@@ -6,6 +6,7 @@ import { isOpen } from './unlocks.ts';
 import { classBond } from './schools.ts';
 import type { State } from './state.ts';
 import { deepDrop } from './record.ts';
+import { codexValue } from './hundred.ts';
 
 /**
  * 緣 The bond with a beast, and the drop it promises.
@@ -29,9 +30,13 @@ export function fateDue(s: State, b: Beast): boolean {
   return fateOf(s, b.key).n + 1 >= fateFull(s);
 }
 
-/** 運 How many wins fill a bond on this body: fewer for a Fortune Seeker. */
+/**
+ * 運 How many wins fill a bond on this body: fewer for a Fortune Seeker. 譜 落星 The Fallen
+ * Star codex gives every win more bond, which is the same bar filled in fewer wins.
+ */
 export function fateFull(s: State): number {
-  return classBond(s);
+  const bond = codexValue(s, 'bond');
+  return bond > 0 ? Math.max(1, Math.ceil(classBond(s) / (1 + bond) - 1e-9)) : classBond(s);
 }
 
 /** What a full bar promises from this beast: an index into RARITIES. */

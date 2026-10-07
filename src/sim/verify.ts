@@ -60,6 +60,7 @@ import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
 import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
 import { equip } from './chest.ts';
+import { hundredFits } from './hundred.ts';
 
 /**
  * 始 No save can have begun before the game existed, so a first sync is measured from
@@ -538,7 +539,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // left where it was would make the next Dragon the one just beaten, every two days.
   else if (newMarks > 0 && after.tribulationAt < anchorFloor(before, after.tribulation) * 0.999) why.push('anchor');
 
-  if (!gearFits(after)) why.push('gear');
+  // 百煉 And every Hundredfold thing one the forge could have made: see hundredFits.
+  if (!gearFits(after) || !hundredFits(after)) why.push('gear');
   if (freePoints(after) < 0) why.push('dao');
   // 道 The bank the road and the vault's shrines pay into: the most each newly answered
   // meeting could hand over, and a walk through the vault every DOOR_GAP at most (one

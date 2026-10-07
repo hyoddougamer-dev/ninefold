@@ -349,6 +349,12 @@ export interface Item {
    * will allow me to protect a set pieces from destroyed them in any way."*
    */
   readonly locked?: true;
+  /**
+   * 百煉 A Hundredfold piece: forged (`from` is `forge`), every line chosen at the crucible.
+   * validate() keeps the mark only where the save's own count of pieces made backs it, and
+   * holds every line to the band a crucible could have put it in (sim/hundred.ts).
+   */
+  readonly hundred?: true;
 }
 
 /** 煉 What one refine level adds to every line: REFINE_PER_LEVEL, in balance.ts. */

@@ -123,6 +123,16 @@ export interface Habit {
    * whole workshop is worth to the ladder, played greedily (see tools/crafter.ts).
    */
   readonly crafts?: boolean;
+  /**
+   * 百煉 Whether the crafter also forges the Hundredfold sets, lowest realm first, every
+   * place at the best rank the forge allows (tools/crafter.ts hundredPlan).
+   */
+  readonly hundred?: 'forge' | 'spread';
+  /**
+   * 續 Whether they play on past the summit until `maxDays`, the way somebody chasing the
+   * long goals does: the climb stops at the ninth realm, the forge does not.
+   */
+  readonly on?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -543,7 +553,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     s = next;
   };
 
-  while ((t - T0) / DAY < maxDays && layersOpened(s) < LAYERS - 1) {
+  while ((t - T0) / DAY < maxDays && (h.on || layersOpened(s) < LAYERS - 1)) {
     // 入定 the part of the visit spent looking at it, walked in steps so the ramp counts.
     const open = h.minutes * 60;
     const deeper = focusBonus(s.unlocked);
@@ -791,7 +801,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts) {
-      s = craftVisit(s, t, tick);
+      s = craftVisit(s, t, tick, h.hundred ?? false);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];

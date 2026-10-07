@@ -23,12 +23,13 @@
  * comes from. Eleven levels is one realm's worth of material, so each rank of a craft
  * arrives beside a step of the climb, and no craft can run ahead of the mountain.
  */
-import { BEASTS, type Beast } from './bestiary.ts';
-import { ARCHETYPES, RARITY_INFO, REALM_SETS } from './gear.ts';
+import { BEASTS, commonsOf, wardenOf, type Beast } from './bestiary.ts';
+import { ARCHETYPES, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, type Slot } from './gear.ts';
 import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SPEED, CRAFT_ARRAY_TWICE, CRAFT_ARRAY_WORK, CRAFT_ARRAY_XP,
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
   CRAFT_TOOL_STEPS,
+  HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
@@ -226,7 +227,9 @@ for (const b of BEASTS) {
 export type Makes =
   | { readonly kind: 'item'; readonly item: string }
   | { readonly kind: 'tool'; readonly skill: SkillKey; readonly step: number }
-  | { readonly kind: 'gear'; readonly template: string; readonly beast: string };
+  | { readonly kind: 'gear'; readonly template: string; readonly beast: string }
+  /** 百煉 A Hundredfold piece of a realm's set, for one place, at a rank the forge chose. */
+  | { readonly kind: 'hundred'; readonly realm: number; readonly slot: Slot; readonly rarity: HundredRank };
 
 export interface Recipe {
   readonly key: string;
@@ -383,7 +386,7 @@ for (const b of BEASTS) {
  * 丹 Elixirs: three lines of nine, one herb and one beast of that realm each. The tier is
  * the realm the elixir is made for (see CRAFT_KIT.fade).
  */
-const TIER_HERB = ['moss', 'orchid', 'dragonblood', 'lotus', 'ginseng', 'fern', 'vine', 'beard', 'peach'];
+export const TIER_HERB = ['moss', 'orchid', 'dragonblood', 'lotus', 'ginseng', 'fern', 'vine', 'beard', 'peach'];
 export const ELIXIR_LINES = [
   { key: 'mend', han: '回', name: 'Mending', icon: 'round-potion', step: 0, nth: 0,
     names: [['回春散', 'Spring-Return Powder'], ['續骨膏', 'Bone-Setting Salve'], ['生肌丹', 'Flesh-Knitting Pill'],
@@ -531,6 +534,42 @@ for (const [key, han, name, level, realm, needs, icon] of ARRAYS) {
 }
 
 /**
+ * 百煉 The Hundredfold pieces: one recipe for each realm, place and rank, 162 of them. The
+ * shape and every line are the crucible's (sim/hundred.ts reads the order and adds what it
+ * asks for to these needs), so the recipe holds only what every piece of it costs: its
+ * realm's ingots for one portion of the main line, two parts of the realm's 霸 elite and
+ * one of its warden. The first realm has no elite, and its warden gives all three.
+ */
+export type HundredRank = 'mystic' | 'earth' | 'heaven';
+export const HUNDRED_RANKS: readonly HundredRank[] = ['mystic', 'earth', 'heaven'];
+/** 百煉 The Forging level a Hundredfold piece of this realm asks for at this rank. */
+export const hundredLevel = (realm: number, rank: HundredRank) =>
+  Math.min(HUNDRED_LEVEL_TOP[rank], tierLevel(realm) + HUNDRED_LEVEL[rank]);
+/** 霸 Whose parts a Hundredfold piece of this realm asks for: its elite, or in the first realm its warden. */
+export const hundredElite = (realm: number): Beast => {
+  const c = commonsOf(realm);
+  return realm >= 2 && c.length ? c[c.length - 1] : wardenOf(realm);
+};
+export const hundredKey = (realm: number, slot: Slot, rank: HundredRank) => `forge:hundred:${realm}:${slot}:${rank}`;
+REALM_SETS.forEach((set, i) => {
+  const realm = i + 1;
+  const elite = hundredElite(realm);
+  const warden = wardenOf(realm);
+  const parts: (readonly [string, number])[] = elite.key === warden.key
+    ? [[partKey(warden.key), HUNDRED_ELITE_PARTS + HUNDRED_WARDEN_PARTS]]
+    : [[partKey(elite.key), HUNDRED_ELITE_PARTS], [partKey(warden.key), HUNDRED_WARDEN_PARTS]];
+  for (const slot of SLOTS) {
+    for (const rank of HUNDRED_RANKS) {
+      recipe({ key: hundredKey(realm, slot, rank), skill: 'forge', group: 'Hundredfold',
+        han: `${set.han}${SLOT_INFO[slot].han}`, name: `Hundredfold ${set.word} ${SLOT_INFO[slot].name}`,
+        level: hundredLevel(realm, rank), realm, seconds: HUNDRED_SECONDS, remains: elite.key,
+        needs: [[metalKey(realm), HUNDRED_INGOTS], ...parts],
+        makes: { kind: 'hundred', realm, slot, rarity: rank }, graded: false });
+    }
+  }
+});
+
+/**
  * 經 Experience, from one number.
  *
  * A recipe pays in proportion to its time and grows with its level, and each craft's
@@ -542,7 +581,8 @@ const growth = (level: number) => 1 + level / 8;
 export const RECIPES: readonly Recipe[] = (() => {
   const scale: Record<string, number> = {};
   for (const s of SKILLS) {
-    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools');
+    // 百煉 The Hundredfold pieces are left out too: a goal beside the craft, not a step of it.
+    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools' && r.group !== 'Hundredfold');
     let hours = 0;
     for (let l = 1; l < LEVEL_CAP; l++) {
       const best = Math.max(...mine.filter((r) => r.level <= l).map((r) => r.level));

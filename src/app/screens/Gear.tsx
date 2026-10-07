@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import { fightDeps, shelf } from '../memo.ts';
 import {
   AFFIX_INFO, RARITIES, RARITY_INFO, SET_STEPS, SLOTS, SLOT_INFO,
-  activeSets, callingOf, primaryOf, schoolOf, templateOf, wornRarity, wornTotals,
+  activeSets, callingOf, primaryOf, realmSet, schoolOf, templateOf, wornRarity, wornTotals,
   type Affix, type Item, type Rarity, type Slot,
 } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
@@ -18,6 +18,9 @@ import type { State } from '../../sim/state.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { gearTile, wornRim } from '../../art/gear.ts';
+import { spiritRim } from '../../art/spirit.ts';
+import { spiritOf } from '../../sim/hundred.ts';
+import { HUNDRED } from '../copy.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Calling } from '../ui/Calling.tsx';
 import { Term } from '../ui/Term.tsx';
@@ -127,6 +130,8 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   }));
   const sets = activeSets(state.worn);
   const best = wornRarity(state.worn);
+  // 器靈 A Hundredfold set worn whole at Heaven: its spirit's light over the portrait. Looks only.
+  const spirit = spiritOf(state.worn);
   // 煉 Fusing opens with 妖丹 at the third realm, when there is junk enough to melt.
   // 算 Counted when the chest moves, not on every tick: a big chest has a hundred groups.
   const groups = useMemo(() => (isOpen(state.realm, 'fuse') ? fusable(state.chest) : []),
@@ -350,6 +355,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
           <svg className="wrim" viewBox={`0 0 ${S} ${S}`} aria-hidden="true">
             <g dangerouslySetInnerHTML={{ __html: wornRim(best, S) }} />
           </svg>
+          {spirit !== null && (
+            <svg className="wspirit" viewBox={`0 0 ${S} ${S}`} aria-hidden="true">
+              <g dangerouslySetInnerHTML={{ __html: spiritRim(realmOf(spirit).colour, S) }} />
+            </svg>
+          )}
         </div>
         {SLOTS.map((slot, i) => {
           const a = (i / SLOTS.length) * Math.PI * 2 - Math.PI / 2;
@@ -373,6 +383,9 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       {/* 職 The class the body wears: read off it, never stored. */}
       <Calling worn={state.worn} onBook={onBook} onCompare={onCompare} />
 
+      {spirit !== null && (
+        <p className="wspirit-line" style={{ color: realmOf(spirit).colour }}>{HUNDRED.spiritLine(realmSet(spirit).name)}</p>
+      )}
       {best && (
         <p className="faint" style={{ fontSize: 12.5, textAlign: 'center', margin: 0 }}>
           {GEAR.bestLead} <span className="cjk" style={{ color: RARITY_INFO[best].colour }}>
