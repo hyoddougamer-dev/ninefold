@@ -41,7 +41,8 @@ import {
 import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
-import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
+import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
+import { backHundred, bandTop } from './hundred.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -892,6 +893,8 @@ export function validate(raw: unknown, now: number): State {
     // allowed, and every value is capped at what the last realm's top rank could roll.
     const seenAffix = new Set<Affix>();
     const rolls: Roll[] = [];
+    // 百煉 A Hundredfold piece is held to the band its crucible could have put each line in.
+    const marked = o.hundred === true && o.from === FORGED && HUNDRED_RANKS.includes(rarity as HundredRank);
     for (const raw of Array.isArray(o.rolls) ? o.rolls : []) {
       if (rolls.length > SECONDARIES[rarity]) break;          // one primary plus its share
       const r = (raw ?? {}) as Record<string, unknown>;
@@ -905,7 +908,8 @@ export function validate(raw: unknown, now: number): State {
       // tenth), so the cap is rounded the same way, or an honest 藏 1 came back as 0.9 and a
       // full chest lost a piece on every load (2026-10-05).
       const most = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : SECONDARY_SHARE) * FUSE_TOP * 1.001;
-      const top = Math.max(most, roundValue(affix, most));
+      const top = marked ? bandTop(tpl, rarity as HundredRank, affix, rolls.length === 0)
+        : Math.max(most, roundValue(affix, most));
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
@@ -921,7 +925,7 @@ export function validate(raw: unknown, now: number): State {
     // names is locked whatever the save says, because a loadout whose piece can be melted
     // out from under it is not a loadout (see sets.ts setLocked).
     const locked = o.locked === true || inSets.has(id) ? { locked: true as const } : {};
-    return { id, template: tpl.key, rarity, rolls, ...from, ...locked };
+    return { id, template: tpl.key, rarity, rolls, ...from, ...locked, ...(marked ? { hundred: true as const } : {}) };
   };
 
   const used = new Set<string>();
@@ -1032,6 +1036,8 @@ export function validate(raw: unknown, now: number): State {
 
   const elapsed = Math.max(0, now - startedAt);
   const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
+  // 百煉 A Hundredfold mark stays only where the pieces made back it (sim/hundred.ts).
+  const marks = backHundred(crafts.made);
   // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
   // cut, so holding one is what widens the ceiling, placed or lifted out, and at its
   // deepest step (shortestDoorGap), since it may have been that deep all along.
@@ -1058,8 +1064,8 @@ export function validate(raw: unknown, now: number): State {
       ? (num(o.gateAt, 0) > 0 ? clamp(num(o.gateAt, 0), 1, now) : 1) : 0,
     levels,
     killed,
-    worn,
-    chest,
+    worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,
+    chest: chest.map(marks),
     refined,
     unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached

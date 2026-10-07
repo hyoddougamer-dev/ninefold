@@ -21,6 +21,7 @@ import { BOON_BLOOD, BOON_LOTUS, QUARRY_HOURS, midRate } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
+import { codexFoe, codexValue } from './hundred.ts';
 
 export { NO_KIT, type Kit };
 export { isElite };
@@ -203,7 +204,7 @@ function setup(s: State, b: Beast, standing?: number, kit: Kit = NO_KIT): Setup 
     pp,
     // A tower floor brings its own power; everywhere else the beast brings its own.
     bp0: (standing === undefined ? effectiveBeastPower(s, b, undefined, kit.breach ?? 0) : effectiveBeastPower(s, b, standing))
-      * (b.key === DEMON_KEY ? kit.demon : 1),
+      * (b.key === DEMON_KEY ? kit.demon : 1) * (kit.foe ?? 1),
     artStrike: (tribulation ? 1 : gearArt(s)) * classArts(s),
     // 羅漢 The Arhat mends a little every round, as 續 Endure does.
     // 蓮 And the lotus seed from the monk on the road, for somebody who walked kindly.
@@ -427,7 +428,9 @@ export function lootFrom(s: State, b: Beast): number {
   // week at all: 狩 the hunt row, 圍 the drive, and the line under 鬥 the arena.
   const week = isQuarry(s, b) ? QUARRY_LOOT : 1;
   // 精 And this beast's own deep marks, so every screen that quotes it quotes them too.
-  return Math.round(Math.max(own, Math.round(floor)) * week * deepMaterial(s.killed[b.key] ?? 0));
+  // 譜 凡鐵 And the Mortal Iron codex: more from every kill.
+  return Math.round(Math.max(own, Math.round(floor)) * week * deepMaterial(s.killed[b.key] ?? 0)
+    * (1 + codexValue(s, 'hunt')));
 }
 
 /** How many fights the odds are read from. Enough to be steady, cheap enough to be free. */
@@ -532,7 +535,9 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number, breac
   const base = standing ?? beastPower(b) * bottleneck(s, b, breach);
   // 心魔 The heart demon is the cultivator's own power and nothing thins it: no sunder,
   // no bane, no blood method, no class. See sim/seclusion.ts.
-  if (b.key === DEMON_KEY && standing !== undefined) return standing;
+  // 譜 霜銀 The one exception is the Frostsilver codex, capped (CODEX_CAP.demon), as Calm
+  // Heart and the Purity Sigil are through the kit.
+  if (b.key === DEMON_KEY && standing !== undefined) return standing * codexFoe(s, 'demon');
   const trial = standing === undefined && b.key === 'dragon' && s.realm === 9;
   if (trial) {
     // 劫 The tribulation is lightning, not a beast. 破甲 and 破煞 thin what has blood in
@@ -554,7 +559,11 @@ export function effectiveBeastPower(s: State, b: Beast, standing?: number, breac
   // 血 The blood method from the road, for somebody who walked hard. The Dragon is
   // returned above, before this line, so it never reaches the tribulation.
   const blood = hasBoon(s, 'blood') ? BOON_BLOOD : 1;
-  return base * beastWeakness(s.unlocked) * pillBane(s.brewed) * gearSunder(s) * tower * warden * blood;
+  // 譜 The codex of the sets finished: 枯骨 elites, 龍骸 the tower's floors, 仙蛻 the
+  // Platform's challengers, each capped (CODEX_CAP) so no fight is ever a free win.
+  const codex = standing === undefined ? (isElite(b) ? codexFoe(s, 'elite') : 1)
+    : b.challenger !== undefined ? codexFoe(s, 'platform') : codexFoe(s, 'tower');
+  return base * beastWeakness(s.unlocked) * pillBane(s.brewed) * gearSunder(s) * tower * warden * blood * codex;
 }
 
 /**

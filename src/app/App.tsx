@@ -26,7 +26,7 @@ import {
 } from '../sim/platform.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
-  carry, kitFor, kitWhere, placeArray, setTask, spendOnWin, spendSeek, takeSeeking, tookPart, work,
+  carry, kitFor, kitWhere, placeArray, setOrder, setTask, spendOnWin, spendSeek, takeSeeking, tookPart, work,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
 import { splitKey } from '../data/crafts.ts';
@@ -1310,6 +1310,7 @@ export function App() {
           <Crafts state={state}
             onGo={(where) => { setTab(where); sfx.tap(); }}
             onTask={(key) => { setState((s) => setTask(s, key, now())); sfx.tap(); haptics.tap(); }}
+            onOrder={(o) => { setState((s) => setOrder(s, o, now())); sfx.buy(); haptics.tap(); }}
             onCarry={(hand, key) => { setState((s) => carry(s, hand, key)); sfx.tap(); }}
             onUse={(key) => { setState((s) => takeSeeking(s, key)); sfx.buy(); }}
             onPlace={(key, on) => { setState((s) => placeArray(s, key, on)); sfx.buy(); }} />

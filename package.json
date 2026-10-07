@@ -48,7 +48,8 @@
     "ranks": "tsx tools/ranks.mjs",
     "itch": "node tools/itch.mjs",
     "sounds": "node tools/sounds.mjs",
-    "freeclimb": "tsx tools/freeclimb.ts"
+    "freeclimb": "tsx tools/freeclimb.ts",
+    "hundredfold": "tsx tools/hundredfold.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

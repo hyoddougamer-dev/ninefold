@@ -37,5 +37,10 @@ export interface Kit {
    * Zero everywhere else.
    */
   readonly unseal?: number;
+  /**
+   * 譜 What the other side's power is multiplied by, for a fight the cultivator's own codex
+   * thins where nothing else names it: 古銅 the vault's gates (sim/hundred.ts). 1 elsewhere.
+   */
+  readonly foe?: number;
 }
 export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0, unseal: 0 };
