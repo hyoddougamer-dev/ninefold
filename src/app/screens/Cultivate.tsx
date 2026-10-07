@@ -1,4 +1,4 @@
-import { breachHeld, kitFor, kitWhere } from '../../sim/crafts.ts';
+import { breachHeld, kitFor, kitWhere, unsealCarried, unsealHeld } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -11,7 +11,7 @@ import { BOTTLENECK_LOOSEN } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
-  power, tribulationPool, upgradeCost,
+  power, sealDays, sealLeft, tribulationPool, upgradeCost, wardenStands,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
@@ -135,6 +135,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // whether the bar is full. See wardenStands: buying the upgrades that beat it used to
   // make it vanish.
   const standing = canFightWarden(state);
+  // 封 The warden out at a sealed gate: the card stands, its fight waits. See sealLeft.
+  const atGate = !state.wardenFell && !top && wardenStands(state);
+  const sealDue = atGate ? sealLeft(state) : 0;
+  const unseal = atGate && sealDays(state.realm) > 0 ? unsealCarried(state) : 0;
+  const sealNow = Math.max(0, sealDue - unseal);
+  const unsealOwned = atGate && sealDue > 0 && !unseal ? unsealHeld(state) : 0;
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
@@ -386,7 +392,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       </div>
 
       <div className="c-side">
-      {standing && (
+      {(standing || atGate) && (
         <>
           <h2 className="heading">
             {top ? CULTIVATE.tribulationNext(state.tribulation + 1) : CULTIVATE.wardenHead}
@@ -423,9 +429,25 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                 </span>
               </p>
             )}
-            <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
-              戰 <span>Fight</span>
-            </button>
+            {sealDays(state.realm) > 0 && atGate && (
+              <p className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                {sealDue > 0
+                  ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, unseal) : CULTIVATE.sealed(sealDue))
+                  : CULTIVATE.sealServed}{' '}
+                {sealDue > 0 && !unseal && (
+                  <span className="faint">{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}</span>
+                )}
+              </p>
+            )}
+            {standing ? (
+              <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
+                戰 <span>Fight</span>
+              </button>
+            ) : (
+              <button className="act" data-tone="cinnabar" data-sealed="true" disabled>
+                封 <span>{CULTIVATE.sealedButton(sealNow)}</span>
+              </button>
+            )}
           </div>
         </>
       )}

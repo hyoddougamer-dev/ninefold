@@ -21,7 +21,7 @@
  */
 
 import { ART_BEND, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
-import { pct as percent } from '../sim/format.ts';
+import { duration, pct as percent } from '../sim/format.ts';
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
 import { RARITY_INFO } from '../data/gear.ts';
@@ -268,6 +268,19 @@ export const CULTIVATE = {
     `Your pouch could break up to ${days.toFixed(1)} days of it: carry an elixir and a sigil from 業 the workshop.`,
   breachNone: 'An elixir or a sigil from 業 the workshop breaks days of it, and cores, 爐 pills and gear raise you to meet it.',
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
+  /**
+   * 封 The seal, said where the warden is (realms 5 to 8): how long it still holds, what a
+   * carried Breakthrough Pill does to it, and that waiting always opens it.
+   */
+  sealed: (left: number) =>
+    `封 Sealed: from the fifth realm on, the gate stays shut for a while after its warden comes out, however strong you are. It opens by itself in ${duration(left * 86_400)}.`,
+  sealBroken: (left: number, days: number) =>
+    `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry counts as ${days.toFixed(1)} days: the seal breaks at once and the bottleneck stands lower. It is spent only if you win.`,
+  sealHeld: (days: number) =>
+    `Your pouch holds a Breakthrough Pill worth ${days.toFixed(1)} days: carry it in 業 the workshop and fight now.`,
+  sealNone: 'A Breakthrough Pill from 業 Alchemy breaks it at once. Nothing is lost while you wait.',
+  sealServed: '封 The seal has run out. The gate is open.',
+  sealedButton: (left: number) => `Sealed · ${duration(left * 86_400)}`,
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
   /** 劫 The heading names the crossing still to come, and the line under the realm's name
@@ -598,6 +611,12 @@ export const ADVICE = {
   /** 瓶頸 Blocked at a fresh wall with something in the pouch that breaks it. */
   breach: (days: number) =>
     `The warden is still in its 瓶頸 bottleneck. Carry an elixir and a sigil from 業 the workshop: they break up to ${days.toFixed(1)} days of it.`,
+  /** 封 A sealed gate, and a Breakthrough Pill in the pouch that is not in its hand. */
+  sealPill: (days: number) =>
+    `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: it counts as ${days.toFixed(1)} days, and the seal breaks at once.`,
+  /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
+  sealWait: (left: number) =>
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait; a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -1497,7 +1516,7 @@ export const PLATFORM = {
   nextButton: (ordinal: string) => `The ${ordinal.toLowerCase()}`,
   answeredLine: (temper: string, by: string) => `${temper}, answered by ${by}.`,
   unansweredLine: (temper: string) => `${temper}, unanswered: it stood \u00d71.3 again.`,
-  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
+  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power, a little more of it every realm. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
   temperWhat: 'The week\u2019s temper on 擂台 the Platform: unanswered, a challenger stands \u00d71.3 again. A stance or one art in your sequence answers it.',
 };
 
@@ -2251,9 +2270,20 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps both. Never the tribulation’s Dragon.',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. Never the tribulation’s Dragon.',
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
+  /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
+  carryPill: '破境 Breakthrough, for the gate',
+  pillSays: 'From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once and thins the bottleneck. Waiting it out always works too.',
+  pillBreaks: (days: number, left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill counts as ${days.toFixed(1)} days: the seal breaks at once, and it is spent only if you win.`,
+  pillHeld: (days: number, left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it counts as up to ${days.toFixed(1)} days.`,
+  pillNone: (left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself.`,
+  pillWall: (days: number) =>
+    `The seal is open. Your pill still counts as ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',
   carry: 'Carry',
   uncarry: 'Put back',
@@ -2280,6 +2310,12 @@ export const CRAFTS = {
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
   gearOf: (realm: number) => `Showing the gear of realm ${realm}.`,
+  /** 百形 The forge's list by place on the body, and the shapes a warden teaches. */
+  slots: 'Which place on the body',
+  slotAll: 'All',
+  realmShort: (n: number) => `Realm ${n}`,
+  anyShapeLocked: (warden: string, realm: number) =>
+    `百形 Beat the ${warden} and the forge makes every shape of realm ${realm}, all fifty-four, not only the ones its beasts teach.`,
   /** 鑄 The row of realms above the forge's gear list. */
   tiers: 'Which realm',
   tierNow: 'Now',

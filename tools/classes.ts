@@ -31,8 +31,8 @@ export function playPlain(): number {
   return play(active()).arrival[8];
 }
 
-export function playClass(build: Build, marks = 40): ClassRun {
-  const h = { ...active(), name: `active ${build}`, calling: build };
+export function playClass(build: Build, marks = 40, seed?: number): ClassRun {
+  const h = { ...active(), name: `active ${build}`, calling: build, ...(seed !== undefined ? { seed } : {}) };
   let held = 0, days = 0;
   const run = play(h, 400, (_d, s) => {
     days++;

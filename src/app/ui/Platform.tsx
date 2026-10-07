@@ -5,7 +5,7 @@ import { ART_BY_KEY, STANCE_BY_KEY } from '../../data/arts.ts';
 import { kitFor } from '../../sim/crafts.ts';
 import { duration, num } from '../../sim/format.ts';
 import {
-  PLATFORM_EDGE, TIERS, answered, beatenNow, challengeOdds, challengerOf, challengerPays,
+  TIERS, edgeLabel, answered, beatenNow, challengeOdds, challengerOf, challengerPays,
   challengerPower, standingTier, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { stanceChoices } from '../../sim/arts.ts';
@@ -108,7 +108,7 @@ export function Platform({ state, onChallenge, onStance }: {
             <span className="plwho">
               <b><span className="cjk">{HAN[tier]} {shape.han}</span> {shape.name}</b>
               <i>
-                {PLATFORM.edge(String(PLATFORM_EDGE[tier]))}
+                {PLATFORM.edge(edgeLabel(tier, state.realm))}
                 {beaten ? <> {'·'} {PLATFORM.beaten}</>
                   : standing ? <> {'·'} <Term han="力" /> {num(brings)}{best ? <> {PLATFORM.inStance(`${best.han} ${best.name}`)}</> : null}</>
                     : <> {'·'} {PLATFORM.waits}</>}

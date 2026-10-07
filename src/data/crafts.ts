@@ -249,6 +249,11 @@ export interface Recipe {
   readonly graded: boolean;
   readonly does?: string;
   /**
+   * 百形 A shape no beast of its realm leaves, which the warden's lesson opens: the forge
+   * makes it once that realm's warden has fallen (see `remains`). Gear only.
+   */
+  readonly anyShape?: boolean;
+  /**
    * 丹符 How many light makes one make of this recipe is: CRAFT_KIT_WORK for a pill or a
    * sigil, CRAFT_ARRAY_WORK for an array, 1 for everything else. Its time and every need
    * are already multiplied by it; the marks and the third mark's saving read it (see `marks`).
@@ -366,17 +371,36 @@ recipe({ key: `forge:${REALM_KEY}`, skill: 'forge', group: 'Tools', han: '鑰', 
  */
 const ARCH = Object.fromEntries(ARCHETYPES.map((a) => [a.key, a]));
 const GEAR_STEP = [0, 2, 4, 7];
-for (const b of BEASTS) {
+const gearRecipe = (b: Beast, shape: string, anyShape = false) => {
+  const a = ARCH[shape];
+  if (!a) return;
   const set = REALM_SETS[b.realm - 1];
-  for (const shape of b.leaves) {
-    const a = ARCH[shape];
-    if (!a) continue;
-    recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
-      name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
-      seconds: CRAFT_SECONDS.forge * 1.5,
-      needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
-      makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true });
-  }
+  recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
+    name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
+    seconds: CRAFT_SECONDS.forge * 1.5,
+    needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
+    makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true,
+    ...(anyShape ? { anyShape: true, remains: b.key } : {}) });
+};
+for (const b of BEASTS) for (const shape of b.leaves) gearRecipe(b, shape);
+
+/**
+ * 百形 Every shape of a realm, once its warden has fallen.
+ *
+ * Each beast teaches the three shapes it leaves, so a realm's four beasts teach twelve of
+ * the fifty-four, and which twelve was never chosen for the six schools: measured on
+ * 2026-10-06, the fifth realm's own beasts reach four places of 法 Arts at most, and the
+ * ninth realm has no 體 Body shape at all, so a pure set of one school out of one realm was
+ * impossible whatever a cultivator did. So the warden teaches the rest: once it has fallen,
+ * the forge makes any shape of the realm in the realm's metal, at the warden's own price
+ * (its level, two of its parts, three ingots and the material). The drop tables do not
+ * change; a forged piece still cannot be fused and melts back into its metal, never qi.
+ */
+for (let realm = 1; realm <= 9; realm++) {
+  const warden = BEASTS.find((b) => b.warden && b.realm === realm);
+  if (!warden) continue;
+  const taught = new Set(BEASTS.filter((b) => b.realm === realm).flatMap((b) => b.leaves));
+  for (const a of ARCHETYPES) if (!taught.has(a.key)) gearRecipe(warden, a.key, true);
 }
 
 /**
@@ -450,6 +474,39 @@ for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Special', han, name, level, realm,
     seconds: key === 'nineturn' ? CRAFT_SECONDS.alchemy * 2.5 : CRAFT_SECONDS.alchemy, needs,
     makes: { kind: 'item', item: key }, graded: key !== 'seekincense' }));
+}
+
+/**
+ * 破境丹 The Breakthrough Pills: one for each sealed gate (SEAL_DAYS, the fifth realm to the
+ * eighth), carried in their own hand into the realm's warden. Each counts as
+ * CRAFT_KIT.unseal days of the seal and of the bottleneck, by rank, so the seal breaks at
+ * once and the wall stands as if those days had been waited.
+ *
+ * 時 They have to be in the pouch the day the gate seals, so they are made from what a
+ * cultivator already has there: the herb of the realm below and cinnabar, both gathered a
+ * realm earlier, and an Alchemy level the crafters of tools/habits.ts reach before each of
+ * those gates (measured 2026-10-07: the hourly crafter, the one whose crafts lag furthest
+ * behind the climb, stands at Alchemy 46, 55, 59 and 62 at the four gates). Each level is
+ * one an Alchemy recipe already asks for, so the experience every recipe pays, which is
+ * solved from the levels (see RECIPES below), is what it was.
+ */
+export const BREAKTHROUGH_TIERS: readonly number[] = [5, 6, 7, 8];
+export const breakthroughKey = (tier: number) => `breakthrough${tier}`;
+const BREAKTHROUGH_LEVEL: Readonly<Record<number, number>> = { 5: 40, 6: 45, 7: 51, 8: 56 };
+const unsealTop = Number((CRAFT_KIT.unseal * TOP_MULT).toFixed(2));
+for (const tier of BREAKTHROUGH_TIERS) {
+  const set = REALM_SETS[tier - 1];
+  const key = breakthroughKey(tier);
+  const han = `${set.han}破境丹`;
+  const name = `${set.word} Breakthrough Pill`;
+  item({ key, han, name, kind: 'elixir', realm: tier, icon: 'beams-aura', graded: true,
+    does: `Carried into your realm’s warden, it counts as ${CRAFT_KIT.unseal} days of the gate’s 封 seal and of its 瓶頸 bottleneck `
+      + `(${unsealTop} at ${RARITY_INFO.heaven.name} rank). The seal breaks at once and the wall stands lower. `
+      + `Made for realm ${tier}; ×${CRAFT_KIT.fade} for each realm a gate stands above it. A win spends it, a loss keeps it.` });
+  recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Breakthrough', han, name,
+    level: BREAKTHROUGH_LEVEL[tier], realm: tier, seconds: CRAFT_SECONDS.alchemy,
+    needs: [[TIER_HERB[tier - 2], 2], ['cinnabar', 1]],
+    makes: { kind: 'item', item: key }, graded: true }));
 }
 
 /** 符 Sigils: paper, cinnabar and a beast's ink. The last word of each is what it does. */

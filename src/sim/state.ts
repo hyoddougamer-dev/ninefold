@@ -35,11 +35,11 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
+  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { NO_CRAFTS, shortestDoorGap, validCrafts, type Crafts } from './crafts.ts';
+import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
 import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
 
@@ -726,7 +726,33 @@ export function wardenStands(s: State): boolean {
  * that a second screen forgets.
  */
 export function canFightWarden(s: State): boolean {
-  return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s));
+  return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s) && !sealed(s));
+}
+
+/** 封 How many days a realm's gate stays sealed after its warden comes out: SEAL_DAYS. */
+export function sealDays(realm: number): number {
+  return realm >= 1 && realm <= 9 ? SEAL_DAYS[realm - 1] ?? 0 : 0;
+}
+
+/**
+ * 封 Days of the seal still to run at this realm's gate, with `unseal` days of a carried
+ * 破境丹 Breakthrough Pill counted as already waited. 0 when the gate is open: no seal in
+ * this realm, the warden not out yet or already beaten, or the time served. A gate a save
+ * holds without a time (gateAt 1, one from before the bottleneck) was met long ago.
+ */
+export function sealLeft(s: State, unseal = 0): number {
+  const days = sealDays(s.realm);
+  if (days <= 0 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
+  const waited = Math.max(0, (s.at - s.gateAt) / 86_400);
+  return Math.max(0, days - waited - Math.max(0, unseal));
+}
+
+/**
+ * 封 Whether the gate is sealed against a fight right now, with what is carried: a
+ * Breakthrough Pill in its hand breaks the seal, and waiting it out always does.
+ */
+export function sealed(s: State): boolean {
+  return sealLeft(s, unsealCarried(s)) > 0;
 }
 
 /**

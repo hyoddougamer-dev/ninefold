@@ -19,11 +19,18 @@ const DAY = 86_400;
 const T0 = 1_700_000_000;
 const SYNC = 300;
 
-/** A body standing on the first rung of a realm with both qi upgrades at `lv`. */
+/**
+ * A body standing on the first rung of a realm with both qi upgrades at `lv`, and the three
+ * arts of the climb in its sequence. 擂 Since the edge grows with the realm (platformEdge,
+ * 2026-10-07) a body with nothing but its levels can no longer take the third challenger
+ * from the seventh realm on at all, so the body that claims all three has the arts that win
+ * it; the one without them is the last test below.
+ */
 const body = (realm: number, lv: number): State => ({
   ...newState(T0), realm, layer: 0, qi: 0, materials: 0, wardenFell: false, stance: 'endure',
   levels: { technique: realm * 6, method: lv, pills: lv, cores: realm * 6 + 18 },
   at: T0 + 30 * DAY, startedAt: T0, runAt: T0, springAt: T0, spring: 0, tower: 0,
+  killed: { crane: 1, tiger: 1, direwolf: 1 }, sequence: ['crane', 'tiger', 'wolf'],
 } as State);
 
 const allThree = (s: State): State => ({ ...beatChallenger(beatChallenger(beatChallenger(s, 0), 1), 2), at: s.at + SYNC });
@@ -67,6 +74,15 @@ describe('擂 three challengers in one sync are honest', () => {
       const extra = 3 * challengerQi(r, 2) * PAIR_BOUNTY * 2;
       expect(verify(before, { ...after, qi: after.qi + extra }, SYNC).why, `realm ${r}`).toContain('too-fast');
     }
+  });
+
+  it('but a third challenger the body could never have won waits, now that the edge grows', () => {
+    // The same levels with no arts: ×5% against the third at the flat edge, nothing at the
+    // seventh realm's grown one. A wait, never a strike: the stance in hand is not in the save.
+    const bare = { ...body(7, 0), killed: {}, sequence: [] } as State;
+    const v = verify(bare, allThree(bare), SYNC);
+    expect(v.why).toContain('too-fast');
+    expect(v.strike).toBe(false);
   });
 
   it('credits a bout no more than the third\'s Vajra pay', () => {

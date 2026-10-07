@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
 import { currentWarden } from '../../sim/combat.ts';
 import { progress } from '../../sim/time.ts';
-import { canFightWarden, type State } from '../../sim/state.ts';
+import { canFightWarden, wardenStands, type State } from '../../sim/state.ts';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
@@ -42,7 +42,8 @@ export function Ladder({ state }: { state: State }) {
   // so what this rung really shows is the head start you are building for the next realm.
   const here = state.wardenFell ? 1 : progress(state);
   // 守 Lit once the last rung is reached, and it stays lit. See wardenStands.
-  const wardenUp = canFightWarden(state);
+  // 封 And lit while its gate is sealed: the warden is out, only the fight waits.
+  const wardenUp = canFightWarden(state) || (!state.wardenFell && state.realm < 9 && wardenStands(state));
 
   return (
     <div className="ladder" data-coach="ladder">

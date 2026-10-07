@@ -432,7 +432,7 @@ describe('戰 what is carried into a fight', () => {
     s = carry(carry(s, 'elixir', 'might6@4'), 'sigil', 'sigil:purity@4');
     const w = wardenOf(6);
     const k = kitFor(s, w, kitWhere(s, w));
-    expect(k.used).toEqual({ elixir: 'might6@4', sigil: null });
+    expect(k.used).toEqual({ elixir: 'might6@4', sigil: null, pill: null });
     s = spendKit(s, k.used);
     expect(s.crafts.pouch['might6@4']).toBe(2);
     expect(s.crafts.pouch['sigil:purity@4']).toBe(3);
@@ -706,7 +706,7 @@ describe('守 a save is input', () => {
     expect(forged.pouch).not.toHaveProperty('moss@1');
     expect(forged.tools.herb).toBe(0);
     expect(forged.arrays).toEqual([]);
-    expect(forged.carry).toEqual({ elixir: null, sigil: null });
+    expect(forged.carry).toEqual({ elixir: null, sigil: null, pill: null });
     expect(forged.seek).toBe(0);   // no Sigil Writing and no Alchemy: nothing it holds could have left a sure drop
     expect(forged.task).toBeNull();
   });

@@ -15,7 +15,7 @@ import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
   canFightWarden, condense,
-  newState, power, upgradeCost, type State,
+  newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
 import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
@@ -584,8 +584,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // 業 Somebody who crafts looks at the pouch first: the kit changes the odds, so it
     // changes how many cores they have to condense before the fight looks worth it.
     const kitOf = (x: State) => (h.crafts ? kitFor(x, wardenOf(x.realm), 'warden') : { kit: NO_KIT, spends: false, used: NOT_USED });
+    // 封 And they carry before asking whether the gate is open, since in realms 5 to 8 a
+    // Breakthrough Pill in its hand is what opens it.
+    if (h.crafts && (canFightWarden(s) || (!s.wardenFell && wardenStands(s)))) s = carryBest(s, wardenOf(s.realm), 'warden');
     if (canFightWarden(s)) {
-      if (h.crafts) s = carryBest(s, wardenOf(s.realm), 'warden');
       for (let i = 0; i < 40; i++) {
         if (odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.5 || !canCondense(s)) break;
         s = spend(condense(s));
@@ -791,7 +793,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts) {
-      s = craftVisit(s, t, tick);
+      s = craftVisit(s, t, tick, h.calling);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];

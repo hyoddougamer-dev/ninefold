@@ -30,5 +30,12 @@ export interface Kit {
    * days longer (CRAFT_KIT.breach). Zero everywhere else.
    */
   readonly breach?: number;
+  /**
+   * 封 Days of the gate's seal a 破境丹 Breakthrough Pill carried into the warden counts as
+   * (CRAFT_KIT.unseal, by rank and realm). They are in `breach` as well: a day of the seal
+   * counted is a day of the wall counted, so the wall stands as if they had been waited.
+   * Zero everywhere else.
+   */
+  readonly unseal?: number;
 }
-export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0 };
+export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0, unseal: 0 };

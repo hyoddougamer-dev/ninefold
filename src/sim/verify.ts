@@ -34,11 +34,11 @@ import {
   ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
-import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
+import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
 import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
-  UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
-  newState, type State,
+  UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, sealDays, sealLeft, tribulationScale, upgradeCost,
+  newState, wardenStands, type State,
 } from './state.ts';
 import { layerCost } from './time.ts';
 import { beastPower, beatable, quarryQi, seenBounty } from './combat.ts';
@@ -49,7 +49,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestKit, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
@@ -341,6 +341,28 @@ function metCeiling(before: State, after: State, dt: number, first = false): num
   return road + (Math.ceil(Math.max(0, dt) / gap) + Math.ceil(Math.max(0, dt) / 86_400) + 2) * RUN_DAO_CEILING;
 }
 
+/**
+ * 封 Room for a phone's clock a little ahead of the server's, on a seal read in real seconds.
+ */
+export const SEAL_GRACE = 3600;
+
+/**
+ * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
+ * the least: each gate's SEAL_DAYS less the most an honest Breakthrough Pill could count
+ * as there (bestUnseal, at Heaven rank). A gate the earlier save already stood at owes only
+ * what was left of its seal then; one it had not reached owes all of it.
+ */
+export function sealSeconds(before: State, after: State): number {
+  let days = 0;
+  for (let r = before.realm; r < Math.min(9, after.realm); r++) {
+    const pill = bestUnseal(after, r);
+    if (r === before.realm && before.wardenFell) continue;
+    if (r === before.realm && wardenStands(before)) days += sealLeft(before, pill);
+    else days += Math.max(0, sealDays(r) - pill);
+  }
+  return days * 86_400;
+}
+
 /** 業 The seconds of work the experience gained between two saves took, at its fastest. */
 export function craftSeconds(before: State, after: State): number {
   let t = 0;
@@ -502,6 +524,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
     const there = { ...after, realm: r, layer: 8, gateAt: 1 };
     if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
+  // 封 And every sealed gate crossed stood shut for its days, less what a Breakthrough Pill
+  // this save's Alchemy could have made counts as. Time is the honest way through it, so
+  // a seal crossed too soon is a matter of time and waits, like a clock moved on.
+  if (sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) why.push('too-fast');
   // 業 One task at a time, so the experience every craft gained between two saves has to
   // fit in the seconds between them, at the fastest each one can ever be worked.
   if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
@@ -658,7 +684,8 @@ export function platformBeatable(s: State): boolean {
   return bodiesHeld(s).some((b) => {
     const shape = challengerOf(b, tier);
     // The temper answered: the challenger at its edge alone.
-    const standing = power(b) * PLATFORM_EDGE[tier];
+    // 擂 At the realm's own edge (platformEdge), the one the phone's challenger stood at.
+    const standing = power(b) * platformEdge(tier, b.realm);
     return beatable(b, shape, standing, { ...bestKit(b, shape, 'platform'), wound: TRAIL_WOUND });
   });
 }
