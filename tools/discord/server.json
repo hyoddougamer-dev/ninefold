@@ -1594,7 +1594,89 @@
           "Everything here can still change. The polls on the workshop stay open until 13 October, and the thread in {#ideas} is the place to argue with me. Thank you for every report that shaped this."
         ]
       ],
-      "footer": "師 Shibaki"
+      "footer": "師 Shibaki",
+      "polls": [
+        {
+          "question": "The Breakthrough Pill breaks the seal and takes at least half of the wall. How does it feel?",
+          "answers": [
+            [
+              "🙂",
+              "About right: a real tool"
+            ],
+            [
+              "➕",
+              "Still too little"
+            ],
+            [
+              "➖",
+              "Too much, the gates matter less"
+            ],
+            [
+              "🤷",
+              "I haven't reached a gate yet"
+            ]
+          ]
+        },
+        {
+          "question": "A Hundredfold piece takes 20 minutes at the anvil, and the cost is in what you gather. Better?",
+          "answers": [
+            [
+              "👍",
+              "Yes, no waiting"
+            ],
+            [
+              "📦",
+              "Make it cost more material"
+            ],
+            [
+              "⏳",
+              "I preferred hours at the anvil"
+            ]
+          ]
+        },
+        {
+          "question": "Rebirth keeps an Echo of up to +25% qi, the codex and a title. Would you take it?",
+          "answers": [
+            [
+              "🔥",
+              "Yes, at the first chance"
+            ],
+            [
+              "⌛",
+              "Only when the Echo is bigger"
+            ],
+            [
+              "🛑",
+              "No, I would rather stay"
+            ],
+            [
+              "💡",
+              "I want something else kept (say in ideas)"
+            ]
+          ]
+        },
+        {
+          "question": "Which should come next?",
+          "answers": [
+            [
+              "📜",
+              "Drive: keep or melt the drops"
+            ],
+            [
+              "👹",
+              "Stronger elites, so power matters"
+            ],
+            [
+              "🌿",
+              "More ways to spend Path points"
+            ],
+            [
+              "🧱",
+              "Hold the layer: choose when it opens"
+            ]
+          ]
+        }
+      ]
     },
     {
       "key": "update-2026-10-07-small",
@@ -3624,6 +3706,19 @@
       "reply": [
         "The sitting does survive a tab switch, and your question about it deepening is a fair one: the answer is no, on purpose. Time spent off the screen is paid at the depth the sitting had when you left and never deepens it, because a tab left open all day would otherwise climb weeks faster than anyone sitting there. The help line says so now, in the next update.",
         "Your idea of a longer sitting through a path node or a class is on my list. I will measure it before I answer.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "The trials tower bug",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Thank you for the report, and for confirming it was fixed after a reload. The bug let a beast miss every round, so some fights were won that no build could win. The ranked server measures every floor against the body that won it, so floors won that way cannot stand on the board.",
+        "I checked the server's records: no account other than the ones already put right has a refused or marked save, so nothing is holding you back there. The usual reason for not appearing on the ranks is that the game is not signed in on that device (an account that is not signed in plays as a guest, named 修士 and a code). Open the 榜 Ranks tab and sign in with your email, and your honest climb will go up as it syncs. If it still does not, tell me the exact line the game shows.",
         "· 師 Shibaki"
       ]
     }
