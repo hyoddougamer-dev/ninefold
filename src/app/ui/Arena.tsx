@@ -20,7 +20,7 @@ import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { ARENA, CRAFTS, PLATFORM, SECLUSION, UNIT, meltPays } from '../copy.ts';
 import {
-  PLATFORM_EDGE, answerOf, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
+  PLATFORM_EDGE, answerOf, edgeLabel, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
@@ -443,7 +443,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                     : PLATFORM.unansweredLine(`${temper.han} ${temper.name}`)}{' '}
                   {!outcome.won ? PLATFORM.dice
                     : nextShape && nextUp !== null
-                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, String(PLATFORM_EDGE[nextUp]), num(challengerPays(state, nextUp)))
+                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, edgeLabel(nextUp, state.realm), num(challengerPays(state, nextUp)))
                       : PLATFORM.done}
                 </i>
               </span>

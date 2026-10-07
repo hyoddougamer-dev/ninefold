@@ -1982,6 +1982,34 @@ export const TRAIL_WOUND = 0.1;
  */
 export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
 /**
+ * 擂 How much each challenger's edge grows with every realm past the Platform's first:
+ * edge × (1 + PLATFORM_EDGE_GROWTH × (realm − PLATFORM_REALM)), read by platformEdge in
+ * sim/platform.ts, so ×1.0 at the fourth realm and ×1.2 at the ninth.
+ *
+ * The edge is a share of the cultivator's own 力, and the cheaper a body's power is to
+ * raise, the smaller the challenger it brings: measured on 2026-10-07 (tools/platformedge.ts)
+ * the third challenger fell in none of the weeks spent in realms 4 to 6 and in 22 to 88%
+ * of those in realms 7 to 9, so the same fight got easier the higher the climb went. An
+ * earlier analysis proposed 0.04: the third challenger in about 10% of weeks with nothing
+ * carried and 20% for the Vajra, the second in 81 to 83%, the ninth realm 0.7 days later.
+ * Measured with it (tools/platformedge.ts, the share of Platform periods each challenger
+ * fell, and the ninth realm's day), the flat edge against the grown one:
+ *
+ *   habit            realm 9         2nd           3rd          3rd in realms 7 to 9
+ *   once a day       77.0 → 76.0     88% → 82%     24% →  0%    44% →  0%
+ *   casual           66.3 → 66.0     82% → 53%     12% →  0%    22% →  0%
+ *   active           49.3 → 49.7     86% → 86%     29% →  7%    50% → 13%
+ *   every hour       32.0 → 32.1     91% → 91%     45% → 27%    83% → 50%
+ *   crafts it all    45.8 → 46.0     86% → 86%     29% →  0%    50% →  0%
+ *   active Vajra     47.5 → 46.7     86% → 77%     50% → 23%    88% → 43%
+ *
+ * The third challenger is the hard one again late in the climb as it is early, the most
+ * active build takes it in about a quarter of its weeks and the Vajra, whose class is
+ * the Platform's, twice as often as the plain active one. The climb does not move: the
+ * Platform pays qi beside it, never the ladder itself.
+ */
+export const PLATFORM_EDGE_GROWTH = 0.04;
+/**
  * 擂 What each challenger pays, once a period: this many hours of the realm's middle rate
  * (REALM_MID_RUNG), a fixed sum read off the realm and the same for everyone in it.
  *

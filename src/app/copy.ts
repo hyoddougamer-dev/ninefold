@@ -1515,7 +1515,7 @@ export const PLATFORM = {
   nextButton: (ordinal: string) => `The ${ordinal.toLowerCase()}`,
   answeredLine: (temper: string, by: string) => `${temper}, answered by ${by}.`,
   unansweredLine: (temper: string) => `${temper}, unanswered: it stood \u00d71.3 again.`,
-  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
+  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power, a little more of it every realm. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
   temperWhat: 'The week\u2019s temper on 擂台 the Platform: unanswered, a challenger stands \u00d71.3 again. A stance or one art in your sequence answers it.',
 };
 

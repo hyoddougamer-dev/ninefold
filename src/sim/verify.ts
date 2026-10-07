@@ -34,7 +34,7 @@ import {
   ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
-import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
+import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
 import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
   UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, sealDays, sealLeft, tribulationScale, upgradeCost,
@@ -684,7 +684,8 @@ export function platformBeatable(s: State): boolean {
   return bodiesHeld(s).some((b) => {
     const shape = challengerOf(b, tier);
     // The temper answered: the challenger at its edge alone.
-    const standing = power(b) * PLATFORM_EDGE[tier];
+    // 擂 At the realm's own edge (platformEdge), the one the phone's challenger stood at.
+    const standing = power(b) * platformEdge(tier, b.realm);
     return beatable(b, shape, standing, { ...bestKit(b, shape, 'platform'), wound: TRAIL_WOUND });
   });
 }

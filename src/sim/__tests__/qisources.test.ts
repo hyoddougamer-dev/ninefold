@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BOX_HOURS, INCENSE_BONUS, INCENSE_HOLD, INCENSE_WORTH, PAIR_BOUNTY, PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM,
+  BOX_HOURS, INCENSE_BONUS, INCENSE_HOLD, INCENSE_WORTH, PAIR_BOUNTY, PLATFORM_EDGE, PLATFORM_EDGE_GROWTH, PLATFORM_HOURS, PLATFORM_REALM,
   SPRING_FILL, SPRING_HOLD, TEMPER_EDGE, TRAIL_WOUND, midRate, springShare,
 } from '../balance.ts';
 import { ROOMS } from '../../data/secret.ts';
@@ -10,6 +10,7 @@ import {
 import {
   answerHeld, answered, beatChallenger, beatenNow, challengeFight, challengeOdds, challengerOf, challengerPays, challengerQi,
   challengerPower, periodNow, standingTier, temperOf,
+  platformEdge,
 } from '../platform.ts';
 import { TEMPERS } from '../../data/platform.ts';
 import { stanceChoices } from '../arts.ts';
@@ -188,12 +189,18 @@ describe('擂台 the Platform', () => {
     expect(standingTier(next)).toBe(0);
   });
 
-  it('measures each against your own power, the temper on top unless it is answered', () => {
+  it('measures each against your own power at the realm\'s edge, the temper on top unless it is answered', () => {
     const s = fighter();
     const t = temperOf(s);
+    // 擂 Since 2026-10-07 the edge grows by PLATFORM_EDGE_GROWTH a realm past the Platform's first.
+    const grown = 1 + PLATFORM_EDGE_GROWTH * (s.realm - PLATFORM_REALM);
     for (let tier = 0 as 0 | 1 | 2; tier <= 2; tier = (tier + 1) as 0 | 1 | 2) {
-      const want = power(s) * PLATFORM_EDGE[tier] * (answered(s, t) ? 1 : TEMPER_EDGE);
+      const want = power(s) * PLATFORM_EDGE[tier] * grown * (answered(s, t) ? 1 : TEMPER_EDGE);
       expect(challengerPower(s, tier)).toBeCloseTo(want, 6);
+      expect(platformEdge(tier, s.realm)).toBeCloseTo(PLATFORM_EDGE[tier] * grown, 9);
+      // The Platform's first realm stands at the edge as it was; the ninth a fifth above it.
+      expect(platformEdge(tier, PLATFORM_REALM)).toBeCloseTo(PLATFORM_EDGE[tier], 9);
+      expect(platformEdge(tier, 9)).toBeCloseTo(PLATFORM_EDGE[tier] * (1 + 5 * PLATFORM_EDGE_GROWTH), 9);
     }
     const ans = answerHeld(s, t);
     expect(ans).not.toBe(null);
