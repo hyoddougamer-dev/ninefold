@@ -778,7 +778,7 @@ export const KEY = {
   familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
   carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
-  systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
+  systemsBlurb: 'Nothing resets on its own, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string, sooner?: string) => `opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}`,
 
   doingHead: '作 Words you will meet',

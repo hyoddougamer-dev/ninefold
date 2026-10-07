@@ -1591,7 +1591,7 @@
         "**Three promises the game keeps**",
         "· Nothing is ever taken away for being away. Close it for a week and you come back further along.",
         "· Losing a fight costs nothing. Not qi, not material, not a level.",
-        "· Nothing resets. Every realm adds something and keeps everything you had."
+        "· Nothing resets on its own. Every realm adds something and keeps everything you had. At the summit, 轉世 Rebirth is an offer you can take or leave, never forced."
       ],
       "fields": [
         ["▸ The guide in the game walks you through this", "1. Spend the qi your master left you on an upgrade.\n2. Win your first fight: the rat.\n3. Spend the 材 material it drops on 妖丹 Beast Cores.\n4. Kill the same beast ten times, for its 熟 Known mark.\n5. Fill the ninth layer, beat the realm's warden, and break through.\nPlayed straight through, the first realm takes about a quarter of an hour."],
@@ -1659,7 +1659,7 @@
         ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi\n盡 Buy all buys every level you can pay for, cheapest first"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
         ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
-        ["▸ 瓶頸 The bottleneck", "From the third realm the warden comes to the gate far stronger than the realm: ×4 in the third, up to ×72 in the eighth. Every day it loosens by 30%, back to where it would stand without the wall, so waiting alone always opens it. Beast cores, gear, the Path and the workshop's elixirs and sigils get you over it sooner. Its card on 修 Cultivate says how strong it stands and when it is back. The tribulation's Dragon has no bottleneck."],
+        ["▸ 瓶頸 The bottleneck", "From the third realm the warden comes to the gate far stronger than the realm: ×4 in the third, up to ×72 in the eighth. Every day it loosens by 30% of what is left, back to where it would stand without the wall (about 3.9 days in the third realm, 12 in the eighth), so waiting alone always opens it. Beast cores, gear, the Path and the workshop's elixirs and sigils get you over it sooner. Its card on 修 Cultivate says how strong it stands and when it is back. The tribulation's Dragon has no bottleneck."],
         ["▸ 封 The seal", "From the fifth realm to the eighth, the gate stays sealed for a while after the warden comes out, however strong you are: 1 day in the fifth, 1.25 in the sixth, 1.5 in the seventh, 2 in the eighth. Waiting it out always opens it, and the warden's card on 修 Cultivate shows the seal as a bar that fills with time. A 破境丹 Breakthrough Pill from 丹 Alchemy, carried into the gate, breaks the seal at once and half of the days its bottleneck takes to loosen with it (70% at 天 Heaven rank): 6 of the eighth realm's 12 days at Common, on top of the elixir and sigil. A win spends the pill, a loss keeps it."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
       ]
@@ -1680,9 +1680,9 @@
         "Material is the second currency. Qi cannot buy it and waiting cannot earn it: it falls off beasts. It buys 妖丹 Beast Cores, and from the third realm a warden will not fall without them."
       ],
       "fields": [
-        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything.\n通 **Mastered** at 100 kills: +2% power.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: that beast alone pays +10% 材 material and +2 points of drop chance for each, and +1% 材 material from every beast."],
+        ["▸ 錄 The Record: every kill counts for ever", "見 **Seen** at 1 kill: the first sight of a beast pays qi.\n熟 **Known** at 10 kills: +2% 材 material from everything, for each beast you know.\n通 **Mastered** at 100 kills: +2% power, for each beast.\n精 **Seasoned** at 1,000 and 絕 **Peerless** at 5,000 kills of one beast: for each, that beast alone pays +10% 材 material and +2 points of drop chance, and every beast pays +1% 材 material."],
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
-        ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you, and the bond starts again."],
+        ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you (Mystic at the least; a common beast tops out at Earth, a warden reaches Heaven), and the bond starts again. 運 Fortune Seekers fill it in 9 wins, or 8 at the full."],
         ["▸ 霸 Elites", "From the second realm, the last beast of each realm is an elite, marked on its row. It stands far above the rest of its realm and never gets weaker with time, and it leaves three times the 材 material. It is the hunt for a strong build, never the week's quarry and never a door in 秘境."],
         ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
         ["▸ 期 The week's quarry", "One beast each week (never an elite) pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
@@ -1705,12 +1705,12 @@
         "Gear power has no ceiling. Qi from gear has one, and it rises as you climb, so each realm's own qi pieces still count."
       ],
       "fields": [
-        ["▸ 系 Sets", "Wear several pieces from one realm and its lineage pays on top."],
+        ["▸ 系 Sets", "Wear 2, 4 or 6 pieces from one realm and its lineage pays on top, more at each step. Pieces from the forge's 百煉 Hundredfold sets add steps of their own (see 業 The Workshop)."],
         ["▸ 職 Classes", "Every line belongs to a school: 劍 Sword, 氣 Qi, 運 Fortune, 體 Body, 器 Artificer, 法 Arts. Wear three pieces of one school and its class wakes. Two schools together make a pair class."],
         ["▸ 譜 Which piece is which school", "The school goes with the shape, never the metal: a Mortal Iron Sword and an Ascendant Sword are both 劍 Sword. In the order weapon, robe, crown, boots, talisman, ring:\n**劍 Sword:** Sword, Saber, Crescent, Spear, Trident · Vest, Lamellar, Breastplate · Visor, Dragon Head · Leather Boots, Greaves · Pendant · Plain Ring, Power Ring\n**氣 Qi:** Fan · Robe, Winged Robe · Band, Hairpin, Diadem · Bare Feet, Tabi · Charm, Censer · Topaz, Ringed Star\n**運 Fortune:** Scythe · Cloak · Laurel · Sandals, Walkers · Medal, Orb · Amethyst, Emerald\n**體 Body:** Twin Hooks · Pauldrons · Horned Helm · Iron Boots · Bone Charm · Frost Ring\n**器 Artificer:** no weapon · Mantle · Bone Crown · Fur Boots · Scroll, Orb Wand · Spiral Ring\n**法 Arts:** Staff · Kimono · Ritual Crown · Wind Foot · Beads · Flame Ring"],
         ["▸ 鎖 Locks and 套 Loadouts", "Lock a piece from its sheet and nothing melts or fuses it, and a full chest leaves it alone. Save what you wear as a loadout (five at most), name it with ✎, and put it all back on with one tap; saving locks its pieces, and a loadout's piece stays locked until it is out of the loadout. Give a loadout a task (煉 Fuse, 拆 Melt or 煉器 Refine) and that task reads the loadout instead of what you wear, without changing clothes. Every piece shows its school's seal in the corner and its quality at the foot, in the chest and on the wheel (×1.00 is a usual roll of its rank). *Other effects* lists each line bent, then your luck in all. The chest filters by place (or only 鎖 Locked pieces), by school and by lines (a piece must carry every line you pick), and keeps up to twenty-four filters you name. Mark a filter 鎖 Keep and a full chest melts what it shows last: it melts the worst piece no kept filter shows, and a piece a kept filter shows only ever makes room for a better one a kept filter shows."],
-        ["▸ 煉器 Refining", "Material makes what you wear better, for ever. No top level. The levels belong to the place on your body, not to the piece: whatever you wear in that place has them, and taking a piece off, melting it or fusing it never takes them away, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, with the place's levels, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ on at once."],
-        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. At 天 Heaven, three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top (×1.5 of a usual roll at most), and a piece a fusion made is never fused again, so Fuse all takes each found piece once. Anything you will not wear melts into qi, up to an allowance that refills as you gather (six hours of your own gathering at most); past it, a piece melts into 材 material instead."]
+        ["▸ 煉器 Refining", "Material makes what you wear better, for ever. No top level. The levels belong to the place on your body, not to the piece: whatever you wear in that place has them, and taking a piece off, melting it or fusing it never takes them away, so nothing you pour in is ever wasted. A ▲ is read the same way: a piece is compared as it would be once worn, with the place's levels, and it is ▲ only if it is at least as good on every line the worn piece has. ▲ **Wear all upgrades** puts every ▲ piece on at once, the biggest gain first. Locked pieces, loadout pieces and any piece that would change your class stay put."],
+        ["▸ 煉 Fusing and 拆 Melting", "From the third realm, three of a kind fuse into one of the rank above, and 煉 **Fuse all groups** does every group in one tap. At 天 Heaven, three Heaven pieces you found fuse into one Heaven piece with your fusion quality on top (×1.5 of a usual roll at most), and a piece a fusion made is never fused again, so Fuse all takes each found piece once. Anything you will not wear melts into qi, up to an allowance that refills as you gather (at 37.5% of your standing qi rate, open or shut, six hours of it at most); past it, a piece melts into 材 material instead."]
       ]
     },
     {
@@ -1729,13 +1729,13 @@
         "",
         "Changing class is changing clothes. It costs nothing, and you can go back whenever you like. So every piece that drops is also a question: who are you becoming?",
         "",
-        "The item sheet tells you before you wear anything: *Wearing it makes you a Vajra*, or *ends your Wanderer*. The 器 Gear screen shows your class and how many pieces the next step needs."
+        "The item sheet tells you before you wear anything: *Wearing it makes you a Vajra*, or *ends your Wanderer*. The 器 Gear screen shows your class and how many pieces the next step needs, and *Compare classes* builds the strongest outfit your pieces can make for every class, with its power, the highest tower floor it beats and its qi a second."
       ],
       "fields": [
         ["劍 Sword Cultivator · 劍修", "Leads with 力 Power. All your power ×1.1, or ×1.2 at the full, on top of everything else."],
-        ["氣 Qi Cultivator · 氣修", "Leads with 氣 Qi rate. The four upgrades cost 8% less, or 15% at the full."],
+        ["氣 Qi Cultivator · 氣修", "Leads with 氣 Qi rate. The four upgrades cost 8% less, or 15% at the full. At the full, the ceiling on qi from gear also stands 0.1 higher: on the first layer, ×1.38 becomes ×1.48."],
         ["運 Fortune Seeker · 運修", "Leads with 運 Rarer gear, 拾 Drop chance. Your 運 rarer gear and 拾 drop chance lines count ×1.5, or ×2 at the full. A bond fills in 9 wins, or 8 at the full."],
-        ["體 Body Cultivator · 體修", "Leads with 破 Beasts weaker. Your 破 beasts weaker lines count ×1.5, or ×2 at the full."],
+        ["體 Body Cultivator · 體修", "Leads with 破 Beasts weaker. Your 破 beasts weaker lines count ×1.5, or ×2 at the full. They reach the hunt, the tower, the Platform and every realm's warden, never your heart demon or the Dragon."],
         ["器 Artificer · 器修", "Leads with 煉 Fusion quality, 藏 Chest slots. Refining costs 12% less, or 22% at the full. Your 煉 fusion quality and 藏 chest slots lines count ×1.5, or ×2 at the full."],
         ["法 Arts Cultivator · 法修", "Leads with 法 Art. The arts in your sequence strike 15% harder, or 30% at the full."]
       ],
@@ -1782,7 +1782,7 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-path.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/path.webp",
       "body": [
-        "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon and the Bestiary. They are spent on the tree in 道 the Path.",
+        "**道 points** come from climbing: one for every three layers, two for every warden, and more from the heart demon, the Bestiary and the secret realm's shrines (three a realm at most). They are spent on the tree in 道 the Path.",
         "",
         "The tree has three branches, 劍 the Sword, 神 the Spirit and 運 Fortune, with gold bridges between them. Tap a node to read it before you take it. The last node of each branch (萬劍 Ten Thousand Swords, 化境 Transcendence, 造化 Creation) opens at the fifth realm."
       ],
@@ -1802,9 +1802,9 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-cave.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/cave.webp",
       "body": [
-        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours. A ripe bed waits for you for ever. It is the one thing that grows while the game is shut, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
+        "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours, with the game shut or open. A ripe bed waits for you for ever, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
         "",
-        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, and every other room is a guardian a realm above you. Nothing is carried in, so losing takes nothing back.",
+        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, and every other room is a guardian a realm above you. Everything a room pays is banked the moment you take it, so losing takes nothing back. An elixir and a sigil from the workshop can go in with you.",
         "",
         "**泉 The spring** fills while the door is shut: four minutes of your gathering for every hour, a day at most (1 h 36 min of gathering when full). The rooms between the guardians share it, the deeper ones more (10, 20, 30 and 40% in seven rooms). Each room offers its share three ways, and whichever you take, the room is spent:"
       ],
@@ -1852,11 +1852,11 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-tower.webp?v=2",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/tower.webp",
       "body": [
-        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, darkened, without what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
+        "**閉關 Seclusion** (fourth realm). Shut the door for eight hours and your 心魔 heart demon comes: yourself, a fifth stronger, with none of what you know. Beat it for a 道 point. Nine in a life, two a realm, and a loss costs nothing: it comes back in an hour. When one falls and the realm has another, the door shuts again by itself.",
         "",
         "**擂台 The Platform** (fourth realm, on 塔 Trials). Three challengers a week, and three new ones when you break through. They stand at ×1.3, ×1.8 and ×2.5 of your own power in the fourth realm, 4% more for each realm after it (×3 for the third at the ninth), so the build wins them, not the number: 破甲 sunder, 破煞 bane, the tree and your class thin them as they thin any beast. The week's temper (堅 Armoured, 捷 Nimble, 癒 Mending or 狂 Frenzied) stands them ×1.3 again unless your stance or one art in your sequence answers it, and the card names the answers. A win pays a fixed sum of qi read off your realm, once each a week: the third pays three times the first, and every sum is the same for everyone in the realm, whatever they wear, whatever rate they bought and whenever they fight. The card shows each sum before you fight. A loss costs nothing, and the dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry. Never on Auto, never driven.",
         "",
-        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: twice as much. Past floor 81, the Dragon's, each floor is a step 4% steeper than the curve below it, and pays 4% more material for it. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill at the ninth realm about five.",
+        "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: twice as much. Past floor 81, the Dragon's, each floor is a step 4% steeper than the curve below it, and pays 4% more material for it. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill with a 天罡 Heaven Seal Sigil at the ninth realm, four or five.",
         "",
         "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
@@ -1874,10 +1874,10 @@
         "",
         "**爐 The Furnace** (ninth realm). Pills, brewed from qi and material together, kept for good, with no cap. Power is what shortens a crossing.",
         "",
-        "**The Heavens.** Thunder marks open nine heavens above the summit, and each one offers a 悟道 card: one of three, your choice."
+        "**The Heavens.** Every three thunder marks open a heaven above the summit, nine in all. Each one gives six more levels of every upgrade and offers a 悟道 card: one of three, your choice."
       ],
       "fields": [
-        ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: every beast 1.5% weaker each, never under 40% of itself, and never the Dragon. 聚寶 Fortune: +4% chance at rare gear each. Each pill on the furnace says what all of yours come to now."],
+        ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: the first takes 0.9% off every beast's power, each later one a little less, never under 40% of a beast's power, and never the Dragon. 聚寶 Fortune: +4% luck each on the rare end of the drop table, so Mystic, Earth and Heaven pieces drop more, the last two most. Each pill on the furnace says what all of yours come to now."],
         ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
         ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit. Or begin again: see 轉世 Rebirth below."],
         ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +2.5% to every second of qi gathered for every doubling of the marks it crossed (1 mark +2.5%, 3 marks +5%, 7 marks +7.5%, 12.5% a life at most), never more than +25% across every life. The Echo is qi gathered only: never the tower, the vault or any other lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at the best rank any life reached), who you are, and your chest filters, and the boards keep the best you ever reached. Everything else begins again. It is never forced and staying loses nothing. Measured: a life at the full Echo reaches the summit 14% to 18% sooner. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
@@ -1891,7 +1891,7 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-week.webp?v=2",
       "body": [
-        "**期 The week** turns every Monday. It marks a beast worth double 材 material, a herb worth planting and a room of 秘境 worth reaching. It never touches the rate you gather at, so nobody falls behind for missing one.",
+        "**期 The week** turns every Monday. It marks a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching and the temper of 擂台 the Platform's challengers. It never touches the rate you gather at, so nobody falls behind for missing one.",
         "",
         "**緣 The road.** Somebody is on the road every few hours: a child begging at a shrine, a pool with nothing living in it, and many more. One choice, and walking on is always free. Nothing is taken that you did not offer, and the road remembers what you did."
       ]
@@ -1909,7 +1909,9 @@
         "",
         "**Joining the rankings** takes a name, then either nothing (a guest, on this device) or an email: you get a 6-digit code (and a link), and the same cultivator opens anywhere you type it. No password, ever.",
         "",
-        "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up."
+        "Every climb on the boards is checked against real time on the server, so nobody can edit or clock their way up.",
+        "",
+        "You can delete your ranked account from the Rankings screen (*Delete my ranked account*). It removes your name, your place on the boards and the cloud copy, and leaves the game on your device alone."
       ],
       "fields": [
         ["▸ The three boards", "期榜 This Week: layers climbed since Monday. Everybody starts the week level, so a new player can top it in their first week. The rankings open here.\n天榜 Heaven List: the furthest climb. A 轉世 rebirth keeps your best on every board.\n塔榜 The Tower: the highest floor."],
@@ -1936,7 +1938,9 @@
         "",
         "**Can I play on my phone and my PC?** Yes. Sign in with your email on both, the Android app included: type the 6-digit code from the email into the game.",
         "",
-        "**The music is too loud, or I want it off.** ≡ Menu has one button for the sound and one for the music: on, quiet or off.",
+        "**The music is too loud, or I want it off.** ≡ Menu has a slider for the sound and one for the music, each with a mute beside it. Your levels are remembered on the device.",
+        "",
+        "**Can I start again from the first realm?** Only if you want to. At the summit, once the first Dragon has fallen, 轉世 Rebirth ends a life and begins the next, carrying an Echo of qi gathered, your records and the codex of every set you finished. Staying loses nothing. See 雷池 The Tribulation in {#guides}.",
         "",
         "**What do the characters mean?** ≡ Menu → *What the characters mean*. Every character has an English name beside it or under a tap.",
         "",
@@ -1951,18 +1955,18 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-opens.webp?v=2",
       "body": [
-        "Nothing resets, so every realm hands over something that was not there before. The locked tabs in the game say which realm opens them."
+        "Nothing resets on its own, so every realm hands over something that was not there before. The locked tabs in the game say which realm opens them."
       ],
       "fields": [
         ["▸ 練氣 Realm 1", "狩 Hunting · 妖丹 Beast Cores · 錄 The Record"],
-        ["▸ 築基 Realm 2", "器 Gear · 煉器 Refining · 洞天 The Cave · 勢 Stances and Arts · 道 The Path · 業 The Workshop: 藥 Herbs, 礦 Veins, 解 Rendering, 鑄 Forging"],
-        ["▸ 金丹 Realm 3", "煉 Fusing · 秘境 The Secret Realm"],
+        ["▸ 築基 Realm 2", "器 Gear · 煉器 Refining · 洞天 The Cave · 勢 Stances and Arts · 道 The Path · 霸 Elites on the hunt · 業 The Workshop: 藥 Herbs, 礦 Veins, 解 Rendering, 鑄 Forging"],
+        ["▸ 金丹 Realm 3", "煉 Fusing · 秘境 The Secret Realm · 瓶頸 Bottlenecks: from here the warden comes to the gate far stronger"],
         ["▸ 元嬰 Realm 4", "樞 The Keystones · 閉關 Seclusion · 擂台 The Platform"],
-        ["▸ 化神 Realm 5", "塔 The Endless Tower · 丹 Alchemy"],
+        ["▸ 化神 Realm 5", "塔 The Endless Tower · 丹 Alchemy · 封 Gate seals begin, with 破境丹 Breakthrough Pills to break them (realms 5 to 8)"],
         ["▸ 煉虛 Realm 6", "圖鑑 The Bestiary · 符 Sigil Writing"],
         ["▸ 合體 Realm 7", "秘境深 The Deeper Vault · 陣 Arrays"],
-        ["▸ 大乘 Realm 8", "The last climb before the storm"],
-        ["▸ 渡劫 Realm 9", "爐 The Furnace · 雷池 The Tribulation, and the Heavens above it"]
+        ["▸ 大乘 Realm 8", "封 The longest seal (2 days) and the highest wall (×72): the last climb before the storm"],
+        ["▸ 渡劫 Realm 9", "爐 The Furnace · 雷池 The Tribulation, and the Heavens above it · 轉世 Rebirth, once the first Dragon has fallen"]
       ]
     },
     {
