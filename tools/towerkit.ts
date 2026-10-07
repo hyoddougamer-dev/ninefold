@@ -92,8 +92,13 @@ export interface KitRow {
 export function towerKit(h: Habit, every = 3, maxDays = 400): KitRow[] {
   const rows: KitRow[] = [];
   let next = 0;
+  // 頂 The first visit in the ninth realm is always read, whatever the step, so the summit is
+  // measured however the days fall between the samples.
+  let summit = false;
   play(h, maxDays, (day, s) => {
-    if (day < next || s.realm < opensAt('tower')) return;
+    const first9 = s.realm === 9 && !summit;
+    if ((day < next && !first9) || s.realm < opensAt('tower')) return;
+    if (s.realm === 9) summit = true;
     next = day + every;
     const from = Math.max(1, s.tower - 2);
     const bare = climbs(s, () => NO_KIT, from);

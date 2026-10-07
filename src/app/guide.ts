@@ -1,5 +1,5 @@
 import {
-  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, rate, upgradeCost,
+  UPGRADES, UPGRADE_INFO, canBreakThrough, canBuy, canFightWarden, gathering, upgradeCost,
   wardenStands,
   type State,
 } from '../sim/state.ts';
@@ -251,6 +251,8 @@ export function guide(s: State): Guiding | null {
   // 退 The player can put it away. It is one key in the same list the notices use, so
   // it survives a reload, and 引 in the help panel brings it back.
   if (s.seen.includes(DISMISSED)) return null;
+  // 轉世 A reborn cultivator has climbed all of this before: the first steps are not repeated.
+  if ((s.lives?.length ?? 0) > 0) return null;
 
   const i = STEPS.findIndex((x) => !x.done(s));
   if (i < 0) {
@@ -321,7 +323,7 @@ export function onFirstPurse(s: State): boolean {
 export function clockUntil(s: State, now: number, focus: number): number {
   if (!onFirstPurse(s) || now - s.startedAt >= FIRST_HOLD) return now;
   const cost = layerCost(s.realm, s.layer, s.unlocked);
-  const per = rate(s) * Math.max(1, focus);
+  const per = gathering(s) * Math.max(1, focus);
   if (!Number.isFinite(cost) || !(per > 0)) return now;
   return Math.min(now, s.at + Math.max(0, (cost - HOLD_SHORT - s.qi) / per));
 }

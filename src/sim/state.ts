@@ -35,13 +35,15 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SECLUSION,
+  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { NO_CRAFTS, shortestDoorGap, validCrafts, type Crafts } from './crafts.ts';
+import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
-import { FORGED, ITEM_BY_KEY, RECIPE_BY_KEY } from '../data/crafts.ts';
+import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
+import { backHundred, bandTop, validKept } from './hundred.ts';
+import { echoFactor, validLives, type Life } from './echo.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -340,6 +342,19 @@ export interface State {
   crafts: Crafts;
   /** 新 Which one-time notices have been read. Cosmetic, and the only state that is. */
   seen: string[];
+  /**
+   * 世 The lives that ended before this one: the marks each crossed and the instant it
+   * ended. Empty for a first life. 宿慧 the Echo, the title and the day this life began are
+   * all derived from it. See sim/echo.ts and sim/rebirth.ts.
+   */
+  lives: readonly Life[];
+  /**
+   * 承 The codex the lives before this one finished: for each of the nine sets in realm
+   * order, the best rank (0 none, 1 Mystic to 3 Heaven) any life reached. Empty for a first
+   * life and for one whose lives finished no set. Written by reincarnate() alone; the codex
+   * reads the higher of this and what this life has made. See sim/hundred.ts.
+   */
+  codexKept: readonly number[];
 }
 
 /** What the marks already taken are worth. They multiply, to power and to qi alike. */
@@ -371,6 +386,17 @@ export function layersOpened(s: State): number {
 /** Qi per second, right now. The single source of the rate; nothing else computes it. */
 export function rate(s: State): number {
   return BASE_RATE * LAYER_BONUS ** layersOpened(s) * rateBonus(s);
+}
+
+/**
+ * 宿慧 Qi gathered per second: the rate, and 宿慧 the Echo of the lives before this one on
+ * top of it. This is what the bar fills at (advance) and what the screen calls the standing
+ * rate. Everything paid as seconds of the rate (a bed, a meeting, the spring, a melt) and
+ * everything priced in it (a drive, a retrade) keeps reading rate(): the Echo is a share of
+ * the cultivating and nothing else, which is what keeps it from reaching any lump.
+ */
+export function gathering(s: State): number {
+  return rate(s) * echoFactor(s.lives);
 }
 
 /**
@@ -495,6 +521,8 @@ export function newState(now: number): State {
     fate: {},
     crafts: { ...NO_CRAFTS, since: now },
     seen: [],
+    lives: [],
+    codexKept: [],
   };
 }
 
@@ -726,7 +754,33 @@ export function wardenStands(s: State): boolean {
  * that a second screen forgets.
  */
 export function canFightWarden(s: State): boolean {
-  return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s));
+  return !s.wardenFell && (s.realm === 9 ? atTribulation(s) : wardenStands(s) && !sealed(s));
+}
+
+/** 封 How many days a realm's gate stays sealed after its warden comes out: SEAL_DAYS. */
+export function sealDays(realm: number): number {
+  return realm >= 1 && realm <= 9 ? SEAL_DAYS[realm - 1] ?? 0 : 0;
+}
+
+/**
+ * 封 Days of the seal still to run at this realm's gate, with `unseal` days of a carried
+ * 破境丹 Breakthrough Pill counted as already waited. 0 when the gate is open: no seal in
+ * this realm, the warden not out yet or already beaten, or the time served. A gate a save
+ * holds without a time (gateAt 1, one from before the bottleneck) was met long ago.
+ */
+export function sealLeft(s: State, unseal = 0): number {
+  const days = sealDays(s.realm);
+  if (days <= 0 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
+  const waited = Math.max(0, (s.at - s.gateAt) / 86_400);
+  return Math.max(0, days - waited - Math.max(0, unseal));
+}
+
+/**
+ * 封 Whether the gate is sealed against a fight right now, with what is carried: a
+ * Breakthrough Pill in its hand breaks the seal, and waiting it out always does.
+ */
+export function sealed(s: State): boolean {
+  return sealLeft(s, unsealCarried(s)) > 0;
 }
 
 /**
@@ -866,6 +920,8 @@ export function validate(raw: unknown, now: number): State {
     // allowed, and every value is capped at what the last realm's top rank could roll.
     const seenAffix = new Set<Affix>();
     const rolls: Roll[] = [];
+    // 百煉 A Hundredfold piece is held to the band its crucible could have put each line in.
+    const marked = o.hundred === true && o.from === FORGED && HUNDRED_RANKS.includes(rarity as HundredRank);
     for (const raw of Array.isArray(o.rolls) ? o.rolls : []) {
       if (rolls.length > SECONDARIES[rarity]) break;          // one primary plus its share
       const r = (raw ?? {}) as Record<string, unknown>;
@@ -879,7 +935,8 @@ export function validate(raw: unknown, now: number): State {
       // tenth), so the cap is rounded the same way, or an honest 藏 1 came back as 0.9 and a
       // full chest lost a piece on every load (2026-10-05).
       const most = baseValue(tpl, rarity, affix) * (rolls.length === 0 ? 1 : SECONDARY_SHARE) * FUSE_TOP * 1.001;
-      const top = Math.max(most, roundValue(affix, most));
+      const top = marked ? bandTop(tpl, rarity as HundredRank, affix, rolls.length === 0)
+        : Math.max(most, roundValue(affix, most));
       rolls.push({ affix, value: clamp(num(r.value, 0), 0, top) });
     }
     if (rolls.length === 0) rolls.push({ affix: tpl.affix, value: 0 });
@@ -895,7 +952,7 @@ export function validate(raw: unknown, now: number): State {
     // names is locked whatever the save says, because a loadout whose piece can be melted
     // out from under it is not a loadout (see sets.ts setLocked).
     const locked = o.locked === true || inSets.has(id) ? { locked: true as const } : {};
-    return { id, template: tpl.key, rarity, rolls, ...from, ...locked };
+    return { id, template: tpl.key, rarity, rolls, ...from, ...locked, ...(marked ? { hundred: true as const } : {}) };
   };
 
   const used = new Set<string>();
@@ -1006,12 +1063,15 @@ export function validate(raw: unknown, now: number): State {
 
   const elapsed = Math.max(0, now - startedAt);
   const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
+  // 百煉 A Hundredfold mark stays only where the pieces made back it (sim/hundred.ts).
+  const marks = backHundred(crafts.made);
   // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
   // cut, so holding one is what widens the ceiling, placed or lifted out, and at its
   // deepest step (shortestDoorGap), since it may have been that deep all along.
   const doorGap = shortestDoorGap(crafts.pouch, DOOR_GAP);
 
   const savedAt = clamp(num(o.at, now), startedAt, now);
+  const lives = validLives(o.lives, startedAt, now);
   const out: State = {
     v: 1,
     startedAt,
@@ -1032,8 +1092,8 @@ export function validate(raw: unknown, now: number): State {
       ? (num(o.gateAt, 0) > 0 ? clamp(num(o.gateAt, 0), 1, now) : 1) : 0,
     levels,
     killed,
-    worn,
-    chest,
+    worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,
+    chest: chest.map(marks),
     refined,
     unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached
@@ -1146,6 +1206,11 @@ export function validate(raw: unknown, now: number): State {
       .filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 32)
       .filter((x, i, all) => all.indexOf(x) === i)
       .slice(0, 32),
+    // 世 The lives before this one: at most LIVES_MAX, each a life that could have ended.
+    lives,
+    // 承 The codex those lives kept: nine ranks, none past Heaven, and none at all for a
+    // first life, since only a life that ended can have left one.
+    codexKept: validKept(o.codexKept, lives.length),
   };
 
   /**
@@ -1170,7 +1235,8 @@ export function validate(raw: unknown, now: number): State {
    * already an over-estimate of every second of it, and 入定 at its deepest is the most
    * any of those seconds could have been worth.
    */
-  const gathered = rate(out) * FOCUS_MAX * elapsed;
+  // 宿慧 Read at what is gathered, the Echo included: it is part of every second's qi.
+  const gathered = gathering(out) * FOCUS_MAX * elapsed;
   // What a cultivator is allowed to be standing on having spent nothing: the rung under
   // their feet, and at the summit 雷池 the pool, which the ladder has no way to take.
   const standing = tribulationPool(out) + ladderAt(Math.min(LAYERS - 1, layersOpened(out)));

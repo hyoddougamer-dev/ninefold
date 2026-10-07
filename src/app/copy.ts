@@ -20,8 +20,11 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
-import { pct as percent } from '../sim/format.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
+import { duration, pct as percent } from '../sim/format.ts';
+
+/** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
+const EIGHTH_WALL = Math.log(REALM_WALL[7]) / -Math.log(1 - BOTTLENECK_LOOSEN);
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
 import { RARITY_INFO } from '../data/gear.ts';
@@ -54,7 +57,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Time off the screen counts toward the half hour but never deepens the sitting: it runs on at the depth it had. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -262,12 +265,28 @@ export const CULTIVATE = {
   bottleneck: (over: number, days: number) =>
     `瓶頸 Bottleneck: the warden stands ×${over < 10 ? over.toFixed(1) : Math.round(over)} above its old strength. `
     + `It loosens every day and is back to it in ${days < 1 ? 'under a day' : `${Math.ceil(days)} ${Math.ceil(days) === 1 ? 'day' : 'days'}`}. Nothing is lost while you wait.`,
-  breachCarried: (days: number) =>
-    `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it in this fight, and is spent only if you win.`,
+  breachCarried: (days: number, over: number) =>
+    `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it: in this fight it stands ×${over < 10 ? over.toFixed(1) : Math.round(over)}. It is spent only if you win.`,
   breachHeld: (days: number) =>
     `Your pouch could break up to ${days.toFixed(1)} days of it: carry an elixir and a sigil from 業 the workshop.`,
   breachNone: 'An elixir or a sigil from 業 the workshop breaks days of it, and cores, 爐 pills and gear raise you to meet it.',
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
+  /**
+   * 封 The seal, said where the warden is (realms 5 to 8): how long it still holds, what a
+   * carried Breakthrough Pill does to it, and that waiting always opens it.
+   */
+  sealed: (left: number) =>
+    `封 Sealed: from the fifth realm on, the gate stays shut for a while after its warden comes out, however strong you are. It opens by itself in ${duration(left * 86_400)}.`,
+  sealBroken: (left: number, days: number) =>
+    `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry breaks the seal at once`
+    + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
+  sealHeld: (days: number) =>
+    `Your pouch holds a Breakthrough Pill: carried, it breaks the seal now and ${days.toFixed(1)} days of the bottleneck with it. Carry it in 業 the workshop.`,
+  sealNone: `A Breakthrough Pill from 業 Alchemy breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
+  /** 封 The seal's bar, filling with the time served: its label for a screen reader. */
+  sealBar: (served: number) => `Seal ${percent(served)} served`,
+  sealServed: '封 The seal has run out. The gate is open.',
+  sealedButton: (left: number) => `Sealed · ${duration(left * 86_400)}`,
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
   /** 劫 The heading names the crossing still to come, and the line under the realm's name
@@ -413,6 +432,7 @@ export const MENU = {
   stele: 'The stele',
   credits: 'Credits',
   cards: 'Your Enlightenment cards',
+  rebirth: 'Rebirth',
   report: 'Report a bug',
   /** 量 The two sliders in the menu, each with a mute. */
   sound: 'Sound',
@@ -598,6 +618,12 @@ export const ADVICE = {
   /** 瓶頸 Blocked at a fresh wall with something in the pouch that breaks it. */
   breach: (days: number) =>
     `The warden is still in its 瓶頸 bottleneck. Carry an elixir and a sigil from 業 the workshop: they break up to ${days.toFixed(1)} days of it.`,
+  /** 封 A sealed gate, and a Breakthrough Pill in the pouch that is not in its hand. */
+  sealPill: (days: number) =>
+    `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
+  /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
+  sealWait: (left: number) =>
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait; a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -752,7 +778,7 @@ export const KEY = {
   familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
   carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
-  systemsBlurb: 'Nothing resets, so every realm hands over something that was not there before.',
+  systemsBlurb: 'Nothing resets on its own, so every realm hands over something that was not there before.',
   opensAt: (han: string, name: string, sooner?: string) => `opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}`,
 
   doingHead: '作 Words you will meet',
@@ -1066,7 +1092,8 @@ export const ITEM = {
     luck: 'Rarer gear from every drop, and better rolls on what drops. It bends, so the first of it counts the most.',
     find: `Beasts leave a piece more often, by up to ${Math.round(FIND_TOP * 100)} points and never past it. `
       + `With 造化 Creation every beast drops already, so it becomes the chance of a second piece.`,
-    sunder: 'Beasts count as weaker against you. Never the Dragon of the tribulation.',
+    // \u7834 rekaris asked what it reaches (2026-10-05); it is every beast the fight sums, and the two it never thins.
+    sunder: 'Beasts count as weaker against you: on the hunt, in the tower, on the Platform and every realm\u2019s warden. Never your heart demon, and never the Dragon of the tribulation.',
     refine: 'A fusion keeps more of its quality.',
     art: 'The arts in your sequence strike harder when they fire, and 龜息 heals more. Not against the Dragon of the tribulation.',
   } as Record<string, string>,
@@ -1168,6 +1195,67 @@ export const AWAKEN = {
       default: return '';
     }
   },
+};
+
+/**
+ * 轉世 Rebirth: the quiet offer on 修, the page that explains it, and the line a new life
+ * opens with. Every number here is read off sim/rebirth.ts and balance.ts, never typed.
+ */
+export const REBIRTH = {
+  title: 'Rebirth',
+  what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A step for every doubling of a life’s marks, under one ceiling for every life together.',
+  lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
+  /** 修 The quiet card, when a life may end. */
+  offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
+  offerFull: 'A new life is open to you. Your Echo is already at its ceiling.',
+  /** 修 The Echo beside the standing rate. */
+  chip: (echo: string) => `Echo ${echo}`,
+  lifeDay: (life: number, day: number) => `life ${life} · day ${day}`,
+  blurb: 'A life may end at the summit once the first Dragon has fallen, and begin again in the first realm. The further it went, the more the next one carries.',
+  locked: (marks: number) => `Opens at the summit, once ${marks === 1 ? 'the first Dragon has' : `${marks} Dragons have`} fallen.`,
+  full: 'Nine lives are remembered, and no more.',
+  nowHead: 'This life',
+  lifeN: (n: number) => `Life ${n}`,
+  depth: (marks: number) => `${marks} ${marks === 1 ? 'mark' : 'marks'} crossed`,
+  inHeaven: (name: string) => `standing in ${name}`,
+  atSummit: 'at the summit',
+  climbing: (realm: string) => `climbing, in ${realm}`,
+  leaveHead: 'The Echo it would leave',
+  leaves: (echo: string) => `${echo} of every second of qi gathered`,
+  nextStep: (marks: number, echo: string) => `At ${marks} marks it would leave ${echo}: a step for every doubling.`,
+  lifeTop: 'A life leaves no more than this.',
+  echoHead: 'Your Echo',
+  echoNow: (now: string, ceiling: string) => `${now} now, of ${ceiling} that every life together can give`,
+  echoAfter: (after: string) => `${after} after this life`,
+  echoCapped: 'At its ceiling. A new life still gives a title and a fresh climb.',
+  carriesHead: 'Carries into the new life',
+  carries: [
+    ['宿慧', 'The Echo', 'qi gathered, under the ceiling'],
+    ['世', 'A title', 'one for every life lived'],
+    ['榜', 'Your records', 'the boards keep the best you reached'],
+    ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
+    ['相', 'Who you are', 'and the chest’s filters'],
+  ] as readonly (readonly [string, string, string])[],
+  /** 譜 Beside the codex in what carries: how many sets it holds now. */
+  codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
+  resetsHead: 'Begins again',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
+  staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
+  begin: 'Begin a new life',
+  sure: 'Tap again to end this life',
+  sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
+  cancel: 'Not now',
+  pastHead: 'Lives behind you',
+  past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,
+  /** After it is done. */
+  bornHead: (n: number) => `Life ${n} begins`,
+  born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
+  bornCodex: (n: number) => `The codex comes with you: ${n} ${n === 1 ? 'set' : 'sets'} finished, each at the best rank it reached.`,
+  wear: 'You carry the title',
+  go: 'Begin',
+  close: 'Close',
+  menu: 'Rebirth',
 };
 
 /**
@@ -1496,7 +1584,7 @@ export const PLATFORM = {
   nextButton: (ordinal: string) => `The ${ordinal.toLowerCase()}`,
   answeredLine: (temper: string, by: string) => `${temper}, answered by ${by}.`,
   unansweredLine: (temper: string) => `${temper}, unanswered: it stood \u00d71.3 again.`,
-  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
+  what: 'The Platform, on 塔 Trials from the fourth realm: three challengers a week, measured against your own power, a little more of it every realm. A win pays a fixed sum of qi read off your realm, the same for everyone in it, once each a week; a loss costs nothing. The dice are set for the week, so the way past a loss is to change something.',
   temperWhat: 'The week\u2019s temper on 擂台 the Platform: unanswered, a challenger stands \u00d71.3 again. A stance or one art in your sequence answers it.',
 };
 
@@ -1524,6 +1612,12 @@ export const GEAR = {
     refine: 'Fusion quality',
     art: 'Arts strike harder',
   } as Record<string, string>,
+  /**
+   * 運 The whole of it. rekaris asked on 2026-10-03 for the luck every source adds up to,
+   * and was told it would be on this screen that day. The row above reads the gear's own
+   * line; this one reads what a drop is actually rolled by.
+   */
+  luckInAll: 'Your luck in all, every source',
   /** 拾 A drop chance is added in points, so it reads as points. */
   points: (x: number) => `+${Math.round(x * 10) / 10} pts`,
   /**
@@ -1553,7 +1647,7 @@ export const GEAR = {
       'How often a beast leaves a piece. It is added in points to the beast\u2019s own chance.\n'
       + `Never past ${top} points. +100% on your pieces is ${pts} points: a beast\u2019s ${base} becomes ${after}.\n`
       + 'With 造化 Creation every beast drops already, so it is the chance of a second piece.',
-    sunder: (small: string, big: string) => 'Beasts count as weaker against you. Never the Dragon of the tribulation.\n'
+    sunder: (small: string, big: string) => 'Beasts count as weaker against you: on the hunt, in the tower, on the Platform and every realm\u2019s warden. Never your heart demon, and never the Dragon of the tribulation.\n'
       + `No cap, but it bends hard: +100% takes ${small} off a beast, +300% only ${big}.`,
     art: (small: string, big: string) => 'Your arts strike harder when they fire, and 龜息 Turtle Breath heals more.\n'
       + `No cap, but it bends: +100% gives ${small}, +300% only ${big}. Never against the Dragon.`,
@@ -1640,7 +1734,8 @@ export const GEAR = {
   lockedWord: 'locked',
   anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
-    + 'It refills as you gather, open or shut.',
+    + `It holds at most ${MELT_CAP / 3600} hours of your qi rate and refills with time at ${Math.round(MELT_FILL * 1000) / 10}% of your standing qi rate, open or shut; sitting does not speed it up. `
+    + 'A piece pays a share of the realm it was made in, so lower-realm gear melts for less.',
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
   meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
@@ -1692,7 +1787,7 @@ export const CLASS = {
     sword: (w: number, f: number) => `All your power ×${w}, or ×${f} at the full, on top of everything else.`,
     // 氣滿 The full school also lifts the ceiling on qi from gear (QI_FULL_ROOF); rekaris
     // found it unsaid (2026-10-06).
-    qi: (w: number, f: number, roof: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full. At the full, the ceiling on qi from gear also stands ×${roof} higher.`,
+    qi: (w: number, f: number, roof: number) => `The four upgrades cost ${pct(w)} less, or ${pct(f)} at the full. At the full, the ceiling on qi from gear also stands ${roof} higher: on the first layer, ×${QI_ROOF_FIRST} becomes ×${Math.round((QI_ROOF_FIRST + roof) * 100) / 100}.`,
     fortune: (w: number, f: number, amp: number, full: number) => `Your 運 rarer gear and 拾 drop chance lines count ×${amp}, or ×${full} at the full. A bond fills in ${w} wins, or ${f} at the full.`,
     body: (amp: number, full: number) => `Your 破 beasts weaker lines count ×${amp}, or ×${full} at the full.`,
     artificer: (w: number, f: number, amp: number, full: number) => `Refining costs ${pct(w)} less, or ${pct(f)} at the full. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}, or ×${full} at the full.`,
@@ -1701,7 +1796,7 @@ export const CLASS = {
   /** 今 What a school gives at the step it is at now, which is what the ribbon says. */
   schoolAt: {
     sword: (x: number) => `All your power ×${x}.`,
-    qi: (x: number, roof: number) => `The four upgrades cost ${pct(x)} less.${roof ? ` The ceiling on qi from gear stands ×${roof} higher.` : ''}`,
+    qi: (x: number, roof: number) => `The four upgrades cost ${pct(x)} less.${roof ? ` The ceiling on qi from gear stands ${roof} higher.` : ''}`,
     fortune: (bond: number, amp: number) => `A bond fills in ${bond} wins. Your 運 rarer gear and 拾 drop chance lines count ×${amp}.`,
     body: (amp: number) => `Your 破 beasts weaker lines count ×${amp}.`,
     artificer: (x: number, amp: number) => `Refining costs ${pct(x)} less. Your 煉 fusion quality and 藏 chest slots lines count ×${amp}.`,
@@ -2244,9 +2339,21 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps both. Never the tribulation’s Dragon.',
+  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. Never the tribulation’s Dragon.',
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
+  /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
+  carryPill: '破境 Breakthrough, for the gate',
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. Waiting it out always works too.`,
+  pillBreaks: (days: number, left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
+    + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
+  pillHeld: (days: number, left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
+  pillNone: (left: number) =>
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself.`,
+  pillWall: (days: number) =>
+    `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',
   carry: 'Carry',
   uncarry: 'Put back',
@@ -2273,6 +2380,12 @@ export const CRAFTS = {
   forgedRule: 'A forged piece is the one you chose. It cannot be fused, and melting it gives its metal back, never qi.',
   gearShown: (realm: number) => `Showing the gear of realms ${Math.max(1, realm - 1)} to ${realm}.`,
   gearOf: (realm: number) => `Showing the gear of realm ${realm}.`,
+  /** 百形 The forge's list by place on the body, and the shapes a warden teaches. */
+  slots: 'Which place on the body',
+  slotAll: 'All',
+  realmShort: (n: number) => `Realm ${n}`,
+  anyShapeLocked: (warden: string, realm: number) =>
+    `百形 Beat the ${warden} and the forge makes every shape of realm ${realm}, all fifty-four, not only the ones its beasts teach.`,
   /** 鑄 The row of realms above the forge's gear list. */
   tiers: 'Which realm',
   tierNow: 'Now',
@@ -2377,6 +2490,82 @@ export const WORKSHOP_FIX = {
 };
 
 /** 突破 What a realm hands over, said before the cards, and each one a way in. */
+/**
+ * 百煉 The Hundredfold sets and 譜 the codex, in the workshop's Forging panel (ui/Hundred.tsx).
+ * Every number in these lines is passed in, read off sim/balance.ts and sim/hundred.ts.
+ */
+export const HUNDRED = {
+  group: 'Hundredfold',
+  head: '百煉 Hundredfold sets',
+  intro: 'Nine sets, one for every realm, made only here. You choose the shape and the rank, and every line comes from what you put in the crucible: one, two or three portions put it at the bottom, middle or top of its rank.',
+  tabs: { crucible: 'Crucible', sets: 'Sets', codex: 'Codex' } as Record<'crucible' | 'sets' | 'codex', string>,
+  realm: 'Set',
+  place: 'Place',
+  shape: 'Shape',
+  rank: 'Rank',
+  main: 'Main line',
+  mainFrom: (ingots: string) => `from ${ingots}`,
+  line: (i: number) => `Line ${i}`,
+  pick: 'Choose a line',
+  portions: (n: number) => `${n} ${n === 1 ? 'portion' : 'portions'}`,
+  portionNote: (each: number) => `A portion is ${each} of the material for a piece of this realm.`,
+  out: 'What comes out',
+  versus: (p: string, q: string) => `Worn in place of yours: power ×${p}, qi ×${q}`,
+  versusEmpty: (p: string, q: string) => `Worn in an empty place: power ×${p}, qi ×${q}`,
+  needs: 'The crucible asks for',
+  takes: (time: string) => `${time} at the anvil`,
+  forge: 'Forge it',
+  forging: 'In the crucible now',
+  empty: 'Empty the crucible',
+  heldBack: 'Nothing is spent until the piece is made.',
+  why: {
+    level: (n: number) => `Forging ${n} first`,
+    heaven: (n: number, made: number) => `Heaven asks ${n} pieces of this set made first (${made} so far)`,
+    open: (elite: string, warden: string) => `Know the ${elite} (ten killed) and the ${warden} (one) first: their parts go into every piece`,
+    material: (name: string) => `${name} is not within your reach yet`,
+    chest: 'Your chest is full',
+    lines: 'Choose every line first',
+  },
+  setsNote: 'Each set is six places. Each place counts once, at the best rank you have made it.',
+  placeMade: (rank: string) => `made at ${rank}`,
+  placeNot: 'not made',
+  finished: (rank: string) => `Finished at ${rank}`,
+  unfinished: (n: number) => `${n} of 6 places made`,
+  wornNow: (n: number) => `${n} worn now`,
+  steps: '百煉 Worn together, Hundredfold pieces of one set add',
+  step2: (pct: number) => `elixirs and sigils carried do ${pct}% more`,
+  step4: (days: number) => `each thing carried into a warden breaks ${days} day more of its bottleneck`,
+  step6: (x: number) => `the set's codex bonus counts ×${x}`,
+  codexNote: (mystic: number, earth: number, heaven: number, worn: number) =>
+    `Finish a set once, all six places, and it leaves a bonus for good, kept through every new life. Finished at Mystic it counts ×${mystic}, at Earth ×${earth}, at Heaven ×${heaven}; wearing the whole set doubles it again (×${worn}). Nothing here touches the qi rate.`,
+  codexSays: {
+    hunt: (pct: number) => `+${pct}% material from every kill`,
+    elite: (pct: number) => `elites stand ${pct}% weaker`,
+    vault: (pct: number) => `the vault's gates stand ${pct}% weaker`,
+    demon: (pct: number) => `the heart demon stands ${pct}% weaker`,
+    work: (pct: number) => `the workshop works ${pct}% faster`,
+    bond: (pct: number) => `+${pct}% bond for every win`,
+    gates: (days: number) => `each thing carried breaks ${days} day more of a bottleneck`,
+    tower: (pct: number) => `tower floors stand ${pct}% weaker`,
+    platform: (pct: number) => `Platform challengers stand ${pct}% weaker`,
+  },
+  codexNow: (v: string) => `Now ${v}`,
+  codexNone: 'Not earned yet: finish all six places of the set at any rank.',
+  codexAt: (rank: string) => `finished at ${rank}`,
+  /** 承 Beside a codex rank a life before this one finished, and this one has not yet. */
+  keptNote: 'kept from a past life',
+  keptSet: (rank: string) => `Finished at ${rank} in a past life, and kept`,
+  /** The fourth step on a codex row: Heaven, with the whole set worn, which is also its cap. */
+  codexWhole: 'Heaven, worn whole',
+  unreached: 'not within your reach yet',
+  levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
+  spiritHead: '器靈 Artifact Spirit',
+  spiritNote: 'Wear all six pieces of one set, every one Hundredfold and Heaven, and its spirit wakes around you. It is a light and a name, and nothing else.',
+  spiritAwake: (set: string) => `The spirit of ${set} is awake`,
+  spiritAsleep: 'Asleep: no set is worn whole at Heaven.',
+  spiritLine: (set: string) => `器靈 The spirit of ${set} walks with you`,
+};
+
 export const OPENED = {
   head: 'Opened in this realm',
   /** The tab a system lives on, at the end of its row. */
@@ -2429,7 +2618,7 @@ export const NODE = {
  */
 export const SIT = {
   chip: (x: string, left: string) => `Sitting \u00d7${x} \u00b7 ${left} left`,
-  rising: 'It deepens for three minutes, then holds until the half hour is up.',
+  rising: 'It deepens for three minutes on the screen, then holds until the half hour is up. Time off the screen counts toward the half hour and never deepens it.',
   over: (n: string) =>
     `That sitting has passed, so you gather at your standing ${n} a second. Nothing was taken: the sitting was extra.`,
   how: 'A new sitting starts whenever you come back to the game, or now:',
@@ -2483,7 +2672,7 @@ export const QOL = {
     moreLeft: (left: number) => `${left.toLocaleString('en')} left`,
     moreLabel: (n: number, left: number) => `Show ${n} more pieces. ${left.toLocaleString('en')} not shown yet.`,
     moreGroupsLabel: (n: number, left: number) => `Show ${n} more groups to fuse. ${left.toLocaleString('en')} not shown yet.`,
-    /** \u5b58 Saved filters, up to eight, kept with the cultivator. */
+    /** \u5b58 Saved filters, up to twenty-four (FILTER_LIMIT), kept with the cultivator. */
     saveFilter: 'Save this filter',
     filterName: 'Name this filter',
     filterDefault: (n: number) => `Filter ${n}`,

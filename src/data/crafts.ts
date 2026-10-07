@@ -23,12 +23,13 @@
  * comes from. Eleven levels is one realm's worth of material, so each rank of a craft
  * arrives beside a step of the climb, and no craft can run ahead of the mountain.
  */
-import { BEASTS, type Beast } from './bestiary.ts';
-import { ARCHETYPES, RARITY_INFO, REALM_SETS } from './gear.ts';
+import { BEASTS, commonsOf, wardenOf, type Beast } from './bestiary.ts';
+import { ARCHETYPES, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, type Slot } from './gear.ts';
 import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SPEED, CRAFT_ARRAY_TWICE, CRAFT_ARRAY_WORK, CRAFT_ARRAY_XP,
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
   CRAFT_TOOL_STEPS,
+  HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
 
@@ -226,7 +227,9 @@ for (const b of BEASTS) {
 export type Makes =
   | { readonly kind: 'item'; readonly item: string }
   | { readonly kind: 'tool'; readonly skill: SkillKey; readonly step: number }
-  | { readonly kind: 'gear'; readonly template: string; readonly beast: string };
+  | { readonly kind: 'gear'; readonly template: string; readonly beast: string }
+  /** 百煉 A Hundredfold piece of a realm's set, for one place, at a rank the forge chose. */
+  | { readonly kind: 'hundred'; readonly realm: number; readonly slot: Slot; readonly rarity: HundredRank };
 
 export interface Recipe {
   readonly key: string;
@@ -248,6 +251,11 @@ export interface Recipe {
   readonly makes: Makes;
   readonly graded: boolean;
   readonly does?: string;
+  /**
+   * 百形 A shape no beast of its realm leaves, which the warden's lesson opens: the forge
+   * makes it once that realm's warden has fallen (see `remains`). Gear only.
+   */
+  readonly anyShape?: boolean;
   /**
    * 丹符 How many light makes one make of this recipe is: CRAFT_KIT_WORK for a pill or a
    * sigil, CRAFT_ARRAY_WORK for an array, 1 for everything else. Its time and every need
@@ -366,24 +374,43 @@ recipe({ key: `forge:${REALM_KEY}`, skill: 'forge', group: 'Tools', han: '鑰', 
  */
 const ARCH = Object.fromEntries(ARCHETYPES.map((a) => [a.key, a]));
 const GEAR_STEP = [0, 2, 4, 7];
-for (const b of BEASTS) {
+const gearRecipe = (b: Beast, shape: string, anyShape = false) => {
+  const a = ARCH[shape];
+  if (!a) return;
   const set = REALM_SETS[b.realm - 1];
-  for (const shape of b.leaves) {
-    const a = ARCH[shape];
-    if (!a) continue;
-    recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
-      name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
-      seconds: CRAFT_SECONDS.forge * 1.5,
-      needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
-      makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true });
-  }
+  recipe({ key: `forge:gear:${b.key}:${shape}`, skill: 'forge', group: 'Gear', han: a.han,
+    name: `${set.word} ${a.name}`, level: tierLevel(b.realm) + GEAR_STEP[nthOf(b)], realm: b.realm,
+    seconds: CRAFT_SECONDS.forge * 1.5,
+    needs: [[metalKey(b.realm), 3], [partKey(b.key), 2], ['mat', 25 * b.realm]],
+    makes: { kind: 'gear', template: `${shape}${b.realm}`, beast: b.key }, graded: true,
+    ...(anyShape ? { anyShape: true, remains: b.key } : {}) });
+};
+for (const b of BEASTS) for (const shape of b.leaves) gearRecipe(b, shape);
+
+/**
+ * 百形 Every shape of a realm, once its warden has fallen.
+ *
+ * Each beast teaches the three shapes it leaves, so a realm's four beasts teach twelve of
+ * the fifty-four, and which twelve was never chosen for the six schools: measured on
+ * 2026-10-06, the fifth realm's own beasts reach four places of 法 Arts at most, and the
+ * ninth realm has no 體 Body shape at all, so a pure set of one school out of one realm was
+ * impossible whatever a cultivator did. So the warden teaches the rest: once it has fallen,
+ * the forge makes any shape of the realm in the realm's metal, at the warden's own price
+ * (its level, two of its parts, three ingots and the material). The drop tables do not
+ * change; a forged piece still cannot be fused and melts back into its metal, never qi.
+ */
+for (let realm = 1; realm <= 9; realm++) {
+  const warden = BEASTS.find((b) => b.warden && b.realm === realm);
+  if (!warden) continue;
+  const taught = new Set(BEASTS.filter((b) => b.realm === realm).flatMap((b) => b.leaves));
+  for (const a of ARCHETYPES) if (!taught.has(a.key)) gearRecipe(warden, a.key, true);
 }
 
 /**
  * 丹 Elixirs: three lines of nine, one herb and one beast of that realm each. The tier is
  * the realm the elixir is made for (see CRAFT_KIT.fade).
  */
-const TIER_HERB = ['moss', 'orchid', 'dragonblood', 'lotus', 'ginseng', 'fern', 'vine', 'beard', 'peach'];
+export const TIER_HERB = ['moss', 'orchid', 'dragonblood', 'lotus', 'ginseng', 'fern', 'vine', 'beard', 'peach'];
 export const ELIXIR_LINES = [
   { key: 'mend', han: '回', name: 'Mending', icon: 'round-potion', step: 0, nth: 0,
     names: [['回春散', 'Spring-Return Powder'], ['續骨膏', 'Bone-Setting Salve'], ['生肌丹', 'Flesh-Knitting Pill'],
@@ -414,7 +441,7 @@ const atTop = (x: number) => `(${pct(x * TOP_MULT)} at ${RARITY_INFO.heaven.name
 /** What a thing made for one realm is worth in a fight above it. See fade() in sim/crafts.ts. */
 const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.${breaks}`;
 /** 破境 What every carried thing also does at the warden: see Kit.breach. */
-const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank).`;
+const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank). Never in the tribulation’s Dragon fight.`;
 const ELIXIR_DOES: Record<ElixirLine, string> = {
   mend: `Mends ${pct(CRAFT_KIT.mend)} of your health every round of one hard fight ${atTop(CRAFT_KIT.mend)}.`,
   guard: `You take ${pct(CRAFT_KIT.guard)} less in one hard fight ${atTop(CRAFT_KIT.guard)}.`,
@@ -442,7 +469,7 @@ const SPECIALS: readonly [string, string, string, number, number, (readonly [str
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
     `Carried into seclusion: your heart demon stands ${pct(CRAFT_KIT.calmHeart)} weaker ${atTop(CRAFT_KIT.calmHeart)}.`, 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
-    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it.', 'dragon-orb'],
+    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it. Never in the tribulation’s Dragon fight.', 'dragon-orb'],
 ];
 for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   item({ key, han, name, kind: 'elixir', realm, icon, graded: key !== 'seekincense', does,
@@ -450,6 +477,40 @@ for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Special', han, name, level, realm,
     seconds: key === 'nineturn' ? CRAFT_SECONDS.alchemy * 2.5 : CRAFT_SECONDS.alchemy, needs,
     makes: { kind: 'item', item: key }, graded: key !== 'seekincense' }));
+}
+
+/**
+ * 破境丹 The Breakthrough Pills: one for each sealed gate (SEAL_DAYS, the fifth realm to the
+ * eighth), carried in their own hand into the realm's warden. Each breaks its realm's seal
+ * outright and takes away CRAFT_KIT.pill of what is left of the bottleneck at Common rank,
+ * more at a finer one (pillShare in sim/crafts.ts), so the wall stands far lower at once.
+ *
+ * 時 They have to be in the pouch the day the gate seals, so they are made from what a
+ * cultivator already has there: the herb of the realm below and cinnabar, both gathered a
+ * realm earlier, and an Alchemy level the crafters of tools/habits.ts reach before each of
+ * those gates (measured 2026-10-07: the hourly crafter, the one whose crafts lag furthest
+ * behind the climb, stands at Alchemy 46, 55, 59 and 62 at the four gates). Each level is
+ * one an Alchemy recipe already asks for, so the experience every recipe pays, which is
+ * solved from the levels (see RECIPES below), is what it was.
+ */
+export const BREAKTHROUGH_TIERS: readonly number[] = [5, 6, 7, 8];
+export const breakthroughKey = (tier: number) => `breakthrough${tier}`;
+const BREAKTHROUGH_LEVEL: Readonly<Record<number, number>> = { 5: 40, 6: 45, 7: 51, 8: 56 };
+/** The share of its wall's days a pill breaks at a rank's multiplier: see pillShare in sim/crafts.ts. */
+const pillTakes = (mult: number) => pct(Number((1 - (1 - CRAFT_KIT.pill) ** mult).toFixed(2)));
+for (const tier of BREAKTHROUGH_TIERS) {
+  const set = REALM_SETS[tier - 1];
+  const key = breakthroughKey(tier);
+  const han = `${set.han}破境丹`;
+  const name = `${set.word} Breakthrough Pill`;
+  item({ key, han, name, kind: 'elixir', realm: tier, icon: 'beams-aura', graded: true,
+    does: `Carried into your realm’s warden, it breaks the gate’s 封 seal at once, and ${pillTakes(1)} of the days its 瓶頸 bottleneck `
+      + `takes to loosen with it (${pillTakes(TOP_MULT)} at ${RARITY_INFO.heaven.name} rank), on top of your elixir and sigil. `
+      + `Made for realm ${tier}: a gate above it keeps its seal, and the wall takes ×${CRAFT_KIT.fade} as much for each realm. A win spends it, a loss keeps it.` });
+  recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Breakthrough', han, name,
+    level: BREAKTHROUGH_LEVEL[tier], realm: tier, seconds: CRAFT_SECONDS.alchemy,
+    needs: [[TIER_HERB[tier - 2], 2], ['cinnabar', 1]],
+    makes: { kind: 'item', item: key }, graded: true }));
 }
 
 /** 符 Sigils: paper, cinnabar and a beast's ink. The last word of each is what it does. */
@@ -531,6 +592,42 @@ for (const [key, han, name, level, realm, needs, icon] of ARRAYS) {
 }
 
 /**
+ * 百煉 The Hundredfold pieces: one recipe for each realm, place and rank, 162 of them. The
+ * shape and every line are the crucible's (sim/hundred.ts reads the order and adds what it
+ * asks for to these needs), so the recipe holds only what every piece of it costs: its
+ * realm's ingots for one portion of the main line, two parts of the realm's 霸 elite and
+ * one of its warden. The first realm has no elite, and its warden gives all three.
+ */
+export type HundredRank = 'mystic' | 'earth' | 'heaven';
+export const HUNDRED_RANKS: readonly HundredRank[] = ['mystic', 'earth', 'heaven'];
+/** 百煉 The Forging level a Hundredfold piece of this realm asks for at this rank. */
+export const hundredLevel = (realm: number, rank: HundredRank) =>
+  Math.min(HUNDRED_LEVEL_TOP[rank], tierLevel(realm) + HUNDRED_LEVEL[rank]);
+/** 霸 Whose parts a Hundredfold piece of this realm asks for: its elite, or in the first realm its warden. */
+export const hundredElite = (realm: number): Beast => {
+  const c = commonsOf(realm);
+  return realm >= 2 && c.length ? c[c.length - 1] : wardenOf(realm);
+};
+export const hundredKey = (realm: number, slot: Slot, rank: HundredRank) => `forge:hundred:${realm}:${slot}:${rank}`;
+REALM_SETS.forEach((set, i) => {
+  const realm = i + 1;
+  const elite = hundredElite(realm);
+  const warden = wardenOf(realm);
+  const parts: (readonly [string, number])[] = elite.key === warden.key
+    ? [[partKey(warden.key), HUNDRED_ELITE_PARTS + HUNDRED_WARDEN_PARTS]]
+    : [[partKey(elite.key), HUNDRED_ELITE_PARTS], [partKey(warden.key), HUNDRED_WARDEN_PARTS]];
+  for (const slot of SLOTS) {
+    for (const rank of HUNDRED_RANKS) {
+      recipe({ key: hundredKey(realm, slot, rank), skill: 'forge', group: 'Hundredfold',
+        han: `${set.han}${SLOT_INFO[slot].han}`, name: `Hundredfold ${set.word} ${SLOT_INFO[slot].name}`,
+        level: hundredLevel(realm, rank), realm, seconds: HUNDRED_SECONDS, remains: elite.key,
+        needs: [[metalKey(realm), HUNDRED_INGOTS], ...parts],
+        makes: { kind: 'hundred', realm, slot, rarity: rank }, graded: false });
+    }
+  }
+});
+
+/**
  * 經 Experience, from one number.
  *
  * A recipe pays in proportion to its time and grows with its level, and each craft's
@@ -542,7 +639,8 @@ const growth = (level: number) => 1 + level / 8;
 export const RECIPES: readonly Recipe[] = (() => {
   const scale: Record<string, number> = {};
   for (const s of SKILLS) {
-    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools');
+    // 百煉 The Hundredfold pieces are left out too: a goal beside the craft, not a step of it.
+    const mine = draft.filter((r) => r.skill === s.key && r.group !== 'Tools' && r.group !== 'Hundredfold');
     let hours = 0;
     for (let l = 1; l < LEVEL_CAP; l++) {
       const best = Math.max(...mine.filter((r) => r.level <= l).map((r) => r.level));

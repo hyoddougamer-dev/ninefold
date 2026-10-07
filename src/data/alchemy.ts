@@ -16,7 +16,7 @@
  * find. Rate upgrades stay behind the realm cap where they belong.
  */
 
-import { PILL_BANE, PILL_FORTUNE, PILL_POWER } from '../sim/balance.ts';
+import { PILL_BANE, PILL_BANE_FLOOR, PILL_FORTUNE, PILL_POWER } from '../sim/balance.ts';
 
 export type Line = 'body' | 'bane' | 'fortune';
 
@@ -43,13 +43,13 @@ export const PILL_LINES: Record<Line, PillLine> = {
   },
   bane: {
     key: 'bane', han: '破煞', name: 'Bane Breaking', icon: 'cracked-shield',
-    effect: `every beast ${pct(1 - PILL_BANE)} weaker each, never the Dragon`,
+    effect: `the first takes ${pct((1 - PILL_BANE_FLOOR) * (1 - PILL_BANE))} off every beast's power, each later one a little less, never below ${pct(PILL_BANE_FLOOR)} of it, never the Dragon`,
     lore: 'Brewed from what the beasts themselves carried. What killed them thins their ' +
       'kin, never to nothing, but never back either.',
   },
   fortune: {
     key: 'fortune', han: '聚寶', name: 'Treasure Gathering', icon: 'gold-nuggets',
-    effect: `+${pct(PILL_FORTUNE)} chance at rare gear each`,
+    effect: `+${pct(PILL_FORTUNE)} luck each: Mystic, Earth and Heaven pieces drop more, the last two most`,
     lore: 'The old alchemists swore fortune was a substance like any other, and could be ' +
       'boiled. Nobody has disproved them.',
   },

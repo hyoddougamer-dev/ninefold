@@ -29,7 +29,7 @@ import {
 import { opensAt } from './unlocks.ts';
 import {
   ITEM_BY_KEY, LEVEL_CAP, RECIPES, RECIPE_BY_KEY, SKILLS, SKILL_BY_KEY, SKILL_KEYS, TOOL_METALS, XP_CAP,
-  FORGED, arrayKey, levelOf, pouchKey, splitKey, tierLevel,
+  BREAKTHROUGH_TIERS, FORGED, arrayKey, breakthroughKey, levelOf, pouchKey, splitKey, tierLevel,
   type Recipe, type SkillKey,
 } from '../data/crafts.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -40,12 +40,22 @@ import { rollSecondaries } from './drops.ts';
 import { limitFor, stash } from './stash.ts';
 import { NO_KIT, type Kit } from './kit.ts';
 import type { State } from './state.ts';
+import {
+  bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
+  type Order,
+} from './hundred.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS } from './balance.ts';
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
   readonly elixir: string | null;
   /** A pouch key: a sigil, with its rank. */
   readonly sigil: string | null;
+  /**
+   * 破境丹 A pouch key: a Breakthrough Pill, with its rank, carried in a hand of its own
+   * because it does one thing only, at one gate. Absent in a save from before the seal.
+   */
+  readonly pill?: string | null;
 }
 
 export interface Crafts {
@@ -73,6 +83,11 @@ export interface Crafts {
   readonly carry: Carry;
   /** 尋 Sure drops waiting for the next beasts beaten on the hunt. */
   readonly seek: number;
+  /**
+   * 百煉 What is in the crucible: the Hundredfold piece the forge is set to make, its shape,
+   * rank and every line. Cleared when the piece is made. See sim/hundred.ts.
+   */
+  readonly order?: Order | null;
 }
 
 const zeroSkills = <T>(v: T): Record<SkillKey, T> =>
@@ -83,7 +98,7 @@ const RECIPES_OF: Readonly<Record<SkillKey, readonly Recipe[]>> =
 
 export const NO_CRAFTS: Crafts = {
   xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
-  tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null }, seek: 0,
+  tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null, pill: null }, seek: 0,
 };
 
 /* ── 讀 Reading the workshop ─────────────────────────────────────────────── */
@@ -264,12 +279,19 @@ function arrayFactor(s: State, skill: SkillKey): number {
   return key ? 1 - CRAFT_ARRAY_SPEED * arrayStrength(s, key) : 1;
 }
 
-/** 時 Seconds one make of this recipe takes, for this cultivator, now. */
-export function secondsOf(s: State, r: Recipe): number {
+/**
+ * 時 Seconds one make of this recipe takes, for this cultivator, now. `mastery` is the
+ * craft's mastery when the caller already holds it: 百形 Forging has over five hundred
+ * recipes since every shape of a realm can be forged, and settle() asks this once a make,
+ * so it reads the mastery again only when the recipe it is making earns its last mark.
+ */
+export function secondsOf(s: State, r: Recipe, mastery: number = masteryOf(s, r.skill)): number {
   return r.seconds * toolFactor(s, r.skill) * arrayFactor(s, r.skill)
     * (marksOf(s, r) >= 1 ? 1 - CRAFT_MARK_FASTER : 1)
     * (1 - CRAFT_MARK_SUB) ** subsOf(s, r).fast
-    * (1 - masteryOf(s, r.skill));
+    * (1 - mastery)
+    // 譜 碧玉 The Jadewater codex: the whole workshop faster, for good.
+    * (1 - codexValue(s, 'work'));
 }
 
 /** 經 The experience one make pays this cultivator. */
@@ -287,11 +309,16 @@ export function workSeconds(s: State): number {
  * make's worth, so a pill or a sigil (Recipe.weight) asks for that many fewer.
  */
 export function needsOf(s: State, r: Recipe): readonly (readonly [string, number])[] {
+  // 百煉 A Hundredfold piece asks for what its crucible holds.
+  if (r.makes.kind === 'hundred') {
+    const o = s.crafts.order;
+    return o && orderRecipe(o)?.key === r.key ? orderNeeds(o) : r.needs;
+  }
   const less = marksOf(s, r) >= 3;
   return r.needs.map(([k, n], i) => [k, i === 0 && less && n > r.weight ? n - r.weight : n] as const);
 }
 
-export type Blocked = 'shut' | 'level' | 'realm' | 'needs' | 'remains' | 'chest' | 'tool' | null;
+export type Blocked = 'shut' | 'level' | 'realm' | 'needs' | 'remains' | 'chest' | 'tool' | 'order' | null;
 
 /** Why a recipe cannot be made right now, or null if it can. The screen says each one. */
 export function blocked(s: State, r: Recipe): Blocked {
@@ -300,6 +327,14 @@ export function blocked(s: State, r: Recipe): Blocked {
   if (s.realm < r.realm) return 'realm';
   if (r.makes.kind === 'tool' && (s.crafts.tools[r.makes.skill] ?? 0) >= r.makes.step) return 'tool';
   if (r.remains && !known(s, r.remains)) return 'remains';
+  // 百煉 A Hundredfold piece is made from an order, once; Heaven asks five of its set made first.
+  if (r.makes.kind === 'hundred') {
+    const o = s.crafts.order;
+    if (!o || orderRecipe(o)?.key !== r.key) return 'order';
+    if (!setOpen(s.killed, r.makes.realm)) return 'remains';
+    if (r.makes.rarity === 'heaven' && piecesMade(s.crafts.made, r.makes.realm) < HUNDRED_HEAVEN_MADE) return 'level';
+    if (s.chest.length >= limitFor(s)) return 'chest';
+  }
   if (needsOf(s, r).some(([k, n]) => held(s, k) < n)) return 'needs';
   if (r.makes.kind === 'gear' && s.chest.length >= limitFor(s)) return 'chest';
   return null;
@@ -413,6 +448,10 @@ function makeOne(s: State, r: Recipe): State {
   } else if (r.makes.kind === 'gear') {
     const piece = forged(s, r, r.makes.template, rank, d);
     if (piece) out = stash(out, piece).state;
+  } else if (r.makes.kind === 'hundred' && c.order) {
+    // 百煉 The piece the crucible holds, and the crucible emptied.
+    const piece = pieceOf(c.order, `hundred-${n.toString(36)}-${c.order.template}-${seedOf(s, r, -1).toString(36)}`);
+    if (piece) out = stash(out, piece).state;
   }
   const xp = Math.min(XP_CAP, (c.xp[r.skill] ?? 0) + xpOf(s, r));
   // 深 An array cut is a copy toward its depth.
@@ -422,6 +461,7 @@ function makeOne(s: State, r: Recipe): State {
     ...out,
     crafts: {
       ...c, pouch, tools, cut,
+      ...(r.makes.kind === 'hundred' ? { order: undefined } : {}),
       made: { ...c.made, [r.key]: n + 1 },
       xp: { ...c.xp, [r.skill]: xp },
     },
@@ -488,8 +528,12 @@ export function settle(s: State, now: number): Settled {
   let stoodFrom: number | null = null;
   // 守 A day's worth of the fastest recipe is under thirty thousand makes; this is only a
   // guard against a clock that has gone somewhere a clock cannot go.
+  // 熟 Only this recipe's count moves while it is being made, so the craft's mastery can
+  // only change on the make that earns its last mark: it is read then, not every make.
+  let mastery = masteryOf(out, r.skill);
+  const last = r.marks[r.marks.length - 1];
   for (let guard = 0; guard < 200_000; guard++) {
-    const t = secondsOf(out, r);
+    const t = secondsOf(out, r, mastery);
     if (at + t > end) break;
     const b = blocked(out, r);
     if (b !== null) {
@@ -499,6 +543,7 @@ export function settle(s: State, now: number): Settled {
       break;
     }
     out = makeOne(out, r);
+    if ((out.crafts.made[r.key] ?? 0) === last) mastery = masteryOf(out, r.skill);
     at += t;
   }
   // The workshop stood still at its limit: the rest of the absence is not owed, and the
@@ -521,6 +566,26 @@ export function setTask(s: State, key: string | null, now: number): State {
   const r = RECIPE_BY_KEY[key];
   if (!r || !canSet(settled, r)) return settled;
   return { ...settled, crafts: { ...settled.crafts, task: key, since: now } };
+}
+
+/**
+ * 百煉 Fill the crucible and set the forge going on it, or empty it (null). Settles what was
+ * running first. An order the forge could not make now (the level, the realm, the Heaven
+ * rule) is refused and nothing changes; one short of material is set and waits, like any task.
+ */
+export function setOrder(s: State, raw: Order | null, now: number): State {
+  const settled = work(s, now);
+  if (raw === null) {
+    const r = settled.crafts.task ? RECIPE_BY_KEY[settled.crafts.task] : undefined;
+    const task = r?.makes.kind === 'hundred' ? null : settled.crafts.task;
+    return { ...settled, crafts: { ...settled.crafts, order: undefined, task, since: now } };
+  }
+  const o = validOrder(raw, settled.realm);
+  const r = o ? orderRecipe(o) : undefined;
+  if (!o || !r) return settled;
+  const next: State = { ...settled, crafts: { ...settled.crafts, order: o } };
+  if (!canSet(next, r)) return settled;
+  return { ...next, crafts: { ...next.crafts, task: r.key, since: now } };
 }
 
 /** How far through the make in hand, 0..1, for the bar on the screen. */
@@ -547,19 +612,25 @@ export function placeArray(s: State, key: string, on: boolean): State {
 
 const SIGIL_CARRIED = new Set(['warding', 'thunder', 'binding', 'mirror', 'purity', 'fivethunder', 'soullock', 'heavenseal']);
 const ELIXIR_CARRIED = new Set(['calmheart', 'nineturn']);
+const PILL_CARRIED = new Set(BREAKTHROUGH_TIERS.map(breakthroughKey));
+
+/** The three hands: an elixir, a sigil, and 破境丹 a Breakthrough Pill for the gate. */
+export type Hand = 'elixir' | 'sigil' | 'pill';
+export const HANDS: readonly Hand[] = ['elixir', 'sigil', 'pill'];
 
 /** Whether a pouch key can be carried into a fight, and in which hand. */
-export function carrySlot(key: string): 'elixir' | 'sigil' | null {
+export function carrySlot(key: string): Hand | null {
   const { key: k, quality } = splitKey(key);
   const it = ITEM_BY_KEY[k];
   if (!it || quality === null) return null;
+  if (PILL_CARRIED.has(k)) return 'pill';
   if (it.kind === 'elixir' && (/^(mend|guard|might)\d$/.test(k) || ELIXIR_CARRIED.has(k))) return 'elixir';
   if (it.kind === 'sigil' && SIGIL_CARRIED.has(k.slice('sigil:'.length))) return 'sigil';
   return null;
 }
 
 /** Carry a thing from the pouch into the next hard fight, or put it back (null). */
-export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): State {
+export function carry(s: State, hand: Hand, key: string | null): State {
   if (key !== null && (carrySlot(key) !== hand || (s.crafts.pouch[key] ?? 0) < 1)) return s;
   return { ...s, crafts: { ...s.crafts, carry: { ...s.crafts.carry, [hand]: key } } };
 }
@@ -569,15 +640,74 @@ export function carry(s: State, hand: 'elixir' | 'sigil', key: string | null): S
  * best: what the screen offers when nothing is carried yet, so "carry one" names a number.
  */
 export function breachHeld(s: State, b: Beast): number {
-  let best = { elixir: 0, sigil: 0 };
+  // The best of each hand alone, then all three carried together, as the fight reads them.
+  const alone = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
+  const best: Record<Hand, { key: string | null; days: number }> = {
+    elixir: { key: null, days: 0 }, sigil: { key: null, days: 0 }, pill: { key: null, days: 0 },
+  };
   for (const [key, n] of Object.entries(s.crafts.pouch)) {
     const hand = n > 0 ? carrySlot(key) : null;
     if (!hand) continue;
-    const alone = carry(carry(s, 'elixir', null), 'sigil', null);
     const days = kitFor(carry(alone, hand, key), b, 'warden').kit.breach ?? 0;
-    if (days > best[hand]) best = { ...best, [hand]: days };
+    if (days > best[hand].days) best[hand] = { key, days };
   }
-  return best.elixir + best.sigil;
+  let all = alone;
+  for (const hand of HANDS) if (best[hand].key) all = carry(all, hand, best[hand].key);
+  return kitFor(all, b, 'warden').kit.breach ?? 0;
+}
+
+/**
+ * 封 The best Breakthrough Pill held that would break this realm's seal, as the days of the
+ * bottleneck it takes away (0 when the pouch holds none that breaks it). What the gate's
+ * card offers when none is carried.
+ */
+export function pillHeld(s: State): number {
+  let best = 0;
+  const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
+  if (!b) return 0;
+  for (const [key, n] of Object.entries(s.crafts.pouch)) {
+    if (n <= 0 || carrySlot(key) !== 'pill') continue;
+    const k = kitFor(carry(s, 'pill', key), b, 'warden').kit;
+    if ((k.unseal ?? 0) > 0) best = Math.max(best, pillShare(splitKey(key).quality ?? 0, 1) * wallDays(s.realm));
+  }
+  return best;
+}
+
+/** 封 Days of the seal the Breakthrough Pill carried counts as at this realm's gate, or 0. */
+export function unsealCarried(s: State): number {
+  const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
+  return b ? kitFor(s, b, 'warden').kit.unseal ?? 0 : 0;
+}
+
+/**
+ * 破境丹 The share of its gate's whole bottleneck (wallDays) a Breakthrough Pill of this rank
+ * takes away, at `f` of its strength (1 at its own realm, CRAFT_KIT.fade a realm above):
+ * what it leaves is (1 − CRAFT_KIT.pill) to the power of the rank's CRAFT_QUALITY_MULT, so
+ * it takes half at Common and seven tenths at Heaven. A share of the whole wall rather than
+ * of what is left: whatever a cultivator would still wait at the gate is never more than
+ * the whole wall, so a pill of the realm always takes at least half of the wait there is.
+ */
+export function pillShare(quality: number, f: number): number {
+  const q = CRAFT_QUALITY_MULT[Math.max(0, Math.min(CRAFT_QUALITY_MULT.length - 1, quality))];
+  return (1 - (1 - CRAFT_KIT.pill) ** q) * f;
+}
+
+/** 瓶頸 The days a fresh wall of this realm takes to loosen all the way: 8 at the fifth, 12 at the eighth. */
+export function wallDays(realm: number): number {
+  const wall = REALM_WALL[Math.max(1, Math.min(9, realm)) - 1];
+  return realm >= 9 || wall <= 1 ? 0 : Math.log(wall) / -Math.log(1 - BOTTLENECK_LOOSEN);
+}
+
+/**
+ * 瓶頸 The days the warden's wall still has to loosen, with `breach` days of a kit already
+ * counted: what combat.ts's bottleneck reads, turned back into days. Written here because
+ * combat.ts reads the state and the kit is read before it; crafts.test holds the two to
+ * each other. 0 for anything that is not the realm's own warden below the ninth.
+ */
+export function wallDaysLeft(s: State, b: Beast, breach = 0): number {
+  if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 0;
+  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  return Math.max(0, wallDays(b.realm) - days);
 }
 
 /** 尋 Use a Seeking Sigil or burn incense: the next beast beaten on the hunt leaves a piece. */
@@ -636,6 +766,8 @@ function fade(tier: number, fightRealm: number): number {
 export interface Used {
   readonly elixir: string | null;
   readonly sigil: string | null;
+  /** 破境丹 The Breakthrough Pill, at a warden only. */
+  readonly pill?: string | null;
 }
 
 export interface Carried {
@@ -650,7 +782,7 @@ export interface Carried {
   readonly used: Used;
 }
 
-export const NOT_USED: Used = { elixir: null, sigil: null };
+export const NOT_USED: Used = { elixir: null, sigil: null, pill: null };
 
 /**
  * 戰 The kit a fight is fought with: what is carried, and the Guardian Array under the
@@ -659,9 +791,9 @@ export const NOT_USED: Used = { elixir: null, sigil: null };
 export function kitFor(s: State, b: Beast, where: Where | null): Carried {
   if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
   const fightRealm = Math.max(1, Math.min(9, fightRealmOf(s, b, where)));
-  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0;
+  let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0, unseal = 0;
   let bind = false, revive = false, spends = false;
-  let usedElixir: string | null = null, usedSigil: string | null = null;
+  let usedElixir: string | null = null, usedSigil: string | null = null, usedPill: string | null = null;
 
   const e = s.crafts.carry.elixir;
   if (e && (s.crafts.pouch[e] ?? 0) > 0) {
@@ -707,8 +839,41 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (spends && where === 'warden') breach += CRAFT_KIT.breach * q * f;
     spends = spends || before;
   }
+  // 百煉 What a Hundredfold set worn and the Thunderscript codex add to what was carried.
+  ({ strike, taken, mend, reflect, demon, breach } = hundredKit(s, where === 'warden',
+    { strike, taken, mend, reflect, demon, breach }, (usedElixir ? 1 : 0) + (usedSigil ? 1 : 0)));
+  // 破境丹 The Breakthrough Pill does one thing, at the gate of a realm with a bottleneck or a
+  // seal. Made for the realm (or one above), it breaks the 封 seal outright; and it breaks
+  // its share (pillShare) of the wall's whole loosening in days, on top of what else is
+  // carried. Anywhere else, or at a gate it has nothing left to do at, it takes no part and
+  // is never spent.
+  let thin = 0;
+  const p = s.crafts.carry.pill;
+  if (p && where === 'warden' && b.realm === s.realm && b.realm < 9 && (s.crafts.pouch[p] ?? 0) > 0) {
+    const { key, quality } = splitKey(p);
+    const it = ITEM_BY_KEY[key];
+    if (it && PILL_CARRIED.has(key)) {
+      const seal = SEAL_DAYS[b.realm - 1] ?? 0;
+      const waited = s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0;
+      const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
+      const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));
+      const days = wallDaysLeft(s, b, breach) > 1e-6 ? share * wallDays(b.realm) : 0;
+      if (breaks || days > 1e-6) {
+        if (breaks) unseal = seal;
+        thin = days > 1e-6 ? share : 0;
+        breach += days;
+        usedPill = p;
+        spends = true;
+      }
+    }
+  }
   if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
-  return { kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach }, spends, used: { elixir: usedElixir, sigil: usedSigil } };
+  // 譜 古銅 The Elder Bronze codex: the vault's gates stand weaker.
+  const foe = where === 'vault' ? 1 - codexValue(s, 'vault') : 1;
+  return {
+    kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal, thin, foe },
+    spends, used: { elixir: usedElixir, sigil: usedSigil, pill: usedPill },
+  };
 }
 
 /**
@@ -746,12 +911,13 @@ export function spendKit(s: State, used: Used): State {
   const c = s.crafts;
   const pouch = { ...c.pouch };
   let { elixir, sigil } = c.carry;
-  for (const k of [used.elixir, used.sigil]) {
+  let pill = c.carry.pill ?? null;
+  for (const k of [used.elixir, used.sigil, used.pill ?? null]) {
     if (!k || (pouch[k] ?? 0) < 1) continue;
     addTo(pouch, k, -1);
-    if (!pouch[k]) { if (elixir === k) elixir = null; if (sigil === k) sigil = null; }
+    if (!pouch[k]) { if (elixir === k) elixir = null; if (sigil === k) sigil = null; if (pill === k) pill = null; }
   }
-  return { ...s, crafts: { ...c, pouch, carry: { elixir, sigil } } };
+  return { ...s, crafts: { ...c, pouch, carry: { elixir, sigil, pill } } };
 }
 
 /**
@@ -770,6 +936,11 @@ export function spendOnWin(before: State, after: State, used: Used): State {
  * because it sees a warden beaten and not what was carried into the fight.
  */
 export function bestKit(s: State, b: Beast, where: Where): Kit {
+  // 百煉 And the most a Hundredfold set this save holds could add to it: see bestHundred.
+  return bestHundred(s, where, bestKitBare(s, b, where));
+}
+
+function bestKitBare(s: State, b: Beast, where: Where): Kit {
   const alch = skillOpen(s, 'alchemy') ? levelIn(s, 'alchemy') : 0;
   const sig = skillOpen(s, 'sigil') ? levelIn(s, 'sigil') : 0;
   const top = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
@@ -799,6 +970,20 @@ export function bestKit(s: State, b: Beast, where: Where): Kit {
     mend: CRAFT_KIT.mend * top, bind: sig > 0, revive: alch >= 97,
     breach: where === 'warden' ? CRAFT_KIT.breach * top * (f + (sig > 0 ? 1 : 0)) : 0,
     demon: where === 'demon' ? (1 - CRAFT_KIT.purity * top) * (1 - CRAFT_KIT.calmHeart * top) : 1 };
+}
+
+/**
+ * 封 The days of a realm's seal a Breakthrough Pill this save's Alchemy could have made
+ * would count as: the whole seal, if its level reached the pill made for that realm (which
+ * breaks the seal outright), and nothing otherwise, since a pill made for a realm below
+ * thins the wall and leaves the seal. 驗 the server reads it, because it sees a sealed gate
+ * crossed and never what was carried into it, so it allows the most an honest pill can be.
+ */
+export function bestUnseal(s: State, realm: number): number {
+  if (!skillOpen(s, 'alchemy') || realm > s.realm) return 0;
+  const seal = SEAL_DAYS[realm - 1] ?? 0;
+  const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(realm)}`];
+  return seal > 0 && r && BREAKTHROUGH_TIERS.includes(realm) && levelIn(s, 'alchemy') >= r.level ? seal : 0;
 }
 
 /* ── 爐 What the crafts do elsewhere ─────────────────────────────────────── */
@@ -837,7 +1022,8 @@ export const XP_PER_SECOND_MAX: Readonly<Record<SkillKey, number>> = Object.from
   const fastest = (1 - CRAFT_TOOL_STEP * CRAFT_TOOL_STEPS) * (1 - CRAFT_ARRAY_SPEED * CRAFT_ARRAY_DEPTH_TOP)
     * (1 - CRAFT_MARK_FASTER) * (1 - CRAFT_MARK_SUB) ** (CRAFT_MARKS.length - 1) * (1 - masteryMost(k));
   const best = Math.max(...RECIPES.filter((r) => r.skill === k).map((r) => r.xp / (r.seconds * fastest)));
-  return [k, best * (1 + CRAFT_ARRAY_XP * CRAFT_ARRAY_DEPTH_TOP)];
+  // 譜 碧玉 And the Jadewater codex at its most.
+  return [k, best * (1 + CRAFT_ARRAY_XP * CRAFT_ARRAY_DEPTH_TOP) / (1 - CODEX_CAP.work)];
 })) as Record<SkillKey, number>;
 
 const POUCH_LIMIT = 1e9;
@@ -909,6 +1095,9 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     const n = Math.floor(num(v, 0, most));
     if (n > 0) made[k] = n;
   }
+  // 百煉 And the Hundredfold pieces only where their set could be made: see validHundredMade.
+  const fair = validHundredMade(made, s.killed);
+  for (const k of Object.keys(made)) if (!(k in fair)) delete made[k];
 
   // 具 A tool is only held if this forge level and realm could have made it.
   const forge = open('forge') ? level('forge') : 0;
@@ -950,9 +1139,13 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     .slice(0, slots);
 
   const rawCarry = rec(o.carry);
-  const hand = (x: unknown, which: 'elixir' | 'sigil') =>
+  const hand = (x: unknown, which: Hand) =>
     typeof x === 'string' && carrySlot(x) === which && (pouch[x] ?? 0) > 0 ? x : null;
-  const carryOut: Carry = { elixir: hand(rawCarry.elixir, 'elixir'), sigil: hand(rawCarry.sigil, 'sigil') };
+  // 破境丹 The third hand holds only a Breakthrough Pill the pouch holds, which the pouch
+  // above only holds if this Alchemy level and realm could have made it.
+  const carryOut: Carry = {
+    elixir: hand(rawCarry.elixir, 'elixir'), sigil: hand(rawCarry.sigil, 'sigil'), pill: hand(rawCarry.pill, 'pill'),
+  };
 
   const task = typeof o.task === 'string' && RECIPE_BY_KEY[o.task]
     && open(RECIPE_BY_KEY[o.task].skill) && level(RECIPE_BY_KEY[o.task].skill) >= RECIPE_BY_KEY[o.task].level
@@ -964,8 +1157,13 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
     pouch, made, tools, arrays, cut, carry: carryOut,
     // 尋 Sure drops come only from a Seeking Sigil or incense, so only a hand that can make one holds any.
     seek: seeks(level) ? Math.floor(num(o.seek, 0, CRAFT_SEEK_MAX)) : 0,
+    // 百煉 An order is only what the crucible could hold: see validOrder.
+    ...withOrder(validOrder(o.order, s.realm)),
   };
 }
+
+/** 百煉 A crucible with something in it is kept; an empty one is left out of the save. */
+const withOrder = (o: Order | null): { order?: Order } => (o ? { order: o } : {});
 
 /** 尋 Whether these levels could make anything that leaves a sure drop. */
 function seeks(level: (k: SkillKey) => number): boolean {

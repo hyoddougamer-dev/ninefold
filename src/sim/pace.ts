@@ -1,6 +1,6 @@
 import { LAYERS, LAYERS_PER_REALM, realmCost } from './balance.ts';
 import { layerCostFactor } from './dao.ts';
-import { layerCost, rate } from './time.ts';
+import { gathering, layerCost } from './time.ts';
 import { type State } from './state.ts';
 
 /**
@@ -41,7 +41,7 @@ export interface Pace {
 const seconds = (qi: number, per: number) => (per > 0 ? Math.max(0, qi) / per : Infinity);
 
 export function pace(s: State): Pace {
-  const per = rate(s);
+  const per = gathering(s);
   const factor = layerCostFactor(s.unlocked);
   const rung = layerCost(s.realm, s.layer, s.unlocked);
   const realm = realmCost(s.realm) * factor;

@@ -263,7 +263,7 @@ describe('鎖 a kept filter and a full chest', () => {
       { name: 'x', slot: 'nowhere', school: 'any', lines: [] },
       { name: 'y', slot: 'better', school: 'any', lines: [], keep: true },
       { name: 'z\u0001', slot: 'ring', school: 'sword', lines: ['power', 'power', 'bogus'], keep: 'yes' },
-      ...Array.from({ length: 20 }, (_, i) => ({ name: `f${i}`, slot: 'all', school: 'any', lines: ['power'] })),
+      ...Array.from({ length: 40 }, (_, i) => ({ name: `f${i}`, slot: 'all', school: 'any', lines: ['power'] })),
     ]);
     expect(forged.length).toBe(FILTER_LIMIT - 1);
     expect(forged[0]).toEqual({ name: 'y', slot: 'better', school: 'any', lines: [] });

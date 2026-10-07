@@ -20,7 +20,7 @@ import { Plate } from './Plate.tsx';
 import { pictureOf } from '../../data/pictures.ts';
 import { ARENA, CRAFTS, PLATFORM, SECLUSION, UNIT, meltPays } from '../copy.ts';
 import {
-  PLATFORM_EDGE, answerOf, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
+  PLATFORM_EDGE, answerOf, edgeLabel, beatenNow, challengerOf, challengerPays, temperOf, type Tier,
 } from '../../sim/platform.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { tookPart, type Used } from '../../sim/crafts.ts';
@@ -176,10 +176,10 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   const hit: Striker | null = over ? null : f.striker === 'player' ? 'beast' : 'player';
   const names = (ks: readonly (string | null | undefined)[]) => ks.filter((k): k is string => !!k)
     .map((k) => ITEM_BY_KEY[splitKey(k).key]?.name ?? k).join(' · ') || null;
-  const kitNames = names([battle.kit?.elixir, battle.kit?.sigil]);
+  const kitNames = names([battle.kit?.elixir, battle.kit?.sigil, battle.kit?.pill]);
   // 九轉 On a win, what was spent and what was carried in but never needed.
   const took = battle.kit && tookPart(battle.kit, !!outcome.revived);
-  const spentNames = took ? names([took.elixir, took.sigil]) : null;
+  const spentNames = took ? names([took.elixir, took.sigil, took.pill]) : null;
   const unneeded = battle.kit && took && battle.kit.elixir !== took.elixir ? names([battle.kit.elixir]) : null;
   /** 擂 A challenger, which is neither a kill nor a floor: the verdict says what it is. */
   const tier = battle.challenger;
@@ -443,7 +443,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                     : PLATFORM.unansweredLine(`${temper.han} ${temper.name}`)}{' '}
                   {!outcome.won ? PLATFORM.dice
                     : nextShape && nextUp !== null
-                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, String(PLATFORM_EDGE[nextUp]), num(challengerPays(state, nextUp)))
+                      ? PLATFORM.next(PLATFORM.ordinal[nextUp], `${nextShape.han} ${nextShape.name}`, edgeLabel(nextUp, state.realm), num(challengerPays(state, nextUp)))
                       : PLATFORM.done}
                 </i>
               </span>

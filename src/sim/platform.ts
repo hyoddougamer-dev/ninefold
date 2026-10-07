@@ -1,5 +1,5 @@
 import {
-  PLATFORM_EDGE, PLATFORM_HOURS, PLATFORM_REALM, TEMPER_EDGE, TRAIL_WOUND, midRate,
+  PLATFORM_EDGE, PLATFORM_EDGE_GROWTH, PLATFORM_HOURS, PLATFORM_REALM, TEMPER_EDGE, TRAIL_WOUND, midRate,
 } from './balance.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { TEMPERS, type Temper } from '../data/platform.ts';
@@ -108,9 +108,23 @@ export function challengerOf(s: State, tier: Tier): Beast {
   return { ...shape, challenger: tier };
 }
 
+/**
+ * 擂 A challenger's edge in a realm: PLATFORM_EDGE, grown by PLATFORM_EDGE_GROWTH for every
+ * realm past the Platform's first, so the same body meets a harder third challenger in the
+ * ninth realm than in the fourth. The one number the card, the arena and 驗 the server read.
+ */
+export function platformEdge(tier: Tier, realm: number): number {
+  return PLATFORM_EDGE[tier] * (1 + PLATFORM_EDGE_GROWTH * Math.max(0, Math.min(9, realm) - PLATFORM_REALM));
+}
+
+/** 擂 The edge as the screen writes it: ×2.7, never ×2.6999999. */
+export function edgeLabel(tier: Tier, realm: number): string {
+  return String(Number(platformEdge(tier, realm).toFixed(2)));
+}
+
 /** 量 What a challenger stands at against this body, before 破甲 and the rest thin it. */
 export function challengerPower(body: State, tier: Tier, temper: Temper = temperOf(body)): number {
-  return power(body) * PLATFORM_EDGE[tier] * (answered(body, temper) ? 1 : TEMPER_EDGE);
+  return power(body) * platformEdge(tier, body.realm) * (answered(body, temper) ? 1 : TEMPER_EDGE);
 }
 
 /** 定 The period's dice for one challenger. The same body meets the same fight all period. */

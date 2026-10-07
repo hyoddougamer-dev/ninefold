@@ -34,12 +34,14 @@ import {
   ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
-import { beatenNow, challengerOf, challengerQi, type Tier } from './platform.ts';
+import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
 import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
-  UPGRADES, UPGRADE_INFO, capOf, heavenStep, layersOpened, power, rate, tribulationScale, upgradeCost,
-  newState, type State,
+  UPGRADES, UPGRADE_INFO, capOf, gathering, heavenStep, layersOpened, power, sealDays, sealLeft, tribulationScale, upgradeCost,
+  newState, wardenStands, type State,
 } from './state.ts';
+import { echoFactor, livesExtend } from './echo.ts';
+import { bornFrom } from './rebirth.ts';
 import { layerCost } from './time.ts';
 import { beastPower, beatable, quarryQi, seenBounty } from './combat.ts';
 import { heavensOpened } from '../data/heavens.ts';
@@ -49,7 +51,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestKit, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
@@ -60,6 +62,7 @@ import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
 import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
 import { equip } from './chest.ts';
+import { codexToKeep, hundredFits, keptCovers } from './hundred.ts';
 
 /**
  * 始 No save can have begun before the game existed, so a first sync is measured from
@@ -163,6 +166,7 @@ export type Why =
   | 'dao'            // more 道 spent than earned
   | 'anchor'         // the Dragon's anchor shrank: edited to make the next crossing easy
   | 'road'           // an answer given on the road was changed afterwards, to take a boon
+  | 'codex'          // a kept codex no life left: in a first life, or grown without a rebirth
   | 'shape'          // another run of the game than the one verified (startedAt); never a strike
   | 'newrun';        // a run of its own far past the account's last verified save (sync core); review, never a strike
 
@@ -225,7 +229,8 @@ function rateOn(s: State, n: number): number {
   for (const u of UPGRADES) levels[u] = Math.min(levels[u], capOf(probe, u));
   const worn = Object.fromEntries(Object.entries(s.worn)
     .filter(([, x]) => x && (templateOf(x as Item)?.realm ?? 1) <= realm)) as State['worn'];
-  return rate({ ...probe, levels, worn });
+  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_CEILING at most.
+  return gathering({ ...probe, levels, worn });
 }
 
 /**
@@ -341,6 +346,55 @@ function metCeiling(before: State, after: State, dt: number, first = false): num
   return road + (Math.ceil(Math.max(0, dt) / gap) + Math.ceil(Math.max(0, dt) / 86_400) + 2) * RUN_DAO_CEILING;
 }
 
+/**
+ * 封 Room for a phone's clock a little ahead of the server's, on a seal read in real seconds.
+ */
+export const SEAL_GRACE = 3600;
+
+/**
+ * 封 From this instant (seconds) a sealed gate crossed is read against its days. The game
+ * before the seal had none: its warden could be fought the moment it came out, so a save
+ * from before then crossed realms 5 to 8 honestly without the days or a pill. A pair that
+ * starts earlier is never charged for a seal.
+ *
+ * Two days after the release of 2026-10-08, as DAO_BANK_STRICT_FROM sat two days after the
+ * shrines changed: a phone still running the old build (a cached page, an APK not updated
+ * yet) crosses a gate the old way, and is not charged for it while most of them catch up.
+ * One that is still old after this waits the seal out on the server, SEAL_DAYS at the most
+ * per gate, never a strike, and it clears by itself as the hours pass (the rankings card
+ * says how far ahead of real time the climb is). The margin costs nothing honest: the new
+ * game keeps the gate shut itself, so only an edited one could cross it early meanwhile.
+ * If the release moves later, this moves with it.
+ */
+export const SEAL_STRICT_FROM = 1_791_590_400; // 2026-10-10T00:00:00Z
+
+/**
+ * 擂 From the same instant a Platform challenger beaten is read at the realm's grown edge
+ * (platformEdge, released with the seal). Before it, and on a phone that had not updated
+ * yet, every challenger stood at the flat PLATFORM_EDGE, and a third one beaten there in
+ * the seventh realm or above may be one the grown edge says no body could take: read at
+ * the grown edge, that save would wait until the period turned, a week at the most.
+ */
+export const EDGE_STRICT_FROM = SEAL_STRICT_FROM;
+
+/**
+ * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
+ * the least: each gate's SEAL_DAYS, or nothing where this save's Alchemy reached the
+ * Breakthrough Pill made for that realm, which breaks the seal outright (bestUnseal). A
+ * gate the earlier save already stood at owes only what was left of its seal then; one it
+ * had not reached owes all of it.
+ */
+export function sealSeconds(before: State, after: State): number {
+  let days = 0;
+  for (let r = before.realm; r < Math.min(9, after.realm); r++) {
+    const pill = bestUnseal(after, r);
+    if (r === before.realm && before.wardenFell) continue;
+    if (r === before.realm && wardenStands(before)) days += sealLeft(before, pill);
+    else days += Math.max(0, sealDays(r) - pill);
+  }
+  return days * 86_400;
+}
+
 /** 業 The seconds of work the experience gained between two saves took, at its fastest. */
 export function craftSeconds(before: State, after: State): number {
   let t = 0;
@@ -374,8 +428,15 @@ export function verify(before: State, after: State, seconds: number, first = fal
 
   if (after.startedAt !== before.startedAt) why.push('shape');
 
+  // 轉世 A life that ended since the last save: measured as the new life it began. See reborn().
+  const born = (after.lives?.length ?? 0) > (before.lives?.length ?? 0);
+  if (born && livesExtend(before.lives, after.lives) && !why.includes('shape')) return reborn(before, after, dt, first);
+
   // 下 Anything that can only ever grow, having shrunk, is a restore or a second device.
-  const down = layersOpened(after) < layersOpened(before)
+  // 世 And a record of lives that lost one, or that is not the record it was (two copies of
+  // one cultivator each reborn their own way), is another copy, never a strike.
+  const down = !livesExtend(before.lives, after.lives)
+    || layersOpened(after) < layersOpened(before)
     || after.tribulation < before.tribulation
     || after.tower < before.tower
     // 擂 Every challenger ever beaten: a count that only grows.
@@ -385,8 +446,15 @@ export function verify(before: State, after: State, seconds: number, first = fal
     || (after.keyDay ?? 0) < (before.keyDay ?? 0)
     || UPGRADES.some((u) => after.levels[u] < before.levels[u])
     // Commons only: a warden's count is a marker the arts read, not a tally that pays.
-    || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0));
+    || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0))
+    // 承 The codex the lives before kept only grows, and only at a rebirth.
+    || !keptCovers(after.codexKept, before.codexKept);
   if (down) why.push('went-down');
+  // 承 And a kept codex is something only a life that ended can leave: one in a first life,
+  // or one that grew while the record of lives stayed what it was, was written by hand.
+  // validate() already empties the first, so the server only meets it unvalidated.
+  if ((after.lives?.length ?? 0) === 0 ? (after.codexKept?.length ?? 0) > 0
+    : !down && !keptCovers(before.codexKept, after.codexKept)) why.push('codex');
 
   // 時 The budget, in seconds. What the best possible player would have needed to make
   // these gains, against the seconds that really passed.
@@ -459,7 +527,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // cheaper each one got: 300 at once verified in thirty seconds. It is time, so it is
   // counted as time.
   const newMarks = Math.max(0, after.tribulation - before.tribulation);
-  need += newMarks * MARK_DAYS * 86_400 / focus;
+  // 宿慧 The Echo fills the pool faster, by ECHO_CEILING at the most.
+  need += newMarks * markSeconds(before, after, focus);
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
 
@@ -502,6 +571,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
     const there = { ...after, realm: r, layer: 8, gateAt: 1 };
     if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
+  // 封 And every sealed gate crossed stood shut for its days, less what a Breakthrough Pill
+  // this save's Alchemy could have made counts as. Time is the honest way through it, so
+  // a seal crossed too soon is a matter of time and waits, like a clock moved on.
+  // A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
+  if (before.at >= SEAL_STRICT_FROM && sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) {
+    why.push('too-fast');
+  }
   // 業 One task at a time, so the experience every craft gained between two saves has to
   // fit in the seconds between them, at the fastest each one can ever be worked.
   if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
@@ -538,7 +614,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // left where it was would make the next Dragon the one just beaten, every two days.
   else if (newMarks > 0 && after.tribulationAt < anchorFloor(before, after.tribulation) * 0.999) why.push('anchor');
 
-  if (!gearFits(after)) why.push('gear');
+  // 百煉 And every Hundredfold thing one the forge could have made: see hundredFits.
+  if (!gearFits(after) || !hundredFits(after)) why.push('gear');
   if (freePoints(after) < 0) why.push('dao');
   // 道 The bank the road and the vault's shrines pay into: the most each newly answered
   // meeting could hand over, and a walk through the vault every DOOR_GAP at most (one
@@ -572,7 +649,9 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // holds can beat, with the best kit, a trail and the temper answered. It is measured
   // against that body's own power, so an edited 力 cannot win it; a no only waits, because
   // the stance and the kit in hand at the fight are not in the save.
-  if (bouts > 0 && !why.includes('too-fast') && !platformBeatable(after)) why.push('too-fast');
+  // 擂 At the realm's grown edge from EDGE_STRICT_FROM, and at the flat one a phone on the
+  // build before it fought.
+  if (bouts > 0 && !why.includes('too-fast') && !platformBeatable(after, before.at >= EDGE_STRICT_FROM)) why.push('too-fast');
   // 香 The incense queued and the spring held only ever grow by what time fills: a stick
   // relit by hand to burn for ever is more incense than any spring could have given.
   if (!first && !why.includes('too-fast')) {
@@ -613,6 +692,49 @@ export function verify(before: State, after: State, seconds: number, first = fal
 }
 
 /**
+ * 雷 The least time a mark can take: 雷池 the pool, MARK_DAYS of gathering, at the deepest
+ * sitting and 宿慧 the larger Echo of the two saves.
+ */
+function markSeconds(before: State, after: State, focus: number): number {
+  return MARK_DAYS * 86_400 / focus / Math.max(echoFactor(before.lives), echoFactor(after.lives));
+}
+
+/**
+ * 轉世 A pair across a rebirth: `before` is the last life the server saw, `after` a life
+ * that began since. Every rebirth is a life that crossed its marks, and every mark is the
+ * pool filled, which is time: the marks each new entry in the record claims past what
+ * `before` already held are paid first, out of the seconds that passed, at the fastest a
+ * mark can be crossed. What is left is the new life's own time, and the new life is
+ * verified as any climb is, from the state it was born as (bornFrom, the function the
+ * game itself is reborn through) to what it is now.
+ *
+ * So an edited record can do two things and no more: claim marks it would have had to
+ * wait for (it waits, like any gain the time does not cover), or claim an Echo it did not
+ * earn, which raises every bound here by ECHO_CEILING at most, because that is the most
+ * any record can give. The ended life's floors and Dragons are not read again: they were
+ * read when they were synced, and once a life ends the body that won them is gone.
+ */
+function reborn(before: State, after: State, dt: number, first: boolean): Verdict {
+  const focus = FOCUS_MAX + Math.max(focusBonus(before.unlocked), focusBonus(after.unlocked));
+  const fresh = after.lives.slice(before.lives?.length ?? 0);
+  let marks = 0;
+  fresh.forEach((l, i) => { marks += i === 0 ? Math.max(0, l.marks - before.tribulation) : l.marks; });
+  const old = marks * markSeconds(before, after, focus);
+  const at = Math.min(after.at, Math.max(before.at, fresh[fresh.length - 1].at));
+  // 承 The codex the new life was born with: what `before` had finished at the least, and
+  // more where the life went on forging after the server last saw it. A record that holds
+  // less than `before` had is not this cultivator's successor (went-down); one that holds
+  // more is bounded by validate() at what a first life could finish, and every bonus it
+  // gives is capped (CODEX_CAP) and never touches the qi rate.
+  const owed = codexToKeep(before);
+  const kept = keptCovers(after.codexKept, owed) ? after.codexKept : owed;
+  const start = { ...bornFrom(before, after.lives, at, kept), startedAt: after.startedAt };
+  const v = verify(start, after, Math.max(0, dt - old), first, 0);
+  const late = old > dt * SLACK && !v.why.includes('too-fast');
+  return late ? { ...v, ok: false, why: [...v.why, 'too-fast'] } : v;
+}
+
+/**
  * 泉 Seconds of gathering the vault's spring can have paid across a gap of dt: a day held
  * and dt filled, each second worth SPRING_FILL, burned rather than drunk (INCENSE_WORTH),
  * in the week's blessed room (BLESSED_ROOM) by an Immortal Seeker (PAIR_SPRING). Generous
@@ -650,15 +772,19 @@ function seeker(s: State): number {
  * some body it holds: the best kit its crafts could carry, a trail taken, and the temper
  * answered. A save whose period has turned claims nothing that can still be read, and
  * passes: its bouts were counted against the weeks above.
+ *
+ * `grown` reads the challenger at the realm's grown edge (platformEdge); without it, at the
+ * flat PLATFORM_EDGE every challenger stood at before 2026-10-08 (see EDGE_STRICT_FROM).
  */
-export function platformBeatable(s: State): boolean {
+export function platformBeatable(s: State, grown = true): boolean {
   const n = beatenNow(s);
   if (n <= 0) return true;
   const tier = (n - 1) as Tier;
   return bodiesHeld(s).some((b) => {
     const shape = challengerOf(b, tier);
     // The temper answered: the challenger at its edge alone.
-    const standing = power(b) * PLATFORM_EDGE[tier];
+    // 擂 At the realm's own edge (platformEdge), the one the phone's challenger stood at.
+    const standing = power(b) * (grown ? platformEdge(tier, b.realm) : PLATFORM_EDGE[tier]);
     return beatable(b, shape, standing, { ...bestKit(b, shape, 'platform'), wound: TRAIL_WOUND });
   });
 }

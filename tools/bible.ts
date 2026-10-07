@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { CAPSTONE_REALM, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION, SHRINE_DAO_PER_REALM } from '../src/sim/balance.ts';
+import { CAPSTONE_REALM, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION, SHRINE_DAO_PER_REALM, PLATFORM_EDGE_GROWTH } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -555,7 +555,7 @@ const SYSTEMS: readonly System[] = [
   { han: '秘境', name: 'A run with an ending', status: 'done', at: 'secret',
     line: `${SECRET_ROOMS} rooms, every other one a gate with one guardian, and between them a spring that fills while the door is shut: each room's share drunk now, burned as incense, or spent on a third door. Nothing is carried, so losing takes nothing back. Every door is the room it goes to, drawn, and the end of a run says what the whole thing gave and from which room.` },
   { han: '擂台', name: 'Three challengers a week', status: 'done', at: 'qisrc',
-    line: 'From the fourth realm, on 塔 Trials: three challengers a period at ×1.3, ×1.8 and ×2.5 of your own power, the week\u2019s temper on top unless answered, the dice set for the period. A win pays a fixed sum of qi read off the realm; a loss costs nothing. Never Auto, never driven.' },
+    line: 'From the fourth realm, on 塔 Trials: three challengers a period at ×1.3, ×1.8 and ×2.5 of your own power in the fourth realm, 4% more for every realm after it, the week\u2019s temper on top unless answered, the dice set for the period. A win pays a fixed sum of qi read off the realm; a loss costs nothing. Never Auto, never driven.' },
 
   { han: '期', name: 'The one thing that never runs out', status: 'done', at: 'week',
     line: `Everything else in the game arrives once, the last of it around the seventh week. One mark rides the calendar instead: a beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching, all three derived from the week and the save alone. No server, no clock to cheat, and it may never touch the qi rate. Measured, the cultivator who never fights finishes on the same day with it as without.` },
@@ -563,8 +563,8 @@ const SYSTEMS: readonly System[] = [
   { han: '氣查', name: 'The audit of the qi', status: 'done', at: 'audit',
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
-  { han: '轉世', name: 'Rebirth', status: 'planned',
-    line: 'Ruled out. 九境 is purely vertical by decision: nothing resets, and every track only goes up. This row stays so the decision is on the page rather than in somebody\'s memory.' },
+  { han: '轉世', name: 'Rebirth', status: 'open',
+    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +2.5% qi gathered for every doubling of the marks it crossed, under +25% for every life together, and a title. Measured by npm run rebirth: a life at the full Echo reaches the summit 14% to 18% sooner. See docs/DRAWER.md.' },
 ];
 
 /** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
@@ -1420,7 +1420,7 @@ const QS_ROWS = ([0, 1, 2] as const).map((tier) => {
       : '<b>·</b><i>waits</i>';
   return `<div class="qrow" data-state="${beaten ? 'beaten' : standing ? 'standing' : 'waits'}">
     <span class="nm"><b><span class="cjk">${['一', '二', '三'][tier]} ${shape.han}</span> ${shape.name}</b>
-      <i>×${QS_PLATFORM.PLATFORM_EDGE[tier]} your power${beaten ? ' · beaten this week' : ''}</i>
+      <i>×${QS_PLATFORM.edgeLabel(tier, QS_PLAT.realm)} your power${beaten ? ' · beaten this week' : ''}</i>
       ${beaten ? '' : `<em>pays ${num(QS_PLATFORM.challengerPays(QS_PLAT, tier))} qi</em>`}</span>
     <span class="od">${right}</span></div>`;
 }).join('');
@@ -2294,9 +2294,10 @@ const page = `<meta charset="utf-8">
       dirigidos, campo a campo.</div>
 
     <h3>O que falta decidir</h3>
-    <p class="t">Nada está a meio. A única linha do quadro que não está fechada é
-      <b>轉世 Rebirth</b>, e está marcada como <em>planeada</em> só para a decisão ficar
-      escrita: 九境 é puramente vertical, nada faz reset, e todas as barras só sobem.</p>
+    <p class="t">A única linha do quadro que não está fechada é
+      <b>轉世 Rebirth</b>: está construída num ramo à parte e espera pela decisão. A partir
+      do cume, com uma marca, uma vida pode recomeçar no primeiro reino com um 宿慧 Eco de qi
+      que nunca passa de +25%.</p>
   </section>
 
   <section class="sec" id="mockups">
@@ -3202,8 +3203,9 @@ const page = `<meta charset="utf-8">
     <h3>擂台 The Platform: three challengers a week, by hand</h3>
     <p class="t">From the fourth realm, on 塔 Trials (which opens with it, a realm before the
       tower). Three challengers a period, and a period is a week or a realm: each stands at
-      ×1.3, ×1.8 and ×2.5 of your own 力 in the shape of a beast of your realm (the third, of
-      the realm above), and is thinned like any beast by 破甲 sunder, 破煞 bane, the tree and
+      ×1.3, ×1.8 and ×2.5 of your own 力 in the fourth realm, ${Math.round(PLATFORM_EDGE_GROWTH * 100)}% more
+      for every realm after it (×${Number((2.5 * (1 + 5 * PLATFORM_EDGE_GROWTH)).toFixed(2))} for the third at the ninth), in the
+      shape of a beast of your realm (the third, of the realm above), and is thinned like any beast by 破甲 sunder, 破煞 bane, the tree and
       the classes. The week's temper (${TEMPERS.map((t) => `${t.han} ${t.name}`).join(', ')})
       stands it ×${QS_TEMPER_EDGE} again unless the stance or one art in the sequence answers
       it, and every temper has an answer held by the fourth realm. <b>The dice are set for

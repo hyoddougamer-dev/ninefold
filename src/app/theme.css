@@ -1536,6 +1536,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .othereff .oe .cjk { width: 18px; color: var(--faint); }
 .othereff .oe em { margin-left: auto; font-style: normal; font-family: Rajdhani, sans-serif;
                    font-weight: 600; font-size: 14px; }
+/* 運 The luck in all, set apart from the gear's own lines above it by a hairline. */
+.othereff .oe .oetotal { border-top: 1px solid var(--line); margin-top: 3px; padding-top: 5px; }
 /* 彎 The sum the pieces add up to, faint, then the bent effect it comes out as. */
 .othereff .oe .oesum { margin-left: auto; color: var(--faint); font-family: Rajdhani, sans-serif; font-size: 13px; white-space: nowrap; }
 .othereff .oe .oesum i { font-style: normal; margin-left: 6px; }
@@ -1600,6 +1602,67 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .cardbook .cb-alt .cb-icon { width: 32px; height: 32px; }
 .cardbook .cb-alt em { display: block; font-style: normal; font-size: 11.5px; color: var(--cinnabar); margin-top: 3px; }
 .cardbook .cb-alt .act { grid-column: 1 / -1; margin: 0; }
+
+/* 轉世 Rebirth. A .help sheet for its frame; everything inside starts rb-, and the two
+   lines it puts on 修 are rebirthline and lifewears, which no other screen uses. */
+.rebirthsheet { gap: 12px; --rb: #B49AE0; }
+.rebirthsheet h2 { padding-right: 56px; color: var(--text); }
+.rebirthsheet h2 .cjk { color: var(--rb); }
+.rebirthsheet .rb-seal { width: 64px; height: 64px; display: block; margin-bottom: -4px; }
+.rebirthsheet .rb-says { margin: -4px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--faint); }
+.rebirthsheet .rb-card { border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; background: var(--panel);
+                         min-width: 0; }
+.rebirthsheet .rb-card[data-tone="gold"] { border-color: rgba(212,175,86,.5); }
+.rebirthsheet .rb-card p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; }
+.rebirthsheet .rb-head { display: block; font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+                         color: var(--faint); }
+.rebirthsheet .rb-head .cjk { color: var(--rb); letter-spacing: 0; }
+.rebirthsheet .rb-big { display: block; font-size: 17px; font-weight: 600; margin-top: 3px; }
+.rebirthsheet .rb-big .cjk { color: var(--rb); font-weight: 400; }
+.rebirthsheet .rb-big em { font-style: normal; font-weight: 400; font-size: 14px; color: var(--gold); }
+.rebirthsheet .rb-big em .cjk { color: var(--gold); }
+.rebirthsheet .rb-gold { color: var(--gold); }
+.rebirthsheet .rb-big.rb-gold { font-family: Rajdhani, sans-serif; font-size: 26px; font-weight: 700; }
+.rebirthsheet .rb-faint { color: var(--faint); }
+.rebirthsheet .rb-shut { color: var(--faint); font-style: italic; }
+.rebirthsheet .rb-meter { position: relative; height: 8px; margin: 9px 0 2px; border-radius: 99px; overflow: hidden;
+                          background: var(--ground); border: 1px solid var(--line); }
+.rebirthsheet .rb-meter span { position: absolute; inset: 0; transform-origin: left center; border-radius: 99px; }
+.rebirthsheet .rb-now { background: var(--rb); }
+.rebirthsheet .rb-after { background: rgba(212,175,86,.55); }
+.rebirthsheet .rb-past { margin: 8px 0 0; padding: 8px 0 0; list-style: none; border-top: 1px solid var(--line);
+                         display: grid; gap: 3px; font-size: 12px; color: var(--faint); }
+.rebirthsheet .rb-two { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.rebirthsheet .rb-carry { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 12.5px; }
+.rebirthsheet .rb-carry li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.rebirthsheet .rb-carry li > b { color: var(--rb); font-weight: 400; font-size: 15px; }
+.rebirthsheet .rb-carry li span b { font-weight: 600; }
+.rebirthsheet .rb-carry .rb-sets { font-style: normal; color: var(--faint); }
+.rebirthsheet .rb-stay { margin: 0; font-size: 12.5px; line-height: 1.5; }
+.rebirthsheet .rb-confirm { display: grid; gap: 8px; }
+.rebirthsheet .rb-confirm .act, .rebirthsheet > .act { margin: 0; }
+.rebirthsheet .rb-warn { margin: 0; font-size: 12.5px; color: var(--cinnabar); line-height: 1.5; }
+.rebirthsheet .rb-title { margin: 0; display: grid; gap: 2px; }
+.rebirthsheet .rb-title i { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.rebirthsheet .rb-title b { font-size: 20px; font-weight: 500; color: var(--gold); }
+.rebirthsheet .rb-note { margin: 0; font-size: 12.5px; color: var(--faint); }
+.rebirthsheet .rb-note b { color: var(--rb); font-weight: 400; }
+@media (min-width: 560px) { .rebirthsheet .rb-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+/* 轉世 On 修: the quiet offer at the summit, and the title a reborn life wears. */
+.rebirthline { display: flex; gap: 11px; align-items: center; width: 100%; margin-top: 12px; padding: 10px 12px;
+               border-radius: 11px; text-align: left; border: 1px dashed rgba(180,154,224,.45); background: none;
+               color: var(--faint); font: inherit; font-size: 12.5px; line-height: 1.45; cursor: pointer; }
+.rebirthline:hover { color: var(--text); border-color: rgba(180,154,224,.8); }
+.rebirthline > span:first-child { flex: none; width: 30px; height: 30px; }
+.rebirthline b { color: #B49AE0; font-weight: 400; }
+.rebirthline em { flex: none; font-style: normal; color: #B49AE0; font-size: 16px; }
+.lifewears { display: inline-flex; align-items: baseline; gap: 6px; margin: 4px 6px 0 0; padding: 3px 10px;
+             border-radius: 99px; font-size: 12px; color: #C9B5EE; border: 1px solid rgba(180,154,224,.45);
+             background: rgba(180,154,224,.08); }
+.lifewears b { font-weight: 400; font-size: 14px; }
+.echochip { margin-left: 8px; padding: 1px 7px; border-radius: 99px; font-size: 11px; color: #C9B5EE;
+            border: 1px solid rgba(180,154,224,.4); white-space: nowrap; }
 
 /* 譜 Which piece is which school. A .help sheet for its frame, like 榜; everything inside
    is its own and starts sb-, because .schools is the chest's filter row. */
@@ -2803,6 +2866,18 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .beast .bname .etag i { display: inline; font-style: normal; font-size: 10px; letter-spacing: .04em; color: var(--faint); }
 /* 瓶頸 The bottleneck line on the warden's card. */
 .c-side .card .bneck { border-left: 2px solid color-mix(in srgb, var(--cinnabar) 60%, transparent); padding-left: 9px; }
+/* 封 The seal line under it, in gold while it holds and quiet once it is broken or served,
+   and the fight button it holds back, which reads as waiting rather than as broken. */
+.c-side .card .gateseal { border-left: 2px solid color-mix(in srgb, var(--gold) 70%, transparent); padding-left: 9px; }
+.c-side .card .gateseal[data-open="true"] { border-left-color: color-mix(in srgb, var(--jade) 55%, transparent); }
+.c-side .card .act[data-sealed="true"] { opacity: .62; cursor: default; }
+/* 封 The seal's bar: it fills with the time served (rekaris: "a bar that fills with time"),
+   and stands full in jade once a carried Breakthrough Pill breaks it. Its own class, on
+   this card only. */
+.c-side .card .gateseal .gateseal-bar { display: block; height: 4px; margin-top: 7px; border-radius: 2px; overflow: hidden;
+        background: color-mix(in srgb, var(--gold) 16%, transparent); }
+.c-side .card .gateseal .gateseal-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--gold) 75%, transparent); }
+.c-side .card .gateseal .gateseal-bar[data-broken="true"] i { background: color-mix(in srgb, var(--jade) 70%, transparent); }
 
 /* 室 On the vault's path the blessed room is named under the seal rather than ringed.
    量 A ring was the first version and it was invisible: every room on that path wears a
@@ -3427,6 +3502,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cr-lock { font-style: normal; font-size: 11.5px; color: var(--faint); white-space: nowrap; }
 
 .crafts .cfloor, .crafts .ccarry, .crafts .clook { margin: 0 0 12px; }
+/* 破境丹 The seal's line under the pill's hand in the Carry panel. */
+.crafts .ccarry .ccarry-seal { border-left: 2px solid color-mix(in srgb, var(--gold) 70%, transparent); padding-left: 9px; }
 .crafts .cpouch { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; margin-bottom: 10px; }
 .crafts .cpc { position: relative; display: grid; place-items: center; padding: 3px; background: none; cursor: pointer;
                border: 1px solid transparent; border-radius: 10px; }
@@ -3555,6 +3632,17 @@ button.gs-new .cjk { margin: 0; }
 .doorkeynote { margin: -4px 0 12px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
 .itemsheet .vline[data-none] { border-style: dashed; opacity: .8; }
 .crafts .ctier { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+/* 百形 The forge's gear, one place on the body at a time, and a heading wherever the school
+   changes: fifty-four shapes a realm read as short runs. Scoped to the workshop's list. */
+.crafts .cslot { margin: 0 0 8px; }
+.crafts .cslot button { padding: 5px 9px; }
+.crafts .cslot .cjk { font-size: 13px; }
+.crafts .crecipes .cgsub { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+        margin: 6px 0 0; padding: 2px 0 2px 9px; font-size: 12px; letter-spacing: .02em; color: var(--faint);
+        border-left: 2px solid var(--c, var(--gold)); }
+.crafts .crecipes .cgsub b { font-weight: 400; font-size: 14px; color: var(--c, var(--gold)); }
+.crafts .crecipes .cgsub .mono { color: var(--gold); }
+.crafts .canyshape { border-left: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); padding-left: 9px; }
 
 /* 習 A note that is a list (familiarity's five marks) keeps its line breaks. */
 .termtip i { white-space: pre-line; }
@@ -3980,3 +4068,114 @@ nav.tabs .tabkey { display: none; }
   padding: 9px 10px; background: transparent; color: var(--faint); border: 0; white-space: nowrap; }
 .towerkit .tk-switch button[data-on='true'] { background: rgba(212,175,86,.16); color: var(--gold); }
 .towerkit-none { margin: 0 0 12px; font-size: 12px; }
+
+/* ── 百煉 The Hundredfold section of the forge: crucible, sets, codex (ui/Hundred.tsx) ──
+   Scoped under .hundred, which no other screen uses; the spirit's light on the 器 wheel is
+   .wspirit, its own class beside .wrim. */
+.hundred { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; min-width: 0; }
+.hundred .hu-intro { margin: 0; font-size: 12.5px; line-height: 1.45; }
+.hundred .hu-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px;
+                    border: 1px solid var(--line); border-radius: 12px; background: rgba(20, 17, 13, .6); }
+.hundred .hu-tabs button { padding: 8px 4px; border-radius: 9px; font: inherit; font-size: 13px; color: var(--faint);
+                           background: none; border: 0; cursor: pointer; white-space: nowrap; }
+.hundred .hu-tabs button[aria-selected='true'] { color: var(--gold); background: rgba(212, 175, 86, .12);
+                                                 box-shadow: inset 0 0 0 1px var(--gild-strong); }
+.hundred .hu-tabs b.cjk { margin-right: 3px; }
+.hundred .hu-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.hundred .hu-label { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.hundred .hu-chips { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.hundred .hu-chips button { font: inherit; font-size: 12px; padding: 5px 9px; border-radius: 99px; cursor: pointer;
+                            color: var(--faint); background: none; border: 1px solid var(--line); max-width: 100%; }
+.hundred .hu-chips button i { font-style: normal; font-size: 10.5px; opacity: .75; margin-left: 4px; }
+.hundred .hu-chips button[aria-selected='true'] { border-color: var(--gild-strong); background: rgba(212, 175, 86, .1);
+                                                  color: var(--text); }
+.hundred .hu-lines { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
+.hundred .hu-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.hundred .hu-what { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.hundred .hu-what i { font-style: normal; font-size: 11px; color: var(--faint); }
+.hundred .hu-what select { font: inherit; font-size: 12.5px; color: var(--text); background: var(--panel2); max-width: 100%;
+                           border: 1px solid var(--line); border-radius: 7px; padding: 4px 6px; }
+.hundred .hu-short { font-style: normal; color: var(--cinnabar); }
+.hundred .hu-por { display: grid; grid-template-columns: repeat(3, 52px); gap: 4px; }
+.hundred .hu-por button { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; cursor: pointer;
+                          border-radius: 7px; border: 1px solid var(--line); background: var(--panel2); color: var(--faint); font: inherit; }
+.hundred .hu-por button b { font-size: 10px; font-weight: 400; }
+.hundred .hu-por button em { font-style: normal; font-size: 11.5px; color: var(--jade); white-space: nowrap; }
+.hundred .hu-por button[aria-checked='true'] { border-color: var(--gold); background: rgba(212, 175, 86, .14); color: var(--gold); }
+.hundred .hu-por button[aria-checked='true'] em { color: var(--gold); }
+.hundred .hu-portion { margin: 0; font-size: 11px; }
+.hundred .hu-out { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 2px solid var(--hue, var(--gold)); }
+.hundred .hu-piece { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; }
+.hundred .hu-tile { width: 64px; height: 64px; display: block; }
+.hundred .hu-pbody { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hundred .hu-pbody > b { font-size: 13.5px; line-height: 1.2; }
+.hundred .hu-pbody > i { font-style: normal; font-size: 11.5px; }
+.hundred .hu-roll { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 2px 6px;
+                    border-radius: 6px; background: rgba(20, 17, 13, .6); }
+.hundred .hu-roll em { font-style: normal; color: var(--jade); }
+.hundred .hu-roll[data-main] em { color: var(--gold); }
+.hundred .hu-versus { margin: 0; font-size: 11.5px; color: var(--gold); }
+.hundred .hu-needs { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; }
+.hundred .hu-needs b { font-weight: 400; color: var(--jade); margin-left: 2px; }
+.hundred .hu-needs [data-short] b { color: var(--cinnabar); }
+.hundred .hu-go { gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.hundred .hu-why { font-style: normal; font-size: 12px; color: var(--cinnabar); flex: 1 1 160px; min-width: 0; }
+.hundred .hu-held { font-size: 11.5px; flex: 1 1 160px; min-width: 0; }
+.hundred .hu-on { font-style: normal; font-size: 12.5px; color: var(--jade); }
+.hundred .hu-note { margin: 0; font-size: 12px; line-height: 1.45; }
+.hundred .hu-set, .hundred .hu-cx { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: start;
+                                    padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--lacquer);
+                                    border-left: 3px solid var(--hue, var(--line)); }
+.hundred .hu-set[data-shut] { opacity: .55; }
+.hundred .hu-seal { width: 44px; height: 38px; display: grid; place-items: center; font-size: 15px; color: var(--hue);
+                    border: 1.5px solid var(--hue); border-radius: 7px; white-space: nowrap; }
+.hundred .hu-sbody, .hundred .hu-cbody { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.hundred .hu-sbody > b, .hundred .hu-cbody > b { font-size: 13.5px; }
+.hundred .hu-sbody > b i, .hundred .hu-cbody > b i { font-style: normal; font-weight: 400; font-size: 11px; color: var(--faint); }
+.hundred .hu-places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.hundred .hu-place { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 4px; align-items: baseline;
+                     padding: 3px 6px; border-radius: 7px; border: 1px dashed var(--line); color: var(--faint); font-size: 11px; }
+.hundred .hu-place[data-made] { border-style: solid; background: rgba(20, 17, 13, .6); }
+.hundred .hu-place i { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.hundred .hu-place em { grid-column: 1 / -1; font-style: normal; font-size: 10.5px; }
+.hundred .hu-state, .hundred .hu-now { font-style: normal; font-size: 11.5px; color: var(--faint); }
+.hundred .hu-now b { color: var(--jade); font-weight: 600; }
+/* 承 A set a life before this one finished: said quietly, beside the rank it was kept at. */
+.hundred .hu-now .hu-kept { font-style: italic; color: var(--faint); }
+.hundred .hu-sbody > .hu-kept { font-size: 11px; color: var(--faint); }
+.hundred .hu-cx:not([data-earned]) .hu-seal { opacity: .6; }
+.hundred .hu-ranks { display: flex; flex-direction: column; gap: 1px; font-size: 11.5px; }
+.hundred .hu-ranks span { opacity: .55; }
+.hundred .hu-ranks span[data-on] { opacity: 1; }
+.hundred .hu-ranks em { font-style: normal; color: var(--text); }
+.hundred .hu-steps { display: flex; flex-direction: column; gap: 4px; padding: 10px; font-size: 12px; }
+.hundred .hu-steps > b { font-size: 12.5px; color: var(--gold); }
+.hundred .hu-steps b.mono { color: var(--gold); margin-right: 4px; }
+.hundred .hu-spirit { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px; }
+.hundred .hu-sp-art { position: relative; width: 96px; height: 96px; display: grid; place-items: center; }
+.hundred .hu-sp-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hundred .hu-sp-art .cjk { font-size: 20px; color: var(--hue, var(--faint)); }
+.hundred .hu-sp-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
+.hundred .hu-sp-body b { color: var(--gold); font-size: 13.5px; }
+.hundred .hu-sp-body i { font-style: normal; color: var(--hue, var(--faint)); }
+@media (max-width: 360px) {
+  .hundred .hu-row { grid-template-columns: minmax(0, 1fr); }
+  .hundred .hu-por { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hundred .hu-places { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hundred .hu-spirit { grid-template-columns: 72px minmax(0, 1fr); }
+  .hundred .hu-sp-art { width: 72px; height: 72px; }
+}
+.wheel .wcore .wspirit { position: absolute; inset: -6%; display: block; width: 112%; height: 112%; pointer-events: none; }
+.wspirit-line { margin: 0; text-align: center; font-size: 12.5px; letter-spacing: .02em; }
+.spirit-turn { animation: spiritturn 24s linear infinite; }
+.spirit-pulse { animation: spiritpulse 3.2s ease-in-out infinite; }
+@keyframes spiritturn { to { transform: rotate(360deg); } }
+@keyframes spiritpulse { 0%, 100% { opacity: .35; transform: scale(.97); } 50% { opacity: .9; transform: scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .spirit-turn, .spirit-pulse { animation: none; } }
+.hundred .hu-sets, .hundred .hu-codex { display: flex; flex-direction: column; gap: 8px; }
+.hundred .hu-does { font-size: 12.5px; color: var(--text); }
+.hundred .hu-ranks { flex-direction: row; flex-wrap: wrap; gap: 3px 10px; }
+.hundred .hu-ranks span:last-child { color: var(--jade); }
+.hundred .hu-spirit[data-awake] .hu-sp-art svg { filter: drop-shadow(0 0 6px var(--hue)); }
+.wheel .wcore .wspirit { filter: drop-shadow(0 0 5px rgba(255, 236, 200, .25)); }
+.hundred .hu-crucible { display: flex; flex-direction: column; gap: 10px; min-width: 0; }

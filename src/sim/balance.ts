@@ -1010,6 +1010,32 @@ export const TRIBULATION_GAIN = 0.728;
 export const MAX_MARK_DAYS = 14;
 
 /**
+ * 轉世 Rebirth: from the summit with a mark crossed, a cultivator may begin again, and how
+ * far ahead they were decides what the new life carries. Bruno: *"from a certain realm
+ * onward you can reset, but the benefit of the reset depends on how far ahead you are."*
+ *
+ * What carries is 宿慧 the Echo, a share added to the qi gathered (advance, never the tower,
+ * the vault or any other lump). A life's Echo is ECHO_STEP for every doubling of the marks
+ * it crossed (log2(1 + marks)), so the first mark is worth a step, three are worth two,
+ * seven three: further is always more, and every step costs twice the endgame the last one
+ * did. One life gives ECHO_LIFE_MAX at most, and all of them together ECHO_CEILING, which
+ * is the hard roof the economic law asks for: a stacked multiplier with no roof was
+ * measured (a tester asked for 2x per life) and a 2x cut the climb by 45%.
+ *
+ * See tools/rebirth.ts for the measurement and docs/DRAWER.md (轉世) for the numbers.
+ */
+/** 轉世 Marks a life must have crossed before it may end: the first Dragon. */
+export const REBIRTH_MARKS = 1;
+/** 宿慧 What each doubling of a life's marks adds to the qi gathered: 2.5%. */
+export const ECHO_STEP = 0.025;
+/** 宿慧 The most one life can add, five doublings (31 marks): 12.5%. */
+export const ECHO_LIFE_MAX = 0.125;
+/** 宿慧 The most every life together can ever add to the qi gathered: 25%. */
+export const ECHO_CEILING = 0.25;
+/** 世 How many lives a save may remember. Nine, as the realms are. */
+export const LIVES_MAX = 9;
+
+/**
  * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.
  */
 export const PILL_PACE = 3;
@@ -1411,6 +1437,45 @@ export const REALM_WALL: readonly number[] = [1, 1, 4, 10, 18, 28, 44, 72, 1];
  * waiting gets over it too, later.
  */
 export const BOTTLENECK_LOOSEN = 0.3;
+
+/**
+ * 封 How many days the gate of each realm stays sealed after its warden comes out, whatever
+ * the cultivator's power. Index 0 is the first realm; only the fifth to the eighth have one.
+ *
+ * Bruno, 2026-10-06, announced to the players as a proposal and built the day after: the
+ * walls asked something of a build, and a build carried every active cultivator through
+ * them the day they arrived, so the workshop was still worth a day or two of the climb and
+ * nobody needed it. The seal is the part of the gate power cannot open. Waiting it out
+ * always works (nothing is ever taken from somebody for being away), and 破境丹 a
+ * Breakthrough Pill carried into the gate breaks it outright, and CRAFT_KIT.pill of the
+ * wall's days with it (since 2026-10-07; it counted as two days of both before).
+ *
+ * Measured with tools/seal.ts (2026-10-07), every habit with the workshop and without:
+ * the day the ninth realm opens, before the seal and after it.
+ *
+ *   habit            workshop ignored       workshop used
+ *   once a day       70.0  →  77.0  (+7)    72.0  →  72.0
+ *   casual           64.7  →  66.3  (+1.6)  61.7  →  61.7
+ *   active           45.8  →  49.3  (+3.5)  44.3  →  45.8
+ *   every hour       29.0  →  32.0  (+3)    28.8  →  28.8
+ *   barely fights   101.0  → 101.0          99.0  →  96.0
+ *   never fights    121.0  → 121.0   (every gate already holds them 8 to 12 days)
+ *
+ * Whoever uses the workshop climbs at the pace they did, within a day and a half; whoever
+ * fights and skips it waits out every seal, three to seven days in all; the casual
+ * cultivator, who banks the waiting qi into levels, loses less than two.
+ * The seal grows with the realm because a realm takes longer to climb the higher it is,
+ * so the same share of a realm is more days at the eighth than at the fifth.
+ *
+ * 破境丹 Measured again on 2026-10-07 with the pill breaking the seal outright and half of
+ * the wall's days (tools/seal.ts): every habit that fights and uses the workshop already
+ * crossed every gate the day it opened, and still does (once a day 69.0, casual 61.7,
+ * active 46.0, every hour 29.0); the one it moves is the crafter whose build lags the wall,
+ * `barely fights`, from 97 to 93, its days at gates 5 to 8 from 4, 4, 5, 7 to 2, 2, 2, 3.
+ * Whoever skips the workshop is where they were (once a day 76, casual 66, active 49.7,
+ * every hour 32.1), and the pure waiter never waits on a seal (121, unchanged).
+ */
+export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
 
 /**
  * 精 Where each realm's last beast stands, as a multiple of the bare reference: the realm's
@@ -1951,6 +2016,34 @@ export const TRAIL_WOUND = 0.1;
  */
 export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
 /**
+ * 擂 How much each challenger's edge grows with every realm past the Platform's first:
+ * edge × (1 + PLATFORM_EDGE_GROWTH × (realm − PLATFORM_REALM)), read by platformEdge in
+ * sim/platform.ts, so ×1.0 at the fourth realm and ×1.2 at the ninth.
+ *
+ * The edge is a share of the cultivator's own 力, and the cheaper a body's power is to
+ * raise, the smaller the challenger it brings: measured on 2026-10-07 (tools/platformedge.ts)
+ * the third challenger fell in none of the weeks spent in realms 4 to 6 and in 22 to 88%
+ * of those in realms 7 to 9, so the same fight got easier the higher the climb went. An
+ * earlier analysis proposed 0.04: the third challenger in about 10% of weeks with nothing
+ * carried and 20% for the Vajra, the second in 81 to 83%, the ninth realm 0.7 days later.
+ * Measured with it (tools/platformedge.ts, the share of Platform periods each challenger
+ * fell, and the ninth realm's day), the flat edge against the grown one:
+ *
+ *   habit            realm 9         2nd           3rd          3rd in realms 7 to 9
+ *   once a day       77.0 → 76.0     88% → 82%     24% →  0%    44% →  0%
+ *   casual           66.3 → 66.0     82% → 53%     12% →  0%    22% →  0%
+ *   active           49.3 → 49.7     86% → 86%     29% →  7%    50% → 13%
+ *   every hour       32.0 → 32.1     91% → 91%     45% → 27%    83% → 50%
+ *   crafts it all    45.8 → 46.0     86% → 86%     29% →  0%    50% →  0%
+ *   active Vajra     47.5 → 46.7     86% → 77%     50% → 23%    88% → 43%
+ *
+ * The third challenger is the hard one again late in the climb as it is early, the most
+ * active build takes it in about a quarter of its weeks and the Vajra, whose class is
+ * the Platform's, twice as often as the plain active one. The climb does not move: the
+ * Platform pays qi beside it, never the ladder itself.
+ */
+export const PLATFORM_EDGE_GROWTH = 0.04;
+/**
  * 擂 What each challenger pays, once a period: this many hours of the realm's middle rate
  * (REALM_MID_RUNG), a fixed sum read off the realm and the same for everyone in it.
  *
@@ -2289,6 +2382,19 @@ export const CRAFT_KIT = {
   // an elixir and a sigil at Heaven rank break 3.5 days, which takes a fresh wall to a
   // third of itself. This is what a crafter makes the walls with, rather than waits.
   breach: 1,
+  // 破境丹 The share of its gate's whole 瓶頸 bottleneck a Breakthrough Pill made for the
+  // realm breaks at Common rank, in days: half of the days a fresh wall takes to loosen (4
+  // of 8 at the fifth realm, 6 of 12 at the eighth). A finer rank breaks more, leaving
+  // (1 − pill) to the power of its CRAFT_QUALITY_MULT: 50% at Common, 70% at Heaven. It
+  // also breaks the gate's 封 seal outright (see SEAL_DAYS).
+  //
+  // rekaris, 2026-10-07, in the workshop thread: "every system that makes you wait must have
+  // a tool that removes the wait", and the elixir and the sigil took 2 of the 12 days of the
+  // eighth realm's wall. The pill used to count as two days (3.5 at Heaven) of the seal and
+  // of the wall, which read as "a day shorter" rather than a pill that breaks a gate. Read
+  // off the whole wall, it scales with the realm, and since nobody waits at a gate longer
+  // than its whole wall, it takes at least half of anybody's wait there (sealgate.test).
+  pill: 0.5,
 } as const;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
@@ -2308,3 +2414,127 @@ export const CRAFT_RENDER_KNOWN = 10;
 
 /** 丹 What each Alchemy level takes off the furnace's material price: 0.2%, so 20% at 99. */
 export const CRAFT_FURNACE_DISCOUNT = 0.002;
+
+/* ── 百煉 The Hundredfold sets and 譜 the codex ─────────────────────────────── */
+
+/**
+ * 百煉 A Hundredfold piece: one of its realm's set, made only at the forge, whose every line
+ * is chosen by what goes into the crucible (sim/hundred.ts). Designed and measured on
+ * 2026-10-06 and put to the testers before it was built: a goal for the long road, never
+ * a shortcut. Every number below is read by tools/hundredfold.ts, which plays the crafter
+ * on past the summit and prints the day each set is finished at each rank.
+ *
+ * 時 A piece is twenty minutes at the anvil before tools, arrays and familiarity.
+ *
+ * It was three hours until 2026-10-07. rekaris, in the workshop thread: no system should
+ * make a player wait without a tool that removes the wait, and a piece should take about
+ * five minutes. Bruno: remove the forced waiting, keep the progression in materials and in
+ * Forging levels, so a set is a goal gathered for and not a timer watched.
+ *
+ * Measured with tools/hundredfold.ts, the day each set is first finished at Heaven, forge
+ * first / crafts kept level:
+ *
+ *   set            three hours        twenty minutes
+ *   凡鐵 Mortal Iron   15.5 / 15.8        15.5 / 11.7
+ *   古銅 Elder Bronze  19.8 / 21.0        23.2 / 37.7
+ *   霜銀 Frostsilver   25.8 / 26.7        49.8 / 60.0
+ *   碧玉 Jadewater     39.3 / 43.5        67.3 / 101.8
+ *   落星 Fallen Star  114.2 / 158.5      115.2 / 176.5
+ *
+ * Slower, not faster: a three-hour piece was the forge's best experience, so the forge
+ * reached level 60 on day 17 and now reaches it on day 44, and the Forging level a rank asks
+ * is what holds a set back. It lands where the announcement put the long road (Jadewater
+ * around day 84, Fallen Star around 170). The materials were measured too and left as they
+ * were: five times the ingots and parts moved no set by a day for the crafter who levels
+ * the forge first, and at half as much again the crafter who keeps every craft level no
+ * longer finished Fallen Star at Heaven within six months.
+ */
+export const HUNDRED_SECONDS = 20 * 60;
+
+/**
+ * 級 The Forging level each rank asks for, above the first level of its realm's metal
+ * (tierLevel in data/crafts.ts): Mystic 8 above it, Earth 16, Heaven 28. Never past 98
+ * for Earth and 99 for Heaven, so the last two sets ask for the craft's very top.
+ * Heaven also asks HUNDRED_HEAVEN_MADE pieces of the same set already made.
+ */
+export const HUNDRED_LEVEL = { mystic: 8, earth: 16, heaven: 28 } as const;
+export const HUNDRED_LEVEL_TOP = { mystic: 97, earth: 98, heaven: 99 } as const;
+export const HUNDRED_HEAVEN_MADE = 5;
+
+/**
+ * 爐 What one piece costs before the crucible: two of its realm's ingots for each portion of
+ * the main line, two parts of the realm's 霸 elite (so the elite has to have fallen ten
+ * times for Rendering to know it) and one of its warden. In the first realm, which has no
+ * elite, the warden gives all three.
+ */
+export const HUNDRED_INGOTS = 2;
+export const HUNDRED_ELITE_PARTS = 2;
+export const HUNDRED_WARDEN_PARTS = 1;
+
+/**
+ * 爐 A portion of a crucible material is this many of it for each realm of the set: three
+ * in the first realm, twenty-seven in the ninth. One, two or three portions put the line
+ * at the bottom, the middle or the top of the band a drop rolls in (1 ± VARIANCE), and
+ * never past it: a forged line is never better than the best line a drop could roll,
+ * which is what keeps the economic law (see HUNDRED_BAND).
+ */
+export const HUNDRED_PORTION = 3;
+
+/**
+ * 律 Where one, two and three portions put a line, as a share of its base: the bottom, the
+ * middle and the top of the band every drop rolls in. The top is 1 + VARIANCE, under the
+ * best a lucky drop reaches (LUCK_ROLL_TOP) and under FUSE_TOP. A forged 氣 line is read
+ * through the same gear bend (gearQiRate) as any other, so a forged set can never raise
+ * the qi rate past what a dropped one could.
+ */
+export const HUNDRED_BAND: readonly [number, number, number] = [1 - VARIANCE, 1, 1 + VARIANCE];
+
+/**
+ * 百煉 The Hundredfold steps, for Hundredfold pieces of one set worn together: at two,
+ * every elixir and sigil carried does HUNDRED_KIT more (a quarter); at four, each thing
+ * carried into a warden breaks HUNDRED_BREACH day more of its 瓶頸 bottleneck; at six, the
+ * set's codex bonus counts CODEX_WORN times.
+ */
+export const HUNDRED_KIT = 0.25;
+export const HUNDRED_BREACH = 1;
+export const HUNDRED_STEPS = [2, 4, 6] as const;
+
+/**
+ * 譜 The codex: finish a set once, all six places made at a rank, and it leaves a bonus for
+ * good, each set on a different part of the game so no set is ever spare. CODEX_STEP is
+ * the bonus at Mystic; Earth is CODEX_RANK[1] times it and Heaven CODEX_RANK[2]; the whole
+ * set worn doubles it again (CODEX_WORN). None of them touches the qi rate.
+ *
+ *   hunt      凡鐵 more material from every kill
+ *   elite     枯骨 elites stand weaker
+ *   vault     古銅 the vault's gates stand weaker
+ *   demon     霜銀 the heart demon stands weaker
+ *   work      碧玉 the workshop works faster
+ *   bond      落星 more bond for every win
+ *   gates     雷紋 days more of a bottleneck each thing carried breaks
+ *   tower     龍骸 tower floors stand weaker
+ *   platform  仙蛻 Platform challengers stand weaker
+ */
+export const CODEX_STEP = {
+  hunt: 0.05, elite: 0.08, vault: 0.08, demon: 0.05, work: 0.05,
+  bond: 0.10, gates: 0.5, tower: 0.05, platform: 0.05,
+} as const;
+export const CODEX_RANK: readonly [number, number, number] = [1, 1.5, 2];
+export const CODEX_WORN = 2;
+
+/**
+ * 頂 The most each codex bonus can ever be, whatever the rank and whatever is worn. Where
+ * nothing is a fight (material, the workshop, the bond, the bottleneck days) it is the full
+ * Heaven worn whole. A bonus that thins a fight stops at half again its Heaven value: the
+ * odds of a fight are steep near even, and measured with tools/hundredfold.ts (2026-10-07)
+ * the doubled 32% turned an elite at 32% odds into 98% and the heart demon of a body with
+ * no arts from 29% into 98%. At 24% and 15%, read on every second day of six months of the
+ * set-chaser, the most a codex moved a fight was an elite won one time in three made 93%
+ * (Withered Bone at Heaven, 16%) and a floor at 51% made 93% (Dragonwake at its cap); no
+ * fight lost three times in four was ever made a likely win, and the endgame clock moved
+ * 1% (tools/hundredfold.ts).
+ */
+export const CODEX_CAP = {
+  hunt: 0.2, elite: 0.24, vault: 0.24, demon: 0.15, work: 0.2,
+  bond: 0.4, gates: 2, tower: 0.15, platform: 0.15,
+} as const;

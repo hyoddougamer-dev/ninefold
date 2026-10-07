@@ -10,7 +10,7 @@ import { lineMath, lineNote } from './lines.ts';
 import { FEEDER } from '../sim/crafts.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
-import { AWAKEN, CAVE, CLASS, FIGURE, KEY, SECRET } from './copy.ts';
+import { AWAKEN, CAVE, CLASS, FIGURE, KEY, REBIRTH, SECRET } from './copy.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../data/schools.ts';
 import { pairSays, schoolSays } from './classes.ts';
 
@@ -189,6 +189,9 @@ export const GROUPS: readonly Group[] = [
       { han: '跡', name: 'A challenger\u2019s trail', note: SECRET.trailWhat },
       { han: '期', name: 'The week', note: KEY.week },
       { han: '相', name: 'Who is climbing', note: FIGURE.what },
+      { han: '轉世', name: 'Rebirth', note: REBIRTH.what },
+      { han: '宿慧', name: 'The Echo', note: REBIRTH.echoWhat },
+      { han: '世', name: 'A life', note: REBIRTH.lifeWhat },
     ],
   },
 ];

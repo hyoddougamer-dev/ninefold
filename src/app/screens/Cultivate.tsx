@@ -1,4 +1,4 @@
-import { breachHeld, kitFor, kitWhere } from '../../sim/crafts.ts';
+import { breachHeld, kitFor, kitWhere, pillHeld, unsealCarried, wallDays } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -7,15 +7,17 @@ import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
-import { BOTTLENECK_LOOSEN } from '../../sim/balance.ts';
+import { BOTTLENECK_LOOSEN, ECHO_CEILING } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
-  power, tribulationPool, upgradeCost,
+  power, sealDays, sealLeft, tribulationPool, upgradeCost, wardenStands,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { affordableIn, ladderDone, layersOpened, progress, rate } from '../../sim/time.ts';
+import { affordableIn, gathering, ladderDone, layersOpened, progress } from '../../sim/time.ts';
+import { canReincarnate, echoAfter, echoOf, lifeOf, lifeStart, lifeTitle } from '../../sim/rebirth.ts';
+import { echoPct } from '../ui/Rebirth.tsx';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { HEAVENS, heavenAt, marksToNext, nextHeaven } from '../../data/heavens.ts';
 import { portraitLayers, seal } from '../../art/aura.ts';
@@ -30,7 +32,7 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, QOL, RANKS } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -53,8 +55,10 @@ import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
   owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title,
-  sitLeft = 0, onSitAgain, waiting = [], onReady }: {
+  sitLeft = 0, onSitAgain, waiting = [], onReady, onRebirth }: {
   state: State;
+  /** 轉世 Open the page of the new life, from the quiet card at the summit. */
+  onRebirth?: () => void;
   /** 入定 Whole seconds left in this visit's sitting; 0 when it has ended or not begun. */
   sitLeft?: number;
   /** 坐 Start a new sitting now, which is what coming back to the game does. */
@@ -135,11 +139,25 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // whether the bar is full. See wardenStands: buying the upgrades that beat it used to
   // make it vanish.
   const standing = canFightWarden(state);
+  // 封 The warden out at a sealed gate: the card stands, its fight waits. See sealLeft.
+  const atGate = !state.wardenFell && !top && wardenStands(state);
+  const sealDue = atGate ? sealLeft(state) : 0;
+  const unseal = atGate && sealDays(state.realm) > 0 ? unsealCarried(state) : 0;
+  const sealNow = Math.max(0, sealDue - unseal);
+  const unsealOwned = atGate && sealDue > 0 && !unseal ? pillHeld(state) : 0;
+  // 封 How much of the seal has run, for its bar: it fills with time, and a pill breaks it.
+  const sealServed = sealDays(state.realm) > 0 ? 1 - sealDue / sealDays(state.realm) : 1;
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
-  const left = top && !full ? (pool - state.qi) / (rate(state) * focus) : 0;
-  const day = Math.floor((state.at - state.startedAt) / 86_400) + 1;
+  const left = top && !full ? (pool - state.qi) / (gathering(state) * focus) : 0;
+  // 世 The day of this life: a reborn cultivator counts from the day it began.
+  const day = Math.floor((state.at - lifeStart(state)) / 86_400) + 1;
+  const life = lifeOf(state);
+  const lifeName = lifeTitle(state);
+  // 宿慧 The Echo the lives before this one carry, on every second gathered.
+  const echo = echoOf(state.lives);
+  const reborn = canReincarnate(state);
   // 入定 As deep as this cultivator's sitting goes: 神 the Spirit branch takes it past three.
   const deepest = FOCUS_MAX + focusBonus(state.unlocked);
   // 香 Seconds of incense still burning.
@@ -153,7 +171,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // 瓶頸 How far above its old self the warden still stands, and the days until it is not.
   const over = bottleneck(state, w) * wallOf(w.realm);
   const loosens = over > 1.01 ? Math.log(over) / -Math.log(1 - BOTTLENECK_LOOSEN) : 0;
-  const carriedBreach = loosens ? kitFor(state, w, 'warden').kit.breach ?? 0 : 0;
+  const carriedKit = kitFor(state, w, 'warden').kit;
+  const carriedBreach = loosens ? carriedKit.breach ?? 0 : 0;
+  const overCarried = bottleneck(state, w, carriedBreach) * wallOf(w.realm);
+  // 破境丹 The days of the wall the carried pill breaks: its share of the realm's whole wall.
+  const pillDays = (carriedKit.thin ?? 0) * wallDays(w.realm);
   const heldBreach = loosens && !carriedBreach ? breachHeld(state, w) : 0;
   const tip = advice(state);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.
@@ -206,7 +228,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         {/* 日 The day count never truncates: the line wraps before "day", and the number
             stays with its word. At 320 wide day 121 read "DAY 1…". */}
         <span className="faint c-title" style={{ fontSize: 12, letterSpacing: '.14em', textTransform: 'uppercase' }}>
-          修 Cultivate · <span className="c-day">day {day}</span>
+          修 Cultivate · <span className="c-day">{life > 1 ? REBIRTH.lifeDay(life, day) : `day ${day}`}</span>
         </span>
         {/* 註 修 is the screen a player is on for most of the game and it had two
             answerable characters on it, both of them inside 梯 the ladder. Every other
@@ -226,6 +248,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {/* 冠 A title earned on the boards, worn where the player looks every visit. */}
       {title && (
         <span className="wears"><b className="cjk">{title}</b> {RANKS.titleNames[title] ?? ''}</span>
+      )}
+      {/* 世 The title of a life lived again, beside the one from the boards. */}
+      {lifeName && (
+        <span className="lifewears"><b className="cjk">{lifeName.han}</b> {lifeName.name}</span>
       )}
       <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
         {/* 梯 The layer number used to live here, and now lives on the ladder below
@@ -295,7 +321,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             bought and climbed. 入定 rides alongside it with its own name and its own
             number, so nothing on this line moves without saying why it moved. */}
         <div className="r mono">
-          {CULTIVATE.standing(`+${num(rate(state))} qi / s`)}
+          {CULTIVATE.standing(`+${num(gathering(state))} qi / s`)}
+          {/* 宿慧 Already inside the number beside it, and named, so nothing moves unexplained. */}
+          {echo > 0 && <span className="echochip"><Term han="宿慧" /> {REBIRTH.chip(echoPct(echo))}</span>}
           {focus > 1.15 && (
             <span className="deep" data-full={focus >= deepest - 0.001}>
               <Term han="入定" /> ×{focus.toFixed(1)}
@@ -309,8 +337,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </div>
         {(focus > 1.15 || burning > 0) && (
           <div className="rnow mono">{burning > 0
-            ? INCENSE.now(num(rate(state) * (focus + INCENSE_BONUS)))
-            : `${num(rate(state) * focus)} qi / s now`}</div>
+            ? INCENSE.now(num(gathering(state) * (focus + INCENSE_BONUS)))
+            : `${num(gathering(state) * focus)} qi / s now`}</div>
         )}
         {/* 入定 Which part of the sitting this is, said every moment of it: deepening or
             holding with the time it has left, or over with what starts the next one.
@@ -333,7 +361,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         )}
         {satOut && (
           <div className="sitline" data-over="true">
-            <p className="faint"><Term han="入定" /> {SIT.over(num(rate(state)))} {SIT.how}</p>
+            <p className="faint"><Term han="入定" /> {SIT.over(num(gathering(state)))} {SIT.how}</p>
             {onSitAgain && (
               <button className="act small sitagain" onClick={onSitAgain}>坐 <span>{SIT.again}</span></button>
             )}
@@ -386,7 +414,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       </div>
 
       <div className="c-side">
-      {standing && (
+      {(standing || atGate) && (
         <>
           <h2 className="heading">
             {top ? CULTIVATE.tribulationNext(state.tribulation + 1) : CULTIVATE.wardenHead}
@@ -418,14 +446,36 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               <p className="bneck" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
                 {CULTIVATE.bottleneck(over, loosens)}{' '}
                 <span className="faint">
-                  {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach)
+                  {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach, overCarried)
                     : heldBreach >= 0.1 ? CULTIVATE.breachHeld(heldBreach) : CULTIVATE.breachNone}
                 </span>
               </p>
             )}
-            <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
-              戰 <span>Fight</span>
-            </button>
+            {sealDays(state.realm) > 0 && atGate && (
+              <p className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                {sealDue > 0
+                  ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, pillDays) : CULTIVATE.sealed(sealDue))
+                  : CULTIVATE.sealServed}{' '}
+                {sealDue > 0 && !unseal && (
+                  <span className="faint">{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}</span>
+                )}
+                {sealDue > 0 && (
+                  <span className="gateseal-bar" role="img" aria-label={CULTIVATE.sealBar(sealServed)}
+                    data-broken={unseal > 0}>
+                    <i style={{ width: `${Math.round(Math.max(0, Math.min(1, unseal > 0 ? 1 : sealServed)) * 100)}%` }} />
+                  </span>
+                )}
+              </p>
+            )}
+            {standing ? (
+              <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>
+                戰 <span>Fight</span>
+              </button>
+            ) : (
+              <button className="act" data-tone="cinnabar" data-sealed="true" disabled>
+                封 <span>{CULTIVATE.sealedButton(sealNow)}</span>
+              </button>
+            )}
           </div>
         </>
       )}
@@ -536,6 +586,17 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           )}
           {!coming2 && <p className="hgain">{CULTIVATE.lastHeaven}</p>}
         </div>
+      )}
+
+      {/* 轉世 The other road from the top, offered quietly and never pressed: a line, not a
+          card, under the heaven the cultivator stands in. Nothing is lost by leaving it. */}
+      {reborn && onRebirth && (
+        <button className="rebirthline" onClick={onRebirth}>
+          <span><Svg html={seal('cosmic-egg', '#B49AE0')} /></span>
+          <span><b className="cjk">轉世</b> {REBIRTH.title}. {echo >= ECHO_CEILING - 1e-9
+            ? REBIRTH.offerFull : REBIRTH.offer(echoPct(echoAfter(state)))}</span>
+          <em className="cjk">›</em>
+        </button>
       )}
 
       {/* 入定 The sitting is said under the qi now, where its number is (see .sitline):

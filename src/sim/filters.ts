@@ -25,8 +25,12 @@ import type { State } from './state.ts';
 export type Place = 'all' | 'better' | 'locked' | Slot;
 export const PLACES: readonly Place[] = ['all', 'better', 'locked', ...SLOTS];
 
-/** 存 How many filters a cultivator keeps. rekaris asked for more than three; a sane top. */
-export const FILTER_LIMIT = 8;
+/**
+ * 存 How many filters a cultivator keeps. rekaris asked for more than three, and got eight;
+ * then asked for as many as he liked (2026-10-06). A row of pills wraps, and a save carries
+ * a few short strings per filter, so twenty-four costs nothing and is still a top.
+ */
+export const FILTER_LIMIT = 24;
 
 /** 存 A saved chest filter: the three rows, a name, and whether a full chest must weigh what it shows first. */
 export interface ChestFilter {

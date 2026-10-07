@@ -1,5 +1,5 @@
-import { RARITIES, type Item, type Rarity } from '../data/gear.ts';
-import { addToChest, chestLimit, fusable, fuse, fuseThree, fusedQuality } from './chest.ts';
+import { RARITIES, TEMPLATE_BY_KEY, baseValue, type Item, type Rarity } from '../data/gear.ts';
+import { addToChest, chestLimit, fusable, fuse, fuseThree, fusedPrimary, fusedQuality, fusesInto } from './chest.ts';
 import { dropsRankUp, fuseQuality } from './dao.ts';
 import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
@@ -84,9 +84,18 @@ export function fusionQuality(s: State): number {
   return fuseQuality(s.unlocked) * gearFuse(taskBody(s, 'fuse'));
 }
 
-/** 質 What a fusion of this group would come out at, read before the tap (sim/chest.ts). */
+/**
+ * 質 What a fusion of this group would come out at, read before the tap (sim/chest.ts): the
+ * quality of the first line it would make, rounded and held to fusedTop as fuse() holds it,
+ * so the number on the button is the number on the piece.
+ */
 export function fuseQuote(s: State, template: string, rarity: Rarity): number {
-  return fusedQuality(fuseThree(s.chest, template, rarity), fusionQuality(s));
+  const q = fusedQuality(fuseThree(s.chest, template, rarity), fusionQuality(s));
+  const up = fusesInto(rarity);
+  const tpl = TEMPLATE_BY_KEY[template];
+  if (!up || !tpl || q <= 0) return q;
+  const base = baseValue(tpl, up, tpl.affix);
+  return base > 0 ? fusedPrimary(tpl, up, q) / base : q;
 }
 
 /**

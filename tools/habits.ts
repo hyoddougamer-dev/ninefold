@@ -15,7 +15,7 @@ import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
   atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
   canFightWarden, condense,
-  newState, power, upgradeCost, type State,
+  newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
 import { advance, layersOpened, rate } from '../src/sim/time.ts';
 import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
@@ -58,6 +58,8 @@ import type { Beast } from '../src/data/bestiary.ts';
 const wornWorth = (s: State, slot: Slot) => itemWorth(s.worn[slot]!, levelAt(s.refined, slot));
 
 const T0 = 1_700_000_000;
+/** 轉世 T0 under another name, for play() to count its days from a given start instead. */
+const EPOCH = T0;
 const DAY = 86_400;
 
 export interface Habit {
@@ -123,6 +125,16 @@ export interface Habit {
    * whole workshop is worth to the ladder, played greedily (see tools/crafter.ts).
    */
   readonly crafts?: boolean;
+  /**
+   * 百煉 Whether the crafter also forges the Hundredfold sets, lowest realm first, every
+   * place at the best rank the forge allows (tools/crafter.ts hundredPlan).
+   */
+  readonly hundred?: 'forge' | 'spread';
+  /**
+   * 續 Whether they play on past the summit until `maxDays`, the way somebody chasing the
+   * long goals does: the climb stops at the ninth realm, the forge does not.
+   */
+  readonly on?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -496,8 +508,16 @@ function spendTree(s: State, branch: Path | undefined): State {
  */
 export type Watcher = (day: number, s: State) => void;
 
-export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
-  let s = newState(T0);
+/**
+ * 轉世 `start` begins the walk from a given state instead of a new one (a reborn life, see
+ * tools/rebirth.ts), and the days are counted from its own instant. `gain` multiplies
+ * every second gathered, the way 宿慧 the Echo does, for pushing the Echo past its ceiling
+ * to see what a higher one would do; 1 for every curve the game is measured by.
+ */
+export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, gain = 1): Run {
+  // 轉世 Every day below is counted from here: T0, or the instant a given start stands at.
+  const T0 = start?.at ?? EPOCH;
+  let s = start ?? newState(T0);
   let t = T0;
   const tick = DAY / h.checks;
   const arrival = [0];
@@ -530,12 +550,12 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
   /** 梯 The clock, with the rungs it opened counted and 香 the incense it paid set apart. */
   const tickTo = (to: number, focus = 1) => {
     const burning = (s.incenseUntil ?? 0) > s.at;
-    const next = advance(s, to, false, focus);
+    const next = advance(s, to, false, focus * gain);
     let rungs = 0;
     for (let n = layersOpened(s); n < layersOpened(next); n++) rungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
     led.ladder += rungs;
     if (burning) {
-      const cold = advance({ ...s, incenseUntil: 0 }, to, false, focus);
+      const cold = advance({ ...s, incenseUntil: 0 }, to, false, focus * gain);
       let coldRungs = 0;
       for (let n = layersOpened(s); n < layersOpened(cold); n++) coldRungs += layerCost(Math.floor(n / 9) + 1, n % 9, s.unlocked);
       led.incense += Math.max(0, (next.qi + rungs) - (cold.qi + coldRungs));
@@ -543,7 +563,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     s = next;
   };
 
-  while ((t - T0) / DAY < maxDays && layersOpened(s) < LAYERS - 1) {
+  while ((t - T0) / DAY < maxDays && (h.on || layersOpened(s) < LAYERS - 1)) {
     // 入定 the part of the visit spent looking at it, walked in steps so the ramp counts.
     const open = h.minutes * 60;
     const deeper = focusBonus(s.unlocked);
@@ -584,8 +604,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // 業 Somebody who crafts looks at the pouch first: the kit changes the odds, so it
     // changes how many cores they have to condense before the fight looks worth it.
     const kitOf = (x: State) => (h.crafts ? kitFor(x, wardenOf(x.realm), 'warden') : { kit: NO_KIT, spends: false, used: NOT_USED });
+    // 封 And they carry before asking whether the gate is open, since in realms 5 to 8 a
+    // Breakthrough Pill in its hand is what opens it.
+    if (h.crafts && (canFightWarden(s) || (!s.wardenFell && wardenStands(s)))) s = carryBest(s, wardenOf(s.realm), 'warden');
     if (canFightWarden(s)) {
-      if (h.crafts) s = carryBest(s, wardenOf(s.realm), 'warden');
       for (let i = 0; i < 40; i++) {
         if (odds(s, wardenOf(s.realm), undefined, kitOf(s).kit) > 0.5 || !canCondense(s)) break;
         s = spend(condense(s));
@@ -791,7 +813,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher): Run {
     // it on something that will still be running when they are back, and wear a forged
     // piece the moment the game would mark it ▲, as with anything that falls.
     if (h.crafts) {
-      s = craftVisit(s, t, tick);
+      s = craftVisit(s, t, tick, h.calling, h.hundred ?? false);
       for (const it of s.chest.filter((x) => x.from === FORGED)) {
         const slot = templateOf(it).slot as Slot;
         const worn = s.worn[slot];

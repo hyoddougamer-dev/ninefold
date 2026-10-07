@@ -169,6 +169,11 @@ async function walk(realm) {
       fail(`realm ${realm} ${name}`, `did not open, still on ${screen} (${why})`);
       continue;
     }
+    // 開 A character inside a closed <details> is on the screen only once a thumb has opened
+    // it. 運 in "Your luck in all" is the first one the gear screen has, so the walk opens
+    // every panel the way a player would, and then taps what they could see.
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+    await page.waitForTimeout(150);
     const n = await page.$$eval('.term', (e) => e.length);
     if (!n) fail(`realm ${realm} ${name}`, 'the screen opened with no character on it to tap');
     for (let i = 0; i < n; i++) {
