@@ -352,6 +352,32 @@ function metCeiling(before: State, after: State, dt: number, first = false): num
 export const SEAL_GRACE = 3600;
 
 /**
+ * 封 From this instant (seconds) a sealed gate crossed is read against its days. The game
+ * before the seal had none: its warden could be fought the moment it came out, so a save
+ * from before then crossed realms 5 to 8 honestly without the days or a pill. A pair that
+ * starts earlier is never charged for a seal.
+ *
+ * Two days after the release of 2026-10-08, as DAO_BANK_STRICT_FROM sat two days after the
+ * shrines changed: a phone still running the old build (a cached page, an APK not updated
+ * yet) crosses a gate the old way, and is not charged for it while most of them catch up.
+ * One that is still old after this waits the seal out on the server, SEAL_DAYS at the most
+ * per gate, never a strike, and it clears by itself as the hours pass (the rankings card
+ * says how far ahead of real time the climb is). The margin costs nothing honest: the new
+ * game keeps the gate shut itself, so only an edited one could cross it early meanwhile.
+ * If the release moves later, this moves with it.
+ */
+export const SEAL_STRICT_FROM = 1_791_590_400; // 2026-10-10T00:00:00Z
+
+/**
+ * 擂 From the same instant a Platform challenger beaten is read at the realm's grown edge
+ * (platformEdge, released with the seal). Before it, and on a phone that had not updated
+ * yet, every challenger stood at the flat PLATFORM_EDGE, and a third one beaten there in
+ * the seventh realm or above may be one the grown edge says no body could take: read at
+ * the grown edge, that save would wait until the period turned, a week at the most.
+ */
+export const EDGE_STRICT_FROM = SEAL_STRICT_FROM;
+
+/**
  * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
  * the least: each gate's SEAL_DAYS, or nothing where this save's Alchemy reached the
  * Breakthrough Pill made for that realm, which breaks the seal outright (bestUnseal). A
@@ -548,7 +574,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // 封 And every sealed gate crossed stood shut for its days, less what a Breakthrough Pill
   // this save's Alchemy could have made counts as. Time is the honest way through it, so
   // a seal crossed too soon is a matter of time and waits, like a clock moved on.
-  if (sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) why.push('too-fast');
+  // A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
+  if (before.at >= SEAL_STRICT_FROM && sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) {
+    why.push('too-fast');
+  }
   // 業 One task at a time, so the experience every craft gained between two saves has to
   // fit in the seconds between them, at the fastest each one can ever be worked.
   if (dt > 0 && craftSeconds(before, after) > dt * SLACK + 60 && !why.includes('too-fast')) why.push('too-fast');
@@ -620,7 +649,9 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // holds can beat, with the best kit, a trail and the temper answered. It is measured
   // against that body's own power, so an edited 力 cannot win it; a no only waits, because
   // the stance and the kit in hand at the fight are not in the save.
-  if (bouts > 0 && !why.includes('too-fast') && !platformBeatable(after)) why.push('too-fast');
+  // 擂 At the realm's grown edge from EDGE_STRICT_FROM, and at the flat one a phone on the
+  // build before it fought.
+  if (bouts > 0 && !why.includes('too-fast') && !platformBeatable(after, before.at >= EDGE_STRICT_FROM)) why.push('too-fast');
   // 香 The incense queued and the spring held only ever grow by what time fills: a stick
   // relit by hand to burn for ever is more incense than any spring could have given.
   if (!first && !why.includes('too-fast')) {
@@ -741,8 +772,11 @@ function seeker(s: State): number {
  * some body it holds: the best kit its crafts could carry, a trail taken, and the temper
  * answered. A save whose period has turned claims nothing that can still be read, and
  * passes: its bouts were counted against the weeks above.
+ *
+ * `grown` reads the challenger at the realm's grown edge (platformEdge); without it, at the
+ * flat PLATFORM_EDGE every challenger stood at before 2026-10-08 (see EDGE_STRICT_FROM).
  */
-export function platformBeatable(s: State): boolean {
+export function platformBeatable(s: State, grown = true): boolean {
   const n = beatenNow(s);
   if (n <= 0) return true;
   const tier = (n - 1) as Tier;
@@ -750,7 +784,7 @@ export function platformBeatable(s: State): boolean {
     const shape = challengerOf(b, tier);
     // The temper answered: the challenger at its edge alone.
     // 擂 At the realm's own edge (platformEdge), the one the phone's challenger stood at.
-    const standing = power(b) * platformEdge(tier, b.realm);
+    const standing = power(b) * (grown ? platformEdge(tier, b.realm) : PLATFORM_EDGE[tier]);
     return beatable(b, shape, standing, { ...bestKit(b, shape, 'platform'), wound: TRAIL_WOUND });
   });
 }
