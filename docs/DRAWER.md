@@ -149,8 +149,8 @@ were rejected and are not revived.
 - **What carries:** the Echo, a title per life (再世 Twice-Born, 三世 Thrice-Born, ... 十世),
   the records already on the boards (the server keeps the best ever), who the cultivator is,
   the notices read, the chest's filters, and three forward-only counters (vault runs, the
-  last Realm Key day, the week's quarry) so a week cannot pay twice. **Everything else
-  begins again.** No heirloom: a ninth-realm piece worn in the first realm either breaks the
+  last Realm Key day, the week's quarry) so a week cannot pay twice, and **譜 the codex**
+  (below). **Everything else begins again.** No heirloom: a ninth-realm piece worn in the first realm either breaks the
   server's gear check (a strike) or needs a new rescaling rule, and one more uncapped power
   path is the opposite of what the endgame needs.
 - **Record:** `State.lives`, at most `LIVES_MAX` = 9 entries of `{ marks, at }` (seconds),
@@ -162,6 +162,39 @@ were rejected and are not revived.
   forged record can claim at most +25% of rate and waits for the marks it claims; two copies
   reborn differently are another copy, never a strike. The sync core, the spare copy and the
   cloud pick order saves by lives first (`progressOf`). **No Supabase schema change.**
+
+- **譜 The codex is kept** (Bruno, 2026-10-07: *"o codex não deve reset, seria injusto"*;
+  the page promised "finish a set once and it leaves a bonus for good"). `State.codexKept`
+  holds, for each of the nine sets, the best rank any life finished it at (0 none, 1 Mystic
+  to 3 Heaven). `reincarnate()` writes it from the codex derived at that moment, the higher
+  of that life's pieces made and what it already kept, and nothing else writes it. The codex
+  reads the higher of the kept rank and this life's own, so finishing a set again only
+  matters at a higher rank. The steps for Hundredfold pieces worn (two, four, six, and the
+  whole set doubling its bonus) are about pieces worn now, so they begin again with the gear.
+  Every bonus keeps its cap (`CODEX_CAP`) and none touches the qi rate. `validate()` holds
+  the record to nine ranks of 0 to 3 and empties it for a save with no lives. The server
+  strikes a kept codex in a first life, or one that grew without a new life (`'codex'`); one
+  that shrank is another copy (`'went-down'`). Across a rebirth, a record holding less than
+  the old life had finished is another copy; one holding more (the life forged on after the
+  last sync) is taken as born with, bounded by the caps. Shown on 譜 the codex page as earned
+  with a quiet "kept from a past life", and in the Rebirth page's "carries" rows.
+- **What the kept codex moves** (`npm run rebirth`, section 6: every set at Heaven carried,
+  the most a record holds, against none; mean of four gear seeds; days to realm 9 / summit):
+
+| habit | | life 1 | life 2 | life 3 | life 4 | life 5 | life 6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| active | none | 49.3/57.1 | 45.8/53.6 | 44.8/52.4 | 42.7/49.6 | 42.4/49.3 | 40.6/47.3 |
+| active | codex | 49.3/57.1 | 46.2/54.0 | 44.6/52.2 | 42.7/50.1 | 41.9/48.8 | 40.4/46.9 |
+| once a day | none | 73.5/88.0 | 72.0/84.3 | 69.0/81.0 | 66.5/79.3 | 65.8/77.5 | 62.5/75.0 |
+| once a day | codex | 73.5/88.0 | 71.0/83.0 | 68.3/79.8 | 65.3/77.8 | 63.5/76.3 | 62.3/73.8 |
+
+  The active habit moves by half a day at most, either way: noise. The once-a-day habit is
+  1.2 to 1.5 days sooner to the summit in every reborn life and at most 2.3 days sooner to
+  realm 9 (life 5): a convenience, not a second Echo. One gear seed alone moves a life by up
+  to 5 days either way, because 落星 the bond fills a win sooner and every drop after it is a
+  different piece, which is why the table is a mean. Pushed: the set-chaser's own record
+  (five sets at Heaven, one at Earth) sits between none and all nine, and all nine with the
+  Echo's ceiling a tenth higher walls nothing.
 
 **Measured** (`npm run rebirth`, every life ending on its third mark; days to realm 9 /
 summit / third mark, and the summit's saving on the first life):

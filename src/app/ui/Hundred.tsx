@@ -13,7 +13,7 @@ import {
   CODEX_CAP, CODEX_RANK, CODEX_WORN, HUNDRED_BREACH, HUNDRED_HEAVEN_MADE, HUNDRED_KIT, HUNDRED_STEPS, SECONDARIES,
 } from '../../sim/balance.ts';
 import {
-  codexRank, codexValue, codexWorth, lineAxes, lineValue, materialReached, orderNeeds, orderRecipe, pieceOf,
+  codexHeld, codexRank, codexValue, codexWorth, keptRank, lineAxes, lineValue, materialReached, orderNeeds, orderRecipe, pieceOf,
   piecesMade, placesMade, portionOf, setOpen, spiritOf, wornOfSet, type Order, type Portions,
 } from '../../sim/hundred.ts';
 import { blocked, held, levelIn, secondsOf } from '../../sim/crafts.ts';
@@ -270,6 +270,8 @@ function Sets({ state }: { state: State }) {
         const realm = i + 1;
         const made = placesMade(state.crafts.made, realm);
         const rank = codexRank(state.crafts.made, realm);
+        // 承 A set a life before this one finished stays finished, at the best rank it reached.
+        const kept = keptRank(state.codexKept, realm);
         const count = SLOTS.filter((x) => made[x] >= 0).length;
         const worn = wornOfSet(state.worn, realm).length;
         return (
@@ -295,6 +297,9 @@ function Sets({ state }: { state: State }) {
                 {rank > 0 ? HUNDRED.finished(rankName(HUNDRED_RANKS[rank - 1])) : HUNDRED.unfinished(count)}
                 {worn > 0 && <> · {HUNDRED.wornNow(worn)}</>}
               </i>
+              {kept > rank && (
+                <i className="hu-kept" data-kept={kept}>{HUNDRED.keptSet(rankName(HUNDRED_RANKS[kept - 1]))}</i>
+              )}
             </span>
           </div>
         );
@@ -317,7 +322,9 @@ function Codex({ state }: { state: State }) {
       <p className="faint hu-note">{HUNDRED.codexNote(CODEX_RANK[0], CODEX_RANK[1], CODEX_RANK[2], CODEX_WORN)}</p>
       {CODEX.map((c) => {
         const set = REALM_SETS[c.realm - 1];
-        const rank = codexRank(state.crafts.made, c.realm);
+        // 承 This life's pieces, or the best a life before finished the set at: the higher.
+        const rank = codexHeld(state, c.realm);
+        const past = keptRank(state.codexKept, c.realm) > codexRank(state.crafts.made, c.realm);
         const now = codexValue(state, c.key);
         return (
           <div key={c.key} className="hu-cx" data-earned={rank > 0 || undefined} style={{ ['--hue' as string]: realmOf(c.realm).colour }}>
@@ -337,6 +344,7 @@ function Codex({ state }: { state: State }) {
               <i className="hu-now">
                 {rank > 0 ? <><b>{HUNDRED.codexNow(worth(c.key, now))}</b> · {HUNDRED.codexAt(rankName(HUNDRED_RANKS[rank - 1]))}</>
                   : HUNDRED.codexNone}
+                {past && <> · <em className="hu-kept">{HUNDRED.keptNote}</em></>}
               </i>
             </span>
           </div>
