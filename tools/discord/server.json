@@ -1546,6 +1546,57 @@
       ]
     },
     {
+      "key": "update-2026-10-08",
+      "pin": false,
+      "channel": "news",
+      "title": "業 Update · The workshop grows teeth, and a way to begin again",
+      "color": "#D4AF56",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-gate.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-piece.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-codex.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-rebirth.webp?v=1"
+      ],
+      "body": [
+        "Many of you told me the same three things: the workshop's pills and sigils sat unused, crafting felt pointless next to a drop, and past the Dragon there was nothing left but a clock. This update answers all three. Everything below is built, tested and measured in the simulator. Thank you, rekaris above all, for saying it plainly and with numbers."
+      ],
+      "fields": [
+        [
+          "封 The seal and the Breakthrough Pill",
+          "In realms 5 to 8 the gate stays **sealed** after the warden comes out: 1, 1.25, 1.5 and 2 days, whatever your power, shown as a bar on the 修 Cultivate card. Waiting it out always works. A **破境丹 Breakthrough Pill** from Alchemy (levels 40, 45, 51 and 56) breaks the seal at once and takes **at least half** of the wall's whole loosening time with it: half at Common, 70% at Heaven. At the eighth realm that is 6 of its 12 days at Common. A win spends it, a loss keeps it. Measured: whoever uses the workshop climbs within about two days of before, whoever ignores it loses one to seven depending on how they play, and whoever only waits is never walled."
+        ],
+        [
+          "百形 Forge any shape",
+          "Once a realm's warden has fallen, the forge makes any of that realm's 54 shapes, at the warden's price. Until now no school could be worn whole from one realm's own beasts, and now every one can. A forged piece is bound: it cannot be fused, and melting it gives metal back, never qi."
+        ],
+        [
+          "百煉 Hundredfold sets",
+          "Nine sets, one for every realm, six places each, made only at the forge. You choose the place, the shape and the rank (Mystic, Earth or Heaven). Every other line comes from what you put in the crucible: Cinnabar for 力 power, the realm's herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. One, two or three portions put a line at the bottom, middle or top of the band a drop of that rank rolls in, never above it. A piece takes 20 minutes at the anvil, its ingots, two parts of the realm's 霸 elite and one of its warden. The wait is short on purpose: the cost is in what you gather and in your Forging level, and Heaven also asks five pieces of the set made first."
+        ],
+        [
+          "百 Worn together",
+          "At 2 pieces the elixirs and sigils you carry do 25% more. At 4, each one breaks a day more of a bottleneck. At 6, the set's codex counts twice. Wear six Heaven pieces of one set and its 器靈 Artifact Spirit wakes: a light round your portrait. Looks only."
+        ],
+        [
+          "譜 The codex, for good",
+          "Finish a set once and it leaves a bonus that stays, even through a new life: Mortal Iron +5% material from kills, Withered Bone elites 8% weaker, Elder Bronze vault gates 8% weaker, Frostsilver the heart demon 5% weaker, Jadewater the workshop 5% faster, Fallen Star +10% bond, Thunderscript half a day more of a bottleneck for each thing carried, Dragonwake tower floors 5% weaker, Ascendant Husk Platform challengers 5% weaker. Earth counts ×1.5, Heaven ×2, wearing the whole set twice again, up to caps: elites and vault gates 24%, the demon, floors and challengers 15%. None of it touches the qi rate. In my tests Mortal Iron reaches Heaven around day 12 to 15, Jadewater around day 67 to 100, Fallen Star around day 115 to 175, and Dragonwake and Ascendant Husk not within six months."
+        ],
+        [
+          "轉世 Rebirth",
+          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +2.5% of the qi you gather for every doubling of the marks you crossed, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世). The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
+        ],
+        [
+          "擂 The Platform's edge",
+          "From the fifth realm the Platform's challengers stand 4% higher for every realm. The third one fell almost every week at the top, and now it is a fight."
+        ],
+        [
+          "❓ Tell us",
+          "Everything here can still change. The polls on the workshop stay open until 13 October, and the thread in {#ideas} is the place to argue with me. Thank you for every report that shaped this."
+        ]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
       "key": "update-2026-10-07-small",
       "quiet": true,
       "pin": false,
@@ -1571,7 +1622,10 @@
         [
           "言 Three sentences that say what they do",
           "破 *beasts weaker* now names what it reaches: the hunt, the tower, the Platform and every realm's warden, never your heart demon or the Dragon. The melting allowance says it refills at 37.5% of your standing qi rate, open or shut, and that sitting does not speed it up. The full Qi school said its ceiling stands \"×0.1 higher\", which read as a tenth of it. It is 0.1 added to it, so ×1.38 becomes ×1.48 on the first layer."
-        ]
+        ],
+        ["藏 A fused piece stops at ×1.5", "A fusion's main line was rounded after its cap and could read up to ×2.00 on a chest-slots line. It now never reads above ×1.50. Pieces fused before keep what they have."],
+        ["爐 Pills say what they do", "The Bane pill's first takes 0.9% off every beast, each later one a little less, never below 40% of their power. Fortune is +4% luck each, and lifts Mystic, Earth and Heaven drops, the last two most. Every elixir and sigil now says it never reaches the Dragon."],
+        ["融 Melting and sitting", "The melting allowance says it holds up to six hours and that lower-realm gear melts for less. The sitting says that time spent off the screen never deepens it."]
       ],
       "footer": "師 Shibaki"
     }
@@ -2402,7 +2456,10 @@
     {
       "forum": "bugs",
       "title": "When changing tabs or application, the game goes \"offline\"",
-      "tags": ["Bug"],
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
       "reply": [
         "Thanks for the detailed report, and for the tip about timers! You found a real one.",
         "The game was treating any click outside its window as you leaving, so 入定 sitting started over even with the game right there on your screen.",
@@ -3202,6 +3259,31 @@
     },
     {
       "forum": "ideas",
+      "title": "Spread of available gear schools",
+      "reply": [
+        "This one is answered in the next update: once a realm's warden has fallen, the forge makes any of that realm's 54 shapes, so every school can be worn whole from a single realm, and the Hundredfold sets let you choose every line on top. Drops stay as they are, the forge is where you choose.",
+        "Thank you for counting it out, the table was right.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Show quality on equipped pieces too",
+      "reply": [
+        "Done in the next update: the ×1.xx now sits at the foot of the six pieces you wear as well, and in the tile's label. Thank you.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform is still trivial, even while ignoring every condition",
+      "reply": [
+        "Confirmed, and measured: the challenger scaled with whatever you wore, so a cheaper set made an easier fight. From the next update the Platform's edge grows 4% for every realm past the fourth, so the third challenger falls in about one week in ten for an active player and one in five with the Vajra, down from nearly every week. Thank you for the push.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
       "title": "Melting material reward is low",
       "tags": [
         "Balance"
@@ -3373,7 +3455,8 @@
       "forum": "bugs",
       "title": "Fusion quality probably isn't capped at 1.5x.",
       "tags": [
-        "Bug"
+        "Bug",
+        "Fixed"
       ],
       "reply": [
         "It was the description, thank you. The line can pass ×1.5 on purpose: it multiplies the average quality of the three pieces, and only the piece made stops at ×1.5, so a line past it still lifts three low rolls up to that ceiling. The note says so since today's update.",
@@ -3428,7 +3511,8 @@
       "forum": "bugs",
       "title": "When changing tabs or application, the game goes \"offline\"",
       "tags": [
-        "Bug"
+        "Bug",
+        "Fixed"
       ],
       "reply": [
         "Thank you for your patience on this one. Since today's update a sitting already running keeps going when you switch tab or app, to its usual 30 minutes, and is paid when you come back. Auto still stops while the game is hidden, since hunting while away is what the Drive is for.",
@@ -3514,6 +3598,32 @@
       ],
       "reply": [
         "Both fixed in today's update, thank you. The heaven's colour is a round glow now that fades out before the edges, with its mist slowly turning, and at the summit your aura moves like it does everywhere else: the swords circling, the formation turning, the bolts flickering.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Fusion quality probably isn't capped at 1.5x.",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "Fixed ✅ You were right to doubt it, rekaris. The cap was applied and the number was then rounded, so a line worth 1 in the base could read ×2.00 and small ones up to ×1.56. A fusion now never reads above ×1.50. Pieces you fused before keep what they have.",
+        "Thank you for the second look, it is what found it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When changing tabs or application, the game goes \"offline\"",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "The sitting does survive a tab switch, and your question about it deepening is a fair one: the answer is no, on purpose. Time spent off the screen is paid at the depth the sitting had when you left and never deepens it, because a tab left open all day would otherwise climb weeks faster than anyone sitting there. The help line says so now, in the next update.",
+        "Your idea of a longer sitting through a path node or a class is on my list. I will measure it before I answer.",
         "· 師 Shibaki"
       ]
     }
