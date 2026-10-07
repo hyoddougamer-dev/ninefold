@@ -1447,8 +1447,8 @@ export const BOTTLENECK_LOOSEN = 0.3;
  * them the day they arrived, so the workshop was still worth a day or two of the climb and
  * nobody needed it. The seal is the part of the gate power cannot open. Waiting it out
  * always works (nothing is ever taken from somebody for being away), and 破境丹 a
- * Breakthrough Pill carried into the gate counts as CRAFT_KIT.unseal days of it, so the
- * seal breaks at once and the wall stands that much lower.
+ * Breakthrough Pill carried into the gate breaks it outright, and CRAFT_KIT.pill of the
+ * wall's days with it (since 2026-10-07; it counted as two days of both before).
  *
  * Measured with tools/seal.ts (2026-10-07), every habit with the workshop and without:
  * the day the ninth realm opens, before the seal and after it.
@@ -1466,6 +1466,14 @@ export const BOTTLENECK_LOOSEN = 0.3;
  * cultivator, who banks the waiting qi into levels, loses less than two.
  * The seal grows with the realm because a realm takes longer to climb the higher it is,
  * so the same share of a realm is more days at the eighth than at the fifth.
+ *
+ * 破境丹 Measured again on 2026-10-07 with the pill breaking the seal outright and half of
+ * the wall's days (tools/seal.ts): every habit that fights and uses the workshop already
+ * crossed every gate the day it opened, and still does (once a day 69.0, casual 61.7,
+ * active 46.0, every hour 29.0); the one it moves is the crafter whose build lags the wall,
+ * `barely fights`, from 97 to 93, its days at gates 5 to 8 from 4, 4, 5, 7 to 2, 2, 2, 3.
+ * Whoever skips the workshop is where they were (once a day 76, casual 66, active 49.7,
+ * every hour 32.1), and the pure waiter never waits on a seal (121, unchanged).
  */
 export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
 
@@ -2374,10 +2382,19 @@ export const CRAFT_KIT = {
   // an elixir and a sigil at Heaven rank break 3.5 days, which takes a fresh wall to a
   // third of itself. This is what a crafter makes the walls with, rather than waits.
   breach: 1,
-  // 破境丹 Days of the seal and of the bottleneck a Breakthrough Pill made for the realm
-  // counts as (see SEAL_DAYS): two at Common rank, 3.5 at Heaven, so any pill of the realm
-  // breaks its seal at once, and the wall stands as if those days had been waited.
-  unseal: 2,
+  // 破境丹 The share of its gate's whole 瓶頸 bottleneck a Breakthrough Pill made for the
+  // realm breaks at Common rank, in days: half of the days a fresh wall takes to loosen (4
+  // of 8 at the fifth realm, 6 of 12 at the eighth). A finer rank breaks more, leaving
+  // (1 − pill) to the power of its CRAFT_QUALITY_MULT: 50% at Common, 70% at Heaven. It
+  // also breaks the gate's 封 seal outright (see SEAL_DAYS).
+  //
+  // rekaris, 2026-10-07, in the workshop thread: "every system that makes you wait must have
+  // a tool that removes the wait", and the elixir and the sigil took 2 of the 12 days of the
+  // eighth realm's wall. The pill used to count as two days (3.5 at Heaven) of the seal and
+  // of the wall, which read as "a day shorter" rather than a pill that breaks a gate. Read
+  // off the whole wall, it scales with the realm, and since nobody waits at a gate longer
+  // than its whole wall, it takes at least half of anybody's wait there (sealgate.test).
+  pill: 0.5,
 } as const;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
@@ -2407,9 +2424,32 @@ export const CRAFT_FURNACE_DISCOUNT = 0.002;
  * a shortcut. Every number below is read by tools/hundredfold.ts, which plays the crafter
  * on past the summit and prints the day each set is finished at each rank.
  *
- * 時 A piece is three hours at the anvil before tools, arrays and familiarity.
+ * 時 A piece is twenty minutes at the anvil before tools, arrays and familiarity.
+ *
+ * It was three hours until 2026-10-07. rekaris, in the workshop thread: no system should
+ * make a player wait without a tool that removes the wait, and a piece should take about
+ * five minutes. Bruno: remove the forced waiting, keep the progression in materials and in
+ * Forging levels, so a set is a goal gathered for and not a timer watched.
+ *
+ * Measured with tools/hundredfold.ts, the day each set is first finished at Heaven, forge
+ * first / crafts kept level:
+ *
+ *   set            three hours        twenty minutes
+ *   凡鐵 Mortal Iron   15.5 / 15.8        15.5 / 11.7
+ *   古銅 Elder Bronze  19.8 / 21.0        23.2 / 37.7
+ *   霜銀 Frostsilver   25.8 / 26.7        49.8 / 60.0
+ *   碧玉 Jadewater     39.3 / 43.5        67.3 / 101.8
+ *   落星 Fallen Star  114.2 / 158.5      115.2 / 176.5
+ *
+ * Slower, not faster: a three-hour piece was the forge's best experience, so the forge
+ * reached level 60 on day 17 and now reaches it on day 44, and the Forging level a rank asks
+ * is what holds a set back. It lands where the announcement put the long road (Jadewater
+ * around day 84, Fallen Star around 170). The materials were measured too and left as they
+ * were: five times the ingots and parts moved no set by a day for the crafter who levels
+ * the forge first, and at half as much again the crafter who keeps every craft level no
+ * longer finished Fallen Star at Heaven within six months.
  */
-export const HUNDRED_SECONDS = 3 * 3600;
+export const HUNDRED_SECONDS = 20 * 60;
 
 /**
  * 級 The Forging level each rank asks for, above the first level of its realm's metal

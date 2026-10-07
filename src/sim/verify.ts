@@ -352,9 +352,10 @@ export const SEAL_GRACE = 3600;
 
 /**
  * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
- * the least: each gate's SEAL_DAYS less the most an honest Breakthrough Pill could count
- * as there (bestUnseal, at Heaven rank). A gate the earlier save already stood at owes only
- * what was left of its seal then; one it had not reached owes all of it.
+ * the least: each gate's SEAL_DAYS, or nothing where this save's Alchemy reached the
+ * Breakthrough Pill made for that realm, which breaks the seal outright (bestUnseal). A
+ * gate the earlier save already stood at owes only what was left of its seal then; one it
+ * had not reached owes all of it.
  */
 export function sealSeconds(before: State, after: State): number {
   let days = 0;

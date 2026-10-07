@@ -11,7 +11,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
   marksOf, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
-  unsealCarried, unsealHeld, workSeconds, xpOf, type Hand,
+  kitFor, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
 } from '../../sim/crafts.ts';
 import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
@@ -717,7 +717,10 @@ function Carry({ state, onCarry }: { state: State; onCarry: (hand: Hand, key: st
   const seal = sealDays(state.realm);
   const left = sealLeft(state);
   const counts = unsealCarried(state);
-  const held = unsealHeld(state);
+  const held = pillHeld(state);
+  // 破境丹 The share of the wall the carried pill takes at this gate, read at the warden.
+  const gw = BEASTS.find((x) => x.warden && x.realm === state.realm);
+  const thin = gw ? (kitFor(state, gw, 'warden').kit.thin ?? 0) * wallDays(state.realm) : 0;
   const hand = (which: Hand) => {
     const k = state.crafts.carry[which] ?? null;
     const it = k ? ITEM_BY_KEY[splitKey(k).key] : null;
@@ -743,8 +746,8 @@ function Carry({ state, onCarry }: { state: State; onCarry: (hand: Hand, key: st
       {pillHand && (
         <p className="ccarry-seal" style={{ margin: '6px 0 0', fontSize: 12 }}>
           {seal > 0 && left > 0
-            ? (counts > 0 ? CRAFTS.pillBreaks(counts, left) : held > 0 ? CRAFTS.pillHeld(held, left) : CRAFTS.pillNone(left))
-            : seal > 0 && counts > 0 && wardenStands(state) && !state.wardenFell ? CRAFTS.pillWall(counts) : CRAFTS.pillSays}
+            ? (counts > 0 ? CRAFTS.pillBreaks(thin, left) : held > 0 ? CRAFTS.pillHeld(held, left) : CRAFTS.pillNone(left))
+            : seal > 0 && thin > 0 && wardenStands(state) && !state.wardenFell ? CRAFTS.pillWall(thin) : CRAFTS.pillSays}
         </p>
       )}
       {state.crafts.seek > 0 && <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--gold)' }}>{CRAFTS.seek(state.crafts.seek)}</p>}

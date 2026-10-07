@@ -32,7 +32,7 @@ import { CODEX, type CodexKey } from '../src/data/hundred.ts';
 import {
   GEAR, REALM_SETS, SLOTS, type Affix, type Item, type Slot,
 } from '../src/data/gear.ts';
-import { SECONDARIES, CODEX_CAP } from '../src/sim/balance.ts';
+import { SECONDARIES, CODEX_CAP, HUNDRED_SECONDS } from '../src/sim/balance.ts';
 import { power, type State } from '../src/sim/state.ts';
 import { rate } from '../src/sim/time.ts';
 import { commonsOf, isElite, wardenOf } from '../src/data/bestiary.ts';
@@ -105,11 +105,19 @@ for (const [name, x] of Object.entries(roads)) {
   console.log(`  forge level, ${name.padEnd(7)}  ${[40, 50, 60, 70, 73, 80, 84, 90, 95, 99].map((l) => `${l}@${x.forge[l] === undefined ? '-' : x.forge[l].toFixed(0)}`).join(' ')}`);
 }
 assert(finished >= 20, `the long road reaches something: ${finished} completions counted`);
+// 時 A piece is a short sitting at the anvil once its materials are in (rekaris, 2026-10-07).
+assert(HUNDRED_SECONDS <= 30 * 60, 'a Hundredfold piece takes minutes at the anvil, never hours');
 for (const x of Object.values(roads)) {
   // The first sets in days, the last two not within six months.
   assert((x.first['1:3'] ?? Infinity) <= 30, 'Mortal Iron reaches Heaven within a month');
   assert(x.first['8:3'] === undefined && x.first['9:3'] === undefined, 'Dragonwake and Ascendant Husk are not finished at Heaven within six months');
   assert((x.first['5:3'] ?? Infinity) >= 20, 'Jadewater at Heaven is weeks away, never days');
+  // 時 And the long road the announcement promised (Jadewater around day 84, Fallen Star
+  // around 170) still holds with the anvil cut to minutes: Jadewater within four months and
+  // Fallen Star at Earth within six, and neither in its first month.
+  assert((x.first['5:3'] ?? Infinity) <= 120, 'Jadewater reaches Heaven within four months');
+  assert((x.first['6:2'] ?? Infinity) <= 180, 'Fallen Star reaches Earth within six months');
+  assert((x.first['6:3'] ?? Infinity) >= 60, 'Fallen Star at Heaven is months away');
 }
 
 if (!quick) {

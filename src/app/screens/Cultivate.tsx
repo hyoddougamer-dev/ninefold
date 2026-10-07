@@ -1,4 +1,4 @@
-import { breachHeld, kitFor, kitWhere, unsealCarried, unsealHeld } from '../../sim/crafts.ts';
+import { breachHeld, kitFor, kitWhere, pillHeld, unsealCarried, wallDays } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -144,7 +144,9 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const sealDue = atGate ? sealLeft(state) : 0;
   const unseal = atGate && sealDays(state.realm) > 0 ? unsealCarried(state) : 0;
   const sealNow = Math.max(0, sealDue - unseal);
-  const unsealOwned = atGate && sealDue > 0 && !unseal ? unsealHeld(state) : 0;
+  const unsealOwned = atGate && sealDue > 0 && !unseal ? pillHeld(state) : 0;
+  // 封 How much of the seal has run, for its bar: it fills with time, and a pill breaks it.
+  const sealServed = sealDays(state.realm) > 0 ? 1 - sealDue / sealDays(state.realm) : 1;
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
@@ -169,7 +171,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // 瓶頸 How far above its old self the warden still stands, and the days until it is not.
   const over = bottleneck(state, w) * wallOf(w.realm);
   const loosens = over > 1.01 ? Math.log(over) / -Math.log(1 - BOTTLENECK_LOOSEN) : 0;
-  const carriedBreach = loosens ? kitFor(state, w, 'warden').kit.breach ?? 0 : 0;
+  const carriedKit = kitFor(state, w, 'warden').kit;
+  const carriedBreach = loosens ? carriedKit.breach ?? 0 : 0;
+  const overCarried = bottleneck(state, w, carriedBreach) * wallOf(w.realm);
+  // 破境丹 The days of the wall the carried pill breaks: its share of the realm's whole wall.
+  const pillDays = (carriedKit.thin ?? 0) * wallDays(w.realm);
   const heldBreach = loosens && !carriedBreach ? breachHeld(state, w) : 0;
   const tip = advice(state);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.
@@ -440,7 +446,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               <p className="bneck" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
                 {CULTIVATE.bottleneck(over, loosens)}{' '}
                 <span className="faint">
-                  {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach)
+                  {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach, overCarried)
                     : heldBreach >= 0.1 ? CULTIVATE.breachHeld(heldBreach) : CULTIVATE.breachNone}
                 </span>
               </p>
@@ -448,10 +454,16 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             {sealDays(state.realm) > 0 && atGate && (
               <p className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
                 {sealDue > 0
-                  ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, unseal) : CULTIVATE.sealed(sealDue))
+                  ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, pillDays) : CULTIVATE.sealed(sealDue))
                   : CULTIVATE.sealServed}{' '}
                 {sealDue > 0 && !unseal && (
                   <span className="faint">{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}</span>
+                )}
+                {sealDue > 0 && (
+                  <span className="gateseal-bar" role="img" aria-label={CULTIVATE.sealBar(sealServed)}
+                    data-broken={unseal > 0}>
+                    <i style={{ width: `${Math.round(Math.max(0, Math.min(1, unseal > 0 ? 1 : sealServed)) * 100)}%` }} />
+                  </span>
                 )}
               </p>
             )}
