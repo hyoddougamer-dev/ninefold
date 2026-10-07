@@ -9,7 +9,7 @@ import { carry, carrySlot, kitFor, pillHeld, pillShare, spendKit, unsealCarried,
 import { XP_TABLE, breakthroughKey, RECIPE_BY_KEY, ITEM_BY_KEY } from '../../data/crafts.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { bottleneck } from '../combat.ts';
-import { sealSeconds, verify } from '../verify.ts';
+import { SEAL_STRICT_FROM, sealSeconds, verify } from '../verify.ts';
 
 /**
  * 封 The seal at the gates of realms 5 to 8 and 破境丹 the Breakthrough Pill that breaks it.
@@ -284,7 +284,8 @@ describe('驗 the server and the seal', () => {
   it('refuses a sealed gate crossed with a pill that was never made, and only waits', () => {
     const { before, after } = crafted;
     // The same crossing, but this save's Alchemy never made anything: no pill could exist.
-    const strip = (s: State): State => ({ ...s, crafts: { ...s.crafts, xp: { ...s.crafts.xp, alchemy: 0 } } });
+    // Read after SEAL_STRICT_FROM: before it the game had no seal (see the next test).
+    const strip = (s: State): State => late({ ...s, crafts: { ...s.crafts, xp: { ...s.crafts.xp, alchemy: 0 } } });
     const b = strip(before), a = strip(after);
     expect(bestUnseal(a, 5)).toBe(0);
     const dt = after.at - before.at;
@@ -297,7 +298,24 @@ describe('驗 the server and the seal', () => {
     // And once the seal's days have really passed, the same save is ranked.
     expect(verify(b, a, dt + sealDays(5) * DAY).why).not.toContain('too-fast');
   });
+
+  it('charges nothing for a gate crossed before the seal existed: the old game had none', () => {
+    const { before, after } = crafted;
+    const strip = (s: State): State => ({ ...s, crafts: { ...s.crafts, xp: { ...s.crafts.xp, alchemy: 0 } } });
+    const b = strip(before), a = strip(after);
+    expect(b.at).toBeLessThan(SEAL_STRICT_FROM);
+    expect(sealSeconds(b, a)).toBeGreaterThan(0);
+    const v = verify(b, a, a.at - b.at);
+    expect(v.why).not.toContain('too-fast');
+    expect(v.ok).toBe(true);
+  });
 });
+
+/** 封 A save moved, whole, to just after the seal began to be read (at, the start and the gate together). */
+function late(s: State): State {
+  const off = SEAL_STRICT_FROM + 30 * DAY - T0;
+  return { ...s, at: s.at + off, startedAt: s.startedAt + off, gateAt: s.gateAt > 1 ? s.gateAt + off : s.gateAt };
+}
 
 describe('量 what the seal costs each way of playing (tools/seal.ts)', () => {
   const row = (name: string, crafts: boolean) => sealRow({ ...HABITS.find((h) => h.name === name)!, crafts });
