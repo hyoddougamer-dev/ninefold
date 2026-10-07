@@ -89,7 +89,7 @@ for (const c of channels.filter((x) => x.type === 0 && TALK.some((k) => x.name.e
 // 問 The polls under the announcements. The bot asks them in news and devlog, and nobody
 // else writes there, so what comes back is only the question, each answer's votes and when
 // it closes.
-for (const c of channels.filter((x) => x.type === 0 && ['news', 'devlog'].some((k) => x.name.endsWith(k)))) {
+for (const c of channels.filter((x) => (x.type === 0 || x.type === 5) && ['news', 'devlog'].some((k) => x.name.endsWith(k)))) {
   const polls = (await call(`/channels/${c.id}/messages?limit=100`)).reverse().filter((m) => m.poll);
   if (!polls.length) continue;
   out.push(`## ${c.name} (polls)`, '');
