@@ -1228,10 +1228,13 @@ export const REBIRTH = {
     ['宿慧', 'The Echo', 'qi gathered, under the ceiling'],
     ['世', 'A title', 'one for every life lived'],
     ['榜', 'Your records', 'the boards keep the best you reached'],
+    ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
     ['相', 'Who you are', 'and the chest’s filters'],
   ] as readonly (readonly [string, string, string])[],
+  /** 譜 Beside the codex in what carries: how many sets it holds now. */
+  codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
@@ -1242,6 +1245,7 @@ export const REBIRTH = {
   /** After it is done. */
   bornHead: (n: number) => `Life ${n} begins`,
   born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
+  bornCodex: (n: number) => `The codex comes with you: ${n} ${n === 1 ? 'set' : 'sets'} finished, each at the best rank it reached.`,
   wear: 'You carry the title',
   go: 'Begin',
   close: 'Close',
@@ -2525,7 +2529,7 @@ export const HUNDRED = {
   step4: (days: number) => `each thing carried into a warden breaks ${days} day more of its bottleneck`,
   step6: (x: number) => `the set's codex bonus counts ×${x}`,
   codexNote: (mystic: number, earth: number, heaven: number, worn: number) =>
-    `Finish a set once, all six places, and it leaves a bonus for good. Finished at Mystic it counts ×${mystic}, at Earth ×${earth}, at Heaven ×${heaven}; wearing the whole set doubles it again (×${worn}). Nothing here touches the qi rate.`,
+    `Finish a set once, all six places, and it leaves a bonus for good, kept through every new life. Finished at Mystic it counts ×${mystic}, at Earth ×${earth}, at Heaven ×${heaven}; wearing the whole set doubles it again (×${worn}). Nothing here touches the qi rate.`,
   codexSays: {
     hunt: (pct: number) => `+${pct}% material from every kill`,
     elite: (pct: number) => `elites stand ${pct}% weaker`,
@@ -2540,6 +2544,9 @@ export const HUNDRED = {
   codexNow: (v: string) => `Now ${v}`,
   codexNone: 'Not earned yet: finish all six places of the set at any rank.',
   codexAt: (rank: string) => `finished at ${rank}`,
+  /** 承 Beside a codex rank a life before this one finished, and this one has not yet. */
+  keptNote: 'kept from a past life',
+  keptSet: (rank: string) => `Finished at ${rank} in a past life, and kept`,
   /** The fourth step on a codex row: Heaven, with the whole set worn, which is also its cap. */
   codexWhole: 'Heaven, worn whole',
   unreached: 'not within your reach yet',

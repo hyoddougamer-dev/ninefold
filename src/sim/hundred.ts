@@ -17,6 +17,12 @@
  * codex is read off those counts: a set is finished at a rank when each of its six places
  * has been made at that rank or above. The counts are capped by the experience the forge
  * earned (validCrafts), so a codex cannot be claimed without the hours.
+ *
+ * 承 The one thing stored is what a life that ended leaves the next (State.codexKept): the
+ * best rank each set was ever finished at, written by reincarnate() alone, because a new
+ * life begins with no pieces made and the codex is promised for good. Bruno, 2026-10-07:
+ * *"o codex não deve reset, seria injusto."* It is nine ranks, capped by validate() at what
+ * a first life could finish, and every bonus it gives keeps its cap (CODEX_CAP).
  */
 import {
   CODEX_CAP, CODEX_RANK, CODEX_STEP, CODEX_WORN, CRAFT_RENDER_KNOWN, HUNDRED_BAND, HUNDRED_BREACH,
@@ -171,16 +177,62 @@ export function hundredWorn(worn: Worn): number {
   return most;
 }
 
-type Body = Pick<State, 'worn' | 'crafts'>;
+/* ── 承 The codex kept from the lives before ───────────────────────────────── */
+
+/** 承 What can read the codex: this life's pieces made, and the record the lives before kept. */
+type Codexed = Pick<State, 'crafts'> & { readonly codexKept?: readonly number[] };
+
+/** 承 The rank a life before this one left a set at, read off the record: 0 none, 1 Mystic to 3 Heaven. */
+export function keptRank(kept: readonly number[] | undefined, realm: number): 0 | 1 | 2 | 3 {
+  const r = kept?.[Math.max(1, Math.min(9, realm)) - 1];
+  return (typeof r === 'number' && Number.isFinite(r) ? Math.max(0, Math.min(3, Math.floor(r))) : 0) as 0 | 1 | 2 | 3;
+}
+
+/**
+ * 譜 How far a set is finished for this cultivator: what this life has made, or the best any
+ * life before it finished the set at, whichever is higher. Finishing a set again in a new
+ * life only matters if it reaches a higher rank.
+ */
+export function codexHeld(s: Codexed, realm: number): 0 | 1 | 2 | 3 {
+  return Math.max(codexRank(s.crafts?.made ?? {}, realm), keptRank(s.codexKept, realm)) as 0 | 1 | 2 | 3;
+}
+
+/**
+ * 承 What a life ending now leaves the next one: every set at the best rank any life has
+ * finished it, or nothing at all when no set ever was. Read by reincarnate() and by
+ * nothing else that writes a save.
+ */
+export function codexToKeep(s: Codexed): number[] {
+  const out = CODEX.map((c) => codexHeld(s, c.realm));
+  return out.some((r) => r > 0) ? out : [];
+}
+
+/**
+ * 守 The kept codex as a save may hold it: one rank for each of the nine sets, 0 to 3, which
+ * is the most a first life could finish them at, and nothing at all for a first life, since
+ * only a life that ended can have left one.
+ */
+export function validKept(raw: unknown, lives: number): number[] {
+  if (lives <= 0 || !Array.isArray(raw)) return [];
+  const out = CODEX.map((c) => keptRank(raw as number[], c.realm));
+  return out.some((r) => r > 0) ? out : [];
+}
+
+/** 承 Whether record `a` holds every set at least as high as record `b` does. */
+export function keptCovers(a: readonly number[] | undefined, b: readonly number[] | undefined): boolean {
+  return CODEX.every((c) => keptRank(a, c.realm) >= keptRank(b, c.realm));
+}
+
+type Body = Pick<State, 'worn' | 'crafts'> & { readonly codexKept?: readonly number[] };
 
 /**
  * 譜 What a codex bonus is worth to this cultivator now, as a share (0.08 is 8%) or, for 瓶
- * the bottlenecks, in days: its step, times its rank, doubled while the whole set is worn,
- * and never past its cap.
+ * the bottlenecks, in days: its step, times its rank (this life's or a kept one, the
+ * higher), doubled while the whole set is worn, and never past its cap.
  */
 export function codexValue(s: Body, key: CodexKey): number {
   const entry = CODEX.find((c) => c.key === key)!;
-  const rank = codexRank(s.crafts?.made ?? {}, entry.realm);
+  const rank = codexHeld(s, entry.realm);
   if (rank === 0) return 0;
   const whole = wornOfSet(s.worn ?? {}, entry.realm).length >= SLOTS.length;
   return codexWorth(key, rank, whole);
@@ -227,7 +279,9 @@ export function hundredKit<K extends { strike: number; taken: number; mend: numb
  * a fight was fought in: every Hundredfold piece the save holds, worn or in the chest, counts
  * as if worn together, and both hands as carried.
  */
-export function bestHundred<K extends Kit>(s: Pick<State, 'worn' | 'chest' | 'crafts'>, where: string, k: K): K {
+export function bestHundred<K extends Kit>(
+  s: Pick<State, 'worn' | 'chest' | 'crafts'> & { readonly codexKept?: readonly number[] }, where: string, k: K,
+): K {
   const held: Worn[] = [];
   for (let r = 1; r <= 9; r++) {
     const body: Partial<Record<Slot, Item>> = {};
@@ -239,7 +293,7 @@ export function bestHundred<K extends Kit>(s: Pick<State, 'worn' | 'chest' | 'cr
   }
   const best = held.reduce((a, b) => (Object.keys(b).length > Object.keys(a).length ? b : a), {} as Worn);
   const gates = held[6] ?? {};
-  const body = { worn: Object.keys(gates).length >= SLOTS.length ? gates : best, crafts: s.crafts };
+  const body = { worn: Object.keys(gates).length >= SLOTS.length ? gates : best, crafts: s.crafts, codexKept: s.codexKept };
   const amp = hundredKit({ worn: best, crafts: { ...s.crafts, made: {} } }, false,
     { strike: k.strike, taken: k.taken, mend: k.mend, reflect: k.reflect, demon: k.demon, breach: 0 }, 2);
   const days = where === 'warden'

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ECHO_CEILING, ECHO_LIFE_MAX, LIVES_MAX, REBIRTH_MARKS } from '../../sim/balance.ts';
 import { echoOf, lifeEcho } from '../../sim/echo.ts';
 import { canReincarnate, depthOf, echoAfter, lifeOf, lifeTitle } from '../../sim/rebirth.ts';
+import { codexToKeep } from '../../sim/hundred.ts';
 import { layersOpened, type State } from '../../sim/state.ts';
 import { LAYERS } from '../../sim/balance.ts';
 import { heavenAt } from '../../data/heavens.ts';
@@ -44,6 +45,8 @@ export function Rebirth({ state, born, onReborn, onClose }: {
   const top = state.realm === 9 && layersOpened(state) >= LAYERS - 1;
   // 倍 The marks at which the next step of Echo comes: every doubling.
   const nextMarks = 2 * (marks + 1) - 1;
+  // 譜 The sets the codex holds now, this life's and the lives before: what a new life keeps.
+  const sets = codexToKeep(state).filter((r) => r > 0).length;
 
   if (born) {
     return (
@@ -58,6 +61,7 @@ export function Rebirth({ state, born, onReborn, onClose }: {
           <span className="rb-now" style={{ transform: `scaleX(${now / ECHO_CEILING})` }} />
         </div>
         <p className="rb-note"><b className="cjk">宿慧</b> {REBIRTH.echoNow(echoPct(now), echoPct(ECHO_CEILING))}</p>
+        {sets > 0 && <p className="rb-note"><b className="cjk">譜</b> {REBIRTH.bornCodex(sets)}</p>}
         <button className="act" onClick={onClose}>續 <span>{REBIRTH.go}</span></button>
       </div>
     );
@@ -116,7 +120,8 @@ export function Rebirth({ state, born, onReborn, onClose }: {
           <i className="rb-head">{REBIRTH.carriesHead}</i>
           <ul className="rb-carry">
             {REBIRTH.carries.map(([han, name, says]) => (
-              <li key={han}><b className="cjk">{han}</b><span><b>{name}</b> {says}</span></li>
+              <li key={han}><b className="cjk">{han}</b><span><b>{name}</b> {says}
+                {han === '譜' && sets > 0 && <em className="rb-sets"> {REBIRTH.codexSets(sets)}</em>}</span></li>
             ))}
           </ul>
         </div>

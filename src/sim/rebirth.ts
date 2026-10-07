@@ -14,6 +14,11 @@
  *        across every life, for ever, because nothing uncapped may raise the qi rate.
  *   世   a title, one for each life lived, derived from the record.
  *   榜   the records already on the boards, which the server keeps as the best ever.
+ *   譜   the codex: every Hundredfold set any life finished, at the best rank it reached
+ *        (State.codexKept). Bruno, 2026-10-07: *"o codex não deve reset, seria injusto."*
+ *        The bonuses it gives are the ones a first life had, under the same caps, and none
+ *        of them touches the qi rate. The steps for pieces worn are about the pieces worn
+ *        now, so those begin again with the gear.
  *   and who the cultivator is (相), the notices already read, the chest's filters, and the
  *   few counters that only ever move forward (the vault's paths walked, the last Realm Key,
  *   the week's quarry), so a new life cannot take twice what a week gives once.
@@ -26,6 +31,7 @@
  */
 import { LAYERS, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
 import { echoOf, lifeEcho, type Life } from './echo.ts';
+import { codexToKeep } from './hundred.ts';
 import { layersOpened, newState, type State } from './state.ts';
 
 export { echoOf, lifeEcho };
@@ -66,9 +72,10 @@ export function lifeStart(s: State): number {
 /**
  * 生 The state a life begins as, given the record it is born with and an instant. One
  * function, read by reincarnate() and by the server (verify.ts), so what the game does and
- * what the server measures from cannot be two different new lives.
+ * what the server measures from cannot be two different new lives. `kept` is the codex it
+ * is born with: what the life it leaves had finished, unless the caller already knows.
  */
-export function bornFrom(prev: State, lives: readonly Life[], now: number): State {
+export function bornFrom(prev: State, lives: readonly Life[], now: number, kept: readonly number[] = codexToKeep(prev)): State {
   const fresh = newState(now);
   return {
     ...fresh,
@@ -81,6 +88,8 @@ export function bornFrom(prev: State, lives: readonly Life[], now: number): Stat
     quarryWeek: prev.quarryWeek,
     runs: prev.runs,
     lives,
+    // 譜 The codex, for good: the best rank every set was finished at, in any life.
+    codexKept: kept,
   };
 }
 

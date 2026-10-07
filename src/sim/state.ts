@@ -42,7 +42,7 @@ import { demonsFor } from './seclusion.ts';
 import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
-import { backHundred, bandTop } from './hundred.ts';
+import { backHundred, bandTop, validKept } from './hundred.ts';
 import { echoFactor, validLives, type Life } from './echo.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
@@ -348,6 +348,13 @@ export interface State {
    * all derived from it. See sim/echo.ts and sim/rebirth.ts.
    */
   lives: readonly Life[];
+  /**
+   * 承 The codex the lives before this one finished: for each of the nine sets in realm
+   * order, the best rank (0 none, 1 Mystic to 3 Heaven) any life reached. Empty for a first
+   * life and for one whose lives finished no set. Written by reincarnate() alone; the codex
+   * reads the higher of this and what this life has made. See sim/hundred.ts.
+   */
+  codexKept: readonly number[];
 }
 
 /** What the marks already taken are worth. They multiply, to power and to qi alike. */
@@ -515,6 +522,7 @@ export function newState(now: number): State {
     crafts: { ...NO_CRAFTS, since: now },
     seen: [],
     lives: [],
+    codexKept: [],
   };
 }
 
@@ -1063,6 +1071,7 @@ export function validate(raw: unknown, now: number): State {
   const doorGap = shortestDoorGap(crafts.pouch, DOOR_GAP);
 
   const savedAt = clamp(num(o.at, now), startedAt, now);
+  const lives = validLives(o.lives, startedAt, now);
   const out: State = {
     v: 1,
     startedAt,
@@ -1198,7 +1207,10 @@ export function validate(raw: unknown, now: number): State {
       .filter((x, i, all) => all.indexOf(x) === i)
       .slice(0, 32),
     // 世 The lives before this one: at most LIVES_MAX, each a life that could have ended.
-    lives: validLives(o.lives, startedAt, now),
+    lives,
+    // 承 The codex those lives kept: nine ranks, none past Heaven, and none at all for a
+    // first life, since only a life that ended can have left one.
+    codexKept: validKept(o.codexKept, lives.length),
   };
 
   /**

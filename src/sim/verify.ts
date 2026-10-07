@@ -62,7 +62,7 @@ import { LINES } from '../data/alchemy.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
 import { SLOTS, TEMPLATE_BY_KEY, templateOf, type Item } from '../data/gear.ts';
 import { equip } from './chest.ts';
-import { hundredFits } from './hundred.ts';
+import { codexToKeep, hundredFits, keptCovers } from './hundred.ts';
 
 /**
  * 始 No save can have begun before the game existed, so a first sync is measured from
@@ -166,6 +166,7 @@ export type Why =
   | 'dao'            // more 道 spent than earned
   | 'anchor'         // the Dragon's anchor shrank: edited to make the next crossing easy
   | 'road'           // an answer given on the road was changed afterwards, to take a boon
+  | 'codex'          // a kept codex no life left: in a first life, or grown without a rebirth
   | 'shape'          // another run of the game than the one verified (startedAt); never a strike
   | 'newrun';        // a run of its own far past the account's last verified save (sync core); review, never a strike
 
@@ -418,8 +419,15 @@ export function verify(before: State, after: State, seconds: number, first = fal
     || (after.keyDay ?? 0) < (before.keyDay ?? 0)
     || UPGRADES.some((u) => after.levels[u] < before.levels[u])
     // Commons only: a warden's count is a marker the arts read, not a tally that pays.
-    || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0));
+    || BEASTS.some((b) => !b.warden && (after.killed[b.key] ?? 0) < (before.killed[b.key] ?? 0))
+    // 承 The codex the lives before kept only grows, and only at a rebirth.
+    || !keptCovers(after.codexKept, before.codexKept);
   if (down) why.push('went-down');
+  // 承 And a kept codex is something only a life that ended can leave: one in a first life,
+  // or one that grew while the record of lives stayed what it was, was written by hand.
+  // validate() already empties the first, so the server only meets it unvalidated.
+  if ((after.lives?.length ?? 0) === 0 ? (after.codexKept?.length ?? 0) > 0
+    : !down && !keptCovers(before.codexKept, after.codexKept)) why.push('codex');
 
   // 時 The budget, in seconds. What the best possible player would have needed to make
   // these gains, against the seconds that really passed.
@@ -681,7 +689,14 @@ function reborn(before: State, after: State, dt: number, first: boolean): Verdic
   fresh.forEach((l, i) => { marks += i === 0 ? Math.max(0, l.marks - before.tribulation) : l.marks; });
   const old = marks * markSeconds(before, after, focus);
   const at = Math.min(after.at, Math.max(before.at, fresh[fresh.length - 1].at));
-  const start = { ...bornFrom(before, after.lives, at), startedAt: after.startedAt };
+  // 承 The codex the new life was born with: what `before` had finished at the least, and
+  // more where the life went on forging after the server last saw it. A record that holds
+  // less than `before` had is not this cultivator's successor (went-down); one that holds
+  // more is bounded by validate() at what a first life could finish, and every bonus it
+  // gives is capped (CODEX_CAP) and never touches the qi rate.
+  const owed = codexToKeep(before);
+  const kept = keptCovers(after.codexKept, owed) ? after.codexKept : owed;
+  const start = { ...bornFrom(before, after.lives, at, kept), startedAt: after.startedAt };
   const v = verify(start, after, Math.max(0, dt - old), first, 0);
   const late = old > dt * SLACK && !v.why.includes('too-fast');
   return late ? { ...v, ok: false, why: [...v.why, 'too-fast'] } : v;

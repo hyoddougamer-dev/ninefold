@@ -15,6 +15,11 @@
  *   3. The honest net: what a rebirth costs in days against staying and crossing marks.
  *   4. The knife edge: an Echo a tenth past the ceiling must slow nothing and wall nothing.
  *   5. The law: no life may be faster than the ceiling's own arithmetic allows.
+ *   6. 譜 The codex kept through a new life (State.codexKept): how much a carried codex moves
+ *      a new life's pace, against the same life carrying none. It reaches the hunt's
+ *      material, fights (elites, the vault, the heart demon, floors, the Platform, all
+ *      capped), the workshop, the bond and the bottleneck days, and never the qi rate, so
+ *      it should move a climb by little.
  *
  * A climb depends on the Echo and on nothing else the record holds, so each habit's climb
  * is walked once per Echo and reused by every policy that reaches the same Echo.
@@ -23,6 +28,7 @@ import { HABITS, play, type Habit, type Run } from './habits.ts';
 import { arrivalOf, playEndgame } from './endgame.ts';
 import { ECHO_CEILING, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from '../src/sim/balance.ts';
 import { echoOf, lifeEcho, type Life } from '../src/sim/echo.ts';
+import { CODEX } from '../src/data/hundred.ts';
 import { bornFrom } from '../src/sim/rebirth.ts';
 import { newState, type State } from '../src/sim/state.ts';
 
@@ -47,17 +53,23 @@ const record = (n: number, marks: number): Life[] => Array.from({ length: n }, (
  * the harness restarts its clock at T0, and a week index from the end of the last walk would
  * stand in this one's future; nothing else a life carries moves a curve.
  */
-const reborn = (lives: Life[]): State => ({ ...bornFrom(newState(T0), lives, T0), quarryWeek: -1, keyDay: 0 });
+const reborn = (lives: Life[], kept: readonly number[] = []): State =>
+  ({ ...bornFrom(newState(T0), lives, T0, lives.length ? kept : []), quarryWeek: -1, keyDay: 0 });
 
 interface Life1 { readonly echo: number; readonly run: Run; readonly r9: number; readonly summit: number; readonly done: boolean }
 const climbs = new Map<string, Life1>();
-/** One habit's climb at one Echo, walked once. `gain` pushes the Echo past what lives can give. */
-function climbAt(name: string, lives: Life[], gain = 1): Life1 {
+/**
+ * One habit's climb at one Echo, walked once. `gain` pushes the Echo past what lives can
+ * give. `kept` is the codex the life is born with (none for a first life, which has none).
+ */
+function climbAt(name: string, lives: Life[], gain = 1, kept: readonly number[] = [], seed?: number): Life1 {
   const echo = (1 + echoOf(lives)) * gain - 1;
-  const key = `${name}@${echo.toFixed(4)}`;
+  const carried = lives.length && kept.some((r) => r > 0) ? kept.join('') : '';
+  const key = `${name}@${echo.toFixed(4)}${carried ? `+${carried}` : ''}${seed !== undefined ? `#${seed}` : ''}`;
   const hit = climbs.get(key);
   if (hit) return hit;
-  const run = play(habitOf(name), 400, undefined, lives.length ? reborn(lives) : undefined, gain);
+  const habit = seed !== undefined ? { ...habitOf(name), seed } : habitOf(name);
+  const run = play(habit, 400, undefined, lives.length ? reborn(lives, kept) : undefined, gain);
   const out = { echo, run, r9: run.arrival[8] ?? Infinity, summit: run.days, done: run.done };
   climbs.set(key, out);
   return out;
@@ -172,5 +184,82 @@ for (const name of NAMES) {
   check(at.summit - past.summit <= (at.summit * 0.1), `${name}: a higher ceiling moves the climb smoothly, not past a cliff`);
 }
 
-console.log(failures ? `\n✗ ${failures} checks failed` : '\n✓ every life reaches the summit, each is faster than the last within the ceiling, and the edge is smooth');
+// ── 6. 譜 The codex kept ──────────────────────────────────────────────────────────────────
+/** Every set at Heaven: the most any kept record can hold (validate() caps it there). */
+const FULL = CODEX.map(() => 3);
+/** What the set-chaser finished in its first life (src/sim/__tests__/codexkept.test.ts): five sets at Heaven, one at Earth. */
+const CHASER = [3, 3, 3, 3, 3, 2, 0, 0, 0];
+const CODEX_NAMES = ['active', 'once a day'] as const;
+/**
+ * 骰 The gear the harness finds is seeded, and the codex changes which dice fall where: 落星
+ * the bond fills a win sooner, and every drop after it is another piece. One seed's
+ * difference is mostly that lottery (measured 2026-10-07: the bond alone moved one life
+ * of the active habit 2.4 days later and another 1.5 earlier), so the codex is read as
+ * the mean over four gear seeds, each walked with and without it.
+ */
+const SEEDS = [991, 7, 1234, 4242] as const;
+/**
+ * How far a carried codex may move a life on average, in days: about two. Measured
+ * 2026-10-07, the most was the once-a-day habit's fifth life reaching realm 9 2.3 days
+ * sooner (its summit 1.3); it visits once a day, so its days come in whole visits.
+ */
+const CODEX_DAYS = 2.5;
+const mean = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+/** One habit's life `n + 1`, averaged over the seeds: realm 9 and summit days, and every walk. */
+function seeded(name: string, n: number, kept: readonly number[], gain = 1) {
+  const walks = SEEDS.map((seed) => climbAt(name, record(n, MAIN), gain, kept, seed));
+  return { r9: mean(walks.map((w) => w.r9)), summit: mean(walks.map((w) => w.summit)), walks };
+}
+const sgn = (x: number) => `${x >= 0 ? '+' : ''}${x.toFixed(1)}`;
+console.log(`\n6. 譜 The codex kept: lives 1 to ${SHOW}, every life ending on mark ${MAIN}, carrying every set at Heaven (the most a record holds) or none`);
+console.log(`   days to realm 9 / the summit, the mean of ${SEEDS.length} gear seeds; moved is with less without, and in brackets the most one seed moved`);
+const moved: Record<string, number> = {};
+let compared = 0;
+for (const name of CODEX_NAMES) {
+  const without: string[] = [];
+  const withIt: string[] = [];
+  const diff: string[] = [];
+  let most = 0;
+  for (let n = 0; n < SHOW; n++) {
+    const a = seeded(name, n, []);
+    const b = seeded(name, n, FULL);
+    without.push(pad(`${a.r9.toFixed(1)}/${a.summit.toFixed(1)}`, 17));
+    withIt.push(pad(`${b.r9.toFixed(1)}/${b.summit.toFixed(1)}`, 17));
+    const d9 = b.r9 - a.r9;
+    const dS = b.summit - a.summit;
+    const one = Math.max(...SEEDS.map((_, i) => Math.abs(b.walks[i].summit - a.walks[i].summit)));
+    diff.push(pad(`${sgn(d9)}/${sgn(dS)} (${one.toFixed(1)})`, 17));
+    most = Math.max(most, Math.abs(d9), Math.abs(dS));
+    check(b.walks.every((w) => w.done), `${name}, life ${n + 1} with the codex: every seed reaches the summit`);
+    check(dS <= 1, `${name}, life ${n + 1}: the codex does not slow a life (summit ${sgn(dS)} days)`);
+    check(Math.abs(dS) <= CODEX_DAYS && Math.abs(d9) <= CODEX_DAYS,
+      `${name}, life ${n + 1}: the codex moves the climb by ${CODEX_DAYS} days at most (realm 9 ${sgn(d9)}, summit ${sgn(dS)})`);
+    if (n === 0) check(a.walks.every((w, i) => w === b.walks[i]), `${name}: a first life carries no codex, so its climb is the same walk`);
+    else compared += b.walks.filter((w) => w.run.state.codexKept.length === FULL.length).length;
+  }
+  moved[name] = most;
+  console.log(`   ${pad(name, 13)} without  ${without.join('')}`);
+  console.log(`   ${pad('', 13)} with     ${withIt.join('')}`);
+  console.log(`   ${pad('', 13)} moved    ${diff.join('')}`);
+}
+check(compared === CODEX_NAMES.length * (SHOW - 1) * SEEDS.length,
+  `the codex table compares ${CODEX_NAMES.length * (SHOW - 1) * SEEDS.length} reborn walks that carried it (it compared ${compared})`);
+console.log(`   The most the codex moved any life on average: ${CODEX_NAMES.map((n) => `${n} ${moved[n].toFixed(1)} days`).join(', ')}.`);
+
+// Pushed off its number: a smaller record must sit between none and the full one, and the
+// full record with the Echo's ceiling a tenth higher must slow nothing and wall nothing.
+console.log(`\n   Pushed: life ${SHOW}, mean summit days: none / the set-chaser's record (${CHASER.join('')}) / every set at Heaven / that and the ceiling ${Math.round((1.1 - 1) * 100)}% higher`);
+for (const name of CODEX_NAMES) {
+  const none = seeded(name, SHOW - 1, []);
+  const some = seeded(name, SHOW - 1, CHASER);
+  const full = seeded(name, SHOW - 1, FULL);
+  const past = seeded(name, SHOW - 1, FULL, (1 + ECHO_CEILING * 1.1) / (1 + ECHO_CEILING));
+  console.log(`   ${pad(name, 13)} ${f1(none.summit)} / ${f1(some.summit)} / ${f1(full.summit)} / ${f1(past.summit)}`);
+  check(some.summit <= none.summit + 1 && full.summit <= some.summit + 1,
+    `${name}: more of the codex is never slower (${none.summit.toFixed(1)}, ${some.summit.toFixed(1)}, ${full.summit.toFixed(1)})`);
+  check(past.walks.every((w) => w.done) && past.summit <= full.summit + 1, `${name}: the codex and a higher ceiling together do not wall`);
+  check(full.summit - past.summit <= full.summit * 0.1, `${name}: the codex and a higher ceiling together move the climb smoothly`);
+}
+
+console.log(failures ? `\n✗ ${failures} checks failed` : '\n✓ every life reaches the summit, each is faster than the last within the ceiling, the edge is smooth, and the codex kept moves a life by little');
 if (failures) process.exit(1);
