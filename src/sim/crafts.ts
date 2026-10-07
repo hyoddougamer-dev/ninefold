@@ -44,7 +44,7 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { CODEX_CAP, HUNDRED_HEAVEN_MADE } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS } from './balance.ts';
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
@@ -640,28 +640,35 @@ export function carry(s: State, hand: Hand, key: string | null): State {
  * best: what the screen offers when nothing is carried yet, so "carry one" names a number.
  */
 export function breachHeld(s: State, b: Beast): number {
-  let best = { elixir: 0, sigil: 0, pill: 0 };
+  // The best of each hand alone, then all three carried together, as the fight reads them.
+  const alone = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
+  const best: Record<Hand, { key: string | null; days: number }> = {
+    elixir: { key: null, days: 0 }, sigil: { key: null, days: 0 }, pill: { key: null, days: 0 },
+  };
   for (const [key, n] of Object.entries(s.crafts.pouch)) {
     const hand = n > 0 ? carrySlot(key) : null;
     if (!hand) continue;
-    const alone = carry(carry(carry(s, 'elixir', null), 'sigil', null), 'pill', null);
     const days = kitFor(carry(alone, hand, key), b, 'warden').kit.breach ?? 0;
-    if (days > best[hand]) best = { ...best, [hand]: days };
+    if (days > best[hand].days) best[hand] = { key, days };
   }
-  return best.elixir + best.sigil + best.pill;
+  let all = alone;
+  for (const hand of HANDS) if (best[hand].key) all = carry(all, hand, best[hand].key);
+  return kitFor(all, b, 'warden').kit.breach ?? 0;
 }
 
 /**
- * 封 The most days of the gate's seal the pouch could break: the best Breakthrough Pill
- * held, read at this realm's warden. What the gate's card offers when none is carried.
+ * 封 The best Breakthrough Pill held that would break this realm's seal, as the days of the
+ * bottleneck it takes away (0 when the pouch holds none that breaks it). What the gate's
+ * card offers when none is carried.
  */
-export function unsealHeld(s: State): number {
+export function pillHeld(s: State): number {
   let best = 0;
   const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
   if (!b) return 0;
   for (const [key, n] of Object.entries(s.crafts.pouch)) {
     if (n <= 0 || carrySlot(key) !== 'pill') continue;
-    best = Math.max(best, kitFor(carry(s, 'pill', key), b, 'warden').kit.unseal ?? 0);
+    const k = kitFor(carry(s, 'pill', key), b, 'warden').kit;
+    if ((k.unseal ?? 0) > 0) best = Math.max(best, pillShare(splitKey(key).quality ?? 0, 1) * wallDays(s.realm));
   }
   return best;
 }
@@ -670,6 +677,37 @@ export function unsealHeld(s: State): number {
 export function unsealCarried(s: State): number {
   const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
   return b ? kitFor(s, b, 'warden').kit.unseal ?? 0 : 0;
+}
+
+/**
+ * 破境丹 The share of its gate's whole bottleneck (wallDays) a Breakthrough Pill of this rank
+ * takes away, at `f` of its strength (1 at its own realm, CRAFT_KIT.fade a realm above):
+ * what it leaves is (1 − CRAFT_KIT.pill) to the power of the rank's CRAFT_QUALITY_MULT, so
+ * it takes half at Common and seven tenths at Heaven. A share of the whole wall rather than
+ * of what is left: whatever a cultivator would still wait at the gate is never more than
+ * the whole wall, so a pill of the realm always takes at least half of the wait there is.
+ */
+export function pillShare(quality: number, f: number): number {
+  const q = CRAFT_QUALITY_MULT[Math.max(0, Math.min(CRAFT_QUALITY_MULT.length - 1, quality))];
+  return (1 - (1 - CRAFT_KIT.pill) ** q) * f;
+}
+
+/** 瓶頸 The days a fresh wall of this realm takes to loosen all the way: 8 at the fifth, 12 at the eighth. */
+export function wallDays(realm: number): number {
+  const wall = REALM_WALL[Math.max(1, Math.min(9, realm)) - 1];
+  return realm >= 9 || wall <= 1 ? 0 : Math.log(wall) / -Math.log(1 - BOTTLENECK_LOOSEN);
+}
+
+/**
+ * 瓶頸 The days the warden's wall still has to loosen, with `breach` days of a kit already
+ * counted: what combat.ts's bottleneck reads, turned back into days. Written here because
+ * combat.ts reads the state and the kit is read before it; crafts.test holds the two to
+ * each other. 0 for anything that is not the realm's own warden below the ninth.
+ */
+export function wallDaysLeft(s: State, b: Beast, breach = 0): number {
+  if (!b.warden || b.realm >= 9 || b.realm !== s.realm) return 0;
+  const days = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0) + Math.max(0, breach);
+  return Math.max(0, wallDays(b.realm) - days);
 }
 
 /** 尋 Use a Seeking Sigil or burn incense: the next beast beaten on the hunt leaves a piece. */
@@ -801,28 +839,39 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     if (spends && where === 'warden') breach += CRAFT_KIT.breach * q * f;
     spends = spends || before;
   }
+  // 百煉 What a Hundredfold set worn and the Thunderscript codex add to what was carried.
+  ({ strike, taken, mend, reflect, demon, breach } = hundredKit(s, where === 'warden',
+    { strike, taken, mend, reflect, demon, breach }, (usedElixir ? 1 : 0) + (usedSigil ? 1 : 0)));
   // 破境丹 The Breakthrough Pill does one thing, at the gate of a realm with a bottleneck or a
-  // seal: it counts as days of both. Anywhere else it takes no part and is never spent.
+  // seal. Made for the realm (or one above), it breaks the 封 seal outright; and it breaks
+  // its share (pillShare) of the wall's whole loosening in days, on top of what else is
+  // carried. Anywhere else, or at a gate it has nothing left to do at, it takes no part and
+  // is never spent.
+  let thin = 0;
   const p = s.crafts.carry.pill;
   if (p && where === 'warden' && b.realm === s.realm && b.realm < 9 && (s.crafts.pouch[p] ?? 0) > 0) {
     const { key, quality } = splitKey(p);
     const it = ITEM_BY_KEY[key];
     if (it && PILL_CARRIED.has(key)) {
-      const days = CRAFT_KIT.unseal * CRAFT_QUALITY_MULT[quality ?? 0] * fade(it.realm, fightRealm);
-      unseal += days;
-      breach += days;
-      usedPill = p;
-      spends = true;
+      const seal = SEAL_DAYS[b.realm - 1] ?? 0;
+      const waited = s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0;
+      const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
+      const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));
+      const days = wallDaysLeft(s, b, breach) > 1e-6 ? share * wallDays(b.realm) : 0;
+      if (breaks || days > 1e-6) {
+        if (breaks) unseal = seal;
+        thin = days > 1e-6 ? share : 0;
+        breach += days;
+        usedPill = p;
+        spends = true;
+      }
     }
   }
-  // 百煉 What a Hundredfold set worn and the Thunderscript codex add to what was carried.
-  ({ strike, taken, mend, reflect, demon, breach } = hundredKit(s, where === 'warden',
-    { strike, taken, mend, reflect, demon, breach }, (usedElixir ? 1 : 0) + (usedSigil ? 1 : 0)));
   if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
   // 譜 古銅 The Elder Bronze codex: the vault's gates stand weaker.
   const foe = where === 'vault' ? 1 - codexValue(s, 'vault') : 1;
   return {
-    kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal, foe },
+    kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal, thin, foe },
     spends, used: { elixir: usedElixir, sigil: usedSigil, pill: usedPill },
   };
 }
@@ -924,22 +973,17 @@ function bestKitBare(s: State, b: Beast, where: Where): Kit {
 }
 
 /**
- * 封 The most days of a realm's seal a Breakthrough Pill this save's Alchemy could have
- * made would count as, at Heaven rank: the best tier its level and realm allow, read at
- * that realm's gate. 驗 the server reads it, because it sees a sealed gate crossed and
- * never what was carried into it, so it allows the most an honest pill can ever be.
+ * 封 The days of a realm's seal a Breakthrough Pill this save's Alchemy could have made
+ * would count as: the whole seal, if its level reached the pill made for that realm (which
+ * breaks the seal outright), and nothing otherwise, since a pill made for a realm below
+ * thins the wall and leaves the seal. 驗 the server reads it, because it sees a sealed gate
+ * crossed and never what was carried into it, so it allows the most an honest pill can be.
  */
 export function bestUnseal(s: State, realm: number): number {
-  if (!skillOpen(s, 'alchemy')) return 0;
-  const alch = levelIn(s, 'alchemy');
-  const top = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
-  let best = 0;
-  for (const tier of BREAKTHROUGH_TIERS) {
-    const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(tier)}`];
-    if (!r || tier > realm || tier > s.realm || alch < r.level) continue;
-    best = Math.max(best, CRAFT_KIT.unseal * top * fade(tier, realm));
-  }
-  return best;
+  if (!skillOpen(s, 'alchemy') || realm > s.realm) return 0;
+  const seal = SEAL_DAYS[realm - 1] ?? 0;
+  const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(realm)}`];
+  return seal > 0 && r && BREAKTHROUGH_TIERS.includes(realm) && levelIn(s, 'alchemy') >= r.level ? seal : 0;
 }
 
 /* ── 爐 What the crafts do elsewhere ─────────────────────────────────────── */

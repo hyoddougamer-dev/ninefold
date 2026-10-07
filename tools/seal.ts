@@ -4,8 +4,8 @@
  *
  * Bruno, 2026-10-06, announced as a proposal and then asked for live: after a warden comes
  * out in realms 5 to 8 the gate stays sealed for a day or two whatever the power, waiting
- * it out always works, and a Breakthrough Pill from Alchemy counts as two days of it (3.5 at
- * Heaven rank). The promise it was announced with, and what this prints to hold it to:
+ * it out always works, and a Breakthrough Pill from Alchemy breaks it outright (since
+ * 2026-10-07, with half of the wall's days; it counted as two days of both before). The promise it was announced with, and what this prints to hold it to:
  * whoever uses the workshop climbs at today's pace, whoever ignores it and plays actively
  * loses three to seven days by the ninth realm, and whoever only waits loses nothing beyond
  * the seal's own days.

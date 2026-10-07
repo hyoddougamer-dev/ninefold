@@ -3,10 +3,11 @@ import { XP_TABLE, hundredKey, metalKey, partKey, type HundredRank } from '../..
 import { AFFIXES, GEAR, SLOTS, TEMPLATE_BY_KEY, baseValue, type Item, type Slot } from '../../data/gear.ts';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
-  CODEX_CAP, CRAFT_KIT, HUNDRED_BAND, HUNDRED_HEAVEN_MADE, LUCK_ROLL_TOP, SECONDARY_SHARE, VARIANCE,
+  CODEX_CAP, CRAFT_KIT, HUNDRED_BAND, HUNDRED_ELITE_PARTS, HUNDRED_HEAVEN_MADE, HUNDRED_INGOTS, HUNDRED_SECONDS,
+  HUNDRED_WARDEN_PARTS, LUCK_ROLL_TOP, SECONDARY_SHARE, VARIANCE,
 } from '../balance.ts';
 import {
-  bandTop, codexRank, codexValue, hundredFits, hundredWorn, lineValue, orderNeeds, pieceOf, spiritOf, validOrder,
+  bandTop, codexRank, codexValue, hundredFits, hundredWorn, lineValue, orderNeeds, pieceOf, portionOf, spiritOf, validOrder,
   type Order,
 } from '../hundred.ts';
 import { blocked, carry, kitFor, secondsOf, setOrder, work } from '../crafts.ts';
@@ -34,7 +35,7 @@ function crafter(over: Record<string, unknown> = {}, crafts: Record<string, unkn
     crafts: {
       xp: { herb: lvl(60), vein: lvl(58), render: lvl(60), forge: lvl(75), alchemy: lvl(50), sigil: 0, array: 0 },
       task: null, since: T0, made: {}, tools: {}, arrays: [], cut: {}, carry: { elixir: null, sigil: null }, seek: 0,
-      pouch: { metal5: 40, [partKey('lizard')]: 200, [partKey('turtle')]: 10, cinnabar: 200, ginseng: 200, jade: 100, stone: 100 },
+      pouch: { metal5: 400, [partKey('lizard')]: 400, [partKey('turtle')]: 60, cinnabar: 200, ginseng: 200, jade: 100, stone: 100 },
       ...crafts,
     },
   }, T0);
@@ -79,14 +80,18 @@ describe('百煉 a Hundredfold piece', () => {
     expect(lines).toBeGreaterThan(10_000);
   });
 
-  it('is forged from an order: three hours, what the crucible asked for spent, the crucible emptied, the count kept', () => {
+  it('is forged from an order: minutes at the anvil, what the crucible asked for spent, the crucible emptied, the count kept', () => {
     const s = crafter();
     const set = setOrder(s, ORDER, T0);
     expect(set.crafts.task).toBe(hundredKey(5, 'weapon', 'mystic'));
+    // 時 rekaris, 2026-10-07: a piece is a short sitting at the anvil once its materials are in.
+    expect(HUNDRED_SECONDS).toBeLessThanOrEqual(30 * 60);
+    expect(secondsOf(s, RECIPE_BY_KEY[hundredKey(5, 'weapon', 'mystic')])).toBeLessThanOrEqual(HUNDRED_SECONDS);
     const needs = orderNeeds(ORDER);
-    expect(needs).toContainEqual([metalKey(5), 6]);
-    expect(needs).toContainEqual([partKey('lizard'), 2 + 2 * 15]);
-    expect(needs).toContainEqual(['ginseng', 15]);
+    expect(needs).toContainEqual([metalKey(5), HUNDRED_INGOTS * ORDER.main]);
+    expect(needs).toContainEqual([partKey('lizard'), HUNDRED_ELITE_PARTS + 2 * portionOf(5)]);
+    expect(needs).toContainEqual([partKey('turtle'), HUNDRED_WARDEN_PARTS]);
+    expect(needs).toContainEqual(['ginseng', portionOf(5)]);
     const done = work(set, T0 + 4 * HOUR);
     const piece = done.chest.find((x) => x.hundred);
     expect(piece?.rolls).toEqual(pieceOf(ORDER, 'x')!.rolls);

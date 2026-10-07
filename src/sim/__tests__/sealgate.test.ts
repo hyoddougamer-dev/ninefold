@@ -5,7 +5,7 @@ import {
   LAYERS_PER_REALM, SEAL_DAYS, CRAFT_KIT, CRAFT_QUALITY_MULT,
 } from '../balance.ts';
 import { canFightWarden, newState, sealDays, sealLeft, sealed, validate, type State } from '../state.ts';
-import { carry, carrySlot, kitFor, spendKit, unsealCarried, unsealHeld, bestUnseal } from '../crafts.ts';
+import { carry, carrySlot, kitFor, pillHeld, pillShare, spendKit, unsealCarried, wallDays, wallDaysLeft, bestUnseal } from '../crafts.ts';
 import { XP_TABLE, breakthroughKey, RECIPE_BY_KEY, ITEM_BY_KEY } from '../../data/crafts.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { bottleneck } from '../combat.ts';
@@ -88,32 +88,90 @@ describe('破境丹 the Breakthrough Pill', () => {
     }
   });
 
-  it('counts as two days at Common rank and 3.5 at Heaven, of the seal and of the wall', () => {
-    const s = atGate(6, 0, 60);
-    const common = withPill(s, 6, 0);
-    const heaven = withPill(s, 6, 4);
-    expect(unsealCarried(common)).toBeCloseTo(CRAFT_KIT.unseal, 9);
-    expect(unsealCarried(heaven)).toBeCloseTo(CRAFT_KIT.unseal * CRAFT_QUALITY_MULT[4], 9);
-    expect(unsealCarried(heaven)).toBeCloseTo(3.5, 9);
-    // The seal breaks at once, at any rank, with the realm's own pill.
-    expect(canFightWarden(common)).toBe(true);
-    // And the wall stands as if those days had been waited.
-    const w = wardenOf(6);
-    const k = kitFor(heaven, w, 'warden').kit;
-    expect(k.breach).toBeCloseTo(3.5, 9);
-    expect(bottleneck(heaven, w, k.breach)).toBeCloseTo(bottleneck({ ...heaven, gateAt: heaven.gateAt - 3.5 * DAY }, w), 9);
+  it('breaks the seal outright and takes at least half of what is left of the wall, at every rank and every sealed realm', () => {
+    for (const realm of [5, 6, 7, 8]) {
+      for (const days of [0, 0.5, 3]) {
+        const s = atGate(realm, days, 60);
+        const w = wardenOf(realm);
+        const left = wallDaysLeft(s, w);
+        for (let q = 0; q < CRAFT_QUALITY_MULT.length; q++) {
+          const p = withPill(s, realm, q);
+          const k = kitFor(p, w, 'warden').kit;
+          // The seal breaks at once, at any rank, with the realm's own pill.
+          expect(canFightWarden(p), `realm ${realm} rank ${q}`).toBe(true);
+          if (days < sealDays(realm)) expect(unsealCarried(p)).toBe(sealDays(realm));
+          // At least half of the days the wall still had, and so the wall at most its square root.
+          expect(k.thin).toBeGreaterThanOrEqual(0.5 - 1e-9);
+          expect(k.breach).toBeGreaterThanOrEqual(left * 0.5 - 1e-9);
+          expect(wallDaysLeft(p, w, k.breach)).toBeLessThanOrEqual(left * 0.5 + 1e-9);
+          // And the wall stands as if those days had been waited.
+          expect(bottleneck(p, w, k.breach)).toBeCloseTo(bottleneck({ ...p, gateAt: p.gateAt - (k.breach ?? 0) * DAY }, w), 9);
+        }
+      }
+    }
+    // Half at Common, seven tenths at Heaven.
+    expect(pillShare(0, 1)).toBeCloseTo(CRAFT_KIT.pill, 9);
+    expect(pillShare(0, 1)).toBeCloseTo(0.5, 9);
+    expect(pillShare(4, 1)).toBeCloseTo(1 - 0.5 ** 1.75, 9);
   });
 
-  it('is worth half a realm above its tier, and nothing anywhere but the realm\'s own warden', () => {
+  it('breaks half of the eighth realm\'s twelve days at Common, on top of the elixir and the sigil', () => {
+    const s = atGate(8, 0, 70);
+    const w = wardenOf(8);
+    // rekaris: "they save 2 of 12 days". Twelve is the fresh eighth wall.
+    expect(wallDays(8)).toBeCloseTo(Math.log(72) / -Math.log(0.7), 9);
+    expect(Math.round(wallDays(8))).toBe(12);
+    expect(wallDaysLeft(s, w)).toBeCloseTo(wallDays(8), 9);
+    const kit = { ...s, crafts: { ...s.crafts, pouch: { ...s.crafts.pouch, 'might8@0': 1, 'sigil:warding@0': 1 } } };
+    const two = carry(carry(kit, 'elixir', 'might8@0'), 'sigil', 'sigil:warding@0');
+    const b2 = kitFor(two, w, 'warden').kit.breach ?? 0;
+    expect(b2).toBeGreaterThanOrEqual(CRAFT_KIT.breach);
+    const three = withPill(two, 8, 0);
+    const b3 = kitFor(three, w, 'warden').kit.breach ?? 0;
+    expect(b3 - b2).toBeCloseTo(wallDays(8) / 2, 9);
+    // Of the twelve days, the three hands leave fewer than half.
+    expect(wallDaysLeft(three, w, b3)).toBeLessThan(wallDays(8) / 2);
+  });
+
+  it('takes at least half of anybody\'s wait at the gate: any day of the wall, any rank, every sealed realm', () => {
+    let read = 0;
+    for (const realm of [5, 6, 7, 8]) {
+      const w = wardenOf(realm);
+      for (let t = 0; t < wallDays(realm); t += 0.25) {
+        const s = atGate(realm, t, 60);
+        for (let q = 0; q < CRAFT_QUALITY_MULT.length; q++) {
+          // Somebody whose build wins once the wall has `need` days left waits (left - need) days.
+          for (const need of [0, 1, 3]) {
+            const wait = Math.max(0, wallDaysLeft(s, w) - need);
+            const p = withPill(s, realm, q);
+            const after = Math.max(0, wallDaysLeft(p, w, kitFor(p, w, 'warden').kit.breach) - need);
+            expect(after, `realm ${realm} day ${t} rank ${q} need ${need}`).toBeLessThanOrEqual(wait / 2 + 1e-9);
+            read++;
+          }
+        }
+      }
+    }
+    expect(read).toBeGreaterThan(500);
+  });
+
+  it('made for the realm below, it thins the wall at its faded share and leaves the seal; nothing anywhere but the realm\'s own warden', () => {
     const s = withPill(atGate(6, 0, 60), 5, 0);
-    expect(unsealCarried(s)).toBeCloseTo(CRAFT_KIT.unseal * CRAFT_KIT.fade, 9);
-    // Half a seal of 1.25 days still shut: a fifth-realm pill does not open the sixth at Common rank.
+    expect(unsealCarried(s)).toBe(0);
+    expect(kitFor(s, wardenOf(6), 'warden').kit.thin).toBeCloseTo(CRAFT_KIT.pill * CRAFT_KIT.fade, 9);
     expect(canFightWarden(s)).toBe(false);
     for (const where of ['demon', 'vault', 'platform', 'tower'] as const) {
       const c = kitFor(s, wardenOf(6), where);
       expect(c.used.pill ?? null, where).toBeNull();
       expect(c.kit.unseal ?? 0, where).toBe(0);
     }
+  });
+
+  it('is never spent at a gate where it has nothing left to do', () => {
+    // A gate met long ago: the seal served and the wall loosened all the way.
+    const s = withPill({ ...atGate(6, 0, 60), gateAt: 1 }, 6, 2);
+    const c = kitFor(s, wardenOf(6), 'warden');
+    expect(c.used.pill ?? null).toBeNull();
+    expect(c.kit.thin ?? 0).toBe(0);
   });
 
   it('a win spends it and a loss keeps it, as with the rest of the kit', () => {
@@ -132,7 +190,8 @@ describe('破境丹 the Breakthrough Pill', () => {
     const s = atGate(8, 0, 70);
     const k = `${breakthroughKey(8)}@3`;
     const held = { ...s, crafts: { ...s.crafts, pouch: { ...s.crafts.pouch, [k]: 2 } } };
-    expect(unsealHeld(held)).toBeCloseTo(CRAFT_KIT.unseal * CRAFT_QUALITY_MULT[3], 9);
+    expect(pillHeld(held)).toBeCloseTo(pillShare(3, 1) * wallDays(8), 9);
+    expect(pillHeld(held)).toBeGreaterThan(wallDays(8) / 2);
     expect(sealed(held)).toBe(true);
     expect(sealed(carry(held, 'pill', k))).toBe(false);
   });
@@ -209,6 +268,17 @@ describe('驗 the server and the seal', () => {
     const v = verify(before, after, dt);
     expect(v.ok).toBe(true);
     expect(v.suspect).toBe(false);
+  });
+
+  it('reads the pill as the whole seal only where the Alchemy reached the realm\'s own pill', () => {
+    const at7 = atGate(7, 0, 45);
+    // Alchemy 45 makes the sixth realm's pill (level 45) and the fifth's, never the seventh's (51).
+    expect(bestUnseal(at7, 5)).toBe(sealDays(5));
+    expect(bestUnseal(at7, 6)).toBe(sealDays(6));
+    expect(bestUnseal(at7, 7)).toBe(0);
+    expect(bestUnseal(atGate(7, 0, 44), 6)).toBe(0);
+    // Never a gate the save has not reached.
+    expect(bestUnseal(atGate(5, 0, 99), 6)).toBe(0);
   });
 
   it('refuses a sealed gate crossed with a pill that was never made, and only waits', () => {

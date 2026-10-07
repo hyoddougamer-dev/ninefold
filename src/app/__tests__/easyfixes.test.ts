@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CLASS, GEAR, ITEM } from '../copy.ts';
-import { MELT_FILL, QI_FULL_ROOF, QI_ROOF_FIRST } from '../../sim/balance.ts';
+import { CLASS, GEAR, HELP, ITEM, SIT } from '../copy.ts';
+import { MELT_CAP, MELT_FILL, QI_FULL_ROOF, QI_ROOF_FIRST } from '../../sim/balance.ts';
+import { GEAR as TEMPLATES } from '../../data/gear.ts';
+import { salvageValue } from '../../sim/salvage.ts';
 import { FILTER_LIMIT } from '../../sim/filters.ts';
 import { PILL_LINES } from '../../data/alchemy.ts';
 import { ITEMS } from '../../data/crafts.ts';
@@ -25,6 +27,21 @@ describe('便 the small fixes the Discord asked for', () => {
     const text = GEAR.allowance('1.2M');
     expect(text).toContain(`${Math.round(MELT_FILL * 1000) / 10}%`);
     expect(text).toContain('sitting does not speed it up');
+  });
+
+  it('says how much the melting allowance holds, and that lower-realm gear melts for less (rekaris, 2026-10-07)', () => {
+    const text = GEAR.allowance('1.2M');
+    expect(text).toContain(`at most ${MELT_CAP / 3600} hours`);
+    expect(text).toContain('lower-realm gear melts for less');
+    // And it is true: a piece of the first realm pays less than the same piece of the fifth.
+    const piece = (realm: number) => ({ id: 'x', template: TEMPLATES.find((g) => g.realm === realm && g.slot === 'weapon')!.key, rarity: 'common' as const, rolls: [] });
+    expect(salvageValue(piece(1))).toBeLessThan(salvageValue(piece(5)));
+  });
+
+  it('says that time off the screen never deepens the sitting (rekaris, 2026-10-07)', () => {
+    expect(HELP.steps[1][1]).toContain('Time off the screen');
+    expect(HELP.steps[1][1]).toContain('never deepens');
+    expect(SIT.rising).toContain('never deepens');
   });
 
   it('says which fights the beasts-weaker line reaches, and the two it never does', () => {

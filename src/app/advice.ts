@@ -1,5 +1,5 @@
 import { bottleneck, currentWarden, effectiveBeastPower, odds, quarryPaid, wallOf } from '../sim/combat.ts';
-import { breachHeld, kitFor, unsealHeld } from '../sim/crafts.ts';
+import { breachHeld, kitFor, pillHeld } from '../sim/crafts.ts';
 import {
   UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, sealLeft, sealed, upgradeCost,
   wardenStands, type State,
@@ -125,7 +125,7 @@ export function advice(s: State): Advice | null {
   // 封 A sealed gate: the one wait the build cannot shorten. A pill in the pouch is the way
   // through today, and with none the line says the wait is a wait and nothing is lost.
   if (!s.wardenFell && s.realm < 9 && wardenStands(s) && sealed(s)) {
-    const pill = unsealHeld(s);
+    const pill = pillHeld(s);
     return pill > 0
       ? { han: '封', text: ADVICE.sealPill(pill), tab: 'crafts' }
       : { han: '封', text: ADVICE.sealWait(sealLeft(s)) };

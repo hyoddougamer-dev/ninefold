@@ -31,16 +31,21 @@ export interface Kit {
    */
   readonly breach?: number;
   /**
-   * 封 Days of the gate's seal a 破境丹 Breakthrough Pill carried into the warden counts as
-   * (CRAFT_KIT.unseal, by rank and realm). They are in `breach` as well: a day of the seal
-   * counted is a day of the wall counted, so the wall stands as if they had been waited.
-   * Zero everywhere else.
+   * 封 Days of the gate's seal a 破境丹 Breakthrough Pill carried into the warden counts as:
+   * the whole seal, for a pill made for the realm, which breaks it outright. Zero everywhere
+   * else, and for a pill made for a realm below.
    */
   readonly unseal?: number;
+  /**
+   * 破境丹 The share of its gate's whole bottleneck the Breakthrough Pill took away in this
+   * fight (CRAFT_KIT.pill, by rank and realm). Its days are in `breach` as well, so the wall
+   * stands as if they had been waited. Zero everywhere else.
+   */
+  readonly thin?: number;
   /**
    * 譜 What the other side's power is multiplied by, for a fight the cultivator's own codex
    * thins where nothing else names it: 古銅 the vault's gates (sim/hundred.ts). 1 elsewhere.
    */
   readonly foe?: number;
 }
-export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0, unseal: 0 };
+export const NO_KIT: Kit = { strike: 1, taken: 1, mend: 0, bind: false, reflect: 0, revive: false, demon: 1, wound: 0, breach: 0, unseal: 0, thin: 0 };

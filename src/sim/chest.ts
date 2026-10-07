@@ -1,7 +1,7 @@
 import { FORGED } from '../data/crafts.ts';
 import {
-  FUSED, RARITIES, RARITY_INFO, REALM_SETS, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, schoolOf,
-  templateOf, wornTotals, type Affix, type Item, type Rarity, type Refined, type Roll, type Slot, type Worn,
+  AFFIX_INFO, FUSED, RARITIES, RARITY_INFO, REALM_SETS, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue, schoolOf,
+  templateOf, wornTotals, type Affix, type GearTemplate, type Item, type Rarity, type Refined, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { refineFactor } from './refine.ts';
 import type { School } from '../data/schools.ts';
@@ -252,6 +252,26 @@ export function fusedQuality(three: readonly Item[], quality = 1): number {
 }
 
 /**
+ * 頂 The most a fused piece's first line can hold: its base times FUSE_TOP, rounded down to
+ * what the line shows (a whole number for a flat line, never under 1; a tenth otherwise).
+ *
+ * The line used to be rounded after the cap, so a flat line with a small base came out above
+ * it: 藏 a Spirit Stone of base 1 fused at ×1.5 rounded to 2 and read ×2.00, on a sheet that
+ * says a fusion stops at ×1.5. Rounded down, it never reads above the cap. validate() keeps
+ * its own, looser cap (the cap rounded to nearest), so every piece fused before this is kept
+ * as it was and every piece fused after it loads unchanged.
+ */
+export function fusedTop(tpl: GearTemplate, rarity: Rarity, affix: Affix): number {
+  const raw = baseValue(tpl, rarity, affix) * FUSE_TOP;
+  return AFFIX_INFO[affix].unit === 'flat' ? Math.max(1, Math.floor(raw + 1e-9)) : Math.floor(raw * 10 + 1e-9) / 10;
+}
+
+/** 頂 The first line a fusion at this quality makes: rounded as every line is, then held to fusedTop. */
+export function fusedPrimary(tpl: GearTemplate, rarity: Rarity, quality: number): number {
+  return Math.min(roundValue(tpl.affix, baseValue(tpl, rarity, tpl.affix) * quality), fusedTop(tpl, rarity, tpl.affix));
+}
+
+/**
  * 質 A piece's quality: its first line against what its own rank and realm usually roll.
  * Derived, never stored. A drop rolls about 0.85 to 1.35 of it; a fusion stops at FUSE_TOP.
  */
@@ -320,7 +340,7 @@ export function fuse(
     template,
     rarity: up,
     rolls: [
-      { affix: tpl.affix, value: roundValue(tpl.affix, baseValue(tpl, up, tpl.affix) * rolled) },
+      { affix: tpl.affix, value: fusedPrimary(tpl, up, rolled) },
       ...inherited,
     ],
     // 源 Made, not found: the sheet says so, and a Heaven fusion never takes it again.

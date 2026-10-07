@@ -20,8 +20,11 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
+
+/** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
+const EIGHTH_WALL = Math.log(REALM_WALL[7]) / -Math.log(1 - BOTTLENECK_LOOSEN);
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
 import { RARITY_INFO } from '../data/gear.ts';
@@ -54,7 +57,7 @@ export const HELP = {
     ['Qi gathers whether you are here or not',
       'With the phone shut, all night, at the full rate. Come back tomorrow and it is waiting. Nothing in this game is ever taken away for being away.'],
     ['Sitting with it open gathers faster',
-      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
+      'Up to three times as fast after a few minutes (more with 神 the Spirit branch), for half an hour. Time off the screen counts toward the half hour but never deepens the sitting: it runs on at the depth it had. Coming back to the game starts a new sitting, and so does 坐 Sit again on 修 Cultivate. It is a bonus for being there, never a penalty for leaving.'],
     ['Losing a fight costs nothing',
       'Not qi, not material, not a level. Every beast, every tower floor, every warden, every time. So try the ones you are not sure about.'],
     // 指 It said "the button beside this one" from before the corner folded into one
@@ -262,8 +265,8 @@ export const CULTIVATE = {
   bottleneck: (over: number, days: number) =>
     `瓶頸 Bottleneck: the warden stands ×${over < 10 ? over.toFixed(1) : Math.round(over)} above its old strength. `
     + `It loosens every day and is back to it in ${days < 1 ? 'under a day' : `${Math.ceil(days)} ${Math.ceil(days) === 1 ? 'day' : 'days'}`}. Nothing is lost while you wait.`,
-  breachCarried: (days: number) =>
-    `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it in this fight, and is spent only if you win.`,
+  breachCarried: (days: number, over: number) =>
+    `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it: in this fight it stands ×${over < 10 ? over.toFixed(1) : Math.round(over)}. It is spent only if you win.`,
   breachHeld: (days: number) =>
     `Your pouch could break up to ${days.toFixed(1)} days of it: carry an elixir and a sigil from 業 the workshop.`,
   breachNone: 'An elixir or a sigil from 業 the workshop breaks days of it, and cores, 爐 pills and gear raise you to meet it.',
@@ -275,10 +278,13 @@ export const CULTIVATE = {
   sealed: (left: number) =>
     `封 Sealed: from the fifth realm on, the gate stays shut for a while after its warden comes out, however strong you are. It opens by itself in ${duration(left * 86_400)}.`,
   sealBroken: (left: number, days: number) =>
-    `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry counts as ${days.toFixed(1)} days: the seal breaks at once and the bottleneck stands lower. It is spent only if you win.`,
+    `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry breaks the seal at once`
+    + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   sealHeld: (days: number) =>
-    `Your pouch holds a Breakthrough Pill worth ${days.toFixed(1)} days: carry it in 業 the workshop and fight now.`,
-  sealNone: 'A Breakthrough Pill from 業 Alchemy breaks it at once. Nothing is lost while you wait.',
+    `Your pouch holds a Breakthrough Pill: carried, it breaks the seal now and ${days.toFixed(1)} days of the bottleneck with it. Carry it in 業 the workshop.`,
+  sealNone: `A Breakthrough Pill from 業 Alchemy breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
+  /** 封 The seal's bar, filling with the time served: its label for a screen reader. */
+  sealBar: (served: number) => `Seal ${percent(served)} served`,
   sealServed: '封 The seal has run out. The gate is open.',
   sealedButton: (left: number) => `Sealed · ${duration(left * 86_400)}`,
 
@@ -614,7 +620,7 @@ export const ADVICE = {
     `The warden is still in its 瓶頸 bottleneck. Carry an elixir and a sigil from 業 the workshop: they break up to ${days.toFixed(1)} days of it.`,
   /** 封 A sealed gate, and a Breakthrough Pill in the pouch that is not in its hand. */
   sealPill: (days: number) =>
-    `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: it counts as ${days.toFixed(1)} days, and the seal breaks at once.`,
+    `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
   sealWait: (left: number) =>
     `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait; a Breakthrough Pill from Alchemy opens it now.`,
@@ -1728,7 +1734,8 @@ export const GEAR = {
   lockedWord: 'locked',
   anySchool: 'Any school',
   allowance: (qi: string) => `Melting can pay ${qi} more qi right now, and the rest melts into 材 material. `
-    + `It refills with time at ${Math.round(MELT_FILL * 1000) / 10}% of your standing qi rate, open or shut, and sitting does not speed it up.`,
+    + `It holds at most ${MELT_CAP / 3600} hours of your qi rate and refills with time at ${Math.round(MELT_FILL * 1000) / 10}% of your standing qi rate, open or shut; sitting does not speed it up. `
+    + 'A piece pays a share of the realm it was made in, so lower-realm gear melts for less.',
   /** The rest of it, for the player who wants it, behind a tap rather than in the way. */
   meltingWhy: 'A piece is worth a share of a layer of the realm it was made in. Old junk stays old junk.',
 
@@ -2337,15 +2344,16 @@ export const CRAFTS = {
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
   carryPill: '破境 Breakthrough, for the gate',
-  pillSays: 'From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once and thins the bottleneck. Waiting it out always works too.',
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. Waiting it out always works too.`,
   pillBreaks: (days: number, left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill counts as ${days.toFixed(1)} days: the seal breaks at once, and it is spent only if you win.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
+    + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   pillHeld: (days: number, left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it counts as up to ${days.toFixed(1)} days.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   pillNone: (left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself.`,
   pillWall: (days: number) =>
-    `The seal is open. Your pill still counts as ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
+    `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',
   carry: 'Carry',
   uncarry: 'Put back',
@@ -2610,7 +2618,7 @@ export const NODE = {
  */
 export const SIT = {
   chip: (x: string, left: string) => `Sitting \u00d7${x} \u00b7 ${left} left`,
-  rising: 'It deepens for three minutes, then holds until the half hour is up.',
+  rising: 'It deepens for three minutes on the screen, then holds until the half hour is up. Time off the screen counts toward the half hour and never deepens it.',
   over: (n: string) =>
     `That sitting has passed, so you gather at your standing ${n} a second. Nothing was taken: the sitting was extra.`,
   how: 'A new sitting starts whenever you come back to the game, or now:',
