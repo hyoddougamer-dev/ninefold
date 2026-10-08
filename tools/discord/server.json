@@ -1583,7 +1583,7 @@
         ],
         [
           "轉世 Rebirth",
-          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +2.5% of the qi you gather for every doubling of the marks you crossed, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世). The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
+          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +5% of the qi you gather for your first mark and +2.5% more for every doubling after, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世). The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
         ],
         [
           "擂 The Platform's edge",
@@ -1710,6 +1710,44 @@
         ["藏 A fused piece stops at ×1.5", "A fusion's main line was rounded after its cap and could read up to ×2.00 on a chest-slots line. It now never reads above ×1.50. Pieces fused before keep what they have."],
         ["爐 Pills say what they do", "The Bane pill's first takes 0.9% off every beast, each later one a little less, never below 40% of their power. Fortune is +4% luck each, and lifts Mystic, Earth and Heaven drops, the last two most. Every elixir and sigil now says it never reaches the Dragon."],
         ["融 Melting and sitting", "The melting allowance says it holds up to six hours and that lower-realm gear melts for less. The sitting says that time spent off the screen never deepens it."]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-08-fixes",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "認 Update · Marks cleared, and four fixes from your posts",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-opens.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1008-shapes.webp?v=1"
+      ],
+      "body": [
+        "Thank you rekaris, speculaether, razielmorgenstern and baha6290. Two of our own bugs had been marking honest saves, so that comes first."
+      ],
+      "fields": [
+        [
+          "認 Every mark is off",
+          "Every strike and every review flag on every account is cleared, and each account is counted from the save it has now. It is a test, and two of our bugs had been marking honest play: a tower floor won while the Fox, Dragon and Swift bug was live was refused on every sync, and a save the server had refused was counted again each time the game sent it. A repeated refused save now counts once. Nothing for you to do: open the game and give it five minutes. Bans are a separate matter and stay as they were."
+        ],
+        [
+          "開 Locked lines say when they open",
+          "On a Hundredfold piece, a line you cannot make yet now shows the craft, its level and the realm it waits on, in red, instead of just being locked. The page says how a line opens."
+        ],
+        [
+          "形 One card for one piece",
+          "Shapes that give the same line (trident, sword, saber, crescent, spear) are one card in the forge and the crucible, with a picker for the look. A piece you already forged keeps its shape."
+        ],
+        [
+          "宿 A fairer first Echo",
+          "Your first mark's Echo is +5% (it said +2.5% in the announcement), then +2.5% for every doubling, up to +12.5% a life and +25% across every life. The Rebirth page shows the exact Echo before you confirm."
+        ],
+        [
+          "▸ Still open",
+          "The wait at the gates (a bar that qi and pills can fill), the Hundredfold lines that ask for a later realm's ore, the Dragon and pills, the Drive's keep-or-melt window and a switch to hold the layer. Each has a thread in {#ideas}, and I will post numbers there before any of them change."
+        ]
       ],
       "footer": "師 Shibaki"
     }
@@ -3721,6 +3759,151 @@
       "reply": [
         "Thank you for the report, and for confirming it was fixed after a reload. The bug let a beast miss every round, so some fights were won that no build could win. The ranked server measures every floor against the body that won it, so floors won that way cannot stand on the board.",
         "I checked the server's records: no account other than the ones already put right has a refused or marked save, so nothing is holding you back there. The usual reason for not appearing on the ranks is that the game is not signed in on that device (an account that is not signed in plays as a guest, named 修士 and a code). Open the 榜 Ranks tab and sign in with your email, and your honest climb will go up as it syncs. If it still does not, tell me the exact line the game shows.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "The trials tower bug",
+      "tags": [
+        "Bug",
+        "Fixed"
+      ],
+      "reply": [
+        "A correction, and I am sorry for it. I told you no account had a refused or marked save, and that was wrong for one account made last night: its tower floor was won while the bug was live, and the server refused it on every sync. If that account is yours, it is cleared now. It is a test, so you are counted from the save you have today, floor and all, and there is nothing for you to do.",
+        "Open the game, sign in from the 榜 Ranks tab if it still plays as a guest, and give it five minutes. If it still says Not synced yet after that, tell me here and I will look straight away.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Arbitrary \"wait 2 days\" limits don't feel good.",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "You are right about the principle, and your version of the gate is better than mine. Today the seal is only a clock, and the Breakthrough Pill is the one way round it: it breaks the seal outright and half the wall with it. With no pill in the pouch there is nothing to do but wait, and that is the \"Nah, can't now\" you describe.",
+        "What you propose turns it around: a bar that fills with time by itself, a part of it that qi can fill as often as you like, and pills that fill more of it, so one pill still clears a low gate and a high gate asks for a few. Then the workshop is the way through and waiting is the casual way. I am going to measure it before I promise it, because the qi part has to be priced so it does not make the gate pointless. I will post the exact version and the numbers here before anything goes in. Until then the gates stay as they are.",
+        "The general point is taken too: any new wait will be held to the same test, a way to spend something to shorten it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Hundredfold set lines require inaccessible materials",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "That example is a fair one, and I think it is a flaw rather than a choice: a first-realm sword should not ask for a sixth-realm ore. Two things are in this update. Every line you cannot make yet now says what it waits on (the craft, its level and the realm), so it is no longer a mystery, and the set page says how a line opens.",
+        "What I have not done is what you actually asked: that the Mystic and Earth pieces of a realm can be made from that realm's own materials, so you craft your own to push. I will check which lines are held behind a later vein and, if they can ask for something the realm gathers, move them and post the result here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What's the point of of having multiple pieces like sword/spear of the same realm and same school?",
+      "tags": [
+        "Idea",
+        "Question"
+      ],
+      "reply": [
+        "You were right: those shapes give the same line, so they were only different drawings of one piece. Since this update the forge and the crucible show them as one card with a picker for the look (trident, sword, saber, crescent, spear), so the list has one card per piece instead of five. A piece you already forged keeps its shape.",
+        "I kept the looks because some of you will want a saber and not a trident. If the picker still reads as clutter, say so and I will take the looks out altogether.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "tags": [
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "Thank you, that is a strong argument and I am changing my mind about the principle: cutting a tool out of a fight only to hold the pace is a poor reason, and the player who maxed Alchemy and Sigil Writing should feel it at the summit.",
+        "I have not changed it yet because the number is large: with the pills fully on, a 40-crossing run falls from 251 days to about 122. Your middle road is the one to measure, pills and sigils counting against the Dragon at a fraction of their strength, so that the crafter has a real edge there and the endgame is not made much shorter. I will push the fraction off its value to check it slows the climb rather than walls it, and post the numbers here first.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What is the point of the beast pill if it doesnt affect dragon?",
+      "reply": [
+        "Noted, and kept alive as you asked. The pile stays as it is for now. When you do another run I would like to hear what it does to your tower power, and if the Dragon starts to answer pills (see the thread above) the beast pill comes back into the picture with it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Make it easier to make alt accounts and switch between them without losing leaderboard progress",
+      "reply": [
+        "I like the reason: a tester should be able to see the fresh game without giving up their place. One thing works today: playing as a guest in another browser profile or on another device starts a clean game and never touches your main account.",
+        "What is missing is a switch inside the game that keeps the two apart. It is more work than it looks, because each account has its own cloud save and its own place on the board, so I am putting it on the list rather than promising it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add more ways to spend path points",
+      "reply": [
+        "Both ideas are on the list: deeper trees, and a node you can buy again at a growing cost. The second is the safer one to balance, since a repeatable node is a sink with a price I can measure, so I will start there and post the numbers before anything changes.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Qi spent in layers",
+      "reply": [
+        "You are right, and the guide promises more choice than the game gives. When the bar fills, the layer takes the qi, and sometimes you wanted it for the next upgrade. I do not want to take the automatic part away, since a game that needs a tap to level is not idle. A switch that holds the layer, so qi keeps piling up until you choose, is a small and fair answer, and nothing is lost by waiting. I will measure it against the pace of the climb and post the result here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Drive improvements",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "These are good, and the third is the one I would do first: when a Drive ends, a window that lists everything that dropped, with keep and melt marks and a way to clear the bag from there, so the game never decides for you what you lose. A Drive that cannot finish until your choice fits the chest is the right rule.",
+        "On the price: it has been fifteen seconds of your own gathering per kill since 2 October, but I agree a beast should have a price of its own that does not move with what you gather. I will measure that next to the window. Auto stays; I have read everything said about it and I will bring a proposal in its own post.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "A complex look back - good and bad",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Thank you again for this one, rekaris. The seal, the Breakthrough Pill, forging any shape, the Hundredfold sets and the first Rebirth all began in this post. What is still open from it is the Dragon and the pills, the Drive and the beast pill. And the hidden ways to get ahead you described, a herb grown in the cave and turned into a pill worth a few extra floors, I like very much and have written down as a system of its own.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Revert or change \"A beast never misses two rounds running\"",
+      "reply": [
+        "Thank you both. The cap is a blunt tool and I agree it holds dodge builds down. It stays for now because it is what keeps the fight sums honest while two things can guarantee a miss. The cleaner fix is the one you give: change one of those effects into something else, then lift the cap. I will look at which one, and post the options here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Loadouts slots",
+      "reply": [
+        "Thank you all, this is a good argument and I am not going to answer it with a number. rekaris's point is the real question: if every set is one tap away, nobody has to choose, and more slots only make that easier. I would rather decide the direction first. I will write up the two roads (fewer swaps with real specialisation, or more slots and less friction) and ask here before changing anything.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "A follow-up now that Rebirth is in, and a change you asked for. The first mark's Echo was +2.5% and is now +5%, then +2.5% for every doubling after, up to +12.5% a life and +25% across every life, so the first rebirth feels like something. The exact Echo shows before you confirm.",
+        "The ceiling stays: an uncapped bonus on qi would cut the climb by almost half within a few lives, and nothing without a cap may raise the qi rate. Everything else you wanted is there: your codex, your records and a title for each life are kept. Thank you for pushing on this one.",
         "· 師 Shibaki"
       ]
     }

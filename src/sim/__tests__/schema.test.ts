@@ -404,6 +404,45 @@ describe('榜 the ranked schema', () => {
     await db.exec(`delete from profiles where id in ('${R}', '${D}'); delete from auth.users where id in ('${R}', '${D}');`);
   });
 
+  /**
+   * 認 Every mark off (Bruno, 2026-10-08): the flagged are cleared and rebased, the banned
+   * are left exactly as they were, the clean are not touched, and nothing is deleted.
+   */
+  it('clearing the marks takes them off the flagged, leaves the banned and the clean alone', async () => {
+    const F = '99999999-aaaa-1111-1111-111111111111';
+    const S = '99999999-aaaa-2222-2222-222222222222';
+    const X = '99999999-aaaa-3333-3333-333333333333';
+    const N = '99999999-aaaa-4444-4444-444444444444';
+    await db.exec(`
+      insert into auth.users values ('${F}'), ('${S}'), ('${X}'), ('${N}');
+      insert into profiles (id, name, strikes, suspect, banned) values
+        ('${F}', 'Flagged', 3, true, false), ('${S}', 'Struck', 1, false, false),
+        ('${X}', 'Banned', 3, true, true), ('${N}', 'Clean', 0, false, false);
+      insert into saves (user_id, latest, latest_at, verified, verified_at, pinned) values
+        ('${F}', '{"tower": 548}', '2026-10-08T01:00:00Z', '{"tower": 100}', '2026-10-07T01:00:00Z', true),
+        ('${S}', '{"tower": 9}', '2026-10-08T01:00:00Z', '{"tower": 8}', '2026-10-07T01:00:00Z', false),
+        ('${X}', '{"tower": 9}', '2026-10-08T01:00:00Z', '{"tower": 8}', '2026-10-07T01:00:00Z', true),
+        ('${N}', '{"tower": 9}', '2026-10-08T01:00:00Z', '{"tower": 8}', '2026-10-07T01:00:00Z', false);
+      insert into barred (email_hash, strikes, banned) values ('h-struck', 2, false), ('h-banned', 3, true);
+    `);
+    await db.exec(readFileSync(`${MIGRATIONS}/20261008120000_clear_marks.sql`, 'utf8'));
+    const read = async (id: string) => (await db.query(`
+      select p.strikes, p.suspect, p.banned, s.pinned, s.rebase, n.cleared_at is not null as noted
+        from profiles p join saves s on s.user_id = p.id left join panel_notes n on n.user_id = p.id
+       where p.id = '${id}'`)).rows[0] as any;
+    expect(await read(F)).toMatchObject({ strikes: 0, suspect: false, banned: false, pinned: false, rebase: true, noted: true });
+    expect(await read(S)).toMatchObject({ strikes: 0, suspect: false, rebase: true, noted: true });
+    expect(await read(X)).toMatchObject({ strikes: 3, suspect: true, banned: true, pinned: true, rebase: false, noted: false });
+    expect(await read(N)).toMatchObject({ strikes: 0, rebase: false, noted: false });
+    expect((await db.query(`select email_hash, strikes from barred where email_hash like 'h-%' order by email_hash`)).rows)
+      .toEqual([{ email_hash: 'h-banned', strikes: 3 }, { email_hash: 'h-struck', strikes: 0 }]);
+    // and nothing was deleted
+    expect((await db.query(`select count(*)::int as n from profiles where id in ('${F}','${S}','${X}','${N}')`)).rows[0]).toEqual({ n: 4 });
+    await db.exec(`delete from barred where email_hash in ('h-struck', 'h-banned');
+      delete from profiles where id in ('${F}','${S}','${X}','${N}'); delete from auth.users where id in ('${F}','${S}','${X}','${N}');
+      update profiles set suspect = true where id = '${C}';   -- the migration cleared the suite's own suspect too`);
+  });
+
   it('where I stand, for the signed-in player only', async () => {
     const r = await as(A, `select my_standing() as s`);
     expect((r.rows[0] as any).s.name).toBe('修士 Alpha');
