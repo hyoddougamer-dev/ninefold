@@ -57,10 +57,11 @@ import { CORES_FREE_REALMS } from '../src/sim/combat.ts';
 import { HABITS, play, playAll } from './habits.ts';
 import { verify, TOWER_FORGED, BURST, BURST_CAP, FIRST_PACE, PRE_JOIN_CREDIT, SUSPECT_DAY, SUSPECT_WEEK, MIN_FIGHT_SECONDS, SLACK } from '../src/sim/verify.ts';
 import { BRANCHES, climb } from './climb.ts';
-import { playEndgame } from './endgame.ts';
+import { KIT_CLOCK_BAND, arrived, kitClock, playEndgame } from './endgame.ts';
 import { BUILDS, playClass, playPlain } from './classes.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../src/data/schools.ts';
 import { pairSays, schoolSaysAt } from '../src/app/classes.ts';
+import { DRAGON_KIT_SHARE } from '../src/sim/balance.ts';
 import { ART_BEND, DRIVE_MINUTES, FIND_TOP, FUSE_BEND, LUCK_BEND, LUCK_ROLL_BEND, LUCK_ROLL_TOP, SUNDER_BEND } from '../src/sim/balance.ts';
 import { allowedShare, walkAll } from './idle.ts';
 import { DEEDS, TRACKS, deedsOn } from '../src/sim/deeds.ts';
@@ -148,6 +149,9 @@ const BREWER = climb(6, true, true);             // and pours everything into th
 /** 道 The same cultivator down each branch of the tree: the measurement that was missing. */
 const BY_BRANCH = BRANCHES.map((b) => ({ b, day: climb(6, true, true, true, b).arrival[8] }));
 const ENDGAME = playEndgame(40);
+/** 丹 What an elixir and a sigil would take off the endgame at the Dragon, at a few shares: tools/endgame.ts kitClock. */
+const KIT_SHARES = [0.003, 0.01, 0.03, 0.1, 0.3, 1];
+const KIT_CLOCKS = KIT_SHARES.map((share) => ({ share, ...kitClock(arrived(), 40, share) }));
 // 職 Every class played by the active cultivator, the same runs classes.test.ts bounds.
 const CLASS_PLAIN = playPlain();
 const CLASS_RUNS = BUILDS.map((b) => playClass(b));
@@ -4612,6 +4616,25 @@ const page = `<meta charset="utf-8">
       stops rising once a cultivator is <b>${PILL_AHEAD} pills ahead of the marks' pace</b>,
       so being behind costs days in a straight line. With every Dragon a tenth heavier the
       marks go from ${Math.max(...ENDGAME.days)} days to about eleven and stay there.</div>
+    <div class="rule"><b>丹 What an elixir and a sigil are worth at the Dragon.</b> At the moment
+      <b>${DRAGON_KIT_SHARE === 0 ? 'nothing' : `${Number((DRAGON_KIT_SHARE * 100).toFixed(1))}% of their strength`}</b>
+      (<code>DRAGON_KIT_SHARE</code> is ${DRAGON_KIT_SHARE}). rekaris asked that every tool be
+      used where it makes sense, unless it breaks the fight, and the machinery is built: the
+      kit is thinned toward nothing by the share, the server reads the same kit, and the
+      harness plays the endgame both ways. It is off because of this. The Dragon stands a
+      step above the one the cultivator met at even odds, so a crossing asks for a few pills
+      of power and a kit is worth those pills at once. The active cultivator made a crafter
+      (Alchemy and Sigil Writing at 99, the best of every elixir and sigil in the pouch),
+      forty crossings, ${KIT_CLOCKS[0] ? KIT_CLOCKS[0].offDays : 0} days with nothing reaching the Dragon:
+      <table style="margin-top:8px"><tr><th>share of the kit</th><th style="text-align:right">days</th>
+        <th style="text-align:right">sooner</th></tr>
+        ${KIT_CLOCKS.map((c) => `<tr><td>${Number((c.share * 100).toFixed(1))}%</td><td style="text-align:right">${c.onDays}</td>
+        <td style="text-align:right">${(c.gain * 100).toFixed(0)}%${c.gain <= KIT_CLOCK_BAND ? '' : ' (past the ' + Math.round(KIT_CLOCK_BAND * 100) + '% band)'}</td></tr>`).join('')}
+      </table>
+      Only a share nobody would feel in a fight stays inside the band, and an elixir is spent
+      on every win. The kit is deliberately <i>not</i> read into the even-odds Dragon: read in,
+      it is a tax on anybody out of stock, and a carry taken off between the win and the
+      crossing would be a lever on the anchor. The options are in <code>docs/DRAWER.md</code>.</div>
     <p class="t">The rest is solved, not chosen. Three pills a crossing, a price that rises
       ${LADDER_GROWTH_LAST}x a pill and a pill worth ${pc(PILL_POWER)} give a mark of
       ${(1 + TRIBULATION_GAIN).toFixed(3)}x and a Dragon of ${TRIBULATION_CHALLENGE}x.</p>

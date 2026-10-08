@@ -17,7 +17,11 @@ import { SLOTS } from '../src/data/gear.ts';
 import { cardDue, take as takeCard } from '../src/sim/awaken.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { heavenAt } from '../src/data/heavens.ts';
+import { RECIPES, XP_CAP, pouchKey } from '../src/data/crafts.ts';
+import { DRAGON_KIT_SHARE } from '../src/sim/balance.ts';
+import { carrySlot, kitFor } from '../src/sim/crafts.ts';
 import { HABITS, play as playHabit } from './habits.ts';
+import { carryBest } from './crafter.ts';
 
 /**
  * 境外 What stands there is no longer one animal.
@@ -64,6 +68,36 @@ export function arrived(): State {
   }
   return ARRIVED;
 }
+
+/**
+ * 業 A cultivator who has taken the workshop to the top: Alchemy and Sigil Writing at 99, and
+ * the best of every elixir and sigil in the pouch, Heaven rank, a thousand of each. What a
+ * crossing spends is made again before the next, so supply is not what is measured: the
+ * workshop makes two things a crossing and has days to do it in. This is the strong version
+ * on purpose, as tools/crafter.ts is, because the question is what the crafts can do to the
+ * endgame at most. A cultivator who never opened the workshop is not changed by this at all.
+ */
+export function crafterOf(s: State): State {
+  const pouch: Record<string, number> = { ...s.crafts.pouch };
+  for (const r of RECIPES) {
+    if (r.makes.kind !== 'item') continue;
+    const key = pouchKey(r.makes.item, 4);
+    const hand = carrySlot(key);
+    if (hand === 'elixir' || hand === 'sigil') pouch[key] = 1000;
+  }
+  return { ...s, crafts: { ...s.crafts, xp: { ...s.crafts.xp, alchemy: XP_CAP, sigil: XP_CAP }, pouch } };
+}
+
+/**
+ * 劫 What a carried elixir and sigil are worth against the Dragon, for the harness to play.
+ *
+ *   'off'   the game as it stood until 2026-10-08: nothing carried reaches the Dragon.
+ *   'game'  the game as it is: they count at DRAGON_KIT_SHARE of their strength.
+ *   a number  they count at that share, to push the balance off its value (tools and tests).
+ *
+ * A cultivator whose pouch is empty carries nothing, so none of the three changes them.
+ */
+export type DragonKit = 'off' | 'game' | number;
 
 /** A played cultivator made ready for the Dragon, for a caller who already has the run. */
 export function arrivalOf(s: State): State {
@@ -119,8 +153,18 @@ function takeOwed(s: State, lean: Lean): State {
  * cultivator whose economy is short of the harness's looks like to the endgame. It is
  * how the long haul proves it has no knife edge left: see longhaul.test.ts.
  */
-export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, heavier = 1): Endgame {
+export function playEndgame(
+  marks: number, lean: Lean = 'pill', start?: State, heavier = 1, dragonKit: DragonKit = 'game',
+): Endgame {
   let s = takeOwed(start ?? arrived(), lean);
+  const share = dragonKit === 'game' ? DRAGON_KIT_SHARE : dragonKit === 'off' ? 0 : dragonKit;
+  // The odds this cultivator reads off the Dragon's card, with whatever they would carry
+  // into it: the best thing owned in each hand, judged by the fight, as a crafter does.
+  const stood = (x: State): State => (share > 0 ? carryBest(x, currentWarden(x), 'dragon', undefined, share) : x);
+  const oddsAt = (x: State) => {
+    const w = currentWarden(x);
+    return share > 0 ? odds(x, w, undefined, kitFor(x, w, 'dragon', share).kit) : odds(x, w);
+  };
   const days: number[] = [];
   const floors: number[] = [];
   const chances: number[] = [];
@@ -129,7 +173,8 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
   for (let m = 0; m < marks; m++) {
     let waited = 0;
     for (let day = 0; day < 400; day++) {
-      if (odds(s, currentWarden(s)) > WILLING && canCross({ ...s, wardenFell: true })) break;
+      s = stood(s);
+      if (oddsAt(s) > WILLING && canCross({ ...s, wardenFell: true })) break;
       s = { ...s, qi: s.qi + gathering(s) * 86_400 };
       waited += 1;
 
@@ -170,7 +215,7 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
       // crossings in, the furnace had nothing to brew 煉體 with, the tower floors were
       // past it, and the harness sat four hundred days on a Dragon at twice its power.
       // A person short of the Dragon brews the pill that is for exactly that first.
-      const short = odds(s, currentWarden(s)) <= WILLING;
+      const short = oddsAt(s) <= WILLING;
       for (let i = 0; i < 4000 && short; i++) {
         if (!canBrew(s, 'body')) break;
         s = brew(s, 'body');
@@ -190,7 +235,8 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
     }
     days.push(waited);
     floors.push(s.tower);
-    chances.push(odds(s, currentWarden(s)));
+    s = stood(s);
+    chances.push(oddsAt(s));
     s = crossNow({ ...s, wardenFell: true });
     if (heavier !== 1) s = { ...s, tribulationAt: s.tribulationAt * heavier };
     heavens.push(heavenAt(s.tribulation)?.han ?? '');
@@ -199,3 +245,30 @@ export function playEndgame(marks: number, lean: Lean = 'pill', start?: State, h
   }
   return { days, floors, chances, heavens, end: s };
 }
+
+/**
+ * 劫 What the elixir and the sigil are worth to the endgame's clock: the same cultivator
+ * made a crafter at the top (crafterOf) and played twice, once with nothing reaching the
+ * Dragon and once with the kit at `share`. `gain` is the share of the days the kit takes
+ * off, which is the number DRAGON_KIT_SHARE is chosen against: the band is
+ * KIT_CLOCK_BAND, and a cultivator who never opened the workshop reads 0.
+ */
+export interface KitClock {
+  readonly marks: number;
+  readonly off: Endgame;
+  readonly on: Endgame;
+  readonly offDays: number;
+  readonly onDays: number;
+  /** The share of the days the kit took off, 0.1 being a tenth sooner. */
+  readonly gain: number;
+}
+export function kitClock(start: State, marks: number, share: DragonKit = 'game', heavier = 1): KitClock {
+  const crafter = crafterOf(start);
+  const off = playEndgame(marks, 'pill', crafter, heavier, 'off');
+  const on = playEndgame(marks, 'pill', crafter, heavier, share);
+  const total = (e: Endgame) => e.days.reduce((a, b) => a + b, 0);
+  return { marks, off, on, offDays: total(off), onDays: total(on), gain: 1 - total(on) / Math.max(1, total(off)) };
+}
+
+/** 劫 The most the kit may take off the clock of a crafter with both crafts at 99, over forty crossings or eighty. */
+export const KIT_CLOCK_BAND = 0.12;

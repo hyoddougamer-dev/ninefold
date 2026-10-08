@@ -442,9 +442,9 @@ describe('戰 what is carried into a fight', () => {
     expect(d.used.sigil).toBe('sigil:purity@4');
   });
 
-  it('never goes into the Dragon or a common beast, and goes up the tower (since 2026-10-05)', () => {
+  it('never goes into a common beast, goes up the tower (since 2026-10-05) and into the Dragon at a share of itself (2026-10-08)', () => {
     const s = carry(hard(9), 'elixir', 'might9@4');
-    expect(kitWhere(s, wardenOf(9))).toBeNull();
+    expect(kitWhere(s, wardenOf(9))).toBe('dragon');
     expect(kitWhere(s, commonsOf(9)[0])).toBeNull();
     expect(kitWhere(s, demonOf(s), demonPower(s))).toBe('demon');
     // 塔 A floor is a hard fight: the might pill strikes harder there, read in the climber's
