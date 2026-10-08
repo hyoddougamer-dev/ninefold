@@ -2872,13 +2872,24 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .c-side .card .gateseal { border-left: 2px solid color-mix(in srgb, var(--gold) 70%, transparent); padding-left: 9px; }
 .c-side .card .gateseal[data-open="true"] { border-left-color: color-mix(in srgb, var(--jade) 55%, transparent); }
 .c-side .card .act[data-sealed="true"] { opacity: .62; cursor: default; }
-/* 封 The seal's bar: it fills with the time served (rekaris: "a bar that fills with time"),
-   and stands full in jade once a carried Breakthrough Pill breaks it. Its own class, on
-   this card only. */
-.c-side .card .gateseal .gateseal-bar { display: block; height: 4px; margin-top: 7px; border-radius: 2px; overflow: hidden;
-        background: color-mix(in srgb, var(--gold) 16%, transparent); }
-.c-side .card .gateseal .gateseal-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--gold) 75%, transparent); }
-.c-side .card .gateseal .gateseal-bar[data-broken="true"] i { background: color-mix(in srgb, var(--jade) 70%, transparent); }
+/* 封 The seal's bar (rekaris, 2026-10-08): time fills it by itself, in gold; qi paid in
+   adds a violet stretch and lesser Breakthrough Pills a jade one; a carried pill that breaks
+   the seal stands it full in jade. Its own classes, on this card only. */
+.c-side .card .gateseal .gateseal-bar { display: flex; height: 8px; margin-top: 8px; border-radius: 4px; overflow: hidden;
+        background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.c-side .card .gateseal .gateseal-bar i { display: block; height: 100%; flex: none; }
+.c-side .card .gateseal .gateseal-bar i[data-kind="time"] { background: color-mix(in srgb, var(--gold) 78%, transparent); }
+.c-side .card .gateseal .gateseal-bar i[data-kind="qi"] { background: color-mix(in srgb, var(--incense) 85%, transparent); }
+.c-side .card .gateseal .gateseal-bar i[data-kind="pill"] { background: color-mix(in srgb, var(--jade) 75%, transparent); }
+.c-side .card .gateseal .gateseal-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; }
+.c-side .card .gateseal .gateseal-acts button.act { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        width: 100%; padding: 9px 12px; text-align: left; font-size: 12.5px; letter-spacing: .03em; line-height: 1.3;
+        background: transparent; color: var(--text); box-shadow: none; border: 1px solid var(--line); border-radius: 9px; }
+.c-side .card .gateseal .gateseal-acts button.act em { flex: none; font-style: normal; font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px; letter-spacing: .04em; color: var(--faint); text-align: right; }
+.c-side .card .gateseal .gateseal-acts button.act[data-kind="qi"] { border-color: color-mix(in srgb, var(--incense) 65%, transparent); }
+.c-side .card .gateseal .gateseal-acts button.act[data-kind="pill"] { border-color: color-mix(in srgb, var(--jade) 65%, transparent); }
+.c-side .card .gateseal .gateseal-acts button.act:disabled { color: var(--faint); border-color: var(--line); background: transparent; }
 
 /* 室 On the vault's path the blessed room is named under the seal rather than ringed.
    量 A ring was the first version and it was invisible: every room on that path wears a
@@ -4208,3 +4219,92 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-spirit[data-awake] .hu-sp-art svg { filter: drop-shadow(0 0 6px var(--hue)); }
 .wheel .wcore .wspirit { filter: drop-shadow(0 0 5px rgba(255, 236, 200, .25)); }
 .hundred .hu-crucible { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/* ── 留 hold the layer: the switch under the ladder on 修 ─────────────────── */
+.holdcard { margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.holdcard .hold-switch { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+                         padding: 10px 12px; border-radius: 11px; background: var(--panel);
+                         border: 1px solid var(--line); color: var(--text); font: inherit; cursor: pointer; }
+.holdcard[data-on] .hold-switch { border-color: var(--gold); background: rgba(212,175,86,.07); }
+.holdcard .hold-switch > b { flex: none; font-size: 22px; font-weight: 400; color: var(--faint);
+                             min-width: 26px; text-align: center; }
+.holdcard[data-on] .hold-switch > b { color: var(--gold); }
+.holdcard .hold-text { flex: 1; min-width: 0; }
+.holdcard .hold-text em { display: block; font-style: normal; font-size: 14px; }
+.holdcard .hold-text i { display: block; margin-top: 2px; font-style: normal; font-size: 12px;
+                         line-height: 1.45; color: var(--faint); }
+.holdcard .hold-knob { flex: none; position: relative; width: 38px; height: 22px; border-radius: 99px;
+                       background: var(--line); transition: background .15s; }
+.holdcard .hold-knob::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+                              border-radius: 50%; background: var(--text); transition: transform .15s; }
+.holdcard[data-on] .hold-knob { background: var(--gold); }
+.holdcard[data-on] .hold-knob::after { transform: translateX(16px); background: var(--ground); }
+.holdcard .hold-open { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.holdcard .hold-open em { font-style: normal; font-size: 11.5px; opacity: .75; }
+@media (prefers-reduced-motion: reduce) {
+  .holdcard .hold-knob, .holdcard .hold-knob::after { transition: none; }
+}
+
+/* ── 圍 the drive's window: what fell, what to keep, the rest melted ──────── */
+.dwin { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.dwin .heading { margin: 6px 0 0; }
+.dwin .dw-says { margin: 0; font-size: 12.5px; line-height: 1.5; }
+.dwin .dw-filter { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.dwin .dw-filter::-webkit-scrollbar { display: none; }
+.dwin .dw-filter button { flex: none; background: none; border: 1px solid var(--line); border-radius: 99px;
+                          padding: 6px 11px; font: inherit; font-size: 12.5px; color: var(--faint); cursor: pointer; }
+.dwin .dw-filter button i { font-style: normal; font-size: 11px; opacity: .8; }
+.dwin .dw-filter button[aria-pressed='true'] { border-color: var(--text); color: var(--text); }
+.dwin .dw-filter button.ups[aria-pressed='true'] { border-color: var(--jade); color: var(--jade); }
+.dwin .dw-filter button .cjk { color: var(--hue, inherit); }
+.dwin .dw-bulk { display: flex; align-items: center; gap: 8px; }
+.dwin .dw-bulk .act { margin: 0; width: auto; padding: 8px 14px; }
+.dwin .dw-bulk i { margin-left: auto; font-style: normal; font-size: 11.5px; }
+.dwin .dw-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px 8px; }
+.dwin .dw-tile { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+                 padding: 3px; cursor: pointer; opacity: .5; transition: opacity .12s, border-color .12s; min-width: 0; }
+.dwin .dw-tile svg { display: block; width: 100%; height: auto; }
+.dwin .dw-tile[data-on] { opacity: 1; border-color: var(--gold); box-shadow: 0 0 0 1px rgba(212,175,86,.35); }
+.dwin .dw-tick { position: absolute; top: -6px; right: -5px; width: 19px; height: 19px; border-radius: 50%;
+                 display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+                 background: var(--gold); color: var(--ground); }
+.dwin .dw-tile[data-on] .dw-tick { display: flex; }
+.dwin .dw-up { position: absolute; bottom: 1px; left: 3px; font-size: 11px; color: var(--jade); }
+.dwin .dw-sum { padding: 11px 13px; border: 1px solid var(--line); border-radius: 11px; display: flex;
+                flex-wrap: wrap; gap: 2px 12px; align-items: baseline; justify-content: space-between; }
+.dwin .dw-sum b { font-weight: 500; font-size: 15px; }
+.dwin .dw-sum .mono { font-size: 12px; color: var(--faint); }
+.dwin .dw-sum p { flex-basis: 100%; margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; }
+.dwin .dw-sum[data-over] { border-color: var(--cinnabar); }
+.dwin .dw-sum .dw-warn { color: var(--cinnabar); }
+.dwin .dw-bag { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px;
+                border-radius: 11px; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+                font: inherit; cursor: pointer; }
+.dwin .dw-bag:disabled { opacity: .45; cursor: default; }
+.dwin .dw-bag[data-on] { border-color: var(--cinnabar); background: rgba(200,70,60,.07); }
+.dwin .dw-bag > b { flex: none; font-size: 22px; font-weight: 400; min-width: 26px; text-align: center; color: var(--faint); }
+.dwin .dw-bag[data-on] > b { color: var(--cinnabar); }
+.dwin .dw-bag > span:not(.dw-knob) { flex: 1; min-width: 0; }
+.dwin .dw-bag em { display: block; font-style: normal; font-size: 14px; }
+.dwin .dw-bag i { display: block; margin-top: 2px; font-style: normal; font-size: 12px; line-height: 1.45; color: var(--faint); }
+.dwin .dw-knob { flex: none; position: relative; width: 38px; height: 22px; border-radius: 99px; background: var(--line); }
+.dwin .dw-knob::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+                        border-radius: 50%; background: var(--text); transition: transform .15s; }
+.dwin .dw-bag[data-on] .dw-knob { background: var(--cinnabar); }
+.dwin .dw-bag[data-on] .dw-knob::after { transform: translateX(16px); }
+.dwin .dw-act { display: flex; flex-direction: column; gap: 8px; }
+.dwin .dw-act .act { width: 100%; margin: 0; }
+.dwin .dw-act .act i { display: block; margin-top: 3px; font-style: normal; font-size: 11.5px; letter-spacing: 0;
+                       text-transform: none; font-weight: 400; }
+.drivesheet .pileline { margin: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .dwin .dw-tile, .dwin .dw-knob::after { transition: none; }
+}
+.pilewait { display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0 10px; padding: 11px 13px;
+            border-radius: 11px; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+            border: 1px solid rgba(255,196,84,.4); background: rgba(255,196,84,.07); }
+.pilewait > b { flex: none; font-size: 22px; font-weight: 400; color: var(--gold); }
+.pilewait span:not(.go) { flex: 1; min-width: 0; }
+.pilewait em { display: block; font-style: normal; font-size: 14px; }
+.pilewait i { display: block; margin-top: 2px; font-style: normal; font-size: 12px; line-height: 1.45; color: var(--faint); }
+.pilewait .go { flex: none; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }

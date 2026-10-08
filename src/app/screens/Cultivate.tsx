@@ -5,17 +5,21 @@ import {
 } from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
+import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
+import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
+import { SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
 import { BOTTLENECK_LOOSEN, ECHO_CEILING } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
-  power, sealDays, sealLeft, tribulationPool, upgradeCost, wardenStands,
+  canPaySeal, feedDays, feedSeal, paySeal, power, sealDays, sealFeedRoom, sealLeft, sealPayRoom, sealPrice, sealStep,
+  tribulationPool, upgradeCost, wardenStands,
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { affordableIn, gathering, ladderDone, layersOpened, progress } from '../../sim/time.ts';
+import { affordableIn, canOpenLayer, gathering, ladderDone, layerCost, layersOpened, openLayer, progress, setHold } from '../../sim/time.ts';
 import { canReincarnate, echoAfter, echoOf, lifeOf, lifeStart, lifeTitle } from '../../sim/rebirth.ts';
 import { echoPct } from '../ui/Rebirth.tsx';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
@@ -32,7 +36,7 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -145,8 +149,32 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const unseal = atGate && sealDays(state.realm) > 0 ? unsealCarried(state) : 0;
   const sealNow = Math.max(0, sealDue - unseal);
   const unsealOwned = atGate && sealDue > 0 && !unseal ? pillHeld(state) : 0;
-  // 封 How much of the seal has run, for its bar: it fills with time, and a pill breaks it.
-  const sealServed = sealDays(state.realm) > 0 ? 1 - sealDue / sealDays(state.realm) : 1;
+  // 封 How much of the bar is filled, and by what: time by itself, qi paid in, lesser pills
+  // eaten. A pill carried that breaks the seal fills all of it. Time gives way where the rest
+  // already has the bar, so the three never add up to more than the whole.
+  const sealWhole = Math.max(1e-9, sealDays(state.realm));
+  const sealServed = sealDays(state.realm) > 0 ? 1 - sealDue / sealWhole : 1;
+  const sealParts = {
+    qi: (state.sealPaid ?? 0) / 86_400,
+    pill: (state.sealFed ?? 0) / 86_400,
+    time: 0,
+  };
+  sealParts.time = atGate ? Math.max(0, Math.min((state.at - state.gateAt) / 86_400, sealWhole - sealParts.qi - sealParts.pill)) : 0;
+  const sealTotal = sealWhole;
+  const sealRoom = atGate ? sealPayRoom(state) : 0;
+  const feedRoom = atGate ? sealFeedRoom(state) : 0;
+  const sealCost = atGate ? sealPrice(state) : 0;
+  // 封 The Breakthrough Pills in the pouch made for a realm below, best first.
+  const lesser = atGate && feedRoom > 0
+    ? Object.keys(state.crafts.pouch)
+      .filter((k) => (state.crafts.pouch[k] ?? 0) > 0 && feedDays(state, k) > 0)
+      .map((k) => {
+        const { key, quality } = splitKey(k);
+        const q = quality ?? 0;
+        return { key: k, days: feedDays(state, k), name: `${RARITY_INFO[RARITIES[q]].han} ${RARITY_INFO[RARITIES[q]].name} ${ITEM_BY_KEY[key].name}` };
+      })
+      .sort((a, b) => b.days - a.days).slice(0, 3)
+    : [];
   const ready = canBreakThrough(state);
   const crossing = canCross(state);
   const filled = top ? Math.min(1, state.qi / pool) : progress(state);
@@ -396,6 +424,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               first purchase (see clockUntil), which it says rather than freezing at 0s. */}
           {standing ? PACE.wardenWaits(w.han, w.name)
             : ready ? PACE.breakOpen
+            : state.hold && canOpenLayer(state) ? HOLD.ready
             : heldAtFirstRung(state) ? PACE.held
             : PACE.rungLeft(num(p.rungLeft), duration(p.rungSeconds))}
         </p>
@@ -405,6 +434,30 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           and the warden at the end of them. Bruno had read "layer 3 / 9" and "realm 1 of
           9" for a week without the screen ever showing that one is inside the other. */}
       {!top && <Ladder state={state} />}
+
+      {/* 留 Hold the layer. Off for everyone; on, a full bar waits for a tap instead of opening
+          the layer by itself, so the qi can go to upgrades first. The first session is left alone:
+          this is a choice for somebody who already knows what the bar is. */}
+      {!top && !step && (
+        <div className="holdcard" data-on={state.hold || undefined}>
+          <button type="button" className="hold-switch" role="switch" aria-checked={state.hold}
+            onClick={() => set((s) => setHold(s, !s.hold))}>
+            <b className="cjk" aria-hidden="true">留</b>
+            <span className="hold-text">
+              <em>{HOLD.name}</em>
+              <i>{state.hold ? HOLD.on : HOLD.off}</i>
+            </span>
+            <span className="hold-knob" aria-hidden="true" />
+          </button>
+          {state.hold && canOpenLayer(state) && (
+            <button type="button" className="act small hold-open" data-qol="open-layer"
+              onClick={() => set(openLayer)}>
+              <b className="cjk">開</b> <span>{HOLD.open(state.layer + 1)}</span>
+              <em className="mono">{HOLD.price(num(layerCost(state.realm, state.layer, state.unlocked)))}</em>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 雷池 The ninth realm still has nine layers to climb before the pool takes the bar.
           The breakthrough card names the pool, so this says how far off it is. */}
@@ -452,20 +505,51 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               </p>
             )}
             {sealDays(state.realm) > 0 && atGate && (
-              <p className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
-                {sealDue > 0
-                  ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, pillDays) : CULTIVATE.sealed(sealDue))
-                  : CULTIVATE.sealServed}{' '}
-                {sealDue > 0 && !unseal && (
-                  <span className="faint">{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}</span>
-                )}
+              <div className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                <p style={{ margin: 0 }}>
+                  {sealDue > 0
+                    ? (unseal > 0 ? CULTIVATE.sealBroken(sealDue, pillDays) : CULTIVATE.sealed(sealDue))
+                    : CULTIVATE.sealServed}
+                </p>
                 {sealDue > 0 && (
-                  <span className="gateseal-bar" role="img" aria-label={CULTIVATE.sealBar(sealServed)}
+                  <span className="gateseal-bar" role="img" aria-label={CULTIVATE.sealBar(unseal > 0 ? 1 : sealServed)}
                     data-broken={unseal > 0}>
-                    <i style={{ width: `${Math.round(Math.max(0, Math.min(1, unseal > 0 ? 1 : sealServed)) * 100)}%` }} />
+                    {unseal > 0
+                      ? <i data-kind="pill" style={{ width: '100%' }} />
+                      : (['time', 'qi', 'pill'] as const).map((k) => (
+                        <i key={k} data-kind={k} style={{ width: `${Math.round(sealParts[k] / sealTotal * 1000) / 10}%` }} />
+                      ))}
                   </span>
                 )}
-              </p>
+                {sealDue > 0 && !unseal && (
+                  <>
+                    <p className="faint gateseal-legend" style={{ margin: '5px 0 0', fontSize: 11.5 }}>
+                      {CULTIVATE.sealLegend(sealParts.time, sealParts.qi, sealParts.pill)}
+                    </p>
+                    <div className="gateseal-acts">
+                      {sealRoom > 0 && (
+                        <button className="act small" data-kind="qi" disabled={!canPaySeal(state)}
+                          onClick={() => set(paySeal)}>
+                          {CULTIVATE.sealPay(num(sealCost))}
+                          <em>{CULTIVATE.sealPayFills(sealStep(state))}</em>
+                        </button>
+                      )}
+                      {lesser.map((l) => (
+                        <button key={l.key} className="act small" data-kind="pill" onClick={() => set((x) => feedSeal(x, l.key))}>
+                          {CULTIVATE.sealFeed(l.name)}
+                          <em>{CULTIVATE.sealFeedFills(l.days)}</em>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="faint" style={{ margin: '7px 0 0', fontSize: 11.5 }}>
+                      {sealRoom > 0 && state.qi < sealCost ? `${CULTIVATE.sealPayShort} ` : ''}
+                      {sealRoom <= 0 ? CULTIVATE.sealPayFull(SEAL_PAY_SHARE) : CULTIVATE.sealPayRule(SEAL_PAY_SHARE, SEAL_PAY_MINUTES)}
+                      {feedRoom <= 0 && (state.sealFed ?? 0) > 0 ? ` ${CULTIVATE.sealFeedFull(SEAL_PILL_SHARE)}` : ''}
+                      {' '}{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}
+                    </p>
+                  </>
+                )}
+              </div>
             )}
             {standing ? (
               <button className="act" data-tone="cinnabar" data-coach="fight-warden" onClick={onFight}>

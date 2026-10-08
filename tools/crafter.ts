@@ -290,7 +290,7 @@ export function hundredPlan(s: State): Order | null {
         if (made[slot] >= at) continue;
         const shapes = GEAR.filter((g) => g.realm === realm && g.slot === slot);
         const tpl = shapes.find((g) => g.affix === 'power') ?? shapes[0];
-        const axes = ORDER.filter((a) => lineAxes(tpl).includes(a) && materialReached(s, CRUCIBLE[a](realm)));
+        const axes = ORDER.filter((a) => lineAxes(tpl).includes(a) && materialReached(s, CRUCIBLE[a](realm, rarity)));
         if (axes.length < SECONDARIES[rarity]) continue;
         return { template: tpl.key, rarity, main: 3, lines: axes.slice(0, SECONDARIES[rarity]).map((affix) => ({ affix, n: 3 })) };
       }

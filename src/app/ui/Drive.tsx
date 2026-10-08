@@ -9,12 +9,12 @@ import { lootFrom } from '../../sim/combat.ts';
 import { lootTaken } from '../../sim/trials.ts';
 import { MARK_INFO } from '../../sim/record.ts';
 import { duration, num } from '../../sim/format.ts';
-import { RARITY_INFO, SLOT_INFO, templateOf } from '../../data/gear.ts';
-import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
-import { DRIVE, HUNT, QOL } from '../copy.ts';
+import { DRIVE, HUNT, PILE, QOL } from '../copy.ts';
+import { DrivePile } from './DrivePile.tsx';
+import { settleDefault, type Choice, type Plan } from '../../sim/pile.ts';
 
 /**
  * 圍 The drive, on the screen.
@@ -27,15 +27,22 @@ import { DRIVE, HUNT, QOL } from '../copy.ts';
  * The prices are not hidden behind a confirmation. A drive costs qi and cannot be
  * undone, so the button that spends it is the button that says the number.
  */
-export function Drive({ state, beast, seed, onTake, onClose }: {
+export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }: {
   state: State;
   beast: Beast;
   /** The app's seed, so the drops are the drops those fights would have rolled. */
   seed: number;
+  /** The drive happened: the app takes its state and puts what fell on the table (sim/pile.ts holdDrops). */
   onTake: (result: Result) => void;
+  /** 圍 The player's answer to what fell: keep these, melt the rest. */
+  onSettle: (choice: Choice) => void;
+  /** 圍 Or the game's own answer, which is what a drive always did. */
+  onGame: () => void;
   onClose: () => void;
 }) {
   const [done, setDone] = useState<Result | null>(null);
+  /** 圍 What the player answered, once they have, for the line that replaces the window. */
+  const [answered, setAnswered] = useState<{ plan: Plan | null } | null>(null);
   /** 再 The size of the last drive, so Drive again repeats it ('max' is worked out again). */
   const [last, setLast] = useState<number | 'max'>(10);
   const r = realmOf(beast.realm);
@@ -43,13 +50,18 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
   // 盡 The last row: as many as the qi in hand pays for, up to DRIVE_MOST.
   const most = driveMax(state, beast);
   const go = (size: number | 'max') => {
-    const n = size === 'max' ? driveMax(state, beast) : size;
-    if (n <= 0 || !canAffordDrive(state, beast, n)) return;
-    const result = drive(state, beast, n, seed);
+    // 圍 Pieces still waiting from an earlier drive are answered the game's way first.
+    const base = settleDefault(state);
+    const n = size === 'max' ? driveMax(base, beast) : size;
+    if (n <= 0 || !canAffordDrive(base, beast, n)) return;
+    const result = drive(base, beast, n, seed);
     setLast(size);
     setDone(result);
+    setAnswered(null);
     onTake(result);
   };
+  // 圍 The window is open while the save holds pieces nobody has answered for.
+  const waiting = state.pile.length > 0;
   const againN = last === 'max' ? most : last;
 
   if (done) {
@@ -80,26 +92,35 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
           </p>
         ))}
 
-        {done.best && (
-          <div className="spoil">
-            <Svg html={gearTile(done.best, { size: 58 })} />
+        {/* 圍 Everything that fell, with the choice of what to keep. The best piece is marked to start
+            with: it is what the game would have kept. */}
+        {waiting && (
+          <DrivePile state={state} unlisted={Math.max(0, done.dropsRolled - done.drops.length)}
+            onAnswer={(choice, p) => { setAnswered({ plan: p }); onSettle(choice); }}
+            onGame={() => { setAnswered({ plan: null }); onGame(); }} />
+        )}
+        {!waiting && answered && (
+          <p className="mark pileline">
+            <b className="cjk">圍</b>
             <span>
-              <b className="cjk" style={{ color: RARITY_INFO[done.best.rarity].colour }}>
-                {templateOf(done.best).han}
-              </b>
-              <i>{QOL.slotted(templateOf(done.best).name, SLOT_INFO[templateOf(done.best).slot].name)} · {DRIVE.bestOf(done.dropsRolled)}</i>
+              <em>{answered.plan ? PILE.answered(answered.plan.kept.length, answered.plan.melted.length + answered.plan.bag.length) : PILE.decided}</em>
+              {answered.plan && (answered.plan.qi > 0 || answered.plan.materials > 0) && (
+                <i>{PILE.melts(answered.plan.melted.length + answered.plan.bag.length,
+                  answered.plan.qi > 0 ? num(answered.plan.qi) : '', answered.plan.materials > 0 ? num(answered.plan.materials) : '')}</i>
+              )}
             </span>
-          </div>
+          </p>
         )}
 
         {/* 再 The same drive again, at today's price, without walking back through the sizes. */}
         <div className="driveagain">
-          <button className="act" data-qol="drive-again" disabled={againN <= 0 || !canAffordDrive(state, beast, againN)}
+          <button className="act" data-qol="drive-again"
+            disabled={waiting || againN <= 0 || !canAffordDrive(settleDefault(state), beast, againN)}
             onClick={() => go(last)}>
             再 <span>{QOL.drive.again}</span>
           </button>
-          {againN > 0 && <p className="faint">{QOL.drive.againSays(againN, num(driveCost(state, againN, beast)))}</p>}
-          <button className="act ghost" onClick={onClose}>續 <span>{DRIVE.back}</span></button>
+          {againN > 0 && <p className="faint">{waiting ? PILE.drivePending : QOL.drive.againSays(againN, num(driveCost(state, againN, beast)))}</p>}
+          <button className="act ghost" data-qol="drive-back" onClick={onClose}>續 <span>{waiting ? PILE.later : DRIVE.back}</span></button>
         </div>
       </div>
     );
@@ -151,6 +172,31 @@ export function Drive({ state, beast, seed, onTake, onClose }: {
 
       <p className="faint blurb">{DRIVE.free}</p>
       <button className="act ghost" onClick={onClose}>退 <span>{DRIVE.never}</span></button>
+    </div>
+  );
+}
+
+/**
+ * 圍 The same window on its own, for pieces that are still waiting when the drive's sheet is
+ * not open: the game was shut when the drive ended, or the sheet was put away. The pieces are
+ * in the save, so this needs nothing but the save.
+ */
+export function PileSheet({ state, onSettle, onGame, onClose }: {
+  state: State;
+  onSettle: (choice: Choice) => void;
+  onGame: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="drivesheet" data-qol="pile-sheet">
+      <div className="head">
+        <b className="cjk" style={{ fontSize: 30, color: 'var(--gold)' }}>圍</b>
+        <span>
+          <b>{PILE.head(state.pile.length)}</b>
+          <i>{PILE.waitingSays}</i>
+        </span>
+      </div>
+      <DrivePile state={state} onAnswer={(choice) => onSettle(choice)} onGame={onGame} onLater={onClose} />
     </div>
   );
 }

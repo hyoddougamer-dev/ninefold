@@ -1,5 +1,5 @@
 import type { Beast } from '../data/bestiary.ts';
-import { DRIVE_MINUTES, DRIVE_MOST, DRIVE_OLD, DRIVE_SIZES } from './balance.ts';
+import { DRIVE_MINUTES, DRIVE_MOST, DRIVE_OLD, DRIVE_PILE, DRIVE_SIZES } from './balance.ts';
 import { lootFrom, quarryPaid } from './combat.ts';
 import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import { MARKS, marksOf } from './record.ts';
@@ -8,6 +8,7 @@ import { isOpen } from './unlocks.ts';
 import { rate, type State } from './state.ts';
 import { dropFor, noteFate, secondDropFor } from './fate.ts';
 import { itemWorth } from './chest.ts';
+import { lifted } from './stash.ts';
 import type { Item } from '../data/gear.ts';
 import type { Fortune } from './drops.ts';
 import { classDrive } from './schools.ts';
@@ -133,6 +134,12 @@ export interface Drive {
   readonly best: Item | null;
   /** Marks crossed by the drive, by index into MARK_INFO. */
   readonly earned: readonly number[];
+  /**
+   * 圍 Every piece that fell, as it would go into the chest (空囊 applied), best first, at
+   * most DRIVE_PILE of them. The state is *not* given these: whoever resolves the drive
+   * decides where they go (sim/pile.ts for the game, nothing at all for a harness).
+   */
+  readonly drops: readonly Item[];
 }
 
 /**
@@ -158,13 +165,14 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
    * audit of the qi.
    */
   if (!canAffordDrive(s, b, kills)) {
-    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [] };
+    return { state: s, material: 0, qiSpent: 0, kills: 0, dropsRolled: 0, best: null, earned: [], drops: [] };
   }
   const before = s.killed[b.key] ?? 0;
 
   let material = 0;
   let dropsRolled = 0;
   let best: Item | null = null;
+  const fell: Item[] = [];
   // 緣 The bar fills kill by kill inside a drive exactly as it would tapped, so a drive
   // of twenty crosses two full bars and both of their certain pieces are rolled.
   let bond: State = s;
@@ -181,6 +189,7 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
     for (const it of [item, secondDropFor(bond, b, kseed, fortune, s.layer)]) {
       if (!it) continue;
       dropsRolled++;
+      fell.push(it);
       if (!best || itemWorth(it) > itemWorth(best)) best = it;
     }
   }
@@ -203,5 +212,9 @@ export function drive(s: State, b: Beast, n: number, seed: number, fortune: Fort
       quarryWeek: week ? weekOf(s.at) : s.quarryWeek,
     },
     material, qiSpent, kills, dropsRolled, best, earned,
+    // 圍 Best first; a tie keeps the order the pieces fell in, so the same drive lists the same pile.
+    drops: fell.map((it, i) => ({ it: lifted(s, it), i }))
+      .sort((a, b) => itemWorth(b.it) - itemWorth(a.it) || a.i - b.i)
+      .slice(0, DRIVE_PILE).map((x) => x.it),
   };
 }

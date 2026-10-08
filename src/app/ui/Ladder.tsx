@@ -7,7 +7,7 @@ import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { icon } from '../../art/icon.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
-import { LADDER, standing } from '../copy.ts';
+import { HOLD, LADDER, standing } from '../copy.ts';
 
 /**
  * 梯 The climb, drawn.
@@ -83,7 +83,7 @@ export function Ladder({ state }: { state: State }) {
         </span>
       </div>
 
-      <p className="faint">{LADDER.rule(r.han, r.name)} {LADDER.ruleAfter}</p>
+      <p className="faint">{(state.hold ? HOLD.rule : LADDER.rule)(r.han, r.name)} {LADDER.ruleAfter}</p>
     </div>
   );
 }

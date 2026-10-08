@@ -7,17 +7,17 @@
  */
 import { answer, canAnswer, giftOf, meetingDue, priceOf } from '../src/sim/meet.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel, seclude } from '../src/sim/seclusion.ts';
-import { FORGED, NOT_USED, kitFor, soulLocked, spendKit, work } from '../src/sim/crafts.ts';
+import { FORGED, NOT_USED, feedShare, kitFor, pillHeld, soulLocked, spendKit, unsealCarried, work } from '../src/sim/crafts.ts';
 import { NO_KIT } from '../src/sim/kit.ts';
 import { carryBest, craftVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
-  atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
-  canFightWarden, condense,
+  atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
+  canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
-import { advance, layersOpened, rate } from '../src/sim/time.ts';
+import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
 import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
@@ -61,6 +61,29 @@ const T0 = 1_700_000_000;
 /** 轉世 T0 under another name, for play() to count its days from a given start instead. */
 const EPOCH = T0;
 const DAY = 86_400;
+
+/**
+ * 封 One visit's worth of paying a sealed gate: qi into the bar while it is allowed and the
+ * purse can pay (at `scale` times the real price), then every lesser pill held.
+ */
+export function payGate(s: State, scale: number): State {
+  // Somebody holding the pill made for this gate carries it instead: it breaks the whole bar for nothing.
+  const own = pillHeld(s) > 0 || unsealCarried(s) > 0;
+  for (let i = 0; i < 40 && !own && canPaySeal(s) && s.qi >= sealPrice(s) * scale; i++) {
+    const owed = sealPrice(s);
+    const next = paySeal(s);
+    // A price off the real one is the real one paid and the difference handed back, or taken.
+    s = { ...next, qi: Math.max(0, next.qi + owed * (1 - scale)) };
+  }
+  for (const key of Object.keys(s.crafts.pouch)) {
+    while (feedShare(key, s.realm) > 0 && (s.crafts.pouch[key] ?? 0) > 0) {
+      const next = feedSeal(s, key);
+      if (next === s) break;
+      s = next;
+    }
+  }
+  return s;
+}
 
 export interface Habit {
   readonly name: string;
@@ -126,6 +149,13 @@ export interface Habit {
    */
   readonly crafts?: boolean;
   /**
+   * 封 Whether they put qi into a sealed gate's bar before they spend it on anything else
+   * (paySeal, as often as the cap and the purse allow), and eat the lesser Breakthrough Pills
+   * the pouch holds (feedSeal). The number is the price they pay as a multiple of the real
+   * one: 1 is the game, 0.5 a price half as high, to push the number off its value.
+   */
+  readonly paysSeal?: number;
+  /**
    * 百煉 Whether the crafter also forges the Hundredfold sets, lowest realm first, every
    * place at the best rank the forge allows (tools/crafter.ts hundredPlan).
    */
@@ -135,6 +165,12 @@ export interface Habit {
    * long goals does: the climb stops at the ninth realm, the forge does not.
    */
   readonly on?: boolean;
+  /**
+   * 留 Whether they hold the layer, and spend on the three qi upgrades first: a layer is opened by
+   * hand only once nothing the realm still sells for qi is left to buy, which is the order
+   * a player who wants their qi for upgrades is after. tools/habits.ts HOLDER plays it.
+   */
+  readonly holds?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -207,6 +243,16 @@ export const HABITS: readonly Habit[] = [
 export const AUTO_HABIT: Habit = { name: 'runs auto', gear: true, checks: 6, minutes: 10, hunts: 120, tower: true,
   furnace: true, build: true, branch: 'sword',
   who: 'The active cultivator, with Auto left on for three minutes of every visit.' };
+
+/**
+ * 留 The active cultivator again, holding the layer and spending on upgrades before any layer
+ * is opened (src/sim/__tests__/hold.test.ts). Kept out of HABITS so no table, page or other
+ * test that walks the habits changes: it is the answer to what the toggle is worth at its
+ * best, and the toggle is off for everybody until they turn it on.
+ */
+export const HOLDER: Habit = { name: 'holds the layer', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+  furnace: true, build: true, branch: 'sword', holds: true,
+  who: 'The active cultivator, with the layer held: qi goes to upgrades first, a layer opens when none are left.' };
 
 /** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
 const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
@@ -518,6 +564,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   // 轉世 Every day below is counted from here: T0, or the instant a given start stands at.
   const T0 = start?.at ?? EPOCH;
   let s = start ?? newState(T0);
+  if (h.holds) s = { ...s, hold: true };
   let t = T0;
   const tick = DAY / h.checks;
   const arrival = [0];
@@ -575,6 +622,9 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     if (h.crafts) s = work(s, t);
 
     watch?.((t - T0) / DAY, s);
+
+    // 封 Qi into the bar of a sealed gate, and lesser pills, before the tree takes the qi.
+    if (h.paysSeal !== undefined) s = payGate(s, h.paysSeal);
 
     s = spendTree(s, h.branch);
 
@@ -884,6 +934,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
     // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
     s = spend(buyAll(s, () => true).state);
+    // 留 A held layer waits for the upgrades, and opens once the realm has none left to sell.
+    if (h.holds) {
+      while (canOpenLayer(s) && (['technique', 'method', 'pills'] as const).every((u) => atCap(s, u))) s = openLayer(s);
+    }
     // 爐 Pills when the warden is out of reach, and none once it is beatable: qi brewed
     // is qi that did not open a layer.
     if (h.furnace && (h.brews ?? 'stuck') === 'stuck') for (let g = 0; g < 400; g++) {

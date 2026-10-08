@@ -1489,6 +1489,50 @@ export const BOTTLENECK_LOOSEN = 0.3;
 export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
 
 /**
+ * 封 The seal as a bar (rekaris, Discord, 2026-10-08): it fills with time by itself, qi can
+ * fill part of it again and again, and Breakthrough Pills fill the rest. Waiting alone
+ * still fills the whole bar in SEAL_DAYS, and nothing here lengthens any seal.
+ *
+ * - SEAL_PAY_SHARE: the most of a gate's bar qi can ever fill, 40%. A sink with a ceiling,
+ *   so the gate stays a gate: the cheapest honest way through still stands shut for the rest.
+ * - SEAL_PAY_STEP: how much of the bar one tap fills, a tenth, so four taps reach the cap.
+ * - SEAL_PAY_MINUTES: the price, in minutes of the cultivator's own gathering (standing
+ *   rate, no 入定, no incense) for every hour of the bar a tap fills. It grows with the
+ *   cultivator, so it is never a flat sum a late realm shrugs off, and it is paid out of
+ *   qi, never into it: nothing about the bar can raise the rate.
+ * - SEAL_PILL_SHARE: the most a lesser pill (made for a realm below the gate) can fill,
+ *   also 40%. The pill made for the gate's own realm still breaks the whole bar at once.
+ *
+ * Together qi and lesser pills leave 20% of the bar to time, so a gate is never opened
+ * by spending alone: 5 to 10 hours always have to pass.
+ *
+ * Measured on 2026-10-08 with tools/seal.ts, the day the ninth realm opens. `waits` is the
+ * seal as it was (the numbers above, unchanged); `pays` puts qi into the bar before the
+ * tree takes it, as often as the cap allows, at the real price (x1) and at a price half
+ * as high (x0.5) and twice as high (x2), to push the number off its value. A cultivator
+ * holding the gate's own pill carries it and pays nothing.
+ *
+ *   habit            waits    pays x1   x0.5    x2     with the workshop (any price)
+ *   never fights     121.0    116.0     121.0   116.0  (no workshop)
+ *   barely fights    101.0    101.0     101.0   101.0  93.0
+ *   once a day        76.0     74.0      76.0    76.0  69.0
+ *   casual            66.0     67.0      66.7    67.3  61.7
+ *   active            49.7     47.8      47.3    48.0  46.0
+ *   every hour        32.1     31.0      31.0    30.9  29.0
+ *
+ * Paying shortens an active climb by 1 to 2 days of 50, which is what a sink at this price
+ * can honestly buy: a cultivator who spends the qi on the tree instead gets it back as
+ * rate, so the casual one, who banks into levels, is a day slower for paying. The workshop
+ * stays the way through (46.0 against 47.8 for the best payer), no price moves any habit
+ * by more than a day and a half either side, and what each gate stood shut for stays at
+ * 60% of its seal or more for everybody who carries no pill, so the gate is still a gate.
+ */
+export const SEAL_PAY_SHARE = 0.4;
+export const SEAL_PAY_STEP = 0.1;
+export const SEAL_PAY_MINUTES = 30;
+export const SEAL_PILL_SHARE = 0.4;
+
+/**
  * 精 Where each realm's last beast stands, as a multiple of the bare reference: the realm's
  * elite. It gates nothing, so it is set for the strongest builds rather than for everyone,
  * measured off the active and hourly cultivators at that realm's gate (tools/walls.ts), and
@@ -1871,6 +1915,23 @@ export const DRIVE_SIZES = [10, 50, 200] as const;
  * every kill's drop one by one, and a summit cultivator's qi would pay for millions.
  */
 export const DRIVE_MOST = 2000;
+
+/**
+ * 圍 How many pieces a drive lays out for the player to choose from, best first. Two
+ * thousand kills can roll three hundred and sixty pieces, and a window of that is the
+ * sorting job the drive always refused to be: the best sixty are listed, and the rest are
+ * left on the mountain exactly as they were before the window existed. It bounds the
+ * save too (validate reads no more than this), so it moves no curve.
+ */
+export const DRIVE_PILE = 60;
+
+/**
+ * 圍 How long a drive's pieces wait for an answer, in seconds. A player who never opens
+ * the window, or whose drive finished while the game was shut, gets the game's own answer
+ * once this has gone by: the best piece into the chest, the rest left. A day, so that
+ * coming back the next morning still finds the window open.
+ */
+export const PILE_HOLD = 86_400;
 
 /** 緣 How long after one meeting before the next can arrive, in seconds. */
 export const MEET_GAP = 3 * 3600;

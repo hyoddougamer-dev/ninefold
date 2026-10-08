@@ -65,7 +65,8 @@ import {
   enter as enterSecret, inside as insideSecret, leave as leaveSecret, openByKind, useKey,
 } from '../sim/secret.ts';
 import { Secret, Tally } from './ui/Secret.tsx';
-import { Drive } from './ui/Drive.tsx';
+import { Drive, PileSheet } from './ui/Drive.tsx';
+import { holdDrops, settle as settlePile, settleDefault, settleStale } from '../sim/pile.ts';
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Cards } from './ui/Cards.tsx';
 import { Rebirth } from './ui/Rebirth.tsx';
@@ -225,6 +226,8 @@ export function App() {
   // 據 What the last meeting gave, shown once on 修 until it is read; never stored.
   const [meetDone, setMeetDone] = useState<Receipt | null>(null);
   const [driving, setDriving] = useState<Beast | null>(null);
+  /** 圍 Whether the window for a drive's waiting pieces is open without a drive sheet behind it. */
+  const [pileOpen, setPileOpen] = useState(false);
   // 鑑 The piece being looked at, and whether it is the one on the body.
   const [inspect, setInspect] = useState<{ item: Item; wearing: boolean } | null>(null);
   const [fresh, setFresh] = useState(false);
@@ -312,6 +315,8 @@ export function App() {
     const r = load(now());
     setState(r.state);
     setReady(true);
+    // 圍 A drive that ended with the game shut left its pieces in the save: the window shows them.
+    if (r.state.pile.length > 0 && settleStale(r.state) === r.state) setPileOpen(true);
     lastLayer.current = (r.state.realm - 1) * LAYERS_PER_REALM + r.state.layer;
     // A first-ever run has no save and no hours away: that is who the help is for. It
     // asks save.ts for what "has not begun" means rather than keeping its own idea of
@@ -404,7 +409,8 @@ export function App() {
       setState((s) => {
         // 業 And the workshop, settled to the same instant. It reads its own clock.
         // 隱 Paid with the sitting this tick was handed, up to its end and ×1 after it.
-        const next = payTo(s, now(), sit, deeper);
+        // 圍 And pieces nobody answered for in a day are answered the game's way.
+        const next = settleStale(payTo(s, now(), sit, deeper));
         const layers = (next.realm - 1) * LAYERS_PER_REALM + next.layer;
         if (layers > lastLayer.current) {
           lastLayer.current = layers;
@@ -1074,7 +1080,7 @@ export function App() {
   // otherwise draw its arrow and its ring straight over the sheet asking it.
   const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
   /** 收 What hides the corner Menu. The vault, the tally and the cards keep it, as they always did. */
-  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || rebirth || stele || credits || saving || realmPage || menu || !!driving
+  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || rebirth || stele || credits || saving || realmPage || menu || !!driving || (pileOpen && state.pile.length > 0)
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   /**
@@ -1146,6 +1152,7 @@ export function App() {
     : ranks ? () => { setRanks(false); sfx.tap(); }
     : inspect ? () => { setInspect(null); sfx.tap(); }
     : driving ? () => { setDriving(null); sfx.tap(); }
+    : pileOpen && state.pile.length > 0 ? () => { setPileOpen(false); sfx.tap(); }
     : realmPage ? () => { setRealmPage(false); sfx.tap(); }
     // 碑 謝 The stele and the credits are menu panels like the rest, so they take the same
     // fixed cross and the same Esc. They were left out, and the stele is a long page.
@@ -1312,6 +1319,7 @@ export function App() {
             state={state}
             onFight={(key) => startFight(byKey[key])}
             onDrive={(key) => { setDriving(byKey[key]); sfx.tap(); }}
+            onPile={() => { setPileOpen(true); sfx.tap(); }}
             onAuto={(key) => autoFrom(byKey[key])}
             onSecret={() => { setState((s) => enterSecret(s)); sfx.tap(); }}
             onKey={() => { setState((s) => enterSecret(useKey(s))); sfx.buy(); haptics.strike(); }}
@@ -1738,11 +1746,26 @@ export function App() {
           beast={driving}
           seed={Math.floor(Math.random() * 0xffffffff)}
           onTake={(result) => {
-            setState(() => stash(result.state, result.best).state);
+            // 圍 What fell goes on the table (sim/pile.ts), and the player chooses; until they do the
+            // save holds it, and a day later the game answers as it always did.
+            setState(() => holdDrops(result.state, result));
             sfx.mark();
             haptics.tap();
           }}
+          onSettle={(choice) => { setState((s) => settlePile(s, choice)); sfx.buy(); }}
+          onGame={() => { setState((s) => settleDefault(s)); sfx.tap(); }}
           onClose={() => { setDriving(null); sfx.tap(); }}
+        />
+      )}
+
+      {/* 圍 And pieces still waiting when no drive sheet is open: the game was shut when the drive
+          ended, or the sheet was put away. They are in the save, so the window opens on them. */}
+      {!driving && pileOpen && state.pile.length > 0 && (
+        <PileSheet
+          state={state}
+          onSettle={(choice) => { setState((s) => settlePile(s, choice)); sfx.buy(); }}
+          onGame={() => { setState((s) => settleDefault(s)); sfx.tap(); }}
+          onClose={() => { setPileOpen(false); sfx.tap(); }}
         />
       )}
 

@@ -72,7 +72,7 @@ function summit() {
 
 // 守 What the screen is shown is what the game would keep, and the case is the one asked about.
 const c = validate(JSON.parse(JSON.stringify(crafter())), at + 5);
-const star = CRUCIBLE.luck(1);
+const star = CRUCIBLE.luck(1, 'heaven');
 assert.equal(c.realm, 4, 'the crafter is in the fourth realm');
 assert.equal(materialReached(c, star), false, 'Fallen Star Iron is out of reach, as it was for rekaris');
 assert.deepEqual(materialGate(star), { skill: 'vein', level: 56, realm: 6 });
@@ -143,6 +143,8 @@ for (const width of [400, 320]) {
   await page.click('.crafts .cgroups button:has-text("Hundredfold")');
   await page.waitForTimeout(300);
   await page.click('.hundred .hu-crucible .hu-field:first-child .hu-chips button:first-child');
+  await page.waitForTimeout(250);
+  await page.click('.hundred .hu-crucible .hu-chips button:has(i.mono):has-text("Heaven")');
   await page.waitForTimeout(250);
   await page.selectOption('.hundred .hu-lines select >> nth=0', 'luck');
   await page.waitForTimeout(250);

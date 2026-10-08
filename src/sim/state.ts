@@ -35,11 +35,12 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SECLUSION,
+  BOON_SWORDSOUL, DRIVE_PILE, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SEAL_PAY_MINUTES, SEAL_PAY_SHARE,
+  SEAL_PAY_STEP, SEAL_PILL_SHARE, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
-import { NO_CRAFTS, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
+import { NO_CRAFTS, eatPill, feedShare, shortestDoorGap, unsealCarried, validCrafts, type Crafts } from './crafts.ts';
 import { keptByFilter, validFilters, type ChestFilter } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
 import { backHundred, bandTop, validKept } from './hundred.ts';
@@ -168,12 +169,35 @@ export interface State {
    * BOTTLENECK_LOOSEN), so a cultivator who only waits still gets through.
    */
   gateAt: number;
+  /**
+   * 封 Seconds of this gate's seal that qi has filled (paySeal), and that Breakthrough Pills
+   * made for a realm below have (feedSeal). Both belong to the gate standing now: 0 while no
+   * warden stands, and 0 again the moment the gate is left. Each is capped by validate().
+   * Absent in a save from before the bar, which the server reads without the bar's
+   * allowance (sealSeconds): a save that carries them is one the bar's game wrote.
+   */
+  sealPaid?: number;
+  sealFed?: number;
   levels: Record<Upgrade, number>;
   killed: Record<string, number>;
   /** 器 What is on the body. */
   worn: Worn;
   /** 藏 What is in the chest, capped at CHEST_LIMIT plus whatever 運 has added. */
   chest: Item[];
+  /**
+   * 圍 What the last drive left on the table, waiting to be answered: the best DRIVE_PILE
+   * pieces that fell, best first, and the instant they fell. Nothing in here is worn,
+   * fused or counted by anything else, and nothing in here is lost while it waits; the
+   * game answers for the player once PILE_HOLD has gone by. See sim/pile.ts.
+   */
+  pile: Item[];
+  pileAt: number;
+  /**
+   * 留 Whether the layer is held: the bar fills as ever, but a full bar waits for a tap
+   * (openLayer) instead of opening by itself, so the qi can be spent on upgrades. Off in
+   * every save that never said otherwise. See advance().
+   */
+  hold: boolean;
   /**
    * 煉 The refining levels of each place on the body. They belong to the place: whatever
    * is worn there has them, a place left empty keeps them for the next piece, and nothing
@@ -492,11 +516,12 @@ export function newState(now: number): State {
   return {
     v: 1, at: now, startedAt: now,
     // 囊 The purse the first minute is bought with. See OPENING_PURSE.
-    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0,
+    realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },
     killed: {},
     worn: {},
     chest: [],
+    pile: [], pileAt: 0, hold: false,
     refined: {},
     unlocked: [],
     self: null,
@@ -763,16 +788,108 @@ export function sealDays(realm: number): number {
 }
 
 /**
- * 封 Days of the seal still to run at this realm's gate, with `unseal` days of a carried
- * 破境丹 Breakthrough Pill counted as already waited. 0 when the gate is open: no seal in
- * this realm, the warden not out yet or already beaten, or the time served. A gate a save
- * holds without a time (gateAt 1, one from before the bottleneck) was met long ago.
+ * 封 Days of the gate's bar still to fill, with `unseal` days of a carried 破境丹 Breakthrough
+ * Pill counted as already filled. 0 when the gate is open: no seal in this realm, the warden
+ * not out yet or already beaten, or the bar full. The bar fills with time by itself
+ * (waiting alone always fills it in sealDays), and with what was paid in: qi (paySeal) and
+ * Breakthrough Pills made for a realm below (feedSeal). A gate a save holds without a time
+ * (gateAt 1, one from before the bottleneck) was met long ago.
  */
 export function sealLeft(s: State, unseal = 0): number {
   const days = sealDays(s.realm);
   if (days <= 0 || s.wardenFell || !wardenStands(s) || s.gateAt <= 0) return 0;
   const waited = Math.max(0, (s.at - s.gateAt) / 86_400);
-  return Math.max(0, days - waited - Math.max(0, unseal));
+  return Math.max(0, days - waited - sealFilled(s) - Math.max(0, unseal));
+}
+
+/** 封 The days of the bar qi and lesser pills have filled at this gate so far. */
+export function sealFilled(s: State): number {
+  return (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
+}
+
+/**
+ * 封 How much more of this gate's bar (in days) qi may still fill: SEAL_PAY_SHARE of the
+ * seal, less what it has filled, and never more than the bar has left to fill.
+ */
+export function sealPayRoom(s: State): number {
+  const left = sealLeft(s);
+  if (left <= 0) return 0;
+  return Math.max(0, Math.min(left, sealDays(s.realm) * SEAL_PAY_SHARE - Math.max(0, s.sealPaid ?? 0) / 86_400));
+}
+
+/**
+ * 封 The same for lesser Breakthrough Pills: SEAL_PILL_SHARE of the seal, less what they
+ * have filled, and never more than the bar has left to fill.
+ */
+export function sealFeedRoom(s: State): number {
+  const left = sealLeft(s);
+  if (left <= 0) return 0;
+  return Math.max(0, Math.min(left, sealDays(s.realm) * SEAL_PILL_SHARE - Math.max(0, s.sealFed ?? 0) / 86_400));
+}
+
+/**
+ * 封 What the next tap on the bar fills, in days: a SEAL_PAY_STEP of the seal, or what is
+ * left of the room qi has there (sealPayRoom). 0 when nothing can be paid.
+ */
+export function sealStep(s: State): number {
+  return Math.min(sealDays(s.realm) * SEAL_PAY_STEP, sealPayRoom(s));
+}
+
+/**
+ * 封 What a tap on the bar costs in qi: SEAL_PAY_MINUTES of the cultivator's own gathering
+ * (the standing rate, gathering(), with no 入定 and no incense) for every hour it fills. Read
+ * off the rate and never into it, so it is a sink that follows the cultivator and nothing
+ * paid here can raise anything.
+ */
+export function sealPrice(s: State): number {
+  return sealStep(s) * 24 * SEAL_PAY_MINUTES * 60 * gathering(s);
+}
+
+/** 封 Whether a tap on the bar can be paid for right now. */
+export function canPaySeal(s: State): boolean {
+  const price = sealPrice(s);
+  return sealStep(s) > 1e-9 && s.qi >= price;
+}
+
+/**
+ * 封 Pay qi into the bar: one tap fills sealStep, repeatedly, up to SEAL_PAY_SHARE of the
+ * seal. It costs sealPrice, which leaves the save and goes nowhere.
+ */
+export function paySeal(s: State): State {
+  if (!canPaySeal(s)) return s;
+  const step = sealStep(s);
+  return { ...s, qi: Math.max(0, s.qi - sealPrice(s)), sealPaid: Math.max(0, s.sealPaid ?? 0) + step * 86_400 };
+}
+
+/**
+ * 封 Eat a Breakthrough Pill made for a realm below this gate to fill part of the bar
+ * (feedShare of the seal, up to SEAL_PILL_SHARE of it in all), repeatedly. The pill is
+ * spent. The pill made for the gate's own realm is carried instead and breaks the whole bar
+ * (see kitFor), so it is never eaten here.
+ */
+export function feedSeal(s: State, key: string): State {
+  const room = sealFeedRoom(s);
+  const share = feedShare(key, s.realm);
+  if (room <= 0 || share <= 0 || (s.crafts.pouch[key] ?? 0) < 1) return s;
+  const fill = Math.min(room, share * sealDays(s.realm));
+  const eaten = eatPill(s, key);
+  return { ...eaten, sealFed: Math.max(0, s.sealFed ?? 0) + fill * 86_400 };
+}
+
+/** 封 The days of the bar a lesser pill (a pouch key) would fill at this gate, or 0. */
+export function feedDays(s: State, key: string): number {
+  return Math.min(sealFeedRoom(s), feedShare(key, s.realm) * sealDays(s.realm));
+}
+
+/** 封 The fills a save claims, kept to this gate and to the most each can be. */
+function sealFills(o: Record<string, unknown>, realm: number, layer: number): { sealPaid: number; sealFed: number } {
+  const days = sealDays(realm);
+  if (days <= 0 || realm >= 9 || layer < LAYERS_PER_REALM - 1) return { sealPaid: 0, sealFed: 0 };
+  const num = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
+  const clamp = (x: number, hi: number) => Math.min(hi, Math.max(0, x));
+  const paid = clamp(num(o.sealPaid), SEAL_PAY_SHARE * days * 86_400);
+  const fed = clamp(num(o.sealFed), Math.min(SEAL_PILL_SHARE * days, days - paid / 86_400) * 86_400);
+  return { sealPaid: paid, sealFed: fed };
 }
 
 /**
@@ -813,7 +930,7 @@ export function canBreakThrough(s: State): boolean {
 export function breakThrough(s: State): State {
   if (!canBreakThrough(s)) return s;
   // 銀 The qi carries. See canBreakThrough for why it no longer burns.
-  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0 };
+  return { ...s, realm: s.realm + 1, layer: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0 };
 }
 
 /**
@@ -1090,10 +1207,17 @@ export function validate(raw: unknown, now: number): State {
     // fully loosened: nobody already standing there meets a wall they did not have.
     gateAt: realm < 9 && layer >= LAYERS_PER_REALM - 1
       ? (num(o.gateAt, 0) > 0 ? clamp(num(o.gateAt, 0), 1, now) : 1) : 0,
+    // 封 The bar's fills: only at a sealed gate, and never more than the most each can be.
+    // A save from before the bar has none, and keeps having none until the game writes one.
+    ...(o.sealPaid === undefined && o.sealFed === undefined ? {} : sealFills(o, realm, layer)),
     levels,
     killed,
     worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,
     chest: chest.map(marks),
+    // 圍 The drive's pile is read after the ids above are taken, at the foot of this function.
+    pile: [], pileAt: 0,
+    // 留 A yes or nothing; anything else is the layer opening by itself, as it always did.
+    hold: o.hold === true,
     refined,
     unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached
@@ -1279,8 +1403,23 @@ export function validate(raw: unknown, now: number): State {
     if (n > 0) cappedRefined[slot] = n;
   }
 
+  /**
+   * 圍 The drive's pile: at most DRIVE_PILE pieces, each a real piece from a realm the save has
+   * reached, none sharing a name with the chest or each other, and an instant the save has
+   * lived. A pile with no pieces has no instant. It is read last so that its names are only
+   * ever the ones left over (a piece in the chest keeps its own).
+   */
+  const pile: Item[] = [];
+  for (const raw of Array.isArray(o.pile) ? o.pile : []) {
+    if (pile.length >= DRIVE_PILE) break;
+    const it = item(raw, used);
+    if (it && (TEMPLATE_BY_KEY[it.template]?.realm ?? 1) <= realm) pile.push(marks(it));
+  }
+
   return {
     ...out,
+    pile,
+    pileAt: pile.length > 0 ? clamp(num(o.pileAt, savedAt), startedAt, savedAt) : 0,
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
     refined: cappedRefined,

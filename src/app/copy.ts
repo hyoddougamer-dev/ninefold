@@ -276,16 +276,32 @@ export const CULTIVATE = {
    * carried Breakthrough Pill does to it, and that waiting always opens it.
    */
   sealed: (left: number) =>
-    `封 Sealed: from the fifth realm on, the gate stays shut for a while after its warden comes out, however strong you are. It opens by itself in ${duration(left * 86_400)}.`,
+    `封 Sealed, however strong you are. The bar fills with time by itself and opens the gate in ${duration(left * 86_400)}.`,
   sealBroken: (left: number, days: number) =>
     `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   sealHeld: (days: number) =>
     `Your pouch holds a Breakthrough Pill: carried, it breaks the seal now and ${days.toFixed(1)} days of the bottleneck with it. Carry it in 業 the workshop.`,
-  sealNone: `A Breakthrough Pill from 業 Alchemy breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
-  /** 封 The seal's bar, filling with the time served: its label for a screen reader. */
-  sealBar: (served: number) => `Seal ${percent(served)} served`,
+  sealNone: `Pills made for a lower realm fill part of it. The Breakthrough Pill made for this realm, from 業 Alchemy, breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
+  /** 封 The seal's bar, filling with time, qi and pills: its label for a screen reader. */
+  sealBar: (served: number) => `Seal ${percent(served)} filled`,
   sealServed: '封 The seal has run out. The gate is open.',
+  /** 封 What has filled the bar so far, one word for each way. */
+  sealLegend: (time: number, qi: number, pills: number) =>
+    `Filled by time ${duration(time * 86_400)} · qi ${qi > 0 ? duration(qi * 86_400) : 'none'} · pills ${pills > 0 ? duration(pills * 86_400) : 'none'}`,
+  /** 封 Pay qi into the bar: the button, what it fills, and why it may be out of reach. */
+  sealPay: (price: string) => `Pay ${price} qi`,
+  sealPayFills: (days: number) => `fills ${duration(days * 86_400)}`,
+  sealPayShort: 'Not enough qi for a tap yet.',
+  sealPayFull: (share: number) =>
+    `Qi has filled all it can here, ${percent(share)} of the bar. Time and pills do the rest.`,
+  sealPayRule: (share: number, minutes: number) =>
+    `Qi fills up to ${percent(share)} of the bar, a tap at a time, and a tap costs ${minutes} min of your own gathering for every hour it fills.`,
+  /** 封 Eat a Breakthrough Pill made for a realm below: the button and its note. */
+  sealFeed: (name: string) => `Use ${name}`,
+  sealFeedFills: (days: number) => `fills ${duration(days * 86_400)}`,
+  sealFeedFull: (share: number) =>
+    `Pills made for lower realms have filled all they can here, ${percent(share)} of the bar.`,
   sealedButton: (left: number) => `Sealed · ${duration(left * 86_400)}`,
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
@@ -501,6 +517,26 @@ export const PACE = {
   held: 'The first layer waits until you spend your qi. Nothing is lost while it waits',
 };
 
+/**
+ * 留 Hold the layer (speculaether, on the Discord, 2026-10-06: *"Qi spent in layers"*). The bar
+ * fills toward the layer's price and, when full, the layer takes the qi by itself, even for
+ * somebody who wanted it for upgrades. Off for everyone; on, a full bar waits for a tap.
+ */
+export const HOLD = {
+  name: 'Hold the layer',
+  /** One line, said for the state the switch is in. */
+  off: 'Off: a full bar opens the layer by itself.',
+  on: 'On: a full bar waits. Spend the qi on upgrades, then open the layer yourself.',
+  /** The tap that opens it, with its price. */
+  open: (n: number) => `Open layer ${n}`,
+  price: (qi: string) => `${qi} qi`,
+  /** 待 The pace line, when the bar is full and the layer is waiting for the player. */
+  ready: 'The bar is full and this layer is waiting for you. Open it, or spend the qi first',
+  /** Under the ladder, in place of the rule that says a full bar opens a layer. */
+  rule: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the warden of ${han} ${name} comes out.`,
+};
+
 export const LADDER = {
   /** 短 Two short sentences where there was one long one. It is the first thing a new
    *  cultivator reads, and 境 and 層 beside it answer for themselves. */
@@ -623,7 +659,7 @@ export const ADVICE = {
     `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
   sealWait: (left: number) =>
-    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait; a Breakthrough Pill from Alchemy opens it now.`,
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi fills part of the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -794,7 +830,7 @@ export const KEY = {
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
   sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after half an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
-  layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
+  layerWord: 'One step of a realm. Your qi fills it and it opens by itself, unless you hold the layer. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
   save: 'Your save, to copy out or paste back. It lives in this browser only.',
   stele: 'Everything you have done, counted: the deeds and the figures.',
@@ -990,6 +1026,46 @@ export const DRIVE = {
   fell: 'drops fell',
   bestOf: (n: number) => (n === 1 ? 'the only one that fell' : `the best of ${n} that fell`),
   earned: (han: string, pays: string) => `${han} \u00b7 ${pays}`,
+};
+
+/**
+ * 圍 What a drive left, and the player's say over it (rekaris and razielmorgenstern, on the
+ * Discord, 2026-10-06: *"I don't use Drive for the cost and the loss of control of dropped
+ * items."*). Everything unmarked melts, by the same rules as melting anywhere.
+ */
+export const PILE = {
+  head: (n: number) => (n === 1 ? 'One piece fell' : `${n} pieces fell`),
+  says: 'Mark what you keep. Everything unmarked is melted like any melt: qi while the melting allowance holds, 材 material after it.',
+  /** The weakest pieces are not listed; they are left where they fell, as a drive always did. */
+  unlisted: (n: number) => (n === 1 ? 'The weakest piece that fell was left on the mountain.' : `The ${n} weakest pieces that fell were left on the mountain.`),
+  all: 'Select all',
+  none: 'Clear',
+  /** Select all and Clear act on what the filters show. */
+  allShown: (n: number) => `${n} shown`,
+  keeping: (k: number, of: number) => `Keeping ${k} of ${of}`,
+  room: (n: number) => (n === 1 ? 'room for 1 in the chest' : `room for ${n} in the chest`),
+  melts: (n: number, qi: string, mats: string) => `Melting ${n} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
+  meltsNone: 'Nothing is left to melt.',
+  past: 'Past the melting allowance, pieces melt into 材 material instead of qi.',
+  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over}, or melt the bag below to make room.`,
+  bag: 'Melt the bag as well',
+  bagSays: (n: number) => `Every piece in the chest that is not locked (${n}) melts as well, so there is room for what you keep.`,
+  bagNone: 'The chest holds nothing that is not locked.',
+  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k}, melt the rest`),
+  game: 'Let the game decide',
+  gameSays: 'Keeps the best piece and leaves the rest, as a Drive always did.',
+  later: 'Decide later',
+  laterSays: 'The pieces wait in your save. Nothing is lost.',
+  /** After an answer. */
+  answered: (kept: number, melted: number) =>
+    `${kept === 0 ? 'Nothing kept' : kept === 1 ? '1 piece kept' : `${kept} pieces kept`} · ${melted === 0 ? 'nothing melted' : `${melted} melted`}`,
+  decided: 'The game kept the best piece and left the rest.',
+  drivePending: 'Answer the pieces above first.',
+  /** On the hunt list, while a drive's pieces still wait. */
+  waiting: (n: number) => (n === 1 ? '1 piece from your last Drive is waiting for you' : `${n} pieces from your last Drive are waiting for you`),
+  waitingSays: 'Nothing is lost while they wait. If you do not choose, the game answers after a day.',
+  open: 'Choose',
+  aria: { tile: (name: string, rank: string, marked: boolean) => `${name}, ${rank}, ${marked ? 'kept' : 'will be melted'}` },
 };
 
 /**
@@ -2347,14 +2423,14 @@ export const CRAFTS = {
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
   carryPill: '破境 Breakthrough, for the gate',
-  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. Waiting it out always works too.`,
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi fills part as well. Waiting it out always works too.`,
   pillBreaks: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   pillHeld: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   pillNone: (left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi fills part of the bar on the Cultivate screen.`,
   pillWall: (days: number) =>
     `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',
@@ -2571,7 +2647,7 @@ export const HUNDRED = {
   unreached: (craft: string, level: number, realm: number) => `opens at ${craft} level ${level}, realm ${realm}`,
   /** 開 The crucible's plan: every line of the chosen set, in the order the lines open. */
   opensHead: (set: string) => `What opens when: ${set}`,
-  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. The herb and the elite part are this set\'s own.',
+  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. Mystic and Earth never ask for a material from a later realm than the set\'s own: where a line\'s usual material is later, this set\'s own ore stands in. Heaven asks for the usual one. The herb and the elite part are this set\'s own.',
   opensAt: (craft: string, level: number, realm: number) => `${craft} Lv ${level} · realm ${realm}`,
   opensOpen: 'open',
   levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
