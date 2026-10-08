@@ -44,7 +44,7 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { BOTTLENECK_LOOSEN, CODEX_CAP, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
@@ -673,6 +673,29 @@ export function pillHeld(s: State): number {
   return best;
 }
 
+/**
+ * 封 The share of a gate's seal a Breakthrough Pill (a pouch key) fills when it is eaten at
+ * the gate of `realm`, or 0 when it cannot be eaten there: only a pill made for a realm
+ * below, at its faded strength (pillShare). The pill made for the gate's own realm, or one
+ * above it, is carried and breaks the whole bar, so it is never eaten.
+ */
+export function feedShare(key: string, realm: number): number {
+  const { key: k, quality } = splitKey(key);
+  const it = ITEM_BY_KEY[k];
+  if (!it || quality === null || !PILL_CARRIED.has(k) || it.realm >= realm) return 0;
+  return pillShare(quality, fade(it.realm, realm));
+}
+
+/** 封 One Breakthrough Pill out of the pouch, and out of the hand if it was the last. */
+export function eatPill(s: State, key: string): State {
+  if ((s.crafts.pouch[key] ?? 0) < 1) return s;
+  const pouch = { ...s.crafts.pouch };
+  addTo(pouch, key, -1);
+  const carryPill = s.crafts.carry.pill ?? null;
+  return { ...s, crafts: { ...s.crafts, pouch,
+    carry: { ...s.crafts.carry, pill: carryPill === key && !pouch[key] ? null : carryPill } } };
+}
+
 /** 封 Days of the seal the Breakthrough Pill carried counts as at this realm's gate, or 0. */
 export function unsealCarried(s: State): number {
   const b = BEASTS.find((x) => x.warden && x.realm === s.realm);
@@ -854,7 +877,9 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
     const it = ITEM_BY_KEY[key];
     if (it && PILL_CARRIED.has(key)) {
       const seal = SEAL_DAYS[b.realm - 1] ?? 0;
-      const waited = s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0;
+      // 封 Time, qi and lesser pills fill the bar too: a pill breaks only what is still unfilled.
+      const waited = (s.gateAt > 0 ? Math.max(0, (s.at - s.gateAt) / 86_400) : 0)
+        + (Math.max(0, s.sealPaid ?? 0) + Math.max(0, s.sealFed ?? 0)) / 86_400;
       const breaks = it.realm >= b.realm && seal > 0 && waited < seal;
       const share = pillShare(quality ?? 0, fade(it.realm, fightRealm));
       const days = wallDaysLeft(s, b, breach) > 1e-6 ? share * wallDays(b.realm) : 0;
@@ -984,6 +1009,22 @@ export function bestUnseal(s: State, realm: number): number {
   const seal = SEAL_DAYS[realm - 1] ?? 0;
   const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(realm)}`];
   return seal > 0 && r && BREAKTHROUGH_TIERS.includes(realm) && levelIn(s, 'alchemy') >= r.level ? seal : 0;
+}
+
+/**
+ * 封 The days of a realm's seal that lesser Breakthrough Pills (made for a realm below it)
+ * could fill, if this save's Alchemy reached the lowest of them: SEAL_PILL_SHARE of the seal,
+ * and nothing otherwise. The count of pills is not in the save, so the server allows the
+ * most the bar takes, as bestUnseal allows the whole of it.
+ */
+export function bestFeed(s: State, realm: number): number {
+  if (!skillOpen(s, 'alchemy') || realm > s.realm) return 0;
+  const seal = SEAL_DAYS[realm - 1] ?? 0;
+  const reached = BREAKTHROUGH_TIERS.some((t) => {
+    const r = RECIPE_BY_KEY[`alchemy:${breakthroughKey(t)}`];
+    return t < realm && r && levelIn(s, 'alchemy') >= r.level;
+  });
+  return seal > 0 && reached ? seal * SEAL_PILL_SHARE : 0;
 }
 
 /* ── 爐 What the crafts do elsewhere ─────────────────────────────────────── */

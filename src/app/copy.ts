@@ -276,16 +276,32 @@ export const CULTIVATE = {
    * carried Breakthrough Pill does to it, and that waiting always opens it.
    */
   sealed: (left: number) =>
-    `封 Sealed: from the fifth realm on, the gate stays shut for a while after its warden comes out, however strong you are. It opens by itself in ${duration(left * 86_400)}.`,
+    `封 Sealed, however strong you are. The bar fills with time by itself and opens the gate in ${duration(left * 86_400)}.`,
   sealBroken: (left: number, days: number) =>
     `封 Sealed for ${duration(left * 86_400)} more, but the Breakthrough Pill you carry breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   sealHeld: (days: number) =>
     `Your pouch holds a Breakthrough Pill: carried, it breaks the seal now and ${days.toFixed(1)} days of the bottleneck with it. Carry it in 業 the workshop.`,
-  sealNone: `A Breakthrough Pill from 業 Alchemy breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
-  /** 封 The seal's bar, filling with the time served: its label for a screen reader. */
-  sealBar: (served: number) => `Seal ${percent(served)} served`,
+  sealNone: `Pills made for a lower realm fill part of it. The Breakthrough Pill made for this realm, from 業 Alchemy, breaks it at once, and ${percent(CRAFT_KIT.pill)} or more of the bottleneck’s days with it. Nothing is lost while you wait.`,
+  /** 封 The seal's bar, filling with time, qi and pills: its label for a screen reader. */
+  sealBar: (served: number) => `Seal ${percent(served)} filled`,
   sealServed: '封 The seal has run out. The gate is open.',
+  /** 封 What has filled the bar so far, one word for each way. */
+  sealLegend: (time: number, qi: number, pills: number) =>
+    `Filled by time ${duration(time * 86_400)} · qi ${qi > 0 ? duration(qi * 86_400) : 'none'} · pills ${pills > 0 ? duration(pills * 86_400) : 'none'}`,
+  /** 封 Pay qi into the bar: the button, what it fills, and why it may be out of reach. */
+  sealPay: (price: string) => `Pay ${price} qi`,
+  sealPayFills: (days: number) => `fills ${duration(days * 86_400)}`,
+  sealPayShort: 'Not enough qi for a tap yet.',
+  sealPayFull: (share: number) =>
+    `Qi has filled all it can here, ${percent(share)} of the bar. Time and pills do the rest.`,
+  sealPayRule: (share: number, minutes: number) =>
+    `Qi fills up to ${percent(share)} of the bar, a tap at a time, and a tap costs ${minutes} min of your own gathering for every hour it fills.`,
+  /** 封 Eat a Breakthrough Pill made for a realm below: the button and its note. */
+  sealFeed: (name: string) => `Use ${name}`,
+  sealFeedFills: (days: number) => `fills ${duration(days * 86_400)}`,
+  sealFeedFull: (share: number) =>
+    `Pills made for lower realms have filled all they can here, ${percent(share)} of the bar.`,
   sealedButton: (left: number) => `Sealed · ${duration(left * 86_400)}`,
 
   /** 渡劫 What the ninth realm says instead, now that it has somewhere to go. */
@@ -623,7 +639,7 @@ export const ADVICE = {
     `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
   sealWait: (left: number) =>
-    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait; a Breakthrough Pill from Alchemy opens it now.`,
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi fills part of the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -2347,14 +2363,14 @@ export const CRAFTS = {
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
   carryPill: '破境 Breakthrough, for the gate',
-  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. Waiting it out always works too.`,
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi fills part as well. Waiting it out always works too.`,
   pillBreaks: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   pillHeld: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   pillNone: (left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi fills part of the bar on the Cultivate screen.`,
   pillWall: (days: number) =>
     `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',

@@ -13,8 +13,17 @@
  * Each habit is played as it is, and again with the workshop on (`crafts`), and for each
  * the day the ninth realm opened and the days spent at each gate from five to eight.
  *
- *     npx tsx tools/seal.ts               every habit
- *     npx tsx tools/seal.ts active        one
+ * 封 Since 2026-10-08 the seal is a bar (rekaris): time fills it by itself, qi can fill up to
+ * SEAL_PAY_SHARE of it a tap at a time, and lesser pills fill the rest of what they can.
+ * Each habit is therefore played four ways: `waits` (the seal as it was, and the numbers
+ * every earlier measurement was made on), and `pays` at the real price, half of it and
+ * twice it, which pushes the number off its value to see that it slows and never walls.
+ *
+ *     npx tsx tools/seal.ts                          every habit, every way
+ *     npx tsx tools/seal.ts active                   one habit, every way
+ *     npx tsx tools/seal.ts active 1                 one habit, paying the real price
+ *     npx tsx tools/seal.ts active wait              one habit, waiting
+ *     npx tsx tools/seal.ts active "" workshop       only the rows with the workshop
  */
 import { HABITS, play, type Habit } from './habits.ts';
 import { canFightWarden, wardenStands } from '../src/sim/state.ts';
@@ -49,18 +58,28 @@ export function sealRow(h: Habit): SealRow {
 
 const WHO = ['never fights', 'barely fights', 'once a day', 'casual', 'active', 'every hour'];
 
+/** 封 How each way of paying is named, and what the habit is told to do: undefined waits (the seal as it was). */
+export const PRICES: readonly (number | undefined)[] = [undefined, 1, 0.5, 2];
+const label = (p: number | undefined) => (p === undefined ? 'waits' : `pays x${p}`);
+
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // npx tsx tools/seal.ts [habit] [price]: price is a multiple of the real one, "wait" for none.
   const only = process.argv[2];
+  const one = process.argv[3];
+  const prices = one === undefined || one === '' ? PRICES : [one === 'wait' ? undefined : Number(one)];
   const rows: SealRow[] = [];
   for (const name of only ? [only] : WHO) {
     const base = HABITS.find((x) => x.name === name);
     if (!base) throw new Error(`封 no habit called ${name}`);
-    for (const h of base.hunts > 0 ? [base, { ...base, crafts: true }] : [base]) {
-      const row = sealRow(h);
-      rows.push(row);
-      const f = (x: number) => (Number.isFinite(x) ? x.toFixed(1).padStart(5) : '    -');
-      console.log(`${(row.name + (row.crafts ? ' + workshop' : '')).padEnd(26)} realm 9 on day ${row.realm9 !== undefined ? row.realm9.toFixed(1).padStart(6) : '     -'}`
-        + `   at gates 5..8 ${row.waited.map(f).join(' ')} d   sealed ${row.sealed.map(f).join(' ')} d`);
+    const hands = base.hunts > 0 ? [base, { ...base, crafts: true }] : [base];
+    for (const h of process.argv[4] === 'workshop' ? hands.filter((x) => x.crafts) : hands) {
+      for (const price of prices) {
+        const row = sealRow({ ...h, paysSeal: price });
+        rows.push(row);
+        const f = (x: number) => (Number.isFinite(x) ? x.toFixed(1).padStart(5) : '    -');
+        console.log(`${(row.name + (row.crafts ? ' + workshop' : '')).padEnd(26)} ${label(price).padEnd(9)} realm 9 on day ${row.realm9 !== undefined ? row.realm9.toFixed(1).padStart(6) : '     -'}`
+          + `   at gates 5..8 ${row.waited.map(f).join(' ')} d   sealed ${row.sealed.map(f).join(' ')} d`);
+      }
     }
   }
   // 底 A harness that reached nothing passes, so it says how many it reached and stops if
