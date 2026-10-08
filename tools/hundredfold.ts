@@ -19,11 +19,12 @@
  *   4. each codex bonus, measured on the fight or the system it reaches, at Heaven and at
  *      Heaven worn whole (its cap), against the same body without it;
  *   5. the endgame clock with and without the sets, and with the tower codex at its cap,
- *      pushed off its number the way CLAUDE.md asks (every Dragon a tenth heavier).
+ *      pushed off its number the way CLAUDE.md asks (every Dragon a tenth heavier), with the
+ *      kit reaching the Dragon and without, and the set's own worn step told apart from the codex.
  */
 import { strict as assert } from 'node:assert';
 import { HABITS, play, type Habit } from './habits.ts';
-import { arrivalOf, playEndgame } from './endgame.ts';
+import { arrivalOf, playEndgame, type DragonKit } from './endgame.ts';
 import {
   codexRank, codexValue, lineAxes, materialReached, pieceOf, placesMade, type Order, type Portions,
 } from '../src/sim/hundred.ts';
@@ -293,29 +294,47 @@ if (!quick) {
   /* ── 5 · the endgame clock ─────────────────────────────────────────────── */
 
   console.log('\n劫 5 · the endgame clock, days a mark over 80 crossings (and every Dragon a tenth heavier)');
-  const clock = (start: State, heavier = 1) => {
-    const e = playEndgame(80, 'pill', arrivalOf(start), heavier);
+  const clock = (start: State, heavier = 1, dragonKit: DragonKit = 'game') => {
+    const e = playEndgame(80, 'pill', arrivalOf(start), heavier, dragonKit);
     return e.days.reduce((a, b) => a + b, 0) / e.days.length;
   };
   const sNo = without.state;
   const sWith = withForge.state;
   const tower = three(sWith, 8);
+  /**
+   * 劫 Since 2026-10-08 a carried elixir and sigil reach the Dragon, and so does the set's own
+   * step (HUNDRED_KIT: two pieces worn make every one of them a quarter stronger). `none` and
+   * `whole` differ in more than the codex: `whole` wears flagged pieces, `none` does not. So
+   * the codex is asked two ways that leave nothing else standing between the bodies: with
+   * nothing reaching the Dragon ('off'), and with the kit reaching it but the set worn in
+   * both (`step`: the same six flagged pieces, the sets' codex not finished).
+   */
+  const step: State = { ...tower.whole, crafts: { ...tower.whole.crafts, made: tower.none.crafts.made } };
   const rows: [string, State][] = [
     ['crafts it all, no sets', sNo], ['crafts it all, with its sets', sWith],
     ['Dragonwake worn, no codex', tower.none], ['Dragonwake worn, codex at cap', tower.whole],
+    ['Dragonwake worn, set step only', step],
   ];
-  const clocks: Record<string, [number, number]> = {};
+  const clocks: Record<string, { off: [number, number]; kit: [number, number] }> = {};
   for (const [name, s] of rows) {
-    clocks[name] = [clock(s), clock(s, 1.1)];
-    console.log(`  ${name.padEnd(32)} ${clocks[name][0].toFixed(2)} d/mark   heavier ${clocks[name][1].toFixed(2)} d/mark`);
-    assert(clocks[name][0] > 0 && clocks[name][1] < 400, `${name}: the endgame keeps moving`);
+    clocks[name] = { off: [clock(s, 1, 'off'), clock(s, 1.1, 'off')], kit: [clock(s), clock(s, 1.1)] };
+    const c = clocks[name];
+    console.log(`  ${name.padEnd(32)} kit not at the Dragon ${c.off[0].toFixed(2)} (heavier ${c.off[1].toFixed(2)})   kit at the Dragon ${c.kit[0].toFixed(2)} (heavier ${c.kit[1].toFixed(2)}) d/mark`);
+    assert(c.off[0] > 0 && c.off[1] < 400 && c.kit[0] > 0 && c.kit[1] < 400, `${name}: the endgame keeps moving`);
   }
-  const moved = (a: string, b: string, i: 0 | 1) => clocks[b][i] / clocks[a][i] - 1;
+  const moved = (a: string, b: string, kit: 'off' | 'kit', i: 0 | 1) => clocks[b][kit][i] / clocks[a][kit][i] - 1;
   for (const i of [0, 1] as const) {
-    const sets = moved('crafts it all, no sets', 'crafts it all, with its sets', i);
-    const cap = moved('Dragonwake worn, no codex', 'Dragonwake worn, codex at cap', i);
-    console.log(`  ${i ? 'heavier' : 'as set '}: the sets move the clock ${(sets * 100).toFixed(1)}%, the tower codex at its cap ${(cap * 100).toFixed(1)}%`);
-    assert(Math.abs(cap) <= 0.08, 'the tower codex moves the endgame clock a few per cent at most');
+    const label = i ? 'heavier' : 'as set ';
+    const sets = moved('crafts it all, no sets', 'crafts it all, with its sets', 'kit', i);
+    // The codex alone, two ways with nothing else between the bodies.
+    const capOff = moved('Dragonwake worn, no codex', 'Dragonwake worn, codex at cap', 'off', i);
+    const capKit = moved('Dragonwake worn, set step only', 'Dragonwake worn, codex at cap', 'kit', i);
+    // And the set's own worn step, which the kit at the Dragon now lets reach the clock.
+    const stepKit = moved('Dragonwake worn, no codex', 'Dragonwake worn, set step only', 'kit', i);
+    console.log(`  ${label}: the sets move the clock ${(sets * 100).toFixed(1)}%; the tower codex at its cap ${(capOff * 100).toFixed(1)}% with no kit at the Dragon, ${(capKit * 100).toFixed(1)}% with the kit and the set worn in both; the set's worn step alone ${(stepKit * 100).toFixed(1)}% with the kit`);
+    assert(Math.abs(capOff) <= 0.08, 'the tower codex moves the endgame clock a few per cent at most');
+    assert(Math.abs(capKit) <= 0.08, 'the tower codex moves the endgame clock a few per cent at most, with the kit at the Dragon');
+    assert(stepKit <= 0.08, 'wearing the set never slows the endgame');
   }
   void placesMade; void SLOTS;
 }
