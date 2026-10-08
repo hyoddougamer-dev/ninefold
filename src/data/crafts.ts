@@ -506,7 +506,7 @@ for (const tier of BREAKTHROUGH_TIERS) {
   item({ key, han, name, kind: 'elixir', realm: tier, icon: 'beams-aura', graded: true,
     does: `Carried into your realm’s warden, it breaks the gate’s 封 seal at once, and ${pillTakes(1)} of the days its 瓶頸 bottleneck `
       + `takes to loosen with it (${pillTakes(TOP_MULT)} at ${RARITY_INFO.heaven.name} rank), on top of your elixir and sigil. `
-      + `Made for realm ${tier}: a gate above it keeps its seal, and the wall takes ×${CRAFT_KIT.fade} as much for each realm. A win spends it, a loss keeps it.` });
+      + `Made for realm ${tier}: at a gate above it, it cannot be carried to break the seal, but eaten from the gate’s card it fills part of the seal’s bar (×${CRAFT_KIT.fade} as much for each realm above), and the wall takes ×${CRAFT_KIT.fade} as much. A win spends it, a loss keeps it.` });
   recipe(heavy({ key: `alchemy:${key}`, skill: 'alchemy', group: 'Breakthrough', han, name,
     level: BREAKTHROUGH_LEVEL[tier], realm: tier, seconds: CRAFT_SECONDS.alchemy,
     needs: [[TIER_HERB[tier - 2], 2], ['cinnabar', 1]],

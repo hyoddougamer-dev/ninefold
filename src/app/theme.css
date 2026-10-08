@@ -2872,13 +2872,24 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .c-side .card .gateseal { border-left: 2px solid color-mix(in srgb, var(--gold) 70%, transparent); padding-left: 9px; }
 .c-side .card .gateseal[data-open="true"] { border-left-color: color-mix(in srgb, var(--jade) 55%, transparent); }
 .c-side .card .act[data-sealed="true"] { opacity: .62; cursor: default; }
-/* 封 The seal's bar: it fills with the time served (rekaris: "a bar that fills with time"),
-   and stands full in jade once a carried Breakthrough Pill breaks it. Its own class, on
-   this card only. */
-.c-side .card .gateseal .gateseal-bar { display: block; height: 4px; margin-top: 7px; border-radius: 2px; overflow: hidden;
-        background: color-mix(in srgb, var(--gold) 16%, transparent); }
-.c-side .card .gateseal .gateseal-bar i { display: block; height: 100%; background: color-mix(in srgb, var(--gold) 75%, transparent); }
-.c-side .card .gateseal .gateseal-bar[data-broken="true"] i { background: color-mix(in srgb, var(--jade) 70%, transparent); }
+/* 封 The seal's bar (rekaris, 2026-10-08): time fills it by itself, in gold; qi paid in
+   adds a violet stretch and lesser Breakthrough Pills a jade one; a carried pill that breaks
+   the seal stands it full in jade. Its own classes, on this card only. */
+.c-side .card .gateseal .gateseal-bar { display: flex; height: 8px; margin-top: 8px; border-radius: 4px; overflow: hidden;
+        background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.c-side .card .gateseal .gateseal-bar i { display: block; height: 100%; flex: none; }
+.c-side .card .gateseal .gateseal-bar i[data-kind="time"] { background: color-mix(in srgb, var(--gold) 78%, transparent); }
+.c-side .card .gateseal .gateseal-bar i[data-kind="qi"] { background: color-mix(in srgb, var(--incense) 85%, transparent); }
+.c-side .card .gateseal .gateseal-bar i[data-kind="pill"] { background: color-mix(in srgb, var(--jade) 75%, transparent); }
+.c-side .card .gateseal .gateseal-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; }
+.c-side .card .gateseal .gateseal-acts button.act { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        width: 100%; padding: 9px 12px; text-align: left; font-size: 12.5px; letter-spacing: .03em; line-height: 1.3;
+        background: transparent; color: var(--text); box-shadow: none; border: 1px solid var(--line); border-radius: 9px; }
+.c-side .card .gateseal .gateseal-acts button.act em { flex: none; font-style: normal; font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+        font-size: 11px; letter-spacing: .04em; color: var(--faint); text-align: right; }
+.c-side .card .gateseal .gateseal-acts button.act[data-kind="qi"] { border-color: color-mix(in srgb, var(--incense) 65%, transparent); }
+.c-side .card .gateseal .gateseal-acts button.act[data-kind="pill"] { border-color: color-mix(in srgb, var(--jade) 65%, transparent); }
+.c-side .card .gateseal .gateseal-acts button.act:disabled { color: var(--faint); border-color: var(--line); background: transparent; }
 
 /* 室 On the vault's path the blessed room is named under the seal rather than ringed.
    量 A ring was the first version and it was invisible: every room on that path wears a

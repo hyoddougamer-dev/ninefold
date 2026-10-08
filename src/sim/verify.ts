@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
-  ROUND_CAP, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
@@ -51,7 +51,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestFeed, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
@@ -379,18 +379,29 @@ export const EDGE_STRICT_FROM = SEAL_STRICT_FROM;
 
 /**
  * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
- * the least: each gate's SEAL_DAYS, or nothing where this save's Alchemy reached the
- * Breakthrough Pill made for that realm, which breaks the seal outright (bestUnseal). A
- * gate the earlier save already stood at owes only what was left of its seal then; one it
- * had not reached owes all of it.
+ * the least. Each gate's bar is SEAL_DAYS of time, less everything an honest cultivator
+ * could have put into it: the Breakthrough Pill made for that realm, which this save's
+ * Alchemy reached or not, breaks the whole bar (bestUnseal); otherwise qi fills up to
+ * SEAL_PAY_SHARE of it, and lesser pills up to SEAL_PILL_SHARE where Alchemy reached one
+ * (bestFeed). The server sees a gate crossed, never what was paid into it, so it allows the
+ * most that can honestly be, as it does for the kit. A gate the earlier save already stood
+ * at owes only what was left of its bar then (its own fills counted); one it had not
+ * reached owes all of it. A save from before the bar has no fills and is read the same.
  */
 export function sealSeconds(before: State, after: State): number {
   let days = 0;
   for (let r = before.realm; r < Math.min(9, after.realm); r++) {
-    const pill = bestUnseal(after, r);
+    const whole = bestUnseal(after, r);
+    const bar = after.sealPaid !== undefined || after.sealFed !== undefined;
+    const qi = bar ? SEAL_PAY_SHARE * sealDays(r) : 0;
+    const lesser = bar ? bestFeed(after, r) : 0;
     if (r === before.realm && before.wardenFell) continue;
-    if (r === before.realm && wardenStands(before)) days += sealLeft(before, pill);
-    else days += Math.max(0, sealDays(r) - pill);
+    if (r === before.realm && wardenStands(before)) {
+      // What the earlier save had already put in is inside sealLeft; allow only the rest.
+      const more = Math.max(0, qi - Math.max(0, before.sealPaid ?? 0) / 86_400)
+        + Math.max(0, lesser - Math.max(0, before.sealFed ?? 0) / 86_400);
+      days += sealLeft(before, whole > 0 ? whole : more);
+    } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser));
   }
   return days * 86_400;
 }
@@ -572,9 +583,11 @@ export function verify(before: State, after: State, seconds: number, first = fal
     if (!beatable(there, w, undefined, bestKit(there, w, 'warden'))) { why.push('warden'); break; }
   }
   // 封 And every sealed gate crossed stood shut for its days, less what a Breakthrough Pill
-  // this save's Alchemy could have made counts as. Time is the honest way through it, so
-  // a seal crossed too soon is a matter of time and waits, like a clock moved on.
-  // A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
+  // this save's Alchemy could have made counts as, and the share of its bar that qi and lesser
+  // pills can fill (SEAL_PAY_SHARE, SEAL_PILL_SHARE: see sealSeconds; a loosening, so it needs
+  // no grandfathering, and a save without the bar's fields is read as it always was). Time is
+  // the honest way through it, so a seal crossed too soon is a matter of time and waits, like
+  // a clock moved on. A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
   if (before.at >= SEAL_STRICT_FROM && sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) {
     why.push('too-fast');
   }
