@@ -1774,11 +1774,15 @@
         ],
         [
           "圍 Drive: keep or melt",
-          "When a Drive ends, a window lists everything that dropped (the best 60), with the chest's filters. Mark what you keep, melt the rest, or melt the bag as well to make room. If the chest cannot hold what you marked, it will not let you finish. Not answering is fine: *Let the game decide* does what it always did, and after a day the game answers for you. The price is unchanged."
+          "When a Drive ends, a window lists everything that dropped, all of it up to the drive's cap, with the chest's filters. Mark what you keep, melt the rest, or melt the bag as well to make room. If the chest cannot hold what you marked, it will not let you finish. Not answering is fine: *Let the game decide* does what it always did, and after a day the game answers for you. The price is unchanged."
         ],
         [
           "留 Hold the layer",
           "A switch under the ladder on 修 Cultivate, off by default. On, a full bar waits until you tap *Open layer*, so you can spend the qi on upgrades first. It never gives more qi than not holding. Played carefully it is worth up to about 9% sooner to the ninth realm, which I think is fair for the attention."
+        ],
+        [
+          "狩 The realm of every beast",
+          "Each beast on the hunt list carries a small chip with its realm (R5 for the fifth), in the realm's colour, so you can tell at a glance what level of gear it leaves. Hover it on a computer for the realm's name. It is on the Drive sheet and the arena too. Thank you, Raziel, for the mockups."
         ],
         [
           "百煉 Hundredfold lines in your own realm",
@@ -1900,7 +1904,7 @@
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you (Mystic at the least; a common beast tops out at Earth, a warden reaches Heaven), and the bond starts again. 運 Fortune Seekers fill it in 9 wins, or 8 at the full."],
         ["▸ 霸 Elites", "From the second realm, the last beast of each realm is an elite, marked on its row. It stands far above the rest of its realm and never gets weaker with time, and it leaves three times the 材 material. It is the hunt for a strong build, never the week's quarry and never a door in 秘境."],
-        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free. When it ends, a window lists what dropped: mark what to keep and the rest melts like any melt, or let the game decide. Leave it and it waits; the game answers after a day."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free. When it ends, a window lists everything that dropped: mark what to keep and the rest melts like any melt, or let the game decide. Leave it and it waits; the game answers after a day."],
         ["▸ 期 The week's quarry", "One beast each week (never an elite) pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
       ]
     },
@@ -4000,6 +4004,38 @@
       "reply": [
         "I built what you suggested, pills and sigils counting at the Dragon at a fraction of their strength, and measured it before deciding. The honest result is that I cannot make the fraction small. The Dragon stands only a few per cent above even odds, so a kit that matters moves the clock at once. For a crafter with Alchemy and Sigil Writing at 99, the 40 crossings come sooner by about 6% to 17% (depending on how you play) at 1% of their strength, 17% to 28% at 2%, a third at 10%, and half at full strength. Only about 0.3% keeps every habit under 10%, and a pill worth 0.3% is a pill nobody would feel.",
         "So for now they stay out of the Dragon, and I would rather say that than ship a number that feels like nothing. There is another road: let them count and set the Dragon heavier for everyone, so the marks come at today's pace. That makes the pills matter and the fight harder for those without them. If you want me to measure that one, say so here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Drive improvements",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "You were right, and the number I gave above was wrong to say 60. The window now lists every piece the drive dropped, up to the drive's own cap (at most 3,000, counting the second pieces from Creation), 60 on screen at a time with a Show more button. Select all and Clear act on everything the filter shows, not only on what is drawn: I checked it on a 2,000-piece drive, where Select all keeps 2,000 and the Weapon filter marks exactly the weapons. It opens in a fraction of a second. Thank you for pushing on that, it was the right call.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Hunt realm",
+      "reply": [
+        "Done, thank you for the mockups. Each beast on the hunt list now carries a small chip with its realm (R5 for the fifth), in the realm's colour, beside its name. Hover it on a computer for the realm's name. It is also on the Drive sheet and the arena.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "tags": [
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "That is a fair hit, and you are right that I was holding on to a number. So I measured the road you offered: let the tools count at the Dragon and make the Dragon harder, so a crafter keeps today's pace. It does not work fairly. Whatever raises the Dragon enough to keep the crafter where he is makes everyone who does not craft 40% to 85% slower to forty crossings, and a tenth more Dragon on top walls them. The other way, keeping the average pace, puts crafters 35% to 53% sooner and everyone else 26% to 59% later. Neither is the 'not too unfun for someone not using them' you asked for.",
+        "What I can do is small: a carried elixir and sigil counting at about 1.5% of their strength at the Dragon. For the active crafter that is 8% to 11% sooner, for the once-a-day and every-hour crafters about 20%, and nobody else moves. It is more a shortcut on the clock than a better fight, because the Dragon is a cliff in power, and the elixir is spent on every win. Making the tools compulsory, as gear is, would mean rebuilding the endgame's numbers as a whole, and I would not do that unless you all ask for it. So: the small share, or leave the Dragon alone and I look for another job for pills elsewhere? Tell me which one and I will do it.",
         "· 師 Shibaki"
       ]
     }
