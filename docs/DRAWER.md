@@ -141,7 +141,8 @@ were rejected and are not revived.
 - **宿慧 The Echo** a life leaves: `ECHO_FIRST` (5%) for its first mark and `ECHO_STEP`
   (2.5%) for every doubling after it, `ECHO_FIRST + ECHO_STEP * log2((1 + marks) / 2)`:
   1 mark +5%, 3 marks +7.5%, 7 +10%, 15 +12.5% (`ECHO_LIFE_MAX`, the most one life gives).
-  All lives together: `ECHO_CEILING` = **+25%**. Until 2026-10-08 the first mark was a bare
+  All lives together: `ECHO_CEILING` = **+25%** exactly, and past it a soft tail under a hard roof
+  of `ECHO_ROOF` = **+35%** (built 2026-10-08, see *The endless road*). Until 2026-10-08 the first mark was a bare
   step (1 mark +2.5%, 31 marks for the most a life gives); see *The first allowed moment*.
 - **Where it applies:** qi gathered, in `advance()` through `gathering()`. `rate()` itself is
   unchanged, so everything paid or priced as seconds of the rate (beds, meetings, the spring,
@@ -155,13 +156,13 @@ were rejected and are not revived.
   (below). **Everything else begins again.** No heirloom: a ninth-realm piece worn in the first realm either breaks the
   server's gear check (a strike) or needs a new rescaling rule, and one more uncapped power
   path is the opposite of what the endgame needs.
-- **Record:** `State.lives`, at most `LIVES_MAX` = 9 entries of `{ marks, at }` (seconds),
+- **Record:** `State.lives`, at most `LIVES_MAX` = 40 entries (9 until the tail was built) of `{ marks, at }` (seconds),
   validated by `validLives`: whole marks from 1 to 300, instants in order inside the save's
   life. The Echo, the title and the day a life began are derived from it, never stored.
 - **Server:** `verify()` reads a pair across a rebirth as the claimed marks paid out of the
   time first (a mark is at least the pool at the deepest sitting and the larger Echo), then
   the new life verified from `bornFrom`, the same function the game is reborn through. A
-  forged record can claim at most +25% of rate and waits for the marks it claims; two copies
+  forged record can claim at most the roof (+35%) of rate and waits for the marks it claims; two copies
   reborn differently are another copy, never a strike. The sync core, the spare copy and the
   cloud pick order saves by lives first (`progressOf`). **No Supabase schema change.**
 
@@ -482,51 +483,66 @@ The Rebirth page and the line a new life opens with already say it (`REBIRTH.car
 `REBIRTH.bornWorkshop`). The `g-rebirth` guide in `tools/discord/server.json` still says the
 workshop begins again, and the bible's Rebirth line (`tools/bible.ts`) does not mention it.
 
-### 宿慧 The endless road (rekaris asked for "no cap, diminishing returns"; measured, NOT built)
+### 宿慧 The endless road (rekaris asked for "no cap, diminishing returns"; BUILT 2026-10-08)
+
+**Status:** built on the working branch, not released. The owner decided on 2026-10-08 to
+build the soft tail below. `npm run echotail` (tools/echotail.ts) measures it and
+`npm run rebirth` holds the rest of the rebirth to it.
 
 **Can an uncapped Echo be offered in a form that respects the law?** Literally uncapped, no:
-`ECHO_CEILING` is the roof the economic law asks for, and it is also what the server's bound
-stands on (`verify.ts` reads `echoFactor` of the record), so an Echo without a roof is a bound
-without one: a forged record of forty lives would be the most any save may hold. What can be
-offered is a *soft* one: a logarithmic tail that never quite stops but is worth little, under
-a hard roof a few points past today's. `npm run echotail` measures the form below.
+the server's bound stands on the Echo of the record (`verify.ts` reads `echoFactor`), so an
+Echo without a roof is a bound without one. What was built is a *soft* one: a logarithmic
+tail that never quite stops, under a hard roof.
 
-Every life gives what it gives now. Past the 25%, the lives are counted in full lives (12.5%
-each) and each doubling of that count adds `TAIL`: `tail = TAIL * log2(1 + (sum - 25%) / 12.5%)`.
-The Echo after n lives of 15 marks (of 3 marks, in brackets), for a tail of 1% / 2% / 3% a
-doubling:
+**As built** (`src/sim/echo.ts`, constants in `balance.ts`): every life gives what it gave.
+`sum` is the sum of `lifeEcho` over the record. `echo = min(ECHO_ROOF, min(ECHO_CEILING, sum) +
+ECHO_TAIL * log2(1 + max(0, sum - ECHO_CEILING) / ECHO_LIFE_MAX))`, with `ECHO_CEILING` 25%,
+`ECHO_TAIL` 2% and `ECHO_ROOF` 35%. So while the lives sum to 25% or less the Echo is the
+sum, bit for bit as before; past it, each doubling of the full lives (12.5% each) beyond the
+first two adds 2%. The roof is reached at **33** lives of 15 marks (the brief said about 38,
+but log2(32) = 5 doublings of 2% is exactly 10 points, which is a sum of 4.125, 33 lives).
+The record holds `LIVES_MAX` = 40, so the roof is inside it. The server's bound moves from
+1.25 to 1.35 (`ECHO_ROOF`) and nothing else: `validate()` cuts a record to 40 lives of at
+most 300 marks, so a hand-edited record of 200 lives or 99999 marks reads exactly the roof.
+The save grows by about 0.9 KB of JSON (1.2 KB sealed) at 40 lives against 9.
 
-| lives | 1% | 2% | 3% |
-| --- | --- | --- | --- |
-| 4 | +26.6% (+25.5%) | +28.2% (+26.0%) | +29.8% (+26.5%) |
-| 9 | +28.0% (+27.1%) | +31.0% (+29.3%) | +34.0% (+31.4%) |
-| 20 | +29.2% (+28.5%) | +33.5% (+31.9%) | +37.7% (+35.4%) |
-| 40 | +30.3% (+29.5%) | +35.6% (+34.0%) | +40.9% (+38.6%) |
+The Echo after n lives of 15 marks (of 3 marks): 4 lives +28.2% (+26.0%), 9 +31.0% (+29.3%),
+10 +31.3%, 20 +33.5% (+31.9%), 33 and 40 +35.0% (+34.0% at 40 lives of 3 marks). Before the
+tail, nine lives of 15 marks read +25%; they now read +31.0%.
 
-And what that moves, days to the summit of a reborn life at each total Echo (a visit-a-day
-habit steps in whole visits, so its column is a day or two noisy):
+**Measured** (`npm run echotail`, 2026-10-08, days to the summit of a reborn life, the mean of
+three gear seeds; a visit-a-day habit steps in whole visits and the gear dice move a column
+by a day or two either way):
 
-| Echo | active | every hour | once a day |
-| --- | --- | --- | --- |
-| +25% (today's roof) | 48.3 | 31.7 | 72.0 |
-| +30% | 46.3 (-4.1%) | 29.7 (-6.3%) | 74.0 |
-| +33% | 46.2 (-4.5%) | 30.1 (-5.0%) | 72.0 |
-| +36% | 44.8 (-7.2%) | 29.7 (-6.2%) | 72.0 |
-| +40% | 41.7 (-13.8%) | 28.4 (-10.4%) | 71.0 (-1.4%) |
-| +50% | 41.2 (-14.8%) | 26.5 (-16.2%) | 65.0 (-9.7%) |
+| habit | +25% (the old roof) | 10 lives (+31.3%) | 20 lives (+33.5%) | 40 lives (+35%) |
+| --- | --- | --- | --- | --- |
+| active | 47.4 | 44.8 (-5.6%) | 44.9 (-5.4%) | 44.5 (-6.2%) |
+| every hour | 30.7 | 29.8 (-3.0%) | 29.3 (-4.5%) | 29.4 (-4.4%) |
+| casual | 64.6 | 63.9 (-1.0%) | 61.7 (-4.5%) | 61.8 (-4.3%) |
+| once a day | 74.3 | 74.3 (0%) | 73.3 (-1.3%) | 73.0 (-1.8%) |
+| never fights | 111.3 | 105.3 (-5.4%) | 104.3 (-6.3%) | 104.3 (-6.3%) |
 
-So twenty lives with a 1% tail sit at about +29%: the summit moves 1 to 2 days and a mark
-comes 3% sooner. A 2% tail, about +33%: about 2 days at the summit, 6% on a mark. A 3% tail,
-about +38%: 4 to 5 days at the active habit, 9% on a mark. A point of Echo past the roof is
-worth about what the first points were (0.6% of the summit), so the tail is small because
-it adds few points, not because the points are weak. The cost is not the days. It is what
-comes with it: the record would have to hold more than nine lives (`LIVES_MAX`, `validLives`,
-the server's walk of the record, the size of the save) or fold old lives into a count; the
-roof the server bounds a forged record by would move to wherever the tail is cut; and a
-number that never stops is a promise to a tester that the game will never say "enough".
+So twenty lives of 15 marks sit at about +33%: the summit moves 1 to 3 days for the habits that
+fight and about 7 for the one that never does, and a mark comes 6.4% sooner. That is about
+what the Echo's own arithmetic says (1/1.25 to 1/1.335), and no life is ever sooner than the
+roof's arithmetic allows (`rebirth.ts` section 5 now holds it to the 35%).
 
-**If the owner wants it,** the form that respects the law is a tail with a hard roof: say
-`TAIL = 2%` and a ceiling at +35%, which the tail reaches at about 38 lives of 15 marks, and
-the 25% roof and the nine lives left exactly as they are for everyone who stops there. The
-server's bound moves from 1.25 to 1.35 and nothing else. It is the owner's decision and none
-of it is in the code.
+- **The first lives never change.** Up to a sum of 25% the Echo is the sum itself (held by a
+  test over every depth up to 40 marks). Life 6 of the mark-3 policy, the longest the earlier
+  measurement walked, now carries +27.0% against +25.0% and reaches the summit within half a
+  day of where it did (active -0.3, every hour +0.1, casual -0.4, once a day 0, never fights
+  0). Ending every life on mark 1, the Echo reaches +25.0% after five lives as before, and
+  the tail adds 1.0 point at life 6 and 3.9 at life 12; on 15-mark lives it adds 2.0 at life 3
+  and 6.0 at life 9.
+- **Knife edge** (40 lives, `ECHO_TAIL` and `ECHO_ROOF` each a tenth either way): the summit
+  moves by -1.0 to +0.4 days for the tail and by -0.7 to +1.1 days for the roof, except one
+  never-fights reading of +4.3 days for a roof a tenth *higher* (the gear dice, not the Echo:
+  the roof pushed down reads +0.7). It slows rather than collapses and nothing walls.
+- **On screen:** the Rebirth page says the exact Echo before and after (`+31.0% now, +31.2%
+  after this life, of at most +35%`), says that a life past the ceiling adds a small step
+  rather than what it is worth, and draws the meter against the roof with a tick at 25%. A
+  life past the tenth keeps 十世 Ten Times Born and shows its count; the record list shows the
+  latest nine lives and counts the rest.
+- **The cost** that was named is paid: the record holds 40 lives (`LIVES_MAX`, `validLives`),
+  the server's bound is the roof, and a number that never stops is still a number that
+  stops: `ECHO_ROOF`. Any guide that says nine lives or +25% as the most is out of date.

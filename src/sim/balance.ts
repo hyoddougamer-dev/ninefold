@@ -1041,10 +1041,30 @@ export const ECHO_FIRST = 0.05;
 export const ECHO_STEP = 0.025;
 /** 宿慧 The most one life can add, the first mark and three doublings (15 marks): 12.5%. */
 export const ECHO_LIFE_MAX = 0.125;
-/** 宿慧 The most every life together can ever add to the qi gathered: 25%. */
+/**
+ * 宿慧 Where the Echo stops being quick: 25%, two full lives of 15 marks. Every life together
+ * gives exactly what its lives add up to until here (the first lives never change), and past
+ * here only the soft tail below: see ECHO_TAIL.
+ */
 export const ECHO_CEILING = 0.25;
-/** 世 How many lives a save may remember. Nine, as the realms are. */
-export const LIVES_MAX = 9;
+/**
+ * 宿慧 The soft tail (rekaris, 2026-10-08: "no cap, diminishing returns"; the owner built it
+ * the same day). What the lives add up to past ECHO_CEILING is counted in full lives
+ * (ECHO_LIFE_MAX each), and every doubling of that count is worth ECHO_TAIL more:
+ * tail = ECHO_TAIL * log2(1 + (sum - ECHO_CEILING) / ECHO_LIFE_MAX). It never quite stops,
+ * and every step costs twice the lives the one before it did. 20 lives of 15 marks sit at
+ * about +33%. Measured by tools/echotail.ts and tools/rebirth.ts.
+ */
+export const ECHO_TAIL = 0.02;
+/**
+ * 宿慧 The hard roof: the most every life together can ever add to the qi gathered, tail
+ * included, 35%. The economic law's number, and the one the server holds a record to: a
+ * forged record, however many lives it claims, reads no higher. 33 lives of 15 marks
+ * reach it; the record holds LIVES_MAX of them.
+ */
+export const ECHO_ROOF = 0.35;
+/** 世 How many lives a save may remember: the tail's roof is reached inside it, 40. */
+export const LIVES_MAX = 40;
 /**
  * 業 The workshop through a rebirth. rekaris (Discord, 2026-10-08): the crafts are a thick
  * part of the time spent and running them all again sounds exhausting. A new life begins

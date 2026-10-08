@@ -564,7 +564,7 @@ const SYSTEMS: readonly System[] = [
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
   { han: '轉世', name: 'Rebirth', status: 'open',
-    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +5% qi gathered for its first mark and +2.5% more for every doubling of the marks after it, under +25% for every life together, and a title. Measured by npm run rebirth: a first rebirth taken at once makes the next life 3% to 9% sooner to the summit, and a life at the full Echo 14% to 20% sooner. See docs/DRAWER.md.' },
+    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +5% qi gathered for its first mark and +2.5% more for every doubling of the marks after it, quick to +25% for every life together, then a slow logarithmic tail of +2% for every doubling of the full lives past it, under a hard roof of +35% (reached at 33 lives of 15 marks, 40 lives remembered), and a title. Measured by npm run rebirth and npm run echotail: a first rebirth taken at once makes the next life 3% to 9% sooner to the summit, a life at +25% 14% to 20% sooner, and 20 lives of 15 marks (+33.5%) a few days sooner than that. See docs/DRAWER.md.' },
 ];
 
 /** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
@@ -2297,7 +2297,8 @@ const page = `<meta charset="utf-8">
     <p class="t">A única linha do quadro que não está fechada é
       <b>轉世 Rebirth</b>: está construída num ramo à parte e espera pela decisão. A partir
       do cume, com uma marca, uma vida pode recomeçar no primeiro reino com um 宿慧 Eco de qi
-      que nunca passa de +25%.</p>
+      que sobe depressa até +25% e depois devagar, com uma cauda logarítmica, sem nunca passar
+      de +35%.</p>
   </section>
 
   <section class="sec" id="mockups">

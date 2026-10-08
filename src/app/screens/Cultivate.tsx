@@ -10,7 +10,7 @@ import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
 import { SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
-import { BOTTLENECK_LOOSEN, ECHO_CEILING } from '../../sim/balance.ts';
+import { BOTTLENECK_LOOSEN, ECHO_ROOF } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
   canBuy, canCondense, canCross, canFightWarden, capOf, condense, condenseCost,
@@ -21,7 +21,7 @@ import {
 import { duration, num } from '../../sim/format.ts';
 import { affordableIn, canOpenLayer, gathering, ladderDone, layerCost, layersOpened, openLayer, progress, setHold } from '../../sim/time.ts';
 import { canReincarnate, echoAfter, echoOf, lifeOf, lifeStart, lifeTitle } from '../../sim/rebirth.ts';
-import { echoPct } from '../ui/Rebirth.tsx';
+import { echoExact } from '../ui/Rebirth.tsx';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
 import { HEAVENS, heavenAt, marksToNext, nextHeaven } from '../../data/heavens.ts';
 import { portraitLayers, seal } from '../../art/aura.ts';
@@ -279,7 +279,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       )}
       {/* 世 The title of a life lived again, beside the one from the boards. */}
       {lifeName && (
-        <span className="lifewears"><b className="cjk">{lifeName.han}</b> {lifeName.name}</span>
+        <span className="lifewears"><b className="cjk">{lifeName.han}</b> {lifeName.name}{lifeName.life > 10 && <> · {REBIRTH.lifeCount(lifeName.life)}</>}</span>
       )}
       <div className="row" style={{ alignItems: 'baseline', marginTop: 4 }}>
         {/* 梯 The layer number used to live here, and now lives on the ladder below
@@ -351,7 +351,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         <div className="r mono">
           {CULTIVATE.standing(`+${num(gathering(state))} qi / s`)}
           {/* 宿慧 Already inside the number beside it, and named, so nothing moves unexplained. */}
-          {echo > 0 && <span className="echochip"><Term han="宿慧" /> {REBIRTH.chip(echoPct(echo))}</span>}
+          {echo > 0 && <span className="echochip"><Term han="宿慧" /> {REBIRTH.chip(echoExact(echo))}</span>}
           {focus > 1.15 && (
             <span className="deep" data-full={focus >= deepest - 0.001}>
               <Term han="入定" /> ×{focus.toFixed(1)}
@@ -677,8 +677,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {reborn && onRebirth && (
         <button className="rebirthline" onClick={onRebirth}>
           <span><Svg html={seal('cosmic-egg', '#B49AE0')} /></span>
-          <span><b className="cjk">轉世</b> {REBIRTH.title}. {echo >= ECHO_CEILING - 1e-9
-            ? REBIRTH.offerFull : REBIRTH.offer(echoPct(echoAfter(state)))}</span>
+          <span><b className="cjk">轉世</b> {REBIRTH.title}. {echo >= ECHO_ROOF - 1e-9
+            ? REBIRTH.offerFull : REBIRTH.offer(echoExact(echoAfter(state)))}</span>
           <em className="cjk">›</em>
         </button>
       )}

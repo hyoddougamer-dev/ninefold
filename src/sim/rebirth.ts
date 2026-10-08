@@ -10,8 +10,9 @@
  * and the life they leave is written into the record (State.lives). What it leaves them is:
  *
  *   宿慧 the Echo, a share on top of the qi gathered, read off how far the life went (the
- *        marks it crossed, a step for every doubling: see echo.ts). Under ECHO_CEILING
- *        across every life, for ever, because nothing uncapped may raise the qi rate.
+ *        marks it crossed, a step for every doubling: see echo.ts). Quick under
+ *        ECHO_CEILING, a slow logarithmic tail past it (ECHO_TAIL), and a hard roof over
+ *        every life together (ECHO_ROOF), because nothing uncapped may raise the qi rate.
  *   世   a title, one for each life lived, derived from the record.
  *   榜   the records already on the boards, which the server keeps as the best ever.
  *   譜   the codex: every Hundredfold set any life finished, at the best rank it reached
@@ -122,8 +123,11 @@ export const LIFE_TITLES: readonly { readonly han: string; readonly name: string
   { han: '十世', name: 'Ten Times Born' },
 ];
 
-/** 世 This life's title, or null for a first life. */
-export function lifeTitle(s: State): { readonly han: string; readonly name: string } | null {
+/**
+ * 世 This life's title, or null for a first life. 十世 is the last name: a life past the tenth
+ * keeps it, and `life` says which life it is, for a page that wants to show the count.
+ */
+export function lifeTitle(s: State): { readonly han: string; readonly name: string; readonly life: number } | null {
   const n = s.lives?.length ?? 0;
-  return n > 0 ? LIFE_TITLES[Math.min(n, LIFE_TITLES.length) - 1] : null;
+  return n > 0 ? { ...LIFE_TITLES[Math.min(n, LIFE_TITLES.length) - 1], life: n + 1 } : null;
 }

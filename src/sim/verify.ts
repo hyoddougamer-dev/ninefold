@@ -229,7 +229,7 @@ function rateOn(s: State, n: number): number {
   for (const u of UPGRADES) levels[u] = Math.min(levels[u], capOf(probe, u));
   const worn = Object.fromEntries(Object.entries(s.worn)
     .filter(([, x]) => x && (templateOf(x as Item)?.realm ?? 1) <= realm)) as State['worn'];
-  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_CEILING at most.
+  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_ROOF at most.
   return gathering({ ...probe, levels, worn });
 }
 
@@ -539,7 +539,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // cheaper each one got: 300 at once verified in thirty seconds. It is time, so it is
   // counted as time.
   const newMarks = Math.max(0, after.tribulation - before.tribulation);
-  // 宿慧 The Echo fills the pool faster, by ECHO_CEILING at the most.
+  // 宿慧 The Echo fills the pool faster, by ECHO_ROOF at the most.
   need += newMarks * markSeconds(before, after, focus);
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
@@ -724,7 +724,7 @@ function markSeconds(before: State, after: State, focus: number): number {
  *
  * So an edited record can do two things and no more: claim marks it would have had to
  * wait for (it waits, like any gain the time does not cover), or claim an Echo it did not
- * earn, which raises every bound here by ECHO_CEILING at most, because that is the most
+ * earn, which raises every bound here by ECHO_ROOF at most, because that is the most
  * any record can give. The ended life's floors and Dragons are not read again: they were
  * read when they were synced, and once a life ends the body that won them is gone.
  */
