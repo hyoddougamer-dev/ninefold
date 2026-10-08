@@ -31,6 +31,7 @@
  */
 import { LAYERS, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
 import { echoOf, lifeEcho, type Life } from './echo.ts';
+import { carriedXp } from './crafts.ts';
 import { codexToKeep } from './hundred.ts';
 import { layersOpened, newState, type State } from './state.ts';
 
@@ -90,6 +91,9 @@ export function bornFrom(prev: State, lives: readonly Life[], now: number, kept:
     quarryWeek: prev.quarryWeek,
     runs: prev.runs,
     lives,
+    // 業 Each craft begins with a share of the experience the last life earned in it, and
+    // nothing else of the workshop does: see CRAFT_CARRY.
+    crafts: { ...fresh.crafts, xp: carriedXp(prev.crafts?.xp) },
     // 譜 The codex, for good: the best rank every set was finished at, in any life.
     codexKept: kept,
   };

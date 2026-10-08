@@ -1320,10 +1320,19 @@ export const REBIRTH = {
     ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
     ['相', 'Who you are', 'and the chest’s filters'],
   ] as readonly (readonly [string, string, string])[],
+  /**
+   * 業 What the workshop carries (CRAFT_CARRY): a share of the experience in every craft, and
+   * where that would put the crafts, read off the save. Nothing else of the workshop comes.
+   */
+  carriesWorkshop: ['業', 'The workshop', (pct: string) => `${pct} of the experience in every craft, and nothing else of it`] as const,
+  workshopLevels: (lo: number, hi: number) =>
+    lo === hi ? `(yours begin at level ${lo})` : `(yours begin at levels ${lo} to ${hi})`,
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the vault. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex or its experience. The marks and the heavens.',
+  /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
+  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
@@ -1338,6 +1347,9 @@ export const REBIRTH = {
   bornHead: (n: number) => `Life ${n} begins`,
   born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
   bornCodex: (n: number) => `The codex comes with you: ${n} ${n === 1 ? 'set' : 'sets'} finished, each at the best rank it reached.`,
+  bornWorkshop: (lo: number, hi: number) =>
+    lo === hi ? `The workshop comes with you in part: every craft begins at level ${lo}.`
+      : `The workshop comes with you in part: the crafts begin at levels ${lo} to ${hi}.`,
   wear: 'You carry the title',
   go: 'Begin',
   close: 'Close',

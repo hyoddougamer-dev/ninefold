@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ECHO_CEILING, ECHO_LIFE_MAX, LIVES_MAX, REBIRTH_MARKS } from '../../sim/balance.ts';
+import { CRAFT_CARRY, ECHO_CEILING, ECHO_LIFE_MAX, LIVES_MAX, REBIRTH_MARKS } from '../../sim/balance.ts';
+import { SKILL_KEYS, levelOf } from '../../data/crafts.ts';
+import { carriedXp } from '../../sim/crafts.ts';
 import { echoOf, lifeEcho } from '../../sim/echo.ts';
 import { canReincarnate, depthOf, echoAfter, lifeOf, lifeTitle } from '../../sim/rebirth.ts';
 import { codexToKeep } from '../../sim/hundred.ts';
@@ -47,6 +49,11 @@ export function Rebirth({ state, born, onReborn, onClose }: {
   const nextMarks = 2 * (marks + 1) - 1;
   // 譜 The sets the codex holds now, this life's and the lives before: what a new life keeps.
   const sets = codexToKeep(state).filter((r) => r > 0).length;
+  // 業 Where the crafts would begin: CRAFT_CARRY of each one's experience, as levels. In the
+  // born page that is the state itself, which has already been given them.
+  const levels = SKILL_KEYS.map((k) => levelOf((born ? state.crafts.xp : carriedXp(state.crafts.xp))[k]));
+  const lo = Math.min(...levels), hi = Math.max(...levels);
+  const workshop = CRAFT_CARRY > 0 && hi > 1;
 
   if (born) {
     return (
@@ -62,6 +69,7 @@ export function Rebirth({ state, born, onReborn, onClose }: {
         </div>
         <p className="rb-note"><b className="cjk">宿慧</b> {REBIRTH.echoNow(echoPct(now), echoPct(ECHO_CEILING))}</p>
         {sets > 0 && <p className="rb-note"><b className="cjk">譜</b> {REBIRTH.bornCodex(sets)}</p>}
+        {workshop && <p className="rb-note"><b className="cjk">業</b> {REBIRTH.bornWorkshop(lo, hi)}</p>}
         <button className="act" onClick={onClose}>續 <span>{REBIRTH.go}</span></button>
       </div>
     );
@@ -119,15 +127,24 @@ export function Rebirth({ state, born, onReborn, onClose }: {
         <div className="rb-card">
           <i className="rb-head">{REBIRTH.carriesHead}</i>
           <ul className="rb-carry">
-            {REBIRTH.carries.map(([han, name, says]) => (
-              <li key={han}><b className="cjk">{han}</b><span><b>{name}</b> {says}
-                {han === '譜' && sets > 0 && <em className="rb-sets"> {REBIRTH.codexSets(sets)}</em>}</span></li>
-            ))}
+            {REBIRTH.carries.flatMap(([han, name, says]) => {
+              const row = (
+                <li key={han}><b className="cjk">{han}</b><span><b>{name}</b> {says}
+                  {han === '譜' && sets > 0 && <em className="rb-sets"> {REBIRTH.codexSets(sets)}</em>}</span></li>
+              );
+              if (han !== '譜' || CRAFT_CARRY <= 0) return [row];
+              // 業 The workshop's share, beside the codex it shares a screen with.
+              const [wHan, wName, wSays] = REBIRTH.carriesWorkshop;
+              return [row, (
+                <li key={wHan}><b className="cjk">{wHan}</b><span><b>{wName}</b> {wSays(`${Math.round(CRAFT_CARRY * 100)}%`)}
+                  {hi > 1 && <em className="rb-sets"> {REBIRTH.workshopLevels(lo, hi)}</em>}</span></li>
+              )];
+            })}
           </ul>
         </div>
         <div className="rb-card">
           <i className="rb-head">{REBIRTH.resetsHead}</i>
-          <p>{REBIRTH.resets}</p>
+          <p>{CRAFT_CARRY > 0 ? REBIRTH.resets : REBIRTH.resetsAll}</p>
         </div>
       </section>
 
