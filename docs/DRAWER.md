@@ -285,3 +285,80 @@ every non-crafter as well, so the whole endgame is re-solved (TRIBULATION_GAIN's
 The kit must never be read into `evenDragon`: carried in the fight and left out of the
 anchor it is a head start, but read into the anchor it becomes a tax on anyone who is out of
 stock, and a carry that is taken off between the win and the crossing would be a lever on it.
+
+### Follow-up (2026-10-08, rekaris): count the kit at the Dragon AND re-set the Dragon
+
+**His argument.** *"Building tools only to be told you can't use them isn't fun ... Increasing
+the dragon's difficulty can be a way, yes. But you will need to be careful not to make it too
+unfun for someone not using these tools. Unless you want to make the tools compulsory, just
+like gear is."* So the road was measured: the kit counts at the Dragon at a share S (25%, 50%,
+100%), and the Dragon is made harder by a factor h on every crossing (the harness's `heavier`,
+which is the same as multiplying TRIBULATION_CHALLENGE, 1.89, by h) until the crafter with
+Alchemy and Sigil Writing at 99 reaches forty crossings in 231 days, as today.
+
+**Design A, the crafter held where it is.** h = 1.092 at S 25%, 1.108 at 50%, 1.128 at 100%.
+Days to 40 / 80 crossings, today and re-set, and what each loses (all numbers from
+`tools/endgame.ts`, `playEndgame(marks, 'pill', start, h, S)`; longest mark in brackets):
+
+| who | today | S 25%, h 1.092 | S 50%, h 1.108 | S 100%, h 1.128 |
+|---|---|---|---|---|
+| never fights | 423 / 823 | 616 / 1216 (+46% / +48%) (20) | 662 / 1302 (+57% / +58%) (22) | 662 / 1302 (+57% / +58%) (22) |
+| barely fights | 421 / 821 | 614 / 1214 (+46% / +48%) (20) | 660 / 1300 (+57% / +58%) (22) | 660 / 1300 (+57% / +58%) (22) |
+| once a day | 261 / 549 | 400 / 800 (+53% / +46%) (11) | 421 / 844 (+61% / +54%) (13) | 452 / 892 (+73% / +62%) (14) |
+| casual | 245 / 524 | 393 / 793 (+60% / +51%) (11) | 422 / 844 (+72% / +61%) (12) | 441 / 879 (+80% / +68%) (12) |
+| active | 231 / 503 | 380 / 781 (+65% / +55%) (12) | 403 / 826 (+74% / +64%) (12) | 426 / 867 (+84% / +72%) (13) |
+| every hour | 268 / 539 | 376 / 774 (+40% / +44%) (12) | 399 / 820 (+49% / +52%) (12) | 427 / 869 (+59% / +61%) (12) |
+| drives it all | 251 / 532 | 384 / 784 (+53% / +47%) (11) | 407 / 834 (+62% / +57%) (12) | 426 / 865 (+70% / +63%) (13) |
+| walks 神 | 252 / 524 | 387 / 787 (+54% / +50%) (12) | 415 / 834 (+65% / +59%) (12) | 436 / 875 (+73% / +67%) (12) |
+| crafter 99 (built on active) | 231 / 503 | 232 / 533 (0% / +6%) (8) | 232 / 557 (0% / +11%) (9) | 230 / 579 (0% / +15%) (10) |
+| crafts it all, as played (about level 72) | 241 / 519 | 375 / 763 (+56% / +47%) (11) | 384 / 783 (+59% / +51%) (11) | 393 / 793 (+63% / +53%) (12) |
+
+The as-played crafter is not saved either: its kit is a few levels short of the 99 one, so it
+is made harder by the same h and recovers little. Knife edge, forty crossings: the 99 crafter
+with the Dragon a tenth heavier on top is 399 / 404 / 409 days (longest 12 / 13 / 14), and its
+share moved 10% either way is 224 to 232 / 222 to 236 / 230 to 233 days, so the kit is not
+the knife. The non-crafters are: a tenth heavier on top of the re-set walls them past
+MAX_MARK_DAYS (14), longest mark 15 to 17 at every S, and they are 527 to 590 days to forty.
+
+**Design B, the average habit held where it is.** Half of every fighting habit crafts at 99,
+and h is chosen so the mean over all twelve is as today (251.3 days to forty):
+
+| S | h | non-crafters, forty crossings | crafters at 99 |
+|---|---|---|---|
+| 25% | 1.063 | +26% to +50% (every hour +26%, active +50%) | -34% to -44% |
+| 50% | 1.074 | +32% to +55% | -41% to -49% |
+| 100% | 1.082 | +34% to +59% | -45% to -53% |
+
+**A small Dragon change, to see what the non-crafter pays per step.** Forty crossings, plain
+habits, % slower, and the 99 crafter at S 25% (today 231):
+
+| h | once a day | casual | active | every hour | walks 神 | crafter 99, S 25% / 50% / 100% |
+|---|---|---|---|---|---|---|
+| 1.00 | 261 | 245 | 231 | 268 | 252 | 128 / 123 / 118 |
+| 1.01 | +7% | +11% | +23% | +5% | +15% | 129 / 124 / 118 |
+| 1.02 | +13% | +21% | +27% | +9% | +19% | 129 / 124 / 118 |
+| 1.03 | +20% | +25% | +31% | +13% | +21% | 130 / 127 / 118 |
+| 1.05 | +36% | +40% | +45% | +23% | +33% | 145 / 129 / 118 |
+| 1.07 | +43% | +49% | +55% | +30% | +42% | 158 / 133 / 123 |
+
+**Why no re-set works.** The crafter is already on the floor the thunder pool sets (about 3
+days a mark, 118 to 130 days to forty): a kit of any size carries it to the pool and no
+further, and a heavier Dragon only brings it off the floor again slowly. The non-crafter is
+on the steep part of the same curve, where each 1% of Dragon is 5% to 23% more days. So the h
+that puts the crafter back where it was is the h that makes everyone else 40% to 85% slower,
+and a tenth heavier on top walls them. The odds do not help either: right after a crossing
+the Dragon reads 0% for a crafter at S up to 1.5% and 100% at S 25%, with 10% only at S 5%
+(the fight is a cliff in power), so the kit's feel is the day it is ready, not a better
+fight.
+
+**Recommendation.** Neither re-set. Plainly: no design keeps the non-crafters within 10%
+slower while a share worth feeling (25% or more) is counted at the Dragon, because a share
+that large takes the crafter to the pool's floor and putting it back costs the others 40% or
+more. The one design that meets Bruno's two numbers (non-crafters not slower, a crafter at
+least 10% sooner) is the small share with the Dragon left alone: DRAGON_KIT_SHARE about 1.5%
+(measured above: active crafter 10.8% sooner at forty crossings, 8.3% at eighty; once a day
+and every hour 20%; no re-set, so nobody else moves). It is not clearly good: it is a clock
+shortcut of a few days that the player never sees in a fight, and the elixir is spent on
+every win. It stays at 0 in the code; setting `DRAGON_KIT_SHARE = 0.015` is the whole switch.
+If a "tools are compulsory" Dragon is wanted instead (rekaris's second road), it is a
+re-solve of TRIBULATION_GAIN and TRIBULATION_CHALLENGE for the whole endgame, not a constant.
