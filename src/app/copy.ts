@@ -517,6 +517,26 @@ export const PACE = {
   held: 'The first layer waits until you spend your qi. Nothing is lost while it waits',
 };
 
+/**
+ * 留 Hold the layer (speculaether, on the Discord, 2026-10-06: *"Qi spent in layers"*). The bar
+ * fills toward the layer's price and, when full, the layer takes the qi by itself, even for
+ * somebody who wanted it for upgrades. Off for everyone; on, a full bar waits for a tap.
+ */
+export const HOLD = {
+  name: 'Hold the layer',
+  /** One line, said for the state the switch is in. */
+  off: 'Off: a full bar opens the layer by itself.',
+  on: 'On: a full bar waits. Spend the qi on upgrades, then open the layer yourself.',
+  /** The tap that opens it, with its price. */
+  open: (n: number) => `Open layer ${n}`,
+  price: (qi: string) => `${qi} qi`,
+  /** 待 The pace line, when the bar is full and the layer is waiting for the player. */
+  ready: 'The bar is full and this layer is waiting for you. Open it, or spend the qi first',
+  /** Under the ladder, in place of the rule that says a full bar opens a layer. */
+  rule: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the warden of ${han} ${name} comes out.`,
+};
+
 export const LADDER = {
   /** 短 Two short sentences where there was one long one. It is the first thing a new
    *  cultivator reads, and 境 and 層 beside it answer for themselves. */
@@ -810,7 +830,7 @@ export const KEY = {
   condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
   sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after half an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
-  layerWord: 'One step of a realm. Your qi fills it and it opens by itself. The next one costs more.',
+  layerWord: 'One step of a realm. Your qi fills it and it opens by itself, unless you hold the layer. The next one costs more.',
   full: 'This upgrade is at its cap for this realm. Climb to hold more.',
   save: 'Your save, to copy out or paste back. It lives in this browser only.',
   stele: 'Everything you have done, counted: the deeds and the figures.',
@@ -1006,6 +1026,46 @@ export const DRIVE = {
   fell: 'drops fell',
   bestOf: (n: number) => (n === 1 ? 'the only one that fell' : `the best of ${n} that fell`),
   earned: (han: string, pays: string) => `${han} \u00b7 ${pays}`,
+};
+
+/**
+ * 圍 What a drive left, and the player's say over it (rekaris and razielmorgenstern, on the
+ * Discord, 2026-10-06: *"I don't use Drive for the cost and the loss of control of dropped
+ * items."*). Everything unmarked melts, by the same rules as melting anywhere.
+ */
+export const PILE = {
+  head: (n: number) => (n === 1 ? 'One piece fell' : `${n} pieces fell`),
+  says: 'Mark what you keep. Everything unmarked is melted like any melt: qi while the melting allowance holds, 材 material after it.',
+  /** The weakest pieces are not listed; they are left where they fell, as a drive always did. */
+  unlisted: (n: number) => (n === 1 ? 'The weakest piece that fell was left on the mountain.' : `The ${n} weakest pieces that fell were left on the mountain.`),
+  all: 'Select all',
+  none: 'Clear',
+  /** Select all and Clear act on what the filters show. */
+  allShown: (n: number) => `${n} shown`,
+  keeping: (k: number, of: number) => `Keeping ${k} of ${of}`,
+  room: (n: number) => (n === 1 ? 'room for 1 in the chest' : `room for ${n} in the chest`),
+  melts: (n: number, qi: string, mats: string) => `Melting ${n} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
+  meltsNone: 'Nothing is left to melt.',
+  past: 'Past the melting allowance, pieces melt into 材 material instead of qi.',
+  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over}, or melt the bag below to make room.`,
+  bag: 'Melt the bag as well',
+  bagSays: (n: number) => `Every piece in the chest that is not locked (${n}) melts as well, so there is room for what you keep.`,
+  bagNone: 'The chest holds nothing that is not locked.',
+  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k}, melt the rest`),
+  game: 'Let the game decide',
+  gameSays: 'Keeps the best piece and leaves the rest, as a Drive always did.',
+  later: 'Decide later',
+  laterSays: 'The pieces wait in your save. Nothing is lost.',
+  /** After an answer. */
+  answered: (kept: number, melted: number) =>
+    `${kept === 0 ? 'Nothing kept' : kept === 1 ? '1 piece kept' : `${kept} pieces kept`} · ${melted === 0 ? 'nothing melted' : `${melted} melted`}`,
+  decided: 'The game kept the best piece and left the rest.',
+  drivePending: 'Answer the pieces above first.',
+  /** On the hunt list, while a drive's pieces still wait. */
+  waiting: (n: number) => (n === 1 ? '1 piece from your last Drive is waiting for you' : `${n} pieces from your last Drive are waiting for you`),
+  waitingSays: 'Nothing is lost while they wait. If you do not choose, the game answers after a day.',
+  open: 'Choose',
+  aria: { tile: (name: string, rank: string, marked: boolean) => `${name}, ${rank}, ${marked ? 'kept' : 'will be melted'}` },
 };
 
 /**

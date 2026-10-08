@@ -1916,6 +1916,23 @@ export const DRIVE_SIZES = [10, 50, 200] as const;
  */
 export const DRIVE_MOST = 2000;
 
+/**
+ * 圍 How many pieces a drive lays out for the player to choose from, best first. Two
+ * thousand kills can roll three hundred and sixty pieces, and a window of that is the
+ * sorting job the drive always refused to be: the best sixty are listed, and the rest are
+ * left on the mountain exactly as they were before the window existed. It bounds the
+ * save too (validate reads no more than this), so it moves no curve.
+ */
+export const DRIVE_PILE = 60;
+
+/**
+ * 圍 How long a drive's pieces wait for an answer, in seconds. A player who never opens
+ * the window, or whose drive finished while the game was shut, gets the game's own answer
+ * once this has gone by: the best piece into the chest, the rest left. A day, so that
+ * coming back the next morning still finds the window open.
+ */
+export const PILE_HOLD = 86_400;
+
 /** 緣 How long after one meeting before the next can arrive, in seconds. */
 export const MEET_GAP = 3 * 3600;
 

@@ -13,11 +13,11 @@ import { carryBest, craftVisit, toLearn } from './crafter.ts';
 import { fuseIn, stash } from '../src/sim/stash.ts';
 import { LAYERS, focusAt, ladderBetween } from '../src/sim/balance.ts';
 import {
-  atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
+  atCap, atCeiling, breakThrough, buyAll, canBreakThrough, canBuy, canCondense,
   canFightWarden, condense, canPaySeal, feedSeal, paySeal, sealPrice,
   newState, power, upgradeCost, wardenStands, type State,
 } from '../src/sim/state.ts';
-import { advance, layersOpened, rate } from '../src/sim/time.ts';
+import { advance, canOpenLayer, layersOpened, openLayer, rate } from '../src/sim/time.ts';
 import { fight, odds, quarryPaid, takeKill } from '../src/sim/combat.ts';
 import { quarryOf, quarryOwed } from '../src/sim/week.ts';
 import { DRIVE_SIZES, canDrive, drive, driveCost, driveMax } from '../src/sim/hunt.ts';
@@ -165,6 +165,12 @@ export interface Habit {
    * long goals does: the climb stops at the ninth realm, the forge does not.
    */
   readonly on?: boolean;
+  /**
+   * 留 Whether they hold the layer, and spend on the three qi upgrades first: a layer is opened by
+   * hand only once nothing the realm still sells for qi is left to buy, which is the order
+   * a player who wants their qi for upgrades is after. tools/habits.ts HOLDER plays it.
+   */
+  readonly holds?: boolean;
   /** One line for the page: who this is. */
   readonly who: string;
   /** 道 The branch they walk, bought the moment the points allow. */
@@ -237,6 +243,16 @@ export const HABITS: readonly Habit[] = [
 export const AUTO_HABIT: Habit = { name: 'runs auto', gear: true, checks: 6, minutes: 10, hunts: 120, tower: true,
   furnace: true, build: true, branch: 'sword',
   who: 'The active cultivator, with Auto left on for three minutes of every visit.' };
+
+/**
+ * 留 The active cultivator again, holding the layer and spending on upgrades before any layer
+ * is opened (src/sim/__tests__/hold.test.ts). Kept out of HABITS so no table, page or other
+ * test that walks the habits changes: it is the answer to what the toggle is worth at its
+ * best, and the toggle is off for everybody until they turn it on.
+ */
+export const HOLDER: Habit = { name: 'holds the layer', gear: true, checks: 6, minutes: 10, hunts: 6, tower: true,
+  furnace: true, build: true, branch: 'sword', holds: true,
+  who: 'The active cultivator, with the layer held: qi goes to upgrades first, a layer opens when none are left.' };
 
 /** 悟道 Off, for measuring what the cards are actually worth: HABITS_NO_CARDS=1 */
 const NO_CARDS = process.env.HABITS_NO_CARDS === '1';
@@ -548,6 +564,7 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
   // 轉世 Every day below is counted from here: T0, or the instant a given start stands at.
   const T0 = start?.at ?? EPOCH;
   let s = start ?? newState(T0);
+  if (h.holds) s = { ...s, hold: true };
   let t = T0;
   const tick = DAY / h.checks;
   const arrival = [0];
@@ -917,6 +934,10 @@ export function play(h: Habit, maxDays = 400, watch?: Watcher, start?: State, ga
     // 盡 The 修 screen's Buy all is this loop (buyAll); the harness has always bought every
     // box the sim will sell, 妖丹 included, so it passes that rule rather than the screen's.
     s = spend(buyAll(s, () => true).state);
+    // 留 A held layer waits for the upgrades, and opens once the realm has none left to sell.
+    if (h.holds) {
+      while (canOpenLayer(s) && (['technique', 'method', 'pills'] as const).every((u) => atCap(s, u))) s = openLayer(s);
+    }
     // 爐 Pills when the warden is out of reach, and none once it is beatable: qi brewed
     // is qi that did not open a layer.
     if (h.furnace && (h.brews ?? 'stuck') === 'stuck') for (let g = 0; g < 400; g++) {

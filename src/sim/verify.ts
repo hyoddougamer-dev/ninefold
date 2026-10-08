@@ -418,7 +418,8 @@ export function craftSeconds(before: State, after: State): number {
 
 /** Every piece the save holds must come from a realm the cultivator has stood in. */
 function gearFits(s: State): boolean {
-  const all = [...Object.values(s.worn), ...s.chest].filter(Boolean) as Item[];
+  // 圍 And a drive's pieces on the table, which fell in the realm the save stands in.
+  const all = [...Object.values(s.worn), ...s.chest, ...(s.pile ?? [])].filter(Boolean) as Item[];
   return all.every((x) => (templateOf(x)?.realm ?? 1) <= s.realm);
 }
 

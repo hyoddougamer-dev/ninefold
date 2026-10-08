@@ -83,6 +83,8 @@ export function bornFrom(prev: State, lives: readonly Life[], now: number, kept:
     self: prev.self,
     seen: prev.seen,
     filters: prev.filters,
+    // 留 How the layers are taken is a way of playing, not a thing a life owns.
+    hold: prev.hold === true,
     // Counters that only move forward, so a new life cannot be paid twice for one week.
     keyDay: prev.keyDay,
     quarryWeek: prev.quarryWeek,

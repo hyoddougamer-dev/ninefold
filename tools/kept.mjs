@@ -628,7 +628,7 @@ for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   await page.click('.drivesheet .size >> nth=0');
   await page.waitForTimeout(300);
   check(!!(await page.$('[data-qol="drive-again"]')), `${tag}: the drive result offers Drive again`);
-  await page.click('.drivesheet .act.ghost');
+  await page.click('.drivesheet .driveagain .act.ghost');
   await page.waitForTimeout(300);
 
   // 塔 登 Next floor on a floor that fell, and only Collect on one that did not.
