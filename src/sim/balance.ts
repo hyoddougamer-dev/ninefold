@@ -2650,6 +2650,15 @@ export const HUNDRED_BAND: readonly [number, number, number] = [1 - VARIANCE, 1,
  * every elixir and sigil carried does HUNDRED_KIT more (a quarter); at four, each thing
  * carried into a warden breaks HUNDRED_BREACH day more of its 瓶頸 bottleneck; at six, the
  * set's codex bonus counts CODEX_WORN times.
+ *
+ * 劫 The first step reaches the Dragon too, since DRAGON_KIT_SHARE: a worn pair makes the kit
+ * carried into it a quarter stronger. Measured with tools/hundredfold.ts (2026-10-08) on a
+ * crafter's pouch, the Dragonwake set worn against the same body without it, days a mark over
+ * 80 crossings: 5.60 to 3.90 as the game sets the Dragon (-30%), 7.72 to 7.35 at 1.05 (-5%),
+ * 9.32 to 8.89 a tenth heavier (-4.7%). The first figure is a knife edge, not a lever: the
+ * body without the set is on the slow side of the thunder pool's floor and the set carries it
+ * over (the same body before it, 'crafts it all', reads 3.99). The tower codex itself moves
+ * the clock under 1% with or without the kit.
  */
 export const HUNDRED_KIT = 0.25;
 export const HUNDRED_BREACH = 1;
