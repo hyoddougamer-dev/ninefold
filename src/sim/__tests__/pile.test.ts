@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { BEASTS, commonsOf } from '../../data/bestiary.ts';
 import { RARITIES, type Item } from '../../data/gear.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { DRIVE_PILE, MELT_CAP, PILE_HOLD } from '../balance.ts';
+import { DRIVE_MOST, DRIVE_PILE, MELT_CAP, PILE_HOLD, SECOND_DROP_CAP } from '../balance.ts';
+import { outbound } from '../save.ts';
+import { seal } from '../seal.ts';
+import { packItem, packPile, unpackPile } from '../pilepack.ts';
 import { drive } from '../hunt.ts';
 import { MARKS } from '../record.ts';
 import { advance } from '../time.ts';
@@ -49,17 +52,31 @@ function junk(n: number, tag = 'j'): Item[] {
 }
 
 describe('圍 what a drive lays out', () => {
-  it('lists what fell, best first, at most DRIVE_PILE of it, and leaves the state alone', () => {
+  it('lists everything that fell, best first, and leaves the state alone', () => {
     const s = hunter(4);
     const d = driven(s, 1000);
-    expect(d.dropsRolled).toBeGreaterThan(DRIVE_PILE);
-    expect(d.drops.length).toBe(DRIVE_PILE);
+    // rekaris, 2026-10-08: "Why only the best 60?" Every piece is listed now.
+    expect(d.dropsRolled).toBeGreaterThan(60);
+    expect(d.drops.length).toBe(d.dropsRolled);
     const worth = d.drops.map((x) => itemWorth(x));
     expect(worth).toEqual([...worth].sort((a, b) => b - a));
     // The harness (tools/) reads drive().state and never the pile, so the curves cannot move.
     expect(d.state.pile).toEqual([]);
     expect(d.state.pileAt).toBe(0);
     expect(d.state.chest).toEqual(s.chest);
+  });
+
+  it('lists all of the biggest drive there is, even with Creation making a second piece likely', () => {
+    // The worst case a drive can roll: DRIVE_MOST kills, every one a piece (Creation), and the
+    // second piece as likely as it can ever be made.
+    expect(DRIVE_PILE).toBe(Math.floor(DRIVE_MOST * (1 + SECOND_DROP_CAP)));
+    const s = hunter(6);
+    const d = drive(s, commonsOf(6)[0], DRIVE_MOST, 9, { always: true, chance: 1 });
+    expect(d.kills).toBe(DRIVE_MOST);
+    expect(d.dropsRolled).toBeGreaterThan(DRIVE_MOST);
+    expect(d.dropsRolled).toBeLessThanOrEqual(DRIVE_PILE);
+    expect(d.drops.length).toBe(d.dropsRolled);
+    expect(new Set(d.drops.map((x) => x.id)).size).toBe(d.drops.length);
   });
 
   it('is the same pile for the same drive', () => {
@@ -241,6 +258,17 @@ describe('圍 the save', () => {
     const many = Array.from({ length: 5000 }, (_, i) => ({ ...junk(1)[0], id: `x${i}` }));
     const back = validate({ ...JSON.parse(JSON.stringify(held)), pile: many }, held.at);
     expect(back.pile.length).toBe(DRIVE_PILE);
+    // And a hostile array of rows or junk is cut before it is read, not only after.
+    const junkRows = Array.from({ length: 200_000 }, () => 'nope');
+    expect(validate({ ...JSON.parse(JSON.stringify(held)), pile: junkRows }, held.at).pile).toEqual([]);
+    expect(unpackPile(junkRows).length).toBeLessThanOrEqual(DRIVE_PILE * 2);
+  });
+
+  it('still loads a pile from before the window listed everything: sixty objects, as they were', () => {
+    const sixty = Array.from({ length: 60 }, (_, i) => ({ ...junk(1)[0], id: `old${i}-sword3` }));
+    const back = validate({ ...JSON.parse(JSON.stringify(held)), pile: sixty }, held.at);
+    expect(back.pile.map((x) => x.id)).toEqual(sixty.map((x) => x.id));
+    expect(back.pileAt).toBe(held.pileAt);
   });
 
   it('drops pieces that do not exist, from realms not reached, or with impossible lines', () => {
@@ -321,5 +349,90 @@ describe('圍 the server', () => {
     const far: Item = { ...junk(1)[0], id: 'far', template: 'sword9' };
     const v = verify(s, { ...s, pile: [far], pileAt: s.at }, 60);
     expect(v.why).toContain('gear');
+  });
+});
+
+describe('圍 the pile written small', () => {
+  const s0 = hunter(6);
+  const big = drive(s0, commonsOf(6)[0], DRIVE_MOST, 9, { always: true, chance: 1 });
+  const held = holdDrops(big.state, big);
+  const wire = () => JSON.parse(JSON.stringify(outbound(held)));
+
+  it('writes rows and reads them back as the very same pieces', () => {
+    const raw = wire();
+    expect(Array.isArray(raw.pile[0])).toBe(true);
+    const back = validate(raw, held.at);
+    expect(back.pile).toEqual(held.pile);
+    expect(back.pileAt).toBe(held.pileAt);
+  });
+
+  it('is a modest save at the biggest a pile can be (measured, printed)', () => {
+    const plain = JSON.stringify(held).length;
+    const packed = JSON.stringify(outbound(held)).length;
+    const sealed = seal(JSON.stringify(outbound(held))).length;
+    // eslint-disable-next-line no-console
+    console.log(`\n  圍 ${held.pile.length} pieces: save ${Math.round(plain / 1024)} KB as objects, `
+      + `${Math.round(packed / 1024)} KB as rows (${Math.round(packed / plain * 100)}%), `
+      + `${Math.round(sealed / 1024)} KB sealed, and the phone keeps two copies of it`);
+    expect(held.pile.length).toBeGreaterThan(DRIVE_MOST);
+    // The rows must stay well under half of the objects, and the sealed save (written twice,
+    // main and backup) under a fifth of the five million characters a phone's storage allows.
+    expect(packed).toBeLessThan(plain * 0.5);
+    expect(sealed * 2).toBeLessThan(1_000_000);
+  });
+
+  it('keeps a piece that is more than a drive drops as the object it was', () => {
+    const odd: Item = { ...junk(1)[0], id: 'odd', locked: true };
+    expect(Array.isArray(packItem(odd))).toBe(false);
+    const plainId: Item = { ...junk(1)[0], id: 'no-suffix-here' };
+    const row = packItem(plainId);
+    expect(Array.isArray(row)).toBe(true);
+    const raw = JSON.parse(JSON.stringify({ ...held, pile: packPile([odd, plainId]) }));
+    const back = validate(raw, held.at);
+    expect(back.pile.map((x) => x.id)).toEqual(['odd', 'no-suffix-here']);
+    expect(back.pile[0].locked).toBe(true);
+  });
+
+  it('judges a row like any other piece: unknown, too far, twins, and impossible lines', () => {
+    const raw = JSON.parse(JSON.stringify({ ...held, realm: 4, pile: [] }));
+    raw.pile = [
+      ['a', 'sword3', 'rare', ['power', 3]],
+      ['a', 'sword3', 'rare', ['power', 3]],                 // the same name again
+      ['b', 'not-a-template', 'rare', ['power', 3]],
+      ['c', 'sword9', 'rare', ['power', 3]],                 // a realm not reached
+      ['d', 'sword3', 'rare', ['power', 1e12, 'power', 5, 'nonsense', 4]],
+      [], [null], ['e'], [1, 2, 3, 4], 'row', 7,
+    ];
+    const back = validate(raw, held.at);
+    const ids = back.pile.map((x) => x.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.filter((x) => x.startsWith('a-')).length).toBe(2);
+    expect(ids).toContain('d-sword3');
+    expect(back.pile.every((x) => x.template === 'sword3')).toBe(true);
+    const d = back.pile.find((x) => x.id === 'd-sword3')!;
+    expect(d.rolls).toHaveLength(1);
+    expect(d.rolls[0].value).toBeLessThan(1e6);
+  });
+});
+
+describe('圍 the server reads the biggest pile without strain', () => {
+  it('verifies a save with the largest pile at once, and still refuses a far piece in it', () => {
+    const s0 = hunter(6);
+    const big = drive(s0, commonsOf(6)[0], DRIVE_MOST, 9, { always: true, chance: 1 });
+    const held = holdDrops(big.state, big);
+    const before = validate(JSON.parse(JSON.stringify(s0)), s0.at);
+    const sent = JSON.parse(JSON.stringify(outbound(held)));
+    const t0 = performance.now();
+    const after = validate(sent, held.at + 60);
+    const v = verify(before, after, 60 + (held.at - before.at));
+    const ms = performance.now() - t0;
+    // eslint-disable-next-line no-console
+    console.log(`\n  圍 validate + verify of a ${after.pile.length}-piece pile: ${ms.toFixed(0)} ms`);
+    expect(after.pile.length).toBe(held.pile.length);
+    expect(v.why.filter((w) => w === 'gear')).toEqual([]);
+    expect(ms).toBeLessThan(1500);
+    // One far piece among three thousand is still a piece the cultivator could not have.
+    const far = { ...after, pile: [...after.pile, { ...junk(1)[0], id: 'far', template: 'sword9' }] };
+    expect(verify(before, { ...far, realm: 2 }, 60).why).toContain('gear');
   });
 });

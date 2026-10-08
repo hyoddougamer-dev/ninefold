@@ -1917,13 +1917,22 @@ export const DRIVE_SIZES = [10, 50, 200] as const;
 export const DRIVE_MOST = 2000;
 
 /**
- * 圍 How many pieces a drive lays out for the player to choose from, best first. Two
- * thousand kills can roll three hundred and sixty pieces, and a window of that is the
- * sorting job the drive always refused to be: the best sixty are listed, and the rest are
- * left on the mountain exactly as they were before the window existed. It bounds the
- * save too (validate reads no more than this), so it moves no curve.
+ * 圍 How many pieces a drive lays out for the player to choose from: all of them. It was the
+ * best sixty (2026-10-06) and rekaris asked on 2026-10-08 why only sixty, when the filters
+ * are there and the drive is capped at DRIVE_MOST kills: the sixty "best" might not be the
+ * sixty the player would keep. A kill leaves one piece at most, and a second with 造化
+ * Creation at most SECOND_DROP_CAP of the time, so no drive can roll more than this. It
+ * bounds the save too (validate reads no more than this), so it moves no curve, and it is
+ * written as rows (sim/pilepack.ts) so the largest pile stays a modest save.
  */
-export const DRIVE_PILE = 60;
+export const DRIVE_PILE = Math.floor(DRIVE_MOST * (1 + SECOND_DROP_CAP));
+
+/**
+ * 圍 How many tiles the drive's window draws at once. The window holds every piece and the
+ * filters, Select all and Clear act on all of them; only the drawing is by the page, because
+ * three thousand painted tiles is a slow screen on a phone and sixty is not.
+ */
+export const PILE_PAGE = 60;
 
 /**
  * 圍 How long a drive's pieces wait for an answer, in seconds. A player who never opens

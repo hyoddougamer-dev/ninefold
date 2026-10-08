@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { AFFIXES, AFFIX_INFO, RARITY_INFO, SLOTS, SLOT_INFO, schoolOf, templateOf, type Affix, type Item, type Slot } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { gearTile } from '../../art/gear.ts';
@@ -10,6 +10,7 @@ import { plan, type Choice, type Plan } from '../../sim/pile.ts';
 import { salvageable } from '../../sim/salvage.ts';
 import { RARITIES } from '../../data/gear.ts';
 import type { State } from '../../sim/state.ts';
+import { PILE_PAGE } from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
 import { GEAR, PILE, QOL } from '../copy.ts';
 import { Svg } from './Svg.tsx';
@@ -22,13 +23,16 @@ import { Svg } from './Svg.tsx';
  * same window opens on a drive just taken and on one left unanswered when the game was shut.
  * It answers by handing a Choice up; nothing is changed in here.
  *
+ * 全 rekaris, on the Discord (2026-10-08): "Why only the best 60?" Every piece the drive
+ * dropped is in the window (up to DRIVE_PILE, more than a drive can roll), the filters,
+ * Select all and Clear work on the whole filtered set, and only the *drawing* is by the
+ * page: PILE_PAGE tiles, and the next ones on a tap.
+ *
  * Every class is scoped under `.dwin`: the chest has tiles and filters of its own and the two
  * screens must never share a rule (CLAUDE.md).
  */
-export function DrivePile({ state, unlisted = 0, onAnswer, onGame, onLater }: {
+export function DrivePile({ state, onAnswer, onGame, onLater }: {
   state: State;
-  /** How many pieces fell beyond the ones listed, which were left where they fell. */
-  unlisted?: number;
   onAnswer: (choice: Choice, p: Plan) => void;
   onGame: () => void;
   /** Left out where the sheet around it already has a way to close that says the same. */
@@ -43,33 +47,54 @@ export function DrivePile({ state, unlisted = 0, onAnswer, onGame, onLater }: {
   const [lines, setLines] = useState<readonly Affix[]>([]);
 
   // ▲ Better than what is worn, read once per piece until something a fight reads moves.
-  const better = useMemo(() => new Set(pile.filter((it) => upOf(state, it, swing(state, it))).map((it) => it.id)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pile, ...fightDeps(state)]);
+  const better = useBetter(state, pile);
 
-  const shown = pile.filter((it) => (place === 'better' ? better.has(it.id)
+  const pick = useMemo(() => pile.filter((it) => (place === 'better' ? better.has(it.id)
     : place === 'all' || place === 'locked' ? true : templateOf(it).slot === place)
-    && matchesFilter({ slot: 'all', school, lines }, it));
-  const bySlot = (slot: Slot) => pile.filter((x) => templateOf(x).slot === slot).length;
-  const bySchool = (sc: School) => pile.filter((x) => schoolOf(x) === sc).length;
-  const offered = AFFIXES.filter((a) => lines.includes(a) || pile.some((x) => x.rolls.some((r) => r.affix === a)));
+    && matchesFilter({ slot: 'all', school, lines }, it)), [pile, better, place, school, lines]);
+  // 窗 Only the first page is drawn; a new filter starts from the top again.
+  const view = `${place}|${school}|${lines.join(',')}`;
+  const [drawn, setDrawn] = useState({ view, n: PILE_PAGE });
+  const shown = drawn.view === view ? drawn.n : PILE_PAGE;
+  const drawMore = useCallback(() => setDrawn((d) => ({ view, n: (d.view === view ? d.n : PILE_PAGE) + PILE_PAGE })), [view]);
+
+  const counts = useMemo(() => {
+    const slot: Partial<Record<Slot, number>> = {};
+    const schools: Partial<Record<School, number>> = {};
+    const affix = new Set<Affix>();
+    for (const x of pile) {
+      const sl = templateOf(x).slot;
+      slot[sl] = (slot[sl] ?? 0) + 1;
+      const sc = schoolOf(x);
+      if (sc) schools[sc] = (schools[sc] ?? 0) + 1;
+      for (const r of x.rolls) affix.add(r.affix);
+    }
+    return { slot, schools, affix };
+  }, [pile]);
+  const bySlot = (slot: Slot) => counts.slot[slot] ?? 0;
+  const bySchool = (sc: School) => counts.schools[sc] ?? 0;
+  const offered = AFFIXES.filter((a) => lines.includes(a) || counts.affix.has(a));
 
   const choice: Choice = { keep: [...marked], meltBag: bag };
-  // Both readings, whether or not the bag is switched on, so the switch can say what it would add.
-  const without = plan(state, { keep: [...marked], meltBag: false });
-  const withBag = plan(state, { keep: [...marked], meltBag: true });
-  const p = bag ? withBag : without;
+  // The plan is read when the marks, the bag or the chest move, and otherwise every few
+  // seconds as the melting allowance fills: three thousand pieces are not re-melted on paper
+  // at every tick of the clock. The tap itself (settle) always reads the live state.
+  const slow = Math.floor(state.at / 3);
+  const p = useMemo(() => plan(state, { keep: [...marked], meltBag: bag }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [marked, bag, pile, state.chest, state.unlocked, state.awakened, slow]);
   const bagPieces = useMemo(() => salvageable(state.chest, RARITIES[RARITIES.length - 1]),
     [state.chest]);
 
-  const toggle = (id: string) => setMarked((m) => {
+  const toggle = useCallback((id: string) => setMarked((m) => {
     const next = new Set(m);
     if (!next.delete(id)) next.add(id);
     return next;
-  });
+  }), []);
+  // 全 Select all and Clear act on everything the filters match, drawn yet or not.
   const markShown = (on: boolean) => setMarked((m) => {
     const next = new Set(m);
-    for (const it of shown) { if (on) next.add(it.id); else next.delete(it.id); }
+    for (const it of pick) { if (on) next.add(it.id); else next.delete(it.id); }
     return next;
   });
   const toggleLine = (a: Affix) => setLines(lines.includes(a) ? lines.filter((x) => x !== a) : [...lines, a]);
@@ -82,7 +107,6 @@ export function DrivePile({ state, unlisted = 0, onAnswer, onGame, onLater }: {
     <div className="dwin" data-qol="drive-pile">
       <h2 className="heading"><span className="cjk">圍</span> {PILE.head(pile.length)}</h2>
       <p className="faint dw-says">{PILE.says}</p>
-      {unlisted > 0 && <p className="faint dw-says">{PILE.unlisted(unlisted)}</p>}
 
       {/* 篩 The chest's three rows, over what fell. */}
       <div className="dw-filter" role="group" aria-label={GEAR.all}>
@@ -121,13 +145,17 @@ export function DrivePile({ state, unlisted = 0, onAnswer, onGame, onLater }: {
       <div className="dw-bulk">
         <button type="button" className="act small" data-qol="pile-all" onClick={() => markShown(true)}>{PILE.all}</button>
         <button type="button" className="act small ghost" data-qol="pile-none" onClick={() => markShown(false)}>{PILE.none}</button>
-        <i className="faint mono">{PILE.allShown(shown.length)}</i>
+        <i className="faint mono">{PILE.allShown(pick.length)}</i>
       </div>
 
-      {shown.length === 0 && <p className="faint dw-says">{QOL.gear.none}</p>}
+      {pick.length === 0 && <p className="faint dw-says">{QOL.gear.none}</p>}
       <div className="dw-grid">
-        {shown.map((it) => <Tile key={it.id} item={it} on={marked.has(it.id)} up={better.has(it.id)} onTap={toggle} />)}
+        {pick.slice(0, shown).map((it) => <Tile key={it.id} item={it} on={marked.has(it.id)} up={better.has(it.id)} onTap={toggle} />)}
       </div>
+      {pick.length > shown && (
+        <More n={Math.min(PILE_PAGE, pick.length - shown)} left={pick.length - shown} onMore={drawMore}
+          label={QOL.gear.moreLabel(Math.min(PILE_PAGE, pick.length - shown), pick.length - shown)} />
+      )}
 
       <div className="dw-sum" data-over={over > 0 || undefined}>
         <b>{PILE.keeping(kept, pile.length)}</b>
@@ -171,17 +199,68 @@ export function DrivePile({ state, unlisted = 0, onAnswer, onGame, onLater }: {
 }
 
 /** One piece: a tap marks it to keep, another lets it go. Unmarked pieces sit dimmer, because they melt. */
-function Tile({ item, on, up, onTap }: { item: Item; on: boolean; up: boolean; onTap: (id: string) => void }) {
+const Tile = memo(function Tile({ item, on, up, onTap }: { item: Item; on: boolean; up: boolean; onTap: (id: string) => void }) {
   const tpl = templateOf(item);
   const q = qualityOf(item);
+  // The painting does not depend on the mark, so a tap that flips a hundred tiles redraws no art.
+  const art = useMemo(() => gearTile(item, { size: 56, quality: q }), [item, q]);
   return (
     <button type="button" className="dw-tile" aria-pressed={on} data-on={on || undefined}
       aria-label={PILE.aria.tile(tpl.name, RARITY_INFO[item.rarity].name, on)}
       title={`${tpl.name} · ${RARITY_INFO[item.rarity].name} · ×${q.toFixed(2)}`}
       onClick={() => onTap(item.id)}>
-      <Svg html={gearTile(item, { size: 56, quality: q })} />
+      <Svg html={art} />
       {up && <span className="dw-up" aria-hidden="true">▲</span>}
       <span className="dw-tick" aria-hidden="true">{on ? '✓' : ''}</span>
     </button>
   );
+});
+
+/**
+ * 窗 The foot of the grid: a button that draws the next page. It does not draw by itself as the
+ * chest does, on purpose: the Keep button stands below the grid, and a grid that grew as it
+ * was scrolled would carry the answer further away with every screen.
+ */
+function More({ n, left, label, onMore }: { n: number; left: number; label: string; onMore: () => void }) {
+  return (
+    <button type="button" className="act ghost dw-more" data-qol="pile-more" onClick={onMore} aria-label={label}>
+      {QOL.gear.showMore(n)}
+      <i className="mono" aria-hidden="true">{QOL.gear.moreLeft(left)}</i>
+    </button>
+  );
+}
+
+/**
+ * ▲ Which of the pieces would be an upgrade over what is worn. The first pages are read at
+ * once, so the window opens with its marks; the rest of a big pile is read in slices between
+ * frames, because three thousand fights' worth of arithmetic in one go is a frozen phone.
+ * Read again when the pile or anything a fight reads moves.
+ */
+const BETTER_HEAD = 240;
+const BETTER_SLICE = 400;
+function useBetter(state: State, pile: readonly Item[]): ReadonlySet<string> {
+  const deps = fightDeps(state);
+  const readOne = (it: Item) => upOf(state, it, swing(state, it));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const head = useMemo(() => new Set(pile.slice(0, BETTER_HEAD).filter(readOne).map((it) => it.id)), [pile, ...deps]);
+  const [tail, setTail] = useState<{ pile: readonly Item[]; ids: ReadonlySet<string> } | null>(null);
+  useEffect(() => {
+    if (pile.length <= BETTER_HEAD) return;
+    let at = BETTER_HEAD;
+    const ids = new Set<string>();
+    let timer = 0;
+    const step = () => {
+      const stop = Math.min(pile.length, at + BETTER_SLICE);
+      for (; at < stop; at++) if (readOne(pile[at])) ids.add(pile[at].id);
+      setTail({ pile, ids: new Set(ids) });
+      if (at < pile.length) timer = window.setTimeout(step, 0);
+    };
+    timer = window.setTimeout(step, 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pile, ...deps]);
+  return useMemo(() => {
+    if (!tail || tail.pile !== pile || tail.ids.size === 0) return head;
+    return new Set([...head, ...tail.ids]);
+  }, [head, tail, pile]);
 }

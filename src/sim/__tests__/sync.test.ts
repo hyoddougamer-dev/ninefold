@@ -4,7 +4,8 @@ import { HABITS, play } from '../../../tools/habits.ts';
 import { GAME_EPOCH, type Verdict } from '../verify.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
-import type { State } from '../state.ts';
+import { validate, type State } from '../state.ts';
+import { withPackedPile } from '../pilepack.ts';
 import { progressOf } from '../echo.ts';
 
 /**
@@ -279,5 +280,28 @@ describe('同步 the ranked sync', () => {
     // validate() makes a cultivator of nearly anything; what it cannot read is refused.
     const r = await sync(m.store, 'u5', 'not a save', GAME_EPOCH + DAY, undefined, GAME_EPOCH);
     expect([200, 400]).toContain(r.status);
+  });
+});
+
+describe('圍 a drive\'s pile in the cloud copy', () => {
+  it('is kept as rows in the one copy a new device pulls, and not in the three that only measure', async () => {
+    const shots = walk(8);
+    const m = memory();
+    const s = shots[shots.length - 1].s;
+    const pile = Array.from({ length: 500 }, (_, i) => ({
+      id: `p${i}-sword1`, template: 'sword1', rarity: 'common' as const, rolls: [{ affix: 'power' as const, value: 1 }],
+    }));
+    const sent = withPackedPile({ ...s, pile, pileAt: s.at });
+    const r = await sync(m.store, 'u9', JSON.parse(JSON.stringify(sent)), s.at + 30, undefined, GAME_EPOCH);
+    expect(r.status).toBe(200);
+    const kept = m.saves.get('u9')!;
+    const latest = kept.latest as { pile: unknown[] };
+    expect(latest.pile.length).toBe(500);
+    expect(Array.isArray(latest.pile[0])).toBe(true);
+    for (const copy of [kept.verified, kept.day?.state, kept.week?.state]) {
+      if (copy) expect((copy as { pile: unknown[] }).pile).toEqual([]);
+    }
+    // And a device that pulls the cloud copy gets every piece back through validate().
+    expect(validate(kept.latest, s.at + 60).pile.map((x) => x.id)).toEqual(pile.map((x) => x.id));
   });
 });
