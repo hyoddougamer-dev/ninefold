@@ -1179,7 +1179,8 @@ export function validate(raw: unknown, now: number): State {
       .map((x) => x.it);
 
   const elapsed = Math.max(0, now - startedAt);
-  const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now);
+  const lives = validLives(o.lives, startedAt, now);
+  const crafts = validCrafts(o.crafts, { realm, killed, startedAt }, now, lives.length);
   // 百煉 A Hundredfold mark stays only where the pieces made back it (sim/hundred.ts).
   const marks = backHundred(crafts.made);
   // 秘門 The Hidden Door Array brings the vault door sooner. An array is kept for good once
@@ -1188,7 +1189,6 @@ export function validate(raw: unknown, now: number): State {
   const doorGap = shortestDoorGap(crafts.pouch, DOOR_GAP);
 
   const savedAt = clamp(num(o.at, now), startedAt, now);
-  const lives = validLives(o.lives, startedAt, now);
   const out: State = {
     v: 1,
     startedAt,

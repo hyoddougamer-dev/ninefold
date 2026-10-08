@@ -250,3 +250,171 @@ so a reborn life earns no week credit until it passes its old life; a per-life w
 would need a new column (a migration). (2) The unlock: the first mark, or later. (3) Whether
 the title should also show on the boards (it is derived, so the server could read it from
 the save without a schema change). (4) An heirloom, if he wants one, needs its own rule.
+
+### 業 The workshop through a rebirth (rekaris, 2026-10-08; built behind `CRAFT_CARRY`, set to 0.25)
+
+**What rekaris said.** *"My other points around material, crafting exp and crafting speed have
+not been addressed at all. The crafting is pretty thick part of the time spent around the game
+and running it all again sounds exhausting. Is there a reason as to why it shouldn't be sped
+up?"* He is right that nothing answered it: a new life began every craft at level 1.
+
+**What a new life kept of the workshop before this** (`bornFrom` in `src/sim/rebirth.ts`, from
+`newState`): the codex (`codexKept`) and nothing else. Experience in all seven crafts, the
+tools (the 5% steps), the pouch, the count of what was made (marks, mastery, array depth), the
+arrays, the order in the crucible, the kit carried, and `State.materials` all began at zero.
+
+**Does any craft level feed qi?** No. `rate()` reads upgrades, gear and the tree. A craft level
+reaches the climb in two indirect, capped ways only: the quality of what is forged (a higher
+level above the recipe rolls better ranks, so better gear, under the same slots and ranks as
+ever) and the kit carried into a warden or a demon. Both are inside the measurements below,
+and neither moves the climb.
+
+**The cost of re-crafting** (`npm run carry`: the active cultivator with the workshop running,
+every life ending on its third mark; levels of herb / vein / render / forge / alchemy / sigil /
+array). A craft's experience is RuneScape's table, so levels come fast and then slow: the
+first life has most crafts past level 40 by day 10 and spends the rest of its time on the tail.
+
+| | day 0 | day 10 | day 30 | day 60 |
+| --- | --- | --- | --- | --- |
+| first life | 1 1 1 1 1 1 1 | 61 47 48 43 48 34 13 | 68 62 63 56 65 56 55 | 74 72 74 67 74 67 67 |
+| life 2, nothing carried | 1 1 1 1 1 1 1 | 62 47 46 43 50 18 32 | 68 61 64 55 65 56 54 | 75 72 71 66 75 66 66 |
+| life 2, 25% carried | 60 61 61 56 62 56 55 | 68 65 63 60 64 57 57 | 73 69 70 63 71 63 62 | 77 77 77 71 78 71 71 |
+
+Days until the *slowest* of the seven crafts (the median in brackets) reaches a level (the
+summit on day 52 in life 2, day 56 in the first life):
+
+| | level 60 | level 70 | level 75 |
+| --- | --- | --- | --- |
+| first life | 38 (26) | 68 (50) | 92 (69) |
+| life 2, nothing carried | 40 (26) | 76 (52) | 99 (73) |
+| life 2, 22.5% carried | 26 (1) | 62 (36) | 84 (53) |
+| **life 2, 25% carried** | **22 (0)** | **58 (34)** | **83 (53)** |
+| life 2, 27.5% carried | 22 (0) | 56 (33) | 78 (49) |
+
+So the carry is worth 16 to 18 days at the slowest craft at every level asked about, and puts
+the median craft at level 60 on the first day. That is the front of the grind (level 1 to
+60, which costs the first life 26 to 38 days) and a slice of the tail. It is *not* the whole
+tail: the table is exponential, a quarter of the experience is 14 levels fewer than the life
+had, and the new life still has to earn the levels above that. Crafting speed (the tools)
+comes back sooner as well: 28 of the 42 steps are held on day 30 with the carry, on day 60
+without it.
+
+**It does not touch the climb or the rate.** Life 2, days to realm 9 / the summit, nothing
+carried against 25%, over three gear seeds: 42.5 / 52.3 to 42.3 / 52.0 (seed 991), 43.7 / 52.5
+to 43.8 / 53.0 (seed 7), 41.8 / 51.5 to 41.8 / 52.0 (seed 1234): +0.2 days on average, which
+is the gear lottery. Every habit played as a crafter (life 1 / life 2 nothing carried / life 2
+carried, summit days): crafts it all 55.5 / 52.3 / 52.0, every hour 35.3 / 33.7 / 33.5,
+casual 74.7 / 71.0 / 71.0, once a day 84.0 / 81.0 / 80.0, never fights 125 / 123 / 123. Lives
+2 to 6, mean of two seeds, summit sooner than the first life: the Echo alone 6 / 11 / 16 / 16
+/ 16%, with 25% carried 6 / 10 / 18 / 18 / 18%. That is inside the 14 to 18% the Echo was
+tuned to, and far from the 25% line; the 2 points in lives 4 to 6 are about one day of gear
+luck (in life 2, where the lottery is the smallest, the carry moves 0.2 days). The qi rate at
+the same day of life 2, with the carry over without: 1.00x at day 10, 1.01x at day 30,
+1.03x at day 60.
+
+**The knife edge** (the share pushed a tenth either way, 22.5% / 25% / 27.5%): the summit
+moves 52.0 / 52.0 / 51.8 and the slowest craft reaches level 75 on day 84 / 83 / 78. More
+carried is sooner and less is later, smoothly: nothing walls and nothing collapses.
+
+**Recommendation, and what is live: `CRAFT_CARRY = 0.25` is set on this branch.** A new life
+begins each craft with a quarter of the experience the life it leaves had in it: 14 levels
+fewer than the life ended on, around level 55 to 62 in every craft after a life that ended on
+level 67 to 74. It is the smallest change that answers the complaint (the first weeks of
+crafting are gone and the median craft is at level 60 on day 0) without making the tail free:
+the tail is the endgame of the crafts (level 99 is 13 million experience) and it still has to
+be earned. A carry compounds under a roof, because the life after carries a quarter of a life
+that already carried one: a life that earns the same again each time settles at 1 / (1 - 0.25),
+a third more than one life earns, never the cap. It does not share a number with the Echo:
+the Echo is the climb's bonus, this is the workshop's.
+
+**What it looks like** (`node tools/shot-carry.mjs`, the real build on fabricated saves, at 400
+and 320 wide, in `docs/shots-carry/`): the Rebirth page with the new row, 業 The workshop,
+"25% of the experience in every craft, and nothing else of it (yours begin at levels 46 to
+66)", and the Begins again card saying the pouch, tools, arrays and counts go but not the
+experience; the line the new life opens with; and the Crafts screen of the second life's
+first hour in the second realm, Total 400 of 693 with the carry and Total 7 without it. One
+consequence worth knowing: the existing feeder rule (Herb 40 opens Alchemy, Vein 40 Sigils,
+Forging 40 Arrays, from the second realm) now opens all three at once in a carried life, as it
+does for a first life that levels a gatherer to 40 early. Their recipes keep their realms.
+
+**Not done, and why.** The pouch and the tools are not carried: every item names a recipe
+that names a realm, and validate() drops what a realm has not opened, so a carried pouch
+would be thrown away at load; the tools come back on their own once the forge level is
+already there (above). *Material* (`State.materials`) is not carried and was not measured:
+it is what gear, refining and fusing cost, so it is the climb's power and not the
+workshop's, and a cap low enough to be safe in the first realm would be worth almost
+nothing. A crafting-speed bonus that grows with lives was not built: the carry already
+brings the tools and the levels back sooner, and a second knob on the same grind would need
+its own measurement. If the owner wants more, `CRAFT_CARRY` is the one number. An exploratory
+walk (not in the harness, one seed) at 0.5, which is 7 levels fewer, moved the summit
+52.8 against 52.3 and brought the slowest craft to level 75 on day 66 instead of 99, about
+twice what 0.25 saves.
+
+**Verification and the save.** The carried experience is derived, never trusted:
+- `bornFrom` writes it (`carriedXp`: floored, never above what the life had, one function for
+  the game and the server).
+- `validate()` lets a craft that is not open hold experience only in a later life
+  (`State.lives` not empty), and then at most `floor(XP_CAP * CRAFT_CARRY)`. A first life
+  still holds nothing in a shut craft, and an open craft is still bounded by the time the run
+  has lived. A life that began before the carry has none and loads exactly as it was.
+- `verify()` across a rebirth starts the new life from the experience it could honestly have
+  been born with: a quarter of what the last accepted save held plus every second since at
+  the fastest a craft pays, and never less than `bornFrom` gives. What the save holds above
+  that is read as gained and has to fit the seconds that passed, as in any life, so a
+  hand-edited craft is `too-fast` (a wait, never a strike). `craftcarry.test.ts` holds all of
+  it, including the life that went on crafting after the server last saw it.
+- No schema change, and no change to the server's function beyond `verify.ts`.
+
+**Words to change when it is released** (not done here: the Discord file is the owner's).
+The Rebirth page and the line a new life opens with already say it (`REBIRTH.carriesWorkshop`,
+`REBIRTH.bornWorkshop`). The `g-rebirth` guide in `tools/discord/server.json` still says the
+workshop begins again, and the bible's Rebirth line (`tools/bible.ts`) does not mention it.
+
+### 宿慧 The endless road (rekaris asked for "no cap, diminishing returns"; measured, NOT built)
+
+**Can an uncapped Echo be offered in a form that respects the law?** Literally uncapped, no:
+`ECHO_CEILING` is the roof the economic law asks for, and it is also what the server's bound
+stands on (`verify.ts` reads `echoFactor` of the record), so an Echo without a roof is a bound
+without one: a forged record of forty lives would be the most any save may hold. What can be
+offered is a *soft* one: a logarithmic tail that never quite stops but is worth little, under
+a hard roof a few points past today's. `npm run echotail` measures the form below.
+
+Every life gives what it gives now. Past the 25%, the lives are counted in full lives (12.5%
+each) and each doubling of that count adds `TAIL`: `tail = TAIL * log2(1 + (sum - 25%) / 12.5%)`.
+The Echo after n lives of 15 marks (of 3 marks, in brackets), for a tail of 1% / 2% / 3% a
+doubling:
+
+| lives | 1% | 2% | 3% |
+| --- | --- | --- | --- |
+| 4 | +26.6% (+25.5%) | +28.2% (+26.0%) | +29.8% (+26.5%) |
+| 9 | +28.0% (+27.1%) | +31.0% (+29.3%) | +34.0% (+31.4%) |
+| 20 | +29.2% (+28.5%) | +33.5% (+31.9%) | +37.7% (+35.4%) |
+| 40 | +30.3% (+29.5%) | +35.6% (+34.0%) | +40.9% (+38.6%) |
+
+And what that moves, days to the summit of a reborn life at each total Echo (a visit-a-day
+habit steps in whole visits, so its column is a day or two noisy):
+
+| Echo | active | every hour | once a day |
+| --- | --- | --- | --- |
+| +25% (today's roof) | 48.3 | 31.7 | 72.0 |
+| +30% | 46.3 (-4.1%) | 29.7 (-6.3%) | 74.0 |
+| +33% | 46.2 (-4.5%) | 30.1 (-5.0%) | 72.0 |
+| +36% | 44.8 (-7.2%) | 29.7 (-6.2%) | 72.0 |
+| +40% | 41.7 (-13.8%) | 28.4 (-10.4%) | 71.0 (-1.4%) |
+| +50% | 41.2 (-14.8%) | 26.5 (-16.2%) | 65.0 (-9.7%) |
+
+So twenty lives with a 1% tail sit at about +29%: the summit moves 1 to 2 days and a mark
+comes 3% sooner. A 2% tail, about +33%: about 2 days at the summit, 6% on a mark. A 3% tail,
+about +38%: 4 to 5 days at the active habit, 9% on a mark. A point of Echo past the roof is
+worth about what the first points were (0.6% of the summit), so the tail is small because
+it adds few points, not because the points are weak. The cost is not the days. It is what
+comes with it: the record would have to hold more than nine lives (`LIVES_MAX`, `validLives`,
+the server's walk of the record, the size of the save) or fold old lives into a count; the
+roof the server bounds a forged record by would move to wherever the tail is cut; and a
+number that never stops is a promise to a tester that the game will never say "enough".
+
+**If the owner wants it,** the form that respects the law is a tail with a hard roof: say
+`TAIL = 2%` and a ceiling at +35%, which the tail reaches at about 38 lives of 15 marks, and
+the 25% roof and the nine lives left exactly as they are for everyone who stops there. The
+server's bound moves from 1.25 to 1.35 and nothing else. It is the owner's decision and none
+of it is in the code.

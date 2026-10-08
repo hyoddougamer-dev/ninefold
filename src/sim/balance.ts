@@ -1045,6 +1045,24 @@ export const ECHO_LIFE_MAX = 0.125;
 export const ECHO_CEILING = 0.25;
 /** 世 How many lives a save may remember. Nine, as the realms are. */
 export const LIVES_MAX = 9;
+/**
+ * 業 The workshop through a rebirth. rekaris (Discord, 2026-10-08): the crafts are a thick
+ * part of the time spent and running them all again sounds exhausting. A new life begins
+ * each craft with this share of the experience the life it leaves had earned in it, never
+ * more than that life had, floored to whole experience. Experience only: the pouch, the
+ * material, the tools and the counts of what was made begin again, so nothing carried is a
+ * thing a realm's gate has not opened, and no craft level feeds the qi rate directly (the
+ * rate is read from upgrades, gear and the tree, never from a craft). The table is a
+ * curve, so a share is a few levels, not a fraction of them: a quarter of the experience
+ * is 14 levels fewer than the life had (7 levels per halving). tools/carry.ts and
+ * docs/DRAWER.md (轉世) are where it is measured. 0 is the game as it was: nothing carried.
+ *
+ * Measured 2026-10-08 at a quarter: the slowest craft reaches level 60, 70 and 75 about 16 to
+ * 18 days sooner and the median craft starts at level 60; the second life's summit moves 0.2
+ * days on average (three gear seeds), the qi rate at the same day by 0 to 3%, and a share a
+ * tenth either way (22.5%, 27.5%) moves the saving smoothly and walls nothing.
+ */
+export const CRAFT_CARRY = 0.25;
 
 /**
  * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.

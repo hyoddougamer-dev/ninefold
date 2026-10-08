@@ -51,7 +51,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestFeed, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
@@ -742,7 +742,16 @@ function reborn(before: State, after: State, dt: number, first: boolean): Verdic
   // gives is capped (CODEX_CAP) and never touches the qi rate.
   const owed = codexToKeep(before);
   const kept = keptCovers(after.codexKept, owed) ? after.codexKept : owed;
-  const start = { ...bornFrom(before, after.lives, at, kept), startedAt: after.startedAt };
+  const born = bornFrom(before, after.lives, at, kept);
+  // 業 And the experience it was born with: CRAFT_CARRY of the old life's, which `before` may
+  // not have seen the end of. The most that can have been is the share of what `before` held
+  // plus every second since at the fastest a craft pays, so the new life starts from what
+  // its save says up to that, and only what is above it is read as gained (and has to fit
+  // the time). Never from less than bornFrom gives, so a save with no carry reads as before.
+  const owedXp = born.crafts.xp;
+  const roof = carriedXp(Object.fromEntries(SKILL_KEYS.map((k) => [k, (before.crafts?.xp[k] ?? 0) + dt * XP_PER_SECOND_MAX[k]])) as State['crafts']['xp']);
+  const xp = Object.fromEntries(SKILL_KEYS.map((k) => [k, Math.max(owedXp[k], Math.min(after.crafts?.xp[k] ?? 0, roof[k]))])) as State['crafts']['xp'];
+  const start = { ...born, crafts: { ...born.crafts, xp }, startedAt: after.startedAt };
   const v = verify(start, after, Math.max(0, dt - old), first, 0);
   const late = old > dt * SLACK && !v.why.includes('too-fast');
   return late ? { ...v, ok: false, why: [...v.why, 'too-fast'] } : v;

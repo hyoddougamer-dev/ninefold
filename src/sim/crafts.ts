@@ -44,7 +44,7 @@ import {
   bestHundred, codexValue, hundredKit, orderNeeds, orderRecipe, piecesMade, pieceOf, setOpen, validHundredMade, validOrder,
   type Order,
 } from './hundred.ts';
-import { BOTTLENECK_LOOSEN, CODEX_CAP, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
+import { BOTTLENECK_LOOSEN, CODEX_CAP, CRAFT_CARRY, HUNDRED_HEAVEN_MADE, REALM_WALL, SEAL_DAYS, SEAL_PILL_SHARE } from './balance.ts';
 
 export interface Carry {
   /** A pouch key: an elixir, with its rank. */
@@ -1050,6 +1050,17 @@ export function shortestDoorGap(pouch: Readonly<Record<string, number>>, gap: nu
   return (pouch[arrayKey('hiddendoor')] ?? 0) > 0 ? gap - CRAFT_ARRAY_DOOR * CRAFT_ARRAY_DEPTH_TOP : gap;
 }
 
+/**
+ * 業 What a new life begins each craft with: CRAFT_CARRY of the experience the life it leaves
+ * had in it, floored, never more than that life had. The share is a parameter so a harness
+ * can push it off its value; the game never passes one.
+ */
+export function carriedXp(xp: Readonly<Record<SkillKey, number>> | undefined, share = CRAFT_CARRY): Record<SkillKey, number> {
+  const out = zeroSkills(0);
+  for (const k of SKILL_KEYS) out[k] = Math.floor(Math.min(XP_CAP, Math.max(0, xp?.[k] ?? 0)) * Math.min(1, Math.max(0, share)));
+  return out;
+}
+
 /* ── 守 A save is input ──────────────────────────────────────────────────── */
 
 /**
@@ -1085,7 +1096,9 @@ const MAKER: Readonly<Record<string, Recipe>> = Object.fromEntries(
  * experience by the time the run has lived, a level's tools and arrays by the level,
  * and anything that names nothing is not there.
  */
-export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 'startedAt'>, now: number): Crafts {
+export function validCrafts(
+  raw: unknown, s: Pick<State, 'realm' | 'killed' | 'startedAt'>, now: number, lives = 0,
+): Crafts {
   const o = (raw ?? {}) as Record<string, unknown>;
   const num = (x: unknown, lo: number, hi: number, fallback = 0) =>
     typeof x === 'number' && Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback;
@@ -1097,9 +1110,13 @@ export function validCrafts(raw: unknown, s: Pick<State, 'realm' | 'killed' | 's
   const rawXp = rec(o.xp);
   const xp = zeroSkills(0);
   const fedLast = [...SKILL_KEYS].sort((a, b) => (FEEDER[a] ? 1 : 0) - (FEEDER[b] ? 1 : 0));
+  // 業 A craft that is not open yet holds nothing, except in a life that began with a share of
+  // the last one's experience (CRAFT_CARRY): there it may hold that share and no more, which
+  // is the roof of what could have been carried (bornFrom writes the exact figure).
+  const carried = lives > 0 ? Math.floor(XP_CAP * CRAFT_CARRY) : 0;
   for (const k of fedLast) {
-    xp[k] = openBy(s.realm, k, (f) => levelOf(xp[f]))
-      ? num(rawXp[k], 0, Math.min(XP_CAP, elapsed * XP_PER_SECOND_MAX[k] * 1.05)) : 0;
+    const most = Math.min(XP_CAP, elapsed * XP_PER_SECOND_MAX[k] * 1.05);
+    xp[k] = openBy(s.realm, k, (f) => levelOf(xp[f])) ? num(rawXp[k], 0, most) : num(rawXp[k], 0, Math.min(carried, most));
   }
   const open = (k: SkillKey) => openBy(s.realm, k, (f) => levelOf(xp[f]));
   const level = (k: SkillKey) => levelOf(xp[k]);
