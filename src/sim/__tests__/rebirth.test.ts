@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { arrivalOf, playEndgame } from '../../../tools/endgame.ts';
 import {
-  ECHO_CEILING, ECHO_LIFE_MAX, ECHO_STEP, LAYERS, LIVES_MAX, REBIRTH_MARKS,
+  ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LAYERS, LIVES_MAX, REBIRTH_MARKS,
 } from '../balance.ts';
 import { MARKS_LIMIT, echoFactor, echoOf, lifeEcho, livesExtend, progressOf, validLives, type Life } from '../echo.ts';
 import {
@@ -33,12 +33,16 @@ const summit = (marks: number, at = T0 + 90 * DAY): State => ({
 });
 
 describe('宿慧 the Echo', () => {
-  it('is a step for every doubling of the marks a life crossed', () => {
+  it('is the first mark, and a step for every doubling of the marks a life crossed after it', () => {
     expect(lifeEcho(0)).toBe(0);
-    expect(lifeEcho(REBIRTH_MARKS)).toBeCloseTo(ECHO_STEP);
-    expect(lifeEcho(3)).toBeCloseTo(2 * ECHO_STEP);
-    expect(lifeEcho(7)).toBeCloseTo(3 * ECHO_STEP);
-    expect(lifeEcho(15)).toBeCloseTo(4 * ECHO_STEP);
+    expect(lifeEcho(REBIRTH_MARKS)).toBeCloseTo(ECHO_FIRST);
+    expect(lifeEcho(3)).toBeCloseTo(ECHO_FIRST + ECHO_STEP);
+    expect(lifeEcho(7)).toBeCloseTo(ECHO_FIRST + 2 * ECHO_STEP);
+    expect(lifeEcho(15)).toBeCloseTo(Math.min(ECHO_LIFE_MAX, ECHO_FIRST + 3 * ECHO_STEP));
+    // 轉世 The first allowed rebirth is worth taking (2026-10-08): never less than 5%, and
+    // more marks always leave at least as much.
+    expect(ECHO_FIRST).toBeGreaterThanOrEqual(0.05);
+    for (let m = REBIRTH_MARKS + 1; m < 40; m++) expect(lifeEcho(m)).toBeGreaterThanOrEqual(lifeEcho(m - 1));
     // Concave: every extra mark is worth less than the one before it.
     for (let m = 2; m < 40; m++) expect(lifeEcho(m) - lifeEcho(m - 1)).toBeLessThanOrEqual(lifeEcho(m - 1) - lifeEcho(Math.max(0, m - 2)) + 1e-12);
     expect(lifeEcho(MARKS_LIMIT)).toBe(ECHO_LIFE_MAX);
@@ -50,16 +54,20 @@ describe('宿慧 the Echo', () => {
     expect(echoFactor(most)).toBe(1 + ECHO_CEILING);
     expect(echoOf([])).toBe(0);
     expect(echoOf(undefined)).toBe(0);
+    // The fewest lives that reach it, ending each on the first mark: ECHO_CEILING / ECHO_FIRST.
+    const rushed = (n: number): Life[] => Array.from({ length: n }, (_, i) => ({ marks: REBIRTH_MARKS, at: T0 + i }));
+    expect(echoOf(rushed(Math.ceil(ECHO_CEILING / ECHO_FIRST)))).toBeCloseTo(ECHO_CEILING);
+    expect(echoOf(rushed(LIVES_MAX))).toBe(ECHO_CEILING);
   });
 
   it('raises what is gathered and nothing priced in the rate', () => {
     const s = { ...summit(3), lives: [{ marks: 7, at: T0 }] };
-    expect(gathering(s)).toBeCloseTo(rate(s) * (1 + 3 * ECHO_STEP));
+    expect(gathering(s)).toBeCloseTo(rate(s) * (1 + lifeEcho(7)));
     expect(rate(s)).toBe(rate({ ...s, lives: [] }));
     // advance() is the one place it pays: a minute at the ceiling banks the Echo's share more.
     const a = advance({ ...s, layer: 8, realm: 8 }, s.at + 60);
     const b = advance({ ...s, layer: 8, realm: 8, lives: [] }, s.at + 60);
-    expect((a.qi - s.qi) / (b.qi - s.qi)).toBeCloseTo(1 + 3 * ECHO_STEP, 6);
+    expect((a.qi - s.qi) / (b.qi - s.qi)).toBeCloseTo(1 + lifeEcho(7), 6);
   });
 });
 
@@ -100,8 +108,10 @@ describe('轉世 a new life', () => {
     expect(lifeStart(s)).toBe(now);
     expect(lifeTitle(s)?.name).toBe('Twice-Born');
     expect(lifeTitle(old)).toBeNull();
-    expect(echoAfter(old)).toBeCloseTo(2 * ECHO_STEP);
-    expect(echoOf(s.lives)).toBeCloseTo(2 * ECHO_STEP);
+    expect(echoAfter(old)).toBeCloseTo(ECHO_FIRST + ECHO_STEP);
+    expect(echoOf(s.lives)).toBeCloseTo(ECHO_FIRST + ECHO_STEP);
+    // 宿慧 What the confirm promises (echoAfter) is what the new life carries.
+    expect(echoOf(s.lives)).toBe(echoAfter(old));
   });
 
   it('is never refused as empty, and is further along than the life it left', () => {

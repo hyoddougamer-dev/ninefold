@@ -1015,20 +1015,31 @@ export const MAX_MARK_DAYS = 14;
  * onward you can reset, but the benefit of the reset depends on how far ahead you are."*
  *
  * What carries is 宿慧 the Echo, a share added to the qi gathered (advance, never the tower,
- * the vault or any other lump). A life's Echo is ECHO_STEP for every doubling of the marks
- * it crossed (log2(1 + marks)), so the first mark is worth a step, three are worth two,
- * seven three: further is always more, and every step costs twice the endgame the last one
- * did. One life gives ECHO_LIFE_MAX at most, and all of them together ECHO_CEILING, which
- * is the hard roof the economic law asks for: a stacked multiplier with no roof was
- * measured (a tester asked for 2x per life) and a 2x cut the climb by 45%.
+ * the vault or any other lump). A life's Echo is ECHO_FIRST for its first mark and
+ * ECHO_STEP more for every doubling after it (log2((1 + marks) / 2)), so one mark is worth
+ * 5%, three 7.5%, seven 10%: further is always more, and every step costs twice the endgame
+ * the last one did. One life gives ECHO_LIFE_MAX at most, and all of them together
+ * ECHO_CEILING, which is the hard roof the economic law asks for: a stacked multiplier with
+ * no roof was measured (a tester asked for 2x per life) and a 2x cut the climb by 45%.
+ *
+ * The first mark was a bare step (2.5%) until 2026-10-08. The poll and rekaris said a
+ * rebirth was not worth taking the moment it opens, and measured they were right: the next
+ * life reached the summit 1% to 10% sooner (casual 1%, active 4%). At 5% it is 3% to 9%,
+ * and the ceiling is reached by every road in about the same calendar (273 days for the
+ * active cultivator ending each life on its first mark, 250 on its third, 248 on its
+ * seventh), so rushing the first Dragon is no longer a dead end and is still not the best
+ * road. A floor alone (5% for one to three marks) made rushing the best road; a 5% step
+ * reached the ceiling in two lives of seven marks. tools/rebirth.ts sections 1b and 2.
  *
  * See tools/rebirth.ts for the measurement and docs/DRAWER.md (轉世) for the numbers.
  */
 /** 轉世 Marks a life must have crossed before it may end: the first Dragon. */
 export const REBIRTH_MARKS = 1;
-/** 宿慧 What each doubling of a life's marks adds to the qi gathered: 2.5%. */
+/** 宿慧 What a life that crossed its first mark leaves, the least any ended life leaves: 5%. */
+export const ECHO_FIRST = 0.05;
+/** 宿慧 What each doubling of a life's marks past the first adds to the qi gathered: 2.5%. */
 export const ECHO_STEP = 0.025;
-/** 宿慧 The most one life can add, five doublings (31 marks): 12.5%. */
+/** 宿慧 The most one life can add, the first mark and three doublings (15 marks): 12.5%. */
 export const ECHO_LIFE_MAX = 0.125;
 /** 宿慧 The most every life together can ever add to the qi gathered: 25%. */
 export const ECHO_CEILING = 0.25;

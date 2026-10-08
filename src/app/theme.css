@@ -1641,6 +1641,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .rebirthsheet .rb-stay { margin: 0; font-size: 12.5px; line-height: 1.5; }
 .rebirthsheet .rb-confirm { display: grid; gap: 8px; }
 .rebirthsheet .rb-confirm .act, .rebirthsheet > .act { margin: 0; }
+.rebirthsheet .rb-promise { margin: 0; font-size: 13px; line-height: 1.5; }
 .rebirthsheet .rb-warn { margin: 0; font-size: 12.5px; color: var(--cinnabar); line-height: 1.5; }
 .rebirthsheet .rb-title { margin: 0; display: grid; gap: 2px; }
 .rebirthsheet .rb-title i { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
@@ -3480,6 +3481,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cr-body > b { font-size: 13.5px; font-weight: 600; }
 .crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
 .crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
+/* 形 One piece in several looks: a row of small pictures with names, the chosen one gilt. */
+.crafts .cr-looks { display: flex; flex-wrap: wrap; gap: 4px; margin: 1px 0 2px; min-width: 0; }
+.crafts .cr-looks button { display: inline-flex; align-items: center; gap: 3px; font: inherit; font-size: 11px; cursor: pointer;
+                           padding: 1px 7px 1px 3px; border-radius: 7px; color: var(--faint); background: var(--panel2);
+                           border: 1px solid var(--line); max-width: 100%; min-width: 0; }
+.crafts .cr-looks button > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crafts .cr-looks button > span:first-child:not(:last-child) { display: grid; place-items: center; width: 18px; height: 18px; color: var(--gold); }
+.crafts .cr-looks button i { font-style: normal; opacity: .75; }
+.crafts .cr-looks button[aria-checked='true'] { border-color: var(--gold); color: var(--text); background: rgba(212, 175, 86, .12); }
+.crafts .cr-looks button[data-on] { box-shadow: inset 0 -2px 0 var(--jade); }
 .crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
 /* 深 An array's depth, under what it does: the pips gold, the words as quiet as the line above. */
 .crafts .cr-depth { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
@@ -4089,6 +4100,14 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-chips button i { font-style: normal; font-size: 10.5px; opacity: .75; margin-left: 4px; }
 .hundred .hu-chips button[aria-selected='true'] { border-color: var(--gild-strong); background: rgba(212, 175, 86, .1);
                                                   color: var(--text); }
+/* 形 The looks of one piece: a small picture and its name, one of them chosen. */
+.hundred .hu-looks { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.hundred .hu-looks button { display: inline-flex; align-items: center; gap: 5px; font: inherit; font-size: 12px; cursor: pointer;
+                            padding: 3px 9px 3px 4px; border-radius: 8px; color: var(--faint); background: var(--panel2);
+                            border: 1px solid var(--line); max-width: 100%; }
+.hundred .hu-looks button[aria-checked='true'] { border-color: var(--gold); color: var(--text); background: rgba(212, 175, 86, .12); }
+.hundred .hu-lookic { width: 22px; height: 22px; display: grid; place-items: center; color: var(--gold); }
+.hundred .hu-looknote { font-size: 11px; }
 .hundred .hu-lines { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
 .hundred .hu-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .hundred .hu-what { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
@@ -4104,6 +4123,16 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-por button[aria-checked='true'] { border-color: var(--gold); background: rgba(212, 175, 86, .14); color: var(--gold); }
 .hundred .hu-por button[aria-checked='true'] em { color: var(--gold); }
 .hundred .hu-portion { margin: 0; font-size: 11px; }
+/* 開 What opens when: one row a line, the material, and the craft level and realm it waits on. */
+.hundred .hu-opens { display: flex; flex-direction: column; gap: 3px; padding: 10px; font-size: 12px; }
+.hundred .hu-opens > b { font-size: 12.5px; color: var(--gold); }
+.hundred .hu-opens > p { margin: 0 0 4px; font-size: 11px; line-height: 1.4; }
+.hundred .hu-open { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 1px; align-items: baseline;
+                    padding: 3px 7px; border-radius: 6px; background: rgba(20, 17, 13, .6); }
+.hundred .hu-open > span { min-width: 0; }
+.hundred .hu-omat { grid-column: 1 / -1; grid-row: 2; font-size: 11px; color: var(--faint); }
+.hundred .hu-open em { font-style: normal; font-size: 11px; color: var(--cinnabar); white-space: nowrap; }
+.hundred .hu-open[data-open] em { color: var(--jade); }
 .hundred .hu-out { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 2px solid var(--hue, var(--gold)); }
 .hundred .hu-piece { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; }
 .hundred .hu-tile { width: 64px; height: 64px; display: block; }
