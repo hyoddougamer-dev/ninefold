@@ -919,6 +919,15 @@ export const GUIDE = {
 };
 
 export const HUNT = {
+  /**
+   * 境 The realm a beast belongs to, as a small mark beside its name. razielmorgenstern, on the
+   * Discord (2026-10-08): to know exactly which level of equipment a hunt goes for. A beast of
+   * realm 5 leaves realm-5 pieces, so the number is the one on the gear (sword5). The mark says
+   * "R" and the number; the realm's name is in its label, so the character is never the only
+   * place it is named.
+   */
+  realmTag: (n: number) => `R${n}`,
+  realmLabel: (n: number, name: string) => `Realm ${n}: ${name}`,
   /** 出 When a beast of this realm walks out, for the rows that have not yet. */
   walksOut: (layer: number) => `layer ${layer}`,
   coming: 'Still to come in this realm',
@@ -1034,24 +1043,22 @@ export const DRIVE = {
  * items."*). Everything unmarked melts, by the same rules as melting anywhere.
  */
 export const PILE = {
-  head: (n: number) => (n === 1 ? 'One piece fell' : `${n} pieces fell`),
+  head: (n: number) => (n === 1 ? 'One piece fell' : `${n.toLocaleString('en')} pieces fell`),
   says: 'Mark what you keep. Everything unmarked is melted like any melt: qi while the melting allowance holds, 材 material after it.',
-  /** The weakest pieces are not listed; they are left where they fell, as a drive always did. */
-  unlisted: (n: number) => (n === 1 ? 'The weakest piece that fell was left on the mountain.' : `The ${n} weakest pieces that fell were left on the mountain.`),
   all: 'Select all',
   none: 'Clear',
-  /** Select all and Clear act on what the filters show. */
-  allShown: (n: number) => `${n} shown`,
-  keeping: (k: number, of: number) => `Keeping ${k} of ${of}`,
+  /** Select all and Clear act on every piece the filters match, drawn on the screen yet or not. */
+  allShown: (n: number) => `${n.toLocaleString('en')} match`,
+  keeping: (k: number, of: number) => `Keeping ${k.toLocaleString('en')} of ${of.toLocaleString('en')}`,
   room: (n: number) => (n === 1 ? 'room for 1 in the chest' : `room for ${n} in the chest`),
-  melts: (n: number, qi: string, mats: string) => `Melting ${n} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
+  melts: (n: number, qi: string, mats: string) => `Melting ${n.toLocaleString('en')} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
   meltsNone: 'Nothing is left to melt.',
   past: 'Past the melting allowance, pieces melt into 材 material instead of qi.',
-  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over}, or melt the bag below to make room.`,
+  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over.toLocaleString('en')}, or melt the bag below to make room.`,
   bag: 'Melt the bag as well',
   bagSays: (n: number) => `Every piece in the chest that is not locked (${n}) melts as well, so there is room for what you keep.`,
   bagNone: 'The chest holds nothing that is not locked.',
-  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k}, melt the rest`),
+  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k.toLocaleString('en')}, melt the rest`),
   game: 'Let the game decide',
   gameSays: 'Keeps the best piece and leaves the rest, as a Drive always did.',
   later: 'Decide later',

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, templateOf, type Item } from '../../data/gear.ts';
 import { lifted, type Stashed } from '../../sim/stash.ts';
 import { marksUp } from '../../sim/inspect.ts';
+import { RealmTag } from './RealmTag.tsx';
 import { demonsFor } from '../../sim/seclusion.ts';
 import { QOL } from '../copy.ts';
 import { plateOf } from '../../data/bestiary.ts';
@@ -371,6 +372,7 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
           <span className="nm">
             <b className="cjk" style={{ color: br.colour }}>
               {battle.floor === undefined ? beast.han : `${battle.floor}層`}
+              {!platform && battle.floor === undefined && <RealmTag realm={beast.realm} />}
             </b>
             <span className="en">{platform ? PLATFORM.who(ordinal)
               : battle.floor === undefined ? beast.name : ARENA.floor(battle.floor)}</span>

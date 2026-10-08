@@ -16,6 +16,7 @@ import {
   type Affix, type Item, type Rarity, type Refined, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { chestCeiling, chestLimit, freshId, itemWorth } from './chest.ts';
+import { unpackPile } from './pilepack.ts';
 import { affinity, layerCostFactor, powerMultiplier, rateMultiplier, validateUnlocked } from './dao.ts';
 import {
   owed as cardsOwed, refineFactor as cardRefineFactor, valid as validAwakened,
@@ -185,8 +186,9 @@ export interface State {
   /** 藏 What is in the chest, capped at CHEST_LIMIT plus whatever 運 has added. */
   chest: Item[];
   /**
-   * 圍 What the last drive left on the table, waiting to be answered: the best DRIVE_PILE
-   * pieces that fell, best first, and the instant they fell. Nothing in here is worn,
+   * 圍 What the last drive left on the table, waiting to be answered: every piece that
+   * fell, best first (at most DRIVE_PILE, which is more than a drive can roll), and the
+   * instant they fell. Written to the save as rows (sim/pilepack.ts). Nothing in here is worn,
    * fused or counted by anything else, and nothing in here is lost while it waits; the
    * game answers for the player once PILE_HOLD has gone by. See sim/pile.ts.
    */
@@ -1404,13 +1406,13 @@ export function validate(raw: unknown, now: number): State {
   }
 
   /**
-   * 圍 The drive's pile: at most DRIVE_PILE pieces, each a real piece from a realm the save has
+   * 圍 The drive's pile: at most DRIVE_PILE pieces (rows or objects, see pilepack.ts), each a real piece from a realm the save has
    * reached, none sharing a name with the chest or each other, and an instant the save has
    * lived. A pile with no pieces has no instant. It is read last so that its names are only
    * ever the ones left over (a piece in the chest keeps its own).
    */
   const pile: Item[] = [];
-  for (const raw of Array.isArray(o.pile) ? o.pile : []) {
+  for (const raw of unpackPile(o.pile)) {
     if (pile.length >= DRIVE_PILE) break;
     const it = item(raw, used);
     if (it && (TEMPLATE_BY_KEY[it.template]?.realm ?? 1) <= realm) pile.push(marks(it));

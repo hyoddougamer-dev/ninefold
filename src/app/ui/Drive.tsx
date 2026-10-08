@@ -14,6 +14,7 @@ import { Svg } from './Svg.tsx';
 import { rate, type State } from '../../sim/state.ts';
 import { DRIVE, HUNT, PILE, QOL } from '../copy.ts';
 import { DrivePile } from './DrivePile.tsx';
+import { RealmTag } from './RealmTag.tsx';
 import { settleDefault, type Choice, type Plan } from '../../sim/pile.ts';
 
 /**
@@ -71,7 +72,7 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
           <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={r.colour}
             tier={2} size={46} alt={beast.name} />
           <span>
-            <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>
+            <b className="cjk" style={{ color: r.colour }}>{beast.han}<RealmTag realm={beast.realm} /></b>
             <i>{DRIVE.took(done.kills)}</i>
           </span>
         </div>
@@ -95,7 +96,7 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
         {/* 圍 Everything that fell, with the choice of what to keep. The best piece is marked to start
             with: it is what the game would have kept. */}
         {waiting && (
-          <DrivePile state={state} unlisted={Math.max(0, done.dropsRolled - done.drops.length)}
+          <DrivePile state={state}
             onAnswer={(choice, p) => { setAnswered({ plan: p }); onSettle(choice); }}
             onGame={() => { setAnswered({ plan: null }); onGame(); }} />
         )}
@@ -132,7 +133,7 @@ export function Drive({ state, beast, seed, onTake, onSettle, onGame, onClose }:
         <Plate kind="beast" subject={plateOf(beast)} icon={beast.icon} colour={r.colour}
           tier={2} size={46} alt={beast.name} />
         <span>
-          <b className="cjk" style={{ color: r.colour }}>{beast.han}</b>
+          <b className="cjk" style={{ color: r.colour }}>{beast.han}<RealmTag realm={beast.realm} /></b>
           <i>{beast.name} · {DRIVE.pays(num(per))}</i>
         </span>
       </div>
