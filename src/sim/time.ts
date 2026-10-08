@@ -79,9 +79,13 @@ export function advance(s: State, now: number, auto = false, focus = 1): State {
     const span = burning ? Math.min(dt, until - clock) : dt;
     const cost = layerCost(realm, layer, s.unlocked);
     const ceiling = layer >= LAYERS_PER_REALM - 1;
+    // 留 A held layer banks the qi exactly as the ceiling does, and for the same reason: it
+    // is the player's tap that opens the next one (openLayer). Never under `auto`, which
+    // traces the theoretical climb, and never read from a save that does not say so.
+    const holding = s.hold === true && !auto;
 
     // At the ceiling, qi banks and time ends here. Only 突破 leaves a realm.
-    if (ceiling && !auto) {
+    if ((ceiling || holding) && !auto) {
       qi += r * span;
       dt -= span;
       clock += span;
@@ -152,6 +156,8 @@ export function buysWith(s: State, lump: number): { rungs: number; left: number 
   let { realm, layer } = s;
   let qi = s.qi + lump;
   let rungs = 0;
+  // 留 A held layer takes nothing by itself: the lump stays where it landed.
+  if (s.hold === true) return { rungs: 0, left: qi };
   for (let guard = 0; guard <= LAYERS + 1; guard++) {
     if (layer >= LAYERS_PER_REALM - 1) break;      // 頂 the ceiling: qi banks, nothing opens
     const cost = layerCost(realm, layer, s.unlocked);
@@ -161,6 +167,40 @@ export function buysWith(s: State, lump: number): { rungs: number; left: number 
     if (++layer >= LAYERS_PER_REALM) { layer = 0; realm += 1; }
   }
   return { rungs, left: qi };
+}
+
+/**
+ * 留 Whether the layer under your feet can be opened by hand: the bar is full, a rung is
+ * left to open below the warden, and the summit is not a rung.
+ */
+export function canOpenLayer(s: State): boolean {
+  if (s.layer >= LAYERS_PER_REALM - 1 || layersOpened(s) >= LAYERS - 1) return false;
+  return s.qi >= layerCost(s.realm, s.layer, s.unlocked);
+}
+
+/**
+ * 留 Open the layer under your feet by hand: take its price from the qi and step up one.
+ *
+ * It is what advance() does by itself when the layer is not held, one rung at a time and
+ * at the same price, so holding changes *when* the qi is spent and never what it is worth.
+ * A held bar gathers at the rate of the rung it stands on, which is never above the rate of
+ * the rung over it, so holding cannot make more qi than not holding (see hold.test.ts).
+ * Reaching the last rung stands the warden at the gate from this instant, as anywhere else.
+ */
+export function openLayer(s: State): State {
+  if (!canOpenLayer(s)) return s;
+  const layer = s.layer + 1;
+  return {
+    ...s,
+    qi: Math.max(0, s.qi - layerCost(s.realm, s.layer, s.unlocked)),
+    layer,
+    gateAt: layer === LAYERS_PER_REALM - 1 && s.realm < 9 && !s.gateAt ? s.at : s.gateAt,
+  };
+}
+
+/** 留 Hold the layer, or let it open by itself again. Nothing is spent either way. */
+export function setHold(s: State, on: boolean): State {
+  return s.hold === on ? s : { ...s, hold: on };
 }
 
 /**
@@ -195,7 +235,8 @@ export function affordableIn(
   // riding on it would promise a minute that arrives at four, and the standing rate is
   // the one that is still true tomorrow. A player who is sitting gets there sooner than
   // the screen said, which is the only direction this is allowed to be wrong in.
-  if (!Number.isFinite(here) || cost <= here) {
+  // 留 And a held layer never takes the qi, so no rung stands in the way: it is only a wait.
+  if (!Number.isFinite(here) || cost <= here || s.hold === true) {
     return { seconds: Math.max(0, cost - s.qi) / Math.max(1e-9, gathering(s)), rungs: 0 };
   }
   let realm = s.realm;

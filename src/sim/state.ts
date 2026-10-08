@@ -35,7 +35,7 @@ import {
   type Take,
 } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SECLUSION,
+  BOON_SWORDSOUL, DRIVE_PILE, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_DAYS, SECLUSION,
   SHRINE_DAO_PER_REALM, SPRING_HOLD,
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
@@ -174,6 +174,20 @@ export interface State {
   worn: Worn;
   /** 藏 What is in the chest, capped at CHEST_LIMIT plus whatever 運 has added. */
   chest: Item[];
+  /**
+   * 圍 What the last drive left on the table, waiting to be answered: the best DRIVE_PILE
+   * pieces that fell, best first, and the instant they fell. Nothing in here is worn,
+   * fused or counted by anything else, and nothing in here is lost while it waits; the
+   * game answers for the player once PILE_HOLD has gone by. See sim/pile.ts.
+   */
+  pile: Item[];
+  pileAt: number;
+  /**
+   * 留 Whether the layer is held: the bar fills as ever, but a full bar waits for a tap
+   * (openLayer) instead of opening by itself, so the qi can be spent on upgrades. Off in
+   * every save that never said otherwise. See advance().
+   */
+  hold: boolean;
   /**
    * 煉 The refining levels of each place on the body. They belong to the place: whatever
    * is worn there has them, a place left empty keeps them for the next piece, and nothing
@@ -497,6 +511,7 @@ export function newState(now: number): State {
     killed: {},
     worn: {},
     chest: [],
+    pile: [], pileAt: 0, hold: false,
     refined: {},
     unlocked: [],
     self: null,
@@ -1094,6 +1109,10 @@ export function validate(raw: unknown, now: number): State {
     killed,
     worn: Object.fromEntries(Object.entries(worn).map(([k, it]) => [k, marks(it as Item)])) as Worn,
     chest: chest.map(marks),
+    // 圍 The drive's pile is read after the ids above are taken, at the foot of this function.
+    pile: [], pileAt: 0,
+    // 留 A yes or nothing; anything else is the layer opening by itself, as it always did.
+    hold: o.hold === true,
     refined,
     unlocked,
     // Neither of these is owned in the save: the stances follow from the realm reached
@@ -1279,8 +1298,23 @@ export function validate(raw: unknown, now: number): State {
     if (n > 0) cappedRefined[slot] = n;
   }
 
+  /**
+   * 圍 The drive's pile: at most DRIVE_PILE pieces, each a real piece from a realm the save has
+   * reached, none sharing a name with the chest or each other, and an instant the save has
+   * lived. A pile with no pieces has no instant. It is read last so that its names are only
+   * ever the ones left over (a piece in the chest keeps its own).
+   */
+  const pile: Item[] = [];
+  for (const raw of Array.isArray(o.pile) ? o.pile : []) {
+    if (pile.length >= DRIVE_PILE) break;
+    const it = item(raw, used);
+    if (it && (TEMPLATE_BY_KEY[it.template]?.realm ?? 1) <= realm) pile.push(marks(it));
+  }
+
   return {
     ...out,
+    pile,
+    pileAt: pile.length > 0 ? clamp(num(o.pileAt, savedAt), startedAt, savedAt) : 0,
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
     refined: cappedRefined,

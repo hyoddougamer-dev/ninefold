@@ -62,9 +62,10 @@ export interface Stashed {
   readonly unkept: boolean;
 }
 
-export function stash(s: State, found: Item | null): Stashed {
+export function stash(s: State, found: Item | null, lift = true): Stashed {
   if (!found) return { state: s, item: null, dropped: null, melted: 0, meltedMaterial: 0, unkept: false };
-  const item = lifted(s, found);
+  // 圍 A drive's pile is lifted when it falls, so it is stashed as it is (sim/pile.ts).
+  const item = lift ? lifted(s, found) : found;
   // 熔 A full chest melts what no kept filter shows first (sim/filters.ts).
   const kept = addToChest(s.chest, item, limitFor(s), (it) => keptByFilter(s.filters, it));
   const m = kept.dropped ? melt(s, [kept.dropped]) : null;

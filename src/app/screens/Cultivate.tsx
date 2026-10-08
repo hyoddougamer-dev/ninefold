@@ -15,7 +15,7 @@ import {
   type State,
 } from '../../sim/state.ts';
 import { duration, num } from '../../sim/format.ts';
-import { affordableIn, gathering, ladderDone, layersOpened, progress } from '../../sim/time.ts';
+import { affordableIn, canOpenLayer, gathering, ladderDone, layerCost, layersOpened, openLayer, progress, setHold } from '../../sim/time.ts';
 import { canReincarnate, echoAfter, echoOf, lifeOf, lifeStart, lifeTitle } from '../../sim/rebirth.ts';
 import { echoPct } from '../ui/Rebirth.tsx';
 import { REALMS, realm as realmOf } from '../../data/realms.ts';
@@ -32,7 +32,7 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
+import { AWAKEN, CULTIVATE, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -396,6 +396,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
               first purchase (see clockUntil), which it says rather than freezing at 0s. */}
           {standing ? PACE.wardenWaits(w.han, w.name)
             : ready ? PACE.breakOpen
+            : state.hold && canOpenLayer(state) ? HOLD.ready
             : heldAtFirstRung(state) ? PACE.held
             : PACE.rungLeft(num(p.rungLeft), duration(p.rungSeconds))}
         </p>
@@ -405,6 +406,30 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           and the warden at the end of them. Bruno had read "layer 3 / 9" and "realm 1 of
           9" for a week without the screen ever showing that one is inside the other. */}
       {!top && <Ladder state={state} />}
+
+      {/* 留 Hold the layer. Off for everyone; on, a full bar waits for a tap instead of opening
+          the layer by itself, so the qi can go to upgrades first. The first session is left alone:
+          this is a choice for somebody who already knows what the bar is. */}
+      {!top && !step && (
+        <div className="holdcard" data-on={state.hold || undefined}>
+          <button type="button" className="hold-switch" role="switch" aria-checked={state.hold}
+            onClick={() => set((s) => setHold(s, !s.hold))}>
+            <b className="cjk" aria-hidden="true">留</b>
+            <span className="hold-text">
+              <em>{HOLD.name}</em>
+              <i>{state.hold ? HOLD.on : HOLD.off}</i>
+            </span>
+            <span className="hold-knob" aria-hidden="true" />
+          </button>
+          {state.hold && canOpenLayer(state) && (
+            <button type="button" className="act small hold-open" data-qol="open-layer"
+              onClick={() => set(openLayer)}>
+              <b className="cjk">開</b> <span>{HOLD.open(state.layer + 1)}</span>
+              <em className="mono">{HOLD.price(num(layerCost(state.realm, state.layer, state.unlocked)))}</em>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 雷池 The ninth realm still has nine layers to climb before the pool takes the bar.
           The breakthrough card names the pool, so this says how far off it is. */}

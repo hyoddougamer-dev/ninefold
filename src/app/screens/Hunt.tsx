@@ -15,7 +15,7 @@ import { Term } from '../ui/Term.tsx';
 import { schoolSays } from '../classes.ts';
 import { Door } from '../ui/Secret.tsx';
 import { isOpen } from '../../sim/unlocks.ts';
-import { HUNT, QOL, UNIT } from '../copy.ts';
+import { HUNT, PILE, QOL, UNIT } from '../copy.ts';
 import { Bestiary } from './Bestiary.tsx';
 import { DriveTag } from '../ui/Drive.tsx';
 import { canDrive } from '../../sim/hunt.ts';
@@ -44,11 +44,13 @@ import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
 type HuntOrder = 'mark' | 'strong' | 'material';
 const ORDER_KEY = 'ninefold.huntorder';
 
-export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
+export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey }: {
   state: State;
   onFight: (key: string) => void;
   /** 圍 Open the drive sheet for a beast you have 熟 Known. */
   onDrive: (key: string) => void;
+  /** 圍 Open the window for the pieces a drive left, which are still waiting for an answer. */
+  onPile?: () => void;
   /** 自 Start the auto-hunt on a beast you have 熟 Known, straight from its row. */
   onAuto?: (key: string) => void;
   /** 秘境 Walk through the door, when it is open. */
@@ -183,6 +185,15 @@ export function Hunt({ state, onFight, onDrive, onAuto, onSecret, onKey }: {
       <p className="faint" style={{ margin: '6px 0 4px', fontSize: 13 }}>
         <Term han="力" /> {num(power(state))} power. {HUNT.free}
       </p>
+
+      {/* 圍 What the last drive left, still waiting for the player. */}
+      {state.pile.length > 0 && onPile && (
+        <button type="button" className="pilewait" data-qol="pile-waiting" onClick={onPile}>
+          <b className="cjk">圍</b>
+          <span><em>{PILE.waiting(state.pile.length)}</em><i>{PILE.waitingSays}</i></span>
+          <span className="go">{PILE.open}</span>
+        </button>
+      )}
 
       {/* 秘境 The door, at the top of the hunt because a secret realm is a hunt with a
           shape. It says when it opens again rather than going away, because it waits. */}
