@@ -2522,7 +2522,9 @@ export const HUNDRED = {
     level: (n: number) => `Forging ${n} first`,
     heaven: (n: number, made: number) => `Heaven asks ${n} pieces of this set made first (${made} so far)`,
     open: (elite: string, warden: string) => `Know the ${elite} (ten killed) and the ${warden} (one) first: their parts go into every piece`,
-    material: (name: string) => `${name} is not within your reach yet`,
+    /** 開 rekaris, 2026-10-07: 'not within your reach yet' did not say when it would be. */
+    material: (name: string, craft: string, level: number, realm: number) =>
+      `${name} opens this line at ${craft} level ${level}, realm ${realm}`,
     chest: 'Your chest is full',
     lines: 'Choose every line first',
   },
@@ -2557,7 +2559,13 @@ export const HUNDRED = {
   keptSet: (rank: string) => `Finished at ${rank} in a past life, and kept`,
   /** The fourth step on a codex row: Heaven, with the whole set worn, which is also its cap. */
   codexWhole: 'Heaven, worn whole',
-  unreached: 'not within your reach yet',
+  /** 開 Beside a line whose material is not in reach yet: exactly what it waits on. */
+  unreached: (craft: string, level: number, realm: number) => `opens at ${craft} level ${level}, realm ${realm}`,
+  /** 開 The crucible's plan: every line of the chosen set, in the order the lines open. */
+  opensHead: (set: string) => `What opens when: ${set}`,
+  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. The herb and the elite part are this set\'s own.',
+  opensAt: (craft: string, level: number, realm: number) => `${craft} Lv ${level} · realm ${realm}`,
+  opensOpen: 'open',
   levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
   spiritHead: '器靈 Artifact Spirit',
   spiritNote: 'Wear all six pieces of one set, every one Hundredfold and Heaven, and its spirit wakes around you. It is a light and a name, and nothing else.',

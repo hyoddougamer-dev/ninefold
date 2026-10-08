@@ -30,7 +30,7 @@ import {
 } from './balance.ts';
 import {
   FORGED, HUNDRED_RANKS, RECIPES, RECIPE_BY_KEY, hundredElite, hundredKey, levelOf, metalKey,
-  type HundredRank, type Recipe,
+  type HundredRank, type Recipe, type SkillKey,
 } from '../data/crafts.ts';
 import {
   AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue,
@@ -385,9 +385,19 @@ export function backHundred(made: Made): (it: Item) => Item {
  * with a 拾 line needs Immortal Gold, which only the ninth realm's veins give.
  */
 export function materialReached(s: Pick<State, 'realm' | 'crafts'>, key: string): boolean {
+  const g = materialGate(key);
+  if (!g) return false;
+  return s.realm >= g.realm && levelOf(s.crafts?.xp?.[g.skill] ?? 0) >= g.level;
+}
+
+/**
+ * 開 When a crucible material opens: the craft that gathers it, the level it asks and the
+ * realm it comes from, read off the recipe that makes it. The crucible says this beside a
+ * line not yet in reach, so a player can tell 'rarer gear' waits on the sixth realm's veins.
+ */
+export function materialGate(key: string): { skill: SkillKey; level: number; realm: number } | null {
   const r = RECIPES.find((x) => x.makes.kind === 'item' && x.makes.item === key);
-  if (!r) return false;
-  return s.realm >= r.realm && levelOf(s.crafts?.xp?.[r.skill] ?? 0) >= r.level;
+  return r ? { skill: r.skill, level: r.level, realm: r.realm } : null;
 }
 
 /**

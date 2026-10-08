@@ -4104,6 +4104,16 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-por button[aria-checked='true'] { border-color: var(--gold); background: rgba(212, 175, 86, .14); color: var(--gold); }
 .hundred .hu-por button[aria-checked='true'] em { color: var(--gold); }
 .hundred .hu-portion { margin: 0; font-size: 11px; }
+/* 開 What opens when: one row a line, the material, and the craft level and realm it waits on. */
+.hundred .hu-opens { display: flex; flex-direction: column; gap: 3px; padding: 10px; font-size: 12px; }
+.hundred .hu-opens > b { font-size: 12.5px; color: var(--gold); }
+.hundred .hu-opens > p { margin: 0 0 4px; font-size: 11px; line-height: 1.4; }
+.hundred .hu-open { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 6px; align-items: baseline;
+                    padding: 3px 6px; border-radius: 6px; background: rgba(20, 17, 13, .6); }
+.hundred .hu-open > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hundred .hu-omat { color: var(--faint); }
+.hundred .hu-open em { font-style: normal; font-size: 11px; color: var(--cinnabar); white-space: nowrap; }
+.hundred .hu-open[data-open] em { color: var(--jade); }
 .hundred .hu-out { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 2px solid var(--hue, var(--gold)); }
 .hundred .hu-piece { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; }
 .hundred .hu-tile { width: 64px; height: 64px; display: block; }
@@ -4162,6 +4172,8 @@ nav.tabs .tabkey { display: none; }
   .hundred .hu-row { grid-template-columns: minmax(0, 1fr); }
   .hundred .hu-por { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hundred .hu-places { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hundred .hu-open { grid-template-columns: minmax(0, 1fr) auto; }
+  .hundred .hu-omat { grid-column: 1 / -1; grid-row: 2; }
   .hundred .hu-spirit { grid-template-columns: 72px minmax(0, 1fr); }
   .hundred .hu-sp-art { width: 72px; height: 72px; }
 }
