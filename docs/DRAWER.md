@@ -138,9 +138,11 @@ were rejected and are not revived.
 - **Depth** of a life: the 雷印 marks it crossed, and nothing else. The heaven is derived from
   the marks; the tower is left out on purpose, because a floor is checked against the body
   that won it and once a life ends that body is gone.
-- **宿慧 The Echo** a life leaves: `ECHO_STEP` (2.5%) for every doubling of its marks,
-  `log2(1 + marks)`: 1 mark +2.5%, 3 marks +5%, 7 +7.5%, 15 +10%, 31 +12.5%
-  (`ECHO_LIFE_MAX`, the most one life gives). All lives together: `ECHO_CEILING` = **+25%**.
+- **宿慧 The Echo** a life leaves: `ECHO_FIRST` (5%) for its first mark and `ECHO_STEP`
+  (2.5%) for every doubling after it, `ECHO_FIRST + ECHO_STEP * log2((1 + marks) / 2)`:
+  1 mark +5%, 3 marks +7.5%, 7 +10%, 15 +12.5% (`ECHO_LIFE_MAX`, the most one life gives).
+  All lives together: `ECHO_CEILING` = **+25%**. Until 2026-10-08 the first mark was a bare
+  step (1 mark +2.5%, 31 marks for the most a life gives); see *The first allowed moment*.
 - **Where it applies:** qi gathered, in `advance()` through `gathering()`. `rate()` itself is
   unchanged, so everything paid or priced as seconds of the rate (beds, meetings, the spring,
   incense, melting, drives, retrades) and every lump (the tower, the quarry, the Platform)
@@ -196,33 +198,47 @@ were rejected and are not revived.
   (five sets at Heaven, one at Earth) sits between none and all nine, and all nine with the
   Echo's ceiling a tenth higher walls nothing.
 
-**Measured** (`npm run rebirth`, every life ending on its third mark; days to realm 9 /
-summit / third mark, and the summit's saving on the first life):
+**Measured** (`npm run rebirth`, 2026-10-08, every life ending on its third mark; days to
+realm 9 / summit / third mark, and the summit's saving on the first life):
 
-| habit | life 1 | life 2 (+5%) | life 3 (+10%) | life 4 (+15%) | life 5 (+20%) | life 6 (+25%) |
+| habit | life 1 | life 2 (+7.5%) | life 3 (+15%) | life 4 (+22.5%) | life 5 (+25%) | life 6 (+25%) |
 | --- | --- | --- | --- | --- | --- | --- |
-| active | 46/56/68 | 41/51/63 (-9%) | 42/51/62 (-8%) | 40/49/59 (-12%) | 39/47/57 (-15%) | 38/45/56 (-18%) |
-| every hour | 29/35/47 | 28/34/45 (-4%) | 27/32/43 (-8%) | 26/31/41 (-12%) | 26/31/42 (-12%) | 25/30/39 (-16%) |
-| casual | 65/77/90 | 61/73/85 (-6%) | 59/70/82 (-9%) | 57/69/79 (-11%) | 55/67/77 (-13%) | 53/63/73 (-18%) |
-| once a day | 70/84/101 | 69/83/102 (-1%) | 65/80/95 (-5%) | 65/77/92 (-8%) | 62/75/89 (-11%) | 59/72/86 (-14%) |
-| never fights | 121/134/155 | 108/122/140 (-9%) | 103/116/134 (-13%) | 106/117/135 (-13%) | 100/111/128 (-17%) | 100/110/126 (-18%) |
+| active | 50/57/69 | 44/52/63 (-9%) | 42/48/59 (-16%) | 41/48/58 (-15%) | 41/48/58 (-15%) | 41/48/58 (-15%) |
+| every hour | 32/37/49 | 29/33/43 (-10%) | 29/33/42 (-10%) | 28/32/42 (-13%) | 28/32/42 (-14%) | 28/32/42 (-14%) |
+| casual | 66/77/91 | 63/73/87 (-5%) | 59/68/79 (-12%) | 57/66/75 (-14%) | 56/64/75 (-17%) | 56/64/75 (-17%) |
+| once a day | 76/90/106 | 71/83/99 (-8%) | 68/79/95 (-12%) | 63/75/90 (-17%) | 61/72/85 (-20%) | 61/72/85 (-20%) |
+| never fights | 121/134/155 | 112/124/142 (-7%) | 106/117/135 (-13%) | 99/109/125 (-19%) | 100/110/126 (-18%) | 100/110/126 (-18%) |
 
-- **To the ceiling:** ending every life on mark 3, life 6 carries +25% after 5 lives
-  (active 308 days, every hour 219, casual 413, once a day 479, never fights 692). On mark 7,
-  life 5 after 4 lives (312 / 252 / 395 / 447 / 668). On mark 1, **never**: nine lives give
-  +22.5%, so rushing the first Dragon over and over is not the road to it.
+- **The first allowed moment** (2026-10-08). The poll and rekaris said a rebirth was not
+  worth taking the moment it opens, and measured they were right: at +2.5% the next life
+  reached the summit 1% to 10% sooner (casual 1%, active 4%), and nine lives ended on the
+  first mark never reached the ceiling. Three candidates were measured, each keeping the
+  +25% ceiling: (a) a floor, every ended life leaves at least 5%; (b) a 5% step; (c) 5% for
+  the first mark and the same 2.5% step for every doubling after it. All three make a first
+  rebirth taken at once leave +5%, and the next life reaches the summit 3% to 9% sooner
+  (active 57.2 to 51.8 days, every hour 37.0 to 35.3, casual 77.0 to 74.7, once a day 90.0
+  to 83.0, never fights 134 to 122). They differ in the calendar to the ceiling (active
+  cultivator, ending every life on mark 1 / 3 / 7): (a) 273 / 316 / 323 days, which makes
+  rushing the first Dragon the best road; (b) 273 / 194 / 164 days, the ceiling in two lives
+  of seven marks; (c) 273 / 250 / 248 days, every road about the same and further never
+  worse. **(c) is built** (`ECHO_FIRST`). Pushed off its number, a first mark worth 5.5%
+  moves the next life by 1.4 days at most and walls nothing.
+- **To the ceiling:** ending every life on mark 1, life 6 carries +25% after 5 lives (active
+  273 days, every hour 184, casual 374, once a day 442, never fights 639). On mark 3, life 5
+  after 4 lives (250 / 177 / 332 / 390 / 557). On mark 7, life 4 after 3 lives
+  (248 / 193 / 302 / 347 / 511).
 - **The honest net:** one rebirth at mark 3 costs the active cultivator 63 days to be back at
-  mark 3, which staying would have spent reaching mark 14 (every hour: 45 days, mark 10;
-  casual 85, mark 17; once a day 102, mark 21; never fights 140, mark 15). The endgame is a
+  mark 3, which staying would have spent reaching mark 14 (every hour: 43 days, mark 10;
+  casual 87, mark 18; once a day 99, mark 19; never fights 142, mark 16). The endgame is a
   clock, so a rebirth always costs marks. What it gives instead is the Echo for every life
   after, a title, the nine realms climbed again with everything the game has grown since,
   and records the boards keep.
 - **Knife edge:** the ceiling pushed 10% higher (+27.5%) moves every habit's summit by
-  -2.3 to +1.0 days against +25% (casual -2.3, once a day -1.0, every hour -0.7, active +0.3,
+  -1.3 to +1.0 days against +25% (active -1.3, casual -0.7, every hour -0.3, once a day +1.0,
   never fights +1.0, the last two being a visit's granularity): smooth, nothing walled.
 - **Why 25%:** it is the qi bonus the earlier measurement put at about a fifth off a climb
-  (measured here: 14% to 18% at the summit), it is reached only after about a year of
-  play, and it is a roof: nothing past it moves the rate, so the law holds.
+  (measured here: 14% to 20% at the summit), it is reached only after eight months to a
+  year of play, and it is a roof: nothing past it moves the rate, so the law holds.
 
 **Composable with 季榜 The Hundred.** The Echo belongs to the Eternal save. A season is a
 fresh life under the season's Law and never reaches the Eternal, so the two never meet. If

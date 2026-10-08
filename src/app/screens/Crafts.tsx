@@ -4,7 +4,7 @@ import {
   type Recipe, type SkillKey,
 } from '../../data/crafts.ts';
 import { BEASTS, plateOf } from '../../data/bestiary.ts';
-import { AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Slot } from '../../data/gear.ts';
+import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type Slot } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -322,11 +322,12 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       <div className="crecipes" data-preview={!open || undefined}>
         {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
           {needle ? CRAFTS.nothingFound(find.trim()) : filter === 'all' ? CRAFTS.nothingYet : CRAFTS.nothingShown}</p>}
-        {list.map((r, i) => {
+        {lookRuns(list, gearList).map((rs, i, runs) => {
+          const r = rs[0];
           // 百形 A heading wherever the place or the school changes, so fifty-four shapes read
           // as a few short runs: the realm too when the list holds two.
           const head = gearList && r.makes.kind === 'gear' ? placeOf(r) : null;
-          const before = i > 0 && gearList ? placeOf(list[i - 1]) : null;
+          const before = i > 0 && gearList ? placeOf(runs[i - 1][0]) : null;
           const fresh = head && (!before || before.key !== head.key);
           return (
             <div key={r.key} style={{ display: 'contents' }}>
@@ -337,8 +338,10 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
                   <span><b className="cjk">{SCHOOL_INFO[head.school].seal}</b> {SCHOOL_INFO[head.school].short}</span>
                 </p>
               )}
-              <Row state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
-                onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />
+              {rs.length > 1
+                ? <LookRow state={state} rs={rs} lit={lit} onTask={onTask} onGo={goTo} />
+                : <Row state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key}
+                    onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={goTo} />}
             </div>
           );
         })}
@@ -359,20 +362,80 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
 }
 
 /** 百形 Where a gear recipe sits in the forge's list: realm, place on the body, school. */
-function placeOf(r: Recipe): { key: string; realm: number; slot: Slot; school: (typeof SCHOOLS)[number] } | null {
+function placeOf(r: Recipe): { key: string; realm: number; slot: Slot; school: (typeof SCHOOLS)[number]; affix: Affix } | null {
   if (r.makes.kind !== 'gear') return null;
   const tpl = TEMPLATE_BY_KEY[r.makes.template];
   if (!tpl) return null;
   const school = schoolOfAxis(tpl.affix);
-  return { key: `${r.realm}:${tpl.slot}:${school}`, realm: r.realm, slot: tpl.slot, school };
+  return { key: `${r.realm}:${tpl.slot}:${school}`, realm: r.realm, slot: tpl.slot, school, affix: tpl.affix };
 }
 
-/** 百形 The forge's gear in the order the list reads: newest realm, then place, then school. */
-function byPlace(a: Recipe, b: Recipe): number {
+/** 百形 The forge's gear in the order the list reads: newest realm, then place, then school, then line. */
+export function byPlace(a: Recipe, b: Recipe): number {
   const A = placeOf(a), B = placeOf(b);
   if (!A || !B) return (A ? 1 : 0) - (B ? 1 : 0);
   return B.realm - A.realm || SLOTS.indexOf(A.slot) - SLOTS.indexOf(B.slot)
-    || SCHOOLS.indexOf(A.school) - SCHOOLS.indexOf(B.school) || a.level - b.level;
+    || SCHOOLS.indexOf(A.school) - SCHOOLS.indexOf(B.school)
+    || AFFIXES.indexOf(A.affix) - AFFIXES.indexOf(B.affix) || a.level - b.level;
+}
+
+/**
+ * 形 The forge's gear list in runs of one piece in several looks. A saber, a sword, a
+ * crescent, a spear and a trident of one realm lead with the same line and differ only in
+ * name and picture, so with every shape open they were five rows of the same thing (rekaris,
+ * 2026-10-07: clutter). Each run is one row with a switcher; every recipe and its key stay
+ * exactly as they were. Outside the gear list every recipe is a run of its own.
+ */
+export function lookRuns(list: readonly Recipe[], grouped: boolean): Recipe[][] {
+  const out: Recipe[][] = [];
+  const keyOf = (r: Recipe) => { const p = placeOf(r); return p ? `${p.key}:${p.affix}` : null; };
+  for (const r of list) {
+    const k = grouped ? keyOf(r) : null;
+    const last = out.at(-1);
+    if (k && last && keyOf(last[0]) === k) last.push(r);
+    else out.push([r]);
+  }
+  return out;
+}
+
+/** 形 A shape's own name, without its realm's metal: "Saber" for "Mortal Iron Saber". */
+const shapeName = (r: Recipe) => {
+  const tpl = r.makes.kind === 'gear' ? TEMPLATE_BY_KEY[r.makes.template] : undefined;
+  return tpl ? tpl.name.replace(`${REALM_SETS[tpl.realm - 1].word} `, '') : r.name;
+};
+
+/**
+ * 形 One piece in several looks: the look chosen is a recipe row like any other, and the
+ * switcher above its needs picks which. The look the workshop is making shows first.
+ */
+function LookRow({ state, rs, lit, onTask, onGo }: {
+  state: State; rs: readonly Recipe[]; lit: string | null; onTask: (key: string | null) => void; onGo: (key: string) => void;
+}) {
+  const [pick, setPick] = useState<string | null>(null);
+  const r = rs.find((x) => x.key === lit) ?? rs.find((x) => x.key === pick) ?? rs.find((x) => x.key === state.crafts.task)
+    ?? rs.find((x) => blocked(state, x) === null) ?? rs[0];
+  const names = rs.map(shapeName);
+  const looks = (
+    <span className="cr-looks" role="radiogroup" aria-label={CRAFTS.looks}>
+      {rs.map((x, i) => {
+        const tpl = x.makes.kind === 'gear' ? TEMPLATE_BY_KEY[x.makes.template] : undefined;
+        // Two beasts can teach one shape: the teacher tells the two recipes apart.
+        const twin = names.indexOf(names[i]) !== i || names.lastIndexOf(names[i]) !== i;
+        const by = twin && x.makes.kind === 'gear' ? BEASTS.find((b) => b.key === (x.makes as { beast: string }).beast)?.name : null;
+        return (
+          <button key={x.key} role="radio" aria-checked={x.key === r.key} data-on={state.crafts.task === x.key || undefined}
+            onClick={() => setPick(x.key)}>
+            {tpl && <Svg html={icon(tpl.icon, 16)} />}
+            <span>{names[i]}{by && <i> · {by}</i>}</span>
+          </button>
+        );
+      })}
+    </span>
+  );
+  return (
+    <Row state={state} r={r} on={state.crafts.task === r.key} lit={lit === r.key} looks={looks}
+      onStart={() => onTask(state.crafts.task === r.key ? null : r.key)} onGo={onGo} />
+  );
 }
 
 /** 印 A craft's painted seal, or its character while the painting is not there. */
@@ -600,8 +663,10 @@ function Named({ k, onGo }: { k: string; onGo: (key: string) => void }) {
 }
 
 /** A recipe: what it makes, what it needs against what is held, how long, what it pays. */
-function Row({ state, r, on, lit, onStart, onGo }: {
+function Row({ state, r, on, lit, onStart, onGo, looks }: {
   state: State; r: Recipe; on: boolean; lit: boolean; onStart: () => void; onGo: (key: string) => void;
+  /** 形 The switcher of a piece that comes in several looks. */
+  looks?: React.ReactNode;
 }) {
   const why = blocked(state, r);
   const lock = why === 'level' ? CRAFTS.why.level(r.level) : why === 'realm' ? CRAFTS.why.realm(r.realm)
@@ -615,6 +680,7 @@ function Row({ state, r, on, lit, onStart, onGo }: {
       <Out r={r} size={40} />
       <span className="cr-body">
         <b><span className="cjk">{r.han}</span> {r.name}</b>
+        {looks}
         <i className="cr-meta mono">
           Lv {r.level} · {duration(secondsOf(state, r))} · +{fmtXp(xpOf(state, r))} xp
           {(state.crafts.made[r.key] ?? 0) > 0 && <> · <Term han="習" bare

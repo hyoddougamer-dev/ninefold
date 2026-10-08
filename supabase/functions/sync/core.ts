@@ -36,6 +36,13 @@ const NEVER = 2_000_000_000;
  * sync (the audit of 2026-10-05 had a casual account pass as the hourly cultivator).
  */
 export const NEW_RUN_LEAP = 9;
+/**
+ * 罰 A refused save offered again inside this many seconds of the last sync, and no further
+ * along than the copy the server holds, is the same offence and is not struck again. The
+ * game offers a refused save every half minute until it moves on: a tester whose very first
+ * save was refused (2026-10-07) was struck three times in 51 seconds and sent to review.
+ */
+export const REPEAT_WINDOW = 6 * 3600;
 
 /** A verified save held back as the start of a longer window. */
 export interface Anchor { state: unknown; at: number }
@@ -238,8 +245,14 @@ export async function sync(
   await store.writeSaved(id, next);
 
   // 罰 Strikes are counted; at STRIKES_TO_REVIEW the player is kept off the boards for
-  // review rather than banned.
-  if (v.strike || v.suspect) {
+  // review rather than banned. The same refused save offered again (the last sync did not
+  // verify either, this one is no further along than the copy kept, and it came within
+  // REPEAT_WINDOW) is logged as refused but not struck or flagged again. The trade-off: a
+  // cheater who repeats one edited save collects one strike instead of many, but it is
+  // refused every time and never ranked, and any save that has moved on is struck as before.
+  const repeat = v.strike && saved !== null && saved.verifiedAt !== saved.lastSync && kept !== null
+    && ahead(kept) >= ahead(after) && now - saved.lastSync <= REPEAT_WINDOW;
+  if ((v.strike || v.suspect) && !repeat) {
     const review = v.strike && profile.strikes + 1 >= STRIKES_TO_REVIEW;
     profile = await store.mark(id, v.strike, v.suspect || review, NEVER);
   }

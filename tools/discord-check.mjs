@@ -228,7 +228,9 @@ function runSetup(port, env = {}) {
   });
 }
 
-const changes = (out) => out.split('\n').filter((l) => /\b(made|posted|edited|corrected|given|set|switched)\b/.test(l));
+// A title can hold one of these words ("Hundredfold set lines…"), so a post that is simply not
+// there, which is no change, is left out first.
+const changes = (out) => out.split('\n').filter((l) => !/not found .* skipped/.test(l) && /\b(made|posted|edited|corrected|given|set|switched)\b/.test(l));
 let failures = 0;
 const check = (ok, what) => { console.log(`${ok ? '✓' : '✗'} ${what}`); if (!ok) failures++; };
 const all = SPEC.categories.flatMap((c) => c.channels);

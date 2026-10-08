@@ -21,5 +21,8 @@ select json_build_object(
   'saves', (select json_agg(json_build_object('name', p.name, 'latest', s.latest, 'verified', s.verified,
       'verified_at', s.verified_at, 'pinned', s.pinned, 'rebase', s.rebase, 'latest_at', s.latest_at, 'day_state', s.day_state, 'day_at', s.day_at, 'week_state', s.week_state, 'week_at', s.week_at))
     from profiles p join saves s on s.user_id = p.id
-   where p.name in ('Rekaris', 'Qin Mu', 'Raziel_Sama', 'esko', 'Hevon', '修士 059629D3', 'Gil'))
+   where p.name in ('Rekaris', 'Qin Mu', 'Raziel_Sama', 'esko', 'Hevon', '修士 059629D3', 'Gil', 'Argun')),
+  'argun_log', (select json_agg(json_build_object('at', l.at, 'ok', l.ok, 'why', l.why, 'pace', l.pace, 'strike', l.strike, 'suspect', l.suspect) order by l.at)
+    from sync_log l join profiles p on p.id = l.user_id where p.name = 'Argun'),
+  'argun_profile', (select json_agg(json_build_object('name', p.name, 'created', p.created_at, 'strikes', p.strikes, 'suspect', p.suspect)) from profiles p where p.name = 'Argun')
 ) as out;

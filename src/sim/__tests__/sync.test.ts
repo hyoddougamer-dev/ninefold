@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, sync, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
+import { cleanName, sync, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, REPEAT_WINDOW, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { GAME_EPOCH, type Verdict } from '../verify.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
 import type { State } from '../state.ts';
+import { progressOf } from '../echo.ts';
 
 /**
  * 同步 The server's sync, run against an in-memory database: what the Edge Function does
@@ -106,18 +107,68 @@ describe('同步 the ranked sync', () => {
     const a = shots[10].s;
     await sync(m.store, 'u4', a, a.at + 10, undefined, GAME_EPOCH);
     const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
-    for (let i = 1; i <= STRIKES_TO_REVIEW; i++) {
-      await sync(m.store, 'u4', { ...a, at: a.at + i * 100, chest: [...a.chest, sword] }, a.at + i * 100, undefined, GAME_EPOCH);
+    // Three impossibilities, each further along than the last: the same save offered again
+    // is one offence (see the test below), so each of these has to have moved on.
+    const later = shots.filter(({ s }, i, all) => i > 10 && progressOf(s) > progressOf(all[i - 1].s));
+    expect(later.length).toBeGreaterThanOrEqual(STRIKES_TO_REVIEW);
+    for (const { s } of later.slice(0, STRIKES_TO_REVIEW)) {
+      await sync(m.store, 'u4', { ...s, chest: [...s.chest, sword] }, s.at + 10, undefined, GAME_EPOCH);
     }
     const p = m.profiles.get('u4')!;
     expect(p.strikes).toBe(STRIKES_TO_REVIEW);
     expect(p.suspect).toBe(true);     // off the boards (board() leaves suspects off)
     expect(p.banned).toBe(false);     // but never banned by the machine
     // It goes on syncing, and an honest save after it is still kept as the cloud copy.
-    const r = await sync(m.store, 'u4', { ...a, at: a.at + 10_000 }, a.at + 10_000, undefined, GAME_EPOCH);
+    const last = later[STRIKES_TO_REVIEW - 1].s;
+    const r = await sync(m.store, 'u4', { ...last, at: last.at + 10_000 }, last.at + 10_000, undefined, GAME_EPOCH);
     expect(r.status).toBe(200);
     // Every refused sync is in the log with what it tried, for the panel.
     expect(m.logs.filter((x) => x.v?.strike).every((x) => x.v!.why.includes('gear'))).toBe(true);
+  });
+
+  it('the same refused save offered again and again is one strike, not one each time', async () => {
+    const m = memory();
+    // 2026-10-07: a new account's first save was refused, and the game offered it again
+    // every half minute. Each offer used to count, and three made the account a suspect.
+    const a = shots[10].s;
+    const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
+    const bad = { ...a, chest: [...a.chest, sword] };
+    for (let i = 0; i < 5; i++) {
+      const r = await sync(m.store, 'n1', { ...bad, at: a.at + i * 25 }, a.at + 10 + i * 25, undefined, GAME_EPOCH);
+      expect(r.status === 200 && r.body.state).toBe('refused');
+      expect(r.status === 200 && r.body.ranked).toBe(false);
+    }
+    expect(m.profiles.get('n1')!.strikes).toBe(1);
+    expect(m.profiles.get('n1')!.suspect).toBe(false);
+    // Every offer is still in the log as refused, for the panel.
+    expect(m.logs.filter((x) => x.id === 'n1' && x.v?.strike)).toHaveLength(5);
+    expect(m.standings.get('n1')).toBeUndefined();
+
+    // A refused save that has moved on is a new offence.
+    const on = shots.find(({ s }) => progressOf(s) > progressOf(a))!.s;
+    await sync(m.store, 'n1', { ...on, chest: [...on.chest, sword] }, on.at + 10, undefined, GAME_EPOCH);
+    expect(m.profiles.get('n1')!.strikes).toBe(2);
+
+    // And so is the same save offered again after a long silence.
+    const t = on.at + 10 + REPEAT_WINDOW + 1;
+    await sync(m.store, 'n1', { ...on, at: t, chest: [...on.chest, sword] }, t, undefined, GAME_EPOCH);
+    expect(m.profiles.get('n1')!.strikes).toBe(3);
+    expect(m.profiles.get('n1')!.suspect).toBe(true);
+    expect(m.profiles.get('n1')!.banned).toBe(false);
+  });
+
+  it('a refused save right after a verified one of the same progress is still struck', async () => {
+    const m = memory();
+    const a = shots[10].s;
+    const b = shots[11].s;
+    // An honest pair is untouched.
+    await sync(m.store, 'n2', a, a.at + 10, undefined, GAME_EPOCH);
+    await sync(m.store, 'n2', b, b.at + 10, undefined, GAME_EPOCH);
+    expect(m.profiles.get('n2')!).toMatchObject({ strikes: 0, suspect: false });
+    // The last sync verified, so an edited copy of it is an offence of its own.
+    const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
+    await sync(m.store, 'n2', { ...b, at: b.at + 60, chest: [...b.chest, sword] }, b.at + 60, undefined, GAME_EPOCH);
+    expect(m.profiles.get('n2')!.strikes).toBe(1);
   });
 
   it('a player who deletes the account and signs in again on the same email keeps what was against it', async () => {

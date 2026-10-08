@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import {
-  HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, hundredElite, hundredLevel, metalKey, type HundredRank,
+  HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, SKILL_BY_KEY, hundredElite, hundredLevel, metalKey, type HundredRank,
 } from '../../data/crafts.ts';
 import {
-  AFFIX_INFO, GEAR, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type Slot,
+  AFFIX_INFO, GEAR, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type GearTemplate, type Slot,
 } from '../../data/gear.ts';
 import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { wardenOf } from '../../data/bestiary.ts';
@@ -13,7 +13,7 @@ import {
   CODEX_CAP, CODEX_RANK, CODEX_WORN, HUNDRED_BREACH, HUNDRED_HEAVEN_MADE, HUNDRED_KIT, HUNDRED_STEPS, SECONDARIES,
 } from '../../sim/balance.ts';
 import {
-  codexHeld, codexRank, codexValue, codexWorth, keptRank, lineAxes, lineValue, materialReached, orderNeeds, orderRecipe, pieceOf,
+  codexHeld, codexRank, codexValue, codexWorth, keptRank, lineAxes, lineValue, materialGate, materialReached, orderNeeds, orderRecipe, pieceOf,
   piecesMade, placesMade, portionOf, setOpen, spiritOf, wornOfSet, type Order, type Portions,
 } from '../../sim/hundred.ts';
 import { blocked, held, levelIn, secondsOf } from '../../sim/crafts.ts';
@@ -21,6 +21,7 @@ import { swing } from '../../sim/inspect.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { gearTile } from '../../art/gear.ts';
+import { icon } from '../../art/icon.ts';
 import { spiritRim } from '../../art/spirit.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
@@ -42,6 +43,30 @@ const worth = (key: (typeof CODEX)[number]['key'], v: number) => (key === 'gates
 /** The shapes of a set's place, power first, the way the crucible lists them. */
 function shapesOf(realm: number, slot: Slot) {
   return GEAR.filter((g) => g.realm === realm && g.slot === slot);
+}
+
+/** 開 When a material opens, in words: the craft, its level and the realm, read off its recipe. */
+function opensWith<T>(key: string, say: (craft: string, level: number, realm: number) => T): T | null {
+  const g = materialGate(key);
+  return g ? say(SKILL_BY_KEY[g.skill].name, g.level, g.realm) : null;
+}
+
+/** 開 Every line a set's crucible can take, in the order they open: by realm, then by level. */
+export function linesByOpening(realm: number): { affix: Affix; key: string; level: number; realm: number }[] {
+  return (Object.keys(CRUCIBLE) as Affix[])
+    .map((affix) => {
+      const key = CRUCIBLE[affix](realm);
+      const g = materialGate(key);
+      return { affix, key, level: g?.level ?? 0, realm: g?.realm ?? 0 };
+    })
+    .sort((a, b) => a.realm - b.realm || a.level - b.level);
+}
+
+/** 形 A place's shapes, gathered by the line they lead with, in the order the place lists them. */
+export function linesOfShapes(realm: number, slot: Slot): [Affix, GearTemplate[]][] {
+  const by = new Map<Affix, GearTemplate[]>();
+  for (const g of shapesOf(realm, slot)) by.set(g.affix, [...(by.get(g.affix) ?? []), g]);
+  return [...by];
 }
 
 /** 爐 A first order for a place: the shape that leads with power, every line it can have, two portions. */
@@ -109,7 +134,8 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
   const why = level < hundredLevel(realm, o.rarity) ? HUNDRED.why.level(hundredLevel(realm, o.rarity))
     : o.rarity === 'heaven' && made < HUNDRED_HEAVEN_MADE ? HUNDRED.why.heaven(HUNDRED_HEAVEN_MADE, made)
     : !setOpen(state.killed, realm) ? HUNDRED.why.open(elite.name, wardenOf(realm).name)
-    : unreached ? HUNDRED.why.material(ITEM_BY_KEY[CRUCIBLE[unreached.affix](realm)]?.name ?? '')
+    : unreached ? opensWith(CRUCIBLE[unreached.affix](realm), (craft, lv, at) =>
+      HUNDRED.why.material(ITEM_BY_KEY[CRUCIBLE[unreached.affix](realm)]?.name ?? '', craft, lv, at))
     : null;
   // 作 What the forge would say of it set going: only a wait for material is allowed past here.
   const probe: State = { ...state, crafts: { ...state.crafts, order: o } };
@@ -121,6 +147,8 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
   const line = (i: number, next: Partial<{ affix: Affix; n: Portions }>) =>
     setO({ ...o, lines: o.lines.map((l, j) => (j === i ? { ...l, ...next } : l)) });
   const used = new Set(o.lines.map((l) => l.affix));
+  const looks = shapesOf(realm, slot).filter((g) => g.affix === tpl.affix);
+  const short = (g: GearTemplate) => g.name.replace(`${set.word} `, '');
 
   return (
     <div className="hu-crucible">
@@ -147,18 +175,35 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
       </div>
       <div className="hu-field">
         <span className="hu-label">{HUNDRED.shape}</span>
+        {/* 形 Shapes that lead with the same line are one piece in different looks (rekaris,
+            2026-10-07): one chip a line, naming every look, and the looks below it. */}
         <div className="hu-chips" role="tablist">
-          {shapesOf(realm, slot).map((g) => {
-            const sc = SCHOOL_INFO[schoolOfAxis(g.affix)];
+          {linesOfShapes(realm, slot).map(([a, gs]) => {
+            const sc = SCHOOL_INFO[schoolOfAxis(a)];
+            const on = a === tpl.affix;
             return (
-              <button key={g.key} role="tab" aria-selected={g.key === o.template} onClick={() => go(realm, slot, o.rarity, g.key)}>
-                <span className="cjk" style={{ color: sc.colour }}>{sc.seal}</span> {g.name.replace(`${set.word} `, '')}
-                <i>{AFFIX_INFO[g.affix].han} {AFFIX_INFO[g.affix].label}</i>
+              <button key={a} role="tab" aria-selected={on} onClick={() => go(realm, slot, o.rarity, on ? o.template : gs[0].key)}>
+                <span className="cjk" style={{ color: sc.colour }}>{sc.seal}</span> {gs.map(short).join(' · ')}
+                <i>{AFFIX_INFO[a].han} {AFFIX_INFO[a].label}</i>
               </button>
             );
           })}
         </div>
       </div>
+      {looks.length > 1 && (
+        <div className="hu-field">
+          <span className="hu-label">{HUNDRED.look}</span>
+          <div className="hu-looks" role="radiogroup" aria-label={HUNDRED.look}>
+            {looks.map((g) => (
+              // The same line, so the same lines can follow: only the template changes.
+              <button key={g.key} role="radio" aria-checked={g.key === o.template} onClick={() => setO({ ...o, template: g.key })}>
+                <Svg className="hu-lookic" html={icon(g.icon, 20)} /> <span>{short(g)}</span>
+              </button>
+            ))}
+          </div>
+          <span className="faint hu-looknote">{HUNDRED.lookNote}</span>
+        </div>
+      )}
       <div className="hu-field">
         <span className="hu-label">{HUNDRED.rank}</span>
         <div className="hu-chips" role="tablist">
@@ -187,12 +232,29 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
                 ))}
               </select>}
               sub={<>{mat ? <><span className="cjk">{mat.han}</span> {mat.name}</> : null}
-                {!materialReached(state, CRUCIBLE[l.affix](realm)) && <em className="hu-short"> · {HUNDRED.unreached}</em>}</>}
+                {!materialReached(state, CRUCIBLE[l.affix](realm)) && (
+                  <em className="hu-short"> · {opensWith(CRUCIBLE[l.affix](realm), HUNDRED.unreached)}</em>)}</>}
               n={l.n} values={[1, 2, 3].map((n) => lineValue(tpl, o.rarity, l.affix, n as Portions, false))}
               affix={l.affix} onN={(n) => line(i, { n })} />
           );
         })}
         <p className="faint hu-portion">{HUNDRED.portionNote(portionOf(realm))}</p>
+      </div>
+
+      <div className="card hu-opens">
+        <b>{HUNDRED.opensHead(set.name)}</b>
+        <p className="faint">{HUNDRED.opensNote}</p>
+        {linesByOpening(realm).map((x) => {
+          const it = ITEM_BY_KEY[x.key];
+          const open = materialReached(state, x.key);
+          return (
+            <span key={x.affix} className="hu-open" data-open={open || undefined}>
+              <span className="hu-oline"><span className="cjk">{AFFIX_INFO[x.affix].han}</span> {AFFIX_INFO[x.affix].label}</span>
+              <span className="hu-omat"><span className="cjk">{it?.han}</span> {it?.name}</span>
+              <em className="mono">{open ? HUNDRED.opensOpen : opensWith(x.key, HUNDRED.opensAt)}</em>
+            </span>
+          );
+        })}
       </div>
 
       <div className="card hu-out" style={{ ['--hue' as string]: colour }}>

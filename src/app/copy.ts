@@ -1204,7 +1204,7 @@ export const AWAKEN = {
 export const REBIRTH = {
   title: 'Rebirth',
   what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
-  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A step for every doubling of a life’s marks, under one ceiling for every life together.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, under one ceiling for every life together.',
   lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
   /** 修 The quiet card, when a life may end. */
   offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
@@ -1245,6 +1245,9 @@ export const REBIRTH = {
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
   sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
+  /** 宿慧 Above the confirm: the Echo the next life begins with, exactly, and what this life adds. */
+  promise: (life: number, echo: string, adds: string) => `Life ${life} begins with an Echo of ${echo} qi gathered (${adds} from this life).`,
+  promiseCapped: (ceiling: string) => `The ceiling, ${ceiling}, keeps the rest.`,
   cancel: 'Not now',
   pastHead: 'Lives behind you',
   past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,
@@ -2383,6 +2386,8 @@ export const CRAFTS = {
   /** 百形 The forge's list by place on the body, and the shapes a warden teaches. */
   slots: 'Which place on the body',
   slotAll: 'All',
+  /** 形 The switcher on a piece that comes in several looks with the same line. */
+  looks: 'Which look the piece takes',
   realmShort: (n: number) => `Realm ${n}`,
   anyShapeLocked: (warden: string, realm: number) =>
     `百形 Beat the ${warden} and the forge makes every shape of realm ${realm}, all fifty-four, not only the ones its beasts teach.`,
@@ -2502,6 +2507,9 @@ export const HUNDRED = {
   realm: 'Set',
   place: 'Place',
   shape: 'Shape',
+  /** 形 Shapes with the same main line are one piece: the look is the only difference. */
+  look: 'Look',
+  lookNote: 'Same piece and the same lines in every look: only the name and the picture change.',
   rank: 'Rank',
   main: 'Main line',
   mainFrom: (ingots: string) => `from ${ingots}`,
@@ -2522,7 +2530,9 @@ export const HUNDRED = {
     level: (n: number) => `Forging ${n} first`,
     heaven: (n: number, made: number) => `Heaven asks ${n} pieces of this set made first (${made} so far)`,
     open: (elite: string, warden: string) => `Know the ${elite} (ten killed) and the ${warden} (one) first: their parts go into every piece`,
-    material: (name: string) => `${name} is not within your reach yet`,
+    /** 開 rekaris, 2026-10-07: 'not within your reach yet' did not say when it would be. */
+    material: (name: string, craft: string, level: number, realm: number) =>
+      `${name} opens this line at ${craft} level ${level}, realm ${realm}`,
     chest: 'Your chest is full',
     lines: 'Choose every line first',
   },
@@ -2557,7 +2567,13 @@ export const HUNDRED = {
   keptSet: (rank: string) => `Finished at ${rank} in a past life, and kept`,
   /** The fourth step on a codex row: Heaven, with the whole set worn, which is also its cap. */
   codexWhole: 'Heaven, worn whole',
-  unreached: 'not within your reach yet',
+  /** 開 Beside a line whose material is not in reach yet: exactly what it waits on. */
+  unreached: (craft: string, level: number, realm: number) => `opens at ${craft} level ${level}, realm ${realm}`,
+  /** 開 The crucible's plan: every line of the chosen set, in the order the lines open. */
+  opensHead: (set: string) => `What opens when: ${set}`,
+  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. The herb and the elite part are this set\'s own.',
+  opensAt: (craft: string, level: number, realm: number) => `${craft} Lv ${level} · realm ${realm}`,
+  opensOpen: 'open',
   levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
   spiritHead: '器靈 Artifact Spirit',
   spiritNote: 'Wear all six pieces of one set, every one Hundredfold and Heaven, and its spirit wakes around you. It is a light and a name, and nothing else.',

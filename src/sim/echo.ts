@@ -11,7 +11,7 @@
  * earn by claiming one: it can only claim lives, and validate() and the ranked server
  * (verify.ts) bound those.
  */
-import { ECHO_CEILING, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
+import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
 
 /** 世 A life that ended: the marks it crossed and the instant it ended, in seconds. */
 export interface Life {
@@ -23,13 +23,14 @@ export interface Life {
 export const MARKS_LIMIT = 300;
 
 /**
- * 宿慧 What one life adds to the qi gathered, as a share: ECHO_STEP for every doubling of
- * its marks, never more than ECHO_LIFE_MAX. Concave on purpose: the further a life went,
- * the more it leaves, and every step costs twice the endgame the one before it did.
+ * 宿慧 What one life adds to the qi gathered, as a share: ECHO_FIRST for its first mark and
+ * ECHO_STEP for every doubling of its marks after that, never more than ECHO_LIFE_MAX.
+ * Concave on purpose: the further a life went, the more it leaves, and every step costs
+ * twice the endgame the one before it did.
  */
 export function lifeEcho(marks: number): number {
   if (!(marks >= REBIRTH_MARKS)) return 0;
-  return Math.min(ECHO_LIFE_MAX, ECHO_STEP * Math.log2(1 + Math.floor(marks)));
+  return Math.min(ECHO_LIFE_MAX, ECHO_FIRST + ECHO_STEP * Math.log2((1 + Math.floor(marks)) / 2));
 }
 
 /** 宿慧 Every life together, under ECHO_CEILING, which nothing passes. */

@@ -6,10 +6,11 @@
  * Bruno: *"from a certain realm onward you can reset, but the benefit of the reset depends
  * on how far ahead you are."* The design is in sim/rebirth.ts and the numbers in
  * balance.ts; this is where they are measured, and docs/DRAWER.md (轉世) is where they are
- * written down. It answers five questions:
+ * written down. It answers these questions:
  *
  *   1. How much faster is each life than the first, for every habit, when every life ends
  *      on its third mark (the policy the table is read on)?
+ *   1b. The same when every life ends at the first allowed moment, its first mark.
  *   2. After how many lives does each habit reach the ceiling, ending each life on its
  *      first, third or seventh mark?
  *   3. The honest net: what a rebirth costs in days against staying and crossing marks.
@@ -26,7 +27,7 @@
  */
 import { HABITS, play, type Habit, type Run } from './habits.ts';
 import { arrivalOf, playEndgame } from './endgame.ts';
-import { ECHO_CEILING, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from '../src/sim/balance.ts';
+import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from '../src/sim/balance.ts';
 import { echoOf, lifeEcho, type Life } from '../src/sim/echo.ts';
 import { CODEX } from '../src/data/hundred.ts';
 import { bornFrom } from '../src/sim/rebirth.ts';
@@ -97,7 +98,7 @@ const check = (ok: boolean, what: string) => {
 };
 
 console.log('轉世 Rebirth, measured');
-console.log(`  unlock: the summit and ${REBIRTH_MARKS} mark crossed. A life's Echo is ${pc(ECHO_STEP).trim()} for every doubling of its marks,`);
+console.log(`  unlock: the summit and ${REBIRTH_MARKS} mark crossed. A life's Echo is ${pc(ECHO_FIRST).trim()} for its first mark and ${pc(ECHO_STEP).trim()} for every doubling after,`);
 console.log(`  at most ${pc(ECHO_LIFE_MAX).trim()} a life, ${pc(ECHO_CEILING).trim()} across every life, ${LIVES_MAX} lives remembered.`);
 console.log(`  a life ending on 1 / 3 / 7 / 15 / 31 marks leaves ${[1, 3, 7, 15, 31].map((m) => pc(lifeEcho(m)).trim()).join(' / ')}`);
 
@@ -134,6 +135,35 @@ for (const name of NAMES) {
     check(t[i].summit >= first / (1 + ECHO_CEILING) - 1, `${name}: life ${i + 1} saves no more than the ceiling's arithmetic (${f1(first / (1 + ECHO_CEILING))} days)`);
   }
   check(t[t.length - 1].summit < first, `${name}: a life at the ceiling is measurably faster than the first`);
+}
+
+// ── 1b. The first allowed moment ────────────────────────────────────────────────────────
+// 轉世 The poll and rekaris (2026-10-07): is a rebirth worth taking the moment it is allowed?
+// Every life here ends on its first mark, which is the soonest the game lets a life end.
+console.log(`\n1b. The first allowed moment: lives 1 to ${SHOW}, every life ending on mark ${REBIRTH_MARKS}: realm 9 / summit / mark ${REBIRTH_MARKS} days`);
+const early: Record<string, { echo: number; summit: number; life: number }[]> = {};
+for (const name of NAMES) {
+  const line: string[] = [];
+  early[name] = [];
+  for (let n = 0; n < SHOW; n++) {
+    const c = climbAt(name, record(n, REBIRTH_MARKS));
+    const life = c.summit + marksAfter(name, c, REBIRTH_MARKS)[REBIRTH_MARKS - 1];
+    early[name].push({ echo: c.echo, summit: c.summit, life });
+    line.push(pad(`${c.r9.toFixed(0)}/${c.summit.toFixed(0)}/${life.toFixed(0)} ${pc(c.echo).trim()}`, 21));
+    check(c.done, `${name}, life ${n + 1} after first-mark lives: reaches the summit`);
+    if (n > 0) check(c.summit <= early[name][n - 1].summit + 1, `${name}: a life after first-mark lives is not slower than the one before`);
+  }
+  console.log(`   ${pad(name, 13)} ${line.join('')}`);
+}
+console.log(`   What the first rebirth taken at once saves the second life, to the summit, and with ECHO_FIRST pushed a tenth higher (${pc(ECHO_FIRST * 1.1).trim()}):`);
+for (const name of NAMES) {
+  const [a, b] = early[name];
+  // Pushed off its number: a first mark worth a tenth more must slow nothing and wall nothing.
+  const push = climbAt(name, record(1, REBIRTH_MARKS), (1 + ECHO_FIRST * 1.1) / (1 + b.echo));
+  console.log(`   ${pad(name, 13)} ${f1(a.summit)} -> ${f1(b.summit)} days (${((1 - b.summit / a.summit) * 100).toFixed(0)}% sooner), Echo ${pc(b.echo).trim()}; pushed ${f1(push.summit)}`);
+  check(b.summit < a.summit, `${name}: the first rebirth taken at once makes the next life sooner`);
+  check(push.done && push.summit <= b.summit + 1, `${name}: the first mark's Echo a tenth higher does not wall`);
+  check(b.summit - push.summit <= b.summit * 0.1, `${name}: the first mark's Echo a tenth higher moves the climb smoothly`);
 }
 
 // ── 2. Lives to the ceiling ─────────────────────────────────────────────────────────────
