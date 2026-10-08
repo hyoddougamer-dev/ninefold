@@ -141,7 +141,8 @@ were rejected and are not revived.
 - **宿慧 The Echo** a life leaves: `ECHO_FIRST` (5%) for its first mark and `ECHO_STEP`
   (2.5%) for every doubling after it, `ECHO_FIRST + ECHO_STEP * log2((1 + marks) / 2)`:
   1 mark +5%, 3 marks +7.5%, 7 +10%, 15 +12.5% (`ECHO_LIFE_MAX`, the most one life gives).
-  All lives together: `ECHO_CEILING` = **+25%**. Until 2026-10-08 the first mark was a bare
+  All lives together: `ECHO_CEILING` = **+25%** exactly, and past it a soft tail under a hard roof
+  of `ECHO_ROOF` = **+35%** (built 2026-10-08, see *The endless road*). Until 2026-10-08 the first mark was a bare
   step (1 mark +2.5%, 31 marks for the most a life gives); see *The first allowed moment*.
 - **Where it applies:** qi gathered, in `advance()` through `gathering()`. `rate()` itself is
   unchanged, so everything paid or priced as seconds of the rate (beds, meetings, the spring,
@@ -155,13 +156,13 @@ were rejected and are not revived.
   (below). **Everything else begins again.** No heirloom: a ninth-realm piece worn in the first realm either breaks the
   server's gear check (a strike) or needs a new rescaling rule, and one more uncapped power
   path is the opposite of what the endgame needs.
-- **Record:** `State.lives`, at most `LIVES_MAX` = 9 entries of `{ marks, at }` (seconds),
+- **Record:** `State.lives`, at most `LIVES_MAX` = 40 entries (9 until the tail was built) of `{ marks, at }` (seconds),
   validated by `validLives`: whole marks from 1 to 300, instants in order inside the save's
   life. The Echo, the title and the day a life began are derived from it, never stored.
 - **Server:** `verify()` reads a pair across a rebirth as the claimed marks paid out of the
   time first (a mark is at least the pool at the deepest sitting and the larger Echo), then
   the new life verified from `bornFrom`, the same function the game is reborn through. A
-  forged record can claim at most +25% of rate and waits for the marks it claims; two copies
+  forged record can claim at most the roof (+35%) of rate and waits for the marks it claims; two copies
   reborn differently are another copy, never a strike. The sync core, the spare copy and the
   cloud pick order saves by lives first (`progressOf`). **No Supabase schema change.**
 
@@ -250,3 +251,305 @@ so a reborn life earns no week credit until it passes its old life; a per-life w
 would need a new column (a migration). (2) The unlock: the first mark, or later. (3) Whether
 the title should also show on the boards (it is derived, so the server could read it from
 the save without a schema change). (4) An heirloom, if he wants one, needs its own rule.
+
+---
+
+## 丹 Elixirs and sigils at the Dragon (built, switched off at 0, waiting for Bruno)
+
+**Status:** built and measured on 2026-10-08, shipped as `DRAGON_KIT_SHARE = 0` in
+`src/sim/balance.ts`, so the game plays exactly as it did. The machinery is all there:
+`kitWhere` returns `'dragon'`, `kitFor` thins the kit by the share (`thinKit` in `sim/crafts.ts`),
+the server reads the same thing (`bestKit(…, 'dragon')`, `dragonBeaten` in `sim/verify.ts`), and
+`tools/endgame.ts` plays the endgame both ways (`playEndgame(…, dragonKit)`, `kitClock`,
+`crafterOf`). Setting the constant above zero is the whole switch, and the item text, the carry
+card and the Dragon card change with it.
+
+**Why it is off.** rekaris (2026-10-07): *"every tool given to the player should be used in any
+place where it makes sense, unless it breaks or trivializes it ... you could make the pills
+less effective against the dragon, but still a significant boost to one's fight."* Bruno's
+band for it: the full endgame of a crafter with Alchemy and Sigil Writing at 99 shorter by no
+more than about 10 to 12 per cent, and a cultivator with no workshop not moved at all. The
+Dragon is footed one step above the Dragon the cultivator met at even odds, so a crossing asks
+for a few pills of power and a kit is worth those pills at once. Forty crossings of the active
+crafter: 231 days with nothing reaching the Dragon; 223 at a share of 0.3% (a strike 0.2%
+harder); 218 at 0.5%; 206 at 1.5%; 190 at 2%; 172 at 3%; 153 at 10%; 128 at 30%; 118 at the whole
+kit. The once-a-day and every-hour crafters move faster still (14.6% at 0.5%, 17% at 1%). The
+only shares inside the band are ones nobody would feel in a fight, and the elixir is spent on
+every win. The numbers are on the bible's endgame section and printed by
+`src/sim/__tests__/dragonkit.test.ts`.
+
+**What Bruno can choose.** (1) Leave it at 0 and keep the item text honest (it already says the
+elixir does not reach the Dragon). (2) Pick a visible share (3% to 10%) and accept a crafter
+reaching forty crossings a quarter to a third sooner, as the Sword Saint's 2% already does for
+one class. (3) Pick one and raise the Dragon's footing or challenge to pay for it, which moves
+every non-crafter as well, so the whole endgame is re-solved (TRIBULATION_GAIN's arithmetic).
+The kit must never be read into `evenDragon`: carried in the fight and left out of the
+anchor it is a head start, but read into the anchor it becomes a tax on anyone who is out of
+stock, and a carry that is taken off between the win and the crossing would be a lever on it.
+
+### Follow-up (2026-10-08, rekaris): count the kit at the Dragon AND re-set the Dragon
+
+**His argument.** *"Building tools only to be told you can't use them isn't fun ... Increasing
+the dragon's difficulty can be a way, yes. But you will need to be careful not to make it too
+unfun for someone not using these tools. Unless you want to make the tools compulsory, just
+like gear is."* So the road was measured: the kit counts at the Dragon at a share S (25%, 50%,
+100%), and the Dragon is made harder by a factor h on every crossing (the harness's `heavier`,
+which is the same as multiplying TRIBULATION_CHALLENGE, 1.89, by h) until the crafter with
+Alchemy and Sigil Writing at 99 reaches forty crossings in 231 days, as today.
+
+**Design A, the crafter held where it is.** h = 1.092 at S 25%, 1.108 at 50%, 1.128 at 100%.
+Days to 40 / 80 crossings, today and re-set, and what each loses (all numbers from
+`tools/endgame.ts`, `playEndgame(marks, 'pill', start, h, S)`; longest mark in brackets):
+
+| who | today | S 25%, h 1.092 | S 50%, h 1.108 | S 100%, h 1.128 |
+|---|---|---|---|---|
+| never fights | 423 / 823 | 616 / 1216 (+46% / +48%) (20) | 662 / 1302 (+57% / +58%) (22) | 662 / 1302 (+57% / +58%) (22) |
+| barely fights | 421 / 821 | 614 / 1214 (+46% / +48%) (20) | 660 / 1300 (+57% / +58%) (22) | 660 / 1300 (+57% / +58%) (22) |
+| once a day | 261 / 549 | 400 / 800 (+53% / +46%) (11) | 421 / 844 (+61% / +54%) (13) | 452 / 892 (+73% / +62%) (14) |
+| casual | 245 / 524 | 393 / 793 (+60% / +51%) (11) | 422 / 844 (+72% / +61%) (12) | 441 / 879 (+80% / +68%) (12) |
+| active | 231 / 503 | 380 / 781 (+65% / +55%) (12) | 403 / 826 (+74% / +64%) (12) | 426 / 867 (+84% / +72%) (13) |
+| every hour | 268 / 539 | 376 / 774 (+40% / +44%) (12) | 399 / 820 (+49% / +52%) (12) | 427 / 869 (+59% / +61%) (12) |
+| drives it all | 251 / 532 | 384 / 784 (+53% / +47%) (11) | 407 / 834 (+62% / +57%) (12) | 426 / 865 (+70% / +63%) (13) |
+| walks 神 | 252 / 524 | 387 / 787 (+54% / +50%) (12) | 415 / 834 (+65% / +59%) (12) | 436 / 875 (+73% / +67%) (12) |
+| crafter 99 (built on active) | 231 / 503 | 232 / 533 (0% / +6%) (8) | 232 / 557 (0% / +11%) (9) | 230 / 579 (0% / +15%) (10) |
+| crafts it all, as played (about level 72) | 241 / 519 | 375 / 763 (+56% / +47%) (11) | 384 / 783 (+59% / +51%) (11) | 393 / 793 (+63% / +53%) (12) |
+
+The as-played crafter is not saved either: its kit is a few levels short of the 99 one, so it
+is made harder by the same h and recovers little. Knife edge, forty crossings: the 99 crafter
+with the Dragon a tenth heavier on top is 399 / 404 / 409 days (longest 12 / 13 / 14), and its
+share moved 10% either way is 224 to 232 / 222 to 236 / 230 to 233 days, so the kit is not
+the knife. The non-crafters are: a tenth heavier on top of the re-set walls them past
+MAX_MARK_DAYS (14), longest mark 15 to 17 at every S, and they are 527 to 590 days to forty.
+
+**Design B, the average habit held where it is.** Half of every fighting habit crafts at 99,
+and h is chosen so the mean over all twelve is as today (251.3 days to forty):
+
+| S | h | non-crafters, forty crossings | crafters at 99 |
+|---|---|---|---|
+| 25% | 1.063 | +26% to +50% (every hour +26%, active +50%) | -34% to -44% |
+| 50% | 1.074 | +32% to +55% | -41% to -49% |
+| 100% | 1.082 | +34% to +59% | -45% to -53% |
+
+**A small Dragon change, to see what the non-crafter pays per step.** Forty crossings, plain
+habits, % slower, and the 99 crafter at S 25% (today 231):
+
+| h | once a day | casual | active | every hour | walks 神 | crafter 99, S 25% / 50% / 100% |
+|---|---|---|---|---|---|---|
+| 1.00 | 261 | 245 | 231 | 268 | 252 | 128 / 123 / 118 |
+| 1.01 | +7% | +11% | +23% | +5% | +15% | 129 / 124 / 118 |
+| 1.02 | +13% | +21% | +27% | +9% | +19% | 129 / 124 / 118 |
+| 1.03 | +20% | +25% | +31% | +13% | +21% | 130 / 127 / 118 |
+| 1.05 | +36% | +40% | +45% | +23% | +33% | 145 / 129 / 118 |
+| 1.07 | +43% | +49% | +55% | +30% | +42% | 158 / 133 / 123 |
+
+**Why no re-set works.** The crafter is already on the floor the thunder pool sets (about 3
+days a mark, 118 to 130 days to forty): a kit of any size carries it to the pool and no
+further, and a heavier Dragon only brings it off the floor again slowly. The non-crafter is
+on the steep part of the same curve, where each 1% of Dragon is 5% to 23% more days. So the h
+that puts the crafter back where it was is the h that makes everyone else 40% to 85% slower,
+and a tenth heavier on top walls them. The odds do not help either: right after a crossing
+the Dragon reads 0% for a crafter at S up to 1.5% and 100% at S 25%, with 10% only at S 5%
+(the fight is a cliff in power), so the kit's feel is the day it is ready, not a better
+fight.
+
+**Recommendation.** Neither re-set. Plainly: no design keeps the non-crafters within 10%
+slower while a share worth feeling (25% or more) is counted at the Dragon, because a share
+that large takes the crafter to the pool's floor and putting it back costs the others 40% or
+more. The one design that meets Bruno's two numbers (non-crafters not slower, a crafter at
+least 10% sooner) is the small share with the Dragon left alone: DRAGON_KIT_SHARE about 1.5%
+(measured above: active crafter 10.8% sooner at forty crossings, 8.3% at eighty; once a day
+and every hour 20%; no re-set, so nobody else moves). It is not clearly good: it is a clock
+shortcut of a few days that the player never sees in a fight, and the elixir is spent on
+every win. It stays at 0 in the code; setting `DRAGON_KIT_SHARE = 0.015` is the whole switch.
+If a "tools are compulsory" Dragon is wanted instead (rekaris's second road), it is a
+re-solve of TRIBULATION_GAIN and TRIBULATION_CHALLENGE for the whole endgame, not a constant.
+
+### 業 The workshop through a rebirth (rekaris, 2026-10-08; built behind `CRAFT_CARRY`, set to 0.25)
+
+**What rekaris said.** *"My other points around material, crafting exp and crafting speed have
+not been addressed at all. The crafting is pretty thick part of the time spent around the game
+and running it all again sounds exhausting. Is there a reason as to why it shouldn't be sped
+up?"* He is right that nothing answered it: a new life began every craft at level 1.
+
+**What a new life kept of the workshop before this** (`bornFrom` in `src/sim/rebirth.ts`, from
+`newState`): the codex (`codexKept`) and nothing else. Experience in all seven crafts, the
+tools (the 5% steps), the pouch, the count of what was made (marks, mastery, array depth), the
+arrays, the order in the crucible, the kit carried, and `State.materials` all began at zero.
+
+**Does any craft level feed qi?** No. `rate()` reads upgrades, gear and the tree. A craft level
+reaches the climb in two indirect, capped ways only: the quality of what is forged (a higher
+level above the recipe rolls better ranks, so better gear, under the same slots and ranks as
+ever) and the kit carried into a warden or a demon. Both are inside the measurements below,
+and neither moves the climb.
+
+**The cost of re-crafting** (`npm run carry`: the active cultivator with the workshop running,
+every life ending on its third mark; levels of herb / vein / render / forge / alchemy / sigil /
+array). A craft's experience is RuneScape's table, so levels come fast and then slow: the
+first life has most crafts past level 40 by day 10 and spends the rest of its time on the tail.
+
+| | day 0 | day 10 | day 30 | day 60 |
+| --- | --- | --- | --- | --- |
+| first life | 1 1 1 1 1 1 1 | 61 47 48 43 48 34 13 | 68 62 63 56 65 56 55 | 74 72 74 67 74 67 67 |
+| life 2, nothing carried | 1 1 1 1 1 1 1 | 62 47 46 43 50 18 32 | 68 61 64 55 65 56 54 | 75 72 71 66 75 66 66 |
+| life 2, 25% carried | 60 61 61 56 62 56 55 | 68 65 63 60 64 57 57 | 73 69 70 63 71 63 62 | 77 77 77 71 78 71 71 |
+
+Days until the *slowest* of the seven crafts (the median in brackets) reaches a level (the
+summit on day 52 in life 2, day 56 in the first life):
+
+| | level 60 | level 70 | level 75 |
+| --- | --- | --- | --- |
+| first life | 38 (26) | 68 (50) | 92 (69) |
+| life 2, nothing carried | 40 (26) | 76 (52) | 99 (73) |
+| life 2, 22.5% carried | 26 (1) | 62 (36) | 84 (53) |
+| **life 2, 25% carried** | **22 (0)** | **58 (34)** | **83 (53)** |
+| life 2, 27.5% carried | 22 (0) | 56 (33) | 78 (49) |
+
+So the carry is worth 16 to 18 days at the slowest craft at every level asked about, and puts
+the median craft at level 60 on the first day. That is the front of the grind (level 1 to
+60, which costs the first life 26 to 38 days) and a slice of the tail. It is *not* the whole
+tail: the table is exponential, a quarter of the experience is 14 levels fewer than the life
+had, and the new life still has to earn the levels above that. Crafting speed (the tools)
+comes back sooner as well: 28 of the 42 steps are held on day 30 with the carry, on day 60
+without it.
+
+**It does not touch the climb or the rate.** Life 2, days to realm 9 / the summit, nothing
+carried against 25%, over three gear seeds: 42.5 / 52.3 to 42.3 / 52.0 (seed 991), 43.7 / 52.5
+to 43.8 / 53.0 (seed 7), 41.8 / 51.5 to 41.8 / 52.0 (seed 1234): +0.2 days on average, which
+is the gear lottery. Every habit played as a crafter (life 1 / life 2 nothing carried / life 2
+carried, summit days): crafts it all 55.5 / 52.3 / 52.0, every hour 35.3 / 33.7 / 33.5,
+casual 74.7 / 71.0 / 71.0, once a day 84.0 / 81.0 / 80.0, never fights 125 / 123 / 123. Lives
+2 to 6, mean of two seeds, summit sooner than the first life: the Echo alone 6 / 11 / 16 / 16
+/ 16%, with 25% carried 6 / 10 / 18 / 18 / 18%. That is inside the 14 to 18% the Echo was
+tuned to, and far from the 25% line; the 2 points in lives 4 to 6 are about one day of gear
+luck (in life 2, where the lottery is the smallest, the carry moves 0.2 days). The qi rate at
+the same day of life 2, with the carry over without: 1.00x at day 10, 1.01x at day 30,
+1.03x at day 60.
+
+**The knife edge** (the share pushed a tenth either way, 22.5% / 25% / 27.5%): the summit
+moves 52.0 / 52.0 / 51.8 and the slowest craft reaches level 75 on day 84 / 83 / 78. More
+carried is sooner and less is later, smoothly: nothing walls and nothing collapses.
+
+**Recommendation, and what is live: `CRAFT_CARRY = 0.25` is set on this branch.** A new life
+begins each craft with a quarter of the experience the life it leaves had in it: 14 levels
+fewer than the life ended on, around level 55 to 62 in every craft after a life that ended on
+level 67 to 74. It is the smallest change that answers the complaint (the first weeks of
+crafting are gone and the median craft is at level 60 on day 0) without making the tail free:
+the tail is the endgame of the crafts (level 99 is 13 million experience) and it still has to
+be earned. A carry compounds under a roof, because the life after carries a quarter of a life
+that already carried one: a life that earns the same again each time settles at 1 / (1 - 0.25),
+a third more than one life earns, never the cap. It does not share a number with the Echo:
+the Echo is the climb's bonus, this is the workshop's.
+
+**What it looks like** (`node tools/shot-carry.mjs`, the real build on fabricated saves, at 400
+and 320 wide, in `docs/shots-carry/`): the Rebirth page with the new row, 業 The workshop,
+"25% of the experience in every craft, and nothing else of it (yours begin at levels 46 to
+66)", and the Begins again card saying the pouch, tools, arrays and counts go but not the
+experience; the line the new life opens with; and the Crafts screen of the second life's
+first hour in the second realm, Total 400 of 693 with the carry and Total 7 without it. One
+consequence worth knowing: the existing feeder rule (Herb 40 opens Alchemy, Vein 40 Sigils,
+Forging 40 Arrays, from the second realm) now opens all three at once in a carried life, as it
+does for a first life that levels a gatherer to 40 early. Their recipes keep their realms.
+
+**Not done, and why.** The pouch and the tools are not carried: every item names a recipe
+that names a realm, and validate() drops what a realm has not opened, so a carried pouch
+would be thrown away at load; the tools come back on their own once the forge level is
+already there (above). *Material* (`State.materials`) is not carried and was not measured:
+it is what gear, refining and fusing cost, so it is the climb's power and not the
+workshop's, and a cap low enough to be safe in the first realm would be worth almost
+nothing. A crafting-speed bonus that grows with lives was not built: the carry already
+brings the tools and the levels back sooner, and a second knob on the same grind would need
+its own measurement. If the owner wants more, `CRAFT_CARRY` is the one number. An exploratory
+walk (not in the harness, one seed) at 0.5, which is 7 levels fewer, moved the summit
+52.8 against 52.3 and brought the slowest craft to level 75 on day 66 instead of 99, about
+twice what 0.25 saves.
+
+**Verification and the save.** The carried experience is derived, never trusted:
+- `bornFrom` writes it (`carriedXp`: floored, never above what the life had, one function for
+  the game and the server).
+- `validate()` lets a craft that is not open hold experience only in a later life
+  (`State.lives` not empty), and then at most `floor(XP_CAP * CRAFT_CARRY)`. A first life
+  still holds nothing in a shut craft, and an open craft is still bounded by the time the run
+  has lived. A life that began before the carry has none and loads exactly as it was.
+- `verify()` across a rebirth starts the new life from the experience it could honestly have
+  been born with: a quarter of what the last accepted save held plus every second since at
+  the fastest a craft pays, and never less than `bornFrom` gives. What the save holds above
+  that is read as gained and has to fit the seconds that passed, as in any life, so a
+  hand-edited craft is `too-fast` (a wait, never a strike). `craftcarry.test.ts` holds all of
+  it, including the life that went on crafting after the server last saw it.
+- No schema change, and no change to the server's function beyond `verify.ts`.
+
+**Words to change when it is released** (not done here: the Discord file is the owner's).
+The Rebirth page and the line a new life opens with already say it (`REBIRTH.carriesWorkshop`,
+`REBIRTH.bornWorkshop`). The `g-rebirth` guide in `tools/discord/server.json` still says the
+workshop begins again, and the bible's Rebirth line (`tools/bible.ts`) does not mention it.
+
+### 宿慧 The endless road (rekaris asked for "no cap, diminishing returns"; BUILT 2026-10-08)
+
+**Status:** built on the working branch, not released. The owner decided on 2026-10-08 to
+build the soft tail below. `npm run echotail` (tools/echotail.ts) measures it and
+`npm run rebirth` holds the rest of the rebirth to it.
+
+**Can an uncapped Echo be offered in a form that respects the law?** Literally uncapped, no:
+the server's bound stands on the Echo of the record (`verify.ts` reads `echoFactor`), so an
+Echo without a roof is a bound without one. What was built is a *soft* one: a logarithmic
+tail that never quite stops, under a hard roof.
+
+**As built** (`src/sim/echo.ts`, constants in `balance.ts`): every life gives what it gave.
+`sum` is the sum of `lifeEcho` over the record. `echo = min(ECHO_ROOF, min(ECHO_CEILING, sum) +
+ECHO_TAIL * log2(1 + max(0, sum - ECHO_CEILING) / ECHO_LIFE_MAX))`, with `ECHO_CEILING` 25%,
+`ECHO_TAIL` 2% and `ECHO_ROOF` 35%. So while the lives sum to 25% or less the Echo is the
+sum, bit for bit as before; past it, each doubling of the full lives (12.5% each) beyond the
+first two adds 2%. The roof is reached at **33** lives of 15 marks (the brief said about 38,
+but log2(32) = 5 doublings of 2% is exactly 10 points, which is a sum of 4.125, 33 lives).
+The record holds `LIVES_MAX` = 40, so the roof is inside it. The server's bound moves from
+1.25 to 1.35 (`ECHO_ROOF`) and nothing else: `validate()` cuts a record to 40 lives of at
+most 300 marks, so a hand-edited record of 200 lives or 99999 marks reads exactly the roof.
+The save grows by about 0.9 KB of JSON (1.2 KB sealed) at 40 lives against 9.
+
+The Echo after n lives of 15 marks (of 3 marks): 4 lives +28.2% (+26.0%), 9 +31.0% (+29.3%),
+10 +31.3%, 20 +33.5% (+31.9%), 33 and 40 +35.0% (+34.0% at 40 lives of 3 marks). Before the
+tail, nine lives of 15 marks read +25%; they now read +31.0%.
+
+**Measured** (`npm run echotail`, 2026-10-08, days to the summit of a reborn life, the mean of
+three gear seeds; a visit-a-day habit steps in whole visits and the gear dice move a column
+by a day or two either way):
+
+| habit | +25% (the old roof) | 10 lives (+31.3%) | 20 lives (+33.5%) | 40 lives (+35%) |
+| --- | --- | --- | --- | --- |
+| active | 47.4 | 44.8 (-5.6%) | 44.9 (-5.4%) | 44.5 (-6.2%) |
+| every hour | 30.7 | 29.8 (-3.0%) | 29.3 (-4.5%) | 29.4 (-4.4%) |
+| casual | 64.6 | 63.9 (-1.0%) | 61.7 (-4.5%) | 61.8 (-4.3%) |
+| once a day | 74.3 | 74.3 (0%) | 73.3 (-1.3%) | 73.0 (-1.8%) |
+| never fights | 111.3 | 105.3 (-5.4%) | 104.3 (-6.3%) | 104.3 (-6.3%) |
+
+So twenty lives of 15 marks sit at about +33%: the summit moves 1 to 3 days for the habits that
+fight and about 7 for the one that never does, and a mark comes 6.4% sooner. That is about
+what the Echo's own arithmetic says (1/1.25 to 1/1.335), and no life is ever sooner than the
+roof's arithmetic allows (`rebirth.ts` section 5 now holds it to the 35%).
+
+**If the owner wants it,** the form that respects the law is a tail with a hard roof: say
+`TAIL = 2%` and a ceiling at +35%, which the tail reaches at about 38 lives of 15 marks, and
+the 25% roof and the nine lives left exactly as they are for everyone who stops there. The
+server's bound moves from 1.25 to 1.35 and nothing else. It is the owner's decision and none
+of it is in the code.
+
+
+- **The first lives never change.** Up to a sum of 25% the Echo is the sum itself (held by a
+  test over every depth up to 40 marks). Life 6 of the mark-3 policy, the longest the earlier
+  measurement walked, now carries +27.0% against +25.0% and reaches the summit within half a
+  day of where it did (active -0.3, every hour +0.1, casual -0.4, once a day 0, never fights
+  0). Ending every life on mark 1, the Echo reaches +25.0% after five lives as before, and
+  the tail adds 1.0 point at life 6 and 3.9 at life 12; on 15-mark lives it adds 2.0 at life 3
+  and 6.0 at life 9.
+- **Knife edge** (40 lives, `ECHO_TAIL` and `ECHO_ROOF` each a tenth either way): the summit
+  moves by -1.0 to +0.4 days for the tail and by -0.7 to +1.1 days for the roof, except one
+  never-fights reading of +4.3 days for a roof a tenth *higher* (the gear dice, not the Echo:
+  the roof pushed down reads +0.7). It slows rather than collapses and nothing walls.
+- **On screen:** the Rebirth page says the exact Echo before and after (`+31.0% now, +31.2%
+  after this life, of at most +35%`), says that a life past the ceiling adds a small step
+  rather than what it is worth, and draws the meter against the roof with a tick at 25%. A
+  life past the tenth keeps 十世 Ten Times Born and shows its count; the record list shows the
+  latest nine lives and counts the rest.
+- **The cost** that was named is paid: the record holds 40 lives (`LIVES_MAX`, `validLives`),
+  the server's bound is the roof, and a number that never stops is still a number that
+  stops: `ECHO_ROOF`. Any guide that says nine lives or +25% as the most is out of date.

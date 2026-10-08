@@ -14,6 +14,7 @@
 import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
 import { progressOf } from '../../../src/sim/echo.ts';
+import { withPackedPile } from '../../../src/sim/pilepack.ts';
 import { WEEK, weekOf } from '../../../src/sim/week.ts';
 import { callingKey } from '../../../src/sim/schools.ts';
 import { cleanName } from '../../../src/net/names.ts';
@@ -232,11 +233,15 @@ export async function sync(
   // the copy another device would sign in to find.
   let kept: State | null = null;
   try { kept = saved ? validate(saved.latest, now) : null; } catch { kept = null; }
+  // 圍 A drive's pile is a drive's, not the run's: the cloud copy keeps it (as rows, so the
+  // largest pile of three thousand is a modest row), and the three reference saves that only
+  // ever measure the next one against the last keep none. One pile in the database, not four.
+  const bare = { ...after, pile: [], pileAt: 0 } as State;
   const roll = (a: Anchor | null | undefined, span: number): Anchor | null =>
-    (v.ok && (newRun || !a || now - a.at > span) ? { state: after, at: now } : a ?? null);
+    (v.ok && (newRun || !a || now - a.at > span) ? { state: bare, at: now } : a ?? null);
   const next: Saved = {
-    latest: kept && ahead(kept) > ahead(after) ? saved!.latest : after,
-    verified: v.ok ? after : saved?.verified ?? null,
+    latest: kept && ahead(kept) > ahead(after) ? saved!.latest : withPackedPile(after),
+    verified: v.ok ? bare : saved?.verified ?? null,
     verifiedAt: v.ok ? now : saved?.verifiedAt ?? null,
     lastSync: now,
     day: roll(saved?.day, DAY_WINDOW),

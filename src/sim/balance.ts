@@ -1041,10 +1041,48 @@ export const ECHO_FIRST = 0.05;
 export const ECHO_STEP = 0.025;
 /** 宿慧 The most one life can add, the first mark and three doublings (15 marks): 12.5%. */
 export const ECHO_LIFE_MAX = 0.125;
-/** 宿慧 The most every life together can ever add to the qi gathered: 25%. */
+/**
+ * 宿慧 Where the Echo stops being quick: 25%, two full lives of 15 marks. Every life together
+ * gives exactly what its lives add up to until here (the first lives never change), and past
+ * here only the soft tail below: see ECHO_TAIL.
+ */
 export const ECHO_CEILING = 0.25;
-/** 世 How many lives a save may remember. Nine, as the realms are. */
-export const LIVES_MAX = 9;
+/**
+ * 宿慧 The soft tail (rekaris, 2026-10-08: "no cap, diminishing returns"; the owner built it
+ * the same day). What the lives add up to past ECHO_CEILING is counted in full lives
+ * (ECHO_LIFE_MAX each), and every doubling of that count is worth ECHO_TAIL more:
+ * tail = ECHO_TAIL * log2(1 + (sum - ECHO_CEILING) / ECHO_LIFE_MAX). It never quite stops,
+ * and every step costs twice the lives the one before it did. 20 lives of 15 marks sit at
+ * about +33%. Measured by tools/echotail.ts and tools/rebirth.ts.
+ */
+export const ECHO_TAIL = 0.02;
+/**
+ * 宿慧 The hard roof: the most every life together can ever add to the qi gathered, tail
+ * included, 35%. The economic law's number, and the one the server holds a record to: a
+ * forged record, however many lives it claims, reads no higher. 33 lives of 15 marks
+ * reach it; the record holds LIVES_MAX of them.
+ */
+export const ECHO_ROOF = 0.35;
+/** 世 How many lives a save may remember: the tail's roof is reached inside it, 40. */
+export const LIVES_MAX = 40;
+/**
+ * 業 The workshop through a rebirth. rekaris (Discord, 2026-10-08): the crafts are a thick
+ * part of the time spent and running them all again sounds exhausting. A new life begins
+ * each craft with this share of the experience the life it leaves had earned in it, never
+ * more than that life had, floored to whole experience. Experience only: the pouch, the
+ * material, the tools and the counts of what was made begin again, so nothing carried is a
+ * thing a realm's gate has not opened, and no craft level feeds the qi rate directly (the
+ * rate is read from upgrades, gear and the tree, never from a craft). The table is a
+ * curve, so a share is a few levels, not a fraction of them: a quarter of the experience
+ * is 14 levels fewer than the life had (7 levels per halving). tools/carry.ts and
+ * docs/DRAWER.md (轉世) are where it is measured. 0 is the game as it was: nothing carried.
+ *
+ * Measured 2026-10-08 at a quarter: the slowest craft reaches level 60, 70 and 75 about 16 to
+ * 18 days sooner and the median craft starts at level 60; the second life's summit moves 0.2
+ * days on average (three gear seeds), the qi rate at the same day by 0 to 3%, and a share a
+ * tenth either way (22.5%, 27.5%) moves the saving smoothly and walls nothing.
+ */
+export const CRAFT_CARRY = 0.25;
 
 /**
  * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.
@@ -1917,13 +1955,22 @@ export const DRIVE_SIZES = [10, 50, 200] as const;
 export const DRIVE_MOST = 2000;
 
 /**
- * 圍 How many pieces a drive lays out for the player to choose from, best first. Two
- * thousand kills can roll three hundred and sixty pieces, and a window of that is the
- * sorting job the drive always refused to be: the best sixty are listed, and the rest are
- * left on the mountain exactly as they were before the window existed. It bounds the
- * save too (validate reads no more than this), so it moves no curve.
+ * 圍 How many pieces a drive lays out for the player to choose from: all of them. It was the
+ * best sixty (2026-10-06) and rekaris asked on 2026-10-08 why only sixty, when the filters
+ * are there and the drive is capped at DRIVE_MOST kills: the sixty "best" might not be the
+ * sixty the player would keep. A kill leaves one piece at most, and a second with 造化
+ * Creation at most SECOND_DROP_CAP of the time, so no drive can roll more than this. It
+ * bounds the save too (validate reads no more than this), so it moves no curve, and it is
+ * written as rows (sim/pilepack.ts) so the largest pile stays a modest save.
  */
-export const DRIVE_PILE = 60;
+export const DRIVE_PILE = Math.floor(DRIVE_MOST * (1 + SECOND_DROP_CAP));
+
+/**
+ * 圍 How many tiles the drive's window draws at once. The window holds every piece and the
+ * filters, Select all and Clear act on all of them; only the drawing is by the page, because
+ * three thousand painted tiles is a slow screen on a phone and sixty is not.
+ */
+export const PILE_PAGE = 60;
 
 /**
  * 圍 How long a drive's pieces wait for an answer, in seconds. A player who never opens
@@ -2419,8 +2466,9 @@ export const CRAFT_ARRAY_DEPTH_TOP = 1.5;
  * fight that is a warden, a heart demon or a beast of the vault, and spent only if it is
  * won: a lost fight keeps them, because a lost fight costs nothing.
  *
- * 劫 Never the Dragon. It is anchored to the power that faced it, so anything that carried
- * a cultivator over it would be a lever on the endgame.
+ * 劫 The Dragon, since 2026-10-08, but only at DRAGON_KIT_SHARE of itself (below). It is
+ * anchored to the power that faced it, so anything that carried a cultivator over it would
+ * be a lever on the endgame, and the share is how large a lever the endgame can bear.
  *
  * 塔 The tower, since 2026-10-05, when the climber chooses it on the floor's card. rekaris:
  * *"Pills and Sigils provide combat edge that has no use right now. All combat challenges
@@ -2468,6 +2516,42 @@ export const CRAFT_KIT = {
   // than its whole wall, it takes at least half of anybody's wait there (sealgate.test).
   pill: 0.5,
 } as const;
+
+/**
+ * 劫 What a carried elixir and sigil are worth against the Dragon of the tribulation, as a
+ * share of what they do everywhere else. rekaris (Discord, 2026-10-07): "every tool given
+ * to the player should be used in any place where it makes sense, unless it breaks or
+ * trivializes it. ... you could make the pills less effective against the dragon, but still
+ * a significant boost to one's fight."
+ *
+ * Every effect is thinned toward nothing by this share (thinKit in sim/crafts.ts): a strike
+ * of 1.53 counts as 1 + 0.53 · share, a blow taken at 0.74 as 1 - 0.26 · share, mending and
+ * reflection are multiplied by it, a Binding Sigil turns aside that share of the first blow,
+ * and a Nine-Turn Pill mends that share of the way back to full. No Guardian Array (it is not
+ * carried), and no 破境 breach or Breakthrough Pill, which are the gate's. The Dragon's
+ * even-odds reading (evenDragon) stays bare, so a kit is a head start at every crossing and
+ * never ratchets the anchor, and the server reads the same kit (bestKit 'dragon').
+ *
+ * 1 BECAUSE THE TOOLS SHOULD COUNT (Bruno, 2026-10-08, on rekaris's case: building tools
+ * only to be told they cannot be used is not fun, and no Dragon re-set keeps the others
+ * whole). Measured with tools/endgame.ts (kitClock: the cultivator made a crafter at the
+ * top, Alchemy and Sigil Writing at 99 and the best of every elixir and sigil in the pouch
+ * at Heaven rank, played twice), days to forty crossings and how much sooner the kit makes
+ * them, by the share of the kit that counts:
+ *
+ *     share     0     .003   .005   .01    .015   .02    .03    .1     .3     1
+ *     active    231   223    218    217    206    190    172    153    128    118
+ *     sooner    -     3.5%   5.6%   6.1%   10.8%  17.7%  25.5%  34%    45%    49%
+ *
+ * At 1 the crafter is on the floor the thunder pool sets (about three days a mark, 118 days
+ * to forty, 200 to eighty instead of 503), and nobody else moves: a cultivator who never
+ * opened the workshop carries nothing and reads 0 at every share. The Dragon itself is left
+ * as it was, because every re-set that held the crafter where he was made the others 40% to
+ * 85% slower (docs/DRAWER.md, 丹 Elixirs and sigils at the Dragon). The wall past eighty
+ * crossings is the same for everyone; the crafter only reaches it sooner. Set it lower to
+ * give the tools less of a say, and nothing else has to change.
+ */
+export const DRAGON_KIT_SHARE = 1;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
 export const CRAFT_SEEK_MAX = 20;

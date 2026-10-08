@@ -6,6 +6,7 @@ import { RECIPE_BY_KEY, levelOf } from '../data/crafts.ts';
 import { LAYERS_PER_REALM } from './balance.ts';
 import { isSealed, open, seal } from './seal.ts';
 import { progressOf } from './echo.ts';
+import { withPackedPile } from './pilepack.ts';
 
 const KEY = 'ninefold.save.v1';
 /**
@@ -129,7 +130,8 @@ export function outbound(s: State): State {
     const level = s.refined[slot as keyof typeof s.refined] ?? 0;
     return [slot, it && level > 0 ? { ...it, refine: level } : it];
   }));
-  return { ...s, worn } as State;
+  // 圍 The drive's pile goes out as rows (pilepack.ts): up to three thousand pieces, written small.
+  return withPackedPile({ ...s, worn } as State);
 }
 
 function write(key: string, s: State): void {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fightDeps } from '../memo.ts';
 import { BEASTS, comingIn, huntable, plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
+import { RealmTag } from '../ui/RealmTag.tsx';
 import { beastPower, effectiveBeastPower, isElite, lootFrom, oddsRaw } from '../../sim/combat.ts';
 import { ELITE_LOOT, ODDS_CEILING, ODDS_FLOOR } from '../../sim/balance.ts';
 import { power, type State } from '../../sim/state.ts';
@@ -294,7 +295,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
               <Plate kind="beast" subject={plateOf(b)} icon={b.icon} colour={r.colour}
                 tier={b.warden ? 2 : 1} size={46} alt={b.name} />
               <span className="bname">
-                <b style={{ color: r.colour }}>{b.han}</b>
+                <b style={{ color: r.colour }}>{b.han}<RealmTag realm={b.realm} /></b>
                 <i>
                   {b.name} · <span className="nw">力 {num(effectiveBeastPower(state, b))} {UNIT.power}</span> · <span className="nw">材 {num(lootTaken(state, lootFrom(state, b)))} {UNIT.material}</span>
                 </i>

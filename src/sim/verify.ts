@@ -31,7 +31,8 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
-  ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND, TRIBULATION_CHALLENGE,
+  DRAGON_KIT_SHARE, ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
+  TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
 import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
@@ -51,7 +52,7 @@ import { CAPSTONE_TIER, capstonesOpen, focusBonus } from './dao.ts';
 import { NODE_BY_KEY } from '../data/techniques.ts';
 import { freePoints } from './points.ts';
 import { driveFloor } from './hunt.ts';
-import { XP_PER_SECOND_MAX, bestFeed, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
+import { XP_PER_SECOND_MAX, bestFeed, carriedXp, bestKit, bestUnseal, shortestDoorGap } from './crafts.ts';
 import type { Kit } from './kit.ts';
 import { RECIPE_BY_KEY, SKILL_KEYS } from '../data/crafts.ts';
 import { floorBeast, floorPower, floorQiPay } from './tower.ts';
@@ -229,7 +230,7 @@ function rateOn(s: State, n: number): number {
   for (const u of UPGRADES) levels[u] = Math.min(levels[u], capOf(probe, u));
   const worn = Object.fromEntries(Object.entries(s.worn)
     .filter(([, x]) => x && (templateOf(x as Item)?.realm ?? 1) <= realm)) as State['worn'];
-  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_CEILING at most.
+  // 宿慧 What is gathered, the Echo included: a claimed record raises this by ECHO_ROOF at most.
   return gathering({ ...probe, levels, worn });
 }
 
@@ -273,6 +274,21 @@ export function anchorFloor(before: State, marks: number): number {
     at = Math.max(at, dragon * met) * step;
   }
   return at;
+}
+
+/**
+ * 劫 Whether the last Dragon a save claims to have crossed could have been beaten by any body it
+ * holds, with the best kit the crafts could have carried into it at `share` of itself (the
+ * game's own reading, DRAGON_KIT_SHARE; 1 is the warden's whole kit, which the game never lets
+ * in). Read on the least Dragon an honest crossing can have faced (anchorFloor).
+ */
+export function dragonBeaten(before: State, after: State, share = DRAGON_KIT_SHARE): boolean {
+  const faced = {
+    ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1,
+    tribulationAt: anchorFloor(before, after.tribulation - 1),
+  };
+  const dragon = wardenOf(9);
+  return bodiesHeld(faced).some((b) => beatable(b, dragon, undefined, bestKit(b, dragon, 'dragon', share)));
 }
 
 /**
@@ -539,7 +555,7 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // cheaper each one got: 300 at once verified in thirty seconds. It is time, so it is
   // counted as time.
   const newMarks = Math.max(0, after.tribulation - before.tribulation);
-  // 宿慧 The Echo fills the pool faster, by ECHO_CEILING at the most.
+  // 宿慧 The Echo fills the pool faster, by ECHO_ROOF at the most.
   need += newMarks * markSeconds(before, after, focus);
   // 塔 And every floor climbed is a fight, fought at a hand's pace at best.
   need += Math.max(0, after.tower - before.tower) * MIN_FIGHT_SECONDS;
@@ -603,16 +619,11 @@ export function verify(before: State, after: State, seconds: number, first = fal
   // twice what it beat, and struck. The Dragon that fell stood on the anchor before the
   // last crossing; the least that can have been is anchorFloor, so that is what it is
   // read on. And it is fought in every body the save holds, with the best kit the crafts
-  // could have carried, as the wardens and the tower are: 劍聖 a Sword Saint who crossed and
+  // could have carried into the Dragon, which is the game's own reading of it and not the
+  // warden's (bestKit 'dragon': a share of an elixir and a sigil, no array, no gate), as the
+  // wardens and the tower are: 劍聖 a Sword Saint who crossed and
   // then dressed for the tower is a cultivator who beat that Dragon.
-  if (newMarks > 0) {
-    const faced = {
-      ...after, realm: 9, layer: 8, tribulation: after.tribulation - 1,
-      tribulationAt: anchorFloor(before, after.tribulation - 1),
-    };
-    const dragon = wardenOf(9);
-    if (!bodiesHeld(faced).some((b) => beatable(b, dragon, undefined, bestKit(b, dragon, 'warden')))) why.push('warden');
-  }
+  if (newMarks > 0 && !dragonBeaten(before, after)) why.push('warden');
   // 塔 And the highest floor claimed has to be one this cultivator can take, in some body
   // the save holds. See towerVerdict.
   if (after.tower > Math.max(before.tower, held) && after.tower > 0) {
@@ -724,7 +735,7 @@ function markSeconds(before: State, after: State, focus: number): number {
  *
  * So an edited record can do two things and no more: claim marks it would have had to
  * wait for (it waits, like any gain the time does not cover), or claim an Echo it did not
- * earn, which raises every bound here by ECHO_CEILING at most, because that is the most
+ * earn, which raises every bound here by ECHO_ROOF at most, because that is the most
  * any record can give. The ended life's floors and Dragons are not read again: they were
  * read when they were synced, and once a life ends the body that won them is gone.
  */
@@ -742,7 +753,16 @@ function reborn(before: State, after: State, dt: number, first: boolean): Verdic
   // gives is capped (CODEX_CAP) and never touches the qi rate.
   const owed = codexToKeep(before);
   const kept = keptCovers(after.codexKept, owed) ? after.codexKept : owed;
-  const start = { ...bornFrom(before, after.lives, at, kept), startedAt: after.startedAt };
+  const born = bornFrom(before, after.lives, at, kept);
+  // 業 And the experience it was born with: CRAFT_CARRY of the old life's, which `before` may
+  // not have seen the end of. The most that can have been is the share of what `before` held
+  // plus every second since at the fastest a craft pays, so the new life starts from what
+  // its save says up to that, and only what is above it is read as gained (and has to fit
+  // the time). Never from less than bornFrom gives, so a save with no carry reads as before.
+  const owedXp = born.crafts.xp;
+  const roof = carriedXp(Object.fromEntries(SKILL_KEYS.map((k) => [k, (before.crafts?.xp[k] ?? 0) + dt * XP_PER_SECOND_MAX[k]])) as State['crafts']['xp']);
+  const xp = Object.fromEntries(SKILL_KEYS.map((k) => [k, Math.max(owedXp[k], Math.min(after.crafts?.xp[k] ?? 0, roof[k]))])) as State['crafts']['xp'];
+  const start = { ...born, crafts: { ...born.crafts, xp }, startedAt: after.startedAt };
   const v = verify(start, after, Math.max(0, dt - old), first, 0);
   const late = old > dt * SLACK && !v.why.includes('too-fast');
   return late ? { ...v, ok: false, why: [...v.why, 'too-fast'] } : v;

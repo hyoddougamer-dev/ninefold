@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
@@ -31,6 +31,8 @@ import { RARITY_INFO } from '../data/gear.ts';
 
 /** 式 A balance constant as a formula prints it: 0.35, never 0.35000000000000009. */
 const trim = (x: number) => String(Math.round(x * 1000) / 1000);
+/** 劫 A share as a percentage to a tenth, so a share of 1.5% never reads as 2%. */
+const oneDecimal = (x: number) => `${Number((x * 100).toFixed(1))}%`;
 
 /**
  * 引 How to play, and now only the part that cannot be shown.
@@ -310,6 +312,13 @@ export const CULTIVATE = {
   tribulationNext: (n: number) => `劫 Tribulation ${n} · the next crossing`,
   crossed: (n: number) => (n === 1 ? '1 tribulation crossed' : `${n} tribulations crossed`),
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
+  /**
+   * 劫 What the elixir and the sigil are worth at the Dragon (DRAGON_KIT_SHARE), under the card.
+   * The odds above already count what is carried.
+   */
+  dragonKit: (share: string, carrying: boolean) => carrying
+    ? `What you carry counts here at ${share} of its strength, and the odds count it.`
+    : `An elixir or a sigil carried here counts at ${share} of its strength.`,
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
   /** 境外 What every heaven opens, said once rather than nine times. */
@@ -919,6 +928,15 @@ export const GUIDE = {
 };
 
 export const HUNT = {
+  /**
+   * 境 The realm a beast belongs to, as a small mark beside its name. razielmorgenstern, on the
+   * Discord (2026-10-08): to know exactly which level of equipment a hunt goes for. A beast of
+   * realm 5 leaves realm-5 pieces, so the number is the one on the gear (sword5). The mark says
+   * "R" and the number; the realm's name is in its label, so the character is never the only
+   * place it is named.
+   */
+  realmTag: (n: number) => `R${n}`,
+  realmLabel: (n: number, name: string) => `Realm ${n}: ${name}`,
   /** 出 When a beast of this realm walks out, for the rows that have not yet. */
   walksOut: (layer: number) => `layer ${layer}`,
   coming: 'Still to come in this realm',
@@ -1034,24 +1052,22 @@ export const DRIVE = {
  * items."*). Everything unmarked melts, by the same rules as melting anywhere.
  */
 export const PILE = {
-  head: (n: number) => (n === 1 ? 'One piece fell' : `${n} pieces fell`),
+  head: (n: number) => (n === 1 ? 'One piece fell' : `${n.toLocaleString('en')} pieces fell`),
   says: 'Mark what you keep. Everything unmarked is melted like any melt: qi while the melting allowance holds, 材 material after it.',
-  /** The weakest pieces are not listed; they are left where they fell, as a drive always did. */
-  unlisted: (n: number) => (n === 1 ? 'The weakest piece that fell was left on the mountain.' : `The ${n} weakest pieces that fell were left on the mountain.`),
   all: 'Select all',
   none: 'Clear',
-  /** Select all and Clear act on what the filters show. */
-  allShown: (n: number) => `${n} shown`,
-  keeping: (k: number, of: number) => `Keeping ${k} of ${of}`,
+  /** Select all and Clear act on every piece the filters match, drawn on the screen yet or not. */
+  allShown: (n: number) => `${n.toLocaleString('en')} match`,
+  keeping: (k: number, of: number) => `Keeping ${k.toLocaleString('en')} of ${of.toLocaleString('en')}`,
   room: (n: number) => (n === 1 ? 'room for 1 in the chest' : `room for ${n} in the chest`),
-  melts: (n: number, qi: string, mats: string) => `Melting ${n} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
+  melts: (n: number, qi: string, mats: string) => `Melting ${n.toLocaleString('en')} ${n === 1 ? 'piece' : 'pieces'} pays${qi ? ` ${qi} qi` : ''}${mats ? `${qi ? ' and' : ''} ${mats} 材` : ''}${qi || mats ? '.' : ' nothing.'}`,
   meltsNone: 'Nothing is left to melt.',
   past: 'Past the melting allowance, pieces melt into 材 material instead of qi.',
-  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over}, or melt the bag below to make room.`,
+  tooMany: (over: number, room: number) => `The chest has room for ${room}. Unmark ${over.toLocaleString('en')}, or melt the bag below to make room.`,
   bag: 'Melt the bag as well',
   bagSays: (n: number) => `Every piece in the chest that is not locked (${n}) melts as well, so there is room for what you keep.`,
   bagNone: 'The chest holds nothing that is not locked.',
-  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k}, melt the rest`),
+  keep: (k: number) => (k === 0 ? 'Melt all of them' : `Keep ${k.toLocaleString('en')}, melt the rest`),
   game: 'Let the game decide',
   gameSays: 'Keeps the best piece and leaves the rest, as a Drive always did.',
   later: 'Decide later',
@@ -1280,17 +1296,17 @@ export const AWAKEN = {
 export const REBIRTH = {
   title: 'Rebirth',
   what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
-  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, under one ceiling for every life together.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, quick at first, then slowly, under one roof for every life together.',
   lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
   /** 修 The quiet card, when a life may end. */
   offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
-  offerFull: 'A new life is open to you. Your Echo is already at its ceiling.',
+  offerFull: 'A new life is open to you. Your Echo is already at its roof.',
   /** 修 The Echo beside the standing rate. */
   chip: (echo: string) => `Echo ${echo}`,
   lifeDay: (life: number, day: number) => `life ${life} · day ${day}`,
   blurb: 'A life may end at the summit once the first Dragon has fallen, and begin again in the first realm. The further it went, the more the next one carries.',
   locked: (marks: number) => `Opens at the summit, once ${marks === 1 ? 'the first Dragon has' : `${marks} Dragons have`} fallen.`,
-  full: 'Nine lives are remembered, and no more.',
+  full: (n: number) => `${n} lives are remembered, and no more.`,
   nowHead: 'This life',
   lifeN: (n: number) => `Life ${n}`,
   depth: (marks: number) => `${marks} ${marks === 1 ? 'mark' : 'marks'} crossed`,
@@ -1301,29 +1317,48 @@ export const REBIRTH = {
   leaves: (echo: string) => `${echo} of every second of qi gathered`,
   nextStep: (marks: number, echo: string) => `At ${marks} marks it would leave ${echo}: a step for every doubling.`,
   lifeTop: 'A life leaves no more than this.',
+  /** 尾 A life past the ceiling: what it is worth, and why it adds less. */
+  leavesTail: (worth: string, ceiling: string) => `The life itself is worth ${worth}, but past ${ceiling} the Echo grows by a small step for every doubling of the lives, so this is what it adds.`,
   echoHead: 'Your Echo',
-  echoNow: (now: string, ceiling: string) => `${now} now, of ${ceiling} that every life together can give`,
+  echoNow: (now: string, roof: string) => `${now} now, of at most ${roof} that every life together can give`,
   echoAfter: (after: string) => `${after} after this life`,
-  echoCapped: 'At its ceiling. A new life still gives a title and a fresh climb.',
+  /** 宿慧 Past the quick part: what the tail is, said once the record has reached it. */
+  echoTail: (ceiling: string, roof: string) => `Past ${ceiling} each life adds less: every doubling of the lives adds the same small step, and ${roof} is the most there will ever be.`,
+  echoCapped: 'At its roof. A new life still gives a title and a fresh climb.',
+  /** 世 Beside the title once a life is past the tenth. */
+  lifeCount: (n: number) => `life ${n}`,
+  /** 世 The record is long: the page lists the latest lives and counts the rest. */
+  pastMore: (n: number) => `${n} earlier ${n === 1 ? 'life' : 'lives'} not listed`,
   carriesHead: 'Carries into the new life',
   carries: [
-    ['宿慧', 'The Echo', 'qi gathered, under the ceiling'],
+    ['宿慧', 'The Echo', 'qi gathered, under its roof'],
     ['世', 'A title', 'one for every life lived'],
     ['榜', 'Your records', 'the boards keep the best you reached'],
     ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
     ['相', 'Who you are', 'and the chest’s filters'],
   ] as readonly (readonly [string, string, string])[],
+  /**
+   * 業 What the workshop carries (CRAFT_CARRY): a share of the experience in every craft, and
+   * where that would put the crafts, read off the save. Nothing else of the workshop comes.
+   */
+  carriesWorkshop: ['業', 'The workshop', (pct: string) => `${pct} of the experience in every craft, and nothing else of it`] as const,
+  workshopLevels: (lo: number, hi: number) =>
+    lo === hi ? `(yours begin at level ${lo})` : `(yours begin at levels ${lo} to ${hi})`,
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the vault. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex or its experience. The marks and the heavens.',
+  /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
+  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
   sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
   /** 宿慧 Above the confirm: the Echo the next life begins with, exactly, and what this life adds. */
   promise: (life: number, echo: string, adds: string) => `Life ${life} begins with an Echo of ${echo} qi gathered (${adds} from this life).`,
-  promiseCapped: (ceiling: string) => `The ceiling, ${ceiling}, keeps the rest.`,
+  promiseCapped: (roof: string) => `The roof, ${roof}, keeps the rest.`,
+  /** 宿慧 Before and after, said in one line above the confirm: where the Echo stands and where it goes. */
+  promiseFrom: (now: string, after: string, roof: string) => `Echo ${now} now, ${after} after this life, of at most ${roof}.`,
   cancel: 'Not now',
   pastHead: 'Lives behind you',
   past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,
@@ -1331,6 +1366,9 @@ export const REBIRTH = {
   bornHead: (n: number) => `Life ${n} begins`,
   born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
   bornCodex: (n: number) => `The codex comes with you: ${n} ${n === 1 ? 'set' : 'sets'} finished, each at the best rank it reached.`,
+  bornWorkshop: (lo: number, hi: number) =>
+    lo === hi ? `The workshop comes with you in part: every craft begins at level ${lo}.`
+      : `The workshop comes with you in part: the crafts begin at levels ${lo} to ${hi}.`,
   wear: 'You carry the title',
   go: 'Begin',
   close: 'Close',
@@ -2418,7 +2456,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. Never the tribulation’s Dragon.',
+  carrySays: `An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */

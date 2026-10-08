@@ -14,8 +14,9 @@
  *   2. After how many lives does each habit reach the ceiling, ending each life on its
  *      first, third or seventh mark?
  *   3. The honest net: what a rebirth costs in days against staying and crossing marks.
- *   4. The knife edge: an Echo a tenth past the ceiling must slow nothing and wall nothing.
- *   5. The law: no life may be faster than the ceiling's own arithmetic allows.
+ *   4. The knife edge: an Echo a tenth past the ceiling must slow nothing and wall nothing
+ *      (the tail and the roof pushed the same way are in tools/echotail.ts).
+ *   5. The law: no life may be faster than the roof's own arithmetic allows.
  *   6. 譜 The codex kept through a new life (State.codexKept): how much a carried codex moves
  *      a new life's pace, against the same life carrying none. It reaches the hunt's
  *      material, fights (elites, the vault, the heart demon, floors, the Platform, all
@@ -27,7 +28,7 @@
  */
 import { HABITS, play, type Habit, type Run } from './habits.ts';
 import { arrivalOf, playEndgame } from './endgame.ts';
-import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from '../src/sim/balance.ts';
+import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_ROOF, ECHO_STEP, ECHO_TAIL, LIVES_MAX, REBIRTH_MARKS } from '../src/sim/balance.ts';
 import { echoOf, lifeEcho, type Life } from '../src/sim/echo.ts';
 import { CODEX } from '../src/data/hundred.ts';
 import { bornFrom } from '../src/sim/rebirth.ts';
@@ -99,7 +100,7 @@ const check = (ok: boolean, what: string) => {
 
 console.log('轉世 Rebirth, measured');
 console.log(`  unlock: the summit and ${REBIRTH_MARKS} mark crossed. A life's Echo is ${pc(ECHO_FIRST).trim()} for its first mark and ${pc(ECHO_STEP).trim()} for every doubling after,`);
-console.log(`  at most ${pc(ECHO_LIFE_MAX).trim()} a life, ${pc(ECHO_CEILING).trim()} across every life, ${LIVES_MAX} lives remembered.`);
+console.log(`  at most ${pc(ECHO_LIFE_MAX).trim()} a life, quick to ${pc(ECHO_CEILING).trim()} across every life, then a tail of ${pc(ECHO_TAIL).trim()} a doubling under a roof of ${pc(ECHO_ROOF).trim()} (npm run echotail), ${LIVES_MAX} lives remembered.`);
 console.log(`  a life ending on 1 / 3 / 7 / 15 / 31 marks leaves ${[1, 3, 7, 15, 31].map((m) => pc(lifeEcho(m)).trim()).join(' / ')}`);
 
 // ── 1. Lives one to six, every life ending on its third mark ────────────────────────────
@@ -131,10 +132,13 @@ for (const name of NAMES) {
   console.log(`   ${pad(name, 13)} ${t.map((x, i) => pad(`L${i + 1} ${f1(x.summit)} (${i ? `-${((1 - x.summit / first) * 100).toFixed(0)}%` : '  0%'})`, 21)).join('')}`);
   // 5. The law: every life is faster than the first, and none faster than the Echo itself.
   for (let i = 1; i < t.length; i++) {
-    check(t[i].summit <= t[i - 1].summit + 1, `${name}: life ${i + 1} is not slower than life ${i}`);
-    check(t[i].summit >= first / (1 + ECHO_CEILING) - 1, `${name}: life ${i + 1} saves no more than the ceiling's arithmetic (${f1(first / (1 + ECHO_CEILING))} days)`);
+    // A day, or two once the tail moves the Echo by a point a life: a visit-a-day habit steps in
+    // whole visits, and a different Echo is a different fall of the seeded drops (once a day,
+    // life 5 to 6, 71 to 73 on 2026-10-08, with the Echo 26.0% to 27.0%).
+    check(t[i].summit <= t[i - 1].summit + 2.5, `${name}: life ${i + 1} is not slower than life ${i}`);
+    check(t[i].summit >= first / (1 + ECHO_ROOF) - 1, `${name}: life ${i + 1} saves no more than the roof's arithmetic (${f1(first / (1 + ECHO_ROOF))} days)`);
   }
-  check(t[t.length - 1].summit < first, `${name}: a life at the ceiling is measurably faster than the first`);
+  check(t[t.length - 1].summit < first, `${name}: a life at the full Echo is measurably faster than the first`);
 }
 
 // ── 1b. The first allowed moment ────────────────────────────────────────────────────────

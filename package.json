@@ -46,6 +46,8 @@
     "busy": "tsx tools/busy.ts",
     "worth": "tsx tools/worth.ts",
     "rebirth": "tsx tools/rebirth.ts",
+    "carry": "tsx tools/carry.ts",
+    "echotail": "tsx tools/echotail.ts",
     "ranks": "tsx tools/ranks.mjs",
     "itch": "node tools/itch.mjs",
     "sounds": "node tools/sounds.mjs",

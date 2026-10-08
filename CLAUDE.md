@@ -66,6 +66,13 @@ Each of these cost real time once. They are written down so they cost it once.
   fixtures stay plain; a tool that *reads* a save back must open it (`open` from seal.ts, which
   is why `actions` and `ranks` run under tsx). The seal is a deterrent and a tell, never the
   lock: the lock is the server (`sim/verify.ts`), and an edited save plays on but is not ranked.
+- **The drive's pile is written as rows, not pieces** (`src/sim/pilepack.ts`). A drive of 2000
+  kills can leave up to `DRIVE_PILE` (3000) pieces, and the window lists all of them, so what
+  the game writes to `localStorage` and sends to the server is `[stem, template, rarity,
+  [affix, value, ...], from?]` per piece (about 45% of the object form: 218 KB for 3000).
+  `validate()` reads both forms, so a fixture written as plain pieces still loads, but a tool
+  that reads a save's `pile` *raw* sees arrays: read it through `validate()`. The server keeps
+  the pile in the one `latest` copy and none in the `verified`, `day` and `week` copies.
 - **The app rewrites its save on page unload**, so editing `localStorage` has to be
   done with the app's scripts blocked (`route('**/assets/*.js', r => r.abort())`).
 - **Beast keys are `rat`, `hound`, `frog`**, not `mountain-rat`. Gear templates are
