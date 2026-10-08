@@ -1583,7 +1583,7 @@
         ],
         [
           "轉世 Rebirth",
-          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +5% of the qi you gather for your first mark and +2.5% more for every doubling after, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世). The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
+          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +5% of the qi you gather for your first mark and +2.5% more for every doubling after, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世), and each craft starts with 25% of its experience. The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
         ],
         [
           "擂 The Platform's edge",
@@ -1787,6 +1787,10 @@
         [
           "百煉 Hundredfold lines in your own realm",
           "A first-realm sword no longer asks for a sixth-realm ore. At Mystic and Earth, a line whose usual ore comes from a later realm now asks for the set's own ore (Mortal Iron for the first set, up to Immortal Gold for the ninth). Heaven still asks for the rare ones, so it stays the demanding rank. Pieces you already made are untouched."
+        ],
+        [
+          "業 Crafting comes with you",
+          "rekaris said running all the crafting again sounds exhausting, and he was right. A new life now starts each craft with 25% of the experience it had, about 14 levels fewer than you left, so the workshop is open again within days, not weeks. The pouch, the tools and the made counts still begin again, and qi is untouched: the second life reaches the summit on the same day with or without it (measured, 52.1 days against 52.3)."
         ],
         [
           "▸ Not in",
@@ -2100,7 +2104,7 @@
         ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: the first takes 0.9% off every beast's power, each later one a little less, never under 40% of a beast's power, and never the Dragon. 聚寶 Fortune: +4% luck each on the rare end of the drop table, so Mystic, Earth and Heaven pieces drop more, the last two most. Each pill on the furnace says what all of yours come to now."],
         ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
         ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit. Or begin again: see 轉世 Rebirth below."],
-        ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +5% to every second of qi gathered for its first mark and +2.5% more for every doubling after (1 mark +5%, 3 +7.5%, 7 +10%, 15 or more +12.5%), never more than +25% across every life. The page shows the exact Echo before you confirm. The Echo is qi gathered only: never the tower, the vault or any other lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at the best rank any life reached), who you are, and your chest filters, and the boards keep the best you ever reached. Everything else begins again. It is never forced and staying loses nothing. Measured: taken at the first mark, the next life reaches the summit 3% to 9% sooner; a life at the full Echo, 14% to 20% sooner. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
+        ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +5% to every second of qi gathered for its first mark and +2.5% more for every doubling after (1 mark +5%, 3 +7.5%, 7 +10%, 15 or more +12.5%), never more than +25% across every life. The page shows the exact Echo before you confirm. The Echo is qi gathered only: never the tower, the vault or any other lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at the best rank any life reached), who you are, and your chest filters, and the boards keep the best you ever reached. Each craft starts with 25% of its experience; the pouch, tools and counts begin again, like everything else. It is never forced and staying loses nothing. Measured: 3% to 20% sooner to the summit, by how deep the life went. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
       ]
     },
     {
@@ -4036,6 +4040,15 @@
       "reply": [
         "That is a fair hit, and you are right that I was holding on to a number. So I measured the road you offered: let the tools count at the Dragon and make the Dragon harder, so a crafter keeps today's pace. It does not work fairly. Whatever raises the Dragon enough to keep the crafter where he is makes everyone who does not craft 40% to 85% slower to forty crossings, and a tenth more Dragon on top walls them. The other way, keeping the average pace, puts crafters 35% to 53% sooner and everyone else 26% to 59% later. Neither is the 'not too unfun for someone not using them' you asked for.",
         "What I can do is small: a carried elixir and sigil counting at about 1.5% of their strength at the Dragon. For the active crafter that is 8% to 11% sooner, for the once-a-day and every-hour crafters about 20%, and nobody else moves. It is more a shortcut on the clock than a better fight, because the Dragon is a cliff in power, and the elixir is spent on every win. Making the tools compulsory, as gear is, would mean rebuilding the endgame's numbers as a whole, and I would not do that unless you all ask for it. So: the small share, or leave the Dragon alone and I look for another job for pills elsewhere? Tell me which one and I will do it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "You are right that I skipped the crafting, and I am sorry. It is in the next update: a new life starts each craft with 25% of the experience it had, so the workshop is open again within days. I measured it first: the slowest craft reaches level 75 on day 83 of the second life instead of 99, and the summit comes on the same day (52.1 against 52.3), because crafts feed the climb only through the gear they make. The pouch, the tools and the made counts begin again. I did not build a crafting speed bonus, since this already brings the tools back sooner.",
+        "On the cap, here is the reason, since you asked for one and not a rule. The Echo is also what the server checks a save against: the roof is a number it can hold a record to, and an Echo with no roof is a bound with no roof, so a hand-edited record could not be told from a real one. Within that, I measured the thing you describe, a soft tail that never stops growing but slowly: 1% per doubling past +25% gives +29% after twenty lives of fifteen marks, 2% gives +33%, 3% gives +38%, and the summit moves 1 to 5 days for the active player. I have not built it, because I think it promises 'never enough'. If, knowing that, you and the others would still want it, say so here and it goes on the list.",
         "· 師 Shibaki"
       ]
     }
