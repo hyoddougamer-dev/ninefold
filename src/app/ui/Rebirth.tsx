@@ -135,6 +135,12 @@ export function Rebirth({ state, born, onReborn, onClose }: {
 
       {open && (
         <div className="rb-confirm" data-sure={sure || undefined}>
+          {/* 宿慧 The exact Echo the next life begins with, said before either tap: the same
+              echoAfter the rebirth itself writes, so what is promised is what is carried. */}
+          <p className="rb-gold rb-promise" data-echo={after}>
+            {REBIRTH.promise(life + 1, echoPct(after), echoPct(after - now))}
+            {after - now < leaves - 1e-9 && <> {REBIRTH.promiseCapped(echoPct(ECHO_CEILING))}</>}
+          </p>
           {sure && <p className="rb-warn">{REBIRTH.sureSays}</p>}
           <button className={sure ? 'act' : 'act ghost'} data-tone={sure ? 'cinnabar' : undefined}
             onClick={() => {

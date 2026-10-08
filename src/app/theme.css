@@ -1641,6 +1641,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .rebirthsheet .rb-stay { margin: 0; font-size: 12.5px; line-height: 1.5; }
 .rebirthsheet .rb-confirm { display: grid; gap: 8px; }
 .rebirthsheet .rb-confirm .act, .rebirthsheet > .act { margin: 0; }
+.rebirthsheet .rb-promise { margin: 0; font-size: 13px; line-height: 1.5; }
 .rebirthsheet .rb-warn { margin: 0; font-size: 12.5px; color: var(--cinnabar); line-height: 1.5; }
 .rebirthsheet .rb-title { margin: 0; display: grid; gap: 2px; }
 .rebirthsheet .rb-title i { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
@@ -4126,10 +4127,10 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-opens { display: flex; flex-direction: column; gap: 3px; padding: 10px; font-size: 12px; }
 .hundred .hu-opens > b { font-size: 12.5px; color: var(--gold); }
 .hundred .hu-opens > p { margin: 0 0 4px; font-size: 11px; line-height: 1.4; }
-.hundred .hu-open { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 6px; align-items: baseline;
-                    padding: 3px 6px; border-radius: 6px; background: rgba(20, 17, 13, .6); }
-.hundred .hu-open > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hundred .hu-omat { color: var(--faint); }
+.hundred .hu-open { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; row-gap: 1px; align-items: baseline;
+                    padding: 3px 7px; border-radius: 6px; background: rgba(20, 17, 13, .6); }
+.hundred .hu-open > span { min-width: 0; }
+.hundred .hu-omat { grid-column: 1 / -1; grid-row: 2; font-size: 11px; color: var(--faint); }
 .hundred .hu-open em { font-style: normal; font-size: 11px; color: var(--cinnabar); white-space: nowrap; }
 .hundred .hu-open[data-open] em { color: var(--jade); }
 .hundred .hu-out { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-top: 2px solid var(--hue, var(--gold)); }
@@ -4190,8 +4191,6 @@ nav.tabs .tabkey { display: none; }
   .hundred .hu-row { grid-template-columns: minmax(0, 1fr); }
   .hundred .hu-por { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hundred .hu-places { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hundred .hu-open { grid-template-columns: minmax(0, 1fr) auto; }
-  .hundred .hu-omat { grid-column: 1 / -1; grid-row: 2; }
   .hundred .hu-spirit { grid-template-columns: 72px minmax(0, 1fr); }
   .hundred .hu-sp-art { width: 72px; height: 72px; }
 }

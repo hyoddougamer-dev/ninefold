@@ -1204,7 +1204,7 @@ export const AWAKEN = {
 export const REBIRTH = {
   title: 'Rebirth',
   what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
-  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A step for every doubling of a life’s marks, under one ceiling for every life together.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, under one ceiling for every life together.',
   lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
   /** 修 The quiet card, when a life may end. */
   offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
@@ -1245,6 +1245,9 @@ export const REBIRTH = {
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
   sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
+  /** 宿慧 Above the confirm: the Echo the next life begins with, exactly, and what this life adds. */
+  promise: (life: number, echo: string, adds: string) => `Life ${life} begins with an Echo of ${echo} qi gathered (${adds} from this life).`,
+  promiseCapped: (ceiling: string) => `The ceiling, ${ceiling}, keeps the rest.`,
   cancel: 'Not now',
   pastHead: 'Lives behind you',
   past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,

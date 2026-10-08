@@ -564,7 +564,7 @@ const SYSTEMS: readonly System[] = [
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
   { han: '轉世', name: 'Rebirth', status: 'open',
-    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +2.5% qi gathered for every doubling of the marks it crossed, under +25% for every life together, and a title. Measured by npm run rebirth: a life at the full Echo reaches the summit 14% to 18% sooner. See docs/DRAWER.md.' },
+    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +5% qi gathered for its first mark and +2.5% more for every doubling of the marks after it, under +25% for every life together, and a title. Measured by npm run rebirth: a first rebirth taken at once makes the next life 3% to 9% sooner to the summit, and a life at the full Echo 14% to 20% sooner. See docs/DRAWER.md.' },
 ];
 
 /** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
