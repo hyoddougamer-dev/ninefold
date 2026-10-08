@@ -1563,7 +1563,7 @@
       "fields": [
         [
           "封 The seal and the Breakthrough Pill",
-          "In realms 5 to 8 the gate stays **sealed** after the warden comes out: 1, 1.25, 1.5 and 2 days, whatever your power, shown as a bar on the 修 Cultivate card. Waiting it out always works. A **破境丹 Breakthrough Pill** from Alchemy (levels 40, 45, 51 and 56) breaks the seal at once and takes **at least half** of the wall's whole loosening time with it: half at Common, 70% at Heaven. At the eighth realm that is 6 of its 12 days at Common. A win spends it, a loss keeps it. Measured: whoever uses the workshop climbs within about two days of before, whoever ignores it loses one to seven depending on how they play, and whoever only waits is never walled."
+          "In realms 5 to 8 the gate stays **sealed** after the warden comes out: 1, 1.25, 1.5 and 2 days, whatever your power, shown as a bar on the 修 Cultivate card. Waiting it out always works, and you can speed it: a tap on *Pay qi* fills 10% of the bar (40% at most, at 30 minutes of your own gathering per hour filled), and a pill made for a realm below fills up to 40% more. A **破境丹 Breakthrough Pill** from Alchemy (levels 40, 45, 51 and 56) breaks the seal at once and takes **at least half** of the wall's whole loosening time with it: half at Common, 70% at Heaven. At the eighth realm that is 6 of its 12 days at Common. A win spends it, a loss keeps it. Measured: whoever uses the workshop climbs within about two days of before, whoever ignores it loses one to seven depending on how they play, and whoever only waits is never walled."
         ],
         [
           "百形 Forge any shape",
@@ -1571,7 +1571,7 @@
         ],
         [
           "百煉 Hundredfold sets",
-          "Nine sets, one for every realm, six places each, made only at the forge. You choose the place, the shape and the rank (Mystic, Earth or Heaven). Every other line comes from what you put in the crucible: Cinnabar for 力 power, the realm's herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. One, two or three portions put a line at the bottom, middle or top of the band a drop of that rank rolls in, never above it. A piece takes 20 minutes at the anvil, its ingots, two parts of the realm's 霸 elite and one of its warden. The wait is short on purpose: the cost is in what you gather and in your Forging level, and Heaven also asks five pieces of the set made first."
+          "Nine sets, one for every realm, six places each, made only at the forge. You choose the place, the shape and the rank (Mystic, Earth or Heaven). Every other line comes from what you put in the crucible (at Mystic and Earth, a line whose usual ore comes from a later realm asks for the set's own ore instead): Cinnabar for 力 power, the realm's herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. One, two or three portions put a line at the bottom, middle or top of the band a drop of that rank rolls in, never above it. A piece takes 20 minutes at the anvil, its ingots, two parts of the realm's 霸 elite and one of its warden. The wait is short on purpose: the cost is in what you gather and in your Forging level, and Heaven also asks five pieces of the set made first."
         ],
         [
           "百 Worn together",
@@ -1746,7 +1746,47 @@
         ],
         [
           "▸ Still open",
-          "The wait at the gates (a bar that qi and pills can fill), the Hundredfold lines that ask for a later realm's ore, the Dragon and pills, the Drive's keep-or-melt window and a switch to hold the layer. Each has a thread in {#ideas}, and I will post numbers there before any of them change."
+          "The Dragon and pills, the Path's spare points and what the loadouts should be. Each has a thread in {#ideas}, and I will post numbers there before any of them change."
+        ]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-09",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "壁 Update · A bar for the gates, keep or melt, hold the layer",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-seal.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-drive.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-hold.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-lines.webp?v=1"
+      ],
+      "body": [
+        "Four things you asked for in {#ideas}, nearly all from rekaris and speculaether. Thank you for saying exactly where it felt bad."
+      ],
+      "fields": [
+        [
+          "封 The gate is a bar",
+          "rekaris said a wait you cannot touch feels like maintenance. The seal is now a bar on the warden's card. Time fills it by itself, exactly as before, so waiting still opens every gate in 1 to 2 days. *Pay qi* fills 10% a tap, up to 40%, for 30 minutes of your own gathering per hour filled. A pill made for a realm below fills up to 40% more, eaten from the card. The Breakthrough Pill for the gate's own realm still breaks it at once. Measured: paying qi saves one to two days of fifty, and the workshop is still the faster way through."
+        ],
+        [
+          "圍 Drive: keep or melt",
+          "When a Drive ends, a window lists everything that dropped (the best 60), with the chest's filters. Mark what you keep, melt the rest, or melt the bag as well to make room. If the chest cannot hold what you marked, it will not let you finish. Not answering is fine: *Let the game decide* does what it always did, and after a day the game answers for you. The price is unchanged."
+        ],
+        [
+          "留 Hold the layer",
+          "A switch under the ladder on 修 Cultivate, off by default. On, a full bar waits until you tap *Open layer*, so you can spend the qi on upgrades first. It never gives more qi than not holding. Played carefully it is worth up to about 9% sooner to the ninth realm, which I think is fair for the attention."
+        ],
+        [
+          "百煉 Hundredfold lines in your own realm",
+          "A first-realm sword no longer asks for a sixth-realm ore. At Mystic and Earth, a line whose usual ore comes from a later realm now asks for the set's own ore (Mortal Iron for the first set, up to Immortal Gold for the ninth). Heaven still asks for the rare ones, so it stays the demanding rank. Pieces you already made are untouched."
+        ],
+        [
+          "▸ Not in",
+          "Pills and sigils at the Dragon. I built it at a fraction of their strength and measured it: even 1% of their strength shortens a crafter's endgame by 6 to 17%, so no number is small enough to leave the pace alone. The thread has the table."
         ]
       ],
       "footer": "師 Shibaki"
@@ -1827,7 +1867,7 @@
         "",
         "**Sitting.** With the game open, gathering deepens up to three times as fast after a few minutes, for half an hour (more with 神 the Spirit branch of the Path). The screen shows how long is left. Switch to another tab or app and the sitting goes on to its end, held at the depth it had, and that time is paid when you come back. Coming back after it has ended starts a new one, and so does 坐 Sit again on 修 Cultivate once one has passed. A bonus for being there, never a cost for leaving.",
         "",
-        "**Layers.** Qi fills the bar, and a full bar opens a layer by itself. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
+        "**Layers.** Qi fills the bar, and a full bar opens a layer by itself, unless you switch on *Hold the layer* under the ladder: then it waits for your tap. Nine layers make a realm. At the ninth, the realm's 守 warden comes out. Beat it, and 突破 Break through takes the next realm. Only you press it, never the clock.",
         "",
         "**The trade.** Qi you spend on upgrades stops filling the bar. Choosing between the two is the whole game."
       ],
@@ -1836,7 +1876,7 @@
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
         ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
         ["▸ 瓶頸 The bottleneck", "From the third realm the warden comes to the gate far stronger than the realm: ×4 in the third, up to ×72 in the eighth. Every day it loosens by 30% of what is left, back to where it would stand without the wall (about 3.9 days in the third realm, 12 in the eighth), so waiting alone always opens it. Beast cores, gear, the Path and the workshop's elixirs and sigils get you over it sooner. Its card on 修 Cultivate says how strong it stands and when it is back. The tribulation's Dragon has no bottleneck."],
-        ["▸ 封 The seal", "From the fifth realm to the eighth, the gate stays sealed for a while after the warden comes out, however strong you are: 1 day in the fifth, 1.25 in the sixth, 1.5 in the seventh, 2 in the eighth. Waiting it out always opens it, and the warden's card on 修 Cultivate shows the seal as a bar that fills with time. A 破境丹 Breakthrough Pill from 丹 Alchemy, carried into the gate, breaks the seal at once and half of the days its bottleneck takes to loosen with it (70% at 天 Heaven rank): 6 of the eighth realm's 12 days at Common, on top of the elixir and sigil. A win spends the pill, a loss keeps it."],
+        ["▸ 封 The seal", "From the fifth realm to the eighth, the gate stays sealed for a while after the warden comes out, however strong you are: 1 day in the fifth, 1.25 in the sixth, 1.5 in the seventh, 2 in the eighth. Waiting it out always opens it, and the warden's card on 修 Cultivate shows the seal as a bar that fills with time. *Pay qi* fills 10% of it a tap, 40% at most, and a pill made for a realm below fills up to 40% more, so something is always left to time. A 破境丹 Breakthrough Pill from 丹 Alchemy, carried into the gate, breaks the seal at once and half of the days its bottleneck takes to loosen with it (70% at 天 Heaven rank): 6 of the eighth realm's 12 days at Common, on top of the elixir and sigil. A win spends the pill, a loss keeps it."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
       ]
     },
@@ -1860,7 +1900,7 @@
         ["▸ 序 Order and 職 schools", "A switch over the list orders the beasts by the next mark, the strongest first, or the most material first, and your device remembers it. Only the next-mark order folds a finished beast away; the other two keep it in its place. Under the switch, **Leaves** filters the list by the place and the school of the pieces a beast leaves: 運 Fortune and 戒 Ring shows the beasts that leave a fortune ring. Each piece a beast leaves shows the seal of its school and where it is worn (Laurel · Crown), so you can see who drops a 運 Fortune crown. A beast you know has 自 Auto on its row."],
         ["▸ 緣 The bond", "Every win fills a beast's bond. The tenth leaves a piece for certain, a rank above the best that beast has given you (Mystic at the least; a common beast tops out at Earth, a warden reaches Heaven), and the bond starts again. 運 Fortune Seekers fill it in 9 wins, or 8 at the full."],
         ["▸ 霸 Elites", "From the second realm, the last beast of each realm is an elite, marked on its row. It stands far above the rest of its realm and never gets weaker with time, and it leaves three times the 材 material. It is the hunt for a strong build, never the week's quarry and never a door in 秘境."],
-        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free."],
+        ["▸ 圍 Drive", "Buy many kills of a beast you already know at once, instead of tapping for each. Each kill costs fifteen seconds of your own gathering, and a quarter of that on a beast from an earlier realm. The last row drives as many as your qi pays for, and the result offers 再 Drive again. It's the way to hunt while the game is shut; with the game open, 自 Auto hunts for free. When it ends, a window lists what dropped: mark what to keep and the rest melts like any melt, or let the game decide. Leave it and it waits; the game answers after a day."],
         ["▸ 期 The week's quarry", "One beast each week (never an elite) pays double material, and its first kill that week pays a fixed sum of qi read off your realm: the same for everyone in the realm, whatever you wear. The hunt band shows the sum before you fight. It moves every Monday."]
       ]
     },
@@ -2013,7 +2053,7 @@
         ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank). A third hand holds a 破境丹 Breakthrough Pill, for your realm's gate only: it breaks the seal and half the days of its bottleneck (70% at Heaven)."],
         ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, an array as 30): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."],
-        ["▸ 百煉 Hundredfold sets", "Nine sets, one a realm, made only at the forge (Forging, then Hundredfold). Choose the place, shape and rank; every other line comes from the crucible: Cinnabar for 力 power, the realm's own herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. The main line takes the realm's ingots. A locked line says when it opens, and the crucible lists what opens when. One, two or three portions put a line at the bottom, middle or top of its rank's band. A piece costs its ingots, two parts of the realm's 霸 elite, one of its warden and 20 minutes. Higher ranks ask more Forging, and Heaven asks five pieces of the set made first."],
+        ["▸ 百煉 Hundredfold sets", "Nine sets, one a realm, made only at the forge (Forging, then Hundredfold). Choose the place, shape and rank; every other line comes from the crucible (own-realm ore at Mystic and Earth): Cinnabar for 力 power, the realm's own herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. The main line takes the realm's ingots. A locked line says when it opens. One, two or three portions put a line at the bottom, middle or top of its rank's band. A piece costs its ingots, two parts of the realm's 霸 elite, one of its warden and 20 minutes. Higher ranks ask more Forging; Heaven asks five pieces of the set first."],
         ["▸ 百 Worn together", "Hundredfold pieces of one set worn together add, on top of the set's own bonus: at 2, the elixirs and sigils you carry do 25% more; at 4, each one carried into a warden breaks a day more of its bottleneck; at 6, the set's codex bonus counts twice. Wear all six pieces of one set at 天 Heaven and its 器靈 Artifact Spirit wakes: a light round your portrait and a name under it. Looks only."],
         ["▸ 譜 The codex", "Finish a set once, all six places at any rank, and it leaves a bonus for good, kept through every 轉世 rebirth: Mortal Iron +5% material from kills, Withered Bone elites 8% weaker, Elder Bronze vault gates 8% weaker, Frostsilver the heart demon 5% weaker, Jadewater the workshop 5% faster, Fallen Star +10% bond a win, Thunderscript half a day more of a bottleneck a thing carried, Dragonwake tower floors 5% weaker, Ascendant Husk Platform challengers 5% weaker. Earth counts ×1.5, Heaven ×2, worn whole twice again, up to a cap: elites and vault gates 24%, the demon, floors and challengers 15%. None touches the qi rate."]
       ],
@@ -3904,6 +3944,62 @@
       "reply": [
         "A follow-up now that Rebirth is in, and a change you asked for. The first mark's Echo was +2.5% and is now +5%, then +2.5% for every doubling after, up to +12.5% a life and +25% across every life, so the first rebirth feels like something. The exact Echo shows before you confirm.",
         "The ceiling stays: an uncapped bonus on qi would cut the climb by almost half within a few lives, and nothing without a cap may raise the qi rate. Everything else you wanted is there: your codex, your records and a title for each life are kept. Thank you for pushing on this one.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Arbitrary \"wait 2 days\" limits don't feel good.",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Built, and in the next update. The seal is a bar now: time fills it by itself exactly as before, a tap on Pay qi fills 10% of it (40% at most, at 30 minutes of your own gathering per hour filled), and a pill made for a realm below fills up to 40% more, eaten from the gate's card as often as you have them. The Breakthrough Pill for the gate's own realm still breaks the whole bar at once.",
+        "I measured the price first, and pushed it half and double: paying qi saves one to two days out of fifty and no price lets anyone skip the wait, because at least 60% of the seal is always left for time and pills. The workshop stays the faster way through (46 days to the ninth realm against 48 for the best payer without it), so waiting is the casual way, as you put it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Hundredfold set lines require inaccessible materials",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "Fixed, in the next update. 24 of the 72 lines across the nine sets asked for an ore from a later realm than the set's own. At Mystic and Earth those lines now ask for the set's own ore (Mortal Iron for the first set, up to Immortal Gold for the ninth), so you can craft your own to push. Heaven still asks for the rare ones, so it stays the demanding rank. I tried it at every rank first and it pulled the ninth realm three days earlier than I allow, so Heaven keeps its materials. Pieces you already made are untouched.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Drive improvements",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "The window is built, in the next update. When a Drive ends, a sheet lists what dropped (the best 60), with the chest's own filters, tap to keep, select all, and a switch to melt the bag as well so a full chest never locks you out. It will not let you finish while what you marked does not fit. The unmarked melt like any melt, with qi from the same allowance and the rest as 材 material. You can leave it undecided: it waits, and the game answers the old way after a day.",
+        "I have not touched the price yet, nor Auto. A price that does not move with your gathering is next, and I will post the numbers here first.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Qi spent in layers",
+      "reply": [
+        "Built, in the next update: a switch under the ladder on 修 Cultivate, 留 Hold the layer, off by default so nothing changes for anyone who leaves it. On, a full bar waits until you tap Open layer, so you can spend the qi on upgrades first. It cannot give you more qi than not holding. I measured what a careful player gets from it: up to about 9% sooner to the ninth realm, which seemed fair for the attention it asks. Tell me if it feels like too much or too little.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "tags": [
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "I built what you suggested, pills and sigils counting at the Dragon at a fraction of their strength, and measured it before deciding. The honest result is that I cannot make the fraction small. The Dragon stands only a few per cent above even odds, so a kit that matters moves the clock at once. For a crafter with Alchemy and Sigil Writing at 99, the 40 crossings come sooner by about 6% to 17% (depending on how you play) at 1% of their strength, 17% to 28% at 2%, a third at 10%, and half at full strength. Only about 0.3% keeps every habit under 10%, and a pill worth 0.3% is a pill nobody would feel.",
+        "So for now they stay out of the Dragon, and I would rather say that than ship a number that feels like nothing. There is another road: let them count and set the Dragon heavier for everyone, so the marks come at today's pace. That makes the pills matter and the fight harder for those without them. If you want me to measure that one, say so here.",
         "· 師 Shibaki"
       ]
     }
