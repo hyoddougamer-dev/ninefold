@@ -1583,7 +1583,7 @@
         ],
         [
           "轉世 Rebirth",
-          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +5% of the qi you gather for your first mark and +2.5% more for every doubling after, up to +12.5% a life and +25% for all your lives together, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世), and each craft starts with 25% of its experience. The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a ceiling."
+          "At the summit, once the first Dragon has fallen, you may end a life and begin again in the first realm. It is optional, and nothing is lost by staying. You keep an **Echo**: +5% of the qi you gather for your first mark and +2.5% more for every doubling after, up to +12.5% a life and +25% for the first lives, then a slow tail up to a roof of +35% over forty lives, never on the tower, the vault or any lump sum. You keep the codex, your records and a title for every life (再世 Twice-Born, up to 十世), and each craft starts with 25% of its experience. The rest begins again. Measured: six lives bring the climb to the summit down by 14 to 18%, so it is a new road through the changing nine realms, not a shortcut. The version asked for here, ×2 then ×4 with no ceiling, would have cut that climb by almost half, so it has a roof."
         ],
         [
           "擂 The Platform's edge",
@@ -1742,7 +1742,7 @@
         ],
         [
           "宿 A fairer first Echo",
-          "Your first mark's Echo is +5% (it said +2.5% in the announcement), then +2.5% for every doubling, up to +12.5% a life and +25% across every life. The Rebirth page shows the exact Echo before you confirm."
+          "Your first mark's Echo is +5% (it said +2.5% in the announcement), then +2.5% for every doubling, up to +12.5% a life and +25% across the first lives. Since the next update a slow tail carries on past that, up to a roof of +35%. The Rebirth page shows the exact Echo before you confirm."
         ],
         [
           "▸ Still open",
@@ -1763,7 +1763,8 @@
         "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-drive.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-hold.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-lines.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-dragon.webp?v=1"
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-dragon.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-echo.webp?v=1"
       ],
       "body": [
         "Four things you asked for in {#ideas}, nearly all from rekaris and speculaether. Thank you for saying exactly where it felt bad."
@@ -1792,6 +1793,10 @@
         [
           "業 Crafting comes with you",
           "rekaris said running all the crafting again sounds exhausting, and he was right. A new life now starts each craft with 25% of the experience it had, about 14 levels fewer than you left, so the workshop is open again within days, not weeks. The pouch, the tools and the made counts still begin again, and qi is untouched: the second life reaches the summit on the same day with or without it (measured, 52.1 days against 52.3)."
+        ],
+        [
+          "宿 The Echo has a tail",
+          "Past +25% the Echo keeps growing, slowly: 2% for every doubling of your lives, up to a roof of +35%. The record remembers up to forty lives (it was nine) and the Rebirth page shows the Echo it gives, how far it sits from the roof and what this life adds. Twenty lives of fifteen marks reach +33.5%, and the summit then comes about 5% sooner for the habits that fight. Everything under +25% is exactly as it was. The roof stays because the server needs a number to hold a record to."
         ],
         [
           "丹 Your tools count at the Dragon",
@@ -1883,7 +1888,7 @@
       "fields": [
         ["▸ The four upgrades", "劍訣 Sword Technique: power\n功法 Cultivation Method: qi per second\n吐納 Breathwork: qi per second\n妖丹 Beast Cores: power, bought with 材 material, not qi\n盡 Buy all buys every level you can pay for, cheapest first"],
         ["▸ 滿 Full", "Each realm holds so many levels of each upgrade. 滿 means this one is at its cap for now. Climb to hold more."],
-        ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks you to tap twice."],
+        ["▸ 悟道 Enlightenment cards", "Every breakthrough offers three cards and you keep one. You can change your mind later: *Your Enlightenment cards* (in the menu, or the line on the home screen) trades any card for one of the other two it came with. It costs your own qi, half a day of gathering for the newest card and half a day more for each card further back, and asks twice."],
         ["▸ 瓶頸 The bottleneck", "From the third realm the warden comes to the gate far stronger than the realm: ×4 in the third, up to ×72 in the eighth. Every day it loosens by 30% of what is left, back to where it would stand without the wall (about 3.9 days in the third realm, 12 in the eighth), so waiting alone always opens it. Beast cores, gear, the Path and the workshop's elixirs and sigils get you over it sooner. Its card on 修 Cultivate says how strong it stands and when it is back. The tribulation's Dragon has no bottleneck."],
         ["▸ 封 The seal", "From the fifth realm to the eighth, the gate stays sealed for a while after the warden comes out, however strong you are: 1 day in the fifth, 1.25 in the sixth, 1.5 in the seventh, 2 in the eighth. Waiting it out always opens it, and the warden's card on 修 Cultivate shows the seal as a bar that fills with time. *Pay qi* fills 10% of it a tap, 40% at most, and a pill made for a realm below fills up to 40% more, so something is always left to time. A 破境丹 Breakthrough Pill from 丹 Alchemy, carried into the gate, breaks the seal at once and half of the days its bottleneck takes to loosen with it (70% at 天 Heaven rank): 6 of the eighth realm's 12 days at Common, on top of the elixir and sigil. A win spends the pill, a loss keeps it."],
         ["▸ The nine realms", "練氣 Qi Refining · 築基 Foundation · 金丹 Golden Core · 元嬰 Nascent Soul · 化神 Spirit Severing · 煉虛 Void Refining · 合體 Unity · 大乘 Great Vehicle · 渡劫 Tribulation"]
@@ -2105,7 +2110,7 @@
         ["▸ 爐 The three pills", "煉體 Body: +3% power each, multiplied. 破煞 Bane: the first takes 0.9% off every beast's power, each later one a little less, never under 40% of a beast's power, and never the Dragon. 聚寶 Fortune: +4% luck each on the rare end of the drop table, so Mystic, Earth and Heaven pieces drop more, the last two most. Each pill on the furnace says what all of yours come to now."],
         ["▸ The nine heavens", "真仙 True Immortal · 金仙 Golden Immortal · 太乙 Supreme Unity · 大羅 Grand Veil · 准聖 Quasi-Sage · 聖人 Sage · 道祖 Dao Ancestor · 混元 Primordial Unity · 鴻蒙 The Uncarved"],
         ["▸ And after that", "The Tower has no top, the week turns every Monday for ever, and the 天榜 Heaven List counts thunder marks past the summit. Or begin again: see 轉世 Rebirth below."],
-        ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +5% to every second of qi gathered for its first mark and +2.5% more for every doubling after (1 mark +5%, 3 +7.5%, 7 +10%, 15 or more +12.5%), never more than +25% across every life. The page shows the exact Echo before you confirm. The Echo is qi gathered only: never the tower, the vault or any other lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at the best rank any life reached), who you are, and your chest filters, and the boards keep the best you ever reached. Each craft starts with 25% of its experience; the pouch, tools and counts begin again, like everything else. It is never forced and staying loses nothing. Measured: 3% to 20% sooner to the summit, by how deep the life went. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
+        ["▸ 轉世 Rebirth", "At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. The further it went, the more the next one carries: 宿慧 the Echo, +5% to every second of qi gathered for its first mark and +2.5% more for every doubling after (up to +12.5% a life), +25% across the first lives, then a slow tail to a roof of +35% over forty lives. The page shows the exact Echo before you confirm. It is qi gathered only, never a lump. Each life also carries a title (再世 Twice-Born, 三世 Thrice-Born...), the 譜 codex (every Hundredfold set finished, at the best rank any life reached), who you are, and your chest filters, and the boards keep the best you ever reached. Each craft starts with 25% of its experience; the pouch, tools and counts begin again, like everything else. It is never forced and staying loses nothing. Measured: 3% to 20% sooner to the summit, by how deep the life went. *Rebirth* is on 修 Cultivate at the summit and in the menu, and asks you to tap twice."]
       ]
     },
     {
@@ -4049,7 +4054,7 @@
       "title": "Consider adding reincarnation option  after reaching Golden Immortal",
       "reply": [
         "You are right that I skipped the crafting, and I am sorry. It is in the next update: a new life starts each craft with 25% of the experience it had, so the workshop is open again within days. I measured it first: the slowest craft reaches level 75 on day 83 of the second life instead of 99, and the summit comes on the same day (52.1 against 52.3), because crafts feed the climb only through the gear they make. The pouch, the tools and the made counts begin again. I did not build a crafting speed bonus, since this already brings the tools back sooner.",
-        "On the cap, here is the reason, since you asked for one and not a rule. The Echo is also what the server checks a save against: the roof is a number it can hold a record to, and an Echo with no roof is a bound with no roof, so a hand-edited record could not be told from a real one. Within that, I measured the thing you describe, a soft tail that never stops growing but slowly: 1% per doubling past +25% gives +29% after twenty lives of fifteen marks, 2% gives +33%, 3% gives +38%, and the summit moves 1 to 5 days for the active player. I have not built it, because I think it promises 'never enough'. If, knowing that, you and the others would still want it, say so here and it goes on the list.",
+        "On the cap, you made the case and I have changed my mind part of the way. The roof stays, but it is no longer at +25%. Past it the Echo keeps growing as a slow tail, 2% for every doubling of lives, up to a roof of +35%, and the record now remembers forty lives instead of nine. Twenty lives of fifteen marks reach +33.5% and the roof comes at 33 lives, so there is something to go deeper for. I measured what it moves: at twenty lives the summit comes 5% sooner for the habits that fight, about 1 to 3 days, and 7 days for someone who never fights, with every first life and every Echo under +25% exactly as before. The roof is there because it is the number the server checks your record against, and a record with no roof is one a forged save could not be told from.",
         "· 師 Shibaki"
       ]
     },
