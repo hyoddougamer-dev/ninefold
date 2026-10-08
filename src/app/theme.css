@@ -3480,6 +3480,16 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .crafts .cr-body > b { font-size: 13.5px; font-weight: 600; }
 .crafts .cr-body > b .cjk { color: var(--gold); font-size: 12px; margin-right: 3px; }
 .crafts .cr-meta { font-style: normal; font-size: 11px; color: var(--faint); }
+/* 形 One piece in several looks: a row of small pictures with names, the chosen one gilt. */
+.crafts .cr-looks { display: flex; flex-wrap: wrap; gap: 4px; margin: 1px 0 2px; min-width: 0; }
+.crafts .cr-looks button { display: inline-flex; align-items: center; gap: 3px; font: inherit; font-size: 11px; cursor: pointer;
+                           padding: 1px 7px 1px 3px; border-radius: 7px; color: var(--faint); background: var(--panel2);
+                           border: 1px solid var(--line); max-width: 100%; min-width: 0; }
+.crafts .cr-looks button > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crafts .cr-looks button > span:first-child:not(:last-child) { display: grid; place-items: center; width: 18px; height: 18px; color: var(--gold); }
+.crafts .cr-looks button i { font-style: normal; opacity: .75; }
+.crafts .cr-looks button[aria-checked='true'] { border-color: var(--gold); color: var(--text); background: rgba(212, 175, 86, .12); }
+.crafts .cr-looks button[data-on] { box-shadow: inset 0 -2px 0 var(--jade); }
 .crafts .cr-does { font-style: normal; font-size: 11.5px; color: var(--faint); }
 /* 深 An array's depth, under what it does: the pips gold, the words as quiet as the line above. */
 .crafts .cr-depth { display: block; font-style: normal; font-size: 11.5px; color: var(--faint); }
@@ -4089,6 +4099,14 @@ nav.tabs .tabkey { display: none; }
 .hundred .hu-chips button i { font-style: normal; font-size: 10.5px; opacity: .75; margin-left: 4px; }
 .hundred .hu-chips button[aria-selected='true'] { border-color: var(--gild-strong); background: rgba(212, 175, 86, .1);
                                                   color: var(--text); }
+/* 形 The looks of one piece: a small picture and its name, one of them chosen. */
+.hundred .hu-looks { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.hundred .hu-looks button { display: inline-flex; align-items: center; gap: 5px; font: inherit; font-size: 12px; cursor: pointer;
+                            padding: 3px 9px 3px 4px; border-radius: 8px; color: var(--faint); background: var(--panel2);
+                            border: 1px solid var(--line); max-width: 100%; }
+.hundred .hu-looks button[aria-checked='true'] { border-color: var(--gold); color: var(--text); background: rgba(212, 175, 86, .12); }
+.hundred .hu-lookic { width: 22px; height: 22px; display: grid; place-items: center; color: var(--gold); }
+.hundred .hu-looknote { font-size: 11px; }
 .hundred .hu-lines { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
 .hundred .hu-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
 .hundred .hu-what { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }

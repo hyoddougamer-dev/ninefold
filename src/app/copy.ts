@@ -2383,6 +2383,8 @@ export const CRAFTS = {
   /** 百形 The forge's list by place on the body, and the shapes a warden teaches. */
   slots: 'Which place on the body',
   slotAll: 'All',
+  /** 形 The switcher on a piece that comes in several looks with the same line. */
+  looks: 'Which look the piece takes',
   realmShort: (n: number) => `Realm ${n}`,
   anyShapeLocked: (warden: string, realm: number) =>
     `百形 Beat the ${warden} and the forge makes every shape of realm ${realm}, all fifty-four, not only the ones its beasts teach.`,
@@ -2502,6 +2504,9 @@ export const HUNDRED = {
   realm: 'Set',
   place: 'Place',
   shape: 'Shape',
+  /** 形 Shapes with the same main line are one piece: the look is the only difference. */
+  look: 'Look',
+  lookNote: 'Same piece and the same lines in every look: only the name and the picture change.',
   rank: 'Rank',
   main: 'Main line',
   mainFrom: (ingots: string) => `from ${ingots}`,

@@ -3,7 +3,7 @@ import {
   HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, SKILL_BY_KEY, hundredElite, hundredLevel, metalKey, type HundredRank,
 } from '../../data/crafts.ts';
 import {
-  AFFIX_INFO, GEAR, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type Slot,
+  AFFIX_INFO, GEAR, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type GearTemplate, type Slot,
 } from '../../data/gear.ts';
 import { SCHOOL_INFO, schoolOfAxis } from '../../data/schools.ts';
 import { wardenOf } from '../../data/bestiary.ts';
@@ -21,6 +21,7 @@ import { swing } from '../../sim/inspect.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { gearTile } from '../../art/gear.ts';
+import { icon } from '../../art/icon.ts';
 import { spiritRim } from '../../art/spirit.ts';
 import { Svg } from './Svg.tsx';
 import { Term } from './Term.tsx';
@@ -59,6 +60,13 @@ export function linesByOpening(realm: number): { affix: Affix; key: string; leve
       return { affix, key, level: g?.level ?? 0, realm: g?.realm ?? 0 };
     })
     .sort((a, b) => a.realm - b.realm || a.level - b.level);
+}
+
+/** 形 A place's shapes, gathered by the line they lead with, in the order the place lists them. */
+export function linesOfShapes(realm: number, slot: Slot): [Affix, GearTemplate[]][] {
+  const by = new Map<Affix, GearTemplate[]>();
+  for (const g of shapesOf(realm, slot)) by.set(g.affix, [...(by.get(g.affix) ?? []), g]);
+  return [...by];
 }
 
 /** 爐 A first order for a place: the shape that leads with power, every line it can have, two portions. */
@@ -139,6 +147,8 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
   const line = (i: number, next: Partial<{ affix: Affix; n: Portions }>) =>
     setO({ ...o, lines: o.lines.map((l, j) => (j === i ? { ...l, ...next } : l)) });
   const used = new Set(o.lines.map((l) => l.affix));
+  const looks = shapesOf(realm, slot).filter((g) => g.affix === tpl.affix);
+  const short = (g: GearTemplate) => g.name.replace(`${set.word} `, '');
 
   return (
     <div className="hu-crucible">
@@ -165,18 +175,35 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
       </div>
       <div className="hu-field">
         <span className="hu-label">{HUNDRED.shape}</span>
+        {/* 形 Shapes that lead with the same line are one piece in different looks (rekaris,
+            2026-10-07): one chip a line, naming every look, and the looks below it. */}
         <div className="hu-chips" role="tablist">
-          {shapesOf(realm, slot).map((g) => {
-            const sc = SCHOOL_INFO[schoolOfAxis(g.affix)];
+          {linesOfShapes(realm, slot).map(([a, gs]) => {
+            const sc = SCHOOL_INFO[schoolOfAxis(a)];
+            const on = a === tpl.affix;
             return (
-              <button key={g.key} role="tab" aria-selected={g.key === o.template} onClick={() => go(realm, slot, o.rarity, g.key)}>
-                <span className="cjk" style={{ color: sc.colour }}>{sc.seal}</span> {g.name.replace(`${set.word} `, '')}
-                <i>{AFFIX_INFO[g.affix].han} {AFFIX_INFO[g.affix].label}</i>
+              <button key={a} role="tab" aria-selected={on} onClick={() => go(realm, slot, o.rarity, on ? o.template : gs[0].key)}>
+                <span className="cjk" style={{ color: sc.colour }}>{sc.seal}</span> {gs.map(short).join(' · ')}
+                <i>{AFFIX_INFO[a].han} {AFFIX_INFO[a].label}</i>
               </button>
             );
           })}
         </div>
       </div>
+      {looks.length > 1 && (
+        <div className="hu-field">
+          <span className="hu-label">{HUNDRED.look}</span>
+          <div className="hu-looks" role="radiogroup" aria-label={HUNDRED.look}>
+            {looks.map((g) => (
+              // The same line, so the same lines can follow: only the template changes.
+              <button key={g.key} role="radio" aria-checked={g.key === o.template} onClick={() => setO({ ...o, template: g.key })}>
+                <Svg className="hu-lookic" html={icon(g.icon, 20)} /> <span>{short(g)}</span>
+              </button>
+            ))}
+          </div>
+          <span className="faint hu-looknote">{HUNDRED.lookNote}</span>
+        </div>
+      )}
       <div className="hu-field">
         <span className="hu-label">{HUNDRED.rank}</span>
         <div className="hu-chips" role="tablist">
