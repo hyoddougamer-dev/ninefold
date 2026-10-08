@@ -2512,28 +2512,26 @@ export const CRAFT_KIT = {
  * even-odds reading (evenDragon) stays bare, so a kit is a head start at every crossing and
  * never ratchets the anchor, and the server reads the same kit (bestKit 'dragon').
  *
- * 0 BECAUSE NO SHARE THAT MATTERS KEEPS THE ENDGAME. Measured with tools/endgame.ts
- * (kitClock: the cultivator made a crafter at the top, Alchemy and Sigil Writing at 99 and
- * the best of every elixir and sigil in the pouch at Heaven rank, played twice, once with
- * nothing reaching the Dragon), days to forty crossings and how much sooner the kit makes
- * them. The Dragon is footed 1.05 times above the even-odds one and has to be out-grown by
- * a few per cent of power a crossing, so the whole endgame is a few pills a crossing wide,
- * and a kit is worth those pills at once:
+ * 1 BECAUSE THE TOOLS SHOULD COUNT (Bruno, 2026-10-08, on rekaris's case: building tools
+ * only to be told they cannot be used is not fun, and no Dragon re-set keeps the others
+ * whole). Measured with tools/endgame.ts (kitClock: the cultivator made a crafter at the
+ * top, Alchemy and Sigil Writing at 99 and the best of every elixir and sigil in the pouch
+ * at Heaven rank, played twice), days to forty crossings and how much sooner the kit makes
+ * them, by the share of the kit that counts:
  *
  *     share     0     .003   .005   .01    .015   .02    .03    .1     .3     1
  *     active    231   223    218    217    206    190    172    153    128    118
  *     sooner    -     3.5%   5.6%   6.1%   10.8%  17.7%  25.5%  34%    45%    49%
  *
- * Habit by habit the same curve starts at a different place: the fastest to move are the
- * once-a-day crafter (7.7% sooner at .003, 14.6% at .005) and the every-hour one (7.5% at
- * .005, 17% at .01); a share of .003 keeps every habit under 12% and .005 does not. A share
- * of .003 is a strike 0.2% harder, which nobody feels in a fight, and an elixir that is
- * spent on every win for it is a worse trade than keeping it for the wardens. So no number
- * is shipped: the machinery is built, tested and measured, and the Dragon takes none until
- * Bruno chooses what a crossing should cost a crafter. A cultivator who never opened the
- * workshop reads 0 at every share.
+ * At 1 the crafter is on the floor the thunder pool sets (about three days a mark, 118 days
+ * to forty, 200 to eighty instead of 503), and nobody else moves: a cultivator who never
+ * opened the workshop carries nothing and reads 0 at every share. The Dragon itself is left
+ * as it was, because every re-set that held the crafter where he was made the others 40% to
+ * 85% slower (docs/DRAWER.md, 丹 Elixirs and sigils at the Dragon). The wall past eighty
+ * crossings is the same for everyone; the crafter only reaches it sooner. Set it lower to
+ * give the tools less of a say, and nothing else has to change.
  */
-export const DRAGON_KIT_SHARE = 0;
+export const DRAGON_KIT_SHARE = 1;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
 export const CRAFT_SEEK_MAX = 20;
