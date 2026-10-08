@@ -11,7 +11,7 @@
  * earn by claiming one: it can only claim lives, and validate() and the ranked server
  * (verify.ts) bound those.
  */
-import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
+import { ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_ROOF, ECHO_STEP, ECHO_TAIL, LIVES_MAX, REBIRTH_MARKS } from './balance.ts';
 
 /** 世 A life that ended: the marks it crossed and the instant it ended, in seconds. */
 export interface Life {
@@ -33,10 +33,28 @@ export function lifeEcho(marks: number): number {
   return Math.min(ECHO_LIFE_MAX, ECHO_FIRST + ECHO_STEP * Math.log2((1 + Math.floor(marks)) / 2));
 }
 
-/** 宿慧 Every life together, under ECHO_CEILING, which nothing passes. */
+/** 宿慧 What the lives add up to before any ceiling: the sum of lifeEcho over the record. */
+export function echoSum(lives: readonly Life[] | undefined): number {
+  return lives ? lives.reduce((n, l) => n + lifeEcho(l.marks), 0) : 0;
+}
+
+/**
+ * 宿慧 The Echo a sum of lives gives. Exactly the sum up to ECHO_CEILING, so the first lives
+ * are what they always were. Past it, the excess counted in full lives gives ECHO_TAIL for
+ * every doubling (a logarithm, so it never quite stops), and ECHO_ROOF is the hard roof
+ * over all of it, which nothing passes however long the record.
+ */
+export function echoFromSum(sum: number): number {
+  if (!(sum > 0)) return 0;
+  const base = Math.min(ECHO_CEILING, sum);
+  const tail = sum > ECHO_CEILING ? ECHO_TAIL * Math.log2(1 + (sum - ECHO_CEILING) / ECHO_LIFE_MAX) : 0;
+  return Math.min(ECHO_ROOF, base + tail);
+}
+
+/** 宿慧 Every life together, under ECHO_ROOF, which nothing passes. */
 export function echoOf(lives: readonly Life[] | undefined): number {
   if (!lives || lives.length === 0) return 0;
-  return Math.min(ECHO_CEILING, lives.reduce((n, l) => n + lifeEcho(l.marks), 0));
+  return echoFromSum(echoSum(lives));
 }
 
 /** 宿慧 The Echo as the multiplier on what is gathered: 1 for a first life. */

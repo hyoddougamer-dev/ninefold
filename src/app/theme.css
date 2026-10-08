@@ -1639,6 +1639,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .rebirthsheet .rb-meter span { position: absolute; inset: 0; transform-origin: left center; border-radius: 99px; }
 .rebirthsheet .rb-now { background: var(--rb); }
 .rebirthsheet .rb-after { background: rgba(212,175,86,.55); }
+/* 宿慧 Where the quick part of the Echo ends (ECHO_CEILING) on a meter that runs to the roof. */
+.rebirthsheet .rb-meter .rb-tick { inset: 0 auto 0 auto; width: 2px; border-radius: 0; background: var(--faint); opacity: .85; }
+.rebirthsheet .rb-standing { margin: 2px 0 6px; font-size: 12.5px; }
 .rebirthsheet .rb-past { margin: 8px 0 0; padding: 8px 0 0; list-style: none; border-top: 1px solid var(--line);
                          display: grid; gap: 3px; font-size: 12px; color: var(--faint); }
 .rebirthsheet .rb-two { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }

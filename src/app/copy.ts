@@ -1296,17 +1296,17 @@ export const AWAKEN = {
 export const REBIRTH = {
   title: 'Rebirth',
   what: 'From the summit, with the first Dragon crossed, a life may end and begin again in the first realm. How far it went decides what the next life carries. Never forced: staying loses nothing.',
-  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, under one ceiling for every life together.',
+  echoWhat: 'What the lives before this one leave: a share added to every second of qi gathered, and nothing else. A life’s first mark leaves the most, and every doubling of its marks a step more, quick at first, then slowly, under one roof for every life together.',
   lifeWhat: 'One climb from the first realm to wherever it ended. The lives behind this one are counted, and each gives a title.',
   /** 修 The quiet card, when a life may end. */
   offer: (echo: string) => `A new life is open to you. It would carry an Echo of ${echo} qi gathered.`,
-  offerFull: 'A new life is open to you. Your Echo is already at its ceiling.',
+  offerFull: 'A new life is open to you. Your Echo is already at its roof.',
   /** 修 The Echo beside the standing rate. */
   chip: (echo: string) => `Echo ${echo}`,
   lifeDay: (life: number, day: number) => `life ${life} · day ${day}`,
   blurb: 'A life may end at the summit once the first Dragon has fallen, and begin again in the first realm. The further it went, the more the next one carries.',
   locked: (marks: number) => `Opens at the summit, once ${marks === 1 ? 'the first Dragon has' : `${marks} Dragons have`} fallen.`,
-  full: 'Nine lives are remembered, and no more.',
+  full: (n: number) => `${n} lives are remembered, and no more.`,
   nowHead: 'This life',
   lifeN: (n: number) => `Life ${n}`,
   depth: (marks: number) => `${marks} ${marks === 1 ? 'mark' : 'marks'} crossed`,
@@ -1317,13 +1317,21 @@ export const REBIRTH = {
   leaves: (echo: string) => `${echo} of every second of qi gathered`,
   nextStep: (marks: number, echo: string) => `At ${marks} marks it would leave ${echo}: a step for every doubling.`,
   lifeTop: 'A life leaves no more than this.',
+  /** 尾 A life past the ceiling: what it is worth, and why it adds less. */
+  leavesTail: (worth: string, ceiling: string) => `The life itself is worth ${worth}, but past ${ceiling} the Echo grows by a small step for every doubling of the lives, so this is what it adds.`,
   echoHead: 'Your Echo',
-  echoNow: (now: string, ceiling: string) => `${now} now, of ${ceiling} that every life together can give`,
+  echoNow: (now: string, roof: string) => `${now} now, of at most ${roof} that every life together can give`,
   echoAfter: (after: string) => `${after} after this life`,
-  echoCapped: 'At its ceiling. A new life still gives a title and a fresh climb.',
+  /** 宿慧 Past the quick part: what the tail is, said once the record has reached it. */
+  echoTail: (ceiling: string, roof: string) => `Past ${ceiling} each life adds less: every doubling of the lives adds the same small step, and ${roof} is the most there will ever be.`,
+  echoCapped: 'At its roof. A new life still gives a title and a fresh climb.',
+  /** 世 Beside the title once a life is past the tenth. */
+  lifeCount: (n: number) => `life ${n}`,
+  /** 世 The record is long: the page lists the latest lives and counts the rest. */
+  pastMore: (n: number) => `${n} earlier ${n === 1 ? 'life' : 'lives'} not listed`,
   carriesHead: 'Carries into the new life',
   carries: [
-    ['宿慧', 'The Echo', 'qi gathered, under the ceiling'],
+    ['宿慧', 'The Echo', 'qi gathered, under its roof'],
     ['世', 'A title', 'one for every life lived'],
     ['榜', 'Your records', 'the boards keep the best you reached'],
     ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
@@ -1348,7 +1356,9 @@ export const REBIRTH = {
   sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
   /** 宿慧 Above the confirm: the Echo the next life begins with, exactly, and what this life adds. */
   promise: (life: number, echo: string, adds: string) => `Life ${life} begins with an Echo of ${echo} qi gathered (${adds} from this life).`,
-  promiseCapped: (ceiling: string) => `The ceiling, ${ceiling}, keeps the rest.`,
+  promiseCapped: (roof: string) => `The roof, ${roof}, keeps the rest.`,
+  /** 宿慧 Before and after, said in one line above the confirm: where the Echo stands and where it goes. */
+  promiseFrom: (now: string, after: string, roof: string) => `Echo ${now} now, ${after} after this life, of at most ${roof}.`,
   cancel: 'Not now',
   pastHead: 'Lives behind you',
   past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,

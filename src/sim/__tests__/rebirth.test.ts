@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { arrivalOf, playEndgame } from '../../../tools/endgame.ts';
 import {
-  ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_STEP, LAYERS, LIVES_MAX, REBIRTH_MARKS,
+  ECHO_CEILING, ECHO_FIRST, ECHO_LIFE_MAX, ECHO_ROOF, ECHO_STEP, ECHO_TAIL, LAYERS, LIVES_MAX, REBIRTH_MARKS,
 } from '../balance.ts';
-import { MARKS_LIMIT, echoFactor, echoOf, lifeEcho, livesExtend, progressOf, validLives, type Life } from '../echo.ts';
+import { MARKS_LIMIT, echoFactor, echoFromSum, echoOf, echoSum, lifeEcho, livesExtend, progressOf, validLives, type Life } from '../echo.ts';
 import {
   bornFrom, canReincarnate, echoAfter, lifeOf, lifeStart, lifeTitle, reincarnate,
 } from '../rebirth.ts';
@@ -17,11 +17,12 @@ import { sync, type Profile, type Saved, type Standing, type Store } from '../..
 /**
  * 轉世 Rebirth, held to what it promises.
  *
- *   - the Echo grows with how far a life went, slower each step, and never past the ceiling;
+ *   - the Echo grows with how far a life went, slower each step, quick to the ceiling, a soft
+ *     tail past it, and never past the roof;
  *   - a new life is a clean one, and only what is meant to carry carries;
  *   - the record is input, capped like every other field of a save;
  *   - a reborn cultivator is never held against by the server, and a forged record buys
- *     at most the ceiling and waits for the time it claims.
+ *     at most the roof and waits for the time it claims.
  */
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -48,16 +49,62 @@ describe('宿慧 the Echo', () => {
     expect(lifeEcho(MARKS_LIMIT)).toBe(ECHO_LIFE_MAX);
   });
 
-  it('never passes the ceiling, however many lives and however deep', () => {
+  it('is exactly the sum of the lives up to the ceiling: the first lives never change', () => {
+    // The Echo before the tail existed: min(ceiling, sum). Nine lives of any marks up to the
+    // point the sum reaches the ceiling must read the same to the last bit.
+    for (const m of [1, 2, 3, 5, 7, 15, 40]) {
+      for (let n = 1; n <= LIVES_MAX; n++) {
+        const sum = n * lifeEcho(m);
+        if (sum > ECHO_CEILING) break;
+        expect(echoOf(Array.from({ length: n }, (_, i) => ({ marks: m, at: T0 + i })))).toBe(sum);
+      }
+    }
+    expect(echoOf(Array.from({ length: 2 }, (_, i) => ({ marks: 15, at: T0 + i })))).toBe(ECHO_CEILING);
+    expect(echoFromSum(0)).toBe(0);
+    expect(echoFromSum(0.1)).toBe(0.1);
+  });
+
+  it('grows as a slow logarithmic tail past the ceiling: 9 lives of 15 marks read +31.0%', () => {
+    const lives = (n: number, marks = 15): Life[] => Array.from({ length: n }, (_, i) => ({ marks, at: T0 + i }));
+    expect(echoSum(lives(9))).toBeCloseTo(9 * ECHO_LIFE_MAX);
+    expect(echoOf(lives(9))).toBeCloseTo(ECHO_CEILING + ECHO_TAIL * Math.log2(1 + (9 * ECHO_LIFE_MAX - ECHO_CEILING) / ECHO_LIFE_MAX), 12);
+    expect(echoOf(lives(9))).toBeCloseTo(0.31, 3);
+    expect((echoOf(lives(9)) * 100).toFixed(1)).toBe('31.0');
+    // 20 lives of 15 marks: about +33%, and the tail is concave: each life adds less.
+    expect(echoOf(lives(20))).toBeGreaterThan(0.33);
+    expect(echoOf(lives(20))).toBeLessThan(0.335);
+    let last = echoOf(lives(2));
+    let step = Infinity;
+    for (let n = 3; n <= LIVES_MAX; n++) {
+      const e = echoOf(lives(n));
+      expect(e).toBeGreaterThanOrEqual(last);
+      expect(e - last).toBeLessThanOrEqual(step + 1e-12);
+      step = e - last;
+      last = e;
+    }
+  });
+
+  it('never passes the roof, however many lives and however deep', () => {
     const most: Life[] = Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: MARKS_LIMIT, at: T0 + i }));
-    expect(echoOf(most)).toBe(ECHO_CEILING);
-    expect(echoFactor(most)).toBe(1 + ECHO_CEILING);
+    // The roof is exactly ECHO_ROOF, and 40 lives of any depth that matters reach it.
+    expect(ECHO_ROOF).toBe(0.35);
+    expect(echoOf(most)).toBe(ECHO_ROOF);
+    expect(echoFactor(most)).toBe(1 + ECHO_ROOF);
+    // 33 lives of 15 marks are where the form meets the roof (log2(32) = 5 doublings of 2%),
+    // and so 32 do not.
+    expect(echoOf(Array.from({ length: 32 }, (_, i) => ({ marks: 15, at: T0 + i })))).toBeLessThan(ECHO_ROOF);
+    expect(echoOf(Array.from({ length: 33 }, (_, i) => ({ marks: 15, at: T0 + i })))).toBeCloseTo(ECHO_ROOF, 12);
+    expect(echoOf(Array.from({ length: 34 }, (_, i) => ({ marks: 15, at: T0 + i })))).toBe(ECHO_ROOF);
+    // Not even a record longer than any save can hold, nor a sum no one could earn.
+    expect(echoOf(Array.from({ length: 5000 }, (_, i) => ({ marks: MARKS_LIMIT, at: T0 + i })))).toBe(ECHO_ROOF);
+    expect(echoFromSum(1e9)).toBe(ECHO_ROOF);
     expect(echoOf([])).toBe(0);
     expect(echoOf(undefined)).toBe(0);
-    // The fewest lives that reach it, ending each on the first mark: ECHO_CEILING / ECHO_FIRST.
+    // Ending each life on the first mark reaches the ceiling in five lives, and the roof late.
     const rushed = (n: number): Life[] => Array.from({ length: n }, (_, i) => ({ marks: REBIRTH_MARKS, at: T0 + i }));
     expect(echoOf(rushed(Math.ceil(ECHO_CEILING / ECHO_FIRST)))).toBeCloseTo(ECHO_CEILING);
-    expect(echoOf(rushed(LIVES_MAX))).toBe(ECHO_CEILING);
+    expect(echoOf(rushed(LIVES_MAX))).toBeLessThan(ECHO_ROOF);
+    expect(echoOf(rushed(LIVES_MAX))).toBeGreaterThan(ECHO_CEILING);
   });
 
   it('raises what is gathered and nothing priced in the rate', () => {
@@ -122,7 +169,7 @@ describe('轉世 a new life', () => {
     expect(importSave(exportSave(s), s.at + 60).state?.lives).toEqual(s.lives);
   });
 
-  it('stops at the ninth life remembered', () => {
+  it('stops at the last life remembered', () => {
     const lives = Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: 3, at: T0 + i }));
     expect(canReincarnate({ ...summit(3), lives })).toBe(false);
     expect(canReincarnate({ ...summit(3), lives: lives.slice(1) })).toBe(true);
@@ -137,6 +184,40 @@ describe('世 the record is input', () => {
     expect(validLives([{ marks: 0, at: T0 }, { marks: -4 }, { marks: 'x' }, null, 7], T0, now)).toEqual([]);
     expect(validLives([{ marks: 1e9, at: T0 + DAY }], T0, now)).toEqual([{ marks: MARKS_LIMIT, at: T0 + DAY }]);
     expect(validLives('nope', T0, now)).toEqual([]);
+  });
+
+  it('reads a record of nine lives, as the game wrote it before the tail, unchanged', () => {
+    const nine = Array.from({ length: 9 }, (_, i) => ({ marks: 3 + i, at: T0 + (i + 1) * DAY }));
+    const back = validate({ ...newState(T0), at: now, lives: nine }, now);
+    expect(back.lives).toEqual(nine);
+    // Nine such lives used to read the ceiling and now read the ceiling and the tail on it;
+    // the first lives (a sum under the ceiling) read exactly what they always did.
+    expect(echoOf(nine)).toBeGreaterThan(ECHO_CEILING);
+    expect(echoOf(nine)).toBeLessThan(ECHO_ROOF);
+    expect(echoOf(nine.slice(0, 3))).toBe(nine.slice(0, 3).reduce((n, l) => n + lifeEcho(l.marks), 0));
+  });
+
+  it('truncates a record longer than LIVES_MAX when a save is read, never when it is written', () => {
+    const long = Array.from({ length: 200 }, (_, i) => ({ marks: 15, at: T0 + (i + 1) * 60 }));
+    const back = validate({ ...newState(T0), at: now, lives: long }, now);
+    expect(back.lives).toHaveLength(LIVES_MAX);
+    expect(back.lives).toEqual(long.slice(0, LIVES_MAX));
+    expect(echoOf(back.lives)).toBe(ECHO_ROOF);
+  });
+
+  it('keeps 十世 as the last title, with the life counted beside it', () => {
+    const lives = (n: number) => Array.from({ length: n }, (_, i) => ({ marks: 3, at: T0 + i }));
+    const at = (n: number) => lifeTitle({ ...newState(T0), lives: lives(n) });
+    expect(at(0)).toBeNull();
+    expect(at(9)).toMatchObject({ han: '十世', life: 10 });
+    expect(at(25)).toMatchObject({ han: '十世', name: 'Ten Times Born', life: 26 });
+    expect(at(LIVES_MAX)?.han).toBe('十世');
+  });
+
+  it('orders saves by lives at any length the record holds', () => {
+    const a = { lives: Array.from({ length: LIVES_MAX - 1 }, (_, i) => ({ marks: 3, at: T0 + i })), realm: 9, layer: 8, tribulation: MARKS_LIMIT };
+    const b = { lives: Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: 3, at: T0 + i })), realm: 1, layer: 0, tribulation: 0 };
+    expect(progressOf(b)).toBeGreaterThan(progressOf(a));
   });
 
   it('moves an instant out of place into place rather than dropping the life', () => {
@@ -274,12 +355,51 @@ describe('驗 a reborn cultivator on the ranked server', () => {
     expect(back.strike).toBe(false);
   });
 
-  it('a claimed Echo raises the bound by the ceiling and no more', () => {
+  it('a claimed Echo raises the bound by the roof and no more', () => {
     const s = shots[shots.length - 1].s;
     const most = { ...s, lives: Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: MARKS_LIMIT, at: bornAt + i })) };
-    expect(gathering(most) / gathering({ ...s, lives: [] })).toBeCloseTo(1 + ECHO_CEILING, 9);
+    expect(gathering(most) / gathering({ ...s, lives: [] })).toBeCloseTo(1 + ECHO_ROOF, 9);
+    // 偽 And a record edited by hand to 200 lives, or to 99999 marks a life, is cut to what a
+    // save can hold before anything reads it: the same roof, never a higher one.
+    const hand = validate({ ...s, lives: Array.from({ length: 200 }, (_, i) => ({ marks: 99999, at: bornAt + i })) }, s.at);
+    expect(hand.lives).toHaveLength(LIVES_MAX);
+    expect(hand.lives.every((l) => l.marks === MARKS_LIMIT)).toBe(true);
+    expect(gathering(hand) / gathering({ ...hand, lives: [] })).toBeCloseTo(1 + ECHO_ROOF, 9);
     expect(bornFrom(s, most.lives, s.at).lives).toBe(most.lives);
     expect(layersOpened(s)).toBeLessThan(LAYERS);
+  });
+
+  it('an honest record of 40 lives of 15 marks is verified, never struck, at the roof', () => {
+    // 長 The longest record the save holds, each life at the deepest a life gives: the roof is
+    // the Echo it earns, and the server's bound (echoFactor of the record) is that very number.
+    const lives = Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: 15, at: old.at - LIVES_MAX + i }));
+    expect(echoOf(lives)).toBe(ECHO_ROOF);
+    const start = validate(bornFrom(old, lives, bornAt), bornAt);
+    expect(start.lives).toEqual(lives);
+    const long: { at: number; s: State }[] = [];
+    play(h, 30, (_d, st) => long.push({ at: st.at, s: structuredClone(st) }), start);
+    expect(long.length).toBeGreaterThan(50);
+    let base = { at: start.at, s: start };
+    const held: string[] = [];
+    let accepted = 0;
+    for (const shot of long) {
+      const st = validate(shot.s, shot.at);
+      const v = verify(base.s, st, shot.at - base.at);
+      if (v.strike || v.suspect) held.push(`${((shot.at - bornAt) / DAY).toFixed(2)}: ${v.why.join(',')} ${v.pace.toFixed(2)}`);
+      if (v.ok) { base = { at: shot.at, s: st }; accepted++; }
+    }
+    expect(held.slice(0, 5)).toEqual([]);
+    expect(accepted).toBeGreaterThan(long.length / 2);
+  });
+
+  it('a first life that forges 40 lives of 300 marks waits for the marks, and is never struck', () => {
+    const early = validate(first.state, first.state.at);
+    const lives = Array.from({ length: LIVES_MAX }, (_, i) => ({ marks: MARKS_LIMIT, at: early.at + 60 + i }));
+    const forged = { ...early, at: early.at + 3600, lives };
+    const v = verify(early, forged, 3600);
+    expect(v.ok).toBe(false);
+    expect(v.why).toContain('too-fast');
+    expect(v.strike).toBe(false);
   });
 });
 
