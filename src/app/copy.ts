@@ -2647,7 +2647,7 @@ export const HUNDRED = {
   unreached: (craft: string, level: number, realm: number) => `opens at ${craft} level ${level}, realm ${realm}`,
   /** 開 The crucible's plan: every line of the chosen set, in the order the lines open. */
   opensHead: (set: string) => `What opens when: ${set}`,
-  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. The herb and the elite part are this set\'s own.',
+  opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. Mystic and Earth never ask for a material from a later realm than the set\'s own: where a line\'s usual material is later, this set\'s own ore stands in. Heaven asks for the usual one. The herb and the elite part are this set\'s own.',
   opensAt: (craft: string, level: number, realm: number) => `${craft} Lv ${level} · realm ${realm}`,
   opensOpen: 'open',
   levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,

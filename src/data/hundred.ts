@@ -8,17 +8,16 @@
  * with pictures on that day (tools/forge-sets-data.ts drew them from these same tables).
  */
 import type { Affix } from './gear.ts';
-import { TIER_HERB, hundredElite, partKey } from './crafts.ts';
+import { ITEM_BY_KEY, TIER_HERB, hundredElite, partKey, type HundredRank } from './crafts.ts';
 
 /**
- * 爐 The crucible: which material gives which line. Every line on a Hundredfold piece but
- * the main one is a material chosen here; the main line is the realm's own ingots.
- * Cinnabar for power, the realm's own herb for qi, starfall for rarer gear, Immortal Gold
- * for drop chance, the elite's parts for beasts weaker, jade for fusion, thunder ore for
- * the arts and Spirit Stone for the chest. A material from a later realm opens its line
- * when the veins reach it.
+ * 爐 What each line would ask for if the set's realm did not matter: cinnabar for power, the
+ * realm's own herb for qi, starfall for rarer gear, Immortal Gold for drop chance, the elite's
+ * parts for beasts weaker, jade for fusion, thunder ore for the arts and Spirit Stone for the
+ * chest. Heaven still asks for these; Mystic and Earth ask for each only from the realm it
+ * belongs to (CRUCIBLE below).
  */
-export const CRUCIBLE: Readonly<Record<Affix, (realm: number) => string>> = {
+export const CRUCIBLE_NATURAL: Readonly<Record<Affix, (realm: number) => string>> = {
   power: () => 'cinnabar',
   rate: (realm) => TIER_HERB[Math.max(1, Math.min(9, realm)) - 1],
   luck: () => 'starfall',
@@ -28,6 +27,29 @@ export const CRUCIBLE: Readonly<Record<Affix, (realm: number) => string>> = {
   art: () => 'thunderore',
   capacity: () => 'stone',
 };
+
+/** 礦 The ore each realm's veins give, one a realm: the set's own, which stands in below. */
+export const REALM_ORE: readonly string[] = ['iron', 'stone', 'bronze', 'frostsilver', 'jade', 'starfall', 'thunderore', 'voidcrystal', 'gold'];
+
+/**
+ * 爐 The crucible: which material gives which line, for a set of this realm at this rank.
+ * Heaven asks for each line's own material, as the crucible always did: Fallen Star Iron for
+ * rarer gear, Immortal Gold for drop chance, wherever the veins give them. Mystic and Earth
+ * ask for nothing their own realm cannot gather: where a line's material belongs to a later
+ * realm, the set's own ore stands in for it, so a first-realm cultivator can craft the
+ * first-realm set and push with it, and the rare materials stay what Heaven is for.
+ * rekaris, on the Discord (2026-10-08): *"A person in the mortal realm should be able to
+ * craft the mortal iron items otherwise it's just 'collect the collection' rather than
+ * 'craft your own to push'. Not necessarily at Heaven rank, but Mystic/Earth should be
+ * doable without waiting days for crafts before pushing."*
+ */
+export const CRUCIBLE: Readonly<Record<Affix, (realm: number, rank: HundredRank) => string>> = Object.fromEntries(
+  (Object.keys(CRUCIBLE_NATURAL) as Affix[]).map((affix) => [affix, (realm: number, rank: HundredRank) => {
+    const key = CRUCIBLE_NATURAL[affix](realm);
+    const own = Math.max(1, Math.min(9, realm));
+    return rank === 'heaven' || (ITEM_BY_KEY[key]?.realm ?? 1) <= own ? key : REALM_ORE[own - 1];
+  }]),
+) as Record<Affix, (realm: number, rank: HundredRank) => string>;
 
 /** 譜 The nine parts of the game a finished set reaches, one each, in realm order. */
 export type CodexKey = 'hunt' | 'elite' | 'vault' | 'demon' | 'work' | 'bond' | 'gates' | 'tower' | 'platform';

@@ -52,10 +52,10 @@ function opensWith<T>(key: string, say: (craft: string, level: number, realm: nu
 }
 
 /** 開 Every line a set's crucible can take, in the order they open: by realm, then by level. */
-export function linesByOpening(realm: number): { affix: Affix; key: string; level: number; realm: number }[] {
+export function linesByOpening(realm: number, rank: HundredRank): { affix: Affix; key: string; level: number; realm: number }[] {
   return (Object.keys(CRUCIBLE) as Affix[])
     .map((affix) => {
-      const key = CRUCIBLE[affix](realm);
+      const key = CRUCIBLE[affix](realm, rank);
       const g = materialGate(key);
       return { affix, key, level: g?.level ?? 0, realm: g?.realm ?? 0 };
     })
@@ -75,7 +75,7 @@ function firstOrder(s: State, realm: number, slot: Slot, rarity: HundredRank, te
   const tpl = (template && TEMPLATE_BY_KEY[template]) || shapes.find((g) => g.affix === 'power') || shapes[0];
   const order: Affix[] = ['power', 'sunder', 'art', 'rate', 'luck', 'refine', 'find', 'capacity'];
   const can = order.filter((a) => lineAxes(tpl).includes(a));
-  const reached = can.filter((a) => materialReached(s, CRUCIBLE[a](realm)));
+  const reached = can.filter((a) => materialReached(s, CRUCIBLE[a](realm, rarity)));
   const picks = [...reached, ...can.filter((a) => !reached.includes(a))].slice(0, SECONDARIES[rarity]);
   return { template: tpl.key, rarity, main: 2, lines: picks.map((affix) => ({ affix, n: 2 as Portions })) };
 }
@@ -129,13 +129,13 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
   const inHand = running && JSON.stringify(running) === JSON.stringify(o) && state.crafts.task === r.key;
   const level = levelIn(state, 'forge');
   const made = piecesMade(state.crafts.made, realm);
-  const unreached = o.lines.find((l) => !materialReached(state, CRUCIBLE[l.affix](realm)));
+  const unreached = o.lines.find((l) => !materialReached(state, CRUCIBLE[l.affix](realm, o.rarity)));
   const elite = hundredElite(realm);
   const why = level < hundredLevel(realm, o.rarity) ? HUNDRED.why.level(hundredLevel(realm, o.rarity))
     : o.rarity === 'heaven' && made < HUNDRED_HEAVEN_MADE ? HUNDRED.why.heaven(HUNDRED_HEAVEN_MADE, made)
     : !setOpen(state.killed, realm) ? HUNDRED.why.open(elite.name, wardenOf(realm).name)
-    : unreached ? opensWith(CRUCIBLE[unreached.affix](realm), (craft, lv, at) =>
-      HUNDRED.why.material(ITEM_BY_KEY[CRUCIBLE[unreached.affix](realm)]?.name ?? '', craft, lv, at))
+    : unreached ? opensWith(CRUCIBLE[unreached.affix](realm, o.rarity), (craft, lv, at) =>
+      HUNDRED.why.material(ITEM_BY_KEY[CRUCIBLE[unreached.affix](realm, o.rarity)]?.name ?? '', craft, lv, at))
     : null;
   // 作 What the forge would say of it set going: only a wait for material is allowed past here.
   const probe: State = { ...state, crafts: { ...state.crafts, order: o } };
@@ -222,7 +222,7 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
           n={o.main} values={[1, 2, 3].map((n) => lineValue(tpl, o.rarity, tpl.affix, n as Portions, true))}
           affix={tpl.affix} onN={(n) => setO({ ...o, main: n })} />
         {o.lines.map((l, i) => {
-          const mat = ITEM_BY_KEY[CRUCIBLE[l.affix](realm)];
+          const mat = ITEM_BY_KEY[CRUCIBLE[l.affix](realm, o.rarity)];
           return (
             <Row key={i}
               label={<select aria-label={HUNDRED.line(i + 1)} value={l.affix}
@@ -232,8 +232,8 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
                 ))}
               </select>}
               sub={<>{mat ? <><span className="cjk">{mat.han}</span> {mat.name}</> : null}
-                {!materialReached(state, CRUCIBLE[l.affix](realm)) && (
-                  <em className="hu-short"> · {opensWith(CRUCIBLE[l.affix](realm), HUNDRED.unreached)}</em>)}</>}
+                {!materialReached(state, CRUCIBLE[l.affix](realm, o.rarity)) && (
+                  <em className="hu-short"> · {opensWith(CRUCIBLE[l.affix](realm, o.rarity), HUNDRED.unreached)}</em>)}</>}
               n={l.n} values={[1, 2, 3].map((n) => lineValue(tpl, o.rarity, l.affix, n as Portions, false))}
               affix={l.affix} onN={(n) => line(i, { n })} />
           );
@@ -244,7 +244,7 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
       <div className="card hu-opens">
         <b>{HUNDRED.opensHead(set.name)}</b>
         <p className="faint">{HUNDRED.opensNote}</p>
-        {linesByOpening(realm).map((x) => {
+        {linesByOpening(realm, o.rarity).map((x) => {
           const it = ITEM_BY_KEY[x.key];
           const open = materialReached(state, x.key);
           return (

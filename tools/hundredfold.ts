@@ -25,12 +25,13 @@ import { strict as assert } from 'node:assert';
 import { HABITS, play, type Habit } from './habits.ts';
 import { arrivalOf, playEndgame } from './endgame.ts';
 import {
-  codexRank, codexValue, lineAxes, pieceOf, placesMade, type Order, type Portions,
+  codexRank, codexValue, lineAxes, materialReached, pieceOf, placesMade, type Order, type Portions,
 } from '../src/sim/hundred.ts';
+import { CRUCIBLE, CRUCIBLE_NATURAL } from '../src/data/hundred.ts';
 import { HUNDRED_RANKS, RECIPE_BY_KEY, hundredKey, type HundredRank } from '../src/data/crafts.ts';
 import { CODEX, type CodexKey } from '../src/data/hundred.ts';
 import {
-  GEAR, REALM_SETS, SLOTS, type Affix, type Item, type Slot,
+  AFFIXES, GEAR, REALM_SETS, SLOTS, type Affix, type Item, type Slot,
 } from '../src/data/gear.ts';
 import { SECONDARIES, CODEX_CAP, HUNDRED_SECONDS } from '../src/sim/balance.ts';
 import { power, type State } from '../src/sim/state.ts';
@@ -72,16 +73,19 @@ interface Road {
   first: Record<string, number>; forge: number[]; atRealm: Record<number, State>; end: State;
   /** The climb and the road after it, a visit every two days or so: what the codex is measured on. */
   seen: State[];
+  /** The day of each visit in `seen`. */
+  seenDay: number[];
 }
 function road(how: 'forge' | 'spread'): Road {
   const first: Record<string, number> = {};
   const forge: number[] = [];
   const atRealm: Record<number, State> = {};
   const seen: State[] = [];
+  const seenDay: number[] = [];
   let last = -9;
   const run = play(chaser(how, true), DAYS, (day, s) => {
     if (!atRealm[s.realm]) atRealm[s.realm] = s;
-    if (day - last >= 2) { seen.push(s); last = day; }
+    if (day - last >= 2) { seen.push(s); seenDay.push(day); last = day; }
     for (let r = 1; r <= 9; r++) {
       const k = codexRank(s.crafts.made, r);
       for (let i = 1; i <= k; i++) first[`${r}:${i}`] ??= day;
@@ -89,7 +93,7 @@ function road(how: 'forge' | 'spread'): Road {
     const lv = levelIn(s, 'forge');
     for (let l = forge.length; l <= lv; l++) forge[l] = day;
   });
-  return { first, forge, atRealm, end: run.state, seen };
+  return { first, forge, atRealm, end: run.state, seen, seenDay };
 }
 
 console.log(`\n百煉 2 · the long road: the day each set is first finished, played to day ${DAYS}`);
@@ -119,6 +123,37 @@ for (const x of Object.values(roads)) {
   assert((x.first['6:2'] ?? Infinity) <= 180, 'Fallen Star reaches Earth within six months');
   assert((x.first['6:3'] ?? Infinity) >= 60, 'Fallen Star at Heaven is months away');
 }
+
+/* ── 2b · the crucible opening ───────────────────────────────────────────── */
+
+// 爐 rekaris, 2026-10-08: the lines of the first sets asked for materials of the sixth and
+// ninth realms. The crafter above only ever chooses lines it can already make, so it never
+// felt that; this reads off the same visits which of a set's eight lines could be chosen.
+console.log('\n爐 2b · the day every one of a set\'s eight lines can be chosen (first visit with all eight in reach)');
+console.log('                         forge first                          crafts kept level');
+console.log('                         first rule · Mystic, Earth · Heaven  first rule · Mystic, Earth · Heaven');
+let opened = 0;
+for (let r = 1; r <= 6; r++) {
+  const cols = (x: Road) => {
+    const day = (open: (s: State, a: Affix) => boolean) => {
+      const i = x.seen.findIndex((s) => s.realm >= r && AFFIXES.every((a) => open(s, a)));
+      return i < 0 ? undefined : x.seenDay[i];
+    };
+    const old = day((s, a) => materialReached(s, CRUCIBLE_NATURAL[a](r)));
+    const low = day((s, a) => materialReached(s, CRUCIBLE[a](r, 'earth')));
+    const top = day((s, a) => materialReached(s, CRUCIBLE[a](r, 'heaven')));
+    // The rule only loosens: Mystic and Earth are never later than the first rule was, Heaven is the first rule.
+    assert((low ?? Infinity) <= (old ?? Infinity), `set ${r}: Mystic and Earth never open later than before`);
+    assert(top === old, `set ${r}: Heaven asks what it always asked`);
+    if (old !== undefined) opened++;
+    return { text: `${f1(old)}  ${f1(low)}  ${f1(top)}`, old, low };
+  };
+  const a = cols(roads.forge), b = cols(roads.spread);
+  console.log(`  ${r} ${REALM_SETS[r - 1].han} ${REALM_SETS[r - 1].name.padEnd(16)} ${a.text}              ${b.text}`);
+  // 初 The first three sets are craftable from the day their realm opens: no later than a day or two in.
+  if (r <= 3) for (const c of [a, b]) assert((c.low ?? Infinity) <= (c.old ?? Infinity) && c.low !== undefined && c.low <= 30, `set ${r}: all eight lines open at Mystic and Earth within the first month`);
+}
+assert(opened >= 6, `the plan reads something: ${opened} first-rule openings counted`);
 
 if (!quick) {
   /* ── 3 · the ceiling ───────────────────────────────────────────────────── */

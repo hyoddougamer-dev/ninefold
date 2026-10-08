@@ -212,13 +212,69 @@ describe('驗 the server reads the Hundredfold things', () => {
     expect(codexRank(validate(JSON.parse(JSON.stringify(heavenFirst)), heavenFirst.at).crafts.made, 1)).toBe(0);
   });
 
-  it('refuses a mark nothing made, and a line whose material was out of reach', () => {
+  /**
+   * 爐 rekaris, 2026-10-08: a set asks only for what its own realm can gather. The rarer gear
+   * line of a Mortal Iron piece is made with Mortal Iron Ore, the drop chance line of the
+   * Jadewater set with Jadewater Jade, and a piece whose line the save never had the ore for
+   * is still refused.
+   */
+  describe('a line takes its set\'s own ore where its usual material is a later realm\'s', () => {
+    const killed = { ...crafter().killed };
+    /** A first-set weapon at a rank with the rarer gear and drop chance lines, in a save at this realm. */
+    const mortal = (xp: Record<string, number>, realm = 1, rank: HundredRank = 'mystic'): Pick<State, 'realm' | 'killed' | 'worn' | 'chest' | 'crafts'> => {
+      const lines = [{ affix: 'luck', n: 3 }, { affix: 'find', n: 1 }, { affix: 'rate', n: 1 }, { affix: 'sunder', n: 1 }] as const;
+      const piece = pieceOf({ template: 'sword1', rarity: rank, main: 2, lines: lines.slice(0, { mystic: 2, earth: 3, heaven: 4 }[rank]) }, 'mortal')!;
+      // Heaven asks five other pieces of its set made first.
+      const others = rank === 'heaven' ? Object.fromEntries(SLOTS.slice(1, 6).map((x) => [hundredKey(1, x, 'mystic'), 1])) : {};
+      return { realm, killed, worn: {}, chest: [piece],
+        crafts: { ...crafter().crafts, xp: { forge: lvl(30), herb: lvl(60), render: lvl(60), ...xp }, made: { [hundredKey(1, 'weapon', rank)]: 1, ...others } } } as never;
+    };
+
+    it('asks for the set\'s own ore, and a first-realm cultivator has it', () => {
+      const o: Order = { template: 'sword1', rarity: 'mystic', main: 2, lines: [{ affix: 'luck', n: 3 }, { affix: 'find', n: 1 }] };
+      const need = Object.fromEntries(orderNeeds(o));
+      expect(need.iron).toBe(portionOf(1) * 4);
+      expect(need.starfall).toBeUndefined();
+      expect(need.gold).toBeUndefined();
+      expect(hundredFits(mortal({ vein: 0 }))).toBe(true);
+      expect(hundredFits(mortal({ vein: 0 }, 1, 'earth'))).toBe(true);
+    });
+
+    it('Heaven still asks for the rare materials, and refuses a save that never reached them', () => {
+      const o: Order = { template: 'sword1', rarity: 'heaven', main: 2, lines: [{ affix: 'luck', n: 3 }, { affix: 'find', n: 1 }, { affix: 'rate', n: 1 }, { affix: 'sunder', n: 1 }] };
+      const need = Object.fromEntries(orderNeeds(o));
+      expect(need.starfall).toBe(portionOf(1) * 3);
+      expect(need.gold).toBe(portionOf(1));
+      expect(need.iron).toBeUndefined();
+      expect(hundredFits(mortal({ vein: lvl(30) }, 2, 'heaven'))).toBe(false);
+      expect(hundredFits(mortal({ vein: lvl(95) }, 9, 'heaven'))).toBe(true);
+    });
+
+    it('refuses a Jadewater piece when the save never had Jadewater Jade, and takes it once it did', () => {
+      const piece = pieceOf({ ...ORDER, lines: [{ affix: 'find', n: 1 }, { affix: 'rate', n: 1 }] }, 'gold')!;
+      const held = (vein: number) => ({ ...after, chest: [...after.chest.filter((x) => !x.hundred), piece],
+        crafts: { ...after.crafts, xp: { ...after.crafts.xp, vein } } });
+      expect(hundredFits(held(lvl(40)))).toBe(false);
+      expect(hundredFits(held(lvl(58)))).toBe(true);
+    });
+
+    it('still takes an Earth piece forged under the first rule, with the later realm\'s material', () => {
+      // A sixth-realm save holds a first-realm piece with a rarer gear line: Fallen Star Iron was reached.
+      expect(hundredFits(mortal({ vein: lvl(58) }, 6, 'earth'))).toBe(true);
+    });
+
+    it('refuses a set the save has not reached, whatever its lines', () => {
+      const piece = pieceOf({ template: 'sword3', rarity: 'mystic', main: 1, lines: [{ affix: 'luck', n: 1 }, { affix: 'find', n: 1 }] }, 'far')!;
+      const s = mortal({ vein: lvl(30) });
+      const far = { ...s, chest: [piece], crafts: { ...s.crafts, made: { [hundredKey(3, 'weapon', 'mystic')]: 1 } } };
+      expect(hundredFits(far)).toBe(false);
+    });
+  });
+
+  it('refuses a mark nothing made', () => {
     const stray = { ...pieceOf({ ...ORDER, template: 'robe5' }, 'stray')!, rolls: pieceOf({ ...ORDER, template: 'robe5', lines: [{ affix: 'sunder', n: 2 }, { affix: 'power', n: 1 }] }, 'stray')!.rolls };
     const unbacked = { ...after, chest: [...after.chest, stray] };
     expect(hundredFits(unbacked)).toBe(false);
     expect(validate(JSON.parse(JSON.stringify(unbacked)), unbacked.at).chest.find((x) => x.id === 'stray')?.hundred).toBeUndefined();
-    const gold = pieceOf({ ...ORDER, lines: [{ affix: 'find', n: 1 }, { affix: 'rate', n: 1 }] }, 'gold')!;
-    const reached = { ...after, chest: [...after.chest.filter((x) => !x.hundred), gold] };
-    expect(hundredFits(reached)).toBe(false);
   });
 });

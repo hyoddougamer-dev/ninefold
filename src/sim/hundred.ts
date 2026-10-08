@@ -85,7 +85,7 @@ export function orderNeeds(o: Order): readonly (readonly [string, number])[] {
   const out = new Map<string, number>();
   const add = (k: string, n: number) => out.set(k, (out.get(k) ?? 0) + n);
   for (const [k, n] of r.needs) add(k, k === metalKey(tpl.realm) ? HUNDRED_INGOTS * o.main : n);
-  for (const l of o.lines) add(CRUCIBLE[l.affix](tpl.realm), portionOf(tpl.realm) * l.n);
+  for (const l of o.lines) add(CRUCIBLE[l.affix](tpl.realm, o.rarity), portionOf(tpl.realm) * l.n);
   return [...out.entries()];
 }
 
@@ -381,8 +381,10 @@ export function backHundred(made: Made): (it: Item) => Item {
 
 /**
  * 物 Whether a crucible material for this line could ever have been in the pouch: the craft
- * that gathers it at the level and realm it asks for. A Hundredfold piece of the third realm
- * with a 拾 line needs Immortal Gold, which only the ninth realm's veins give.
+ * that gathers it at the level and realm it asks for. A Mystic or Earth piece never asks for
+ * a material from a later realm than its set's own (data/hundred.ts CRUCIBLE: the set's own
+ * ore stands in), so the first set's lines are all within a first-realm cultivator's reach;
+ * Heaven asks for each line's own material.
  */
 export function materialReached(s: Pick<State, 'realm' | 'crafts'>, key: string): boolean {
   const g = materialGate(key);
@@ -404,6 +406,10 @@ export function materialGate(key: string): { skill: SkillKey; level: number; rea
  * 驗 Whether every Hundredfold thing in a save could have been made honestly: the codex its
  * counts claim (sets opened, Heaven only after five), and every marked piece backed by those
  * counts, its lines inside the band, and each line's material one the save could have had.
+ * The materials are the crucible's own for the piece's rank (CRUCIBLE). Heaven asks what it
+ * always asked; Mystic and Earth ask the set's own ore where a line's material is a later
+ * realm's, and a save that reached that later material has reached the set's own ore too, so
+ * a piece forged before rekaris's report (2026-10-08) is still honest. The rule only loosened.
  * The server reads it on every sync; validate() already trims what it would refuse, so an
  * honest save always passes and a hand-made one never gets this far unchanged.
  */
@@ -419,7 +425,7 @@ export function hundredFits(s: Pick<State, 'realm' | 'killed' | 'worn' | 'chest'
   return pieces.every((it) => {
     const tpl = TEMPLATE_BY_KEY[it.template];
     return it.from === FORGED && backed(made, it) && linesFit(it)
-      && it.rolls.slice(1).every((l) => materialReached(s, CRUCIBLE[l.affix](tpl.realm)));
+      && it.rolls.slice(1).every((l) => materialReached(s, CRUCIBLE[l.affix](tpl.realm, it.rarity as HundredRank)));
   });
 }
 
