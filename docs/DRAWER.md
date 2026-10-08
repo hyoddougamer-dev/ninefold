@@ -250,3 +250,38 @@ so a reborn life earns no week credit until it passes its old life; a per-life w
 would need a new column (a migration). (2) The unlock: the first mark, or later. (3) Whether
 the title should also show on the boards (it is derived, so the server could read it from
 the save without a schema change). (4) An heirloom, if he wants one, needs its own rule.
+
+---
+
+## 丹 Elixirs and sigils at the Dragon (built, switched off at 0, waiting for Bruno)
+
+**Status:** built and measured on 2026-10-08, shipped as `DRAGON_KIT_SHARE = 0` in
+`src/sim/balance.ts`, so the game plays exactly as it did. The machinery is all there:
+`kitWhere` returns `'dragon'`, `kitFor` thins the kit by the share (`thinKit` in `sim/crafts.ts`),
+the server reads the same thing (`bestKit(…, 'dragon')`, `dragonBeaten` in `sim/verify.ts`), and
+`tools/endgame.ts` plays the endgame both ways (`playEndgame(…, dragonKit)`, `kitClock`,
+`crafterOf`). Setting the constant above zero is the whole switch, and the item text, the carry
+card and the Dragon card change with it.
+
+**Why it is off.** rekaris (2026-10-07): *"every tool given to the player should be used in any
+place where it makes sense, unless it breaks or trivializes it ... you could make the pills
+less effective against the dragon, but still a significant boost to one's fight."* Bruno's
+band for it: the full endgame of a crafter with Alchemy and Sigil Writing at 99 shorter by no
+more than about 10 to 12 per cent, and a cultivator with no workshop not moved at all. The
+Dragon is footed one step above the Dragon the cultivator met at even odds, so a crossing asks
+for a few pills of power and a kit is worth those pills at once. Forty crossings of the active
+crafter: 231 days with nothing reaching the Dragon; 223 at a share of 0.3% (a strike 0.2%
+harder); 218 at 0.5%; 206 at 1.5%; 190 at 2%; 172 at 3%; 153 at 10%; 128 at 30%; 118 at the whole
+kit. The once-a-day and every-hour crafters move faster still (14.6% at 0.5%, 17% at 1%). The
+only shares inside the band are ones nobody would feel in a fight, and the elixir is spent on
+every win. The numbers are on the bible's endgame section and printed by
+`src/sim/__tests__/dragonkit.test.ts`.
+
+**What Bruno can choose.** (1) Leave it at 0 and keep the item text honest (it already says the
+elixir does not reach the Dragon). (2) Pick a visible share (3% to 10%) and accept a crafter
+reaching forty crossings a quarter to a third sooner, as the Sword Saint's 2% already does for
+one class. (3) Pick one and raise the Dragon's footing or challenge to pay for it, which moves
+every non-crafter as well, so the whole endgame is re-solved (TRIBULATION_GAIN's arithmetic).
+The kit must never be read into `evenDragon`: carried in the fight and left out of the
+anchor it is a head start, but read into the anchor it becomes a tax on anyone who is out of
+stock, and a carry that is taken off between the win and the crossing would be a lever on it.

@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
@@ -31,6 +31,8 @@ import { RARITY_INFO } from '../data/gear.ts';
 
 /** 式 A balance constant as a formula prints it: 0.35, never 0.35000000000000009. */
 const trim = (x: number) => String(Math.round(x * 1000) / 1000);
+/** 劫 A share as a percentage to a tenth, so a share of 1.5% never reads as 2%. */
+const oneDecimal = (x: number) => `${Number((x * 100).toFixed(1))}%`;
 
 /**
  * 引 How to play, and now only the part that cannot be shown.
@@ -294,6 +296,13 @@ export const CULTIVATE = {
   tribulationNext: (n: number) => `劫 Tribulation ${n} · the next crossing`,
   crossed: (n: number) => (n === 1 ? '1 tribulation crossed' : `${n} tribulations crossed`),
   tribulation: 'The Dragon comes back harder every time. Cross it for a 雷印 mark. If you lose, you lose nothing.',
+  /**
+   * 劫 What the elixir and the sigil are worth at the Dragon (DRAGON_KIT_SHARE), under the card.
+   * The odds above already count what is carried.
+   */
+  dragonKit: (share: string, carrying: boolean) => carrying
+    ? `What you carry counts here at ${share} of its strength, and the odds count it.`
+    : `An elixir or a sigil carried here counts at ${share} of its strength.`,
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
   /** 境外 What every heaven opens, said once rather than nine times. */
@@ -2342,7 +2351,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: 'An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. Never the tribulation’s Dragon.',
+  carrySays: `An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */

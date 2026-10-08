@@ -307,11 +307,14 @@ export function hundredPlan(s: State): Order | null {
  * how far the kit closes the gap: a fresh wall reads 0% with or without a sigil, and a
  * crafter carries one into it all the same, because each day of bottleneck it breaks is a
  * day sooner through the gate.
+ *
+ * 劫 `share` is DRAGON_KIT_SHARE unless a harness asks what another would be worth at the
+ * Dragon (tools/endgame.ts).
  */
-export function carryBest(s: State, b: Beast, where: Where, standing?: number): State {
+export function carryBest(s: State, b: Beast, where: Where, standing?: number, share?: number): State {
   const owned = Object.entries(s.crafts.pouch).filter(([, n]) => n > 0).map(([k]) => k);
   const chance = (x: State) => {
-    const kit = kitFor(x, b, where).kit;
+    const kit = kitFor(x, b, where, share).kit;
     const gap = power(x) * kit.strike / (kit.taken * effectiveBeastPower(x, b, standing, kit.breach ?? 0));
     // 封 A sealed gate is no fight at all, so whatever opens it comes first.
     const open = where === 'warden' && sealed(x) ? 0 : 2;

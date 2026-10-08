@@ -28,7 +28,7 @@ import { ARCHETYPES, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, type Slot } from
 import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SPEED, CRAFT_ARRAY_TWICE, CRAFT_ARRAY_WORK, CRAFT_ARRAY_XP,
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
-  CRAFT_TOOL_STEPS,
+  CRAFT_TOOL_STEPS, DRAGON_KIT_SHARE,
   HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
@@ -439,9 +439,13 @@ const TOP_MULT = CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1];
 /** "(21% at Heaven rank)": the same effect at the best rank a make can roll. */
 const atTop = (x: number) => `(${pct(x * TOP_MULT)} at ${RARITY_INFO.heaven.name} rank)`;
 /** What a thing made for one realm is worth in a fight above it. See fade() in sim/crafts.ts. */
+/** 劫 And what it does at the tribulation's Dragon: the same, at a share of itself (DRAGON_KIT_SHARE). */
+const atDragon = DRAGON_KIT_SHARE > 0
+  ? `At the tribulation’s Dragon it works at ${pct(DRAGON_KIT_SHARE)} of its strength.`
+  : 'Never in the tribulation’s Dragon fight.';
 const madeFor = (realm: number) => `Made for realm ${realm}; ×${CRAFT_KIT.fade} for each realm a fight stands above it.${breaks}`;
 /** 破境 What every carried thing also does at the warden: see Kit.breach. */
-const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank). Never in the tribulation’s Dragon fight.`;
+const breaks = ` At your realm’s warden it also breaks ${CRAFT_KIT.breach} day of its 瓶頸 bottleneck (${Number((CRAFT_KIT.breach * TOP_MULT).toFixed(2))} at ${RARITY_INFO.heaven.name} rank). ${atDragon}`;
 const ELIXIR_DOES: Record<ElixirLine, string> = {
   mend: `Mends ${pct(CRAFT_KIT.mend)} of your health every round of one hard fight ${atTop(CRAFT_KIT.mend)}.`,
   guard: `You take ${pct(CRAFT_KIT.guard)} less in one hard fight ${atTop(CRAFT_KIT.guard)}.`,
@@ -469,7 +473,7 @@ const SPECIALS: readonly [string, string, string, number, number, (readonly [str
   ['calmheart', '靜心丹', 'Calm Heart Pill', 40, 5, [['ginseng', 2], [partKey('turtle'), 1]],
     `Carried into seclusion: your heart demon stands ${pct(CRAFT_KIT.calmHeart)} weaker ${atTop(CRAFT_KIT.calmHeart)}.`, 'meditation'],
   ['nineturn', '九轉還丹', 'Nine-Turn Pill', 97, 9, [['lingzhi', 2], [partKey('dragon'), 1], ['tribstone', 1]],
-    'Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it. Never in the tribulation’s Dragon fight.', 'dragon-orb'],
+    `Once in one hard fight, a blow that would put you down mends you to full instead. A win that never needed it keeps it. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon it mends ${pct(DRAGON_KIT_SHARE)} of the way back instead.` : 'Never in the tribulation’s Dragon fight.'}`, 'dragon-orb'],
 ];
 for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
   item({ key, han, name, kind: 'elixir', realm, icon, graded: key !== 'seekincense', does,

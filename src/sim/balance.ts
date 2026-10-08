@@ -2358,8 +2358,9 @@ export const CRAFT_ARRAY_DEPTH_TOP = 1.5;
  * fight that is a warden, a heart demon or a beast of the vault, and spent only if it is
  * won: a lost fight keeps them, because a lost fight costs nothing.
  *
- * 劫 Never the Dragon. It is anchored to the power that faced it, so anything that carried
- * a cultivator over it would be a lever on the endgame.
+ * 劫 The Dragon, since 2026-10-08, but only at DRAGON_KIT_SHARE of itself (below). It is
+ * anchored to the power that faced it, so anything that carried a cultivator over it would
+ * be a lever on the endgame, and the share is how large a lever the endgame can bear.
  *
  * 塔 The tower, since 2026-10-05, when the climber chooses it on the floor's card. rekaris:
  * *"Pills and Sigils provide combat edge that has no use right now. All combat challenges
@@ -2407,6 +2408,44 @@ export const CRAFT_KIT = {
   // than its whole wall, it takes at least half of anybody's wait there (sealgate.test).
   pill: 0.5,
 } as const;
+
+/**
+ * 劫 What a carried elixir and sigil are worth against the Dragon of the tribulation, as a
+ * share of what they do everywhere else. rekaris (Discord, 2026-10-07): "every tool given
+ * to the player should be used in any place where it makes sense, unless it breaks or
+ * trivializes it. ... you could make the pills less effective against the dragon, but still
+ * a significant boost to one's fight."
+ *
+ * Every effect is thinned toward nothing by this share (thinKit in sim/crafts.ts): a strike
+ * of 1.53 counts as 1 + 0.53 · share, a blow taken at 0.74 as 1 - 0.26 · share, mending and
+ * reflection are multiplied by it, a Binding Sigil turns aside that share of the first blow,
+ * and a Nine-Turn Pill mends that share of the way back to full. No Guardian Array (it is not
+ * carried), and no 破境 breach or Breakthrough Pill, which are the gate's. The Dragon's
+ * even-odds reading (evenDragon) stays bare, so a kit is a head start at every crossing and
+ * never ratchets the anchor, and the server reads the same kit (bestKit 'dragon').
+ *
+ * 0 BECAUSE NO SHARE THAT MATTERS KEEPS THE ENDGAME. Measured with tools/endgame.ts
+ * (kitClock: the cultivator made a crafter at the top, Alchemy and Sigil Writing at 99 and
+ * the best of every elixir and sigil in the pouch at Heaven rank, played twice, once with
+ * nothing reaching the Dragon), days to forty crossings and how much sooner the kit makes
+ * them. The Dragon is footed 1.05 times above the even-odds one and has to be out-grown by
+ * a few per cent of power a crossing, so the whole endgame is a few pills a crossing wide,
+ * and a kit is worth those pills at once:
+ *
+ *     share     0     .003   .005   .01    .015   .02    .03    .1     .3     1
+ *     active    231   223    218    217    206    190    172    153    128    118
+ *     sooner    -     3.5%   5.6%   6.1%   10.8%  17.7%  25.5%  34%    45%    49%
+ *
+ * Habit by habit the same curve starts at a different place: the fastest to move are the
+ * once-a-day crafter (7.7% sooner at .003, 14.6% at .005) and the every-hour one (7.5% at
+ * .005, 17% at .01); a share of .003 keeps every habit under 12% and .005 does not. A share
+ * of .003 is a strike 0.2% harder, which nobody feels in a fight, and an elixir that is
+ * spent on every win for it is a worse trade than keeping it for the wardens. So no number
+ * is shipped: the machinery is built, tested and measured, and the Dragon takes none until
+ * Bruno chooses what a crossing should cost a crafter. A cultivator who never opened the
+ * workshop reads 0 at every share.
+ */
+export const DRAGON_KIT_SHARE = 0;
 
 /** 尋 How many sure drops can be waiting at once, from Seeking Sigils and incense. */
 export const CRAFT_SEEK_MAX = 20;

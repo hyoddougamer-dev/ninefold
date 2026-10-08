@@ -300,12 +300,12 @@ function run(u: Setup, seed: number, record: boolean): Outcome {
     if (stance?.key === 'guard') theirs *= STANCE_NUMBERS.guardTaken;
     if (stance?.key === 'fierce') theirs *= STANCE_NUMBERS.fierceTaken;
     theirs *= kit.taken;
-    if (kit.bind && i === 0) theirs = 0;
+    if (i === 0) theirs = kit.bind ? 0 : theirs * (1 - Math.max(0, Math.min(1, kit.bound ?? 0)));
     took = theirs;
     if (kit.reflect > 0) bh -= theirs * kit.reflect;
 
     ph = Math.min(ph0, ph - theirs + healed);
-    if (ph <= 0 && !revived) { ph = ph0; revived = true; }
+    if (ph <= 0 && !revived) { ph += (ph0 - ph) * Math.max(0, Math.min(1, kit.reviveShare ?? 1)); revived = true; }
 
     if (record) rounds.push({
       playerHealth: Math.max(0, ph / ph0),

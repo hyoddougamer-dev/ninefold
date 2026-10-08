@@ -1,7 +1,7 @@
 import { breachHeld, kitFor, kitWhere, pillHeld, unsealCarried, wallDays } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
-  CORE_QI_RUNGS, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
+  CORE_QI_RUNGS, DRAGON_KIT_SHARE, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
 } from '../../sim/balance.ts';
 import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
@@ -171,6 +171,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // 瓶頸 How far above its old self the warden still stands, and the days until it is not.
   const over = bottleneck(state, w) * wallOf(w.realm);
   const loosens = over > 1.01 ? Math.log(over) / -Math.log(1 - BOTTLENECK_LOOSEN) : 0;
+  // 劫 Whether the Dragon's odds above already count an elixir or a sigil: the line under the card says so.
+  const dragonCarried = top && kitFor(state, w, kitWhere(state, w)).spends;
   const carriedKit = kitFor(state, w, 'warden').kit;
   const carriedBreach = loosens ? carriedKit.breach ?? 0 : 0;
   const overCarried = bottleneck(state, w, carriedBreach) * wallOf(w.realm);
@@ -442,6 +444,11 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
             <p className="faint" style={{ margin: '11px 0 12px', fontSize: 12.5 }}>
               {top ? CULTIVATE.tribulation : CULTIVATE.warden}
             </p>
+            {top && DRAGON_KIT_SHARE > 0 && (
+              <p className="faint" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                {CULTIVATE.dragonKit(`${Number((DRAGON_KIT_SHARE * 100).toFixed(1))}%`, dragonCarried)}
+              </p>
+            )}
             {loosens > 0 && (
               <p className="bneck" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
                 {CULTIVATE.bottleneck(over, loosens)}{' '}

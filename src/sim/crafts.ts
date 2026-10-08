@@ -24,7 +24,7 @@ import {
   CRAFT_ARRAY_TWICE, CRAFT_ARRAY_XP, CRAFT_FURNACE_DISCOUNT, CRAFT_KIT, CRAFT_LONG_WATCH_HOURS,
   CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND,
   CRAFT_MASTERY_SPEED, CRAFT_QUALITY, CRAFT_QUALITY_MULT,
-  CRAFT_RENDER_KNOWN, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, DEMONS, DEMONS_PER_REALM, VARIANCE,
+  CRAFT_RENDER_KNOWN, DRAGON_KIT_SHARE, CRAFT_SEEK_MAX, CRAFT_TOOL_STEP, CRAFT_TOOL_STEPS, CRAFT_WORK_HOURS, DEMONS, DEMONS_PER_REALM, VARIANCE,
 } from './balance.ts';
 import { opensAt } from './unlocks.ts';
 import {
@@ -725,11 +725,12 @@ export function spendSeek(s: State): State {
   return s.crafts.seek > 0 ? { ...s, crafts: { ...s.crafts, seek: s.crafts.seek - 1 } } : s;
 }
 
-export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower';
+export type Where = 'warden' | 'demon' | 'vault' | 'platform' | 'tower' | 'dragon';
 
 /**
- * 戰 Which fights a kit may enter. Never the Dragon above the ninth realm and never a
- * common beast on the hunt. 擂 A challenger on the Platform is a hard fight like a warden:
+ * 戰 Which fights a kit may enter. Never a common beast on the hunt. 劫 The Dragon of the
+ * tribulation takes it too, since 2026-10-08, at DRAGON_KIT_SHARE of its strength (see
+ * thinKit). 擂 A challenger on the Platform is a hard fight like a warden:
  * what is carried changes it, which is one of the ways past a loss when the dice are set
  * for the period. 塔 A tower floor is one too since 2026-10-05 (see CRAFT_KIT), and there
  * the climber chooses it on the floor's card, since a hundred floors would otherwise spend
@@ -739,7 +740,7 @@ export function kitWhere(s: State, b: Beast, standing?: number): Where | null {
   if (b.key === 'heartdemon') return 'demon';
   if (b.challenger !== undefined) return 'platform';
   if (standing !== undefined) return 'tower';
-  if (b.warden && !(b.key === 'dragon' && s.realm === 9)) return 'warden';
+  if (b.warden) return b.key === 'dragon' && s.realm === 9 ? 'dragon' : 'warden';
   return null;
 }
 
@@ -787,9 +788,13 @@ export const NOT_USED: Used = { elixir: null, sigil: null, pill: null };
 /**
  * 戰 The kit a fight is fought with: what is carried, and the Guardian Array under the
  * floor. The array is not carried and never spent.
+ * 劫 At the Dragon the same things count at `share` of themselves (DRAGON_KIT_SHARE unless a
+ * harness asks for another), and the array and the gate's breach are left out.
  */
-export function kitFor(s: State, b: Beast, where: Where | null): Carried {
-  if (!where) return { kit: NO_KIT, spends: false, used: NOT_USED };
+export function kitFor(s: State, b: Beast, where: Where | null, share = DRAGON_KIT_SHARE): Carried {
+  // 劫 A Dragon that takes none of it takes nothing, and so spends nothing: a win must never use
+  // up an elixir that did not count.
+  if (!where || (where === 'dragon' && share <= 0)) return { kit: NO_KIT, spends: false, used: NOT_USED };
   const fightRealm = Math.max(1, Math.min(9, fightRealmOf(s, b, where)));
   let strike = 1, taken = 1, mend = 0, demon = 1, reflect = 0, breach = 0, unseal = 0;
   let bind = false, revive = false, spends = false;
@@ -870,9 +875,33 @@ export function kitFor(s: State, b: Beast, where: Where | null): Carried {
   if (where === 'warden' || where === 'demon') taken *= 1 - CRAFT_ARRAY_GUARD * arrayStrength(s, 'guardian');
   // 譜 古銅 The Elder Bronze codex: the vault's gates stand weaker.
   const foe = where === 'vault' ? 1 - codexValue(s, 'vault') : 1;
+  const kit: Kit = { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal, thin, foe };
   return {
-    kit: { strike, taken, mend, bind, reflect, revive, demon, wound: 0, breach, unseal, thin, foe },
+    kit: where === 'dragon' ? thinKit(kit, share) : kit,
     spends, used: { elixir: usedElixir, sigil: usedSigil, pill: usedPill },
+  };
+}
+
+/**
+ * 劫 A kit at a share of itself: every effect scaled toward nothing, so that 0 is no kit and
+ * 1 is the kit as it is anywhere else. A strike of 1.74 at a share of 0.3 is 1.22, a blow taken at
+ * 0.58 is 0.87, mending and reflection are multiplied, a Binding Sigil turns aside that share
+ * of the first blow rather than all of it, and a Nine-Turn Pill mends that share of the way
+ * back to full. The effects a share cannot mean anything for (a demon, a wound, the gate's breach
+ * and seal) are not carried to the Dragon at all.
+ */
+export function thinKit(k: Kit, share: number): Kit {
+  const x = Math.max(0, Math.min(1, share));
+  return {
+    ...NO_KIT,
+    strike: 1 + (k.strike - 1) * x,
+    taken: 1 - (1 - k.taken) * x,
+    mend: k.mend * x,
+    reflect: k.reflect * x,
+    bind: false,
+    bound: k.bind ? x : 0,
+    revive: k.revive,
+    reviveShare: k.revive ? x : undefined,
   };
 }
 
@@ -935,9 +964,45 @@ export function spendOnWin(before: State, after: State, used: Used): State {
  * rank of the best elixir and sigil their levels and realm allow. 驗 the server reads it,
  * because it sees a warden beaten and not what was carried into the fight.
  */
-export function bestKit(s: State, b: Beast, where: Where): Kit {
+export function bestKit(s: State, b: Beast, where: Where, share = DRAGON_KIT_SHARE): Kit {
+  // 劫 The Dragon: the strongest kit these levels could carry, with the set's best on top as
+  // anywhere else, and then thinned by the share the game thins it by, last of all, as kitFor does.
+  if (where === 'dragon') return share <= 0 ? NO_KIT : thinKit(bestHundred(s, where, bestDragonFull(s, b)), share);
   // 百煉 And the most a Hundredfold set this save holds could add to it: see bestHundred.
   return bestHundred(s, where, bestKitBare(s, b, where));
+}
+
+/**
+ * 劫 The most one elixir and one sigil could be at full strength, for a save whose Alchemy
+ * and Sigil Writing are at these levels: the best of each hand read through kitFor itself, so
+ * what the server allows cannot drift from what the game does. An elixir is worth what its
+ * recipe's level, its realm and its fade make it, at Heaven rank; the two hands are
+ * independent, so the ceiling takes the best of each effect from each hand. That is looser
+ * than any one kit (a Might Elixir and a Guarding one cannot both be carried), and never
+ * tighter, which is what a ceiling is for.
+ */
+function bestDragonFull(s: State, b: Beast): Kit {
+  const top = CRAFT_QUALITY_MULT.length - 1;
+  const hands: Record<'elixir' | 'sigil', Kit[]> = { elixir: [NO_KIT], sigil: [NO_KIT] };
+  for (const r of RECIPES) {
+    if (r.makes.kind !== 'item' || (r.skill !== 'alchemy' && r.skill !== 'sigil')) continue;
+    // A level is 1 before anything is made, so a craft counts once it has earned experience.
+    if (!skillOpen(s, r.skill) || (s.crafts.xp[r.skill] ?? 0) <= 0 || levelIn(s, r.skill) < r.level || r.realm > s.realm) continue;
+    const key = pouchKey(r.makes.item, top);
+    const hand = carrySlot(key);
+    if (hand !== 'elixir' && hand !== 'sigil') continue;
+    const only = { ...s, worn: {}, crafts: { ...s.crafts, pouch: { [key]: 1 },
+      carry: { elixir: hand === 'elixir' ? key : null, sigil: hand === 'sigil' ? key : null, pill: null } } };
+    hands[hand].push(kitFor(only, b, 'dragon', 1).kit);
+  }
+  const most = (ks: readonly Kit[]) => ({
+    strike: Math.max(...ks.map((k) => k.strike)), taken: Math.min(...ks.map((k) => k.taken)),
+    mend: Math.max(...ks.map((k) => k.mend)), reflect: Math.max(...ks.map((k) => k.reflect)),
+    bind: ks.some((k) => (k.bound ?? 0) > 0), revive: ks.some((k) => k.revive),
+  });
+  const e = most(hands.elixir), g = most(hands.sigil);
+  return { ...NO_KIT, strike: e.strike * g.strike, taken: e.taken * g.taken, mend: e.mend, reflect: g.reflect,
+    bind: g.bind, revive: e.revive };
 }
 
 function bestKitBare(s: State, b: Beast, where: Where): Kit {

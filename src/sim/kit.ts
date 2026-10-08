@@ -2,7 +2,8 @@
  * 業 What a cultivator carries into a hard fight: an elixir, a sigil, an array under the
  * cave floor. Read once into a setup like everything else, so the odds on the screen and
  * the fight that follows are the same fight. See sim/crafts.ts for what fills it and for
- * the fights it is allowed into (never the Dragon, never a tower floor).
+ * the fights it is allowed into (never a common beast; at the Dragon of the tribulation it
+ * counts at a share of itself, DRAGON_KIT_SHARE).
  */
 export interface Kit {
   /** Every blow struck is multiplied by this. */
@@ -13,10 +14,24 @@ export interface Kit {
   readonly mend: number;
   /** 縛 The beast's first blow never lands. */
   readonly bind: boolean;
+  /**
+   * 縛 Only this share of the beast's first blow is turned aside: a Binding Sigil carried where
+   * it works at part of itself (the Dragon, DRAGON_KIT_SHARE). Absent or 0 leaves `bind` to
+   * decide, all or nothing.
+   */
+  readonly bound?: number;
   /** 照 This share of every blow taken goes back into the beast. */
   readonly reflect: number;
   /** 九轉 Once, a blow that would end the fight mends to full instead. */
   readonly revive: boolean;
+  /**
+   * 九轉 How much of the way back to full health the blow that would end the fight mends, when
+   * it is not all of it: the Nine-Turn Pill at the Dragon mends this share of what it would
+   * have mended. Absent is the whole way. It is a share of the mend and never a floor of
+   * health, because any health left at all is one more round of striking, which is worth a
+   * fixed slice of the fight however little of it there is.
+   */
+  readonly reviveShare?: number;
   /** 心魔 The heart demon's power is multiplied by this. */
   readonly demon: number;
   /**
