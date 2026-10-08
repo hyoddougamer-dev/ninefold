@@ -1762,7 +1762,8 @@
       "gallery": [
         "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-drive.webp?v=1",
         "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-hold.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-lines.webp?v=1"
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-lines.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1009-dragon.webp?v=1"
       ],
       "body": [
         "Four things you asked for in {#ideas}, nearly all from rekaris and speculaether. Thank you for saying exactly where it felt bad."
@@ -1793,8 +1794,8 @@
           "rekaris said running all the crafting again sounds exhausting, and he was right. A new life now starts each craft with 25% of the experience it had, about 14 levels fewer than you left, so the workshop is open again within days, not weeks. The pouch, the tools and the made counts still begin again, and qi is untouched: the second life reaches the summit on the same day with or without it (measured, 52.1 days against 52.3)."
         ],
         [
-          "▸ Not in",
-          "Pills and sigils at the Dragon. I built it at a fraction of their strength and measured it: even 1% of their strength shortens a crafter's endgame by 6 to 17%, so no number is small enough to leave the pace alone. The thread has the table."
+          "丹 Your tools count at the Dragon",
+          "An elixir and a sigil carried into the Dragon now count at their full strength, the same as at a warden, and are spent on a win. rekaris was right: months of Alchemy and Sigil Writing should not stop mattering at the summit. Nobody who has not opened the workshop is affected, because there is nothing carried to count. For a crafter, the forty crossings that took 231 days take about 118, the floor the thunder pool sets, and the road to eighty crossings 200 days instead of 503. The Dragon itself is as hard as before: making it harder to pay for this would have slowed everyone else by 40% to 85%. The Breakthrough Pill is still only for gates."
         ]
       ],
       "footer": "師 Shibaki"
@@ -2058,7 +2059,7 @@
         ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending (2% of your health a round), Guarding (12% less taken) and Might (12% harder), 1.75 times that at 天 Heaven rank, for every realm, and three rare ones. 破境丹 Breakthrough Pills, one for each sealed gate (realms 5 to 8, at Alchemy 40, 45, 51 and 56), break the gate's 封 seal and half of its bottleneck. A pill is about an hour of work, its herbs and parts included, and pays the experience of an hour. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding 15% less taken, Thunder 15% harder, Binding, Mirror 10% sent back, Five Thunders 25% harder), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece. A sigil is an hour of work or more. Every recipe in the game lists its own numbers."],
         ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
-        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. Never the tribulation's Dragon, never a common beast. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank). A third hand holds a 破境丹 Breakthrough Pill, for your realm's gate only: it breaks the seal and half the days of its bottleneck (70% at Heaven)."],
+        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. At the tribulation's Dragon they count in full; never a common beast. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank). A third hand holds a 破境丹 Breakthrough Pill, for your realm's gate only: it breaks the seal and half the days of its bottleneck (70% at Heaven)."],
         ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, an array as 30): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."],
         ["▸ 百煉 Hundredfold sets", "Nine sets, one a realm, made only at the forge (Forging, then Hundredfold). Choose the place, shape and rank; every other line comes from the crucible (own-realm ore at Mystic and Earth): Cinnabar for 力 power, the realm's own herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. The main line takes the realm's ingots. A locked line says when it opens. One, two or three portions put a line at the bottom, middle or top of its rank's band. A piece costs its ingots, two parts of the realm's 霸 elite, one of its warden and 20 minutes. Higher ranks ask more Forging; Heaven asks five pieces of the set first."],
@@ -4049,6 +4050,19 @@
       "reply": [
         "You are right that I skipped the crafting, and I am sorry. It is in the next update: a new life starts each craft with 25% of the experience it had, so the workshop is open again within days. I measured it first: the slowest craft reaches level 75 on day 83 of the second life instead of 99, and the summit comes on the same day (52.1 against 52.3), because crafts feed the climb only through the gear they make. The pouch, the tools and the made counts begin again. I did not build a crafting speed bonus, since this already brings the tools back sooner.",
         "On the cap, here is the reason, since you asked for one and not a rule. The Echo is also what the server checks a save against: the roof is a number it can hold a record to, and an Echo with no roof is a bound with no roof, so a hand-edited record could not be told from a real one. Within that, I measured the thing you describe, a soft tail that never stops growing but slowly: 1% per doubling past +25% gives +29% after twenty lives of fifteen marks, 2% gives +33%, 3% gives +38%, and the summit moves 1 to 5 days for the active player. I have not built it, because I think it promises 'never enough'. If, knowing that, you and the others would still want it, say so here and it goes on the list.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "tags": [
+        "Balance",
+        "Question"
+      ],
+      "reply": [
+        "Decided, and it is your road, rekaris. From the next update an elixir and a sigil carried into the Dragon count at their full strength, as they do at a warden, and are spent on a win. I was holding on to a number and you were right to say so. I re-checked what I told you: making the Dragon harder to pay for it would have slowed everyone who does not craft by 40% to 85%, so I have not touched the Dragon. The cost is only that a crafter reaches the end sooner: about 118 days to forty crossings instead of 231, and 200 to eighty instead of 503. Nobody without the workshop moves at all.",
+        "If it turns out too much, or too little, tell me. The share is one number and I can move it without touching anything else.",
         "· 師 Shibaki"
       ]
     }

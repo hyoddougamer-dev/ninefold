@@ -34,16 +34,22 @@ const IN_BAND = 0.003;
 const kitted = (s: State): State => carry(carry(s, 'elixir', 'might9@4'), 'sigil', 'sigil:heavenseal@4');
 
 describe('劫 the kit at the Dragon, thinned toward nothing', () => {
-  it('is switched off at the shipped share: nothing is carried in and nothing is spent', () => {
+  it('counts in full at the shipped share: what a warden gets is carried in and spent', () => {
     const s = kitted(crafterOf(arrived()));
-    expect(DRAGON_KIT_SHARE).toBe(0);
+    expect(DRAGON_KIT_SHARE).toBe(1);
     expect(kitWhere(s, DRAGON)).toBe('dragon');
     const k = kitFor(s, DRAGON, 'dragon');
-    expect(k.kit).toEqual(NO_KIT);
-    expect(k.spends).toBe(false);
-    expect(spendKit(s, k.used)).toEqual(s);
-    // And what the item says matches: while the Dragon takes none, the text says so.
-    expect(bestKit(s, DRAGON, 'dragon')).toEqual(NO_KIT);
+    const warden = kitFor(s, DRAGON, 'warden').kit;
+    expect(k.kit.strike).toBeCloseTo(warden.strike, 9);
+    expect(k.kit.taken).toBeCloseTo(warden.taken, 9);
+    expect(k.kit.mend).toBeCloseTo(warden.mend, 9);
+    expect(k.spends).toBe(true);
+    expect(spendKit(s, k.used)).not.toEqual(s);
+    // The breach and the Breakthrough Pill are the gate's, never the Dragon's.
+    expect(k.kit.breach ?? 0).toBe(0);
+    expect(k.kit.unseal ?? 0).toBe(0);
+    // A cultivator with an empty pouch carries nothing, at any share.
+    expect(kitFor(crafterOf(arrived()), DRAGON, 'dragon', 0).kit).toEqual(NO_KIT);
   });
 
   it('goes into the Dragon and not into a common beast', () => {
@@ -226,8 +232,10 @@ describe('驗 the server allows what the game allows, and no more', () => {
     const between = claim(Math.sqrt(whole * part));
     expect(dragonBeaten(between.before, between.after, 1)).toBe(true);
     expect(dragonBeaten(between.before, between.after, FELT)).toBe(false);
-    // The shipped reading refuses it too, and it is a strike.
-    const refused = verify(between.before, between.after, between.seconds);
+    // The shipped reading counts the whole kit, so it takes that one and refuses one past it.
+    expect(verify(between.before, between.after, between.seconds).why).not.toContain('warden');
+    const beyond = claim(whole * 1.1);
+    const refused = verify(beyond.before, beyond.after, beyond.seconds);
     expect(refused.why).toContain('warden');
     expect(refused.strike).toBe(true);
 
