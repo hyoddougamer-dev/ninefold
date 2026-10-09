@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
-  DRAGON_KIT_SHARE, ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
+  DRAGON_KIT_SHARE, KEY_SPRING, ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
   TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
@@ -682,7 +682,10 @@ export function verify(before: State, after: State, seconds: number, first = fal
   if (!first && !why.includes('too-fast')) {
     // Read without 尋仙 first, which is nearly every pair; only a pair that would wait is
     // read again with the Seeker's step, if either save holds a body that is one.
-    const grew = (k: number) => vaultStock(after, k) > (vaultStock(before, k) + dt * vaultRate(k)) * 1.001 + 60;
+    // 鑰 A Realm Key lifts the spring to KEY_SPRING at the door, once a day at most, so each
+    // day of key the saves show may have added that much fill beside what time did.
+    const keys = Math.min(Math.max(0, (after.keyDay ?? 0) - (before.keyDay ?? 0)), Math.ceil(dt / 86_400) + 1);
+    const grew = (k: number) => vaultStock(after, k) > (vaultStock(before, k) + (dt + keys * KEY_SPRING) * vaultRate(k)) * 1.001 + 60;
     if (grew(1) && grew(Math.max(seeker(before), seeker(after)))) why.push('too-fast');
   }
 

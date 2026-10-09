@@ -2043,7 +2043,7 @@
         ["▸ 香 Burn it as incense", "Half as much again, slowly: +30% to your standing gathering while it burns, open or shut. One burner, and the next stick waits behind the one burning, a day at most. 修 says how long it has left."],
         ["▸ The third door", "龕 a 道 point while your realm's shrine share lasts, 爐 a piece of gear, 匣 a craftsman's box (an hour of this realm's herbs and ore for every room past the first, no experience), or 跡 a challenger's trail: the next challenger on 擂台 the Platform begins a tenth down."],
         ["▸ Rooms you do not reach", "Stay in the spring for next time. A guardian that puts you down takes nothing, those rooms included. One run a day or three, the spring is the same: it fills with time, not with walks."],
-        ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day. A door opened early finds a spring that has filled less."],
+        ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day. It counts the wait as served, spring included: the spring opens holding at least 8 hours of fill, 32 minutes of your gathering, or more if it already held more."],
         ["▸ 秘境深 The Deeper Vault", "From the seventh realm the path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
         ["▸ This week", "Each week one herb is worth planting and one room of the vault pays double. It changes every Monday."]
       ]
@@ -4068,6 +4068,15 @@
       "reply": [
         "Decided, and it is your road, rekaris. From the next update an elixir and a sigil carried into the Dragon count at their full strength, as they do at a warden, and are spent on a win. I was holding on to a number and you were right to say so. I re-checked what I told you: making the Dragon harder to pay for it would have slowed everyone who does not craft by 40% to 85%, so I have not touched the Dragon. The cost is only that a crafter reaches the end sooner: about 118 days to forty crossings instead of 231, and 200 to eighty instead of 503. Nobody without the workshop moves at all.",
         "If it turns out too much, or too little, tell me. The share is one number and I can move it without touching anything else.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "realm key rewards seem much lower",
+      "reply": [
+        "Thanks, speculaether, and thanks rekaris for the explanation: you read it right. The spring fills only while the door is shut, and a key opens the door minutes after the last walk, so it found a spring that had filled for minutes. That was a gap in the key, not a plan.",
+        "Fixed in the next update: a Realm Key now counts the wait as served for the spring too. The door opens on a spring holding at least 8 hours of fill, which is 32 minutes of your gathering, or more if it already held more. The button says the number before you press it. The spring stays, because it is what makes the other rooms worth choosing, and rekaris is right that the other rewards still have to earn their place; I am working on that next.",
         "· 師 Shibaki"
       ]
     }

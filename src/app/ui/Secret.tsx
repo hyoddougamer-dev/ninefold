@@ -6,7 +6,7 @@ import {
 } from '../../sim/secret.ts';
 import { effectiveBeastPower, odds } from '../../sim/combat.ts';
 import { rate } from '../../sim/time.ts';
-import { INCENSE_BONUS, SPRING_FILL, SPRING_HOLD } from '../../sim/balance.ts';
+import { INCENSE_BONUS, KEY_SPRING, SPRING_FILL, SPRING_HOLD } from '../../sim/balance.ts';
 import { duration, num } from '../../sim/format.ts';
 import { icon } from '../../art/icon.ts';
 import { chamber } from '../../art/secret.ts';
@@ -299,7 +299,7 @@ export function Door({ state, onEnter, onKey }: { state: State; onEnter: () => v
       {left === 0 && <em className="cjk">›</em>}
     </button>
     {left > 0 && keys > 0 && (usable && onKey
-      ? <button className="doorkey" onClick={onKey}><b className="cjk">鑰</b> {SECRET.useKey(keys)}</button>
+      ? <button className="doorkey" onClick={onKey}><b className="cjk">鑰</b> {SECRET.useKey(keys, duration(Math.max(spring, KEY_SPRING) * SPRING_FILL))}</button>
       : <p className="faint doorkeynote"><b className="cjk">鑰</b> {SECRET.keyTomorrow}</p>)}
     </>
   );

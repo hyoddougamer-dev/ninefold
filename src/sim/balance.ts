@@ -2089,6 +2089,15 @@ export const DOOR_GAP = 8 * 3600;
  * At three minutes an hour the climb would be close to where it was before.
  */
 export const SPRING_FILL = 4 / 60;
+/**
+ * 鑰 What the Realm Key leaves in the spring when it opens the door: at least a door gap of
+ * fill, 8 hours, which is 32 minutes of gathering at SPRING_FILL. The key counts the wait as
+ * served, so it has to count the spring as served too; before 2026-10-09 it opened a spring
+ * that held only the minutes since the last walk, and the key's rooms paid almost nothing.
+ * A floor, never a top-up: a spring already holding more keeps what it holds. Once a day at
+ * most (the key's own limit), and the server allows for it (KEY_SPRING in verify.ts).
+ */
+export const KEY_SPRING = DOOR_GAP;
 /** 泉 The most shut time the spring holds: a day. It waits full, it never empties itself. */
 export const SPRING_HOLD = 24 * 3600;
 /**

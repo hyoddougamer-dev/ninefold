@@ -3,6 +3,7 @@ import {
   DOOR_GAP, NO_TAKE, OPENS_AT, ROOM_INFO, ROOMS,
   rewardRooms, roomsFor, shrineDeep, springShare, type Room, type RoomKind, type Take,
 } from '../data/secret.ts';
+import { KEY_SPRING } from './balance.ts';
 import { stash } from './stash.ts';
 import { commonsOf, type Beast } from '../data/bestiary.ts';
 import { REALM_KEY } from '../data/crafts.ts';
@@ -261,6 +262,9 @@ export function useKey(s: State): State {
     crafts: { ...s.crafts, pouch },
     runAt: Math.max(0, s.at - doorGap(s)),
     keyDay: keyDayOf(s.at),
+    // 泉 The wait is counted as served, and so is the spring: a floor, never a top-up.
+    spring: Math.max(springNow(s), KEY_SPRING),
+    springAt: s.at,
   };
 }
 

@@ -1568,7 +1568,7 @@ export const SECRET = {
   shrineGives: (n: number) => `+${n} 道 \u00b7 the room is spent`,
   brazierGives: 'a piece of gear \u00b7 the room is spent',
   /** 鑰 The key under a shut door, and why one held may have to wait for tomorrow. */
-  useKey: (n: number) => `Use a Realm Key to open it now (${n} held, one a day)`,
+  useKey: (n: number, spring: string) => `Use a Realm Key to open it now (${n} held, one a day). The spring opens with at least ${spring} of your gathering.`,
   keyTomorrow: 'A Realm Key has opened the door today already. The next one works tomorrow.',
   head: 'The secret realm',
   ready: (rooms: number) => `The door is open. ${rooms} rooms, and every other one is a gate.`,

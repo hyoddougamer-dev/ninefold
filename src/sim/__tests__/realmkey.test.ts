@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { REALM_KEY, RECIPE_BY_KEY } from '../../data/crafts.ts';
-import { canEnter, canUseKey, doorGap, enter, keyDayOf, leave, useKey } from '../secret.ts';
+import { KEY_SPRING, SPRING_FILL } from '../balance.ts';
+import { canEnter, canUseKey, doorGap, enter, keyDayOf, leave, springNow, useKey } from '../secret.ts';
 import { newState, validate, type State } from '../state.ts';
 import { verify } from '../verify.ts';
 
@@ -69,5 +70,30 @@ describe('鑰 the Realm Key', () => {
     const after = { ...before, at: before.at + 600, keyDay: 0 } as State;
     expect(verify(before, after, 600).why).toContain('went-down');
     expect(verify(before, { ...after, keyDay: 19_700 }, 600).why).not.toContain('went-down');
+  });
+});
+
+/** 泉 The key counts the wait as served, and so the spring: it opens on at least KEY_SPRING. */
+describe('鑰 the key and the spring', () => {
+  it('lifts a thin spring to the floor and leaves a fuller one alone', () => {
+    const thin = { ...justOut(1), spring: 600, springAt: T0 + 10 * 86_400 };
+    expect(springNow(useKey(thin))).toBe(KEY_SPRING);
+    const rich = { ...justOut(1), spring: 20 * 3600, springAt: T0 + 10 * 86_400 };
+    expect(springNow(useKey(rich))).toBe(20 * 3600);
+    expect(springNow(enter(useKey(thin)))).toBe(KEY_SPRING);
+  });
+
+  it('is worth a door gap of fill, 32 minutes of gathering', () => {
+    expect(KEY_SPRING * SPRING_FILL).toBe(32 * 60);
+  });
+
+  it('is allowed by the server, once a day and no more', () => {
+    const a = justOut(3);
+    const b = enter(useKey(a));
+    const later = (s: State, at: number): State => ({ ...s, at, springAt: at, runAt: at });
+    // A walker who leaves at once and is paired a day on: honest.
+    const out = leave({ ...b, at: b.at + 600 });
+    const next = later(out, a.at + 86_400);
+    expect(verify(a, next, 86_400, false, 0).why).not.toContain('too-fast');
   });
 });
