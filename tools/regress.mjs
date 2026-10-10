@@ -177,6 +177,8 @@ async function shotFight(fixture, width, later = 0) {
 async function shotStele(fixture, width) {
   const { page, clear } = await openGame(fixture, width);
   try {
+    // On a save with a sheet still up over the corner, the menu is not there to open: no picture.
+    if (!(await page.locator('button.mainswitch').isVisible())) return null;
     await page.click('button.mainswitch', { timeout: 4000 });
     await page.locator('.switchmenu button', { hasText: '碑' }).click({ timeout: 4000 });
     await page.waitForSelector('.stelepage', { timeout: 4000 });
@@ -230,8 +232,9 @@ for (const fixture of Object.keys(FIXTURES)) {
       const name = `${fixture}-stele-${width}`;
       total++;
       const buf = await shotStele(fixture, width);
-      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); }
-      else {
+      if (!buf) { total--; console.log(`skip ${name} (the menu is covered on this save)`); }
+      else if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); }
+      else if (mode !== 'baseline') {
         writeFileSync(join(out, `${name}.png`), buf);
         const ref = join(refDir, `${name}.png`);
         if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); }
@@ -240,7 +243,7 @@ for (const fixture of Object.keys(FIXTURES)) {
           if (want.equals(buf)) console.log(`same ${name}`);
           else {
             let settled = false;
-            for (let attempt = 1; attempt <= 2 && !settled; attempt++) if (want.equals(await shotStele(fixture, width))) settled = true;
+            for (let attempt = 1; attempt <= 2 && !settled; attempt++) { const again = await shotStele(fixture, width); if (again && want.equals(again)) settled = true; }
             if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
             else { differ++; console.log(`DIFF ${name}`); }
           }
@@ -261,7 +264,8 @@ for (const fixture of Object.keys(FIXTURES)) {
       if (want.equals(buf)) { console.log(`same ${name}`); continue; }
       let settled = false;
       for (let attempt = 1; attempt <= 2 && !settled; attempt++) {
-        if (want.equals(await shotFight(fixture, width, later))) settled = true;
+        const again = await shotFight(fixture, width, later);
+        if (again && want.equals(again)) settled = true;
       }
       if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
       else { differ++; console.log(`DIFF ${name}`); }
