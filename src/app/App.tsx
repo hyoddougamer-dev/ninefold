@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { capRefuses, fuseIn, limitFor, stash } from '../sim/stash.ts';
+import { limitFor, stash } from '../sim/stash.ts';
 import { pictureOf } from '../data/pictures.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
@@ -8,7 +8,6 @@ import { currentWarden } from '../sim/combat.ts';
 import { newState, type State,
 } from '../sim/state.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
-import { freePoints as freeOf } from '../sim/points.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
 import { begin, endOf, focusOf, isOver } from './sitting.ts';
 import { now, payTo } from './clock.ts';
@@ -18,20 +17,15 @@ import { useCloud } from './useCloud.ts';
 import { useOverlays } from './useOverlays.ts';
 import { useOnce } from './useOnce.ts';
 import { useFight } from './useFight.ts';
-import { capstonesOpen, focusBonus } from '../sim/dao.ts';
-import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
-import { equip as equipItem, unequip as unequipItem } from '../sim/chest.ts';
-import { brew, refine } from '../sim/trials.ts';
+import { useActions } from './useActions.ts';
+import { focusBonus } from '../sim/dao.ts';
+import { templateOf, type Rarity } from '../data/gear.ts';
 import {
   carry, placeArray, setOrder, setTask, takeSeeking,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
 import type { Away } from '../sim/save.ts';
 import { AWAKEN, GEAR } from './copy.ts';
-import type { Line } from '../data/alchemy.ts';
-import { canUnlock } from '../sim/dao.ts';
-import { swapFork } from '../sim/fork.ts';
-import { salvage, salvageUpTo } from '../sim/salvage.ts';
 import { assignTask, clearSet, renameSet, saveSet, setLocked as lockPiece, wearPieces, wearSet } from '../sim/sets.ts';
 import { adoptFilters, forgetFilter, keepFilter, saveFilter } from '../sim/filters.ts';
 import { Dao } from './screens/Dao.tsx';
@@ -78,12 +72,8 @@ import { Escape } from './ui/Escape.tsx';
 import { Arena } from './ui/Arena.tsx';
 import { JUICE, RANKS } from './copy.ts';
 // 便 The quality-of-life batch B: bulk buttons, the next floor, wear it from the verdict.
-import { QOL } from './copy.ts';
 import { recall, keep, oneOf, useRemembered } from './prefs.ts';
 import { RARITIES } from '../data/gear.ts';
-import { brewMax } from '../sim/trials.ts';
-import { wearBetter } from '../sim/inspect.ts';
-import { fuseAllIn } from '../sim/stash.ts';
 
 import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
@@ -103,14 +93,12 @@ import { spendablePoints } from '../sim/points.ts';
 import { fightDeps } from './memo.ts';
 import { weekOf } from '../sim/week.ts';
 
-
 /** 待 Where on its screen a row of the waiting list is, so taking it brings it into view. */
 const READY_AT: Partial<Record<Waiting['key'], string>> = {
   beds: '.cave', demon: '.seclude', road: '.meet', breakthrough: '[data-coach="breakthrough"]',
   cross: '[data-ready="cross"]', vault: '.door.open', workshop: '.ctask', upgrades: '.chestfilter .ups',
   chestFull: '.melting', melt: '.melting',
 };
-
 
 /** 歸 What the homecoming card says: how long away, and what the time did. */
 interface Homecoming {
@@ -326,94 +314,11 @@ export function App() {
     canAgain, fightAgain, canNext, climbNext, auto, startAuto, stopAuto, autoNext, autoFrom, autoLeft,
   } = useFight(state, setState, towerKit, tap, once);
 
-  const onBrew = useCallback((line: Line, max = false) => {
-    const id = tap();
-    setState((s) => {
-      // 盡 ×Max brews as many as can be paid for, each at its own price (brewMax).
-      const next = max ? brewMax(s, line).state : brew(s, line);
-      if (next === s) return s;
-      once(id, () => { sfx.brew(); haptics.win(); });
-      return next;
-    });
-  }, []);
-
-  /** ▲ 著 Put on every ▲ piece in the chest at once. */
-  const onWearAll = useCallback(() => {
-    const id = tap();
-    setState((s) => {
-      const r = wearBetter(s);
-      if (r.worn > 0) once(id, () => { float(QOL.gear.wore(r.worn), 'gold'); burst('gold', null, 12, 64); sfx.buy(); haptics.strike(); });
-      return r.state;
-    });
-  }, []);
-
-  /** 煉 Fuse every group of three until none is left. */
-  const onFuseAll = useCallback(() => {
-    const id = tap();
-    setState((s) => {
-      const r = fuseAllIn(s);
-      if (r.state !== s) once(id, () => { float(QOL.gear.fused(r.made.length), 'gold'); burst('gold', null, 16, 80); sfx.breakthrough(); haptics.win(); });
-      return r.state;
-    });
-  }, []);
-
-  const onEquip = useCallback((item: Item) => {
-    sfx.buy();
-    haptics.tap();
-    setState((s) => {
-      const next = equipItem(s.worn, s.chest, item, templateOf(item).slot);
-      return { ...s, worn: next.worn, chest: [...next.chest] };
-    });
-  }, []);
-
-  const onUnequip = useCallback((slot: Slot) => {
-    setState((s) => {
-      const next = unequipItem(s.worn, s.chest, slot, limitFor(s));
-      if (next.refused) return s;   // a full chest has nowhere to put it
-      return { ...s, worn: next.worn, chest: [...next.chest] };
-    });
-    sfx.tap();
-    haptics.tap();
-  }, []);
-
-  /** 煉器 Refining spends material on the place of a piece you are wearing; the level stays with the place. */
-  const onRefine = useCallback((slot: Slot) => {
-    const id = tap();
-    setState((s) => {
-      const next = refine(s, slot);
-      if (next === s) return s;
-      once(id, () => { float(JUICE.refined, 'gold'); burst('gold', null, 10, 56); sfx.buy(); haptics.strike(); });
-      return next;
-    });
-  }, []);
-
-  const onFuse = useCallback((template: string, rarity: string) => {
-    const id = tap();
-    setState((s) => {
-      const next = fuseIn(s, template, rarity as Item['rarity']);
-      if (!next.made) return s;
-      once(id, () => { float(JUICE.fused, 'gold'); burst('gold', null, 16, 80); });
-      return next.state;
-    });
-    sfx.breakthrough();
-    haptics.win();
-  }, []);
-
-  /**
-   * 手 Everything 修 the screen does, applied to the state the app is holding now.
-   *
-   * It used to take a finished state: the screen computed `buy(state, u)` from the props
-   * of its last render and this put it over whatever the clock had done since. The bar
-   * survived that, because every second of it is re-derived from the stamp in the save,
-   * but anything else that landed inside the same fifth of a second did not. Now the
-   * screen hands over the change and the change is applied to the current state, which
-   * is the pattern every other handler in this file already used.
-   */
-  const climb = useCallback((make: (s: State) => State) => {
-    setState((s) => make(s));
-    sfx.buy();
-    haptics.tap();
-  }, []);
+  // The game's own actions: what a tap does to the save. The handlers live in useActions.ts.
+  const {
+    onBrew, onWearAll, onFuseAll, onEquip, onUnequip, onRefine, onFuse, climb,
+    onSalvage, onSalvageAll, onUnlock, onSwap, onStance, onSequence,
+  } = useActions(setState, tap, once);
 
   /**
    * 突破 And the breakthrough is watched rather than announced.
@@ -454,59 +359,11 @@ export function App() {
   const heavens = state.tribulation > 0;
   useEffect(() => { setMood(moodFor({ tab, fight: fightKind, heavens })); }, [tab, fightKind, heavens]);
 
-  /** 拆 Melting one piece, from the sheet where it can be looked at first. */
-  const onSalvage = useCallback((id: string) => {
-    setState((s) => salvage(s, [id]));
-    sfx.buy();
-    haptics.strike();
-  }, []);
-
-  /** 拆 And the bulk form: everything at or below a rank, in one tap. */
-  const onSalvageAll = useCallback((upTo: Rarity) => {
-    setState((s) => salvageUpTo(s, upTo));
-    burst('jade', null, 14, 70);
-    sfx.buy();
-    haptics.strike();
-  }, []);
-
-  const onUnlock = useCallback((key: string) => {
-    const id = tap();
-    setState((s) => {
-      const free = freeOf(s);
-      if (!canUnlock(key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm))) return s;
-      // 空囊 Not over a chest fuller than the node would let it be. The sheet says why.
-      if (capRefuses(s, key) !== null) return s;
-      once(id, () => { float(JUICE.learned, 'jade'); burst('jade', null, 14, 70); });
-      return { ...s, unlocked: [...s.unlocked, key] };
-    });
-    sfx.buy();
-    haptics.strike();
-  }, []);
-
-  // 岔 A held fork of the Path becomes its twin, once a day (sim/fork.ts).
-  const onSwap = useCallback((key: string) => {
-    setState((s) => swapFork(s, key, s.at, isOpen(s.realm, 'keystones')));
-    sfx.buy();
-    haptics.strike();
-  }, []);
-
   // A new version of the page is a new version of the game. Nobody installs anything
   // again; they are told, and they choose when.
   useEffect(() => { watchForUpdates(() => setFresh(true)); }, []);
   // 勁 One listener for the whole game: a ripple under every press.
   useEffect(() => { armJuice(); }, []);
-
-  const onStance = useCallback((key: string | null) => {
-    setState((s) => ({ ...s, stance: key }));
-    sfx.tap();
-    haptics.tap();
-  }, []);
-
-  const onSequence = useCallback((keys: string[]) => {
-    setState((s) => ({ ...s, sequence: keys }));
-    sfx.tap();
-    haptics.tap();
-  }, []);
 
   /**
    * 新 The next one-time card, if there is one.
