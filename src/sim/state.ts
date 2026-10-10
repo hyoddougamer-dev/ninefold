@@ -133,7 +133,9 @@ function validTasks(raw: unknown, sets: number): Partial<Record<Task, number>> {
 function validSets(raw: unknown): readonly GearSet[] {
   if (!Array.isArray(raw)) return [];
   const out: GearSet[] = [];
-  for (const r of raw.slice(0, SET_LIMIT)) {
+  // Counted by the sets kept, not the entries read: a dropped entry must not take one of the places.
+  for (const r of raw) {
+    if (out.length >= SET_LIMIT) break;
     const o = (r ?? {}) as Record<string, unknown>;
     const name = typeof o.name === 'string' ? cleanSetName(o.name) : '';
     const rawIds = (o.ids ?? {}) as Record<string, unknown>;

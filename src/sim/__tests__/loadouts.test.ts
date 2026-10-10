@@ -145,6 +145,13 @@ describe('套 ten loadouts', () => {
     expect(SET_LIMIT).toBe(10);
   });
 
+  // An entry with no name or no piece is dropped, and it must not take one of the ten places
+  // from a set that is kept: four of these ahead of ten real sets still leaves all ten.
+  it('a dropped entry does not use up one of the ten places', () => {
+    const junk = Array.from({ length: 4 }, () => ({ name: '', ids: {} }));
+    expect(validate({ ...asSave(0), sets: [...junk, ...rawSets(10)] }, T0).sets).toEqual(rawSets(10));
+  });
+
   it('loads a save of five sets unchanged, and trims a forged fifty to ten', () => {
     const five = validate(asSave(5), T0);
     expect(five.sets).toEqual(rawSets(5));
