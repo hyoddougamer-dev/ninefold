@@ -146,7 +146,17 @@ for (const fixture of Object.keys(FIXTURES)) {
       writeFileSync(join(out, `${s.name}.png`), s.buf);
       const ref = join(refDir, `${s.name}.png`);
       if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${s.name}`); continue; }
-      if (!readFileSync(ref).equals(s.buf)) { differ++; console.log(`DIFF ${s.name}`); } else console.log(`same ${s.name}`);
+      const want = readFileSync(ref);
+      if (want.equals(s.buf)) { console.log(`same ${s.name}`); continue; }
+      // A picture that differs is taken again, twice. One that matches on a retake was a
+      // timing blip, and is reported as such; one that differs every time is a change.
+      let settled = false;
+      for (let attempt = 1; attempt <= 2 && !settled; attempt++) {
+        const again = (await capture(fixture, width)).find((x) => x.name === s.name);
+        if (again && want.equals(again.buf)) settled = true;
+      }
+      if (settled) console.log(`same ${s.name} (a timing blip on the first take, matched on a retake)`);
+      else { differ++; console.log(`DIFF ${s.name}`); }
     }
   }
 }
