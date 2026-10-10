@@ -21,7 +21,7 @@ import { SLOTS } from '../src/data/gear.ts';
 import { commonsOf, wardenOf } from '../src/data/bestiary.ts';
 import { codexHeld, codexRank, codexToKeep, hundredFits, keptRank } from '../src/sim/hundred.ts';
 import { canReincarnate } from '../src/sim/rebirth.ts';
-import { validate } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium';

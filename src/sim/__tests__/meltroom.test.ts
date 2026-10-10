@@ -5,7 +5,8 @@ import { SCHOOL_INFO, type School } from '../../data/schools.ts';
 import { classMelt } from '../schools.ts';
 import { melt, meltMaterial, meltSpill, salvage, salvageValue, meltFactor } from '../salvage.ts';
 import { stash } from '../stash.ts';
-import { newState, rate, validate, type State } from '../state.ts';
+import { newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { advance } from '../time.ts';
 
 const T0 = 1_700_000_000;

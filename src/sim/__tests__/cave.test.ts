@@ -4,7 +4,8 @@ import {
   canPlant, grown, harvest, harvestAll, harvestValue, isRipe, leftOn, plant, plantable,
   ripeCount, seedCost,
 } from '../cave.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { duration } from '../format.ts';
 import { WEEK, isSeason } from '../week.ts';
 import { rate } from '../time.ts';

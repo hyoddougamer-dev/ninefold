@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { validate } from '../state.ts';
+import { validate } from '../load.ts';
 import { codexRank, hundredFits } from '../hundred.ts';
 import { verify } from '../verify.ts';
 

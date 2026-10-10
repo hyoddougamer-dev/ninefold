@@ -19,7 +19,7 @@ import { strict as assert } from 'node:assert';
 import { XP_TABLE } from '../src/data/crafts.ts';
 import { CRUCIBLE } from '../src/data/hundred.ts';
 import { materialGate, materialReached } from '../src/sim/hundred.ts';
-import { validate } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 import { echoAfter } from '../src/sim/rebirth.ts';
 import { ECHO_FIRST } from '../src/sim/balance.ts';
 

@@ -4,7 +4,8 @@ import { CRAFT_KIT, CRAFT_QUALITY_MULT, DRAGON_KIT_SHARE, MAX_MARK_DAYS } from '
 import { beatable, oddsRaw } from '../combat.ts';
 import { bestKit, carry, kitFor, kitWhere, spendKit, thinKit } from '../crafts.ts';
 import { NO_KIT } from '../kit.ts';
-import { validate, type State } from '../state.ts';
+import { type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { anchorFloor, dragonBeaten, verify } from '../verify.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { KIT_CLOCK_BAND, arrivalOf, arrived, crafterOf, kitClock, playEndgame } from '../../../tools/endgame.ts';

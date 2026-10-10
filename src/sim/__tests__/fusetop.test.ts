@@ -4,7 +4,8 @@ import {
 } from '../../data/gear.ts';
 import { fuse, fusedTop, fusesInto, qualityOf } from '../chest.ts';
 import { FUSE_TOP } from '../balance.ts';
-import { newState, validate } from '../state.ts';
+import { newState } from '../state.ts';
+import { validate } from '../load.ts';
 
 /**
  * 頂 A fusion stops at ×1.5, and the sheet says so. The first line used to be rounded after

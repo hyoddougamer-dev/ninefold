@@ -1,7 +1,7 @@
 /**
  * 宿慧 The Echo: what the lives before this one are worth, read off the record they left.
  *
- * Kept apart from rebirth.ts because state.ts reads it (the rate, and validate), and
+ * Kept apart from rebirth.ts because state.ts reads it (the rate) and load.ts does (validate), and
  * rebirth.ts reads state.ts: this file knows nothing about a State, so the two cannot
  * import each other in a circle.
  *

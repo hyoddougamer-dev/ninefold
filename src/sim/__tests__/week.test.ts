@@ -3,7 +3,8 @@ import { BEASTS, huntable, isElite, wardenOf } from '../../data/bestiary.ts';
 import { HERBS } from '../../data/herbs.ts';
 import { roomsFor } from '../../data/secret.ts';
 import { BLESSED_ROOM, QUARRY_LOOT, SEASON_HARVEST } from '../balance.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import {
   WEEK, blessedStep, isBlessed, isQuarry, isSeason, quarryOf, quarryOwed, seasonOf,
   weekLeft, weekOf,

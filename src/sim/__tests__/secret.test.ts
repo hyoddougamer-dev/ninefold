@@ -5,7 +5,8 @@ import {
   beastAt, canEnter, doorIn, doorsAt, enter, giftOf, inside, isGate, leave, open,
 } from '../secret.ts';
 import { springShare, roomsFor } from '../../data/secret.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 const T0 = 1_700_000_000;
 

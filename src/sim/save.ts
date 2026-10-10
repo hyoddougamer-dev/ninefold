@@ -1,4 +1,5 @@
-import { newState, validate, type State } from './state.ts';
+import { newState, type State } from './state.ts';
+import { validate } from './load.ts';
 import { OPENING_PURSE } from './balance.ts';
 import { advance, layerCost } from './time.ts';
 import { held, needsOf, settle, workSeconds, workshopOpen, type Stood } from './crafts.ts';

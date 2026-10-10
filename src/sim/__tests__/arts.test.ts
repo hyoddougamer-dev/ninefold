@@ -3,7 +3,8 @@ import { ARTS, SEQUENCE_SLOTS, STANCES, WARDEN_ART } from '../../data/arts.ts';
 import { WARDENS, wardenOf } from '../../data/bestiary.ts';
 import { beastPower, odds } from '../combat.ts';
 import { artsHeld, sequenceOf, stanceOf, validateSequence, validateStance } from '../arts.ts';
-import { UPGRADE_INFO, newState, power, validate, type State } from '../state.ts';
+import { UPGRADE_INFO, newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { ART_NUMBERS, STANCE_NUMBERS } from '../balance.ts';
 
 const REALM = 6;

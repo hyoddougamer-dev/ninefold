@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { TAB_OF, clearFresh, freshTabs, markFresh, newTabsOf } from '../fresh.ts';
 import { workshopLines } from '../away.ts';
 import { SYSTEMS } from '../../sim/unlocks.ts';
-import { newState, validate } from '../../sim/state.ts';
+import { newState } from '../../sim/state.ts';
+import { validate } from '../../sim/load.ts';
 import type { Away } from '../../sim/save.ts';
 
 const T0 = 1_700_000_000;

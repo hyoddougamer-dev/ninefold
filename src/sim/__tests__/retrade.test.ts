@@ -6,7 +6,8 @@ import { chestLimit } from '../chest.ts';
 import { canUnlock } from '../dao.ts';
 import { freePoints } from '../points.ts';
 import { alternatives, retrade, retradeCost, retradeDays } from '../retrade.ts';
-import { newState, rate, validate, type State } from '../state.ts';
+import { newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;

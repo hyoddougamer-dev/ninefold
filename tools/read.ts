@@ -21,8 +21,8 @@
  * It reads and prints. It never writes anything, and it never asks the network.
  */
 import { readFileSync } from 'node:fs';
-import { validate, power, rate, layersOpened, capOf, canBuy, UPGRADES, UPGRADE_INFO,
-  type State } from '../src/sim/state.ts';
+import { power, rate, layersOpened, capOf, canBuy, UPGRADES, UPGRADE_INFO, type State } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 import { advance } from '../src/sim/time.ts';
 import { duration, num } from '../src/sim/format.ts';
 import { LAYERS, LAYERS_PER_REALM } from '../src/sim/balance.ts';

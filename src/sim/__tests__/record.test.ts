@@ -99,7 +99,7 @@ describe('錄 the record', () => {
   });
 
   it('cannot be claimed by a save that never fought', async () => {
-    const { validate } = await import('../state.ts');
+    const { validate } = await import('../load.ts');
     const forged = { ...newState(T0), v: 1, killed: { rat: 1e9, notabeast: 500 } };
     const held = validate(forged, T0 + 10);
     // A beast that does not exist is not a kill, and the ones that do are honoured:

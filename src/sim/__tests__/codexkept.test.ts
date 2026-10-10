@@ -10,7 +10,8 @@ import {
   codexHeld, codexRank, codexToKeep, codexValue, keptCovers, keptRank, validKept,
 } from '../hundred.ts';
 import { bornFrom, reincarnate } from '../rebirth.ts';
-import { gathering, layersOpened, newState, rate, validate, type State } from '../state.ts';
+import { gathering, layersOpened, newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { keepSpare, load, rearm, save } from '../save.ts';
 import { GAME_EPOCH, firstSync, verify } from '../verify.ts';
 

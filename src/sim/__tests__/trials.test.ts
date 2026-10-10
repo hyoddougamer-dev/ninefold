@@ -15,7 +15,8 @@ import {
 } from '../furnace.ts';
 import { brew, canBrew, clearFloor, floorMaterial, floorQi, furnaceMenu, standingFloor, towerOpen } from '../trials.ts';
 import { isOpen, opensAt } from '../unlocks.ts';
-import { newState, power, validate, type State } from '../state.ts';
+import { newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { num } from '../format.ts';
 
 const T0 = 1_700_000_000;

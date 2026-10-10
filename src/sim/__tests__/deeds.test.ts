@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEEDS, TRACKS, closest, doneBy, tally } from '../deeds.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { BEASTS } from '../../data/bestiary.ts';
 import { ALL_NODES, NODES } from '../../data/techniques.ts';
 import { canUnlock, daoEarned, daoSpent } from '../dao.ts';

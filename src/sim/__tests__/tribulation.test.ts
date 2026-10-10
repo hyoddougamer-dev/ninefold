@@ -5,10 +5,8 @@ import {
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { crossNow, effectiveBeastPower, evenDragon } from '../combat.ts';
-import {
-  atTribulation, canCross, crossTribulation, markBonus, newState, power,
-  tribulationPool, tribulationScale, validate, type State,
-} from '../state.ts';
+import { atTribulation, canCross, crossTribulation, markBonus, newState, power, tribulationPool, tribulationScale, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { rate } from '../time.ts';
 import { LINES } from '../../data/alchemy.ts';
 import { pillsTaken } from '../furnace.ts';

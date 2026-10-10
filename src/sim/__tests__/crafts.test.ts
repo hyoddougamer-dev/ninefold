@@ -19,7 +19,8 @@ import {
   arrayStrength, depthOf, depthStrength, doorGapFor, masteryFor, masteryMost, toNextDepth, xpOf,
   type Crafts,
 } from '../crafts.ts';
-import { newState, rate, validate, type State } from '../state.ts';
+import { newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { oddsRaw } from '../combat.ts';
 import { fusable } from '../chest.ts';
 import { salvage } from '../salvage.ts';

@@ -283,7 +283,7 @@ describe('the cap on what a realm may hold', () => {
   });
 
   it('refuses a save that claims more levels than its realm allows', async () => {
-    const { validate } = await import('../state.ts');
+    const { validate } = await import('../load.ts');
     const forged = {
       ...newState(T0), v: 1, realm: 2,
       levels: { technique: 900, method: 900, pills: 900, cores: 900 } as Record<Upgrade, number>,
@@ -301,7 +301,8 @@ describe('the cap on what a realm may hold', () => {
    * level 境外 had paid for was deleted on the next open: silently, every single time.
    */
   it('keeps the levels a heaven paid for through a save and a load', async () => {
-    const { validate, capOf } = await import('../state.ts');
+    const { validate } = await import('../load.ts');
+    const { capOf } = await import('../state.ts');
     const crossed = {
       ...newState(T0), v: 1 as const, realm: 9, layer: 8, tribulation: 2 * MARKS_PER_HEAVEN,
     };

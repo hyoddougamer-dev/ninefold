@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MEETINGS, heartOf, meetingOf } from '../../data/meetings.ts';
 import { answer, boons, heart, meetingDue, pathOf, stillToCome, MEET_GAP } from '../meet.ts';
-import { newState, power, validate, type State } from '../state.ts';
+import { newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { effectiveBeastPower, oddsRaw } from '../combat.ts';
 import { driveCost } from '../hunt.ts';
 import { fortuneOf } from '../fortune.ts';

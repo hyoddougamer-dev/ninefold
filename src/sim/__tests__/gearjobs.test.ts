@@ -10,7 +10,8 @@ import {
 import { meltFactor, melt } from '../salvage.ts';
 import { classMelt, classRefine, gearFuse } from '../schools.ts';
 import { assignTask, clearSet, saveSet, taskBody, tasksOf } from '../sets.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { fusionQuality, stash } from '../stash.ts';
 import { advance } from '../time.ts';
 import { refinePrice } from '../trials.ts';

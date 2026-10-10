@@ -11,7 +11,8 @@
  *      if it was faster than anybody honest, marks the player for review;
  *   4. answers with where the player now stands, and why, in words the game can show.
  */
-import { validate, layersOpened, type State } from '../../../src/sim/state.ts';
+import { validate } from '../../../src/sim/load.ts';
+import { layersOpened, type State } from '../../../src/sim/state.ts';
 import { verify, firstSync, type Verdict } from '../../../src/sim/verify.ts';
 import { progressOf } from '../../../src/sim/echo.ts';
 import { withPackedPile } from '../../../src/sim/pilepack.ts';

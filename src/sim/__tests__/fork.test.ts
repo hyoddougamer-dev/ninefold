@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { forkTwin, forkWait, swapFork, swapStatus } from '../fork.ts';
 import { verify } from '../verify.ts';
 import { FORK_SWAP_GAP } from '../balance.ts';

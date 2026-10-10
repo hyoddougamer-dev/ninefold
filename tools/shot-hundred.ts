@@ -16,7 +16,7 @@ import { strict as assert } from 'node:assert';
 import { XP_TABLE, hundredKey, type HundredRank } from '../src/data/crafts.ts';
 import { GEAR, SLOTS, type Item, type Slot } from '../src/data/gear.ts';
 import { codexRank, hundredFits, pieceOf, spiritOf, type Order } from '../src/sim/hundred.ts';
-import { validate } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium';

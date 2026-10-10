@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { HABITS, HOLDER, play } from '../../../tools/habits.ts';
 import { LAYERS_PER_REALM } from '../balance.ts';
 import { advance, affordableIn, buysWith, canOpenLayer, layerCost, openLayer, setHold } from '../time.ts';
-import { UPGRADES, buy, canBuy, newState, rate, validate, type State } from '../state.ts';
+import { UPGRADES, buy, canBuy, newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { verify } from '../verify.ts';
 import { bornFrom } from '../rebirth.ts';
 

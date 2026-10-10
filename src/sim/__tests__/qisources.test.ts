@@ -15,7 +15,8 @@ import {
 import { TEMPERS } from '../../data/platform.ts';
 import { stanceChoices } from '../arts.ts';
 import { advance, rate } from '../time.ts';
-import { breakThrough, newState, power, validate, type State } from '../state.ts';
+import { breakThrough, newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { effectiveBeastPower } from '../combat.ts';
 import { kitWhere } from '../crafts.ts';
 import { WEEK, isBlessed } from '../week.ts';

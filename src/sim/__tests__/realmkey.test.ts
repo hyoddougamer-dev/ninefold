@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { REALM_KEY, RECIPE_BY_KEY } from '../../data/crafts.ts';
 import { KEY_SPRING, SPRING_FILL } from '../balance.ts';
 import { canEnter, canUseKey, doorGap, enter, keyDayOf, leave, springNow, useKey } from '../secret.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { verify } from '../verify.ts';
 
 const T0 = 1_700_000_000;

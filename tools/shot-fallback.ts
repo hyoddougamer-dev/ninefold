@@ -16,7 +16,7 @@ import { mkdirSync } from 'node:fs';
 import { strict as assert } from 'node:assert';
 import { XP_TABLE } from '../src/data/crafts.ts';
 import { commonsOf, wardenOf } from '../src/data/bestiary.ts';
-import { validate } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.CHROME ?? '/opt/pw-browsers/chromium';

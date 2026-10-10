@@ -14,7 +14,8 @@ import { blocked, carry, kitFor, secondsOf, setOrder, work } from '../crafts.ts'
 import { RECIPE_BY_KEY } from '../../data/crafts.ts';
 import { effectiveBeastPower, lootFrom } from '../combat.ts';
 import { fateFull } from '../fate.ts';
-import { validate, type State } from '../state.ts';
+import { type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { verify } from '../verify.ts';
 
 const T0 = 1_700_000_000;

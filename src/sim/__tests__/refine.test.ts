@@ -8,7 +8,8 @@ import {
 } from '../refine.ts';
 import { canRefine, refine, refinePrice } from '../trials.ts';
 import { equip } from '../chest.ts';
-import { newState, power, rate, validate, type State } from '../state.ts';
+import { newState, power, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { levelCap } from '../balance.ts';
 import { floorLoot } from '../tower.ts';
 import { itemWorth } from '../chest.ts';

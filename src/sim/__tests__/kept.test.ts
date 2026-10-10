@@ -5,7 +5,8 @@ import { fuseAllIn, fuseIn } from '../stash.ts';
 import { salvage, salvageUpTo, salvageable } from '../salvage.ts';
 import { linesHeld, marksUp, swing, verdictByLines, verdictOf, compare, wearBetter } from '../inspect.ts';
 import { loadoutsOf, saveSet, setLocked } from '../sets.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 /**
  * 守 What the testers lost, and the rules that keep it now (the Discord, 2026-10-04).

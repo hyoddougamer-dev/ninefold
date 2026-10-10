@@ -4,7 +4,8 @@ import { HABITS, play } from '../../../tools/habits.ts';
 import { GAME_EPOCH, type Verdict } from '../verify.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
-import { validate, type State } from '../state.ts';
+import { type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { withPackedPile } from '../pilepack.ts';
 import { progressOf } from '../echo.ts';
 

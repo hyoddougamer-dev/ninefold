@@ -5,7 +5,8 @@ import { salvage, salvageUpTo, salvageable } from '../salvage.ts';
 import { clearSet, isWorn, renameSet, saveSet, setKeeping, setLocked, wearSet } from '../sets.ts';
 import { CHEST_LIMIT, SET_ROOM_RESERVE } from '../balance.ts';
 import { stash } from '../stash.ts';
-import { SET_LIMIT, newState, validate, type State } from '../state.ts';
+import { SET_LIMIT, newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 const T0 = 1_700_000_000;
 const piece = (id: string, template = 'sword2', rarity: Item['rarity'] = 'common'): Item =>

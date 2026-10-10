@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { validate } from '../state.ts';
+import { validate } from '../load.ts';
 import { levelIn, totalLevel } from '../crafts.ts';
 import { SKILL_KEYS } from '../../data/crafts.ts';
 import { SEAL_DAYS } from '../balance.ts';

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { newState, power, validate, type State } from '../state.ts';
+import { newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { oddsRaw } from '../combat.ts';
 import { freePoints } from '../points.ts';
 import { verify } from '../verify.ts';

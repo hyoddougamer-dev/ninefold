@@ -3,7 +3,8 @@ import { SKILL_KEYS, XP_CAP, XP_TABLE, levelOf, type SkillKey } from '../../data
 import { CRAFT_CARRY } from '../balance.ts';
 import { NO_CRAFTS, XP_PER_SECOND_MAX, carriedXp, levelIn, validCrafts } from '../crafts.ts';
 import { bornFrom, reincarnate } from '../rebirth.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { verify } from '../verify.ts';
 import { REBIRTH } from '../../app/copy.ts';
 

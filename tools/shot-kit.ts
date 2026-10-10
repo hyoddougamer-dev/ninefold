@@ -12,7 +12,7 @@
  */
 import { chromium, type Page } from 'playwright';
 import { mkdirSync } from 'node:fs';
-import { validate } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 import { odds } from '../src/sim/combat.ts';
 import { floorBeast, floorPower } from '../src/sim/tower.ts';
 import { XP_TABLE } from '../src/data/crafts.ts';

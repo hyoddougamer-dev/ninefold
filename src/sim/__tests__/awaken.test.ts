@@ -3,7 +3,8 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../../data/awakening
 import { MARKS_PER_HEAVEN } from '../../data/heavens.ts';
 import { ALL_NODES } from '../../data/techniques.ts';
 import { cardDue, due, held, owed, pillFactor, take, towerBonus, valid } from '../awaken.ts';
-import { newState, power, validate, type State } from '../state.ts';
+import { newState, power, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { MEETINGS, MEET_POINT_CEILING, validMet } from '../../data/meetings.ts';
 import { answer, canAnswer, giftOf, meetingDue, priceOf, MEET_GAP } from '../meet.ts';
 import { freePoints } from '../points.ts';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { NOTICES, nextNotice } from '../notices.ts';
-import { newState, validate, type State } from '../../sim/state.ts';
+import { newState, type State } from '../../sim/state.ts';
+import { validate } from '../../sim/load.ts';
 import { levelCap } from '../../sim/balance.ts';
 import { GEAR, baseValue } from '../../data/gear.ts';
 import { DISMISSED } from '../guide.ts';

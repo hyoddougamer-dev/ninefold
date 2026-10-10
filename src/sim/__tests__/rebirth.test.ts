@@ -8,7 +8,8 @@ import { MARKS_LIMIT, echoFactor, echoFromSum, echoOf, echoSum, lifeEcho, livesE
 import {
   bornFrom, canReincarnate, echoAfter, lifeOf, lifeStart, lifeTitle, reincarnate,
 } from '../rebirth.ts';
-import { gathering, layersOpened, newState, rate, validate, type State } from '../state.ts';
+import { gathering, layersOpened, newState, rate, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { advance } from '../time.ts';
 import { importSave, keepSpare, load, rearm, save, untouched, exportSave } from '../save.ts';
 import { GAME_EPOCH, verify } from '../verify.ts';

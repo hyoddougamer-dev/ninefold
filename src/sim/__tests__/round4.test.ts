@@ -6,7 +6,8 @@ import { CAPSTONE_TIER, canUnlock, capstonesOpen } from '../dao.ts';
 import { secondChance, secondDropFor } from '../fate.ts';
 import { fortuneOf } from '../fortune.ts';
 import { doorsAt, giftOf } from '../secret.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 /**
  * 四 The testers' fourth round, held where the numbers are.

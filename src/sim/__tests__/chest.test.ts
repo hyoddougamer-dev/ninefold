@@ -10,7 +10,8 @@ import {
 import { fuseAllIn } from '../stash.ts';
 import { FUSE_TOP } from '../balance.ts';
 import { rollDrop } from '../drops.ts';
-import { newState, power, validate } from '../state.ts';
+import { newState, power } from '../state.ts';
+import { validate } from '../load.ts';
 
 /** A plain piece: its template's own line at its rank's base, and nothing else. */
 const mk = (template: string, rarity: Rarity, n: number): Item => {

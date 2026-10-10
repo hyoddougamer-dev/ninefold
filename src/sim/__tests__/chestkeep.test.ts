@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { limitFor } from '../stash.ts';
 import { equip } from '../chest.ts';
 import { GEAR, SLOTS, callingOf, schoolOf, type Item, type Worn } from '../../data/gear.ts';

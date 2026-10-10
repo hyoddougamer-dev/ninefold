@@ -4,10 +4,8 @@ import { sealRow } from '../../../tools/seal.ts';
 import {
   LAYERS_PER_REALM, SEAL_DAYS, CRAFT_KIT, CRAFT_QUALITY_MULT, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP, SEAL_PILL_SHARE,
 } from '../balance.ts';
-import {
-  breakThrough, canFightWarden, canPaySeal, feedDays, feedSeal, gathering, newState, paySeal, sealDays, sealFeedRoom,
-  sealFilled, sealLeft, sealPayRoom, sealPrice, sealStep, sealed, validate, type State,
-} from '../state.ts';
+import { breakThrough, canFightWarden, canPaySeal, feedDays, feedSeal, gathering, newState, paySeal, sealDays, sealFeedRoom, sealFilled, sealLeft, sealPayRoom, sealPrice, sealStep, sealed, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { advance } from '../time.ts';
 import {
   carry, carrySlot, feedShare, kitFor, pillHeld, pillShare, spendKit, unsealCarried, wallDays, wallDaysLeft, bestFeed, bestUnseal,

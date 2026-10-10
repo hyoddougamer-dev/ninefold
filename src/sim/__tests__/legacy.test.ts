@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { canFightWarden, layersOpened, sealLeft, sealDays, sealed, validate, type State } from '../state.ts';
+import { canFightWarden, layersOpened, sealLeft, sealDays, sealed, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { advance } from '../time.ts';
 import { settle } from '../crafts.ts';
 import { load } from '../save.ts';

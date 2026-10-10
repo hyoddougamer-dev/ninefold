@@ -25,11 +25,8 @@
  *
  * Run with `npm run qi`.
  */
-import {
-  atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense, condense,
-  condenseCost, crossTribulation, tribulationPool, upgradeCost, validate,
-  type State, type Upgrade,
-} from '../src/sim/state.ts';
+import { atCeiling, breakThrough, buy, canBreakThrough, canBuy, canCondense, condense, condenseCost, crossTribulation, tribulationPool, upgradeCost, type State, type Upgrade } from '../src/sim/state.ts';
+import { validate } from '../src/sim/load.ts';
 import { advance, layerCost, layersOpened, rate } from '../src/sim/time.ts';
 import { LAYERS_PER_REALM } from '../src/sim/balance.ts';
 import { brew, canBrew, clearFloor, floorQi, pillPrice, standingFloor } from '../src/sim/trials.ts';

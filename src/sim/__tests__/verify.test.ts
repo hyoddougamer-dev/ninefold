@@ -9,7 +9,7 @@ import { TOWER_FORGED, anchorFloor, bodiesHeld, firstSync, towerVerdict, verify,
 import { floorBeast, floorPower } from '../tower.ts';
 import { saveSet } from '../sets.ts';
 import { RUN_DAO_CEILING } from '../../data/secret.ts';
-import { validate } from '../state.ts';
+import { validate } from '../load.ts';
 import { fuse } from '../chest.ts';
 import { FUSE_TOP, PAIR_DRAGON, focusAt } from '../balance.ts';
 import { classDragon, classTower } from '../schools.ts';

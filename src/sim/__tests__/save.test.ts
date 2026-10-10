@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { exportSave, importSave, keepSpare, load, rearm, save, saveFileName, wasEdited, wipe } from '../save.ts';
 import { MAGIC, open, seal } from '../seal.ts';
-import { newState, power, tribulationPool, validate, type State } from '../state.ts';
+import { newState, power, tribulationPool, type State } from '../state.ts';
+import { validate } from '../load.ts';
 import { chestLimit } from '../chest.ts';
 import { advance, rate } from '../time.ts';
 import { ladderAt } from '../balance.ts';

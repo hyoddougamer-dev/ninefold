@@ -4,7 +4,8 @@ import { RARITIES } from '../../data/gear.ts';
 import { FATE_FLOOR, FATE_FULL, FATE_TOP_COMMON } from '../balance.ts';
 import { dropFor, fateDue, fateOf, fatePromise, noteFate } from '../fate.ts';
 import { drive } from '../hunt.ts';
-import { newState, validate, type State } from '../state.ts';
+import { newState, type State } from '../state.ts';
+import { validate } from '../load.ts';
 
 const T0 = 1_700_000_000;
 const at = (realm: number, fate: State['fate'] = {}): State =>
