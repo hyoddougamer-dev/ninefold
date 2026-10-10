@@ -172,6 +172,23 @@ async function shotFight(fixture, width, later = 0) {
   }
 }
 
+
+/** The stele, opened from the menu the way a player opens it. */
+async function shotStele(fixture, width) {
+  const { page, clear } = await openGame(fixture, width);
+  try {
+    await page.click('button.mainswitch', { timeout: 4000 });
+    await page.locator('.switchmenu button', { hasText: '碑' }).click({ timeout: 4000 });
+    await page.waitForSelector('.stelepage', { timeout: 4000 });
+    await page.waitForTimeout(400);
+    await clear();
+    await page.mouse.move(0, 0);
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
+  }
+}
+
 /** The tabs the game shows, read from its own tab bar once, so a new tab is shot without editing this file. */
 async function tabsOf(fixture, width) {
   const { page } = await openGame(fixture, width);
@@ -206,6 +223,28 @@ for (const fixture of Object.keys(FIXTURES)) {
       }
       if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
       else { differ++; console.log(`DIFF ${name}`); }
+      }
+    }
+    // The stele, from the menu.
+    {
+      const name = `${fixture}-stele-${width}`;
+      total++;
+      const buf = await shotStele(fixture, width);
+      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); }
+      else {
+        writeFileSync(join(out, `${name}.png`), buf);
+        const ref = join(refDir, `${name}.png`);
+        if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); }
+        else {
+          const want = readFileSync(ref);
+          if (want.equals(buf)) console.log(`same ${name}`);
+          else {
+            let settled = false;
+            for (let attempt = 1; attempt <= 2 && !settled; attempt++) if (want.equals(await shotStele(fixture, width))) settled = true;
+            if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+            else { differ++; console.log(`DIFF ${name}`); }
+          }
+        }
       }
     }
     // The fight: its opening beat, and a few beats on.

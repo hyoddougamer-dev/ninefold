@@ -72,7 +72,7 @@ import { retrade } from '../sim/retrade.ts';
 import { Schools } from './ui/Schools.tsx';
 import { Compare } from './ui/Compare.tsx';
 import { Coach } from './ui/Coach.tsx';
-import { Chronicle } from './screens/Chronicle.tsx';
+import { SteleSheet } from './ui/SteleSheet.tsx';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Svg } from './ui/Svg.tsx';
@@ -1319,15 +1319,7 @@ export function App() {
         />
       )}
 
-      {stele && (
-        <div className="stelepage">
-          <Chronicle state={state} pulse={pulse} />
-          <button className="act" style={{ marginTop: 18 }}
-            onClick={() => { setStele(false); sfx.tap(); }}>
-            續 <span>Back</span>
-          </button>
-        </div>
-      )}
+      {stele && <SteleSheet state={state} pulse={pulse} onBack={() => { setStele(false); sfx.tap(); }} />}
 
       {credits && <Credits onClose={() => { setCredits(false); sfx.tap(); }} />}
 
