@@ -1,4 +1,6 @@
 import { forkTrees } from '../fork.ts';
+import { GEAR, SLOTS, type Item, type Slot, type Worn } from '../../data/gear.ts';
+import { NODES } from '../../data/techniques.ts';
 import { describe, expect, it } from 'vitest';
 import { AUTO_HABIT, HABITS, play } from '../../../tools/habits.ts';
 import { arrivalOf, playEndgame } from '../../../tools/endgame.ts';
@@ -543,5 +545,48 @@ describe('劫 an honest crossing is never struck, a Sword Saint\'s included', ()
     const v = verify(top, validate(forged, later), later - top.at);
     expect(v.why).toContain('warden');
     expect(v.strike).toBe(true);
+  });
+});
+
+/**
+ * 套 驗 Ten loadouts are ten more bodies the server tries (bodiesHeld). Held to a time, so
+ * a later change that makes the walk dear is caught: the worst save a cultivator can send,
+ * ten distinct loadouts, a chest of 141 pieces and every fork of the tree held.
+ */
+describe('套 bodiesHeld with ten loadouts', () => {
+  const forks = NODES.filter((n) => n.excludes && !n.keystone).map((n) => n.key);
+  const pieceFor = (i: number, slot: Slot): Item => {
+    const options = GEAR.filter((g) => g.slot === slot);
+    const tpl = options[i % options.length];
+    return { id: `${slot}${i}`, template: tpl.key, rarity: 'heaven', rolls: [{ affix: tpl.affix, value: 5 + (i % 7) }] };
+  };
+  const worst = (sets: number): State => {
+    const chest: Item[] = Array.from({ length: 141 }, (_, i) => pieceFor(Math.floor(i / 6), SLOTS[i % 6]));
+    const worn: Worn = {};
+    for (const slot of SLOTS) worn[slot] = pieceFor(99, slot);
+    const named = Array.from({ length: sets }, (_, k) => ({
+      name: `S${k}`,
+      ids: Object.fromEntries(SLOTS.map((slot, j) => [slot, chest[(k * 6 + j) % chest.length].id])),
+    }));
+    return { ...newState(1_700_000_000), realm: 9, layer: 5, tower: 60, worn, chest, sets: named, unlocked: forks };
+  };
+  const best = (f: () => void, runs = 15) => {
+    let least = Infinity;
+    for (let i = 0; i < runs; i++) { const t = performance.now(); f(); least = Math.min(least, performance.now() - t); }
+    return least;
+  };
+
+  it('holds one body per loadout on each tree, and stays far inside 50 ms', () => {
+    const five = worst(5);
+    const ten = worst(10);
+    const trees = forkTrees(ten.unlocked).length;
+    expect(trees).toBeGreaterThan(1);
+    expect(bodiesHeld(ten).length).toBe((10 + 2) * trees);
+    const t5 = best(() => bodiesHeld(five));
+    const t10 = best(() => bodiesHeld(ten));
+    const v10 = best(() => towerVerdict(ten, 40), 5);
+    console.log(`    bodiesHeld: 5 sets ${t5.toFixed(1)} ms, 10 sets ${t10.toFixed(1)} ms (${bodiesHeld(ten).length} bodies); towerVerdict with 10 sets ${v10.toFixed(1)} ms`);
+    expect(t10).toBeLessThan(50);
+    expect(v10).toBeLessThan(50);
   });
 });

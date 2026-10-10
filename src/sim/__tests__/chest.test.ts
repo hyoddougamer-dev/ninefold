@@ -407,3 +407,17 @@ describe('承 a swap changes neither piece', () => {
     expect(after.chest[0]).toBe(old);
   });
 });
+
+describe('套 a full chest of locks', () => {
+  const lock = (id: string, rarity: Item['rarity']): Item => ({ ...mk('sword1', rarity, 0), id, locked: true });
+  it('spends a loadout-held spare piece last, and only for a better one', () => {
+    const chest = [lock('a', 'common'), lock('b', 'spirit'), lock('c', 'mystic')];
+    const spare = () => new Set(['b', 'c']);
+    const up = { ...mk('sword1', 'heaven', 9), id: 'n' };
+    expect(addToChest(chest, up, 3, () => false, spare).dropped?.id).toBe('b');
+    // Not named by a loadout, so nothing is spent: the new piece falls.
+    expect(addToChest(chest, up, 3).dropped?.id).toBe('n');
+    // Pieces that count as kept ('a') are never touched, however good the drop.
+    expect(addToChest(chest, up, 3, () => false, () => new Set()).dropped?.id).toBe('n');
+  });
+});

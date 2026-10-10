@@ -1813,6 +1813,23 @@ export const LINEAGE_LAYER = 5;
 
 /** 藏 Places in the chest before anything widens it. */
 export const CHEST_LIMIT = 40;
+
+/**
+ * 套 How many loadouts a cultivator may keep. Three until 2026-10-05, five after rekaris
+ * asked for more, ten now. The price of a set is paid in chest places (its pieces are
+ * locked) and in keeping its pieces up, and the server tries every body a save holds
+ * (verify.ts bodiesHeld): measured, ten sets cost it about a millisecond more than five.
+ */
+export const SET_LIMIT = 10;
+
+/**
+ * 套 Places in the chest that loadouts may never take. Ten loadouts can name more pieces
+ * than the base chest holds, and a chest locked solid has nowhere to put a drop or a craft.
+ * So the pieces loadouts keep in the chest count up to the chest's limit less this many
+ * (sets.ts setKeeping); the pieces past that stay locked and stay in the chest, they are
+ * only no longer counted, and a full chest may spend them last (chest.ts addToChest).
+ */
+export const SET_ROOM_RESERVE = 6;
 /** 煉 How many of one piece at one rank fuse into one of the rank above. */
 export const FUSE_COUNT = 3;
 

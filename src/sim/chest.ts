@@ -33,6 +33,8 @@ export { CHEST_LIMIT, FUSE_COUNT };
  * and a piece in the chest is only a piece.
  */
 
+const NO_SPARE: ReadonlySet<string> = new Set();
+
 export function chestFull(chest: readonly Item[], limit = CHEST_LIMIT): boolean {
   return chest.length >= limit;
 }
@@ -80,6 +82,13 @@ export function addToChest(
   chest: readonly Item[], item: Item, limit = CHEST_LIMIT,
   /** 熔 Pieces a full chest weighs above every other: a kept filter's (sim/filters.ts). */
   kept: (it: Item) => boolean = () => false,
+  /**
+   * 套 Ids of locked pieces that loadouts name beyond what the chest may keep for them
+   * (sets.ts setKeeping), read only when the chest is full. They are spared like any lock,
+   * but when nothing else is left to go, the worst of them goes before a drop is turned
+   * away, so a chest the loadouts crowd still has somewhere to put what falls.
+   */
+  spare: () => ReadonlySet<string> = () => NO_SPARE,
 ): Kept {
   if (!chestFull(chest, limit)) return { chest: [...chest, item], dropped: null };
 
@@ -96,6 +105,14 @@ export function addToChest(
   for (let i = 0; i < chest.length; i++) {
     if (chest[i].locked) continue;
     if (worstAt < 0 || below(chest[i], chest[worstAt])) worstAt = i;
+  }
+  if (worstAt < 0) {
+    // 套 Every piece is locked. The ones loadouts hold past their share go last, worst first.
+    const extra = spare();
+    for (let i = 0; i < chest.length; i++) {
+      if (!extra.has(chest[i].id)) continue;
+      if (worstAt < 0 || below(chest[i], chest[worstAt])) worstAt = i;
+    }
   }
   const worst = worstAt >= 0 ? chest[worstAt] : undefined;
   if (!worst || !below(worst, item)) return { chest, dropped: item };

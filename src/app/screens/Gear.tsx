@@ -36,7 +36,7 @@ import { GLOSS } from '../glossary.ts';
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
-import { isWorn, tasksOf } from '../../sim/sets.ts';
+import { isWorn, setKeeping, tasksOf } from '../../sim/sets.ts';
 import { SET_LIMIT, TASKS, type Task } from '../../sim/state.ts';
 import { FILTER_LIMIT, PLACES, keepable, type ChestFilter, type Place } from '../../sim/filters.ts';
 import type { Swing } from '../../sim/inspect.ts';
@@ -152,6 +152,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
       quote={quotes.get(g.template)} onFuse={onFuse} />
   );
   const limit = chestLimit(state.unlocked, totals.capacity, state.awakened);
+  const keeping = setKeeping(state, limit);
   const S = 200;
   // 總 What everything worn does, from the sim: the body against itself with nothing on.
   const lift = gearLift(state);
@@ -477,6 +478,14 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               </button>
             )}
           </div>
+          {/* 套 What the loadouts hold of the chest. Past the share the chest keeps for them the
+              count stops and the line says so, since a locked chest has nowhere for a drop. */}
+          {state.sets.length > 0 && (
+            <p className="faint gkeeps" data-qol="kept-by-sets">
+              {GEAR.keptBySets(keeping.counted, limit)}
+              {keeping.named > keeping.counted && <span>{GEAR.keptCrowded(keeping.named - keeping.counted)}</span>}
+            </p>
+          )}
         </>
       )}
 

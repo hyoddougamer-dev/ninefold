@@ -4,7 +4,7 @@ import { dropsRankUp, fuseQuality } from './dao.ts';
 import { melt, returnMetal } from './salvage.ts';
 import { bodyTotals, gearFuse } from './schools.ts';
 import { keptByFilter } from './filters.ts';
-import { taskBody } from './sets.ts';
+import { setKeeping, taskBody } from './sets.ts';
 import type { State } from './state.ts';
 import { FORGED } from '../data/crafts.ts';
 
@@ -67,7 +67,11 @@ export function stash(s: State, found: Item | null, lift = true): Stashed {
   // 圍 A drive's pile is lifted when it falls, so it is stashed as it is (sim/pile.ts).
   const item = lift ? lifted(s, found) : found;
   // 熔 A full chest melts what no kept filter shows first (sim/filters.ts).
-  const kept = addToChest(s.chest, item, limitFor(s), (it) => keptByFilter(s.filters, it));
+  const kept = addToChest(
+    s.chest, item, limitFor(s), (it) => keptByFilter(s.filters, it),
+    // 套 Read only if the chest is full and every piece in it is locked.
+    () => setKeeping(s, limitFor(s)).spare,
+  );
   const m = kept.dropped ? melt(s, [kept.dropped]) : null;
   const state = { ...(m ? m.state : s), chest: [...kept.chest] };
   return {

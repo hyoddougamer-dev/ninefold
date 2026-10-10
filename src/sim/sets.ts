@@ -1,6 +1,7 @@
 import { SLOTS, templateOf, type Item, type Slot, type Worn } from '../data/gear.ts';
 import { equip } from './chest.ts';
-import { SET_LIMIT, TASKS, cleanSetName, type GearSet, type State, type Task } from './state.ts';
+import { SET_LIMIT, SET_ROOM_RESERVE } from './balance.ts';
+import { TASKS, cleanSetName, type GearSet, type State, type Task } from './state.ts';
 
 /**
  * 鎖 套 Keeping pieces, and putting a whole body of them on at once.
@@ -40,6 +41,50 @@ export function setLocked(s: State, id: string, on: boolean): State {
   const worn = onBody ? { ...s.worn } : s.worn;
   if (onBody) for (const slot of SLOTS) if (worn[slot]) worn[slot] = flip(worn[slot]!);
   return { ...s, worn, chest: s.chest.map(flip) };
+}
+
+export interface SetKeeping {
+  /** Pieces in the chest that some loadout names, locked by it. */
+  readonly named: number;
+  /** How many of them count as kept: at most `limit` less SET_ROOM_RESERVE. */
+  readonly counted: number;
+  /** The ids named past that share. Still locked, still in the chest, only not counted. */
+  readonly spare: ReadonlySet<string>;
+}
+
+/**
+ * 套 How many of the chest's places the loadouts hold, and the rule that keeps them from
+ * holding all of it. Ten loadouts can name more pieces than the base chest has places, and
+ * a chest locked solid has nowhere to put a drop or a craft. So the pieces loadouts keep
+ * count up to `limit` less SET_ROOM_RESERVE. The newest loadout's pieces count first (a
+ * later loadout is a later choice), and what is past the share is the oldest: it is not
+ * counted, and a full chest may spend it last (chest.ts addToChest).
+ *
+ * 承 Nothing is deleted or unlocked here. A piece worn is not in the chest and costs no
+ * place. The function only reads, so the screen and the sim read the same answer.
+ */
+export function setKeeping(s: Pick<State, 'sets' | 'chest'>, limit: number): SetKeeping {
+  const order: string[] = [];
+  const seen = new Set<string>();
+  for (let i = s.sets.length - 1; i >= 0; i--) {
+    for (const slot of SLOTS) {
+      const id = s.sets[i].ids[slot];
+      if (id && !seen.has(id)) { seen.add(id); order.push(id); }
+    }
+  }
+  const held = new Map<string, number>();
+  for (const it of s.chest) if (seen.has(it.id)) held.set(it.id, (held.get(it.id) ?? 0) + 1);
+  const share = Math.max(0, Math.floor(limit) - SET_ROOM_RESERVE);
+  const spare = new Set<string>();
+  let counted = 0;
+  let named = 0;
+  for (const id of order) {
+    const n = held.get(id) ?? 0;
+    if (n === 0) continue;
+    named += n;
+    if (counted + n <= share) counted += n; else spare.add(id);
+  }
+  return { named, counted, spare };
 }
 
 /**

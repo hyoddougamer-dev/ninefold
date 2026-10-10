@@ -3618,6 +3618,8 @@ button.gs-new .cjk { margin: 0; }
 /* 套 A loadout's tasks: three small chips under its row, lit when it is the one a task reads.
    Its own block, sharing nothing with the chest's filters or the kept filters. */
 .gtasksays { font-size: 12px; margin: -4px 0 8px; line-height: 1.5; }
+.gkeeps { font-size: 12px; margin: 6px 0 0; line-height: 1.5; }
+.gkeeps span { display: block; margin-top: 3px; }
 .gsetblock { display: flex; flex-direction: column; gap: 4px; }
 .gstasks { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 4px; }
 .gstasks .gst { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 10px;

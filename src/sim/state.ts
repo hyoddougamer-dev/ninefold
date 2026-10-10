@@ -5,7 +5,7 @@ import {
   ladderAt, ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA,
   FOCUS_MAX, OPENING_PURSE,
   FATE_FULL, FUSE_TOP, BEDS, CORE_STEP, FLOORS_PER_REALM, SECONDARY_SHARE, SECONDARIES,
-  UPGRADE_NUMBERS, towerLoot,
+  UPGRADE_NUMBERS, towerLoot, SET_LIMIT,
 } from './balance.ts';
 import { pct } from './format.ts';
 import { BEASTS } from '../data/bestiary.ts';
@@ -104,13 +104,7 @@ export interface GearSet {
   readonly ids: Partial<Record<Slot, string>>;
 }
 
-/**
- * 套 How many sets a cultivator may keep. Three until 2026-10-05: rekaris asked for more,
- * and the price of a set is already paid in chest places and in keeping its pieces up, so
- * Bruno raised it to five. The server tries every body a save holds (verify.ts bodiesHeld),
- * five sets as cheaply as three.
- */
-export const SET_LIMIT = 5;
+export { SET_LIMIT };
 
 /** 名 A loadout's name, cleaned once for the save and for the screen: no control characters, 24 at most. */
 export function cleanSetName(raw: string): string {

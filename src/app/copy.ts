@@ -1829,6 +1829,10 @@ export const GEAR = {
   loadoutRename: (name: string) => `Rename ${name}`,
   loadoutNameField: 'Loadout name',
   loadoutDefault: (n: number) => `Loadout ${n}`,
+  /** 套 How much of the chest the loadouts hold (sim/sets.ts setKeeping). */
+  keptBySets: (n: number, places: number) => `Pieces kept by sets: ${n} of ${places} places`,
+  /** 套 Pieces the loadouts name past what the chest may keep for them. Nothing is lost. */
+  keptCrowded: (n: number) => `${n === 1 ? '1 more piece is' : `${n} more pieces are`} locked by sets, past the share the chest keeps for them. They stay, and a full chest spends them last.`,
   setMissing: (n: number) => (n === 1 ? '1 piece of that loadout is gone' : `${n} pieces of that loadout are gone`),
   /**
    * 套 A loadout given a task (speculaether and rekaris, on the Discord): the game reads it
