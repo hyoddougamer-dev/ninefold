@@ -159,6 +159,8 @@ async function shotFight(fixture, width, later = 0) {
     await clear();
     // The first row of the hunt list. Not by its guide attribute: that is only set while the
     // guide is pointing at it, so a fight shot would depend on which guide step was up.
+    // A save whose hunt is still locked has no rows to press: there is no fight to shoot on it.
+    if (!(await page.locator('button.beast').count())) return null;
     await page.locator('button.beast').first().click({ timeout: 4000 });
     await page.waitForSelector('.arena', { timeout: 4000 });
     await page.waitForTimeout(300);
@@ -211,6 +213,7 @@ for (const fixture of Object.keys(FIXTURES)) {
       const name = `${fixture}-fight${later ? '-beats' : ''}-${width}`;
       total++;
       const buf = await shotFight(fixture, width, later);
+      if (!buf) { console.log(`skip ${name} (the hunt is locked on this save)`); continue; }
       if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); continue; }
       writeFileSync(join(out, `${name}.png`), buf);
       const ref = join(refDir, `${name}.png`);
