@@ -122,7 +122,7 @@ async function openGame(fixture, width) {
  * not the tab on its own: the screens keep what was seen, so the order of the tour leaked into
  * the picture. Each tab starts from the same save and nothing else.
  */
-async function shotOf(fixture, width, tab) {
+async function shotOf(fixture, width, tab, later = 0) {
   const { page, clear } = await openGame(fixture, width);
   try {
     if (tab !== 'cultivate') {
@@ -135,6 +135,9 @@ async function shotOf(fixture, width, tab) {
       await page.waitForTimeout(300);
       await clear();
     }
+    // A minute of the clock is run forward on request: the ticks, the sitting's countdown and the
+    // workshop's progress all move, and the picture after them is held to the reference too.
+    if (later) { await page.clock.runFor(later); await page.waitForTimeout(300); await clear(); }
     await page.mouse.move(0, 0);
     return await page.screenshot({ animations: 'disabled', caret: 'initial' });
   } finally {
@@ -158,9 +161,10 @@ let total = 0;
 for (const fixture of Object.keys(FIXTURES)) {
   for (const width of WIDTHS) {
     for (const tab of await tabsOf(fixture, width)) {
-      const name = `${fixture}-tab-${tab}-${width}`;
+      for (const later of [0, 60_000]) {
+      const name = `${fixture}-tab-${tab}${later ? '-plus60s' : ''}-${width}`;
       total++;
-      const buf = await shotOf(fixture, width, tab);
+      const buf = await shotOf(fixture, width, tab, later);
       if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); continue; }
       writeFileSync(join(out, `${name}.png`), buf);
       const ref = join(refDir, `${name}.png`);
@@ -171,10 +175,11 @@ for (const fixture of Object.keys(FIXTURES)) {
       // blip, and is reported as one; one that differs every time is a change.
       let settled = false;
       for (let attempt = 1; attempt <= 2 && !settled; attempt++) {
-        if (want.equals(await shotOf(fixture, width, tab))) settled = true;
+        if (want.equals(await shotOf(fixture, width, tab, later))) settled = true;
       }
       if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
       else { differ++; console.log(`DIFF ${name}`); }
+      }
     }
   }
 }
