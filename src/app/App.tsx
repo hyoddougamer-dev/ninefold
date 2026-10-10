@@ -89,17 +89,16 @@ import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
 import { moodFor, setMood, unlockMusic } from './music.ts';
 import { MainSwitch } from './ui/MainSwitch.tsx';
+import { Breakthrough } from './ui/Breakthrough.tsx';
+import { LockedSystem } from './ui/LockedSystem.tsx';
+import { NoticeCard, UpdateBar } from './ui/Notices.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
 import { DISMISSED, guide } from './guide.ts';
-import { isOpen, opensIn, systemInfo } from '../sim/unlocks.ts';
-import { realm as realmInfo } from '../data/realms.ts';
-import { NOTICE } from './copy.ts';
-import { BLOOM, LOCKED, UPDATE } from './copy.ts';
+import { isOpen, opensIn } from '../sim/unlocks.ts';
 // ── 待 What is waiting, the keys and the sitting (quality of life, 2026-10-03) ──
-import { OPENED } from './copy.ts';
 import { heavyOf, ready as readyNow, readyByTab, type Place, type Waiting } from './ready.ts';
-import { TAB_OF, clearFresh, freshTabs, markFresh, newTabsOf } from './fresh.ts';
+import { clearFresh, freshTabs, markFresh, newTabsOf } from './fresh.ts';
 import { spendablePoints } from '../sim/points.ts';
 import { fightDeps } from './memo.ts';
 import { weekOf } from '../sim/week.ts';
@@ -850,21 +849,7 @@ export function App() {
       <TabBar state={state} tab={tab} setTab={setTab} setLocked={setLocked} byTab={byTab} free={free}
         newTabs={newTabs} ranks={ranks} setRanks={setRanks} place={place} />
 
-      {locked && (
-        <div className="shut" onClick={() => setLocked(null)}>
-          <b className="cjk" style={{ color: realmInfo(systemInfo(locked).realm).colour }}>
-            {systemInfo(locked).han}
-          </b>
-          <em>{systemInfo(locked).name}</em>
-          <i>{systemInfo(locked).gives}</i>
-          <p>{LOCKED.opensAt(
-            realmInfo(systemInfo(locked).realm).han,
-            realmInfo(systemInfo(locked).realm).name,
-            systemInfo(locked).realm,
-          )}</p>
-          <button className="act" onClick={() => setLocked(null)}>續 <span>{LOCKED.back}</span></button>
-        </div>
-      )}
+      {locked && <LockedSystem system={locked} onBack={() => setLocked(null)} />}
 
       {/**
         * 出口 One way out, drawn here rather than by each panel, so it is fixed to the
@@ -913,64 +898,11 @@ export function App() {
         />
       )}
 
-      {bloom !== null && (
-        <div className="bloom" data-held={opensIn(bloom).length > 0}
-             style={{ color: realmOf(bloom).colour }}>
-          <span className="wash" />
-          <span className="ring" /><span className="ring" /><span className="ring" />
-          <div className="mid">
-            <span className="han" style={{ color: realmOf(bloom).colour }}>{realmOf(bloom).han}</span>
-            <p>{realmOf(bloom).gains}</p>
-            {opensIn(bloom).length > 0 && (
-              <>
-                {/* 突破 Each row names the tab it is on and goes there. The cards wait until
-                    this has been read (see cardsUp), and every tab named here wears 新 until
-                    it is opened. */}
-                <p className="openedhead">{OPENED.head}</p>
-                <div className="opened">
-                  {opensIn(bloom).map((sys) => {
-                    const place = TAB_OF[sys.key];
-                    const t = TABS.find((x) => x.key === place)!;
-                    return (
-                      <button key={sys.key} type="button" className="openedrow" onClick={() => goOpened(place)}>
-                        <b className="cjk">{sys.han}</b>
-                        <em>{sys.name}</em>
-                        <i>{sys.gives}</i>
-                        <u className="openedtab">{OPENED.where(t.han, t.label)}</u>
-                      </button>
-                    );
-                  })}
-                </div>
-                <button className="act" onClick={() => { setBloom(null); sfx.tap(); }}>
-                  續 <span>{BLOOM.on}</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {bloom !== null && <Breakthrough realm={bloom} onGo={goOpened} onDone={() => { setBloom(null); sfx.tap(); }} />}
 
-      {notice && (
-        <div className="notice">
-          <b className="cjk">{notice.han}</b>
-          <span>
-            <em>{notice.title}</em>
-            <i>{notice.text}</i>
-          </span>
-          <button onClick={() => readNotice(notice.key, notice.tab)}>{NOTICE.read}</button>
-        </div>
-      )}
+      {notice && <NoticeCard notice={notice} onRead={() => readNotice(notice.key, notice.tab)} />}
 
-      {fresh && (
-        <div className="newver">
-          <span>
-            <b className="cjk">新</b>
-            <i>{UPDATE.ready}</i>
-          </span>
-          <button onClick={takeUpdate}>{UPDATE.take}</button>
-          <button className="later" onClick={() => setFresh(false)} aria-label={UPDATE.later}>✕</button>
-        </div>
-      )}
+      {fresh && <UpdateBar onTake={takeUpdate} onLater={() => setFresh(false)} />}
 
       {ranks && (
         <Ranks

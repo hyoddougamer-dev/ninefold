@@ -65,7 +65,8 @@ function early() {
     v: 1, at, startedAt: at - 2 * 86400, realm: 1, layer: 2, qi: 900, materials: 120, wardenFell: false,
     levels: { technique: 2, method: 1, pills: 1, cores: 0 }, killed: { rat: 4, hound: 2 }, worn: {}, chest: [], sets: [], tasks: {},
     self: 'woman', stance: 'swift', sequence: [], tribulation: 0, tribulationAt: 0, tower: 0, quarryWeek: 99999,
-    awakened: [], seen: ['guide'],
+    // The first meeting is answered here, so its question does not cover the screen and the locked tabs can be tapped.
+    awakened: [], seen: ['guide', 'whom'],
   };
 }
 
@@ -217,6 +218,36 @@ async function shotMenu(fixture, width) {
 }
 
 
+/** A system whose gate is shut, opened the way a player opens it: by tapping its locked tab. */
+async function shotShut(fixture, width) {
+  const { page } = await openGame(fixture, width);
+  try {
+    const tab = page.locator('nav.tabs button[data-shut="true"]').first();
+    if (!(await tab.count())) return null;
+    // A card that covers the corner or the question on this save takes the tap: no picture, as with the menu.
+    try { await tab.click({ timeout: 4000 }); } catch { return null; }
+    await page.waitForSelector('.shut', { timeout: 4000 });
+    await page.waitForTimeout(400);
+    await page.mouse.move(0, 0);
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
+  }
+}
+
+/** The notice a player has not read yet, if the save has one on the way in. */
+async function shotNotice(fixture, width) {
+  const { page } = await openGame(fixture, width, { clearFirst: false });
+  try {
+    if (!(await page.locator('.notice').first().isVisible().catch(() => false))) return null;
+    await page.waitForTimeout(400);
+    await page.mouse.move(0, 0);
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
+  }
+}
+
 /** The homecoming card, as it is on load after a long while away: nothing is shut first. */
 async function shotHome(fixture, width) {
   const { page } = await openGame(fixture, width, { clearFirst: false });
@@ -334,6 +365,23 @@ for (const fixture of Object.keys(FIXTURES)) {
           }
         }
       }
+    }
+    // The locked system card, and the unread notice, when the save shows them.
+    for (const [kind, take] of [['shut', shotShut], ['notice', shotNotice]]) {
+      const name = `${fixture}-${kind}-${width}`;
+      total++;
+      const buf = await take(fixture, width);
+      if (!buf) { total--; console.log(`skip ${name} (none on this save)`); continue; }
+      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); continue; }
+      writeFileSync(join(out, `${name}.png`), buf);
+      const ref = join(refDir, `${name}.png`);
+      if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); continue; }
+      const want = readFileSync(ref);
+      if (want.equals(buf)) { console.log(`same ${name}`); continue; }
+      let settled = false;
+      for (let attempt = 1; attempt <= 2 && !settled; attempt++) { const again = await take(fixture, width); if (again && want.equals(again)) settled = true; }
+      if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+      else { differ++; console.log(`DIFF ${name}`); }
     }
     // The fight: its opening beat, and a few beats on.
     for (const later of [0, 2_500]) {
