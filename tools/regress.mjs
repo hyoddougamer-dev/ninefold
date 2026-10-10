@@ -157,7 +157,9 @@ async function shotFight(fixture, width, later = 0) {
     await page.click('nav.tabs button[data-coach="tab-hunt"]', { timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(500);
     await clear();
-    await page.click('[data-coach="beast-first"]', { timeout: 4000 });
+    // The first row of the hunt list. Not by its guide attribute: that is only set while the
+    // guide is pointing at it, so a fight shot would depend on which guide step was up.
+    await page.locator('button.beast').first().click({ timeout: 4000 });
     await page.waitForSelector('.arena', { timeout: 4000 });
     await page.waitForTimeout(300);
     if (later) { await page.clock.runFor(later); await page.waitForTimeout(300); }
