@@ -69,12 +69,18 @@ function early() {
   };
 }
 
-const FIXTURES = { mid, early };
+/** The same mid-game save, opened after three hours away: the homecoming card is up on load. */
+function away() {
+  const s = mid();
+  return { ...s, at: NOW - 3 * 3600, startedAt: NOW - 3 * 3600 - 40 * 86400 };
+}
+
+const FIXTURES = { mid, early, away };
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
 /** A fresh game on the fixture, at the width, with the clock held and the first notices shut. */
-async function openGame(fixture, width) {
+async function openGame(fixture, width, { clearFirst = true } = {}) {
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
   // The clock is held before the app loads. Paused only after the load, the app had read a few
   // real milliseconds while it mounted, and the bars that run on time moved by a pixel or two.
@@ -113,7 +119,7 @@ async function openGame(fixture, width) {
       await page.waitForTimeout(250);
     }
   };
-  await clear();
+  if (clearFirst) await clear();
   return { page, clear };
 }
 
@@ -191,6 +197,21 @@ async function shotStele(fixture, width) {
   }
 }
 
+
+/** The homecoming card, as it is on load after a long while away: nothing is shut first. */
+async function shotHome(fixture, width) {
+  const { page } = await openGame(fixture, width, { clearFirst: false });
+  try {
+    await page.waitForSelector('.back', { timeout: 4000 });
+    await page.waitForTimeout(400);
+    await page.evaluate(() => document.fonts.ready);
+    await page.mouse.move(0, 0);
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
+  }
+}
+
 /** The tabs the game shows, read from its own tab bar once, so a new tab is shot without editing this file. */
 async function tabsOf(fixture, width) {
   const { page } = await openGame(fixture, width);
@@ -225,6 +246,28 @@ for (const fixture of Object.keys(FIXTURES)) {
       }
       if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
       else { differ++; console.log(`DIFF ${name}`); }
+      }
+    }
+    // The homecoming card, on the save that was away.
+    if (fixture === 'away') {
+      const name = `${fixture}-home-${width}`;
+      total++;
+      const buf = await shotHome(fixture, width);
+      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); }
+      else {
+        writeFileSync(join(out, `${name}.png`), buf);
+        const ref = join(refDir, `${name}.png`);
+        if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); }
+        else {
+          const want = readFileSync(ref);
+          if (want.equals(buf)) console.log(`same ${name}`);
+          else {
+            let settled = false;
+            for (let attempt = 1; attempt <= 2 && !settled; attempt++) { const again = await shotHome(fixture, width); if (again && want.equals(again)) settled = true; }
+            if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+            else { differ++; console.log(`DIFF ${name}`); }
+          }
+        }
       }
     }
     // The stele, from the menu.
