@@ -73,16 +73,15 @@ const FIXTURES = { mid, early };
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
-async function capture(fixture, width) {
+/** A fresh game on the fixture, at the width, with the clock held and the first notices shut. */
+async function openGame(fixture, width) {
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
   await page.clock.install({ time: NOW * 1000 });
   await page.route('**/assets/*.js', (r) => r.abort());
   await page.route('**/*.supabase.co/**', (r) => r.abort());
   // The two animations the app drives by frame (a count-up and the coach's pulse) are held
-  // still, so the same build paints the same bytes twice. CSS animations are finished by the
-  // screenshot option below.
-  // CSS transitions that start while the page mounts (a bar filling, a card sliding in) run in
-  // real time, whatever the clock says, so they are switched off: the picture is the state.
+  // still, and CSS transitions that start while the page mounts are switched off, so the
+  // picture is the state and not a moment of it.
   await page.addInitScript(() => {
     window.requestAnimationFrame = () => 0;
     window.cancelAnimationFrame = () => {};
@@ -113,24 +112,40 @@ async function capture(fixture, width) {
     }
   };
   await clear();
-  const tabs = await page.$$eval('nav.tabs button[data-coach]', (bs) => bs.map((b) => b.getAttribute('data-coach')));
-  const shots = [];
-  for (const tab of tabs) {
-    const name = `${fixture}-${tab}-${width}`;
-    await page.click(`nav.tabs button[data-coach="${tab}"]`, { timeout: 4000 }).catch(() => {});
-    // Let the tab paint: fonts and the art's images decode asynchronously, and a picture taken
-    // while one of them is still arriving is not the same picture twice.
-    await page.waitForTimeout(500);
-    await page.evaluate(() => document.fonts.ready);
-    await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 4000 }).catch(() => {});
-    await page.waitForTimeout(300);
-    await clear();
+  return { page, clear };
+}
+
+/**
+ * One tab, in a page of its own. A tab shot after visiting the others in the same page is
+ * not the tab on its own: the screens keep what was seen, so the order of the tour leaked into
+ * the picture. Each tab starts from the same save and nothing else.
+ */
+async function shotOf(fixture, width, tab) {
+  const { page, clear } = await openGame(fixture, width);
+  try {
+    if (tab !== 'cultivate') {
+      await page.click(`nav.tabs button[data-coach="tab-${tab}"]`, { timeout: 4000 }).catch(() => {});
+      // Let the tab paint: fonts and the art's images decode asynchronously, and a picture taken
+      // while one of them is still arriving is not the same picture twice.
+      await page.waitForTimeout(500);
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 4000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      await clear();
+    }
     await page.mouse.move(0, 0);
-    const buf = await page.screenshot({ animations: 'disabled', caret: 'initial' });
-    shots.push({ name, buf });
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
   }
+}
+
+/** The tabs the game shows, read from its own tab bar once, so a new tab is shot without editing this file. */
+async function tabsOf(fixture, width) {
+  const { page } = await openGame(fixture, width);
+  const tabs = await page.$$eval('nav.tabs button[data-coach]', (bs) => bs.map((b) => b.getAttribute('data-coach').replace(/^tab-/, '')));
   await page.close();
-  return shots;
+  return tabs;
 }
 
 // The reference is written by `baseline`; `compare` only reads it, and keeps its pictures apart.
@@ -140,23 +155,24 @@ let differ = 0;
 let total = 0;
 for (const fixture of Object.keys(FIXTURES)) {
   for (const width of WIDTHS) {
-    for (const s of await capture(fixture, width)) {
+    for (const tab of await tabsOf(fixture, width)) {
+      const name = `${fixture}-tab-${tab}-${width}`;
       total++;
-      if (mode === 'baseline') { writeFileSync(join(out, `${s.name}.png`), s.buf); console.log(`wrote ${s.name}`); continue; }
-      writeFileSync(join(out, `${s.name}.png`), s.buf);
-      const ref = join(refDir, `${s.name}.png`);
-      if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${s.name}`); continue; }
+      const buf = await shotOf(fixture, width, tab);
+      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); continue; }
+      writeFileSync(join(out, `${name}.png`), buf);
+      const ref = join(refDir, `${name}.png`);
+      if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); continue; }
       const want = readFileSync(ref);
-      if (want.equals(s.buf)) { console.log(`same ${s.name}`); continue; }
-      // A picture that differs is taken again, twice. One that matches on a retake was a
-      // timing blip, and is reported as such; one that differs every time is a change.
+      if (want.equals(buf)) { console.log(`same ${name}`); continue; }
+      // A picture that differs is taken again, twice. One that matches on a retake was a timing
+      // blip, and is reported as one; one that differs every time is a change.
       let settled = false;
       for (let attempt = 1; attempt <= 2 && !settled; attempt++) {
-        const again = (await capture(fixture, width)).find((x) => x.name === s.name);
-        if (again && want.equals(again.buf)) settled = true;
+        if (want.equals(await shotOf(fixture, width, tab))) settled = true;
       }
-      if (settled) console.log(`same ${s.name} (a timing blip on the first take, matched on a retake)`);
-      else { differ++; console.log(`DIFF ${s.name}`); }
+      if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+      else { differ++; console.log(`DIFF ${name}`); }
     }
   }
 }
