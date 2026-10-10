@@ -81,9 +81,17 @@ async function capture(fixture, width) {
   // The two animations the app drives by frame (a count-up and the coach's pulse) are held
   // still, so the same build paints the same bytes twice. CSS animations are finished by the
   // screenshot option below.
+  // CSS transitions that start while the page mounts (a bar filling, a card sliding in) run in
+  // real time, whatever the clock says, so they are switched off: the picture is the state.
   await page.addInitScript(() => {
     window.requestAnimationFrame = () => 0;
     window.cancelAnimationFrame = () => {};
+    const off = () => {
+      const st = document.createElement('style');
+      st.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}';
+      document.head.appendChild(st);
+    };
+    if (document.head) off(); else document.addEventListener('readystatechange', off, { once: true });
   });
   await page.goto(BASE);
   await page.evaluate(([k, b, s]) => {
