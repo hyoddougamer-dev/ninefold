@@ -198,6 +198,25 @@ async function shotStele(fixture, width) {
 }
 
 
+/** The corner menu, open: the same switch a player taps, with nothing on top of it. */
+async function shotMenu(fixture, width) {
+  const { page, clear } = await openGame(fixture, width);
+  try {
+    if (!(await page.locator('button.mainswitch').isVisible())) return null;
+    await page.click('button.mainswitch', { timeout: 4000 });
+    await page.waitForSelector('.switchmenu', { timeout: 4000 });
+    await page.waitForTimeout(400);
+    await clear();
+    await page.mouse.move(0, 0);
+    // The build stamp at the foot of the menu is the commit it was made from, so it moves with every
+    // commit. It is masked, and the rest of the menu is what is compared.
+    return await page.screenshot({ animations: 'disabled', caret: 'initial', mask: [page.locator('.build')] });
+  } finally {
+    await page.close();
+  }
+}
+
+
 /** The homecoming card, as it is on load after a long while away: nothing is shut first. */
 async function shotHome(fixture, width) {
   const { page } = await openGame(fixture, width, { clearFirst: false });
@@ -287,6 +306,29 @@ for (const fixture of Object.keys(FIXTURES)) {
           else {
             let settled = false;
             for (let attempt = 1; attempt <= 2 && !settled; attempt++) { const again = await shotStele(fixture, width); if (again && want.equals(again)) settled = true; }
+            if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+            else { differ++; console.log(`DIFF ${name}`); }
+          }
+        }
+      }
+    }
+    // The corner menu, open.
+    {
+      const name = `${fixture}-menu-${width}`;
+      total++;
+      const buf = await shotMenu(fixture, width);
+      if (!buf) { total--; console.log(`skip ${name} (the menu is covered on this save)`); }
+      else if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); }
+      else {
+        writeFileSync(join(out, `${name}.png`), buf);
+        const ref = join(refDir, `${name}.png`);
+        if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); }
+        else {
+          const want = readFileSync(ref);
+          if (want.equals(buf)) console.log(`same ${name}`);
+          else {
+            let settled = false;
+            for (let attempt = 1; attempt <= 2 && !settled; attempt++) { const again = await shotMenu(fixture, width); if (again && want.equals(again)) settled = true; }
             if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
             else { differ++; console.log(`DIFF ${name}`); }
           }

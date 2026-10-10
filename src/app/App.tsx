@@ -64,7 +64,7 @@ import { holdDrops, settle as settlePile, settleDefault, settleStale } from '../
 import { ItemSheet } from './ui/ItemSheet.tsx';
 import { Cards } from './ui/Cards.tsx';
 import { Rebirth } from './ui/Rebirth.tsx';
-import { canReincarnate, reincarnate } from '../sim/rebirth.ts';
+import { reincarnate } from '../sim/rebirth.ts';
 import { retrade } from '../sim/retrade.ts';
 import { Schools } from './ui/Schools.tsx';
 import { Compare } from './ui/Compare.tsx';
@@ -76,7 +76,7 @@ import { TABS, type TabKey } from './tabs.ts';
 import { SavePanel } from './ui/SavePanel.tsx';
 import { Escape } from './ui/Escape.tsx';
 import { Arena } from './ui/Arena.tsx';
-import { BUILD, JUICE, RANKS } from './copy.ts';
+import { JUICE, RANKS } from './copy.ts';
 // 便 The quality-of-life batch B: bulk buttons, the next floor, wear it from the verdict.
 import { QOL } from './copy.ts';
 import { recall, keep, oneOf, useRemembered } from './prefs.ts';
@@ -85,19 +85,17 @@ import { brewMax } from '../sim/trials.ts';
 import { wearBetter } from '../sim/inspect.ts';
 import { fuseAllIn } from '../sim/stash.ts';
 
-/** 版 Filled in by the build (vite.config.ts). */
-declare const __BUILD__: string;
 import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
 import { moodFor, setMood, unlockMusic } from './music.ts';
-import { Volumes } from './ui/Volume.tsx';
+import { MainSwitch } from './ui/MainSwitch.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
 import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
-import { BLOOM, LOCKED, MENU, UPDATE } from './copy.ts';
+import { BLOOM, LOCKED, UPDATE } from './copy.ts';
 // ── 待 What is waiting, the keys and the sitting (quality of life, 2026-10-03) ──
 import { OPENED } from './copy.ts';
 import { heavyOf, ready as readyNow, readyByTab, type Place, type Waiting } from './ready.ts';
@@ -845,48 +843,9 @@ export function App() {
         )}
       </div>
 
-      {/* 收 One button, not five.
-          Five bare characters floating over the corner of a screen that is already
-          asking a new player to learn characters is five unanswered questions, and
-          Bruno said so: *"fica muito confuso"*. They fold into one, and when it opens
-          each one arrives with its name in English beside it, which is the same rule
-          the upgrades follow, applied to the one place that had escaped it. */}
-      <div className="topband" aria-hidden="true" data-on={scrolled && !covered} />
-      <div className="switches" data-open={menu} hidden={shade && !menu}>
-        <button className="mainswitch" data-on={menu} aria-expanded={menu}
-          aria-label={MENU.label} onClick={() => { setMenu((m) => !m); sfx.tap(); }}>
-          {menu ? '✕' : '≡'}
-        </button>
-        {menu && (
-          <div className="switchmenu">
-            {([
-              ['存', MENU.save, () => setSaving(true)],
-              ['?', MENU.help, () => setHelp(true)],
-              ['釋', MENU.key, () => setKey(true)],
-              ['碑', MENU.stele, () => setStele(true)],
-              ['悟', MENU.cards, () => setCards(true)],
-              // 轉世 Only once it has ever been possible: before the summit it is a word for nothing.
-              ...((canReincarnate(state) || state.lives.length > 0)
-                ? [['轉', MENU.rebirth, () => setRebirth(true)] as const] : []),
-              ['謝', MENU.credits, () => setCredits(true)],
-            ] as const).map(([han, label, go]) => (
-              <button key={label} onClick={() => { setMenu(false); go(); sfx.tap(); }}>
-                <b className="cjk">{han}</b><span>{label}</span>
-              </button>
-            ))}
-            {/* 報 Out to the testers' Discord, where the build line below goes in the post. */}
-            <a href={MENU.discord} target="_blank" rel="noopener noreferrer" onClick={() => { setMenu(false); sfx.tap(); }}>
-              <b className="cjk">報</b><span>{MENU.report}</span>
-            </a>
-            {/* 量 Sound and music: a slider and a mute each (ui/Volume.tsx). */}
-            <Volumes />
-            <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
-          </div>
-        )}
-      </div>
-      {/* Anywhere else shuts it, which is what a menu that floats over a live game has
-          to do or the player is left tapping the game through a list. */}
-      {menu && <div className="scrim" onClick={() => setMenu(false)} />}
+      <MainSwitch state={state} menu={menu} setMenu={setMenu} scrolled={scrolled} covered={covered} shade={shade}
+        setSaving={setSaving} setHelp={setHelp} setKey={setKey} setStele={setStele} setCards={setCards}
+        setRebirth={setRebirth} setCredits={setCredits} />
 
       <TabBar state={state} tab={tab} setTab={setTab} setLocked={setLocked} byTab={byTab} free={free}
         newTabs={newTabs} ranks={ranks} setRanks={setRanks} place={place} />
