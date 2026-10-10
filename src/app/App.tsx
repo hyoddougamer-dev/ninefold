@@ -9,11 +9,11 @@ import { canFightWarden, newState, power, type State,
 } from '../sim/state.ts';
 import { duration, num } from '../sim/format.ts';
 import { keepSpare, load, save, untouched} from '../sim/save.ts';
-import { advance } from '../sim/time.ts';
 import { freePoints as freeOf } from '../sim/points.ts';
 import { fortuneOf } from '../sim/fortune.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
-import { begin, endOf, focusOf, hide, isOver, show, spans, type Sitting } from './sitting.ts';
+import { begin, endOf, focusOf, hide, isOver, show, type Sitting } from './sitting.ts';
+import { now, payTo } from './clock.ts';
 import { capstonesOpen, focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
@@ -26,7 +26,7 @@ import {
 } from '../sim/platform.ts';
 import { conquer, conquerTwice, demonDue, demonOf, demonPower, repel } from '../sim/seclusion.ts';
 import {
-  carry, kitFor, kitWhere, placeArray, setOrder, setTask, spendOnWin, spendSeek, takeSeeking, tookPart, work,
+  carry, kitFor, kitWhere, placeArray, setOrder, setTask, spendOnWin, spendSeek, takeSeeking, tookPart,
 } from '../sim/crafts.ts';
 import { Crafts } from './screens/Crafts.tsx';
 import { splitKey } from '../data/crafts.ts';
@@ -98,7 +98,7 @@ import { moodFor, setMood, unlockMusic } from './music.ts';
 import { Volumes } from './ui/Volume.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
-import { DISMISSED, clockUntil, guide } from './guide.ts';
+import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn, systemInfo, type System } from '../sim/unlocks.ts';
 import { realm as realmInfo } from '../data/realms.ts';
 import { NOTICE } from './copy.ts';
@@ -136,22 +136,6 @@ const READY_AT: Partial<Record<Waiting['key'], string>> = {
   cross: '[data-ready="cross"]', vault: '.door.open', workshop: '.ctask', upgrades: '.chestfilter .ups',
   chestFull: '.melting', melt: '.melting',
 };
-
-const now = () => Date.now() / 1000;
-
-/**
- * 入定 Run the clock from the save's own instant to `t`, at the depth the sitting gives each
- * stretch of it (sitting.ts spans), and settle the workshop to the same instant.
- */
-function payTo(s: State, t: number, sit: Sitting | null, deeper: number): State {
-  let next = s;
-  for (const span of spans(sit, s.at, t, deeper)) {
-    // 囊 A fresh cultivator's first rung waits for the first purchase; the time it
-    // waits is owed, not lost, and arrives on the tick after. See clockUntil.
-    next = advance(next, clockUntil(next, span.until, span.focus), false, span.focus);
-  }
-  return work(next, t);
-}
 
 /**
  * 擊 The least time between two fights starting, in the app. The ranked server allows one
