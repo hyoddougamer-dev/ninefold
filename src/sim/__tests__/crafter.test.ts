@@ -73,5 +73,6 @@ describe('業 a crafter played for a whole climb', () => {
     expect(crafted.days - plain.days).toBeLessThanOrEqual(2);
     const seal = SEAL_DAYS.reduce((a, b) => a + b, 0);
     expect(plain.days - crafted.days).toBeLessThanOrEqual(seal + 2);
-  }, 60_000);
+  // Each whole climb runs for about 50 seconds alone; the limit leaves room for a full run on a loaded machine.
+  }, 180_000);
 });

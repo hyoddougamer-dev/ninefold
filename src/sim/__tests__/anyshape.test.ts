@@ -106,5 +106,6 @@ describe('量 is it a shortcut (tools/anyshape.ts)', () => {
     expect(after.realm9!).toBeGreaterThan(before.realm9! - 2);
     // A pure set is a class, not a ladder: never far past the cultivator who wears whatever is best.
     expect(after.power).toBeLessThan(plain.power * 1.6);
-  }, 120_000);
+  // Each school's pair of whole climbs runs for about 105 seconds alone; the limit leaves room for a loaded machine.
+  }, 300_000);
 });
