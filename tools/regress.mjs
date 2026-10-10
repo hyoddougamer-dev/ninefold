@@ -145,6 +145,29 @@ async function shotOf(fixture, width, tab, later = 0) {
   }
 }
 
+
+/**
+ * A fight, from the hunt list: the first beast is pressed, the arena opens, and the picture is
+ * taken at its first beat and again after the clock has run a few beats on. The fight's seed is
+ * the clock, so the same save and the same clock give the same fight, and the picture.
+ */
+async function shotFight(fixture, width, later = 0) {
+  const { page, clear } = await openGame(fixture, width);
+  try {
+    await page.click('nav.tabs button[data-coach="tab-hunt"]', { timeout: 4000 }).catch(() => {});
+    await page.waitForTimeout(500);
+    await clear();
+    await page.click('[data-coach="beast-first"]', { timeout: 4000 });
+    await page.waitForSelector('.arena', { timeout: 4000 });
+    await page.waitForTimeout(300);
+    if (later) { await page.clock.runFor(later); await page.waitForTimeout(300); }
+    await page.mouse.move(0, 0);
+    return await page.screenshot({ animations: 'disabled', caret: 'initial' });
+  } finally {
+    await page.close();
+  }
+}
+
 /** The tabs the game shows, read from its own tab bar once, so a new tab is shot without editing this file. */
 async function tabsOf(fixture, width) {
   const { page } = await openGame(fixture, width);
@@ -180,6 +203,24 @@ for (const fixture of Object.keys(FIXTURES)) {
       if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
       else { differ++; console.log(`DIFF ${name}`); }
       }
+    }
+    // The fight: its opening beat, and a few beats on.
+    for (const later of [0, 2_500]) {
+      const name = `${fixture}-fight${later ? '-beats' : ''}-${width}`;
+      total++;
+      const buf = await shotFight(fixture, width, later);
+      if (mode === 'baseline') { writeFileSync(join(out, `${name}.png`), buf); console.log(`wrote ${name}`); continue; }
+      writeFileSync(join(out, `${name}.png`), buf);
+      const ref = join(refDir, `${name}.png`);
+      if (!existsSync(ref)) { differ++; console.log(`NEW (no reference) ${name}`); continue; }
+      const want = readFileSync(ref);
+      if (want.equals(buf)) { console.log(`same ${name}`); continue; }
+      let settled = false;
+      for (let attempt = 1; attempt <= 2 && !settled; attempt++) {
+        if (want.equals(await shotFight(fixture, width, later))) settled = true;
+      }
+      if (settled) console.log(`same ${name} (a timing blip on the first take, matched on a retake)`);
+      else { differ++; console.log(`DIFF ${name}`); }
     }
   }
 }
