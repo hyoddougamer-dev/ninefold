@@ -33,7 +33,7 @@ import {
   type HundredRank, type Recipe, type SkillKey,
 } from '../data/crafts.ts';
 import {
-  AFFIXES, RARITIES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue,
+  AFFIXES, SLOTS, TEMPLATE_BY_KEY, baseValue, roundValue,
   type Affix, type GearTemplate, type Item, type Roll, type Slot, type Worn,
 } from '../data/gear.ts';
 import { BEASTS, wardenOf } from '../data/bestiary.ts';
@@ -429,7 +429,14 @@ export function hundredFits(s: Pick<State, 'realm' | 'killed' | 'worn' | 'chest'
   });
 }
 
-/** 階 A rank's place on the ladder, 2 Mystic to 4 Heaven, for a frame or a colour. */
-export const rankIndex = (rank: HundredRank) => RARITIES.indexOf(rank);
+/**
+ * 單 Whether two orders name the same piece: the same shape, rank, main portions and lines in
+ * the same order. Read field by field, so the key order of a saved order never matters.
+ */
+export function sameOrder(a: Order, b: Order): boolean {
+  return a.template === b.template && a.rarity === b.rarity && a.main === b.main
+    && a.lines.length === b.lines.length
+    && a.lines.every((l, i) => l.affix === b.lines[i].affix && l.n === b.lines[i].n);
+}
 
 export { HUNDRED_RANKS, codexOf };

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { XP_TABLE, hundredKey, metalKey, partKey, type HundredRank } from '../../data/crafts.ts';
-import { AFFIXES, GEAR, SLOTS, TEMPLATE_BY_KEY, baseValue, type Item, type Slot } from '../../data/gear.ts';
+import { AFFIXES, GEAR, SLOTS, TEMPLATE_BY_KEY, baseValue, type Affix, type Item, type Slot } from '../../data/gear.ts';
 import { commonsOf, wardenOf } from '../../data/bestiary.ts';
 import {
   CODEX_CAP, CRAFT_KIT, HUNDRED_BAND, HUNDRED_ELITE_PARTS, HUNDRED_HEAVEN_MADE, HUNDRED_INGOTS, HUNDRED_SECONDS,
   HUNDRED_WARDEN_PARTS, LUCK_ROLL_TOP, SECONDARY_SHARE, VARIANCE,
 } from '../balance.ts';
 import {
-  bandTop, codexRank, codexValue, hundredFits, hundredWorn, lineValue, orderNeeds, pieceOf, portionOf, spiritOf, validOrder,
-  type Order,
+  bandTop, codexRank, codexValue, hundredFits, hundredWorn, lineValue, orderNeeds, pieceOf, portionOf, sameOrder, spiritOf,
+  validOrder, type Order,
 } from '../hundred.ts';
 import { blocked, carry, kitFor, secondsOf, setOrder, work } from '../crafts.ts';
 import { RECIPE_BY_KEY } from '../../data/crafts.ts';
@@ -276,5 +276,26 @@ describe('驗 the server reads the Hundredfold things', () => {
     const unbacked = { ...after, chest: [...after.chest, stray] };
     expect(hundredFits(unbacked)).toBe(false);
     expect(validate(JSON.parse(JSON.stringify(unbacked)), unbacked.at).chest.find((x) => x.id === 'stray')?.hundred).toBeUndefined();
+  });
+});
+
+describe('單 sameOrder: the order in hand is the one on the screen', () => {
+  const o: Order = {
+    template: 'sword5', rarity: 'Heaven' as HundredRank, main: 2,
+    lines: [{ affix: 'power' as Affix, n: 1 }, { affix: 'fortune' as Affix, n: 3 }],
+  };
+
+  it('matches a copy with its fields in another order', () => {
+    const copy = JSON.parse(JSON.stringify(o)) as Order;
+    const shuffled = { lines: copy.lines, main: copy.main, rarity: copy.rarity, template: copy.template } as Order;
+    expect(sameOrder(o, shuffled)).toBe(true);
+  });
+
+  it('is false for any field that changes, and for lines in another order', () => {
+    expect(sameOrder(o, { ...o, main: 3 })).toBe(false);
+    expect(sameOrder(o, { ...o, template: 'robe5' })).toBe(false);
+    expect(sameOrder(o, { ...o, rarity: 'Mystic' as HundredRank })).toBe(false);
+    expect(sameOrder(o, { ...o, lines: [...o.lines].reverse() })).toBe(false);
+    expect(sameOrder(o, { ...o, lines: o.lines.slice(0, 1) })).toBe(false);
   });
 });

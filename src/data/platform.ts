@@ -32,6 +32,3 @@ export const TEMPERS: readonly Temper[] = [
   // 狂 It comes on hard: what answers it is weathering the storm.
   { key: 'frenzied', han: '狂', name: 'Frenzied', stances: ['guard', 'endure', 'steady'], arts: ['turtle', 'puppet'] },
 ];
-
-export const TEMPER_BY_KEY: Readonly<Record<TemperKey, Temper>> =
-  Object.fromEntries(TEMPERS.map((t) => [t.key, t])) as Record<TemperKey, Temper>;

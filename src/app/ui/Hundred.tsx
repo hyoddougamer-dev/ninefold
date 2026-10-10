@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
-  HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, SKILL_BY_KEY, hundredElite, hundredLevel, metalKey, type HundredRank,
+  HUNDRED_RANKS, ITEM_BY_KEY, SKILL_BY_KEY, hundredElite, hundredLevel, metalKey, type HundredRank,
 } from '../../data/crafts.ts';
 import {
   AFFIX_INFO, GEAR, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, TEMPLATE_BY_KEY, type Affix, type GearTemplate, type Slot,
@@ -14,7 +14,7 @@ import {
 } from '../../sim/balance.ts';
 import {
   codexHeld, codexRank, codexValue, codexWorth, keptRank, lineAxes, lineValue, materialGate, materialReached, orderNeeds, orderRecipe, pieceOf,
-  piecesMade, placesMade, portionOf, setOpen, spiritOf, wornOfSet, type Order, type Portions,
+  piecesMade, placesMade, portionOf, sameOrder, setOpen, spiritOf, wornOfSet, type Order, type Portions,
 } from '../../sim/hundred.ts';
 import { blocked, held, levelIn, secondsOf } from '../../sim/crafts.ts';
 import { swing } from '../../sim/inspect.ts';
@@ -126,7 +126,7 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
   const move = useMemo(() => swing(state, piece), [state, piece]);
   const needs = orderNeeds(o);
   const r = orderRecipe(o)!;
-  const inHand = running && JSON.stringify(running) === JSON.stringify(o) && state.crafts.task === r.key;
+  const inHand = !!running && sameOrder(running, o) && state.crafts.task === r.key;
   const level = levelIn(state, 'forge');
   const made = piecesMade(state.crafts.made, realm);
   const unreached = o.lines.find((l) => !materialReached(state, CRUCIBLE[l.affix](realm, o.rarity)));
@@ -429,6 +429,3 @@ function Codex({ state }: { state: State }) {
     </div>
   );
 }
-
-/** For a recipe row elsewhere: the key the forge is making from, if it is a Hundredfold one. */
-export const isHundred = (key: string | null) => !!key && RECIPE_BY_KEY[key]?.makes.kind === 'hundred';
