@@ -76,7 +76,10 @@ const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-san
 /** A fresh game on the fixture, at the width, with the clock held and the first notices shut. */
 async function openGame(fixture, width) {
   const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1 });
+  // The clock is held before the app loads. Paused only after the load, the app had read a few
+  // real milliseconds while it mounted, and the bars that run on time moved by a pixel or two.
   await page.clock.install({ time: NOW * 1000 });
+  await page.clock.pauseAt(NOW * 1000 + 2000);
   await page.route('**/assets/*.js', (r) => r.abort());
   await page.route('**/*.supabase.co/**', (r) => r.abort());
   // The two animations the app drives by frame (a count-up and the coach's pulse) are held
@@ -101,7 +104,6 @@ async function openGame(fixture, width) {
   await page.unroute('**/assets/*.js');
   await page.goto(BASE);
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
-  await page.clock.pauseAt(NOW * 1000 + 2000);
   await page.waitForTimeout(400);
   const clear = async () => {
     for (let i = 0; i < 8; i++) {
