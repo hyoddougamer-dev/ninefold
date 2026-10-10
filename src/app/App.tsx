@@ -15,6 +15,7 @@ import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
 import { begin, endOf, focusOf, isOver } from './sitting.ts';
 import { now, payTo } from './clock.ts';
 import { useSitting } from './useSitting.ts';
+import { useSave } from './useSave.ts';
 import { capstonesOpen, focusBonus } from '../sim/dao.ts';
 import { portraitLayers } from '../art/aura.ts';
 import { templateOf, type Item, type Rarity, type Slot } from '../data/gear.ts';
@@ -380,15 +381,7 @@ export function App() {
    * The state goes in a ref so the interval can read the latest one without the effect
    * depending on it. Leaving the app still saves at once, which is the case that matters.
    */
-  const latest = useRef(state);
-  latest.current = state;
-  // 轉世 A new life is written at once, and the spare copy with it: the spare is the life
-  // left behind until then, and a main copy lost before the next clean load would bring it back.
-  useEffect(() => {
-    if (!born) return;
-    save(latest.current);
-    keepSpare(latest.current);
-  }, [born]);
+  const latest = useSave(born, state);
 
   // ── 榜 The ranked server ────────────────────────────────────────────────
   // A player who has signed in is synced when the game opens, every five minutes, and
