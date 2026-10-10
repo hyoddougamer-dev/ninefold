@@ -21,7 +21,7 @@ const WIDTH = Number(process.env.SHOT_WIDTH ?? 400);
 mkdirSync(dir, { recursive: true });
 
 const NOW = Date.UTC(2026, 9, 9, 12) / 1000;
-const NAMES = ['Boss killer', 'Qi gatherer', 'Sword Saint', 'Fusing outfit', 'Melting outfit', 'Refiner', 'Tower climb', 'Spare'];
+const NAMES = ['Boss killer', 'Qi gatherer', 'Sword Saint', 'Fusing outfit', 'Melting outfit', 'Refiner', 'Tower climb', 'Spare', 'Dragon run', 'Seclusion'];
 const KEYS = { weapon: 'sword', robe: 'robe', crown: 'band', boots: 'bare', talisman: 'charm', ring: 'plainring' };
 const piece = (id, slot, realm, rarity = 'earth') =>
   ({ id, template: `${KEYS[slot]}${realm}`, rarity, rolls: [{ affix: 'power', value: 12 + realm }] });
@@ -50,7 +50,7 @@ function cultivator(crowd) {
     v: 1, at, startedAt: at - 40 * 86400, realm: 5, layer: 6, qi: 1e7, materials: 1e6, wardenFell: false,
     levels: { technique: 30, method: 30, pills: 30, cores: 24 }, killed, worn, chest, sets, tasks: {},
     self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0, tower: 40,
-    quarryWeek: 99999, awakened: [],
+    quarryWeek: 99999, awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard', 'dew', 'taotie', 'onethought', 'formula'],
     seen: ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'keystones', 'bestiary', 'salvage', 'fuse', 'whom'],
   };
 }
@@ -60,7 +60,7 @@ let page = null;
 
 const clear = async () => {
   for (let i = 0; i < 8; i++) {
-    const b = await page.$('.notice button, .awaken button, .back button');
+    const b = await page.$('.notice button, .awaken .later, .awaken button, .back button');
     if (!b) break;
     try { await b.click({ timeout: 1200 }); } catch { break; }
     await page.waitForTimeout(220);
@@ -114,4 +114,6 @@ await plant(cultivator(3));
 await shot('three-sets');
 await plant(cultivator(8));
 await shot('eight-sets-crowded');
+await plant(cultivator(10));
+await shot('ten-sets-full');
 await browser.close();
