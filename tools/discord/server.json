@@ -1842,6 +1842,18 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "sync-2026-10-11",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "通 Sync · Saves sync during the test",
+      "color": "#7FB495",
+      "body": [
+        "Syncing during the test: the server now accepts every save that reaches it, so a save that used to show \"Not synced yet\" should sync. Nothing changes on your device, and your progress is kept the same way."
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
