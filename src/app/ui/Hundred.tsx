@@ -129,6 +129,8 @@ function Crucible({ state, onOrder, onFind }: {
   const piece = useMemo(() => pieceOf(o, 'crucible')!, [o]);
   const move = useMemo(() => swing(state, piece), [state, piece]);
   const needs = orderNeeds(o);
+  // 往 The main line's ingot has a recipe too: the same one-tap link as a line's material has.
+  const mainMaker = makerOf(metalKey(realm));
   const r = orderRecipe(o)!;
   const inHand = !!running && sameOrder(running, o) && state.crafts.task === r.key;
   const level = levelIn(state, 'forge');
@@ -222,7 +224,11 @@ function Crucible({ state, onOrder, onFind }: {
 
       <div className="card hu-lines">
         <Row label={<><span className="cjk" style={{ color: 'var(--gold)' }}>{AFFIX_INFO[tpl.affix].han}</span> {HUNDRED.main}</>}
-          sub={HUNDRED.mainFrom(ITEM_BY_KEY[metalKey(realm)]?.name ?? '')}
+          sub={<>{HUNDRED.mainFrom(ITEM_BY_KEY[metalKey(realm)]?.name ?? '')}
+            {mainMaker && onFind && (
+              <button type="button" className="hu-goto" onClick={() => onFind(mainMaker.key)}>
+                <span className="cjk">往</span> {HUNDRED.toCraft(ITEM_BY_KEY[metalKey(realm)]?.name ?? mainMaker.name)}
+              </button>)}</>}
           n={o.main} values={[1, 2, 3].map((n) => lineValue(tpl, o.rarity, tpl.affix, n as Portions, true))}
           affix={tpl.affix} onN={(n) => setO({ ...o, main: n })} />
         {o.lines.map((l, i) => {

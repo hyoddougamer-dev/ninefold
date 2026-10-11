@@ -64,6 +64,7 @@ export const BANNERS = [
   // 修 The fixes of 11 October: gear that waits says so, the odds say what they are, the filters wrap.
   { key: 'fixes-1011', seal: '修', over: '筆 Dev log · Fixes', title: 'The Hunt, the Dragon, the Filters', sub: 'Gear that waits says so, and the odds say what they are', bg: 'realm/6', fig: 'cut/dragon' },
   // 通 Saves syncing during the test: every save counts, and nobody is taken off the boards.
+  { key: 'craft-1011', seal: '筆', over: '筆 Dev log · Craft links and switches', title: 'Links, Switches and Clearer Names', sub: 'A recipe one tap away, the formula when you want it, drops by slot', bg: 'realm/5', fig: 'self/man-5' },
   { key: 'sync-1011', seal: '通', over: '告 Announcement · Testing', title: 'Saves Sync During the Test', sub: 'Every save counts while we test, and nobody is taken off the boards', bg: 'realm/2', fig: 'self/man-1' },
 ];
 
