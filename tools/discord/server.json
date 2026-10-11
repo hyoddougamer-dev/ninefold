@@ -1872,6 +1872,31 @@
         "Fixes: what the hunt and the Dragon said, and the filters at 320. The hunt now shows your realm's pieces dimmed, with the layer they start at, instead of listing pieces you cannot get yet. The Dragon line says what its percentage measures: your odds, with even at 50%. And the filter rows wrap on a small phone instead of cutting the names at the edge."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "craft-2026-10-11",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "筆 Update · Craft links, a formula switch, clearer names",
+      "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/craft-1011.webp?v=1",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/craft-1011-lines.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/craft-1011-menu.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/craft-1011-formula.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/craft-1011-loadout.webp?v=1",
+        "https://hyoddougamer-dev.github.io/ninefold/discord/craft-1011-drops.webp?v=1"
+      ],
+      "body": [
+        "Craft links. A material that has a recipe now has a button, Go to the craft that makes it, on the Hundredfold screen: on the main line and on each line. It opens that recipe in Crafts. Mystic and Earth pieces use their own realm's ore, so the link matters most at Heaven.",
+        "The formula is on request. Each gear line's note says what the line does, its cap and how it bends. The formula under it is off by default. Turn on Show the formula for every line in the menu. This replaces the earlier promise that it shows when you tap a line: it shows when the switch is on.",
+        "The luck note was wrong. It said luck had no cap. Its roll lift stops at +20%, and the note says so now.",
+        "In loadout. A new filter in the chest, next to Locked, lists the pieces a loadout names, so you can see what you could trade out. It is a way of looking: it does not change any saved filter.",
+        "Drops by slot. Show drops as, in the menu, names a drop by its slot and school (Robe · Sword) instead of its name, in Hunt, the arena and meetings. The default is the name, as before.",
+        "Corrections. The Celestial Master's tower pay is double the qi on every floor, which is +100%, not 25%. Replies that said the craft link and the drop names were planned are out of date: both are in."
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
@@ -4225,6 +4250,35 @@
       "mention": false,
       "reply": [
         "Closed without building: the votes and the thread did not give us enough to design from. The idea stays on the list, with no date. Thank you for the thought you put into it. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "reply": [
+        "A correction to our replies above. The Celestial Master's tower pay is double the qi on every floor, which is +100%, not 25%. The 25% was from an earlier build. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "reply": [
+        "A correction to our reply above: the 25% was from an earlier build. Today the Celestial Master's tower pay is double the qi on every floor (+100%). The whole-run figure has not been measured again with the single table yet, so the 25% over a run is out of date too. We will post the table when it exists. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Hundredfold recipes do not have navigable materials unlike other recipes",
+      "reply": [
+        "Built in this update: a material with a recipe has a button, Go to the craft that makes it, on the main line and on each line. It opens that recipe in Crafts. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "便 Quality of life: what slows you down?",
+      "mention": false,
+      "reply": [
+        "Since our last reply, built in this update: a drop can show its slot and school instead of its name (Menu, Show drops as, slot), and the link from the Hundredfold to each craft is in too. · 師 Shibaki"
       ]
     }
   ]
