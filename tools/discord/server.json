@@ -4280,6 +4280,20 @@
       "reply": [
         "Since our last reply, built in this update: a drop can show its slot and school instead of its name (Menu, Show drops as, slot), and the link from the Hundredfold to each craft is in too. · 師 Shibaki"
       ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Are you sure the dragon power calculations are correct?",
+      "reply": [
+        "rekaris, we cannot read the picture from here, so please copy the line you see as text. What we have: on this build, in our simulated runs, the Dragon's power divided by yours is about 1.7 to 1.8. The percentage on the Dragon card is your chance to win, and even odds are 50%. The Dragon line now says that. If your screen says 138x, tell us the realm and layer you are on, and we will look into it. On pills: since 8 October, the pills and sigils you carry into the Dragon count at full strength, and they are spent on a win, so a stronger kit moves your odds at once. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "no R6 Gear",
+      "reply": [
+        "razielmorgenstern, you asked which layer you were on. Gear from a realm-6 beast starts falling at layer 5 of realm 6. On layers 1 to 4 a realm-6 beast drops only realms 1 to 5, so those hunts give no realm-6 pieces. That is the game working as written, and the hunt screen now dims those pieces and says when they start, for example: Falls from layer 5 of realm 6. You are on layer 2. Which layer were you on for the 1,395 hunts? · 師 Shibaki"
+      ]
     }
   ]
 }
