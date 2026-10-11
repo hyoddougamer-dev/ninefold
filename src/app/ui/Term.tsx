@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GLOSS } from '../glossary.ts';
+import { formulaShown } from '../prefs.ts';
 
 /**
  * 註 A character you can tap, answered where it stands.
@@ -187,8 +188,9 @@ export function Term({ han, sense, plain, children, entry, go, bare }: {
           <b className="cjk">{term.han}</b>
           <em>{term.name}</em>
           {term.note && <i>{term.note}</i>}
-          {/* 式 The formula last and set apart, so a reader who does not want it stops above it. */}
-          {term.math && <code className="termmath">{term.math}</code>}
+          {/* 式 The formula last and set apart, so a reader who does not want it stops above it. It shows
+              only when the menu's switch is on: off by default, so the note is the plain half. */}
+          {term.math && formulaShown() && <code className="termmath">{term.math}</code>}
           {go && <button className="termgo" onClick={() => { shut(); go.onGo(); }}>{go.label}</button>}
         </span>, document.body)}
     </>

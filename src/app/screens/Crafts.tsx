@@ -11,7 +11,7 @@ import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
   marksOf, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
-  kitFor, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
+  kitFor, makerOf, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
 } from '../../sim/crafts.ts';
 import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
@@ -317,7 +317,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
 
       {!open && <p className="faint cpreview" style={{ margin: '0 0 8px', fontSize: 12 }}>{CRAFTS.preview(info.name)}</p>}
       {open && skill === 'forge' && shown === 'Hundredfold' && !needle && onOrder
-        ? <Hundred state={state} onOrder={onOrder} />
+        ? <Hundred state={state} onOrder={onOrder} onFind={goTo} />
         : (
       <div className="crecipes" data-preview={!open || undefined}>
         {list.length === 0 && <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>
@@ -513,7 +513,7 @@ function fixFor(state: State, r: Recipe | null, act: {
   const missing = needsOf(state, r).find(([k, n]) => held(state, k) < n)?.[0];
   if (!missing) return null;
   if (missing === 'mat') return act.onGo ? { han: '狩', label: WORKSHOP_FIX.hunt, run: () => act.onGo!('hunt') } : null;
-  const maker = MAKER.get(splitKey(missing).key);
+  const maker = makerOf(splitKey(missing).key);
   if (!maker) return null;
   if (blocked(state, maker) === null) {
     const name = ITEM_BY_KEY[splitKey(missing).key]?.name ?? maker.name;
@@ -643,14 +643,11 @@ function Thing({ k, size }: { k: string; size: number }) {
  * opened by a tap or a resting pointer, naming the thing in English beside its character,
  * saying which craft makes it, and carrying a button that goes there.
  */
-const MAKER = new Map<string, Recipe>();
-for (const r of RECIPES) if (r.makes.kind === 'item' && !MAKER.has(r.makes.item)) MAKER.set(r.makes.item, r);
-
 function Named({ k, onGo }: { k: string; onGo: (key: string) => void }) {
   const { key, quality } = splitKey(k);
   const it = ITEM_BY_KEY[key];
   if (!it) return null;
-  const from = MAKER.get(key);
+  const from = makerOf(key);
   const skill = from ? SKILL_BY_KEY[from.skill] : null;
   const name = quality !== null ? `${RARITY_INFO[RARITIES[quality]].name} ${it.name}` : it.name;
   return (

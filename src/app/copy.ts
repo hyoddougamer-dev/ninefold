@@ -466,6 +466,13 @@ export const MENU = {
   unmute: (what: string) => `Turn the ${what.toLowerCase()} back on`,
   volumeOf: (what: string) => `${what} volume`,
   off: 'off',
+  on: 'on',
+  /** 式 The menu switch for the formula under every gear line's note. Off until a player turns it on. */
+  formula: 'Show the formula for every line',
+  /** 名 The menu switch for how a drop is named in lists: by its name (the default) or its slot. */
+  dropNames: 'Show drops as',
+  dropName: 'name',
+  dropSlot: 'slot',
   /** 報 The testers' Discord, where a bug gets one post in 報-bugs. A permanent invite. */
   discord: 'https://discord.gg/JFD9cTGscN',
 };
@@ -1763,8 +1770,8 @@ export const GEAR = {
     rate: (first: string, top: string, small: string, big: string) => 'Qi a second, while you are away too.\n'
       + `Gear and the 道 Path tree together bend toward a ceiling of ${first} on the first layer, rising to ${top} at the summit. `
       + `The bend moves up as you climb, so each realm's own pieces still count: in the fifth realm +100% gives ${small}, +300% ${big}.`,
-    luck: (small: string, big: string) => 'Rarer gear from every drop, and better rolls on what drops.\n'
-      + `No cap, but it bends: +100% gives ${small}, +300% only ${big}.`,
+    luck: (small: string, big: string, top: number) => 'Rarer gear from every drop, and better rolls on what drops.\n'
+      + `It bends, and the roll it lifts stops at +${top}%: +100% gives ${small}, +300% only ${big}.`,
     find: (top: number, base: string, pts: string, after: string) =>
       'How often a beast leaves a piece. It is added in points to the beast\u2019s own chance.\n'
       + `Never past ${top} points. +100% on your pieces is ${pts} points: a beast\u2019s ${base} becomes ${after}.\n`
@@ -2697,6 +2704,8 @@ export const HUNDRED = {
   opensNote: 'A line opens once you have reached the realm its material comes from and the craft that gathers it is at the level. Mystic and Earth never ask for a material from a later realm than the set\'s own: where a line\'s usual material is later, this set\'s own ore stands in. Heaven asks for the usual one. The herb and the elite part are this set\'s own.',
   opensAt: (craft: string, level: number, realm: number) => `${craft} Lv ${level} · realm ${realm}`,
   opensOpen: 'open',
+  /** 往 The button beside a line's material: the recipe that makes it, opened in the Crafts list. */
+  toCraft: (item: string) => `Go to the craft that makes ${item}`,
   levels: (m: number, e: number, h: number) => `Forging ${m} · ${e} · ${h}`,
   spiritHead: '器靈 Artifact Spirit',
   spiritNote: 'Wear all six pieces of one set, every one Hundredfold and Heaven, and its spirit wakes around you. It is a light and a name, and nothing else.',
@@ -2832,10 +2841,14 @@ export const QOL = {
     filtersFull: (n: number) => `${n} filters are kept, the most there is room for. Forget one to keep another.`,
     /** \u9396 The chest's first row: only the pieces kept on purpose. */
     lockedOnly: 'Locked',
+  /** 套 The chest's place for pieces a loadout names: the ones a loadout would have to let go first. */
+  loadoutOnly: 'In loadout',
     savedHead: 'Saved filters',
   },
   /** \u5668 A piece's slot, in English, beside its name wherever a beast's drops are listed. */
   slotted: (name: string, slot: string) => (name.toLowerCase().includes(slot.toLowerCase()) ? name : `${name} \u00b7 ${slot}`),
+  /** 名 A drop in a list by its slot and school, for a player who chose Slot in the menu. */
+  bySlot: (slot: string, school: string) => `${slot} · ${school}`,
   arena: {
     better: 'Better than what you wear',
     wearIt: 'Wear it',

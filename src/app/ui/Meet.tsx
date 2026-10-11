@@ -1,5 +1,7 @@
 import { canAnswer, giftOf, priceOf, type Meeting, type Pick, type Receipt } from '../../sim/meet.ts';
-import { RARITY_INFO, SLOT_INFO, templateOf } from '../../data/gear.ts';
+import { RARITY_INFO, SLOT_INFO, schoolOf, templateOf } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
+import { dropNamesShown } from '../prefs.ts';
 import { gearTile } from '../../art/gear.ts';
 import { icon } from '../../art/icon.ts';
 import { pictureOf } from '../../data/pictures.ts';
@@ -121,7 +123,9 @@ export function MeetDone({ receipt, onClose, onSee }: {
   let pieceLine: string | null = null;
   if (item) {
     const t = templateOf(item);
-    const name = QOL.slotted(t.name, SLOT_INFO[t.slot].name);
+    const name = dropNamesShown() === 'slot'
+      ? QOL.bySlot(SLOT_INFO[t.slot].name, SCHOOL_INFO[schoolOf(item)].short)
+      : QOL.slotted(t.name, SLOT_INFO[t.slot].name);
     const rank = RARITY_INFO[item.rarity].name;
     const pays = meltPays(num(f!.melted), num(f!.meltedMaterial), f!.melted > 0, f!.meltedMaterial > 0);
     pieceLine = !f!.dropped ? MEET.done.piece(name, rank)

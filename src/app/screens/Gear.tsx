@@ -36,7 +36,7 @@ import { GLOSS } from '../glossary.ts';
 import { meltQuote, salvageable } from '../../sim/salvage.ts';
 
 import { buysWith } from '../../sim/time.ts';
-import { isWorn, setKeeping, tasksOf } from '../../sim/sets.ts';
+import { isWorn, loadoutsOf, setKeeping, tasksOf } from '../../sim/sets.ts';
 import { SET_LIMIT, TASKS, type Task } from '../../sim/state.ts';
 import { FILTER_LIMIT, PLACES, keepable, type ChestFilter, type Place } from '../../sim/filters.ts';
 import type { Swing } from '../../sim/inspect.ts';
@@ -56,11 +56,18 @@ const CHEST_PAGE = 60;
 /** 煉 How many fuse groups are drawn before a tap asks for more. */
 const FUSE_PAGE = 12;
 
+/**
+ * 套 The chest's place row: a place of the save (sim/filters.ts), or "In loadout", which only
+ * the screen knows. It is never a saved or kept filter (validFilters would drop it), so a
+ * filter that is lit on it cannot be kept.
+ */
+type ChestPlace = Place | 'loadout';
+
 /** 架 What the chest reads, kept between visits to the screen (app/memo.ts shelf). */
 const READINGS = shelf<WeakMap<Item, ChestRead>>();
 const CHEST_READ = shelf<readonly ChestRead[]>();
 const SORTED = shelf<readonly ChestRead[]>();
-const TALLY = shelf<{ ups: number; locks: number; slots: Map<Slot, number>; schools: Map<School, number>; carried: Set<Affix> }>();
+const TALLY = shelf<{ ups: number; locks: number; inLoadout: number; slots: Map<Slot, number>; schools: Map<School, number>; carried: Set<Affix> }>();
 const WEAR_ALL = shelf<number>();
 
 /**
@@ -176,7 +183,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
   // 篩 The chest's filter lives here: it is a way of looking, not a fact about the save.
   // 記 Remembered on the device, so a tab away and back, or a reload, keeps it.
   // 鎖 Locked is one of these too: only the pieces kept on purpose (rekaris, on the Discord).
-  const [only, setOnly] = useRemembered<Place>('chest.slot', 'all', oneOf(PLACES));
+  const [only, setOnly] = useRemembered<ChestPlace>('chest.slot', 'all', oneOf<ChestPlace>([...PLACES, 'loadout']));
   // 職 And by school, a second line under the first. rekaris, on the Discord: *"You already
   // have filters for gear slot, adding another line of filters for the class would be great."*
   const [kin, setKin] = useRemembered<'any' | School>('chest.school', 'any', oneOf(['any', ...SCHOOLS] as const));
@@ -213,39 +220,45 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
     || (RARITIES.indexOf(b.item.rarity) - RARITIES.indexOf(a.item.rarity))
     || (templateOf(b.item).realm - templateOf(a.item).realm)));
   // 數 What the filter chips count, in one walk of the chest rather than one walk per chip.
-  const tally = TALLY([read], () => {
+  // 套 A loadout names a piece by id, so its membership moves with the loadouts as well as the chest.
+  const savedSets = state.sets;
+  const tally = TALLY([read, savedSets], () => {
     const slots = new Map<Slot, number>();
     const schools = new Map<School, number>();
     const carried = new Set<Affix>();
     let ups = 0;
     let locks = 0;
+    let inLoadout = 0;
     for (const r of read) {
       if (r.move.better) ups++;
       if (r.item.locked) locks++;
+      if (loadoutsOf({ sets: savedSets }, r.item.id).length > 0) inLoadout++;
       const slot = templateOf(r.item).slot;
       slots.set(slot, (slots.get(slot) ?? 0) + 1);
       const sc = schoolOf(r.item);
       schools.set(sc, (schools.get(sc) ?? 0) + 1);
       for (const roll of r.item.rolls) carried.add(roll.affix);
     }
-    return { ups, locks, slots, schools, carried };
+    return { ups, locks, inLoadout, slots, schools, carried };
   });
-  const { ups, locks } = tally;
+  const { ups, locks, inLoadout } = tally;
   const bySchool = (sc: School) => tally.schools.get(sc) ?? 0;
   const bySlot = (slot: Slot) => tally.slots.get(slot) ?? 0;
   const school = kin !== 'any' && bySchool(kin) === 0 ? 'any' : kin;
   // 記 A remembered slot the chest no longer holds, or ▲ with nothing ▲, reads as All.
-  const place: Place = only === 'better' ? (ups > 0 ? 'better' : 'all')
+  const place: ChestPlace = only === 'better' ? (ups > 0 ? 'better' : 'all')
     : only === 'locked' ? (locks > 0 ? 'locked' : 'all')
-      : only !== 'all' && bySlot(only) === 0 ? 'all' : only;
+      : only === 'loadout' ? (inLoadout > 0 ? 'loadout' : 'all')
+        : only !== 'all' && bySlot(only) === 0 ? 'all' : only;
   const pick = useMemo(() => {
     const has = (item: Item, a: Affix) => item.rolls.some((r) => r.affix === a);
     return (place === 'better' ? read.filter((r) => r.move.better)
       : place === 'locked' ? read.filter((r) => r.item.locked)
-        : place === 'all' ? read : read.filter((r) => templateOf(r.item).slot === place))
+        : place === 'loadout' ? read.filter((r) => loadoutsOf({ sets: savedSets }, r.item.id).length > 0)
+          : place === 'all' ? read : read.filter((r) => templateOf(r.item).slot === place))
       .filter((r) => school === 'any' || schoolOf(r.item) === school)
       .filter((r) => lines.every((a) => has(r.item, a)));
-  }, [read, place, school, lines]);
+  }, [read, place, school, lines, savedSets]);
   /*
    * 窗 The chest draws CHEST_PAGE tiles and more as its foot comes near, never the whole
    * of a big one at once. 1,800 tiles were 72,000 elements on the page, and every tick of
@@ -689,7 +702,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
         const isOn = (p: ChestFilter) => p.slot === place && p.school === school
           && p.lines.length === lines.length && p.lines.every((a) => lines.includes(a));
         // 存 Keeping is offered for a filter that is on and not kept already.
-        const canKeep = filtered && !presets.some(isOn);
+        const canKeep = filtered && place !== 'loadout' && !presets.some(isOn);
         return (
           <>
             {/* ▲ 著 Every upgrade on at once. rekaris, the audit: the chest is 2,090px down
@@ -714,6 +727,11 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               {locks > 0 && (
                 <button type="button" className="locks" aria-pressed={place === 'locked'} onClick={() => setOnly('locked')}>
                   <span className="cjk">鎖</span> {QOL.gear.lockedOnly} <i className="mono">{locks}</i>
+                </button>
+              )}
+              {inLoadout > 0 && (
+                <button type="button" className="loadouts" aria-pressed={place === 'loadout'} onClick={() => setOnly('loadout')}>
+                  <span className="cjk">套</span> {QOL.gear.loadoutOnly} <i className="mono">{inLoadout}</i>
                 </button>
               )}
               {SLOTS.filter((slot) => bySlot(slot) > 0).map((slot) => (
@@ -788,7 +806,7 @@ export function Gear({ state, pulse, upTo, onUpTo, onInspect, onFuse, onRefine, 
               <form className="keepname" onSubmit={(e) => {
                 e.preventDefault();
                 const name = presetName.trim().slice(0, 24) || QOL.gear.filterDefault(presets.length + 1);
-                onSaveFilter?.({ name, slot: place, school, lines: [...lines] });
+                onSaveFilter?.({ name, slot: place as Place, school, lines: [...lines] }); // canKeep is false on 'loadout'
                 setPresetName(null);
               }}>
                 <input value={presetName} maxLength={24} aria-label={QOL.gear.filterName} autoFocus

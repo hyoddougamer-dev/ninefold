@@ -96,6 +96,13 @@ const zeroSkills = <T>(v: T): Record<SkillKey, T> =>
 const RECIPES_OF: Readonly<Record<SkillKey, readonly Recipe[]>> =
   Object.fromEntries(SKILL_KEYS.map((k) => [k, RECIPES.filter((r) => r.skill === k)])) as unknown as Record<SkillKey, readonly Recipe[]>;
 
+/** 往 The recipe that makes an item, the first one that lists it: the craft a missing material sends you to. */
+const FIRST_MAKER = new Map<string, Recipe>();
+for (const r of RECIPES) if (r.makes.kind === 'item' && !FIRST_MAKER.has(r.makes.item)) FIRST_MAKER.set(r.makes.item, r);
+export function makerOf(item: string): Recipe | undefined {
+  return FIRST_MAKER.get(item);
+}
+
 export const NO_CRAFTS: Crafts = {
   xp: zeroSkills(0), task: null, since: 0, pouch: {}, made: {},
   tools: zeroSkills(0), arrays: [], cut: {}, carry: { elixir: null, sigil: null, pill: null }, seek: 0,

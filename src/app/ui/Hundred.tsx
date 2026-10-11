@@ -16,7 +16,7 @@ import {
   codexHeld, codexRank, codexValue, codexWorth, keptRank, lineAxes, lineValue, materialGate, materialReached, orderNeeds, orderRecipe, pieceOf,
   piecesMade, placesMade, portionOf, sameOrder, setOpen, spiritOf, wornOfSet, type Order, type Portions,
 } from '../../sim/hundred.ts';
-import { blocked, held, levelIn, secondsOf } from '../../sim/crafts.ts';
+import { blocked, held, levelIn, makerOf, secondsOf } from '../../sim/crafts.ts';
 import { swing } from '../../sim/inspect.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
@@ -95,7 +95,9 @@ function bestRank(s: State, realm: number): HundredRank {
  * lineValue, what it asks for is orderNeeds, and what wearing it would do is the same swing
  * the chest's ▲ reads. So the crucible quotes the piece the forge will make, to the decimal.
  */
-export function Hundred({ state, onOrder }: { state: State; onOrder: (o: Order | null) => void }) {
+export function Hundred({ state, onOrder, onFind }: {
+  state: State; onOrder: (o: Order | null) => void; onFind?: (key: string) => void;
+}) {
   const [page, setPage] = useState<Page>('crucible');
   return (
     <div className="hundred">
@@ -106,14 +108,16 @@ export function Hundred({ state, onOrder }: { state: State; onOrder: (o: Order |
             <b className="cjk">{han}</b> {HUNDRED.tabs[k]}</button>
         ))}
       </div>
-      {page === 'crucible' && <Crucible state={state} onOrder={onOrder} />}
+      {page === 'crucible' && <Crucible state={state} onOrder={onOrder} onFind={onFind} />}
       {page === 'sets' && <Sets state={state} />}
       {page === 'codex' && <Codex state={state} />}
     </div>
   );
 }
 
-function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null) => void }) {
+function Crucible({ state, onOrder, onFind }: {
+  state: State; onOrder: (o: Order | null) => void; onFind?: (key: string) => void;
+}) {
   const running = state.crafts.order ?? null;
   const top = Math.min(9, state.realm);
   const [o, setO] = useState<Order>(() => running ?? firstOrder(state, top, 'weapon', bestRank(state, top)));
@@ -223,6 +227,8 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
           affix={tpl.affix} onN={(n) => setO({ ...o, main: n })} />
         {o.lines.map((l, i) => {
           const mat = ITEM_BY_KEY[CRUCIBLE[l.affix](realm, o.rarity)];
+          // 往 A material that has a recipe names the craft that makes it, one tap from here.
+          const maker = makerOf(CRUCIBLE[l.affix](realm, o.rarity));
           return (
             <Row key={i}
               label={<select aria-label={HUNDRED.line(i + 1)} value={l.affix}
@@ -233,7 +239,11 @@ function Crucible({ state, onOrder }: { state: State; onOrder: (o: Order | null)
               </select>}
               sub={<>{mat ? <><span className="cjk">{mat.han}</span> {mat.name}</> : null}
                 {!materialReached(state, CRUCIBLE[l.affix](realm, o.rarity)) && (
-                  <em className="hu-short"> · {opensWith(CRUCIBLE[l.affix](realm, o.rarity), HUNDRED.unreached)}</em>)}</>}
+                  <em className="hu-short"> · {opensWith(CRUCIBLE[l.affix](realm, o.rarity), HUNDRED.unreached)}</em>)}
+                {maker && onFind && (
+                  <button type="button" className="hu-goto" onClick={() => onFind(maker.key)}>
+                    <span className="cjk">往</span> {HUNDRED.toCraft(mat?.name ?? maker.name)}
+                  </button>)}</>}
               n={l.n} values={[1, 2, 3].map((n) => lineValue(tpl, o.rarity, l.affix, n as Portions, false))}
               affix={l.affix} onN={(n) => line(i, { n })} />
           );

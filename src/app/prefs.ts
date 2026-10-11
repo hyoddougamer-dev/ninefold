@@ -33,6 +33,17 @@ export function useRemembered<T>(key: string, fallback: T, valid: (x: unknown) =
   return [value, set];
 }
 
+/** 名 How a drop is named in a list: by its name (the default), or by its slot and school. */
+export type DropNames = 'name' | 'slot';
+export const dropNamesShown = (): DropNames =>
+  recall<DropNames>('drops.names', 'name', (x): x is DropNames => x === 'name' || x === 'slot');
+
+/** A guard for a switch: on or off. */
+export const isFlag = (x: unknown): x is boolean => typeof x === 'boolean';
+
+/** 式 Whether the formula sits under each gear line's note. Off until a player turns it on in the menu. */
+export const formulaShown = (): boolean => recall('formula.all', false, isFlag);
+
 /** A guard for one of a fixed list of strings. */
 export const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T =>
   typeof x === 'string' && (list as readonly string[]).includes(x);

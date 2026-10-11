@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
-import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, templateOf, type Item } from '../../data/gear.ts';
+import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, schoolOf, templateOf, type Item } from '../../data/gear.ts';
+import { SCHOOL_INFO } from '../../data/schools.ts';
+import { dropNamesShown } from '../prefs.ts';
 import { lifted, type Stashed } from '../../sim/stash.ts';
 import { marksUp } from '../../sim/inspect.ts';
 import { RealmTag } from './RealmTag.tsx';
@@ -507,7 +509,9 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
                 {/* ▲ Better than what is worn, said before the lines so it is never under the buttons. */}
                 {dropUp && <em className="dropup"><span aria-hidden="true">▲</span> {QOL.arena.better}</em>}
                 <i>
-                  {QOL.slotted(templateOf(battle.drop).name, SLOT_INFO[templateOf(battle.drop).slot].name)}
+                  {dropNamesShown() === 'slot'
+                    ? QOL.bySlot(SLOT_INFO[templateOf(battle.drop).slot].name, SCHOOL_INFO[schoolOf(battle.drop)].short)
+                    : QOL.slotted(templateOf(battle.drop).name, SLOT_INFO[templateOf(battle.drop).slot].name)}
                   {battle.drop.rolls.map((roll) => (
                     <span key={roll.affix} style={{ marginLeft: 7 }}>
                       <span className="cjk">{AFFIX_INFO[roll.affix].han}</span>

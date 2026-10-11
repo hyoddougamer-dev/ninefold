@@ -1,6 +1,6 @@
 import type { Affix } from '../data/gear.ts';
 import { BEASTS } from '../data/bestiary.ts';
-import { FIND_TOP, FUSE_TOP, QI_ROOF_FIRST, QI_ROOF_TOP, gearQiRate } from '../sim/balance.ts';
+import { FIND_TOP, FUSE_TOP, LUCK_ROLL_TOP, QI_ROOF_FIRST, QI_ROOF_TOP, gearQiRate } from '../sim/balance.ts';
 import { dropChance } from '../sim/drops.ts';
 import { bendArt, bendFind, bendFuse, bendLuck, bendSunder } from '../sim/schools.ts';
 import { GEAR } from './copy.ts';
@@ -20,7 +20,8 @@ export function lineNote(a: Affix): string {
     case 'power': return GEAR.line.power();
     // 氣 At the first layer of the fifth realm, rung 36, with no tree: where the bend is worked.
     case 'rate': return GEAR.line.rate(times(QI_ROOF_FIRST), times(QI_ROOF_TOP), times(gearQiRate(1, 1, 36)), times(gearQiRate(3, 1, 36)));
-    case 'luck': return GEAR.line.luck(times(bendLuck(100)), times(bendLuck(300)));
+    // 溢 The roll luck lifts stops at LUCK_ROLL_TOP: the note says where, read from the constant.
+    case 'luck': return GEAR.line.luck(times(bendLuck(100)), times(bendLuck(300)), Math.round(LUCK_ROLL_TOP * 100));
     case 'find': return GEAR.line.find(Math.round(FIND_TOP * 100), share(dropChance(COMMON)),
       points(bendFind(100)), share(dropChance(COMMON, bendFind(100))));
     case 'sunder': return GEAR.line.sunder(share(1 - bendSunder(100)), share(1 - bendSunder(300)));

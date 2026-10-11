@@ -3,6 +3,7 @@ import { BUILD, MENU } from '../copy.ts';
 import { canReincarnate } from '../../sim/rebirth.ts';
 import type { State } from '../../sim/state.ts';
 import { sfx } from '../sound.ts';
+import { isFlag, useRemembered, type DropNames } from '../prefs.ts';
 import { Volumes } from './Volume.tsx';
 
 /** 版 Filled in by the build (vite.config.ts). */
@@ -64,6 +65,8 @@ export function MainSwitch({ state, menu, setMenu, scrolled, covered, shade, set
             </a>
             {/* 量 Sound and music: a slider and a mute each (ui/Volume.tsx). */}
             <Volumes />
+            <FormulaSwitch />
+            <DropNamesSwitch />
             <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
           </div>
         )}
@@ -72,5 +75,33 @@ export function MainSwitch({ state, menu, setMenu, scrolled, covered, shade, set
           to do or the player is left tapping the game through a list. */}
       {menu && <div className="scrim" onClick={() => setMenu(false)} />}
     </>
+  );
+}
+
+/**
+ * 式 The formula under each gear line's note, on or off. Off by default: the note says what the
+ * line does, its cap and how it bends, and whoever wants the formula as well turns it on here.
+ * It is read when the menu opens, so the switch is always true to what the notes show.
+ */
+function FormulaSwitch() {
+  const [on, setOn] = useRemembered('formula.all', false, isFlag);
+  return (
+    <button type="button" data-on={on} aria-pressed={on} onClick={() => { setOn(!on); sfx.tap(); }}>
+      <b className="cjk">式</b><span>{MENU.formula}</span><em className="switchstate">{on ? MENU.on : MENU.off}</em>
+    </button>
+  );
+}
+
+/**
+ * 名 How a drop is named in the lists it appears in: by its name, as it always was, or by its
+ * slot and school. Read again each time a list draws, so the next draw shows the choice.
+ */
+function DropNamesSwitch() {
+  const [mode, setMode] = useRemembered<DropNames>('drops.names', 'name', (x): x is DropNames => x === 'name' || x === 'slot');
+  const bySlot = mode === 'slot';
+  return (
+    <button type="button" data-on={bySlot} aria-pressed={bySlot} onClick={() => { setMode(bySlot ? 'name' : 'slot'); sfx.tap(); }}>
+      <b className="cjk">名</b><span>{MENU.dropNames}</span><em className="switchstate">{bySlot ? MENU.dropSlot : MENU.dropName}</em>
+    </button>
   );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AFFIXES, AFFIX_INFO } from '../../data/gear.ts';
-import { ART_BEND, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, SUNDER_BEND, UNCAPPED_RATE_CEILING } from '../../sim/balance.ts';
+import { ART_BEND, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, LUCK_ROLL_TOP, SUNDER_BEND, UNCAPPED_RATE_CEILING } from '../../sim/balance.ts';
 import { GLOSS } from '../glossary.ts';
 import { lineMath, lineNote } from '../lines.ts';
 
@@ -25,6 +25,9 @@ describe('註 the gear line notes', () => {
     expect(lineNote('refine')).toContain(`×${FUSE_TOP}`);
     expect(lineNote('rate')).toContain(`×${UNCAPPED_RATE_CEILING}`);
     expect(lineNote('power')).toMatch(/no cap/i);
+    // 溢 Luck has a cap on its roll, so its note must not say it has none.
+    expect(lineNote('luck')).toContain(`+${Math.round(LUCK_ROLL_TOP * 100)}%`);
+    expect(lineNote('luck')).not.toMatch(/no cap/i);
     expect(lineMath('luck')).toContain(String(LUCK_BEND));
     expect(lineMath('sunder')).toContain(String(SUNDER_BEND));
     expect(lineMath('art')).toContain(String(ART_BEND));

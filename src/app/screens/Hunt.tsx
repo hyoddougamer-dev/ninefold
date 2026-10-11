@@ -24,7 +24,7 @@ import { QuarryBand, WeekTag } from '../ui/Week.tsx';
 import { isQuarry, weekLeft, weekOf } from '../../sim/week.ts';
 import { ARCHETYPES, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO, schoolOf, type Slot } from '../../data/gear.ts';
 import { SCHOOLS, SCHOOL_INFO, type School } from '../../data/schools.ts';
-import { oneOf, useRemembered } from '../prefs.ts';
+import { dropNamesShown, oneOf, useRemembered } from '../prefs.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
@@ -378,7 +378,9 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                           {/* 註 Hover or tap the seal and it says which school, in English.
                               rekaris: *"it would be great if I could hover over it and know what it is."* */}
                           <Term han={sc.seal} plain entry={{ han: sc.seal, name: `${sc.short} school`, note: schoolSays(key) }} />
-                        </b> {QOL.slotted(arch.name, SLOT_INFO[arch.slot].name)}</span>
+                        </b> {dropNamesShown() === 'slot'
+                          ? QOL.bySlot(SLOT_INFO[arch.slot].name, sc.short)
+                          : QOL.slotted(arch.name, SLOT_INFO[arch.slot].name)}</span>
                       </em>
                     );
                   })}
