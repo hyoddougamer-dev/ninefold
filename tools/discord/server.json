@@ -1897,6 +1897,329 @@
         "Corrections. The Celestial Master's tower pay is double the qi on every floor, which is +100%, not 25%. Replies that said the craft link and the drop names were planned are out of date: both are in."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "news-rebirth",
+      "channel": "news",
+      "title": "Ten questions on rebirth: help us decide",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/news-rebirth.webp?v=1",
+      "body": [
+        "Rebirth is the biggest open question for the endgame, and we would rather build it with you than guess.",
+        "We have put ten decisions in front of you. Each one has a rough preview and the numbers we measured. The four that matter most:\n1. What happens to your Heaven record when you rebirth?\n2. Should the Echo grow with how many lives you have lived, or with how deep each life went?\n3. How much of your forging experience should come with you into a new life?\n4. Should the boards show values the server would reject, while we test?",
+        "Vote on each one below, and leave a note if you have one. We read every note."
+      ],
+      "footer": "· 師 Shibaki"
+    },
+    {
+      "key": "poll-rebirth-1",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 1 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-1.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "What happens to your Heaven record when you rebirth?",
+          "answers": [
+            [
+              null,
+              "It stays: your best ever stays on Heaven"
+            ],
+            [
+              null,
+              "Only your first life stays on Heaven"
+            ],
+            [
+              null,
+              "You leave Heaven and climb only Samsara"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-2",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 2 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-2.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "Should the Echo grow with how many lives you have lived, or with how deep each life went?",
+          "answers": [
+            [
+              null,
+              "The number of lives, as it is today"
+            ],
+            [
+              null,
+              "How deep each life went, with a cap"
+            ],
+            [
+              null,
+              "Both, under one cap"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-3",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 3 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-4.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "How much forging experience should come with you into a new life?",
+          "answers": [
+            [
+              null,
+              "25%, with forging speed carried (as today)"
+            ],
+            [
+              null,
+              "50%, with forging speed carried"
+            ],
+            [
+              null,
+              "100%: your levels open at once"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-4",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 4 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-9.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "Should the boards show values the server would refuse, while we test?",
+          "answers": [
+            [
+              null,
+              "No: turn the check on now"
+            ],
+            [
+              null,
+              "Yes, until the next season that counts"
+            ],
+            [
+              null,
+              "Not sure"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-5",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 5 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-3.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "If the Echo counts depth, what should each mark be worth?",
+          "answers": [
+            [
+              null,
+              "10% per mark: the cap is reached at mark 4"
+            ],
+            [
+              null,
+              "About 2.3% per mark: the cap at mark 15"
+            ],
+            [
+              null,
+              "Keep today's Echo: depth does not count"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-6",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 6 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-5.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "How should a rebirth be confirmed?",
+          "answers": [
+            [
+              null,
+              "Two taps, as today"
+            ],
+            [
+              null,
+              "Type a word, like Reincarnate"
+            ],
+            [
+              null,
+              "Another way (say it in the ideas topic)"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-7",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 7 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-6.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "Should the first place on Samsara get the 天下第一 title?",
+          "answers": [
+            [
+              null,
+              "Yes"
+            ],
+            [
+              null,
+              "No: the title stays on Heaven"
+            ],
+            [
+              null,
+              "Not sure"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-8",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 8 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-7.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "Should the tower count on Samsara, life by life?",
+          "answers": [
+            [
+              null,
+              "Yes, from the next floor"
+            ],
+            [
+              null,
+              "No, not for now"
+            ],
+            [
+              null,
+              "Only once the tower is fixed per life"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-9",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 9 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-8.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "For a daily player, how long should the climb to the summit take?",
+          "answers": [
+            [
+              null,
+              "About 40 days"
+            ],
+            [
+              null,
+              "About 90 days"
+            ],
+            [
+              null,
+              "Not sure"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
+    },
+    {
+      "key": "poll-rebirth-10",
+      "channel": "news",
+      "quiet": true,
+      "color": "#D4AF56",
+      "title": "Poll 10 of 10",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/poll/poll-10.webp?v=1",
+      "body": [
+        "Vote below. The numbers behind it are on the card above."
+      ],
+      "polls": [
+        {
+          "question": "Should we show the Samsara board design before we build it?",
+          "answers": [
+            [
+              null,
+              "Yes, show it before we build"
+            ],
+            [
+              null,
+              "No, only when it is ready"
+            ],
+            [
+              null,
+              "Only after question 1 is decided"
+            ]
+          ],
+          "hours": 336
+        }
+      ]
     }
   ],
   "posts": [
@@ -2599,6 +2922,39 @@
         [
           "🤝 Keep it kind",
           "Every opinion is welcome, including \"I just want to idle\". Answer each other and argue the case; I'll read all of it before building anything."
+        ]
+      ],
+      "footer": "師 Shibaki"
+    },
+    {
+      "key": "ideas-rebirth",
+      "forum": "ideas",
+      "tags": [
+        "Idea"
+      ],
+      "pin": false,
+      "title": "議 Rebirth: what would make it worth taking?",
+      "color": "#D4AF56",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-rebirth.webp?v=1",
+      "body": [
+        "The ten polls are in {#news}, each with its picture and the number we measured behind it. This is the place to argue the case: what would make you take a rebirth, and what would break it. Answer each other, and tell us if you think we have a number wrong. We read all of it before building anything."
+      ],
+      "fields": [
+        [
+          "🔁 Heaven record",
+          "When you rebirth, should your best ever stay on Heaven, or should it leave with the old life? Why?"
+        ],
+        [
+          "📈 Depth or lives",
+          "Should the Echo grow with how deep each life went? If so, is 10% per mark too much, or is about 2.3% right?"
+        ],
+        [
+          "🔨 Forging",
+          "How much of your experience should carry into a new life? Would you rather have the speed back, or the levels?"
+        ],
+        [
+          "🤝 Keep it kind",
+          "Every opinion is welcome, including \"I just want to idle\". Argue the case, not the person."
         ]
       ],
       "footer": "師 Shibaki"
