@@ -1462,7 +1462,7 @@
         ],
         [
           "⚒️ Hard on purpose",
-          "Each piece needs its realm's ingots, two parts of the realm's elite (so you have to beat it), one of its warden and three hours of work. Heaven asks Forging 20 levels above the set's start and five pieces of it already made. In my tests the first sets reach Heaven in days, Jadewater around day 84, Fallen Star around day 170 for the most active crafter, and Dragonwake and Ascendant Husk not within six months. A goal for the long road, never a shortcut."
+          "Each piece needs its realm's ingots, two parts of the realm's elite (so you have to beat it), one of its warden and twenty minutes of work at the anvil before tools. Heaven asks Forging 20 levels above the set's start and five pieces of it already made. In my tests the first sets reach Heaven in days, Jadewater around day 84, Fallen Star around day 170 for the most active crafter, and Dragonwake and Ascendant Husk not within six months. A goal for the long road, never a shortcut."
         ],
         [
           "📊 The pictures, in order",
@@ -1897,6 +1897,21 @@
         "Corrections. The Celestial Master's tower pay is double the qi on every floor, which is +100%, not 25%. Replies that said the craft link and the drop names were planned are out of date: both are in."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "texts-2026-10-11",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "Corrections: the Celestial Master, the Vajra and the anvil time",
+      "color": "#D4AF56",
+      "body": [
+        "The Celestial Master pays twice its qi in the tower only when it is worn. The floor sum itself is the same for everyone in a class. The text said what you wear never changes it, which was wrong.",
+        "The same correction for the Vajra on the Platform: its bonus is paid when it is worn.",
+        "The Hundredfold piece takes twenty minutes at the anvil, not three hours. The guide said three hours until 7 October.",
+        "In the tower the Celestial Master pays two times its qi, not two and a half times."
+      ],
+      "footer": "· 師 Shibaki"
     },
     {
       "key": "news-rebirth",

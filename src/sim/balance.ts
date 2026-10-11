@@ -2155,9 +2155,9 @@ export const TRAIL_WOUND = 0.1;
  * weeks for somebody who builds, not "eventually, by tapping". With a free reroll every
  * builder took all three every week, which is why the dice are set.
  *
- * A win pays hours of gathering without gear (towerRate), so clothes cannot move the pay
- * and the card can say it before the fight: about 3 to 6% of a run for anybody who
- * builds, under the tower.
+ * A win pays a fixed sum read off the realm (PLATFORM_HOURS of its middle rate, challengerQi
+ * in platform.ts), so clothes cannot move the pay and the card can say it before the fight:
+ * about 3 to 6% of a run for anybody who builds, under the tower.
  */
 export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
 /**

@@ -605,7 +605,7 @@ export const TRIALS = {
    * Master's share when that class is worn, as "150%".
    */
   fixed: (bonus?: string) =>
-    `Every floor pays a fixed sum of qi. It is the same for everyone, whenever the floor falls: what you wear, how fast you gather and your realm never change it${bonus ? `. As Celestial Master you are paid ${bonus} more` : ''}.`,
+    `Every floor pays a fixed sum of qi, read off the floor. The sum is the same for everyone in the same class, whenever the floor falls${bonus ? `. Wearing the Celestial Master pays ${bonus} more` : ''}.`,
   /**
    * 吸 What this floor's qi is worth to you today, in your own time, and how the sums climb.
    * The time is only a reading: it shrinks as you grow, and the sum does not.
@@ -1685,7 +1685,7 @@ export const PLATFORM = {
    * `bonus` is 金剛 the Vajra's share when that class is worn, as "50%".
    */
   fixed: (realm: string, bonus?: string) =>
-    `Each challenger pays a fixed sum of qi read off your realm, ${realm}. It is the same for everyone in the realm, whenever it falls: what you wear and how fast you gather never change it${bonus ? `. As 金剛 Vajra you are paid ${bonus} more` : ''}.`,
+    `Each challenger pays a fixed sum of qi read off your realm, ${realm}. It is the same for everyone in the same realm and class, whenever it falls${bonus ? `. Wearing the 金剛 Vajra pays ${bonus} more` : ''}.`,
   /** 吸 What the one standing is worth today, in the cultivator's own time: only a reading. */
   today: (span: string) => `Today the one standing is worth ${span} of your gathering.`,
   waits: 'comes up when the one before it falls',
