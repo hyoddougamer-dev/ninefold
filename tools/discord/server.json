@@ -4129,6 +4129,61 @@
         "Fixed in the next update: a Realm Key now counts the wait as served for the spring too. The door opens on a spring holding at least 8 hours of fill, which is 32 minutes of your gathering, or more if it already held more. The button says the number before you press it. The spring stays, because it is what makes the other rooms worth choosing, and rekaris is right that the other rewards still have to earn their place; I am working on that next.",
         "· 師 Shibaki"
       ]
+    },
+    {
+      "forum": "bugs",
+      "title": "no R6 Gear",
+      "tags": [],
+      "reply": [
+        "The game is doing what it was written to do, but the hunt screen is misleading, and that is on us. It lists realm-6 pieces that cannot drop yet. Gear from a beast's own realm starts falling at layer 5 of that realm: at layer 2, a realm-6 beast drops only realms 1 to 5. We are changing the hunt to show that line, instead of listing pieces you cannot get yet. Which layer were you on for those 1,395 hunts? · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Are you sure the dragon power calculations are correct?",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "We measured it on the current build. In our simulated runs, the Dragon's power divided by your raw power is about 1.7 to 1.8, not 138. The percentage on the card is your chance to win, and even odds are 50%, so the card and the line about the Dragon read as if they meant different things. We are changing that line to say your odds. If you see 138 on your screen, send us the exact line and what you were looking at, and we will look into it. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Change the seal so there is no limit to how much qi or how many pills you can use to contribute",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "The numbers on the seal. Removing only the cap on qi keeps the ninth realm where it is for an active player (47.8 days now, 47.5 without the cap), and cuts the time spent waiting at a sealed gate from 3.7 days to 0.5. The pill cap never binds in these habits, and the step per tap stays, because without it one tap pays a whole day's price at once. We are weighing this now, and we will say what we decide. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Hundredfold recipes do not have navigable materials unlike other recipes",
+      "tags": [
+        "Idea"
+      ],
+      "reply": [
+        "Valid, and narrower than it first sounds. Mystic and Earth pieces use their own realm's ore. Only Heaven pieces ask for ore from a later realm, so that is where a link matters. The Crafts screen already has a button that takes you to the craft that makes a missing material. The same link on the Hundredfold screen is planned, not built yet. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "On a separate board for lives after a rebirth: it is on our list, not decided. The idea as you wrote it is a good one. It would stay hidden until your first rebirth, each rebirth would clear that board's record, and it would be kept apart from the Heaven board, so a new player is not compared with a life that started further along. We will show it here before anything is built. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "tags": [
+        "Balance"
+      ],
+      "reply": [
+        "A correction to our own numbers. The numbers we posted in this thread came from an earlier build. On today's build, with one harness for every class (40 crossings, five seeds): Sword Immortal reaches the ninth realm on day 45.9, while pure Sword and Celestial Master both reach it on day 48.6. Tower qi for the Master and the Immortal is close (3.53e12 against 3.28e12), and within the noise of the harness, so the Master is not clearly the tower class yet. We will not change the Celestial Master until we have one table that holds up, and we are working on it now. · 師 Shibaki"
+      ]
     }
   ]
 }
