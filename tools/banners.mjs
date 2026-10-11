@@ -61,6 +61,10 @@ export const BANNERS = [
   { key: 'ideas-art', seal: '畫', over: '議 Your opinion · The look', title: 'Does the Look Matter?', sub: 'Six ways the game could wear its art', bg: 'realm/5', fig: 'cut/crane' },
   // 業 The walls, the seal with its pill, and the workshop's own sets: asked before the last two are built.
   { key: 'ideas-forge', seal: '業', over: '議 Your opinion · A proposal', title: 'Walls, Seals and Sets', sub: 'Three ideas to make the workshop matter', bg: 'realm/6', fig: 'cut/golem' },
+  // 修 The fixes of 11 October: gear that waits says so, the odds say what they are, the filters wrap.
+  { key: 'fixes-1011', seal: '修', over: '筆 Dev log · Fixes', title: 'The Hunt, the Dragon, the Filters', sub: 'Gear that waits says so, and the odds say what they are', bg: 'realm/6', fig: 'cut/dragon' },
+  // 通 Saves syncing during the test: every save counts, and nobody is taken off the boards.
+  { key: 'sync-1011', seal: '通', over: '告 Announcement · Testing', title: 'Saves Sync During the Test', sub: 'Every save counts while we test, and nobody is taken off the boards', bg: 'realm/2', fig: 'self/man-1' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
