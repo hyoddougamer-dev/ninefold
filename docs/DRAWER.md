@@ -118,9 +118,10 @@ of a season, who sets the Law, how a late joiner is treated, and what the main s
 
 ---
 
-## 轉世 Rebirth (built, on its own branch, waiting for Bruno)
+## 轉世 Rebirth (on main since 2026-10-08, kept here for its numbers)
 
-**Status:** built and measured on 2026-10-07, not released. Unlike everything else in this
+**Status:** built and measured on 2026-10-07, released on 2026-10-08, and still open for
+its next steps (the Samsara board, the choice of what a life keeps). Unlike everything else in this
 drawer it is in the code: `src/sim/rebirth.ts`, `src/sim/echo.ts`, `src/app/ui/Rebirth.tsx`,
 measured by `npm run rebirth` (tools/rebirth.ts). It is written down here because its numbers
 are a decision, and a decision has to live somewhere other than a conversation.
