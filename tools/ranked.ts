@@ -15,6 +15,9 @@
  */
 import { newState } from '../src/sim/state.ts';
 import { advance } from '../src/sim/time.ts';
+// 試 While the server is in testing (ACCEPT_EVERYTHING), it verifies what it refuses, so the
+// cheats below are expected to be accepted. The same constant is in the deployed function.
+import { ACCEPT_EVERYTHING } from '../supabase/functions/sync/core.ts';
 
 const URL = process.env.SUPABASE_URL!;
 const KEY = process.env.SUPABASE_KEY!;
@@ -80,7 +83,8 @@ check(peek.status >= 400 || (await peek.json()).length === 0, 'a player cannot r
 await new Promise((r) => setTimeout(r, 22_000));
 const cheat = { ...fresh, at: now + 25, qi: 1e30 };
 const refused = await call('/functions/v1/sync', { save: cheat }, token);
-check(refused.status === 200 && refused.json?.ranked === false, 'an edited save is not ranked', refused);
+check(refused.status === 200 && refused.json?.ranked === !ACCEPT_EVERYTHING,
+  ACCEPT_EVERYTHING ? 'an edited save is accepted while testing' : 'an edited save is not ranked', refused);
 check(refused.json && !('why' in refused.json), 'and the reply does not say which check it failed', refused.json);
 
 const tooSoon = await call('/functions/v1/sync', { save: fresh }, token);
@@ -101,8 +105,10 @@ const other = await signup();
 const otherToken: string = other.json?.access_token;
 const weeks = advance(newState(now - 30 * 86_400), now);
 const forged = await call('/functions/v1/sync', { save: weeks, name: '天下第一' }, otherToken);
-check(forged.status === 200 && forged.json?.ranked === false && forged.json?.state === 'waiting',
-  'a guest signed up now cannot bring a month of play to their first sync', forged.json);
+check(forged.status === 200 && forged.json?.ranked === !ACCEPT_EVERYTHING
+  && forged.json?.state === (ACCEPT_EVERYTHING ? 'verified' : 'waiting'),
+  ACCEPT_EVERYTHING ? 'while testing, a guest signed up now is accepted with a month of play'
+    : 'a guest signed up now cannot bring a month of play to their first sync', forged.json);
 const otherMe = await call('/rest/v1/rpc/my_standing', {}, otherToken);
 check(otherMe.status === 200 && otherMe.json?.name !== '天下第一' && /^修士 /.test(otherMe.json?.name ?? ''),
   'and a title sent as a name on the first sync becomes a plain 修士 name', otherMe.json?.name);
