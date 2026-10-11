@@ -1854,6 +1854,22 @@
         "Syncing during the test: the server now accepts every save that reaches it, so a save that used to show \"Not synced yet\" should sync. Nothing changes on your device, and your progress is kept the same way."
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "fixes-2026-10-11",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "便 Fixes · The hunt, the Dragon and the filters",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/fix-1011-hunt.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/fix-1011-filters.webp?v=1"
+      ],
+      "body": [
+        "Fixes: what the hunt and the Dragon said, and the filters at 320. The hunt now shows your realm's pieces dimmed, with the layer they start at, instead of listing pieces you cannot get yet. The Dragon line says what its percentage measures: your odds, with even at 50%. And the filter rows wrap on a small phone instead of cutting the names at the edge."
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
