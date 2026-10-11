@@ -65,7 +65,7 @@ describe('業 what a new life begins each craft with', () => {
 
   it('is on, at the share the measurement settled', () => {
     expect(CRAFT_CARRY).toBeGreaterThan(0);
-    expect(CRAFT_CARRY).toBeLessThanOrEqual(0.5);
+    expect(CRAFT_CARRY).toBeLessThanOrEqual(1);
   });
 });
 
@@ -73,12 +73,16 @@ describe('業 a rebirth carries the experience and nothing else of the workshop'
   const old = summit(lifeXp);
   const born = reincarnate(old, old.at + 60);
 
-  it('begins each craft at the share, below the life it left', () => {
+  it('begins each craft at the share, never above the life it left', () => {
     expect(born.realm).toBe(1);
     expect(born.crafts.xp).toEqual(carriedXp(lifeXp));
     for (const k of SKILL_KEYS) {
-      expect(born.crafts.xp[k]).toBeLessThan(old.crafts.xp[k]);
-      expect(levelIn(born, k)).toBeLessThan(levelIn(old, k));
+      expect(born.crafts.xp[k]).toBeLessThanOrEqual(old.crafts.xp[k]);
+      expect(levelIn(born, k)).toBeLessThanOrEqual(levelIn(old, k));
+    }
+    // Below the life it left only where the share is under all of it.
+    if (CRAFT_CARRY < 1) {
+      for (const k of SKILL_KEYS) expect(levelIn(born, k)).toBeLessThan(levelIn(old, k));
     }
   });
 
@@ -101,10 +105,15 @@ describe('業 a rebirth carries the experience and nothing else of the workshop'
       for (const k of SKILL_KEYS) expect(next[k]).toBeLessThanOrEqual(xp[k]);
       xp = next;
     }
-    // And one that earns the same again each life settles at 1 / (1 - share) of one life's.
-    let held = 0;
-    for (let i = 0; i < 40; i++) held = Math.floor((held + 1e6) * CRAFT_CARRY);
-    expect(held).toBeLessThan(1e6 * CRAFT_CARRY / (1 - CRAFT_CARRY) + 1);
+    // And one that earns the same again each life settles at 1 / (1 - share) of one life's,
+    // when the share is under all of it. At all of it nothing is lost, and the cap is XP_CAP.
+    if (CRAFT_CARRY < 1) {
+      let held = 0;
+      for (let i = 0; i < 40; i++) held = Math.floor((held + 1e6) * CRAFT_CARRY);
+      expect(held).toBeLessThan(1e6 * CRAFT_CARRY / (1 - CRAFT_CARRY) + 1);
+    } else {
+      expect(carriedXp(lifeXp)).toEqual(lifeXp);
+    }
   });
 
   it('is the same function the server is reborn through', () => {
@@ -215,7 +224,8 @@ describe('頁 the Rebirth page says what the workshop keeps', () => {
     expect(REBIRTH.workshopLevels(55, 55)).toBe('(yours begin at level 55)');
     expect(REBIRTH.bornWorkshop(46, 66)).toContain('levels 46 to 66');
     // The page that keeps the experience must not also say the whole workshop begins again.
-    expect(REBIRTH.resets).toContain('but not its codex or its experience');
+    expect(REBIRTH.resets).toContain('but not its codex');
+    expect(REBIRTH.resets).not.toContain('its experience');
     expect(REBIRTH.resets).not.toContain('the vault and the workshop, all but its codex');
   });
 

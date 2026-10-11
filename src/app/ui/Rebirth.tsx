@@ -46,9 +46,10 @@ const SEAL_COLOUR = '#B49AE0';
  *
  * Reached from the quiet card on 修 when a life may end, and from the Menu once it has
  * ever been possible. Everything on it is derived from the save (sim/rebirth.ts): the
- * depth, the Echo it would leave, the Echo held, the record. The confirm takes two taps,
- * as trading a card does (ui/Cards.tsx), because nothing can bring the old life back.
- * After it is done the same page says which life begins and the title it carries.
+ * depth, the Echo it would leave, the Echo held, the record. The confirm takes the word
+ * itself, typed (rekaris, 2026-10-08: a written confirmation like "Reincarnate"), because
+ * nothing can bring the old life back. After it is done the same page says which life
+ * begins and the title it carries.
  */
 export function Rebirth({ state, born, onReborn, onClose }: {
   state: State;
@@ -57,7 +58,8 @@ export function Rebirth({ state, born, onReborn, onClose }: {
   onReborn: () => void;
   onClose: () => void;
 }) {
-  const [sure, setSure] = useState(false);
+  const [typed, setTyped] = useState('');
+  const sure = typed.trim().toLowerCase() === REBIRTH.word.toLowerCase();
   const life = lifeOf(state);
   const now = echoOf(state.lives);
   const open = canReincarnate(state);
@@ -193,18 +195,23 @@ export function Rebirth({ state, born, onReborn, onClose }: {
             {after >= ECHO_ROOF - 1e-9 && after - now < leaves - 1e-9 && <> {REBIRTH.promiseCapped(echoPct(ECHO_ROOF))}</>}
           </p>
           <p className="rb-faint rb-standing">{REBIRTH.promiseFrom(echoExact(now), echoExact(after), echoPct(ECHO_ROOF))}</p>
+          <label className="rb-typeword">
+            <span>{REBIRTH.typeWord}</span>
+            <input className="rb-type" value={typed} placeholder={REBIRTH.word}
+              autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+              aria-invalid={typed.length > 0 && !sure || undefined}
+              onChange={(e) => setTyped(e.target.value)} />
+          </label>
           {sure && <p className="rb-warn">{REBIRTH.sureSays}</p>}
           <button className={sure ? 'act' : 'act ghost'} data-tone={sure ? 'cinnabar' : undefined}
+            disabled={!sure}
             onClick={() => {
-              if (!sure) { setSure(true); return; }
-              setSure(false);
+              if (!sure) return;
+              setTyped('');
               onReborn();
             }}>
-            轉 <span>{sure ? REBIRTH.sure : REBIRTH.begin}</span>
+            轉 <span>{REBIRTH.begin}</span>
           </button>
-          {sure && (
-            <button className="act ghost" onClick={() => setSure(false)}>留 <span>{REBIRTH.cancel}</span></button>
-          )}
         </div>
       )}
       <button className="act ghost" onClick={onClose}>閉 <span>{REBIRTH.close}</span></button>

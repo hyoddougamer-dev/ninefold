@@ -141,22 +141,22 @@ for (const width of [400, 320]) {
   const rows = await page.$$eval('.rb-carry li', (els) => els.map((e) => e.textContent ?? ''));
   const row = rows.find((t) => t.includes('The workshop')) ?? '';
   check(!!row, `${width}: the workshop has a row in what carries (${rows.length} rows)`);
-  check(/25%/.test(row) && /begin at levels \d+ to \d+/.test(row), `${width}: the row says the share and where the crafts would begin (${row})`);
+  check(/100%/.test(row) && /begin at levels \d+ to \d+/.test(row), `${width}: the row says the share and where the crafts would begin (${row})`);
   const resets = await page.$eval('.rb-two .rb-card:last-child p', (e) => e.textContent ?? '');
-  check(/but not its codex or its experience/.test(resets), `${width}: what begins again says the workshop keeps its experience (${resets.slice(0, 60)})`);
+  check(/but not its codex/.test(resets) && !/its experience/.test(resets), `${width}: what begins again says the workshop keeps its experience (${resets.slice(0, 60)})`);
   await fits(`${width} page`, '.rebirthsheet *');
   await page.evaluate(() => document.querySelector('.rb-carry')?.scrollIntoView({ block: 'center' }));
   await page.waitForTimeout(300);
   await shot(`${width}-1-carries`);
 
-  // 2. The double tap, and the line the new life opens with.
-  await page.click('.rb-confirm .act');
-  await page.waitForTimeout(300);
+  // 2. The word is typed, and the line the new life opens with.
+  await page.fill('.rb-type', 'Reincarnate');
+  await page.waitForTimeout(200);
   await page.click('.rb-confirm .act');
   await page.waitForSelector('.rebirthsheet[data-born="true"]', { timeout: 5000 });
   await page.waitForTimeout(500);
   const born = await page.$$eval('.rebirthsheet .rb-note', (els) => els.map((e) => e.textContent ?? ''));
-  check(born.some((t) => /workshop comes with you in part/.test(t)), `${width}: the new life says the workshop came with it (${born.join(' | ')})`);
+  check(born.some((t) => /workshop.s experience comes with you/.test(t)), `${width}: the new life says the workshop came with it (${born.join(' | ')})`);
   await fits(`${width} born`, '.rebirthsheet *');
   await shot(`${width}-2-born`);
 

@@ -72,7 +72,7 @@ const plant = async (save, width, height = 860) => {
   await page.goto(BASE);
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
   await page.waitForTimeout(900);
-  await dismiss();
+  // A notice's own button can lead to 業, so 修 is taken first and the notices cleared after it.
   await toCultivate();
 };
 
@@ -80,7 +80,6 @@ const plant = async (save, width, height = 860) => {
 const toCultivate = async () => {
   await page.locator('nav.tabs button', { hasText: /cultivate/i }).first().click();
   await page.waitForTimeout(400);
-  await dismiss();
 };
 
 /** 歸 Whatever card sits over the screen goes first: a notice blocks every tap under it. */
@@ -113,7 +112,7 @@ const fits = async (what) => {
 for (const width of [400, 320]) {
   // 1. The quiet offer, at the summit with three marks crossed.
   await plant(summit(3), width);
-  const offer = await page.$('.rebirthline');
+  const offer = await page.waitForSelector('.rebirthline', { timeout: 4000 }).catch(() => null);
   check(!!offer, `${width}: the offer is on 修 at the summit`);
   if (offer) {
     await offer.scrollIntoViewIfNeeded();
@@ -133,19 +132,22 @@ for (const width of [400, 320]) {
   await page.waitForTimeout(250);
   await shot(`${width}-3-page-foot`);
 
-  // 3. The first tap only asks.
-  await page.click('.rb-confirm .act');
-  await page.waitForTimeout(300);
+  // 3. The word is typed, and the button stays shut until it matches.
+  await page.fill('.rb-type', 'reincarnat');
+  await page.waitForTimeout(200);
+  check(await page.$eval('.rb-confirm .act', (b) => b.disabled), `${width}: a near word keeps the button shut`);
+  await page.fill('.rb-type', 'Reincarnate');
+  await page.waitForTimeout(200);
   const asked = await page.$eval('.rb-confirm', (e) => e.textContent ?? '');
-  check(asked.includes('Tap again'), `${width}: the first tap asks again (${asked})`);
+  check(!(await page.$eval('.rb-confirm .act', (b) => b.disabled)), `${width}: the word opens the button (${asked.slice(0, 60)})`);
   const still = await page.evaluate(() => document.querySelector('.rebirthsheet')?.getAttribute('data-born'));
-  check(still !== 'true', `${width}: one tap ends nothing`);
+  check(still !== 'true', `${width}: typing ends nothing`);
   await page.evaluate(() => { const s = document.querySelector('.rebirthsheet'); if (s) s.scrollTop = s.scrollHeight; });
   await page.waitForTimeout(250);
   await fits(`${width} confirm`);
   await shot(`${width}-4-confirm`);
 
-  // 4. The second tap: the new life, and its title.
+  // 4. The button: the new life, and its title.
   await page.click('.rb-confirm .act');
   await page.waitForSelector('.rebirthsheet[data-born="true"]', { timeout: 5000 });
   await page.waitForTimeout(500);

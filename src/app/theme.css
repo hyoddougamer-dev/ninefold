@@ -1659,6 +1659,11 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .rebirthsheet .rb-confirm .act, .rebirthsheet > .act { margin: 0; }
 .rebirthsheet .rb-promise { margin: 0; font-size: 13px; line-height: 1.5; }
 .rebirthsheet .rb-warn { margin: 0; font-size: 12.5px; color: var(--cinnabar); line-height: 1.5; }
+.rebirthsheet .rb-typeword { display: grid; gap: 4px; margin: 0; font-size: 12.5px; color: var(--faint); line-height: 1.5; }
+.rebirthsheet .rb-type { font: inherit; font-size: 16px; color: var(--text); background: var(--panel2); min-width: 0; width: 100%;
+  box-sizing: border-box; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line); }
+.rebirthsheet .rb-type:focus { outline: none; border-color: var(--gild-strong); }
+.rebirthsheet .rb-type[aria-invalid='true'] { border-color: var(--cinnabar); }
 .rebirthsheet .rb-title { margin: 0; display: grid; gap: 2px; }
 .rebirthsheet .rb-title i { font-style: normal; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
 .rebirthsheet .rb-title b { font-size: 20px; font-weight: 500; color: var(--gold); }

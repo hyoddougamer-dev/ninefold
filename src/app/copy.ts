@@ -1359,19 +1359,20 @@ export const REBIRTH = {
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the vault. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex or its experience. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the vault. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex. The marks and the heavens.',
   /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
   resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
-  sure: 'Tap again to end this life',
+  /** The word the player types to confirm. It is the word itself, not a button label. */
+  word: 'Reincarnate',
+  typeWord: 'Type Reincarnate to end this life',
   sureSays: 'This life ends here and the first realm begins. It cannot be undone.',
   /** 宿慧 Above the confirm: the Echo the next life begins with, exactly, and what this life adds. */
   promise: (life: number, echo: string, adds: string) => `Life ${life} begins with an Echo of ${echo} qi gathered (${adds} from this life).`,
   promiseCapped: (roof: string) => `The roof, ${roof}, keeps the rest.`,
   /** 宿慧 Before and after, said in one line above the confirm: where the Echo stands and where it goes. */
   promiseFrom: (now: string, after: string, roof: string) => `Echo ${now} now, ${after} after this life, of at most ${roof}.`,
-  cancel: 'Not now',
   pastHead: 'Lives behind you',
   past: (n: number, marks: number, echo: string) => `Life ${n}: ${marks} ${marks === 1 ? 'mark' : 'marks'}, left ${echo}`,
   /** After it is done. */
@@ -1379,8 +1380,8 @@ export const REBIRTH = {
   born: (echo: string) => `The first realm again, and every second of qi gathered carries ${echo} from the lives before.`,
   bornCodex: (n: number) => `The codex comes with you: ${n} ${n === 1 ? 'set' : 'sets'} finished, each at the best rank it reached.`,
   bornWorkshop: (lo: number, hi: number) =>
-    lo === hi ? `The workshop comes with you in part: every craft begins at level ${lo}.`
-      : `The workshop comes with you in part: the crafts begin at levels ${lo} to ${hi}.`,
+    lo === hi ? `The workshop's experience comes with you: every craft begins at level ${lo}.`
+      : `The workshop's experience comes with you: the crafts begin at levels ${lo} to ${hi}.`,
   wear: 'You carry the title',
   go: 'Begin',
   close: 'Close',

@@ -1073,17 +1073,18 @@ export const LIVES_MAX = 40;
  * more than that life had, floored to whole experience. Experience only: the pouch, the
  * material, the tools and the counts of what was made begin again, so nothing carried is a
  * thing a realm's gate has not opened, and no craft level feeds the qi rate directly (the
- * rate is read from upgrades, gear and the tree, never from a craft). The table is a
- * curve, so a share is a few levels, not a fraction of them: a quarter of the experience
- * is 14 levels fewer than the life had (7 levels per halving). tools/carry.ts and
- * docs/DRAWER.md (轉世) are where it is measured. 0 is the game as it was: nothing carried.
+ * rate is read from upgrades, gear and the tree, never from a craft). The share is of the
+ * experience itself, so 1 carries all of it: the levels a life reached are where the next
+ * one begins. 0 is the game as it was: nothing carried. tools/carry.ts and docs/DRAWER.md
+ * (轉世) are where it is measured.
  *
- * Measured 2026-10-08 at a quarter: the slowest craft reaches level 60, 70 and 75 about 16 to
- * 18 days sooner and the median craft starts at level 60; the second life's summit moves 0.2
- * days on average (three gear seeds), the qi rate at the same day by 0 to 3%, and a share a
- * tenth either way (22.5%, 27.5%) moves the saving smoothly and walls nothing.
+ * Settled 2026-10-11 at 1, on rekaris's feedback (#306: a new life should not lose 75% of
+ * its crafting experience). The summit barely moves with it (the eval's figure: 45.9 days
+ * at 1, 46.5 at a quarter), so this is the feel of the second life, not its pace. It was a
+ * quarter from 2026-10-08, which was 14 levels fewer than the life had and then a 0.2-day
+ * move of the summit. Speed carried is not in yet: measure it before it is added.
  */
-export const CRAFT_CARRY = 0.25;
+export const CRAFT_CARRY = 1;
 
 /**
  * 丹 The pills a mark is paced for: the k in TRIBULATION_GAIN's arithmetic above.
