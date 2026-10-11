@@ -130,7 +130,9 @@ export const RANKS = {
   tabPlace: (n: number) => `Rankings, you are number ${n} on the Heaven List`,
   boards: {
     week: { han: '期榜', name: 'This Week', what: 'Layers climbed since Monday. Everybody starts the week level.' },
-    climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit.' },
+    climb: { han: '天榜', name: 'Heaven List', what: 'The furthest climb. Thunder marks count past the summit. A cultivator who has reborn is listed on the Samsara board instead.' },
+    /** 輪迴 Only shown to a cultivator who has reborn at least once (see Ranks.tsx). */
+    samsara: { han: '輪迴', name: 'Samsara', what: 'Cultivators who have reborn, by the climb of the life they are living now. Each rebirth starts it again.' },
     tower: { han: '塔榜', name: 'The Tower', what: 'The highest floor of the Endless Tower.' },
   },
   joinHead: 'Join the rankings',

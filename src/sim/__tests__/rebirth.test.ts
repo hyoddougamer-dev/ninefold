@@ -486,4 +486,126 @@ describe('同步 a rebirth through the ranked sync', () => {
     expect(reborns.length).toBeGreaterThan(20);
     expect(reborns.filter((x) => x === 'ok').length).toBeGreaterThan(reborns.length / 2);
   }, 60_000);
+
+  /**
+   * 輪迴 The Samsara record (decided 2026-10-11, docs/DRAWER.md). Before a rebirth the cultivator
+   * is on Heaven and the record is the life being lived, which is the same as the Heaven value.
+   * A rebirth sets the record back to where the new life begins and keeps the Heaven values
+   * as they were. Within one life the record only rises, and each rebirth sets it back again.
+   */
+  it('the Samsara record is the life being lived: it starts again at each rebirth, and the Heaven values stay', async () => {
+    const m = memory();
+    const h = HABITS.find((x) => x.name === 'active')!;
+    const walked: State[] = [];
+    const first = play(h, 400, (_d, s) => walked.push(structuredClone(s)));
+    const e = playEndgame(3, 'pill', arrivalOf(first.state));
+    const endAt = first.state.at + e.days.reduce((a, b) => a + b, 0) * DAY;
+    const old = { ...e.end, at: endAt };
+    // Pressed a day after the summit. When it was pressed five minutes after, the rules refused
+    // the same rebirth as too-fast (seen while writing this test), so the test gives it a day.
+    const reborn = reincarnate(old, endAt + DAY);
+    // Moved so the run begins just after the game's epoch, as in the test above.
+    const shift = GAME_EPOCH + 3600 - old.startedAt;
+    const move = (s: State): State => ({ ...s, startedAt: s.startedAt + shift, at: s.at + shift,
+      lives: s.lives.map((l) => ({ ...l, at: l.at + shift })) });
+    const offer = async (s: State) => {
+      const x = move(s);
+      const r = await sync(m.store, 'u', x, x.at + 30, 'Shibaki', x.startedAt);
+      if (r.status !== 200) throw new Error(`the sync answered ${r.status}`);
+      return { ranked: r.body.ranked, x };
+    };
+
+    // The first life, to the summit and the Dragon's marks: never reborn, so on Heaven.
+    for (let i = 0; i < walked.length; i += 6) await offer(walked[i]);
+    await offer(old);
+    const before = m.standings.get('u')!;
+    expect(before.lives).toBe(0);
+    expect(before.climb).toBe(LAYERS - 1);
+    expect(before.marks).toBe(3);
+    expect(before.samsaraClimb).toBe(before.climb);
+    expect(before.samsaraMarks).toBe(before.marks);
+
+    // The rebirth: reborn, the record back at the start of the new life, the Heaven values kept.
+    await offer(reborn);
+    const born = m.standings.get('u')!;
+    expect(born.lives).toBe(1);
+    expect(born.samsaraClimb).toBe(0);
+    expect(born.samsaraMarks).toBe(0);
+    expect(born.samsaraAt).toBeGreaterThan(before.samsaraAt!);
+    expect(born.climb).toBe(before.climb);
+    expect(born.marks).toBe(before.marks);
+
+    // The new life climbs: its record rises with the verified saves of this life, and only them.
+    const next: State[] = [];
+    const lifeOne = play(h, 20, (_d, s) => next.push(structuredClone(s)), reborn);
+    const verified: State[] = [];
+    for (let i = 0; i < next.length; i += 3) {
+      const { ranked, x } = await offer(next[i]);
+      if (ranked) verified.push(x);
+    }
+    expect(verified.length).toBeGreaterThan(0);
+    const mid = m.standings.get('u')!;
+    expect(mid.lives).toBe(1);
+    expect(mid.samsaraClimb).toBe(Math.max(...verified.map((x) => layersOpened(x))));
+    expect(mid.samsaraMarks).toBe(Math.max(...verified.map((x) => x.tribulation)));
+    expect(mid.climb).toBe(LAYERS - 1);
+
+    // A second life to the summit, and a second rebirth: the record is cleared once more.
+    const second: State[] = [];
+    const lifeTwo = play(h, 400, (_d, s) => second.push(structuredClone(s)), lifeOne.state);
+    const e2 = playEndgame(3, 'pill', arrivalOf(lifeTwo.state));
+    const endAt2 = lifeTwo.state.at + e2.days.reduce((a, b) => a + b, 0) * DAY;
+    const old2 = { ...e2.end, at: endAt2 };
+    const reborn2 = reincarnate(old2, endAt2 + DAY);
+    expect(reborn2.lives.length).toBe(2);
+    for (let i = 0; i < second.length; i += 6) await offer(second[i]);
+    await offer(old2);
+    const summit2 = m.standings.get('u')!;
+    expect(summit2.lives).toBe(1);
+    expect(summit2.samsaraClimb).toBe(LAYERS - 1);
+    expect(summit2.samsaraMarks).toBe(3);
+    await offer(reborn2);
+    const again = m.standings.get('u')!;
+    expect(again.lives).toBe(2);
+    expect(again.samsaraClimb).toBe(0);
+    expect(again.samsaraMarks).toBe(0);
+    // The Heaven value is never taken away: it is the best either life reached, and it stays.
+    expect(again.climb).toBeGreaterThanOrEqual(before.climb);
+    expect(again.marks).toBeGreaterThanOrEqual(before.marks);
+    expect(m.standings.has('u')).toBe(true);
+  }, 180_000);
+
+  /**
+   * 輪迴 A lives count is never taken on a claim. A save that says it has been reborn, when it
+   * has not lived that life, is refused, and the standing (Heaven and Samsara alike) is the
+   * one the last verified save left.
+   */
+  it('a save that claims a rebirth it did not live moves neither the lives nor the Samsara record', async () => {
+    const m = memory();
+    const h = HABITS.find((x) => x.name === 'active')!;
+    const walked: State[] = [];
+    play(h, 40, (_d, s) => walked.push(structuredClone(s)));
+    const shift = GAME_EPOCH + 3600 - walked[0].startedAt;
+    const move = (s: State): State => ({ ...s, startedAt: s.startedAt + shift, at: s.at + shift,
+      lives: s.lives.map((l) => ({ ...l, at: l.at + shift })) });
+    for (let i = 0; i < walked.length; i += 6) {
+      const x = move(walked[i]);
+      const r = await sync(m.store, 'u', x, x.at + 30, 'Shibaki', x.startedAt);
+      expect(r.status).toBe(200);
+    }
+    const last = move(walked.at(-1)!);
+    const honest = await sync(m.store, 'u', last, last.at + 30, 'Shibaki', last.startedAt);
+    expect(honest.status === 200 && honest.body.state).toBe('verified');
+    const before = structuredClone(m.standings.get('u'));
+    expect(before?.lives).toBe(0);
+
+    // The same life, claiming three marks and a rebirth an hour later: a crossing that could
+    // not have happened in the time given. Refused, so nothing it says is written.
+    const forged = { ...last, at: last.at + 3600, lives: [{ marks: 3, at: last.at + 60 }] };
+    const r = await sync(m.store, 'u', forged, forged.at + 30, undefined, last.startedAt);
+    expect(r.status === 200 && r.body.ranked).toBe(false);
+    expect(['refused', 'waiting']).toContain(r.status === 200 ? r.body.state : 'refused');
+    expect(m.standings.get('u')).toEqual(before);
+    expect(m.standings.get('u')!.lives).toBe(0);
+  }, 120_000);
 });

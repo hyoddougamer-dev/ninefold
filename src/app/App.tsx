@@ -767,6 +767,7 @@ export function App() {
           synced={synced}
           syncedAt={syncedAt}
           syncError={syncError}
+          reborn={state.lives.length > 0}
           onEnter={async (w, name) => {
             setWho(w); sfx.mark();
             // 雲 An email account may already hold a cultivator from another device: look

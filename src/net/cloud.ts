@@ -144,7 +144,8 @@ export async function pull(): Promise<{ save: unknown; at: string | null }> {
   return data as { save: unknown; at: string | null };
 }
 
-export type Board = 'climb' | 'week' | 'tower';
+/** The boards. 'samsara' is the 輪迴 board, which only a cultivator who has reborn can see. */
+export type Board = 'climb' | 'samsara' | 'week' | 'tower';
 
 export interface Row {
   readonly rank: number;
@@ -161,7 +162,9 @@ export interface Row {
 
 export async function board(kind: Board): Promise<readonly Row[]> {
   const c = await client();
-  const { data, error } = await c.rpc('board', { kind, lim: 100 });
+  const { data, error } = kind === 'samsara'
+    ? await c.rpc('samsara_board', { lim: 100 })
+    : await c.rpc('board', { kind, lim: 100 });
   if (error) throw new Error(error.message);
   return (data ?? []) as Row[];
 }

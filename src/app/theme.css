@@ -3003,6 +3003,8 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .ranks .rw .rcall { font-size: 11.5px; color: var(--faint); display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ranks .rw .rcall::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
 .ranks .rw .rcall .cjk { color: var(--c); }
+/* The class's English name shrinks with an ellipsis, rather than being cut mid-word at 320. */
+.ranks .rw .rcall .rcallname { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ranks .rv { font: 600 13px/1.2 Rajdhani, sans-serif; color: var(--text); text-align: right; white-space: nowrap; }
 .ranks .rjoin, .ranks .raccount { display: flex; flex-direction: column; gap: 10px; padding: 14px;
                                   border: 1px solid var(--line); border-radius: 13px; background: var(--panel); }

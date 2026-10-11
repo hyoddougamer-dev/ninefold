@@ -49,6 +49,7 @@
     "carry": "tsx tools/carry.ts",
     "echotail": "tsx tools/echotail.ts",
     "ranks": "tsx tools/ranks.mjs",
+    "samsara": "tsx tools/shot-samsara.mjs",
     "itch": "node tools/itch.mjs",
     "sounds": "node tools/sounds.mjs",
     "freeclimb": "tsx tools/freeclimb.ts",

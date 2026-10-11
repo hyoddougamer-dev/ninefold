@@ -20,12 +20,14 @@ import { wasEdited } from '../../sim/save.ts';
  * every row against its own clock (sim/verify.ts); this screen only shows them and says,
  * in words, where the player's own climb stands.
  */
-export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, onClose }: {
+export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnter, onSignOut, onClose }: {
   who: Who | null;
   /** What the last sync said, and when. */
   synced: Synced | null;
   syncedAt: number | null;
   syncError?: string | null;
+  /** 輪迴 The local save has lived through a rebirth: only then is the Samsara board shown. */
+  reborn?: boolean;
   /** Called once a player is signed in, with the name they chose, so the app syncs at once. */
   onEnter: (w: Who, name: string) => void;
   onSignOut: () => void;
@@ -36,6 +38,10 @@ export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, on
   // on the Heaven List, no, and on This Week, in their first week.
   // 記 The board last looked at, remembered on the device.
   const [tab, setTab] = useRemembered<Board>('ranks.board', 'week', (x): x is Board => typeof x === 'string' && x in RANKS.boards);
+  // 輪迴 A remembered choice of the Samsara board falls back to This Week for a cultivator who
+  // has not reborn, which is the board the screen opens on anyway.
+  const shown = (Object.keys(RANKS.boards) as Board[]).filter((k) => k !== 'samsara' || reborn);
+  const current: Board = shown.includes(tab) ? tab : 'week';
   const [rows, setRows] = useState<readonly Row[] | null>(null);
   const [me, setMe] = useState<Mine | null>(null);
   const [failed, setFailed] = useState(false);
@@ -45,10 +51,10 @@ export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, on
     let live = true;
     setRows(null);
     setFailed(false);
-    cloud.board(tab).then((r) => { if (live) setRows(r); }).catch(() => { if (live) setFailed(true); });
+    cloud.board(current).then((r) => { if (live) setRows(r); }).catch(() => { if (live) setFailed(true); });
     cloud.mine().then((m) => { if (live) setMe(m); });
     return () => { live = false; };
-  }, [who, tab, syncedAt]);
+  }, [who, current, syncedAt]);
 
   return (
     <div className="help ranks">
@@ -57,14 +63,14 @@ export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, on
         <>
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
           {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
-          <div className="rtabs" role="tablist">
-            {(Object.keys(RANKS.boards) as Board[]).map((k) => (
-              <button key={k} role="tab" aria-selected={tab === k} data-on={tab === k} onClick={() => setTab(k)}>
+          <div className="rtabs" role="tablist" style={{ gridTemplateColumns: `repeat(${shown.length}, 1fr)` }}>
+            {shown.map((k) => (
+              <button key={k} role="tab" aria-selected={current === k} data-on={current === k} onClick={() => setTab(k)}>
                 <b className="cjk">{RANKS.boards[k].han}</b><span>{RANKS.boards[k].name}</span>
               </button>
             ))}
           </div>
-          <p className="rwhat">{RANKS.boards[tab].what}</p>
+          <p className="rwhat">{RANKS.boards[current].what}</p>
           {failed ? <p className="rnote">{RANKS.offline}</p>
             : rows === null ? <p className="rnote">{RANKS.loading}</p>
               : rows.length === 0 ? <p className="rnote">{RANKS.empty}</p>
@@ -79,8 +85,8 @@ export function Ranks({ who, synced, syncedAt, syncError, onEnter, onSignOut, on
                           <Called calling={r.calling} />
                         </span>
                         <span className="rv">
-                          {tab === 'climb' ? RANKS.climbCell(r.climb, r.marks)
-                            : tab === 'week' ? RANKS.gainCell(r.gain)
+                          {current === 'climb' || current === 'samsara' ? RANKS.climbCell(r.climb, r.marks)
+                            : current === 'week' ? RANKS.gainCell(r.gain)
                               : RANKS.towerCell(r.tower)}
                         </span>
                       </li>
@@ -299,7 +305,7 @@ function Called({ calling }: { calling?: string | null }) {
   if (!c) return null;
   return (
     <span className="rcall" style={{ ['--c' as string]: c.colour }}>
-      <span className="cjk">{c.han}</span> {c.name}
+      <span className="cjk">{c.han}</span> <span className="rcallname">{c.name}</span>
     </span>
   );
 }

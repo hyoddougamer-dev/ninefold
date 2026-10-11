@@ -11,7 +11,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { sync, ACCEPT_EVERYTHING } from './core.bundle.js';
 type Anchor = { state: unknown; at: number };
 type Saved = { latest: unknown; verified: unknown; verifiedAt: number | null; lastSync: number; day?: Anchor | null; week?: Anchor | null };
-type Standing = { climb: number; marks: number; tower: number; climbedAt: number; towerAt: number; week: number; weekFrom: number };
+type Standing = { climb: number; marks: number; tower: number; climbedAt: number; towerAt: number; week: number; weekFrom: number;
+  calling?: string | null; lives?: number; samsaraClimb?: number; samsaraMarks?: number; samsaraAt?: number };
 type Profile = { name: string; strikes: number; suspect: boolean; banned: boolean };
 // deno-lint-ignore no-explicit-any
 type Store = any;
@@ -82,6 +83,8 @@ function store(): Store {
         climb: data.climb, marks: data.marks, tower: data.tower,
         climbedAt: sec(data.climbed_at)!, towerAt: sec(data.tower_at)!,
         week: data.week, weekFrom: data.week_from, calling: data.calling ?? null,
+        lives: data.lives ?? 0, samsaraClimb: data.samsara_climb ?? 0, samsaraMarks: data.samsara_marks ?? 0,
+        samsaraAt: sec(data.samsara_at) ?? 0,
       };
     },
     async writeProfile(id, p) {
@@ -102,6 +105,8 @@ function store(): Store {
         user_id: id, climb: s.climb, marks: s.marks, tower: s.tower,
         climbed_at: iso(s.climbedAt), tower_at: iso(s.towerAt), week: s.week, week_from: s.weekFrom,
         calling: s.calling ?? null,
+        lives: s.lives ?? 0, samsara_climb: s.samsaraClimb ?? 0, samsara_marks: s.samsaraMarks ?? 0,
+        samsara_at: iso(s.samsaraAt ?? s.climbedAt),
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;

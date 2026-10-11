@@ -451,4 +451,93 @@ describe('榜 the ranked schema', () => {
     const none = await as(null, `select my_standing() as s`);
     expect((none.rows[0] as any)?.s ?? null).toBe(null);
   });
+
+  /**
+   * 輪迴 The Samsara board (decided 2026-10-11). Heaven lists only the cultivators who have never
+   * reborn; the Samsara board lists those who have, by the record of the life they are living,
+   * which a rebirth sets back. The weekly board and the tower are not changed by it.
+   */
+  it('Heaven lists the never-reborn, the Samsara board the reborn by their current life, and the other boards read as before', async () => {
+    const H = 'cccccccc-1000-0000-0000-000000000001'; // never reborn: Heaven 60
+    const R = 'cccccccc-1000-0000-0000-000000000002'; // reborn once: Heaven 80 kept, this life 12 layers
+    const T = 'cccccccc-1000-0000-0000-000000000003'; // reborn once: Heaven 90, this life 12 layers, 5 marks
+    const U = 'cccccccc-1000-0000-0000-000000000004'; // reborn once: this life 12 layers, 5 marks, found later
+    const Q = 'cccccccc-1000-0000-0000-000000000005'; // reborn twice: Heaven 81, this life 30 layers
+    await db.exec(`
+      insert into auth.users values ('${H}'), ('${R}'), ('${T}'), ('${U}'), ('${Q}');
+      insert into profiles (id, name) values ('${H}', 'Samsara Honest'), ('${R}', 'Samsara Reborn'),
+        ('${T}', 'Samsara Tops'), ('${U}', 'Samsara Later'), ('${Q}', 'Samsara Twice');
+      insert into standings (user_id, climb, marks, tower, week, week_from, lives, samsara_climb, samsara_marks, samsara_at) values
+        ('${H}', 60, 0, 5, week_of(), 0, 0, 60, 0, now() - interval '3 days'),
+        ('${R}', 80, 2, 7, week_of(), 0, 1, 12, 0, now() - interval '3 days'),
+        ('${T}', 90, 2, 0, week_of(), 0, 1, 12, 5, now() - interval '2 days'),
+        ('${U}', 70, 1, 0, week_of(), 0, 1, 12, 5, now() - interval '1 day'),
+        ('${Q}', 81, 4, 0, week_of(), 0, 2, 30, 0, now() - interval '5 days');
+    `);
+    const names = (rows: unknown[]) => (rows as any[]).map((r) => r.name);
+
+    // Heaven: the never-reborn only, and that holds for the reborn player looking at it too.
+    const heaven = names((await as(null, `select name from board('climb')`)).rows);
+    expect(heaven).toContain('Samsara Honest');
+    expect(heaven.filter((n) => n.startsWith('Samsara'))).toEqual(['Samsara Honest']);
+    expect(names((await as(R, `select name from board('climb')`)).rows)).not.toContain('Samsara Reborn');
+
+    // Samsara: the reborn, by this life's climb, then its marks, then who got there first.
+    const samsara = (await as(null, `select rank, name, climb, marks, tower, gain, title, me, calling from samsara_board()`)).rows as any[];
+    expect(samsara.map((r) => r.name)).toEqual(['Samsara Twice', 'Samsara Tops', 'Samsara Later', 'Samsara Reborn']);
+    expect(samsara.map((r) => [Number(r.rank), r.climb, r.marks])).toEqual([[1, 30, 0], [2, 12, 5], [3, 12, 5], [4, 12, 0]]);
+    // No tower and no week's gain on this board, and no 天下第一 for the first place.
+    expect(samsara.every((r) => r.tower === 0 && r.gain === 0)).toBe(true);
+    expect(samsara.some((r) => r.title === '天下第一')).toBe(false);
+    expect(names(samsara)).not.toContain('Samsara Honest');
+    // A reborn player sees their own place, marked as theirs, and nobody else's.
+    const asR = (await as(R, `select name, me from samsara_board()`)).rows as any[];
+    expect(asR.filter((r) => r.me).map((r) => r.name)).toEqual(['Samsara Reborn']);
+
+    // The same public columns as Heaven, so the screen reads both alike.
+    const cols = async (sql: string) => (await db.query(`${sql} limit 0`)).fields.map((f: any) => f.name);
+    expect(await cols(`select * from samsara_board()`)).toEqual(await cols(`select * from board('climb')`));
+
+    // The weekly board and the tower are as they were: a reborn cultivator is on both.
+    expect(names((await as(null, `select name from board('week')`)).rows)).toContain('Samsara Reborn');
+    expect(names((await as(null, `select name from board('tower')`)).rows)).toContain('Samsara Reborn');
+
+    // The Heaven value a reborn cultivator leaves is kept, not deleted.
+    expect((await db.query(`select climb from standings where user_id = '${R}'`)).rows[0]).toEqual({ climb: 80 });
+    await db.exec(`delete from auth.users where id in ('${H}', '${R}', '${T}', '${U}', '${Q}')`);
+  });
+
+  /**
+   * 輪迴 A cultivator who reborn before the Samsara migration is taken off Heaven by it, read from
+   * the verified copy, at once rather than at their next sync. The migration is run again over
+   * the seeded rows here: it is written to be run again (every statement is idempotent).
+   */
+  it('the migration takes a cultivator who had reborn off Heaven, from the verified copy', async () => {
+    const W = 'cccccccc-2000-0000-0000-000000000001';
+    await db.exec(`
+      insert into auth.users values ('${W}');
+      insert into profiles (id, name) values ('${W}', 'Samsara Before');
+      insert into saves (user_id, latest, verified, verified_at, last_sync) values ('${W}', '{}',
+        '{"realm": 2, "layer": 3, "tribulation": 4, "lives": [{"marks": 9, "at": 1700000000}]}', '2026-10-10T10:00:00Z', now());
+      insert into standings (user_id, climb, marks, tower, week, week_from) values ('${W}', 90, 3, 0, week_of(), 0);
+    `);
+    const pre = (await db.query(`select lives from standings where user_id = '${W}'`)).rows[0] as any;
+    expect(Number(pre.lives)).toBe(0);
+    await db.exec(readFileSync(`${MIGRATIONS}/20261011120000_samsara.sql`, 'utf8'));
+    const got = (await db.query(`select lives, samsara_climb, samsara_marks, samsara_at, climb from standings where user_id = '${W}'`)).rows[0] as any;
+    expect(Number(got.lives)).toBe(1);
+    expect(Number(got.samsara_climb)).toBe(12);           // realm 2, layer 3: (2 - 1) * 9 + 3
+    expect(Number(got.samsara_marks)).toBe(4);
+    expect(Number(got.climb)).toBe(90);                    // the Heaven value is kept
+    expect(new Date(got.samsara_at).toISOString()).toBe('2026-10-10T10:00:00.000Z');
+    expect((await as(null, `select name from board('climb')`)).rows.map((r: any) => r.name)).not.toContain('Samsara Before');
+    expect((await as(null, `select name from samsara_board()`)).rows.map((r: any) => r.name)).toContain('Samsara Before');
+    await db.exec(`delete from auth.users where id = '${W}'`);
+  });
+
+  it('no player can write or read the lives and the Samsara record except through the boards', async () => {
+    await expect(as(A, `update standings set lives = 9 where user_id = '${A}'`)).rejects.toThrow(/permission denied/);
+    await expect(as(A, `update standings set samsara_climb = 80 where user_id = '${A}'`)).rejects.toThrow(/permission denied/);
+    await expect(as(A, `select samsara_climb from standings`)).rejects.toThrow(/permission denied/);
+  });
 });

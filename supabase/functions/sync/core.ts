@@ -68,6 +68,16 @@ export interface Standing {
   week: number; weekFrom: number;
   /** 職 The class the verified save wears, as sim/schools.ts callingKey says it. */
   calling?: string | null;
+  /**
+   * 輪迴 The lives the verified save has lived through. Never fewer than the copy held: a
+   * cultivator who has reborn stays off Heaven, whichever device the next save comes from.
+   */
+  lives?: number;
+  /**
+   * 輪迴 The record of the life being lived, for the Samsara board: the layers it opened and
+   * its marks, and when they last rose. A rebirth sets it back to where the new life stands.
+   */
+  samsaraClimb?: number; samsaraMarks?: number; samsaraAt?: number;
 }
 export interface Profile { name: string; strikes: number; suspect: boolean; banned: boolean }
 
@@ -286,6 +296,15 @@ export async function sync(
     const old = standing;
     const rose = !old || climb > old.climb || marks > old.marks;
     const fresh = !old || old.week !== week;
+    // 輪迴 The lives this save has lived through. Sticky: a cultivator who has reborn stays
+    // reborn, so a new run that began with fewer lives cannot rejoin the Heaven List.
+    const livesNow = after.lives?.length ?? 0;
+    const lives = Math.max(livesNow, old?.lives ?? 0);
+    // 輪迴 The Samsara record is the life being lived. Within one life it only rises, as the
+    // Heaven record does; a rebirth verified since the copy was written, or another run, starts
+    // it again from where this save stands. The Heaven values are left as they always were.
+    const sameLife = !!old && !newRun && livesNow === (old.lives ?? 0);
+    const samsaraRose = !sameLife || climb > (old?.samsaraClimb ?? 0) || marks > (old?.samsaraMarks ?? 0);
     standing = {
       climb: Math.max(climb, old?.climb ?? 0),
       marks: Math.max(marks, old?.marks ?? 0),
@@ -297,6 +316,10 @@ export async function sync(
       weekFrom: newRun ? climb + marks
         : fresh ? weekStart(old, climb + marks, saved?.verifiedAt ?? null, now) : old!.weekFrom,
       calling: callingKey(after),
+      lives,
+      samsaraClimb: sameLife ? Math.max(climb, old?.samsaraClimb ?? 0) : climb,
+      samsaraMarks: sameLife ? Math.max(marks, old?.samsaraMarks ?? 0) : marks,
+      samsaraAt: samsaraRose ? now : (old?.samsaraAt ?? now),
     };
     await store.writeStanding(id, standing);
   }
