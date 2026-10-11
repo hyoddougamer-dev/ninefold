@@ -1850,6 +1850,7 @@
       "channel": "devlog",
       "title": "通 Sync · Saves sync during the test",
       "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/sync-1011.webp?v=1",
       "body": [
         "Syncing during the test: the server now accepts every save that reaches it, so a save that used to show \"Not synced yet\" should sync. Nothing changes on your device, and your progress is kept the same way."
       ],
@@ -1862,6 +1863,7 @@
       "channel": "devlog",
       "title": "便 Fixes · The hunt, the Dragon and the filters",
       "color": "#7FB495",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/fixes-1011.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/fix-1011-hunt.webp?v=1",
       "gallery": [
         "https://hyoddougamer-dev.github.io/ninefold/discord/fix-1011-filters.webp?v=1"
@@ -4199,6 +4201,30 @@
       ],
       "reply": [
         "A correction to our own numbers. The numbers we posted in this thread came from an earlier build. On today's build, with one harness for every class (40 crossings, five seeds): Sword Immortal reaches the ninth realm on day 45.9, while pure Sword and Celestial Master both reach it on day 48.6. Tower qi for the Master and the Immortal is close (3.53e12 against 3.28e12), and within the noise of the harness, so the Master is not clearly the tower class yet. We will not change the Celestial Master until we have one table that holds up, and we are working on it now. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "便 Quality of life: what slows you down?",
+      "mention": false,
+      "reply": [
+        "Most of this is in the game now. Enemy filters by slot and school: done. Saved filters: up to 24, up from three. A piece in a loadout cannot be unlocked any more: its button says which loadout holds it. The filter rows wrap on a small phone (this update), so no name is cut. Locked: when you have locked pieces, the chest shows a Locked filter. Still on our list, not built: showing a drop's slot instead of its name. We will decide after the next test round. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "業 The workshop: walls, seals and sets",
+      "mention": false,
+      "reply": [
+        "The forge takes 20 minutes a piece now, and it was three hours until 7 October. With five tools it is 15 minutes, and fully mastered with the array it is 8.9 minutes. Your 5 minutes is a real question: a base of 5 minutes changes how long a Hundredfold set takes to reach 99, so we will measure it before we decide. On set effects you choose yourself: a good idea, and it answers who a set is for. It is on our list, not decided. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "深 Deeper hunts: what do you think?",
+      "mention": false,
+      "reply": [
+        "Closed without building: the votes and the thread did not give us enough to design from. The idea stays on the list, with no date. Thank you for the thought you put into it. · 師 Shibaki"
       ]
     }
   ]

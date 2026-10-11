@@ -37,6 +37,8 @@ import { join } from 'node:path';
 const SPEC = JSON.parse(readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'));
 // 問 Every poll under a post, in a forum or a channel, is one more message the bot leaves, asked once.
 const POLLS = [...SPEC.messages, ...(SPEC.posts ?? [])].reduce((n, p) => n + (p.polls?.length ?? 0), 0);
+// 答 An answer given in a post the bot opened is one more message the bot writes, as a member's answer is.
+const ANSWERS_TO_POSTS = (SPEC.threads ?? []).filter((a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title)).length;
 const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
@@ -390,7 +392,7 @@ await scenario({}, async (port, env, state) => {
   check(JSON.stringify(tagNames(state.threads.find((t) => t.name === retag.title))) === JSON.stringify([...retag.tags].sort()),
     "a post's tags follow server.json, archived or not");
   await runSetup(port, env);   // and back to server.json as it is, for what follows
-  check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
+  check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS - ANSWERS_TO_POSTS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
   const asked = Object.values(state.messages).flat().filter((m) => m.poll).map((m) => m.poll.question.text);
   check([...SPEC.messages, ...SPEC.posts].flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
     && asked.length === POLLS, `each of the ${POLLS} polls is asked once, under its post`);
@@ -409,7 +411,7 @@ await scenario({}, async (port, env, state) => {
   writeFileSync(specPath, JSON.stringify(edited));
   const fourth = await runSetup(port, { ...env, DISCORD_SPEC: specPath });
   const first0 = Object.values(state.messages).flat().find((m) => m.embeds.some((e) => e.title === SPEC.messages[0].title));
-  check(/edited/.test(fourth.out) && first0.embeds.find((e) => e.title).description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length + POLLS,
+  check(/edited/.test(fourth.out) && first0.embeds.find((e) => e.title).description.endsWith('One more line.') && Object.values(state.messages).flat().length === SPEC.messages.length + SPEC.posts.length + POLLS + ANSWERS_TO_POSTS,
     'a post changed in server.json is edited in place, not posted again');
   check(state.onboarding.prompts[1].options.length === SPEC.onboarding.prompts[1].options.length + 1
     && kept.every(([pid, oids], i) => state.onboarding.prompts[i].id === pid && oids.every((o, j) => state.onboarding.prompts[i].options[j].id === o)),
@@ -436,7 +438,9 @@ await scenario({}, async (port, env, state) => {
   await runSetup(port, env);
   const forumOf = (key) => state.channels.find((c) => c.name === all.find((x) => x.key === key).name);
   const owed = (a) => (SPEC.threads ?? []).filter((x) => x.forum === a.forum && x.title === a.title).length;
-  for (const a of (SPEC.threads ?? []).filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i)) {
+  // 答 A title the bot opens itself has no member's thread: its answers go in the bot's own post.
+  const ownPost = (a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title);
+  for (const a of (SPEC.threads ?? []).filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i && !ownPost(x))) {
     const t = { id: id(), parent_id: forumOf(a.forum).id, name: a.title, flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
     state.threads.push(t);
     state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
@@ -444,13 +448,19 @@ await scenario({}, async (port, env, state) => {
   const first = await runSetup(port, env);
   // 處 By forum as well as title: a post can be answered in whichever forum holds it, by
   // naming it under both (the bot skips the one where it is not).
-  const mine = (a) => state.threads.find((t) => t.name === a.title && t.owner_id === '4242'
+  // A member's thread (owned by 4242 here) or, for a post the bot opened, the bot's own thread (no owner).
+  const mine = (a) => state.threads.find((t) => t.name === a.title && (t.owner_id === '4242' || (ownPost(a) && !t.owner_id))
     && t.parent_id === forumOf(a.forum).id);
-  const replies = (a) => state.messages[mine(a).id].filter((x) => x.author.id === BOT);
+  // The post the bot opened is in the same thread, and so are its polls: both are bot messages with no
+  // text. An answer is the only one with text.
+  const replies = (a) => state.messages[mine(a).id].filter((x) => x.author.id === BOT && !!x.content);
   const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x).name).sort(); };
-  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => r.content.startsWith('<@4242> '))),
-    `each of the ${(SPEC.threads ?? []).length} answers is given once, naming whoever opened the post, even archived`);
-  check((SPEC.threads ?? []).every((a) => JSON.stringify(tagNames(mine(a))) === JSON.stringify([...(a.tags ?? [])].sort())),
+  // 答 "mention": false answers name nobody; every other answer names whoever opened the post.
+  const named = (a, r) => (a.mention === false ? !r.content.includes('<@4242>') : r.content.startsWith('<@4242> '));
+  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => named(a, r))),
+    `each of the ${(SPEC.threads ?? []).length} answers is given once, naming whoever opened the post (or nobody, when so marked), even archived`);
+  // An answer with no tags leaves the thread's tags alone (discord.mjs only applies what it is given).
+  check((SPEC.threads ?? []).every((a) => a.tags === undefined || JSON.stringify(tagNames(mine(a))) === JSON.stringify([...a.tags].sort())),
     'and wears the tags server.json gives it');
   const again = await runSetup(port, env);
   check(again.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a)) && !/answered|tagged/.test(again.out),

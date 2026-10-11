@@ -583,9 +583,13 @@ async function run() {
         const opening = text.slice(0, 60);
         const said = await call('GET', `/channels/${thread.id}/messages?limit=100`);
         if (!said.some((m) => m.author?.id === me.id && (m.content ?? '').includes(opening))) {
+          // 答 A member's post names its author, as always. A post the bot opened has the bot as
+          // its owner, and naming the bot would read as a slip: those answers name nobody, the
+          // same as an answer marked "mention": false.
+          const to = a.mention !== false && thread.owner_id && thread.owner_id !== me.id ? thread.owner_id : null;
           await wake(thread);
           await call('POST', `/channels/${thread.id}/messages`, {
-            content: `${thread.owner_id ? `<@${thread.owner_id}> ` : ''}${text}`, allowed_mentions: { users: thread.owner_id ? [thread.owner_id] : [] },
+            content: `${to ? `<@${to}> ` : ''}${text}`, allowed_mentions: { users: to ? [to] : [] },
           });
           log(`  "${a.title}" answered`);
         }
