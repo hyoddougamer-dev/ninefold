@@ -69,9 +69,10 @@ const STUCK = 0.35;
 /** And the odds above which a Dragon needs no comment. Below it, the furnace is the answer. */
 const DRAGON_COMFORT = 0.85;
 
-/** The 煉體 pill by the name this realm's furnace actually sells it under. */
-function bodyPill(s: State): string {
-  return pillOf('body', s.realm).han;
+/** The 煉體 pill by the name this realm's furnace actually sells it under: English, and its characters. */
+function bodyPill(s: State): { name: string; han: string } {
+  const grade = pillOf('body', s.realm);
+  return { name: grade.name, han: grade.han };
 }
 
 /** 道 Points that can actually be spent. See sim/points.ts: the tab badge reads it too. */
@@ -166,7 +167,7 @@ export function advice(s: State): Advice | null {
     if (sequenceOf(s).every((a) => a === null)) {
       return { han: '訣', text: ADVICE.noSequence, tab: 'dao' };
     }
-    if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew(bodyPill(s)), tab: 'trials' };
+    if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew(bodyPill(s).han), tab: 'trials' };
     if (towerOpen(s)) return { han: '塔', text: ADVICE.climbForMaterial, tab: 'trials' };
     return { han: '狩', text: ADVICE.huntForMaterial, tab: 'hunt' };
   }
@@ -181,7 +182,8 @@ export function advice(s: State): Advice | null {
    * one is what turns 66% into 70%.
    */
   if (atTribulation(s) && !s.wardenFell && odds(s, warden) < DRAGON_COMFORT && canBrew(s, 'body')) {
-    const text = ADVICE.brewForDragon(bodyPill(s), Math.round(odds(s, warden) * 100));
+    const pill = bodyPill(s);
+    const text = ADVICE.brewForDragon(pill.name, pill.han, Math.round(odds(s, warden) * 100));
     return { han: '爐', text, tab: 'trials' };
   }
 

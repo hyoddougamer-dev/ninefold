@@ -722,8 +722,10 @@ export const ADVICE = {
    */
   brew: (han: string) => `The furnace will sell you a ${han}. It is power you keep for good.`,
   /** 立 The endgame's one decision, said out loud while the Dragon is standing. */
-  brewForDragon: (han: string, pct: number) =>
-    `The Dragon is at ${pct}%. A ${han} raises that, and the power stays with you afterwards.`,
+  // 立 The percentage is the cultivator's own chance to win, and even is 50%: it says so, so
+  // it cannot be read as the Dragon's strength (rekaris, on the Discord, 2026-10-08).
+  brewForDragon: (name: string, han: string, pct: number) =>
+    `Your odds against the Dragon are ${pct}%. Even is 50%. A ${name} (${han}) raises them, and the power stays with you afterwards.`,
   climbForMaterial: 'Everything else is at its cap. Climb the tower for material and qi.',
   floorWaiting: (floor: number, qi: string) =>
     `Floor ${floor} of the tower looks winnable. It pays material and ${qi} qi once, and that sum is the same for everyone.`,
@@ -1002,6 +1004,9 @@ export const HUNT = {
   deepToward: (kills: number, at: number, name: string) => `${kills.toLocaleString('en')} / ${at.toLocaleString('en')} toward ${name}`,
   /** 物 What a beast leaves, said once on its row. */
   leaves: 'Leaves',
+  /** 層 Under a row that is drawn dimmed: the layer its realm's gear starts to fall at, and where the cultivator is. */
+  fallsFrom: (layer: number, realm: number, now: number) =>
+    `Falls from layer ${layer} of realm ${realm}. You are on layer ${now}.`,
   /** 緣 The bond on the row: how far, and what the full one promises. */
   bond: (n: number, full: number, rank: string) => `${n} / ${full} · then a piece for certain, ${rank} or better`,
   /**

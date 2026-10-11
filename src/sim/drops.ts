@@ -1,7 +1,7 @@
 import type { Beast } from '../data/bestiary.ts';
 import { isOpen } from './unlocks.ts';
 import {
-  BASE_DROP_CHANCE, LAYERS_PER_REALM, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
+  BASE_DROP_CHANCE, LAYERS_PER_REALM, LINEAGE_LAYER, LUCK_EARTH_GRADE, LUCK_GRADE_CAP, LUCK_HEAVEN_GRADE, RARITY_WEIGHT,
   SECONDARIES, SECONDARY_SHARE, VARIANCE,
   WARDEN_RARITY_TILT, LUCK_ROLL_BEND, LUCK_ROLL_TOP,
 } from './balance.ts';
@@ -128,6 +128,17 @@ export function rollSecondaries(
     out.push({ affix: picked, value: roundValue(picked, baseValue(template, rarity, picked) * SECONDARY_SHARE * swing) });
   }
   return out;
+}
+
+/**
+ * 層 The layer a beast's gear starts falling at, when the hunt would draw its pieces but the
+ * drop cannot leave them yet: the realm they come from is the cultivator's own, and the
+ * cultivator is still below LINEAGE_LAYER in it. null when they fall now. This is the gate
+ * rollDrop applies, read off the same numbers, so the hunt can say what it has not reached.
+ */
+export function fallsFromLayer(beastRealm: number, realm: number, layer: number): number | null {
+  const at = Math.min(beastRealm, realm);
+  return at === realm && layer < LINEAGE_LAYER ? LINEAGE_LAYER : null;
 }
 
 export function rollDrop(

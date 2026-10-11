@@ -28,6 +28,7 @@ import { oneOf, useRemembered } from '../prefs.ts';
 import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
+import { fallsFromLayer } from '../../sim/drops.ts';
 
 /**
  * 狩 Free hunting.
@@ -367,8 +368,11 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                       rarity: RARITIES[fatePromise(state, b)], rolls: [] };
                     const key = schoolOf(piece);
                     const sc = SCHOOL_INFO[key];
+                    // 層 A piece of the cultivator's own realm does not fall until the layer
+                    // gate opens, so it is drawn dimmed, and the line under the row says when.
+                    const gated = fallsFromLayer(b.realm, state.realm, state.layer ?? 0) !== null;
                     return (
-                      <em key={a}>
+                      <em key={a} className={gated ? 'gated' : undefined}>
                         <Svg html={gearTile(piece, { size: 26 })} />
                         <span><b className="cjk lsch" style={{ color: sc.colour }}>
                           {/* 註 Hover or tap the seal and it says which school, in English.
@@ -378,6 +382,12 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                       </em>
                     );
                   })}
+                  {(() => {
+                    const gate = fallsFromLayer(b.realm, state.realm, state.layer ?? 0);
+                    return gate === null ? null : (
+                      <span className="gatenote"><span className="cjk">鎖</span> {HUNT.fallsFrom(gate, state.realm, state.layer ?? 0)}</span>
+                    );
+                  })()}
                 </span>
               )}
               {/* 緣 The bond: how many wins to a certain piece, and what it promises. */}
