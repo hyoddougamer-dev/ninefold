@@ -57,6 +57,9 @@ export const BANNERS = [
   { key: 'devlog-4', seal: '便', over: '筆 Dev log · 04', title: 'Fewer Taps, Clearer Screens', sub: 'Your quality-of-life ideas, in the game', bg: 'realm/6', fig: 'self/woman-6' },
   // 深 The question about deeper hunts, before anything is built.
   { key: 'ideas-deep', seal: '深', over: '議 Your opinion · A proposal', title: 'Deeper Hunts', sub: 'The same beast, further down', bg: 'realm/7', fig: 'cut/gargoyle' },
+  // 票 The rebirth polls: the announcement that pings everyone, and the ideas topic that argues the case.
+  { key: 'news-rebirth', seal: '轉', over: '告 Announcement · Rebirth', title: 'Ten Questions on Rebirth', sub: 'Vote in the polls, then argue it out in the ideas', bg: 'heaven/9', fig: 'cut/dragon' },
+  { key: 'ideas-rebirth', seal: '議', over: '議 Your opinion · Rebirth', title: 'What Makes Rebirth Worth It?', sub: 'What would make you take it, and what would break it', bg: 'realm/7', fig: 'cut/jiao' },
   // 畫 The question about how the game looks, asked honestly, with the art being AI-made.
   { key: 'ideas-art', seal: '畫', over: '議 Your opinion · The look', title: 'Does the Look Matter?', sub: 'Six ways the game could wear its art', bg: 'realm/5', fig: 'cut/crane' },
   // 業 The walls, the seal with its pill, and the workshop's own sets: asked before the last two are built.
