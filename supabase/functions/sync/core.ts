@@ -147,8 +147,19 @@ export function weekStart(old: Standing | null, total: number, lastAt: number | 
 export const DAY_WINDOW = 2 * 86_400;
 export const WEEK_WINDOW = 14 * 86_400;
 
+/**
+ * 試 Testing, Bruno 2026-10-11: "deixar tudo sincronizar... não vale a pena bans". While this
+ * is on, a save the rules refuse (too fast, impossible) is accepted as the verified save all
+ * the same, and moves the boards. The verdict is still logged as it was, so the panel's 疑
+ * Batota tab shows what each sync tried; no strike is counted and nobody is kept off the
+ * boards. A save that went down is still only behind, as it always was. Set this to false
+ * before the first season that counts: the tests run the rules with it off.
+ */
+export const ACCEPT_EVERYTHING = true;
+
 export async function sync(
   store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt = now,
+  rules: { accept: boolean } = { accept: ACCEPT_EVERYTHING },
 ): Promise<Reply> {
   const wait = await store.claim(id, now, MIN_GAP);
   if (wait > 0) return { status: 429, body: { error: 'too-soon', wait: Math.ceil(wait) } };
@@ -228,6 +239,9 @@ export async function sync(
   }
   v = { ...v, suspect };
   await store.log(id, v, now);
+  // 試 While testing, a refused save that did not go down is counted as verified (see ACCEPT_EVERYTHING).
+  const accepted = rules.accept && !v.ok && !v.why.includes('went-down');
+  const counted: Verdict = accepted ? { ...v, ok: true, strike: false, suspect: false } : v;
 
   // 存 The cloud copy only ever moves forward. A new device's empty save, or an older
   // copy restored on purpose, must never overwrite a cultivator further along: that is
@@ -239,11 +253,11 @@ export async function sync(
   // ever measure the next one against the last keep none. One pile in the database, not four.
   const bare = { ...after, pile: [], pileAt: 0 } as State;
   const roll = (a: Anchor | null | undefined, span: number): Anchor | null =>
-    (v.ok && (newRun || !a || now - a.at > span) ? { state: bare, at: now } : a ?? null);
+    (counted.ok && (newRun || !a || now - a.at > span) ? { state: bare, at: now } : a ?? null);
   const next: Saved = {
     latest: kept && ahead(kept) > ahead(after) ? saved!.latest : withPackedPile(after),
-    verified: v.ok ? bare : saved?.verified ?? null,
-    verifiedAt: v.ok ? now : saved?.verifiedAt ?? null,
+    verified: counted.ok ? bare : saved?.verified ?? null,
+    verifiedAt: counted.ok ? now : saved?.verifiedAt ?? null,
     lastSync: now,
     day: roll(saved?.day, DAY_WINDOW),
     week: roll(saved?.week, WEEK_WINDOW),
@@ -256,15 +270,15 @@ export async function sync(
   // REPEAT_WINDOW) is logged as refused but not struck or flagged again. The trade-off: a
   // cheater who repeats one edited save collects one strike instead of many, but it is
   // refused every time and never ranked, and any save that has moved on is struck as before.
-  const repeat = v.strike && saved !== null && saved.verifiedAt !== saved.lastSync && kept !== null
+  const repeat = counted.strike && saved !== null && saved.verifiedAt !== saved.lastSync && kept !== null
     && ahead(kept) >= ahead(after) && now - saved.lastSync <= REPEAT_WINDOW;
-  if ((v.strike || v.suspect) && !repeat) {
-    const review = v.strike && profile.strikes + 1 >= STRIKES_TO_REVIEW;
-    profile = await store.mark(id, v.strike, v.suspect || review, NEVER);
+  if ((counted.strike || counted.suspect) && !repeat) {
+    const review = counted.strike && profile.strikes + 1 >= STRIKES_TO_REVIEW;
+    profile = await store.mark(id, counted.strike, counted.suspect || review, NEVER);
   }
 
   let standing = await store.standing(id);
-  if (v.ok) {
+  if (counted.ok) {
     const climb = layersOpened(after);
     const marks = after.tribulation;
     const old = standing;
@@ -285,13 +299,13 @@ export async function sync(
     await store.writeStanding(id, standing);
   }
 
-  const state = v.ok ? 'verified'
-    : v.strike ? 'refused'
-    : v.why.includes('went-down') ? 'behind'
+  const state = counted.ok ? 'verified'
+    : counted.strike ? 'refused'
+    : counted.why.includes('went-down') ? 'behind'
     : 'waiting';
-  const behindHours = v.ok ? 0 : Math.max(0, (after.at - (next.verifiedAt ?? after.at)) / 3600);
+  const behindHours = counted.ok ? 0 : Math.max(0, (after.at - (next.verifiedAt ?? after.at)) / 3600);
   return {
     status: 200,
-    body: { ranked: v.ok, state, suspect: profile.suspect, standing, behindHours },
+    body: { ranked: counted.ok, state, suspect: profile.suspect, standing, behindHours },
   };
 }

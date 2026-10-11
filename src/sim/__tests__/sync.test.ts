@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, sync, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, REPEAT_WINDOW, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
+import { cleanName, sync as syncWith, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, REPEAT_WINDOW, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { GAME_EPOCH, type Verdict } from '../verify.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
-import { type State } from '../state.ts';
+import { layersOpened, type State } from '../state.ts';
 import { validate } from '../load.ts';
 import { withPackedPile } from '../pilepack.ts';
 import { progressOf } from '../echo.ts';
+
+/** The rules as they stand, refusals counted. The testing switch has its own test below. */
+const sync = (store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt?: number) =>
+  syncWith(store, id, raw, now, name, joinedAt, { accept: false });
 
 /**
  * 同步 The server's sync, run against an in-memory database: what the Edge Function does
@@ -126,6 +130,24 @@ describe('同步 the ranked sync', () => {
     expect(r.status).toBe(200);
     // Every refused sync is in the log with what it tried, for the panel.
     expect(m.logs.filter((x) => x.v?.strike).every((x) => x.v!.why.includes('gear'))).toBe(true);
+  });
+
+  it('while testing (ACCEPT_EVERYTHING), an impossible save is accepted and moves the boards, but the log still says what it tried', async () => {
+    const m = memory();
+    const a = shots[10].s;
+    const opts = { accept: true };
+    await syncWith(m.store, 't1', a, a.at + 10, undefined, GAME_EPOCH, opts);
+    const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
+    const later = shots.filter(({ s }, i, all) => i > 10 && progressOf(s) > progressOf(all[i - 1].s));
+    const s = later[0].s;
+    const r = await syncWith(m.store, 't1', { ...s, chest: [...s.chest, sword] }, s.at + 10, undefined, GAME_EPOCH, opts);
+    expect(r.status === 200 && r.body.ranked, 'accepted').toBe(true);
+    expect(r.status === 200 && r.body.state).toBe('verified');
+    expect(m.profiles.get('t1')?.strikes ?? 0).toBe(0);
+    expect(m.profiles.get('t1')?.suspect ?? false).toBe(false);
+    expect(m.standings.get('t1')!.climb).toBeGreaterThanOrEqual(layersOpened(s));
+    // The verdict in the log is the real one: the impossibility is still on record.
+    expect(m.logs.filter((x) => x.id === 't1' && x.v?.strike).length).toBeGreaterThan(0);
   });
 
   it('the same refused save offered again and again is one strike, not one each time', async () => {
