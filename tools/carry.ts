@@ -66,6 +66,8 @@ interface LifeOut {
   /** The day the life's third mark falls: summit plus the endgame's days to it. */
   readonly end: number;
   readonly born: number[];
+  /** Levels of the seven crafts when the life ended (its third mark): what the next life is born from. */
+  readonly endLv: number[];
   /** Levels of the seven crafts, the tools held (0 to 42), and the qi rate, at the checkpoints. */
   readonly at: Record<number, { readonly lv: number[]; readonly tools: number; readonly rate: number }>;
   /** For a watched life: the first day each craft was at each level (Infinity when it never was). */
@@ -133,7 +135,7 @@ function chain(job: Job): LifeOut[] {
     const start = n === 0 ? undefined : reborn(lives, xp, job.share);
     const echo = echoOf(lives);
     const w = walkLife(habitOf(job.habit, job.seed), start, job.watch.includes(n + 1), echo);
-    out.push({ ...w, life: n + 1, born: start ? xpList(start.crafts.xp).map(levelOf) : SKILL_KEYS.map(() => 1) });
+    out.push({ ...w, life: n + 1, born: start ? xpList(start.crafts.xp).map(levelOf) : SKILL_KEYS.map(() => 1), endLv: w.xpEnd.map(levelOf) });
     xp = w.xpEnd;
     lives.push({ marks: MARKS, at: T0 + n });
   }
@@ -238,7 +240,7 @@ const lv = (o: LifeOut, d: number) => (o.at[d]?.lv ?? []).join(' ');
 console.log(`   ${pad('first life', 22)} ${CHECKPOINTS.map((d) => pad(lv(first, d), 24)).join('')}`);
 console.log(`   ${pad('life 2, nothing carried', 22)} ${CHECKPOINTS.map((d) => pad(lv(second, d), 24)).join('')}`);
 console.log(`   ${pad(`life 2, ${CARRY * 100}% carried`, 22)} ${CHECKPOINTS.map((d) => pad(lv(secondCarry, d), 24)).join('')}`);
-console.log(`   Born with (levels): ${secondCarry.born.join(' ')}   (the life before ended on levels ${lv(first, 60)} at day 60)`);
+console.log(`   Born with (levels): ${secondCarry.born.join(' ')}   (the life before ended on levels ${first.endLv.join(" ")})`);
 console.log(`   Days until the slowest of the seven crafts reaches a level (the median in brackets), the summit on day ${first.summit.toFixed(0)}:`);
 console.log(`   ${pad('', 26)} ${LEVELS.map((L) => pad(`level ${L}`, 16)).join('')}`);
 const med = (xs: readonly number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
@@ -250,7 +252,8 @@ for (const [tag, o] of [[`${(SHARES[1] * 100).toFixed(1)}%`, lifeAt(low3, 2)], [
 const saved = LEVELS.map((L) => slowest(second.daysTo![L]) - slowest(secondCarry.daysTo![L]));
 console.log(`   Saved at the slowest craft by ${CARRY * 100}%: ${LEVELS.map((L, i) => `level ${L} ${f1(saved[i]).trim()} days`).join(', ')}.`);
 check(secondCarry.born.every((l) => l >= 40), 'a life born with the carry starts every craft at level 40 or more');
-check(secondCarry.born.every((l, i) => l < (first.at[60]?.lv[i] ?? 99)), 'a life is born below the levels the life before it ended on');
+check(secondCarry.born.every((l, i) => l <= first.endLv[i]), 'a life is born no higher than the levels the life before it ended on');
+if (CARRY >= 1) check(secondCarry.born.every((l, i) => l === first.endLv[i]), 'at all of it, a life is born on exactly the levels the life before ended on');
 check(saved.every((d) => d > 0), `the carry brings the slowest craft to level ${LEVELS.join(', ')} sooner`);
 
 // ── 2. The climb ────────────────────────────────────────────────────────────────────────
