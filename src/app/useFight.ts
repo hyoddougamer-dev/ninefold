@@ -185,7 +185,7 @@ export function useFight(
       // 鎖魂 A Soul-Lock Sigil carried in makes the one that fell count twice.
       setState((s) => (outcome.won ? spent(s, locked ? conquerTwice(s) : conquer(s)) : repel(s)));
     } else if (outcome.won && floor !== undefined) {
-      // 塔 A floor counts once. It pays material and hours of gathering, and spends what was
+      // 塔 A floor counts once. It pays material and a fixed sum of qi, and spends what was
       // carried up to it, if the climber chose to carry it.
       sfx.floor();
       setState((s) => spent(s, clearFloor(s, floor)));

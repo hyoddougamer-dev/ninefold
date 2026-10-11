@@ -158,11 +158,11 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // 擂台 The Platform stands beside the demon: a fight that asks for the build rather than
   // for 力, paying qi every week. It is drawn on 塔 Trials, which opens here for it.
   { key: 'platform', han: '擂台', name: 'The Platform', realm: PLATFORM_REALM,
-    gives: 'Three challengers a week, measured against your own power. The dice are set for the week, so the way past a loss is to change your stance, your arts or what you carry. A win pays hours of gathering; a loss costs nothing.' },
+    gives: 'Three challengers a week, measured against your own power. The dice are set for the week, so the way past a loss is to change your stance, your arts or what you carry. A win pays a fixed sum of qi read off your realm; a loss costs nothing.' },
   { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
     gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
-    gives: 'One floor, one beast, no top. Material, and a fixed sum of qi a floor, the same for everyone.' },
+    gives: 'One floor, one beast, no top. Material, and a fixed sum of qi a floor, the same for everyone in its class.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
     gives: 'Every beast you kill is counted, and the count pays. Ten kills of one animal is more material from everything; a hundred is power.' },
   { key: 'sigils', han: '符', name: 'Sigil Writing', realm: 6,
