@@ -1804,6 +1804,44 @@
         ]
       ],
       "footer": "師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-11",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "套 Update · Ten loadouts, the Realm Key fix, and a safer engine",
+      "color": "#7FB495",
+      "image": "https://hyoddougamer-dev.github.io/ninefold/discord/update-1011-loadouts.webp?v=1",
+      "gallery": [
+        "https://hyoddougamer-dev.github.io/ninefold/discord/update-1011-key.webp?v=1"
+      ],
+      "body": [
+        "Since yesterday: loadouts go from five to ten, the Realm Key does what it promised on the spring, and the code under the game was reorganised so the next fixes can land without touching everything else. Nothing on screen moves except what is listed below."
+      ],
+      "fields": [
+        [
+          "套 Ten loadouts",
+          "Keep up to ten loadouts now, up from five. A loadout's pieces are locked, and they count against the chest only up to the chest's limit less 6 places, so there is always room for drops and crafts. The newest loadout's pieces count first. The rest stay locked and stay in the chest, and a full chest spends them last. The Gear screen says how many places your loadouts keep."
+        ],
+        [
+          "鑰 The Realm Key on the spring",
+          "A Realm Key now counts the wait as served. The spring opens with at least 32 minutes of your gathering, as a floor and never a top-up, and the button says the number before you press it. One lift a day, as before. This is the fix from the bug thread."
+        ],
+        [
+          "Saves with a damaged loadout",
+          "A saved list with an entry that has no name or no piece no longer uses up one of the ten places, so the loadouts you do have all load."
+        ],
+        [
+          "Hundredfold: the order in hand",
+          "The Hundredfold screen recognises the order you are making however its fields are arranged, so the right one shows as in hand."
+        ],
+        [
+          "Under the game",
+          "The main screen's file went from 1,907 lines to 1,000: the save check, the actions and the cards each have a file of their own now. Nothing on screen changes because of it. What it buys is that a fix to one screen is less likely to break another, and every change now passes 1,061 tests and a pixel check of the screens against the build before it."
+        ]
+      ],
+      "footer": "師 Shibaki"
     }
   ],
   "posts": [
