@@ -152,14 +152,16 @@ export const WEEK_WINDOW = 14 * 86_400;
  * is on, a save the rules refuse (too fast, impossible) is accepted as the verified save all
  * the same, and moves the boards. The verdict is still logged as it was, so the panel's 疑
  * Batota tab shows what each sync tried; no strike is counted and nobody is kept off the
- * boards. A save that went down is still only behind, as it always was. Set this to false
- * before the first season that counts: the tests run the rules with it off.
+ * boards. A save that went down is still only behind, as it always was. sync() itself runs
+ * the rules by default (accept: false), so the tests never see this switch; the server
+ * passes it in, and tools/ranked.ts reads it to know what the live server should answer.
+ * Set it to false before the first season that counts.
  */
 export const ACCEPT_EVERYTHING = true;
 
 export async function sync(
   store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt = now,
-  rules: { accept: boolean } = { accept: ACCEPT_EVERYTHING },
+  rules: { accept: boolean } = { accept: false },
 ): Promise<Reply> {
   const wait = await store.claim(id, now, MIN_GAP);
   if (wait > 0) return { status: 429, body: { error: 'too-soon', wait: Math.ceil(wait) } };

@@ -8,7 +8,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // (esbuild), so the function does not depend on how Supabase resolves imports that
 // reach outside its own folder.
 // @ts-ignore: generated at deploy time
-import { sync } from './core.bundle.js';
+import { sync, ACCEPT_EVERYTHING } from './core.bundle.js';
 type Anchor = { state: unknown; at: number };
 type Saved = { latest: unknown; verified: unknown; verifiedAt: number | null; lastSync: number; day?: Anchor | null; week?: Anchor | null };
 type Standing = { climb: number; marks: number; tower: number; climbedAt: number; towerAt: number; week: number; weekFrom: number };
@@ -143,7 +143,8 @@ Deno.serve(async (req) => {
     // more than a few days of play from before it (see PRE_JOIN_CREDIT in sim/verify.ts).
     const joined = Math.floor(Date.parse(who.user.created_at) / 1000);
     const now = Math.floor(Date.now() / 1000);
-    const r = await sync(store(), id, body.save, now, body.name, Number.isFinite(joined) ? joined : now);
+    const r = await sync(store(), id, body.save, now, body.name, Number.isFinite(joined) ? joined : now,
+      { accept: ACCEPT_EVERYTHING });
     return json(r.status, r.body);
   } catch (e) {
     console.error(e);

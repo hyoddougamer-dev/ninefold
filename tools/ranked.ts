@@ -83,7 +83,7 @@ check(peek.status >= 400 || (await peek.json()).length === 0, 'a player cannot r
 await new Promise((r) => setTimeout(r, 22_000));
 const cheat = { ...fresh, at: now + 25, qi: 1e30 };
 const refused = await call('/functions/v1/sync', { save: cheat }, token);
-check(refused.status === 200 && refused.json?.ranked === !ACCEPT_EVERYTHING,
+check(refused.status === 200 && refused.json?.ranked === ACCEPT_EVERYTHING,
   ACCEPT_EVERYTHING ? 'an edited save is accepted while testing' : 'an edited save is not ranked', refused);
 check(refused.json && !('why' in refused.json), 'and the reply does not say which check it failed', refused.json);
 
@@ -105,7 +105,7 @@ const other = await signup();
 const otherToken: string = other.json?.access_token;
 const weeks = advance(newState(now - 30 * 86_400), now);
 const forged = await call('/functions/v1/sync', { save: weeks, name: '天下第一' }, otherToken);
-check(forged.status === 200 && forged.json?.ranked === !ACCEPT_EVERYTHING
+check(forged.status === 200 && forged.json?.ranked === ACCEPT_EVERYTHING
   && forged.json?.state === (ACCEPT_EVERYTHING ? 'verified' : 'waiting'),
   ACCEPT_EVERYTHING ? 'while testing, a guest signed up now is accepted with a month of play'
     : 'a guest signed up now cannot bring a month of play to their first sync', forged.json);
