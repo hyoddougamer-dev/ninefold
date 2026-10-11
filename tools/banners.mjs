@@ -69,6 +69,8 @@ export const BANNERS = [
   // 通 Saves syncing during the test: every save counts, and nobody is taken off the boards.
   { key: 'craft-1011', seal: '筆', over: '筆 Dev log · Craft links and switches', title: 'Links, Switches and Clearer Names', sub: 'A recipe one tap away, the formula when you want it, drops by slot', bg: 'realm/5', fig: 'self/man-5' },
   { key: 'sync-1011', seal: '通', over: '告 Announcement · Testing', title: 'Saves Sync During the Test', sub: 'Every save counts while we test, and nobody is taken off the boards', bg: 'realm/2', fig: 'self/man-1' },
+  // 正 The corrections of 11 October: the Celestial Master, the Vajra and the anvil time, said plainly.
+  { key: 'texts-2026-10-11', seal: '正', over: '筆 Dev log · Corrections', title: 'Three Corrections', sub: 'The Celestial Master, the Vajra and the anvil time', bg: 'realm/4', fig: 'cut/tiger' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',

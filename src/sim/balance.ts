@@ -616,20 +616,21 @@ export function focusAt(secondsOpen: number, deeper = 0): number {
  * is under a sixtieth of the seven pills that lift a cultivator over it.
  *
  * Measured with tools/towerpay.ts (tools/habits.ts with every floor's pay traced to the
- * realm it fell in), before (hours of the bare rate, tapered) and now. The share is the
+ * realm it fell in), before (hours of the bare rate, tapered, an earlier commit) and now
+ * (re-measured at HEAD, the same harness). The share is the
  * tower's part of all the qi gathered in that realm; the visit is the most one visit's
  * floors paid in the fifth realm, in rungs of the rung then standing (the harness climbs
  * at most forty floors a visit, so an arrival is two visits):
  *
  *   habit           ninth realm (day)   realm 5 share   biggest visit   realms 6 to 9 share
  *                   before   now        before   now    before   now    before    now
- *   once a day       69.0    70.0        13.0    7.6     1.20   2.00    3 to 6    2 to 5
- *   active           44.2    43.0        20.7   12.6     3.84   2.00    5 to 7    7 to 14
- *   every hour       28.4    27.2        23.6   18.1     6.22   2.00    6 to 7   10 to 16
- *   drives it all    45.3    42.3        25.9   12.5     5.74   2.00    5 to 6    6 to 13
- *   walks 神         42.8    46.3        21.8    6.4     4.39   2.13    6 to 9    2 to 4
- *   crafts it all    44.0    43.5        26.2   12.2     5.50   2.00    5 to 6    7 to 9
- *   runs auto        31.5    31.0        24.5   16.7     6.46   2.00    5 to 8    9 to 22
+ *   once a day       69.0    76.0        13.0    7.5     1.20   2.00    3 to 6    1.4 to 2.2
+ *   active           44.2    49.7        20.7    9.1     3.84   2.00    5 to 7    4.0 to 4.6
+ *   every hour       28.4    32.1        23.6   12.7     6.22   2.00    6 to 7    4.0 to 6.7
+ *   drives it all    45.3    49.5        25.9   12.4     5.74   2.00    5 to 6    3.2 to 5.1
+ *   walks 神         42.8    46.2        21.8    7.0     4.39   2.13    6 to 9    1.5 to 2.0
+ *   crafts it all    44.0    46.0        26.2   15.3     5.50   2.00    5 to 6    3.0 to 7.0
+ *   runs auto        31.5    32.3        24.5   12.4     6.46   2.00    5 to 8    2.9 to 5.1
  *
  * No single visit anywhere pays more than 2.13 rungs. The cost is the spread: a fixed sum
  * per floor pays whoever climbs highest the most, so a build that trades power for
@@ -2151,13 +2152,15 @@ export const TRAIL_WOUND = 0.1;
  * challenger stands at its edge of the cultivator's own power and is thinned like a beast
  * (破甲 sunder, 破煞 bane, the tree's weakness, the classes), so the build is what wins,
  * not 力. The dice are set for the period, so pressing again with nothing changed loses
- * again: measured with the design harness, the third challenger falls in 15 to 60% of
- * weeks for somebody who builds, not "eventually, by tapping". With a free reroll every
+ * again: measured with tools/platformedge.ts at HEAD, the third challenger falls in 0 to 27%
+ * of weeks for the habits that build, not "eventually, by tapping". With a free reroll every
  * builder took all three every week, which is why the dice are set.
  *
  * A win pays a fixed sum read off the realm (PLATFORM_HOURS of its middle rate, challengerQi
- * in platform.ts), so the realm sum cannot move with power or realm, a worn 金剛 Vajra adds its share (platform.ts:157), and the card can say it before the fight:
- * about 3 to 6% of a run for anybody who builds, under the tower.
+ * in platform.ts), so the sum cannot move with power or with a rate bought first, a worn
+ * 金剛 Vajra adds its share (platform.ts:157), and the card can say it before the fight.
+ * Against all the qi a builder gathers, the Platform is about 2% (1.8 to 2.6% at HEAD,
+ * tools/platformpay.ts), under the tower.
  */
 export const PLATFORM_EDGE = [1.3, 1.8, 2.5] as const;
 /**

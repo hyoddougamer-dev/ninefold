@@ -373,7 +373,7 @@ export function takeKill(s: State, b: Beast): State {
  * 首 What the first kill of the week's quarry pays, once, that week.
  *
  * Built on 見 the first-sight bounty rather than beside it, so the two can never drift
- * apart and a player reading "a fifth of a first sight" is reading the truth. A warden
+ * apart and a player reading "a tenth of a first sight" is reading the truth. A warden
  * is never the quarry, so the zero seenBounty returns for one cannot leak in here.
  */
 export function quarryBounty(b: Beast): number {

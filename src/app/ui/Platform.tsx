@@ -130,8 +130,9 @@ export function Platform({ state, onChallenge, onStance }: {
         );
       })}
 
-      {/* 吸 What every challenger pays, read off the realm and nothing else: the same sum for
-          everyone in it, so it is said before the fight rather than after (rekaris). */}
+      {/* 吸 What every challenger pays, read off the realm and the class worn: the same sum for
+          everyone in the same realm and class, so it is said before the fight rather than
+          after (rekaris). */}
       <p className="faint plfixed">
         {PLATFORM.fixed(`${home.han} ${home.name}`, bonus > 1 ? `${Math.round((bonus - 1) * 100)}%` : undefined)}
         {up !== null && <>{' '}{PLATFORM.today(span)}</>}

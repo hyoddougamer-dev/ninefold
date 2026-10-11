@@ -1038,21 +1038,6 @@
       "footer": "師 Shibaki"
     },
     {
-      "key": "news-deep-vote",
-      "pin": false,
-      "channel": "news",
-      "title": "深 Six days left to vote: deeper hunts",
-      "color": "#7FA8D9",
-      "body": [
-        "Only two of you have voted so far, and these five polls decide whether deeper hunts get built, and how.",
-        "",
-        "Open **深 Deeper hunts: what do you think?** in {#ideas} and tap an answer under each poll. It takes a minute, the polls close on **11 October**, and a \"No\" or \"Not sure yet\" helps us just as much as a yes. If none of the answers fits, write what you would rather have in the post.",
-        "",
-        "Thank you for playing, and for every report this week."
-      ],
-      "footer": "師 Shibaki"
-    },
-    {
       "key": "update-2026-10-06",
       "pin": false,
       "channel": "devlog",
@@ -1904,6 +1889,7 @@
       "pin": false,
       "channel": "devlog",
       "title": "Corrections: the Celestial Master, the Vajra and the anvil time",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/texts-2026-10-11.webp?v=1",
       "color": "#D4AF56",
       "body": [
         "The Celestial Master doubles the qi a floor pays, but only when it is worn. The floor sum itself is the same for everyone in a class. The text said what you wear never changes it, which was wrong.",
@@ -2909,10 +2895,7 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/ideas-forge.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-mockup.webp?v=1",
       "gallery": [
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-crucible.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-sets.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-starfall.webp?v=1",
-        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-timeline.webp?v=1"
+        "https://hyoddougamer-dev.github.io/ninefold/discord/promo/forge-crucible.webp?v=1"
       ],
       "body": [
         "This is the place to talk about the workshop. The three ideas, the numbers and the polls are in {#news}, in **業 Walls, seals and sets**. Below: a mockup of a Hundredfold piece being forged line by line, the crucible's eight materials, all nine sets, one set in full, and when each one opens."
@@ -4664,6 +4647,39 @@
       "title": "no R6 Gear",
       "reply": [
         "razielmorgenstern, you asked which layer you were on. Gear from a realm-6 beast starts falling at layer 5 of realm 6. On layers 1 to 4 a realm-6 beast drops only realms 1 to 5, so those hunts give no realm-6 pieces. That is the game working as written, and the hunt screen now dims those pieces and says when they start, for example: Falls from layer 5 of realm 6. You are on layer 2. Which layer were you on for the 1,395 hunts? · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "reply": [
+        "A correction to our earlier replies, with the whole-run figure. For an active player, simulated over five runs of 400 days, the tower is about 3.7% of all the qi gathered without the Celestial Master, and about 4.9% with it worn on most days (76% of the days in the test).",
+        "Per floor the Master pays double (+100%), so the 25% in our older replies was out of date. Thank you for pushing on it. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "reply": [
+        "Here is the whole-run figure we promised above. For an active player, simulated over five runs of 400 days, the tower is about 3.7% of all the qi gathered without the Celestial Master, and about 4.9% with it worn on most days. So the 25% over a run is out of date.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Varja doesn't increase platform yields, intended?",
+      "reply": [
+        "A correction to our reply above, and to the 3, 6 and 9 hours in it. A Platform challenger pays a fixed sum read off your realm: 1, 2 and 3 hours of the realm's middle rate, the same for everyone in that realm. A Vajra you wear adds half again: 1.5, 3 and 4.5 hours. A Vajra you only carry adds nothing.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "議 Rebirth: what would make it worth taking?",
+      "mention": false,
+      "reply": [
+        "A correction to two of the ten polls, which describe the Echo wrongly. Today the Echo grows with the marks of each life: +5% at the first mark, +2.5% for every doubling of the marks after it, up to +12.5% in one life. Across lives it adds up to +25%, then +2% for every doubling of lives, up to a roof of +35%.",
+        "So depth is already part of the Echo, and the 10% per mark in question 5 is not in the game. · 師 Shibaki"
       ]
     }
   ]

@@ -600,9 +600,9 @@ export const TRIALS = {
   climb: 'Climb',
   pays: (mats: string, qi: string) => `pays ${mats} 材 · ${qi} qi`,
   /**
-   * 吸 What every floor pays in qi: a fixed sum read off the floor, and the same for everyone
-   * whenever it falls (rekaris and speculaether, 2026-10-05). `bonus` is the Celestial
-   * Master's share when that class is worn, as "150%".
+   * 吸 What every floor pays in qi: a fixed sum read off the floor, the same for everyone in
+   * the same class whenever it falls (rekaris and speculaether, 2026-10-05). `bonus` is the
+   * Celestial Master's share when that class is worn, as "100%".
    */
   fixed: (bonus?: string) =>
     `Every floor pays a fixed sum of qi, read off the floor. The sum is the same for everyone in the same class, whenever the floor falls${bonus ? `. Wearing the Celestial Master pays ${bonus} more` : ''}.`,
@@ -1680,8 +1680,9 @@ export const PLATFORM = {
   paid: (qi: string) => `${qi} paid`,
   pays: (qi: string) => `pays ${qi} qi`,
   /**
-   * 吸 What every challenger pays: a fixed sum read off the realm, the same for everyone in
-   * it whenever it falls (rekaris, 2026-10-05), as the tower's floors are (TRIALS.fixed).
+   * 吸 What every challenger pays: a fixed sum read off the realm, the same for everyone in the
+   * same realm and class whenever it falls (rekaris, 2026-10-05), as the tower's floors are
+   * (TRIALS.fixed).
    * `bonus` is 金剛 the Vajra's share when that class is worn, as "50%".
    */
   fixed: (realm: string, bonus?: string) =>

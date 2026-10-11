@@ -456,7 +456,7 @@ const sign = (x: number) => `${x > 1 ? '+' : ''}${Math.round((x - 1) * 1000) / 1
 
 const SYSTEMS: readonly System[] = [
   { han: '階', name: 'The ladder', status: 'done', at: 'ladder',
-    line: `Eighty-one rungs, each dearer than the last. ${TARGET_DAYS} days to the top, measured against a cultivator who spends.` },
+    line: `Eighty-one rungs, each dearer than the last. ${TARGET_DAYS} days to the ninth realm, measured against a cultivator who spends.` },
   { han: '上限', name: 'The realm cap', status: 'done', at: 'cap',
     line: `${LEVELS_PER_REALM} levels of each upgrade per realm. It is what stops the qi rate running away.` },
   { han: '氣', name: 'Qi and the four upgrades', status: 'done', at: 'qi',
@@ -567,8 +567,8 @@ const SYSTEMS: readonly System[] = [
   { han: '氣查', name: 'The audit of the qi', status: 'done', at: 'audit',
     line: 'npm run qi walks every path the qi can take. Every verb against the price it quotes, the ladder across an absence, a save round-tripped through validate, a clock that jumps backwards. It found three caps written twice, a drive that could empty a pocket, and a homecoming card that reported 0 qi gathered to a cultivator who had gathered 205M.' },
 
-  { han: '轉世', name: 'Rebirth', status: 'open',
-    line: 'Built on its own branch, waiting for Bruno. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +5% qi gathered for its first mark and +2.5% more for every doubling of the marks after it, quick to +25% for every life together, then a slow logarithmic tail of +2% for every doubling of the full lives past it, under a hard roof of +35% (reached at 33 lives of 15 marks, 40 lives remembered), and a title. Measured by npm run rebirth and npm run echotail: a first rebirth taken at once makes the next life 3% to 9% sooner to the summit, a life at +25% 14% to 20% sooner, and 20 lives of 15 marks (+33.5%) a few days sooner than that. See docs/DRAWER.md.' },
+  { han: '轉世', name: 'Rebirth', status: 'done',
+    line: 'On main since 2026-10-08. From the summit with a mark crossed a life may begin again in the first realm, carrying 宿慧 an Echo of +5% qi gathered for its first mark and +2.5% more for every doubling of the marks after it, quick to +25% for every life together, then a slow logarithmic tail of +2% for every doubling of the full lives past it, under a hard roof of +35% (reached at 33 lives of 15 marks, 40 lives remembered), and a title. Measured by npm run rebirth and npm run echotail: a first rebirth taken at once makes the next life 3% to 9% sooner to the summit, a life at +25% 14% to 20% sooner, and 20 lives of 15 marks (+33.5%) a few days sooner than that. See docs/DRAWER.md.' },
 ];
 
 /** 狀 The board, counted once, so the summary and the board itself cannot disagree. */
@@ -2148,7 +2148,7 @@ const page = `<meta charset="utf-8">
     <h1>九境</h1>
     <p class="lead"><b>Ninefold.</b> An idle cultivation game. Qi gathers on its own, with
       the phone closed. Nine realms, about <b class="big">${TARGET_DAYS} days</b> to the
-      top, and no end after that.</p>
+      ninth, and no end after that.</p>
     <p class="t" style="margin-top:10px">This is the one page to read. Everything the game
       has is in it, in the order you would ask about it, and every number and name below
       is read straight out of the game's own code. <b>It is a living document:</b> the

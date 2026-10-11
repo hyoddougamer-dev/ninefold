@@ -21,16 +21,18 @@ import { classBounty } from './schools.ts';
  * 律 The rules it keeps:
  *
  *   量 Each challenger is measured against the cultivator, at PLATFORM_EDGE of their own
- *     力, so power alone never moves the odds. It is thinned like any beast (破甲 sunder,
+ *     力 (grown by PLATFORM_EDGE_GROWTH for each realm past the fourth), so power alone
+ *     never moves the odds. It is thinned like any beast (破甲 sunder,
  *     破煞 bane, the tree's weakness, the classes), and the week's temper stands it
  *     TEMPER_EDGE higher unless a stance or an art answers it. The build is what wins.
  *   定 The dice are set for the period: one seed per period and challenger, so the same
  *     body meets the same fight. Losing costs nothing, and pressing again with nothing
  *     changed loses again, so the way past a loss is to change something.
  *   一 Each pays once a period a fixed sum read off the realm: PLATFORM_HOURS of the
- *     realm's middle rate (midRate), the same for everyone in the realm whenever it
- *     falls, so the card can say it before the fight and neither clothes nor a rate bought
- *     first can move it. No 材, no drop, no mark on 錄 the record: a challenger is not a hunt.
+ *     realm's middle rate (midRate), the same for everyone in the same realm and class
+ *     whenever it falls, so the card can say it before the fight. A rate bought first
+ *     cannot move it; a worn 金剛 Vajra adds its half (challengerPays). No 材, no drop,
+ *     no mark on 錄 the record: a challenger is not a hunt.
  *   手 Never on the hunt list, never Known, never driven, never on Auto.
  *
  * Pure, like everything in sim/: the save holds the period and the count, and everything

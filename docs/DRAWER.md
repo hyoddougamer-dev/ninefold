@@ -255,6 +255,24 @@ the save without a schema change). (4) An heirloom, if he wants one, needs its o
 
 ---
 
+### Decided on 2026-10-11, by rekaris's feedback (not built yet)
+
+Bruno's rule for the open rebirth questions: follow rekaris, the most experienced tester, and tweak later, after measuring. What follows is what that rule gives, and what each item needs before it ships.
+
+- **Heaven record (poll 1), option C.** Once a cultivator has reborn, Heaven no longer lists them. They climb the Samsara board, which stays hidden until the first rebirth, is cleared at each rebirth, and is kept apart from Heaven (rekaris, #301, #312, #804). Costs a lives column in the standings, a board filter, one screen, and changing the public promise in server.json that "a rebirth keeps your best on every board". Ships only with the words and screens approved.
+- **Titles (poll 2).** No 天下第一 for the first place on Samsara for now. rekaris did not ask for it, and the title already belongs to Heaven.
+- **Tower on Samsara (poll 3).** No for now. rekaris asked only in the poll; the tower is not fixed per life yet.
+- **Echo (polls 4 and 5).** Keep the curve as built: +5% at the first mark, +2.5% for every doubling of the marks in a life, up to +12.5%; across lives up to +25%, then +2% for every doubling of lives, roof +35%. It already follows depth, which rekaris asked for (#301). His 10% per mark, uncapped, breaks the economic law, so it is refused. The two poll answers were worded wrongly and are corrected in the ideas topic.
+- **Experience carried into a new life (poll 6).** rekaris (#306) objected to "lose 75% of your crafting experience". Decided: carry all of it, CRAFT_CARRY 1.0. The summit barely moves (eval: 45.9 days at 100%, 46.5 at 25%), so this is a feel change. Speed carried is later, once measured. Build: one constant, the copy it generates, and the devlog line that still says 25%.
+- **Confirmation (poll 7).** Type the word, as rekaris asked (#299), instead of two taps. Build: an input on Rebirth.tsx, with screens.
+- **Target days (poll 8).** Keep TARGET_DAYS at 90. That constant measures the ninth realm, not the summit, and rekaris's 40 days is how long his own run took. Changing it rebalances the whole curve, so it waits for a measurement.
+- **Gate.** The first mark, as built (REBIRTH_MARKS 1). It matches rekaris's latest version (#301).
+- **ACCEPT_EVERYTHING.** Stays on until before the first season that counts. No date exists yet; Bruno sets it.
+- **No cap (razielmorgenstern, rekaris #302 and #304).** Refused by the economic law. The reply stays pending, as Bruno asked. The material bonus rekaris raised is not measured yet.
+
+Build order: experience carried and the typed word first (small, both on Rebirth.tsx and the constants), then the Samsara board, which changes the server and the promise, and ships last with its words and screens.
+
+
 ## 丹 Elixirs and sigils at the Dragon (built, switched off at 0, waiting for Bruno)
 
 **Status:** built and measured on 2026-10-08, shipped as `DRAGON_KIT_SHARE = 0` in
@@ -481,8 +499,9 @@ twice what 0.25 saves.
 
 **Words to change when it is released** (not done here: the Discord file is the owner's).
 The Rebirth page and the line a new life opens with already say it (`REBIRTH.carriesWorkshop`,
-`REBIRTH.bornWorkshop`). The `g-rebirth` guide in `tools/discord/server.json` still says the
-workshop begins again, and the bible's Rebirth line (`tools/bible.ts`) does not mention it.
+`REBIRTH.bornWorkshop`). The Tribulation guide and the FAQ in `tools/discord/server.json` already
+say a craft starts with 25% of its experience, which is what the code does; they change with
+`CRAFT_CARRY`. The bible's Rebirth line (`tools/bible.ts`) does not mention the workshop.
 
 ### 宿慧 The endless road (rekaris asked for "no cap, diminishing returns"; BUILT 2026-10-08)
 

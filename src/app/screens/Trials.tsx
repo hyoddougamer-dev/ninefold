@@ -135,8 +135,8 @@ export function Trials({ state, onFloor, onBrew, onChallenge, onStance, towerKit
             )}
           </span>
         </div>
-        {/* 吸 What every floor pays, read off the floor and nothing else: the same sum for
-            everyone, so it is said before the fight rather than after. */}
+        {/* 吸 What every floor pays, read off the floor and the class worn: the same sum for
+            everyone in the same class, so it is said before the fight rather than after. */}
         <p className="faint" style={{ margin: '6px 0 0', fontSize: 12.5 }}>
           {TRIALS.fixed(classTowerQi(state) > 1 ? `${Math.round((classTowerQi(state) - 1) * 100)}%` : undefined)}
           {' '}

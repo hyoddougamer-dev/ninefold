@@ -176,8 +176,8 @@ export function useFight(
     // 鎖魂 Read off the hand that went in, not off whatever is carried now.
     const locked = !!kit?.sigil && splitKey(kit.sigil).key === 'sigil:soullock';
     if (challenger !== undefined) {
-      // 擂 Down, its hours are paid and the next one steps up; standing, nothing happens at
-      // all. Not a kill: no material, no drop, no mark on the record.
+      // 擂 Down, its fixed sum of qi is paid and the next one steps up; standing, nothing
+      // happens at all. Not a kill: no material, no drop, no mark on the record.
       if (outcome.won) setState((s) => spent(s, beatChallenger(s, challenger)));
     } else if (demon) {
       // 心魔 Down, the door opens and a 道 point lands; standing, it draws back for an
