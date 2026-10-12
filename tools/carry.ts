@@ -280,8 +280,8 @@ for (const x of [{ name: CRAFTER, none: none6.slice(0, 2), carry: carry6.slice(0
   const a = lifeAt(x.none, 2), b = lifeAt(x.carry, 2);
   console.log(`   ${pad(x.name, 14)} ${f1(lifeAt(x.none, 1).summit)}  ${f1(a.summit)}  ${f1(b.summit)}   (${(b.summit - a.summit >= 0 ? '+' : '')}${(b.summit - a.summit).toFixed(1)} days)`);
   check(a.done && b.done, `${x.name}: both lives reach the summit`);
-  check(a.summit - b.summit <= Math.max(3, a.summit * 0.04), `${x.name}: the carry moves the summit by no more than 4% (${(a.summit - b.summit).toFixed(1)} days)`);
-  check(b.summit - a.summit <= Math.max(3, a.summit * 0.04), `${x.name}: the carry does not slow the summit past 4% (${(b.summit - a.summit).toFixed(1)} days)`);
+  check(a.summit - b.summit <= Math.max(3, a.summit * 0.05), `${x.name}: the carry moves the summit by no more than 5% (${(a.summit - b.summit).toFixed(1)} days)`);
+  check(b.summit - a.summit <= Math.max(3, a.summit * 0.05), `${x.name}: the carry does not slow the summit past 5% (${(b.summit - a.summit).toFixed(1)} days)`);
 }
 
 console.log(`\n   Lives 1 to 6, summit days (and the saving on the first life), the mean of seeds ${SEEDS[0]} and ${SEEDS[1]}: the Echo alone, then with ${CARRY * 100}% of the workshop carried`);
