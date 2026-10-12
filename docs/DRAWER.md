@@ -270,7 +270,7 @@ Bruno's rule for the open rebirth questions: follow rekaris, the most experience
 - **ACCEPT_EVERYTHING.** Stays on until before the first season that counts. No date exists yet; Bruno sets it.
 - **No cap (razielmorgenstern, rekaris #302 and #304).** Refused by the economic law. The reply stays pending, as Bruno asked. The material bonus rekaris raised is not measured yet.
 
-Build order: experience carried and the typed word first (small, both on Rebirth.tsx and the constants), then the Samsara board, which changes the server and the promise, and ships last with its words and screens.
+Build order: experience carried and the typed word came first (both on Rebirth.tsx and the constants), then the Samsara board, which changes the server and the promise. All three are on the branch (2026-10-11, the Samsara board after the carry). Nothing reaches main until Bruno approves its words and screens; the Samsara board ships last, with its server migration deployed before the client.
 
 
 ## 丹 Elixirs and sigils at the Dragon (built, switched off at 0, waiting for Bruno)
