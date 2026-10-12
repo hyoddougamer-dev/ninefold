@@ -1425,6 +1425,9 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .tabs .ranktab .g { color: var(--gold); }
 .tabs .ranktab[data-on='true'] .g, .tabs .ranktab[data-on='true'] .l { color: var(--gold); }
 .tabs .owed.rankplace { background: var(--gold); letter-spacing: 0; }
+/* 榜 The place stands over the glyph's centre. The rankings tab is the last column on a phone,
+   and a three-figure place hung off the right edge, so the whole page scrolled sideways at 320. */
+.tabs .ranktab .owed.rankplace { left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 2px; }
 
 .spoil { display: flex; align-items: center; gap: 12px; justify-content: center;
          margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
@@ -3184,6 +3187,7 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
   /* The unspent 道 count sits at the end of the row, where it cannot land on the name. */
   .app > nav.tabs .owed { left: auto; right: 14px; bottom: auto; top: 50%; transform: translateY(-50%);
                           font-size: 11.5px; padding: 3px 7px; }
+  .app > nav.tabs .ranktab .owed.rankplace { left: auto; right: 14px; bottom: auto; margin-bottom: 0; top: 50%; transform: translateY(-50%); }
   /* 榜 On the rail the rankings stand apart from the five screens, under a rule. */
   .app > nav.tabs .ranktab { margin-top: 14px; }
   .app > nav.tabs .ranktab::before { content: ''; position: absolute; left: 14px; right: 14px;
