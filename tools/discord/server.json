@@ -263,7 +263,7 @@
         "**2 · Keep it closed.** The game is in closed test. Ask before sharing it outside the server.",
         "**3 · One bug, one post.** In {#bugs}, so nothing gets lost.",
         "**4 · No spam, no ads,** nothing you would not show a stranger.",
-        "**5 · Nobody pings @everyone.** A new build pings 告 New builds, and only the people who asked for it.",
+        "**5 · Members don't ping @everyone.** Some news and dev log posts ping everyone once, when they go up.",
         "",
         "Invite links, scam links and mass mentions are held back automatically. The 守 Guardians see every one, and breaking the rules gets a warning, then a timeout."
       ]
@@ -2235,6 +2235,33 @@
         "A correction to our reply on the Platform. It said the third challenger fell in nearly every week before the 4% growth. It did not: for an active player it fell in about one week in three, and in half the weeks of realms 7 to 9. Now it falls in about one week in ten for an active player, and about one in five with the Vajra."
       ],
       "footer": "· 師 Shibaki"
+    },
+    {
+      "key": "corrections-2026-10-12",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "Corrections to our replies and guides",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/corrections-2026-10-12.webp?v=1",
+      "color": "#D4AF56",
+      "body": [
+        "We checked the guides and our replies against the game. Where we were wrong, the guide now says so, and each corrected reply has a new answer under it with the correction in full.",
+        "Loadouts go up to ten. Five came in on 5 October, and the 11 October update made them ten.",
+        "Mastery has no 15% cap. Each recipe taken to 2,000 makes adds 1% to its craft's speed for the first fifteen such recipes, then half that for each further fifteen, so it keeps rising toward 30%.",
+        "The Celestial Master doubles the qi of each tower floor while worn. On five runs per class it is second in tower qi, not first, about 12% more than pure Sword.",
+        "The Vajra's +50% reaches the Platform. A worn Vajra adds half again to the realm sum, and the Platform pays 1, 2 and 3 hours of the realm's middle rate, or 1.5, 3 and 4.5 with a Vajra worn.",
+        "The Echo is +5% at the first mark, then +2.5% for each doubling, up to +12.5% a life. It is +25% across the first lives, then a slow tail up to a roof of +35% over forty lives.",
+        "Rebirth has been in the game since 8 October. At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm.",
+        "Elixirs and sigils carried into the Dragon count at full strength, and they are spent on a win.",
+        "Deep marks add +1% material from every beast, not 0.5%, since 3 October.",
+        "The item sheet does not warn before a melt. Since the 6 October update, refined levels belong to the place on your body, so a melt never takes a refined level.",
+        "Enlightenment cards can be traded for one of the other two they were offered with: half a day of gathering for the newest card, and half a day more for each older one.",
+        "A floor pays a fixed sum of qi read off the floor alone, the same for everyone in your class. It is not six hours of your gathering, and the Celestial Master doubles it (+100%), not 25%.",
+        "The bestiary point counts the three commons of a realm (every beast but its warden), not four beasts.",
+        "The stance is set once for each fight. It does not change every round.",
+        "Members don't ping @everyone. Some news and dev log posts ping everyone once, when they go up."
+      ],
+      "footer": "· 師 Shibaki"
     }
   ],
   "posts": [
@@ -2449,7 +2476,7 @@
       ],
       "fields": [
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door: you hold one side of the fork or the other. Once you hold one, you can swap it for the other side once a day from its card, and the points stay spent."],
-        ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It changes every round of every fight."],
+        ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It is set once for each fight, and holds for the whole fight."],
         ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
         ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance is the chance of a second piece from the same kill (up to 50%), so drop chance lines still count and feed 煉 fusion."]
       ]
@@ -2519,7 +2546,7 @@
         "",
         "**塔 The Endless Tower** (fifth realm). One floor, one beast, no top. A floor pays material and, once, a fixed sum of qi that depends on the floor alone: the same for everyone in your class, whatever your realm, your gathering or your gear, and whenever you beat it. Every floor up to 61 pays 8.9M, so the floors you clear the day the tower opens are worth two or three layers of the fifth realm. Higher floors never pay less: floor 70 pays 69M, floor 81 832M, floor 100 38.1B, and floor 121 and every floor above it 1.29T. So there is never a reason to wait before you climb, or to buy gathering first: climb as high as you can, as soon as you can. Only 天師 Celestial Master changes it: twice as much. Past floor 81, the Dragon's, each floor is a step 4% steeper than the curve below it, and pays 4% more material for it. The floor card shows what the next floor pays before you climb, and how much of your gathering that is today. Every nine floors earn a seal: +15% material from everything. A floor that falls offers 登 Next floor (R on a PC). An elixir and a sigil you carry can go up with you: choose **Take up** on the floor's card, and a won floor spends whichever took part. A pill made for your realm is worth a floor or two; the 九轉 Nine-Turn Pill with a 天罡 Heaven Seal Sigil at the ninth realm, four or five.",
         "",
-        "**圖鑑 The Bestiary** (sixth realm). A realm whose four beasts you have all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
+        "**圖鑑 The Bestiary** (sixth realm). A realm whose three commons (every beast but its warden) are all 熟 Known pays a 道 point. Going back to finish an old realm pays for the tree."
       ]
     },
     {
@@ -4702,6 +4729,110 @@
       "reply": [
         "A correction to two of the ten polls, which describe the Echo wrongly. Today the Echo grows with the marks of each life: +5% at the first mark, +2.5% for every doubling of the marks after it, up to +12.5% in one life. Across lives it adds up to +25%, then +2% for every doubling of lives, up to a roof of +35%.",
         "So depth is already part of the Echo, and the 10% per mark in question 5 is not in the game. · 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Inventory management improvements",
+      "reply": [
+        "A correction to our reply above: loadouts go up to ten, not three. Five came in on 5 October, and the 11 October update made them ten.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow one to reset seemingly permanent choices",
+      "reply": [
+        "A correction to our replies above: the 悟道 cards are not permanent. Any card you have taken can be traded for one of the other two it was offered with. The newest card costs half a day of your gathering, and each older card half a day more. The Change button asks you to confirm with two taps.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "reply": [
+        "A correction to our reply above: since the 3 October update, every 精 Seasoned and 絕 Peerless mark adds +1% 材 material from every beast, not 0.5%.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "reply": [
+        "A correction to our replies above: mastery has no 15% cap. Each recipe taken to 2,000 makes adds 1% to its craft's speed for the first fifteen such recipes, then half that for each further fifteen, so the bonus keeps rising toward 30%.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "reply": [
+        "A correction to our reply above: a floor pays a fixed sum of qi read off the floor alone, the same for everyone in your class, not six hours of your gathering. Wearing the 天師 Celestial Master doubles what a floor pays, which is +100%, not 25%.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "reply": [
+        "A correction to our reply above: the item sheet does not warn before a melt. Since the 6 October update, refined levels belong to the place on your body, so a melt never takes a refined level.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "reply": [
+        "A correction to our reply above: on five runs per class, the Celestial Master is second in tower qi, not first. It earns about 12% more than pure Sword over a run, just behind the Sword Immortal. While worn, it doubles the qi of each tower floor.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Varja doesn't increase platform yields, intended?",
+      "reply": [
+        "A correction to our reply above: the Vajra's +50% does reach the Platform. A worn Vajra adds half again to the realm sum, and the Platform pays 1, 2 and 3 hours of the realm's middle rate, or 1.5, 3 and 4.5 with a Vajra worn. These are not hours of your own gathering.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "A correction to our replies above: rebirth has been in the game since 8 October. At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. It is optional, and the Echo keeps part of the qi you gathered.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "reply": [
+        "A correction to our replies above: elixirs and sigils carried into the Dragon do count, at full strength, and they are spent on a win. Our reply said they do not reach it. That was wrong.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "reply": [
+        "A correction to our reply above: a floor pays the Celestial Master twice its qi while worn, not two and a half times. Over five runs per class he is second in tower qi, not first.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform rewards",
+      "reply": [
+        "A correction to our reply above: a worn Vajra adds 50% to the Platform's realm sum, so the sum is not the same whatever you wear. A Vajra you do not wear adds nothing.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "A correction to our reply above: the Echo is +5% at the first mark, then +2.5% for each doubling, up to +12.5% a life. It is +25% across the first lives, then a slow tail up to a roof of +35% over forty lives. It is not +25% for every life.",
+        "· 師 Shibaki"
       ]
     }
   ]
