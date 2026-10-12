@@ -236,3 +236,19 @@ describe('頁 the Rebirth page says what the workshop keeps', () => {
     expect(SKILL_KEYS.map((k) => levelIn(born, k))).toEqual(promised);
   });
 });
+
+describe('守 a save from before the full carry still verifies', () => {
+  // A client that shipped the quarter share (2026-10-08 to 2026-10-11) can reach a second
+  // rebirth after the change. Its save holds the experience at a quarter, and the server now
+  // reads the new life from the full share. The experience only goes down, which is not a
+  // strike, so the save must still verify on either share.
+  it('reads a second rebirth from a quarter-born save as honest, as it does from a full one', () => {
+    const lifeXp2 = carriedXp(lifeXp, 0.25);
+    const before = summit(lifeXp2, { lives: [{ marks: 3, at: T0 }] });
+    const now = before.at + 10 * DAY;
+    const fresh = reincarnate(before, now);
+    const quarterClient = { ...fresh, crafts: { ...fresh.crafts, xp: carriedXp(lifeXp2, 0.25) } };
+    expect(verify(before, fresh, 10 * DAY).ok).toBe(true);
+    expect(verify(before, quarterClient, 10 * DAY).ok).toBe(true);
+  });
+});

@@ -113,7 +113,7 @@ function walkLife(h: Habit, start: State | undefined, watched: boolean, echo: nu
       });
     }
   }
-  return { life: 0, echo, summit, r9: run.arrival[8] ?? Infinity, done: run.done, end, born: [],
+  return { life: 0, echo, summit, r9: run.arrival[8] ?? Infinity, done: run.done, end, born: [], endLv: [],
     at, daysTo, xpEnd };
 }
 
