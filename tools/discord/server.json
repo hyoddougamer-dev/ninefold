@@ -2221,6 +2221,20 @@
           "hours": 336
         }
       ]
+    },
+    {
+      "key": "fix-2026-10-12",
+      "quiet": true,
+      "pin": false,
+      "channel": "devlog",
+      "title": "Fix and correction: the rank badge, and the Platform reply",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/fix-2026-10-12.webp?v=1",
+      "color": "#D4AF56",
+      "body": [
+        "On a narrow phone, a three-figure place on the rankings tab hung off the right edge, and the whole screen scrolled sideways. The badge now stays inside the screen, at 320 and 400 wide.",
+        "A correction to our reply on the Platform. It said the third challenger fell in nearly every week before the 4% growth. It did not: for an active player it fell in about one week in three, and in half the weeks of realms 7 to 9. Now it falls in about one week in ten for an active player, and about one in five with the Vajra."
+      ],
+      "footer": "· 師 Shibaki"
     }
   ],
   "posts": [
@@ -3901,7 +3915,7 @@
       "forum": "ideas",
       "title": "The platform is still trivial, even while ignoring every condition",
       "reply": [
-        "Confirmed, and measured: the challenger scaled with whatever you wore, so a cheaper set made an easier fight. From the next update the Platform's edge grows 4% for every realm past the fourth, so the third challenger falls in about one week in ten for an active player and one in five with the Vajra, down from nearly every week. Thank you for the push.",
+        "Confirmed, and measured: the challenger scaled with whatever you wore, so a cheaper set made an easier fight. The Platform's edge grows 4% for every realm past the fourth. Measured again, the third challenger falls in about one week in ten for an active player, and about one in five with the Vajra. Before that growth, it fell in about one week in three for an active player, and in half the weeks of realms 7 to 9. Thank you for the push.",
         "· 師 Shibaki"
       ]
     },
