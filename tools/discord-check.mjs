@@ -36,9 +36,14 @@ import { join } from 'node:path';
 
 const SPEC = JSON.parse(readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'));
 // 問 Every poll under a post, in a forum or a channel, is one more message the bot leaves, asked once.
-const POLLS = [...SPEC.messages, ...(SPEC.posts ?? [])].reduce((n, p) => n + (p.polls?.length ?? 0), 0);
+// 結 A poll under a message named in closePolls is over and never asked again.
+const OPEN = [...SPEC.messages, ...(SPEC.posts ?? [])].filter((p) => !(SPEC.closePolls ?? []).includes(p.key));
+const POLLS = OPEN.reduce((n, p) => n + (p.polls?.length ?? 0), 0);
 // 答 An answer given in a post the bot opened is one more message the bot writes, as a member's answer is.
-const ANSWERS_TO_POSTS = (SPEC.threads ?? []).filter((a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title)).length;
+// 整 A tidied post the bot opened holds its one final reply instead of its answers.
+const botPost = (a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title);
+const tidiedTitle = (a) => (SPEC.tidy ?? []).some((t) => t.forum === a.forum && t.title === a.title);
+const ANSWERS_TO_POSTS = (SPEC.threads ?? []).filter((a) => botPost(a) && !tidiedTitle(a)).length + (SPEC.tidy ?? []).filter(botPost).length;
 const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
@@ -48,6 +53,7 @@ const INVITED = 2251800082213937n;          // the permissions the bot's invite 
 
 function fakeDiscord({ admin = true } = {}) {
   const state = {
+    deleted: [],
     admin,
     guild: { id: GUILD, name: 'My server', owner_id: OWNER, features: [], verification_level: 0, explicit_content_filter: 0,
              default_message_notifications: 0, system_channel_id: null, system_channel_flags: 0 },
@@ -165,7 +171,26 @@ function fakeDiscord({ admin = true } = {}) {
         state.messages[m[1]].push(msg); return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'PATCH') {
-        const msg = state.messages[m[1]].find((x) => x.id === m[2]); msg.embeds = JSON.parse(JSON.stringify(body.embeds)); return send(200, msg);
+        const msg = state.messages[m[1]].find((x) => x.id === m[2]);
+        if (msg.author.id !== BOT) return refuse(403, 'Cannot edit a message authored by another user');
+        if (body.embeds !== undefined) msg.embeds = JSON.parse(JSON.stringify(body.embeds));
+        if (body.content !== undefined) msg.content = body.content;
+        return send(200, msg);
+      }
+      // 整 The bot deletes only its own messages here (no Manage Messages), and not in an archived thread.
+      if ((m = path.match(/^\/channels\/(\d+)\/messages\/(\d+)$/)) && req.method === 'DELETE') {
+        if (state.threads.some((t) => t.id === m[1] && t.thread_metadata.archived)) return refuse(400, 'Thread is archived');
+        const list = state.messages[m[1]] ?? []; const msg = list.find((x) => x.id === m[2]);
+        if (!msg) return refuse(404, 'Unknown Message');
+        if (msg.author.id !== BOT) return refuse(403, 'Missing Permissions');
+        state.messages[m[1]] = list.filter((x) => x !== msg); state.deleted.push(m[2]); return send(204);
+      }
+      // 結 Ending a poll early: only the bot's own, and only once.
+      if ((m = path.match(/^\/channels\/(\d+)\/polls\/(\d+)\/expire$/)) && req.method === 'POST') {
+        const msg = (state.messages[m[1]] ?? []).find((x) => x.id === m[2]);
+        if (!msg?.poll || msg.author.id !== BOT) return refuse(403, 'Missing Permissions');
+        if (msg.poll.results?.is_finalized) return refuse(400, 'Poll already ended');
+        msg.poll.results = { is_finalized: true }; return send(200, msg);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/pins\/(\d+)$/))) { state.messages[m[1]].find((x) => x.id === m[2]).pinned = true; return send(204); }
       if (path === `/guilds/${GUILD}/welcome-screen`) {
@@ -320,7 +345,7 @@ await scenario({}, async (port, env, state) => {
     && Object.values(state.messages).flat().filter(bannered).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
     'every post with a banner wears it on top, above its words');
   const all3 = [...SPEC.messages, ...SPEC.posts];
-  check(Object.values(state.messages).flat().filter((m) => !m.poll).every((m) => {
+  check(Object.values(state.messages).flat().filter((m) => !m.poll && m.embeds.length).every((m) => {
     const spec = all3.find((x) => m.embeds.some((e) => e.title === x.title));
     const after = m.embeds.slice(m.embeds.findIndex((e) => e.title) + 1);
     return after.length === (spec.gallery ?? []).length && after.every((e, i) => e.image.url === spec.gallery[i]);
@@ -394,7 +419,7 @@ await scenario({}, async (port, env, state) => {
   await runSetup(port, env);   // and back to server.json as it is, for what follows
   check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS - ANSWERS_TO_POSTS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
   const asked = Object.values(state.messages).flat().filter((m) => m.poll).map((m) => m.poll.question.text);
-  check([...SPEC.messages, ...SPEC.posts].flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
+  check(OPEN.flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
     && asked.length === POLLS, `each of the ${POLLS} polls is asked once, under its post`);
 
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
@@ -437,10 +462,12 @@ await scenario({}, async (port, env, state) => {
 await scenario({}, async (port, env, state) => {
   await runSetup(port, env);
   const forumOf = (key) => state.channels.find((c) => c.name === all.find((x) => x.key === key).name);
-  const owed = (a) => (SPEC.threads ?? []).filter((x) => x.forum === a.forum && x.title === a.title).length;
+  // 整 A tidied thread gets its one final reply instead of the answers listed for it.
+  const tidyOf = (a) => (SPEC.tidy ?? []).find((t) => t.forum === a.forum && t.title === a.title);
+  const owed = (a) => (tidyOf(a) ? 1 : (SPEC.threads ?? []).filter((x) => x.forum === a.forum && x.title === a.title).length);
   // 答 A title the bot opens itself has no member's thread: its answers go in the bot's own post.
   const ownPost = (a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title);
-  for (const a of (SPEC.threads ?? []).filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i && !ownPost(x))) {
+  for (const a of [...(SPEC.threads ?? []), ...(SPEC.tidy ?? [])].filter((x, i, xs) => xs.findIndex((y) => y.forum === x.forum && y.title === x.title) === i && !ownPost(x))) {
     const t = { id: id(), parent_id: forumOf(a.forum).id, name: a.title, flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
     state.threads.push(t);
     state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'a tester wrote this', embeds: [] }];
@@ -457,7 +484,9 @@ await scenario({}, async (port, env, state) => {
   const tagNames = (t) => { const f = state.channels.find((c) => c.id === t.parent_id); return t.applied_tags.map((x) => f.available_tags.find((y) => y.id === x).name).sort(); };
   // 答 "mention": false answers name nobody; every other answer names whoever opened the post.
   const named = (a, r) => (a.mention === false ? !r.content.includes('<@4242>') : r.content.startsWith('<@4242> '));
-  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && replies(a).every((r) => named(a, r))),
+  check(first.code === 0 && (SPEC.tidy ?? []).every((t) => replies(t).length === 1 && replies(t)[0].content.endsWith(t.final.join('\n'))),
+    `each of the ${(SPEC.tidy ?? []).length} tidied threads ends on its one final reply`);
+  check(first.code === 0 && (SPEC.threads ?? []).every((a) => replies(a).length === owed(a) && (tidyOf(a) || replies(a).every((r) => named(a, r)))),
     `each of the ${(SPEC.threads ?? []).length} answers is given once, naming whoever opened the post (or nobody, when so marked), even archived`);
   // An answer with no tags leaves the thread's tags alone (discord.mjs only applies what it is given).
   check((SPEC.threads ?? []).every((a) => a.tags === undefined || JSON.stringify(tagNames(mine(a))) === JSON.stringify([...a.tags].sort())),
@@ -494,6 +523,42 @@ await scenario({}, async (port, env, state) => {
   check(first.code === 0 && said() === nudged.length, `each of the ${nudged.length} posts that went up quietly tells everyone once`);
   const again = await runSetup(port, env);
   check(again.code === 0 && said() === nudged.length && !/told everyone/.test(again.out), 'and a second run tells nobody twice');
+});
+
+// 8. 整 Tidy and 結 closing polls (Bruno, 2026-10-13). A thread whose bot replies piled up into
+// corrections ends on one final reply: the oldest is edited into it, the others deleted, and
+// nothing a member wrote is touched. Polls named in closePolls end; every other poll runs on.
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const ideas = state.channels.find((c) => c.name === all.find((x) => x.key === 'ideas').name);
+  const t = { id: id(), parent_id: ideas.id, name: 'A thread full of corrections', flags: 0, applied_tags: [], owner_id: '4242', thread_metadata: { archived: true } };
+  state.threads.push(t);
+  const said = (who, content) => ({ id: id(), author: { id: who }, pinned: false, content, embeds: [] });
+  state.messages[t.id] = [{ id: t.id, author: { id: '4242' }, pinned: false, content: 'the question', embeds: [] },
+    said(BOT, '<@4242> first answer'), said('4242', 'a follow-up'), said(BOT, '<@4242> a correction'), said(BOT, '<@4242> a correction of the correction')];
+  const oldest = state.messages[t.id][1].id;
+  const withPolls = SPEC.messages.find((m) => m.polls?.length);
+  // The live server already holds the polls closePolls ends: ask them first, as it did.
+  const openPath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(openPath, JSON.stringify({ ...SPEC, closePolls: [] }));
+  await runSetup(port, { ...env, DISCORD_SPEC: openPath });
+  const tidy = { ...SPEC, tidy: [...(SPEC.tidy ?? []), { forum: 'ideas', title: t.name, final: ['The one true answer.', '· 師 Shibaki'] }], closePolls: withPolls ? [withPolls.key] : [] };
+  const path = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(path, JSON.stringify(tidy));
+  const run = await runSetup(port, { ...env, DISCORD_SPEC: path });
+  const ours = state.messages[t.id].filter((x) => x.author.id === BOT);
+  check(run.code === 0 && ours.length === 1 && ours[0].id === oldest && ours[0].content === '<@4242> The one true answer.\n· 師 Shibaki',
+    'a tidied thread keeps one bot reply, the oldest, edited into the final answer');
+  check(state.messages[t.id].filter((x) => x.author.id === '4242').length === 2, 'and every message a member wrote is still there');
+  const polls = Object.values(state.messages).flat().filter((x) => x.poll);
+  const mine = withPolls ? withPolls.polls.map((q) => q.question) : [];
+  check(!withPolls || polls.filter((p) => mine.includes(p.poll.question.text)).every((p) => p.poll.results?.is_finalized)
+    && polls.filter((p) => !mine.includes(p.poll.question.text)).every((p) => !p.poll.results?.is_finalized),
+    'the polls named in closePolls end, and no other poll does');
+  const before = state.deleted.length;
+  const again = await runSetup(port, { ...env, DISCORD_SPEC: path });
+  check(again.code === 0 && state.deleted.length === before && !/removed|corrected in place|final reply|poll closed/.test(again.out),
+    'and a second run deletes, edits and closes nothing');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

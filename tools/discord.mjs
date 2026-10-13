@@ -414,7 +414,18 @@ async function run() {
   const ask = async (where, m, said, before = async () => {}) => {
     const there = await call('GET', said);
     for (const q of m.polls) {
-      if (there.some((x) => x.author?.id === me.id && x.poll?.question?.text === q.question)) continue;
+      const asked = there.find((x) => x.author?.id === me.id && x.poll?.question?.text === q.question);
+      const closing = (SPEC.closePolls ?? []).includes(m.key);
+      if (!asked && closing) continue;   // a poll that is over is never asked again
+      // 結 The polls of a message or post named in `closePolls` (Bruno, 2026-10-13: eighteen
+      // polls open for four testers) are ended now, their votes kept. One already over is
+      // left alone, and a poll under any other message is never touched.
+      if (asked && closing && !asked.poll.results?.is_finalized && !(Date.parse(asked.poll.expiry) <= Date.now())) {
+        await before();
+        await call('POST', `/channels/${where}/polls/${asked.id}/expire`);
+        log(`  "${m.title}" poll closed: ${q.question}`);
+      }
+      if (asked) continue;
       await before();
       await call('POST', `/channels/${where}/messages`, {
         poll: {
@@ -527,6 +538,8 @@ async function run() {
         thread = await call('POST', `/channels/${forum}/threads`, {
           name: p.title, auto_archive_duration: 10080, applied_tags: tagIds, message: { embeds },
         });
+        // Known to the answers and tidy below in this same run, not only the next one.
+        (threads[forum] ??= []).push(thread);
         log(`  "${p.title}" posted in #${spec?.name ?? p.forum}`);
       } else {
         const first = await call('GET', `/channels/${thread.id}/messages/${thread.id}`);
@@ -558,9 +571,14 @@ async function run() {
   // title, given the tags server.json names and one reply from the team, which starts by
   // naming whoever opened it. Found again by its opening words, so it is posted once. A
   // post that is not there (renamed, or deleted by its author) is skipped, never made.
+  // 整 A thread named in `tidy` is answered by its one final reply instead: its tags are
+  // still applied here, but its answers are not posted again, so a chain of corrections
+  // is never rebuilt.
+  const tidied = new Set((SPEC.tidy ?? []).map((t) => `${t.forum}\u0000${t.title}`));
   for (const a of SPEC.threads ?? []) {
     const forum = channelId[a.forum];
     if (!forum) continue;
+    const final = tidied.has(`${a.forum}\u0000${a.title}`);
     await step(`answer "${a.title}"`, async () => {
       if (!threads[forum]) {
         const live = (await call('GET', `/guilds/${GUILD}/threads/active`)).threads ?? [];
@@ -578,7 +596,7 @@ async function run() {
         thread.applied_tags = tagIds;
         log(`  "${a.title}" tagged ${a.tags.join(', ')}`);
       }
-      if (a.reply) {
+      if (a.reply && !final) {
         const text = a.reply.join('\n');
         const opening = text.slice(0, 60);
         const said = await call('GET', `/channels/${thread.id}/messages?limit=100`);
@@ -593,6 +611,48 @@ async function run() {
           });
           log(`  "${a.title}" answered`);
         }
+      }
+    });
+  }
+
+  // 整 Tidy (Bruno, 2026-10-13: the bot's replies had piled up into corrections of
+  // corrections, and he approved deleting them). A thread named in `tidy` ends on one
+  // final reply: the oldest reply the bot wrote there becomes that text (an edit, which
+  // never notifies) and the bot's other replies there are deleted. A member's message is
+  // never touched, nor the post the thread opens with. Run again, it changes nothing.
+  for (const t of SPEC.tidy ?? []) {
+    const forum = channelId[t.forum];
+    if (!forum) continue;
+    await step(`tidy "${t.title}"`, async () => {
+      if (!threads[forum]) {
+        const live = (await call('GET', `/guilds/${GUILD}/threads/active`)).threads ?? [];
+        const old = (await call('GET', `/channels/${forum}/threads/archived/public`)).threads ?? [];
+        threads[forum] = [...live.filter((x) => x.parent_id === forum), ...old];
+      }
+      const thread = threads[forum].find((x) => x.name === t.title);
+      if (!thread) { log(`  "${t.title}" not found in #${t.forum}, skipped`); return; }
+      const to = t.mention !== false && thread.owner_id && thread.owner_id !== me.id ? thread.owner_id : null;
+      const content = `${to ? `<@${to}> ` : ''}${t.final.join('\n')}`;
+      const said = (await call('GET', `/channels/${thread.id}/messages?limit=100`)).slice().reverse();
+      // Only the bot's written replies: never the post it opened, its polls or its banners.
+      const ours = said.filter((m) => m.author?.id === me.id && m.id !== thread.id && !m.poll && !(m.embeds ?? []).length && (m.content ?? '') !== '');
+      const keep = ours.find((m) => m.content === content) ?? ours[0];
+      if (!keep) {
+        await wake(thread);
+        await call('POST', `/channels/${thread.id}/messages`, { content, allowed_mentions: { users: to ? [to] : [] } });
+        log(`  "${t.title}" given its final reply`);
+        return;
+      }
+      if (keep.content !== content) {
+        await wake(thread);
+        await call('PATCH', `/channels/${thread.id}/messages/${keep.id}`, { content, allowed_mentions: { users: [] } });
+        log(`  "${t.title}" reply corrected in place`);
+      }
+      for (const m of ours) {
+        if (m.id === keep.id) continue;
+        await wake(thread);
+        await call('DELETE', `/channels/${thread.id}/messages/${m.id}`);
+        log(`  "${t.title}" earlier reply removed`);
       }
     });
   }

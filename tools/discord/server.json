@@ -2262,6 +2262,40 @@
         "Members don't ping @everyone. Some news and dev log posts ping everyone once, when they go up."
       ],
       "footer": "· 師 Shibaki"
+    },
+    {
+      "key": "state-2026-10-13",
+      "pin": true,
+      "channel": "news",
+      "title": "Discord clean-up, and the state of the game",
+      "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/state-2026-10-13.webp?v=1",
+      "color": "#D4AF56",
+      "body": [
+        "A clean-up of this server. Our Discord bot had a bug: once it had posted an answer, it could not change it, so every correction went up as one more reply under the old one. Threads filled with corrections of corrections, a few of our answers were wrong, and the game got harder to follow. Sorry about that. The bot can now correct its own answer in place, and today we cleaned up: in the threads where our corrections had piled up, the bot's older replies are gone and each one now ends on one short answer, checked against the game. Nothing you wrote was touched. From now on, this post is the one place for what is in the game, what is next and what is still open."
+      ],
+      "fields": [
+        [
+          "▸ In the game now",
+          "All nine realms. The Workshop with seven crafts, fusing, the Secret Realm, the Platform, the Tower, the Furnace and the Dragon. Rebirth after your first Dragon."
+        ],
+        [
+          "▸ Built, waiting for a last check",
+          "A new life keeps all of its craft experience, not a quarter. Rebirth is confirmed by typing Reincarnate. A Samsara board for those who have reborn."
+        ],
+        [
+          "▸ What we are looking at",
+          "The seal at the gates of realms 5 to 8, which you told us feels like a pure wait. The pace past realm 6: cultivation method costs, the Tower above floor 81 and the Dragon. Wildfire, which does not raise the melting allowance."
+        ],
+        [
+          "▸ Polls",
+          "The open polls are closed. Thank you for voting. What came of them: a new life keeps all of its craft experience, a rebirth is confirmed by typing Reincarnate, reborn lives get their own Samsara board, and Deeper hunts will not be built. From now on there will be one or two at a time, and only on questions we have not decided."
+        ],
+        [
+          "▸ Questions",
+          "Ask in {#ideas} or {#bugs}. Every answer is checked against the game before it goes up."
+        ]
+      ],
+      "footer": "· 師 Shibaki"
     }
   ],
   "posts": [
@@ -4875,5 +4909,351 @@
         "· 師 Shibaki"
       ]
     }
+  ],
+  "tidy": [
+    {
+      "forum": "bugs",
+      "title": "no R6 Gear",
+      "final": [
+        "It is on purpose. You enter a new realm well below what its warden asks, and the climb is meant to be hard there. When a realm's own set dropped from the first kill, it gave a big jump in power at exactly that point and handed over the realm's whole loot table at once. So only your current realm's gear waits, until you have opened five of its layers (the climb bar then reads layer 6/9). Every older realm's gear drops from the first kill, and once you are in realm 7 a realm-6 beast drops realm-6 gear at any layer. Forging makes realm-6 pieces at any layer of realm 6, from Forging level 56.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Are you sure the dragon power calculations are correct?",
+      "final": [
+        "rekaris, you were right, and we had this wrong before. When your odds are 0%, the Dragon card shows its power divided by yours, before stance, arts and what you carry, so ×138 is a true reading of your save. A body pill adds 3% power, multiplied, so ×138 is about 167 pills: your arithmetic holds, and pills alone will not close it. We cannot tell from here why your save stands so far off, so please send a copy (≡ Menu, Your save, Copy the save) to 師 Shibaki by DM. We will run it and post what it shows in this thread.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "realm key rewards seem much lower",
+      "final": [
+        "This shipped on 11 October. A Realm Key counts the wait as served, so the spring it opens holds at least 8 hours of fill, which is 32 minutes of your gathering, or more if it already held more. The button shows the sum before you press it. The spring itself stays as it is.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "The trials tower bug",
+      "final": [
+        "Fixed: the bug where Swift with both Fox Shadow and Dragon Might in your sequence meant a beast never hit is gone, and your account counts from the save you have now. Thank you for reporting it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower Qi calculation is bad",
+      "final": [
+        "Since 5 October a floor pays a fixed sum of qi read off the floor number alone. Floors 1 to 61 pay 8.9M each, each floor from 62 to 121 pays more than the one below, and every floor from 121 up pays 1.29T. Your power, gear, gathering, realm and when you climb never change it. The 天師 Celestial Master doubles it (+100%), and nothing else touches it.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Possible way to lose refinement level",
+      "final": [
+        "Fixed on 6 October. Refining levels belong to the place on your body, not to the piece, so melting, fusing or taking a piece off never loses them. There is no warning before a melt because a melt can no longer take a level.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Tower description seems to be wrong",
+      "final": [
+        "Superseded since 5 October: the 6h line is gone. A floor pays a fixed sum read off the floor number alone, 8.9M on floors 1 to 61, more on each floor after that, and 1.29T on every floor from 121. Only the 天師 Celestial Master changes it, by doubling it. The tower card shows the sum before you climb.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "Refinement carries over between gear",
+      "final": [
+        "Since 6 October refining belongs to the place on your body, not to any piece. Whatever you wear in a place has that place's full level, and taking a piece off, melting it or fusing it never changes the level. Pieces carry no refining of their own.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "bugs",
+      "title": "When changing tabs or application, the game goes \"offline\"",
+      "final": [
+        "On the longer sitting: a sitting lasts 30 minutes for everyone, and nothing in the game makes it longer. The 神 Spirit branch of the Path makes it deeper instead: its nodes raise the depth past ×3. While the game stays open in the background (another tab or another app), a sitting that has started runs to its end at the depth it had when you left. Closing the game ends the sitting, and the time away is paid at the normal rate.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "議 Rebirth: what would make it worth taking?",
+      "final": [
+        "Where your three points landed. Echo: it stays capped, because nothing uncapped may raise the qi rate. One life gives up to +12.5%, all lives together up to +35%, so 10% per mark with no roof will not happen. Crafting: built, a new life keeps all of its crafting experience (the live game keeps a quarter). Ranking: built, a cultivator who has reborn leaves the Heaven List for a Samsara board, ranked by the life being lived now, and each rebirth starts it again. Both are finished and waiting for release; the dev log will say the day.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Change the seal so there is no limit to how much qi or how many pills you can use to contribute",
+      "final": [
+        "Where the seal stands. Qi fills up to 40% of a gate's bar, 10% a tap, at 30 minutes of your own gathering for every hour of bar filled. Lesser pills fill up to 40% more, and the Breakthrough Pill made for the gate's own realm breaks the whole bar at once, so pills can already take you straight through. The step per tap stays, so one tap never pays a whole day at once. Whether the 40% cap on qi changes is not decided yet; it is on the list in the State of the game post in announcements.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Make it easier to make alt accounts and switch between them without losing leaderboard progress",
+      "final": [
+        "There is no account switcher in the game, and none is being built. Signing in with another email does not give a fresh start: a browser holds one save, and it goes to whichever account you sign in to. For a fresh start without touching your main account, play as a guest in another browser profile or on another device: it is a separate save and never touches your account's cloud save or its places on the boards.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Loadouts slots",
+      "final": [
+        "Where this stands. Loadouts went from five to ten on 11 October. We said we would write up the two roads (fewer swaps and real specialisation, or more slots and less friction) and ask here before changing anything, and we did not. Swapping between sets works as it does now and no change to it is being built. The Dao study idea is noted as an idea, not planned.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "final": [
+        "Since 8 October, the elixirs and sigils you carry into the Dragon count at full strength, and a win spends them. Three only work against the heart demon and do nothing at the Dragon: the Calm Heart Pill, the Purity Sigil and the Soul-Lock Sigil.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What is the point of the beast pill if it doesnt affect dragon?",
+      "final": [
+        "The Bane Breaking pills thin every beast, warden, tower floor and Platform challenger, and never the Dragon or a heart demon. What changed on 8 October was the elixir and sigil you carry into a fight, not the furnace's pills; the two are not linked. The Bane line stays as it is, and nothing about it is being built. If your next run shows what it does to your tower, post it here.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "final": [
+        "rekaris, to answer you plainly. Live now: Rebirth (since 7 October), with an Echo of +5% to +12.5% a life that adds up to +25% across lives, then a slow tail to a roof of +35%, and each craft keeping 25% of its experience. Built and waiting for release: each craft keeps all of its experience, a Samsara board for reborn lives (hidden until your first rebirth, its record starts again at each rebirth, and once reborn you are listed there instead of on the Heaven List) and a typed Reincarnate confirm. Not changing: the qi roof stays. Not built: a material or crafting speed bonus.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "業 The workshop: walls, seals and sets",
+      "final": [
+        "Where this stands. A Hundredfold piece takes 20 minutes at the forge before tools, arrays, familiarity and the Jadewater codex. A sealed gate is a bar: time fills it, Pay qi fills up to 40%, and a Breakthrough Pill made for that realm breaks the seal at once and takes half of the wall's loosening time at Common, 70% at Heaven. Every line of a Hundredfold piece is chosen through the crucible. Set effects you pick yourself are not built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Add more ways to spend path points",
+      "final": [
+        "Where this stands. Neither is in the game: the trees are as deep as they were and no node can be bought twice, so spare 道 points have no use once the tree is full. Whether a repeatable node comes is not decided.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Drive improvements",
+      "final": [
+        "Where this stands. The keep-or-melt window has been in the game since 8 October and lists every piece a drive dropped, up to its cap. The price has not changed: 15 seconds of your own gathering per kill, a quarter of that for beasts of an older realm. Auto has not changed. A fixed price per beast is not built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "A complex look back - good and bad",
+      "final": [
+        "Where the rest of this post stands. Since 8 October elixirs and sigils carried into the Dragon count at full strength, except the Calm Heart Pill, the Purity Sigil and the Soul-Lock Sigil, which only work on a heart demon. The Drive window lists every drop. The Drive price, Auto and spare Path points are unchanged, and the cave herb idea is not built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Furnace pill descriptions improvement",
+      "final": [
+        "Where this stands. Bane pills never thin the Dragon, but Body Tempering pills raise your own power, and that counts at the Dragon like anywhere else. The Bane line's first pill takes 0.9% off every beast, each later one a little less, never below 40%; the ninth is the Beast-Severing Pill, once the Dragonslaying Pill. Fortune is +4% each on the rare end of the drop table. Workshop elixirs and sigils are different: since 8 October they count at full strength against the Dragon, except the Calm Heart Pill, the Purity Sigil and the Soul-Lock Sigil.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform is still trivial, even while ignoring every condition",
+      "final": [
+        "Where this stands, measured on the live build. A challenger is still set against your own power, so the build wins, not the gear tier, and since 7 October its edge grows 4% for every realm past the fourth. The third challenger now falls for an active player in about 7% of Platform weeks (13% in realms 7 to 9), and with the Vajra in about 23% (43% in realms 7 to 9).",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Revert or change \"A beast never misses two rounds running\"",
+      "final": [
+        "Where this stands. The rule is still in the game: Fox Shadow and Dragon Might both make the beast's blow miss, and with Swift running the sequence twice a round a beast could never land a hit, so a beast never misses two rounds running. No change to either art and no dodge on gear is built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "畫 The look: your examples and opinions",
+      "final": [
+        "Thank you, rekaris. No change to the art is built; gameplay comes first, as you say. Which way the look goes is not decided, and your points on consistency and on replacing art later are part of that decision.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider equalizing equipment stats",
+      "final": [
+        "No. A piece never carries the same line twice. A Sword piece leads with power, and its other lines are drawn from every line except power; fusion keeps that rule. On any other piece a power line is a side line at 0.6 of full size: on a realm-8 Heaven piece, 78% as a Sword lead, about 47% anywhere else. Power is the one combat line that never bends; arts stronger and beasts weaker both do. The highest floor in Compare classes is a real fight with every line counted, so it settles which body is stronger from your own chest. Pieces stay school-shaped.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Varja doesn't increase platform yields, intended?",
+      "final": [
+        "A Platform challenger pays 1, 2 and 3 hours of your realm's middle rate, the same for everyone in that realm. Wearing the Vajra class adds half again: 1.5, 3 and 4.5 hours. A Vajra loadout you are not wearing adds nothing. It is never hours of your own gathering.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "The platform rewards",
+      "final": [
+        "Each Platform challenger pays 1, 2 and 3 hours of your realm's middle rate, the same for everyone in that realm, whenever you fight and whatever rate you bought. The one exception is the Vajra class, worn: half again. The week's quarry pays at least two hours of the same middle rate, the Vajra's half again on top.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "I would appreciate more Loadout slots, but I am not sure if it's a good, balanced idea.",
+      "final": [
+        "Since then the limit went up again: you can keep ten loadouts. Saving one locks its pieces, and you can never melt or fuse a locked piece yourself.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Crafted equipment should show its school",
+      "final": [
+        "Done. In the forge every gear recipe's picture carries its school's seal, as the gear tiles do, and the gear list is grouped under a heading per school. Tap the picture for the school's name and what it does.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "final": [
+        "Each line's note on the Gear screen says what it does, its cap and how it bends, and the Menu switch \"Show the formula for every line\" adds the formula. The Sword Immortal makes every tower beast count 65% of itself, so it climbs highest. The Celestial Master fights like any body and doubles the qi of every floor it beats while worn. Compare classes on the Gear screen shows both bodies' highest floor from your own chest.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "深 Deeper hunts: what do you think?",
+      "final": [
+        "Deeper hunts will not be built, and this idea is closed. The problem under it (beasts too weak for power to matter) was answered another way on 6 October: from the second realm on, each realm's last beast is an elite. It stands far above the realm's other beasts, does not loosen with time the way a warden does, and leaves three times the material of an ordinary beast of its depth, so building power pays in the hunt. The other hunt beasts are unchanged.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does \"weaker beast\" stat affect?",
+      "final": [
+        "Weaker beasts works on every fight except two. It thins hunt beasts (by hand and on Auto), the week's quarry, the wardens of realms 1 to 8, every tower floor, the beasts at the secret realm's gates and the challengers on 擂台 the Platform. It does nothing against your heart demon or the Dragon at the ninth realm's tribulation.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Autofight trivializes combat",
+      "final": [
+        "Auto stays as it is. It cannot become the fastest way to play: qi from melting comes out of an allowance that refills at 37.5% of your standing rate and holds six hours of it, and anything melted past that turns into material, never qi. Measured over a whole climb, Auto reaches the ninth realm behind someone playing by hand every hour, and a test holds it there. The fights where your build decides are the tower and 擂台 the Platform, which Auto never fights, and each realm's elite, which Auto only takes on after you have beaten it ten times yourself.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "More to things to improve, think and strategize about",
+      "final": [
+        "Where each of these stands on 13 October. Forging the piece you want: built. At the forge a Hundredfold piece of your realm's set takes the shape, rank and lines you choose, and how much material you put in sets each line's strength; nothing is rolled. Harder fights where your build matters: built, as each realm's elite, the tower and 擂台 the Platform. Elements and armour types: not built, and Deeper hunts was dropped. Improving the cave's beds and studying a Dao: not built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "final": [
+        "Each recipe has five marks, at 25, 100, 300, 800 and 2,000 makes. A pill or a sigil counts as many makes, so it reaches the last mark at 12, and an array at 67. Each recipe that reaches its last mark makes its whole craft 1% faster for the first 15 such recipes, then half that for each further 15, rising toward 30%. There is no 15% cap.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Inventory management improvements",
+      "final": [
+        "Where loadouts stand on 13 October 2026: up to ten, each renamed with the ✎ beside it. Saving one locks its pieces. A locked piece is never melted, by hand or by the rank filter, and never fused. A full chest never throws out a locked piece while anything unlocked is in it. The one exception: when every piece is locked, loadout pieces past the chest's limit less six places can be replaced by a better drop.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Enemies in Hunt grow trivially easy",
+      "final": [
+        "Where this stands: 深 Deeper hunts will not be built, decided on 7 October. Power has two jobs now. From the second realm on, the last beast of each realm is its 霸 elite, far stronger than the others and leaving three times the material an ordinary beast of its depth leaves. From the fourth realm, 擂台 the Platform brings three challengers a week at about 1.3, 1.8 and 2.5 times your own power, a little more each realm, and never on Auto. The ordinary beasts have not changed, so against them qi gear is still the right choice.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding more milestones to hunts",
+      "final": [
+        "Each beast has two deep marks, at 1,000 and 5,000 kills. Each one gives that beast +10% material and +2 points of drop chance, and +1% material from every beast. They never give qi.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow one to reset seemingly permanent choices",
+      "final": [
+        "Where this stands on 13 October 2026: any Enlightenment card you took can be traded for one of the other two it was offered with, on Your Enlightenment cards (in the menu, or the line on the home screen). It costs qi: half a day of your gathering for the newest card, and half a day more for each card further back. The game refuses a trade, and says why, if the 道 points that card gave are already spent in the Path, or if losing it would leave the chest holding more than it allows.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Roleplay",
+      "final": [
+        "Where this stands: the visible heart is in, the quest chains are not. Your 心 heart shows on 碑 the stele as a scale, 仁 Kind against 狠 Hard, and the buttons never say which way an answer leans. Once it leans far enough one way, people who only meet that heart start to find you: a barefoot monk from the sixth realm for the kind, a demonic cultivator from the seventh for the hard. Orthodox and Demonic encounter chains are not being built.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "jobs",
+      "final": [
+        "The Workshop has been in the game since 1 October: seven crafts, levelled from 1 to 99, and it keeps working for 12 hours while you are away, longer once you place the Long-Watch Array.",
+        "· 師 Shibaki"
+      ]
+    }
+  ],
+  "closePolls": [
+    "news-art",
+    "news-forge",
+    "update-2026-10-08",
+    "poll-rebirth-1",
+    "poll-rebirth-2",
+    "poll-rebirth-3",
+    "poll-rebirth-4",
+    "poll-rebirth-5",
+    "poll-rebirth-6",
+    "poll-rebirth-7",
+    "poll-rebirth-8",
+    "poll-rebirth-9",
+    "poll-rebirth-10",
+    "ideas-deep"
   ]
 }
