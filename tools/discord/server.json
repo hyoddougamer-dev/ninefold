@@ -2245,20 +2245,20 @@
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/corrections-2026-10-12.webp?v=1",
       "color": "#D4AF56",
       "body": [
-        "We checked the guides and our replies against the game. Where we were wrong, the guide now says so, and each corrected reply has a new answer under it with the correction in full.",
+        "We checked the guides and our replies against the game. Where we were wrong, the guide now says so. This version of 13 October replaces the first one of 12 October, which had mistakes on mastery, on the Echo, on the Rebirth date and on the Celestial Master's place in tower qi.",
         "Loadouts go up to ten. Five came in on 5 October, and the 11 October update made them ten.",
-        "Mastery has no 15% cap. Each recipe taken to 2,000 makes adds 1% to its craft's speed for the first fifteen such recipes, then half that for each further fifteen, so it keeps rising toward 30%.",
-        "The Celestial Master doubles the qi of each tower floor while worn. On five runs per class it is second in tower qi, not first, about 12% more than pure Sword.",
+        "Mastery has no 15% cap. Each recipe you finish cuts the time of each make in its craft by 1% for the first fifteen such recipes, then half that for each further fifteen: 15% at fifteen recipes and 22.5% at thirty. Most recipes finish at 2,000 makes. Pills and sigils finish at 12 makes, and arrays at 67.",
+        "The Celestial Master doubles the qi of each tower floor while worn. The order of the classes in tower qi is not settled, because two measurements disagree, so we give no ranking until they agree.",
         "The Vajra's +50% reaches the Platform. A worn Vajra adds half again to the realm sum, and the Platform pays 1, 2 and 3 hours of the realm's middle rate, or 1.5, 3 and 4.5 with a Vajra worn.",
-        "The Echo is +5% at the first mark, then +2.5% for each doubling, up to +12.5% a life. It is +25% across the first lives, then a slow tail up to a roof of +35% over forty lives.",
-        "Rebirth has been in the game since 8 October. At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm.",
-        "Elixirs and sigils carried into the Dragon count at full strength, and they are spent on a win.",
+        "A life's Echo is +5% at 1 mark, +7.5% at 3 marks, +10% at 7 marks and +12.5% at 15 marks, the most one life gives. The lives add up exactly up to +25%. Past that a slow tail reaches a hard roof of +35%, which 33 lives of 15 marks reach.",
+        "Rebirth has been in the game since 7 October. At the summit, once the first Dragon has fallen, a life may end and begin again in the first realm. On 8 October the first mark's Echo went from +2.5% to +5%.",
+        "Since 8 October, most elixirs and sigils carried into the Dragon count at full strength, and a win spends them. Three do nothing there: the Calm Heart Pill, the Purity Sigil and the Soul-Lock Sigil. The Nine-Turn Pill is spent only when it revives.",
         "Deep marks add +1% material from every beast, not 0.5%, since 3 October.",
         "The item sheet does not warn before a melt. Since the 6 October update, refined levels belong to the place on your body, so a melt never takes a refined level.",
-        "Enlightenment cards can be traded for one of the other two they were offered with: half a day of gathering for the newest card, and half a day more for each older one.",
-        "A floor pays a fixed sum of qi read off the floor alone, the same for everyone in your class. It is not six hours of your gathering, and the Celestial Master doubles it (+100%), not 25%.",
+        "Most Enlightenment cards can be traded for one of the other two they were offered with. The newest card costs half a day of gathering, each older card half a day more, and qi. A trade is refused while the 道 points the card gave are already spent in the tree, or while the chest is too full to lose its places.",
+        "A floor pays a fixed sum of qi read off the floor alone, the same for everyone in your class. It is not six hours of your gathering. The Celestial Master doubles it (+100%), not 25%.",
         "The bestiary point counts the three commons of a realm (every beast but its warden), not four beasts.",
-        "The stance is set once for each fight. It does not change every round.",
+        "The stance is one choice that holds for a whole fight, and it does not change every round. A new life starts with none, and the first stance can be held from the third layer of the first realm.",
         "Members don't ping @everyone. Some news and dev log posts ping everyone once, when they go up."
       ],
       "footer": "· 師 Shibaki"
@@ -2476,7 +2476,7 @@
       ],
       "fields": [
         ["▸ 樞 Keystones", "From the fourth realm: three nodes that take something away to pay for what they give. Each is stronger than the node beside it, and each closes a door: you hold one side of the fork or the other. Once you hold one, you can swap it for the other side once a day from its card, and the points stay spent."],
-        ["▸ 勢 Stances", "Always on. You hold the stance of every realm you have reached, and choose which one you fight in. It is set once for each fight, and holds for the whole fight."],
+        ["▸ 勢 Stances", "You hold the stance of every realm below yours, and of your own realm from its third layer. You choose which one you fight in, and it stays on until you change it, or you can fight with none. A new life after 轉世 Rebirth starts with none."],
         ["▸ 法 Arts", "Three in an order, one firing each round, then looping. Every warden gives up its own art when it falls."],
         ["▸ 造化 Creation", "The last node of 運 Fortune: every beast leaves a piece. From then on your drop chance is the chance of a second piece from the same kill (up to 50%), so drop chance lines still count and feed 煉 fusion."]
       ]
@@ -4832,6 +4832,46 @@
       "title": "Consider adding reincarnation option  after reaching Golden Immortal",
       "reply": [
         "A correction to our reply above: the Echo is +5% at the first mark, then +2.5% for each doubling, up to +12.5% a life. It is +25% across the first lives, then a slow tail up to a roof of +35% over forty lives. It is not +25% for every life.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Allow one to reset seemingly permanent choices",
+      "reply": [
+        "Correction to our replies above, 13 October: most Enlightenment cards can be traded for one of the other two they were offered with. The newest card costs half a day of gathering, each older card half a day more, and qi as well. A trade is refused while the 道 points that card gave are already spent in the tree, or while the chest is too full to lose its places. Press Change, choose the alternative, then tap 'Trade for this' and tap again to pay the qi.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "What does familiarity with crafting recipe do?",
+      "reply": [
+        "Correction to our reply above, 13 October: mastery has no 15% cap, and the bonus does not stop at fifteen recipes. Each recipe you finish cuts the time of each make in its craft by 1% for the first fifteen such recipes, then half that for each further fifteen, so it rises toward 30%. Most recipes finish at 2,000 makes, but pills and sigils finish at 12 makes and arrays at 67.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Consider adding reincarnation option  after reaching Golden Immortal",
+      "reply": [
+        "Correction to our replies above, 13 October: rebirth has been in the game since 7 October, not 8 October. The Echo is not kept qi. It multiplies the qi you gather in later lives, and a new life starts with fresh qi. A life's Echo is +5% at 1 mark, +7.5% at 3 marks, +10% at 7 and +12.5% at 15, the most one life gives. The lives add up exactly up to +25%, then a slow tail reaches a hard roof of +35%, which 33 lives of 15 marks reach.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Why stop pills and sigils from affecting the dragon",
+      "reply": [
+        "Correction to our replies above, 13 October: most elixirs and sigils carried into the Dragon count at full strength, and a win spends them. Three do nothing there: the Calm Heart Pill, the Purity Sigil and the Soul-Lock Sigil. The Nine-Turn Pill is spent only when it revives. Our earlier replies said every one of them counts, and that was wrong.",
+        "· 師 Shibaki"
+      ]
+    },
+    {
+      "forum": "ideas",
+      "title": "Obfuscated calculations and inconsistent stat displays and class imbalance",
+      "reply": [
+        "Correction to our replies above, 13 October: the Celestial Master doubles the qi of each tower floor while worn. The order of the classes in tower qi is not settled: two measurements disagree, one playing all 21 classes and one playing three builds. Please ignore the 'second, behind the Sword Immortal' wording, and we give no ranking until they agree.",
         "· 師 Shibaki"
       ]
     }
