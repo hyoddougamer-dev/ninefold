@@ -36,9 +36,14 @@ import { join } from 'node:path';
 
 const SPEC = JSON.parse(readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'));
 // 問 Every poll under a post, in a forum or a channel, is one more message the bot leaves, asked once.
-const POLLS = [...SPEC.messages, ...(SPEC.posts ?? [])].reduce((n, p) => n + (p.polls?.length ?? 0), 0);
+// 結 A poll under a message named in closePolls is over and never asked again.
+const OPEN = [...SPEC.messages, ...(SPEC.posts ?? [])].filter((p) => !(SPEC.closePolls ?? []).includes(p.key));
+const POLLS = OPEN.reduce((n, p) => n + (p.polls?.length ?? 0), 0);
 // 答 An answer given in a post the bot opened is one more message the bot writes, as a member's answer is.
-const ANSWERS_TO_POSTS = (SPEC.threads ?? []).filter((a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title)).length;
+// 整 A tidied post the bot opened holds its one final reply instead of its answers.
+const botPost = (a) => (SPEC.posts ?? []).some((p) => p.forum === a.forum && p.title === a.title);
+const tidiedTitle = (a) => (SPEC.tidy ?? []).some((t) => t.forum === a.forum && t.title === a.title);
+const ANSWERS_TO_POSTS = (SPEC.threads ?? []).filter((a) => botPost(a) && !tidiedTitle(a)).length + (SPEC.tidy ?? []).filter(botPost).length;
 const GUILD = '900', OWNER = '42', BOT = '7', BOT_ROLE = '8';
 let next = 1000;
 const id = () => String(next++);
@@ -340,7 +345,7 @@ await scenario({}, async (port, env, state) => {
     && Object.values(state.messages).flat().filter(bannered).length === [...SPEC.messages, ...SPEC.posts].filter((m) => m.banner).length,
     'every post with a banner wears it on top, above its words');
   const all3 = [...SPEC.messages, ...SPEC.posts];
-  check(Object.values(state.messages).flat().filter((m) => !m.poll).every((m) => {
+  check(Object.values(state.messages).flat().filter((m) => !m.poll && m.embeds.length).every((m) => {
     const spec = all3.find((x) => m.embeds.some((e) => e.title === x.title));
     const after = m.embeds.slice(m.embeds.findIndex((e) => e.title) + 1);
     return after.length === (spec.gallery ?? []).length && after.every((e, i) => e.image.url === spec.gallery[i]);
@@ -414,7 +419,7 @@ await scenario({}, async (port, env, state) => {
   await runSetup(port, env);   // and back to server.json as it is, for what follows
   check(Object.values(state.messages).flat().length - SPEC.posts.length - POLLS - ANSWERS_TO_POSTS === SPEC.messages.length && state.invites.length === 1 && again.out.includes(inviteLine), 'posts nothing twice and finds the same invite');
   const asked = Object.values(state.messages).flat().filter((m) => m.poll).map((m) => m.poll.question.text);
-  check([...SPEC.messages, ...SPEC.posts].flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
+  check(OPEN.flatMap((p) => p.polls ?? []).every((q) => asked.filter((t) => t === q.question).length === 1)
     && asked.length === POLLS, `each of the ${POLLS} polls is asked once, under its post`);
 
   const bugs = state.channels.find((c) => c.name.endsWith('bugs'));
@@ -533,6 +538,10 @@ await scenario({}, async (port, env, state) => {
     said(BOT, '<@4242> first answer'), said('4242', 'a follow-up'), said(BOT, '<@4242> a correction'), said(BOT, '<@4242> a correction of the correction')];
   const oldest = state.messages[t.id][1].id;
   const withPolls = SPEC.messages.find((m) => m.polls?.length);
+  // The live server already holds the polls closePolls ends: ask them first, as it did.
+  const openPath = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(openPath, JSON.stringify({ ...SPEC, closePolls: [] }));
+  await runSetup(port, { ...env, DISCORD_SPEC: openPath });
   const tidy = { ...SPEC, tidy: [...(SPEC.tidy ?? []), { forum: 'ideas', title: t.name, final: ['The one true answer.', '· 師 Shibaki'] }], closePolls: withPolls ? [withPolls.key] : [] };
   const path = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
   writeFileSync(path, JSON.stringify(tidy));
