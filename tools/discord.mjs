@@ -450,6 +450,8 @@ async function run() {
   };
   const sig = (list) => JSON.stringify((list ?? []).map((x) => [x.title ?? '', x.description ?? '', x.color, x.image?.url ?? '',
     (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']));
+  const MAX_NEW = Number(process.env.DISCORD_MAX_NEW || 2);
+  let fresh = 0, loudSent = 0;
   // 史 Every message in a channel, newest first, a hundred at a time, read once a run.
   const histories = {};
   const history = async (where) => {
@@ -488,6 +490,14 @@ async function run() {
       // 2026-10-06, for the walls dev log beside the workshop announcement).
       const loud = !m.quiet && (SPEC.announce ?? []).includes(m.channel);
       if (!mine) {
+        // 閘 A brake on what one run may say. A release adds a post or two; more than that
+        // means the run has lost track of what is already there (2026-10-14: eight old
+        // announcements went up again, each to @everyone), so it stops instead. Setting up a
+        // whole server lifts it with DISCORD_MAX_NEW.
+        if (fresh >= MAX_NEW || (loud && loudSent >= 1 && !process.env.DISCORD_MAX_NEW)) {
+          throw new Error(`refused: this run already posted ${fresh} new message(s), ${loudSent} to @everyone. If that is meant, run with DISCORD_MAX_NEW set.`);
+        }
+        fresh += 1; if (loud) loudSent += 1;
         id = (await call('POST', `/channels/${where}/messages`, loud
           ? { content: '@everyone', allowed_mentions: { parse: ['everyone'] }, embeds } : { embeds })).id;
         log(`  "${m.title}" posted${loud ? ', to everyone' : ''}`);

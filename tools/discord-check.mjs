@@ -253,7 +253,7 @@ function runSetup(port, env = {}) {
   // this process, and a blocking spawn would never let it.
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [new URL('./discord.mjs', import.meta.url).pathname], {
-      env: { ...process.env, DISCORD_API: `http://127.0.0.1:${port}/api`, DISCORD_ICON: '', ...env },
+      env: { ...process.env, DISCORD_API: `http://127.0.0.1:${port}/api`, DISCORD_ICON: '', DISCORD_MAX_NEW: '9999', ...env },
     });
     let out = '', err = '';
     child.stdout.on('data', (d) => { out += d; });
@@ -591,6 +591,19 @@ await scenario({}, async (port, env, state) => {
   check(left.some((x) => x.author.id === '4242') && left.filter((x) => x.type === 46).length === 60, 'and nothing else in the channel is touched');
   const again = await runSetup(port, env);
   check(again.code === 0 && changes(again.out).length === 0 && !/removed/.test(again.out), 'and a second run changes nothing');
+});
+
+// 10. 閘 The brake. With the server already made, a run that suddenly finds many posts missing
+// posts at most two, and at most one of them to @everyone, then stops and goes red.
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const news = state.channels.find((c) => c.name === all.find((x) => x.key === 'news').name);
+  const was = state.messages[news.id].length;
+  state.messages[news.id] = state.messages[news.id].filter((x) => !x.embeds.length);
+  const run = await runSetup(port, { ...env, DISCORD_MAX_NEW: '' });
+  const pinged = state.messages[news.id].filter((x) => (x.content ?? '').includes('@everyone')).length;
+  check(run.code !== 0 && state.messages[news.id].length >= 1 && state.messages[news.id].length <= 2 && pinged <= 1 && was > 2 && /refused/.test(run.out),
+    'a run that would post many old posts again stops after two, one of them to @everyone at most, and goes red');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
