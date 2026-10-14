@@ -2329,6 +2329,7 @@ export const CREDITS = {
     ['樂', 'Music', 'Made with Suno, for this game.'],
     ['畫', 'Illustrations', 'Test art, made with AI tools, then chosen, edited and cut for the game by 師 Shibaki. The final art is planned to be made for the game.'],
     ['字', 'Lettering', 'Cinzel, Cormorant Garamond and Noto Serif SC, under the SIL Open Font License.'],
+    ['聲', 'Trailer voice', 'Made with ElevenLabs (elevenlabs.io).'],
     ['器', 'Built with', 'React, Vite and Capacitor. The rankings run on Supabase.'],
   ] as const,
   iconsHead: 'Icons',
