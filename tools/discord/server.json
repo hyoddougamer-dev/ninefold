@@ -2296,6 +2296,43 @@
         ]
       ],
       "footer": "· 師 Shibaki"
+    },
+    {
+      "key": "update-2026-10-14",
+      "quiet": true,
+      "channel": "devlog",
+      "title": "筆 Update · Clearer screens",
+      "color": "#D4AF56",
+      "body": [
+        "A small update: words and screens only. No number in the game changed."
+      ],
+      "fields": [
+        [
+          "境 The nine realms",
+          "Tap your realm on the Cultivate screen: the card now lists all nine realms and what each one opens."
+        ],
+        [
+          "秘 One name",
+          "The vault is now called the secret realm everywhere, and 秘境深 is The Deeper Rooms. Tapping a realm or a system's characters says what it is."
+        ],
+        [
+          "層 Hunt",
+          "The line about your own realm's gear now counts layers like the climb bar: it starts at layer 6."
+        ],
+        [
+          "燎 Melting cards",
+          "Wildfire and the other melting cards now say what they do: more per piece while the melting allowance lasts, more material after it. The allowance itself does not grow."
+        ],
+        [
+          "丹 修 Workshop and Cultivate",
+          "The locked Alchemy tile says what its Breakthrough Pills are for. Cultivation Method and Breathwork say CAN BUY NOW when you can afford them."
+        ],
+        [
+          "▸ This morning",
+          "The bot posted eight old announcements again, each to everyone. That was a bug in the bot. The copies are gone, and the bot can no longer post more than two things at once."
+        ]
+      ],
+      "footer": "· 師 Shibaki"
     }
   ],
   "posts": [
@@ -2526,7 +2563,7 @@
       "body": [
         "**洞天 The Cave** (second realm). Three beds. Plant 材 material and it ripens into qi over real hours, with the game shut or open. A ripe bed waits for you for ever, and it pays for coming back to pick it. 收 **Take all and plant again** takes every ripe bed and sows the same herb back, in one tap.",
         "",
-        "**秘境 The Secret Realm** (third realm). A door opens every few hours. Seven rooms, and every other room is a guardian a realm above you. Everything a room pays is banked the moment you take it, so losing takes nothing back. An elixir and a sigil from the workshop can go in with you.",
+        "**秘境 The Secret Realm** (third realm). A door at the top of 狩 Hunt that opens every few hours. A row of rooms, and every other room is a gate: one strong beast, of your realm or the one above. Everything a room pays is banked the moment you take it, so losing takes nothing back. An elixir and a sigil from the workshop can go in with you.",
         "",
         "**泉 The spring** fills while the door is shut: four minutes of your gathering for every hour, a day at most (1 h 36 min of gathering when full). The rooms between the guardians share it, the deeper ones more (10, 20, 30 and 40% in seven rooms). Each room offers its share three ways, and whichever you take, the room is spent:"
       ],
@@ -2536,8 +2573,8 @@
         ["▸ The third door", "龕 a 道 point while your realm's shrine share lasts, 爐 a piece of gear, 匣 a craftsman's box (an hour of this realm's herbs and ore for every room past the first, no experience), or 跡 a challenger's trail: the next challenger on 擂台 the Platform begins a tenth down."],
         ["▸ Rooms you do not reach", "Stay in the spring for next time. A guardian that puts you down takes nothing, those rooms included. One run a day or three, the spring is the same: it fills with time, not with walks."],
         ["▸ 鑰 The Realm Key", "Forged in the Workshop from the third realm, from two Elder Bronze ingots and 90 材 material. A key opens a shut door at once, and the door takes one key a day. It counts the wait as served, spring included: the spring opens holding at least 8 hours of fill, 32 minutes of your gathering, or more if it already held more."],
-        ["▸ 秘境深 The Deeper Vault", "From the seventh realm the path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
-        ["▸ This week", "Each week one herb is worth planting and one room of the vault pays double. It changes every Monday."]
+        ["▸ 秘境深 The Deeper Rooms", "From the seventh realm the secret realm goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them."],
+        ["▸ This week", "Each week one herb is worth planting and one room of the secret realm pays double. It changes every Monday."]
       ]
     },
     {
@@ -2548,20 +2585,20 @@
       "color": "#D4AF56",
       "banner": "https://hyoddougamer-dev.github.io/ninefold/discord/banner/g-crafts.webp?v=1",
       "image": "https://hyoddougamer-dev.github.io/ninefold/discord/workshop.webp?v=1",
-      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away.", "", "A craft that is not open yet still shows its recipes, greyed, so you can plan for it."],
+      "body": ["**The workshop is a second road beside the climb.** Seven crafts, each levelled from 1 to 99. Set it on one thing and it repeats that on its own, while you play and for 12 hours after you close the game. Past 12 hours it simply stands still: nothing is lost for being away.", "", "A shut craft shows its recipes greyed, to plan ahead."],
       "fields": [
         ["▸ 藥 Herb Gathering · 礦 Vein Delving", "Realm 2. Herbs from the paths of every realm you have reached, and ore from their veins. They need only time."],
         ["▸ 解 Rendering", "Realm 2. Kill ten of a common beast (one, for a warden) and the workshop knows what its kind leave behind: a pelt, a fang, a scale. From then on it renders that part for as long as you let it."],
         ["▸ 鑄 Forging", "Realm 2. Smelt metal from ore, forge a tool for each craft, 鑰 Realm Keys for the secret realm's door (one a day), and gear: the piece you choose, in a shape a beast teaches. Once a realm's warden has fallen it teaches the rest: any of the realm's 54 shapes, at the warden's price. Shapes with the same line (Sword, Saber, Spear...) are one row with a switcher for the look. A forged piece cannot be fused, and melts into 2 metal, never qi."],
         ["▸ 丹 Alchemy", "Realm 5, or sooner at Herb Gathering 40. Elixirs of Mending (2% of your health a round), Guarding (12% less taken) and Might (12% harder), 1.75 times that at 天 Heaven rank, for every realm, and three rare ones. 破境丹 Breakthrough Pills, one for each sealed gate (realms 5 to 8, at Alchemy 40, 45, 51 and 56), break the gate's 封 seal and half of its bottleneck. A pill is about an hour of work, its herbs and parts included, and pays the experience of an hour. Each Alchemy level also takes 0.2% off the pill furnace's material."],
         ["▸ 符 Sigil Writing", "Realm 6, or sooner at Vein Delving 40. One-use sigils for a hard fight (Warding 15% less taken, Thunder 15% harder, Binding, Mirror 10% sent back, Five Thunders 25% harder), Purity and Soul-Lock for the heart demon, and the Seeking Sigil: the next beast you beat on the hunt is sure to leave a piece. A sigil is an hour of work or more. Every recipe in the game lists its own numbers."],
-        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner vault door, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
-        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, vault gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. At the tribulation's Dragon they count in full; never a common beast. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank). A third hand holds a 破境丹 Breakthrough Pill, for your realm's gate only: it breaks the seal and half the days of its bottleneck (70% at Heaven)."],
+        ["▸ 陣 Arrays", "Realm 7, or sooner at Forging 40. Kept for good and placed in the cave floor: 3 places, a 4th at level 50 and a 5th at 99. Faster crafts, more experience, a sooner door to the secret realm, lighter blows in a hard fight, four more hours of work while you are away. An array is about an hour of work or more, its metal and stone included, and pays the experience of it. Every 10 copies of the same array you cut deepen it a step, up to 5, and at full depth it does half as much again: Dew-Catching 10% faster becomes 15%, the Hidden Door's 30 minutes become 45, the Guardian's 5% becomes 7.5%."],
+        ["▸ 攜 Carrying", "One elixir and one sigil go into your next warden, heart demon, secret realm gate or Platform challenger, and up 塔 the tower when you choose **Take up** on the floor's card. The odds on the card count them. A win spends one of whatever took part; a loss spends nothing, and the arena says which. At the tribulation's Dragon they count in full; never a common beast. At your own realm's warden each one also breaks a day of its 瓶頸 bottleneck (1.75 days at 天 Heaven rank). A third hand holds a 破境丹 Breakthrough Pill, for your realm's gate only: it breaks the seal and half the days of its bottleneck (70% at Heaven)."],
         ["▸ 品 Quality and 習 familiarity", "Elixirs, sigils and gear come in the five gear ranks, better the further your level is above the recipe. Making the same thing earns five marks, at 25, 100, 300, 800 and 2,000 made (a pill or a sigil counts as 180, an array as 30): 10% faster; 1 make in 10 comes out twice (gear, tools and arrays are 10% faster again instead); one fewer of the first ingredient (180 fewer for a pill or a sigil, 30 for an array); better odds of a high rank; and at the fifth never Common. Every recipe of a craft made 2,000 times makes that whole craft faster, with no stop: 1% each for the first 15, half that for each of the next 15, and half again for every 15 after."],
         ["▸ ⏳ How long", "The first levels come in minutes. About 1,550 hours of work take one craft to 99, with a rank every ten levels and a title at the top."],
         ["▸ 百煉 Hundredfold sets", "Nine sets, one a realm, made only at the forge (Forging, then Hundredfold). Choose the place, shape and rank; every other line comes from the crucible (own-realm ore at Mystic and Earth): Cinnabar for 力 power, the realm's own herb for 氣 qi, Fallen Star Iron for 運 rarer gear, Immortal Gold for 拾 drop chance, the elite's parts for 破 beasts weaker, Jadewater Jade for 煉 fusion, Thunderscript Ore for 法 arts, Spirit Stone for 藏 chest places. The main line takes the realm's ingots. A locked line says when it opens. One, two or three portions put a line at the bottom, middle or top of its rank's band. A piece costs its ingots, two parts of the realm's 霸 elite, one of its warden and 20 minutes. Higher ranks ask more Forging; Heaven asks five pieces of the set first."],
         ["▸ 百 Worn together", "Hundredfold pieces of one set worn together add, on top of the set's own bonus: at 2, the elixirs and sigils you carry do 25% more; at 4, each one carried into a warden breaks a day more of its bottleneck; at 6, the set's codex bonus counts twice. Wear all six pieces of one set at 天 Heaven and its 器靈 Artifact Spirit wakes: a light round your portrait and a name under it. Looks only."],
-        ["▸ 譜 The codex", "Finish a set once, all six places at any rank, and it leaves a bonus for good, kept through every 轉世 rebirth: Mortal Iron +5% material from kills, Withered Bone elites 8% weaker, Elder Bronze vault gates 8% weaker, Frostsilver the heart demon 5% weaker, Jadewater the workshop 5% faster, Fallen Star +10% bond a win, Thunderscript half a day more of a bottleneck a thing carried, Dragonwake tower floors 5% weaker, Ascendant Husk Platform challengers 5% weaker. Earth counts ×1.5, Heaven ×2, worn whole twice again, up to a cap: elites and vault gates 24%, the demon, floors and challengers 15%. None touches the qi rate."]
+        ["▸ 譜 The codex", "Finish a set once, all six places at any rank, and it leaves a bonus for good, kept through every 轉世 rebirth: Mortal Iron +5% material from kills, Withered Bone elites 8% weaker, Elder Bronze secret realm gates 8% weaker, Frostsilver the heart demon 5% weaker, Jadewater the workshop 5% faster, Fallen Star +10% bond a win, Thunderscript half a day more of a bottleneck a thing carried, Dragonwake tower floors 5% weaker, Ascendant Husk Platform challengers 5% weaker. Earth counts ×1.5, Heaven ×2, worn whole twice again, up to a cap: elites and secret realm gates 24%, the demon, floors and challengers 15%. None touches the qi rate."]
       ],
       "gallery": ["https://hyoddougamer-dev.github.io/ninefold/discord/promo/workshop-chart.webp?v=1"]
     },
@@ -2686,7 +2723,7 @@
         ["▸ 元嬰 Realm 4", "樞 The Keystones · 閉關 Seclusion · 擂台 The Platform"],
         ["▸ 化神 Realm 5", "塔 The Endless Tower · 丹 Alchemy · 封 Gate seals begin, with 破境丹 Breakthrough Pills to break them (realms 5 to 8)"],
         ["▸ 煉虛 Realm 6", "圖鑑 The Bestiary · 符 Sigil Writing"],
-        ["▸ 合體 Realm 7", "秘境深 The Deeper Vault · 陣 Arrays"],
+        ["▸ 合體 Realm 7", "秘境深 The Deeper Rooms · 陣 Arrays"],
         ["▸ 大乘 Realm 8", "封 The longest seal (2 days) and the highest wall (×72): the last climb before the storm"],
         ["▸ 渡劫 Realm 9", "爐 The Furnace · 雷池 The Tribulation, and the Heavens above it · 轉世 Rebirth, once the first Dragon has fallen (a first mark leaves +5% qi gathered)"]
       ]
@@ -2706,7 +2743,7 @@
         "Tell us how it plays now that it is in your hands."
       ],
       "fields": [
-        ["業 In one line", "Gather (藥 herbs, 礦 ore, 解 beast parts) › make (鑄 metal, tools and gear, 丹 elixirs, 符 sigils) › carry an elixir and a sigil into a warden, heart demon or vault gate › keep 陣 arrays that make it all faster. The chart below has every craft."],
+        ["業 In one line", "Gather (藥 herbs, 礦 ore, 解 beast parts) › make (鑄 metal, tools and gear, 丹 elixirs, 符 sigils) › carry an elixir and a sigil into a warden, heart demon or secret realm gate › keep 陣 arrays that make it all faster. The chart below has every craft."],
         ["守 The promises it keeps", "It works 12 hours after you leave and loses nothing. Nothing it makes raises your qi rate. A lost fight never spends your kit. With it or without it the climb takes the same time within two days: a second road, not a toll."],
         ["❓ What we want to know", "**1.** Which craft would you start with, and why?\n**2.** Are 12 hours of work while you are away enough?\n**3.** Alchemy opens at realm 5, Sigils at 6, Arrays at 7. Too late, or right?\n**4.** Does 1 to 99 sound like the right length?\n**5.** What from the jobs in Dao of the Endless Sky would you miss here?"],
         ["📷 The real thing", "Every picture here is the game itself, not a mockup. Now that it is in, a screenshot of your first forged piece or elixir is the best answer we could get."]

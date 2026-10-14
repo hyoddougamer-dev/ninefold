@@ -148,7 +148,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // 秘境 A run with a beginning and an end, which nothing else in this game has. See
   // data/secret.ts for the gates, and why a gate beast pays nothing at all.
   { key: 'secret', han: '秘境', name: 'The Secret Realm', realm: 3,
-    gives: 'A door at the top of 狩 Hunt that opens every few hours. A row of rooms, two ways on at each, and every other one is a gate: one strong beast, of your realm or the one above. Nothing is carried, so losing takes nothing back.' },
+    gives: 'A door at the top of 狩 Hunt that opens every few hours. A row of rooms, two ways on at each, and every other one is a gate: one strong beast, of your realm or the one above. Everything a room pays is banked at once, so losing takes nothing back.' },
   /**
    * 深 What the seventh realm hands over now that 爐 the furnace has gone to the ninth.
    * The path grows rather than a screen being built: four more rooms, two more
