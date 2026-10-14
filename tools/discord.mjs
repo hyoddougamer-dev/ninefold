@@ -450,16 +450,37 @@ async function run() {
   };
   const sig = (list) => JSON.stringify((list ?? []).map((x) => [x.title ?? '', x.description ?? '', x.color, x.image?.url ?? '',
     (x.fields ?? []).map((f) => [f.name, f.value]), x.footer?.text ?? '']));
+  // 史 Every message in a channel, newest first, a hundred at a time, read once a run.
+  const histories = {};
+  const history = async (where) => {
+    if (histories[where]) return histories[where];
+    const all = [];
+    for (let before = ''; all.length < 5000;) {
+      const page = await call('GET', `/channels/${where}/messages?limit=100${before ? `&before=${before}` : ''}`);
+      all.push(...page);
+      if (page.length < 100) break;
+      before = page[page.length - 1].id;
+    }
+    return (histories[where] = all);
+  };
   for (const m of SPEC.messages) {
     const where = channelId[m.channel];
     if (!where) continue;
     const embeds = embedsOf(m);
     await step(`message "${m.title}"`, async () => {
-      // 釘 The pins first: a pinned message in a busy channel is long past the last fifty.
-      const pins = await call('GET', `/channels/${where}/pins`);
-      const recent = await call('GET', `/channels/${where}/messages?limit=50`);
+      // 史 The whole channel, not the last fifty. On 2026-10-13 eighteen polls closed and
+      // Discord wrote eighteen "poll ended" lines into announcements; the next run looked
+      // at the last fifty, did not see eight older posts and posted them again, each to
+      // @everyone. A post is found wherever it is, and found once: the oldest copy is the
+      // post, and any later copy the bot made of it is taken down.
+      const all = await history(where);
       const ours = (x) => x.author?.id === me.id && (x.embeds ?? []).some((e) => e.title === m.title);
-      const mine = pins.find(ours) ?? recent.find(ours);
+      const copies = all.filter(ours).sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+      const mine = copies[0];
+      for (const extra of copies.slice(1)) {
+        await call('DELETE', `/channels/${where}/messages/${extra.id}`);
+        log(`  "${m.title}" duplicate removed`);
+      }
       let id;
       // 眾 A new post in a channel server.json names in `announce` tells everybody it is
       // there. Only on the first post: an edit never notifies, so it never pings twice.

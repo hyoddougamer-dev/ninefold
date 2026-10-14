@@ -162,7 +162,15 @@ function fakeDiscord({ admin = true } = {}) {
         const c = channel(m[1]); Object.assign(c, body); return send(200, c);
       }
       if ((m = path.match(/^\/channels\/(\d+)\/pins$/))) return send(200, state.messages[m[1]].filter((x) => x.pinned));
-      if ((m = path.match(/^\/channels\/(\d+)\/messages$/)) && req.method === 'GET') return send(200, [...state.messages[m[1]]].reverse().slice(0, 50));
+      // 史 As Discord pages a channel: newest first, at most 100, before or after an id.
+      if ((m = path.match(/^\/channels\/(\d+)\/messages$/)) && req.method === 'GET') {
+        const q = new URL(req.url, 'http://x').searchParams;
+        const limit = Math.min(100, Number(q.get('limit') ?? 50));
+        let list = [...state.messages[m[1]]].reverse();
+        if (q.get('before')) list = list.filter((x) => BigInt(x.id) < BigInt(q.get('before')));
+        if (q.get('after')) list = list.filter((x) => BigInt(x.id) > BigInt(q.get('after')));
+        return send(200, list.slice(0, limit));
+      }
       if ((m = path.match(/^\/channels\/(\d+)\/messages$/)) && req.method === 'POST') {
         const inThread = state.threads.find((t) => t.id === m[1]);
         if (inThread?.thread_metadata.archived) return refuse(400, 'Thread is archived');
@@ -559,6 +567,30 @@ await scenario({}, async (port, env, state) => {
   const again = await runSetup(port, { ...env, DISCORD_SPEC: path });
   check(again.code === 0 && state.deleted.length === before && !/removed|corrected in place|final reply|poll closed/.test(again.out),
     'and a second run deletes, edits and closes nothing');
+});
+
+// 9. 史 The morning of 2026-10-14. Eighteen polls closing wrote their "poll ended" lines into
+// announcements, the run after looked only at the last fifty messages, did not see eight older
+// posts and posted them again, each to @everyone. Now a channel is read whole: a busy channel
+// posts nothing twice, and the copies that morning made are taken down, the oldest kept.
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const news = state.channels.find((c) => c.name === all.find((x) => x.key === 'news').name);
+  const said = (who, extra) => ({ id: id(), author: { id: who }, pinned: false, content: '', embeds: [], ...extra });
+  for (let i = 0; i < 60; i++) state.messages[news.id].push(said(BOT, { type: 46, content: '' }));
+  state.messages[news.id].push(said('4242', { content: 'what is going on' }));
+  const inNews = SPEC.messages.filter((m) => m.channel === 'news');
+  const originals = inNews.map((m) => state.messages[news.id].find((x) => x.embeds.some((e) => e.title === m.title)).id);
+  const twice = inNews.slice(0, 3).map((m) => said(BOT, { content: '@everyone', embeds: [{ title: m.title }] }));
+  state.messages[news.id].push(...twice);
+  const run = await runSetup(port, env);
+  const left = state.messages[news.id];
+  check(run.code === 0 && !/ posted/.test(run.out), 'a channel pushed past fifty messages posts nothing again');
+  check(twice.every((x) => !left.includes(x)) && originals.every((o) => left.some((x) => x.id === o)),
+    'the copies are taken down and every original stays');
+  check(left.some((x) => x.author.id === '4242') && left.filter((x) => x.type === 46).length === 60, 'and nothing else in the channel is touched');
+  const again = await runSetup(port, env);
+  check(again.code === 0 && changes(again.out).length === 0 && !/removed/.test(again.out), 'and a second run changes nothing');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }
