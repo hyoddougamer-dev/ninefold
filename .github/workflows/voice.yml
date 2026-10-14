@@ -1,6 +1,7 @@
-# 聲 Makes the Season 0 trailer voice with Azure Speech and commits the takes to the
-# working branch under media/voice/. Needs the secret AZURE_SPEECH_KEY and the variable
-# AZURE_SPEECH_REGION (for example westeurope). Runs by hand, or when the lines change.
+# 聲 Makes the Season 0 trailer voice and commits the takes to the working branch under
+# media/voice/. With the secret ELEVENLABS_API_KEY it uses ElevenLabs (optional variables
+# ELEVENLABS_VOICES and ELEVENLABS_MODEL); with the secret AZURE_SPEECH_KEY and the variable
+# AZURE_SPEECH_REGION it uses Azure Speech. Runs by hand, or when the lines change.
 name: voice
 
 on:
@@ -23,12 +24,16 @@ jobs:
         env:
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
           AZURE_SPEECH_REGION: ${{ vars.AZURE_SPEECH_REGION }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICES: ${{ vars.ELEVENLABS_VOICES }}
+          ELEVENLABS_MODEL: ${{ vars.ELEVENLABS_MODEL }}
         run: |
-          if [ -z "$AZURE_SPEECH_KEY" ] || [ -z "$AZURE_SPEECH_REGION" ]; then
-            echo "::warning::AZURE_SPEECH_KEY or AZURE_SPEECH_REGION is not set yet. Nothing was made."
-            exit 0
+          made=0
+          if [ -n "$ELEVENLABS_API_KEY" ]; then node tools/voice/eleven.mjs && made=1; fi
+          if [ -n "$AZURE_SPEECH_KEY" ] && [ -n "$AZURE_SPEECH_REGION" ]; then node tools/voice/azure.mjs && made=1; fi
+          if [ "$made" = 0 ]; then
+            echo "::warning::No voice key is set (ELEVENLABS_API_KEY, or AZURE_SPEECH_KEY with AZURE_SPEECH_REGION). Nothing was made."
           fi
-          node tools/voice/azure.mjs
       - name: Commit them to the branch
         run: |
           [ -d media/voice ] || exit 0
