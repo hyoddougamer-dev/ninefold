@@ -29,8 +29,18 @@ const BACKUP = 'ninefold.save.backup';
  * this key: not the season and not 滅 Erase, and a second retirement only ever replaces it
  * with a copy further along (see retire). The player can take it out as a copy at any
  * time (Menu, Save, Closed test). It is never played or ranked again.
+ *
+ * A device that never held one (a new phone, a cleared browser) can be handed it by the
+ * account instead (keepFromAccount): the copy the server kept is written here the same way,
+ * sealed, and only ever into an empty key.
  */
 export const CLOSED_TEST = 'ninefold.save.closedtest';
+/**
+ * 雲 Set to 'account' when the copy under CLOSED_TEST came back from the account rather than
+ * from this device's own save, so the screen can say where it is kept. A retirement that
+ * writes a copy from this device takes it away again.
+ */
+const CLOSED_TEST_FROM = 'ninefold.save.closedtest.from';
 /** 季 Set once the season's card has been read on this device. Erase leaves it, as it leaves the copy. */
 const SEASON_CARD = 'ninefold.season.card';
 
@@ -82,6 +92,8 @@ export interface ClosedTest {
   readonly text: string;
   /** Whether it is safely kept on this device. */
   readonly kept: boolean;
+  /** 雲 Where it came from: this device's own save, or the copy the account kept. */
+  readonly where: 'device' | 'account';
 }
 
 /**
@@ -186,12 +198,12 @@ function textOf(key: string): string | null {
 let frozen = false;
 
 /** 舊 The line and the copy for a closed-test cultivator, read through validate like any save. */
-function describe(raw: unknown, now: number, kept: boolean): ClosedTest {
+function describe(raw: unknown, now: number, kept: boolean, where: ClosedTest['where'] = 'device'): ClosedTest {
   const s = validate(raw, now);
   return {
     realm: s.realm, layer: Math.min(s.layer + 1, LAYERS_PER_REALM),
     marks: s.tribulation, rebirths: s.lives.length,
-    text: exportSave(s), kept,
+    text: exportSave(s), kept, where,
   };
 }
 
@@ -223,6 +235,8 @@ function retire(keys: readonly string[], now: number): { kept: string; raw: unkn
     try {
       localStorage.setItem(CLOSED_TEST, best.text);
       if (localStorage.getItem(CLOSED_TEST) !== best.text) return null;
+      // 雲 The copy is now this device's own, whatever it replaced.
+      localStorage.removeItem(CLOSED_TEST_FROM);
     } catch {
       return null;   // storage full or blocked: nothing is removed
     }
@@ -284,7 +298,7 @@ export function load(now: number): Return {
       return { ...fresh(now), retired: describe(from, now, false) };
     }
     try { for (const k of old) localStorage.removeItem(k); } catch { /* the next load retires it again */ }
-    retired = describe(kept.raw, now, true);
+    retired = describe(kept.raw, now, true, whereKept());
     if (old.includes(KEY)) raw = null;
     if (old.includes(BACKUP)) spare = null;
   }
@@ -351,7 +365,39 @@ function fresh(now: number): Omit<Return, 'retired'> {
  */
 export function closedTest(now: number): ClosedTest | null {
   const raw = read(CLOSED_TEST, false);
-  return raw ? describe(raw, now, true) : null;
+  return raw ? describe(raw, now, true, whereKept()) : null;
+}
+
+/** 舊 Whether this device holds a closed-test copy at all, read without opening it. */
+export function holdsClosedTest(): boolean {
+  return textOf(CLOSED_TEST) !== null;
+}
+
+/** 雲 Where the copy under CLOSED_TEST came from, as CLOSED_TEST_FROM says. */
+function whereKept(): ClosedTest['where'] {
+  return textOf(CLOSED_TEST_FROM) === 'account' ? 'account' : 'device';
+}
+
+/**
+ * 雲 Keep the closed-test copy the account handed back (closed_test_mine() on the server), as
+ * a retired save is kept: under CLOSED_TEST, sealed, in the same shape the game writes. Only
+ * into an empty key: a copy this device already holds is never written over, from here or
+ * from anywhere. And only a closed-test save after the switch: before it there is nothing to
+ * keep, and a season save is not a closed-test copy whatever the server says. Returns the
+ * copy as kept, or null when nothing was written.
+ */
+export function keepFromAccount(save: unknown, now: number): ClosedTest | null {
+  if (!save || typeof save !== 'object' || Array.isArray(save) || !retires(save, now)) return null;
+  if (textOf(CLOSED_TEST) !== null) return null;
+  const text = seal(JSON.stringify(save));
+  try {
+    localStorage.setItem(CLOSED_TEST, text);
+    if (localStorage.getItem(CLOSED_TEST) !== text) return null;
+  } catch {
+    return null;   // storage full or blocked: the account still holds it, and the next ask tries again
+  }
+  try { localStorage.setItem(CLOSED_TEST_FROM, 'account'); } catch { /* it reads as this device's, which it now also is */ }
+  return describe(save, now, true, 'account');
 }
 
 /** 季 Whether the season's card still has to be shown on this device. */

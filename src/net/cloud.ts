@@ -144,6 +144,18 @@ export async function pull(): Promise<{ save: unknown; at: string | null }> {
   return data as { save: unknown; at: string | null };
 }
 
+/**
+ * 舊 The closed-test copy the account kept, or null. The server answers for the signed-in
+ * player alone (closed_test_mine(), 20261014190000_closed_test_mine.sql), and only from the
+ * season's first second. Throws when the server could not be reached.
+ */
+export async function closedTestMine(): Promise<{ save: unknown; at: string | null } | null> {
+  const c = await client();
+  const { data, error } = await c.rpc('closed_test_mine');
+  if (error) throw new Error('offline');
+  return (data ?? null) as { save: unknown; at: string | null } | null;
+}
+
 /** The boards. 'samsara' is the 輪迴 board, which only a cultivator who has reborn can see. */
 export type Board = 'climb' | 'samsara' | 'week' | 'tower';
 

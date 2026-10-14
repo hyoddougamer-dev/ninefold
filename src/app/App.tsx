@@ -301,8 +301,14 @@ export function App() {
 
   const {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError,
-    cloudPick, setCloudPick, title, place, push,
+    cloudPick, setCloudPick, title, place, push, cloudOld,
   } = useCloud(ready, latest);
+  // 舊 A closed-test copy the account handed back, while the season's card is still due on this
+  // device: the card shows it, once nothing else is up. The card never waited for it.
+  useEffect(() => {
+    if (!cloudOld || season || prologue || cloudPick || ranks || !seasonCardDue()) return;
+    setSeason(cloudOld);
+  }, [cloudOld, season, prologue, cloudPick, ranks]);
 
   useEffect(() => {
     if (!ready) return;

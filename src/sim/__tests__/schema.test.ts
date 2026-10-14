@@ -576,7 +576,7 @@ describe('榜 the ranked schema', () => {
         ('${R}', 70, 2, 9, week_of() - 1, 0, 1, 30, ${monday} - interval '2 days'),
         ('${Q}', 3, 0, 1, week_of(), 0, 0, 3, now());
       insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync) values
-        ('${P}', '{"realm": 9, "startedAt": 1777593600}', ${monday} - interval '1 day',
+        ('${P}', '{"realm": 9, "startedAt": 1777593600, "tag": "kept-closed-copy"}', ${monday} - interval '1 day',
          '{"realm": 9, "layer": 8, "startedAt": 1777593600}', ${monday} - interval '1 day', ${monday} - interval '1 day'),
         ('${Q}', '{"realm": 1, "season": "s0"}', now(), '{"realm": 1, "layer": 3, "season": "s0"}', now(), now());
       insert into titles (week, board, rank, user_id, name) values (week_of() - 1, 'week', 1, '${P}', 'Closed Best');
@@ -595,6 +595,9 @@ describe('榜 the ranked schema', () => {
     expect((await panel('panel_cheats')).find((r) => r.name === 'Closed Best')).toMatchObject({ struck: 1 });
     const realms = async () => (((await as(null, `select stats() as s`)).rows[0] as any).s.realms as any[]);
     expect((await realms()).some((r) => r.realm === 9)).toBe(true);
+    // 舊 Before the switch there is no closed-test copy to hand back: the closed test is still on.
+    const kept = async (who: string) => ((await as(who, `select closed_test_mine() as c`)).rows[0] as any).c;
+    expect(await kept(P)).toBeNull();
 
     // The switch.
     await db.exec(`create or replace function public.season_start() returns timestamptz language sql stable
@@ -627,6 +630,17 @@ describe('榜 the ranked schema', () => {
         (select count(*) from sync_log where user_id = '${P}')::int as lg`)).rows[0];
       expect(counts).toEqual({ st: 2, sv: 1, ti: 1, lg: 1 });
 
+      // 舊 Not moved yet: P has not synced since the switch, so the row's latest is the copy,
+      // and it is handed back to P alone. Q began in the season and has none; a player with no
+      // row has none; nobody signed in may not ask at all.
+      const early = await kept(P);
+      expect(Object.keys(early).sort()).toEqual(['at', 'save']);
+      expect(early.save).toEqual({ realm: 9, startedAt: 1777593600, tag: 'kept-closed-copy' });
+      expect(early.at).toBeTruthy();
+      expect(await kept(Q)).toBeNull();
+      expect(await kept(A)).toBeNull();
+      await expect(as(null, `select closed_test_mine()`)).rejects.toThrow(/permission denied/);
+
       // 存 The season's first sync of a kept account writes over its cloud copy, as the sync
       // function does (an upsert); the closed-test copy moves to closed_test, once.
       const upsert = (latest: string) => db.exec(`insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync)
@@ -637,9 +651,25 @@ describe('榜 the ranked schema', () => {
       await upsert('{"realm": 1, "season": "s0", "n": 2}');
       const row = (await db.query(`select latest, closed_test, closed_test_at from saves where user_id = '${P}'`)).rows[0] as any;
       expect(row.latest).toMatchObject({ season: 's0', n: 2 });
-      expect(row.closed_test).toEqual({ realm: 9, startedAt: 1777593600 });
+      expect(row.closed_test).toEqual({ realm: 9, startedAt: 1777593600, tag: 'kept-closed-copy' });
       expect(row.closed_test_at).toBeTruthy();
       await expect(as(P, `select closed_test from saves`)).rejects.toThrow(/permission denied/);
+      // 舊 Moved: the same copy, now read from closed_test, so the order never mattered. Only
+      // P reads it; Q (another player, signed in as a guest is signed in) still reads nothing.
+      expect(await kept(P)).toEqual(early);
+      expect(await kept(Q)).toBeNull();
+      expect(JSON.stringify(await kept(Q))).not.toContain('kept-closed-copy');
+      // The panel and the counts never carry it, by what they answer and by what they read.
+      const told = JSON.stringify([await panel('panel_players'), await panel('panel_cheats'),
+        ((await as(null, `select stats() as s`)).rows[0] as any).s]);
+      expect(told).not.toContain('kept-closed-copy');
+      expect(told).not.toContain('closed_test');
+      for (const fn of ['panel_players', 'panel_cheats', 'stats']) {
+        const def = ((await db.query(`select string_agg(pg_get_functiondef(p.oid), ' ') as d from pg_proc p
+          join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = $1`, [fn])).rows[0] as any).d;
+        expect(def, fn).toBeTruthy();
+        expect(def, fn).not.toContain('closed_test');
+      }
     } finally {
       await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
     }

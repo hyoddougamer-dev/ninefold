@@ -43,7 +43,9 @@ $$;
 -- an account would overwrite the cultivator it held. That copy may be the only one a player
 -- has (a lost phone, a new device: plan, "Promise check" 2), and whether the server keeps an
 -- archive of them is Bruno's decision D3. Until he decides, nothing is lost: the row's old
--- copy moves to closed_test, once, as it stood. Nobody reads it yet; no player can.
+-- copy moves to closed_test, once, as it stood. (D3 decided 2026-10-14, option 1: its own
+-- player reads it through closed_test_mine(), 20261014190000_closed_test_mine.sql. No grant
+-- on the table is ever given for it.)
 alter table public.saves
   add column if not exists closed_test    jsonb,
   add column if not exists closed_test_at timestamptz;

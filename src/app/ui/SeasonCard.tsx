@@ -138,7 +138,7 @@ export function SeasonCard({ old, sky, onBegin }: {
         <h2 id="s0title">{SEASON.name} <span className="cjk">{SEASON.han}</span></h2>
         <p className="s0line">{SEASON.line}</p>
         <p className="s0says">{SEASON.says}</p>
-        <Kept old={old} note={old.kept ? SEASON.kept : SEASON.notKeptYet} />
+        <Kept old={old} note={!old.kept ? SEASON.notKeptYet : old.where === 'account' ? SEASON.keptAccount : SEASON.kept} />
         <div className="s0acts">
           {old.kept ? (
             <>
@@ -162,7 +162,17 @@ export function ClosedTestRow({ old }: { old: ClosedTest }) {
   return (
     <section className="s0kept">
       <h3><span className="cjk">舊</span> {SEASON.panelHead}</h3>
-      <Kept old={old} note={SEASON.panelNote} head={false} />
+      <Kept old={old} note={old.where === 'account' ? SEASON.panelNoteAccount : SEASON.panelNote} head={false} />
+    </section>
+  );
+}
+
+/** 雲 Menu, Save, signed out with no closed-test copy here: one line on how to bring one back. */
+export function ClosedTestSignIn() {
+  return (
+    <section className="s0kept">
+      <h3><span className="cjk">舊</span> {SEASON.panelHead}</h3>
+      <p className="s0signin">{SEASON.signIn}</p>
     </section>
   );
 }

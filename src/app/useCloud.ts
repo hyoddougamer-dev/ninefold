@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import * as cloud from '../net/cloud.ts';
 import type { State } from '../sim/state.ts';
-import { holding, importSave } from '../sim/save.ts';
+import { holding, importSave, type ClosedTest } from '../sim/save.ts';
+import { bringBack } from '../net/closedtest.ts';
 import { progressOf } from '../sim/echo.ts';
 import { now } from './clock.ts';
 
@@ -25,6 +26,9 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
   const [title, setTitle] = useState<string | null>(null);
   const [place, setPlace] = useState<number | null>(null);
+  /** 舊 The closed-test copy the account handed back this session, once kept on the device. */
+  const [cloudOld, setCloudOld] = useState<ClosedTest | null>(null);
+  const askedOld = useRef(false);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
     // 凍 Nothing is synced while the page holds still behind a copy it could not keep.
@@ -69,6 +73,15 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
     })();
     return () => { live = false; };
   }, [ready, push]);
+  // 舊 Signed in after the switch with no closed-test copy on this device: ask the account for
+  // it, once a session. Nothing waits on it; when it comes it is kept and shown.
+  // A sign-out lets the next sign-in, perhaps to another account, ask again.
+  useEffect(() => {
+    if (!who) { askedOld.current = false; return; }
+    if (askedOld.current) return;
+    askedOld.current = true;
+    void bringBack(now(), true, cloud.closedTestMine).then((c) => { if (c) setCloudOld(c); });
+  }, [who]);
   useEffect(() => {
     if (!who) return;
     const id = setInterval(() => { void push(); }, 5 * 60 * 1000);
@@ -79,6 +92,6 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
 
   return {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError, setSyncError,
-    cloudPick, setCloudPick, title, setTitle, place, setPlace, push,
+    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, cloudOld,
   };
 }

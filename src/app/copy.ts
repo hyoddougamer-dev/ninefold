@@ -2281,7 +2281,9 @@ export const SEASON = {
     [`Realm ${realm}`, `layer ${layer}`,
       ...(marks > 0 ? [`${marks} ${marks === 1 ? 'mark' : 'marks'}`] : []),
       ...(rebirths > 0 ? [`${rebirths} ${rebirths === 1 ? 'rebirth' : 'rebirths'}`] : [])].join(', '),
+  /** 舊 Where the copy is kept says the truth for each case: this device, or the account it came back from. */
   kept: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0.',
+  keptAccount: 'Kept in your account, and now on this device too. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0.',
   copy: 'Copy it',
   file: 'Save as a file',
   begin: 'Begin Season 0',
@@ -2298,6 +2300,9 @@ export const SEASON = {
   /** 舊 Menu, Save: the same line and buttons, for as long as the copy is kept. */
   panelHead: 'Closed test',
   panelNote: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0, and Start again never touches it.',
+  panelNoteAccount: 'Kept in your account, and now on this device too. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0, and Start again never touches it.',
+  /** 雲 Menu, Save, signed out, with no copy on this device. */
+  signIn: 'Signing in under Ranks brings back a closed-test cultivator kept in your account.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Seal Falls',
   ranksSince: 'Since Monday 26 October. Everyone started equal.',

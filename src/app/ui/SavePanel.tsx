@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { closedTest, exportSave, importSave, saveFileName, wipe } from '../../sim/save.ts';
-import { ClosedTestRow } from './SeasonCard.tsx';
+import { ClosedTestRow, ClosedTestSignIn } from './SeasonCard.tsx';
+import { SEASON_START } from '../../sim/season.ts';
+import { bringBack } from '../../net/closedtest.ts';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { SAVE } from '../copy.ts';
-import { remembered, type Who } from '../../net/cloud.ts';
+import { closedTestMine, remembered, type Who } from '../../net/cloud.ts';
 
 /**
  * 存 The save, in the player's own hands.
@@ -35,8 +37,14 @@ export function SavePanel({ state, who, onRestore, onClose }: {
   const [confirming, setConfirming] = useState(false);
 
   const blob = exportSave(state);
-  // 舊 The closed-test copy, read once: it never changes while the panel is open.
-  const [old] = useState(() => closedTest(state.at));
+  // 舊 The closed-test copy on this device, read at once. When there is none and the player is
+  // signed in, the account is asked for it, and it is added here when it comes.
+  const [old, setOld] = useState(() => closedTest(state.at));
+  useEffect(() => {
+    if (old) return;
+    void bringBack(state.at, !!who, closedTestMine).then((c) => { if (c) setOld(c); });
+  }, []);
+  const season = state.at >= SEASON_START;
   const played = duration(Math.max(0, state.at - state.startedAt));
 
   const copy = async () => {
@@ -123,7 +131,8 @@ export function SavePanel({ state, who, onRestore, onClose }: {
       {said && <p className="good">{said}</p>}
       {error && <p className="bad">{error}</p>}
 
-      {old && <ClosedTestRow old={old} />}
+      {old ? <ClosedTestRow old={old} />
+        : season && !who && !remembered() ? <ClosedTestSignIn /> : null}
 
       <p className="says small" style={{ marginTop: 'auto' }}>{SAVE.spare}</p>
 

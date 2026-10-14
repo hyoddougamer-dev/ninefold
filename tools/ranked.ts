@@ -87,6 +87,14 @@ check(direct.status >= 400, 'a player cannot write a standing directly', direct.
 
 const peek = await fetch(`${URL}/rest/v1/saves?select=*`, { headers: { apikey: KEY, Authorization: `Bearer ${token}` } });
 check(peek.status >= 400 || (await peek.json()).length === 0, 'a player cannot read anybody’s saves', peek.status);
+// 舊 The closed-test copy is read through closed_test_mine() alone, and only by its own player.
+// A guest begun now has none, on either side of the switch; nobody signed in may not ask.
+const oldMine = await call('/rest/v1/rpc/closed_test_mine', {}, token);
+check(oldMine.status === 200 && oldMine.json === null, 'a new guest has no closed-test copy to read', oldMine.status);
+const oldAnon = await call('/rest/v1/rpc/closed_test_mine', {});
+check(oldAnon.status >= 400, 'nobody signed in may ask for a closed-test copy', oldAnon.status);
+const oldPeek = await fetch(`${URL}/rest/v1/saves?select=closed_test`, { headers: { apikey: KEY, Authorization: `Bearer ${token}` } });
+check(oldPeek.status >= 400 || (await oldPeek.json()).length === 0, 'and nobody reads the column directly', oldPeek.status);
 
 // Wait out the gap, then offer a save with a week of qi in it that took thirty seconds.
 await new Promise((r) => setTimeout(r, 22_000));
