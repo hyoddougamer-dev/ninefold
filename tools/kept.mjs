@@ -678,7 +678,7 @@ for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   const craft = await page.textContent('.back .backcraft').catch(() => '');
   check(/waited 8h for Mortal Iron Ore/.test(craft ?? ''), `qol: the return card says the workshop waited, with nothing made ("${craft}")`);
   const rows = await page.$$eval('.back .backrow', (els) => els.map((e) => e.textContent));
-  check(rows.some((r) => /cave beds are ripe/.test(r)) && rows.some((r) => /vault door is open/.test(r))
+  check(rows.some((r) => /cave beds are ripe/.test(r)) && rows.some((r) => /door of the secret realm is open/.test(r))
     && rows.some((r) => /waiting for Mortal Iron Ore/.test(r)), `qol: the return card lists what is waiting (${rows.length} rows)`);
   check(rows.every((r) => !/\b(lost|wasted|missed)\b/i.test(r)), 'qol: nothing on the list reads as a loss');
   // 鍵 Digits do nothing under the card; Esc carries on.
@@ -691,9 +691,9 @@ for (const [w, h, tag] of [[400, 860, 'qolB400'], [320, 640, 'qolB320']]) {
   check(await page.$('.back') === null, 'qol: Esc closes the return card');
   // 點 The strip on 修 and the dots on the tabs.
   const chips = await page.$$eval('.readystrip .rs-chip', (els) => els.map((e) => e.textContent));
-  check(chips.some((c) => /Vault open/.test(c)), `qol: Ready now on 修 names the open vault (${chips.join(' | ')})`);
+  check(chips.some((c) => /Secret realm open/.test(c)), `qol: Ready now on 修 names the open secret realm (${chips.join(' | ')})`);
   const dots = await page.$$eval('nav.tabs button[data-ready]', (els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
-  check(dots.some((d) => /^Hunt: .*vault door is open/.test(d)) && dots.some((d) => /^Crafts: /.test(d)),
+  check(dots.some((d) => /^Hunt: .*door of the secret realm is open/.test(d)) && dots.some((d) => /^Crafts: /.test(d)),
     `qol: the tabs with something ready wear a dot that says what (${dots.length})`);
   // 業 The fix on the Crafts screen sets the gathering going.
   await page.click('.readystrip .rs-chip:has-text("Workshop")');

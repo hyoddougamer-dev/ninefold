@@ -731,10 +731,13 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
            */
           const wait = !maxed && i.currency === 'qi' && !canBuy(state, u)
             ? affordableIn(state, cost) : null;
+          // 修 A rate upgrade the qi in hand pays for now says so, under its price: held qi
+          // gathers nothing, and an undimmed box was the only sign it could be bought.
+          const now = !maxed && i.affects === 'rate' && canBuy(state, u);
           return (
             /* 指 Named so 引 the guide can put an arrow on this exact box. */
             <button key={u} className="upg" data-full={maxed} data-coach={`upg-${u}`}
-              data-bought={bought === u}
+              data-bought={bought === u} data-now={now}
               disabled={!canBuy(state, u)} onClick={() => {
                 const n = many ? buyMax(state, u).n : 1;
                 set((s) => (many ? buyMax(s, u).state : buy(s, u)));
@@ -771,6 +774,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     <i className="faint" style={{ fontStyle: 'normal', fontSize: 10, display: 'block' }}>
                       {i.currency === 'qi' ? 'qi' : CULTIVATE.materialWord}
                     </i>
+                    {now && <i className="now">{CULTIVATE.canNow}</i>}
                     {wait && (
                       <i className="when">
                         {wait.seconds === null

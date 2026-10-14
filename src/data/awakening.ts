@@ -90,7 +90,7 @@ export const AWAKENINGS: readonly (readonly Card[])[] = [
   [
     { key: 'wolf', han: '貪狼', name: 'Greedy Wolf', icon: 'wolf-head',
       effect: { kind: 'salvage', percent: 0.50 },
-      says: 'Melting gives half as much qi again. What you throw away pays better.' },
+      says: 'Each piece melts for half as much again: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
     { key: 'heat', han: '火候', name: 'Heat Control', icon: 'cauldron',
       effect: { kind: 'refine', percent: 0.20 },
       says: '煉器 Refining costs a fifth less, at every level, for ever.' },
@@ -118,7 +118,7 @@ export const AWAKENINGS: readonly (readonly Card[])[] = [
       says: 'Beasts drop something more often again.' },
     { key: 'stonegold', han: '點石', name: 'Stone to Gold', icon: 'topaz',
       effect: { kind: 'salvage', percent: 0.70 },
-      says: 'Melting gives seven tenths more qi.' },
+      says: 'Each piece melts for seven tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
   ],
   [
     { key: 'hoard', han: '聚寶', name: 'Treasure Gathering', icon: 'gold-nuggets',
@@ -140,7 +140,7 @@ export const AWAKENINGS: readonly (readonly Card[])[] = [
       says: 'Twelve more places in the chest.' },
     { key: 'wildfire', han: '燎原', name: 'Wildfire', icon: 'dragon-breath',
       effect: { kind: 'salvage', percent: 0.90 },
-      says: 'Melting gives nine tenths more qi.' },
+      says: 'Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
   ],
   [
     { key: 'taotie', han: '饕餮', name: 'Taotie', icon: 'dragon-head',
@@ -244,7 +244,7 @@ export const HEAVEN_CARDS: readonly (readonly Card[])[] = [
       says: 'The rare end of the drop table, weighted far up.' },
     { key: 'ashes', han: '餘燼', name: 'Embers', icon: 'fire-gem',
       effect: { kind: 'salvage', percent: 0.60 },
-      says: 'Melting pays three fifths more qi.' },
+      says: 'Each piece melts for three fifths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
   ],
   [
     { key: 'quickfire', han: '武火', name: 'Fierce Fire', icon: 'energy-breath',
@@ -274,7 +274,7 @@ export const HEAVEN_CARDS: readonly (readonly Card[])[] = [
       says: 'A slower fire and a smaller bill. Pills cost less 材 material still.' },
     { key: 'lastdrop', han: '瀝盡', name: 'The Last Drop', icon: 'round-potion',
       effect: { kind: 'salvage', percent: 0.75 },
-      says: 'Melting pays three quarters more qi.' },
+      says: 'Each piece melts for three quarters more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
     { key: 'godmaw', han: '神餐', name: "The God's Meal", icon: 'minotaur',
       effect: { kind: 'material', percent: 0.35 },
       says: 'Beasts give a third more 材 material again.' },
@@ -307,7 +307,7 @@ export const HEAVEN_CARDS: readonly (readonly Card[])[] = [
       says: 'A floor of 塔 the tower pays a quarter more 材 material.' },
     { key: 'meltmountain', han: '銷山', name: 'Melting the Mountain', icon: 'rolling-energy',
       effect: { kind: 'salvage', percent: 0.90 },
-      says: 'Melting pays nine tenths more qi.' },
+      says: 'Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.' },
     { key: 'spiritforge', han: '靈淬', name: 'Spirit Quenching', icon: 'emerald',
       effect: { kind: 'refine', percent: 0.35 },
       says: '煉器 Refining costs a third less at every level.' },

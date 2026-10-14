@@ -352,6 +352,12 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 @keyframes escapein { from { opacity: 0; transform: translateY(-6px) scale(.9); } }
 @media (prefers-reduced-motion: reduce) { .escape { animation: none; } }
 
+/* 修 A qi-rate box the qi in hand pays for now: a jade edge and two words under the
+   price, so held qi reads as something to spend. Only 功法 and 吐納 wear it. */
+.upgrades .upg[data-now='true'] { border-color: rgba(127,180,149,.7); }
+.upgrades .upg .price .now { display: block; margin-top: 3px; font-size: 9.5px; font-style: normal;
+                             color: var(--jade); letter-spacing: .04em; text-transform: uppercase; }
+
 /* 待 When an unaffordable box becomes affordable, under its price. */
 .upg .price .when { display: block; margin-top: 3px; font-size: 9.5px; font-style: normal;
                     color: var(--faint); letter-spacing: .02em; max-width: 84px;
@@ -2511,6 +2517,25 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
 .realmcard .nextup > i { font-style: normal; font-size: 13px; color: var(--faint);
                          margin-left: 8px; }
 .realmcard .nextup p.faint:first-of-type { color: var(--text); }
+
+/* 九 The nine realms, the whole climb on one list. The realm you stand in wears its own
+   colour round it; the ones ahead are dimmed, because they are not yours yet. Scoped to
+   the card: a list of realms elsewhere (the bible's cards) has its own rules. */
+.realmcard .nine { list-style: none; margin: 0; padding: 0; display: flex;
+                   flex-direction: column; gap: 6px; }
+.realmcard .nine li { display: flex; gap: 11px; align-items: center;
+                      border: 1px solid transparent; border-radius: 10px; padding: 7px 10px; }
+.realmcard .nine li > b { flex: none; min-width: 38px; font-weight: 400; font-size: 16px; }
+.realmcard .nine li > span { flex: 1; min-width: 0; }
+.realmcard .nine em { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px;
+                      font-style: normal; font-size: 13.5px; }
+.realmcard .nine em small { white-space: nowrap; font-size: 10px; letter-spacing: .1em;
+                            text-transform: uppercase; }
+.realmcard .nine i { display: block; margin-top: 2px; font-style: normal; font-size: 11.5px;
+                     line-height: 1.45; color: var(--faint); }
+.realmcard .nine u { flex: none; text-decoration: none; font-size: 11px; color: var(--faint); }
+.realmcard .nine li[data-at='here'] { background: var(--panel); }
+.realmcard .nine li[data-at='ahead'] { opacity: .5; }
 
 /* 見 The first kill is still a mark card, but it is the one that pays qi rather than
    material, so it borrows the qi colour to say so. */

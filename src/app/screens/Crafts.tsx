@@ -241,7 +241,7 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
             </div>
             <p className="faint" style={{ margin: '4px 0 0', fontSize: 12.5 }}>{info.does}</p>
         {!open && <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5 }}>
-          {CRAFTS.opensLong(info.seal, info.name, info.realm, feederOf(skill))}</p>}
+          {CRAFTS.opensLong(info.seal, info.name, info.realm, feederOf(skill), skill === 'alchemy' ? CRAFTS.alchemyPill : undefined)}</p>}
         {open && (
           <>
             <p className="crank"><span className="cjk"><Term han={rank.han} plain /></span> {rank.name}

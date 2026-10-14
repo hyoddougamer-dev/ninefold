@@ -4,11 +4,11 @@ import { DEEP_DROP, DEEP_EVERYWHERE, DEEP_INFO, DEEP_MARKS, DEEP_MATERIAL, MARK_
 import { AFFIXES, AFFIX_INFO, RARITIES, RARITY_INFO, SLOTS, SLOT_INFO } from '../data/gear.ts';
 import { STANCES } from '../data/arts.ts';
 import { PATHS, PATH_INFO } from '../data/techniques.ts';
-import { SYSTEMS } from '../sim/unlocks.ts';
+import { SYSTEMS, opensIn } from '../sim/unlocks.ts';
 import { CRAFT_FEED_LEVEL, FATE_FULL } from '../sim/balance.ts';
 import { lineMath, lineNote } from './lines.ts';
 import { FEEDER } from '../sim/crafts.ts';
-import { realm as realmOf } from '../data/realms.ts';
+import { REALMS, realm as realmOf } from '../data/realms.ts';
 import { LINES, PILL_LINES } from '../data/alchemy.ts';
 import { AWAKEN, CAVE, CLASS, FIGURE, KEY, REBIRTH, SECRET } from './copy.ts';
 import { PAIRS, SCHOOLS, SCHOOL_INFO } from '../data/schools.ts';
@@ -159,9 +159,22 @@ export const GROUPS: readonly Group[] = [
     ],
   },
   {
+    // 境 The realms, read from the table the climb plays by, with what each one opens. Before
+    // the systems, because a system's row names the realm it opens at, and that name is
+    // now itself a thing a player can tap.
+    title: KEY.realmsHead, blurb: KEY.realmsBlurb,
+    rows: REALMS.map((r) => ({
+      han: r.han, name: r.name, colour: r.colour,
+      note: KEY.realmNote(r.n, REALMS.length, opensIn(r.n).map((s) => s.name)),
+    })),
+  },
+  {
+    // 釋 What the system is, then when it opens. A bare character answers with the first row
+    // filed under it, and this group comes before 作 the words, so the note has to say what
+    // the thing is: 秘境 and 洞天 used to answer only with the realm that opens them.
     title: KEY.systemsHead, blurb: KEY.systemsBlurb,
     rows: SYSTEMS.map((s) => ({
-      han: s.han, name: s.name, note: KEY.opensAt(realmOf(s.realm).han, realmOf(s.realm).name, sooner(s.key)),
+      han: s.han, name: s.name, note: KEY.system(s.gives, realmOf(s.realm).han, realmOf(s.realm).name, sooner(s.key)),
     })),
   },
   {
