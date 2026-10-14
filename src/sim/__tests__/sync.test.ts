@@ -410,6 +410,14 @@ describe('季 the season, on the server', () => {
     expect(m.saves.size + m.standings.size + m.profiles.size + m.logs.length).toBe(0);
   });
 
+  it('after the switch, a season save whose marker a closed-test tab dropped is let in by its start date', async () => {
+    const m = memory();
+    const s = { ...inSeason(shots[1].s), season: undefined } as unknown as State;
+    const r = await sync(m.store, 'b', s, s.at + 60, undefined, S - DAY);
+    expect(r.status).toBe(200);
+    expect(validate(m.saves.get('b')!.latest, s.at + 60).season).toBe(SEASON);
+  });
+
   it('after the switch, a closed-test save is turned away: nothing written, nothing struck, and it stays off the boards', async () => {
     const { m, old } = kept();
     const before = snapshot(m);

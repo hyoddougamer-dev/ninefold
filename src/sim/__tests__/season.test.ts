@@ -76,7 +76,8 @@ describe('季 the marker', () => {
   });
 
   it('is carried through validate only when it is a season the game knows', () => {
-    const base = { ...newState(AFTER) } as Record<string, unknown>;
+    // Begun before the switch, so only the marker can make it a season save.
+    const base = { ...newState(AFTER), startedAt: BEFORE } as Record<string, unknown>;
     expect(validate({ ...base, season: 's0' }, AFTER).season).toBe('s0');
     // A number with a fallback of 0 would have read every closed-test save as season 0.
     for (const junk of [0, 1, 's1', '', 'S0', null, undefined, {}, ['s0'], true]) {
@@ -207,6 +208,27 @@ describe('印 retiring a device\'s save', () => {
     expect(r.retired).toMatchObject({ realm: 1, layer: 7, kept: true });
     expect(r.state.layer).toBe(0);
     expect(r.state.season).toBe(SEASON);
+  });
+
+  it('a season save whose marker a closed-test tab dropped is still a season save, by its date', () => {
+    store.map.set('ninefold.save.v1', sealed(veteran(9, 3)));
+    const first = load(AFTER);
+    const kept = store.map.get(CLOSED_TEST);
+    // A tab still on the closed-test build began again (or read the season save) after the
+    // switch and wrote it back without the field it does not know.
+    const stripped = { ...first.state, realm: 2, layer: 5 } as Record<string, unknown>;
+    delete stripped.season;
+    expect(seasonOf(stripped)).toBe(SEASON);
+    expect(retires(stripped, AFTER + 600)).toBe(false);
+    store.map.set('ninefold.save.v1', sealed(stripped));
+    const back = load(AFTER + 600);
+    expect(back.retired).toBeNull();
+    expect(back.state).toMatchObject({ season: SEASON, realm: 2, layer: 5 });
+    expect(store.map.get(CLOSED_TEST)).toBe(kept);           // the closed-test copy is untouched
+    // Nothing begun before the switch reads as the season this way, nor a start in the future.
+    expect(seasonOf({ v: 1, startedAt: SEASON_START - 1 })).toBeNull();
+    expect(seasonOf({ v: 1, startedAt: AFTER + 10 }, AFTER)).toBeNull();
+    expect(validate({ v: 1, startedAt: AFTER + 10 }, SEASON_START - 5).season).toBeNull();
   });
 
   it('a season save is never retired, and loads as it always did', () => {

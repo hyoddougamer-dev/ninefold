@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import * as cloud from '../net/cloud.ts';
 import type { State } from '../sim/state.ts';
-import { importSave } from '../sim/save.ts';
+import { holding, importSave } from '../sim/save.ts';
 import { progressOf } from '../sim/echo.ts';
 import { now } from './clock.ts';
 
@@ -27,7 +27,8 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   const [place, setPlace] = useState<number | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
-    if (pushing.current) return;
+    // 凍 Nothing is synced while the page holds still behind a copy it could not keep.
+    if (pushing.current || holding()) return;
     pushing.current = true;
     try {
       const r = await cloud.sync(latest.current, name);

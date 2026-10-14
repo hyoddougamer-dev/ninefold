@@ -351,10 +351,11 @@ export function validate(raw: unknown, now: number): State {
   const out: State = {
     v: 1,
     startedAt,
-    // 季 Carried through only when it names a season the game knows; anything else, a
-    // number included, is the closed test. The season is enforced at the doors (load,
-    // importSave, the server's sync), never here: this reads every season's save.
-    season: seasonOf(o),
+    // 季 Carried through when it names a season the game knows, or when the run began at
+    // or after the switch (seasonOf); anything else, a number included, is the closed
+    // test. The season is enforced at the doors (load, importSave, the server's sync),
+    // never here: this reads every season's save.
+    season: seasonOf({ season: o.season, startedAt }),
     at: savedAt,
     realm,
     layer,

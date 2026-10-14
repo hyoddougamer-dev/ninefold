@@ -33,17 +33,27 @@ export function seasonAt(now: number): string | null {
 }
 
 /**
- * The season a save says it belongs to, read off a raw save, an exported copy
- * (`{ game, state }`) or a validated State alike. Only a known string counts: a number,
- * an unknown name or nothing at all is the closed test, which is null.
+ * The season a save belongs to, read off a raw save, an exported copy (`{ game, state }`)
+ * or a validated State alike. A known string counts: a number or an unknown name is not
+ * a marker.
+ *
+ * And a save with no marker that was begun at or after the switch (and not after `now`)
+ * is a season save all the same: it can only be a season cultivator whose marker was
+ * dropped, by a tab still on the closed-test build that read it or began it (滅 Start again
+ * pressed there after the switch). Retired as the closed test, it would lose the season
+ * play to a deeper closed-test copy. Nothing begun before the switch reads as the season
+ * this way, so it never retires less than the marker alone did, and it is never the lock:
+ * the server measures every first season sync from SEASON_START.
  */
-export function seasonOf(raw: unknown): string | null {
+export function seasonOf(raw: unknown, now = Infinity): string | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
   const body = o.game === 'ninefold' && o.state && typeof o.state === 'object'
     ? o.state as Record<string, unknown> : o;
   const s = body.season;
-  return typeof s === 'string' && KNOWN.includes(s) ? s : null;
+  if (typeof s === 'string' && KNOWN.includes(s)) return s;
+  const t = body.startedAt;
+  return typeof t === 'number' && t >= SEASON_START && t <= now ? SEASON : null;
 }
 
 /**
@@ -57,7 +67,7 @@ export function inSeason(s: { readonly season?: string | null; readonly startedA
 
 /**
  * 印 Whether the device retires a save at this instant: the season has begun and the save
- * does not carry its marker.
+ * is not a season save (no marker, and not begun since the switch: seasonOf).
  *
  * It asks for the marker and not for `startedAt` as well, on purpose. Every honest closed-
  * test save lacks the marker, and so does a cultivator begun on the new build before the
@@ -69,5 +79,5 @@ export function inSeason(s: { readonly season?: string | null; readonly startedA
  * retired in the season's first months and measure a fresh cultivator instead.
  */
 export function retires(raw: unknown, now: number): boolean {
-  return now >= SEASON_START && seasonOf(raw) !== SEASON;
+  return now >= SEASON_START && seasonOf(raw, now) !== SEASON;
 }

@@ -392,6 +392,12 @@ export function keepSpare(s: State): void {
   } catch { /* same */ }
 }
 
+/**
+ * 凍 Whether this page is holding still behind a closed-test copy it could not keep. The
+ * cultivator on screen is then a placeholder that is never saved, so it is not synced either.
+ */
+export function holding(): boolean { return frozen; }
+
 /** Only the tests call this: a page that wiped reloads, and a test file does not. */
 export function rearm(): void { wiped = false; frozen = false; }
 

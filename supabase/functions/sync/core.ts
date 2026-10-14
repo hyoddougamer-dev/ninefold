@@ -265,10 +265,13 @@ export async function sync(
   // switch only a season save begun inside the season comes in: the start date is checked
   // here and not only measured, so an old run whose start date was edited back to before the
   // season is not weighed at all, and one edited forward to the season's first second is
-  // measured from it and waits (firstSync). Before the switch a season save is turned away,
-  // since it can only come from a device whose clock runs ahead.
+  // measured from it and waits (firstSync). Before the switch a save marked for the season
+  // and begun before it is turned away, since it can only come from a device whose clock
+  // runs ahead. (One begun after SEASON_START is a season save by its date alone, seasonOf;
+  // the real server never sees one before the switch, validate caps startedAt at now, and a
+  // test that names a later switch is measuring the closed test's rules on it.)
   const seasonal = after.season === SEASON;
-  if (live ? !seasonal || after.startedAt < start : seasonal) {
+  if (live ? !seasonal || after.startedAt < start : seasonal && after.startedAt < SEASON_START) {
     return { status: 409, body: { error: 'season' } };
   }
 
