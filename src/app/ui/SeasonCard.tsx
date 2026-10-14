@@ -41,11 +41,12 @@ function useTakeOut(old: ClosedTest) {
 }
 
 /** 舊 The closed-test cultivator in one line, with its two ways out. Shared by the card and Menu, Save. */
-function Kept({ old, note }: { old: ClosedTest; note: string }) {
+function Kept({ old, note, head = true }: { old: ClosedTest; note: string; head?: boolean }) {
   const { said, error, byHand, copy, file } = useTakeOut(old);
   return (
     <div className="s0old">
-      <i><span className="cjk">舊</span> {SEASON.oldHead}</i>
+      {/* In Menu, Save the section's own heading already names it, so it is not said twice. */}
+      {head && <i><span className="cjk">舊</span> {SEASON.oldHead}</i>}
       <b>{SEASON.old(old.realm, old.layer, old.marks, old.rebirths)}</b>
       <p>{note}</p>
       <div className="s0take">
@@ -161,7 +162,7 @@ export function ClosedTestRow({ old }: { old: ClosedTest }) {
   return (
     <section className="s0kept">
       <h3><span className="cjk">舊</span> {SEASON.panelHead}</h3>
-      <Kept old={old} note={SEASON.panelNote} />
+      <Kept old={old} note={SEASON.panelNote} head={false} />
     </section>
   );
 }

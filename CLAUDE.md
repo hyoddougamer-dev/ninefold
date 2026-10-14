@@ -75,7 +75,8 @@ Each of these cost real time once. They are written down so they cost it once.
   the pile in the one `latest` copy and none in the `verified`, `day` and `week` copies.
 - **A fixture without the season marker is retired at load after the switch.** From
   `SEASON_START` (Monday 26 October 2026, 00:00 UTC, `src/sim/season.ts`), a save that does not
-  carry `season: 's0'` is moved whole to `ninefold.save.closedtest` and a fresh cultivator begins
+  carry `season: 's0'` and was begun before the switch (one begun after it is a season save by its
+  date alone) is moved whole to `ninefold.save.closedtest` and a fresh cultivator begins
   behind the 落印 season card. A harness that wrote one would then measure a fresh cultivator and
   print a tick. Every fabricated save in `tools/` stamps `season: 's0'` (validate carries it at
   any date, and nothing reads it before the switch), and `season.test.ts` fails on any tool that
