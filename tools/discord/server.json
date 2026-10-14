@@ -4923,7 +4923,7 @@
       "forum": "bugs",
       "title": "Are you sure the dragon power calculations are correct?",
       "final": [
-        "rekaris, you were right, and we had this wrong before. When your odds are 0%, the Dragon card shows its power divided by yours, before stance, arts and what you carry, so ×138 is a true reading of your save. A body pill adds 3% power, multiplied, so ×138 is about 167 pills: your arithmetic holds, and pills alone will not close it. We cannot tell from here why your save stands so far off, so please send a copy (≡ Menu, Your save, Copy the save) to 師 Shibaki by DM. We will run it and post what it shows in this thread.",
+        "rekaris, you were right, and you did not need to send your save: we read the server's copy. Your Dragon stands about 120 times above where an honest crossing would have left it. The crossings you won while the Swift bug meant a beast could never hit (fixed on 5 October) each set the next Dragon far too high, and that height carries into every Dragon after. It is not your build, and pills will not close it. We are fixing it, and will post here when it is done.",
         "· 師 Shibaki"
       ]
     },
