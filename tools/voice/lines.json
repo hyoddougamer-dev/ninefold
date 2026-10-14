@@ -1,0 +1,36 @@
+{
+  "note": "Season 0 trailer narration (docs/SEASON0-VOICE.md). Line 3 whispered by the pause; edit a line here and push to regenerate.",
+  "lines": [
+    "九重境界，<break time=\"400ms\"/>一场试炼。",
+    "你亲手栽培的每一位修士，<break time=\"300ms\"/>都曾在此一步步登攀。",
+    "此印，<break time=\"700ms\"/>只落一次。",
+    "试炼就此封存。<break time=\"500ms\"/>你的修士，原封不动，由你珍藏。",
+    "新卷铺开。<break time=\"400ms\"/>众生平等，皆从第一境起步。",
+    "新榜虚位以待。<break time=\"400ms\"/>名次皆验，全凭实力。",
+    "这是最后一次重来。<break time=\"700ms\"/>从此，画卷永不抹去。",
+    "九境。<break time=\"600ms\"/>落印。<break time=\"600ms\"/>第零赛季。"
+  ],
+  "voices": [
+    {
+      "key": "a",
+      "voice": "zh-CN-YunjianNeural",
+      "style": "narration-relaxed",
+      "rate": "-12%",
+      "pitch": "-6%"
+    },
+    {
+      "key": "b",
+      "voice": "zh-CN-YunyeNeural",
+      "style": "calm",
+      "rate": "-10%",
+      "pitch": "-4%"
+    },
+    {
+      "key": "c",
+      "voice": "zh-CN-YunjianNeural",
+      "style": "",
+      "rate": "-15%",
+      "pitch": "-8%"
+    }
+  ]
+}

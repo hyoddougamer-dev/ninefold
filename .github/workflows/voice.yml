@@ -1,0 +1,40 @@
+# 聲 Makes the Season 0 trailer voice with Azure Speech and commits the takes to the
+# working branch under media/voice/. Needs the secret AZURE_SPEECH_KEY and the variable
+# AZURE_SPEECH_REGION (for example westeurope). Runs by hand, or when the lines change.
+name: voice
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/idle-fantasy-mobile-game-nzn90r]
+    paths: ['tools/voice/**', '.github/workflows/voice.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  speak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Make the takes
+        env:
+          AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          AZURE_SPEECH_REGION: ${{ vars.AZURE_SPEECH_REGION }}
+        run: |
+          if [ -z "$AZURE_SPEECH_KEY" ] || [ -z "$AZURE_SPEECH_REGION" ]; then
+            echo "::warning::AZURE_SPEECH_KEY or AZURE_SPEECH_REGION is not set yet. Nothing was made."
+            exit 0
+          fi
+          node tools/voice/azure.mjs
+      - name: Commit them to the branch
+        run: |
+          [ -d media/voice ] || exit 0
+          git config user.name "ninefold-voice"
+          git config user.email "ninefold-voice@users.noreply.github.com"
+          git add media/voice
+          git diff --cached --quiet && exit 0
+          git commit -m "Voice: Season 0 trailer takes from Azure Speech"
+          git pull --rebase origin claude/idle-fantasy-mobile-game-nzn90r && git push
