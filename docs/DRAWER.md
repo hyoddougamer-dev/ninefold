@@ -267,7 +267,7 @@ Bruno's rule for the open rebirth questions: follow rekaris, the most experience
 - **Confirmation (poll 7). Built 2026-10-11.** The word is typed, as rekaris asked (#299): the button stays shut until the field reads Reincarnate, ignoring case and spaces. Screens: docs/shots-rebirth-confirm.
 - **Target days (poll 8).** Keep TARGET_DAYS at 90. That constant measures the ninth realm, not the summit, and rekaris's 40 days is how long his own run took. Changing it rebalances the whole curve, so it waits for a measurement.
 - **Gate.** The first mark, as built (REBIRTH_MARKS 1). It matches rekaris's latest version (#301).
-- **ACCEPT_EVERYTHING.** Stays on until before the first season that counts. No date exists yet; Bruno sets it.
+- **ACCEPT_EVERYTHING.** Stays on until before the first season that counts. Built on the branch as a time (D7 in docs/SEASON0-PLAN.md, the recommended option): `acceptsEverything(now)` in supabase/functions/sync/core.ts is on until SEASON_START (Monday 26 October 2026, 00:00 UTC) and off from it. A plain off in Push A is the other option, if Bruno prefers it.
 - **No cap (razielmorgenstern, rekaris #302 and #304).** Refused by the economic law. The reply stays pending, as Bruno asked. The material bonus rekaris raised is not measured yet.
 
 Build order: experience carried and the typed word came first (both on Rebirth.tsx and the constants), then the Samsara board, which changes the server and the promise. All three are on the branch (2026-10-11, the Samsara board after the carry). Nothing reaches main until Bruno approves its words and screens; the Samsara board ships last, with its server migration deployed before the client.
