@@ -15,29 +15,29 @@ Eight short lines, timed to the shots of trailer v2. Simplified characters are w
 | # | When | Mandarin (simplified, give this to the tool) | Traditional | Pinyin | English subtitle |
 |---|---|---|---|---|---|
 | 1 | 1.0 to 6.0 s | 九重境界，一场试炼。 | 九重境界，一場試煉。 | Jiǔ chóng jìngjiè, yì chǎng shìliàn. | Nine realms. One closed test. |
-| 2 | 9.0 to 14.5 s | 你亲手培养的每一位修士，都曾在此登高。 | 你親手培養的每一位修士，都曾在此登高。 | Nǐ qīnshǒu péiyǎng de měi yí wèi xiūshì, dōu céng zài cǐ dēnggāo. | Every cultivator you raised. |
-| 3 | 16.2 to 19.2 s | 印，只落一次。 | 印，只落一次。 | Yìn, zhǐ luò yí cì. | The seal falls once. |
+| 2 | 9.0 to 14.5 s | 你亲手栽培的每一位修士，都曾在此一步步登攀。 | 你親手栽培的每一位修士，都曾在此一步步登攀。 | Nǐ qīnshǒu zāipéi de měi yí wèi xiūshì, dōu céng zài cǐ yí bù bù dēngpān. | Every cultivator you raised. |
+| 3 | 16.2 to 19.2 s | 此印，只落一次。 | 此印，只落一次。 | Cǐ yìn, zhǐ luò yí cì. | The seal falls once. |
 | | 21.0 s | (no voice: the seal hits) | | | |
-| 4 | 23.0 to 29.0 s | 试炼就此封存。你的修士，完好留存。 | 試煉就此封存。你的修士，完好留存。 | Shìliàn jiù cǐ fēngcún. Nǐ de xiūshì, wánhǎo liúcún. | The closed test is sealed and kept. Your cultivator is kept as a copy you can save. |
-| 5 | 31.5 to 36.0 s | 新卷铺开，众生同起于第一境。 | 新卷鋪開，眾生同起於第一境。 | Xīn juàn pūkāi, zhòngshēng tóng qǐ yú dì yī jìng. | A new scroll. Everyone starts equal, in realm 1. |
-| 6 | 37.0 to 41.0 s | 榜上无名，一切凭真本事。 | 榜上無名，一切憑真本事。 | Bǎng shàng wú míng, yíqiè píng zhēn běnshi. | The boards start empty. Every rank is checked for fair play. |
-| 7 | 42.0 to 47.5 s | 这是最后一次。从此，画卷永不重绘。 | 這是最後一次。從此，畫卷永不重繪。 | Zhè shì zuìhòu yí cì. Cóngcǐ, huàjuàn yǒng bù chóng huì. | This is the last wipe. Nothing will be painted over again. |
+| 4 | 23.0 to 29.0 s | 试炼就此封存。你的修士，原封不动，由你珍藏。 | 試煉就此封存。你的修士，原封不動，由你珍藏。 | Shìliàn jiùcǐ fēngcún. Nǐ de xiūshì, yuánfēng bú dòng, yóu nǐ zhēncáng. | The closed test is sealed and kept. Your cultivator is kept as a copy you can save. |
+| 5 | 31.5 to 36.0 s | 新卷铺开。众生平等，皆从第一境起步。 | 新卷鋪開。眾生平等，皆從第一境起步。 | Xīn juàn pūkāi. Zhòngshēng píngděng, jiē cóng dì yī jìng qǐbù. | A new scroll. Everyone starts equal, in realm 1. |
+| 6 | 37.0 to 41.0 s | 新榜虚位以待。名次皆验，全凭实力。 | 新榜虛位以待。名次皆驗，全憑實力。 | Xīn bǎng xū wèi yǐ dài. Míngcì jiē yàn, quán píng shílì. | The boards start empty. Every rank is checked for fair play. |
+| 7 | 42.0 to 47.5 s | 这是最后一次重来。从此，画卷永不抹去。 | 這是最後一次重來。從此，畫卷永不抹去。 | Zhè shì zuìhòu yí cì chónglái. Cóngcǐ, huàjuàn yǒng bù mǒqù. | This is the last wipe. Nothing will be painted over again. |
 | 8 | 50.5 to 54.0 s | 九境。落印。第零赛季。 | 九境。落印。第零賽季。 | Jiǔjìng. Luò yìn. Dì líng sàijì. | The Seal Falls 落印 · Season 0 · Monday 26 October, 00:00 UTC |
 
 What each line means, word for word, so nothing is lost in the subtitle:
 1. "Nine layered realms, one trial."
-2. "Every cultivator you raised with your own hands once climbed here."
-3. "The seal falls only once."
-4. "The trial is sealed and stored from here on. Your cultivator is kept whole."
-5. "A new scroll is laid out; all beings begin together in the first realm."
-6. "No names on the boards yet; everything rests on true skill."
-7. "This is the last time. From now on, the scroll is never painted again."
+2. "Every cultivator you raised with your own hands once climbed here, step by step." (栽培 is the word a master uses for raising a disciple.)
+3. "This seal falls only once." (此印 gives the whispered word a second syllable, so it is heard.)
+4. "The trial is sealed from here on. Your cultivator, untouched, yours to treasure." (原封不动 carries 封, the seal itself.)
+5. "A new scroll is laid out. All beings are equal, and all begin in the first realm."
+6. "The new boards wait for their holders. Every rank is verified, earned by true strength." (The first draft used 榜上无名, an idiom for failing to make the list: both reviews caught it.)
+7. "This is the last time we start again. From now on, the scroll is never wiped away."
 8. "Ninefold. The Seal Falls. Season zero."
 
 ## The voice
 
 - **Who:** one narrator, male, older, low and calm, like a sect elder telling a story by a fire. Not a movie-trailer shout. Slow, with room between the two halves of each line.
-- **Delivery notes:** line 3 almost a whisper, with a pause after 印. Line 4 steady and warm (it is the reassuring line). Line 7 slower than the rest, a full stop between the two sentences. Line 8 three separate words with a breath between each.
+- **Delivery notes:** line 1: 重 is read chóng (layered), not zhòng; if the tool says zhòng, write 九层境界 instead. Line 3 almost a whisper, with a pause after 此印. Line 4 steady and warm (it is the reassuring line). Line 7 slower than the rest, a full stop between the two sentences. Line 8 three separate words with a breath between each.
 
 ### Option A · ElevenLabs (recommended)
 
