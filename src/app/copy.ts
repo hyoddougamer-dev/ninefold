@@ -2261,8 +2261,8 @@ export const SAVE = {
 /**
  * 季 Season 0, "The Seal Falls 落印" (docs/SEASON0-BRIEF.md, section 2). The closed test is
  * sealed and kept: every cultivator starts again from the first realm, and the closed-test
- * one stays on the device as a copy the player can take out. Always "sealed and kept"
- * beside "a copy you can take out"; always 印 a stamp, never 封 a lock. Nothing here says
+ * one stays on the device as a copy the player can copy out or save as a file. Always "sealed
+ * and kept" beside what the player can do with it; always 印 a stamp, never 封 a lock. Nothing here says
  * lost or deleted, because nothing is.
  */
 export const SEASON = {
@@ -2270,7 +2270,7 @@ export const SEASON = {
   name: 'The Seal Falls',
   han: '落印',
   over: 'Season 0 · Monday 26 October',
-  line: 'The closed test is sealed and kept. The new scroll is never wiped.',
+  line: 'The closed test is sealed and kept. The new scroll will never be wiped.',
   says: 'Everyone starts again from the first realm, and so do you.',
   /** 印 Lettered beside the seal, which carries 九境 alone. */
   sealName: 'Ninefold',
@@ -2281,11 +2281,11 @@ export const SEASON = {
     [`Realm ${realm}`, `layer ${layer}`,
       ...(marks > 0 ? [`${marks} ${marks === 1 ? 'mark' : 'marks'}`] : []),
       ...(rebirths > 0 ? [`${rebirths} ${rebirths === 1 ? 'rebirth' : 'rebirths'}`] : [])].join(', '),
-  kept: 'Sealed and kept on this device, as a copy you can take out. It cannot be played or ranked in Season 0.',
+  kept: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0.',
   copy: 'Copy it',
   file: 'Save as a file',
   begin: 'Begin Season 0',
-  later: 'You can take it out later too, from Menu, Save.',
+  later: 'You can copy it later too, from Menu, Save.',
   copied: 'Copied. Paste it somewhere you keep things. It is the same text as a save export.',
   copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
   saved: 'Saved as a file.',
@@ -2297,10 +2297,10 @@ export const SEASON = {
   notKeptYet: 'Still on this device, exactly as it was. It cannot be played or ranked in Season 0.',
   /** 舊 Menu, Save: the same line and buttons, for as long as the copy is kept. */
   panelHead: 'Closed test',
-  panelNote: 'Sealed and kept on this device, as a copy you can take out. It cannot be played or ranked in Season 0, and Start again never touches it.',
+  panelNote: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0, and Start again never touches it.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Seal Falls',
-  ranksSince: 'Since Monday 26 October. Everyone started level.',
+  ranksSince: 'Since Monday 26 October. Everyone started equal.',
 };
 
 export const LOADOUT = {

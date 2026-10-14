@@ -46,7 +46,7 @@ Everything for Season 0 in one file: the model we adopt, the theme, the image to
 - **Every title:** First Under Heaven (天下第一), First of the Week (期首), Top Ten and Top Hundred of the Week.
 - **Strikes and suspect flags** are cleared for everyone who is not banned, in Push B, if Bruno names that row change (D5). Bans stay.
 
-### Fair play checks go fully on
+### Fair play checks switch on
 
 - `ACCEPT_EVERYTHING` goes off in the same release. A save the server refuses is no longer counted.
 - A save faster than the fastest honest player waits until real time catches up. Nothing is lost by waiting.
@@ -100,7 +100,7 @@ Exact words for each are in section 6.
 
 ## 2. The theme: The Seal Falls 落印
 
-**The hook:** The closed test is sealed and kept. The new scroll is never wiped.
+**The hook:** The closed test is sealed and kept. The new scroll will never be wiped.
 
 **The idea in one line:** a colossal cinnabar seal (印, a stamp) slams onto the closed-test painting. The old scroll is stamped, rolled and kept. A blank one unrolls, and everyone paints from realm 1.
 
@@ -127,7 +127,7 @@ A colossal square cinnabar seal has just slammed onto the first realm's painting
   - THE SEAL FALLS in Cinzel, with 落印 in cinnabar beside it.
   - A gilt box: "Season 0 · Monday 26 October".
   - A small gold-framed box with 零 (zero) and "Season 0" under it.
-  - One italic Cormorant line: "The closed test is sealed and kept. The new scroll is never wiped."
+  - One italic Cormorant line: "The closed test is sealed and kept. The new scroll will never be wiped."
 - **Top right:** a black tag edged in red: THE LAST WIPE.
 - **Lettering stays big**, so it still reads as a thumbnail in Discord.
 
@@ -232,7 +232,7 @@ Three kinds:
 
 #### 1 · The scroll, rolled and tied · **Must**
 
-- **For:** trailer shot 5 ("The closed test is sealed and kept. Your cultivator stays as a copy you can take out."). Also the in-game Closed test section if we want a picture there.
+- **For:** trailer shot 5 ("The closed test is sealed and kept. Your cultivator is kept as a copy you can save."). Also the in-game Closed test section if we want a picture there.
 - **Shape:** Landscape 3:2, 1536 × 1024 → cropped to 16:9.
 - **Save as:** `s0-01-scroll-tied.png`
 - **Note:** the square on the last section is left blank on purpose. I stamp the code seal (C1) into it, so it is the same print as the slam.
@@ -249,7 +249,7 @@ Landscape 3:2.
 
 #### 2 · Blank silk, unrolling · **Must**
 
-- **For:** trailer shot 6 ("A new scroll. Everyone starts level, in realm 1."). Realm 1 bleeds in through a brush stroke on it.
+- **For:** trailer shot 6 ("A new scroll. Everyone starts equal, in realm 1."). Realm 1 bleeds in through a brush stroke on it.
 - **Shape:** Landscape 3:2, 1536 × 1024 → cropped to 16:9.
 - **Save as:** `s0-02-blank-silk.png`
 
@@ -473,9 +473,9 @@ Picture: the key art (C4). Goes out only once "take out a copy" is built and wor
 >
 > The closed test ends on Monday 26 October at 00:00 UTC. In the Americas that is Sunday evening.
 > This is the one wipe we promised for the end of the closed test, and it is the last one. From then on, Season 0 is the game. Nothing is wiped again.
-> Your closed-test cultivator is kept as a copy you can take out.
-> Everyone starts level, in realm 1.
-> The ranked boards start empty, and the fair play checks go fully on. Every rank is earned.
+> Your closed-test cultivator is kept as a copy you can save.
+> Everyone starts equal, in realm 1.
+> The ranked boards start empty, and every rank is checked for fair play.
 >
 > Thank you for testing with us.
 > 師 Shibaki
@@ -489,7 +489,7 @@ Picture: the key art (C4). Goes out only once "take out a copy" is built and wor
 Video: the trailer.
 
 > **The Seal Falls 落印 · the Season 0 trailer**
-> Season 0 starts Monday 26 October at 00:00 UTC. Your closed-test cultivator is sealed and kept, as a copy you can take out.
+> Season 0 starts Monday 26 October at 00:00 UTC. Your closed-test cultivator is sealed and kept, as a copy you can save.
 
 ### Reminder · Sunday 25 October · announcements
 
@@ -503,13 +503,13 @@ Video: the trailer.
 
 1. Nine realms. One closed test.
 2. Every cultivator you raised.
-3. It falls once.
+3. The seal falls once.
 4. (no text)
-5. The closed test is sealed and kept. Your cultivator stays as a copy you can take out.
-6. A new scroll. Everyone starts level, in realm 1.
-7. The boards start empty. Fair play checks go fully on.
-8. This is the last wipe. Nothing is painted over again.
-9. The Seal Falls 落印 · Season 0 · Monday 26 October, 00:00 UTC, then: The closed test is sealed and kept. The new scroll is never wiped.
+5. The closed test is sealed and kept. Your cultivator is kept as a copy you can save.
+6. A new scroll. Everyone starts equal, in realm 1.
+7. The boards start empty. Every rank is checked for fair play.
+8. This is the last wipe. Nothing will be painted over again.
+9. The Seal Falls 落印 · Season 0 · Monday 26 October, 00:00 UTC, then: The closed test is sealed and kept. The new scroll will never be wiped.
 
 ---
 
@@ -527,10 +527,10 @@ Video: the trailer.
 | 2 | 3 to 6 | R2 woman-1, R3 man-5, R4 tiger, R5 dragon, laid on the scroll | Four quick cuts, each under a second. Each figure settles in with a small ink bloom. | Every cultivator you raised. |
 | 3 | 6 to 8.5 | The whole scroll from above (R1), colour draining to bone silk | A huge square shadow (C3) grows over it. Mist is pulled to the centre. A few gold leaf flecks lift off the silk. A drum swells. | It falls once. |
 | 4 | 8.5 to 10 | C1 seal carved 九境 (Ninefold) striking R1 drained, picture 8 splash, picture 11 (or the stand-in) tiny at its foot | One black frame, then the slam. Black ink drops and gold leaf thrown out, thin red streaks and two ghost outlines hang above. Shake under 0.3 s. No white flash. One deep drum hit, then silence. | (none) |
-| 5 | 10 to 13.5 | Picture 1, the scroll tied with the red cord, C1 print on its last section (V1 if made) | The seal lifts and the print stays. The scroll rolls itself up, the cord pulls tight, and it is laid down gently. Silence, then lantern hush. | The closed test is sealed and kept. Your cultivator stays as a copy you can take out. |
-| 6 | 13.5 to 17 | Picture 2 blank silk (V2 if made), picture 9 stroke, picture 10 brush, then R1 realm 1 | Hard cut to quiet and birdsong. Empty silk unrolls. One brush stroke crosses it, and realm 1's first mountain bleeds in through the stroke. | A new scroll. Everyone starts level, in realm 1. |
-| 7 | 17 to 20 | R7, the real Rankings screen, every board empty; picture 10 brush | Slow push in down the empty ink lines. The brush tip hovers over the first row and does not write yet. | The boards start empty. Fair play checks go fully on. |
-| 8 | 20 to 23.5 | R1 realm 1 (V3 if made), R2 woman-1 small on the first peak, a small C1 seal print in the corner of the new scroll | Slow pull back, mist drifting left to right, a few gold flecks settling. The drum gives way to a single guqin line. | This is the last wipe. Nothing is painted over again. |
+| 5 | 10 to 13.5 | Picture 1, the scroll tied with the red cord, C1 print on its last section (V1 if made) | The seal lifts and the print stays. The scroll rolls itself up, the cord pulls tight, and it is laid down gently. Silence, then lantern hush. | The closed test is sealed and kept. Your cultivator is kept as a copy you can save. |
+| 6 | 13.5 to 17 | Picture 2 blank silk (V2 if made), picture 9 stroke, picture 10 brush, then R1 realm 1 | Hard cut to quiet and birdsong. Empty silk unrolls. One brush stroke crosses it, and realm 1's first mountain bleeds in through the stroke. | A new scroll. Everyone starts equal, in realm 1. |
+| 7 | 17 to 20 | R7, the real Rankings screen, every board empty; picture 10 brush | Slow push in down the empty ink lines. The brush tip hovers over the first row and does not write yet. | The boards start empty. Every rank is checked for fair play. |
+| 8 | 20 to 23.5 | R1 realm 1 (V3 if made), R2 woman-1 small on the first peak, a small C1 seal print in the corner of the new scroll | Slow pull back, mist drifting left to right, a few gold flecks settling. The drum gives way to a single guqin line. | This is the last wipe. Nothing will be painted over again. |
 | 9 | 23.5 to 27 | Title card on ink black, laid out like the left of the key art (C2), R6 Ninefold logo | A small seal (C1) stamps once at the centre with a soft thunk. The lettering and the gold Season 0 box (零) fade up under it while gold flecks keep drifting. | The Seal Falls 落印 · Season 0 · Monday 26 October, 00:00 UTC |
 
 **What I need from Bruno to make it:** pictures 1 to 6 (Must), any of 7 to 11 you can, the Suno track if you want your own music, and V1 to V3 only if you want to try them. Everything else comes from the game and from code.
