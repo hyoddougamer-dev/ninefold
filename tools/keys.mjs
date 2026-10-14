@@ -25,7 +25,7 @@ const SAVE_KEY = 'ninefold.save.v1';
 function cultivator(over = {}) {
   const at = Math.floor(Date.now() / 1000);
   return {
-    v: 1, at, startedAt: at - 30 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 30 * 86400,
     realm: 3, layer: 3, qi: 1e5, materials: 1e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
     killed: { rat: 3, hound: 2, frog: 2, beetle: 12 },

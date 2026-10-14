@@ -41,7 +41,7 @@ function crafter() {
   for (const k of ['rat', 'hound', 'frog', 'serpent', 'mantis', 'bat', 'beetle', 'owl', 'raven', 'boar', 'wolf', 'vulture']) killed[k] = 40;
   for (const k of ['fox', 'ape', 'crane', 'tiger']) killed[k] = 1;
   return {
-    v: 1, at, startedAt: at - 30 * 86400, realm: 4, layer: 4, qi: 1e7, materials: 1e7, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 30 * 86400, realm: 4, layer: 4, qi: 1e7, materials: 1e7, wardenFell: false,
     levels: { technique: 22, method: 22, pills: 22, cores: 18 }, killed, worn: {}, chest: [],
     self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0, tower: 20,
     awakened: ['feast', 'wolf', 'slaughter'], seen: SEEN,
@@ -60,7 +60,7 @@ function summit() {
     wolf: 6, vulture: 6, crab: 6, jellyfish: 5, lizard: 5, centipede: 4, scorpion: 4, gargoyle: 3, minotaur: 3, squid: 3,
     fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1 };
   return {
-    v: 1, at, startedAt: at - 160 * 86400, realm: 9, layer: 8, qi: 1e12, materials: 1e12, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 160 * 86400, realm: 9, layer: 8, qi: 1e12, materials: 1e12, wardenFell: false,
     levels: { technique: 60, method: 60, pills: 60, cores: 54 }, killed,
     worn: { weapon: { id: 'w', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 40 }] } }, chest: [],
     unlocked: [], self: 'woman', stance: 'swift', sequence: ['crane'], tribulation: 1, tribulationAt: 0, tower: 160,

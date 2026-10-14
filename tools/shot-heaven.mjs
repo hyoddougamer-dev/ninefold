@@ -47,7 +47,7 @@ function immortal(marks, cards) {
                    lizard: 5, centipede: 4, scorpion: 4, gargoyle: 3, minotaur: 3, squid: 3,
                    fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1 };
   return {
-    v: 1, at, startedAt: at - 150 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 150 * 86400,
     realm: 9, layer: 8, qi: 1e18, materials: 1e12, wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: cap - 6 },
     killed,

@@ -37,7 +37,7 @@ function crafter() {
   for (const b of commonsOf(1)) killed[b.key] = 40;
   killed[wardenOf(1).key] = 3;
   return {
-    v: 1, at, startedAt: at - 12 * 86400, realm: 2, layer: 4, qi: 1e6, materials: 1e6, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 12 * 86400, realm: 2, layer: 4, qi: 1e6, materials: 1e6, wardenFell: false,
     levels: { technique: 12, method: 12, pills: 12, cores: 8 }, killed, worn: {}, chest: [],
     self: 'woman', stance: 'swift', sequence: [], tribulation: 0, tribulationAt: 0, tower: 8,
     awakened: ['feast', 'wolf', 'slaughter'], seen: SEEN,

@@ -60,7 +60,7 @@ function second() {
   all(made, 1, 'mystic');
   all(made, 5, 'mystic'); all(made, 5, 'earth');
   return {
-    v: 1, at, startedAt: at - 150 * DAY, realm: 6, layer: 4, qi: 1e9, materials: 1e9, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 150 * DAY, realm: 6, layer: 4, qi: 1e9, materials: 1e9, wardenFell: false,
     levels: { technique: 36, method: 36, pills: 36, cores: 30 }, killed: known(5), worn: {}, chest: [],
     self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0, tower: 40,
     brewed: { body: 10, bane: 6, fortune: 4 }, awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard'],
@@ -82,7 +82,7 @@ function summit() {
   all(made, 4, 'earth');
   const cap = 9 * 6 + 6;
   return {
-    v: 1, at, startedAt: at - 160 * DAY, realm: 9, layer: 8, qi: 1e12, materials: 1e12, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 160 * DAY, realm: 9, layer: 8, qi: 1e12, materials: 1e12, wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: cap - 6 }, killed: known(9),
     worn: { weapon: { id: 'w', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 40 }] } }, chest: [],
     unlocked: [], self: 'woman', stance: 'swift', sequence: ['crane'], tribulation: 3, tribulationAt: 0, tower: 160,

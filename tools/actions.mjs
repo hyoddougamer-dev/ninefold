@@ -36,7 +36,7 @@ const pass = (what) => console.log(`  ✓ ${what}`);
 function save(over = {}) {
   const at = Math.floor(Date.now() / 1000);
   return {
-    v: 1, at, startedAt: at - 40 * 86400, realm: 5, layer: 4,
+    v: 1, season: 's0', at, startedAt: at - 40 * 86400, realm: 5, layer: 4,
     qi: 1e11, materials: 5e6, wardenFell: false,
     levels: { technique: 20, method: 20, pills: 20, cores: 20 },
     killed: {

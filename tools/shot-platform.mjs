@@ -56,7 +56,7 @@ function cultivator() {
     crane: 1, tiger: 1 };
   return {
     // A fixed start, so the period's dice (challengerSeed) are the same on both builds.
-    v: 1, at, startedAt: Number(process.env.START ?? 1_780_000_002),
+    v: 1, season: 's0', at, startedAt: Number(process.env.START ?? 1_780_000_002),
     realm, layer: 7, qi: 2.1e9, materials: 6.4e6, wardenFell: false,
     levels: { technique: 33, method: 36, pills: 36, cores: 39 },
     killed,

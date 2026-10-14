@@ -175,7 +175,7 @@ console.log('\na new device');
 {
   const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
   const now = Math.floor(Date.now() / 1000);
-  const cloud = { v: 1, at: now - 60, startedAt: now - 30 * 86400, realm: 5, layer: 3, qi: 5e6, materials: 900,
+  const cloud = { v: 1, season: 's0', at: now - 60, startedAt: now - 30 * 86400, realm: 5, layer: 3, qi: 5e6, materials: 900,
     wardenFell: false, levels: { technique: 20, method: 20, pills: 18, cores: 20 }, killed: { rat: 40, hound: 30 },
     self: 'woman', seen: ['guide', 'whom'] };
   server(page, { cloud, email: 'bruno@example.com' });
@@ -200,7 +200,7 @@ console.log('\na new device, by the code in the email');
 {
   const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
   const now = Math.floor(Date.now() / 1000);
-  const cloud = { v: 1, at: now - 60, startedAt: now - 30 * 86400, realm: 4, layer: 6, qi: 5e6, materials: 900,
+  const cloud = { v: 1, season: 's0', at: now - 60, startedAt: now - 30 * 86400, realm: 4, layer: 6, qi: 5e6, materials: 900,
     wardenFell: false, levels: { technique: 18, method: 18, pills: 16, cores: 18 }, killed: { rat: 40, hound: 30 },
     self: 'man', seen: ['guide', 'whom'] };
   const seen = server(page, { cloud, email: 'bruno@example.com' });

@@ -50,7 +50,7 @@ function mid() {
   const killed = {};
   for (const k of ['rat', 'hound', 'frog', 'serpent', 'mantis', 'bat', 'beetle', 'owl', 'raven', 'boar', 'wolf', 'vulture']) killed[k] = 60;
   return {
-    v: 1, at, startedAt: at - 40 * 86400, realm: 5, layer: 6, qi: 1e7, materials: 1e6, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 40 * 86400, realm: 5, layer: 6, qi: 1e7, materials: 1e6, wardenFell: false,
     levels: { technique: 30, method: 30, pills: 30, cores: 24 }, killed, worn, chest, sets, tasks: {},
     self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0, tower: 40,
     quarryWeek: 99999, awakened: AWAKENED, seen: SEEN,
@@ -62,7 +62,7 @@ function mid() {
 function early() {
   const at = NOW - 60;
   return {
-    v: 1, at, startedAt: at - 2 * 86400, realm: 1, layer: 2, qi: 900, materials: 120, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 2 * 86400, realm: 1, layer: 2, qi: 900, materials: 120, wardenFell: false,
     levels: { technique: 2, method: 1, pills: 1, cores: 0 }, killed: { rat: 4, hound: 2 }, worn: {}, chest: [], sets: [], tasks: {},
     self: 'woman', stance: 'swift', sequence: [], tribulation: 0, tribulationAt: 0, tower: 0, quarryWeek: 99999,
     // The first meeting is answered here, so its question does not cover the screen and the locked tabs can be tapped.

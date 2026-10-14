@@ -25,7 +25,7 @@ function cultivator(realm) {
                    boar: 2, wolf: 1, vulture: 1, crab: 1 };
   ['fox', 'ape', 'crane', 'tiger'].slice(0, realm - 1).forEach((k) => { killed[k] = 1; });
   return {
-    v: 1, at, startedAt: at - realm * 10 * 86400,
+    v: 1, season: 's0', at, startedAt: at - realm * 10 * 86400,
     realm, layer: 3, qi: 10 ** (realm + 2), materials: 10 ** (realm + 1), wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: Math.max(0, cap - 6) },
     killed,

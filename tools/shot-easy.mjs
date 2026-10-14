@@ -26,7 +26,7 @@ const piece = (id, template, rarity, value, extra = []) =>
 const save = (filters = []) => {
   const at = NOW - 30;
   return {
-    v: 1, at, startedAt: at - 30 * 86400, realm: 5, layer: 6, qi: 1e8, materials: 2e5, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 30 * 86400, realm: 5, layer: 6, qi: 1e8, materials: 2e5, wardenFell: false,
     levels: { technique: 30, method: 30, pills: 30, cores: 24 },
     killed: { rat: 150, hound: 40, frog: 40, serpent: 30, mantis: 30, bat: 30, beetle: 30, owl: 30, raven: 30, boar: 30, wolf: 30, vulture: 30, crab: 12 },
     worn: {

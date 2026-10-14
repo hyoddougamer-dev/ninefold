@@ -37,7 +37,7 @@ const check = (ok, what) => { if (!ok) { failures++; console.log(`  ✗ ${what}`
 function cultivator(lives) {
   const now = Math.floor(Date.now() / 1000);
   return {
-    v: 1, at: now, startedAt: now - 120 * 86400,
+    v: 1, season: 's0', at: now, startedAt: now - 120 * 86400,
     realm: 3, layer: 4, qi: 5e6, materials: 900, wardenFell: false,
     levels: { technique: 6, method: 6, pills: 6, cores: 6 },
     killed: { rat: 40, hound: 30, frog: 20, serpent: 20, mantis: 15, bat: 12, beetle: 12, owl: 8 },

@@ -20,7 +20,7 @@ const SEEN = ['guide', 'marks', 'reach', 'tree', 'stance', 'gear', 'tower', 'key
 function save() {
   const at = Math.floor(Date.now() / 1000);
   return {
-    v: 1, at, startedAt: at - 20 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 20 * 86400,
     realm: 3, layer: 4, qi: 5e4, materials: 1e4, wardenFell: false,
     levels: { technique: 20, method: 20, pills: 20, cores: 10 },
     killed: { rat: 40, hound: 30, frog: 20, serpent: 20, mantis: 15 },

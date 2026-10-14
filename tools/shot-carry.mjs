@@ -45,7 +45,7 @@ function summit(lives = []) {
                    lizard: 5, centipede: 4, scorpion: 4, gargoyle: 3, minotaur: 3, squid: 3,
                    fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1, golem: 1, direwolf: 1, jiao: 1 };
   return {
-    v: 1, at, startedAt: at - 160 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 160 * 86400,
     realm: 9, layer: 8, qi: 1e12, materials: 1e12, wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: cap - 6 },
     killed,
@@ -69,7 +69,7 @@ function second(share) {
   const at = Math.floor(Date.now() / 1000);
   const killed = { rat: 40, hound: 30, frog: 20 };
   return {
-    v: 1, at, startedAt: at - 160 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 160 * 86400,
     realm: 2, layer: 3, qi: 4e3, materials: 1.2e3, wardenFell: false,
     levels: { technique: 8, method: 6, pills: 6, cores: 2 },
     killed, worn: {}, chest: [], unlocked: [], self: 'woman', stance: 'swift', sequence: [],

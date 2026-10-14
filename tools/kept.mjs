@@ -30,7 +30,7 @@ const piece = (id, template, rarity = 'common', value = 6, affix = 'power') =>
 function cultivator(over = {}) {
   const at = Math.floor(Date.now() / 1000);
   return {
-    v: 1, at, startedAt: at - 30 * 86400,
+    v: 1, season: 's0', at, startedAt: at - 30 * 86400,
     realm: 4, layer: 4, qi: 1e9, materials: 2e4, wardenFell: false,
     levels: { technique: 18, method: 18, pills: 18, cores: 12 },
     killed: { rat: 150, hound: 20, frog: 20, beetle: 30, viper: 12, boar: 4 },

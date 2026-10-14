@@ -38,7 +38,7 @@ const lv = (l: number) => XP_TABLE[l] + Math.floor((XP_TABLE[l + 1] - XP_TABLE[l
 // 金剛 Three Qi pieces and three Body pieces: the Vajra.
 const piece = (id: string, template: string, affix: string) => ({ id, template, rarity: 'earth', rolls: [{ affix, value: 30 }] });
 const save: Record<string, unknown> = {
-  v: 1, at, startedAt: at - 40 * 86400, realm, layer: 5, qi: 1e9, materials: 1e10,
+  v: 1, season: 's0', at, startedAt: at - 40 * 86400, realm, layer: 5, qi: 1e9, materials: 1e10,
   wardenFell: false, levels: { technique: cap, method: cap, pills: cap, cores: cap - 6 }, killed,
   worn: {
     weapon: piece('w', `fan${realm}`, 'rate'), robe: piece('r', `robe${realm}`, 'rate'), crown: piece('c', `band${realm}`, 'rate'),

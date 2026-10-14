@@ -47,7 +47,7 @@ function cultivator({ strong, crafts, away = 0 }) {
   for (const [k, l] of Object.entries({ herb: 60, vein: 60, render: 60, forge: 60, alchemy: 70, sigil: 60 })) xp[k] = XP[l] + 10;
   const piece = (slot, template) => ({ id: slot, template, rarity: 'heaven', rolls: [{ affix: 'power', value: 40 }, { affix: 'power', value: 40 }] });
   return {
-    v: 1, at, startedAt: at - 60 * 86400, realm, layer: 8, qi: 10 ** (realm + 3), materials: 10 ** (realm + 3),
+    v: 1, season: 's0', at, startedAt: at - 60 * 86400, realm, layer: 8, qi: 10 ** (realm + 3), materials: 10 ** (realm + 3),
     wardenFell: false, levels: { technique: cap, method: cap, pills: cap, cores: cap }, killed,
     worn: strong ? { weapon: piece('weapon', 'sword6'), robe: piece('robe', 'robe6'), ring: piece('ring', 'plainring6') } : {},
     chest: [], self: 'woman', stance: strong ? 'swift' : null, sequence: strong ? ['crane', 'tiger'] : [],

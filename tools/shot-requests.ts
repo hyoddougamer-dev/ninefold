@@ -43,7 +43,7 @@ function cultivator(known: number, extra: Partial<State> = {}): State {
   const killed: Record<string, number> = {};
   for (let r = 1; r <= 5; r++) for (const b of commonsOf(r)) killed[b.key] = known;
   const s = {
-    ...newState(at), startedAt: at - 40 * 86_400, realm: 5, layer: 8, qi: 3e9, materials: 2e5,
+    ...newState(at), season: 's0', startedAt: at - 40 * 86_400, realm: 5, layer: 8, qi: 3e9, materials: 2e5,
     levels: { technique: 20, method: 20, pills: 20, cores: 12 }, killed, seen: SEEN, self: 'woman',
     awakened: ['feast', 'wolf', 'luckystar', 'platform'], ...extra,
   } as State;

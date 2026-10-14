@@ -63,7 +63,7 @@ const plainWorn = { weapon: forged(5, 'weapon', 'earth', 'w-weapon'), robe: forg
 
 function save(worn: Record<string, unknown>) {
   return {
-    v: 1, at, startedAt: at - 70 * 86400, realm: 6, layer: 6, qi: 1e9, materials: 1e9, wardenFell: false,
+    v: 1, season: 's0', at, startedAt: at - 70 * 86400, realm: 6, layer: 6, qi: 1e9, materials: 1e9, wardenFell: false,
     levels: { technique: 36, method: 36, pills: 36, cores: 30 }, killed, worn, chest: [],
     self: 'woman', stance: 'swift', sequence: ['crane', 'tiger'], tribulation: 0, tribulationAt: 0, tower: 60,
     brewed: { body: 10, bane: 6, fortune: 4 }, awakened: ['feast', 'wolf', 'slaughter', 'platform', 'hoard'],

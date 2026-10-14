@@ -33,6 +33,8 @@ function fromHarness(over) {
   const move = (x) => (typeof x === 'number' && x > 0 ? x + d : x);
   return {
     ...FIXTURE,
+    // 季 A fixture without the marker is retired at load after the switch (CLAUDE.md, the traps).
+    season: 's0',
     at, startedAt: move(FIXTURE.startedAt), runAt: move(FIXTURE.runAt), springAt: move(FIXTURE.springAt),
     metAt: move(FIXTURE.metAt), secludedAt: move(FIXTURE.secludedAt), incenseUntil: 0, keyDay: 0, quarryWeek: -1,
     beds: FIXTURE.beds.map((b) => ({ ...b, at: move(b.at) })),
@@ -54,7 +56,7 @@ export function cultivator(over = {}) {
     raven: 10, boar: 12, wolf: 8, vulture: 5, crab: 11, jellyfish: 4, lizard: 3, centipede: 10, scorpion: 2,
     worm: 2, fox: 1, ape: 1, crane: 1, tiger: 1, turtle: 1 };
   return {
-    v: 1, at, startedAt: at - 25 * DAY,
+    v: 1, season: 's0', at, startedAt: at - 25 * DAY,
     realm: 6, layer: 5, qi: 3.2e9, materials: 1.99e8, wardenFell: false,
     levels: { technique: 34, method: 34, pills: 34, cores: 40 },
     killed,

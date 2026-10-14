@@ -29,7 +29,7 @@ function cultivator(tower, over = {}) {
     raven: 10, boar: 12, wolf: 8, vulture: 5, crab: 11, jellyfish: 4, lizard: 3, centipede: 10, fox: 1, ape: 1,
     crane: 1, tiger: 1 };
   return {
-    v: 1, at, startedAt: at - 9 * DAY,
+    v: 1, season: 's0', at, startedAt: at - 9 * DAY,
     realm: 5, layer: 4, qi: 4.1e7, materials: 2.4e6, wardenFell: false,
     levels: { technique: 27, method: 27, pills: 27, cores: 33 },
     killed,

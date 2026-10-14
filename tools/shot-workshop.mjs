@@ -34,7 +34,7 @@ function cultivator(realm, levels, crafts) {
   const xp = {};
   for (const [k, l] of Object.entries(levels)) xp[k] = XP[l] + Math.floor((XP[l + 1] - XP[l]) * 0.45);
   return {
-    v: 1, at, startedAt: at - 40 * 86400, realm, layer: 5, qi: 10 ** (realm + 2), materials: 10 ** (realm + 3),
+    v: 1, season: 's0', at, startedAt: at - 40 * 86400, realm, layer: 5, qi: 10 ** (realm + 2), materials: 10 ** (realm + 3),
     wardenFell: false, levels: { technique: cap, method: cap, pills: cap, cores: Math.max(0, cap - 6) }, killed,
     worn: { weapon: { id: 'w', template: `sword${realm}`, rarity: 'earth', rolls: [{ affix: 'power', value: 22 }] } },
     chest: [], self: 'woman', stance: 'swift', sequence: realm >= 3 ? ['crane'] : [], tribulation: 0, tribulationAt: 0,

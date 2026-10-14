@@ -54,7 +54,7 @@ function cultivator(realm, beast) {
   const at = Math.floor(Date.now() / 1000);
   const cap = realm * 6;
   return {
-    v: 1, at, startedAt: at - realm * 10 * 86400,
+    v: 1, season: 's0', at, startedAt: at - realm * 10 * 86400,
     realm, layer: 8, qi: 10 ** (realm + 2), materials: 10 ** (realm + 1), wardenFell: false,
     levels: { technique: cap, method: cap, pills: cap, cores: Math.max(0, cap - 6) },
     // 見 Every beast seen once, so the row is there and the odds are not a wall.
