@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync, readdirSync } from 'node:fs';
+import { SEASON_START } from '../season.ts';
 
 /**
  * 榜 The ranked schema, run in a real Postgres (PGlite) with the three things Supabase
@@ -9,6 +10,8 @@ import { readFileSync, readdirSync } from 'node:fs';
  * read the boards and choose a name, and can write nothing that is ranked.**
  */
 const MIGRATIONS = 'supabase/migrations';
+/** 季 The season's migration: the boards and the panel read only rows written since the switch. */
+const SEASON_FILE = '20261014130000_season0.sql';
 let db: PGlite;
 
 const A = '11111111-1111-1111-1111-111111111111';
@@ -219,6 +222,7 @@ describe('榜 the ranked schema', () => {
     await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
     await db.exec(readFileSync(`${MIGRATIONS}/20261003000000_panel_refusals.sql`, 'utf8'));
     await db.exec(readFileSync(`${MIGRATIONS}/20261005140000_review.sql`, 'utf8'));
+    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
     // 拒 Gamma's day: two syncs refused for too-fast (one with it twice, from both windows),
     // one for the tower, one that went through, and a refusal two days old that is not today's.
     await db.exec(`insert into sync_log (user_id, at, ok, why) values
@@ -539,5 +543,111 @@ describe('榜 the ranked schema', () => {
     await expect(as(A, `update standings set lives = 9 where user_id = '${A}'`)).rejects.toThrow(/permission denied/);
     await expect(as(A, `update standings set samsara_climb = 80 where user_id = '${A}'`)).rejects.toThrow(/permission denied/);
     await expect(as(A, `select samsara_climb from standings`)).rejects.toThrow(/permission denied/);
+  });
+  /**
+   * 季 Season 0. season_start() is SEASON_START, and the boards, the titles, where I stand and
+   * the panel read every row before it and only the season's rows from it. Nothing is deleted.
+   * The switch cannot be waited for here, so the test moves it: season_start() is redefined to
+   * this Monday 00:00 UTC (a season begins on a Monday, as the real one does), and put back.
+   */
+  it('season_start() is SEASON_START, to the second', async () => {
+    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    const r = (await db.query(`select extract(epoch from season_start())::bigint as t`)).rows[0] as any;
+    expect(Number(r.t)).toBe(SEASON_START);
+    expect(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8')).toContain(`to_timestamp(${SEASON_START})`);
+  });
+
+  it('from the switch the boards, titles and panel read only season rows, and nothing is deleted', async () => {
+    // Every migration that redefined these functions before it, run again above, is undone
+    // by running this one again: it is written to be run again.
+    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    const { createHash } = await import('node:crypto');
+    await db.exec(readFileSync(`${MIGRATIONS}/20261004220000_panel_key.sql`, 'utf8')
+      .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`));
+    const P = 'dddddddd-0000-0000-0000-000000000001'; // the closed test's best, last seen the day before
+    const R = 'dddddddd-0000-0000-0000-000000000002'; // reborn in the closed test
+    const Q = 'dddddddd-0000-0000-0000-000000000003'; // begun in the season
+    const monday = `to_timestamp(week_of() * 604800 - 259200)`;
+    await db.exec(`
+      insert into auth.users values ('${P}'), ('${R}'), ('${Q}');
+      insert into profiles (id, name) values ('${P}', 'Closed Best'), ('${R}', 'Closed Reborn'), ('${Q}', 'Season First');
+      insert into standings (user_id, climb, marks, tower, week, week_from, lives, samsara_climb, updated_at) values
+        ('${P}', 79, 6, 500, week_of() - 1, 0, 0, 79, ${monday} - interval '1 day'),
+        ('${R}', 70, 2, 9, week_of() - 1, 0, 1, 30, ${monday} - interval '2 days'),
+        ('${Q}', 3, 0, 1, week_of(), 0, 0, 3, now());
+      insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync) values
+        ('${P}', '{"realm": 9, "startedAt": 1777593600}', ${monday} - interval '1 day',
+         '{"realm": 9, "layer": 8, "startedAt": 1777593600}', ${monday} - interval '1 day', ${monday} - interval '1 day'),
+        ('${Q}', '{"realm": 1, "season": "s0"}', now(), '{"realm": 1, "layer": 3, "season": "s0"}', now(), now());
+      insert into titles (week, board, rank, user_id, name) values (week_of() - 1, 'week', 1, '${P}', 'Closed Best');
+      insert into sync_log (user_id, at, ok, why, strike) values ('${P}', ${monday} - interval '1 day', false, '{gear}', true);
+    `);
+    const names = async (sql: string, who: string | null = null) => ((await as(who, sql)).rows as any[]).map((r) => r.name);
+    const panel = async (fn: string) => ((await as(null, `select ${fn}('test-key') as p`)).rows[0] as any).p as any[];
+
+    // Before the switch: everything reads as it always has.
+    expect(await names(`select name from board('climb')`)).toEqual(expect.arrayContaining(['Closed Best', 'Season First']));
+    expect(await names(`select name from board('tower')`)).toContain('Closed Best');
+    expect(await names(`select name from samsara_board()`)).toContain('Closed Reborn');
+    expect(((await db.query(`select title_of('${P}') as t`)).rows[0] as any).t).toBe('期首');
+    expect(((await as(P, `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ climb: 79, title: '天下第一' });
+    expect((await panel('panel_players')).find((r) => r.name === 'Closed Best')).toMatchObject({ realm: 9, climb: 79, tower: 500, days: 1 });
+    expect((await panel('panel_cheats')).find((r) => r.name === 'Closed Best')).toMatchObject({ struck: 1 });
+    const realms = async () => (((await as(null, `select stats() as s`)).rows[0] as any).s.realms as any[]);
+    expect((await realms()).some((r) => r.realm === 9)).toBe(true);
+
+    // The switch.
+    await db.exec(`create or replace function public.season_start() returns timestamptz language sql stable
+      set search_path = public as $$ select ${monday} $$`);
+    try {
+      const heaven = await names(`select name from board('climb')`);
+      expect(heaven).toContain('Season First');
+      expect(heaven).not.toContain('Closed Best');
+      expect(await names(`select name from board('tower')`)).not.toContain('Closed Best');
+      expect(await names(`select name from board('week')`)).not.toContain('Closed Best');
+      expect(await names(`select name from samsara_board()`)).not.toContain('Closed Reborn');
+      // The first under Heaven is the season's, and the closed test's last week is worn by nobody.
+      expect(((await as(null, `select title from board('climb') where rank = 1`)).rows[0] as any).title).toBe('天下第一');
+      expect(((await db.query(`select title_of('${P}') as t`)).rows[0] as any).t).toBeNull();
+      const mine = ((await as(P, `select my_standing() as s`)).rows[0] as any).s;
+      expect(mine).toMatchObject({ name: 'Closed Best', climb: null, tower: null, verified_at: null, latest_at: null });
+      expect(mine.title).toBeNull();
+      expect(((await as(Q, `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ climb: 3 });
+      // The panel: accounts are kept, what was played is the season's.
+      const p = (await panel('panel_players')).find((r) => r.name === 'Closed Best');
+      expect(p).toMatchObject({ realm: 1, climb: 0, marks: 0, tower: 0, days: 0, last_seen: null, started: null });
+      expect((await panel('panel_players')).find((r) => r.name === 'Season First')).toMatchObject({ realm: 1, layer: 3, climb: 3 });
+      expect((await panel('panel_cheats')).find((r) => r.name === 'Closed Best')).toBeUndefined();
+      expect((await realms()).some((r) => r.realm === 9)).toBe(false);
+      // Nothing was deleted: every row is where it was.
+      const counts = (await db.query(`select
+        (select count(*) from standings where user_id in ('${P}', '${R}'))::int as st,
+        (select count(*) from saves where user_id = '${P}')::int as sv,
+        (select count(*) from titles where user_id = '${P}')::int as ti,
+        (select count(*) from sync_log where user_id = '${P}')::int as lg`)).rows[0];
+      expect(counts).toEqual({ st: 2, sv: 1, ti: 1, lg: 1 });
+
+      // 存 The season's first sync of a kept account writes over its cloud copy, as the sync
+      // function does (an upsert); the closed-test copy moves to closed_test, once.
+      const upsert = (latest: string) => db.exec(`insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync)
+        values ('${P}', '${latest}', now(), null, null, now())
+        on conflict (user_id) do update set latest = excluded.latest, latest_at = excluded.latest_at,
+          verified = excluded.verified, verified_at = excluded.verified_at, last_sync = excluded.last_sync`);
+      await upsert('{"realm": 1, "season": "s0", "n": 1}');
+      await upsert('{"realm": 1, "season": "s0", "n": 2}');
+      const row = (await db.query(`select latest, closed_test, closed_test_at from saves where user_id = '${P}'`)).rows[0] as any;
+      expect(row.latest).toMatchObject({ season: 's0', n: 2 });
+      expect(row.closed_test).toEqual({ realm: 9, startedAt: 1777593600 });
+      expect(row.closed_test_at).toBeTruthy();
+      await expect(as(P, `select closed_test from saves`)).rejects.toThrow(/permission denied/);
+    } finally {
+      await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    }
+    // Put back, the closed test reads as before, and a sync before the switch keeps nothing aside.
+    expect(await names(`select name from board('climb')`)).toContain('Closed Best');
+    await db.exec(`update saves set latest = '{"realm": 2}' where user_id = '${Q}'`);
+    expect((await db.query(`select closed_test from saves where user_id = '${Q}'`)).rows[0]).toEqual({ closed_test: null });
+    await db.exec(`delete from titles where user_id = '${P}'; delete from sync_log where user_id = '${P}';
+      delete from auth.users where id in ('${P}', '${R}', '${Q}')`);
   });
 });

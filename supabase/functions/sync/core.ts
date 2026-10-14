@@ -10,6 +10,12 @@
  *   3. if it verified, moves the standings; if it was impossible, counts a strike;
  *      if it was faster than anybody honest, marks the player for review;
  *   4. answers with where the player now stands, and why, in words the game can show.
+ *
+ * 季 From SEASON_START (sim/season.ts) it also keeps the season's door: a save that is not a
+ * season save, or that says it began before the season did, is turned away with 409 and
+ * nothing is written, and everything the database still holds from before the switch (the
+ * verified copy, the anchors, the cloud copy, the standing) reads as absent. Before the
+ * switch none of that applies, and the sync is the one the closed test always had.
  */
 import { validate } from '../../../src/sim/load.ts';
 import { layersOpened, type State } from '../../../src/sim/state.ts';
@@ -19,6 +25,7 @@ import { withPackedPile } from '../../../src/sim/pilepack.ts';
 import { WEEK, weekOf } from '../../../src/sim/week.ts';
 import { callingKey } from '../../../src/sim/schools.ts';
 import { cleanName } from '../../../src/net/names.ts';
+import { SEASON, SEASON_START } from '../../../src/sim/season.ts';
 
 /** 限 One sync every this many seconds per player. The phone syncs every few minutes. */
 export const MIN_GAP = 20;
@@ -78,6 +85,11 @@ export interface Standing {
    * its marks, and when they last rose. A rebirth sets it back to where the new life stands.
    */
   samsaraClimb?: number; samsaraMarks?: number; samsaraAt?: number;
+  /**
+   * 季 When the row was last written (the database's updated_at). A standing last written
+   * before the season began is the closed test's, and the season reads it as absent.
+   */
+  updatedAt?: number;
 }
 export interface Profile { name: string; strikes: number; suspect: boolean; banned: boolean }
 
@@ -111,6 +123,13 @@ export type Reply =
   | { status: 429; body: { error: 'too-soon'; wait: number } }
   | { status: 400; body: { error: 'bad-save' | 'no-name' } }
   | { status: 403; body: { error: 'banned' } }
+  /**
+   * 季 A save from the wrong side of the switch: after it, a closed-test save or one that
+   * says it began before the season; before it, a season save (a device clock running
+   * ahead). Nothing is written and nothing is struck. The game says the closed test has
+   * ended and asks the player to check the device's date (RANKS.status.season).
+   */
+  | { status: 409; body: { error: 'season' } }
   | { status: 200; body: {
       ranked: boolean;
       /**
@@ -120,7 +139,7 @@ export type Reply =
        */
       state: 'verified' | 'waiting' | 'refused' | 'behind';
       suspect: boolean;
-      standing: Standing | null;
+      standing: Omit<Standing, 'updatedAt'> | null;
       /** Hours the ranking is behind the phone, when it is. */
       behindHours: number;
     } };
@@ -153,6 +172,13 @@ export function weekStart(old: Standing | null, total: number, lastAt: number | 
   return Math.round(total - (total - had) * share);
 }
 
+/** What the reply shows of a standing: everything but when the row was written. */
+function shown(s: Standing | null): Omit<Standing, 'updatedAt'> | null {
+  if (!s) return null;
+  const { updatedAt: _, ...rest } = s;
+  return rest;
+}
+
 /** 窗 How old an anchor may grow before it is moved up to the present. */
 export const DAY_WINDOW = 2 * 86_400;
 export const WEEK_WINDOW = 14 * 86_400;
@@ -165,17 +191,65 @@ export const WEEK_WINDOW = 14 * 86_400;
  * boards. A save that went down is still only behind, as it always was. sync() itself runs
  * the rules by default (accept: false), so the tests never see this switch; the server
  * passes it in, and tools/ranked.ts reads it to know what the live server should answer.
- * Set it to false before the first season that counts.
+ *
+ * 季 It was a constant, true, with "set it to false before the first season that counts".
+ * It is now a time, decision D7 of docs/SEASON0-PLAN.md: on until SEASON_START and off from
+ * its first second, so the closed test's last days stay as lenient as Bruno set them and the
+ * season is strict without another push. It has to go off with the season: `startedAt` is
+ * the player's own input, and while a refused verdict still ranks, a closed-test save
+ * relabelled with the season and a start date of SEASON_START would rank at once.
  */
-export const ACCEPT_EVERYTHING = true;
+export const acceptsEverything = (now: number): boolean => now < SEASON_START;
+
+/**
+ * 季 What a pull hands a new device: the cloud copy, unless the season has begun and the copy
+ * is not a season save. The closed-test cultivator a device kept is the device's to keep
+ * (the retired copy, sim/save.ts); the cloud does not hand it back as if it were playable.
+ */
+export function pullable(latest: unknown, now: number, seasonStart = SEASON_START): unknown {
+  if (latest === null || latest === undefined) return null;
+  if (now < seasonStart) return latest;
+  const o = latest as { season?: unknown; startedAt?: unknown };
+  return o.season === SEASON && typeof o.startedAt === 'number' && o.startedAt >= seasonStart ? latest : null;
+}
+
+/**
+ * 季 What the database holds for a player, as the season sees it. Before the switch, all of
+ * it. After it, only what was written since: a row last synced before the switch is the
+ * closed test's and absent as a whole, and in a row synced since, a verified copy or an
+ * anchor from before it (kept because the first season syncs did not verify yet) is absent.
+ * Without this, the closed-test verified copy would be the `prev` every season save is
+ * measured against, and a deeper closed-test cloud copy would be kept over every season one.
+ */
+function ofSeason(saved: Saved | null, live: boolean, start: number): Saved | null {
+  if (!saved || !live) return saved;
+  if (saved.lastSync < start) return null;
+  const old = saved.verifiedAt === null || saved.verifiedAt < start;
+  const anchor = (a: Anchor | null | undefined) => (a && a.at >= start ? a : null);
+  return {
+    ...saved,
+    verified: old ? null : saved.verified,
+    verifiedAt: old ? null : saved.verifiedAt,
+    day: anchor(saved.day),
+    week: anchor(saved.week),
+  };
+}
 
 export async function sync(
   store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt = now,
-  rules: { accept: boolean } = { accept: false },
+  rules: { accept: boolean; seasonStart?: number } = { accept: false },
 ): Promise<Reply> {
   const wait = await store.claim(id, now, MIN_GAP);
   if (wait > 0) return { status: 429, body: { error: 'too-soon', wait: Math.ceil(wait) } };
-  const saved = await store.saved(id);
+  // 季 The switch. `seasonStart` is SEASON_START; a test may name another instant to measure
+  // the closed test's rules on fixtures dated past the real one.
+  const start = rules.seasonStart ?? SEASON_START;
+  const live = now >= start;
+  const saved = ofSeason(await store.saved(id), live, start);
+  const standingNow = async (): Promise<Standing | null> => {
+    const s = await store.standing(id);
+    return live && s && (s.updatedAt ?? 0) < start ? null : s;
+  };
 
   let after: State;
   try {
@@ -186,6 +260,17 @@ export async function sync(
     return { status: 400, body: { error: 'bad-save' } };
   }
   after = { ...after, at: Math.min(after.at, now) };
+
+  // 季 The season's door, before anything is read or written for the player. After the
+  // switch only a season save begun inside the season comes in: the start date is checked
+  // here and not only measured, so an old run whose start date was edited back to before the
+  // season is not weighed at all, and one edited forward to the season's first second is
+  // measured from it and waits (firstSync). Before the switch a season save is turned away,
+  // since it can only come from a device whose clock runs ahead.
+  const seasonal = after.season === SEASON;
+  if (live ? !seasonal || after.startedAt < start : seasonal) {
+    return { status: 409, body: { error: 'season' } };
+  }
 
   let profile = await store.profile(id);
   if (!profile) {
@@ -224,11 +309,11 @@ export async function sync(
     before = prev;
     seconds = now - saved.verifiedAt;
   } else {
-    ({ before, seconds, first } = firstSync(after, now, joinedAt));
+    ({ before, seconds, first } = firstSync(after, now, joinedAt, start));
     newRun = prev !== null;
   }
   // 塔 The floors this account already holds on the board were checked when they were won.
-  const held = (await store.standing(id))?.tower ?? 0;
+  const held = (await standingNow())?.tower ?? 0;
   let v = verify(before, after, seconds, first, held);
 
   // 窗 And against the day and the week behind it, where there is one from this run.
@@ -251,7 +336,7 @@ export async function sync(
   }
   v = { ...v, suspect };
   await store.log(id, v, now);
-  // 試 While testing, a refused save that did not go down is counted as verified (see ACCEPT_EVERYTHING).
+  // 試 While testing, a refused save that did not go down is counted as verified (see acceptsEverything).
   const accepted = rules.accept && !v.ok && !v.why.includes('went-down');
   const counted: Verdict = accepted ? { ...v, ok: true, strike: false, suspect: false } : v;
 
@@ -260,6 +345,8 @@ export async function sync(
   // the copy another device would sign in to find.
   let kept: State | null = null;
   try { kept = saved ? validate(saved.latest, now) : null; } catch { kept = null; }
+  // 季 A cloud copy from before the season is not this season's cultivator, however deep.
+  if (live && kept && (kept.season !== SEASON || kept.startedAt < start)) kept = null;
   // 圍 A drive's pile is a drive's, not the run's: the cloud copy keeps it (as rows, so the
   // largest pile of three thousand is a modest row), and the three reference saves that only
   // ever measure the next one against the last keep none. One pile in the database, not four.
@@ -289,7 +376,7 @@ export async function sync(
     profile = await store.mark(id, counted.strike, counted.suspect || review, NEVER);
   }
 
-  let standing = await store.standing(id);
+  let standing = await standingNow();
   if (counted.ok) {
     const climb = layersOpened(after);
     const marks = after.tribulation;
@@ -320,6 +407,7 @@ export async function sync(
       samsaraClimb: sameLife ? Math.max(climb, old?.samsaraClimb ?? 0) : climb,
       samsaraMarks: sameLife ? Math.max(marks, old?.samsaraMarks ?? 0) : marks,
       samsaraAt: samsaraRose ? now : (old?.samsaraAt ?? now),
+      updatedAt: now,
     };
     await store.writeStanding(id, standing);
   }
@@ -331,6 +419,6 @@ export async function sync(
   const behindHours = counted.ok ? 0 : Math.max(0, (after.at - (next.verifiedAt ?? after.at)) / 3600);
   return {
     status: 200,
-    body: { ranked: counted.ok, state, suspect: profile.suspect, standing, behindHours },
+    body: { ranked: counted.ok, state, suspect: profile.suspect, standing: shown(standing), behindHours },
   };
 }

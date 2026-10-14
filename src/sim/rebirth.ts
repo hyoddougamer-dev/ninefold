@@ -82,6 +82,8 @@ export function bornFrom(prev: State, lives: readonly Life[], now: number, kept:
   return {
     ...fresh,
     startedAt: prev.startedAt,
+    // 季 A new life is the same run, so it stays in the season the run was begun in.
+    season: prev.season ?? null,
     self: prev.self,
     seen: prev.seen,
     filters: prev.filters,

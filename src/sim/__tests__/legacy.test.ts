@@ -9,7 +9,7 @@ import { seal } from '../seal.ts';
 import { progressOf } from '../echo.ts';
 import { reincarnate } from '../rebirth.ts';
 import { EDGE_STRICT_FROM, SEAL_GRACE, SEAL_STRICT_FROM, SLACK, verify } from '../verify.ts';
-import { sync, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
+import { sync, sync as syncCore, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
 
 /**
  * 舊 Saves the game before the seal wrote, read by the game after it.
@@ -281,6 +281,11 @@ describe('同步 the sync core across the release', () => {
   it('an old phone crossing a sealed gate after the release waits, says how far behind, and is ranked once the seal has passed', async () => {
     const m = memory();
     const a = fx('gate8-after-at'), b = fx('gate8-after-past');
+    // 季 These two are dated in November 2026, past SEASON_START, and carry no season: from the
+    // switch the server turns them away (409). What this test measures is the seal's rule,
+    // so it runs the sync with the switch never coming, which is the closed test's sync.
+    const sync = (store: Store, id: string, raw: unknown, now: number, name?: string, joinedAt?: number) =>
+      syncCore(store, id, raw, now, name, joinedAt, { accept: false, seasonStart: Infinity });
     const joined = Number(a.save.startedAt);
     const r1 = await sync(m.store, 'u', a.save, a.serverAt, 'tester', joined - 30 * DAY);
     expect(r1.status === 200 && r1.body.state).toBe('verified');

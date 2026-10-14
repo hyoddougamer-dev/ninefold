@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, sync as syncWith, weekStart, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, REPEAT_WINDOW, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
+import { cleanName, sync as syncWith, weekStart, acceptsEverything, pullable, MIN_GAP, STRIKES_TO_REVIEW, NEW_RUN_LEAP, REPEAT_WINDOW, type Store, type Saved, type Standing, type Profile } from '../../../supabase/functions/sync/core.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
-import { GAME_EPOCH, type Verdict } from '../verify.ts';
+import { GAME_EPOCH, PRE_JOIN_CREDIT, firstSync, verify, type Verdict } from '../verify.ts';
+import { SEASON, SEASON_START } from '../season.ts';
 import { advance } from '../time.ts';
 import { WEEK, weekOf } from '../week.ts';
 import { layersOpened, type State } from '../state.ts';
@@ -132,7 +133,7 @@ describe('同步 the ranked sync', () => {
     expect(m.logs.filter((x) => x.v?.strike).every((x) => x.v!.why.includes('gear'))).toBe(true);
   });
 
-  it('while testing (ACCEPT_EVERYTHING), an impossible save is accepted and moves the boards, but the log still says what it tried', async () => {
+  it('while testing (acceptsEverything), an impossible save is accepted and moves the boards, but the log still says what it tried', async () => {
     const m = memory();
     const a = shots[10].s;
     const opts = { accept: true };
@@ -326,5 +327,185 @@ describe('圍 a drive\'s pile in the cloud copy', () => {
     }
     // And a device that pulls the cloud copy gets every piece back through validate().
     expect(validate(kept.latest, s.at + 60).pile.map((x) => x.id)).toEqual(pile.map((x) => x.id));
+  });
+});
+
+/**
+ * 季 Season 0, "The Seal Falls 落印": the server's side of the switch (docs/SEASON0-PLAN.md,
+ * sections 3.1 and 4). Before SEASON_START nothing changes; from it the door lets in only a
+ * season save begun inside the season, and everything the database holds from before reads
+ * as absent.
+ */
+describe('季 the season, on the server', () => {
+  const S = SEASON_START;
+  const shots = walk(20);
+  /** The same cultivator, begun an hour into the season and carrying its marker. */
+  const inSeason = (s: State, from = S + 3600): State => {
+    const shift = from - shots[0].s.startedAt;
+    return { ...s, startedAt: s.startedAt + shift, at: s.at + shift, season: SEASON };
+  };
+  /** And a closed-test one whose day-`i` shot is at `at`, begun weeks before the switch. */
+  const closed = (s: State, at: number): State => ({ ...s, startedAt: s.startedAt + (at - s.at), at, season: null });
+  const deep = shots[shots.length - 1].s;
+
+  /**
+   * An account kept from the closed test, as the database holds it the day before the switch:
+   * a deep verified copy, its anchors, and a standing with a rebirth, a tower and a climb.
+   */
+  function kept() {
+    const m = memory();
+    const old = closed(deep, S - DAY);
+    m.profiles.set('k', { name: 'Veteran', strikes: 0, suspect: false, banned: false });
+    m.saves.set('k', {
+      latest: withPackedPile(old), verified: old, verifiedAt: S - DAY, lastSync: S - DAY,
+      day: { state: old, at: S - 2 * DAY }, week: { state: old, at: S - 9 * DAY },
+    });
+    m.standings.set('k', {
+      climb: 70, marks: 2, tower: 300, climbedAt: S - DAY, towerAt: S - DAY, week: weekOf(S - DAY), weekFrom: 60,
+      lives: 1, samsaraClimb: 12, samsaraMarks: 0, samsaraAt: S - DAY, updatedAt: S - DAY,
+    });
+    return { m, old };
+  }
+  const snapshot = (m: ReturnType<typeof memory>) => structuredClone({
+    profiles: [...m.profiles], saves: [...m.saves], standings: [...m.standings], logs: m.logs.length,
+  });
+
+  it('is one number, Monday 26 October 2026 at 00:00 UTC, and testing ends with it', () => {
+    expect(new Date(S * 1000).toISOString()).toBe('2026-10-26T00:00:00.000Z');
+    expect(acceptsEverything(S - 1)).toBe(true);
+    expect(acceptsEverything(S)).toBe(false);
+  });
+
+  it('before the switch nothing changes: a sync at SEASON_START minus one second is the closed test’s', async () => {
+    // A closed-test cultivator syncing up to the last second, through the server's own rules
+    // for that instant, and through the sync with the switch never coming: the same replies,
+    // the same rows, every time.
+    const run = shots.slice(0, 12).map(({ s }, i, all) => closed(s, S - 1 - (all.length - 1 - i) * 3 * 3600));
+    const real = memory(), never = memory();
+    for (const s of run) {
+      const a = await syncWith(real.store, 'c', s, s.at, 'Closed', S - 40 * DAY, { accept: acceptsEverything(s.at) });
+      const b = await syncWith(never.store, 'c', s, s.at, 'Closed', S - 40 * DAY, { accept: true, seasonStart: Infinity });
+      expect(a).toEqual(b);
+    }
+    expect(snapshot(real)).toEqual(snapshot(never));
+    expect(run.at(-1)!.at).toBe(S - 1);
+    // It ranked, and while testing a save the rules refuse still ranks, as Bruno set it.
+    expect(real.standings.get('c')!.climb).toBeGreaterThan(0);
+    const sword = { id: 'x', template: 'sword9', rarity: 'heaven', rolls: [{ affix: 'power', value: 10 }] };
+    const t = memory();
+    const early = closed(deep, S - 1);
+    const r = await syncWith(t.store, 'e', { ...early, chest: [...early.chest, sword] }, S - 1, undefined, S - 40 * DAY, { accept: acceptsEverything(S - 1) });
+    expect(r.status === 200 && r.body.ranked).toBe(true);
+    // The cloud copy is handed back as it is, and a first sync is measured as it always was.
+    expect(pullable(t.saves.get('e')!.latest, S - 1)).toBe(t.saves.get('e')!.latest);
+    const { seconds } = firstSync(early, S - 1, S - 40 * DAY);
+    expect(seconds).toBe(S - 1 - Math.max(GAME_EPOCH, early.startedAt, S - 40 * DAY - PRE_JOIN_CREDIT));
+  });
+
+  it('before the switch, a season save is turned away: it can only come from a clock running ahead', async () => {
+    const m = memory();
+    const s = { ...inSeason(shots[2].s, S - 7200), at: S - 60 };
+    const r = await sync(m.store, 'a', s, S - 30, undefined, S - DAY);
+    expect(r).toEqual({ status: 409, body: { error: 'season' } });
+    expect(m.saves.size + m.standings.size + m.profiles.size + m.logs.length).toBe(0);
+  });
+
+  it('after the switch, a closed-test save is turned away: nothing written, nothing struck, and it stays off the boards', async () => {
+    const { m, old } = kept();
+    const before = snapshot(m);
+    const on = { ...old, at: S + 3600 };
+    const r = await syncWith(m.store, 'k', on, S + 3600, undefined, S - 40 * DAY, { accept: acceptsEverything(S + 3600) });
+    expect(r).toEqual({ status: 409, body: { error: 'season' } });
+    expect(snapshot(m)).toEqual(before);
+    // And the copy the cloud holds is not handed to a new device as if it were playable.
+    expect(pullable(m.saves.get('k')!.latest, S + 3600)).toBeNull();
+  });
+
+  it('after the switch, a closed-test save relabelled with the season but begun before it is turned away', async () => {
+    const { m, old } = kept();
+    const before = snapshot(m);
+    const r = await sync(m.store, 'k', { ...old, at: S + 3600, season: SEASON }, S + 3600, undefined, S - 40 * DAY);
+    expect(r).toEqual({ status: 409, body: { error: 'season' } });
+    expect(snapshot(m)).toEqual(before);
+  });
+
+  it('an old run with its start date edited forward to SEASON_START is measured from there, and waits as too fast', async () => {
+    for (const [who, joined] of [['guest', S + 2 * 3600], ['kept', S - 40 * DAY]] as const) {
+      const m = memory();
+      const forged = { ...deep, startedAt: S, at: S + 2 * 3600, season: SEASON };
+      const r = await syncWith(m.store, who, forged, S + 2 * 3600, 'Forger', joined, { accept: acceptsEverything(S + 2 * 3600) });
+      expect(r.status, who).toBe(200);
+      if (r.status !== 200) continue;
+      expect(r.body.ranked, who).toBe(false);
+      expect(r.body.state, who).toBe('waiting');
+      expect(m.logs.at(-1)!.v!.why, who).toContain('too-fast');
+      expect(m.standings.get(who), who).toBeUndefined();
+      expect(m.profiles.get(who)!.strikes, who).toBe(0);
+    }
+    // Measured from the season's first second, never from three days before a kept account.
+    const { seconds } = firstSync({ ...deep, startedAt: S, season: SEASON }, S + 2 * 3600, S - 40 * DAY);
+    expect(seconds).toBe(2 * 3600);
+  });
+
+  it('a fresh season save ranks, and a kept account’s closed-test rows count as nothing', async () => {
+    const { m, old } = kept();
+    const season = shots.map(({ s }) => inSeason(s));
+    let ranked = 0;
+    for (const s of season) {
+      const r = await syncWith(m.store, 'k', s, s.at + 30, undefined, S - 40 * DAY, { accept: acceptsEverything(s.at + 30) });
+      expect(r.status).toBe(200);
+      if (r.status === 200) {
+        expect(['verified', 'waiting']).toContain(r.body.state);
+        if (r.body.ranked) ranked++;
+        expect(r.body.suspect).toBe(false);
+      }
+    }
+    expect(ranked).toBeGreaterThan(season.length / 2);
+    const first = m.logs[0].v!;
+    expect(first.why).not.toContain('shape');
+    const st = m.standings.get('k')!;
+    const end = season.at(-1)!;
+    // Its own climb, tower and lives: not the closed test's 70 layers, floor 300 and rebirth.
+    expect(st.lives).toBe(0);
+    expect(st.climb).toBeLessThanOrEqual(layersOpened(end));
+    expect(st.tower).toBeLessThanOrEqual(end.tower);
+    expect(st.tower).toBeLessThan(300);
+    expect(st.updatedAt).toBeGreaterThanOrEqual(S);
+    // The cloud copy is the season's cultivator, though the closed-test one was further along.
+    expect(progressOf(old)).toBeGreaterThan(progressOf(season[0]));
+    const latest = validate(m.saves.get('k')!.latest, end.at + 60);
+    expect(latest.season).toBe(SEASON);
+    expect(latest.startedAt).toBe(season[0].startedAt);
+    expect(pullable(m.saves.get('k')!.latest, end.at + 60)).toBe(m.saves.get('k')!.latest);
+    // Every anchor and verified copy is the season's.
+    const row = m.saves.get('k')!;
+    for (const x of [row.verified, row.day?.state, row.week?.state]) if (x) expect((x as State).season).toBe(SEASON);
+    expect(m.profiles.get('k')).toMatchObject({ strikes: 0, suspect: false, name: 'Veteran' });
+    // And the reply never carries when the row was written.
+    const again = await syncWith(m.store, 'k', { ...end, at: end.at + 7200 }, end.at + 7200, undefined, S - 40 * DAY, { accept: false });
+    expect(again.status === 200 && again.body.standing && 'updatedAt' in again.body.standing).toBe(false);
+  });
+
+  it('a first season sync that waits leaves no closed-test copy to be measured against next time', async () => {
+    const { m } = kept();
+    // The season's first save, from a phone whose first sitting ran long: it may wait, but the
+    // one after it is still a first sync of its own run, never measured against the old one.
+    const a = inSeason(shots[3].s);
+    await sync(m.store, 'k', a, a.at + 30, undefined, S - 40 * DAY);
+    const row = m.saves.get('k')!;
+    expect(row.verifiedAt === null || row.verifiedAt >= S).toBe(true);
+    expect(row.day === null || row.day!.at >= S).toBe(true);
+    expect(row.week === null || row.week!.at >= S).toBe(true);
+    const b = inSeason(shots[4].s);
+    await sync(m.store, 'k', b, b.at + 30, undefined, S - 40 * DAY);
+    expect(m.logs.every((x) => !x.v!.why.includes('shape') && !x.v!.why.includes('went-down') && !x.v!.why.includes('newrun'))).toBe(true);
+  });
+
+  it('a save of another season is another run to the verifier, as another start date is', () => {
+    const a = inSeason(shots[5].s);
+    expect(verify(a, { ...a, at: a.at + 60 }, 60).why).not.toContain('shape');
+    expect(verify(a, { ...a, at: a.at + 60, season: null }, 60).why).toContain('shape');
+    // A first sync is measured as the save's own run: its start date and its season.
+    expect(firstSync(a, a.at + 30, a.at).before.season).toBe(SEASON);
   });
 });

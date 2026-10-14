@@ -8,11 +8,11 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // (esbuild), so the function does not depend on how Supabase resolves imports that
 // reach outside its own folder.
 // @ts-ignore: generated at deploy time
-import { sync, ACCEPT_EVERYTHING } from './core.bundle.js';
+import { sync, acceptsEverything, pullable } from './core.bundle.js';
 type Anchor = { state: unknown; at: number };
 type Saved = { latest: unknown; verified: unknown; verifiedAt: number | null; lastSync: number; day?: Anchor | null; week?: Anchor | null };
 type Standing = { climb: number; marks: number; tower: number; climbedAt: number; towerAt: number; week: number; weekFrom: number;
-  calling?: string | null; lives?: number; samsaraClimb?: number; samsaraMarks?: number; samsaraAt?: number };
+  calling?: string | null; lives?: number; samsaraClimb?: number; samsaraMarks?: number; samsaraAt?: number; updatedAt?: number };
 type Profile = { name: string; strikes: number; suspect: boolean; banned: boolean };
 // deno-lint-ignore no-explicit-any
 type Store = any;
@@ -85,6 +85,8 @@ function store(): Store {
         week: data.week, weekFrom: data.week_from, calling: data.calling ?? null,
         lives: data.lives ?? 0, samsaraClimb: data.samsara_climb ?? 0, samsaraMarks: data.samsara_marks ?? 0,
         samsaraAt: sec(data.samsara_at) ?? 0,
+        // 季 When the row was last written: the season reads one from before it as absent.
+        updatedAt: sec(data.updated_at) ?? 0,
       };
     },
     async writeProfile(id, p) {
@@ -107,7 +109,7 @@ function store(): Store {
         calling: s.calling ?? null,
         lives: s.lives ?? 0, samsara_climb: s.samsaraClimb ?? 0, samsara_marks: s.samsaraMarks ?? 0,
         samsara_at: iso(s.samsaraAt ?? s.climbedAt),
-        updated_at: new Date().toISOString(),
+        updated_at: s.updatedAt ? iso(s.updatedAt) : new Date().toISOString(),
       });
       if (error) throw error;
     },
@@ -140,7 +142,9 @@ Deno.serve(async (req) => {
   // 取 The cloud copy, for a cultivator arriving on a new device.
   if (body.action === 'pull') {
     const { data } = await db.from('saves').select('latest, latest_at').eq('user_id', id).maybeSingle();
-    return json(200, { save: data?.latest ?? null, at: data?.latest_at ?? null });
+    // 季 After the switch a closed-test copy is not handed back (see pullable in core.ts).
+    const save = pullable(data?.latest ?? null, Math.floor(Date.now() / 1000));
+    return json(200, { save, at: save === null ? null : data?.latest_at ?? null });
   }
 
   try {
@@ -149,7 +153,7 @@ Deno.serve(async (req) => {
     const joined = Math.floor(Date.parse(who.user.created_at) / 1000);
     const now = Math.floor(Date.now() / 1000);
     const r = await sync(store(), id, body.save, now, body.name, Number.isFinite(joined) ? joined : now,
-      { accept: ACCEPT_EVERYTHING });
+      { accept: acceptsEverything(now) });
     return json(r.status, r.body);
   } catch (e) {
     console.error(e);

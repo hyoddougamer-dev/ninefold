@@ -35,6 +35,7 @@ import {
   TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
+import { SEASON_START } from './season.ts';
 import { beatenNow, challengerOf, challengerQi, platformEdge, type Tier } from './platform.ts';
 import { classSpring, classTower, classTowerQi } from './schools.ts';
 import {
@@ -71,7 +72,7 @@ import { codexToKeep, hundredFits, keptCovers } from './hundred.ts';
  */
 export const GAME_EPOCH = Date.UTC(2026, 0, 18) / 1000;
 /** 季 The instant Season 0 began, defined in season.ts (the game never imports this file). */
-export { SEASON_START } from './season.ts';
+export { SEASON_START };
 
 /**
  * 初 How much play from before the account existed a first sync may be credited with.
@@ -456,7 +457,8 @@ export function verify(before: State, after: State, seconds: number, first = fal
   const why: Why[] = [];
   const dt = Math.max(0, seconds);
 
-  if (after.startedAt !== before.startedAt) why.push('shape');
+  // 季 And a save of another season is another run, even on the same start date.
+  if (after.startedAt !== before.startedAt || (after.season ?? null) !== (before.season ?? null)) why.push('shape');
 
   // 轉世 A life that ended since the last save: measured as the new life it began. See reborn().
   const born = (after.lives?.length ?? 0) > (before.lives?.length ?? 0);
@@ -954,9 +956,16 @@ export const TOWER_FORGED = 12;
  * 初 What a first sync is measured from: a cultivator who began when the save says they
  * did, but never before the game existed, never in the future, and never more than
  * PRE_JOIN_CREDIT before the account was made.
+ *
+ * 季 And, once the season has begun, never before it (`seasonStart`, SEASON_START unless a
+ * test names another). An account kept from the closed test was made weeks before the
+ * season, so without this its first season sync would be credited from three days before
+ * that, weeks of play nobody could have had. Before the switch the floor is the game's
+ * epoch, exactly as it was. The run is the save's own: its start date and its season.
  */
-export function firstSync(after: State, now: number, joinedAt = now): { before: State; seconds: number; first: true } {
-  const start = Math.max(GAME_EPOCH, Math.min(now, after.startedAt), Math.min(now, joinedAt) - PRE_JOIN_CREDIT);
-  const before = { ...newState(start), startedAt: after.startedAt };
+export function firstSync(after: State, now: number, joinedAt = now, seasonStart = SEASON_START): { before: State; seconds: number; first: true } {
+  const floor = now >= seasonStart ? Math.max(GAME_EPOCH, seasonStart) : GAME_EPOCH;
+  const start = Math.max(floor, Math.min(now, after.startedAt), Math.min(now, joinedAt) - PRE_JOIN_CREDIT);
+  const before = { ...newState(start), startedAt: after.startedAt, season: after.season ?? null };
   return { before, seconds: now - start, first: true };
 }
