@@ -43,3 +43,4 @@ itch-kit/
 
 # Throwaway scripts a session writes while measuring; never part of the repository.
 tools/.tmp-*
+/.tmp-*
