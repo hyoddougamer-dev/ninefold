@@ -8,7 +8,7 @@
 --
 -- What it answers, and only this: { save, at } or null.
 --   before season_start()          null. The closed test is still being played.
---   closed_test is kept            that copy and closed_test_at.
+--   closed_test is kept            that copy and closed_test_at (an empty object is none).
 --   not moved yet                  the row was last synced before the switch, so its latest
 --                                  IS the closed-test copy: that, and latest_at. The trigger
 --                                  still moves it on the row's next update, so the answer
@@ -19,20 +19,22 @@
 -- it is never a grant on the table: the row is chosen by auth.uid() inside the function,
 -- so there is no argument a caller could point at somebody else. Guests are signed in
 -- (Supabase gives an anonymous sign-in the authenticated role), so a guest reads their own.
--- The anon role, nobody signed in, may not call it at all.
+-- The anon role, nobody signed in, may not call it at all. Every name in it is written with
+-- its schema and pg_temp is searched last, so no table of a caller's own can stand in for
+-- saves.
 --
 -- panel_players() and stats() are not touched: neither reads closed_test, and the schema
 -- test holds them to that.
 create or replace function public.closed_test_mine()
-returns jsonb language sql stable security definer set search_path = public as $$
+returns jsonb language sql stable security definer set search_path = public, pg_temp as $$
   select case
-    when now() < season_start() then null
-    when v.closed_test is not null
+    when now() < public.season_start() then null
+    when jsonb_typeof(v.closed_test) = 'object' and v.closed_test <> '{}'::jsonb
       then jsonb_build_object('save', v.closed_test, 'at', v.closed_test_at)
-    when v.last_sync < season_start() and jsonb_typeof(v.latest) = 'object' and v.latest <> '{}'::jsonb
+    when v.last_sync < public.season_start() and jsonb_typeof(v.latest) = 'object' and v.latest <> '{}'::jsonb
       then jsonb_build_object('save', v.latest, 'at', v.latest_at)
   end
-  from saves v
+  from public.saves v
   where v.user_id = auth.uid()
 $$;
 revoke all on function public.closed_test_mine() from public, anon;

@@ -223,12 +223,15 @@ function retire(keys: readonly string[], now: number): { kept: string; raw: unkn
   const archivedRaw = archived ? read(CLOSED_TEST, false) : null;
   let best: { text: string; raw: unknown; depth: number } | null = archivedRaw
     ? { text: archived!, raw: archivedRaw, depth: depth(validate(archivedRaw, now)) } : null;
+  // 雲 A copy the account handed back gives way to this device's own on a tie: the account
+  // still holds its copy, and this device's may be the only one there is.
+  const fromAccount = archivedRaw !== null && whereKept() === 'account';
   for (const key of keys) {
     const text = textOf(key);
     const raw = read(key);
     if (!text || !raw) continue;
     const d = depth(validate(raw, now));
-    if (!best || d > best.depth) best = { text, raw, depth: d };
+    if (!best || d > best.depth || (fromAccount && best.text === archived && d === best.depth)) best = { text, raw, depth: d };
   }
   if (!best) return null;
   if (best.text !== archived) {
@@ -387,8 +390,13 @@ function whereKept(): ClosedTest['where'] {
  * copy as kept, or null when nothing was written.
  */
 export function keepFromAccount(save: unknown, now: number): ClosedTest | null {
-  if (!save || typeof save !== 'object' || Array.isArray(save) || !retires(save, now)) return null;
+  if (!save || typeof save !== 'object' || Array.isArray(save) || Object.keys(save).length === 0
+    || !retires(save, now)) return null;
   if (textOf(CLOSED_TEST) !== null) return null;
+  // 印 This device still holds a closed-test cultivator of its own that has not been retired
+  // yet (a page left open across the switch, or a move that could not be written): the next
+  // load retires that one, and the account's copy may never stand in its way.
+  if ([KEY, BACKUP].some((k) => { const r = read(k, false); return r !== null && retires(r, now); })) return null;
   const text = seal(JSON.stringify(save));
   try {
     localStorage.setItem(CLOSED_TEST, text);

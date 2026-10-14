@@ -102,6 +102,7 @@ describe('舊 the closed-test copy, from the account', () => {
     const season = { ...newState(SEASON_START + 60), season: SEASON };
     expect(await bringBack(AFTER, true, answer(season))).toBeNull();
     expect(await bringBack(AFTER, true, answer('not a save'))).toBeNull();
+    expect(await bringBack(AFTER, true, answer({}))).toBeNull();
     expect(store.getItem(CLOSED_TEST)).toBeNull();
   });
 
@@ -116,6 +117,29 @@ describe('舊 the closed-test copy, from the account', () => {
     store.setItem('ninefold.save.v1', seal(JSON.stringify(veteran(8, 0))));
     expect(load(AFTER).retired).toMatchObject({ realm: 8, where: 'device' });
     expect(closedTest(AFTER)).toMatchObject({ realm: 8, where: 'device' });
+  });
+
+  it('never stands in for a closed-test save this device has not retired yet', async () => {
+    // A page left open across the switch: the main key still holds the device's own cultivator.
+    const own = seal(JSON.stringify(veteran(3, 1)));
+    store.setItem('ninefold.save.v1', own);
+    expect(await bringBack(AFTER, true, answer(veteran(9, 8)))).toBeNull();
+    expect(store.getItem(CLOSED_TEST)).toBeNull();
+    // The spare alone is enough to wait for the next load too.
+    store.removeItem('ninefold.save.v1');
+    store.setItem('ninefold.save.backup', own);
+    expect(keepFromAccount(veteran(9, 8), AFTER)).toBeNull();
+    // The next load retires the device's own, which is then what is kept.
+    expect(load(AFTER).retired).toMatchObject({ realm: 3, where: 'device' });
+    expect(store.getItem(CLOSED_TEST)).toBe(own);
+  });
+
+  it('on a tie the device keeps its own over the account copy', async () => {
+    await bringBack(AFTER, true, answer(veteran(5, 2)));
+    const own = seal(JSON.stringify({ ...veteran(5, 2), qi: 7 }));
+    store.setItem('ninefold.save.v1', own);
+    expect(load(AFTER).retired).toMatchObject({ realm: 5, where: 'device' });
+    expect(store.getItem(CLOSED_TEST)).toBe(own);
   });
 
   it('滅 Erase leaves the copy the account handed back', async () => {

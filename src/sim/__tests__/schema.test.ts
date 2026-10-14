@@ -659,6 +659,14 @@ describe('榜 the ranked schema', () => {
       expect(await kept(P)).toEqual(early);
       expect(await kept(Q)).toBeNull();
       expect(JSON.stringify(await kept(Q))).not.toContain('kept-closed-copy');
+      // An empty object is no cultivator, wherever it sits, and is never handed back as one.
+      await db.exec(`update saves set closed_test = '{}'::jsonb where user_id = '${Q}'`);
+      expect(await kept(Q)).toBeNull();
+      await db.exec(`update saves set closed_test = null where user_id = '${Q}'`);
+      // It reads saves by its schema name, with pg_temp searched last: nothing a caller made stands in.
+      const own = ((await db.query(`select pg_get_functiondef('public.closed_test_mine()'::regprocedure) as d`)).rows[0] as any).d;
+      expect(own).toContain('public.saves');
+      expect(own).toMatch(/search_path\s*(=|TO)\s*'?public'?,\s*'?pg_temp/i);
       // The panel and the counts never carry it, by what they answer and by what they read.
       const told = JSON.stringify([await panel('panel_players'), await panel('panel_cheats'),
         ((await as(null, `select stats() as s`)).rows[0] as any).s]);

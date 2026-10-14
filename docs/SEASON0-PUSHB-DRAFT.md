@@ -89,9 +89,14 @@ begin
   -- then clear the rest of the row. pinned and rebase go false in the same statement, so
   -- saves_pin() cannot put latest back. latest is not null, so it becomes an empty object,
   -- which closed_test_mine() never hands back.
+  -- A latest that is already empty is not a cultivator, and is never made one: closed_test
+  -- stays null there, so a second run (which finds every cleared row still before the cutoff)
+  -- changes nothing.
   update public.saves
-     set closed_test    = coalesce(closed_test, latest),
-         closed_test_at = case when closed_test is null then latest_at else closed_test_at end,
+     set closed_test    = coalesce(closed_test, case when jsonb_typeof(latest) = 'object'
+                                                      and latest <> '{}'::jsonb then latest end),
+         closed_test_at = case when closed_test is null and jsonb_typeof(latest) = 'object'
+                                    and latest <> '{}'::jsonb then latest_at else closed_test_at end,
          latest = '{}'::jsonb, verified = null, verified_at = null,
          day_state = null, day_at = null, week_state = null, week_at = null,
          pinned = false, rebase = false
