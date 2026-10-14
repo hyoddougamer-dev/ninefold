@@ -69,7 +69,7 @@ export interface CodexEntry {
 export const CODEX: readonly CodexEntry[] = [
   { key: 'hunt', realm: 1, han: '狩', sys: 'Hunt', kind: 'more' },
   { key: 'elite', realm: 2, han: '霸', sys: 'Elites', kind: 'less' },
-  { key: 'vault', realm: 3, han: '秘', sys: 'Vault gates', kind: 'less' },
+  { key: 'vault', realm: 3, han: '秘', sys: 'Secret realm gates', kind: 'less' },
   { key: 'demon', realm: 4, han: '心', sys: 'Heart demon', kind: 'less' },
   { key: 'work', realm: 5, han: '業', sys: 'Workshop', kind: 'more' },
   { key: 'bond', realm: 6, han: '緣', sys: 'Bonds', kind: 'more' },

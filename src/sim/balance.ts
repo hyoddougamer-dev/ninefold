@@ -2371,6 +2371,15 @@ export const CRAFT_LONG_WATCH_HOURS = 4;
  */
 export const CRAFT_FEED_LEVEL = 40;
 
+/**
+ * 破境丹 The Alchemy level each Breakthrough Pill asks for, by the realm whose sealed gate it
+ * breaks (data/crafts.ts, BREAKTHROUGH_TIERS, says why these levels). It sits here rather
+ * than beside the recipes because the line that says what Alchemy is for (sim/unlocks.ts)
+ * reads it too, and data/crafts.ts already reads unlocks.ts: kept there, the two files
+ * would each wait on the other to load.
+ */
+export const BREAKTHROUGH_LEVEL: Readonly<Record<number, number>> = { 5: 40, 6: 45, 7: 51, 8: 56 };
+
 /** 具 How much faster each step of a craft's tool makes it: six metals, 5% each. */
 export const CRAFT_TOOL_STEP = 0.05;
 export const CRAFT_TOOL_STEPS = 6;

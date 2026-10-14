@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
@@ -350,6 +350,12 @@ export const CULTIVATE = {
    */
   afterRungs: (n: number) => (n === 1 ? 'after the next layer' : `after ${n} more layers`),
   overRung: 'Some prices are more than this layer\'s bar can hold. They come within reach as you open more layers.',
+  /**
+   * 修 Under the price of 功法 or 吐納 when the qi in hand pays for it now. A box you can
+   * press only looked like a box that was not dimmed, which says nothing to somebody who
+   * has not yet seen one dimmed, and qi held is qi not gathering anything.
+   */
+  canNow: 'can buy now',
 
   // 言 It ended "There is no rebirth yet", which is a note about the roadmap and not a
   // fact about the game. A player reads "yet" as a promise.
@@ -521,6 +527,15 @@ export const REALMCARD = {
   nextHead: 'What the next one is worth',
   opens: (list: string) => `Opens ${list}.`,
   opensNothing: 'Opens no new system. It is the top of the climb.',
+  /**
+   * 九 The whole climb on one list: each realm, its number and what it opens. A player
+   * could see the realm they stood in and the next one, and nothing past it, so the
+   * question "what is the climb for" had an answer one realm deep.
+   */
+  nineHead: 'The nine realms',
+  nineRealm: (n: number) => `realm ${n}`,
+  nineHere: 'you are here',
+  nineNone: 'No new system',
   back: 'Back',
 };
 
@@ -830,10 +845,25 @@ export const KEY = {
   craftTotal: 'Your seven craft levels added up: 7 when every craft is new, 693 when all seven stand at 99. Every level in any craft adds one, so it grows with whatever you work.',
   pouch: 'Everything the workshop gathers and makes.',
   familiar: 'How many times a recipe has been made. Five marks, each one an edge on that recipe, and a recipe made 2,000 times makes its whole craft a little faster.',
-  carried: 'An elixir and a sigil taken into the next warden, heart demon or vault gate. Spent only on a win.',
+  carried: 'An elixir and a sigil taken into the next warden, heart demon or secret realm gate. Spent only on a win.',
   seek: 'A Seeking Sigil or incense used: the next beast you beat by hand on the hunt that would have left nothing leaves a piece.',
   systemsBlurb: 'Nothing resets on its own, so every realm hands over something that was not there before.',
-  opensAt: (han: string, name: string, sooner?: string) => `opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}`,
+  /**
+   * 釋 A system's row: what it is, then when it opens. It said only when, and because the
+   * systems come before 作 the words in the key, that one line was also what tapping 秘境
+   * or 洞天 anywhere in the game answered with: a realm's name and nothing about the place.
+   */
+  system: (gives: string, han: string, name: string, sooner?: string) =>
+    `${gives} Opens at ${han} ${name}${sooner ? `, or at ${sooner}` : ''}.`,
+
+  /** 境 The nine realms, so a realm's name tapped anywhere says where it stands and what it opens. */
+  realmsHead: '境 The nine realms',
+  realmsBlurb: 'The climb, in order. Each realm is nine layers and a warden, and most of them open something new.',
+  realmNote: (n: number, all: number, opens: readonly string[]) => {
+    // Three or more take a comma before the last, so a name with its own 'and' (Stances and Arts) still reads.
+    const list = opens.length < 3 ? opens.join(' and ') : `${opens.slice(0, -1).join(', ')}, and ${opens[opens.length - 1]}`;
+    return `Realm ${n} of ${all}. ${opens.length > 0 ? `Opens ${list}.` : 'Opens no new system.'}`;
+  },
 
   doingHead: '作 Words you will meet',
   doingBlurb: 'The rest of the characters that ask you to do something.',
@@ -1011,9 +1041,15 @@ export const HUNT = {
   deepToward: (kills: number, at: number, name: string) => `${kills.toLocaleString('en')} / ${at.toLocaleString('en')} toward ${name}`,
   /** 物 What a beast leaves, said once on its row. */
   leaves: 'Leaves',
-  /** 層 Under a row that is drawn dimmed: the layer its realm's gear starts to fall at, and where the cultivator is. */
-  fallsFrom: (layer: number, realm: number, now: number) =>
-    `Falls from layer ${layer} of realm ${realm}. You are on layer ${now}.`,
+  /**
+   * 層 Under a row that is drawn dimmed: the layer its realm's gear starts to fall at, and
+   * where the cultivator is. Both come in counted from zero, as the save holds them
+   * (fallsFromLayer, state.layer), and are said the way the climb bar says them
+   * (standing): it read "falls from layer 5, you are on layer 4" while the bar and 境 the
+   * realm card both said 6 and 5.
+   */
+  fallsFrom: (gate: number, realm: number, opened: number) =>
+    `Falls from layer ${standing(gate)} of realm ${realm}. You are on layer ${standing(opened)}.`,
   /** 緣 The bond on the row: how far, and what the full one promises. */
   bond: (n: number, full: number, rank: string) => `${n} / ${full} · then a piece for certain, ${rank} or better`,
   /**
@@ -1359,9 +1395,9 @@ export const REBIRTH = {
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the vault. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex or its experience. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the secret realm. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex or its experience. The marks and the heavens.',
   /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
-  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the vault and the workshop, all but its codex. The marks and the heavens.',
+  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the secret realm and the workshop, all but its codex. The marks and the heavens.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   sure: 'Tap again to end this life',
@@ -1476,7 +1512,7 @@ export const ROAD = {
  * distrust.
  *
  * And every one of them says what it pays in the unit the screen it stands on already
- * uses: material on 狩 the hunt, qi in 洞天 the cave, a door in 秘境 the vault.
+ * uses: material on 狩 the hunt, qi in 洞天 the cave, a door in 秘境 the secret realm.
  */
 export const WEEK = {
   /** The banner at the top of 狩 the hunt. */
@@ -1500,7 +1536,7 @@ export const WEEK = {
   tag: '期',
   /** 草 The mark in the cave. */
   season: (name: string) => `${name} is in season: a bed of it pays half again.`,
-  /** 室 The mark in the vault. */
+  /** 室 The mark in the secret realm. */
   blessed: (n: number, of: number) => `Room ${n} of ${of} pays double this week.`,
   /**
    * 示 The line the advice gives when the week is pointing at something worth doing. The
@@ -1635,16 +1671,16 @@ export const SECRET = {
   /** 釋 What the character means, for the key and the tooltip. */
   // 數 It said "seven rooms", and the door at the summit says eleven. The count grows
   // with the realm, so the sentence does not name one.
-  what: 'A row of rooms. Every other room is a gate: one strong beast, and you beat it to go on. The rooms between share the spring, which fills while the door is shut: drink your share now, burn it as incense for more later, or spend it on the third door. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
-  /** 釋 The vault's own words, for the key and the tooltip. */
-  springWhat: 'The vault\u2019s spring fills while its door is shut, four minutes of your gathering an hour and a day at most. The rooms share it, the deeper ones more.',
+  what: 'A door at the top of 狩 Hunt that opens every few hours. Behind it, a row of rooms. Every other room is a gate: one strong beast, and you beat it to go on. The rooms between share the spring, which fills while the door is shut: drink your share now, burn it as incense for more later, or spend it on the third door. Nothing is carried, so a beast that puts you down ends the run and takes nothing back.',
+  /** 釋 The secret realm's own words, for the key and the tooltip. */
+  springWhat: 'The secret realm\u2019s spring fills while its door is shut, four minutes of your gathering an hour and a day at most. The rooms share it, the deeper ones more.',
   incenseWhat: 'A room\u2019s share of the spring, burned slowly: half as much again, as +30% to your standing gathering while it burns, open or shut. One burner; the next stick waits behind.',
-  boxWhat: 'A craftsman\u2019s box: herbs and ore of your realm for the workshop, from a room of the vault. No experience comes with it.',
-  trailWhat: 'A challenger\u2019s trail, found in the vault: the next challenger on 擂台 the Platform begins its fight a tenth down.',
+  boxWhat: 'A craftsman\u2019s box: herbs and ore of your realm for the workshop, from a room of the secret realm. No experience comes with it.',
+  trailWhat: 'A challenger\u2019s trail, found in the secret realm: the next challenger on 擂台 the Platform begins its fight a tenth down.',
 };
 
 /**
- * 香 Incense from the vault, said on 修 beside 入定 the sitting: what it adds and how long
+ * 香 Incense from the secret realm, said on 修 beside 入定 the sitting: what it adds and how long
  * it has left. It is the first thing in the game that moves the rate for a while, so the
  * screen says for how long, every moment it burns.
  */
@@ -1698,7 +1734,7 @@ export const PLATFORM = {
   toReach: 'to reach',
   standIn: (name: string) => `Stand in ${name}`,
   challenge: 'Challenge',
-  trail: '跡 You hold a trail from the vault: this challenger begins a tenth down.',
+  trail: '跡 You hold a trail from the secret realm: this challenger begins a tenth down.',
   law: 'Losing costs nothing, and it waits for you all week. The dice are set for the week: the same body meets the same fight, so change your stance, your arts or what you carry and it is a new one. Never on Auto, never driven.',
   /** 鬥 The arena's word on a challenger. */
   who: (ordinal: string) => `${ordinal} challenger`,
@@ -2402,8 +2438,19 @@ export const CRAFTS = {
   /** 開 On a shut craft's tile, and the full line under it: its realm, or its feeder's level. */
   opens: (realm: number, feeder?: { name: string; level: number }) =>
     (feeder ? `Realm ${realm} or ${feeder.name} ${feeder.level}` : `Opens at realm ${realm}`),
-  opensLong: (han: string, name: string, realm: number, feeder?: { name: string; level: number }) =>
-    `${han} ${name} opens at realm ${realm}${feeder ? `, or at ${feeder.name} ${feeder.level}` : ''}. What you gather before then waits for it.`,
+  opensLong: (han: string, name: string, realm: number, feeder?: { name: string; level: number }, why?: string) =>
+    `${han} ${name} opens at realm ${realm}${feeder ? `, or at ${feeder.name} ${feeder.level}` : ''}. What you gather before then waits for it.${why ? ` ${why}` : ''}`,
+  /**
+   * 丹 What Alchemy is for, said on its tile before it opens: a player meeting the 封 seal at
+   * the fifth realm's gate should already know which craft breaks it. The levels are the
+   * recipes' own (BREAKTHROUGH_LEVEL), and the same sentence ends Alchemy's line in
+   * sim/unlocks.ts; clarity.test holds the two together.
+   */
+  alchemyPill: (() => {
+    const realms = Object.keys(BREAKTHROUGH_LEVEL).map(Number).sort((a, b) => a - b);
+    return `Each gate from realm ${realms[0]} to realm ${realms[realms.length - 1]} has its own Breakthrough Pill, which breaks that gate's 封 seal at once. `
+      + `The first one needs Alchemy ${BREAKTHROUGH_LEVEL[realms[0]]}.`;
+  })(),
   /** 覽 Over the recipes of a craft that is not open yet, shown so a climb can be planned. */
   preview: (name: string) => `A look ahead: what ${name} makes once it opens. Each recipe also waits for its own level and realm.`,
   tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
@@ -2473,7 +2520,7 @@ export const CRAFTS = {
   viewWork: 'Workshop',
   viewPouch: (n: number) => `Pouch · ${n}`,
   carryHead: '攜 Carried into the next hard fight',
-  carrySays: `An elixir and a sigil go into your next warden, heart demon, vault gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
+  carrySays: `An elixir and a sigil go into your next warden, heart demon, secret realm gate or Platform challenger, and up the tower when you take them on its card. At your realm’s warden each one also breaks days of its 瓶頸 bottleneck. A win spends whichever took part; a loss keeps them. ${DRAGON_KIT_SHARE > 0 ? `At the tribulation’s Dragon they count at ${oneDecimal(DRAGON_KIT_SHARE)} of their strength.` : 'Never the tribulation’s Dragon.'}`,
   carryElixir: 'Elixir',
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
@@ -2564,7 +2611,7 @@ export const READY = {
     short: (n: number) => `Cave: ${n} ripe`,
     long: (n: number) => (n === 1 ? 'A cave bed is ripe.' : `${n} cave beds are ripe.`),
   },
-  vault: { short: 'Vault open', long: 'The vault door is open.' },
+  vault: { short: 'Secret realm open', long: 'The door of the secret realm is open.' },
   points: {
     short: (n: number) => `Path: ${n} to spend`,
     long: (n: number) => `${n} Path ${n === 1 ? 'point' : 'points'} to spend.`,
@@ -2682,7 +2729,7 @@ export const HUNDRED = {
   codexSays: {
     hunt: (pct: number) => `+${pct}% material from every kill`,
     elite: (pct: number) => `elites stand ${pct}% weaker`,
-    vault: (pct: number) => `the vault's gates stand ${pct}% weaker`,
+    vault: (pct: number) => `the secret realm's gates stand ${pct}% weaker`,
     demon: (pct: number) => `the heart demon stands ${pct}% weaker`,
     work: (pct: number) => `the workshop works ${pct}% faster`,
     bond: (pct: number) => `+${pct}% bond for every win`,
@@ -2739,7 +2786,7 @@ export const KEYS = {
     ['A', 'At the verdict, start the auto-hunt on a beast you know.'],
     ['Esc', 'Close whatever is on top. On the cards it means Later, on the question Not yet.'],
     ['Enter', 'Close the return card or a note.'],
-    ['1 or 2, \u2190 or \u2192', 'In the vault, take the left or the right door.'],
+    ['1 or 2, \u2190 or \u2192', 'In the secret realm, take the left or the right door.'],
   ] as const,
 };
 

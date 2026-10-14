@@ -385,6 +385,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
                     );
                   })}
                   {(() => {
+                    // 層 Both layers go in counted from zero; HUNT.fallsFrom says them as the climb bar does.
                     const gate = fallsFromLayer(b.realm, state.realm, state.layer ?? 0);
                     return gate === null ? null : (
                       <span className="gatenote"><span className="cjk">鎖</span> {HUNT.fallsFrom(gate, state.realm, state.layer ?? 0)}</span>

@@ -83,7 +83,17 @@
  * late arrives *full*.
  */
 
-import { CRAFT_FEED_LEVEL, PLATFORM_REALM } from './balance.ts';
+import { BREAKTHROUGH_LEVEL, CRAFT_FEED_LEVEL, PLATFORM_REALM } from './balance.ts';
+
+/**
+ * 破境丹 The realms whose gates a Breakthrough Pill breaks, read off the levels it asks for,
+ * so Alchemy's line can say what it is for before it opens. The same sentence stands on
+ * Alchemy's locked tile (CRAFTS.alchemyPill in app/copy.ts), and clarity.test holds them together.
+ */
+const PILL_REALMS = Object.keys(BREAKTHROUGH_LEVEL).map(Number).sort((a, b) => a - b);
+const ALCHEMY_PILL = `Each gate from realm ${PILL_REALMS[0]} to realm ${PILL_REALMS[PILL_REALMS.length - 1]} has its own Breakthrough Pill, `
+  + `which breaks that gate's 封 seal at once. The first one needs Alchemy ${BREAKTHROUGH_LEVEL[PILL_REALMS[0]]}. `
+  + `Herb Gathering ${CRAFT_FEED_LEVEL} opens Alchemy early for a head start.`;
 
 export type System =
   | 'hunt' | 'gear' | 'arts' | 'cave' | 'cores' | 'fuse' | 'secret' | 'tree' | 'keystones' | 'tower'
@@ -138,14 +148,14 @@ export const SYSTEMS: readonly SystemInfo[] = [
   // 秘境 A run with a beginning and an end, which nothing else in this game has. See
   // data/secret.ts for the gates, and why a gate beast pays nothing at all.
   { key: 'secret', han: '秘境', name: 'The Secret Realm', realm: 3,
-    gives: 'A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a beast a realm above you. Nothing is carried, so losing takes nothing back.' },
+    gives: 'A door at the top of 狩 Hunt that opens every few hours. A row of rooms, two ways on at each, and every other one is a gate: one strong beast, of your realm or the one above. Nothing is carried, so losing takes nothing back.' },
   /**
    * 深 What the seventh realm hands over now that 爐 the furnace has gone to the ninth.
    * The path grows rather than a screen being built: four more rooms, two more
    * guardians, and they are the deepest rooms in the game, so they pay the most.
    */
-  { key: 'deep', han: '秘境深', name: 'The Deeper Vault', realm: 7,
-    gives: 'The path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them.' },
+  { key: 'deep', han: '秘境深', name: 'The Deeper Rooms', realm: 7,
+    gives: 'The secret realm goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game.' },
   { key: 'tree', han: '道', name: 'The Path', realm: 2,
     gives: 'The technique tree. Every 道 point earned since the first realm is waiting for you.' },
   { key: 'keystones', han: '樞', name: 'The Keystones', realm: 4,
@@ -160,7 +170,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
   { key: 'platform', han: '擂台', name: 'The Platform', realm: PLATFORM_REALM,
     gives: 'Three challengers a week, measured against your own power. The dice are set for the week, so the way past a loss is to change your stance, your arts or what you carry. A win pays a fixed sum of qi read off your realm; a loss costs nothing.' },
   { key: 'alchemy', han: '丹', name: 'Alchemy', realm: 5,
-    gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering ${CRAFT_FEED_LEVEL} opens it sooner.` },
+    gives: `A fifth craft: elixirs to carry into a warden, a heart demon or the secret realm. Spent only if you win. ${ALCHEMY_PILL}` },
   { key: 'tower', han: '塔', name: 'The Endless Tower', realm: 5,
     gives: 'One floor, one beast, no top. Material, and a fixed sum of qi a floor, the same for everyone in its class.' },
   { key: 'record', han: '錄', name: 'The Record', realm: 1,
@@ -187,16 +197,16 @@ export const SYSTEMS: readonly SystemInfo[] = [
    * not there: it punishes exactly the player who explores it. So it opens where it is
    * the right move, which is the ninth realm, where 雷池 the pool is measured in days of
    * gathering and power is the only thing that shortens a crossing. What the seventh
-   * realm hands over instead is 秘境深 the deeper vault.
+   * realm hands over instead is 秘境深 the deeper rooms.
    */
   /**
-   * 陣 The seventh realm opened one system, the deeper vault, and the slowest craft fits
+   * 陣 The seventh realm opened one system, the deeper rooms, and the slowest craft fits
    * beside it: arrays are cut once and kept, and what they do is make the other six
-   * faster and the vault door sooner. It sat at the eighth for a draft, which put it two
+   * faster and the secret realm's door sooner. It sat at the eighth for a draft, which put it two
    * months into a casual climb; the seventh is five weeks.
    */
   { key: 'arrays', han: '陣', name: 'Arrays', realm: 7,
-    gives: `The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows. Forging ${CRAFT_FEED_LEVEL} opens it sooner.` },
+    gives: `The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner door to the secret realm, lighter blows. Forging ${CRAFT_FEED_LEVEL} opens it sooner.` },
   { key: 'furnace', han: '爐', name: 'The Furnace', realm: 9,
     gives: 'Pills, bought with qi and material together, with no cap on any of it. Power is what shortens a crossing, and a crossing is what the rest of the game is.' },
   { key: 'tribulation', han: '雷池', name: 'The Tribulation', realm: 9,

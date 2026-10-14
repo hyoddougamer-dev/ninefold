@@ -28,7 +28,7 @@ import { ARCHETYPES, RARITY_INFO, REALM_SETS, SLOTS, SLOT_INFO, type Slot } from
 import {
   CRAFT_ARRAY_DOOR, CRAFT_ARRAY_GUARD, CRAFT_ARRAY_QUALITY, CRAFT_ARRAY_SPEED, CRAFT_ARRAY_TWICE, CRAFT_ARRAY_WORK, CRAFT_ARRAY_XP,
   CRAFT_HOURS_TO_CAP, CRAFT_KIT, CRAFT_KIT_WORK, CRAFT_LONG_WATCH_HOURS, CRAFT_MARKS, CRAFT_QUALITY, CRAFT_QUALITY_MULT, CRAFT_SECONDS,
-  CRAFT_TOOL_STEPS, DRAGON_KIT_SHARE,
+  CRAFT_TOOL_STEPS, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL,
   HUNDRED_ELITE_PARTS, HUNDRED_INGOTS, HUNDRED_LEVEL, HUNDRED_LEVEL_TOP, HUNDRED_SECONDS, HUNDRED_WARDEN_PARTS,
 } from '../sim/balance.ts';
 import { opensAt, type System } from '../sim/unlocks.ts';
@@ -499,7 +499,8 @@ for (const [key, han, name, level, realm, needs, does, icon] of SPECIALS) {
  */
 export const BREAKTHROUGH_TIERS: readonly number[] = [5, 6, 7, 8];
 export const breakthroughKey = (tier: number) => `breakthrough${tier}`;
-const BREAKTHROUGH_LEVEL: Readonly<Record<number, number>> = { 5: 40, 6: 45, 7: 51, 8: 56 };
+/** 破境丹 The Alchemy level each pill asks for, by tier. It lives in balance.ts: see there. */
+export { BREAKTHROUGH_LEVEL };
 /** The share of its wall's days a pill breaks at a rank's multiplier: see pillShare in sim/crafts.ts. */
 const pillTakes = (mult: number) => pct(Number((1 - (1 - CRAFT_KIT.pill) ** mult).toFixed(2)));
 for (const tier of BREAKTHROUGH_TIERS) {
@@ -577,7 +578,7 @@ export function arrayDoes(key: string, strength = 1): string {
     case 'keenedge': return `Rendering: ${pc(CRAFT_ARRAY_TWICE)} of parts come out twice.`;
     case 'firetame': return `Forging and Alchemy ${pc(CRAFT_ARRAY_SPEED)} faster.`;
     case 'guardian': return `You take ${pc(CRAFT_ARRAY_GUARD)} less from wardens and heart demons.`;
-    case 'hiddendoor': return `The vault door opens ${trim(CRAFT_ARRAY_DOOR * strength / 60)} minutes sooner.`;
+    case 'hiddendoor': return `The door of the secret realm opens ${trim(CRAFT_ARRAY_DOOR * strength / 60)} minutes sooner.`;
     case 'longwatch': return `The workshop keeps working ${trim(CRAFT_LONG_WATCH_HOURS * strength)} hours longer while you are away.`;
     case 'ninepalace': {
       const marks = trim(CRAFT_ARRAY_QUALITY * strength / CRAFT_QUALITY.mark);

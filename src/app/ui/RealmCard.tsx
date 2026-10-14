@@ -149,6 +149,27 @@ export function RealmCard({ state, onClose }: { state: State; onClose: () => voi
         </>
       )}
 
+      {/* 九 The whole ladder, read from REALMS and opensIn, so the card answers what the
+          climb is for past the next realm as well. The one you stand in is marked, the ones
+          ahead are dimmed. A list to read, not a control: nothing here is tapped. */}
+      <h3>{REALMCARD.nineHead}</h3>
+      <ol className="nine">
+        {REALMS.map((x) => {
+          const at = x.n === state.realm ? 'here' : x.n > state.realm ? 'ahead' : 'behind';
+          const opens = opensIn(x.n);
+          return (
+            <li key={x.n} data-at={at} style={at === 'here' ? { borderColor: x.colour } : undefined}>
+              <b className="cjk" style={{ color: x.colour }}>{x.han}</b>
+              <span>
+                <em>{x.name}{at === 'here' && <small style={{ color: x.colour }}>{REALMCARD.nineHere}</small>}</em>
+                <i>{opens.length > 0 ? opens.map((sys) => sys.name).join(', ') : REALMCARD.nineNone}</i>
+              </span>
+              <u className="mono">{REALMCARD.nineRealm(x.n)}</u>
+            </li>
+          );
+        })}
+      </ol>
+
       <button className="act" style={{ marginTop: 18 }} onClick={onClose}>
         續 <span>{REALMCARD.back}</span>
       </button>
