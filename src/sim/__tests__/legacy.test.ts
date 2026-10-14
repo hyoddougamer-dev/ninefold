@@ -135,11 +135,15 @@ describe('舊 an old save loads whole', () => {
     for (const name of NAMES) {
       it(`${name}: the sealed copy the old client stored opens to the same cultivator`, () => {
         const f = fx(name);
-        localStorage.setItem('ninefold.save.v1', seal(JSON.stringify(f.save)));
+        // 季 The gate-after fixtures are dated past SEASON_START, and a save without the
+        // season marker is retired at load from then on (season.test.ts holds that). What
+        // this measures is the load path's fidelity, so the copy carries the marker.
+        const stored = { ...f.save, season: 's0' };
+        localStorage.setItem('ninefold.save.v1', seal(JSON.stringify(stored)));
         localStorage.setItem('ninefold.sealed', '1');
         const at = Number(f.save.at);
         const got = load(at).state;
-        const want = settle(advance(validate(f.save, at), at), at).state;
+        const want = settle(advance(validate(stored, at), at), at).state;
         expect(canon(got)).toBe(canon(want));
         expect(got.realm).toBe(f.save.realm);
         expect(got.layer).toBe(f.save.layer);

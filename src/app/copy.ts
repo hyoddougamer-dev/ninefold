@@ -171,6 +171,8 @@ export const RANKS = {
     never: 'Not synced yet. The game tries every five minutes while it is open.',
     /** 拒 The server answered, but not with a verdict. Never left at "Not synced yet". */
     unreached: 'The ranked server could not take this save just now. Your game goes on as it was, and it tries again every five minutes.',
+    /** 季 The server refused the save for its season: almost always a device clock on the wrong side of the switch. */
+    season: 'The closed test has ended. Check the date and time on this device.',
     closed: 'This account is off the boards after saves the server could not accept. Your game is not touched. If you think that is a mistake, tell us in 報-bugs on the Discord and we will look.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
@@ -2254,6 +2256,51 @@ export const SAVE = {
   wipeYes: 'Erase it all',
   wipeNo: 'Keep my save',
   close: 'Back to the game',
+};
+
+/**
+ * 季 Season 0, "The Seal Falls 落印" (docs/SEASON0-BRIEF.md, section 2). The closed test is
+ * sealed and kept: every cultivator starts again from the first realm, and the closed-test
+ * one stays on the device as a copy the player can take out. Always "sealed and kept"
+ * beside "a copy you can take out"; always 印 a stamp, never 封 a lock. Nothing here says
+ * lost or deleted, because nothing is.
+ */
+export const SEASON = {
+  /** The theme, English first and the characters alongside. */
+  name: 'The Seal Falls',
+  han: '落印',
+  over: 'Season 0 · Monday 26 October',
+  line: 'The closed test is sealed and kept. The new scroll is never wiped.',
+  says: 'Everyone starts again from the first realm, and so do you.',
+  /** 印 Lettered beside the seal, which carries 九境 alone. */
+  sealName: 'Ninefold',
+  sealSeason: 'Season 0',
+  oldHead: 'Your closed-test cultivator',
+  /** 舊 One line, the way the brief writes it: "Realm 9, layer 4, 12 marks, 1 rebirth". */
+  old: (realm: number, layer: number, marks: number, rebirths: number) =>
+    [`Realm ${realm}`, `layer ${layer}`,
+      ...(marks > 0 ? [`${marks} ${marks === 1 ? 'mark' : 'marks'}`] : []),
+      ...(rebirths > 0 ? [`${rebirths} ${rebirths === 1 ? 'rebirth' : 'rebirths'}`] : [])].join(', '),
+  kept: 'Sealed and kept on this device, as a copy you can take out. It cannot be played or ranked in Season 0.',
+  copy: 'Copy it',
+  file: 'Save as a file',
+  begin: 'Begin Season 0',
+  later: 'You can take it out later too, from Menu, Save.',
+  copied: 'Copied. Paste it somewhere you keep things. It is the same text as a save export.',
+  copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
+  saved: 'Saved as a file.',
+  noFile: 'This app is not allowed to hand you a file. Use Copy instead.',
+  /** 凍 The copy could not be written on this device, so nothing was changed and the season waits. */
+  notKept: 'This device has no room to keep it, so nothing has been changed. Copy it or save it as a file, make some room, then try again.',
+  retry: 'Try again',
+  /** 凍 In place of `kept` while the copy could not be written: it is still where it was. */
+  notKeptYet: 'Still on this device, exactly as it was. It cannot be played or ranked in Season 0.',
+  /** 舊 Menu, Save: the same line and buttons, for as long as the copy is kept. */
+  panelHead: 'Closed test',
+  panelNote: 'Sealed and kept on this device, as a copy you can take out. It cannot be played or ranked in Season 0, and Start again never touches it.',
+  /** 榜 Under the Rankings title, from the switch on. */
+  ranksTag: 'Season 0 · The Seal Falls',
+  ranksSince: 'Since Monday 26 October. Everyone started level.',
 };
 
 export const LOADOUT = {

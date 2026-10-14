@@ -70,6 +70,8 @@ import { codexToKeep, hundredFits, keptCovers } from './hundred.ts';
  * here at the earliest: the day this repository's first commit was made.
  */
 export const GAME_EPOCH = Date.UTC(2026, 0, 18) / 1000;
+/** 季 The instant Season 0 began, defined in season.ts (the game never imports this file). */
+export { SEASON_START } from './season.ts';
 
 /**
  * 初 How much play from before the account existed a first sync may be credited with.

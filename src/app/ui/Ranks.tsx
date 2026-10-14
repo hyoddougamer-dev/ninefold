@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RANKS } from '../copy.ts';
+import { RANKS, SEASON } from '../copy.ts';
+import { SEASON_START } from '../../sim/season.ts';
 import { useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
 import { cleanName } from '../../net/names.ts';
@@ -59,6 +60,13 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
   return (
     <div className="help ranks">
       <h2>{RANKS.title}</h2>
+      {/* 季 From the switch on, every board is a Season 0 board, and it says so. */}
+      {Date.now() / 1000 >= SEASON_START && (
+        <div className="s0tag">
+          <b className="cjk">季</b>
+          <span><em>{SEASON.ranksTag}</em><small>{SEASON.ranksSince}</small></span>
+        </div>
+      )}
       {who ? (
         <>
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
@@ -120,6 +128,7 @@ function ago(seconds: number): string {
 
 function Status({ synced, syncedAt, suspect, error }: { synced: Synced | null; syncedAt: number | null; suspect: boolean; error: string | null }) {
   const line = error === 'banned' ? RANKS.status.closed
+    : error === 'season' ? RANKS.status.season
     : suspect || synced?.suspect ? RANKS.status.suspect
     : !synced && error ? RANKS.status.unreached
     : !synced ? RANKS.status.never

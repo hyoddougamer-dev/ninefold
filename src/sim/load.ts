@@ -43,6 +43,7 @@ import { keptByFilter, validFilters } from './filters.ts';
 import { FORGED, HUNDRED_RANKS, ITEM_BY_KEY, RECIPE_BY_KEY, type HundredRank } from '../data/crafts.ts';
 import { backHundred, bandTop, validKept } from './hundred.ts';
 import { validLives } from './echo.ts';
+import { seasonOf } from './season.ts';
 
 /** 鎖魂 The realm a Soul-Lock Sigil can first be written in. */
 const SOUL_LOCK_REALM = RECIPE_BY_KEY['sigil:soullock'].realm;
@@ -350,6 +351,10 @@ export function validate(raw: unknown, now: number): State {
   const out: State = {
     v: 1,
     startedAt,
+    // 季 Carried through only when it names a season the game knows; anything else, a
+    // number included, is the closed test. The season is enforced at the doors (load,
+    // importSave, the server's sync), never here: this reads every season's save.
+    season: seasonOf(o),
     at: savedAt,
     realm,
     layer,

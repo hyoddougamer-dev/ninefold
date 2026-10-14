@@ -25,6 +25,7 @@ import {
 import { NO_CRAFTS, eatPill, feedShare, unsealCarried, type Crafts } from './crafts.ts';
 import { type ChestFilter } from './filters.ts';
 import { echoFactor, type Life } from './echo.ts';
+import { seasonAt } from './season.ts';
 
 /** The four things qi is spent on. All of them multiply; none of them is ever lost. */
 export type Upgrade = 'technique' | 'method' | 'pills' | 'cores';
@@ -100,6 +101,11 @@ export interface State {
   /** Epoch seconds this state is correct as of. */
   at: number;
   startedAt: number;
+  /**
+   * 季 The season this cultivator was begun in ('s0'), or null for the closed test. A
+   * string, never a number (see season.ts). Stamped by newState, carried by validate.
+   */
+  season: string | null;
   realm: number;   // 1..9
   layer: number;   // 0..8 layers opened in the current realm
   qi: number;
@@ -459,6 +465,8 @@ export function crossTribulation(s: State, dragonPower: number, even: number): S
 export function newState(now: number): State {
   return {
     v: 1, at: now, startedAt: now,
+    // 季 Begun before the switch is begun in the closed test, and retired with it.
+    season: seasonAt(now),
     // 囊 The purse the first minute is bought with. See OPENING_PURSE.
     realm: 1, layer: 0, qi: OPENING_PURSE, materials: 0, wardenFell: false, gateAt: 0, sealPaid: 0, sealFed: 0,
     levels: { technique: 0, method: 0, pills: 0, cores: 0 },

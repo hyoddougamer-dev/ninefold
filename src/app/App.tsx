@@ -7,7 +7,7 @@ import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden } from '../sim/combat.ts';
 import { newState, type State,
 } from '../sim/state.ts';
-import { keepSpare, load, save, untouched} from '../sim/save.ts';
+import { closedTest, keepSpare, load, save, seasonCardDue, seasonCardRead, untouched, type ClosedTest } from '../sim/save.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
 import { begin, endOf, focusOf, isOver } from './sitting.ts';
 import { now, payTo } from './clock.ts';
@@ -33,6 +33,7 @@ import { Gear } from './screens/Gear.tsx';
 import { Hunt } from './screens/Hunt.tsx';
 import { Cultivate } from './screens/Cultivate.tsx';
 import { Prologue } from './ui/Prologue.tsx';
+import { SeasonCard } from './ui/SeasonCard.tsx';
 import { CloudPick, Ranks } from './ui/Ranks.tsx';
 import * as cloud from '../net/cloud.ts';
 import { progressOf } from '../sim/echo.ts';
@@ -137,6 +138,14 @@ export function App() {
     fresh, setFresh, bloom, setBloom, locked, setLocked, tally, setTally,
   } = useOverlays();
   const [born, setBorn] = useState(false);
+  /**
+   * 季 The closed-test cultivator this device retired, while the season's card is up: shown
+   * once, before the prologue, and again on any open until 始 Begin is pressed (or for as
+   * long as the copy could not be kept, when the game waits behind it).
+   */
+  const [season, setSeason] = useState<ClosedTest | null>(null);
+  /** 序 The prologue a new cultivator would open on, held until the season's card is read. */
+  const prologueNext = useRef(false);
   /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
   // 記 Remembered on the device: it used to reset to Common on every load ("Melt 0 pieces").
   const [meltUpTo, setMeltUpToRaw] = useState<Rarity>(() => recall('melt.upTo', 'common', oneOf(RARITIES)));
@@ -200,7 +209,14 @@ export function App() {
     // 序 It opens on the prologue now, which hands over to 相 and then the guide; the
     // help sheet is what the Menu opens.
     // 雲 Somebody arriving from a sign-in link has a cultivator already: no prologue.
-    if (r.secondsAway === 0 && untouched(r.state) && !cloud.returningFromLink()) setPrologue(true);
+    const beginning = r.secondsAway === 0 && untouched(r.state) && !cloud.returningFromLink();
+    // 季 落印 The first open after the switch: the season's card comes first, and the
+    // prologue waits behind it. A copy that could not be kept holds the card up for good.
+    const old = r.retired && !r.retired.kept ? r.retired : seasonCardDue() ? r.retired ?? closedTest(now()) : null;
+    if (old) {
+      setSeason(old);
+      prologueNext.current = beginning;
+    } else if (beginning) setPrologue(true);
     // The load came back whole, so this is a state worth keeping a spare of.
     keepSpare(r.state);
 
@@ -407,9 +423,9 @@ export function App() {
   const step = guide(state);
   // 相 The question counts as covering: 指 the coach ring is fixed at z-index 60 and would
   // otherwise draw its arrow and its ring straight over the sheet asking it.
-  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !ranks && !cloudPick;
+  const asking = ready && (whom || !state.seen.includes(WHOM)) && !battle && !help && !prologue && !season && !ranks && !cloudPick;
   /** 收 What hides the corner Menu. The vault, the tally and the cards keep it, as they always did. */
-  const shade = help || prologue || ranks || !!cloudPick || key || book || comparing || cards || rebirth || stele || credits || saving || realmPage || menu || !!driving || (pileOpen && state.pile.length > 0)
+  const shade = help || prologue || !!season || ranks || !!cloudPick || key || book || comparing || cards || rebirth || stele || credits || saving || realmPage || menu || !!driving || (pileOpen && state.pile.length > 0)
     || !!inspect || !!home || !!battle || asking
     || locked !== null || bloom !== null;
   /**
@@ -798,6 +814,15 @@ export function App() {
           }}
           onKeep={() => { keepSpare(cloudPick.there); setCloudPick(null); void push(); sfx.tap(); }}
         />
+      )}
+      {season && (
+        <SeasonCard old={season} sky={pictureOf('realm', '1')}
+          onBegin={() => {
+            seasonCardRead();
+            setSeason(null);
+            if (prologueNext.current) setPrologue(true);
+            sfx.mark();
+          }} />
       )}
             {prologue && (
         <Prologue sky={pictureOf('realm', '1')} onDone={() => { setPrologue(false); sfx.tap(); }}

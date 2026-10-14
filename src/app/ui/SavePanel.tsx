@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { exportSave, importSave, saveFileName, wipe } from '../../sim/save.ts';
+import { closedTest, exportSave, importSave, saveFileName, wipe } from '../../sim/save.ts';
+import { ClosedTestRow } from './SeasonCard.tsx';
 import { duration, num } from '../../sim/format.ts';
 import type { State } from '../../sim/state.ts';
 import { SAVE } from '../copy.ts';
@@ -34,6 +35,8 @@ export function SavePanel({ state, who, onRestore, onClose }: {
   const [confirming, setConfirming] = useState(false);
 
   const blob = exportSave(state);
+  // 舊 The closed-test copy, read once: it never changes while the panel is open.
+  const [old] = useState(() => closedTest(state.at));
   const played = duration(Math.max(0, state.at - state.startedAt));
 
   const copy = async () => {
@@ -119,6 +122,8 @@ export function SavePanel({ state, who, onRestore, onClose }: {
 
       {said && <p className="good">{said}</p>}
       {error && <p className="bad">{error}</p>}
+
+      {old && <ClosedTestRow old={old} />}
 
       <p className="says small" style={{ marginTop: 'auto' }}>{SAVE.spare}</p>
 
