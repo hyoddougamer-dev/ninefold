@@ -953,7 +953,7 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
     // Run it.
     const cutoff = new Date(Date.now() - 86_400_000).toISOString();
     const block = (brake: number, when = cutoff) => sql
-      .replace(`'2026-10-26T00:00:00Z'`, `'${when}'`).replace(/<Bruno's player count[^>]*>/, String(brake));
+      .replace(`'2026-10-26T00:00:00Z'`, `'${when}'`).replace(/<the developer's player count[^>]*>/, String(brake));
     const W = (n: number) => `b0000000-0000-0000-0000-${String(n).padStart(12, '0')}`;
     const seed = () => db.exec(`
       insert into auth.users values ('${W(1)}'), ('${W(2)}'), ('${W(3)}'), ('${W(4)}') on conflict do nothing;

@@ -1,4 +1,4 @@
--- 先行 Forerunner: the mark of having walked the closed test (Bruno, 2026-10-15).
+-- 先行 Forerunner: the mark of having walked the closed test (decided 2026-10-15).
 --
 -- docs/SEASON0-THEME.md, 2d. One mark, the same for everyone, for good, and purely cosmetic: it
 -- changes no number. It is its own column on the boards, never the title, so it sits beside

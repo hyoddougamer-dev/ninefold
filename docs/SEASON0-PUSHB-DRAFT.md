@@ -1,13 +1,13 @@
 # Push B, the Season 0 wipe: a draft
 
-**NOT A MIGRATION. It needs Bruno's named rows.**
+**NOT A MIGRATION. It needs the developer's named rows.**
 
 **Its first write stamps 先行 Forerunner on every account the closed test saw, and only then
 does it delete anything.** The evidence for the mark is `sync_log`, and Push B deletes the old
 `sync_log` rows, so the order is the whole point. A schema test holds it
 (`src/sim/__tests__/schema.test.ts`, "the Push B draft").
 
-**It keeps no closed-test save.** Bruno, 2026-10-15: the closed-test save does not stay. No
+**It keeps no closed-test save.** Decided 2026-10-15: the closed-test save does not stay. No
 keepsake, no copy, no file, no restore (`docs/SEASON0-THEME.md`, 2d and 3). That reverses the
 option 1 of 2026-10-14 that this draft used to protect: `closed_test_mine()` and the trigger
 `saves_keep_closed_test` are retired before the switch
@@ -16,9 +16,9 @@ option 1 of 2026-10-14 that this draft used to protect: `closed_test_mine()` and
 every other closed-test row.
 
 This is text, kept in `docs/` on purpose, so that no workflow can ever run it. It becomes a
-file in `supabase/migrations/` only after Bruno has said, in his own message, which tables
+file in `supabase/migrations/` only after the developer has said, in his own message, which tables
 and which rows go (CLAUDE.md: *"Deleting real rows on the live database is refused by the
-safety check unless Bruno asks for it by name and the migration is scoped to exactly what he
+safety check unless [the developer] asks for it by name and the migration is scoped to exactly what he
 asked for"*). His words go into its header verbatim, with the date and the UTC time. If he
 names fewer tables than below, the others stay. Nothing here fills a gap he left. The
 Forerunner stamp is not a deletion and is not his to name: it goes first in every version.
@@ -41,11 +41,11 @@ deleting anything:
 - `firsts`, the Cliff of Names (`20261015100200_cliff.sql`), holds only rows carved in the
   season (its trigger is silent before `season_start()`). Push B never touches it.
 
-So Push B changes nothing a player sees. It tidies the database, and it can wait for Bruno.
+So Push B changes nothing a player sees. It tidies the database, and it can wait for the developer.
 
 ## Before it is written
 
-1. **Bruno names the rows** in his own words. The candidates, from the plan:
+1. **The developer names the rows** in his own words. The candidates, from the plan:
    - `saves` last synced before the switch (the closed-test cloud copies, unreadable since the
      first second of the season): **deleted**;
    - `standings` last written before the switch;
@@ -62,23 +62,23 @@ So Push B changes nothing a player sees. It tidies the database, and it can wait
    those two out when it reads, so a ban lifted later still gives the mark back. The result
    is that `is_forerunner(id)` answers the same for every account before the block and after
    it.
-3. **The brake number.** Bruno reads the player count on `/painel/` (the top half, `stats()`)
+3. **The brake number.** The developer reads the player count on `/painel/` (the top half, `stats()`)
    the day before; the brake is that number plus a margin. Over it, nothing is deleted (the
    stamp included: the block is one transaction, and a raise undoes all of it) and the run
    fails so someone can look.
 4. **Pinned and rebasing rows.** `saves_pin()` rewrites `latest` on an *update* of a pinned or
    rebasing row (`20261006080000_rekaris_as_is.sql`); a delete is not an update, so the
    closed-test rows go whole. A row synced in the season that still carries `pinned` or
-   `rebase` from the closed test has them set to false, if Bruno names that.
+   `rebase` from the closed test has them set to false, if the developer names that.
 
 ## The draft itself
 
 ```sql
--- 季 Season 0. Bruno, <date, UTC time>: "<his words, verbatim, naming each table below>"
+-- 季 Season 0. The developer, <date, UTC time>: "<his words, verbatim, naming each table below>"
 do $$
 declare
   cutoff constant timestamptz := '2026-10-26T00:00:00Z';   -- season_start(), SEASON_START 1792972800
-  brake  constant int := <Bruno's player count from the panel, plus a margin>;
+  brake  constant int := <the developer's player count from the panel, plus a margin>;
   hits int;
 begin
   if now() < cutoff then raise exception 'season 0 wipe: the season has not begun'; end if;
@@ -96,7 +96,7 @@ begin
    where not p.forerunner
      and exists (select 1 from public.sync_log l where l.user_id = p.id and l.at < cutoff);
 
-  -- The closed test's rows. The cloud copies go whole: none is kept (Bruno, 2026-10-15).
+  -- The closed test's rows. The cloud copies go whole: none is kept (decided 2026-10-15).
   delete from public.saves       where last_sync < cutoff;
   delete from public.standings   where updated_at < cutoff;
   delete from public.titles      where week < public.week_of(cutoff);

@@ -1,6 +1,6 @@
--- 落 The closed-test copy is retired before the switch (Bruno, 2026-10-15).
+-- 落 The closed-test copy is retired before the switch (decided 2026-10-15).
 --
--- Bruno's decision on Season 0, The Founding 開山: the closed-test save does not stay. No
+-- The decision on Season 0, The Founding 開山: the closed-test save does not stay. No
 -- keepsake, no copy, no file, no restore (docs/SEASON0-THEME.md, 2d and 3). So the two things
 -- 20261014130000_season0.sql and 20261014190000_closed_test_mine.sql added to keep it go,
 -- before season_start(), because the trigger would otherwise begin copying rows into
