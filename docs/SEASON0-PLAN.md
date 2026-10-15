@@ -2,6 +2,34 @@
 
 Written 2026-10-14 (container clock 07:43 UTC). This is a read-only review of branch `claude/idle-fantasy-mobile-game-nzn90r` at 75a3c89. Nothing here has been built or run. Every claim cites file:line on that commit. **[unverified]** marks anything that could not be checked from this sandbox. The live database cannot be reached from here (CLAUDE.md: "This sandbox cannot reach supabase.co").
 
+## Status after Bruno's decisions (15 Oct 2026)
+
+This review was written before the theme was chosen. Bruno decided on 15 October 2026, all final:
+
+- **The theme is Season 0 · The Founding 開山** (docs/SEASON0-THEME.md, the checked package; its sections 2b to 2f and 3 are the spec). 落印 the seal still falls once, on the closed test.
+- **The date stays** Monday 26 October 2026, 00:00 UTC, `SEASON_START = 1792972800` (D2 below said 19 October; it moved before this decision).
+- **The closed-test save does not stay.** No keepsake, no archive key, no copy, no file, no restore. At load after the switch the device keeps only a four-number summary (realm, layer, marks, rebirths) for one farewell line on the season card, removes the save and its spare, and clears the summary on Begin. Sections 2.2 and 2.3 below describe the archive that is **not** built.
+- **On the server** `closed_test_mine()` and the `saves_keep_closed_test` trigger are dropped by a migration before the switch; `saves.closed_test` may stay as a column but is never read or written. The closed-test copies are unreadable from the switch and deleted with Push B.
+- **先行 Forerunner** (two glyphs, never 先 alone): `is_forerunner(uid)` is `profiles.forerunner` or a `sync_log` row before `season_start()`, false for banned and staff accounts. `board()`, `samsara_board()` and `my_standing()` gain a `forerunner` column. Push B's first statement sets `profiles.forerunner`, and only then deletes.
+- **題名崖 The Cliff of Names:** a `firsts` table filled by the `standings_carve()` trigger from the first second of the season (gate r when `climb >= 9r`, gate 9 at the first mark), read through `cliff()`, the first 81 per gate, skipping banned, held and staff accounts. Push A2, live before the switch.
+- **D1 is confirmed** (recorded in docs/DRAWER.md): no later season and not The Hundred may ever start everyone from zero.
+- **Bruno's own ranked account** is neither marked nor carved: `profiles.staff`, set only through the key-checked `panel_set_staff(key, name, on)`, never his id or name in the repository.
+- **Device-only players** get the local Stele line "Walked the closed test on this device", seen by them alone.
+- **The words** for Discord are drafted in `tools/discord/drafts-season0.json`, one stage per main push, and docs/SEASON0-BRIEF.md section 6 holds their heart. Section 6 below is the first draft, superseded.
+
+The decisions in section 7, as they stand now:
+
+| | Now |
+|---|---|
+| D1 | Decided: (a). Season 0 is the game; The Hundred only ever an optional side life. |
+| D2 | Decided: 26 October 2026, 00:00 UTC. |
+| D3 | Decided: nothing of the closed test is kept, on the device or the server. No archive of the boards is promised. |
+| D4 | Decided: 測 Tester renamed 先行 Forerunner after the switch (`was` in `tools/discord.mjs`); onboarding offers 修 Cultivator instead; footers say Season 0; the rule against sharing goes. Drafted. |
+| D5 | Open: Bruno's own words for Push B, which stamps the Forerunners first. |
+| D6 | Decided: no legacy mode. Nothing is kept to play. |
+| D7 | Built: the time switch, `acceptsEverything(now)`. |
+| D8 | Open: 天下第一 on Samsara. |
+
 ## 0. What was promised, and what this changes
 
 - **6 Oct, Bruno** (as garrv_95883) in #general: *"my idea would be early access, so there would be only 1 wipe, the closed test one"* (digest `read1013b/digest.md:742`).
@@ -63,6 +91,8 @@ From the switch on, the boards and the sync already ignore pre-season rows. So P
 
 ### 2.2 Retiring a device's save, and keeping it
 
+> **Replaced (Bruno, 15 Oct 2026): nothing is kept.** No `ninefold.save.closedtest` key is ever written. At load after the switch the device writes a four-number summary (realm, layer, marks, rebirths) to a small key for the card's farewell line, removes `KEY` and `BACKUP`, and Begin clears the summary. The archive, its read-back and the frozen path below are not built. See the status section at the top and docs/SEASON0-THEME.md 2e and 2f item 1.
+
 Today `load()` (`save.ts:171-185`) reads the main key and the spare (`KEY` at `save.ts:12`, `BACKUP` at `save.ts:21`) and keeps **whichever is deeper**. After the switch, that rule would bring the closed-test spare back over a new season save.
 
 New order inside `load()`:
@@ -89,6 +119,8 @@ Other rules:
 
 ### 2.3 What the player sees on the first open after the switch
 
+> **Replaced by The Founding's card** (docs/SEASON0-THEME.md 2e): the farewell line from the summary, the season's law (同 驗 永), the 先行 Forerunner line when the signed-in server says so (or the signed-out pointer), the Cliff line, and Begin. No Copy, no Save as a file, no 舊 Closed test section in Menu, Save. Below is the first design, kept for its reasoning.
+
 A full-screen card comes before the prologue. It is its own component, not a `.notice` (which blocks pointer events), with scoped class names such as `.season0 .s0card`.
 
 - Title: **季 Season 0 has begun**.
@@ -109,7 +141,7 @@ The welcome-back card (`App.tsx:207-212`) must not fire for the retired save's h
 
 ### 2.4 A pasted old save cannot be played as a season save
 
-- **`importSave()`** (`save.ts:310-330`): before `validate`, if the body is not `inSeason`, return `{ state: null, error: 'That save is from the closed test. It is kept as it was, but it cannot be played in Season 0.' }`.
+- **`importSave()`** (`save.ts:310-330`): before `validate`, if the body is not `inSeason`, return `{ state: null, error: CLOSED_TEST_REFUSED }`, which now reads: "That save is from the closed test, which ended on Monday 26 October. It cannot be loaded in Season 0." (THEME 2e; the first wording said "kept", and nothing is.)
 - **The cloud pick on sign-in** (`App.tsx:776-777`) already goes through `importSave`, so a closed-test cloud copy is never offered over a season save.
 - **The sync function's `pull`** returns `null` for a copy that is not season 0 (`supabase/functions/sync/index.ts:140-143`).
 - **The device is not the lock.** The marker and `startedAt` are both player input, and anyone can edit a save to set them. The seal is "a deterrent and a tell, never the lock" (CLAUDE.md). The lock is the server: an old save relabelled as season 0 is measured as a first sync from `SEASON_START` at FIRST_PACE (`verify.ts:96`) and waits. That holds only while ACCEPT_EVERYTHING is off (section 4). See risk 4 in section 7.
@@ -189,6 +221,8 @@ Recommended: keep every `auth.users` row and its `profiles` row.
 The 28 Sep fresh start did delete accounts (`20260928210000_fresh_start.sql:30-34`), but those were Bruno's own and test-made accounts, not real players.
 
 ### 3.4 The wipe migration (Push B), its brake and its cutoff
+
+> **Changed by the 15 October decisions.** Push B's **first statement** sets `profiles.forerunner` for every account with a `sync_log` row before the cutoff (not banned), and only then deletes anything; a schema test holds that order. The closed-test copies in `saves` are deleted with the rest (the earlier "never delete `closed_test`" rule is reversed). docs/SEASON0-PUSHB-DRAFT.md is the current draft. It still waits for Bruno's own words naming the rows.
 
 It follows the pattern of `20260928210000_fresh_start.sql`: a quoted authorisation, a constant cutoff, a brake, and a return on an empty database (the schema test runs every migration on one).
 
@@ -337,6 +371,8 @@ Some cases cannot be reached live, so they go in `src/sim/__tests__/sync.test.ts
 
 ## 6. (e) The announcement (draft, English, no dashes)
 
+> **Superseded.** The announcement for The Founding, and every other Season 0 post, is drafted in `tools/discord/drafts-season0.json` (stages by day, proved against a fake Discord by `node tools/discord-check.mjs`); docs/SEASON0-BRIEF.md section 6 holds their words. The draft below promised a kept copy, which Bruno's decision removed.
+
 Channel: announcements, with @everyone (`announce` in server.json). `[DATE]` and `[TIME]` are left for Bruno. The bracketed choices are his (section 7).
 
 > **季 Season 0 begins on [DATE]**
@@ -360,6 +396,8 @@ I checked the draft for dashes by eye. Once it is in server.json, run `npm run p
 ## 7. (f) Risks, and what Bruno must decide
 
 ### Decisions
+
+> Where each of these stands now is in the table in the status section at the top.
 
 - **D1. The promise and the next season.** "Only one wipe" holds only if Season 0 never ends in another fresh start, but The Hundred (`docs/DRAWER.md:88`) starts everyone fresh every 12 weeks. Pick one before announcing:
   - (a) Season 0 is the game from now on, and future seasons are optional side lives that never touch it (the Hundred's "Eternal" save, `DRAWER.md:89-90` and `245-247`); or
