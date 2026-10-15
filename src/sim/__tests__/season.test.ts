@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   CLOSED_TEST_REFUSED, exportSave, importSave, keepSpare, load, pendingFarewell,
-  rearm, save, seasonCardDue, seasonCardRead, walked, wipe,
+  rearm, save, seasonCardDue, seasonCardRead, walked, wasEdited, wipe,
 } from '../save.ts';
 import { LAST_WEEK, SEASON, SEASON_START, inSeason, retires, seasonAt, seasonOf } from '../season.ts';
 import { validFarewell } from '../load.ts';
@@ -276,6 +276,21 @@ describe('印 retiring a device\'s save', () => {
     expect(r.retired).toEqual({ realm: 6, layer: 3, marks: 0, rebirths: 1 });
     expect(store.map.has('ninefold.save.v1')).toBe(false);
     expect(r.state.season).toBe(SEASON);
+  });
+
+  it('改 a hand-edited closed-test save does not mark the season cultivator as edited', () => {
+    // The closed test took hand-edited saves. This phone sealed its saves, so a plain one
+    // under the key reads as edited, and the note used to outlive the cultivator it was about.
+    store.map.set('ninefold.sealed', '1');
+    store.map.set('ninefold.save.v1', JSON.stringify(veteran(6, 2)));
+    load(AFTER);
+    expect(wasEdited()).toBe(false);
+    // A season spare that stays keeps whatever note it earned for itself.
+    store.map.set('ninefold.edited', '1');
+    store.map.set('ninefold.save.v1', JSON.stringify(veteran(4, 0)));
+    store.map.set('ninefold.save.backup', seal(JSON.stringify({ ...newState(AFTER), season: SEASON })));
+    load(AFTER + 60);
+    expect(wasEdited()).toBe(true);
   });
 });
 

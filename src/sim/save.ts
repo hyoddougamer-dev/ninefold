@@ -268,6 +268,13 @@ export function load(now: number): Return {
     retired = retire(old.map(([k]) => k), old.map(([, r]) => r), now);
     if (old.some(([k]) => k === KEY)) raw = null;
     if (old.some(([k]) => k === BACKUP)) spare = null;
+    // 改 "This save was changed outside the game" was said of the cultivator that has just
+    // left (the closed test took hand-edited saves, and reading one here noted it). The
+    // season cultivator that begins now is a new one, and never touched: the note goes with
+    // the old one. A season spare that is still here keeps it, since that one may be its own.
+    if (!raw && !spare) {
+      try { localStorage.removeItem(EDITED); } catch { /* the Ranks line stays, nothing else */ }
+    }
   }
 
   /**
