@@ -73,8 +73,19 @@ server league and new anti-cheat. Risk: it splits the game in two.
 
 ## 季榜 The Hundred (the competitive season)
 
-**Status:** approved by Bruno on 2026-10-07 as the design for **season 0**; to be adjusted after
-the player feedback is dealt with. Not built. The interactive workbook with every open question
+**D1, decided: The Hundred can only ever be an optional side life.** Bruno confirmed it on
+2026-10-15, with Season 0 · The Founding 開山 (docs/SEASON0-THEME.md): **no later season, and not
+The Hundred, may ever start everyone from zero.** Season 0 is the last wipe, and the Season 0 save
+is the game from then on (the Eternal below). So whatever of this design is ever built is a
+second life a player may *choose* to open beside the Season 0 save, never one that replaces it:
+the main save, its boards, 題名崖 the Cliff of Names and 先行 Forerunner are never touched by it,
+and a side life never writes to the Cliff's `firsts`. Anything below that reads as "everyone
+starts a fresh cultivator" means "everyone who opens the side life". Without this the Cliff and
+"for ever" would be false, so a design that breaks it does not ship.
+
+**Status:** approved by Bruno on 2026-10-07 as the design for season 0, then **replaced as the
+season 0 model** by the full restart of 26 October (The Founding). Kept here as a future optional
+side life, under D1 above. Not built. The interactive workbook with every open question
 (21 of them, each with options and the evidence) is
 **https://claude.ai/artifact/Wa1BLrN6FSmjk6FMqgySNq**, and the earlier versions are
 v2 (starting realm, rejected) and v3 (**https://claude.ai/artifact/C3bxLCd76Y3shxuexUaRfD**,
@@ -242,8 +253,8 @@ realm 9 / summit / third mark, and the summit's saving on the first life):
   (measured here: 14% to 20% at the summit), it is reached only after eight months to a
   year of play, and it is a roof: nothing past it moves the rate, so the law holds.
 
-**Composable with 季榜 The Hundred.** The Echo belongs to the Eternal save. A season is a
-fresh life under the season's Law and never reaches the Eternal, so the two never meet. If
+**Composable with 季榜 The Hundred.** The Echo belongs to the Eternal save. A Hundred season is an
+optional side life (D1, 2026-10-15) under the season's Law and never reaches the Eternal, so the two never meet. If
 Bruno ever wants the Echo inside a season, the two bonuses add and share one ceiling
 (`ECHO_CEILING`), never multiply.
 
