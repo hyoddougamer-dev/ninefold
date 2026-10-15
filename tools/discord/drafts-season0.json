@@ -27,7 +27,7 @@
       "key": "s0-push-a",
       "when": "Monday 19 October",
       "push": "Push A (docs/SEASON0-THEME.md 2f): the season card, the last-week notice, the closed-test copy retired, 先行 on the boards",
-      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push. If the three rebirth changes are not in this push, drop the dev log's 轉世 field and put back the reply's first paragraph as server.json has it today (it says they are built and waiting).",
+      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push. If the three rebirth changes are not in this push, drop the dev log's 轉世 field and put back the reply's first paragraph as server.json has it today (it says they are built and waiting). The 封 seal field in the dev log and the two corrected seal replies (tidyEdits) go only if the seal change (qi fills the whole bar, 60 minutes an hour past 40%) is in this push; otherwise drop all three.",
       "needs": [
         "public/discord/banner/s0-founding.webp",
         "public/discord/banner/update-2026-10-19.webp",
@@ -76,7 +76,8 @@
             ["終 The last week", "The game shows one notice with the end of the closed test in your own time, and how to carry 先行 Forerunner: join 榜 Ranks once before the switch. A guest only needs a name."],
             ["先行 On the boards", "Every account the ranked server has seen in the closed test wears a small gold 先行 seal beside its name, and so will every account that joins before the switch. Tap it to read what it means."],
             ["季 The season card", "The first time you open the game after the switch, one card says goodbye to your closed-test cultivator in one line, shows the season's law and begins Season 0. No progress from the closed test is kept on the device."],
-            ["轉世 Rebirth", "What the rebirth polls asked for: a new life keeps all of its craft experience, a rebirth is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."]
+            ["轉世 Rebirth", "What the rebirth polls asked for: a new life keeps all of its craft experience, a rebirth is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."],
+            ["封 The seal", "The seal on gates 5 to 8 can now be opened with qi all the way. The first 40% of the bar costs what it did, 30 minutes of your own gathering for every hour of the bar. Past that, an hour of the bar costs an hour of your gathering. Waiting is still free and still opens every gate, and Breakthrough Pills work as before. Paying gets you through the gate now; it does not get you to the summit sooner, so waiting is never the wrong choice. And one card now tells you about the seal the moment you reach realm 5, long before its warden comes out."]
           ],
           "footer": "· 師 Shibaki"
         }
@@ -88,6 +89,22 @@
           "final": [
             "rekaris, to answer you plainly. Live now: Rebirth (since 7 October), with an Echo of +5% to +12.5% a life that adds up to +25% across lives, then a slow tail to a roof of +35%. Since 19 October each craft keeps all of its experience (it was 25%), reborn lives climb a Samsara board of their own (hidden until your first rebirth, its record starts again at each rebirth, and once reborn you are listed there instead of on the Heaven List), and a rebirth is confirmed by typing Reincarnate. Not changing: the qi roof stays. Not built: a material or crafting speed bonus.",
             "On 6 October we said there would be one wipe, at the end of the closed test. It comes on Monday 26 October at 00:00 UTC, when Season 0 begins, and it is the last one. No progress carries over. Your account, your name and the 先行 Forerunner mark do. Details in the announcements channel.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "Change the seal so there is no limit to how much qi or how many pills you can use to contribute",
+          "final": [
+            "Done, since 19 October. Qi can fill the whole bar now, 10% a tap. The first 40% costs what it did, 30 minutes of your own gathering for every hour of bar filled; past that, an hour of the bar costs an hour of gathering. Lesser pills still fill up to 40%, and the Breakthrough Pill made for the gate's own realm still breaks the whole bar at once. Waiting is still free. We measured it on every way of playing: whoever waits climbs exactly as before, and whoever pays stops standing at the gate.",
+            "· 師 Shibaki"
+          ]
+        },
+        {
+          "forum": "ideas",
+          "title": "業 The workshop: walls, seals and sets",
+          "final": [
+            "Where this stands. A Hundredfold piece takes 20 minutes at the forge before tools, arrays, familiarity and the Jadewater codex. A sealed gate is a bar: time fills it, Pay qi can fill all of it (the first 40% at 30 minutes of gathering for an hour of bar, the rest an hour for an hour, since 19 October), and a Breakthrough Pill made for that realm breaks the seal at once and takes half of the wall's loosening time at Common, 70% at Heaven. Every line of a Hundredfold piece is chosen through the crucible. Set effects you pick yourself are not built.",
             "· 師 Shibaki"
           ]
         }

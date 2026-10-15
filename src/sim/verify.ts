@@ -31,7 +31,7 @@
 import {
   BLESSED_ROOM, FOCUS_MAX, INCENSE_BONUS, INCENSE_WORTH, LAYERS, MARK_DAYS, MEET_GAP, MELT_CAP,
   MELT_FILL, PAIR_BOUNTY, PAIR_DRAGON, PAIR_MELT, PAIR_SPRING, PAIR_TOWER_QI, PLATFORM_EDGE,
-  DRAGON_KIT_SHARE, KEY_SPRING, ROUND_CAP, SEAL_PAY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
+  DRAGON_KIT_SHARE, KEY_SPRING, ROUND_CAP, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SECLUSION, SPRING_FILL, SPRING_HOLD, TOWER_QI_SUMMIT, TRAIL_WOUND,
   TRIBULATION_CHALLENGE,
 } from './balance.ts';
 import { WEEK } from './week.ts';
@@ -398,10 +398,11 @@ export const EDGE_STRICT_FROM = SEAL_STRICT_FROM;
 
 /**
  * 封 The real seconds the sealed gates crossed between two saves must have stood shut, at
- * the least. Each gate's bar is SEAL_DAYS of time, less everything an honest cultivator
- * could have put into it: the Breakthrough Pill made for that realm, which this save's
- * Alchemy reached or not, breaks the whole bar (bestUnseal); otherwise qi fills up to
- * SEAL_PAY_SHARE of it, and lesser pills up to SEAL_PILL_SHARE where Alchemy reached one
+ * the least, or been paid for in qi past its free share (sealQi). Each gate's bar is
+ * SEAL_DAYS of time, less everything an honest cultivator could have put into it for
+ * nothing the server counts: the Breakthrough Pill made for that realm, which this save's
+ * Alchemy reached or not, breaks the whole bar (bestUnseal); otherwise qi's cheap first
+ * SEAL_PAY_EASY_SHARE of it, and lesser pills up to SEAL_PILL_SHARE where Alchemy reached one
  * (bestFeed). The server sees a gate crossed, never what was paid into it, so it allows the
  * most that can honestly be, as it does for the kit. A gate the earlier save already stood
  * at owes only what was left of its bar then (its own fills counted); one it had not
@@ -411,8 +412,8 @@ export function sealSeconds(before: State, after: State): number {
   let days = 0;
   for (let r = before.realm; r < Math.min(9, after.realm); r++) {
     const whole = bestUnseal(after, r);
-    const bar = after.sealPaid !== undefined || after.sealFed !== undefined;
-    const qi = bar ? SEAL_PAY_SHARE * sealDays(r) : 0;
+    const bar = hasBar(after);
+    const qi = bar ? SEAL_PAY_EASY_SHARE * sealDays(r) : 0;
     const lesser = bar ? bestFeed(after, r) : 0;
     if (r === before.realm && before.wardenFell) continue;
     if (r === before.realm && wardenStands(before)) {
@@ -423,6 +424,30 @@ export function sealSeconds(before: State, after: State): number {
     } else days += Math.max(0, sealDays(r) - (whole > 0 ? whole : qi + lesser));
   }
   return days * 86_400;
+}
+
+/** 封 Whether a save carries the bar's fields: one written by a game that had the bar. */
+function hasBar(s: State): boolean {
+  return s.sealPaid !== undefined || s.sealFed !== undefined;
+}
+
+/**
+ * 封 The qi the sealed gates crossed between two saves must have been paid, past what time
+ * filled. Since 2026-10-15 qi can fill a gate's whole bar, and past its cheap first
+ * SEAL_PAY_EASY_SHARE an hour of the bar costs SEAL_PAY_DEEP_MINUTES of the cultivator's own
+ * gathering, an hour for an hour: so what the seconds between the saves (with SLACK and
+ * SEAL_GRACE) did not fill of sealSeconds is charged here, at that price, and spent out of the
+ * qi budget like every other sink. For the server, as for the player, paying and waiting are
+ * then the same. It is priced at the gathering the earlier save had at the first gate, the
+ * least it can honestly have been. A save without the bar's fields was written by a game that
+ * could not pay, and owes nothing here: its seal is all time, read as it always was.
+ */
+export function sealQi(before: State, after: State, dt: number): number {
+  if (!hasBar(after)) return 0;
+  const late = Math.max(0, sealSeconds(before, after) - Math.max(0, dt) * SLACK - SEAL_GRACE);
+  if (late <= 0) return 0;
+  const gate = Math.min(LAYERS - 1, before.realm * 9 - 1);
+  return late * (SEAL_PAY_DEEP_MINUTES / 60) * rateOn(before, gate);
 }
 
 /** 業 The seconds of work the experience gained between two saves took, at its fastest. */
@@ -548,10 +573,12 @@ export function verify(before: State, after: State, seconds: number, first = fal
     pocket = Math.max(0, pocket - cost);
   }
   // What is spent or held at the end is paid at the end's own rate, the fastest there was.
+  // 封 And a seal paid through past its free share in qi, spent at a gate (see sealQi).
   const spentAtEnd = after.qi
     + levelsBetween(before, after)
     + pillsBetween(before, after)
-    + (drove > 0 ? driveFloor(before, Math.ceil(drove)) : 0);
+    + (drove > 0 ? driveFloor(before, Math.ceil(drove)) : 0)
+    + (before.at >= SEAL_STRICT_FROM ? sealQi(before, after, dt) : 0);
   need += Math.max(0, spentAtEnd - pocket) / rEnd;
   // 雷 A thunder mark is 雷池 the pool filled: MARK_DAYS of the cultivator's own gathering,
   // however deep the 入定. It used to be charged as qi and divided by the rate at the end,
@@ -605,11 +632,13 @@ export function verify(before: State, after: State, seconds: number, first = fal
   }
   // 封 And every sealed gate crossed stood shut for its days, less what a Breakthrough Pill
   // this save's Alchemy could have made counts as, and the share of its bar that qi and lesser
-  // pills can fill (SEAL_PAY_SHARE, SEAL_PILL_SHARE: see sealSeconds; a loosening, so it needs
-  // no grandfathering, and a save without the bar's fields is read as it always was). Time is
-  // the honest way through it, so a seal crossed too soon is a matter of time and waits, like
-  // a clock moved on. A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
-  if (before.at >= SEAL_STRICT_FROM && sealSeconds(before, after) > dt * SLACK + SEAL_GRACE && !why.includes('too-fast')) {
+  // pills fill for nothing the server counts (SEAL_PAY_EASY_SHARE, SEAL_PILL_SHARE: see
+  // sealSeconds). A save with the bar's fields pays the rest in time or in qi, and the qi is
+  // in the budget above (sealQi). A save without them is read as it always was: time is the
+  // only way through, so a seal crossed too soon is a matter of time and waits, like a clock
+  // moved on. A pair from before the seal existed (SEAL_STRICT_FROM) owes it nothing.
+  if (before.at >= SEAL_STRICT_FROM && !hasBar(after) && sealSeconds(before, after) > dt * SLACK + SEAL_GRACE
+    && !why.includes('too-fast')) {
     why.push('too-fast');
   }
   // 業 One task at a time, so the experience every craft gained between two saves has to

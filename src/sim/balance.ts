@@ -1533,9 +1533,9 @@ export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
  * fill part of it again and again, and Breakthrough Pills fill the rest. Waiting alone
  * still fills the whole bar in SEAL_DAYS, and nothing here lengthens any seal.
  *
- * - SEAL_PAY_SHARE: the most of a gate's bar qi can ever fill, 40%. A sink with a ceiling,
- *   so the gate stays a gate: the cheapest honest way through still stands shut for the rest.
- * - SEAL_PAY_STEP: how much of the bar one tap fills, a tenth, so four taps reach the cap.
+ * - SEAL_PAY_SHARE: the most of a gate's bar qi can ever fill: 40% until 2026-10-15, the
+ *   whole bar since (below).
+ * - SEAL_PAY_STEP: how much of the bar one tap fills, a tenth.
  * - SEAL_PAY_MINUTES: the price, in minutes of the cultivator's own gathering (standing
  *   rate, no 入定, no incense) for every hour of the bar a tap fills. It grows with the
  *   cultivator, so it is never a flat sum a late realm shrugs off, and it is paid out of
@@ -1543,8 +1543,7 @@ export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
  * - SEAL_PILL_SHARE: the most a lesser pill (made for a realm below the gate) can fill,
  *   also 40%. The pill made for the gate's own realm still breaks the whole bar at once.
  *
- * Together qi and lesser pills leave 20% of the bar to time, so a gate is never opened
- * by spending alone: 5 to 10 hours always have to pass.
+ * Together qi and lesser pills left 20% of the bar to time until 2026-10-15 (below).
  *
  * Measured on 2026-10-08 with tools/seal.ts, the day the ninth realm opens. `waits` is the
  * seal as it was (the numbers above, unchanged); `pays` puts qi into the bar before the
@@ -1566,10 +1565,59 @@ export const SEAL_DAYS: readonly number[] = [0, 0, 0, 0, 1, 1.25, 1.5, 2, 0];
  * stays the way through (46.0 against 47.8 for the best payer), no price moves any habit
  * by more than a day and a half either side, and what each gate stood shut for stays at
  * 60% of its seal or more for everybody who carries no pill, so the gate is still a gate.
+ *
+ * 封 Qi all the way (2026-10-15, for Season 0). The seal was the complaint the testers made
+ * most often, in three threads: qi in the purse that a sealed gate would not take. So qi may
+ * now fill the whole bar (SEAL_PAY_SHARE 1), and the bar has two prices:
+ *
+ * - SEAL_PAY_EASY_SHARE: the first 40% of the bar qi fills costs SEAL_PAY_MINUTES, 30 minutes
+ *   of gathering per hour of bar, exactly as before.
+ * - SEAL_PAY_DEEP_MINUTES: the rest costs 60, an hour of gathering for every hour of the bar,
+ *   so past the first 40% paying and waiting are worth the same, to the player and to the
+ *   server (verify.ts sealQi charges what time did not fill at this price). A gate is a gate
+ *   because nothing about it can be skipped for free, not because a share of it is untouchable.
+ *
+ * Still a sink: the price leaves the save, nothing about the bar raises the rate, waiting is
+ * free and opens every gate in SEAL_DAYS as before, and the lesser pills and the gate's own
+ * pill are where they were.
+ *
+ * Measured with tools/habits.ts on 2026-10-15 (five seeds: 991, 1234, 5555, 7777, 31337; the
+ * mean), a payer who pays every visit it can. "held" is the days the seal kept a cultivator
+ * shut who could already beat the warden, summed over gates 5 to 8.
+ *
+ *   habit         held: waits  pays 40%  pays all   realm 9: waits  pays 40%  pays all   summit: pays 40%  pays all
+ *   once a day          6.6      4.8       3.8             74.0      74.0      72.8              87.6      87.4
+ *   active              5.8      3.5       2.0             49.5      48.5      48.3              57.5      57.8
+ *   every hour          5.7      3.4       1.5             31.9      30.9      30.9              36.4      37.2
+ *   runs auto           5.6      3.4       1.7             33.1      33.0      33.0              38.7      39.4
+ *
+ * Whoever waits is exactly where they were, day by day and mark by mark, in all ten habits.
+ * Whoever pays stops standing at the gate, and the qi the bar took is qi the next realm did
+ * not get, so the summit comes the same day or up to 0.8 of a day later: paying buys the gate
+ * now, not the summit sooner, and waiting is never the wrong choice.
+ *
+ * Pushed off its value (seed 991, the day realm 9 opens for the payer): the whole price at
+ * x0.9 and x1.1, at half and at double, and the deep price alone at 54 and 66 minutes. No
+ * habit moves more than a day between x0.9 and x1.1, or more than two between half and
+ * double; it slows, it never walls.
+ *
+ *   habit         today  60 min   x0.9   x1.1   x0.5   x2     deep 54   deep 66
+ *   once a day    74.0   74.0     74.0   74.0   76.0   76.0   74.0      74.0
+ *   casual        67.0   65.0     65.0   65.7   64.7   66.0   66.0      65.0
+ *   active        47.8   48.3     48.3   47.5   47.8   48.7   49.0      47.8
+ *   every hour    31.0   30.2     29.9   30.8   30.0   31.7   30.2      30.6
+ *   runs auto     31.3   32.3     32.3   31.7   30.7   31.8   32.0      32.3
+ *
+ * tools/climb.ts, playEndgame(80) (and a tenth heavier), tools/freeclimb.ts and
+ * tools/rebirth.ts read the same as before. The Cliff of Names and the sect ranks
+ * (docs/SEASON0-THEME.md 2c, docs/SEASON-RANKS.md) keep their tables: the first four
+ * columns are untouched, and a payer reaches columns 5 to 8 a third of a day to a day sooner.
  */
-export const SEAL_PAY_SHARE = 0.4;
+export const SEAL_PAY_SHARE = 1;
 export const SEAL_PAY_STEP = 0.1;
 export const SEAL_PAY_MINUTES = 30;
+export const SEAL_PAY_EASY_SHARE = 0.4;
+export const SEAL_PAY_DEEP_MINUTES = 60;
 export const SEAL_PILL_SHARE = 0.4;
 
 /**

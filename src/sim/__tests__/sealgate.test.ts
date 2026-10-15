@@ -3,6 +3,7 @@ import { HABITS, play } from '../../../tools/habits.ts';
 import { sealRow } from '../../../tools/seal.ts';
 import {
   LAYERS_PER_REALM, SEAL_DAYS, CRAFT_KIT, CRAFT_QUALITY_MULT, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP, SEAL_PILL_SHARE,
+  SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE,
 } from '../balance.ts';
 import { breakThrough, canFightWarden, canPaySeal, feedDays, feedSeal, gathering, newState, paySeal, sealDays, sealFeedRoom, sealFilled, sealLeft, sealPayRoom, sealPrice, sealStep, sealed, type State } from '../state.ts';
 import { validate } from '../load.ts';
@@ -13,7 +14,7 @@ import {
 import { XP_TABLE, breakthroughKey, RECIPE_BY_KEY, ITEM_BY_KEY } from '../../data/crafts.ts';
 import { wardenOf } from '../../data/bestiary.ts';
 import { bottleneck } from '../combat.ts';
-import { SEAL_STRICT_FROM, sealSeconds, verify } from '../verify.ts';
+import { SEAL_GRACE, SEAL_STRICT_FROM, SLACK, sealQi, sealSeconds, verify } from '../verify.ts';
 
 /**
  * 封 The seal at the gates of realms 5 to 8 and 破境丹 the Breakthrough Pill that breaks it.
@@ -343,29 +344,56 @@ describe('封 the bar: time by itself, qi paid in, pills eaten', () => {
     expect(sealPrice(strong)).toBeGreaterThan(sealPrice(weak));
   });
 
-  it('qi is a sink with a ceiling: four taps at most, SEAL_PAY_SHARE of the bar, then it refuses', () => {
+  it('pins the bar\'s numbers (2026-10-15): qi fills all of it, 30 min an hour for the first 40%, 60 past it', () => {
+    // tools/habits.ts, five seeds: whoever waits climbs exactly as before, whoever pays stops
+    // standing at the gate and reaches the summit the same day. See SEAL_PAY_DEEP_MINUTES.
+    expect([SEAL_PAY_SHARE, SEAL_PAY_STEP, SEAL_PAY_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_DEEP_MINUTES, SEAL_PILL_SHARE])
+      .toEqual([1, 0.1, 30, 0.4, 60, 0.4]);
+    // Past the first share, an hour of the bar is an hour of gathering: paying and waiting are worth the same.
+    expect(SEAL_PAY_DEEP_MINUTES).toBe(60);
+    expect(SEAL_PAY_EASY_SHARE).toBeLessThan(SEAL_PAY_SHARE);
+  });
+
+  it('qi is a sink that can fill the whole bar: four cheap taps, then dearer ones, until the gate opens', () => {
     for (const r of [5, 6, 7, 8]) {
       let s: State = { ...atGate(r, 0), qi: 1e17 };
       const g = gathering(s);
+      const hour = sealDays(r) * SEAL_PAY_STEP * 24;
       let spent = 0, taps = 0;
+      const prices: number[] = [];
       while (canPaySeal(s) && taps < 50) {
         const next = paySeal(s);
         expect(next.qi).toBeLessThan(s.qi);
+        prices.push(sealPrice(s));
         spent += sealPrice(s);
         expect(gathering(next)).toBe(g);
         s = next; taps++;
       }
       expect(taps).toBe(Math.round(SEAL_PAY_SHARE / SEAL_PAY_STEP));
-      expect(s.sealPaid! / 86_400).toBeCloseTo(sealDays(r) * SEAL_PAY_SHARE, 6);
+      // The first four taps at the old price, every one after at the deep price.
+      const cheap = Math.round(SEAL_PAY_EASY_SHARE / SEAL_PAY_STEP);
+      prices.forEach((p, i) => expect(p / (hour * (i < cheap ? SEAL_PAY_MINUTES : SEAL_PAY_DEEP_MINUTES) * 60 * g), `tap ${i + 1}`).toBeCloseTo(1, 6));
+      expect(s.sealPaid! / 86_400).toBeCloseTo(sealDays(r), 6);
       expect(sealPayRoom(s)).toBe(0);
-      // A tap past the ceiling is the same state, whatever is in the purse.
+      // A tap on a full bar is the same state, whatever is in the purse.
       expect(paySeal(s)).toBe(s);
-      // The whole of what qi can ever pay at this gate, in minutes of gathering.
-      expect(spent / (sealDays(r) * SEAL_PAY_SHARE * 24 * SEAL_PAY_MINUTES * 60 * g)).toBeCloseTo(1, 6);
-      // And the gate is still shut: qi alone never opens it.
-      expect(sealed(s)).toBe(true);
-      expect(sealLeft(s)).toBeCloseTo(sealDays(r) * (1 - SEAL_PAY_SHARE), 6);
+      // The whole bar in minutes of gathering: the easy share at one price, the rest at the other.
+      const whole = sealDays(r) * 24 * 60 * g * (SEAL_PAY_EASY_SHARE * SEAL_PAY_MINUTES + (1 - SEAL_PAY_EASY_SHARE) * SEAL_PAY_DEEP_MINUTES);
+      expect(spent / whole).toBeCloseTo(1, 6);
+      // Qi alone opens it now, at a price: the gate is open.
+      expect(sealLeft(s)).toBe(0);
+      expect(sealed(s)).toBe(false);
     }
+  });
+
+  it('a tap that straddles the edge pays each part at its own price', () => {
+    const s = { ...atGate(6, 0), qi: 1e17, sealPaid: (SEAL_PAY_EASY_SHARE - SEAL_PAY_STEP / 2) * sealDays(6) * DAY };
+    const g = gathering(s);
+    const half = sealDays(6) * SEAL_PAY_STEP / 2 * 24;
+    expect(sealPrice(s)).toBeCloseTo(half * SEAL_PAY_MINUTES * 60 * g + half * SEAL_PAY_DEEP_MINUTES * 60 * g, 3);
+    // Time filling the bar does not move the edge: it is the qi paid in that counts.
+    const later = { ...atGate(6, 0.5), qi: 1e17 };
+    expect(sealPrice(later)).toBeCloseTo(sealStep(later) * 24 * SEAL_PAY_MINUTES * 60 * gathering(later), 3);
   });
 
   it('refuses without the qi, takes nothing, and never works at an open gate or below the fifth realm', () => {
@@ -435,11 +463,12 @@ describe('封 the bar: time by itself, qi paid in, pills eaten', () => {
     expect(s.sealFed! / 86_400).toBeCloseTo(sealDays(6) * SEAL_PILL_SHARE, 6);
     expect(feedSeal(s, key)).toBe(s);
     expect(sealed(s)).toBe(true);
-    // Qi and lesser pills together never open a gate: a fifth of the bar is always time.
+    // Qi pays what the pills left, and the gate opens: pills and qi together fill the whole bar.
     let b: State = { ...s, qi: 1e17 };
     while (canPaySeal(b)) b = paySeal(b);
-    expect(sealLeft(b)).toBeCloseTo(sealDays(6) * (1 - SEAL_PAY_SHARE - SEAL_PILL_SHARE), 6);
-    expect(sealFilled(b)).toBeCloseTo(sealDays(6) * (SEAL_PAY_SHARE + SEAL_PILL_SHARE), 6);
+    expect(sealLeft(b)).toBe(0);
+    expect(sealFilled(b)).toBeCloseTo(sealDays(6), 6);
+    expect(b.sealPaid! / 86_400).toBeCloseTo(sealDays(6) * (1 - SEAL_PILL_SHARE), 6);
   });
 
   it('cannot eat the realm\'s own pill or a higher one, and the fifth gate has no lesser pill at all', () => {
@@ -483,7 +512,7 @@ describe('封 the bar: time by itself, qi paid in, pills eaten', () => {
     expect(edit({ sealPaid: 1e12, sealFed: 1e12 }).sealPaid).toBeCloseTo(cap * SEAL_PAY_SHARE, 6);
     const both = edit({ sealPaid: 1e12, sealFed: 1e12 });
     expect(both.sealFed! + both.sealPaid!).toBeLessThanOrEqual(cap + 1e-6);
-    expect(both.sealFed!).toBeCloseTo(cap * SEAL_PILL_SHARE, 6);
+    expect(edit({ sealFed: 1e12 }).sealFed!).toBeCloseTo(cap * SEAL_PILL_SHARE, 6);
     expect(edit({ sealPaid: -5, sealFed: NaN }).sealPaid).toBe(0);
     expect(edit({ sealPaid: -5, sealFed: NaN }).sealFed).toBe(0);
     // Off the gate, or at a realm with no seal, nothing stands.
@@ -526,11 +555,11 @@ describe('驗 the server and the bar', () => {
     return { before, after };
   }
 
-  it('allows qi\'s share of the bar: a gate crossed in the rest of its time is honest, sooner is not', () => {
+  it('allows qi\'s cheap share of the bar for nothing: the rest is time, or qi at an hour for an hour', () => {
     for (const r of [5, 6, 7, 8]) {
       const { before, after } = pair(r, 1);
       expect(bestUnseal(after, r)).toBe(0);
-      expect(sealSeconds(before, after)).toBeCloseTo(sealDays(r) * (1 - SEAL_PAY_SHARE) * DAY, 6);
+      expect(sealSeconds(before, after)).toBeCloseTo(sealDays(r) * (1 - SEAL_PAY_EASY_SHARE) * DAY, 6);
       // The line the server draws: owed seconds against the time between, with its slack.
       expect(sealSeconds(before, after)).toBeLessThan(sealDays(r) * DAY);
     }
@@ -541,7 +570,7 @@ describe('驗 the server and the bar', () => {
     const lvl5 = RECIPE_BY_KEY[`alchemy:${breakthroughKey(5)}`].level;
     const { before, after } = pair(6, lvl5);
     expect(bestFeed(after, 6)).toBeCloseTo(sealDays(6) * SEAL_PILL_SHARE, 9);
-    expect(sealSeconds(before, after)).toBeCloseTo(sealDays(6) * (1 - SEAL_PAY_SHARE - SEAL_PILL_SHARE) * DAY, 6);
+    expect(sealSeconds(before, after)).toBeCloseTo(sealDays(6) * (1 - SEAL_PAY_EASY_SHARE - SEAL_PILL_SHARE) * DAY, 6);
     expect(sealSeconds(before, after)).toBeGreaterThan(0);
     // Below the level of the lowest pill, nothing is eaten; at the fifth gate, there is no lesser pill.
     expect(bestFeed(pair(6, lvl5 - 1).after, 6)).toBe(0);
@@ -557,15 +586,51 @@ describe('驗 the server and the bar', () => {
 
   it('counts what the earlier save had already put in, and allows only the rest of the cap', () => {
     const { before, after } = pair(7, 1);
-    const paid = { ...before, sealPaid: SEAL_PAY_SHARE * sealDays(7) * DAY };
-    // Everything qi can fill is in already: what is owed is the rest of the bar, no less.
-    expect(sealSeconds(paid, after)).toBeCloseTo(sealDays(7) * (1 - SEAL_PAY_SHARE) * DAY, 6);
-    // Half a cap in, the other half still allowed: the same sum.
-    const half = { ...before, sealPaid: SEAL_PAY_SHARE * sealDays(7) * DAY / 2 };
-    expect(sealSeconds(half, after)).toBeCloseTo(sealDays(7) * (1 - SEAL_PAY_SHARE) * DAY, 6);
-    // A hand-edited claim of more than the cap is clamped by validate, so it buys nothing.
-    const greedy = validate(JSON.parse(JSON.stringify({ ...before, sealPaid: 1e12 })), before.at);
-    expect(sealSeconds(greedy, after)).toBeCloseTo(sealDays(7) * (1 - SEAL_PAY_SHARE) * DAY, 6);
+    const paid = { ...before, sealPaid: SEAL_PAY_EASY_SHARE * sealDays(7) * DAY };
+    // Everything qi fills for free is in already: what is owed is the rest of the bar, no less.
+    expect(sealSeconds(paid, after)).toBeCloseTo(sealDays(7) * (1 - SEAL_PAY_EASY_SHARE) * DAY, 6);
+    // Half of it in, the other half still allowed: the same sum.
+    const half = { ...before, sealPaid: SEAL_PAY_EASY_SHARE * sealDays(7) * DAY / 2 };
+    expect(sealSeconds(half, after)).toBeCloseTo(sealDays(7) * (1 - SEAL_PAY_EASY_SHARE) * DAY, 6);
+    // Past the free share, what the earlier save paid in was paid: it is inside sealLeft.
+    const deep = { ...before, sealPaid: 0.7 * sealDays(7) * DAY };
+    expect(sealSeconds(deep, after)).toBeCloseTo(sealDays(7) * 0.3 * DAY, 6);
+  });
+
+  it('charges what time did not fill as qi, at an hour of gathering for an hour of the bar', () => {
+    for (const r of [5, 6, 7, 8]) {
+      const { before, after } = pair(r, 1);
+      const owed = sealSeconds(before, after);
+      // Time between the saves fills it first, with its slack and grace: then nothing is owed in qi.
+      expect(sealQi(before, after, (owed - SEAL_GRACE) / SLACK + 1)).toBe(0);
+      // Crossed at once, the whole of it is qi, priced at the deep rate and never more.
+      const qi = sealQi(before, after, 0);
+      expect(qi).toBeGreaterThan(0);
+      expect(qi).toBeLessThanOrEqual((owed - SEAL_GRACE) * (SEAL_PAY_DEEP_MINUTES / 60) * gathering(before) * 1.000001);
+      // A pair without the bar's fields could not have paid: no qi, all time, as before.
+      const old = pair(r, 1, false);
+      expect(sealQi(old.before, old.after, 0)).toBe(0);
+    }
+  });
+
+  it('a gate paid through in qi is honest when the purse held it, and waits when it did not', () => {
+    const { before, after } = pair(7, 1);
+    const at = late(before), to = late(after);
+    const dt = 3600;
+    const need = sealQi(at, to, dt);
+    expect(need).toBeGreaterThan(0);
+    // The same crossing an hour later, holding nothing: it could not have paid, so it waits.
+    const broke = verify({ ...at, qi: 0 }, { ...to, qi: 0, at: at.at + dt }, dt);
+    expect(broke.why).toContain('too-fast');
+    // (This cultivator is made up at the gate and could not beat the warden: that is the warden's
+    // check, read beside the seal's. The seal itself only ever asks for time or qi.)
+    expect(broke.why.filter((w) => w !== 'warden')).toEqual(['too-fast']);
+    // With the qi in the earlier purse (and a margin for the layer it opened), it is ranked.
+    const rich = verify({ ...at, qi: need * 1.5 + 1e15 }, { ...to, qi: 0, at: at.at + dt }, dt);
+    expect(rich.why).not.toContain('too-fast');
+    // And waited out instead, it was always honest.
+    const waited = (sealSeconds(at, to) - SEAL_GRACE) / SLACK + 60;
+    expect(verify({ ...at, qi: 1e15 }, { ...to, qi: 0, at: at.at + waited }, waited).why).not.toContain('too-fast');
   });
 
   it('reads a pair from before the bar exactly as it always was', () => {
@@ -582,7 +647,7 @@ describe('驗 the server and the bar', () => {
     expect(after.sealPaid).toBeDefined();
     const bar = sealSeconds(before, after), was = sealSeconds(before, oldAfter as State);
     expect(was - bar).toBeGreaterThan(0);
-    expect(was - bar).toBeLessThanOrEqual(SEAL_PAY_SHARE * sealDays(5) * DAY + 1);
+    expect(was - bar).toBeLessThanOrEqual(SEAL_PAY_EASY_SHARE * sealDays(5) * DAY + 1);
     // An honest wait is never suspect, with the bar or without it.
     const dt = after.at - before.at;
     expect(verify(late(before), late(after), dt).why).not.toContain('too-fast');
@@ -622,23 +687,26 @@ describe('量 what paying into the bar changes (tools/seal.ts)', () => {
   const row = (name: string, paysSeal: number | undefined, crafts = false) =>
     sealRow({ ...HABITS.find((h) => h.name === name)!, crafts, paysSeal });
 
-  it('paying slows no one and walls no one: the active cultivator pays at the real price, half and double', () => {
+  it('paying slows no one and walls no one: the active cultivator pays at the real price, a tenth off, half and double', () => {
     const waits = row('active', undefined);
     const real = row('active', 1), cheap = row('active', 0.5), dear = row('active', 2);
+    const less = row('active', 0.9), more = row('active', 1.1);
     const f = (r: typeof real) => r.realm9?.toFixed(1);
-    console.log(`    active: realm 9 on day ${f(waits)} waiting, ${f(real)} paying, ${f(cheap)} at half the price, ${f(dear)} at twice it`);
-    for (const r of [waits, real, cheap, dear]) expect(r.realm9).toBeDefined();
-    // Paying is a gain, but a small one: a day or two of fifty, never a shortcut past the gate.
+    const held = (r: typeof real) => r.sealed.reduce((a, b) => a + b, 0);
+    console.log(`    active: realm 9 on day ${f(waits)} waiting, ${f(real)} paying, ${f(less)} and ${f(more)} a tenth either side, ${f(cheap)} at half the price, ${f(dear)} at twice it`);
+    console.log(`    active: the seal held a ready cultivator ${held(waits).toFixed(1)} days waiting, ${held(real).toFixed(1)} paying`);
+    for (const r of [waits, real, cheap, dear, less, more]) expect(r.realm9).toBeDefined();
+    // Paying is a gain, but a small one: a day or two of fifty, never a shortcut past the summit.
     expect(real.realm9!).toBeLessThanOrEqual(waits.realm9!);
     expect(waits.realm9! - real.realm9!).toBeLessThan(4);
-    // Off its value either way, it moves by a day and a half at the most: not a knife edge.
-    expect(Math.abs(cheap.realm9! - real.realm9!)).toBeLessThanOrEqual(1.5);
-    expect(Math.abs(dear.realm9! - real.realm9!)).toBeLessThanOrEqual(1.5);
-    // And the gate is still a gate: it stood shut for 60% of its days or more, at every price.
-    for (const r of [real, cheap, dear]) {
-      r.sealed.forEach((d, i) => expect(d, `gate ${i + 5}`).toBeGreaterThanOrEqual(SEAL_DAYS[i + 4] * (1 - SEAL_PAY_SHARE) - 0.15));
-    }
-  }, 240_000);
+    // Off its value either way, it moves by a day at a tenth and two at half and double: not a knife edge.
+    expect(Math.abs(less.realm9! - real.realm9!)).toBeLessThanOrEqual(1);
+    expect(Math.abs(more.realm9! - real.realm9!)).toBeLessThanOrEqual(1);
+    expect(Math.abs(cheap.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
+    expect(Math.abs(dear.realm9! - real.realm9!)).toBeLessThanOrEqual(2);
+    // What the seal was asked to fix: the payer stands at the gate less than the waiter.
+    expect(held(real)).toBeLessThan(held(waits));
+  }, 300_000);
 
   it('whoever carries the gate\'s own pill is where they were: the workshop is still the way through', () => {
     const waits = row('active', undefined, true), pays = row('active', 1, true);
