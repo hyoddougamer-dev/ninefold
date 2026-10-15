@@ -74,6 +74,14 @@ export const BANNERS = [
   { key: 'state-2026-10-13', seal: '告', over: '告 Announcement · State of the game', title: 'State of the Game', sub: 'What is in, what is next, what is open', bg: 'realm/6', fig: 'self/man-5' },
   { key: 'corrections-2026-10-12', seal: '正', over: '筆 Dev log · Corrections', title: 'Corrections, Measured', sub: 'Loadouts, mastery, the tower and the Echo', bg: 'realm/5', fig: 'cut/jiao' },
   { key: 'texts-2026-10-11', seal: '正', over: '筆 Dev log · Corrections', title: 'Three Corrections', sub: 'The Celestial Master, the Vajra and the anvil time', bg: 'realm/4', fig: 'cut/tiger' },
+  // 開山 Season 0 · The Founding: the posts drafted in tools/discord/drafts-season0.json.
+  { key: 's0-teaser', seal: '開', over: '筆 Dev log · Season 0', title: 'The Closed Test Is Ending', sub: 'The Founding begins on Monday 26 October', bg: 'realm/9', fig: 'self/man-9' },
+  { key: 's0-founding', seal: '開', over: '告 Announcement · Season 0', title: 'The Founding', sub: 'Everyone starts again. The first names are carved for ever.', bg: 'realm/1', fig: 'self/woman-1' },
+  { key: 'update-2026-10-19', seal: '開', over: '筆 Dev log · The trailer', title: 'The Founding: Trailer', sub: 'The seal falls once, and the Cliff waits', bg: 'realm/9', fig: 'cut/dragon' },
+  { key: 'update-2026-10-23', seal: '崖', over: '筆 Dev log · The server', title: 'Ready to Carve', sub: 'Every gate passed is recorded from the first second', bg: 'realm/7', fig: 'cut/direwolf' },
+  { key: 's0-reminder', seal: '開', over: '告 Announcement · Tonight', title: 'Season 0 Begins Tonight', sub: 'At 00:00 UTC. Last call to join Ranks as a Forerunner', bg: 'realm/2', fig: 'self/woman-2' },
+  { key: 's0-open', seal: '開', over: '告 Announcement · Season 0', title: 'Season 0 Is Open', sub: 'Everyone in the first realm, at the same second', bg: 'realm/1', fig: 'self/man-1' },
+  { key: 'g-cliff', seal: '崖', over: '書 Guide · Season 0', title: 'The Cliff of Names', sub: 'The first 81 through each gate, carved for ever', bg: 'realm/3', fig: 'cut/crane' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
