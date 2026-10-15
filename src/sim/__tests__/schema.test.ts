@@ -882,6 +882,21 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
     }
   });
 
+  it('every function the Founding made or remade as its owner searches pg_temp last', async () => {
+    // A security definer function runs as its owner, so no table of a caller's own may stand in
+    // for one of its names: pg_temp is searched first unless it is named, and named last here.
+    const fns = ['board', 'samsara_board', 'my_standing', 'is_forerunner', 'cliff', 'standings_carve',
+      'panel_set_staff', 'panel_players', 'set_name'];
+    const got = (await db.query(`select p.proname, p.prosecdef, array_to_string(p.proconfig, ',') as cfg
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = any($1::text[])`, [fns])).rows as any[];
+    expect(got.map((r) => r.proname).sort()).toEqual([...fns].sort());
+    for (const r of got) {
+      expect(r.prosecdef, r.proname).toBe(true);
+      expect(r.cfg, r.proname).toMatch(/^search_path=.*\bpg_temp$/);
+    }
+  });
+
   it('no player writes the Cliff, and no player calls the carving', async () => {
     for (const who of [A, null]) {
       await expect(as(who, `insert into firsts (gate, user_id) values (1, '${A}')`)).rejects.toThrow(/permission denied/);

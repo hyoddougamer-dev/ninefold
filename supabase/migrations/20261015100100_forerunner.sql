@@ -48,7 +48,7 @@ drop function if exists public.board(text, int);
 create function public.board(kind text, lim int default 100)
 returns table (rank bigint, name text, climb int, marks int, tower int, gain int, title text, me boolean,
                calling text, forerunner boolean)
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   with live as (
     select s.*, p.name,
            case kind
@@ -79,7 +79,7 @@ drop function if exists public.samsara_board(int);
 create function public.samsara_board(lim int default 100)
 returns table (rank bigint, name text, climb int, marks int, tower int, gain int, title text, me boolean,
                calling text, forerunner boolean)
-language sql stable security definer set search_path = public as $$
+language sql stable security definer set search_path = public, pg_temp as $$
   with live as (
     select s.user_id, s.calling, s.samsara_climb as climb, s.samsara_marks as marks, p.name,
            row_number() over (order by s.samsara_climb desc, s.samsara_marks desc, s.samsara_at asc) as r
@@ -99,7 +99,7 @@ grant execute on function public.samsara_board(int) to anon, authenticated;
 -- 我 Where I stand, as 20261014130000_season0.sql left it, and whether I wear 先行. The season
 -- card asks this once, signed in, to say "Your name now carries 先行 Forerunner" or nothing.
 create or replace function public.my_standing()
-returns jsonb language sql stable security definer set search_path = public as $$
+returns jsonb language sql stable security definer set search_path = public, pg_temp as $$
   with first as (
     select s.user_id from standings s join profiles p on p.id = s.user_id
      where not p.suspect and not p.banned and in_season(s.updated_at)

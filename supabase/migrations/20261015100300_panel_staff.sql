@@ -10,7 +10,7 @@
 -- Its arrivals are still recorded in firsts, so taking the flag off puts it back on the Cliff
 -- at its true time, and putting it on takes it off without losing anything.
 create or replace function public.panel_set_staff(key text, name text, "on" boolean)
-returns boolean language plpgsql security definer set search_path = public as $$
+returns boolean language plpgsql security definer set search_path = public, pg_temp as $$
 declare who uuid;
 begin
   if not panel_ok(panel_set_staff.key) then raise exception 'wrong key'; end if;
@@ -26,7 +26,7 @@ grant execute on function public.panel_set_staff(text, text, boolean) to anon, a
 -- staff (so the panel shows the switch the right way round) and forerunner (whether the name
 -- wears 先行). Still nothing that is an email or an id.
 create or replace function public.panel_players(key text)
-returns jsonb language plpgsql stable security definer set search_path = public, auth as $$
+returns jsonb language plpgsql stable security definer set search_path = public, auth, pg_temp as $$
 begin
   if not panel_ok(key) then raise exception 'wrong key'; end if;
   return coalesce((
