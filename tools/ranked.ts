@@ -233,6 +233,11 @@ check(after.status === 200 && Array.isArray(after.json) && !after.json.some((r: 
   'and is gone from the board', after.status);
 check(Array.isArray(after.json) && !after.json.some((r: any) => /^Tester? \d{1,5}$/.test(r.name)),
   'no test player is left on the public board', after.json?.filter?.((r: any) => /^Tester? \d{1,5}$/.test(r.name)));
+// 先行 Every run before the switch syncs, so every test player it leaves behind would wear the mark
+// for good and stand at the foot of the Cliff among the testers. None may be left there either.
+const footAfter = await call('/rest/v1/rpc/forerunners', {});
+check(footAfter.status === 200 && Array.isArray(footAfter.json) && !footAfter.json.some((r: any) => /^Tester? \d{1,5}$/.test(r.name)),
+  'no test player is left at the foot of the Cliff', footAfter.json?.filter?.((r: any) => /^Tester? \d{1,5}$/.test(r.name)));
 
 console.log(failed ? `\n${failed} failed` : '\n榜 the ranked server holds.');
 process.exit(failed ? 1 : 0);
