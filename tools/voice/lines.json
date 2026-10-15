@@ -1,14 +1,16 @@
 {
-  "note": "Season 0 trailer narration (docs/SEASON0-VOICE.md). Line 3 whispered by the pause; edit a line here and push to regenerate.",
+  "note": "Season 0 trailer narration, v6 The Founding (docs/SEASON0-VOICE.md, docs/SEASON0-THEME.md section 4). Only lines 4, 8 and 9 are new (15 Oct 2026): 4 and 8 replace the old 4 and 8, and 9 is added. Keep the takes already made of 1, 2, 3, 5, 6 and 7 and take only 4, 8 and 9 from the run this file starts. In the trailer they are spoken in the order 1, 2, 3, 4, 5, 9, 6, 7, 8. Edit a line here and push to regenerate.",
+  "new": [4, 8, 9],
   "lines": [
     "九重境界，<break time=\"400ms\"/>一场试炼。",
     "你亲手栽培的每一位修士，<break time=\"300ms\"/>都曾在此一步步登攀。",
     "此印，<break time=\"700ms\"/>只落一次。",
-    "试炼就此封存。<break time=\"500ms\"/>你的修士，原封不动，由你珍藏。",
+    "试炼已毕，修为不留。<break time=\"600ms\"/>先行之人，永记其名。",
     "新卷铺开。<break time=\"400ms\"/>众生平等，皆从第一境起步。",
     "新榜虚位以待。<break time=\"400ms\"/>名次皆验，全凭实力。",
     "这是最后一次重来。<break time=\"700ms\"/>从此，画卷永不抹去。",
-    "九境。<break time=\"600ms\"/>落印。<break time=\"600ms\"/>第零赛季。"
+    "九境。<break time=\"600ms\"/>开山。<break time=\"600ms\"/>第零赛季。",
+    "率先破关者，<break time=\"300ms\"/>名刻山崖，<break time=\"300ms\"/>永不磨灭。"
   ],
   "voices": [
     {
