@@ -2,31 +2,36 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  CLOSED_TEST, CLOSED_TEST_REFUSED, closedTest, closedTestFileName, exportSave, importSave, keepSpare, load,
-  rearm, save, seasonCardDue, seasonCardRead, wipe,
+  CLOSED_TEST_REFUSED, exportSave, importSave, keepSpare, load, pendingFarewell,
+  rearm, save, seasonCardDue, seasonCardRead, walked, wipe,
 } from '../save.ts';
 import { SEASON, SEASON_START, inSeason, retires, seasonAt, seasonOf } from '../season.ts';
+import { validFarewell } from '../load.ts';
 import { SEASON_START as FROM_VERIFY, GAME_EPOCH } from '../verify.ts';
 import { newState, type State } from '../state.ts';
 import { validate } from '../load.ts';
-import { open, seal } from '../seal.ts';
+import { seal } from '../seal.ts';
 
 /**
- * 季 Season 0, The Seal Falls 落印: the marker, the switch, and the closed-test copy that is
- * sealed and kept. docs/SEASON0-PLAN.md section 2 is what these hold the client to.
+ * 季 Season 0, The Founding 開山: the marker, the switch, and the closed-test cultivator that
+ * does not stay. docs/SEASON0-THEME.md (2d to 2f) is what these hold the client to: the save is
+ * read once for four numbers and removed, with no copy, no file and no way back.
  */
+
+/** 舊 Where an earlier build of the branch kept the whole save. Nothing may ever write it. */
+const KEEPSAKE = 'ninefold.save.closedtest';
 
 const DAY = 86_400;
 const BEFORE = SEASON_START - 3 * DAY;     // the closed test's last week
 const AFTER = SEASON_START + 3600;         // the first hour of the season
 
-function memoryStorage(fullAfter = Infinity) {
+function memoryStorage(full = false) {
   const map = new Map<string, string>();
   return {
     map,
     getItem: (k: string) => map.get(k) ?? null,
     setItem: (k: string, v: string) => {
-      if (k === CLOSED_TEST && fullAfter <= 0) throw new Error('QuotaExceededError');
+      if (full) throw new Error('QuotaExceededError');
       map.set(k, v);
     },
     removeItem: (k: string) => { map.delete(k); },
@@ -116,88 +121,99 @@ describe('印 retiring a device\'s save', () => {
     expect(r.state.realm).toBe(9);
     expect(r.state.season).toBeNull();
     expect(store.map.get('ninefold.save.v1')).toBe(text);
-    expect(store.map.has(CLOSED_TEST)).toBe(false);
-    expect(closedTest(SEASON_START - 1)).toBeNull();
+    expect(pendingFarewell()).toBeNull();
+    expect(walked()).toBeNull();
   });
 
-  it('after the switch keeps the old save byte for byte and begins a season cultivator', () => {
-    const text = sealed(veteran(9, 3, 12));
-    store.map.set('ninefold.save.v1', text);
+  it('after the switch keeps four numbers, removes the save and its spare, and begins a season cultivator', () => {
+    store.map.set('ninefold.save.v1', sealed(veteran(9, 3, 12)));
     store.map.set('ninefold.save.backup', sealed(veteran(9, 1, 12)));
     const r = load(AFTER);
 
-    expect(store.map.get(CLOSED_TEST)).toBe(text);           // the very text, deepest copy
     expect(store.map.has('ninefold.save.v1')).toBe(false);
     expect(store.map.has('ninefold.save.backup')).toBe(false);
     expect(r.state.realm).toBe(1);
     expect(r.state.layer).toBe(0);
     expect(r.state.season).toBe(SEASON);
     expect(r.secondsAway).toBe(0);                            // no welcome-back for the old hours
-    expect(r.retired).toMatchObject({ realm: 9, layer: 4, marks: 12, rebirths: 1, kept: true });
+    const four = { realm: 9, layer: 4, marks: 12, rebirths: 1 };
+    expect(r.retired).toEqual(four);                          // the deepest copy, in four numbers
+    expect(pendingFarewell()).toEqual(four);
+    expect(walked()).toEqual(four);
   });
 
-  it('the copy a player takes out is the save export, marked as the closed test', () => {
-    store.map.set('ninefold.save.v1', sealed(veteran()));
-    const r = load(AFTER);
-    const copy = r.retired!.text;
-    const body = JSON.parse(open(copy).json!);
-    expect(body.game).toBe('ninefold');
-    expect(body.state.realm).toBe(9);
-    expect(body.state.season).toBeNull();
-    // The same shape exportSave writes, so it is the same text a save export is.
-    const exported = JSON.parse(open(exportSave(validate(veteran(), AFTER))).json!);
-    expect(Object.keys(body)).toEqual(Object.keys(exported));
-    expect(closedTest(AFTER)?.text && JSON.parse(open(closedTest(AFTER)!.text).json!).state.realm).toBe(9);
-    expect(closedTestFileName({ realm: 9 })).toMatch(/^ninefold-closedtest-realm9-\d{4}-\d{2}-\d{2}\.txt$/);
-  });
-
-  it('a second retirement does not overwrite the first with anything that is not further along', () => {
-    const first = sealed(veteran(9, 3));
-    store.map.set('ninefold.save.v1', first);
+  it('keeps no copy of the save anywhere: no keepsake key, and nothing on the device but the four numbers', () => {
+    const text = sealed(veteran(9, 3, 12));
+    store.map.set('ninefold.save.v1', text);
     load(AFTER);
-    save(newState(AFTER));
-    // Something shallower turns up in the main key: it is not kept over the first.
-    store.map.set('ninefold.save.v1', sealed(veteran(5, 2)));
-    load(AFTER + 60);
-    expect(store.map.get(CLOSED_TEST)).toBe(first);
-    // And the same depth does not either: the one already kept stays.
-    store.map.set('ninefold.save.v1', sealed({ ...veteran(9, 3), qi: 5 }));
-    load(AFTER + 120);
-    expect(store.map.get(CLOSED_TEST)).toBe(first);
+    expect(store.map.has(KEEPSAKE)).toBe(false);
+    for (const [k, v] of store.map) {
+      expect(v, k).not.toBe(text);
+      expect(v.length, k).toBeLessThan(80);                   // four numbers, never a cultivator
+    }
+    // And the season save written after it is the season's own, never the old one.
+    save(load(AFTER + 60).state);
+    expect(store.map.has(KEEPSAKE)).toBe(false);
   });
 
-  it('an old tab writing the closed-test save back keeps the season spare, and the copy only grows', () => {
+  it('begin clears the farewell, and the card is not due again; the Stele\'s line stays', () => {
+    store.map.set('ninefold.save.v1', sealed(veteran(5, 2)));
+    load(AFTER);
+    expect(seasonCardDue()).toBe(true);
+    expect(pendingFarewell()).toMatchObject({ realm: 5, layer: 3 });
+    seasonCardRead();
+    expect(seasonCardDue()).toBe(false);
+    expect(pendingFarewell()).toBeNull();
+    expect(walked()).toMatchObject({ realm: 5, layer: 3 });
+  });
+
+  it('a farewell kept across a closed app is still there on the next open, until Begin', () => {
+    store.map.set('ninefold.save.v1', sealed(veteran(7, 0)));
+    load(AFTER);
+    // The app was closed before the card was read: the next load retires nothing new.
+    const again = load(AFTER + 600);
+    expect(again.retired).toBeNull();
+    expect(pendingFarewell()).toMatchObject({ realm: 7, layer: 1 });
+  });
+
+  it('an old tab writing the closed-test save back keeps the season spare; the Stele only rises, the card stays read', () => {
     store.map.set('ninefold.save.v1', sealed(veteran(9, 3)));
     const r = load(AFTER);
+    seasonCardRead();
     // The season begins and the clean load keeps a spare of it, as App.tsx does.
     const season: State = { ...r.state, realm: 2, layer: 4 };
     save(season);
     keepSpare(season);
     // A tab still on the closed-test build played on and wrote its save on pagehide.
-    const further = sealed(veteran(9, 5));
-    store.map.set('ninefold.save.v1', further);
+    store.map.set('ninefold.save.v1', sealed(veteran(9, 5)));
 
     const back = load(AFTER + 600);
     expect(back.state.season).toBe(SEASON);
     expect(back.state.realm).toBe(2);                        // the season save survived in the spare
     expect(back.state.layer).toBe(4);
-    expect(store.map.get(CLOSED_TEST)).toBe(further);        // the copy is the one further along
+    expect(store.map.has('ninefold.save.v1')).toBe(false);   // and the old one is gone again
+    expect(walked()).toMatchObject({ realm: 9, layer: 6 });  // the further of the two
+    expect(pendingFarewell()).toBeNull();                    // no second card
+    // A shallower one never lowers the line.
+    store.map.set('ninefold.save.v1', sealed(veteran(4, 0)));
+    load(AFTER + 900);
+    expect(walked()).toMatchObject({ realm: 9, layer: 6 });
   });
 
-  it('a failed write of the copy removes nothing and starts no season save over it', () => {
-    store = memoryStorage(0);
-    (globalThis as { localStorage?: unknown }).localStorage = store;
+  it('a full storage still retires the save and begins the season: only the line is lost', () => {
     const text = sealed(veteran());
     store.map.set('ninefold.save.v1', text);
+    store.map.set('ninefold.save.backup', text);
+    const full = memoryStorage(true);
+    for (const [k, v] of store.map) full.map.set(k, v);
+    (globalThis as { localStorage?: unknown }).localStorage = full;
     const r = load(AFTER);
-    expect(r.retired).toMatchObject({ realm: 9, kept: false });
-    expect(r.retired!.text.length).toBeGreaterThan(20);       // it can still be copied out by hand
-    expect(store.map.get('ninefold.save.v1')).toBe(text);
-    // The game holds still: neither the save nor the spare is written over the only copy.
-    save(r.state);
-    keepSpare(r.state);
-    expect(store.map.get('ninefold.save.v1')).toBe(text);
-    expect(store.map.has('ninefold.save.backup')).toBe(false);
+    expect(full.map.has('ninefold.save.v1')).toBe(false);
+    expect(full.map.has('ninefold.save.backup')).toBe(false);
+    expect(r.state.season).toBe(SEASON);
+    // The card still has its line this time, from the load itself (App.tsx falls back to it).
+    expect(r.retired).toMatchObject({ realm: 9, layer: 4 });
+    expect(pendingFarewell()).toBeNull();
   });
 
   it('a cultivator begun on the new build before the switch is retired with everyone else', () => {
@@ -205,7 +221,7 @@ describe('印 retiring a device\'s save', () => {
     expect(early.season).toBeNull();
     save(early);
     const r = load(AFTER);
-    expect(r.retired).toMatchObject({ realm: 1, layer: 7, kept: true });
+    expect(r.retired).toEqual({ realm: 1, layer: 7, marks: 0, rebirths: 0 });
     expect(r.state.layer).toBe(0);
     expect(r.state.season).toBe(SEASON);
   });
@@ -213,7 +229,6 @@ describe('印 retiring a device\'s save', () => {
   it('a season save whose marker a closed-test tab dropped is still a season save, by its date', () => {
     store.map.set('ninefold.save.v1', sealed(veteran(9, 3)));
     const first = load(AFTER);
-    const kept = store.map.get(CLOSED_TEST);
     // A tab still on the closed-test build began again (or read the season save) after the
     // switch and wrote it back without the field it does not know.
     const stripped = { ...first.state, realm: 2, layer: 5 } as Record<string, unknown>;
@@ -224,7 +239,7 @@ describe('印 retiring a device\'s save', () => {
     const back = load(AFTER + 600);
     expect(back.retired).toBeNull();
     expect(back.state).toMatchObject({ season: SEASON, realm: 2, layer: 5 });
-    expect(store.map.get(CLOSED_TEST)).toBe(kept);           // the closed-test copy is untouched
+    expect(walked()).toMatchObject({ realm: 9, layer: 4 });  // the line is untouched
     // Nothing begun before the switch reads as the season this way, nor a start in the future.
     expect(seasonOf({ v: 1, startedAt: SEASON_START - 1 })).toBeNull();
     expect(seasonOf({ v: 1, startedAt: AFTER + 10 }, AFTER)).toBeNull();
@@ -237,34 +252,53 @@ describe('印 retiring a device\'s save', () => {
     const r = load(AFTER + 120);
     expect(r.retired).toBeNull();
     expect(r.state.realm).toBe(3);
-    expect(store.map.has(CLOSED_TEST)).toBe(false);
+    expect(walked()).toBeNull();
+    expect(pendingFarewell()).toBeNull();
   });
 
-  it('滅 Erase never touches the kept copy, nor the card already read', () => {
+  it('滅 Erase never touches the card already read, the farewell or the Stele\'s line', () => {
     store.map.set('ninefold.save.v1', sealed(veteran()));
     load(AFTER);
-    const kept = store.map.get(CLOSED_TEST);
-    expect(seasonCardDue()).toBe(true);
-    seasonCardRead();
-    expect(seasonCardDue()).toBe(false);
+    const line = walked();
     wipe();
-    expect(store.map.get(CLOSED_TEST)).toBe(kept);
+    expect(pendingFarewell()).toEqual(line);
+    seasonCardRead();
+    wipe();
     expect(seasonCardDue()).toBe(false);
+    expect(walked()).toEqual(line);
   });
 
-  it('reading the kept copy never marks the season save as edited', () => {
-    // A closed-test save from before the seal is plain text, and it is kept as plain text.
-    store.map.set('ninefold.save.v1', JSON.stringify(veteran()));
-    load(AFTER);
-    save(newState(AFTER));                                   // the season seals from now on
-    closedTest(AFTER);
-    load(AFTER + 60);
-    expect(store.map.has('ninefold.edited')).toBe(false);
+  it('a closed-test save from before the seal, stored plain, retires like a sealed one', () => {
+    store.map.set('ninefold.save.v1', JSON.stringify(veteran(6, 2)));
+    const r = load(AFTER);
+    expect(r.retired).toEqual({ realm: 6, layer: 3, marks: 0, rebirths: 1 });
+    expect(store.map.has('ninefold.save.v1')).toBe(false);
+    expect(r.state.season).toBe(SEASON);
+  });
+});
+
+describe('別 the four numbers are input, capped like a save', () => {
+  it('reads only an object of numbers, and caps each one', () => {
+    expect(validFarewell({ realm: 99, layer: -4, marks: 1e9, rebirths: 1e9 })).toEqual({ realm: 9, layer: 1, marks: 300, rebirths: 40 });
+    // Marks only in the ninth realm, as validate holds them.
+    expect(validFarewell({ realm: 4, layer: 3, marks: 12, rebirths: 0 })).toEqual({ realm: 4, layer: 3, marks: 0, rebirths: 0 });
+    expect(validFarewell({ realm: 3.7, layer: 2.2 })).toEqual({ realm: 3, layer: 2, marks: 0, rebirths: 0 });
+    for (const junk of [null, undefined, 'x', 9, [], {}, { realm: '9', layer: 1 }, { realm: 9 }, { realm: NaN, layer: 1 }]) {
+      expect(validFarewell(junk)).toBeNull();
+    }
+  });
+
+  it('a hand-edited farewell on the device reads capped, and a broken one as nothing', () => {
+    store.map.set('ninefold.season.walked', JSON.stringify({ realm: 12, layer: 40, marks: 9999, rebirths: 2 }));
+    expect(walked()).toEqual({ realm: 9, layer: 9, marks: 300, rebirths: 2 });
+    store.map.set('ninefold.season.farewell', '{not json');
+    expect(pendingFarewell()).toBeNull();
   });
 });
 
 describe('入 a pasted closed-test save', () => {
-  it('cannot be played as a season save, and says so in words', () => {
+  it('cannot be loaded as a season save, and says so in words', () => {
+    expect(CLOSED_TEST_REFUSED).toBe('That save is from the closed test, which ended on Monday 26 October. It cannot be loaded in Season 0.');
     const text = exportSave(validate(veteran(), BEFORE));
     expect(importSave(text, AFTER)).toEqual({ state: null, error: CLOSED_TEST_REFUSED });
     expect(importSave(JSON.stringify(veteran()), AFTER).error).toBe(CLOSED_TEST_REFUSED);

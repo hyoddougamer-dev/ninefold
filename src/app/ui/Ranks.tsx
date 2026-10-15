@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RANKS, SEASON } from '../copy.ts';
+import { FORERUNNER, RANKS, SEASON } from '../copy.ts';
+import { ForerunnerSeal } from './Forerunner.tsx';
 import { SEASON_START } from '../../sim/season.ts';
 import { useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
@@ -228,6 +229,13 @@ function Account({ who, me, onSignOut, onRenamed, onLinked }: {
           </>
         )}
       </div>
+      {/* 先行 Only on the server's own word (my_standing().forerunner), never the device's. */}
+      {me?.forerunner && (
+        <div className="rafore">
+          <ForerunnerSeal className="raseal" />
+          <span><b>{FORERUNNER.name}</b> {FORERUNNER.account}</span>
+        </div>
+      )}
       <p className="rnote small">{who.guest ? RANKS.guestAs : RANKS.signedAs(who.email ?? '')}</p>
       {who.guest && (
         <>

@@ -1,10 +1,12 @@
 /**
  * 季 The season, and the instant it began.
  *
- * Season 0 is "The Seal Falls 落印": the closed test is sealed and kept, and everyone
- * starts again from the first realm. It is a time, not a deploy: the game and the server
- * both read SEASON_START and switch on their own when it comes (docs/SEASON0-PLAN.md,
- * section 1). Before it nothing at all changes for anybody.
+ * Season 0 is "The Founding 開山" (docs/SEASON0-THEME.md): everyone starts again from the
+ * first realm, and the closed-test cultivator does not stay. The device reads it once for a
+ * four-number farewell and removes it (save.ts, retire); the server keeps nothing readable of
+ * it. It is a time, not a deploy: the game and the server both read SEASON_START and switch
+ * on their own when it comes (docs/SEASON0-PLAN.md, section 1). Before it nothing at all
+ * changes for anybody.
  *
  * It is defined here, not in verify.ts, because the game never imports the verifier: if
  * load.ts reached for it there, the whole verifier would end up in the bundle. verify.ts

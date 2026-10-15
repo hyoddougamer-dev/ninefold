@@ -9,6 +9,9 @@ import { isSealed, open, seal } from './seal.ts';
 import { progressOf } from './echo.ts';
 import { withPackedPile } from './pilepack.ts';
 import { retires } from './season.ts';
+import { validFarewell, type Farewell } from './load.ts';
+
+export type { Farewell } from './load.ts';
 
 const KEY = 'ninefold.save.v1';
 /**
@@ -22,26 +25,26 @@ const KEY = 'ninefold.save.v1';
 const BACKUP = 'ninefold.save.backup';
 
 /**
- * 舊 The closed-test cultivator, sealed and kept.
+ * 別 The closed-test cultivator's farewell: four numbers, never the save.
  *
- * When Season 0 begins, a save on this device that is not a season save is moved here,
- * as the very text it was stored as, and a fresh cultivator begins. Nothing ever deletes
- * this key: not the season and not 滅 Erase, and a second retirement only ever replaces it
- * with a copy further along (see retire). The player can take it out as a copy at any
- * time (Menu, Save, Closed test). It is never played or ranked again.
+ * Bruno, 2026-10-15: the closed-test save does not stay. When Season 0 begins, a save on
+ * this device that is not a season save is read once, here, for the one line the season's
+ * card says about it (realm, layer, marks, rebirths), and then removed. There is no copy,
+ * no file and no way back: the four numbers are kept under this small key only until 始
+ * Begin is pressed on the card (seasonCardRead), so a phone closed before the card was
+ * read still has its line when it opens again.
  *
- * A device that never held one (a new phone, a cleared browser) can be handed it by the
- * account instead (keepFromAccount): the copy the server kept is written here the same way,
- * sealed, and only ever into an empty key.
+ * `ninefold.save.closedtest`, where an earlier build of this branch kept the whole save,
+ * is never written by anything.
  */
-export const CLOSED_TEST = 'ninefold.save.closedtest';
+const FAREWELL = 'ninefold.season.farewell';
 /**
- * 雲 Set to 'account' when the copy under CLOSED_TEST came back from the account rather than
- * from this device's own save, so the screen can say where it is kept. A retirement that
- * writes a copy from this device takes it away again.
+ * 碑 The same four numbers, kept for 碑 the Stele's one line, "Walked the closed test on
+ * this device". It is about the device, not the cultivator: it is never put in the save,
+ * so it is never synced and never a claim anybody else can see, and 滅 Erase leaves it.
  */
-const CLOSED_TEST_FROM = 'ninefold.save.closedtest.from';
-/** 季 Set once the season's card has been read on this device. Erase leaves it, as it leaves the copy. */
+const WALKED = 'ninefold.season.walked';
+/** 季 Set once the season's card has been read on this device. Erase leaves it. */
 const SEASON_CARD = 'ninefold.season.card';
 
 /**
@@ -74,26 +77,10 @@ export interface Return {
   /** 業 What the workshop did while the app was shut, or null if it was standing still. */
   readonly crafts: Away | null;
   /**
-   * 舊 The closed-test cultivator this load retired, or null when it retired nothing.
-   * When `kept` is false the copy could not be written and nothing was removed: the
-   * game holds still (see `frozen`) until the player has taken it out by hand.
+   * 別 The closed-test cultivator this load retired, in four numbers, or null when it
+   * retired nothing. The save itself is gone from the device by the time this is read.
    */
-  readonly retired: ClosedTest | null;
-}
-
-/** 舊 The closed-test cultivator in one line, and the copy of it a player can take out. */
-export interface ClosedTest {
-  readonly realm: number;
-  /** The layer being worked on, as the climb bar says it: one more than the layers opened. */
-  readonly layer: number;
-  readonly marks: number;
-  readonly rebirths: number;
-  /** The copy, in the same text as the save export. */
-  readonly text: string;
-  /** Whether it is safely kept on this device. */
-  readonly kept: boolean;
-  /** 雲 Where it came from: this device's own save, or the copy the account kept. */
-  readonly where: 'device' | 'account';
+  readonly retired: Farewell | null;
 }
 
 /**
@@ -142,12 +129,7 @@ export function wasEdited(): boolean {
   try { return localStorage.getItem(EDITED) === '1'; } catch { return false; }
 }
 
-/**
- * `note` is false for 舊 the closed-test copy: it is kept as the text it was stored as, which
- * may be a plain save from before the seal, and that says nothing about the season save
- * this phone seals now.
- */
-function read(key: string, note = true): unknown {
+function read(key: string): unknown {
   try {
     const stored = localStorage.getItem(key);
     if (!stored) return null;
@@ -156,12 +138,12 @@ function read(key: string, note = true): unknown {
       if (json === null) return null;
       // Nothing is taken away for touching a save: it loads and plays as it is. The
       // phone remembers it was touched, and the server was never going to believe it.
-      if (!intact && note) noteEdited();
+      if (!intact) noteEdited();
       return JSON.parse(json);
     }
     // A plain save is how every save was written before the seal, and it is read as it
     // always was. Once this phone has sealed one, a plain one was put there by hand.
-    if (note && localStorage.getItem(SEALED) === '1') noteEdited();
+    if (localStorage.getItem(SEALED) === '1') noteEdited();
     return JSON.parse(stored);
   } catch {
     return null;   // storage blocked, private window, corrupt JSON: all the same here
@@ -185,66 +167,56 @@ export function outbound(s: State): State {
   return withPackedPile({ ...s, worn } as State);
 }
 
-/** The text a key holds, exactly as stored, or null. */
-function textOf(key: string): string | null {
-  try { return localStorage.getItem(key); } catch { return null; }
-}
-
-/**
- * 凍 Set when a closed-test save could not be moved to its own key: the season save may
- * not be written, or it would land over the only copy. Nothing on this page writes the
- * save again; the next load tries the move once more.
- */
-let frozen = false;
-
-/** 舊 The line and the copy for a closed-test cultivator, read through validate like any save. */
-function describe(raw: unknown, now: number, kept: boolean, where: ClosedTest['where'] = 'device'): ClosedTest {
+/** 別 The four numbers of a closed-test cultivator, read through validate like any save. */
+function farewellOf(raw: unknown, now: number): Farewell {
   const s = validate(raw, now);
-  return {
+  return validFarewell({
     realm: s.realm, layer: Math.min(s.layer + 1, LAYERS_PER_REALM),
     marks: s.tribulation, rebirths: s.lives.length,
-    text: exportSave(s), kept, where,
-  };
+  })!;
 }
 
+/** 別 A farewell kept under `key`, capped like any input, or null. */
+function readFarewell(key: string): Farewell | null {
+  try {
+    const text = localStorage.getItem(key);
+    return text ? validFarewell(JSON.parse(text)) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 別 The further along of two farewells, the way progressOf ranks two saves. */
+function further(a: Farewell | null, b: Farewell): Farewell {
+  return a && progressOf(asProgress(a)) >= progressOf(asProgress(b)) ? a : b;
+}
+const asProgress = (f: Farewell) => ({
+  lives: Array.from({ length: f.rebirths }, () => ({ marks: 0, at: 0 })),
+  realm: f.realm, layer: f.layer - 1, tribulation: f.marks,
+});
+
 /**
- * 印 Move every copy on this device that is not a season save to CLOSED_TEST, and say
- * which keys may now be emptied. Returns null when the move could not be made.
+ * 印 Retire what is under `keys`: remove it, and keep only its four numbers.
  *
- * Of the copies found and the one already kept, the deepest is kept (`progressOf`); on a
- * tie the one already kept stays, so a second retirement never writes over the first
- * with anything that is not further along. The one way that happens is an old tab, still
- * on the closed-test build, that played on past the switch and wrote its save back. The
- * copy is written as the text it was stored as, byte for byte, read back, and only once it
- * reads back the same may the retired keys be emptied.
+ * The deepest of the copies found is the one remembered. The keys are emptied first, and
+ * the numbers written after, so a full storage has room for them; a write that still
+ * fails costs only the line, never the season (the card reads the numbers this load
+ * hands back). Nothing here ever keeps the save itself.
+ *
+ * A second retirement (a tab still on the closed-test build that wrote its save back
+ * after the switch) only ever raises the Stele's numbers, and it brings the card back
+ * only while the card has not been read.
  */
-function retire(keys: readonly string[], now: number): { kept: string; raw: unknown } | null {
-  const archived = textOf(CLOSED_TEST);
-  const archivedRaw = archived ? read(CLOSED_TEST, false) : null;
-  let best: { text: string; raw: unknown; depth: number } | null = archivedRaw
-    ? { text: archived!, raw: archivedRaw, depth: depth(validate(archivedRaw, now)) } : null;
-  // 雲 A copy the account handed back gives way to this device's own on a tie: the account
-  // still holds its copy, and this device's may be the only one there is.
-  const fromAccount = archivedRaw !== null && whereKept() === 'account';
-  for (const key of keys) {
-    const text = textOf(key);
-    const raw = read(key);
-    if (!text || !raw) continue;
-    const d = depth(validate(raw, now));
-    if (!best || d > best.depth || (fromAccount && best.text === archived && d === best.depth)) best = { text, raw, depth: d };
-  }
-  if (!best) return null;
-  if (best.text !== archived) {
-    try {
-      localStorage.setItem(CLOSED_TEST, best.text);
-      if (localStorage.getItem(CLOSED_TEST) !== best.text) return null;
-      // 雲 The copy is now this device's own, whatever it replaced.
-      localStorage.removeItem(CLOSED_TEST_FROM);
-    } catch {
-      return null;   // storage full or blocked: nothing is removed
-    }
-  }
-  return { kept: best.text, raw: best.raw };
+function retire(keys: readonly string[], raws: readonly unknown[], now: number): Farewell {
+  let best: Farewell | null = null;
+  for (const raw of raws) best = further(best, farewellOf(raw, now));
+  try { for (const k of keys) localStorage.removeItem(k); } catch { /* the next load retires it again */ }
+  const keep = (key: string, f: Farewell) => {
+    try { localStorage.setItem(key, JSON.stringify(f)); } catch { /* the line is lost, nothing else */ }
+  };
+  keep(WALKED, further(readFarewell(WALKED), best!));
+  if (seasonCardDue()) keep(FAREWELL, further(readFarewell(FAREWELL), best!));
+  return best!;
 }
 
 function write(key: string, s: State): void {
@@ -286,24 +258,16 @@ export function load(now: number): Return {
 
   /**
    * 季 After the switch, a copy that is not a season save is retired before anything
-   * else is read: kept whole under CLOSED_TEST, then emptied from the main key and the
-   * spare. The deeper-wins rule below would otherwise bring the closed-test spare back
-   * over the new season save on every load.
+   * else is read: its four numbers are kept for the farewell, and it is removed from the
+   * main key and the spare. The deeper-wins rule below would otherwise bring the
+   * closed-test spare back over the new season save on every load.
    */
-  let retired: ClosedTest | null = null;
-  const old = [[KEY, raw], [BACKUP, spare]].filter(([, r]) => r && retires(r, now)).map(([k]) => k as string);
+  let retired: Farewell | null = null;
+  const old = ([[KEY, raw], [BACKUP, spare]] as const).filter(([, r]) => r && retires(r, now));
   if (old.length > 0) {
-    const kept = retire(old, now);
-    if (!kept) {
-      // Nothing is removed after a failed write, and no season save may start over it.
-      frozen = true;
-      const from = raw && retires(raw, now) ? raw : spare;
-      return { ...fresh(now), retired: describe(from, now, false) };
-    }
-    try { for (const k of old) localStorage.removeItem(k); } catch { /* the next load retires it again */ }
-    retired = describe(kept.raw, now, true, whereKept());
-    if (old.includes(KEY)) raw = null;
-    if (old.includes(BACKUP)) spare = null;
+    retired = retire(old.map(([k]) => k), old.map(([, r]) => r), now);
+    if (old.some(([k]) => k === KEY)) raw = null;
+    if (old.some(([k]) => k === BACKUP)) spare = null;
   }
 
   /**
@@ -357,55 +321,21 @@ export function load(now: number): Return {
   };
 }
 
-/** A cultivator who has not begun, with nothing to report: what a retirement that could not be kept hands back. */
-function fresh(now: number): Omit<Return, 'retired'> {
-  return { state: newState(now), secondsAway: 0, qiEarned: 0, qiClimbed: 0, layersOpened: 0, realmsClimbed: 0, crafts: null };
+/**
+ * 別 The farewell the season's card still has to say on this device, or null. It is there
+ * from the load that retired a closed-test cultivator until 始 Begin (seasonCardRead).
+ */
+export function pendingFarewell(): Farewell | null {
+  return readFarewell(FAREWELL);
 }
 
 /**
- * 舊 The closed-test cultivator kept on this device, or null if there is none. Read for the
- * season's card and for Menu, Save; validate still reads every closed-test save.
+ * 碑 The closed-test cultivator this device walked, for the Stele's one line, or null. Kept
+ * on the device alone: a device that never held a closed-test save has none, and nothing
+ * on the server ever reads it.
  */
-export function closedTest(now: number): ClosedTest | null {
-  const raw = read(CLOSED_TEST, false);
-  return raw ? describe(raw, now, true, whereKept()) : null;
-}
-
-/** 舊 Whether this device holds a closed-test copy at all, read without opening it. */
-export function holdsClosedTest(): boolean {
-  return textOf(CLOSED_TEST) !== null;
-}
-
-/** 雲 Where the copy under CLOSED_TEST came from, as CLOSED_TEST_FROM says. */
-function whereKept(): ClosedTest['where'] {
-  return textOf(CLOSED_TEST_FROM) === 'account' ? 'account' : 'device';
-}
-
-/**
- * 雲 Keep the closed-test copy the account handed back (closed_test_mine() on the server), as
- * a retired save is kept: under CLOSED_TEST, sealed, in the same shape the game writes. Only
- * into an empty key: a copy this device already holds is never written over, from here or
- * from anywhere. And only a closed-test save after the switch: before it there is nothing to
- * keep, and a season save is not a closed-test copy whatever the server says. Returns the
- * copy as kept, or null when nothing was written.
- */
-export function keepFromAccount(save: unknown, now: number): ClosedTest | null {
-  if (!save || typeof save !== 'object' || Array.isArray(save) || Object.keys(save).length === 0
-    || !retires(save, now)) return null;
-  if (textOf(CLOSED_TEST) !== null) return null;
-  // 印 This device still holds a closed-test cultivator of its own that has not been retired
-  // yet (a page left open across the switch, or a move that could not be written): the next
-  // load retires that one, and the account's copy may never stand in its way.
-  if ([KEY, BACKUP].some((k) => { const r = read(k, false); return r !== null && retires(r, now); })) return null;
-  const text = seal(JSON.stringify(save));
-  try {
-    localStorage.setItem(CLOSED_TEST, text);
-    if (localStorage.getItem(CLOSED_TEST) !== text) return null;
-  } catch {
-    return null;   // storage full or blocked: the account still holds it, and the next ask tries again
-  }
-  try { localStorage.setItem(CLOSED_TEST_FROM, 'account'); } catch { /* it reads as this device's, which it now also is */ }
-  return describe(save, now, true, 'account');
+export function walked(): Farewell | null {
+  return readFarewell(WALKED);
 }
 
 /** 季 Whether the season's card still has to be shown on this device. */
@@ -413,9 +343,10 @@ export function seasonCardDue(): boolean {
   try { return localStorage.getItem(SEASON_CARD) === null; } catch { return true; }
 }
 
-/** 季 The card was read: it is not shown again on this device, even after 滅 Erase. */
+/** 季 The card was read: it is not shown again on this device, even after 滅 Erase, and its farewell goes. */
 export function seasonCardRead(): void {
   try { localStorage.setItem(SEASON_CARD, '1'); } catch { /* it shows once more, which is harmless */ }
+  try { localStorage.removeItem(FAREWELL); } catch { /* same */ }
 }
 
 /**
@@ -430,7 +361,7 @@ export function seasonCardRead(): void {
 let wiped = false;
 
 export function save(s: State): void {
-  if (wiped || frozen) return;
+  if (wiped) return;
   try {
     write(KEY, s);
   } catch {
@@ -440,22 +371,16 @@ export function save(s: State): void {
 
 /** Kept apart from `save`: the spare is written once, on a load that came back whole. */
 export function keepSpare(s: State): void {
-  if (wiped || frozen) return;
+  if (wiped) return;
   try {
     write(BACKUP, s);
   } catch { /* same */ }
 }
 
-/**
- * 凍 Whether this page is holding still behind a closed-test copy it could not keep. The
- * cultivator on screen is then a placeholder that is never saved, so it is not synced either.
- */
-export function holding(): boolean { return frozen; }
-
 /** Only the tests call this: a page that wiped reloads, and a test file does not. */
-export function rearm(): void { wiped = false; frozen = false; }
+export function rearm(): void { wiped = false; }
 
-/** 滅 Erase. It never touches 舊 the closed-test copy (CLOSED_TEST) or the season's card. */
+/** 滅 Erase. It never touches the season's card, its farewell or the Stele's line: those are the device's, not the cultivator's. */
 export function wipe(): void {
   wiped = true;
   try {
@@ -511,7 +436,7 @@ export function untouched(s: State): boolean {
 }
 
 /** 季 Why a closed-test copy is refused after the switch, in words the player can act on. */
-export const CLOSED_TEST_REFUSED = 'That save is from the closed test. It is kept as it was, but it cannot be played in Season 0.';
+export const CLOSED_TEST_REFUSED = 'That save is from the closed test, which ended on Monday 26 October. It cannot be loaded in Season 0.';
 
 export function importSave(text: string, now: number): Imported {
   let parsed: unknown;
@@ -528,7 +453,7 @@ export function importSave(text: string, now: number): Imported {
   // A bare state is accepted too: someone will paste the inner half and be right to.
   const body = o.game === 'ninefold' ? o.state : o.v === 1 ? o : null;
   if (!body) return { state: null, error: 'That is a file, but not a Ninefold save.' };
-  // 季 A closed-test save is kept as it was, but it cannot be played as a season save.
+  // 季 A closed-test save cannot be loaded as a season save.
   if (retires(body, now)) return { state: null, error: CLOSED_TEST_REFUSED };
 
   const state = validate(body, now);
@@ -542,10 +467,4 @@ export function importSave(text: string, now: number): Imported {
 export function saveFileName(s: State): string {
   const day = new Date().toISOString().slice(0, 10);
   return `ninefold-realm${s.realm}-${day}.txt`;
-}
-
-/** 舊 The closed-test copy's file: ninefold-closedtest-realm9-2026-10-26.txt. */
-export function closedTestFileName(c: Pick<ClosedTest, 'realm'>): string {
-  const day = new Date().toISOString().slice(0, 10);
-  return `ninefold-closedtest-realm${c.realm}-${day}.txt`;
 }

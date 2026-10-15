@@ -331,7 +331,7 @@ describe('圍 a drive\'s pile in the cloud copy', () => {
 });
 
 /**
- * 季 Season 0, "The Seal Falls 落印": the server's side of the switch (docs/SEASON0-PLAN.md,
+ * 季 Season 0, "The Founding 開山": the server's side of the switch (docs/SEASON0-PLAN.md,
  * sections 3.1 and 4). Before SEASON_START nothing changes; from it the door lets in only a
  * season save begun inside the season, and everything the database holds from before reads
  * as absent.

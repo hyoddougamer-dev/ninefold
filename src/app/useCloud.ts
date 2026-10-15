@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import * as cloud from '../net/cloud.ts';
 import type { State } from '../sim/state.ts';
-import { holding, importSave, type ClosedTest } from '../sim/save.ts';
-import { bringBack } from '../net/closedtest.ts';
+import { importSave } from '../sim/save.ts';
 import { progressOf } from '../sim/echo.ts';
 import { now } from './clock.ts';
 
@@ -26,13 +25,14 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   const [cloudPick, setCloudPick] = useState<{ there: State; here: State } | null>(null);
   const [title, setTitle] = useState<string | null>(null);
   const [place, setPlace] = useState<number | null>(null);
-  /** 舊 The closed-test copy the account handed back this session, once kept on the device. */
-  const [cloudOld, setCloudOld] = useState<ClosedTest | null>(null);
-  const askedOld = useRef(false);
+  /**
+   * 先行 Whether the server says this account walked the closed test (my_standing().forerunner):
+   * null until it has answered, and again whenever nobody is signed in.
+   */
+  const [forerunner, setForerunner] = useState<boolean | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
-    // 凍 Nothing is synced while the page holds still behind a copy it could not keep.
-    if (pushing.current || holding()) return;
+    if (pushing.current) return;
     pushing.current = true;
     try {
       const r = await cloud.sync(latest.current, name);
@@ -41,7 +41,7 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
       } else {
         setSyncError(null);
         setSynced(r); setSyncedAt(Date.now() / 1000);
-        cloud.mine().then((m) => setTitle(m?.title ?? null)).catch(() => {});
+        cloud.mine().then((m) => { setTitle(m?.title ?? null); if (m) setForerunner(!!m.forerunner); }).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
     } catch { setSyncError('offline'); /* the next one will do */ }
@@ -73,14 +73,14 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
     })();
     return () => { live = false; };
   }, [ready, push]);
-  // 舊 Signed in after the switch with no closed-test copy on this device: ask the account for
-  // it, once a session. Nothing waits on it; when it comes it is kept and shown.
-  // A sign-out lets the next sign-in, perhaps to another account, ask again.
+  // 先行 Asked as soon as somebody is signed in, without waiting for a sync: the season's card
+  // and the Account block say it from the server's own answer, never from anything on the
+  // device. A sign-out forgets it, so the next account is asked afresh.
   useEffect(() => {
-    if (!who) { askedOld.current = false; return; }
-    if (askedOld.current) return;
-    askedOld.current = true;
-    void bringBack(now(), true, cloud.closedTestMine).then((c) => { if (c) setCloudOld(c); });
+    if (!who) { setForerunner(null); return; }
+    let live = true;
+    cloud.mine().then((m) => { if (live && m) setForerunner(!!m.forerunner); }).catch(() => {});
+    return () => { live = false; };
   }, [who]);
   useEffect(() => {
     if (!who) return;
@@ -92,6 +92,6 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
 
   return {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError, setSyncError,
-    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, cloudOld,
+    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner,
   };
 }

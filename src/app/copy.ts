@@ -2259,53 +2259,59 @@ export const SAVE = {
 };
 
 /**
- * 季 Season 0, "The Seal Falls 落印" (docs/SEASON0-BRIEF.md, section 2). The closed test is
- * sealed and kept: every cultivator starts again from the first realm, and the closed-test
- * one stays on the device as a copy the player can copy out or save as a file. Always "sealed
- * and kept" beside what the player can do with it; always 印 a stamp, never 封 a lock. Nothing here says
- * lost or deleted, because nothing is.
+ * 季 Season 0, "The Founding 開山" (docs/SEASON0-THEME.md, sections 2b to 2e). Everyone starts
+ * again from the first realm, and the closed-test cultivator does not stay: the device reads it
+ * once for one farewell line and removes it, with no copy and no file (Bruno, 2026-10-15). What
+ * carries over is the account and its name, and an account the server saw before the switch
+ * carries 先行 Forerunner, a mark that changes no number. 落印 the seal still falls, once, on the
+ * closed test: the card's painting keeps its 九境 seal.
  */
 export const SEASON = {
   /** The theme, English first and the characters alongside. */
-  name: 'The Seal Falls',
-  han: '落印',
+  name: 'The Founding',
+  han: '開山',
   over: 'Season 0 · Monday 26 October',
-  line: 'The closed test is sealed and kept. The new scroll will never be wiped.',
+  line: 'The closed test is over, and its progress ends with it.',
   says: 'Everyone starts again from the first realm, and so do you.',
   /** 印 Lettered beside the seal, which carries 九境 alone. */
   sealName: 'Ninefold',
   sealSeason: 'Season 0',
-  oldHead: 'Your closed-test cultivator',
-  /** 舊 One line, the way the brief writes it: "Realm 9, layer 4, 12 marks, 1 rebirth". */
+  /** 別 The one line read off the closed-test cultivator before it is removed. */
+  farewell: (realmName: string, realm: number, layer: number) =>
+    `Your closed-test cultivator reached ${realmName} (realm ${realm}), layer ${layer}. Its road ends here, under the seal.`,
+  /** 碑 The same four numbers in one line, the way the brief writes it: "Realm 9, layer 4, 12 marks, 1 rebirth". */
   old: (realm: number, layer: number, marks: number, rebirths: number) =>
     [`Realm ${realm}`, `layer ${layer}`,
       ...(marks > 0 ? [`${marks} ${marks === 1 ? 'mark' : 'marks'}`] : []),
       ...(rebirths > 0 ? [`${rebirths} ${rebirths === 1 ? 'rebirth' : 'rebirths'}`] : [])].join(', '),
-  /** 舊 Where the copy is kept says the truth for each case: this device, or the account it came back from. */
-  kept: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0.',
-  keptAccount: 'Kept in your account, and now on this device too. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0.',
-  copy: 'Copy it',
-  file: 'Save as a file',
+  /** 同驗永 The season's law: three lines, all of them true, none of them a number. */
+  law: [
+    { han: '同', text: 'The season opens for everyone at the same second, in the first realm.' },
+    { han: '驗', text: 'Every rank is checked from the first second.' },
+    { han: '永', text: 'Nothing is wiped again.' },
+  ],
+  /** 先行 Only when the signed-in server says so (my_standing().forerunner). */
+  forerunner: 'Your name now carries 先行 Forerunner on every board, for good. It changes nothing in the numbers.',
+  /** 先行 Signed out: the device cannot know, so it only points the way. */
+  signedOut: 'Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting.',
+  cliff: 'The first 81 through each gate are carved on 題名崖 the Cliff of Names.',
   begin: 'Begin Season 0',
-  later: 'You can copy it later too, from Menu, Save.',
-  copied: 'Copied. Paste it somewhere you keep things. It is the same text as a save export.',
-  copyByHand: 'Copying was blocked, so here it is. Select all of it and copy by hand.',
-  saved: 'Saved as a file.',
-  noFile: 'This app is not allowed to hand you a file. Use Copy instead.',
-  /** 凍 The copy could not be written on this device, so nothing was changed and the season waits. */
-  notKept: 'This device has no room to keep it, so nothing has been changed. Copy it or save it as a file, make some room, then try again.',
-  retry: 'Try again',
-  /** 凍 In place of `kept` while the copy could not be written: it is still where it was. */
-  notKeptYet: 'Still on this device, exactly as it was. It cannot be played or ranked in Season 0.',
-  /** 舊 Menu, Save: the same line and buttons, for as long as the copy is kept. */
-  panelHead: 'Closed test',
-  panelNote: 'Sealed and kept on this device. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0, and Start again never touches it.',
-  panelNoteAccount: 'Kept in your account, and now on this device too. Copy it or save it as a file whenever you like. It cannot be played or ranked in Season 0, and Start again never touches it.',
-  /** 雲 Menu, Save, signed out, with no copy on this device. */
-  signIn: 'Signing in under Ranks brings back a closed-test cultivator kept in your account.',
   /** 榜 Under the Rankings title, from the switch on. */
-  ranksTag: 'Season 0 · The Seal Falls',
+  ranksTag: 'Season 0 · The Founding',
   ranksSince: 'Since Monday 26 October. Everyone started equal.',
+};
+
+/**
+ * 先行 Forerunner: the mark of an account the server saw before the seal fell. Two glyphs,
+ * stacked, never 先 alone (beside a name 先 reads "the late", and beside 師 it spells 先師).
+ */
+export const FORERUNNER = {
+  han: '先行',
+  name: 'Forerunner',
+  /** 註 What the seal answers when it is tapped. */
+  note: 'Played the closed test before the seal fell. A mark, not a save: it changes no number.',
+  /** 先行 The Account block in 榜 Ranks, for an account that carries it. */
+  account: 'Your name carries it on every board, for good.',
 };
 
 export const LOADOUT = {
