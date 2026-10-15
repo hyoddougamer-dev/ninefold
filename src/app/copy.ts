@@ -2137,6 +2137,18 @@ export const DAO = {
 export const ESCAPE = { label: 'Close this and go back' };
 
 export const NOTICE = {
+  /**
+   * 終 The closed test's last week, once, from 19 October until the switch (notices.ts). The
+   * end is printed in the device's own time first: in Brazil the season begins on Sunday
+   * evening, and "Monday" alone would send somebody to bed with a day still to go.
+   */
+  lastWeek: {
+    title: 'The closed test ends this week',
+    text: (local: string) =>
+      `The closed test ends on ${local} (Monday 26 October, 00:00 UTC). Season 0 then begins for everyone `
+      + 'from the first realm, and no progress carries over. Join 榜 Ranks once before then (a guest only '
+      + 'needs a name) and your name carries 先行 Forerunner, for good.',
+  },
   cap: {
     title: 'A realm only holds so much',
     // 數 The number is handed in rather than written here. It is LEVELS_PER_REALM, it has

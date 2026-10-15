@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { NOTICES, nextNotice } from '../notices.ts';
+import { NOTICES, endsHere, nextNotice } from '../notices.ts';
+import { LAST_WEEK, SEASON_START } from '../../sim/season.ts';
 import { newState, type State } from '../../sim/state.ts';
 import { validate } from '../../sim/load.ts';
 import { levelCap } from '../../sim/balance.ts';
@@ -75,6 +76,31 @@ describe('新 the cards that arrive once', () => {
     expect(every.size).toBeLessThanOrEqual(32);
     const full = validate({ ...newState(T0), v: 1, seen: [...every] }, T0 + 5);
     expect(full.seen).toEqual([...every]);
+  });
+});
+
+describe('終 the closed test\'s last week', () => {
+  const at = (t: number): State => ({ ...newState(t - 30 * 86_400), at: t });
+
+  it('shows from 19 October until the switch, and never before or after', () => {
+    expect(nextNotice(at(LAST_WEEK - 1))?.key).not.toBe('lastweek');
+    expect(nextNotice(at(LAST_WEEK))?.key).toBe('lastweek');
+    expect(nextNotice(at(SEASON_START - 1))?.key).toBe('lastweek');
+    expect(nextNotice(at(SEASON_START))?.key).not.toBe('lastweek');
+    expect(nextNotice(at(SEASON_START + 30 * 86_400))?.key).not.toBe('lastweek');
+  });
+
+  it('shows once: read, it never comes back that week', () => {
+    const s = at(LAST_WEEK + 3 * 86_400);
+    expect(nextNotice({ ...s, seen: ['lastweek'] })?.key).not.toBe('lastweek');
+  });
+
+  it('says the end in the device\'s own time first, then in UTC, and names the mark in two glyphs', () => {
+    const n = NOTICES.find((x) => x.key === 'lastweek')!;
+    expect(n.text).toContain(`ends on ${endsHere()} (Monday 26 October, 00:00 UTC)`);
+    expect(endsHere()).toMatch(/^(Sunday 25|Monday 26) October, \d{2}:\d{2}$/);
+    expect(n.text).toContain('先行 Forerunner');
+    expect(n.text).not.toMatch(/先(?!行)/);
   });
 });
 

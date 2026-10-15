@@ -5,7 +5,7 @@ import {
   CLOSED_TEST_REFUSED, exportSave, importSave, keepSpare, load, pendingFarewell,
   rearm, save, seasonCardDue, seasonCardRead, walked, wipe,
 } from '../save.ts';
-import { SEASON, SEASON_START, inSeason, retires, seasonAt, seasonOf } from '../season.ts';
+import { LAST_WEEK, SEASON, SEASON_START, inSeason, retires, seasonAt, seasonOf } from '../season.ts';
 import { validFarewell } from '../load.ts';
 import { SEASON_START as FROM_VERIFY, GAME_EPOCH } from '../verify.ts';
 import { newState, type State } from '../state.ts';
@@ -106,6 +106,8 @@ describe('季 the marker', () => {
     expect(inSeason(s, AFTER)).toBe(true);
     expect(inSeason({ ...s, startedAt: SEASON_START - 1 }, AFTER)).toBe(false);
     expect(inSeason(s, SEASON_START - 1)).toBe(false);
+    // 終 The last week is the seven days before the switch.
+    expect(new Date(LAST_WEEK * 1000).toISOString()).toBe('2026-10-19T00:00:00.000Z');
     expect(retires(veteran(), AFTER)).toBe(true);
     expect(retires(veteran(), SEASON_START - 1)).toBe(false);
     expect(retires(s, AFTER)).toBe(false);
