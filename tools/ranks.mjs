@@ -12,6 +12,7 @@
  */
 import { chromium } from 'playwright';
 import { isSealed, open as unsealText } from '../src/sim/seal.ts';
+import { cliffRows, SEASON_START } from './cliff-fixture.mjs';
 // 封 The game seals what it writes; a save written here is plain, and both open.
 const unseal = (raw) => (raw == null ? null : JSON.parse(isSealed(raw) ? unsealText(raw).json : raw));
 
@@ -36,7 +37,7 @@ const CORS = {
 };
 
 /** A stand-in for the project: auth, the sync function and the board RPCs. */
-function server(page, { cloud = null, email = null } = {}) {
+function server(page, { cloud = null, email = null, cliff = [], cliffDown = false } = {}) {
   const seen = { syncs: [], names: [] };
   const user = email ? { ...USER, email, is_anonymous: false } : USER;
   page.route(`${API}/**`, async (route) => {
@@ -49,8 +50,9 @@ function server(page, { cloud = null, email = null } = {}) {
       case '/auth/v1/signup': return reply(200, session(USER));
       case '/auth/v1/user': return reply(200, user);
       case '/auth/v1/otp': return reply(200, {});
-      case '/auth/v1/verify': return reply(200, session({ ...USER, email: email ?? 'bruno@example.com', is_anonymous: false }));
+      case '/auth/v1/verify': return reply(200, session({ ...USER, email: email ?? 'tester@example.com', is_anonymous: false }));
       case '/auth/v1/logout': return route.fulfill({ status: 204, headers: CORS });
+      case '/auth/v1/token': return reply(200, session(user));
       case '/functions/v1/sync':
         if (body?.action === 'pull') return reply(200, { save: cloud, at: new Date().toISOString() });
         seen.syncs.push(body);
@@ -59,16 +61,18 @@ function server(page, { cloud = null, email = null } = {}) {
       case '/rest/v1/rpc/board': {
         const kind = body?.kind;
         const rows = [
-          { rank: 1, name: '雲中君', climb: 62, marks: 0, tower: 88, gain: 14, title: '天下第一', me: false, calling: 'swordimmortal' },
-          { rank: 2, name: 'Mistwalker', climb: 51, marks: 0, tower: 40, gain: 11, title: '期首', me: false, calling: 'qi:2' },
-          { rank: 3, name: 'Old Pine', climb: 44, marks: 0, tower: 31, gain: 9, title: null, me: false, calling: 'sorcerer:9' },
-          { rank: 4, name: seen.names.at(-1) ?? '修士 0B5E', climb: 3, marks: 0, tower: 0, gain: 3, title: null, me: true },
+          // 先行 Two Forerunners: one wearing a title as well, so the seal is seen beside it, not in its place.
+          { rank: 1, name: '雲中君', climb: 62, marks: 0, tower: 88, gain: 14, title: '天下第一', me: false, calling: 'swordimmortal', forerunner: true },
+          { rank: 2, name: 'Mistwalker', climb: 51, marks: 0, tower: 40, gain: 11, title: '期首', me: false, calling: 'qi:2', forerunner: false },
+          { rank: 3, name: 'Old Pine', climb: 44, marks: 0, tower: 31, gain: 9, title: null, me: false, calling: 'sorcerer:9', forerunner: true },
+          { rank: 4, name: seen.names.at(-1) ?? '修士 0B5E', climb: 3, marks: 0, tower: 0, gain: 3, title: null, me: true, forerunner: false },
         ];
         return reply(200, kind === 'tower' ? rows.filter((r) => r.tower > 0) : rows);
       }
       case '/rest/v1/rpc/my_standing':
-        return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首' });
+        return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首', forerunner: !!cliff.length });
       case '/rest/v1/rpc/set_name': return reply(200, body?.new_name?.trim());
+      case '/rest/v1/rpc/cliff': return cliffDown ? reply(500, { message: 'down' }) : reply(200, cliff);
       default: return reply(404, { error: url.pathname });
     }
   });
@@ -113,12 +117,12 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   await page.fill('.ranks .rjoin input:not([type=email])', '天下第一');
   check(await page.locator('.ranks .rjoin [data-tone="bad"]').isVisible()
     && await page.locator('.ranks .rjoin button.act').first().isDisabled(), 'a title typed as a name is refused, in words');
-  await page.fill('.ranks .rjoin input:not([type=email])', 'Bruno');
+  await page.fill('.ranks .rjoin input:not([type=email])', 'Lantern');
   await page.locator('.ranks .rjoin button.act').first().click();
   await page.waitForSelector('.ranks .rlist li[data-me="true"]', { timeout: 8000 }).catch(() => {});
   check(await page.locator('.ranks .rlist li[data-me="true"]').count() === 1, 'the new player is on the board, marked as them');
   check(seen.syncs.length >= 1 && seen.syncs[0]?.save?.v === 1, 'the sync carried the save', JSON.stringify(seen.syncs[0])?.slice(0, 80));
-  check(seen.names.includes('Bruno'), 'and the name', seen.names.join(','));
+  check(seen.names.includes('Lantern'), 'and the name', seen.names.join(','));
   // 期 It opens on the week, the one board a newcomer can win (Raziel, 2026-10-02).
   const opened = await page.locator('.ranks .rtabs button[aria-selected="true"]').textContent();
   const first = await page.locator('.ranks .rtabs button').first().textContent();
@@ -130,6 +134,19 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
     await page.locator('.ranks .rlist .rcall').allTextContents());
   check((await page.locator('.ranks .rlist li').first().locator('.rcall').textContent()) === '劍仙 Sword Immortal',
     'in English beside the characters', await page.locator('.ranks .rlist .rcall').first().textContent());
+  // 先行 The seal on exactly the rows the server marked, named in English, and beside a title, never in its place.
+  check(await page.locator('.ranks .rlist .fore').count() === 2, 'the 先行 seal stands on the two rows the server marked, and no other',
+    String(await page.locator('.ranks .rlist .fore').count()));
+  check(await page.locator('.ranks .rlist li').first().locator('.fore[aria-label="Forerunner"]').count() === 1
+    && /天下第一/.test(await page.locator('.ranks .rlist li').first().locator('.rw > i').textContent().catch(() => '')),
+    'its label says Forerunner, and the 天下第一 title stays beside it');
+  check(await page.locator('.ranks .rlist li[data-me="true"] .fore').count() === 0, 'a player the server did not mark wears nothing');
+  await page.locator('.ranks .rlist .fore').first().click();
+  await page.waitForTimeout(250);
+  check(/closed test before the seal fell/.test(await page.locator('.termtip').textContent().catch(() => '')),
+    'a tap on the seal answers with its note', await page.locator('.termtip').textContent().catch(() => 'none'));
+  await page.locator('.ranks h2').click();
+  check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
   check(/Fair play/.test(await page.locator('.ranks').textContent()), 'the boards say, under them, how they are kept fair');
   check(await page.locator('.ranks .rstatus[data-tone="bad"]').count() === 0, 'and an untouched save hears nothing about editing');
@@ -178,7 +195,7 @@ console.log('\na new device');
   const cloud = { v: 1, season: 's0', at: now - 60, startedAt: now - 30 * 86400, realm: 5, layer: 3, qi: 5e6, materials: 900,
     wardenFell: false, levels: { technique: 20, method: 20, pills: 18, cores: 20 }, killed: { rat: 40, hound: 30 },
     self: 'woman', seen: ['guide', 'whom'] };
-  server(page, { cloud, email: 'bruno@example.com' });
+  server(page, { cloud, email: 'tester@example.com' });
   await fresh(page);
   // A link from an email opens the page from nothing. Only changing the # of a page that
   // is already open reloads nothing, and the game would never see the link at all.
@@ -203,13 +220,13 @@ console.log('\na new device, by the code in the email');
   const cloud = { v: 1, season: 's0', at: now - 60, startedAt: now - 30 * 86400, realm: 4, layer: 6, qi: 5e6, materials: 900,
     wardenFell: false, levels: { technique: 18, method: 18, pills: 16, cores: 18 }, killed: { rat: 40, hound: 30 },
     self: 'man', seen: ['guide', 'whom'] };
-  const seen = server(page, { cloud, email: 'bruno@example.com' });
+  const seen = server(page, { cloud, email: 'tester@example.com' });
   await fresh(page);
   await page.goto(BASE);
   await page.waitForSelector('.prologue');
   await page.click('.prologue .phave');
   await page.waitForSelector('.ranks .rjoin');
-  await page.fill('.ranks .rjoin input[type=email]', 'bruno@example.com');
+  await page.fill('.ranks .rjoin input[type=email]', 'tester@example.com');
   await page.locator('.ranks .rjoin button.act.ghost').click();
   await page.waitForSelector('.ranks .rcode input', { timeout: 5000 }).catch(() => {});
   check(await page.locator('.ranks .rcode input').isVisible(), 'after the email is sent, the game asks for its code');
@@ -224,6 +241,112 @@ console.log('\na new device, by the code in the email');
   const realm = unseal(await page.evaluate(() => localStorage.getItem('ninefold.save.v1')))?.realm;
   check(realm === 4, 'and continuing brings it here', String(realm));
   await page.close();
+}
+
+// 題名崖 The Cliff of Names, after the switch: the game's own clock is set into the season.
+/** A cultivator on this device, signed in unless told otherwise, with the clock `day` days into the season. */
+async function seasonPage(W, H, day, opts) {
+  const page = await browser.newPage({ viewport: { width: W, height: H } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const at = SEASON_START + day * 86400 + 11 * 3600;
+  await page.clock.install({ time: new Date(at * 1000) });
+  const seen = server(page, opts);
+  await page.route('**/assets/*.js', (r) => r.abort());
+  await page.goto(BASE);
+  await page.evaluate(([s, sess, signed]) => {
+    localStorage.clear();
+    localStorage.setItem('ninefold.save.v1', JSON.stringify(s));
+    if (signed) { localStorage.setItem('ninefold.ranked', '1'); localStorage.setItem('ninefold.auth', JSON.stringify(sess)); }
+  }, [{ v: 1, season: 's0', at: at - 30, startedAt: SEASON_START + 600, realm: 2, layer: 4, qi: 4e4, materials: 300,
+    wardenFell: false, levels: { technique: 8, method: 8, pills: 6, cores: 2 }, killed: { rat: 60, hound: 30, fox: 1 },
+    awakened: ['feast'], self: 'man', seen: ['guide', 'whom', 'marks', 'reach', 'gear', 'stance'] },
+  { ...session(USER), expires_at: at + 3600 }, opts.signed !== false]);
+  await page.unroute('**/assets/*.js');
+  await page.goto(BASE);
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(700);
+  for (let i = 0; i < 8; i++) {
+    const x = await page.$('.awaken .acard') ?? await page.$('.notice button');
+    if (!x) break;
+    await x.click().catch(() => {}); await page.waitForTimeout(200);
+  }
+  await openRanks(page);
+  return { page, errors, seen };
+}
+
+const day9 = cliffRows({ me: '修士 0B5E' });
+for (const [label, W, H] of [['320', 320, 720], ['desktop', 1280, 720]]) {
+  console.log(`\nthe Cliff of Names, day 9, ${label}`);
+  const { page, errors } = await seasonPage(W, H, 9, { cliff: day9 });
+  check(await page.locator('.ranks .rcliffdoor').isVisible(), 'from the switch, Rankings has a way to the Cliff');
+  await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
+  check(await page.locator('.ranks .rmine .rmseal[aria-label="Forerunner"]').count() === 1,
+    'the head of Rankings carries the player\'s own 先行, on the server\'s word');
+  await page.click('.ranks .rcliffdoor');
+  await page.waitForSelector('.ranks .rcol', { timeout: 8000 }).catch(() => {});
+  const cols = page.locator('.ranks .rcol');
+  check(await cols.count() === 9, 'nine columns, one per gate', String(await cols.count()));
+  const names = (await page.locator('.ranks .rcolname span').allTextContents()).join(',');
+  check(names === 'Spirit Fox,Stone Ape,Immortal Crane,Thunder Tiger,Black Turtle,Stone Puppet,Demon Wolf,Serpent Dragon,Dragon',
+    'each named for its warden, in English', names);
+  const on = await page.locator('.ranks .rcol[data-on="true"]').count();
+  check(on === 4, 'four gates have names on day 9, and five are still in ink', String(on));
+  const filters = await page.$$eval('.ranks .rcolpic', (els) => els.map((e) => getComputedStyle(e).filter));
+  check(filters.slice(0, 4).every((f) => f === 'none') && filters.slice(4).every((f) => /grayscale/.test(f)),
+    'a column takes its colour with its first name, and stays in ink before it', filters.join(' | '));
+  check(await page.locator('.ranks .rcol[data-gate="1"] .rcolrow').count() === 10,
+    'a full column shows its first nine, and the player\'s own place under them');
+  check(await page.locator('.ranks .rcolrow[data-me]').count() === 2
+    && /23/.test(await page.locator('.ranks .rcol[data-gate="1"] .rcolrow[data-me] .rcoln').textContent().catch(() => '')),
+    'the player\'s place is lit on both gates they are through');
+  check((await page.locator('.ranks .rcliffmine p').count()) === 2, 'and said in words above the Cliff');
+  check(/Oct/.test(await page.locator('.ranks .rcol[data-gate="1"] .rcolw i').first().textContent().catch(() => '')),
+    'each name carries the server\'s date');
+  const widths = await page.evaluate(() => {
+    const sc = document.querySelector('.ranks .rcliffscroll');
+    const sheet = document.querySelector('.ranks');
+    return { doc: document.documentElement.scrollWidth, vw: innerWidth, sheet: sheet.scrollWidth - sheet.clientWidth,
+      inner: sc.scrollWidth, frame: sc.clientWidth };
+  });
+  check(widths.doc <= widths.vw && widths.sheet <= 0, 'the page never scrolls sideways', JSON.stringify(widths));
+  check(widths.inner > widths.frame, 'the nine columns scroll sideways inside their own frame', JSON.stringify(widths));
+  const foot = await page.locator('.ranks .rcliffnames span').allTextContents();
+  const want = new Set(day9.filter((r) => r.forerunner).map((r) => r.name));
+  check(foot.length === want.size && foot.every((n) => want.has(n.replace(/ · $/, ''))),
+    '先行 Those who walked before: every Forerunner on the Cliff, once each, with no numbers', `${foot.length} of ${want.size}`);
+  await page.click('.ranks .rcliffall');
+  check(await page.locator('.ranks .rcol[data-gate="1"] .rcolrow').count() === 81, 'every name, when asked for: 81 in a full column');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/cliff-${label}.png` });
+  await page.click('.ranks .rcliffback');
+  check(await page.locator('.ranks .rtabs').isVisible(), 'and back to the boards');
+  check(errors.length === 0, 'no errors on the page', errors.join(' | '));
+  await page.close();
+}
+
+console.log('\nthe Cliff of Names, day 0, and when it cannot be reached');
+{
+  const { page, errors } = await seasonPage(400, 860, 0, { cliff: [] });
+  await page.click('.ranks .rcliffdoor');
+  await page.waitForSelector('.ranks .rcol', { timeout: 8000 }).catch(() => {});
+  check(await page.locator('.ranks .rcol[data-on="false"]').count() === 9 && await page.locator('.ranks .rcliffempty').isVisible(),
+    'on day 0 every column is in ink, and the Cliff says nobody is through yet');
+  check(await page.locator('.ranks .rcolnone').count() === 9 && await page.locator('.ranks .rcliffnames').count() === 0,
+    'each column says so, and the foot has no names to list');
+  await page.click('.ranks .rcliffback');
+  await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
+  check(await page.locator('.ranks .rmine').isVisible() && await page.locator('.ranks .rmine .rmseal').count() === 0,
+    'an account the server did not mark wears no seal at the head');
+  check(errors.length === 0, 'no errors on the page', errors.join(' | '));
+  await page.close();
+  const down = await seasonPage(400, 860, 3, { cliffDown: true, signed: false });
+  check(await down.page.locator('.ranks .rjoin').isVisible() && await down.page.locator('.ranks .rcliffdoor').isVisible(),
+    'a player who has not joined the boards can still open the Cliff');
+  await down.page.click('.ranks .rcliffdoor');
+  await down.page.waitForSelector('.ranks .rcliffnote:has-text("cannot be reached")', { timeout: 8000 }).catch(() => {});
+  check(/cannot be reached/.test(await down.page.locator('.ranks .rcliffnote').textContent().catch(() => '')),
+    'and a Cliff the server cannot give says so in words');
+  await down.page.close();
 }
 
 await browser.close();
