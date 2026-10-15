@@ -127,6 +127,10 @@ const cliff = await call('/rest/v1/rpc/cliff', {});
 check(cliff.status === 200 && Array.isArray(cliff.json)
   && cliff.json.every((r: any) => Object.keys(r).sort().join() === 'at,forerunner,gate,name,rank'),
   'anybody reads the Cliff, and it carries names, never an id', cliff.status);
+// 先行 Its foot: every Forerunner's name, read by anybody, and nothing but the names.
+const foot = await call('/rest/v1/rpc/forerunners', {});
+check(foot.status === 200 && Array.isArray(foot.json) && foot.json.every((r: any) => Object.keys(r).join() === 'name')
+  && (LIVE || foot.json.length > 0), 'anybody reads the names at the foot of the Cliff, and only the names', foot.status);
 for (const [who, t] of [['a player', token], ['nobody signed in', undefined]] as const) {
   const carved = await write('/rest/v1/firsts', 'POST', { gate: 1, user_id: guest.json?.user?.id, at: '2026-10-26T00:00:01Z' }, t);
   check(carved.status >= 400, `${who} cannot carve a name on the Cliff`, carved.status);

@@ -760,6 +760,16 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
       expect(((await as(F(5), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ forerunner: false });
       expect(((await as(F(3), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ forerunner: false });
 
+      // 先行 The foot of the Cliff: every Forerunner's name, carved or not, and nothing else.
+      const foot = async (who: string | null = null) => ((await as(who, `select * from forerunners()`)).rows as any[])
+        .map((r) => r.name).filter((n: string) => n.startsWith('Fore '));
+      expect(await foot()).toEqual(['Fore Refused', 'Fore Stamped']);
+      expect(await foot(F(5))).toEqual(['Fore Refused', 'Fore Stamped']);
+      expect((await db.query(`select * from forerunners() limit 0`)).fields.map((f: any) => f.name)).toEqual(['name']);
+      await db.exec(`update profiles set suspect = true where id = '${F(1)}'`);
+      expect(await foot()).toEqual(['Fore Stamped']);   // held for review: off it, as off the boards
+      await db.exec(`update profiles set suspect = false where id = '${F(1)}'`);
+
       // Nobody calls it from outside, and nobody stamps or unstamps an account but the server.
       await expect(as(null, `select is_forerunner('${F(1)}')`)).rejects.toThrow(/permission denied/);
       await expect(as(F(5), `select is_forerunner('${F(5)}')`)).rejects.toThrow(/permission denied/);
@@ -886,7 +896,7 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
     // A security definer function runs as its owner, so no table of a caller's own may stand in
     // for one of its names: pg_temp is searched first unless it is named, and named last here.
     const fns = ['board', 'samsara_board', 'my_standing', 'is_forerunner', 'cliff', 'standings_carve',
-      'panel_set_staff', 'panel_players', 'set_name'];
+      'panel_set_staff', 'panel_players', 'set_name', 'forerunners'];
     const got = (await db.query(`select p.proname, p.prosecdef, array_to_string(p.proconfig, ',') as cfg
       from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.proname = any($1::text[])`, [fns])).rows as any[];
