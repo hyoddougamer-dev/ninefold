@@ -1,10 +1,12 @@
 /**
  * 季 The season, and the instant it began.
  *
- * Season 0 is "The Seal Falls 落印": the closed test is sealed and kept, and everyone
- * starts again from the first realm. It is a time, not a deploy: the game and the server
- * both read SEASON_START and switch on their own when it comes (docs/SEASON0-PLAN.md,
- * section 1). Before it nothing at all changes for anybody.
+ * Season 0 is "The Founding 開山" (docs/SEASON0-THEME.md): everyone starts again from the
+ * first realm, and the closed-test cultivator does not stay. The device reads it once for a
+ * four-number farewell and removes it (save.ts, retire); the server keeps nothing readable of
+ * it. It is a time, not a deploy: the game and the server both read SEASON_START and switch
+ * on their own when it comes (docs/SEASON0-PLAN.md, section 1). Before it nothing at all
+ * changes for anybody, apart from the last week's one notice (LAST_WEEK).
  *
  * It is defined here, not in verify.ts, because the game never imports the verifier: if
  * load.ts reached for it there, the whole verifier would end up in the bundle. verify.ts
@@ -26,6 +28,12 @@ const KNOWN: readonly string[] = [SEASON];
  * once said 19 October; the brief moved it, and the SQL's season_start() mirrors this.
  */
 export const SEASON_START = 1792972800;
+
+/**
+ * 終 Monday 19 October 2026, 00:00 UTC: the closed test's last week begins, and with it the
+ * one notice that says when it ends (src/app/notices.ts). Seconds, like SEASON_START.
+ */
+export const LAST_WEEK = SEASON_START - 7 * 86_400;
 
 /** The marker a cultivator begun at this instant carries: the season, or none before it. */
 export function seasonAt(now: number): string | null {

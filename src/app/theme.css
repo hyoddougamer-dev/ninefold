@@ -4367,10 +4367,10 @@ nav.tabs .tabkey { display: none; }
 .pilewait i { display: block; margin-top: 2px; font-style: normal; font-size: 12px; line-height: 1.45; color: var(--faint); }
 .pilewait .go { flex: none; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
 
-/* ── 季 落印 The Seal Falls: Season 0 (docs/SEASON0-BRIEF.md, section 2) ─────────────────
-   Every class is scoped under .season0 (the first-open card), .s0kept (Menu, Save) or
-   .help.ranks .s0tag (Rankings). Ink black, bone silk, gold leaf, and one red: the game's
-   own cinnabar, on the seal alone. No white flash anywhere, and no shake past 0.3 s. */
+/* ── 季 開山 The Founding: Season 0 (docs/SEASON0-THEME.md, 2b to 2e) ─────────────────
+   Every class is scoped under .season0 (the first-open card) or .help.ranks .s0tag
+   (Rankings). Ink black, bone silk, gold leaf, and one red: the game's own cinnabar, on the
+   九境 seal alone. No white flash anywhere, and no shake past 0.3 s. */
 .season0 { position: absolute; inset: 0; z-index: 16; background: #0D0B08; color: var(--text);
   display: flex; flex-direction: column; overflow-y: auto; }
 .season0 .s0art { position: relative; height: 236px; flex: none; overflow: hidden; background: #E8D9B8; }
@@ -4399,23 +4399,31 @@ nav.tabs .tabkey { display: none; }
 .season0 h2 .cjk { font-weight: 600; font-size: 24px; letter-spacing: .06em; color: var(--cinnabar); margin-left: 4px; white-space: nowrap; }
 .season0 .s0line { margin: -4px 0 0; font: italic 600 18px/1.4 var(--serif); color: #E8D9B8; }
 .season0 .s0says { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--text); }
-.season0 .s0old, .s0kept .s0old { background: var(--mount), var(--lacquer); border: 1px solid var(--gild); border-radius: 12px;
-  padding: 13px 14px; box-shadow: var(--lift); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.season0 .s0old i, .s0kept .s0old i { font-style: normal; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
-.season0 .s0old i .cjk, .s0kept .s0old i .cjk { letter-spacing: 0; font-size: 12.5px; color: var(--gold); margin-right: 2px; }
-.season0 .s0old b, .s0kept .s0old b { font-weight: 500; font-size: 16px; color: var(--text); }
-.season0 .s0old p, .s0kept .s0old p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--faint); }
-.season0 .s0take, .s0kept .s0take { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 4px; }
-.season0 .s0take .act, .s0kept .s0take .act { min-width: 0; padding-left: 8px; padding-right: 8px; }
-.season0 .s0take .act span, .s0kept .s0take .act span { letter-spacing: .07em; margin-left: 6px; white-space: nowrap; }
-@media (max-width: 380px) { .season0 .s0take, .s0kept .s0take { grid-template-columns: minmax(0, 1fr); } }
-.season0 .s0text, .s0kept .s0text { width: 100%; box-sizing: border-box; font: 11px/1.4 monospace; color: var(--text);
-  background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: none; }
-.season0 .s0old .s0said, .s0kept .s0old .s0said { color: var(--jade); }
-.season0 .s0bad, .s0kept .s0bad { margin: 0; font-size: 13px; line-height: 1.5; color: var(--cinnabar); }
+/* 別 The farewell: one line, mounted like a scroll's label. */
+.season0 .s0bye { margin: 0; padding: 12px 14px; border-left: 2px solid var(--cinnabar); border-radius: 0 10px 10px 0;
+  background: var(--mount), var(--lacquer); box-shadow: var(--lift);
+  font: italic 500 16.5px/1.45 var(--serif); color: #E8D9B8; }
+/* 同驗永 The season's law: a gold-edged glyph and its English line, three rows. */
+.season0 .s0law { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.season0 .s0law li { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
+.season0 .s0law b { flex: none; width: 26px; height: 26px; display: grid; place-items: center; margin-top: -1px;
+  border: 1px solid var(--gild-strong); border-radius: 3px; background: rgba(212,175,86,.06);
+  font-size: 15px; font-weight: 600; line-height: 1; color: var(--gold); }
+.season0 .s0law span { min-width: 0; font-size: 13.5px; line-height: 1.5; color: var(--text); }
+.season0 .s0cliff { margin: 0; font-size: 13px; line-height: 1.55; color: var(--faint); }
+/* 先行 The Forerunner line, its seal drawn in CSS: two glyphs stacked in a gold-bordered square. */
+.season0 .s0fore { display: flex; align-items: center; gap: 13px; padding: 11px 13px; border-radius: 10px;
+  border: 1px solid var(--gild-strong); background: rgba(212,175,86,.07); }
+.season0 .s0fore p { margin: 0; min-width: 0; font-size: 13.5px; line-height: 1.5; color: #F1E6CF; }
+.season0 .s0seal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 34px; height: 50px; border: 2px solid var(--gold); border-radius: 3px; background: #2b2213; color: var(--gold);
+  box-shadow: 0 0 0 2px #0D0B08, 0 0 0 3px rgba(212,175,86,.45);
+  font: 900 16px/1.1 'Noto Serif SC', serif; }
+.season0 .s0seal i { font-style: normal; display: block; }
+.season0 .s0signed { margin: 0; padding: 10px 13px; border-radius: 10px; border: 1px dashed var(--gild);
+  font-size: 13px; line-height: 1.5; color: var(--faint); }
 .season0 .s0acts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 4px; }
 .season0 .s0acts .act { width: 100%; }
-.season0 .s0later { margin: 0; font-size: 12px; color: var(--faint); text-align: center; line-height: 1.5; }
 @media (max-width: 360px) {
   .season0 .s0art { height: 196px; }
   .season0 .s0body { gap: 11px; padding-left: 16px; padding-right: 16px; }
@@ -4425,11 +4433,22 @@ nav.tabs .tabkey { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .season0 .s0stamp, .season0 .s0ghost { animation: none; }
 }
-/* 舊 Menu, Save, Closed test. */
-.savepanel .s0kept { display: flex; flex-direction: column; gap: 8px; }
-.savepanel .s0kept h3 { margin: 0; font: 600 12px/1.3 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--faint); }
-.savepanel .s0kept h3 .cjk { color: var(--gold); letter-spacing: 0; font-size: 14px; margin-right: 2px; }
-.savepanel .s0kept .s0signin { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--faint); }
+/* 先行 The Account block in Rankings: the seal beside its name and one line. */
+.help.ranks .raccount .rafore { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; }
+.help.ranks .raccount .rafore span { min-width: 0; font-size: 12.5px; line-height: 1.45; color: var(--faint); }
+.help.ranks .raccount .rafore b { font: 600 11.5px/1.3 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-right: 4px; }
+.help.ranks .raccount .raseal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 24px; height: 38px; border: 1px solid var(--gold); border-radius: 2px; background: #2b2213; color: var(--gold);
+  font: 900 12px/1.2 'Noto Serif SC', serif; }
+.help.ranks .raccount .raseal i { font-style: normal; display: block; }
+/* 舊 The Stele's one line for a device that walked the closed test. */
+.stelepage .chwalked { display: flex; align-items: center; gap: 12px; margin: 10px 0 0; padding: 10px 13px; border-radius: 10px;
+  border: 1px solid var(--gild); background: rgba(212,175,86,.05); }
+.stelepage .chwalked > b { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--gild-strong);
+  border-radius: 3px; font-size: 16px; font-weight: 600; line-height: 1; color: var(--gold); }
+.stelepage .chwalked span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stelepage .chwalked em { font-style: normal; font-size: 14px; color: var(--text); }
+.stelepage .chwalked i { font-style: normal; font-size: 12px; line-height: 1.45; color: var(--faint); }
 /* 榜 The season line under the Rankings title. */
 .help.ranks .s0tag { display: flex; align-items: center; gap: 11px; margin: -6px 0 0; padding: 9px 12px; border-radius: 10px;
   border: 1px solid var(--gild); background: rgba(212,175,86,.05); }

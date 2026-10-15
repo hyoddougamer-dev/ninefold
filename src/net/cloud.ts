@@ -144,18 +144,6 @@ export async function pull(): Promise<{ save: unknown; at: string | null }> {
   return data as { save: unknown; at: string | null };
 }
 
-/**
- * 舊 The closed-test copy the account kept, or null. The server answers for the signed-in
- * player alone (closed_test_mine(), 20261014190000_closed_test_mine.sql), and only from the
- * season's first second. Throws when the server could not be reached.
- */
-export async function closedTestMine(): Promise<{ save: unknown; at: string | null } | null> {
-  const c = await client();
-  const { data, error } = await c.rpc('closed_test_mine');
-  if (error) throw new Error('offline');
-  return (data ?? null) as { save: unknown; at: string | null } | null;
-}
-
 /** The boards. 'samsara' is the 輪迴 board, which only a cultivator who has reborn can see. */
 export type Board = 'climb' | 'samsara' | 'week' | 'tower';
 
@@ -170,6 +158,8 @@ export interface Row {
   readonly me: boolean;
   /** 職 The class the verified save wears: "sword:2", a pair's key, or null. */
   readonly calling?: string | null;
+  /** 先行 The account walked the closed test (is_forerunner() on the server). A mark, never a number. */
+  readonly forerunner?: boolean;
 }
 
 export async function board(kind: Board): Promise<readonly Row[]> {
@@ -204,6 +194,8 @@ export interface Mine {
   readonly verified_at: string | null;
   readonly latest_at: string | null;
   readonly title: string | null;
+  /** 先行 The server's own answer: this account synced before the season began. */
+  readonly forerunner?: boolean;
 }
 
 export async function mine(): Promise<Mine | null> {
@@ -211,6 +203,23 @@ export async function mine(): Promise<Mine | null> {
   const { data, error } = await c.rpc('my_standing');
   if (error) return null;
   return (data ?? null) as Mine | null;
+}
+
+/** 題名崖 One name carved on the Cliff of Names: its gate (1 to 9), its place there, and when the server saw it. */
+export interface Carved {
+  readonly gate: number;
+  readonly rank: number;
+  readonly name: string;
+  readonly at: string;
+  readonly forerunner: boolean;
+}
+
+/** 題名崖 The Cliff of Names, every gate at once (cliff() on the server, open to anyone). */
+export async function fetchCliff(): Promise<readonly Carved[]> {
+  const c = await client();
+  const { data, error } = await c.rpc('cliff');
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Carved[]).map((r) => ({ ...r, gate: Number(r.gate), rank: Number(r.rank), forerunner: !!r.forerunner }));
 }
 
 /** 名 Returns the name as the server stored it, or the reason it was refused. */

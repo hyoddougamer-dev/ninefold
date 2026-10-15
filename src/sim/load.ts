@@ -35,7 +35,7 @@ import {
 } from '../data/secret.ts';
 import {
   DRIVE_PILE, INCENSE_HOLD, MELT_CAP, PLATFORM_EDGE, PLATFORM_REALM, SEAL_PAY_SHARE, SEAL_PILL_SHARE,
-  SECLUSION, SHRINE_DAO_PER_REALM, SPRING_HOLD
+  LIVES_MAX, SECLUSION, SHRINE_DAO_PER_REALM, SPRING_HOLD
 } from './balance.ts';
 import { demonsFor } from './seclusion.ts';
 import { shortestDoorGap, validCrafts } from './crafts.ts';
@@ -587,5 +587,35 @@ export function validate(raw: unknown, now: number): State {
     qi: Math.min(out.qi, qiCeiling),
     materials: Math.min(out.materials, matCeiling),
     refined: cappedRefined,
+  };
+}
+
+/**
+ * 別 The closed-test cultivator in four numbers: all that is left of it on a device once
+ * Season 0 has begun (save.ts, retire). It is read back from storage, so it is input like
+ * any save and capped like one: a realm of 1 to 9, a layer of 1 to 9 (the layer being
+ * worked on, as the climb bar says it), marks only in the ninth realm and no more than
+ * validate allows, and no more lives than a save may hold. Anything that is not an object
+ * of numbers reads as nothing. It pays nothing and is never sent anywhere.
+ */
+export interface Farewell {
+  readonly realm: number;
+  readonly layer: number;
+  readonly marks: number;
+  readonly rebirths: number;
+}
+
+export function validFarewell(raw: unknown): Farewell | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const int = (x: unknown, lo: number, hi: number) =>
+    typeof x === 'number' && Number.isFinite(x) ? Math.min(hi, Math.max(lo, Math.floor(x))) : null;
+  const realm = int(o.realm, 1, 9);
+  const layer = int(o.layer, 1, LAYERS_PER_REALM);
+  if (realm === null || layer === null) return null;
+  return {
+    realm, layer,
+    marks: realm === 9 ? int(o.marks, 0, 300) ?? 0 : 0,
+    rebirths: int(o.rebirths, 0, LIVES_MAX) ?? 0,
   };
 }

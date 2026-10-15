@@ -7,7 +7,7 @@ import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden } from '../sim/combat.ts';
 import { newState, type State,
 } from '../sim/state.ts';
-import { closedTest, keepSpare, load, save, seasonCardDue, seasonCardRead, untouched, type ClosedTest } from '../sim/save.ts';
+import { keepSpare, load, pendingFarewell, save, seasonCardDue, seasonCardRead, untouched, type Farewell } from '../sim/save.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
 import { begin, endOf, focusOf, isOver } from './sitting.ts';
 import { now, payTo } from './clock.ts';
@@ -139,11 +139,10 @@ export function App() {
   } = useOverlays();
   const [born, setBorn] = useState(false);
   /**
-   * 季 The closed-test cultivator this device retired, while the season's card is up: shown
-   * once, before the prologue, and again on any open until 始 Begin is pressed (or for as
-   * long as the copy could not be kept, when the game waits behind it).
+   * 季 The closed-test cultivator this device retired, in four numbers, while the season's
+   * card is up: shown before the prologue, and again on any open until 始 Begin is pressed.
    */
-  const [season, setSeason] = useState<ClosedTest | null>(null);
+  const [season, setSeason] = useState<Farewell | null>(null);
   /** 序 The prologue a new cultivator would open on, held until the season's card is read. */
   const prologueNext = useRef(false);
   /** 拆 The rank the bulk melt reaches up to. It lives here so it survives a tab. */
@@ -210,9 +209,10 @@ export function App() {
     // help sheet is what the Menu opens.
     // 雲 Somebody arriving from a sign-in link has a cultivator already: no prologue.
     const beginning = r.secondsAway === 0 && untouched(r.state) && !cloud.returningFromLink();
-    // 季 落印 The first open after the switch: the season's card comes first, and the
-    // prologue waits behind it. A copy that could not be kept holds the card up for good.
-    const old = r.retired && !r.retired.kept ? r.retired : seasonCardDue() ? r.retired ?? closedTest(now()) : null;
+    // 季 開山 The first open after the switch: the season's card comes first, and the
+    // prologue waits behind it. The farewell kept on the device says it on every open until
+    // Begin; this load's own is the fallback when the device could not keep even that.
+    const old = seasonCardDue() ? pendingFarewell() ?? r.retired : null;
     if (old) {
       setSeason(old);
       prologueNext.current = beginning;
@@ -301,14 +301,8 @@ export function App() {
 
   const {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError,
-    cloudPick, setCloudPick, title, place, push, cloudOld,
+    cloudPick, setCloudPick, title, place, push, forerunner,
   } = useCloud(ready, latest);
-  // 舊 A closed-test copy the account handed back, while the season's card is still due on this
-  // device: the card shows it, once nothing else is up. The card never waited for it.
-  useEffect(() => {
-    if (!cloudOld || season || prologue || cloudPick || ranks || !seasonCardDue()) return;
-    setSeason(cloudOld);
-  }, [cloudOld, season, prologue, cloudPick, ranks]);
 
   useEffect(() => {
     if (!ready) return;
@@ -822,7 +816,8 @@ export function App() {
         />
       )}
       {season && (
-        <SeasonCard old={season} sky={pictureOf('realm', '1')}
+        <SeasonCard farewell={season} sky={pictureOf('realm', '1')}
+          forerunner={who ? forerunner : null} signedOut={!who && !cloud.remembered()}
           onBegin={() => {
             seasonCardRead();
             setSeason(null);

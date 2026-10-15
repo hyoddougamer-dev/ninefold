@@ -1,67 +1,7 @@
-import { useState } from 'react';
 import { SEASON } from '../copy.ts';
-import { closedTestFileName, type ClosedTest } from '../../sim/save.ts';
-
-/**
- * 舊 Take the closed-test copy out: to the clipboard, or as a file.
- *
- * The same two ways out as 存 the save panel, in the same order and for the same reason:
- * copying works everywhere, and a download is the one that fails silently inside an app
- * shell. When the clipboard is refused the text is shown instead, so there is always a way.
- */
-function useTakeOut(old: ClosedTest) {
-  const [said, setSaid] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [byHand, setByHand] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(old.text);
-      setSaid(SEASON.copied);
-    } catch {
-      setByHand(true);
-      setSaid(SEASON.copyByHand);
-    }
-    setError(null);
-  };
-  const file = () => {
-    try {
-      const url = URL.createObjectURL(new Blob([old.text], { type: 'text/plain' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = closedTestFileName(old);
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setSaid(SEASON.saved);
-      setError(null);
-    } catch {
-      setError(SEASON.noFile);
-    }
-  };
-  return { said, error, byHand, copy, file };
-}
-
-/** 舊 The closed-test cultivator in one line, with its two ways out. Shared by the card and Menu, Save. */
-function Kept({ old, note, head = true }: { old: ClosedTest; note: string; head?: boolean }) {
-  const { said, error, byHand, copy, file } = useTakeOut(old);
-  return (
-    <div className="s0old">
-      {/* In Menu, Save the section's own heading already names it, so it is not said twice. */}
-      {head && <i><span className="cjk">舊</span> {SEASON.oldHead}</i>}
-      <b>{SEASON.old(old.realm, old.layer, old.marks, old.rebirths)}</b>
-      <p>{note}</p>
-      <div className="s0take">
-        <button className="act ghost" onClick={copy}>複 <span>{SEASON.copy}</span></button>
-        <button className="act ghost" onClick={file}>下 <span>{SEASON.file}</span></button>
-      </div>
-      {byHand && (
-        <textarea className="s0text" readOnly value={old.text} rows={4} spellCheck={false}
-          onFocus={(e) => e.currentTarget.select()} />
-      )}
-      {said && <p className="s0said">{said}</p>}
-      {error && <p className="s0bad">{error}</p>}
-    </div>
-  );
-}
+import { realm as realmOf } from '../../data/realms.ts';
+import type { Farewell } from '../../sim/save.ts';
+import { ForerunnerSeal } from './Forerunner.tsx';
 
 /**
  * 印 The seal, drawn in code so its carving is always exactly 九境 and never a character an
@@ -113,17 +53,26 @@ function SealPrint() {
 }
 
 /**
- * 季 落印 The Seal Falls: the first open after Season 0 began.
+ * 季 開山 The Founding: the first open after Season 0 began, on a device that held a
+ * closed-test cultivator.
  *
  * A full-screen card of its own (never a `.notice`, which blocks pointer events), shown
- * once on a device that retired a closed-test save, before the prologue. It shows the old
- * cultivator in one line and the two ways to take it out, then hands over to the
- * beginning a new player gets. When the copy could not be kept, it has no way on: the
- * game has changed nothing and waits until the copy is safe (see save.ts, frozen).
+ * before the prologue until 始 Begin is pressed. It says the old cultivator's farewell in one
+ * line, the season's law, and the Cliff, and hands over to the beginning a new player gets.
+ * There is nothing to take out: the save was read for its four numbers and removed.
+ *
+ * Its last line is the one thing the device cannot know by itself. Signed in, it is the
+ * server's answer (my_standing().forerunner): the Forerunner line when it says yes, nothing
+ * when it says no or has not answered. Signed out, it points to signing in, and never says the
+ * server did not see this player, because from here nobody can tell.
  */
-export function SeasonCard({ old, sky, onBegin }: {
-  old: ClosedTest;
+export function SeasonCard({ farewell, sky, forerunner, signedOut, onBegin }: {
+  farewell: Farewell;
   sky: string | null;
+  /** The server's answer for the signed-in account, or null when there is none (yet). */
+  forerunner: boolean | null;
+  /** Nobody is signed in on this device. */
+  signedOut: boolean;
   onBegin: () => void;
 }) {
   return (
@@ -138,41 +87,22 @@ export function SeasonCard({ old, sky, onBegin }: {
         <h2 id="s0title">{SEASON.name} <span className="cjk">{SEASON.han}</span></h2>
         <p className="s0line">{SEASON.line}</p>
         <p className="s0says">{SEASON.says}</p>
-        <Kept old={old} note={!old.kept ? SEASON.notKeptYet : old.where === 'account' ? SEASON.keptAccount : SEASON.kept} />
+        <p className="s0bye">{SEASON.farewell(realmOf(farewell.realm).name, farewell.realm, farewell.layer)}</p>
+        <ul className="s0law">
+          {SEASON.law.map((l) => (
+            <li key={l.han}><b className="cjk" aria-hidden="true">{l.han}</b><span>{l.text}</span></li>
+          ))}
+        </ul>
+        <p className="s0cliff">{SEASON.cliff}</p>
+        {forerunner === true ? (
+          <div className="s0fore"><ForerunnerSeal className="s0seal" /><p>{SEASON.forerunner}</p></div>
+        ) : signedOut ? (
+          <p className="s0signed">{SEASON.signedOut}</p>
+        ) : null}
         <div className="s0acts">
-          {old.kept ? (
-            <>
-              <button className="act" onClick={onBegin}>始 <span>{SEASON.begin}</span></button>
-              <p className="s0later">{SEASON.later}</p>
-            </>
-          ) : (
-            <>
-              <p className="s0bad">{SEASON.notKept}</p>
-              <button className="act" onClick={() => location.reload()}>再 <span>{SEASON.retry}</span></button>
-            </>
-          )}
+          <button className="act" onClick={onBegin}>始 <span>{SEASON.begin}</span></button>
         </div>
       </div>
     </div>
-  );
-}
-
-/** 舊 Menu, Save, Closed test: the same line and the same two buttons, for as long as the copy is kept. */
-export function ClosedTestRow({ old }: { old: ClosedTest }) {
-  return (
-    <section className="s0kept">
-      <h3><span className="cjk">舊</span> {SEASON.panelHead}</h3>
-      <Kept old={old} note={old.where === 'account' ? SEASON.panelNoteAccount : SEASON.panelNote} head={false} />
-    </section>
-  );
-}
-
-/** 雲 Menu, Save, signed out with no closed-test copy here: one line on how to bring one back. */
-export function ClosedTestSignIn() {
-  return (
-    <section className="s0kept">
-      <h3><span className="cjk">舊</span> {SEASON.panelHead}</h3>
-      <p className="s0signin">{SEASON.signIn}</p>
-    </section>
   );
 }

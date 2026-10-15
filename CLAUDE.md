@@ -76,9 +76,12 @@ Each of these cost real time once. They are written down so they cost it once.
 - **A fixture without the season marker is retired at load after the switch.** From
   `SEASON_START` (Monday 26 October 2026, 00:00 UTC, `src/sim/season.ts`), a save that does not
   carry `season: 's0'` and was begun before the switch (one begun after it is a season save by its
-  date alone) is moved whole to `ninefold.save.closedtest` and a fresh cultivator begins
-  behind the 落印 season card. A harness that wrote one would then measure a fresh cultivator and
-  print a tick. Every fabricated save in `tools/` stamps `season: 's0'` (validate carries it at
+  date alone) is retired: the device keeps only a four-number summary of it (realm, layer, marks,
+  rebirths, under `ninefold.season.farewell` until 始 Begin, and under `ninefold.season.walked` for
+  the Stele's one line), removes the save and its spare, and a fresh cultivator begins behind the
+  開山 season card. There is no copy, no file and no way back (Bruno, 2026-10-15), and nothing
+  ever writes `ninefold.save.closedtest`. A harness that wrote such a fixture would then measure
+  a fresh cultivator and print a tick. Every fabricated save in `tools/` stamps `season: 's0'` (validate carries it at
   any date, and nothing reads it before the switch), and `season.test.ts` fails on any tool that
   writes the save without it. A harness that has to open a closed-test save installs its clock
   past `SEASON_START` on purpose, and one that has to play it installs it before.

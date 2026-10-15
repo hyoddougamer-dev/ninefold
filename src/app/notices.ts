@@ -9,6 +9,23 @@ import { isOpen } from '../sim/unlocks.ts';
 import { CORE_CAP_EXTRA, LEVELS_PER_REALM } from '../sim/balance.ts';
 import { NOTICE } from './copy.ts';
 import { platformOpen } from '../sim/platform.ts';
+import { LAST_WEEK, SEASON_START } from '../sim/season.ts';
+
+/**
+ * 終 The instant the closed test ends, in the device's own time: "Sunday 25 October, 21:00" in
+ * Brazil, "Monday 26 October, 09:00" in Tokyo. English words, the player's clock.
+ */
+export function endsHere(): string {
+  // Spelled out from the device's own clock rather than through toLocaleString: what an
+  // engine's locale data prints for 'en-GB' is its own business ("Sunday, 25 October" on
+  // some, "24:00" on others), and this one line must read the same on every phone.
+  const d = new Date(SEASON_START * 1000);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}, ${two(d.getHours())}:${two(d.getMinutes())}`;
+}
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+  'September', 'October', 'November', 'December'];
 
 /**
  * 新 The cards that arrive once.
@@ -38,6 +55,13 @@ export interface Notice {
 }
 
 export const NOTICES: readonly Notice[] = [
+  {
+    // 終 The closed test's last week: from 19 October until the switch, never before and never
+    // after, read off the game's own clock. First in the list, because it is the one card that
+    // stops being true. Once read it is in `seen`, and the save it is in retires at the switch.
+    key: 'lastweek', han: '終', title: NOTICE.lastWeek.title, text: NOTICE.lastWeek.text(endsHere()),
+    when: (s) => s.at >= LAST_WEEK && s.at < SEASON_START,
+  },
   {
     key: 'cap', han: '上限', title: NOTICE.cap.title, text: NOTICE.cap.text(LEVELS_PER_REALM, CORE_CAP_EXTRA),
     when: (s) => UPGRADES.some((u) => s.levels[u] >= capOf(s, u)),
