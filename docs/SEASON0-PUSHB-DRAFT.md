@@ -52,7 +52,9 @@ So Push B changes nothing a player sees. It tidies the database, and it can wait
    - `titles` of weeks before the season's first;
    - `sync_log` from before the switch (only after the stamp, below);
    - `panel_notes` from before the switch, only if he wants them gone (D5);
-   - strikes and review flags reset for everyone not banned (D5). Bans stay;
+   - strikes and review flags reset for everyone not banned (D5), except an account the season
+     itself has struck or flagged since the switch (its `sync_log` rows from before the cutoff
+     are gone by then, so any strike or suspect row left is the season's). Bans stay;
    - the two empty columns `saves.closed_test` and `saves.closed_test_at`, dropped, only if
      he names them. Nothing reads or writes them.
 2. **The Forerunner stamp** is not a choice: it is the first write of the block whatever he
@@ -104,8 +106,11 @@ begin
   delete from public.panel_notes where updated_at < cutoff;                 -- only if named (D5)
   update public.saves set pinned = false, rebase = false
    where pinned or rebase;                                                  -- only if named
-  update public.profiles set strikes = 0, suspect = false
-   where not banned and (strikes > 0 or suspect);                           -- only if named (D5)
+  -- Only if named (D5). The old sync_log rows are gone by here, so a strike or suspect row
+  -- still there is the season's own, and a flag the season gave stays.
+  update public.profiles p set strikes = 0, suspect = false
+   where not p.banned and (p.strikes > 0 or p.suspect)
+     and not exists (select 1 from public.sync_log l where l.user_id = p.id and (l.strike or l.suspect));
   alter table public.saves drop column if exists closed_test,
                            drop column if exists closed_test_at;           -- only if named
   raise notice 'season 0 wipe: % standings from the closed test removed', hits;
@@ -128,6 +133,7 @@ season rows. It checks that:
 - only rows from before the cutoff went (the closed-test `saves` rows among them), and every
   season row and every carving in `firsts` is whole;
 - `profiles` are whole, and a banned player is still banned;
+- a closed-test strike or review flag is cleared, and one the season gave stays;
 - the brake raises over its number and changes nothing, the stamp included;
 - the block raises when run before the cutoff, and a second run changes nothing.
 

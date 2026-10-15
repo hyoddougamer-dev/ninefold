@@ -1002,7 +1002,13 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
         ('${W(1)}', 79, 6, 500, '${cutoff}'::timestamptz - interval '3 days') on conflict do nothing;
       insert into titles (week, board, rank, user_id, name) values
         (week_of('${cutoff}'::timestamptz) - 1, 'week', 1, '${W(1)}', 'Wipe Old') on conflict do nothing;
+      -- 疑 Flags: Wipe Old was struck and held in the closed test, Wipe Both is held by the season.
+      update profiles set strikes = 2, suspect = true where id in ('${W(1)}', '${W(4)}');
+      insert into sync_log (user_id, at, ok, strike, suspect) values
+        ('${W(1)}', '${cutoff}'::timestamptz - interval '2 days', false, true, true),
+        ('${W(4)}', now(), false, false, true);
     `);
+    const flags = async (n: number) => (await db.query(`select strikes, suspect from profiles where id = '${W(n)}'`)).rows[0];
     const everyone = async () => (await db.query(`select id, name, is_forerunner(id) as f from profiles order by id`)).rows as any[];
     const rows = async () => (await db.query(`select
       (select count(*) from saves)::int as saves, (select count(*) from standings)::int as standings,
@@ -1046,6 +1052,10 @@ describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
       expect(after).toMatchObject({ profiles: counts.profiles, firsts: counts.firsts });
       expect(after.firsts).toBeGreaterThan(0);
       expect((await db.query(`select banned from profiles where id = '${W(2)}'`)).rows[0]).toEqual({ banned: true });
+      // 疑 The closed test's flags are cleared; a flag the season gave stays, so the wipe never puts
+      // a player held for review back on the boards or the Cliff.
+      expect(await flags(1)).toEqual({ strikes: 0, suspect: false });
+      expect(await flags(4)).toEqual({ strikes: 2, suspect: true });
       // And a second run changes nothing.
       await db.exec(block(1000));
       expect(await rows()).toEqual(after);
