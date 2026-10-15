@@ -88,7 +88,7 @@ const same = (a, b) => a.normalize('NFC').toLowerCase() === b.normalize('NFC').t
 
 function plan() {
   log(`Server: ${SPEC.name}`);
-  for (const r of SPEC.roles) log(`  role ${r.name}${r.permissions ? ` (${r.permissions.join(', ')})` : ''}`);
+  for (const r of SPEC.roles) log(`  role ${r.name}${r.was ? ` (renamed from ${r.was.join(', ')} if that is there)` : ''}${r.permissions ? ` (${r.permissions.join(', ')})` : ''}`);
   for (const c of SPEC.categories) {
     log(`  category ${c.name}`);
     for (const ch of c.channels) {
@@ -99,7 +99,7 @@ function plan() {
   for (const m of SPEC.messages) log(`  message "${m.title}" in #${m.channel}${m.pin ? ', pinned' : ''}${(SPEC.announce ?? []).includes(m.channel) ? ', to @everyone when new' : ''}`);
   for (const p of SPEC.posts ?? []) log(`  post "${p.title}" in the ${p.forum} forum${p.pin ? ', pinned' : ''}`);
   for (const a of SPEC.threads ?? []) log(`  answer "${a.title}" in the ${a.forum} forum${a.tags ? `, tagged ${a.tags.join(', ')}` : ''}`);
-  if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out 測 Tester');
+  if (SPEC.community) log('  Community on, a welcome screen, and onboarding that hands out the roles below');
   for (const p of SPEC.onboarding?.prompts ?? []) log(`  onboarding asks "${p.title}" (${p.options.map((o) => o.title).join(', ')})`);
   for (const r of SPEC.automod?.rules ?? []) log(`  AutoMod: ${r.name}`);
   if (SPEC.invite) log('  one permanent invite, printed at the end');
@@ -159,6 +159,22 @@ async function run() {
     const want = { name: r.name, color: colour(r.color), hoist: !!r.hoist, mentionable: false };
     if (r.permissions) want.permissions = String(perms(r.permissions));
     let have = roles.find((x) => same(x.name, r.name));
+    // 改 A role renamed in server.json names its old names in `was` (測 Tester became 先行
+    // Forerunner at Season 0). Roles are found by name and nothing is ever deleted, so a new
+    // name alone would make a second role and leave the old one standing with its members.
+    // Found by an old name, the role is renamed in place: same id, same members.
+    const old = !have && r.was ? roles.find((x) => r.was.some((w) => same(x.name, w))) : undefined;
+    if (old) {
+      const was = old.name;
+      const renamed = await step(`role ${r.name} (was ${was})`, async () => {
+        const x = await call('PATCH', `/guilds/${GUILD}/roles/${old.id}`, want);
+        log(`  role ${was} renamed ${r.name}`);
+        return x ?? want;
+      });
+      // Refused: the old role keeps its id here and nothing new is made beside it.
+      if (!renamed) { roleId[r.key] = old.id; continue; }
+      have = Object.assign(old, renamed);
+    }
     if (!have) {
       have = await step(`role ${r.name}`, async () => { const x = await call('POST', `/guilds/${GUILD}/roles`, want); log(`  role ${r.name} made`); return x; });
       if (!have) continue;
