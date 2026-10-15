@@ -622,6 +622,7 @@ export function App() {
           <Cultivate
             state={state}
             title={who ? title : null}
+            forerunner={!!who && forerunner === true}
             pulse={pulse}
             focus={focus}
             satOut={satOut}

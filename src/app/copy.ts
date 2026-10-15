@@ -216,6 +216,45 @@ export const RANKS = {
     '期百': 'Top Hundred of the Week',
   } as Record<string, string>,
   back: 'Back to the climb',
+  /** 我 The head of the screen: the name the boards show, and what it wears there. */
+  mineHead: 'On the boards as',
+  /**
+   * 題名崖 The Cliff of Names (docs/SEASON0-THEME.md, 2c): nine columns, one per gate, the
+   * first 81 through each in the order the server saw them. Words say "through the gate",
+   * never "broke the warden": from realm 5 a gate stays sealed a while after its warden falls.
+   */
+  cliff: {
+    han: '題名崖',
+    name: 'The Cliff of Names',
+    /** The way in, at the head of Rankings. */
+    door: 'The first 81 through each gate, carved for good.',
+    what: 'The first 81 cultivators through each gate, in the order the server saw them. A name carved here stays for good, and nothing on it changes a number.',
+    /** Under the columns: what the date is, because a player who crosses offline is carved at the next sync. */
+    when: 'Each date is when the server saw you through the gate, at your first sync after crossing, in this device\'s time.',
+    back: 'Back to the boards',
+    /** What passing gate r means, under the warden's name. */
+    gate: (r: number) => r < 9 ? `into realm ${r + 1}` : 'first tribulation',
+    gateOf: (warden: string) => `${warden}'s gate`,
+    count: (n: number) => n >= 81 ? '81 of 81 · full' : `${n} of 81`,
+    nobody: 'Nobody yet',
+    first: 'The first name through here stays for good.',
+    /** Day 0: not one column has a name. */
+    empty: 'No name is carved yet. The first cultivator through the Spirit Fox\'s gate opens the Cliff.',
+    more: (n: number) => `${n} more`,
+    all: 'Show every name',
+    fewer: 'Show the first nine',
+    you: 'you',
+    /** Where you stand, said in words, for a screen reader and for a column scrolled off the screen. */
+    yours: (n: number, gate: string) => `You are carved ${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'} through the ${gate}.`,
+    scroll: 'Scroll sideways for all nine gates.',
+    footHead: 'Those who walked before',
+    foot: 'Forerunners carved on the Cliff, named once each, with no numbers.',
+    footNone: 'No Forerunner is carved yet. Their names gather here as they pass the first gate.',
+    loading: 'Reading the Cliff…',
+    offline: 'The Cliff cannot be reached right now. Your game goes on as it was.',
+    date: (day: number, month: string, hm: string) => `${day} ${month}, ${hm}`,
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
   delete: 'Delete my ranked account',
   deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
   deleteYes: 'Delete it',

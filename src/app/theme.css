@@ -4457,3 +4457,127 @@ nav.tabs .tabkey { display: none; }
 .help.ranks .s0tag em { font-style: normal; font: 600 11.5px/1.3 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
 .help.ranks .s0tag small { font-size: 12.5px; color: var(--faint); line-height: 1.4; }
 @media (max-width: 360px) { .help.ranks .s0tag em { letter-spacing: .06em; } }
+
+/* ── 先行 Forerunner on the boards, and 題名崖 the Cliff of Names (docs/SEASON0-THEME.md, 2c, 2d) ──
+   Every class is scoped under .help.ranks (Rankings) or .c-hero (修 Cultivate). The seal is the
+   one ForerunnerSeal, styled here under each screen's own class, never one shared class. */
+
+/* 先行 The seal beside a name on a board row: two glyphs stacked in a small gold square. */
+/* The name comes first: it keeps its whole width, and on a narrow row the seal goes under it. */
+.help.ranks .rw .rwho { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px; min-width: 0; }
+.help.ranks .rw .rwho > b { flex: 0 0 auto; max-width: 100%; }
+.help.ranks .rw .fore { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 15px; height: 23px; border: 1px solid var(--gold); border-radius: 2px; background: #2b2213; color: var(--gold);
+  font: 900 8.5px/1.08 'Noto Serif SC', serif; }
+.help.ranks .rw .fore i { font-style: normal; font-size: 8.5px; color: var(--gold); display: block; }
+
+/* 我 The head of Rankings: the name the boards show, its title and its seal. */
+.help.ranks .rmine { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 9px; margin: -4px 0 0; }
+.help.ranks .rmine small { flex-basis: 100%; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.help.ranks .rmine > b { font-size: 17px; font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.help.ranks .rmine > i { font-style: normal; font-size: 12px; color: var(--gold); }
+.help.ranks .rmine .rmseal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 18px; height: 27px; border: 1px solid var(--gold); border-radius: 2px; background: #2b2213; color: var(--gold);
+  font: 900 10px/1.08 'Noto Serif SC', serif; }
+.help.ranks .rmine .rmseal i { font-style: normal; display: block; }
+
+/* 先行 The same mark on 修, beside a title, in the title's own pill shape. */
+.c-hero .c-fore { display: inline-flex; align-items: center; gap: 7px; margin: 4px 0 0; padding: 2px 10px 2px 4px;
+  border-radius: 99px; font-size: 12px; color: var(--gold); letter-spacing: .02em; vertical-align: top;
+  border: 1px solid rgba(212,175,86,.45); background: rgba(212,175,86,.07); }
+.c-hero .wears + .c-fore { margin-left: 6px; }
+.c-hero .c-foreseal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 14px; height: 21px; border: 1px solid var(--gold); border-radius: 2px; background: #2b2213; color: var(--gold);
+  font: 900 8px/1.08 'Noto Serif SC', serif; }
+.c-hero .c-foreseal i { font-style: normal; display: block; }
+
+/* 題名崖 The way in: one gold-edged line under the season's tag. */
+.help.ranks .rcliffdoor { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 13px; border-radius: 11px;
+  border: 1px solid var(--gild-strong); background: linear-gradient(90deg, rgba(212,175,86,.10), rgba(212,175,86,.03));
+  color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.help.ranks .rcliffdoor > b { flex: none; font: 600 19px/1 'Noto Serif SC', serif; letter-spacing: .04em; color: var(--gold); }
+.help.ranks .rcliffdoor > span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.help.ranks .rcliffdoor em { font-style: normal; font: 600 12px/1.3 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.help.ranks .rcliffdoor small { font-size: 12.5px; line-height: 1.4; color: var(--faint); }
+.help.ranks .rcliffdoor > i { flex: none; font-style: normal; font-size: 22px; line-height: 1; color: var(--gold); }
+.help.ranks .rcliffdoor:hover { border-color: var(--gold); }
+
+/* 題名崖 The Cliff itself. */
+.help.ranks .rcliff { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.help.ranks .rcliffback { align-self: flex-start; background: none; border: 0; padding: 2px 0; font: inherit; font-size: 13px;
+  color: var(--faint); cursor: pointer; }
+.help.ranks .rcliffback:hover { color: var(--text); }
+.help.ranks .rcliffhead { display: flex; align-items: center; gap: 12px; }
+.help.ranks .rcliffhead > b { flex: none; font: 600 28px/1 'Noto Serif SC', serif; letter-spacing: .06em; color: var(--gold); }
+.help.ranks .rcliffhead > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.help.ranks .rcliffhead em { font-style: normal; font: 700 16px/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; color: #F1E6CF; }
+.help.ranks .rcliffhead small { font-size: 12.5px; color: var(--faint); line-height: 1.4; }
+.help.ranks .rcliffwhat, .help.ranks .rcliffnote, .help.ranks .rcliffwhen { margin: 0; font-size: 13px; line-height: 1.55; color: var(--faint); }
+.help.ranks .rcliffwhen { font-size: 12px; }
+.help.ranks .rcliffmine { display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; border-radius: 10px;
+  border: 1px solid var(--jade); background: rgba(127,180,149,.08); }
+.help.ranks .rcliffmine p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--jade); }
+.help.ranks .rcliffempty { margin: 0; padding: 10px 13px; border-radius: 10px; border: 1px dashed var(--gild);
+  font-size: 13px; line-height: 1.5; color: var(--text); }
+.help.ranks .rcliffswipe { margin: 0 0 -6px; font-size: 11.5px; letter-spacing: .04em; color: var(--faint); }
+/* 捲 Sideways inside its own frame, never the page: the frame is as wide as the sheet and no wider. */
+.help.ranks .rcliffscroll { overflow-x: auto; overflow-y: hidden; max-width: 100%; min-width: 0; flex: none;
+  margin: 0 -4px; padding: 2px 4px 8px; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+  scrollbar-width: thin; scrollbar-color: var(--gild) transparent; }
+.help.ranks .rcliffscroll:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
+/* Stretched to one height, so a column still in ink stands as tall as the full ones beside it. */
+.help.ranks .rcliffcols { display: grid; grid-template-columns: repeat(9, 124px); gap: 7px; align-items: stretch; width: max-content; }
+.help.ranks .rcol { display: flex; flex-direction: column; min-width: 0; border-radius: 9px; overflow: hidden; scroll-snap-align: start;
+  border: 1px solid var(--line); background: #17130e; }
+.help.ranks .rcol[data-on='true'] { border-color: rgba(212,175,86,.45); }
+.help.ranks .rcol[data-mine] { border-color: var(--jade); }
+/* 墨 In ink until the first name is carved, then in colour. */
+.help.ranks .rcolpic { aspect-ratio: 4 / 3; background: #241e16 center / cover no-repeat;
+  filter: grayscale(1) sepia(.3) brightness(.55) contrast(1.1); transition: filter .6s ease-out; }
+.help.ranks .rcol[data-on='true'] .rcolpic { filter: none; }
+.help.ranks .rcolname { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 6px 6px;
+  text-align: center; border-bottom: 1px solid var(--line); }
+.help.ranks .rcolname b { font: 600 17px/1.1 'Noto Serif SC', serif; color: var(--faint); }
+.help.ranks .rcol[data-on='true'] .rcolname b { color: var(--gold); }
+.help.ranks .rcolname span { font-size: 11.5px; line-height: 1.25; color: var(--text); }
+.help.ranks .rcolname small { font-size: 10.5px; line-height: 1.25; color: var(--faint); }
+.help.ranks .rcolcount { margin: 0; padding: 5px 6px 2px; text-align: center; font: 600 11px/1.2 Rajdhani, sans-serif;
+  letter-spacing: .06em; color: var(--faint); }
+.help.ranks .rcol[data-on='true'] .rcolcount { color: var(--gold); }
+.help.ranks .rcolnone { margin: 0; padding: 4px 9px 10px; text-align: center; font-size: 11px; line-height: 1.4; color: var(--faint); opacity: .8; }
+.help.ranks .rcollist { display: flex; flex-direction: column; padding: 2px 6px 6px; }
+.help.ranks .rcolrow { display: grid; grid-template-columns: 19px minmax(0, 1fr); gap: 4px; align-items: baseline;
+  padding: 3px 2px; border-bottom: 1px dotted #3a3126; }
+.help.ranks .rcolrow:last-child { border-bottom: 0; }
+.help.ranks .rcolrow[data-gap] { margin-top: 5px; border-top: 1px dashed var(--line); padding-top: 5px; }
+.help.ranks .rcolrow[data-me] { margin: 0 -4px; padding: 3px 6px; border-radius: 5px; border-bottom-color: transparent;
+  background: rgba(127,180,149,.14); box-shadow: inset 0 0 0 1px var(--jade); }
+.help.ranks .rcoln { font: 700 12px/1 Rajdhani, sans-serif; color: var(--faint); text-align: right; }
+.help.ranks .rcolrow:nth-child(-n+3) .rcoln { color: var(--gold); }
+.help.ranks .rcolw { display: flex; flex-direction: column; min-width: 0; }
+.help.ranks .rcolw b { font-weight: 500; font-size: 12px; line-height: 1.25; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.help.ranks .rcolw b em { font-style: normal; font-size: 10.5px; color: var(--jade); }
+.help.ranks .rcolw i { font-style: normal; font: 500 10.5px/1.2 Rajdhani, sans-serif; color: var(--faint); }
+.help.ranks .rcolrow[data-me] .rcolw b, .help.ranks .rcolrow[data-me] .rcoln { color: var(--jade); }
+.help.ranks .rcolmore { margin: 0; padding: 0 6px 8px; text-align: center; font-size: 10.5px; color: var(--faint); }
+.help.ranks .rcliffall { align-self: flex-start; background: none; border: 1px solid var(--line); border-radius: 99px;
+  padding: 6px 13px; font: inherit; font-size: 12.5px; color: var(--text); cursor: pointer; }
+.help.ranks .rcliffall:hover { border-color: var(--gild-strong); }
+/* 先行 The foot of the Cliff: the seal, its name, and the names with no numbers. */
+.help.ranks .rclifffoot { display: flex; align-items: flex-start; gap: 13px; padding: 12px 13px; border-radius: 11px;
+  border: 1px solid var(--gild); background: rgba(212,175,86,.05); }
+.help.ranks .rclifffoot > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.help.ranks .rclifffoot b { font: 600 12px/1.3 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.help.ranks .rclifffoot b .cjk { font: 600 14px/1 'Noto Serif SC', serif; letter-spacing: .04em; margin-right: 3px; }
+.help.ranks .rclifffoot small { font-size: 12px; line-height: 1.45; color: var(--faint); }
+.help.ranks .rcliffnames { margin: 4px 0 0; font: italic 500 14.5px/1.6 var(--serif); color: #E8D9B8; overflow-wrap: anywhere; }
+.help.ranks .rcliffnames span[data-me] { color: var(--jade); }
+.help.ranks .rcliffseal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 28px; height: 42px; border: 2px solid var(--gold); border-radius: 3px; background: #2b2213; color: var(--gold);
+  box-shadow: 0 0 0 2px #0D0B08, 0 0 0 3px rgba(212,175,86,.4); font: 900 13px/1.1 'Noto Serif SC', serif; }
+.help.ranks .rcliffseal i { font-style: normal; display: block; }
+@media (max-width: 360px) {
+  .help.ranks .rcliffcols { grid-template-columns: repeat(9, 116px); }
+}
+@media (prefers-reduced-motion: reduce) { .help.ranks .rcolpic { transition: none; } }

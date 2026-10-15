@@ -30,13 +30,14 @@ import { icon } from '../../art/icon.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
+import { ForerunnerSeal } from '../ui/Forerunner.tsx';
 import { Meet, MeetDone } from '../ui/Meet.tsx';
 import type { Receipt } from '../../sim/meet.ts';
 import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
+import { AWAKEN, CULTIVATE, FORERUNNER, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -58,7 +59,7 @@ const longClock = (s: number) => (s >= 3600
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title,
+  owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title, forerunner = false,
   sitLeft = 0, onSitAgain, waiting = [], onReady, onRebirth }: {
   state: State;
   /** 轉世 Open the page of the new life, from the quiet card at the summit. */
@@ -73,6 +74,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   onReady?: (w: Waiting) => void;
   /** 冠 The title the rankings gave this player, if any. */
   title?: string | null;
+  /** 先行 The server says this account walked the closed test (my_standing().forerunner). */
+  forerunner?: boolean;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
@@ -278,6 +281,10 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
       {/* 冠 A title earned on the boards, worn where the player looks every visit. */}
       {title && (
         <span className="wears"><b className="cjk">{title}</b> {RANKS.titleNames[title] ?? ''}</span>
+      )}
+      {/* 先行 Its own mark beside the title, never in place of it, and only on the server's word. */}
+      {forerunner && (
+        <span className="c-fore"><ForerunnerSeal className="c-foreseal" /> {FORERUNNER.name}</span>
       )}
       {/* 世 The title of a life lived again, beside the one from the boards. */}
       {lifeName && (
