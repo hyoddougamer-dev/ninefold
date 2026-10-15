@@ -417,6 +417,19 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </span>
         <span className="mono" style={{ color: 'var(--gold)' }}><Term han="材" /> {num(state.materials)}</span>
       </div>
+      {/* 劫 The next Dragon while the pool fills. Its card stands only once the pool is full,
+          so for two days the screen could not say whether it was a 27% Dragon or one eighteen
+          times your 力, which is the one thing that says whether to brew now. The same
+          reading the card makes, with what is carried counted. */}
+      {top && !full && (
+        <p className="poolnext">
+          <b className="cjk">劫</b>{' '}
+          {wardenRaw > 0
+            ? CULTIVATE.poolNextOdds(Math.round(Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, wardenRaw)) * 100))
+            : CULTIVATE.poolNextFar(wardenGap < 10 ? wardenGap.toFixed(1) : String(Math.round(wardenGap)))}
+          {' '}<span className="faint">{CULTIVATE.poolNextPills}</span>
+        </p>
+      )}
 
       {/* 階 What the bar is actually filling, which the screen never said.
           Bruno: *"é necessário os players perceberem quanto qi é necessário por

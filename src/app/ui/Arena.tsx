@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AFFIX_INFO, RARITY_INFO, SLOT_INFO, schoolOf, templateOf, type Item } from '../../data/gear.ts';
 import { SCHOOL_INFO } from '../../data/schools.ts';
 import { dropNamesShown } from '../prefs.ts';
@@ -11,7 +11,7 @@ import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
-import { DEMON_DAO, HEALTH_PER_POWER } from '../../sim/balance.ts';
+import { DEMON_DAO, HEALTH_PER_POWER, PILL_POWER } from '../../sim/balance.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -30,7 +30,8 @@ import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
-import { lootFrom, quarryPaid, seenPaid } from '../../sim/combat.ts';
+import { lootFrom, pillsToEven, quarryPaid, seenPaid } from '../../sim/combat.ts';
+import { pillOf } from '../../data/alchemy.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
 
@@ -193,6 +194,14 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
       : battle.demon ? (outcome.won ? SECLUSION.won : SECLUSION.lost) : verdictLine(outcome.won, !!beast.warden,
         realm === 9 && beast.key === 'dragon' && battle.floor === undefined))
     : blowLine(f.striker, f.round);
+  // 劫 A lost Dragon says how far it stands, in pills of this realm's grade. Read once a
+  // verdict (a few hundred seeded fights), never on the frames of the fight itself.
+  const dragonLost = over && !outcome.won && realm === 9 && beast.key === 'dragon'
+    && battle.floor === undefined && !platform && !battle.demon;
+  const short = useMemo(() => (dragonLost ? pillsToEven(state, beast) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dragonLost, outcome]);
+  const bodyPill = pillOf('body', realm);
   /** 心魔 A beast of the world, which is what a kill, a bounty and the week are paid for. */
   const worldly = battle.floor === undefined && !battle.demon && !platform;
   // 擂 What a challenger pays, read before the win is written, and where the week stands after it.
@@ -417,6 +426,11 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               : [spentNames && CRAFTS.kitSpent(spentNames), unneeded && CRAFTS.kitUnneeded(unneeded)].filter(Boolean).join(' ')}</p>
           )}
           {battle.sought && !outcome.won && <p className="kitline"><b className="cjk">尋</b> {CRAFTS.seekKept}</p>}
+          {short !== null && (
+            <p className="kitline dragonshort"><b className="cjk">劫</b> {short > 0
+              ? ARENA.dragonShort(short, bodyPill.name, bodyPill.han, Math.round(PILL_POWER * 100))
+              : ARENA.dragonDice}</p>
+          )}
           {/* 得 What it paid, as things you can see arrive rather than the tail of a
               sentence. 材 is the same number the save is credited, from the same function. */}
           {outcome.won && battle.demon && (

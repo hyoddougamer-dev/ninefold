@@ -167,7 +167,10 @@ export function advice(s: State): Advice | null {
     if (sequenceOf(s).every((a) => a === null)) {
       return { han: '訣', text: ADVICE.noSequence, tab: 'dao' };
     }
-    if (canBrew(s, 'body')) return { han: '爐', text: ADVICE.brew(bodyPill(s).han), tab: 'trials' };
+    if (canBrew(s, 'body')) {
+      const pill = bodyPill(s);
+      return { han: '爐', text: ADVICE.brew(pill.name, pill.han), tab: 'trials' };
+    }
     if (towerOpen(s)) return { han: '塔', text: ADVICE.climbForMaterial, tab: 'trials' };
     return { han: '狩', text: ADVICE.huntForMaterial, tab: 'hunt' };
   }

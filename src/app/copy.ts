@@ -445,6 +445,14 @@ export const CULTIVATE = {
     `${n} more ${n === 1 ? 'layer' : 'layers'} and the bar becomes 雷池 the thunder pool.`,
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   /**
+   * 劫 The next Dragon, said while the pool fills. The card that names it only stands once the
+   * pool is full, so for two days a cultivator could not tell a Dragon at 27% from one eighteen
+   * times their 力, which is the one thing that says whether to brew now.
+   */
+  poolNextOdds: (pct: number) => `Next Dragon: ${pct}% odds as you stand now. Even is 50%.`,
+  poolNextFar: (gap: string) => `Next Dragon: ×${gap} your 力 as you stand now.`,
+  poolNextPills: 'Pills brewed while the pool fills count against it.',
+  /**
    * 渡劫 What the crossing costs, said before the tap rather than discovered after it.
    *
    * Crossing spends 雷池 the whole pool, which at the summit is the whole bar, and the
@@ -792,7 +800,7 @@ export const ADVICE = {
    * 渡劫丹 at the ninth. A line naming something that is nowhere on the list sends the
    * player looking for it.
    */
-  brew: (han: string) => `The furnace will sell you a ${han}. It is power you keep for good.`,
+  brew: (name: string, han: string) => `The furnace will sell you a ${name} (${han}). It is power you keep for good.`,
   /** 立 The endgame's one decision, said out loud while the Dragon is standing. */
   // 立 The percentage is the cultivator's own chance to win, and even is 50%: it says so, so
   // it cannot be read as the Dragon's strength (rekaris, on the Discord, 2026-10-08).
@@ -2472,6 +2480,14 @@ export const ARENA = {
   missed: 'turned aside',
   collect: 'Collect',
   withdraw: 'Withdraw',
+  /**
+   * 劫 A lost Dragon says how far it stands, in pills. "Come back stronger" with no number is
+   * a shrug; the furnace is the answer, so the line says how much of it.
+   */
+  dragonShort: (n: number, name: string, han: string, each: number) =>
+    `About ${n} more ${n === 1 ? name : `${name}s`} (${han}) would bring this Dragon to even odds. `
+    + `Each one adds ${each}% to your 力, for good.`,
+  dragonDice: 'Your odds were better than even against this one. That was the dice.',
   /** 再 The same beast again, from the verdict. One button where there used to be three
    *  trips across the screen: rekaris, on the Discord, 2026-10-01. */
   again: 'Again',

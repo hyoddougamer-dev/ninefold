@@ -584,3 +584,26 @@ of it is in the code.
 - **The cost** that was named is paid: the record holds 40 lives (`LIVES_MAX`, `validLives`),
   the server's bound is the roof, and a number that never stops is still a number that
   stops: `ECHO_ROOF`. Any guide that says nine lives or +25% as the most is out of date.
+
+## 頂 Places to put things at the summit (measured 2026-10-16, not built)
+
+The summit is playable in Season 0 and stays in it: every habit that fights reaches it inside
+the 112 days before the earliest close (hourly by day 37, active by day 57, once a day by day
+90), marks cost 3 to 9 days each, and the Dragon at 0.9, 1.0 and 1.1 of its weight slows
+rather than walls. What is missing is not pace but somewhere to put things once you are there
+(the C7 point the testers raised):
+
+- the tower's qi stays at floor 121 and is worth minutes;
+- the 擂台 Platform pays the realm's middle rate (283B against a 97T pool);
+- 52 道 points sit unspent once the whole tree is bought;
+- hunting stops counting for 材 material from about the fifth mark (4,023 kills a pill at 15).
+
+**Why it waits.** Each of these is a new curve at the top, which is the one place a wrong
+number compounds fastest (marks multiply power and qi by 1.73 each). Nobody stands there
+until about day 37 of the season, so it is designed against the first real summit players in
+the first month rather than guessed at ten days before the switch.
+
+**What went in instead (p-summit):** EVEN_ROOF and the unlosable-fight rule on the Dragon's
+footing; the next Dragon said under the pool while it fills; a lost Dragon says how many
+Tribulation Pills bring it to even; the pill in the brew advice named in English; the arena
+names that were cut short at 320.
