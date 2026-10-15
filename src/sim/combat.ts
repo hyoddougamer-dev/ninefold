@@ -469,6 +469,10 @@ export function evenDragon(s: State): number {
     return won / SAMPLES;
   };
   let lo = Math.log(u0.pp) - 8, hi = Math.log(u0.pp) + 8;
+  // 頂 A fight still won at the top of the window, a Dragon e^8 times this cultivator's own
+  // power, is a fight that cannot be lost, and that is a bug, not a reading. It reads as
+  // nothing, so the crossing is built from the Dragon that fell (see EVEN_ROOF).
+  if (wins(Math.exp(hi)) >= at) return 0;
   for (let i = 0; i < 28; i++) {
     const mid = (lo + hi) / 2;
     if (wins(Math.exp(mid)) >= at) lo = mid; else hi = mid;

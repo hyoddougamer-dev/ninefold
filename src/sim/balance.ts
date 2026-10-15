@@ -979,6 +979,36 @@ export const TRIBULATION_POWER = TRIBULATION_CHALLENGE;
 export const TRIBULATION_FOOTING = 1.05;
 
 /**
+ * 頂 The most the even-odds reading may say, as a multiple of the cultivator's own 力.
+ *
+ * The footing is a ratchet: whatever `evenDragon` reads is stood a footing above and never
+ * comes down. So a fight the cultivator cannot lose, however it came to be, reads as a
+ * Dragon thousands of times their power, and the next Dragon is built from that. It
+ * happened once (2026-10-05): 疾 Swift with 狐 Fox Shadow and 龍威 Dragon Might made the
+ * beast miss every round, and an anchor read a hundred and twenty times too heavy. Played
+ * out on the active cultivator after three marks, an anchor that much too heavy cost 190
+ * days before the next mark, and the worst the search window can read (e^8, 2981 times 力)
+ * cost 318: longer than a season. The fight was mended the same day; this is the roof that
+ * makes the next bug like it cost a few weeks instead of a season.
+ *
+ * Measured on every honest build (tools: the sweep in `footing.test.ts`, nine stances by
+ * every ordered sequence of up to three arts, 5,274 builds, on a bare body, the full Arts
+ * school and the 羅漢 Arhat with the lotus seed, which are the only things besides 力 that
+ * a crossing reads):
+ *
+ *     bare body       1.09 to 4.47   (疾 Swift, crane, fox, turtle)
+ *     法 Arts, full   1.09 to 5.15
+ *     羅漢 Arhat       1.26 to 5.84   the most any honest build reads
+ *
+ * At 8 the most honest reading sits 27% under the roof, and the roof pushed a tenth
+ * either way (7.2 or 8.8) touches none of them, so no honest crossing changes: the
+ * endgame harness plays the same days to the day with it and without it. A reading that
+ * hits the very top of the window is no reading at all, and `evenDragon` returns nothing
+ * for it, so the crossing is built from the Dragon that fell.
+ */
+export const EVEN_ROOF = 8;
+
+/**
  * 雷池 How many days of gathering the thunder pool holds.
  *
  * The pool is the endgame's clock. See `tribulationPool` in state.ts for why an endgame

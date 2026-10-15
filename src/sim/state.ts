@@ -1,6 +1,6 @@
 import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS, gearQiRate,
-  TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER, ladderAt,
+  EVEN_ROOF, TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER, ladderAt,
   ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA, OPENING_PURSE,
   BEDS, CORE_STEP, UPGRADE_NUMBERS, SET_LIMIT
 } from './balance.ts';
@@ -455,7 +455,12 @@ export function crossTribulation(s: State, dragonPower: number, even: number): S
     //
     // 立 `even` is read off the fight (evenDragon in combat.ts), stance, arts and class
     // included, so what the next Dragon is built from is what actually stood there.
-    tribulationAt: Math.max(s.tribulationAt, dragonPower, even * TRIBULATION_FOOTING) * step,
+    //
+    // 頂 And never more than EVEN_ROOF times 力, because a reading is stood a footing above
+    // and never comes down: a fight that cannot be lost would otherwise build every Dragon
+    // after it out of a bug.
+    tribulationAt: Math.max(s.tribulationAt, dragonPower,
+      Math.min(Math.max(0, even), EVEN_ROOF * power(s)) * TRIBULATION_FOOTING) * step,
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
     gateAt: 0,
