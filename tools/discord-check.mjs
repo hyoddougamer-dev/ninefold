@@ -27,6 +27,10 @@
  *   4. An empty server: everything made once, a second run changes nothing, drift is put
  *      back, a hand-made channel is left alone, an edited message is edited in place.
  *   5. Discord's own shared mention rule already in the list: never edited, the run green.
+ *   6 to 10. Members' posts answered, @everyone once, tidy and closed polls, the morning of
+ *      2026-10-14, and the brake on a run that finds many posts missing.
+ *   11. 開山 Season 0 played forward from tools/discord/drafts-season0.json, stage by stage,
+ *      with 測 Tester renamed 先行 Forerunner in place.
  */
 import http from 'node:http';
 import { spawn } from 'node:child_process';
@@ -638,6 +642,11 @@ check(![readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'),
 const draftKeys = DRAFTS.stages.flatMap((st) => [...(st.messages ?? []), ...(st.posts ?? [])].map((m) => m.key));
 check(draftKeys.every((k, i) => draftKeys.indexOf(k) === i && ![...SPEC.messages, ...SPEC.posts].some((m) => m.key === k)),
   `the ${draftKeys.length} Season 0 drafts have keys of their own, none already in server.json`);
+// 名 The developer's real name is never in anything members read (CLAUDE.md): every posted
+// field of server.json and of the drafts, which is everything but the _comment and the
+// drafts' own notes to the developer (when, push, approve, needs).
+const readable = (spec) => JSON.stringify(spec, (k, v) => (['_comment', 'when', 'push', 'approve', 'needs'].includes(k) ? undefined : v));
+check(![readable(SPEC), readable(DRAFTS)].some((t) => /bruno/i.test(t)), "the developer's real name is in nothing members read, live or drafted");
 check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits]))
   .replace(/先 alone|先父/g, '')), 'the mark is 先行, never 先 alone (beside a name 先 reads "the late")');
 await scenario({}, async (port, env, state) => {
@@ -651,9 +660,10 @@ await scenario({}, async (port, env, state) => {
     // The brake as it runs on main: no DISCORD_MAX_NEW.
     const run = await runSetup(port, { ...env, DISCORD_SPEC: spec(i), DISCORD_MAX_NEW: '' });
     const mine = st.messages ?? [];
+    const fresh = mine.length + (st.posts ?? []).length;
     const loud = mine.filter((m) => !m.quiet && (SPEC.announce ?? []).includes(m.channel));
-    check(run.code === 0 && mine.every((m) => posted(m.title).length === 1) && (st.posts ?? []).every((p) => state.threads.some((t) => t.name === p.title))
-      && mine.length <= 2 && loud.length <= 1, `${st.when}: ${st.key} posts in one run, within the brake (${mine.length} new, ${loud.length} to @everyone)${run.code ? `\n${run.out}` : ''}`);
+    check(run.code === 0 && fresh > 0 && mine.every((m) => posted(m.title).length === 1) && (st.posts ?? []).every((p) => state.threads.filter((t) => t.name === p.title).length === 1)
+      && fresh <= 2 && loud.length <= 1, `${st.when}: ${st.key} posts in one run, within the brake (${fresh} new, ${loud.length} to @everyone)${run.code ? `\n${run.out}` : ''}`);
     if (st.roles) {
       const fore = state.roles.find((r) => r.name === '先行 Forerunner');
       check(fore?.id === tester.id && !state.roles.some((r) => r.name === '測 Tester') && state.members['4242'].roles.includes(fore.id)
@@ -666,7 +676,10 @@ await scenario({}, async (port, env, state) => {
       const want = season(i);
       const m = [...want.messages, ...want.posts].find((x) => x.key === e.key);
       const at = posted(m.title)[0] ?? state.messages[state.threads.find((t) => t.name === m.title)?.id]?.[0];
-      check(!!at && (!e.footer || at.embeds.find((x) => x.title).footer?.text === e.footer), `${e.key} is edited in place`);
+      const embed = at?.embeds.find((x) => x.title);
+      // The words themselves, not only the message: a body edit has to reach the description.
+      const said = (e.body ?? []).filter((l) => l).every((l) => (embed?.description ?? '').includes(l.split(/\{#\w+\}/)[0].slice(0, 40)));
+      check(!!embed && (!e.footer || embed.footer?.text === e.footer) && said, `${e.key} is edited in place`);
     }
   }
   const again = await runSetup(port, { ...env, DISCORD_SPEC: spec(DRAFTS.stages.length - 1), DISCORD_MAX_NEW: '' });
