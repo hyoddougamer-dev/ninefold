@@ -23,7 +23,7 @@ The decisions in section 7, as they stand now:
 |---|---|
 | D1 | Decided: (a). Season 0 is the game; The Hundred only ever an optional side life. |
 | D2 | Decided: 26 October 2026, 00:00 UTC. |
-| D3 | Decided: nothing of the closed test is kept, on the device or the server. No archive of the boards is promised. |
+| D3 | Decided: no progress of the closed test is kept, on the device or the server. The device keeps only the four-number summary until Begin, and a device-only player's one Stele line. No archive of the boards is promised. |
 | D4 | Decided: 測 Tester renamed 先行 Forerunner after the switch (`was` in `tools/discord.mjs`); onboarding offers 修 Cultivator instead; footers say Season 0; the rule against sharing goes. Drafted. |
 | D5 | Open: Bruno's own words for Push B, which stamps the Forerunners first. |
 | D6 | Decided: no legacy mode. Nothing is kept to play. |

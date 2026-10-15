@@ -488,7 +488,7 @@ Banner `s0-founding`, the key art under the words, and a link to the trailer. Go
 > **No progress carries over.** Every cultivator, on every device, starts again in the first realm. This is the one wipe we promised for the end of the closed test, and it is the last one. Your account and your name carry over.
 >
 > **同 驗 永 The season's law.** 同 The season opens for everyone at the same second, in the first realm. 驗 Every rank is checked from the first second. 永 Nothing is wiped again.
-> **先行 Forerunner.** Everyone who played the closed test can carry one mark: a small gold seal, 先行 Forerunner, beside your name on every board. It is the same for everyone, it is for good, and it changes no number. A mark, not a save.
+> **先行 Forerunner.** Everyone who played the closed test and is in 榜 Ranks by the switch carries one mark: a small gold seal, 先行 Forerunner, beside your name on every board. It is the same for everyone, it is for good, and it changes no number. A mark, not a save.
 > **How to be a Forerunner.** Join 榜 Ranks in the game once before Monday 26 October, 00:00 UTC (Sunday 25 October in the Americas). A guest only needs a name. If you are already on the boards, there is nothing to do.
 > **題名崖 The Cliff of Names.** Nine columns, one for each gate, from the Spirit Fox to the Dragon. The first 81 cultivators through each gate are carved on it for ever, with the date the server saw them. Only players in 榜 Ranks are carved, and every carving is checked.
 > **What stays.** Losing a fight costs nothing. Nothing is taken away for being away.

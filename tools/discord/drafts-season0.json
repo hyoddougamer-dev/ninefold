@@ -1,5 +1,5 @@
 {
-  "_comment": "開山 Season 0 · The Founding: the Discord posts, drafted and NOT live. tools/discord.mjs reads server.json only, never this file, and it has no draft flag: anything in server.json goes up the next time main moves. So every Season 0 post waits here until Bruno approves its words. To release a stage, move what it holds into server.json in the main push of its day: its messages, posts and threads appended, its roles and onboarding replacing server.json's own, each edit applied to the message, post or tidy entry it names, and every file in needs already on main in an earlier push. node tools/discord-check.mjs plays these stages one after another against a fake Discord, so each one is proved to post within the brake (two new posts a run, one of them to @everyone). Source of the words: docs/SEASON0-THEME.md (sections 2b to 2f, 3) and docs/SEASON0-BRIEF.md section 6. English, no dashes, signed 師 Shibaki.",
+  "_comment": "開山 Season 0 · The Founding: the Discord posts, drafted and NOT live. tools/discord.mjs reads server.json only, never this file, and it has no draft flag: anything in server.json goes up the next time main moves. So every Season 0 post waits here until the developer approves its words. To release a stage, move what it holds into server.json in the main push of its day: its messages, posts and threads appended, its roles and onboarding replacing server.json's own, each edit applied to the message, post or tidy entry it names, and every file in needs already on main in an earlier push. node tools/discord-check.mjs plays these stages one after another against a fake Discord, so each one is proved to post within the brake (two new posts a run, one of them to @everyone). Source of the words: docs/SEASON0-THEME.md (sections 2b to 2f, 3) and docs/SEASON0-BRIEF.md section 6. English, no dashes, signed 師 Shibaki.",
   "stages": [
     {
       "key": "s0-teaser",
@@ -27,7 +27,7 @@
       "key": "s0-push-a",
       "when": "Monday 19 October",
       "push": "Push A (docs/SEASON0-THEME.md 2f): the season card, the last-week notice, the closed-test copy retired, 先行 on the boards",
-      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push, and its 轉世 field if the three rebirth changes are not in this push.",
+      "approve": "The announcement, the dev log and the line added to the rebirth thread. Drop the dev log's 先行 field if the board seal waits for a later push. If the three rebirth changes are not in this push, drop the dev log's 轉世 field and put back the reply's first paragraph as server.json has it today (it says they are built and waiting).",
       "needs": [
         "public/discord/banner/s0-founding.webp",
         "public/discord/banner/update-2026-10-19.webp",
@@ -51,7 +51,7 @@
           ],
           "fields": [
             ["同 驗 永 The season's law", "同 The season opens for everyone at the same second, in the first realm.\n驗 Every rank is checked from the first second.\n永 Nothing is wiped again."],
-            ["先行 Forerunner", "Everyone who played the closed test can carry one mark: a small gold seal, 先行 Forerunner, beside your name on every board. It is the same for everyone, it is for good, and it changes no number. A mark, not a save."],
+            ["先行 Forerunner", "Everyone who played the closed test and is in 榜 Ranks by the switch carries one mark: a small gold seal, 先行 Forerunner, beside your name on every board. It is the same for everyone, it is for good, and it changes no number. A mark, not a save."],
             ["▸ How to be a Forerunner", "Join 榜 Ranks in the game once before **Monday 26 October, 00:00 UTC** (Sunday 25 October in the Americas). A guest only needs a name. If you are already on the boards, there is nothing to do. Until then the game also shows you the deadline in your own time."],
             ["題名崖 The Cliff of Names", "Season 0's own monument: nine columns, one for each gate, from the Spirit Fox to the Dragon. The first 81 cultivators through each gate are carved on it for ever, with the date the server saw them. A new column opens every few days for about five weeks. Only players in 榜 Ranks are carved, and every carving is checked."],
             ["▸ The trailer", "[Watch the Season 0 trailer](https://hyoddougamer-dev.github.io/ninefold/discord/season0/founding-trailer.mp4). One minute; the voice is made with elevenlabs.io."],
@@ -74,8 +74,8 @@
           "fields": [
             ["▸ The trailer", "[Season 0 · The Founding 開山 · trailer](https://hyoddougamer-dev.github.io/ninefold/discord/season0/founding-trailer.mp4) (voice: elevenlabs.io). One minute: the seal falls once on the closed test, nine roads through the game, the Dragon, and the Cliff of Names, still empty."],
             ["終 The last week", "The game shows one notice with the end of the closed test in your own time, and how to carry 先行 Forerunner: join 榜 Ranks once before the switch. A guest only needs a name."],
-            ["先行 On the boards", "Every account that played the closed test wears a small gold 先行 seal beside its name. Tap it to read what it means."],
-            ["季 The season card", "The first time you open the game after the switch, one card says goodbye to your closed-test cultivator in one line, shows the season's law and begins Season 0. Nothing from the closed test is kept on the device."],
+            ["先行 On the boards", "Every account the ranked server has seen in the closed test wears a small gold 先行 seal beside its name, and so will every account that joins before the switch. Tap it to read what it means."],
+            ["季 The season card", "The first time you open the game after the switch, one card says goodbye to your closed-test cultivator in one line, shows the season's law and begins Season 0. No progress from the closed test is kept on the device."],
             ["轉世 Rebirth", "What the rebirth polls asked for: a new life keeps all of its craft experience, a rebirth is confirmed by typing Reincarnate, and reborn lives climb their own 輪迴 Samsara board."]
           ],
           "footer": "· 師 Shibaki"
@@ -86,7 +86,7 @@
           "forum": "ideas",
           "title": "Consider adding reincarnation option  after reaching Golden Immortal",
           "final": [
-            "rekaris, to answer you plainly. Live now: Rebirth (since 7 October), with an Echo of +5% to +12.5% a life that adds up to +25% across lives, then a slow tail to a roof of +35%, and each craft keeping 25% of its experience. Built and waiting for release: each craft keeps all of its experience, a Samsara board for reborn lives (hidden until your first rebirth, its record starts again at each rebirth, and once reborn you are listed there instead of on the Heaven List) and a typed Reincarnate confirm. Not changing: the qi roof stays. Not built: a material or crafting speed bonus.",
+            "rekaris, to answer you plainly. Live now: Rebirth (since 7 October), with an Echo of +5% to +12.5% a life that adds up to +25% across lives, then a slow tail to a roof of +35%. Since 19 October each craft keeps all of its experience (it was 25%), reborn lives climb a Samsara board of their own (hidden until your first rebirth, its record starts again at each rebirth, and once reborn you are listed there instead of on the Heaven List), and a rebirth is confirmed by typing Reincarnate. Not changing: the qi roof stays. Not built: a material or crafting speed bonus.",
             "On 6 October we said there would be one wipe, at the end of the closed test. It comes on Monday 26 October at 00:00 UTC, when Season 0 begins, and it is the last one. No progress carries over. Your account, your name and the 先行 Forerunner mark do. Details in the announcements channel.",
             "· 師 Shibaki"
           ]
@@ -141,7 +141,7 @@
     {
       "key": "s0-open",
       "when": "Monday 26 October, after 00:00 UTC",
-      "push": "the launch push (it can travel with Push B, or before it: Push B waits for Bruno's own words on the rows)",
+      "push": "the launch push (it can travel with Push B, or before it: Push B waits for the developer's own words on the rows)",
       "approve": "The launch line, the role rename and the new onboarding answer, the footers, and the second rule (D4: the game is no longer closed, so the rule against sharing it goes).",
       "needs": ["public/discord/banner/s0-open.webp"],
       "messages": [
@@ -253,14 +253,14 @@
           "body": [
             "**題名崖 The Cliff of Names** is Season 0's own monument, in 榜 Ranks. It has nine columns, one for each gate, each headed by its realm's painting: in ink until its first name is carved, then in colour.",
             "",
-            "Each column holds the **first 81 cultivators through that gate**, in order, with the date the server saw them. A place on it is never taken away, and the Cliff is never wiped."
+            "Each column holds the **first 81 cultivators through that gate**, in order, with the date the server saw them. The Cliff is never wiped."
           ],
           "fields": [
             ["▸ The nine gates", "妖狐 Spirit Fox: into realm 2\n石猿 Stone Ape: into realm 3\n仙鶴 Immortal Crane: into realm 4\n雷虎 Thunder Tiger: into realm 5\n玄武 Black Turtle: into realm 6\n石傀 Stone Puppet: into realm 7\n魔狼 Demon Wolf: into realm 8\n蛟 Serpent Dragon: into realm 9\n龍 Dragon: your first tribulation crossed"],
-            ["▸ When you are carved", "When the server sees you in the next realm. From realm 5 to 8 a gate stays sealed for a day or two after its warden falls, so you are carved once you are through it, not when the warden falls. If you climb offline, you are carved at your next sync, with that date."],
+            ["▸ When you are carved", "When the server sees you in the next realm. From realm 5 to 8 a gate can stay sealed for up to two days after its warden falls, so you are carved once you are through it, not when the warden falls. If you climb offline, you are carved at your next sync, with that date."],
             ["▸ Who is carved", "Only cultivators in 榜 Ranks: a player who has not joined is never carved. Every carving is checked like the boards. A save held for review drops off until it is cleared, then comes back at its first time."],
             ["▸ How fast the columns fill", "From a fresh start, the first cultivators reach the Spirit Fox's gate within a day, the Thunder Tiger's in 5 to 16 days, and the Serpent Dragon's in 32 to 76, depending on how often they play. So a new column opens every few days for about five weeks. Your own place is lit on its column."],
-            ["先行 Forerunner", "A small gold seal with two characters, 先行, beside the name of everyone who played the closed test: on every board, in 榜 Ranks, and at the foot of the Cliff under *Those who walked before*. It is the same for everyone and for good, and it changes no number. Tap it in the game to read what it means."],
+            ["先行 Forerunner", "A small gold seal with two characters, 先行, beside the name of every account the ranked server saw in the closed test: on every board, in 榜 Ranks, and at the foot of the Cliff under *Those who walked before*. It is the same for everyone and for good, and it changes no number. Tap it in the game to read what it means."],
             ["▸ Who wears it", "Every account the ranked server saw before Monday 26 October, 00:00 UTC, unless it was banned. The list closed at the switch: nothing after it can add a name. A player who only played on a device, without joining Ranks, is not on it. On that device the game still remembers, for them alone, that they walked the closed test."],
             ["▸ Why two characters", "先 alone before a name reads as *the late*, as in 先父, the late father. 先行 means *went first*, as in 先行者, a pioneer."],
             ["▸ Here in Discord", "The 測 Tester role is now 先行 Forerunner. It is a courtesy for those who tested; the mark in the game is the record."]
