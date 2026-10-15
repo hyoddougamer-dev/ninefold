@@ -33,16 +33,18 @@ async function call(path) {
   throw new Error(`GET ${path}: still rate limited`);
 }
 
-const FORUMS = ['bugs', 'ideas'];
+// 全 Every forum members write in: bugs and ideas, and the questions they leave under the guides
+// and in the journals. Never the team's own.
+const QUIET = ['team', 'mod', 'staff'];
 const channels = await call(`/guilds/${GUILD}/channels`);
 const live = (await call(`/guilds/${GUILD}/threads/active`)).threads ?? [];
 const day = (iso) => (iso ? iso.slice(0, 16).replace('T', ' ') : '');
 const clip = (t, n) => (t.length > n ? `${t.slice(0, n)}…` : t);
 const out = [`# Discord digest, ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC`, ''];
 
-for (const key of FORUMS) {
-  const forum = channels.find((c) => c.type === 15 && c.name.endsWith(key));
-  if (!forum) { out.push(`## ${key}: no forum found`, ''); continue; }
+const FORUMS = channels.filter((c) => c.type === 15 && !QUIET.some((q) => c.name.includes(q)));
+if (!FORUMS.length) out.push('## no forum found', '');
+for (const forum of FORUMS) {
   const tags = Object.fromEntries((forum.available_tags ?? []).map((t) => [t.id, t.name]));
   const old = (await call(`/channels/${forum.id}/threads/archived/public?limit=100`)).threads ?? [];
   const threads = [...live.filter((t) => t.parent_id === forum.id), ...old]
@@ -75,8 +77,9 @@ function pollOf(m) {
 
 // 談 The channels people talk in. Never the team's own, and never the ones only the
 // developer and the bot write in.
-const TALK = ['general', 'screenshots', 'rankings'];
-for (const c of channels.filter((x) => x.type === 0 && TALK.some((k) => x.name.endsWith(k)))) {
+// Every text channel but the team's and the three only the bot writes in.
+const BOT_ONLY = ['announcements', 'dev-log', 'welcome'];
+for (const c of channels.filter((x) => x.type === 0 && !QUIET.some((q) => x.name.includes(q)) && !BOT_ONLY.some((k) => x.name.endsWith(k)))) {
   const msgs = (await call(`/channels/${c.id}/messages?limit=100`)).reverse().filter((m) => !m.author?.bot);
   out.push(`## ${c.name} (last ${msgs.length} messages)`, '');
   for (const m of msgs) {
