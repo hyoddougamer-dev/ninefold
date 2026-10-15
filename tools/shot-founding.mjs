@@ -146,7 +146,11 @@ for (const size of SIZES) {
     check(!/Copy it|Save as a file/.test(text), 'nothing to copy and no file');
     const keys = await page.evaluate(() => Object.keys(localStorage));
     check(!keys.includes('ninefold.save.closedtest'), 'no keepsake key', keys.join(','));
-    check(!keys.includes('ninefold.save.backup') || true, 'the spare is the season\'s own');
+    const planted = JSON.stringify(closedTest());
+    const kept = await page.evaluate(() => [localStorage.getItem('ninefold.save.v1'), localStorage.getItem('ninefold.save.backup')]);
+    check(kept.every((v) => v !== planted) && !kept.some((v) => v && v.includes('"realm":7')),
+      'the closed-test save and its spare are gone (the keys hold the season\'s own)', JSON.stringify(kept.map((v) => v?.slice(0, 40))));
+    check(keys.includes('ninefold.season.farewell') && keys.includes('ninefold.season.walked'), 'the four numbers wait for Begin');
     check(await page.evaluate(() => {
       const w = document.querySelector('.season0'); return w.scrollWidth <= w.clientWidth + 1;
     }), 'nothing runs off the side');
