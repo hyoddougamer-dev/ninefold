@@ -12,9 +12,10 @@
 -- sync_log only grows (only delete_me(), the player's own button, takes a player's rows), so
 -- the set is closed at the switch: nothing written after it can add to it.
 --
--- profiles.forerunner is for Push B: its first statement stamps the column from this same
--- expression for every account, and only then deletes the old sync_log rows, so the one
--- expression below is right before Push B and after it (docs/SEASON0-PUSHB-DRAFT.md).
+-- profiles.forerunner is for Push B: its first statement stamps the column from the same
+-- evidence (a sync_log row before the switch) for every account, banned and staff included, and
+-- only then deletes the old sync_log rows, so the one expression below is right before Push B
+-- and after it, and a ban lifted later gives the mark back (docs/SEASON0-PUSHB-DRAFT.md).
 --
 -- profiles.staff marks the developer's own ranked account, if he chooses: off the Cliff and
 -- never a Forerunner. It is set only through panel_set_staff() behind the panel key
