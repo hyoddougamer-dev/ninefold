@@ -81,6 +81,9 @@ check(Array.isArray(board.json) && board.json.every((r: any) => 'calling' in r)
 
 const named = await call('/rest/v1/rpc/set_name', { new_name: `Tester ${now % 100000}` }, token);
 check(named.status === 200, 'a player can name themselves', named);
+// 先行 The Forerunner mark is worn beside a name, never inside it: nobody types their way to it.
+const worn = await call('/rest/v1/rpc/set_name', { new_name: `先行 ${now % 100000}` }, token);
+check(worn.status >= 400 && /name reserved/.test(worn.json?.message ?? ''), 'nobody takes the 先行 mark as a name', worn.json);
 
 const direct = await call('/rest/v1/standings', { user_id: guest.json?.user?.id, climb: 80 }, token);
 check(direct.status >= 400, 'a player cannot write a standing directly', direct.status);
