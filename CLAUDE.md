@@ -186,7 +186,11 @@ A new post in the announcements or dev log channel tells @everyone (`announce` i
 Bruno 2026-09-30); a post that went up before that gets one short `nudge` line after it.
 Every post wears a banner from `tools/banners.mjs` (the game's own paintings and cut
 figures, a gold seal, the logo's lettering, the cards' frame): a new post is a line in
-`BANNERS` and a `banner` in server.json. **Bruno's real name never appears in anything
+`BANNERS` and a `banner` in server.json. There is no draft flag: whatever is in server.json
+posts when `main` moves, so posts waiting for Bruno's words live in a drafts file
+(`tools/discord/drafts-season0.json`, one stage per main push, played forward by
+`discord-check.mjs`) and move into server.json in their day's push. A role is renamed by
+giving it its old names in `was`, never by a new name alone (that makes a second role). **Bruno's real name never appears in anything
 members read.** He signs 師 Shibaki, the name his community knows.
 Android has two ways in, both in the 裝 install guide (`g-install`) and on `/testar/`: the game
 installed from Chrome, and the APK in a stored zip (some phones' Chrome holds a bare .apk
