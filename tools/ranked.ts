@@ -87,14 +87,57 @@ check(direct.status >= 400, 'a player cannot write a standing directly', direct.
 
 const peek = await fetch(`${URL}/rest/v1/saves?select=*`, { headers: { apikey: KEY, Authorization: `Bearer ${token}` } });
 check(peek.status >= 400 || (await peek.json()).length === 0, 'a player cannot read anybody’s saves', peek.status);
-// 舊 The closed-test copy is read through closed_test_mine() alone, and only by its own player.
-// A guest begun now has none, on either side of the switch; nobody signed in may not ask.
+// 落 The closed-test copy is not kept (decided 2026-10-15): the door that handed it back is gone,
+// for a player and for nobody signed in, and the column it would have sat in is read by nobody.
 const oldMine = await call('/rest/v1/rpc/closed_test_mine', {}, token);
-check(oldMine.status === 200 && oldMine.json === null, 'a new guest has no closed-test copy to read', oldMine.status);
+check(oldMine.status >= 400, 'there is no door to a closed-test copy for a player', oldMine.status);
 const oldAnon = await call('/rest/v1/rpc/closed_test_mine', {});
-check(oldAnon.status >= 400, 'nobody signed in may ask for a closed-test copy', oldAnon.status);
+check(oldAnon.status >= 400, 'nor for anybody not signed in', oldAnon.status);
 const oldPeek = await fetch(`${URL}/rest/v1/saves?select=closed_test`, { headers: { apikey: KEY, Authorization: `Bearer ${token}` } });
 check(oldPeek.status >= 400 || (await oldPeek.json()).length === 0, 'and nobody reads the column directly', oldPeek.status);
+
+// 先行 The Forerunner mark is the server's to give. Every board row says whether it is worn; this
+// guest synced before the switch wears it, one begun in the season does not, and nobody sets it.
+const fore = await call('/rest/v1/rpc/my_standing', {}, token);
+check(fore.status === 200 && fore.json?.forerunner === !LIVE,
+  LIVE ? 'a guest begun in the season does not wear 先行' : 'a guest who synced before the switch wears 先行', fore.json?.forerunner);
+check(Array.isArray(board.json) && board.json.every((r: any) => typeof r.forerunner === 'boolean'),
+  'every board row says whether it wears 先行', board.json?.find?.((r: any) => r.me));
+const asked = await call('/rest/v1/rpc/is_forerunner', { uid: guest.json?.user?.id }, token);
+check(asked.status >= 400, 'nobody asks the mark of an id from outside', asked.status);
+const write = (path: string, method: string, body: unknown, t?: string) => fetch(`${URL}${path}`, {
+  method, headers: { apikey: KEY, Authorization: `Bearer ${t ?? KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+  body: JSON.stringify(body),
+});
+for (const [who, t] of [['a player', token], ['nobody signed in', undefined]] as const) {
+  for (const flag of ['forerunner', 'staff']) {
+    const r = await write(`/rest/v1/profiles?id=eq.${guest.json?.user?.id}`, 'PATCH', { [flag]: true }, t);
+    const rows = r.status < 300 ? await r.json().catch(() => []) : [];
+    check(r.status >= 400 || (Array.isArray(rows) && rows.length === 0), `${who} cannot set ${flag} on a profile`, r.status);
+  }
+}
+const after1 = await call('/rest/v1/rpc/my_standing', {}, token);
+check(after1.json?.forerunner === fore.json?.forerunner, 'and the mark is as the server left it', after1.json?.forerunner);
+
+// 題名崖 The Cliff: anybody reads it, names only, and nobody writes it.
+const cliff = await call('/rest/v1/rpc/cliff', {});
+check(cliff.status === 200 && Array.isArray(cliff.json)
+  && cliff.json.every((r: any) => Object.keys(r).sort().join() === 'at,forerunner,gate,name,rank'),
+  'anybody reads the Cliff, and it carries names, never an id', cliff.status);
+for (const [who, t] of [['a player', token], ['nobody signed in', undefined]] as const) {
+  const carved = await write('/rest/v1/firsts', 'POST', { gate: 1, user_id: guest.json?.user?.id, at: '2026-10-26T00:00:01Z' }, t);
+  check(carved.status >= 400, `${who} cannot carve a name on the Cliff`, carved.status);
+  const moved = await write('/rest/v1/firsts?gate=eq.1', 'PATCH', { at: '2026-10-26T00:00:01Z' }, t);
+  const movedRows = moved.status < 300 ? await moved.json().catch(() => []) : [];
+  check(moved.status >= 400 || (Array.isArray(movedRows) && movedRows.length === 0), `${who} cannot move a carving`, moved.status);
+  const read = await fetch(`${URL}/rest/v1/firsts?select=*`, { headers: { apikey: KEY, Authorization: `Bearer ${t ?? KEY}` } });
+  check(read.status >= 400 || (await read.json()).length === 0, `${who} cannot read the carvings' ids`, read.status);
+  // 師 Staff is the panel's alone, behind its key.
+  const staffed = await call('/rest/v1/rpc/panel_set_staff', { key: 'guess', name: `Test ${now % 100000}`, on: true }, t);
+  // Turned away by the key check itself, so the function is there and answers to its names.
+  check(staffed.status >= 400 && /wrong key/.test(staffed.json?.message ?? ''),
+    `${who} cannot mark anybody staff without the panel key`, staffed.json);
+}
 
 // Wait out the gap, then offer a save with a week of qi in it that took thirty seconds.
 await new Promise((r) => setTimeout(r, 22_000));
