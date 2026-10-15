@@ -280,7 +280,13 @@ async function tapAll(page, where) {
  * note must still land on the screen. Nothing of it shows before the switch, so the game's
  * clock is installed nine days into Season 0 and the ranked server is answered here.
  */
-const CLIFF_FLOOR = 5;
+/**
+ * Floors, one per part, so the boards cannot make up for a Cliff that opened nothing: the
+ * stand-in marks three board rows, the head of Rankings and the Account block (five seals),
+ * and the foot of the Cliff carries one.
+ */
+const BOARDS_FLOOR = 5;
+const CLIFF_FLOOR = 1;
 async function walkCliff(W, H) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   await standIn(page);
@@ -290,13 +296,14 @@ async function walkCliff(W, H) {
   await clear(page);
   await page.click('nav.tabs button.ranktab', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rlist .fore', { timeout: 8000 }).catch(() => {});
-  let opened = await tapAll(page, `ranks ${W}`);
+  const onBoards = await tapAll(page, `ranks ${W}`);
   await page.click('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rcol[data-on="true"]', { timeout: 8000 }).catch(() => {});
   if ((await page.$$('.ranks .rcol')).length !== 9) fail(`cliff ${W}`, 'the Cliff of Names did not open');
-  opened += await tapAll(page, `cliff ${W}`);
-  console.log(`榜 ranks and 題名崖 the Cliff at ${W}: ${opened} notes opened`);
-  if (opened < CLIFF_FLOOR) fail(`cliff ${W}`, `only ${opened} notes opened in Rankings and the Cliff, and there should be at least ${CLIFF_FLOOR}`);
+  const onCliff = await tapAll(page, `cliff ${W}`);
+  console.log(`榜 ranks at ${W}: ${onBoards} notes opened; 題名崖 the Cliff: ${onCliff}`);
+  if (onBoards < BOARDS_FLOOR) fail(`ranks ${W}`, `only ${onBoards} notes opened in Rankings, and there should be at least ${BOARDS_FLOOR}`);
+  if (onCliff < CLIFF_FLOOR) fail(`cliff ${W}`, `only ${onCliff} notes opened on the Cliff, and there should be at least ${CLIFF_FLOOR}`);
   await page.close();
 }
 

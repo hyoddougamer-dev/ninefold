@@ -153,7 +153,7 @@ function cultivator(realm: number) {
  * page then throws ReferenceError: __name is not defined and the audit measures
  * nothing. A string crosses unchanged.
  */
-const LOOK = `((names) => {
+const LOOK = `((names, root) => {
   const HAN = /[㐀-鿿]/;
   const WORD = /[A-Za-z]{3,}/;
   const out = [];
@@ -198,7 +198,8 @@ const LOOK = `((names) => {
       .some((w) => said.some((t) => same(w, t)));
   };
 
-  for (const el of Array.from(document.querySelectorAll('body *'))) {
+  // 域 The whole page, or only what is inside root when a walk asks about one part of it.
+  for (const el of Array.from(document.querySelectorAll((root || 'body') + ' *'))) {
     if (el.children.length > 0) continue;
     const text = (el.textContent || '').trim();
     if (!text || !HAN.test(text)) continue;
@@ -371,6 +372,7 @@ async function walkSecret() {
  * nine days into Season 0 and answers the ranked server itself (cliff-fixture.mjs): the
  * boards with 先行 on their rows, then the Cliff with every name shown.
  */
+let boards = 0;
 let cliffs = 0;
 let cliffPlaces = 0;
 async function walkCliff() {
@@ -387,8 +389,8 @@ async function walkCliff() {
     await el.click({ timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(200);
   }
-  const take = async (where: string) => {
-    const rows = (await page.evaluate(`${LOOK}(${JSON.stringify(NAMES)})`)) as HanRow[];
+  const take = async (where: string, root?: string) => {
+    const rows = (await page.evaluate(`${LOOK}(${JSON.stringify(NAMES)}, ${JSON.stringify(root ?? null)})`)) as HanRow[];
     for (const row of rows) {
       const key = `${row.where}|${row.text}`;
       if (!found.has(key)) found.set(key, { ...row, screens: new Set<string>() });
@@ -398,12 +400,14 @@ async function walkCliff() {
   };
   await page.click('nav.tabs button.ranktab', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rlist .fore', { timeout: 8000 }).catch(() => {});
-  if (await page.$('.ranks .rlist .fore')) await take('ranks');
+  if (await page.$('.ranks .rlist .fore')) boards++;
+  await take('ranks');
   await page.click('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rcol[data-on="true"]', { timeout: 8000 }).catch(() => {});
   await page.click('.ranks .rcliffall', { timeout: 3000 }).catch(() => {});
   await page.waitForTimeout(300);
-  if ((await page.$$('.ranks .rcol')).length === 9) { cliffs++; cliffPlaces = await take('cliff'); }
+  // Counted inside the Cliff alone: the screen under the sheet and the tab bar are not the Cliff.
+  if ((await page.$$('.ranks .rcol')).length === 9) { cliffs++; cliffPlaces = await take('cliff', '.ranks .rcliff'); }
   await page.close();
 }
 
@@ -451,12 +455,14 @@ if (arenas < 4 || verdicts < 4) {
   process.exit(1);
 }
 /**
- * 題名崖 The Cliff has nine wardens' names in characters, 題名崖 itself and 先行 at its foot,
- * each with its English beside it. Fewer than ten places read there means the walk never
- * reached the columns, which is a Cliff nobody checked.
+ * 題名崖 The Cliff heads its nine columns with the wardens' names in characters, each read
+ * against the English under it. They are counted inside the Cliff alone (題名崖 and 先行 are
+ * named by the section's own label, so they are not among them): fewer than nine places read
+ * there means the walk never reached the columns, which is a Cliff nobody checked.
  */
-if (cliffs < 1 || cliffPlaces < 10) {
-  console.log(`  ✗ the Cliff of Names was read ${cliffs} times of 1, with ${cliffPlaces} places of at least 10.`);
+if (boards < 1 || cliffs < 1 || cliffPlaces < 9) {
+  console.log(`  ✗ Rankings with its 先行 seals was read ${boards} times of 1, and the Cliff of Names ${cliffs} of 1,`
+    + ` with ${cliffPlaces} places inside it of at least 9.`);
   console.log('    A Cliff that never opened is a Cliff nobody checked.\n');
   process.exit(1);
 }
