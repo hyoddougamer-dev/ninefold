@@ -607,6 +607,9 @@ export const CHRONICLE = {
   rule: 'A deed pays nothing at all. It is a record of what this cultivator did, and the record is the reward.',
   counted: (n: number) => `${n} deeds, all of them counted from the save itself. There is `
     + 'no list of what you have earned, so there is nothing to forge.',
+  /** 舊 Only on a device that retired a closed-test cultivator, and only for whoever holds it. */
+  walked: 'Walked the closed test on this device',
+  walkedOf: (line: string) => `${line}. Seen on this device alone.`,
 };
 
 export const TRIALS = {

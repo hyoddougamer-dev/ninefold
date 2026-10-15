@@ -15,7 +15,8 @@ import { heavenAt } from '../../data/heavens.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { Svg } from '../ui/Svg.tsx';
-import { CHRONICLE, ROAD } from '../copy.ts';
+import { CHRONICLE, ROAD, SEASON } from '../copy.ts';
+import { walked } from '../../sim/save.ts';
 import { BOON_INFO, MEETINGS, meetingOf } from '../../data/meetings.ts';
 import { boons, heart, pathOf, stillToCome } from '../../sim/meet.ts';
 import { HEART_PATH } from '../../sim/balance.ts';
@@ -41,6 +42,9 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
   const held = tally(state);
   const next = closest(state);
   const rungs = (state.realm - 1) * LAYERS_PER_REALM + state.layer + 1;
+  // 舊 The closed test this device walked, read off the device and never the save: a line for
+  // whoever holds this phone, which nobody else can see and which changes no number.
+  const [was] = useState(walked);
 
   const figures: readonly { han: string; label: string; value: string }[] = [
     { han: '日', label: CHRONICLE.day, value: `${Math.floor(daysIn(state)) + 1}` },
@@ -86,6 +90,16 @@ export function Chronicle({ state, pulse }: { state: State; pulse: number }) {
           )}
         </span>
       </div>
+
+      {was && (
+        <div className="chwalked">
+          <b className="cjk" aria-hidden="true">舊</b>
+          <span>
+            <em>{CHRONICLE.walked}</em>
+            <i>{CHRONICLE.walkedOf(SEASON.old(was.realm, was.layer, was.marks, was.rebirths))}</i>
+          </span>
+        </div>
+      )}
 
       <h2 className="heading">{CHRONICLE.figures}</h2>
       <div className="figures">

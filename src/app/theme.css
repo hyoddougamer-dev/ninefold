@@ -4441,6 +4441,14 @@ nav.tabs .tabkey { display: none; }
   width: 22px; height: 32px; border: 1px solid var(--gold); border-radius: 2px; background: #2b2213; color: var(--gold);
   font: 900 11px/1.1 'Noto Serif SC', serif; }
 .help.ranks .raccount .raseal i { font-style: normal; display: block; }
+/* 舊 The Stele's one line for a device that walked the closed test. */
+.stelepage .chwalked { display: flex; align-items: center; gap: 12px; margin: 10px 0 0; padding: 10px 13px; border-radius: 10px;
+  border: 1px solid var(--gild); background: rgba(212,175,86,.05); }
+.stelepage .chwalked > b { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--gild-strong);
+  border-radius: 3px; font-size: 16px; font-weight: 600; line-height: 1; color: var(--gold); }
+.stelepage .chwalked span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stelepage .chwalked em { font-style: normal; font-size: 14px; color: var(--text); }
+.stelepage .chwalked i { font-style: normal; font-size: 12px; line-height: 1.45; color: var(--faint); }
 /* 榜 The season line under the Rankings title. */
 .help.ranks .s0tag { display: flex; align-items: center; gap: 11px; margin: -6px 0 0; padding: 9px 12px; border-radius: 10px;
   border: 1px solid var(--gild); background: rgba(212,175,86,.05); }
