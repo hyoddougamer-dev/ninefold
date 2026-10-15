@@ -1,54 +1,56 @@
-# The Seal Falls 落印 · Season 0 brief
+# Season 0 · The Founding 開山 · brief
 
-Everything for Season 0 in one file: the model we adopt, the theme, the image tool, every picture with its prompt ready to paste, video prompts, the announcement and the trailer.
+Everything for Season 0 in one file: the model, the theme, the image tool, every picture with its prompt ready to paste, video prompts, the words for Discord and the trailer.
+
+> **Decided by Bruno on 15 Oct 2026, all final.** The theme is **The Founding 開山** (the package in docs/SEASON0-THEME.md); 落印 The Seal Falls stays as the act inside it, the seal that falls once on the closed test. **The closed-test save does not stay:** no keepsake, no copy, no file, no restore. Closed-test players get **先行 Forerunner**, a cosmetic mark. **D1 is confirmed:** no later season and not The Hundred may ever start everyone from zero. Where this brief and SEASON0-THEME.md differ, THEME wins; sections 2 to 5 below keep the look and the pictures of The Seal Falls, which The Founding inherits.
 
 ## Resumo (para o Bruno)
 
-- **Data:** segunda, 26 de outubro de 2026, às 00:00 UTC (domingo à noite nas Américas). `SEASON_START = 1792972800`.
-- **O modelo:** recomeço total. É o wipe prometido no fim do teste fechado e é o último. A partir daí a Season 0 é o jogo; nada volta a ser apagado.
-- **O que cada jogador guarda:** uma cópia do cultivador do teste fechado, que pode copiar ou guardar em ficheiro (no primeiro arranque e depois em Menu, Save). Não se joga nem entra nos rankings.
-- **O que começa vazio:** todos os rankings e títulos. As regras anti-batota ficam ligadas a sério. Todos começam iguais, no reino 1.
-- **Tema:** "The Seal Falls 落印". Um selo vermelho gigante cai sobre a pintura: o teste fechado fica selado e guardado, e um rolo novo começa. Tinta preta, seda clara, um só vermelho (o cinábrio do jogo) e folha de ouro.
-- **Ferramenta de imagem:** o ChatGPT, o mesmo que fez a arte que já existe. Há 11 imagens novas; as 6 primeiras são obrigatórias. Cada uma tem o nome exato do ficheiro e o prompt pronto a colar.
-- **Trailer:** 27 segundos, 9 planos, feito por mim em código a partir das imagens. Os vídeos de IA (secção 5) são opcionais.
-- **Atenção:** "nada volta a ser apagado" também prende a Season 1. The Hundred nunca pode pôr toda a gente a zero. E o anúncio só sai quando a exportação da cópia estiver feita e a funcionar.
+- **Data:** segunda, 26 de outubro de 2026, às 00:00 UTC (domingo 25 à noite nas Américas: 21:00 em São Paulo). `SEASON_START = 1792972800`.
+- **O modelo:** recomeço total. É o wipe prometido no fim do teste fechado e é o último. A partir daí a Season 0 é o jogo; nada volta a ser apagado (D1, confirmado por ti a 15 de outubro: nem a Season 1 nem The Hundred podem pôr toda a gente a zero).
+- **Tema:** *Season 0 · The Founding 開山*. Frase: *Everyone starts again. The first names are carved for ever.* O selo 落印 continua a cair uma vez no trailer, sobre o closed test.
+- **O save do closed test não fica.** O jogo lê-o uma vez para uma linha de despedida e apaga-o. Sem cópia, sem ficheiro, sem restauro. Ficam a conta, o nome e as definições.
+- **A recompensa: 先行 Forerunner**, um selo dourado com dois caracteres ao lado do nome, para quem o servidor viu antes de 26 de outubro. Só cosmético. A tua conta não o usa e não é gravada no Cliff (marcada como staff pelo painel, nunca pelo nome no repositório).
+- **O foco:** 題名崖 The Cliff of Names, os primeiros 81 a passar cada um dos nove portões, gravados para sempre.
+- **Discord:** os textos (teaser, anúncio, trailer, lembrete, abertura, guia do Cliff) estão em `tools/discord/drafts-season0.json`, por dia. Nada é publicado sem a tua aprovação.
+- **Música:** fazes uma faixa nova no Suno para o trailer v6; reeditar a de agora é o plano B.
 
 ---
 
-## 1. The Season 0 model (what we adopt)
+## 1. The Season 0 model
 
 ### The switch
 
-- **When:** Monday 26 October 2026, 00:00 UTC. In the Americas that is Sunday evening (Sunday 25 October, 20:00 in New York, 17:00 in Los Angeles).
-- **The number:** `SEASON_START = 1792972800`. The plan (docs/SEASON0-PLAN.md, D2) still says 19 October (1792368000). It changes to 26 October in `season.ts` and in the SQL, in the same push.
-- **How:** a timed switch, not a deploy. Push A goes to `main` first and sits dormant; at the hour the game and the server switch on their own. Push B (the wipe of old server rows, in Bruno's own words) follows after the switch.
+- **When:** Monday 26 October 2026, 00:00 UTC. In the Americas that is Sunday evening (Sunday 25 October: 21:00 in São Paulo, 20:00 in New York, 17:00 in Los Angeles).
+- **The number:** `SEASON_START = 1792972800`, in `season.ts` and in the SQL (`season_start()`).
+- **How:** a timed switch, not a deploy. Push A goes to `main` on 19 October and sits dormant; Push A2 (the carving record) follows by Friday 23 October; at the hour the game and the server switch on their own. Push B (the deletion of old server rows, in Bruno's own words) follows after the switch, and its first statement stamps every Forerunner.
 
 ### What it is
 
 - **A full restart.** Every cultivator, on every device, starts again in realm 1. Not only the boards.
 - **It is the wipe we promised** for the end of the closed test (6 October: "only 1 wipe, the closed test one").
-- **It is the last one.** From then on, Season 0 is the game. Nothing is wiped again.
+- **It is the last one.** From then on, Season 0 is the game. Nothing is wiped again (D1, confirmed 15 October).
 
-### What each player keeps
+### What each player keeps, and what does not stay
 
-- **Their closed-test cultivator, as a copy they can take out.** The closed test is "sealed and kept", never "locked away".
-- **How to take it out:**
-  1. On the first open after the switch, a full-screen card shows the old cultivator in one line ("Realm 9, layer 4, 12 marks, 1 rebirth").
-  2. Two buttons: **Copy it** (to the clipboard, the same text as the save export) and **Save as a file** (`ninefold-closedtest-realm9-<day>.txt`). Then **Begin Season 0**.
-  3. Later, any time: **Menu, Save, Closed test** has the same line and the same two buttons.
-- The copy cannot be played or ranked in Season 0. There is no Restore button.
-- **Also kept:** the account, the name on the boards, and settings (sound, music, sort orders).
-- Erase never touches the kept copy.
+- **No progress carries over.** One sentence, everywhere (card, notice, announcement, trailer): *no progress carries over; your account and your name do.*
+- **The closed-test cultivator does not stay** (Bruno, 15 October). On the first open after the switch the device reads it once, keeps only four numbers (realm, layer, marks, rebirths, never the save) for the farewell line, and removes it. No copy, no file, no restore, no legacy mode. The summary goes when the player taps Begin.
+- **On the server** the closed-test copy cannot be read by anyone from the first second of the season, and it is deleted with Push B.
+- **Kept:** the account, the name on the boards, and settings (sound, music, sort orders).
+- **先行 Forerunner** for every account the server saw sync before the switch, whatever the verdict, unless banned (and never on an account flagged staff): a small gold seal with two characters, 先行, beside the name on every board, in Ranks, in the Account block and at the foot of the Cliff. Cosmetic, for good, no tiers. **Never 先 alone**, which beside a name reads "the late".
+- **A guest who only played on a device:** a one-time notice in the last week (shipped 19 October) says when the closed test ends, in the device's own time, and to join Ranks once to carry the mark. After the switch the card shows the farewell line; signed in, the server answers whether the account is a Forerunner; signed out, "Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting." Their own 碑 Stele gains the line *Walked the closed test on this device*, seen by nobody else (Bruno: yes).
+- **Bruno's own ranked account** is not marked and not carved. It is a `profiles.staff` flag set only through a key-checked panel function, never with his id or name in the repository.
 
 ### What starts empty
 
 - **Every board:** This Week (期榜), Heaven List (天榜), Samsara (輪迴) and The Tower (塔榜).
 - **Every title:** First Under Heaven (天下第一), First of the Week (期首), Top Ten and Top Hundred of the Week.
+- **題名崖 The Cliff of Names:** nine columns, the first 81 through each gate, recorded from the first second (Push A2) and shown in Ranks in week one.
 - **Strikes and suspect flags** are cleared for everyone who is not banned, in Push B, if Bruno names that row change (D5). Bans stay.
 
 ### Fair play checks switch on
 
-- `ACCEPT_EVERYTHING` goes off in the same release. A save the server refuses is no longer counted.
+- `acceptsEverything(now)` is false from `SEASON_START`. A save the server refuses is no longer counted.
 - A save faster than the fastest honest player waits until real time catches up. Nothing is lost by waiting.
 - The first sync of the season measures from `SEASON_START`, not from the account's creation date.
 
@@ -64,45 +66,54 @@ None of the three matters for weeks: the first rebirth comes after the summit, 3
 
 ### Before anything goes to main
 
-- Build the season card, the kept copy, the archive and the server switch. Run `npm test`, `prose`, `han`, `smoke`, `tips`, `arena`.
-- Screens at 320 and 400 and a mockup block in the bible, shown to Bruno with pictures.
-- **The announcement goes out only once "take out a copy" is built and works** on a real phone and in a browser.
+- Build the season card, the last-week notice, the retirement without a keepsake, 先行 on the boards and the server switch. Run `npm test`, `prose`, `han`, `smoke`, `tips`, `arena`.
+- Screens at 320, 400 and PC and a mockup block in the bible, shown to Bruno with pictures.
+- The carving record (Push A2) must be live before 26 October 00:00 UTC. If it misses, the Spirit Fox column reads "Everyone" and carving starts when it lands, announced as such.
 
 ### Announcement timeline
 
+Every post is drafted in `tools/discord/drafts-season0.json`, one stage per main push, and moves into `server.json` only when Bruno approves its words. `node tools/discord-check.mjs` plays the stages in order against a fake Discord, under the bot's brake.
+
 | Day (2026) | What | Where | Picture |
 |---|---|---|---|
-| Sat 17 Oct | **Teaser.** One line, one picture. | Dev log (tells @everyone) | New picture 3 |
-| Mon 19 Oct | **The announcement**, with the key art. Push A on `main` the same day, export working. Plus a reply in the rebirth thread that promised one wipe. | Announcements (@everyone) | Key art (C4) |
-| Thu 22 Oct | **The trailer** (27 s video) with two lines. | Dev log | Trailer |
-| Sun 25 Oct | **Reminder:** "Season 0 starts tonight at 00:00 UTC. If the game is open then, take the update when it offers it." | Announcements | Banner |
-| Mon 26 Oct | **Launch line** after the switch, with Push B: "Season 0 is open. Everyone starts in realm 1. Good luck on the climb." | Announcements (`nudge`) | Banner |
+| Sat 17 Oct | **Teaser.** Two lines. | Dev log (tells @everyone) | banner `s0-teaser` |
+| Mon 19 Oct | **The announcement**, with the key art and the trailer, Push A on `main` the same day; the **trailer dev log** (quiet); one paragraph added to the rebirth thread that promised one wipe. | Announcements (@everyone), dev log | banners `s0-founding`, `update-2026-10-19`; the key art |
+| by Fri 23 Oct | **Push A2:** one dev log line, the carving record is live. | Dev log (quiet) | banner `update-2026-10-23` |
+| Sun 25 Oct | **Reminder:** tonight at 00:00 UTC, last call for 先行 Forerunner. | Announcements | banner `s0-reminder` |
+| Mon 26 Oct | **Launch line** after the switch. 測 Tester becomes 先行 Forerunner (renamed in place), onboarding stops offering it, footers say Season 0, the rule against sharing goes. | Announcements | banner `s0-open` |
+| week one | **The Cliff guide** in 書-guides, with the Cliff screen. | Guides forum | banner `g-cliff` |
 
 Exact words for each are in section 6.
 
-### Decisions still open (plan section 7)
+### Decisions
 
-- **D1. The next season.** Decided by "the last wipe": Season 1 and The Hundred can never start everyone from zero. The Hundred becomes an optional side life beside the Season 0 save (option a). Bruno confirms.
-- **D2. The date.** Decided: 26 October, 00:00 UTC, `1792972800`. Push A must be green on `main` by 19 October, for the announcement.
-- **D3. History.** Keep a page with the final closed-test boards? Keep the cloud saves in a server archive each player can read? (Needed for anyone whose only copy is in the cloud: see the promise check below.)
-- **D4. Discord.** Rename the Tester role or add a "Closed test veteran" role; drop the "ask before sharing" rule; change the "closed test" footers to "Season 0".
-- **D5. Which server rows go,** named by Bruno in his own words, for the Push B migration.
-- **D6. A legacy mode** (play the old cultivator unranked): yes or no. The announcement does not promise it.
-- **D7. ACCEPT_EVERYTHING off:** by the time switch (recommended) or a plain `false` in Push A.
+- **D1. The next season.** **Decided, Bruno, 15 October 2026:** no later season and not The Hundred may ever start everyone from zero. The Hundred can only be an optional side life beside the Season 0 save (recorded in docs/DRAWER.md).
+- **D2. The date.** Decided: 26 October, 00:00 UTC, `1792972800`.
+- **D3. History.** The closed-test saves: **decided, not kept** (Bruno, 15 October): unreadable on the server from the switch, deleted with Push B, no archive, no copy on the device. A page with the final closed-test boards is not promised.
+- **D4. Discord.** Decided with The Founding: 測 Tester is renamed 先行 Forerunner after the switch (a courtesy; the game's mark is the record) and onboarding offers a new 修 Cultivator role instead; the "closed test" footers become "Season 0"; the rule "ask before sharing" goes. All drafted for the 26 October push.
+- **D5. Which server rows go,** named by Bruno in his own words, for the Push B migration. Its first statement stamps `profiles.forerunner`; only then is anything deleted.
+- **D6. A legacy mode:** no. The closed-test save does not stay, so there is nothing to play.
+- **D7. ACCEPT_EVERYTHING off** by the time switch (`acceptsEverything(now)`), as built.
 - **D8. First Under Heaven (天下第一) on the Samsara board:** the poll was tied, decide before Push A.
+- **Staff:** Bruno's ranked account is neither marked nor carved, through `profiles.staff` and the key-checked `panel_set_staff`.
+- **Device-only players:** the local Stele line, yes.
+- **Music:** Bruno makes a new Suno track for trailer v6; a re-edited bed is the fallback.
 
-### Promise check (flag to Bruno)
+### Promise check
 
-1. **"Nothing is wiped again" binds Season 1 too.** The 12-week restart in The Hundred (docs/DRAWER.md, decision D1) must never start everyone from zero. Only an optional side life fits the promise.
-2. **"Your cultivator is kept as a copy" must be true for everyone.** The plan keeps the copy on the device. A player whose only copy is in the cloud (a lost phone, a new device) has nothing on the device. Either keep the cloud saves in a server archive (D3), or soften the line to "kept on your device". Decide before 19 October.
+1. **"Nothing is wiped again" binds Season 1 and The Hundred.** Confirmed by Bruno (D1). The Cliff and "for ever" stand on it.
+2. **Nothing is promised about the old cultivator.** Every word says "no progress carries over". The trailer, the card and the announcement were rewritten so none of them says "kept" or "a copy" (the old voice line 4 is replaced).
+3. **The Forerunner mark is promised only to those the server saw.** The trailer and the announcement say "join Ranks before the 26th", never "played the closed test" alone.
 
 ---
 
-## 2. The theme: The Seal Falls 落印
+## 2. The theme: The Founding 開山, and the seal that falls inside it
 
-**The hook:** The closed test is sealed and kept. The new scroll will never be wiped.
+**Players see one name:** *Season 0 · The Founding 開山*. 開山 is the day a sect is founded (開山立派, 開山祖師), and it also reads "to cut into a mountain", which suits a season whose focus is a cliff carved with names (docs/SEASON0-THEME.md, 2a).
 
-**The idea in one line:** a colossal cinnabar seal (印, a stamp) slams onto the closed-test painting. The old scroll is stamped, rolled and kept. A blank one unrolls, and everyone paints from realm 1.
+**The hook:** Everyone starts again. The first names are carved for ever.
+
+**落印 The Seal Falls is the act inside it.** A colossal cinnabar seal (印, a stamp) slams once onto the closed-test painting. The old scroll is stamped, rolled, tied and put away: put away, not handed back, because nothing of it carries over. A blank one unrolls, and everyone paints from realm 1. The look below (palette, seal, ink and gold) is The Seal Falls' and The Founding keeps it.
 
 ### Palette
 
@@ -113,7 +124,7 @@ Exact words for each are in section 6.
 | Bone silk | `#E8D9B8` | the painting, drained of colour |
 | Gold leaf | `#D4AF56` | the game's `--gold`: flecks, the Season 0 box, the date |
 
-Type: Cinzel for THE SEAL FALLS and the date, Cormorant (italic) for the one line, Noto Serif SC for 落印. All three are already the game's fonts.
+Type: Cinzel for THE FOUNDING and the date, Cormorant (italic) for the one line, Noto Serif SC for 開山. All three are already the game's fonts.
 
 ### The key visual
 
@@ -124,17 +135,18 @@ A colossal square cinnabar seal has just slammed onto the first realm's painting
 - **For scale:** a tiny meditating cultivator in solid ink at its foot.
 - **The painting:** drained to bone silk, so the seal is the only colour.
 - **The left third:** ink black, holding the title, English first:
-  - THE SEAL FALLS in Cinzel, with 落印 in cinnabar beside it.
+  - THE FOUNDING in Cinzel, with 開山 in cinnabar beside it (was THE SEAL FALLS 落印 in the v5 mockup).
   - A gilt box: "Season 0 · Monday 26 October".
   - A small gold-framed box with 零 (zero) and "Season 0" under it.
-  - One italic Cormorant line: "The closed test is sealed and kept. The new scroll will never be wiped."
+  - One italic Cormorant line: "Everyone starts again. The first names are carved for ever." (The v5 line, "The closed test is sealed and kept", is retired: nothing is kept.)
 - **Top right:** a black tag edged in red: THE LAST WIPE.
 - **Lettering stays big**, so it still reads as a thumbnail in Discord.
 
 ### Rules of the theme
 
-- **Wording:** always 印 (stamp), never 封 (lock up). Always write "sealed and kept" next to "a copy you can take out".
-- **Title order:** "The Seal Falls 落印". English first, characters alongside.
+- **Wording:** always 印 (stamp), never 封 (lock up). Never "kept", "a copy" or "sealed and kept" about the closed-test cultivator: it does not stay (Bruno, 15 Oct 2026). Say "no progress carries over; your account and your name do".
+- **The mark:** always 先行, two characters, never 先 alone (beside a name it reads "the late", and beside 師 it spells 先師). English: Forerunner.
+- **Title order:** "The Founding 開山". English first, characters alongside.
 - **Red** stays on the seal. Splatter is black ink and gold leaf only.
 - **Safety:** no white flash anywhere. Any shake lasts under 0.3 s. The video stays under 10 MB for Discord.
 - **Honesty:** the empty Rankings shot is the real screen, never a mock.
@@ -232,7 +244,7 @@ Three kinds:
 
 #### 1 · The scroll, rolled and tied · **Must**
 
-- **For:** trailer shot 5 ("The closed test is sealed and kept. Your cultivator is kept as a copy you can save."). Also the in-game Closed test section if we want a picture there.
+- **For:** trailer v6 shot 4, after the slam: the painting rolled, tied with its red cord and laid aside. Put away, not handed back: the line over it is no longer "sealed and kept" (docs/SEASON0-THEME.md section 4).
 - **Shape:** Landscape 3:2, 1536 × 1024 → cropped to 16:9.
 - **Save as:** `s0-01-scroll-tied.png`
 - **Note:** the square on the last section is left blank on purpose. I stamp the code seal (C1) into it, so it is the same print as the slam.
@@ -306,7 +318,7 @@ Landscape 3:2.
 Style: classical Chinese ink painting on aged silk. Wet brush, visible strokes, ink bleeding into the fibre, large areas of empty paper. Muted mineral pigment only: jade green, gold leaf, cinnabar red, bone white, soot black. No neon, no glow, no rim light, no lens flare, no science fiction, no cyberpunk. Nothing emits light except a lantern or the moon. It should look like a plate from a bestiary somebody believed in six hundred years ago. No text, no letters and no characters anywhere.
 Composition in the Song dynasty manner: the subject small against a great deal of empty space, mist swallowing the middle distance. No seal, no watermark, no border.
 
-A young cultivator in a plain grey robe kneels at a low table by an open window at dawn, seen from behind and a little to the side. To one side of the table lies a rolled scroll tied with a red silk cord, set down carefully, kept. In front of the cultivator a fresh scroll of blank silk is unrolled, and the cultivator holds a brush over it, about to make the first stroke. Through the window, far away, misty green hills of the first realm. The cultivator is small in the picture; the window, the mist and the empty silk take most of the space. Calm, a new beginning.
+A young cultivator in a plain grey robe kneels at a low table by an open window at dawn, seen from behind and a little to the side. To one side of the table lies a rolled scroll tied with a red silk cord, set down carefully and put away. In front of the cultivator a fresh scroll of blank silk is unrolled, and the cultivator holds a brush over it, about to make the first stroke. Through the window, far away, misty green hills of the first realm. The cultivator is small in the picture; the window, the mist and the empty silk take most of the space. Calm, a new beginning.
 Portrait 2:3.
 ```
 
@@ -314,7 +326,7 @@ Portrait 2:3.
 
 #### 6 · The season emblem · **Must**
 
-- **For:** the Season 0 mark in the game: the heading of the Rankings screen, the Season 0 card, the Closed test section of the save panel. Also the small seal on the Discord banners if it reads at that size.
+- **For:** the Season 0 mark in the game: the heading of the Rankings screen and the Season 0 card. (The Closed test section of the save panel is gone: nothing is kept.) Also the small seal on the Discord banners if it reads at that size.
 - **Shape:** Square 1:1, 1024 × 1024 → 320 × 320.
 - **Save as:** `s0-06-emblem.png` (goes in as `public/art/emblem/season-0.webp`)
 - **Note:** if it carves characters onto the face, replace "stone seal" with "a square carved stone medallion".
@@ -456,70 +468,85 @@ Birdsong for shot 6 is a short field recording (any free CC0 clip). The single s
 
 ## 6. The words
 
-No em dash or en dash anywhere. English, short and plain. Signed 師 Shibaki.
+No em dash or en dash anywhere. English, short and plain. Signed 師 Shibaki. The full posts, with their fields, banners and pictures, are in `tools/discord/drafts-season0.json`; this section is their heart, for reading on a phone. None of it is posted until Bruno approves it and it moves into `tools/discord/server.json` in that day's main push.
 
-### Teaser · Saturday 17 October · dev log
+### Teaser · Saturday 17 October · dev log (@everyone)
 
-Picture: banner from picture 3 (the seal a moment before).
+Banner `s0-teaser`.
 
-> **The closed test is ending.**
+> **The closed test is ending.** Season 0 has a name: **The Founding 開山**. It begins on Monday 26 October, and it happens once.
 > The details come on Monday 19 October.
 
-### The announcement · Monday 19 October · announcements (@everyone)
+### The announcement · Monday 19 October · announcements (@everyone, pinned)
 
-Picture: the key art (C4). Goes out only once "take out a copy" is built and works.
+Banner `s0-founding`, the key art under the words, and a link to the trailer. Goes out with Push A.
 
-> **The Seal Falls 落印: Season 0 starts Monday 26 October**
+> **開山 Season 0 · The Founding begins Monday 26 October**
 >
-> The closed test ends on Monday 26 October at 00:00 UTC. In the Americas that is Sunday evening.
-> This is the one wipe we promised for the end of the closed test, and it is the last one. From then on, Season 0 is the game. Nothing is wiped again.
-> Your closed-test cultivator is kept as a copy you can save.
-> Everyone starts equal, in realm 1.
-> The ranked boards start empty, and every rank is checked for fair play.
+> **Everyone starts again. The first names are carved for ever.**
+> The closed test ends on Monday 26 October at 00:00 UTC. In the Americas that is Sunday 25 October: 21:00 in São Paulo, 20:00 in New York, 17:00 in Los Angeles. Season 0 begins in that same second.
+> **No progress carries over.** Every cultivator, on every device, starts again in the first realm. This is the one wipe we promised for the end of the closed test, and it is the last one. Your account and your name carry over.
 >
-> Thank you for testing with us.
-> 師 Shibaki
+> **同 驗 永 The season's law.** 同 The season opens for everyone at the same second, in the first realm. 驗 Every rank is checked from the first second. 永 Nothing is wiped again.
+> **先行 Forerunner.** Everyone who played the closed test can carry one mark: a small gold seal, 先行 Forerunner, beside your name on every board. It is the same for everyone, it is for good, and it changes no number. A mark, not a save.
+> **How to be a Forerunner.** Join 榜 Ranks in the game once before Monday 26 October, 00:00 UTC (Sunday 25 October in the Americas). A guest only needs a name. If you are already on the boards, there is nothing to do.
+> **題名崖 The Cliff of Names.** Nine columns, one for each gate, from the Spirit Fox to the Dragon. The first 81 cultivators through each gate are carved on it for ever, with the date the server saw them. Only players in 榜 Ranks are carved, and every carving is checked.
+> **What stays.** Losing a fight costs nothing. Nothing is taken away for being away.
+>
+> Thank you for the closed test · 師 Shibaki
 
-### Reply in the rebirth thread · Monday 19 October
+### In the rebirth thread · Monday 19 October
 
-> On 6 October we said there would be one wipe, at the end of the closed test. It is on Monday 26 October at 00:00 UTC, and it is the last one. Your cultivator is kept as a copy you can take out. Details in announcements.
+Its one tidied reply gains a paragraph (an edit in place; the bot's tidy keeps one reply there):
 
-### Trailer post · Thursday 22 October · dev log
+> On 6 October we said there would be one wipe, at the end of the closed test. It comes on Monday 26 October at 00:00 UTC, when Season 0 begins, and it is the last one. No progress carries over. Your account, your name and the 先行 Forerunner mark do. Details in the announcements channel.
 
-Video: the trailer.
+### The trailer · Monday 19 October · dev log (quiet, with the announcement)
 
-> **The Seal Falls 落印 · the Season 0 trailer**
-> Season 0 starts Monday 26 October at 00:00 UTC. Your closed-test cultivator is sealed and kept, as a copy you can save.
+Banner `update-2026-10-19`. The trailer moved from 22 October to the announcement's day (THEME 2f), so it travels as the Push A dev log, which does not ping: one @everyone a day.
 
-### Reminder · Sunday 25 October · announcements
+> **開山 Update · The trailer, and the closed test's last week**
+> The Season 0 trailer is out (voice: elevenlabs.io), and today's update gets the game ready for the switch. Until then you play the closed test exactly as before. The game shows one notice with the end of the closed test in your own time, and how to carry 先行 Forerunner.
 
-> Season 0 starts tonight at 00:00 UTC. If the game is open then, take the update when it offers it.
+### The carving record · by Friday 23 October · dev log (quiet)
 
-### Launch line · Monday 26 October · announcements (`nudge`, with Push B)
+> **題名崖 Update · The Cliff of Names is ready to carve**
+> From the first second of Season 0 the server records when each cultivator in 榜 Ranks passes each of the nine gates. The Cliff itself opens in the game during the first week. Nobody loses a place by that wait: every arrival is already being recorded.
 
-> Season 0 is open. Everyone starts in realm 1. Good luck on the climb.
+### Reminder · Sunday 25 October · announcements (@everyone)
 
-### The text cards in the trailer
+> Season 0 · The Founding begins at 00:00 UTC tonight: 21:00 in São Paulo, 20:00 in New York, 17:00 in Los Angeles, midnight in London, 01:00 in Paris.
+> **Last call for 先行 Forerunner.** If you played the closed test and never joined 榜 Ranks, join it once before then. A guest only needs a name.
+> If the game is open at the switch, take the update when it offers it.
 
-1. Nine realms. One closed test.
-2. Every cultivator you raised.
-3. The seal falls once.
-4. (no text)
-5. The closed test is sealed and kept. Your cultivator is kept as a copy you can save.
-6. A new scroll. Everyone starts equal, in realm 1.
-7. The boards start empty. Every rank is checked for fair play.
-8. This is the last wipe. Nothing will be painted over again.
-9. The Seal Falls 落印 · Season 0 · Monday 26 October, 00:00 UTC, then: The closed test is sealed and kept. The new scroll will never be wiped.
+### Launch line · Monday 26 October · announcements (@everyone)
+
+A message of its own, not a `nudge`: a nudge only follows a post that went up without pinging, and the announcement pinged.
+
+> Season 0 · The Founding is open. Everyone starts in the first realm, at the same second. The boards are empty and the Cliff of Names is waiting for its first names.
+> Good luck on the climb.
+
+With it, in the same push: 測 Tester renamed 先行 Forerunner in place (`was` in `tools/discord.mjs`), the onboarding answer "I'm here to play" handing out a new 修 Cultivator role, the "closed test" footers made "Season 0", and the second rule rewritten as "Share the game, not other servers".
+
+### The guide · week one · 書-guides
+
+Banner `g-cliff`, posted with the Cliff screen: **題名崖 The Cliff of Names and 先行 Forerunner**. The nine gates by warden, when you are carved (when the server sees you in the next realm, so after the seal for realms 5 to 8), who is carved (only players in Ranks, every carving checked), how fast the columns fill (from the harness), what the mark is, who wears it, and why it is two characters.
+
+### The text in the trailer
+
+The v6 storyboard and its subtitles are in docs/SEASON0-THEME.md section 4, and the Mandarin lines in docs/SEASON0-VOICE.md. The title card reads **NINEFOLD 九境 · Season 0 · The Founding 開山 · Monday 26 October, 00:00 UTC**, with the small line *Played the closed test? Join Ranks before the 26th to be marked a Forerunner 先行.*
 
 ---
 
 ## 7. The trailer
 
+> **Superseded by trailer v6** (docs/SEASON0-THEME.md section 4, about 60 s, three new voice lines). The v5 plan below is kept for its look and its rules; its shot 5 line ("sealed and kept") and its title card's "The closed test is sealed and kept" are retired, because nothing of the closed test is kept.
+
 **27 seconds, 9 shots.** 1920 × 1080, 30 fps, H.264 MP4 with AAC sound, under 10 MB (aim for 8: about 2.2 Mbit/s video). Text cards in Cormorant italic, bone white with a soft ink shadow, big enough to read on a phone; Cinzel only on the title card.
 
 **The draft that exists now** (`s0v2/trailer/season0-trailer-draft.mp4`): 1280 × 720, 6.0 MB, Bruno's own tracks (`hunt` then `cultivate-1`) with one made drum hit. Pictures 1, 2 and 8 to 11 are drawn in code there, and shot 2 puts the figures on darkened realm paintings, not on the scroll. No birdsong yet. Each new picture replaces its stand-in with no change to the timing.
 
-**Never cut:** shot 5, the kept-copy line, comes right after the impact and stays even if the trailer is shortened.
+**Never cut (v6):** the season card shot with the 先行 Forerunner line, right after the slam (THEME section 4, shot 5). The v5 "kept-copy" line it replaces is retired.
 
 | Shot | Seconds | Picture | Motion and sound | Text card |
 |---|---|---|---|---|
