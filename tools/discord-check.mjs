@@ -27,6 +27,10 @@
  *   4. An empty server: everything made once, a second run changes nothing, drift is put
  *      back, a hand-made channel is left alone, an edited message is edited in place.
  *   5. Discord's own shared mention rule already in the list: never edited, the run green.
+ *   6 to 10. Members' posts answered, @everyone once, tidy and closed polls, the morning of
+ *      2026-10-14, and the brake on a run that finds many posts missing.
+ *   11. 開山 Season 0 played forward from tools/discord/drafts-season0.json, stage by stage,
+ *      with 測 Tester renamed 先行 Forerunner in place.
  */
 import http from 'node:http';
 import { spawn } from 'node:child_process';
@@ -604,6 +608,90 @@ await scenario({}, async (port, env, state) => {
   const pinged = state.messages[news.id].filter((x) => (x.content ?? '').includes('@everyone')).length;
   check(run.code !== 0 && state.messages[news.id].length >= 1 && state.messages[news.id].length <= 2 && pinged <= 1 && was > 2 && /refused/.test(run.out),
     'a run that would post many old posts again stops after two, one of them to @everyone at most, and goes red');
+});
+
+// 11. 開山 Season 0, played forward: the drafts in tools/discord/drafts-season0.json, stage by
+// stage, on the server as it stands today. Each stage is what one main push would carry, so
+// each must post within the brake (two new posts a run, one to @everyone), and at the switch
+// 測 Tester is renamed 先行 Forerunner in place: the same role, the same members, no second one.
+const DRAFTS = JSON.parse(readFileSync(new URL('./discord/drafts-season0.json', import.meta.url), 'utf8'));
+/** server.json as it would read after every stage up to and including `upto`. */
+function season(upto) {
+  const spec = structuredClone(SPEC);
+  for (const st of DRAFTS.stages.slice(0, upto + 1)) {
+    spec.messages.push(...(st.messages ?? []));
+    spec.posts.push(...(st.posts ?? []));
+    spec.threads.push(...(st.threads ?? []));
+    if (st.roles) spec.roles = st.roles;
+    if (st.onboarding) spec.onboarding = st.onboarding;
+    for (const e of st.edits ?? []) {
+      const at = [...spec.messages, ...spec.posts].find((m) => m.key === e.key);
+      if (at) Object.assign(at, Object.fromEntries(Object.entries(e).filter(([k]) => k !== 'key')));
+      else check(false, `the Season 0 edit names "${e.key}", which server.json does not have`);
+    }
+    for (const e of st.tidyEdits ?? []) {
+      const at = spec.tidy.find((t) => t.forum === e.forum && t.title === e.title);
+      if (at) at.final = e.final; else check(false, `the Season 0 edit names the thread "${e.title}", which tidy does not have`);
+    }
+  }
+  return spec;
+}
+// 文 No dash, in what goes up today or in what is waiting (CLAUDE.md: npm run prose cannot see either).
+check(![readFileSync(new URL('./discord/server.json', import.meta.url), 'utf8'), JSON.stringify(DRAFTS)].some((t) => /[–—]/.test(t)),
+  'no em-dash or en-dash in server.json or the Season 0 drafts');
+const draftKeys = DRAFTS.stages.flatMap((st) => [...(st.messages ?? []), ...(st.posts ?? [])].map((m) => m.key));
+check(draftKeys.every((k, i) => draftKeys.indexOf(k) === i && ![...SPEC.messages, ...SPEC.posts].some((m) => m.key === k)),
+  `the ${draftKeys.length} Season 0 drafts have keys of their own, none already in server.json`);
+// 名 The developer's real name is never in anything members read (CLAUDE.md): every posted
+// field of server.json and of the drafts, which is everything but the _comment and the
+// drafts' own notes to the developer (when, push, approve, needs).
+const readable = (spec) => JSON.stringify(spec, (k, v) => (['_comment', 'when', 'push', 'approve', 'needs'].includes(k) ? undefined : v));
+check(![readable(SPEC), readable(DRAFTS)].some((t) => /bruno/i.test(t)), "the developer's real name is in nothing members read, live or drafted");
+check(!/先(?!行)/.test(JSON.stringify(DRAFTS.stages.map((st) => [st.messages, st.posts, st.roles, st.onboarding, st.edits, st.tidyEdits]))
+  .replace(/先 alone|先父/g, '')), 'the mark is 先行, never 先 alone (beside a name 先 reads "the late")');
+await scenario({}, async (port, env, state) => {
+  await runSetup(port, env);
+  const tester = state.roles.find((r) => r.name === '測 Tester');
+  state.members['4242'] = { roles: [tester.id] };
+  const roles = state.roles.length;
+  const spec = (i) => { const p = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json'); writeFileSync(p, JSON.stringify(season(i))); return p; };
+  const posted = (title) => Object.values(state.messages).flat().filter((m) => (m.embeds ?? []).some((e) => e.title === title));
+  for (const [i, st] of DRAFTS.stages.entries()) {
+    // The brake as it runs on main: no DISCORD_MAX_NEW.
+    const run = await runSetup(port, { ...env, DISCORD_SPEC: spec(i), DISCORD_MAX_NEW: '' });
+    const mine = st.messages ?? [];
+    const fresh = mine.length + (st.posts ?? []).length;
+    const loud = mine.filter((m) => !m.quiet && (SPEC.announce ?? []).includes(m.channel));
+    check(run.code === 0 && fresh > 0 && mine.every((m) => posted(m.title).length === 1) && (st.posts ?? []).every((p) => state.threads.filter((t) => t.name === p.title).length === 1)
+      && fresh <= 2 && loud.length <= 1, `${st.when}: ${st.key} posts in one run, within the brake (${fresh} new, ${loud.length} to @everyone)${run.code ? `\n${run.out}` : ''}`);
+    if (st.roles) {
+      const fore = state.roles.find((r) => r.name === '先行 Forerunner');
+      check(fore?.id === tester.id && !state.roles.some((r) => r.name === '測 Tester') && state.members['4242'].roles.includes(fore.id)
+        && /renamed/.test(run.out), '測 Tester is renamed 先行 Forerunner in place: the same role, its members keep it, no second role');
+      check(state.roles.length === roles + st.roles.length - SPEC.roles.length, 'and only the new 修 Cultivator role is made beside it');
+      check(state.onboarding.prompts.every((p) => p.options.every((o) => o.role_ids.length && !o.role_ids.includes(fore.id))),
+        'onboarding no longer hands out 先行 Forerunner, and every answer still hands out a role');
+    }
+    for (const e of st.edits ?? []) {
+      const want = season(i);
+      const m = [...want.messages, ...want.posts].find((x) => x.key === e.key);
+      const at = posted(m.title)[0] ?? state.messages[state.threads.find((t) => t.name === m.title)?.id]?.[0];
+      const embed = at?.embeds.find((x) => x.title);
+      // The words themselves, not only the message: a body edit has to reach the description.
+      const said = (e.body ?? []).filter((l) => l).every((l) => (embed?.description ?? '').includes(l.split(/\{#\w+\}/)[0].slice(0, 40)));
+      check(!!embed && (!e.footer || embed.footer?.text === e.footer) && said, `${e.key} is edited in place`);
+    }
+  }
+  const again = await runSetup(port, { ...env, DISCORD_SPEC: spec(DRAFTS.stages.length - 1), DISCORD_MAX_NEW: '' });
+  check(again.code === 0 && changes(again.out).length === 0 && !/renamed/.test(again.out), `after the last stage a run changes nothing${changes(again.out).length ? `: ${changes(again.out).join(' | ')}` : ''}`);
+});
+// And on a server that never had 測 Tester (a fresh one), the role is simply made.
+await scenario({}, async (port, env, state) => {
+  const p = join(mkdtempSync(join(tmpdir(), 'discord-')), 'server.json');
+  writeFileSync(p, JSON.stringify(season(DRAFTS.stages.length - 1)));
+  const run = await runSetup(port, { ...env, DISCORD_SPEC: p });
+  check(run.code === 0 && state.roles.filter((r) => r.name === '先行 Forerunner').length === 1 && !/renamed/.test(run.out),
+    'on a server with no 測 Tester, 先行 Forerunner is simply made');
 });
 
 if (failures) { console.error(`\n${failures} check(s) failed.`); process.exit(1); }

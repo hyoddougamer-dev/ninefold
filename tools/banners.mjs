@@ -37,7 +37,7 @@ export const BANNERS = [
   { key: 'g-classes', seal: '職', over: '書 Guide · 05 of 14', title: 'Classes', sub: 'What you wear is who you become', bg: 'realm/4', fig: 'self/man-7' },
   { key: 'g-pairs', seal: '合', over: '書 Guide · 06 of 14', title: 'The Fifteen Classes', sub: 'Two schools awake, one name, one perk', bg: 'realm/6', fig: 'self/woman-7' },
   { key: 'g-path', seal: '道', over: '書 Guide · 07 of 14', title: 'The Path', sub: 'Nodes, keystones, stances and arts', bg: 'realm/6', fig: 'self/man-6' },
-  { key: 'g-cave', seal: '秘', over: '書 Guide · 08 of 14', title: 'The Cave and the Vault', sub: 'What grows while you are away, and seven rooms', bg: 'realm/5', fig: 'cut/jiao' },
+  { key: 'g-cave', seal: '秘', over: '書 Guide · 08 of 14', title: 'The Cave and the Vault', sub: 'What grows while you are away, and seven rooms', bg: 'realm/5', fig: 'self/man-3' },
   { key: 'g-tower', seal: '塔', over: '書 Guide · 09 of 14', title: 'Seclusion and the Tower', sub: 'The heart demon, the endless floors, the Bestiary', bg: 'realm/7', fig: 'cut/wraith' },
   { key: 'g-trib', seal: '劫', over: '書 Guide · 10 of 14', title: 'The Tribulation', sub: 'The Dragon, the Furnace and the nine Heavens', bg: 'heaven/9', fig: 'cut/dragon' },
   { key: 'g-week', seal: '期', over: '書 Guide · 11 of 14', title: 'The Week and the Road', sub: 'What turns every Monday, and who you meet', bg: 'realm/8', fig: 'cut/crane' },
@@ -59,7 +59,7 @@ export const BANNERS = [
   { key: 'ideas-deep', seal: '深', over: '議 Your opinion · A proposal', title: 'Deeper Hunts', sub: 'The same beast, further down', bg: 'realm/7', fig: 'cut/gargoyle' },
   // 票 The rebirth polls: the announcement that pings everyone, and the ideas topic that argues the case.
   { key: 'news-rebirth', seal: '轉', over: '告 Announcement · Rebirth', title: 'Ten Questions on Rebirth', sub: 'Vote in the polls, then argue it out in the ideas', bg: 'heaven/9', fig: 'cut/dragon' },
-  { key: 'ideas-rebirth', seal: '議', over: '議 Your opinion · Rebirth', title: 'What Makes Rebirth Worth It?', sub: 'What would make you take it, and what would break it', bg: 'realm/7', fig: 'cut/jiao' },
+  { key: 'ideas-rebirth', seal: '議', over: '議 Your opinion · Rebirth', title: 'What Makes Rebirth Worth It?', sub: 'What would make you take it, and what would break it', bg: 'realm/7', fig: 'self/man-3' },
   // 畫 The question about how the game looks, asked honestly, with the art being AI-made.
   { key: 'ideas-art', seal: '畫', over: '議 Your opinion · The look', title: 'Does the Look Matter?', sub: 'Six ways the game could wear its art', bg: 'realm/5', fig: 'cut/crane' },
   // 業 The walls, the seal with its pill, and the workshop's own sets: asked before the last two are built.
@@ -70,10 +70,18 @@ export const BANNERS = [
   { key: 'craft-1011', seal: '筆', over: '筆 Dev log · Craft links and switches', title: 'Links, Switches and Clearer Names', sub: 'A recipe one tap away, the formula when you want it, drops by slot', bg: 'realm/5', fig: 'self/man-5' },
   { key: 'sync-1011', seal: '通', over: '告 Announcement · Testing', title: 'Saves Sync During the Test', sub: 'Every save counts while we test, and nobody is taken off the boards', bg: 'realm/2', fig: 'self/man-1' },
   // 正 The corrections of 11 October: the Celestial Master, the Vajra and the anvil time, said plainly.
-  { key: 'fix-2026-10-12', seal: '修', over: '筆 Dev log · Fix and correction', title: 'The Badge and the Reply', sub: 'The badge fits the screen; one reply fixed', bg: 'realm/3', fig: 'cut/crane' },
+  { key: 'fix-2026-10-12', seal: '修', over: '筆 Dev log · Fix and correction', title: 'The Badge and the Reply', sub: 'The badge fits the screen; one reply fixed', bg: 'realm/3', fig: 'self/man-3' },
   { key: 'state-2026-10-13', seal: '告', over: '告 Announcement · State of the game', title: 'State of the Game', sub: 'What is in, what is next, what is open', bg: 'realm/6', fig: 'self/man-5' },
-  { key: 'corrections-2026-10-12', seal: '正', over: '筆 Dev log · Corrections', title: 'Corrections, Measured', sub: 'Loadouts, mastery, the tower and the Echo', bg: 'realm/5', fig: 'cut/jiao' },
+  { key: 'corrections-2026-10-12', seal: '正', over: '筆 Dev log · Corrections', title: 'Corrections, Measured', sub: 'Loadouts, mastery, the tower and the Echo', bg: 'realm/5', fig: 'self/man-3' },
   { key: 'texts-2026-10-11', seal: '正', over: '筆 Dev log · Corrections', title: 'Three Corrections', sub: 'The Celestial Master, the Vajra and the anvil time', bg: 'realm/4', fig: 'cut/tiger' },
+  // 開山 Season 0 · The Founding: the posts drafted in tools/discord/drafts-season0.json.
+  { key: 's0-teaser', seal: '開', over: '筆 Dev log · Season 0', title: 'The Closed Test Is Ending', sub: 'The Founding begins on Monday 26 October', bg: 'realm/9', fig: 'self/man-9' },
+  { key: 's0-founding', seal: '開', over: '告 Announcement · Season 0', title: 'The Founding', sub: 'Everyone starts again. The first names are carved for ever.', bg: 'realm/1', fig: 'self/woman-1' },
+  { key: 'update-2026-10-19', seal: '開', over: '筆 Dev log · The trailer', title: 'The Founding: Trailer', sub: 'The seal falls once, and the Cliff waits', bg: 'realm/9', fig: 'cut/dragon' },
+  { key: 'update-2026-10-23', seal: '崖', over: '筆 Dev log · The server', title: 'Ready to Carve', sub: 'Every gate passed is recorded from the first second', bg: 'realm/7', fig: 'cut/direwolf' },
+  { key: 's0-reminder', seal: '開', over: '告 Announcement · Tonight', title: 'Season 0 Begins Tonight', sub: 'At 00:00 UTC. Last call to join Ranks as a Forerunner', bg: 'realm/2', fig: 'self/woman-2' },
+  { key: 's0-open', seal: '開', over: '告 Announcement · Season 0', title: 'Season 0 Is Open', sub: 'Everyone in the first realm, at the same second', bg: 'realm/1', fig: 'self/man-1' },
+  { key: 'g-cliff', seal: '崖', over: '書 Guide · Season 0', title: 'The Cliff of Names', sub: 'The first 81 through each gate, carved for ever', bg: 'realm/3', fig: 'self/man-3' },
 ];
 
 const curl = (url, binary = false) => execFileSync('curl', ['-sSL', '--max-time', '30', '-A',
