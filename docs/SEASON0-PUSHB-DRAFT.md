@@ -2,73 +2,78 @@
 
 **NOT A MIGRATION. It needs Bruno's named rows.**
 
-**It never deletes `saves.closed_test` or `saves.closed_test_at`.** Bruno chose option 1 on
-2026-10-14: the closed-test copy the server keeps is readable by its own player
-(`closed_test_mine()`, `supabase/migrations/20261014190000_closed_test_mine.sql`), so a player
-whose only copy was in the cloud still gets it back. Push B may clear every other column of a
-`saves` row, but it never deletes a `saves` row that holds a closed-test cultivator, and it
-never clears those two columns.
+**Its first write stamps 先行 Forerunner on every account the closed test saw, and only then
+does it delete anything.** The evidence for the mark is `sync_log`, and Push B deletes the old
+`sync_log` rows, so the order is the whole point. A schema test holds it
+(`src/sim/__tests__/schema.test.ts`, "the Push B draft").
+
+**It keeps no closed-test save.** Bruno, 2026-10-15: the closed-test save does not stay. No
+keepsake, no copy, no file, no restore (`docs/SEASON0-THEME.md`, 2d and 3). That reverses the
+option 1 of 2026-10-14 that this draft used to protect: `closed_test_mine()` and the trigger
+`saves_keep_closed_test` are retired before the switch
+(`supabase/migrations/20261015100000_retire_closed_copy.sql`), nothing ever wrote to
+`saves.closed_test`, and the `saves` rows last synced before the switch are deleted here like
+every other closed-test row.
 
 This is text, kept in `docs/` on purpose, so that no workflow can ever run it. It becomes a
 file in `supabase/migrations/` only after Bruno has said, in his own message, which tables
 and which rows go (CLAUDE.md: *"Deleting real rows on the live database is refused by the
 safety check unless Bruno asks for it by name and the migration is scoped to exactly what he
 asked for"*). His words go into its header verbatim, with the date and the UTC time. If he
-names fewer tables than below, the others stay. Nothing here fills a gap he left.
+names fewer tables than below, the others stay. Nothing here fills a gap he left. The
+Forerunner stamp is not a deletion and is not his to name: it goes first in every version.
 
-The plan is `docs/SEASON0-PLAN.md`, section 3.4. What changed since it was written is marked
-**new** below.
+The plan is `docs/SEASON0-PLAN.md`, section 3.4.
 
 ## Why there is no hurry
 
-Push A (the release) already makes the switch harmless without deleting anything:
+Push A (the release) and Push A2 (the carving) already make the switch harmless without
+deleting anything:
 
 - `supabase/functions/sync/core.ts` turns a closed-test save away from `SEASON_START` on
-  (409, nothing written), and reads every row written before the switch as absent.
+  (409, nothing written), reads every row written before the switch as absent, and never
+  hands a closed-test cloud copy back (`pullable()`).
 - `supabase/migrations/20261014130000_season0.sql` makes the boards, the titles, where I
   stand and the panel read only rows written since `season_start()`.
+- `is_forerunner()` (`20261015100100_forerunner.sql`) reads `profiles.forerunner` **or** a
+  `sync_log` row from before `season_start()`, so the mark is right before Push B and after
+  it, with no second switch.
+- `firsts`, the Cliff of Names (`20261015100200_cliff.sql`), holds only rows carved in the
+  season (its trigger is silent before `season_start()`). Push B never touches it.
 
 So Push B changes nothing a player sees. It tidies the database, and it can wait for Bruno.
 
 ## Before it is written
 
 1. **Bruno names the rows** in his own words. The candidates, from the plan:
+   - `saves` last synced before the switch (the closed-test cloud copies, unreadable since the
+     first second of the season): **deleted**;
    - `standings` last written before the switch;
-   - `saves` last synced before the switch (the closed-test cloud copies): **cleared, never
-     deleted**. Their `latest` moves to `closed_test` first (see D3 below);
    - `titles` of weeks before the season's first;
-   - `sync_log` from before the switch;
+   - `sync_log` from before the switch (only after the stamp, below);
    - `panel_notes` from before the switch, only if he wants them gone (D5);
-   - strikes and review flags reset for everyone not banned (D5). Bans stay.
-2. **D3, the archive: decided, option 1 (Bruno, 2026-10-14).** The season's first sync of an
-   account no longer keeps a deeper closed-test cloud copy, so Push A keeps it instead: the
-   old copy moves to `saves.closed_test` (with `closed_test_at`) once, by the trigger
-   `saves_keep_closed_test`, and its own player reads it back through `closed_test_mine()`.
-   Two kinds of row hold a closed-test cultivator after the switch:
-   - accounts that synced in the season: `closed_test`, on a row Push B leaves whole
-     (its `last_sync` is past the cutoff);
-   - accounts that never came back: `latest`, on a row last synced before the cutoff.
-     `closed_test_mine()` already hands this `latest` back as the copy, so Push B must not
-     delete these rows: it moves `latest` to `closed_test` first, then clears the rest.
-
-   `closed_test` and `closed_test_at` are never cleared, and no `saves` row holding a
-   closed-test cultivator is ever deleted. Only `delete_me()`, the player's own button,
-   takes them, with the rest of the account.
+   - strikes and review flags reset for everyone not banned (D5). Bans stay;
+   - the two empty columns `saves.closed_test` and `saves.closed_test_at`, dropped, only if
+     he names them. Nothing reads or writes them.
+2. **The Forerunner stamp** is not a choice: it is the first write of the block whatever he
+   names, because without it, deleting `sync_log` would take the mark off every tester. It
+   stamps from the same evidence `is_forerunner()` reads (a `sync_log` row before the cutoff,
+   whatever its `ok`), on every account, banned and staff included: `is_forerunner()` leaves
+   those two out when it reads, so a ban lifted later still gives the mark back. The result
+   is that `is_forerunner(id)` answers the same for every account before the block and after
+   it.
 3. **The brake number.** Bruno reads the player count on `/painel/` (the top half, `stats()`)
-   the day before; the brake is that number plus a margin. Over it, nothing is deleted and
-   the run fails so someone can look.
-4. **Pinned and rebasing rows** (new). `saves_pin()` rewrites `latest` on any update of a
-   pinned or rebasing row (`20261006080000_rekaris_as_is.sql`), but only while the new row
-   still says `pinned` or `rebase`. The plan said "delete, never update"; for `saves` that rule
-   now gives way to D3, because a deleted row would take its closed-test copy with it. The
-   clearing update sets `pinned` and `rebase` to false in the same statement, which is what
-   keeps `saves_pin()` out of it. Every other table is still deleted, never updated. Any row
-   that survives (synced in the season) and still carries `pinned` or `rebase` from the closed
-   test has them set to false, if Bruno names that.
+   the day before; the brake is that number plus a margin. Over it, nothing is deleted (the
+   stamp included: the block is one transaction, and a raise undoes all of it) and the run
+   fails so someone can look.
+4. **Pinned and rebasing rows.** `saves_pin()` rewrites `latest` on an *update* of a pinned or
+   rebasing row (`20261006080000_rekaris_as_is.sql`); a delete is not an update, so the
+   closed-test rows go whole. A row synced in the season that still carries `pinned` or
+   `rebase` from the closed test has them set to false, if Bruno names that.
 
 ## The draft itself
 
-```
+```sql
 -- 季 Season 0. Bruno, <date, UTC time>: "<his words, verbatim, naming each table below>"
 do $$
 declare
@@ -79,29 +84,20 @@ begin
   if now() < cutoff then raise exception 'season 0 wipe: the season has not begun'; end if;
   if cutoff <> public.season_start() then raise exception 'season 0 wipe: the cutoff is not season_start()'; end if;
   select count(*) into hits from public.standings where updated_at < cutoff;
-  if hits = 0 and not exists (select 1 from public.saves where last_sync < cutoff) then return; end if;
+  if hits = 0 and not exists (select 1 from public.saves where last_sync < cutoff)
+     and not exists (select 1 from public.sync_log where at < cutoff) then return; end if;
   if hits > brake then
     raise exception 'season 0 wipe: % standings predate the season, more than %; nothing deleted', hits, brake;
   end if;
 
-  -- (D3, option 1) The closed-test copies are kept, never deleted. A row last synced before
-  -- the cutoff holds its copy in latest: move it to closed_test (only where none is kept yet),
-  -- then clear the rest of the row. pinned and rebase go false in the same statement, so
-  -- saves_pin() cannot put latest back. latest is not null, so it becomes an empty object,
-  -- which closed_test_mine() never hands back.
-  -- A latest that is already empty is not a cultivator, and is never made one: closed_test
-  -- stays null there, so a second run (which finds every cleared row still before the cutoff)
-  -- changes nothing.
-  update public.saves
-     set closed_test    = coalesce(closed_test, case when jsonb_typeof(latest) = 'object'
-                                                      and latest <> '{}'::jsonb then latest end),
-         closed_test_at = case when closed_test is null and jsonb_typeof(latest) = 'object'
-                                    and latest <> '{}'::jsonb then latest_at else closed_test_at end,
-         latest = '{}'::jsonb, verified = null, verified_at = null,
-         day_state = null, day_at = null, week_state = null, week_at = null,
-         pinned = false, rebase = false
-   where last_sync < cutoff;
+  -- 先行 First, before anything is deleted: profiles.forerunner from the evidence is_forerunner()
+  -- reads, for every account. Afterwards is_forerunner(id) reads the same without the old rows.
+  update public.profiles p set forerunner = true
+   where not p.forerunner
+     and exists (select 1 from public.sync_log l where l.user_id = p.id and l.at < cutoff);
 
+  -- The closed test's rows. The cloud copies go whole: none is kept (Bruno, 2026-10-15).
+  delete from public.saves       where last_sync < cutoff;
   delete from public.standings   where updated_at < cutoff;
   delete from public.titles      where week < public.week_of(cutoff);
   delete from public.sync_log    where at < cutoff;
@@ -110,29 +106,31 @@ begin
    where pinned or rebase;                                                  -- only if named
   update public.profiles set strikes = 0, suspect = false
    where not banned and (strikes > 0 or suspect);                           -- only if named (D5)
+  alter table public.saves drop column if exists closed_test,
+                           drop column if exists closed_test_at;           -- only if named
   raise notice 'season 0 wipe: % standings from the closed test removed', hits;
 end $$;
 ```
 
-What stays, whatever is named: `profiles` (names and accounts, plan 3.3), `barred` ("a fresh
-start for the boards is not an amnesty for a cheat"), `auth.users`, `sync_turns`, `pulse`
-and `meta`.
+What stays, whatever is named: `profiles` (names and accounts, plan 3.3, now carrying
+`forerunner`), `firsts` (the Cliff, all of it from the season), `barred` ("a fresh start for
+the boards is not an amnesty for a cheat"), `auth.users`, `sync_turns`, `pulse` and `meta`.
 
 ## The test that comes with it
 
-In `src/sim/__tests__/schema.test.ts`, as for `20260928210000_fresh_start.sql`: seed
-closed-test rows and season rows in PGlite, move `season_start()` into the past as the
-season test there already does, run the Push B file's text, and check that:
+`src/sim/__tests__/schema.test.ts` already runs this block's text, with the cutoff moved to a
+day ago (and `season_start()` with it) and the brake filled in, on seeded closed-test and
+season rows. It checks that:
 
-- only rows from before the cutoff went, and every season row is whole;
-- every closed-test cultivator is still there: a pre-cutoff `saves` row is cleared, not
-  deleted, its old `latest` is now its `closed_test`, a season row's `closed_test` and
-  `closed_test_at` are unchanged, and `closed_test_mine()` hands each player the same copy
-  after the block as before it;
-- `profiles` and `barred` are whole, and a banned player is still banned;
-- the brake raises over its number, and deletes nothing;
-- the block raises when run before the cutoff;
-- it returns at once on an empty database (the test runs every migration on one).
+- the stamp is the block's first write, before any `delete`;
+- `is_forerunner()` answers the same for every account before and after, a banned tester
+  included, and a ban lifted afterwards gives the mark back;
+- only rows from before the cutoff went (the closed-test `saves` rows among them), and every
+  season row and every carving in `firsts` is whole;
+- `profiles` are whole, and a banned player is still banned;
+- the brake raises over its number and changes nothing, the stamp included;
+- the block raises when run before the cutoff, and a second run changes nothing.
 
-Then `supabase.yml` runs `tools/ranked.ts` after the deploy, which is the first live run of
-the season half of the attacks if Push A went out before the switch.
+When it becomes a migration, the test runs the migration file instead of this text. Then
+`supabase.yml` runs `tools/ranked.ts` after the deploy, which is the first live run of the
+season half of the attacks if Push A went out before the switch.
