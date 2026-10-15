@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { CARVED, columns, FIRST, GATES, seenAt, shown, walkedBefore } from '../cliff.ts';
+import { CARVED, columns, FIRST, foot, GATES, seenAt, shown, walkedBefore } from '../cliff.ts';
 import { RANKS } from '../copy.ts';
 import { WARDENS } from '../../data/bestiary.ts';
 // @ts-expect-error a plain .mjs fixture shared with the harnesses, typed by what it returns
-import { cliffRows } from '../../../tools/cliff-fixture.mjs';
+import { cliffRows, forerunnerRows, UNCARVED } from '../../../tools/cliff-fixture.mjs';
 import type { Carved } from '../../net/cloud.ts';
 
 /**
@@ -73,6 +73,23 @@ describe('題名崖 the Cliff of Names', () => {
     for (let i = 1; i < before.length; i++) expect(firstSeen(before[i - 1])).toBeLessThanOrEqual(firstSeen(before[i]));
     expect(walkedBefore([])).toEqual([]);
     expect(walkedBefore(day9.map((r) => ({ ...r, forerunner: false })))).toEqual([]);
+  });
+
+  it('lists every Forerunner at the foot, carved or not, and falls back to the carved ones only when it must', () => {
+    const every = (forerunnerRows(day9) as { name: string }[]).map((r) => r.name);
+    const whole = foot(every, day9);
+    expect(whole.whole).toBe(true);
+    expect(whole.names).toEqual(every);
+    for (const n of UNCARVED as string[]) expect(whole.names).toContain(n);
+    // A name the server sent twice is still named once.
+    expect(foot([...every, every[0]], day9).names).toEqual(every);
+    // forerunners() could not be read: the carved ones, and it says so (whole is false).
+    const carved = foot(null, day9);
+    expect(carved.whole).toBe(false);
+    expect(carved.names).toEqual(walkedBefore(day9));
+    for (const n of UNCARVED as string[]) expect(carved.names).not.toContain(n);
+    expect(foot(null, null)).toEqual({ names: [], whole: false });
+    expect(foot([], day9)).toEqual({ names: [], whole: true });
   });
 
   it('dates a carving in the device\'s own time, in English, and says nothing for a date it cannot read', () => {

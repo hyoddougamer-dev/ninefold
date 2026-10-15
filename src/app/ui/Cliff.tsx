@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { FORERUNNER, RANKS } from '../copy.ts';
 import { ForerunnerSeal } from './Forerunner.tsx';
 import { pictureOf } from '../../data/pictures.ts';
-import { columns, FIRST, seenAt, shown, walkedBefore, type Column } from '../cliff.ts';
+import { columns, FIRST, foot, seenAt, shown, type Column } from '../cliff.ts';
 import type { Carved } from '../../net/cloud.ts';
 import * as cloud from '../../net/cloud.ts';
 
@@ -12,7 +12,9 @@ import * as cloud from '../../net/cloud.ts';
  * Nine columns, one per gate, each headed by its realm's painting. A column stays in ink
  * until its first name is carved and then takes its colour, so by December the Cliff is a
  * picture of how far the world has climbed. Each holds the first 81 through its gate with
- * the server's date; your own place is lit. At its foot, 先行 those who walked before.
+ * the server's date; your own place is lit. At its foot, 先行 those who walked before: every
+ * Forerunner's name (2c), from forerunners(), carved or not. If that one call fails, the foot
+ * falls back to the Forerunners carved on the Cliff and says so, rather than going blank.
  *
  * It reads cliff() through fetchCliff(), which anybody may call, so a player who has not
  * joined the boards can look at it too. On a phone the nine columns scroll sideways inside
@@ -28,17 +30,21 @@ export function Cliff({ me, onBack }: {
 }) {
   const [rows, setRows] = useState<readonly Carved[] | null>(null);
   const [failed, setFailed] = useState(false);
+  // 先行 Every Forerunner, or null while it is read and if it could not be.
+  const [walked, setWalked] = useState<readonly string[] | null>(null);
   const [all, setAll] = useState(false);
   const C = RANKS.cliff;
 
   useEffect(() => {
     let live = true;
     cloud.fetchCliff().then((r) => { if (live) setRows(r); }).catch(() => { if (live) setFailed(true); });
+    cloud.fetchForerunners().then((n) => { if (live) setWalked(n); }).catch(() => {});
     return () => { live = false; };
   }, []);
 
   const cols = rows ? columns(rows, me) : null;
-  const before = rows ? walkedBefore(rows) : [];
+  // The whole list when the server gave it; the carved ones only when it did not.
+  const { names: before, whole } = foot(walked, rows);
   const long = cols?.some((c) => c.rows.length > FIRST) ?? false;
   const mine = cols?.filter((c) => c.mine !== null) ?? [];
 
@@ -82,10 +88,13 @@ export function Cliff({ me, onBack }: {
         <ForerunnerSeal className="rcliffseal" />
         <div>
           <b><span className="cjk">{FORERUNNER.han}</span> {C.footHead}</b>
-          <small>{before.length ? C.foot : C.footNone}</small>
+          <small>{whole ? (before.length ? C.foot : C.footNobody) : before.length ? C.footCarved : C.footNone}</small>
           {before.length > 0 && (
             <p className="rcliffnames">
-              {before.map((n, i) => <span key={n} data-me={n === me || undefined}>{n}{i < before.length - 1 ? ' · ' : ''}</span>)}
+              {/* Each name holds together on its line ("Jin He", never "Jin" / "He"); the line breaks between names. */}
+              {before.map((n, i) => (
+                <Fragment key={n}><span data-me={n === me || undefined}>{n}</span>{i < before.length - 1 ? ' · ' : ''}</Fragment>
+              ))}
             </p>
           )}
         </div>

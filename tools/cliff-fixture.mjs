@@ -56,17 +56,31 @@ export function cliffRows({ me = 'Kestrel', counts = [81, 60, 5, 2, 0, 0, 0, 0, 
 /** Day 0: the season has begun and nobody is through a gate yet. */
 export const EMPTY = [];
 
+/** 先行 Forerunners who never reached a gate: on the foot of the Cliff, on no column. */
+export const UNCARVED = ['Quiet Lake', 'Rain Bell'];
+
+/**
+ * 先行 What forerunners() answers: every Forerunner's name, carved or not, once each, in the
+ * order of the names themselves (lower(name), then name), as the server sorts them.
+ */
+export function forerunnerRows(cliff = cliffRows(), extra = UNCARVED) {
+  const names = new Set([...cliff.filter((r) => r.forerunner).map((r) => r.name), ...extra]);
+  return [...names].sort((a, b) => (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : a < b ? -1 : a > b ? 1 : 0))
+    .map((name) => ({ name }));
+}
+
 /**
  * 榜 A stand-in for the ranked server, enough for Rankings and the Cliff to fill: a signed-in
  * guest, the boards with 先行 on some rows (one beside a title), my_standing() saying this
- * account walked the closed test, and cliff() answering with `cliff`. The container cannot
+ * account walked the closed test, cliff() answering with `cliff`, and forerunners() with
+ * `forerunners` (null leaves it unanswered, as a server without it would). The container cannot
  * reach Supabase, so every request the game makes to it is answered here.
  */
 export const API = 'https://yqppvmuwlhibswbbvjzz.supabase.co';
 export const USER = { id: '0b5e2f4a-1111-4222-8333-944455556666', aud: 'authenticated', role: 'authenticated', email: null, is_anonymous: true };
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS' };
 
-export function standIn(page, { me = 'Kestrel', cliff = cliffRows({ me }) } = {}) {
+export function standIn(page, { me = 'Kestrel', cliff = cliffRows({ me }), forerunners = forerunnerRows(cliff) } = {}) {
   return page.route(`${API}/**`, async (route) => {
     const req = route.request();
     const url = new URL(req.url());
@@ -93,6 +107,7 @@ export function standIn(page, { me = 'Kestrel', cliff = cliffRows({ me }) } = {}
         return reply(200, { name: me, suspect: false, banned: false, climb: 22, marks: 0, tower: 12,
           verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期十', forerunner: true });
       case '/rest/v1/rpc/cliff': return reply(200, cliff);
+      case '/rest/v1/rpc/forerunners': return forerunners ? reply(200, forerunners) : reply(404, { message: 'no forerunners()' });
       default: return reply(404, { error: url.pathname });
     }
   });

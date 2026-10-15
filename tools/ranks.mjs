@@ -12,7 +12,7 @@
  */
 import { chromium } from 'playwright';
 import { isSealed, open as unsealText } from '../src/sim/seal.ts';
-import { cliffRows, SEASON_START } from './cliff-fixture.mjs';
+import { cliffRows, forerunnerRows, SEASON_START, UNCARVED } from './cliff-fixture.mjs';
 // 封 The game seals what it writes; a save written here is plain, and both open.
 const unseal = (raw) => (raw == null ? null : JSON.parse(isSealed(raw) ? unsealText(raw).json : raw));
 
@@ -37,7 +37,7 @@ const CORS = {
 };
 
 /** A stand-in for the project: auth, the sync function and the board RPCs. */
-function server(page, { cloud = null, email = null, cliff = [], cliffDown = false } = {}) {
+function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null } = {}) {
   const seen = { syncs: [], names: [] };
   const user = email ? { ...USER, email, is_anonymous: false } : USER;
   page.route(`${API}/**`, async (route) => {
@@ -73,6 +73,8 @@ function server(page, { cloud = null, email = null, cliff = [], cliffDown = fals
         return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首', forerunner: !!cliff.length });
       case '/rest/v1/rpc/set_name': return reply(200, body?.new_name?.trim());
       case '/rest/v1/rpc/cliff': return cliffDown ? reply(500, { message: 'down' }) : reply(200, cliff);
+      // 先行 Every Forerunner's name; left unanswered (as a server without it) unless given.
+      case '/rest/v1/rpc/forerunners': return forerunners ? reply(200, forerunners) : reply(404, { message: 'no forerunners()' });
       default: return reply(404, { error: url.pathname });
     }
   });
@@ -146,7 +148,9 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   check(/closed test before the seal fell/.test(await page.locator('.termtip').textContent().catch(() => '')),
     'a tap on the seal answers with its note', await page.locator('.termtip').textContent().catch(() => 'none'));
   await page.locator('.ranks h2').click();
-  check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
+  // This part runs on the real clock, so it says what is true on either side of the switch.
+  if (Date.now() / 1000 < SEASON_START) check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
+  else check(await page.locator('.ranks .rcliffdoor').count() === 1, 'from the switch, Rankings has a way to the Cliff');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
   check(/Fair play/.test(await page.locator('.ranks').textContent()), 'the boards say, under them, how they are kept fair');
   check(await page.locator('.ranks .rstatus[data-tone="bad"]').count() === 0, 'and an untouched save hears nothing about editing');
@@ -276,9 +280,10 @@ async function seasonPage(W, H, day, opts) {
 }
 
 const day9 = cliffRows({ me: '修士 0B5E' });
-for (const [label, W, H] of [['320', 320, 720], ['desktop', 1280, 720]]) {
-  console.log(`\nthe Cliff of Names, day 9, ${label}`);
-  const { page, errors } = await seasonPage(W, H, 9, { cliff: day9 });
+// 先行 At 320 the server answers forerunners(); on the PC window it does not, and the foot falls back.
+for (const [label, W, H, whole] of [['320', 320, 720, true], ['desktop', 1280, 720, false]]) {
+  console.log(`\nthe Cliff of Names, day 9, ${label}${whole ? '' : ', without forerunners()'}`);
+  const { page, errors } = await seasonPage(W, H, 9, { cliff: day9, forerunners: whole ? forerunnerRows(day9) : null });
   check(await page.locator('.ranks .rcliffdoor').isVisible(), 'from the switch, Rankings has a way to the Cliff');
   await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
   check(await page.locator('.ranks .rmine .rmseal[aria-label="Forerunner"]').count() === 1,
@@ -311,10 +316,20 @@ for (const [label, W, H] of [['320', 320, 720], ['desktop', 1280, 720]]) {
   });
   check(widths.doc <= widths.vw && widths.sheet <= 0, 'the page never scrolls sideways', JSON.stringify(widths));
   check(widths.inner > widths.frame, 'the nine columns scroll sideways inside their own frame', JSON.stringify(widths));
-  const foot = await page.locator('.ranks .rcliffnames span').allTextContents();
-  const want = new Set(day9.filter((r) => r.forerunner).map((r) => r.name));
-  check(foot.length === want.size && foot.every((n) => want.has(n.replace(/ · $/, ''))),
-    '先行 Those who walked before: every Forerunner on the Cliff, once each, with no numbers', `${foot.length} of ${want.size}`);
+  await page.waitForTimeout(300);
+  const foot = (await page.locator('.ranks .rcliffnames span').allTextContents()).map((n) => n.replace(/ · $/, ''));
+  const footSays = await page.locator('.ranks .rclifffoot small').textContent().catch(() => '');
+  if (whole) {
+    const want = forerunnerRows(day9).map((r) => r.name);
+    check(foot.length === want.length && foot.every((n, i) => n === want[i]) && UNCARVED.every((n) => foot.includes(n)),
+      '先行 Those who walked before: every Forerunner, carved or not, once each, with no numbers', `${foot.length} of ${want.length}`);
+    check(/Every Forerunner/.test(footSays), 'and it says it is every Forerunner', footSays);
+  } else {
+    const want = new Set(day9.filter((r) => r.forerunner).map((r) => r.name));
+    check(foot.length === want.size && foot.every((n) => want.has(n)) && !UNCARVED.some((n) => foot.includes(n)),
+      '先行 without forerunners(), the foot lists the Forerunners carved on the Cliff, once each', `${foot.length} of ${want.size}`);
+    check(/carved on the Cliff/.test(footSays), 'and says that is all it lists', footSays);
+  }
   await page.click('.ranks .rcliffall');
   check(await page.locator('.ranks .rcol[data-gate="1"] .rcolrow').count() === 81, 'every name, when asked for: 81 in a full column');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/cliff-${label}.png` });

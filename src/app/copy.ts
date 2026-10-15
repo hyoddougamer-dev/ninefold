@@ -248,7 +248,11 @@ export const RANKS = {
     yours: (n: number, gate: string) => `You are carved ${n}${n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'} through the ${gate}.`,
     scroll: 'Scroll sideways for all nine gates.',
     footHead: 'Those who walked before',
-    foot: 'Forerunners carved on the Cliff, named once each, with no numbers.',
+    /** Every Forerunner, carved or not (forerunners() on the server), in the order of the names. */
+    foot: 'Every Forerunner, named once each, with no numbers.',
+    footNobody: 'No Forerunner is named yet.',
+    /** Only when that list cannot be read: the Forerunners carved on the Cliff, said as exactly that. */
+    footCarved: 'Forerunners carved on the Cliff, named once each, with no numbers.',
     footNone: 'No Forerunner is carved yet. Their names gather here as they pass the first gate.',
     loading: 'Reading the Cliff…',
     offline: 'The Cliff cannot be reached right now. Your game goes on as it was.',

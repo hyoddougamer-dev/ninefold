@@ -4572,6 +4572,7 @@ nav.tabs .tabkey { display: none; }
 .help.ranks .rclifffoot b .cjk { font: 600 14px/1 'Noto Serif SC', serif; letter-spacing: .04em; margin-right: 3px; }
 .help.ranks .rclifffoot small { font-size: 12px; line-height: 1.45; color: var(--faint); }
 .help.ranks .rcliffnames { margin: 4px 0 0; font: italic 500 14.5px/1.6 var(--serif); color: #E8D9B8; overflow-wrap: anywhere; }
+.help.ranks .rcliffnames span { display: inline-block; max-width: 100%; }
 .help.ranks .rcliffnames span[data-me] { color: var(--jade); }
 .help.ranks .rcliffseal { flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
   width: 28px; height: 42px; border: 2px solid var(--gold); border-radius: 3px; background: #2b2213; color: var(--gold);

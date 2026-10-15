@@ -70,6 +70,16 @@ export function walkedBefore(rows: readonly Carved[]): string[] {
   return [...first.entries()].sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])).map(([n]) => n);
 }
 
+/**
+ * 先行 The foot of the Cliff: every Forerunner's name from forerunners() when the server gave it
+ * (once each, in its own order), or, when it could not be read, those carved on the Cliff, and
+ * `whole` says which, so the words under it never claim a list it is not.
+ */
+export function foot(walked: readonly string[] | null, rows: readonly Carved[] | null): { names: string[]; whole: boolean } {
+  if (walked) return { names: [...new Set(walked.filter((n) => typeof n === 'string' && n.length > 0))], whole: true };
+  return { names: rows ? walkedBefore(rows) : [], whole: false };
+}
+
 /** When the server saw you, in this device's own time: "26 Oct, 00:41". */
 export function seenAt(iso: string): string {
   const d = new Date(iso);
