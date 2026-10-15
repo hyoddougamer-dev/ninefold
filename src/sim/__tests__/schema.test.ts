@@ -18,6 +18,21 @@ const A = '11111111-1111-1111-1111-111111111111';
 const B = '22222222-2222-2222-2222-222222222222';
 const C = '33333333-3333-3333-3333-333333333333';
 
+/** A migration as the deploy runs it. pgcrypto is not in PGlite and nothing here uses it. */
+const migration = (f: string) => readFileSync(`${MIGRATIONS}/${f}`, 'utf8').replace(/create extension[^;]*;/g, '');
+
+/**
+ * 季 Every migration from `from` on, run again in order, as the tests that move the clock or
+ * re-run an older file need. 先行 board() and samsara_board() gained a column after the season's
+ * migration, and a function's columns cannot change under create or replace, so an older file
+ * that makes them could not run over the newer ones: both are dropped first, and the files
+ * after it make them again, with their grants, exactly as the deploy left them.
+ */
+async function replay(from: string) {
+  await db.exec('drop function if exists public.board(text, int); drop function if exists public.samsara_board(int);');
+  for (const f of readdirSync(MIGRATIONS).sort().filter((f) => f >= from)) await db.exec(migration(f));
+}
+
 /** Run as a signed-in player: the role Supabase gives a user's JWT, and their id. */
 async function as(id: string | null, sql: string, params: unknown[] = []) {
   await db.exec(`reset role; select set_config('test.uid', '${id ?? ''}', false);`);
@@ -44,10 +59,7 @@ beforeAll(async () => {
     grant usage on schema public to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
   `);
-  for (const f of readdirSync(MIGRATIONS).sort()) {
-    // pgcrypto is not in PGlite and nothing here uses it.
-    await db.exec(readFileSync(`${MIGRATIONS}/${f}`, 'utf8').replace(/create extension[^;]*;/g, ''));
-  }
+  for (const f of readdirSync(MIGRATIONS).sort()) await db.exec(migration(f));
   await db.exec(`
     insert into auth.users values ('${A}'), ('${B}'), ('${C}');
     insert into profiles (id, name) values ('${A}', 'Alpha'), ('${B}', 'Beta'), ('${C}', 'Gamma');
@@ -118,7 +130,7 @@ describe('榜 the ranked schema', () => {
   });
 
   it('no player can read or write a table directly', async () => {
-    for (const t of ['profiles', 'saves', 'standings', 'sync_log', 'titles', 'meta']) {
+    for (const t of ['profiles', 'saves', 'standings', 'sync_log', 'titles', 'meta', 'firsts']) {
       await expect(as(A, `select * from ${t}`)).rejects.toThrow(/permission denied/);
       await expect(as(null, `select * from ${t}`)).rejects.toThrow(/permission denied/);
     }
@@ -222,7 +234,7 @@ describe('榜 the ranked schema', () => {
     await db.exec(readFileSync(`${MIGRATIONS}/20261002000000_clear_rekaris.sql`, 'utf8'));
     await db.exec(readFileSync(`${MIGRATIONS}/20261003000000_panel_refusals.sql`, 'utf8'));
     await db.exec(readFileSync(`${MIGRATIONS}/20261005140000_review.sql`, 'utf8'));
-    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    await replay(SEASON_FILE);
     // 拒 Gamma's day: two syncs refused for too-fast (one with it twice, from both windows),
     // one for the tower, one that went through, and a refusal two days old that is not today's.
     await db.exec(`insert into sync_log (user_id, at, ok, why) values
@@ -236,7 +248,7 @@ describe('榜 the ranked schema', () => {
     expect(rows.length).toBeGreaterThanOrEqual(1);
     expect(Object.keys(rows[0]).sort()).toEqual(
       ['cleared', 'climb', 'days', 'email', 'held', 'joined', 'last_seen', 'layer', 'marks', 'name', 'note', 'realm',
-        'refused_day', 'refused_why', 'started', 'syncs7', 'syncs_day', 'tower']);
+        'refused_day', 'refused_why', 'staff', 'started', 'syncs7', 'syncs_day', 'tower', 'forerunner'].sort());
     expect(JSON.stringify(rows)).not.toMatch(/@|[0-9a-f]{8}-[0-9a-f]{4}-/);
     expect(rows.every((r: any) => typeof r.email === 'boolean')).toBe(true);
     expect(rows.find((r: any) => r.name === 'Gamma')).toMatchObject({ syncs_day: 4, refused_day: 3, refused_why: 'too-fast' });
@@ -527,7 +539,7 @@ describe('榜 the ranked schema', () => {
     `);
     const pre = (await db.query(`select lives from standings where user_id = '${W}'`)).rows[0] as any;
     expect(Number(pre.lives)).toBe(0);
-    await db.exec(readFileSync(`${MIGRATIONS}/20261011120000_samsara.sql`, 'utf8'));
+    await replay('20261011120000_samsara.sql');
     const got = (await db.query(`select lives, samsara_climb, samsara_marks, samsara_at, climb from standings where user_id = '${W}'`)).rows[0] as any;
     expect(Number(got.lives)).toBe(1);
     expect(Number(got.samsara_climb)).toBe(12);           // realm 2, layer 3: (2 - 1) * 9 + 3
@@ -551,7 +563,7 @@ describe('榜 the ranked schema', () => {
    * this Monday 00:00 UTC (a season begins on a Monday, as the real one does), and put back.
    */
   it('season_start() is SEASON_START, to the second', async () => {
-    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    await replay(SEASON_FILE);
     const r = (await db.query(`select extract(epoch from season_start())::bigint as t`)).rows[0] as any;
     expect(Number(r.t)).toBe(SEASON_START);
     expect(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8')).toContain(`to_timestamp(${SEASON_START})`);
@@ -559,8 +571,8 @@ describe('榜 the ranked schema', () => {
 
   it('from the switch the boards, titles and panel read only season rows, and nothing is deleted', async () => {
     // Every migration that redefined these functions before it, run again above, is undone
-    // by running this one again: it is written to be run again.
-    await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+    // by running this one and every one after it again: each is written to be run again.
+    await replay(SEASON_FILE);
     const { createHash } = await import('node:crypto');
     await db.exec(readFileSync(`${MIGRATIONS}/20261004220000_panel_key.sql`, 'utf8')
       .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`));
@@ -595,9 +607,9 @@ describe('榜 the ranked schema', () => {
     expect((await panel('panel_cheats')).find((r) => r.name === 'Closed Best')).toMatchObject({ struck: 1 });
     const realms = async () => (((await as(null, `select stats() as s`)).rows[0] as any).s.realms as any[]);
     expect((await realms()).some((r) => r.realm === 9)).toBe(true);
-    // 舊 Before the switch there is no closed-test copy to hand back: the closed test is still on.
-    const kept = async (who: string) => ((await as(who, `select closed_test_mine() as c`)).rows[0] as any).c;
-    expect(await kept(P)).toBeNull();
+    // 落 The closed-test copy was retired before the switch (20261015100000_retire_closed_copy.sql):
+    // there is no door to it on either side of the switch, for its own player or anyone.
+    await expect(as(P, `select closed_test_mine()`)).rejects.toThrow(/does not exist/);
 
     // The switch.
     await db.exec(`create or replace function public.season_start() returns timestamptz language sql stable
@@ -630,19 +642,13 @@ describe('榜 the ranked schema', () => {
         (select count(*) from sync_log where user_id = '${P}')::int as lg`)).rows[0];
       expect(counts).toEqual({ st: 2, sv: 1, ti: 1, lg: 1 });
 
-      // 舊 Not moved yet: P has not synced since the switch, so the row's latest is the copy,
-      // and it is handed back to P alone. Q began in the season and has none; a player with no
-      // row has none; nobody signed in may not ask at all.
-      const early = await kept(P);
-      expect(Object.keys(early).sort()).toEqual(['at', 'save']);
-      expect(early.save).toEqual({ realm: 9, startedAt: 1777593600, tag: 'kept-closed-copy' });
-      expect(early.at).toBeTruthy();
-      expect(await kept(Q)).toBeNull();
-      expect(await kept(A)).toBeNull();
-      await expect(as(null, `select closed_test_mine()`)).rejects.toThrow(/permission denied/);
+      // 落 No door to the closed-test copy, for its own player, another, or nobody signed in.
+      for (const who of [P, Q, null]) {
+        await expect(as(who, `select closed_test_mine()`)).rejects.toThrow(/does not exist/);
+      }
 
-      // 存 The season's first sync of a kept account writes over its cloud copy, as the sync
-      // function does (an upsert); the closed-test copy moves to closed_test, once.
+      // 落 The season's first sync of an account writes over its cloud copy, as the sync function
+      // does (an upsert), and nothing is moved aside: the closed-test copy is not kept anywhere.
       const upsert = (latest: string) => db.exec(`insert into saves (user_id, latest, latest_at, verified, verified_at, last_sync)
         values ('${P}', '${latest}', now(), null, null, now())
         on conflict (user_id) do update set latest = excluded.latest, latest_at = excluded.latest_at,
@@ -651,22 +657,17 @@ describe('榜 the ranked schema', () => {
       await upsert('{"realm": 1, "season": "s0", "n": 2}');
       const row = (await db.query(`select latest, closed_test, closed_test_at from saves where user_id = '${P}'`)).rows[0] as any;
       expect(row.latest).toMatchObject({ season: 's0', n: 2 });
-      expect(row.closed_test).toEqual({ realm: 9, startedAt: 1777593600, tag: 'kept-closed-copy' });
-      expect(row.closed_test_at).toBeTruthy();
+      expect(row).toMatchObject({ closed_test: null, closed_test_at: null });
+      expect(JSON.stringify((await db.query(`select * from saves`)).rows)).not.toContain('kept-closed-copy');
       await expect(as(P, `select closed_test from saves`)).rejects.toThrow(/permission denied/);
-      // 舊 Moved: the same copy, now read from closed_test, so the order never mattered. Only
-      // P reads it; Q (another player, signed in as a guest is signed in) still reads nothing.
-      expect(await kept(P)).toEqual(early);
-      expect(await kept(Q)).toBeNull();
-      expect(JSON.stringify(await kept(Q))).not.toContain('kept-closed-copy');
-      // An empty object is no cultivator, wherever it sits, and is never handed back as one.
-      await db.exec(`update saves set closed_test = '{}'::jsonb where user_id = '${Q}'`);
-      expect(await kept(Q)).toBeNull();
-      await db.exec(`update saves set closed_test = null where user_id = '${Q}'`);
-      // It reads saves by its schema name, with pg_temp searched last: nothing a caller made stands in.
-      const own = ((await db.query(`select pg_get_functiondef('public.closed_test_mine()'::regprocedure) as d`)).rows[0] as any).d;
-      expect(own).toContain('public.saves');
-      expect(own).toMatch(/search_path\s*(=|TO)\s*'?public'?,\s*'?pg_temp/i);
+      // Nothing on the server keeps it again: no trigger on saves but the pin's, and no function
+      // of the public schema reads or writes those two columns.
+      const triggers = (await db.query(`select tgname from pg_trigger
+        where tgrelid = 'public.saves'::regclass and not tgisinternal order by tgname`)).rows.map((r: any) => r.tgname);
+      expect(triggers).not.toContain('saves_keep_closed_test');
+      const reading = (await db.query(`select p.proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.prosrc like '%closed_test%'`)).rows.map((r: any) => r.proname);
+      expect(reading).toEqual([]);
       // The panel and the counts never carry it, by what they answer and by what they read.
       const told = JSON.stringify([await panel('panel_players'), await panel('panel_cheats'),
         ((await as(null, `select stats() as s`)).rows[0] as any).s]);
@@ -679,13 +680,349 @@ describe('榜 the ranked schema', () => {
         expect(def, fn).not.toContain('closed_test');
       }
     } finally {
-      await db.exec(readFileSync(`${MIGRATIONS}/${SEASON_FILE}`, 'utf8'));
+      await replay(SEASON_FILE);
     }
-    // Put back, the closed test reads as before, and a sync before the switch keeps nothing aside.
+    // Put back, the closed test reads as before, and a write before the switch keeps nothing aside.
     expect(await names(`select name from board('climb')`)).toContain('Closed Best');
     await db.exec(`update saves set latest = '{"realm": 2}' where user_id = '${Q}'`);
     expect((await db.query(`select closed_test from saves where user_id = '${Q}'`)).rows[0]).toEqual({ closed_test: null });
     await db.exec(`delete from titles where user_id = '${P}'; delete from sync_log where user_id = '${P}';
       delete from auth.users where id in ('${P}', '${R}', '${Q}')`);
+  });
+});
+
+/**
+ * 開山 Season 0, The Founding (docs/SEASON0-THEME.md, decided 2026-10-15): the 先行 Forerunner
+ * mark, the carving of 題名崖 the Cliff of Names, and the staff flag. Every test that needs the
+ * switch behind it moves season_start() to a fixed instant a day ago, and puts it back.
+ */
+describe('開山 the Founding: Forerunner, the Cliff, staff', () => {
+  const at = (ms: number) => `'${new Date(ms).toISOString()}'::timestamptz`;
+  const switchAt = (t: string) => db.exec(`create or replace function public.season_start() returns timestamptz
+    language sql stable set search_path = public as $$ select ${t} $$`);
+  const switchBack = () => switchAt(`to_timestamp(${SEASON_START})`);
+  const SWITCH = Date.now() - 86_400_000;
+  const id = (k: string, n: number) => `${k}-0000-0000-0000-${String(n).padStart(12, '0')}`;
+  const forerunner = async (uid: string) => ((await db.query(`select is_forerunner($1) as f`, [uid])).rows[0] as any).f;
+  const gates = async (uid: string) => (await db.query(`select gate, at from firsts where user_id = $1 order by gate`, [uid])).rows as any[];
+  const testKey = async () => {
+    const { createHash } = await import('node:crypto');
+    await db.exec(readFileSync(`${MIGRATIONS}/20261004220000_panel_key.sql`, 'utf8')
+      .replace(/'[0-9a-f]{64}'/, `'${createHash('sha256').update('test-key').digest('hex')}'`));
+  };
+
+  it('先行 is any sync before the switch, whatever its verdict; never the banned, never staff', async () => {
+    const F = (n: number) => id('f0000000', n);
+    await db.exec(`
+      insert into auth.users values ('${F(1)}'), ('${F(2)}'), ('${F(3)}'), ('${F(4)}'), ('${F(5)}'), ('${F(6)}'), ('${F(7)}');
+      insert into profiles (id, name, banned, staff, forerunner) values
+        ('${F(1)}', 'Fore Refused', false, false, false),   -- only a refused sync before the switch
+        ('${F(2)}', 'Fore Banned', true, false, false),
+        ('${F(3)}', 'Fore Staff', false, true, false),
+        ('${F(4)}', 'Fore Stamped', false, false, true),     -- stamped by Push B, its old rows gone
+        ('${F(5)}', 'Fore Late', false, false, false),       -- first synced at or after the switch
+        ('${F(6)}', 'Fore Stamped Banned', true, false, true),
+        ('${F(7)}', 'Fore Never', false, false, false);      -- never synced at all
+      insert into sync_log (user_id, at, ok) values
+        ('${F(1)}', ${at(SWITCH)} - interval '2 days', false),
+        ('${F(1)}', ${at(SWITCH)} + interval '1 hour', true),
+        ('${F(2)}', ${at(SWITCH)} - interval '2 days', true),
+        ('${F(3)}', ${at(SWITCH)} - interval '2 days', true),
+        ('${F(5)}', ${at(SWITCH)} + interval '1 hour', true),
+        ('${F(5)}', ${at(SWITCH)}, true);   -- the switch's own second is the season's
+    `);
+    await switchAt(at(SWITCH));
+    try {
+      const got = await Promise.all([1, 2, 3, 4, 5, 6, 7].map((n) => forerunner(F(n))));
+      expect(got).toEqual([true, false, false, true, false, false, false]);
+      expect(await forerunner('00000000-0000-0000-0000-000000000000')).toBe(false);   // no such account
+
+      // On every board, as its own column after calling, and where I stand.
+      await db.exec(`insert into standings (user_id, climb, marks, tower, week, week_from, lives, samsara_climb, updated_at) values
+        ('${F(1)}', 70, 0, 400, week_of(), 0, 0, 70, now()), ('${F(4)}', 69, 0, 399, week_of(), 0, 1, 12, now()),
+        ('${F(5)}', 68, 0, 398, week_of(), 0, 0, 68, now())`);
+      const marked = (rows: any[]) => Object.fromEntries(rows.filter((r) => r.name.startsWith('Fore ')).map((r) => [r.name, r.forerunner]));
+      expect(marked((await as(null, `select name, forerunner from board('climb')`)).rows as any[]))
+        .toEqual({ 'Fore Refused': true, 'Fore Late': false });
+      expect(marked((await as(A, `select name, forerunner from board('tower')`)).rows as any[]))
+        .toEqual({ 'Fore Refused': true, 'Fore Stamped': true, 'Fore Late': false });
+      expect(marked((await as(null, `select name, forerunner from samsara_board()`)).rows as any[]))
+        .toEqual({ 'Fore Stamped': true });
+      const cols = async (sql: string) => (await db.query(`${sql} limit 0`)).fields.map((f: any) => f.name);
+      expect(await cols(`select * from board('climb')`)).toEqual(
+        ['rank', 'name', 'climb', 'marks', 'tower', 'gain', 'title', 'me', 'calling', 'forerunner']);
+      expect(await cols(`select * from samsara_board()`)).toEqual(await cols(`select * from board('climb')`));
+      expect(((await as(F(1), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ name: 'Fore Refused', forerunner: true });
+      expect(((await as(F(5), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ forerunner: false });
+      expect(((await as(F(3), `select my_standing() as s`)).rows[0] as any).s).toMatchObject({ forerunner: false });
+
+      // Nobody calls it from outside, and nobody stamps or unstamps an account but the server.
+      await expect(as(null, `select is_forerunner('${F(1)}')`)).rejects.toThrow(/permission denied/);
+      await expect(as(F(5), `select is_forerunner('${F(5)}')`)).rejects.toThrow(/permission denied/);
+      await expect(as(F(5), `update profiles set forerunner = true where id = '${F(5)}'`)).rejects.toThrow(/permission denied/);
+      await expect(as(null, `update profiles set forerunner = true`)).rejects.toThrow(/permission denied/);
+      await expect(as(F(3), `update profiles set staff = false where id = '${F(3)}'`)).rejects.toThrow(/permission denied/);
+      await expect(as(F(5), `insert into sync_log (user_id, at, ok) values ('${F(5)}', '2026-01-01', true)`)).rejects.toThrow(/permission denied/);
+    } finally {
+      await switchBack();
+      await db.exec(`delete from sync_log where user_id::text like 'f0000000-%'; delete from auth.users where id::text like 'f0000000-%'`);
+    }
+  });
+
+  it('題名崖 carves nothing before the switch, then each gate once, at the sync that showed it, never rewritten', async () => {
+    const K = (n: number) => id('c0000000', n);
+    await db.exec(`insert into auth.users values ('${K(1)}'), ('${K(2)}'), ('${K(3)}');
+      insert into profiles (id, name) values ('${K(1)}', 'Carve One'), ('${K(2)}', 'Carve Old'), ('${K(3)}', 'Carve New');`);
+    // As the sync function writes a standing: an upsert, updated_at its own now.
+    const sync = (uid: string, climb: number, marks: number) => db.exec(`
+      insert into standings (user_id, climb, marks, tower, updated_at) values ('${uid}', ${climb}, ${marks}, 0, now())
+      on conflict (user_id) do update set climb = excluded.climb, marks = excluded.marks, updated_at = excluded.updated_at`);
+    const later = () => new Promise((r) => setTimeout(r, 15));
+    try {
+      // The closed test: a cultivator at the summit, written again and again, carves nothing.
+      await switchAt(`now() + interval '1 day'`);
+      await sync(K(1), 80, 3);
+      await sync(K(1), 80, 4);
+      expect(await gates(K(1))).toEqual([]);
+
+      // A row the closed test wrote, touched after the switch by anything but a season sync
+      // (its updated_at is still from before), carves nothing either.
+      await db.exec(`insert into standings (user_id, climb, marks, tower, updated_at) values ('${K(2)}', 80, 5, 0, ${at(SWITCH)} - interval '1 day')`);
+      await switchAt(at(SWITCH));
+      await db.exec(`update standings set tower = 7 where user_id = '${K(2)}'`);
+      expect(await gates(K(2))).toEqual([]);
+
+      // The season: K1's first season sync is into realm 3, so through the first two gates.
+      await sync(K(1), 20, 0);
+      const first = await gates(K(1));
+      expect(first.map((g) => g.gate)).toEqual([1, 2]);
+      await later();
+      await sync(K(1), 27, 0);   // realm 4: the third gate, and the first two untouched
+      const second = await gates(K(1));
+      expect(second.map((g) => g.gate)).toEqual([1, 2, 3]);
+      expect(second.slice(0, 2)).toEqual(first);
+      expect(new Date(second[2].at).getTime()).toBeGreaterThan(new Date(first[0].at).getTime());
+      await sync(K(1), 26, 0);   // a climb read lower carves nothing and takes nothing back
+      expect(await gates(K(1))).toEqual(second);
+      await later();
+      await sync(K(1), 30, 1);   // the Dragon's gate is the first tribulation crossed, whatever the climb
+      const dragon = await gates(K(1));
+      expect(dragon.map((g) => g.gate)).toEqual([1, 2, 3, 9]);
+      await later();
+      await sync(K(1), 80, 6);
+      await sync(K(1), 80, 7);
+      const all = await gates(K(1));
+      expect(all.map((g) => g.gate)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      expect(all.filter((g) => g.gate <= 3)).toEqual(second);
+      expect(all.find((g) => g.gate === 9)).toEqual(dragon.find((g) => g.gate === 9));
+      // 8 is the last of the wardens' gates: realm 9 begins at climb 72; 71 is realm 8, layer 8.
+      await sync(K(3), 71, 0);
+      expect((await gates(K(3))).map((g) => g.gate)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+      await sync(K(3), 72, 0);
+      expect((await gates(K(3))).map((g) => g.gate)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      // Leaving takes the account's carvings with it, and nothing else.
+      await as(K(3), `select delete_me()`);
+      expect(await gates(K(3))).toEqual([]);
+      expect(await gates(K(1))).toHaveLength(9);
+    } finally {
+      await switchBack();
+      await db.exec(`delete from auth.users where id::text like 'c0000000-%'`);
+    }
+    expect((await db.query(`select count(*)::int as n from firsts where user_id::text like 'c0000000-%'`)).rows[0]).toEqual({ n: 0 });
+  });
+
+  it('題名崖 reads the first 81 through each gate by time, ties by id, skipping banned, held and staff', async () => {
+    const E = (n: number) => id('e0000000', n);
+    const base = Date.UTC(2026, 9, 26, 6, 0, 0);
+    // Carver n is seen through the fifth gate n minutes in, but 3 shares 2's minute and 9 shares 11's.
+    const t = (n: number) => base + (n === 3 ? 2 : n === 9 ? 11 : n) * 60_000;
+    await db.exec(`
+      insert into auth.users select ('e0000000-0000-0000-0000-' || lpad(g::text, 12, '0'))::uuid from generate_series(1, 90) g;
+      insert into profiles (id, name) select ('e0000000-0000-0000-0000-' || lpad(g::text, 12, '0'))::uuid, 'Carver ' || g
+        from generate_series(1, 90) g;
+      insert into firsts (gate, user_id, at) values
+        ${Array.from({ length: 90 }, (_, i) => `(5, '${E(i + 1)}', ${at(t(i + 1))})`).join(',\n        ')},
+        (1, '${E(7)}', ${at(base)}), (1, '${E(1)}', ${at(base + 1)});
+      update profiles set banned = true where id = '${E(1)}';
+      update profiles set suspect = true where id = '${E(4)}';
+      update profiles set staff = true where id = '${E(6)}';
+      insert into sync_log (user_id, at, ok) values ('${E(2)}', season_start() - interval '1 day', false);
+    `);
+    try {
+      const read = async (who: string | null = null) => ((await as(who, `select gate, rank, name, at, forerunner from cliff()`)).rows as any[])
+        .filter((r) => r.name.startsWith('Carver '));
+      const five = (await read()).filter((r) => r.gate === 5);
+      expect(five).toHaveLength(81);
+      expect(five.map((r) => r.rank)).toEqual(Array.from({ length: 81 }, (_, i) => i + 1));
+      // 2 and 3 share a minute (2 first, by id); 9 shares 11's (9 first); 1, 4 and 6 are skipped.
+      expect(five.slice(0, 9).map((r) => r.name)).toEqual(
+        ['Carver 2', 'Carver 3', 'Carver 5', 'Carver 7', 'Carver 8', 'Carver 10', 'Carver 9', 'Carver 11', 'Carver 12']);
+      expect(five.at(-1).name).toBe('Carver 84');
+      expect(new Date(five[0].at).getTime()).toBe(t(2));
+      expect(five.filter((r) => r.forerunner).map((r) => r.name)).toEqual(['Carver 2']);
+      // The first gate: the banned one first through it is skipped, and the next is first. A
+      // signed-in player reads the same Cliff.
+      expect((await read(A)).filter((r) => r.gate === 1).map((r) => [r.rank, r.name])).toEqual([[1, 'Carver 7']]);
+      // What it answers: no id, nothing but these five.
+      const cols = (await db.query(`select * from cliff() limit 0`)).fields.map((f: any) => f.name);
+      expect(cols).toEqual(['gate', 'rank', 'name', 'at', 'forerunner']);
+      expect(JSON.stringify(await read())).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+
+      // Held for review, then cleared: back at the original time, ahead of those after it.
+      await db.exec(`update profiles set suspect = false where id = '${E(4)}'`);
+      const back = (await read()).filter((r) => r.gate === 5);
+      expect(back.slice(0, 4).map((r) => r.name)).toEqual(['Carver 2', 'Carver 3', 'Carver 4', 'Carver 5']);
+      expect(back.at(-1).name).toBe('Carver 83');
+    } finally {
+      await db.exec(`delete from sync_log where user_id::text like 'e0000000-%'; delete from auth.users where id::text like 'e0000000-%'`);
+    }
+  });
+
+  it('no player writes the Cliff, and no player calls the carving', async () => {
+    for (const who of [A, null]) {
+      await expect(as(who, `insert into firsts (gate, user_id) values (1, '${A}')`)).rejects.toThrow(/permission denied/);
+      await expect(as(who, `update firsts set at = '2020-01-01'`)).rejects.toThrow(/permission denied/);
+      await expect(as(who, `delete from firsts`)).rejects.toThrow(/permission denied/);
+      await expect(as(who, `select * from firsts`)).rejects.toThrow(/permission denied/);
+      await expect(as(who, `select standings_carve()`)).rejects.toThrow(/permission denied|trigger/);
+    }
+    // and the carving is a trigger on the table the sync writes.
+    const trig = (await db.query(`select tgname from pg_trigger where tgrelid = 'public.standings'::regclass
+      and tgname = 'standings_carve'`)).rows;
+    expect(trig).toHaveLength(1);
+  });
+
+  it('staff is set only with the panel key, by name, and takes the account off the Cliff and the mark', async () => {
+    await testKey();
+    const S = id('5aff0000', 1);
+    await db.exec(`insert into auth.users values ('${S}');
+      insert into profiles (id, name) values ('${S}', 'Staff Test');
+      insert into sync_log (user_id, at, ok) values ('${S}', season_start() - interval '3 days', true);
+      insert into firsts (gate, user_id, at) values (2, '${S}', '2026-10-26T00:05:00Z');`);
+    try {
+      for (const who of [null, A, S]) {
+        await expect(as(who, `select panel_set_staff('guess', 'Staff Test', true)`)).rejects.toThrow(/wrong key/);
+        await expect(as(who, `select panel_set_staff(null, 'Staff Test', true)`)).rejects.toThrow(/wrong key/);
+      }
+      await expect(as(null, `select panel_set_staff('test-key', 'Nobody At All', true)`)).rejects.toThrow(/no such player/);
+      const staff = async () => ((await db.query(`select staff from profiles where id = '${S}'`)).rows[0] as any).staff;
+      const onCliff = async () => ((await as(null, `select name from cliff()`)).rows as any[]).some((r) => r.name === 'Staff Test');
+      expect(await staff()).toBe(false);
+      expect(await forerunner(S)).toBe(true);
+      expect(await onCliff()).toBe(true);
+
+      expect(((await as(null, `select panel_set_staff('test-key', '  staff TEST ', true) as s`)).rows[0] as any).s).toBe(true);
+      expect(await staff()).toBe(true);
+      expect(await forerunner(S)).toBe(false);
+      expect(await onCliff()).toBe(false);
+      const row = ((await as(null, `select panel_players('test-key') as p`)).rows[0] as any).p.find((r: any) => r.name === 'Staff Test');
+      expect(row).toMatchObject({ staff: true, forerunner: false });
+
+      // Off again: back on the Cliff at its true time, and the mark is back. Called by name, as
+      // the panel's REST call makes it, every argument quoted ("on" is a keyword).
+      await as(A, `select panel_set_staff("key" := 'test-key', "name" := 'Staff Test', "on" := false)`);
+      expect(await staff()).toBe(false);
+      expect(await forerunner(S)).toBe(true);
+      expect(await onCliff()).toBe(true);
+    } finally {
+      await db.exec(`delete from sync_log where user_id = '${S}'; delete from auth.users where id = '${S}'`);
+    }
+  });
+
+  /**
+   * 先行 Push B (docs/SEASON0-PUSHB-DRAFT.md) deletes the closed test's sync_log rows, which are
+   * the Forerunner evidence, so its first write stamps profiles.forerunner from them. Its text
+   * is run here as it stands, the cutoff moved to a day ago with season_start(), the brake filled
+   * in. Last in the file on purpose: it deletes every row from before the cutoff.
+   */
+  it('the Push B draft stamps every Forerunner before it deletes anything, and keeps no closed-test save', async () => {
+    const draft = readFileSync('docs/SEASON0-PUSHB-DRAFT.md', 'utf8');
+    const sql = draft.match(/```sql\n([\s\S]*?)```/)?.[1] ?? '';
+    const body = sql.replace(/--[^\n]*/g, '');
+    // The order, read off the text: the stamp is the first write.
+    const stamp = body.search(/update\s+public\.profiles\s+p\s+set\s+forerunner\s*=\s*true/i);
+    expect(stamp).toBeGreaterThan(0);
+    const writes = [...body.matchAll(/\b(delete\s+from|update\s+public\.\w+|truncate|drop\s+column)\b/gi)].map((m) => m.index!);
+    expect(Math.min(...writes)).toBe(stamp);
+    expect(body).not.toMatch(/closed_test_mine|closed_test\s*=/);
+    expect(body).toMatch(/delete\s+from\s+public\.saves\s+where\s+last_sync\s*<\s*cutoff/i);
+    // Its cutoff is SEASON_START, and it is no migration.
+    expect(Date.parse(sql.match(/cutoff constant timestamptz := '([^']+)'/)![1]) / 1000).toBe(SEASON_START);
+    for (const f of readdirSync(MIGRATIONS)) expect(readFileSync(`${MIGRATIONS}/${f}`, 'utf8'), f).not.toMatch(/season 0 wipe/i);
+
+    // Run it.
+    const cutoff = new Date(Date.now() - 86_400_000).toISOString();
+    const block = (brake: number, when = cutoff) => sql
+      .replace(`'2026-10-26T00:00:00Z'`, `'${when}'`).replace(/<Bruno's player count[^>]*>/, String(brake));
+    const W = (n: number) => `b0000000-0000-0000-0000-${String(n).padStart(12, '0')}`;
+    const seed = () => db.exec(`
+      insert into auth.users values ('${W(1)}'), ('${W(2)}'), ('${W(3)}'), ('${W(4)}') on conflict do nothing;
+      insert into profiles (id, name, banned) values ('${W(1)}', 'Wipe Old', false), ('${W(2)}', 'Wipe Banned', true),
+        ('${W(3)}', 'Wipe Season', false), ('${W(4)}', 'Wipe Both', false) on conflict do nothing;
+      insert into sync_log (user_id, at, ok) values
+        ('${W(1)}', '${cutoff}'::timestamptz - interval '3 days', false),
+        ('${W(2)}', '${cutoff}'::timestamptz - interval '3 days', true),
+        ('${W(3)}', now(), true),
+        ('${W(4)}', '${cutoff}'::timestamptz - interval '9 days', true), ('${W(4)}', now(), true);
+      insert into saves (user_id, latest, latest_at, last_sync, pinned) values
+        ('${W(1)}', '{"realm": 9, "tag": "closed-copy"}', '${cutoff}'::timestamptz - interval '3 days', '${cutoff}'::timestamptz - interval '3 days', true),
+        ('${W(3)}', '{"realm": 1, "season": "s0"}', now(), now(), false),
+        ('${W(4)}', '{"realm": 2, "season": "s0"}', now(), now(), false)
+        on conflict (user_id) do nothing;
+      insert into standings (user_id, climb, marks, tower, updated_at) values
+        ('${W(1)}', 79, 6, 500, '${cutoff}'::timestamptz - interval '3 days') on conflict do nothing;
+      insert into titles (week, board, rank, user_id, name) values
+        (week_of('${cutoff}'::timestamptz) - 1, 'week', 1, '${W(1)}', 'Wipe Old') on conflict do nothing;
+    `);
+    const everyone = async () => (await db.query(`select id, name, is_forerunner(id) as f from profiles order by id`)).rows as any[];
+    const rows = async () => (await db.query(`select
+      (select count(*) from saves)::int as saves, (select count(*) from standings)::int as standings,
+      (select count(*) from sync_log)::int as log, (select count(*) from titles)::int as titles,
+      (select count(*) from profiles)::int as profiles, (select count(*) from firsts)::int as firsts,
+      (select count(*) from profiles where forerunner)::int as stamped`)).rows[0] as any;
+
+    await switchAt(`'${cutoff}'::timestamptz`);
+    try {
+      await seed();
+      // A carving from the season, which the wipe never touches.
+      await db.exec(`insert into standings (user_id, climb, marks, tower, updated_at) values ('${W(3)}', 9, 0, 0, now())`);
+      const before = await everyone();
+      expect(before.filter((r) => r.name.startsWith('Wipe ')).map((r) => [r.name, r.f]))
+        .toEqual([['Wipe Old', true], ['Wipe Banned', false], ['Wipe Season', false], ['Wipe Both', true]]);
+      const counts = await rows();
+
+      // Over the brake: raises, and nothing at all is changed, the stamp included.
+      await expect(db.exec(block(0))).rejects.toThrow(/more than 0; nothing deleted/);
+      expect(await rows()).toEqual(counts);
+      // Before its cutoff: raises.
+      await expect(db.exec(block(1000, new Date(Date.now() + 86_400_000).toISOString()))).rejects.toThrow(/has not begun|not season_start/);
+
+      await db.exec(block(1000));
+      // 先行 Every account reads the same as before, with the old rows gone.
+      expect(await everyone()).toEqual(before);
+      expect((await db.query(`select count(*)::int as n from sync_log where at < '${cutoff}'`)).rows[0]).toEqual({ n: 0 });
+      const stamped = (await db.query(`select name from profiles where forerunner and name like 'Wipe %' order by name`)).rows.map((r: any) => r.name);
+      expect(stamped).toEqual(['Wipe Banned', 'Wipe Both', 'Wipe Old']);
+      // A ban lifted afterwards gives the mark back.
+      await db.exec(`update profiles set banned = false where id = '${W(2)}'`);
+      expect(await forerunner(W(2))).toBe(true);
+      await db.exec(`update profiles set banned = true where id = '${W(2)}'`);
+      // The closed test's rows went, the closed-test cloud copy with them; the season's are whole.
+      expect((await db.query(`select user_id from saves where user_id::text like 'b0000000-%' order by user_id`)).rows.map((r: any) => r.user_id))
+        .toEqual([W(3), W(4)]);
+      expect(JSON.stringify((await db.query(`select * from saves`)).rows)).not.toContain('closed-copy');
+      expect((await db.query(`select count(*)::int as n from standings where user_id = '${W(1)}'`)).rows[0]).toEqual({ n: 0 });
+      expect((await db.query(`select count(*)::int as n from titles where user_id = '${W(1)}'`)).rows[0]).toEqual({ n: 0 });
+      const after = await rows() as any;
+      expect(after).toMatchObject({ profiles: counts.profiles, firsts: counts.firsts });
+      expect(after.firsts).toBeGreaterThan(0);
+      expect((await db.query(`select banned from profiles where id = '${W(2)}'`)).rows[0]).toEqual({ banned: true });
+      // And a second run changes nothing.
+      await db.exec(block(1000));
+      expect(await rows()).toEqual(after);
+      expect(await everyone()).toEqual(before);
+    } finally {
+      await switchBack();
+    }
   });
 });
