@@ -16,11 +16,16 @@ import { LAST_WEEK, SEASON_START } from '../sim/season.ts';
  * Brazil, "Monday 26 October, 09:00" in Tokyo. English words, the player's clock.
  */
 export function endsHere(): string {
+  // Spelled out from the device's own clock rather than through toLocaleString: what an
+  // engine's locale data prints for 'en-GB' is its own business ("Sunday, 25 October" on
+  // some, "24:00" on others), and this one line must read the same on every phone.
   const d = new Date(SEASON_START * 1000);
-  const day = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  return `${day}, ${time}`;
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}, ${two(d.getHours())}:${two(d.getMinutes())}`;
 }
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+  'September', 'October', 'November', 'December'];
 
 /**
  * 新 The cards that arrive once.

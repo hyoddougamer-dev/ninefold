@@ -102,6 +102,24 @@ describe('終 the closed test\'s last week', () => {
     expect(n.text).toContain('先行 Forerunner');
     expect(n.text).not.toMatch(/先(?!行)/);
   });
+
+  it('reads the same words in any time zone, from the device\'s own clock', () => {
+    const was = process.env.TZ;
+    try {
+      for (const [tz, want] of [
+        ['America/Sao_Paulo', 'Sunday 25 October, 21:00'],
+        ['Pacific/Honolulu', 'Sunday 25 October, 14:00'],
+        ['UTC', 'Monday 26 October, 00:00'],
+        ['Europe/Lisbon', 'Monday 26 October, 00:00'],
+        ['Asia/Tokyo', 'Monday 26 October, 09:00'],
+      ] as const) {
+        process.env.TZ = tz;
+        expect(endsHere(), tz).toBe(want);
+      }
+    } finally {
+      if (was === undefined) delete process.env.TZ; else process.env.TZ = was;
+    }
+  });
 });
 
 describe('業 the workshop, arriving on saves that were made before it', () => {
