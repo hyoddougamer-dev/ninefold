@@ -66,3 +66,16 @@ If `narration-relaxed` is not offered for that voice, remove the `express-as` li
 ## What I do with the files
 
 Each line is placed at its time, with a small hall reverb so it sits in the same room as the music. The music dips about 5 dB under the voice and comes straight back. The English subtitles appear with the voice, in the lower third, in the game's own lettering. The seal hit at 21.0 s keeps the screen and the sound to itself.
+
+## What was made (2026-10-15)
+
+The owner cannot pay, so two free takes were made, measured and kept in `media/voice/`, 24 kHz mono FLAC, `vo-01` to `vo-08`. Nothing was done to either voice: each line is the model's own audio, cut only inside its own quiet and rejoined with exact silence so every pause is the length asked for above. Every line of both takes fits its window.
+
+They were measured by a Mandarin speech recogniser (SenseVoice, through sherpa-onnx): the ElevenLabs English voices used before had about 40% of characters misheard, nearly all wrong tones. Both takes below read back with every tone right except 由你, which the recogniser cannot tell from 有你 in any voice.
+
+| Folder | Made with | Licence | Credit |
+|---|---|---|---|
+| `elevenlabs-v4-brian` | ElevenLabs, model eleven_v4, premade voice Brian, free plan | Free plan: non-commercial only, and the published video's title must carry "elevenlabs.io" | In the game's credits (already there) and in the video title |
+| `kokoro-v1_0-yunjian` | Kokoro-82M v1.0 (hexgrad), voice zm_yunjian, run locally through sherpa-onnx | Apache-2.0: any use, commercial included, nothing to pay | None required; a courtesy line in the credits |
+
+The ElevenLabs take is the livelier and deeper read (median pitch 85 Hz). The Kokoro take is calmer and flatter, and is the only one safe if the game ever earns money. The trailer is mixed by `vo.sh` from whichever folder is chosen: a 70 Hz high-pass, one fixed gain per line, a light room, and the music dipping 5 dB under the voice.
