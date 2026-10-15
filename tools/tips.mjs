@@ -26,6 +26,7 @@
  */
 import { chromium } from 'playwright';
 import { isOpen } from '../src/sim/unlocks.ts';
+import { inSeason, standIn } from './cliff-fixture.mjs';
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.PLAYWRIGHT_CHROMIUM
@@ -247,7 +248,68 @@ async function settle(page, handle) {
   }
 }
 
+/** Tap every character on the screen as it stands, and check each note lands. Returns how many opened. */
+async function tapAll(page, where) {
+  let opened = 0;
+  // Only the sheet's own characters: the screen under it is walked by walk() and cannot be tapped from here.
+  const n = await page.$$eval('.ranks .term', (e) => e.length);
+  for (let i = 0; i < n; i++) {
+    const t = (await page.$$('.ranks .term'))[i];
+    if (!t) { fail(`${where} #${i}`, `the character went before it was tapped (${n} were counted)`); continue; }
+    const label = (await t.textContent())?.trim() ?? '?';
+    await t.scrollIntoViewIfNeeded().catch(() => {});
+    await settle(page, t);
+    await t.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(220);
+    const r = await page.evaluate(LOOK);
+    if (!r) { fail(`${where} ${label}#${i}`, 'tapped and nothing opened'); continue; }
+    opened++;
+    if (r.l < 0 || r.t < 0 || r.l + r.w > r.vw || r.t + r.h > r.vh) fail(`${where} ${label}#${i}`, `off the screen at ${r.l},${r.t} ${r.w}x${r.h} in ${r.vw}x${r.vh}`);
+    if (r.over.length) fail(`${where} ${label}#${i}`, `covered by ${[...new Set(r.over)].join(', ')}`);
+    // 閉 Not Escape: in Rankings Escape closes the whole sheet. A tap on the heading puts the note away.
+    await page.click('.ranks h2').catch(() => {});
+    await page.waitForTimeout(120);
+  }
+  return opened;
+}
+
+/**
+ * 題名崖 Rankings and the Cliff of Names, in the season, at 320 and on a PC window. Every
+ * 先行 seal answers with its note: on the board rows, at the head of Rankings and at the
+ * foot of the Cliff, where the nine columns scroll sideways in a frame of their own and a
+ * note must still land on the screen. Nothing of it shows before the switch, so the game's
+ * clock is installed nine days into Season 0 and the ranked server is answered here.
+ */
+/**
+ * Floors, one per part, so the boards cannot make up for a Cliff that opened nothing: the
+ * stand-in marks three board rows, the head of Rankings and the Account block (five seals),
+ * and the foot of the Cliff carries one.
+ */
+const BOARDS_FLOOR = 5;
+const CLIFF_FLOOR = 1;
+async function walkCliff(W, H) {
+  const page = await browser.newPage({ viewport: { width: W, height: H } });
+  await standIn(page);
+  await inSeason(page, BASE, cultivator(3));
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(800);
+  await clear(page);
+  await page.click('nav.tabs button.ranktab', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rlist .fore', { timeout: 8000 }).catch(() => {});
+  const onBoards = await tapAll(page, `ranks ${W}`);
+  await page.click('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rcol[data-on="true"]', { timeout: 8000 }).catch(() => {});
+  if ((await page.$$('.ranks .rcol')).length !== 9) fail(`cliff ${W}`, 'the Cliff of Names did not open');
+  const onCliff = await tapAll(page, `cliff ${W}`);
+  console.log(`榜 ranks at ${W}: ${onBoards} notes opened; 題名崖 the Cliff: ${onCliff}`);
+  if (onBoards < BOARDS_FLOOR) fail(`ranks ${W}`, `only ${onBoards} notes opened in Rankings, and there should be at least ${BOARDS_FLOOR}`);
+  if (onCliff < CLIFF_FLOOR) fail(`cliff ${W}`, `only ${onCliff} notes opened on the Cliff, and there should be at least ${CLIFF_FLOOR}`);
+  await page.close();
+}
+
 for (const realm of REALMS) await walk(realm);
+await walkCliff(320, 720);
+await walkCliff(1280, 720);
 await browser.close();
 
 if (problems.length) {

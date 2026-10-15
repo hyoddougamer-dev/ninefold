@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FORERUNNER, RANKS, SEASON } from '../copy.ts';
 import { ForerunnerSeal } from './Forerunner.tsx';
+import { Cliff } from './Cliff.tsx';
 import { SEASON_START } from '../../sim/season.ts';
 import { useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
@@ -47,6 +48,10 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
   const [rows, setRows] = useState<readonly Row[] | null>(null);
   const [me, setMe] = useState<Mine | null>(null);
   const [failed, setFailed] = useState(false);
+  // 題名崖 The Cliff of Names is a view inside Rankings, not a board: it is open to anybody,
+  // signed in or not, and only from the season's first second (nothing is carved before it).
+  const season = Date.now() / 1000 >= SEASON_START;
+  const [cliff, setCliff] = useState(false);
 
   useEffect(() => {
     if (!who) return;
@@ -62,14 +67,34 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
     <div className="help ranks">
       <h2>{RANKS.title}</h2>
       {/* 季 From the switch on, every board is a Season 0 board, and it says so. */}
-      {Date.now() / 1000 >= SEASON_START && (
+      {season && (
         <div className="s0tag">
           <b className="cjk">季</b>
           <span><em>{SEASON.ranksTag}</em><small>{SEASON.ranksSince}</small></span>
         </div>
       )}
+      {season && cliff ? (
+        <Cliff me={who ? me?.name ?? null : null} onBack={() => setCliff(false)} />
+      ) : (
+      <>
+      {season && (
+        <button type="button" className="rcliffdoor" onClick={() => setCliff(true)}>
+          <b className="cjk">{RANKS.cliff.han}</b>
+          <span><em>{RANKS.cliff.name}</em><small>{RANKS.cliff.door}</small></span>
+          <i aria-hidden="true">›</i>
+        </button>
+      )}
       {who ? (
         <>
+          {/* 我 Where the player stands, at the head: the name the boards show and what it wears. */}
+          {me && (
+            <div className="rmine">
+              <small>{RANKS.mineHead}</small>
+              <b>{me.name}</b>
+              {me.title && <i><span className="cjk">{me.title}</span> {RANKS.titleNames[me.title] ?? ''}</i>}
+              {me.forerunner && <ForerunnerSeal className="rmseal" />}
+            </div>
+          )}
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
           {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
           <div className="rtabs" role="tablist" style={{ gridTemplateColumns: `repeat(${shown.length}, 1fr)` }}>
@@ -89,7 +114,11 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
                       <li key={`${r.rank}-${r.name}`} data-me={r.me} data-top={r.rank <= 3}>
                         <span className="rn">{r.rank}</span>
                         <span className="rw">
-                          <b>{r.name}{r.me && <em> · {RANKS.you}</em>}</b>
+                          {/* 先行 Its own field beside the name, never in place of a title (2d). */}
+                          <span className="rwho">
+                            <b>{r.name}{r.me && <em> · {RANKS.you}</em>}</b>
+                            {r.forerunner && <ForerunnerSeal className="fore" />}
+                          </span>
                           {r.title && <i><span className="cjk">{r.title}</span> {RANKS.titleNames[r.title] ?? ''}</i>}
                           <Called calling={r.calling} />
                         </span>
@@ -113,6 +142,8 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
         </>
       ) : (
         <Join onEnter={onEnter} />
+      )}
+      </>
       )}
       <button className="act" style={{ marginTop: 'auto' }} onClick={onClose}>
         歸 <span>{RANKS.back}</span>

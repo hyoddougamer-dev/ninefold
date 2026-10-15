@@ -30,6 +30,8 @@ import { TEMPERS } from '../src/data/platform.ts';
 import { REALM_SETS, TEMPLATE_BY_KEY } from '../src/data/gear.ts';
 import { ALL_NODES, PATH_INFO } from '../src/data/techniques.ts';
 import { PAIRS, SCHOOL_INFO } from '../src/data/schools.ts';
+// @ts-expect-error a plain .mjs shared by the harnesses that open Rankings in the season
+import { inSeason, standIn } from './cliff-fixture.mjs';
 
 /**
  * 名 Every character the game shows, and the English name it is supposed to carry.
@@ -89,6 +91,9 @@ for (const x of PAIRS) put(x.han, x.name);
  * a table cannot know about the second one because it is written in copy.ts.
  */
 put('煉', 'Refining');
+// 冠 The crown a title is worn as. In 榜 Rankings it heads the paragraph on titles ("冠 Titles"),
+// which no table holds: the walk only reached Rankings once the Cliff of Names gave it a reason.
+put('冠', 'Titles');
 
 const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/';
 const CHROME = process.env.PLAYWRIGHT_CHROMIUM
@@ -148,7 +153,7 @@ function cultivator(realm: number) {
  * page then throws ReferenceError: __name is not defined and the audit measures
  * nothing. A string crosses unchanged.
  */
-const LOOK = `((names) => {
+const LOOK = `((names, root) => {
   const HAN = /[㐀-鿿]/;
   const WORD = /[A-Za-z]{3,}/;
   const out = [];
@@ -193,7 +198,8 @@ const LOOK = `((names) => {
       .some((w) => said.some((t) => same(w, t)));
   };
 
-  for (const el of Array.from(document.querySelectorAll('body *'))) {
+  // 域 The whole page, or only what is inside root when a walk asks about one part of it.
+  for (const el of Array.from(document.querySelectorAll((root || 'body') + ' *'))) {
     if (el.children.length > 0) continue;
     const text = (el.textContent || '').trim();
     if (!text || !HAN.test(text)) continue;
@@ -360,8 +366,54 @@ async function walkSecret() {
   await page.close();
 }
 
+/**
+ * 題名崖 Rankings and the Cliff of Names, read in the season. Both are sheets, not tabs, and
+ * nothing of the Cliff exists before the switch, so the walk installs the game's own clock
+ * nine days into Season 0 and answers the ranked server itself (cliff-fixture.mjs): the
+ * boards with 先行 on their rows, then the Cliff with every name shown.
+ */
+let boards = 0;
+let cliffs = 0;
+let cliffPlaces = 0;
+async function walkCliff() {
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  await standIn(page);
+  await inSeason(page, BASE, cultivator(3));
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(900);
+  for (let i = 0; i < 12; i++) {
+    const card = await page.$('.awaken .acard');
+    if (card) { await card.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(200); continue; }
+    const el = await page.$('.notice button');
+    if (!el) break;
+    await el.click({ timeout: 4000 }).catch(() => {});
+    await page.waitForTimeout(200);
+  }
+  const take = async (where: string, root?: string) => {
+    const rows = (await page.evaluate(`${LOOK}(${JSON.stringify(NAMES)}, ${JSON.stringify(root ?? null)})`)) as HanRow[];
+    for (const row of rows) {
+      const key = `${row.where}|${row.text}`;
+      if (!found.has(key)) found.set(key, { ...row, screens: new Set<string>() });
+      found.get(key).screens.add(where);
+    }
+    return rows.length;
+  };
+  await page.click('nav.tabs button.ranktab', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rlist .fore', { timeout: 8000 }).catch(() => {});
+  if (await page.$('.ranks .rlist .fore')) boards++;
+  await take('ranks');
+  await page.click('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rcol[data-on="true"]', { timeout: 8000 }).catch(() => {});
+  await page.click('.ranks .rcliffall', { timeout: 3000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  // Counted inside the Cliff alone: the screen under the sheet and the tab bar are not the Cliff.
+  if ((await page.$$('.ranks .rcol')).length === 9) { cliffs++; cliffPlaces = await take('cliff', '.ranks .rcliff'); }
+  await page.close();
+}
+
 for (const realm of [2, 4, 6, 9]) await walk(realm);
 await walkSecret();
+await walkCliff();
 await browser.close();
 
 const rows = [...found.values()];
@@ -402,9 +454,22 @@ if (arenas < 4 || verdicts < 4) {
   console.log('    A fight that never opened is an arena nobody checked.\n');
   process.exit(1);
 }
+/**
+ * 題名崖 The Cliff heads its nine columns with the wardens' names in characters, each read
+ * against the English under it. They are counted inside the Cliff alone (題名崖 and 先行 are
+ * named by the section's own label, so they are not among them): fewer than nine places read
+ * there means the walk never reached the columns, which is a Cliff nobody checked.
+ */
+if (boards < 1 || cliffs < 1 || cliffPlaces < 9) {
+  console.log(`  ✗ Rankings with its 先行 seals was read ${boards} times of 1, and the Cliff of Names ${cliffs} of 1,`
+    + ` with ${cliffPlaces} places inside it of at least 9.`);
+  console.log('    A Cliff that never opened is a Cliff nobody checked.\n');
+  process.exit(1);
+}
 if (steles < 4 || secrets < 1) {
   console.log(`  ✗ the stele was read ${steles} times of 4 and the secret realm ${secrets} of 1.`);
   console.log('    A panel that never opened is a panel nobody checked.\n');
   process.exit(1);
 }
-console.log('  ✓ every character is named by the card it sits in, on every screen and in the arena, stele and secret realm.\n');
+console.log('  ✓ every character is named by the card it sits in, on every screen and in the arena, stele, secret realm,\n'
+  + `    Rankings and the Cliff of Names (${cliffPlaces} places read on the Cliff).\n`);

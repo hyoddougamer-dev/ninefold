@@ -222,6 +222,20 @@ export async function fetchCliff(): Promise<readonly Carved[]> {
   return ((data ?? []) as Carved[]).map((r) => ({ ...r, gate: Number(r.gate), rank: Number(r.rank), forerunner: !!r.forerunner }));
 }
 
+/**
+ * 先行 Every Forerunner's name, for the foot of the Cliff (forerunners() on the server, open to
+ * anyone): names only, in the order of the names themselves, so nothing in it reads as a rank.
+ * cliff() alone only carries the names carved through a gate, and most testers never are.
+ */
+export async function fetchForerunners(): Promise<readonly string[]> {
+  const c = await client();
+  const { data, error } = await c.rpc('forerunners');
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as { name?: unknown }[])
+    .map((r) => (typeof r?.name === 'string' ? r.name : ''))
+    .filter((n) => n.length > 0);
+}
+
 /** 名 Returns the name as the server stored it, or the reason it was refused. */
 export async function rename(name: string): Promise<{ name: string } | { error: string }> {
   const c = await client();
