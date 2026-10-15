@@ -227,8 +227,8 @@ export const RANKS = {
     han: '題名崖',
     name: 'The Cliff of Names',
     /** The way in, at the head of Rankings. */
-    door: 'The first 81 through each gate, carved for good.',
-    what: 'The first 81 cultivators through each gate, in the order the server saw them. A name carved here stays for good, and nothing on it changes a number.',
+    door: 'The first 81 through each gate, carved and checked.',
+    what: 'The first 81 cultivators through each gate, in the order the server saw them. Every carving is checked like the boards, and nothing on it changes a number.',
     /** Under the columns: what the date is, because a player who crosses offline is carved at the next sync. */
     when: 'Each date is when the server saw you through the gate, at your first sync after crossing, in this device\'s time.',
     back: 'Back to the boards',
@@ -237,7 +237,7 @@ export const RANKS = {
     gateOf: (warden: string) => `${warden}'s gate`,
     count: (n: number) => n >= 81 ? '81 of 81 · full' : `${n} of 81`,
     nobody: 'Nobody yet',
-    first: 'The first name through here stays for good.',
+    first: 'The first name through here is carved on the Cliff.',
     /** Day 0: not one column has a name. */
     empty: 'No name is carved yet. The first cultivator through the Spirit Fox\'s gate opens the Cliff.',
     more: (n: number) => `${n} more`,

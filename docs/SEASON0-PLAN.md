@@ -222,7 +222,7 @@ The 28 Sep fresh start did delete accounts (`20260928210000_fresh_start.sql:30-3
 
 ### 3.4 The wipe migration (Push B), its brake and its cutoff
 
-> **Changed by the 15 October decisions.** Push B's **first statement** sets `profiles.forerunner` for every account with a `sync_log` row before the cutoff (not banned), and only then deletes anything; a schema test holds that order. The closed-test copies in `saves` are deleted with the rest (the earlier "never delete `closed_test`" rule is reversed). docs/SEASON0-PUSHB-DRAFT.md is the current draft. It still waits for Bruno's own words naming the rows.
+> **Changed by the 15 October decisions.** Push B's **first statement** sets `profiles.forerunner` for every account with a `sync_log` row before the cutoff (every account, banned and staff included; `is_forerunner()` still leaves banned and staff accounts out when it reads, so a ban lifted later gives the mark back), and only then deletes anything; a schema test holds that order. The closed-test copies in `saves` are deleted with the rest (the earlier "never delete `closed_test`" rule is reversed). docs/SEASON0-PUSHB-DRAFT.md is the current draft. It still waits for Bruno's own words naming the rows.
 
 It follows the pattern of `20260928210000_fresh_start.sql`: a quoted authorisation, a constant cutoff, a brake, and a return on an empty database (the schema test runs every migration on one).
 

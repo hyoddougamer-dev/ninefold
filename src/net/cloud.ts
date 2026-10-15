@@ -227,13 +227,19 @@ export async function fetchCliff(): Promise<readonly Carved[]> {
  * anyone): names only, in the order of the names themselves, so nothing in it reads as a rank.
  * cliff() alone only carries the names carved through a gate, and most testers never are.
  */
+const PAGE = 1000;
 export async function fetchForerunners(): Promise<readonly string[]> {
   const c = await client();
-  const { data, error } = await c.rpc('forerunners');
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as { name?: unknown }[])
-    .map((r) => (typeof r?.name === 'string' ? r.name : ''))
-    .filter((n) => n.length > 0);
+  // The API hands back at most 1000 rows a call, so the list is read a page at a time.
+  const names: string[] = [];
+  for (let from = 0; from < 5000; from += PAGE) {
+    const { data, error } = await c.rpc('forerunners').range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as { name?: unknown }[];
+    for (const r of rows) if (typeof r?.name === 'string' && r.name.length > 0) names.push(r.name);
+    if (rows.length < PAGE) break;
+  }
+  return names;
 }
 
 /** 名 Returns the name as the server stored it, or the reason it was refused. */

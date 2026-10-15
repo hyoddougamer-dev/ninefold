@@ -367,8 +367,19 @@ export function seasonCardRead(): void {
  */
 let wiped = false;
 
+/**
+ * 舊 A tab left open across the switch still holds its closed-test cultivator, and its timer
+ * and its pagehide would keep writing it over the season save another tab began. The next
+ * load would retire that copy and fall back to a spare written only at load, so the season's
+ * progress since then would be gone. Past the switch, by the state's own clock, a closed-test
+ * state is never written: its farewell already came from the last write before the switch.
+ */
+function stale(s: State): boolean {
+  return retires(s, s.at);
+}
+
 export function save(s: State): void {
-  if (wiped) return;
+  if (wiped || stale(s)) return;
   try {
     write(KEY, s);
   } catch {
@@ -378,7 +389,7 @@ export function save(s: State): void {
 
 /** Kept apart from `save`: the spare is written once, on a load that came back whole. */
 export function keepSpare(s: State): void {
-  if (wiped) return;
+  if (wiped || stale(s)) return;
   try {
     write(BACKUP, s);
   } catch { /* same */ }

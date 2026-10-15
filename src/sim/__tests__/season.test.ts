@@ -178,6 +178,27 @@ describe('印 retiring a device\'s save', () => {
     expect(pendingFarewell()).toMatchObject({ realm: 7, layer: 1 });
   });
 
+  it('a tab on this build left open across the switch never writes its closed-test cultivator over the season', () => {
+    store.map.set('ninefold.save.v1', sealed(veteran(9, 3)));
+    const r = load(AFTER);
+    seasonCardRead();
+    // The season tab plays on and saves; its spare was kept only at load, as App.tsx does.
+    keepSpare(r.state);
+    save({ ...r.state, realm: 3, layer: 2, at: AFTER + 300 });
+    // The old tab, loaded before the switch, ticks on past it and saves on its timer and on pagehide.
+    const old = validate(veteran(9, 5), BEFORE);
+    save({ ...old, at: AFTER + 400 });
+    keepSpare({ ...old, at: AFTER + 400 });
+    const back = load(AFTER + 600);
+    expect(back.state.season).toBe(SEASON);
+    expect(back.state.realm).toBe(3);                        // nothing of the season was rolled back
+    expect(back.state.layer).toBe(2);
+    // Before the switch the same state is still the closed test's own, and it is written as ever.
+    store.map.clear();
+    save({ ...old, at: BEFORE });
+    expect(store.map.has('ninefold.save.v1')).toBe(true);
+  });
+
   it('an old tab writing the closed-test save back keeps the season spare; the Stele only rises, the card stays read', () => {
     store.map.set('ninefold.save.v1', sealed(veteran(9, 3)));
     const r = load(AFTER);
