@@ -113,6 +113,10 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   await page.fill('.ranks .rjoin input:not([type=email])', '天下第一');
   check(await page.locator('.ranks .rjoin [data-tone="bad"]').isVisible()
     && await page.locator('.ranks .rjoin button.act').first().isDisabled(), 'a title typed as a name is refused, in words');
+  // 先行 The Forerunner mark is worn beside a name, never typed into one.
+  await page.fill('.ranks .rjoin input:not([type=email])', '先行 Kai');
+  check(/先行 Forerunner mark/.test(await page.locator('.ranks .rjoin [data-tone="bad"]').textContent().catch(() => ''))
+    && await page.locator('.ranks .rjoin button.act').first().isDisabled(), 'the 先行 mark typed as a name is refused, in words');
   await page.fill('.ranks .rjoin input:not([type=email])', 'Bruno');
   await page.locator('.ranks .rjoin button.act').first().click();
   await page.waitForSelector('.ranks .rlist li[data-me="true"]', { timeout: 8000 }).catch(() => {});

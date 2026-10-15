@@ -281,6 +281,8 @@ describe('同步 the ranked sync', () => {
     expect(cleanName('天下第一')).toBeNull();
     expect(cleanName('期首 Bruno')).toBeNull();
     expect(cleanName('修士 AB12')).toBeNull();
+    expect(cleanName('先行 Kai')).toBeNull();      // 先行 is the Forerunner mark, worn beside a name
+    expect(cleanName('Kai先行')).toBeNull();
     expect(cleanName('\u202Eonurb')).toBe('onurb');
     expect(cleanName('Br\u200Buno')).toBe('Br uno');
     expect(cleanName('ｂｒｕｎｏ')).toBe('bruno');

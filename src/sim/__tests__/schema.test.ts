@@ -100,6 +100,10 @@ describe('榜 the ranked schema', () => {
     await expect(as(A, `select set_name('天下第一')`)).rejects.toThrow(/name reserved/);
     await expect(as(A, `select set_name('期首 Alpha')`)).rejects.toThrow(/name reserved/);
     await expect(as(A, `select set_name('修士 Alpha')`)).rejects.toThrow(/name reserved/);
+    // 先行 is a mark beside a name, never inside it (20261015100400_name_mark.sql).
+    await expect(as(A, `select set_name('先行 Alpha')`)).rejects.toThrow(/name reserved/);
+    await expect(as(A, `select set_name('Alpha先行')`)).rejects.toThrow(/name reserved/);
+    expect(((await as(A, `select set_name('先 Alpha 行') as n`)).rows[0] as any).n).toBe('先 Alpha 行');
     await expect(as(A, `select set_name('Вeta')`)).rejects.toThrow(/name characters/);
     // Full-width letters fold into the name they look like, which is Beta's.
     await expect(as(A, `select set_name('ｂｅｔａ')`)).rejects.toThrow(/name taken/);

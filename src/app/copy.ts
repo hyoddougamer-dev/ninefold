@@ -176,12 +176,12 @@ export const RANKS = {
     closed: 'This account is off the boards after saves the server could not accept. Your game is not touched. If you think that is a mistake, tell us in 報-bugs on the Discord and we will look.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
-  nameRule: 'Letters, numbers and CJK only, and not a title or a 修士 name.',
+  nameRule: 'Letters, numbers and CJK only, and not a title, a 修士 name or the 先行 Forerunner mark.',
   nameErrors: {
     taken: 'That name is taken.',
     length: 'Two to twenty letters.',
     characters: 'Letters, numbers and spaces only.',
-    reserved: 'The titles and the 修士 names are not for taking.',
+    reserved: 'The titles, the 修士 names and the 先行 Forerunner mark are not for taking.',
     offline: 'That could not be saved just now.',
   },
   /** 盾 Always under the boards, because a player who wonders whether they are fair should not have to ask. */
