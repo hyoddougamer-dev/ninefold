@@ -6,7 +6,7 @@ import { bestKit, carry, kitFor, kitWhere, spendKit, thinKit } from '../crafts.t
 import { NO_KIT } from '../kit.ts';
 import { type State } from '../state.ts';
 import { validate } from '../load.ts';
-import { anchorFloor, dragonBeaten, verify } from '../verify.ts';
+import { anchorFloor, bodiesHeld, dragonBeaten, verify } from '../verify.ts';
 import { HABITS, play } from '../../../tools/habits.ts';
 import { KIT_CLOCK_BAND, arrivalOf, arrived, crafterOf, kitClock, playEndgame } from '../../../tools/endgame.ts';
 
@@ -208,24 +208,37 @@ describe('驗 the server allows what the game allows, and no more', () => {
     return { before, after: validate(after, later), seconds: later - before.at };
   };
   const faced = (at: number): State => ({ ...crafter, realm: 9, layer: 8, tribulation: crafter.tribulation, tribulationAt: at });
-  /** The heaviest anchor a kit could still beat the Dragon at, by bisection on a log scale. */
-  const heaviest = (share: number | null) => {
+  /**
+   * The heaviest anchor a kit could still beat the Dragon at, by bisection on a log scale.
+   * 套 Read on every body the server reads (bodiesHeld: what is worn, each loadout, the chest's
+   * best, each on a held fork), because a crossing may have been won in any of them. Read on
+   * the worn body alone (`worn`), it is the bound only while nothing in the chest dresses
+   * stronger: at seed 991 the chest's best stood 8% past the worn body and the tenth of margin
+   * below hid it, until the week's quarry moved to the second realm (QUARRY_FROM_REALM), the
+   * gap became 21%, and a crossing the server rightly took read here as one it should refuse.
+   */
+  const heaviest = (share: number | null, worn = false) => {
     let lo = Math.max(1, top.tribulationAt), hi = lo * 1e6;
     for (let i = 0; i < 40; i++) {
       const mid = Math.sqrt(lo * hi);
       const f = faced(mid);
-      const kit = share === null ? NO_KIT : bestKit(f, DRAGON, 'dragon', share);
-      if (beatable(f, DRAGON, undefined, kit)) lo = mid; else hi = mid;
+      const bodies = worn ? [f] : bodiesHeld(f);
+      const won = bodies.some((b) => beatable(b, DRAGON, undefined, share === null ? NO_KIT : bestKit(b, DRAGON, 'dragon', share)));
+      if (won) lo = mid; else hi = mid;
     }
     return lo;
   };
 
   it('refuses a crossing only a full-strength kit could have won, and takes one the fractional kit could', () => {
+    // The server's reading is every body, the worn one among them: never fewer than it and the chest's.
+    expect(bodiesHeld(faced(top.tribulationAt)).length).toBeGreaterThanOrEqual(2);
     const whole = heaviest(1);
     const part = heaviest(FELT);
     const none = heaviest(null);
+    const worn = heaviest(1, true);
     console.log(`\n  驗 the heaviest anchor each reading beats: no kit ${none.toExponential(3)}, ${FELT * 100}% of a kit ${part.toExponential(3)}` +
-      `, the whole kit ${whole.toExponential(3)}\n`);
+      `, the whole kit ${whole.toExponential(3)} (the worn body alone ${worn.toExponential(3)})\n`);
+    expect(whole).toBeGreaterThanOrEqual(worn);
     expect(part).toBeGreaterThanOrEqual(none);
     expect(whole).toBeGreaterThan(part * 1.05);
 
