@@ -2936,7 +2936,14 @@ nav.tabs button:active:not([data-shut='true']) { transform: scale(.93); }
    and the fight button it holds back, which reads as waiting rather than as broken. */
 .c-side .card .gateseal { border-left: 2px solid color-mix(in srgb, var(--gold) 70%, transparent); padding-left: 9px; }
 .c-side .card .gateseal[data-open="true"] { border-left-color: color-mix(in srgb, var(--jade) 55%, transparent); }
-.c-side .card .act[data-sealed="true"] { opacity: .62; cursor: default; }
+/* 封 Sealed: light lettering on a muted cinnabar ground. It was the cinnabar button at .62
+   opacity, dark letters on faded red, and that is the one line on the card saying when the gate
+   opens (audit, 2026-10-16). */
+.c-side .card .act[data-sealed="true"] { cursor: default; color: var(--text);
+  background: color-mix(in srgb, var(--cinnabar) 16%, var(--panel));
+  border-color: color-mix(in srgb, var(--cinnabar) 55%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 200, .06); }
+.c-side .card .act[data-sealed="true"] span { opacity: 1; }
 /* 封 The seal's bar (rekaris, 2026-10-08): time fills it by itself, in gold; qi paid in
    adds a violet stretch and lesser Breakthrough Pills a jade one; a carried pill that breaks
    the seal stands it full in jade. Its own classes, on this card only. */

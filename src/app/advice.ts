@@ -1,5 +1,5 @@
 import { bottleneck, currentWarden, effectiveBeastPower, odds, quarryPaid, wallOf } from '../sim/combat.ts';
-import { breachHeld, kitFor, pillHeld } from '../sim/crafts.ts';
+import { breachHands, breachHeld, kitFor, pillHeld } from '../sim/crafts.ts';
 import {
   UPGRADES, UPGRADE_INFO, atTribulation, canBuy, canFightWarden, capOf, power, sealLeft, sealed, upgradeCost,
   wardenStands, type State,
@@ -24,6 +24,7 @@ import { canRefine } from '../sim/trials.ts';
 import { levelAt, refineCost } from '../sim/refine.ts';
 import { SLOTS, templateOf } from '../data/gear.ts';
 import { quarryOf, quarryOwed } from '../sim/week.ts';
+import { WARDEN_EVEN } from './guide.ts';
 
 /**
  * 示 One line telling the player the most useful thing they could do next.
@@ -66,6 +67,12 @@ const PILING = 3;
 /** The odds below which a fight is worth explaining rather than worth trying. */
 const STUCK = 0.35;
 
+/**
+ * 妖 And the odds at which a warden standing at the top of the realm is the thing to do: the
+ * guide's own even (WARDEN_EVEN), which is where 待 the strip names it too.
+ */
+const WARDEN_READY = WARDEN_EVEN;
+
 /** And the odds above which a Dragon needs no comment. Below it, the furnace is the answer. */
 const DRAGON_COMFORT = 0.85;
 
@@ -85,9 +92,15 @@ function refinable(s: State): string | null {
   return slot ? templateOf(s.worn[slot]!).han : null;
 }
 
-export function advice(s: State): Advice | null {
+/**
+ * `wardenOdds` is the warden's odds as the screen already holds them (with what is carried, read
+ * once per change rather than on every tick); without it the line reads them itself.
+ */
+export function advice(s: State, wardenOdds?: number): Advice | null {
   const warden = currentWarden(s);
-  const blocked = canFightWarden(s) && odds(s, warden) < STUCK;
+  const fightable = canFightWarden(s);
+  const bare = fightable ? odds(s, warden) : 0;
+  const blocked = fightable && bare < STUCK;
 
   /**
    * 道 Free points come before everything, including being blocked.
@@ -105,6 +118,18 @@ export function advice(s: State): Advice | null {
    * get later by climbing: the offer waits, but nothing else happens until it is taken.
    */
   if (awakeningDue(s)) return { han: '悟道', text: ADVICE.awaken };
+
+  /**
+   * 妖 A warden at the top of the realm that the reader would beat, and nothing else on the
+   * screen naming it. Played (2026-10-16): layer 9 of 9 in the second realm, the Stone Ape at
+   * 98%, and this line sent the cultivator to kill ninety bats; the card was two screens down,
+   * and they sat there seventeen hours on 4.4M qi. Under a card owed, because a card is free and
+   * waits for nothing; above everything else, because this is the one thing that moves the climb.
+   */
+  const wardenNow = wardenOdds ?? bare;
+  if (fightable && s.realm < 9 && wardenNow >= WARDEN_READY) {
+    return { han: '妖', text: ADVICE.wardenReady(warden.han, warden.name, Math.round(wardenNow * 100)) };
+  }
 
   /**
    * 洞天 A ripe bed, which costs nothing and is gone the moment it is taken.
@@ -157,7 +182,7 @@ export function advice(s: State): Advice | null {
     // wait, because a carried pill is the one thing that gets through the gate today.
     if (bottleneck(s, warden) > 1 / wallOf(warden.realm) && !(kitFor(s, warden, 'warden').kit.breach ?? 0)) {
       const days = breachHeld(s, warden);
-      if (days >= 0.1) return { han: '瓶頸', text: ADVICE.breach(days), tab: 'crafts' };
+      if (days >= 0.1) return { han: '瓶頸', text: ADVICE.breach(days, breachHands(s, warden)), tab: 'crafts' };
     }
     // 煉器 Cores are full and the technique is at its cap, so the material coming off
     // the beasts has exactly one place left to go, and it is the one with no ceiling.

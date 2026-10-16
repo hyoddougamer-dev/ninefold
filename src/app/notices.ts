@@ -10,6 +10,7 @@ import { CORE_CAP_EXTRA, LEVELS_PER_REALM, SEAL_DAYS } from '../sim/balance.ts';
 import { NOTICE } from './copy.ts';
 import { platformOpen } from '../sim/platform.ts';
 import { LAST_WEEK, SEASON_START } from '../sim/season.ts';
+import { freshTabs } from './fresh.ts';
 
 /**
  * 終 The instant the closed test ends, in the device's own time: "Sunday 25 October, 21:00" in
@@ -120,7 +121,16 @@ export const NOTICES: readonly Notice[] = [
   },
 ];
 
-/** The next card to show, or nothing, which is the usual answer. */
+/**
+ * The next card to show, or nothing, which is the usual answer.
+ *
+ * 新 A card about a tab waits while that tab still wears its 新 dot, and comes up when the tab
+ * is first opened, which is where it is about. Arriving in the second realm was the realm's
+ * card, the 悟道 choice, the guide and then a card for the old beasts, the workshop and
+ * refining, all in the same minute and all before a piece of gear had been seen (audit,
+ * 2026-10-16). The dot already says where to look; the card says what it is, once there.
+ */
 export function nextNotice(s: State): Notice | null {
-  return NOTICES.find((n) => !s.seen.includes(n.key) && n.when(s)) ?? null;
+  const fresh = freshTabs(s);
+  return NOTICES.find((n) => !s.seen.includes(n.key) && !(n.tab && fresh.includes(n.tab)) && n.when(s)) ?? null;
 }

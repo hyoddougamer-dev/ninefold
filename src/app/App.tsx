@@ -5,7 +5,7 @@ import { heavenAt } from '../data/heavens.ts';
 import { BEASTS, type Beast } from '../data/bestiary.ts';
 import { realm as realmOf } from '../data/realms.ts';
 import { currentWarden } from '../sim/combat.ts';
-import { newState, type State,
+import { newState, wardenStands, type State,
 } from '../sim/state.ts';
 import { keepSpare, load, pendingFarewell, save, seasonCardDue, seasonCardRead, untouched, type Farewell } from '../sim/save.ts';
 import { FOCUS_HOLD, LAYERS_PER_REALM } from '../sim/balance.ts';
@@ -100,6 +100,7 @@ import { weekOf } from '../sim/week.ts';
 /** 待 Where on its screen a row of the waiting list is, so taking it brings it into view. */
 const READY_AT: Partial<Record<Waiting['key'], string>> = {
   beds: '.cave', demon: '.seclude', road: '.meet', breakthrough: '[data-coach="breakthrough"]',
+  warden: '[data-coach="fight-warden"]',
   cross: '[data-ready="cross"]', vault: '.door.open', workshop: '.ctask', upgrades: '.chestfilter .ups',
   chestFull: '.melting', melt: '.melting',
 };
@@ -498,10 +499,16 @@ export function App() {
   // five times a second: the clock moves the qi on every tick and that changes none of them.
   // 業 Not the pouch, which the workshop moves every few seconds: none of these reads it
   // (a tower floor and a common beast are never fought with a kit, and gear is power).
+  // 妖 The warden's odds move with what is carried (its count, not the whole pouch), with the
+  // gate's time and with the wall loosening by the hour, so those are keyed too: coarsely, a
+  // fresh read every ten minutes at most, never on the tick.
+  const kitKey = (['elixir', 'sigil', 'pill'] as const)
+    .map((h) => { const k = state.crafts.carry[h]; return k && (state.crafts.pouch[k] ?? 0) > 0 ? k : ''; }).join('|');
   const heavy = useMemo(() => heavyOf(state),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [...fightDeps(state).filter((d) => d !== state.crafts.pouch), state.chest, state.tower, state.quarryWeek,
-      weekOf(state.at)]);
+      weekOf(state.at), kitKey, state.gateAt, state.wardenFell,
+      wardenStands(state) && !state.wardenFell ? Math.floor(state.at / 600) : 0]);
   const waiting = useMemo(() => readyNow(state, heavy), [state, heavy]);
   const byTab = readyByTab(waiting);
   /** 新 The tabs a breakthrough put something on, until each is opened. */

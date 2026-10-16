@@ -27,6 +27,7 @@ import { duration, pct as percent } from '../sim/format.ts';
 const EIGHTH_WALL = Math.log(REALM_WALL[7]) / -Math.log(1 - BOTTLENECK_LOOSEN);
 import type { Effect } from '../data/awakening.ts';
 import type { Worth } from '../sim/cardworth.ts';
+import type { Hand } from '../sim/crafts.ts';
 import { RARITY_INFO } from '../data/gear.ts';
 
 /** 式 A balance constant as a formula prints it: 0.35, never 0.35000000000000009. */
@@ -38,6 +39,14 @@ const ordinal = (n: number) => {
 };
 /** 劫 A share as a percentage to a tenth, so a share of 1.5% never reads as 2%. */
 const oneDecimal = (x: number) => `${Number((x * 100).toFixed(1))}%`;
+
+/** 破境 What the pouch would carry into a warden, by hand, in words: "an elixir and a sigil". */
+const HAND_WORDS: Readonly<Record<Hand, string>> = { elixir: 'an elixir', sigil: 'a sigil', pill: 'a Breakthrough Pill' };
+function handList(hands: readonly Hand[]): string {
+  const words = hands.map((h) => HAND_WORDS[h]);
+  if (words.length <= 1) return words[0] ?? 'what it holds';
+  return `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+}
 
 /**
  * 引 How to play, and now only the part that cannot be shown.
@@ -404,14 +413,33 @@ export const CULTIVATE = {
    * 瓶頸 The wall, said where the warden is: how far above itself it stands, when it is
    * back, and what breaks it sooner. Nothing is lost while it loosens.
    */
-  bottleneck: (over: number, days: number) =>
+  // 一 "Nothing is lost while you wait" is said once on the card: the seal's own line says it
+  // when the seal is there to say it, and this one leaves it off (calm false).
+  bottleneck: (over: number, days: number, calm = true) =>
     `瓶頸 Bottleneck: the warden stands ×${over < 10 ? over.toFixed(1) : Math.round(over)} above its old strength. `
-    + `It loosens every day and is back to it in ${days < 1 ? 'under a day' : `${Math.ceil(days)} ${Math.ceil(days) === 1 ? 'day' : 'days'}`}. Nothing is lost while you wait.`,
+    + `It loosens every day and is back to it in ${days < 1 ? 'under a day' : `${Math.ceil(days)} ${Math.ceil(days) === 1 ? 'day' : 'days'}`}.${calm ? ' Nothing is lost while you wait.' : ''}`,
+  /**
+   * 瓶頸 The odds are already high (BNECK_NO_MATCH): the wall is real and beside the point. At 98%
+   * the card used to give it a paragraph in cinnabar, the days it would take and what breaks it,
+   * next to a fight the reader wins (audit, 2026-10-16).
+   */
+  bottleneckBeaten: '瓶頸 The bottleneck is no match for you now.',
   breachCarried: (days: number, over: number) =>
     `What you carry breaks ${days.toFixed(1)} ${days.toFixed(1) === '1.0' ? 'day' : 'days'} of it: in this fight it stands ×${over < 10 ? over.toFixed(1) : Math.round(over)}. It is spent only if you win.`,
-  breachHeld: (days: number) =>
-    `Your pouch could break up to ${days.toFixed(1)} days of it: carry an elixir and a sigil from 業 the workshop.`,
-  breachNone: 'An elixir or a sigil from 業 the workshop breaks days of it, and cores, 爐 pills and gear raise you to meet it.',
+  /** 破境 Names only the hands the pouch actually holds something for (breachHands). */
+  breachHeld: (days: number, hands: readonly Hand[]) =>
+    `Your pouch could break up to ${days.toFixed(1)} days of it: carry ${handList(hands)} from 業 the workshop.`,
+  /**
+   * 破境 What breaks the wall sooner, from what this cultivator has open. It named elixirs,
+   * sigils and 爐 pills at every gate of the third and fourth realms, where Alchemy, Sigil
+   * Writing and the furnace are all still realms away (audit, 2026-10-16).
+   */
+  breachNone: (open: { elixir: boolean; sigil: boolean; furnace: boolean }) => {
+    const breaks = open.elixir && open.sigil ? 'An elixir or a sigil from 業 the workshop breaks days of it. '
+      : open.elixir ? 'An elixir from 丹 Alchemy, in 業 the workshop, breaks days of it. '
+        : open.sigil ? 'A sigil from 符 Sigil Writing, in 業 the workshop, breaks days of it. ' : '';
+    return `${breaks}妖丹 Cores, ${open.furnace ? '爐 pills, ' : ''}gear and 煉器 refining raise you to meet it.`;
+  },
   warden: 'Beat it to open the breakthrough. If you lose, you lose nothing. Come back stronger.',
   /**
    * 封 The seal, said where the warden is (realms 5 to 8): how long it still holds, what a
@@ -836,9 +864,17 @@ export const TRIALS = {
  * decides.
  */
 export const ADVICE = {
-  /** 瓶頸 Blocked at a fresh wall with something in the pouch that breaks it. */
-  breach: (days: number) =>
-    `The warden is still in its 瓶頸 bottleneck. Carry an elixir and a sigil from 業 the workshop: they break up to ${days.toFixed(1)} days of it.`,
+  /** 瓶頸 Blocked at a fresh wall with something in the pouch that breaks it. Names only what is held. */
+  breach: (days: number, hands: readonly Hand[]) =>
+    `The warden is still in its 瓶頸 bottleneck. Carry ${handList(hands)} from 業 the workshop: `
+    + `${hands.length === 1 ? 'it breaks' : 'they break'} up to ${days.toFixed(1)} days of it.`,
+  /**
+   * 妖 A warden standing at the top of the realm that the reader would beat. Under only a card
+   * owed: played (2026-10-16), a cultivator at layer 9 of 9 with the Stone Ape at 98% was told
+   * to go and kill ninety bats, and sat there for seventeen hours.
+   */
+  wardenReady: (han: string, name: string, pct: number) =>
+    `The warden ${han} ${name} is ${pct}% to beat. Beat it to open the breakthrough to the next realm. A loss costs nothing.`,
   /** 封 A sealed gate, and a Breakthrough Pill in the pouch that is not in its hand. */
   sealPill: (days: number) =>
     `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
@@ -2333,8 +2369,10 @@ export const NOTICE = {
   },
   tower: {
     title: 'Only the next floor is ever open',
-    text: 'It never runs out, and losing costs nothing. Sweep the low floors for material. '
-      + 'The ones that can beat you are the ones that pay in qi.',
+    // 吸 Every floor pays its fixed sum of qi once (floorQiPay), the low ones too. The card said
+    // only the floors that could beat you paid qi, beside a tower card quoting the sum.
+    text: 'It never runs out, and losing costs nothing. Every floor pays a fixed sum of qi and some material, once. '
+      + 'Climb until a floor can beat you.',
   },
   furnace: {
     // Not "start with a 煉體丹": 煉體 is the *line*, and the pill on the screen is named
@@ -2896,6 +2934,10 @@ export const READY = {
     needs: (what: string) => `The workshop is waiting for ${what}.`,
     chest: 'The forge is waiting for room in your chest.',
     remains: (beast: string) => `The workshop is waiting to know the ${beast}.`,
+  },
+  warden: {
+    short: 'Warden',
+    long: (han: string, name: string, pct: number) => `The warden ${han} ${name} is ${pct}% to beat. Beating it opens the breakthrough.`,
   },
   quarry: {
     short: 'Week\u2019s quarry',

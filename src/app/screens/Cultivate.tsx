@@ -1,4 +1,4 @@
-import { breachHeld, kitFor, kitWhere, pillHeld, unsealCarried, wallDays } from '../../sim/crafts.ts';
+import { breachHands, breachHeld, kitFor, kitWhere, pillHeld, skillOpen, unsealCarried, wallDays } from '../../sim/crafts.ts';
 import { focusBonus } from '../../sim/dao.ts';
 import {
   CORE_QI_RUNGS, DRAGON_KIT_SHARE, FOCUS_MAX, LAYERS, LEVELS_PER_HEAVEN, ODDS_CEILING, ODDS_FLOOR, TRIBULATION_GAIN,
@@ -59,6 +59,14 @@ const longClock = (s: number) => (s >= 3600
   ? `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`
   : clockOf(s));
 import { bloom, burst, float } from '../juice.ts';
+
+/**
+ * 瓶頸 The odds from which the warden's card gives the bottleneck one line rather than a paragraph.
+ * At 98% a gate of the fifth to eighth realm read the wall's height, its days and what breaks it,
+ * in cinnabar, beside a fight the reader wins (audit, 2026-10-16). Where the line is drawn, not a
+ * balance number: nothing in the game moves with it.
+ */
+const BNECK_NO_MATCH = 0.9;
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
   owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title, forerunner = false, rung = null,
@@ -214,7 +222,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   // 破境丹 The days of the wall the carried pill breaks: its share of the realm's whole wall.
   const pillDays = (carriedKit.thin ?? 0) * wallDays(w.realm);
   const heldBreach = loosens && !carriedBreach ? breachHeld(state, w) : 0;
-  const tip = advice(state);
+  // 妖 The card's own odds, clamped as the card prints them.
+  const wardenShown = Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, wardenRaw));
+  // 一 Whether the seal's own line below says "Nothing is lost while you wait": then the
+  // bottleneck's line does not say it as well.
+  const sealSaysCalm = sealDays(state.realm) > 0 && atGate && sealDue > 0 && !unseal && !(unsealOwned > 0);
+  const tip = advice(state, wardenShown);
   // 階 What a rung and a realm ask for, read off the same ladder the game climbs.
   const p = pace(state);
   // 引 The first session, one step at a time. It is computed, never stored, so it ends
@@ -532,15 +545,23 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                 {CULTIVATE.dragonKit(`${Number((DRAGON_KIT_SHARE * 100).toFixed(1))}%`, dragonCarried)}
               </p>
             )}
-            {loosens > 0 && (
+            {loosens > 0 && (wardenRaw > 0 && wardenShown >= BNECK_NO_MATCH ? (
+              <p className="bneck" data-beaten="true" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
+                {CULTIVATE.bottleneckBeaten}
+              </p>
+            ) : (
               <p className="bneck" style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
-                {CULTIVATE.bottleneck(over, loosens)}{' '}
+                {CULTIVATE.bottleneck(over, loosens, !sealSaysCalm)}{' '}
                 <span className="faint">
                   {carriedBreach > 0 ? CULTIVATE.breachCarried(carriedBreach, overCarried)
-                    : heldBreach >= 0.1 ? CULTIVATE.breachHeld(heldBreach) : CULTIVATE.breachNone}
+                    : heldBreach >= 0.1 ? CULTIVATE.breachHeld(heldBreach, breachHands(state, w))
+                      : CULTIVATE.breachNone({
+                        elixir: skillOpen(state, 'alchemy'), sigil: skillOpen(state, 'sigil'),
+                        furnace: isOpen(state.realm, 'furnace'),
+                      })}
                 </span>
               </p>
-            )}
+            ))}
             {sealDays(state.realm) > 0 && atGate && (
               <div className="gateseal" data-open={sealNow <= 0} style={{ margin: '-4px 0 12px', fontSize: 12.5 }}>
                 <p style={{ margin: 0 }}>
