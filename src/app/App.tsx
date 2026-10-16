@@ -308,13 +308,25 @@ export function App() {
 
   // 升 A realm arrived in or a tribulation crossed is offered to the server at once, so the
   // rank it brings and the Cliff carving with it arrive within seconds rather than at the next
-  // five-minute sync. The server keeps its own minimum gap; a sync too soon is simply skipped.
+  // five-minute sync. The server keeps its own minimum gap: an arrival that lands inside it (a
+  // sync on opening the game, then a gate a few seconds later) is offered again once the gap has
+  // passed, a few times at most, rather than waiting the five minutes out.
   const climbed = useRef<string | null>(null);
+  const climbRetry = useRef<number | undefined>(undefined);
   useEffect(() => {
     const mark = `${state.realm}:${state.tribulation}`;
-    if (climbed.current !== null && climbed.current !== mark && who) void push();
+    if (climbed.current !== null && climbed.current !== mark && who) {
+      window.clearTimeout(climbRetry.current);
+      const offer = (tries: number) => {
+        void push().then((wait) => {
+          if (wait > 0 && tries > 1) climbRetry.current = window.setTimeout(() => offer(tries - 1), (wait + 1) * 1000);
+        });
+      };
+      offer(3);
+    }
     climbed.current = mark;
   }, [state.realm, state.tribulation, who, push]);
+  useEffect(() => () => window.clearTimeout(climbRetry.current), []);
 
   useEffect(() => {
     if (!ready) return;

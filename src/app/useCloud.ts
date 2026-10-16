@@ -36,13 +36,20 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
    */
   const [standing, setStanding] = useState<cloud.Mine | null>(null);
   const pushing = useRef(false);
-  const push = useCallback(async (name?: string) => {
-    if (pushing.current) return;
+  /**
+   * Offer the save to the server. Answers how many seconds to wait before offering it again when
+   * it could not be taken just now (another sync in flight, or the server's minimum gap), and 0
+   * otherwise, so a caller that cannot wait for the next five-minute sync can come back.
+   */
+  const push = useCallback(async (name?: string): Promise<number> => {
+    if (pushing.current) return 5;
     pushing.current = true;
+    let again = 0;
     try {
       const r = await cloud.sync(latest.current, name);
       if ('error' in r) {
         if (r.error !== 'too-soon') setSyncError(r.error);
+        else again = Math.max(1, Math.ceil(Number(r.wait) || 20));
       } else {
         setSyncError(null);
         setSynced(r); setSyncedAt(Date.now() / 1000);
@@ -51,6 +58,7 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
       }
     } catch { setSyncError('offline'); /* the next one will do */ }
     pushing.current = false;
+    return again;
   }, []);
   useEffect(() => {
     if (!ready) return;
