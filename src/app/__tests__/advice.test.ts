@@ -7,6 +7,11 @@ import { huntable, wardenOf } from '../../data/bestiary.ts';
 import { advance } from '../../sim/time.ts';
 import { REALMS } from '../../data/realms.ts';
 import { weekOf } from '../../sim/week.ts';
+import { AWAKENINGS } from '../../data/awakening.ts';
+import { ALL_NODES } from '../../data/techniques.ts';
+import { canUnlock, capstonesOpen } from '../../sim/dao.ts';
+import { isOpen } from '../../sim/unlocks.ts';
+import { freePoints } from '../../sim/points.ts';
 
 /**
  * 示 The line that says what to do next, and the promise that it is always saying
@@ -186,5 +191,50 @@ describe('悟道 a card owed comes first of all', () => {
     expect(advice(s)!.han).toBe('悟道');
     // Take what is owed and the line moves on to the points.
     expect(advice({ ...s, awakened: ['feast', 'wolf'] })!.han).toBe('道');
+  });
+});
+
+/**
+ * 譯 No line of advice names an upgrade by its characters alone, and at the ninth realm none
+ * sends the player back to "the warden": what stands there is the Dragon. The audit found
+ * "You can afford another 劍訣. Buy it and try the warden again." at the summit.
+ */
+/** The first node a cultivator could buy now, or null. */
+function spendable(s: State): string | null {
+  const free = freePoints(s);
+  return ALL_NODES.find((x) => canUnlock(x.key, s.unlocked, free, isOpen(s.realm, 'keystones'), capstonesOpen(s.realm)))?.key ?? null;
+}
+
+describe('譯 the advice names what it points at', () => {
+  it('in English beside the characters, and the Dragon at the ninth realm', () => {
+    const lines = new Map<string, number>();
+    for (const r of REALMS) {
+      for (let layer = 0; layer < LAYERS_PER_REALM; layer++) {
+        for (const share of [0, 0.3, 0.7, 1]) {
+          for (const qi of [0, 1e30]) {
+            const levels = Math.round(levelCap(r.n) * share);
+            // Every card owed taken and every point spent, or those lines outrank the rest.
+            let s: State = {
+              ...newState(T0), realm: r.n, layer, qi, materials: qi, metAt: T0, runAt: T0,
+              levels: { technique: levels, method: levels, pills: levels, cores: levels },
+              awakened: AWAKENINGS.slice(0, r.n - 1).map((t) => t[0].key),
+            };
+            for (let n = spendable(s); n; n = spendable(s)) s = { ...s, unlocked: [...s.unlocked, n] };
+            const tip = advice(s);
+            if (tip) lines.set(tip.text, r.n);
+          }
+        }
+      }
+    }
+    // A sweep that reached none of these lines would pass on nothing.
+    const upgrades = [...lines.keys()].filter((t) => /Sword Technique|Beast Cores/.test(t));
+    expect(upgrades.length).toBeGreaterThan(0);
+    // And the ninth realm's blocked line was reached, naming the Dragon.
+    expect([...lines].some(([t, r]) => r === 9 && /the Dragon/.test(t))).toBe(true);
+    for (const [text, realm] of lines) {
+      expect(text, text).not.toMatch(/another [一-鿿]/);
+      expect(text, text).not.toMatch(/(next|without) [一-鿿]+ (costs|cores)/);
+      if (realm === 9) expect(text, text).not.toMatch(/the warden again|This warden/);
+    }
   });
 });

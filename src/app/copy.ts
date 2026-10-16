@@ -466,7 +466,7 @@ export const CULTIVATE = {
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
   /** 境外 What every heaven opens, said once rather than nine times. */
-  heavenRoom: (n: number) => `＋${n} levels of 劍訣 and 妖丹, for good`,
+  heavenRoom: (n: number) => `＋${n} levels of Sword Technique (劍訣) and Beast Cores (妖丹), for good`,
 
   /** 境外 The ladder above the ladder. */
   nextHeaven: (n: number) =>
@@ -894,14 +894,21 @@ export const ADVICE = {
   refine: (han: string, levels: number) =>
     `Your 材 will take ${han} ${levels} ${levels === 1 ? 'level' : 'levels'} further in 器 Gear. `
     + `Refining has no cap, and the levels stay with the place on your body.`,
-  refineCapped: 'Your 妖丹 cores are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
-  needMaterial: (short: number) =>
-    `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
+  refineCapped: 'Your Beast Cores (妖丹) are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
+  needMaterial: (short: number, foe = 'This warden') =>
+    `${foe} will not fall without Beast Cores (妖丹), and cores cost 材 material. `
     + `You are ${short.toLocaleString('en-GB')} short. Material comes from hunting.`,
-  buyCores: (han: string) => `You can afford another ${han}. Cores are the one upgrade priced in 材 material, and a warden asks for them.`,
-  buyTechnique: 'You can afford another 劍訣. Buy it and try the warden again.',
+  /**
+   * 譯 Each of these named the upgrade by its characters alone ("another 劍訣"), and at the
+   * ninth realm sent the player back to "the warden" when what stands there is the Dragon.
+   * `foe` is "the warden" or "the Dragon", read off the realm by advice.ts.
+   */
+  buyCores: (han: string, name: string, foe = 'the warden') =>
+    `You can afford another level of ${name} (${han}). Cores are the one upgrade priced in 材 material, and ${foe} asks for them.`,
+  buyTechnique: (foe = 'the warden') =>
+    `You can afford another level of Sword Technique (劍訣). Buy it and try ${foe} again.`,
   waitTechnique: (cost: number) =>
-    `The next 劍訣 costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
+    `The next level of Sword Technique (劍訣) costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
   noStance: 'You are fighting with no 勢 stance. Pick one in 道 Path. It is free and it changes every round.',
   noSequence: 'Your 訣 sequence is empty, so every round fires nothing. Fill it in 道 Path.',
   /**
