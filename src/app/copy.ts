@@ -183,7 +183,7 @@ export const RANKS = {
    * most marks ever held, so a new life adds nothing to it until it passes the old one, and
    * the board never said why the new climb was missing from it.
    */
-  weekReborn: 'Your new life counts here once it crosses more Dragons than your last one.',
+  weekReborn: 'Your new life counts here once it crosses more Dragons than any life before it.',
   /**
    * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
    * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
@@ -605,7 +605,7 @@ export const CULTIVATE = {
    * rate. It is a bad deal, and saying so is what points at 狩 Hunt.
    */
   condenseHead: 'Not enough 材 material',
-  condense: 'You can force a 妖丹 out of raw qi instead. It works, and it is dear: '
+  condense: 'You can force a Beast Core (妖丹) out of raw qi instead. It works, and it is dear: '
     + 'this is qi that would have opened layers.',
   condensePrice: (qi: string, rungs: string) => `${qi} qi · the price of ${rungs} layers`,
   condenseHunt: 'A beast leaves material when it falls. That is the cheap way, and it is one tap away.',
@@ -1018,7 +1018,7 @@ export const KEY = {
   dao: 'One for every three layers climbed, two for every warden. Spent on the tree.',
 
   buysHead: '買 What you can buy',
-  buysBlurb: 'Four upgrades. A realm holds so many levels of each; 妖丹 runs further, because you go and kill for it.',
+  buysBlurb: 'Four upgrades. A realm holds so many levels of each; Beast Cores (妖丹) run further, because you go and kill for it.',
 
   marksHead: '錄 The marks on every beast',
   marksBlurb: 'Every beast you kill in this life is counted, and the count pays.',
@@ -1096,7 +1096,7 @@ export const KEY = {
    */
   melt: 'Break a piece down into qi. Worth a share of a layer of the realm it was made in.',
   drive: 'Buy many kills of a beast you already know, instead of tapping for each one.',
-  condense: 'Force a 妖丹 out of raw qi when you have no 材 material left. It is dear.',
+  condense: 'Force a Beast Core (妖丹) out of raw qi when you have no 材 material left. It is dear.',
   sitting: 'Sitting with the app open deepens your gathering, up to three times, or more with 神 the Spirit branch. It ends after half an hour.',
   realmWord: 'One of the nine. Each is nine layers, and holds more of every upgrade than the last.',
   layerWord: 'One step of a realm. Your qi fills it and it opens by itself, unless you hold the layer. The next one costs more.',
@@ -2409,15 +2409,15 @@ export const NOTICE = {
     text: (n: number, extra: number) =>
       `${n} levels of each qi upgrade per realm, and this realm is full of one of them. `
       + 'The only way to hold more is to climb, so a full box is not a wall. It is the '
-      + `next realm calling. 妖丹 is the exception: it runs ${extra} levels further, `
-      + 'because it is bought with 材 material you went and killed something for.',
+      + `next realm calling. Beast Cores (妖丹) are the exception: they run ${extra} levels further, `
+      + 'because they are bought with 材 material you went and killed something for.',
   },
   cores: {
     // 名 Not the title of 引 the guide's fight step, which it once was word for word:
     // two different cards with one name is the fastest way to make a player think the
     // game is repeating itself. This one is about the currency.
     title: '材 Material is the other currency',
-    text: '妖丹 is the one upgrade priced in 材 material, and material only '
+    text: 'Beast Cores (妖丹) are the one upgrade priced in 材 material, and material only '
       + 'falls off beasts. Until you have some, this realm\'s warden will not fall.',
   },
   platform: {
@@ -2737,7 +2737,7 @@ export const ARENA = {
   skip: 'Tap to see how it ends',
   /** 熟 Said at the moment it happens, because a permanent reward that passes in
    *  silence is one the player never learns to go looking for. */
-  earned: (han: string, pays: string) => `${han} · ${pays}, for good`,
+  earned: (han: string, pays: string) => `${han} · ${pays}, for this life`,
 };
 
 /**

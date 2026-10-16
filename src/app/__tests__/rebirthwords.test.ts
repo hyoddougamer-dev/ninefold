@@ -46,7 +46,8 @@ describe('轉世 the words around a rebirth', () => {
   });
 
   it('tells a reborn cultivator why the week and Samsara wait', () => {
-    expect(RANKS.weekReborn).toMatch(/more Dragons than your last one/);
+    // The server compares with the most marks of any earlier life (sync/core.ts weekStart), not only the last.
+    expect(RANKS.weekReborn).toMatch(/more Dragons than any life before it/);
     expect(RANKS.emptyOf.samsara).not.toMatch(/Nobody has been reborn/);
     expect(RANKS.emptySamsaraBefore).not.toMatch(/Nobody has been reborn/);
   });
