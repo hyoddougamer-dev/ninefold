@@ -292,6 +292,61 @@
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
 
+  /* 位 The sect rank: its own block, every class prefixed sk-, nothing shared with the game. */
+  #mockups .mk.sect .sk-two { display:grid; gap:14px; }
+  @media(min-width:640px){ #mockups .mk.sect .sk-two { grid-template-columns:1fr 1fr; } }
+  #mockups .mk.sect .sk-seal { flex:none; display:inline-grid; place-items:center; box-sizing:border-box;
+    border:1px solid var(--rc); border-radius:3px; color:var(--rc); font-family:'Noto Serif SC',serif; font-weight:900;
+    line-height:1; background:color-mix(in srgb, var(--rc) 14%, #16130f); box-shadow:0 0 12px -5px var(--rc); }
+  #mockups .mk.sect .sk-head { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px;
+    border:1px solid color-mix(in srgb, var(--rc) 45%, var(--line));
+    background:linear-gradient(90deg, color-mix(in srgb, var(--rc) 10%, transparent), transparent 80%); }
+  #mockups .mk.sect .sk-hw { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  #mockups .mk.sect .sk-hw small { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  #mockups .mk.sect .sk-hw b { font-size:16px; font-weight:500; color:var(--rc); }
+  #mockups .mk.sect .sk-bar { display:grid; grid-template-columns:repeat(9,1fr); gap:3px; max-width:220px; }
+  #mockups .mk.sect .sk-bar i { height:5px; border-radius:2px; background:var(--line); }
+  #mockups .mk.sect .sk-bar i[data-on] { background:var(--rc); }
+  #mockups .mk.sect .sk-far { font-size:12.5px; color:var(--faint); }
+  #mockups .mk.sect .sk-arr { font-style:normal; font-size:22px; color:var(--rc); }
+  #mockups .mk.sect .sk-rows { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:5px; }
+  #mockups .mk.sect .sk-rows li { display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center;
+    padding:9px 12px; border-radius:10px; border:1px solid transparent; background:rgba(255,255,255,.02); }
+  #mockups .mk.sect .sk-rows li[data-me] { border-color:var(--jade); }
+  #mockups .mk.sect .sk-n { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  #mockups .mk.sect .sk-n b { width:27px; height:27px; box-sizing:border-box; display:grid; place-items:center; border-radius:8px;
+    border:1px solid var(--line); font:700 15px/1 Rajdhani,sans-serif; color:var(--gold); }
+  #mockups .mk.sect .sk-w { display:flex; flex-direction:column; min-width:0; }
+  #mockups .mk.sect .sk-w > b { font-weight:500; font-size:14.5px; }
+  #mockups .mk.sect .sk-w > b em { font-style:normal; color:var(--jade); font-size:12px; }
+  #mockups .mk.sect .sk-w > i { font-style:normal; font-size:12px; color:var(--gold); }
+  #mockups .mk.sect .sk-sub { display:flex; gap:7px; align-items:center; white-space:nowrap; overflow:hidden; font-size:11.5px; }
+  #mockups .mk.sect .sk-sub em { font-style:normal; font-weight:600; color:var(--rc); }
+  #mockups .mk.sect .sk-call { color:var(--faint); overflow:hidden; text-overflow:ellipsis; }
+  #mockups .mk.sect .sk-call::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%;
+    background:var(--c); margin-right:5px; }
+  #mockups .mk.sect .sk-v { font:600 13px/1.2 Rajdhani,sans-serif; white-space:nowrap; }
+  #mockups .mk.sect .sk-cult { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  #mockups .mk.sect .sk-pill { display:inline-flex; align-items:center; gap:7px; padding:2px 10px 2px 3px; border-radius:99px;
+    font-size:12px; color:var(--rc); border:1px solid color-mix(in srgb, var(--rc) 50%, transparent); }
+  #mockups .mk.sect .sk-pill .sk-seal { border-radius:99px; }
+  #mockups .mk.sect .sk-title { display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px; border-radius:99px;
+    font-size:12px; color:var(--gold); border:1px solid rgba(212,175,86,.45); }
+  #mockups .mk.sect .sk-ladhead { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  #mockups .mk.sect .sk-ladhead b { font-size:22px; color:var(--gold); }
+  #mockups .mk.sect .sk-ladhead em { font-style:normal; font:600 12px/1.3 Rajdhani,sans-serif; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--gold); }
+  #mockups .mk.sect .sk-steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+  #mockups .mk.sect .sk-steps li { display:flex; align-items:center; gap:10px; padding:6px 10px; border-radius:9px;
+    border:1px solid transparent; }
+  #mockups .mk.sect .sk-steps li[data-ahead] { opacity:.74; }
+  #mockups .mk.sect .sk-steps li[data-me] { border-color:var(--rc); background:color-mix(in srgb, var(--rc) 12%, transparent); }
+  #mockups .mk.sect .sk-steps li > span:last-child { display:flex; flex-direction:column; min-width:0; }
+  #mockups .mk.sect .sk-steps b { font-size:13.5px; font-weight:500; }
+  #mockups .mk.sect .sk-steps b .cjk { color:var(--rc); font-weight:400; white-space:nowrap; }
+  #mockups .mk.sect .sk-steps b em { font-style:normal; color:var(--jade); font-size:12px; }
+  #mockups .mk.sect .sk-steps small { font-size:11.5px; color:var(--faint); }
+
   /* 梯 And the block itself has to say so: the page's own .ladder is a grid of
      realm cards, and scoping the children was not enough to stop it applying here. */
   #mockups .mk.ladder { display:block; }
@@ -878,7 +933,7 @@
       passar de reino, atravessar o 劫, copiar o save para fora. Cada acto verifica o
       <em>save</em> e não os pixels. Um botão que acende e não faz nada passa no smoke e
       falha aqui. Última vez: <b>os dezasseis actos fizeram o que existem para fazer</b>.
-      Ao lado disso correm <b>1010 testes</b>, dos quais um atira dez mil saves
+      Ao lado disso correm <b>1105 testes</b>, dos quais um atira dez mil saves
       estragados ao <code>validate()</code> e outro seiscentos e setenta e dois
       dirigidos, campo a campo.</div>
 
@@ -1084,6 +1139,69 @@
     <span><b class="cjk">存</b><i>Your save</i></span><span><b class="cjk">?</b><i>How to play</i></span><span><b class="cjk">釋</b><i>What the characters mean</i></span><span><b class="cjk">碑</b><i>The stele</i></span><span><b class="cjk">♪</b><i>Sound on</i></span>
   </div></div>
 </div>
+
+    <h3>位 The sect rank</h3>
+    <p class="t">Nine ranks from Outer Disciple to Ancestor, read by the server from the checked
+      climb and the thunder marks, never stored and never falling. Four sit on realm arrivals
+      (the Cliff's gates 1, 3, 5 and 7), Elder on the first mark, and three past it at 5, 10 and
+      20 marks. Measured with every habit, even one that never fights reaches True Disciple inside
+      the sixteen weeks, six reach Supreme Elder and nobody reaches Ancestor, so Season 1 opens
+      with the top rank still ahead. The
+      rise and the Cliff carving that came in the same sync arrive as one card, kept in the save
+      under one key however many ranks and gates it has shown.</p>
+    <div class="mk sect">
+    <div class="sk-two">
+      <div>
+        <div class="sk-head" style="--rc:#D07C4A"><span class="sk-seal" style="--rc:#D07C4A;width:44px;height:44px;font-size:26px">真</span>
+          <span class="sk-hw"><small>Sect rank</small>
+            <b>True Disciple <span class="cjk">真傳弟子</span></b>
+            <span class="sk-bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="sk-far">16 layers to Guardian 護法</span></span><i class="sk-arr">›</i></div>
+        <ol class="sk-rows"><li><span class="sk-n"><b>1</b><span class="sk-seal" style="--rc:#A077B8;width:20px;height:20px;font-size:12px">峰</span></span>
+            <span class="sk-w"><b>Mistwalker</b>
+              <i><span class="cjk">天下第一</span> First Under Heaven</i>
+              <span class="sk-sub"><em style="--rc:#A077B8">Peak Lord</em>
+                <span class="sk-call" style="--c:#d0604e">劍仙 Sword Immortal</span></span></span>
+            <span class="sk-v">summit · 雷 7</span></li><li data-me><span class="sk-n"><b>5</b><span class="sk-seal" style="--rc:#D07C4A;width:20px;height:20px;font-size:12px">真</span></span>
+            <span class="sk-w"><b>Kestrel <em>· you</em></b>
+              <i><span class="cjk">期十</span> Top Ten of the Week</i>
+              <span class="sk-sub"><em style="--rc:#D07C4A">True Disciple</em>
+                <span class="sk-call" style="--c:#7fb495">氣修 Qi Cultivator</span></span></span>
+            <span class="sk-v">realm 6 · layer 3/9</span></li></ol>
+        <div class="sk-cult"><span class="sk-pill" style="--rc:#D07C4A"><span class="sk-seal" style="--rc:#D07C4A;width:20px;height:20px;font-size:12px">真</span> True Disciple</span>
+          <span class="sk-title"><b class="cjk">期十</b> Top Ten of the Week</span></div>
+      </div>
+      <div>
+        <div class="sk-ladhead"><b class="cjk">位階</b><em>The Sect's Ladder</em></div>
+        <ol class="sk-steps"><li style="--rc:#A077B8" data-ahead>
+          <span class="sk-seal" style="--rc:#A077B8;width:28px;height:28px;font-size:16px">祖</span><span><b>Ancestor <span class="cjk">老祖</span></b>
+          <small>20 thunder marks · score 100</small></span></li><li style="--rc:#A077B8" data-ahead>
+          <span class="sk-seal" style="--rc:#A077B8;width:28px;height:28px;font-size:16px">太</span><span><b>Supreme Elder <span class="cjk">太上長老</span></b>
+          <small>10 thunder marks · score 90</small></span></li><li style="--rc:#A077B8" data-ahead>
+          <span class="sk-seal" style="--rc:#A077B8;width:28px;height:28px;font-size:16px">峰</span><span><b>Peak Lord <span class="cjk">峰主</span></b>
+          <small>5 thunder marks · score 85</small></span></li><li style="--rc:#A077B8" data-ahead>
+          <span class="sk-seal" style="--rc:#A077B8;width:28px;height:28px;font-size:16px">長</span><span><b>Elder <span class="cjk">長老</span></b>
+          <small>The summit and your first thunder mark · score 81</small></span></li><li style="--rc:#BE5B72" data-ahead>
+          <span class="sk-seal" style="--rc:#BE5B72;width:28px;height:28px;font-size:16px">護</span><span><b>Guardian <span class="cjk">護法</span></b>
+          <small>Arrive in Great Vehicle · score 63</small></span></li><li style="--rc:#D07C4A" data-me>
+          <span class="sk-seal" style="--rc:#D07C4A;width:28px;height:28px;font-size:16px">真</span><span><b>True Disciple <span class="cjk">真傳弟子</span> <em>· you</em></b>
+          <small>Arrive in Void Refining · score 45</small></span></li><li style="--rc:#D2B35B">
+          <span class="sk-seal" style="--rc:#D2B35B;width:28px;height:28px;font-size:16px">核</span><span><b>Core Disciple <span class="cjk">核心弟子</span></b>
+          <small>Arrive in Nascent Soul · score 27</small></span></li><li style="--rc:#86AE8C">
+          <span class="sk-seal" style="--rc:#86AE8C;width:28px;height:28px;font-size:16px">內</span><span><b>Inner Disciple <span class="cjk">內門弟子</span></b>
+          <small>Arrive in Foundation · score 9</small></span></li><li style="--rc:#6E9C84">
+          <span class="sk-seal" style="--rc:#6E9C84;width:28px;height:28px;font-size:16px">外</span><span><b>Outer Disciple <span class="cjk">外門弟子</span></b>
+          <small>Your first checked sync · score 0</small></span></li></ol>
+      </div>
+    </div>
+    <p class="cap">Built on the branch, dormant until Monday 26 October: the server sends no rank
+      before the switch, and the game draws nothing for none. Left, the head of 榜 Rankings, two
+      board rows in layout B (the seal under the place number, where a two-line row has room at
+      320) and the mark on 修 beside a title. Right, the Sect's Ladder that a tap on the head opens,
+      in place of the boards like the Cliff. Each seal is its rank's one character in the colour of
+      the realm it lands on, and every one answers a tap with its note through the portal. Layout A
+      (the seal before the name) is shot beside B for 師 Shibaki to choose.</p>
+  </div>
   </section>
 
   <section class="sec" id="newplayer">
@@ -1956,7 +2074,7 @@
   <td class="n">day 14.8</td><td>符 Sigil Writing</td></tr><tr>
   <td class="n">day 14.8</td><td>圖鑑 The Bestiary</td></tr><tr>
   <td class="n">day 24.3</td><td>realm 7</td></tr><tr>
-  <td class="n">day 24.3</td><td>秘境深 The Deeper Vault</td></tr><tr>
+  <td class="n">day 24.3</td><td>秘境深 The Deeper Rooms</td></tr><tr>
   <td class="n">day 24.3</td><td>陣 Arrays</td></tr><tr>
   <td class="n">day 36.7</td><td>realm 8</td></tr><tr>
   <td class="n">day 49.8</td><td>realm 9</td></tr><tr>
@@ -2373,7 +2491,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="Greedy Wolf"
         style="background-position:-0px -52px"></span>
         <b class="cjk">貪狼</b><em>Greedy Wolf</em>
-        <i>Melting gives half as much qi again. What you throw away pays better.</i></div>
+        <i>Each piece melts for half as much again: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div>
       <div class="ac"><span class="pc" role="img" aria-label="Heat Control"
         style="background-position:-52px -52px"></span>
         <b class="cjk">火候</b><em>Heat Control</em>
@@ -2413,7 +2531,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="Stone to Gold"
         style="background-position:-104px -156px"></span>
         <b class="cjk">點石</b><em>Stone to Gold</em>
-        <i>Melting gives seven tenths more qi.</i></div></div>
+        <i>Each piece melts for seven tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 煉虛 Void Refining</span>
@@ -2445,7 +2563,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="Wildfire"
         style="background-position:-104px -260px"></span>
         <b class="cjk">燎原</b><em>Wildfire</em>
-        <i>Melting gives nine tenths more qi.</i></div></div>
+        <i>Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Reaching 大乘 Great Vehicle</span>
@@ -2545,7 +2663,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="Embers"
         style="background-position:-104px -468px"></span>
         <b class="cjk">餘燼</b><em>Embers</em>
-        <i>Melting pays three fifths more qi.</i></div></div>
+        <i>Each piece melts for three fifths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div></div>
   </div>
   <div class="trio">
     <span class="at">Entering 太乙 Supreme Unity</span>
@@ -2589,7 +2707,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="The Last Drop"
         style="background-position:-52px -624px"></span>
         <b class="cjk">瀝盡</b><em>The Last Drop</em>
-        <i>Melting pays three quarters more qi.</i></div>
+        <i>Each piece melts for three quarters more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div>
       <div class="ac"><span class="pc" role="img" aria-label="The God's Meal"
         style="background-position:-104px -624px"></span>
         <b class="cjk">神餐</b><em>The God's Meal</em>
@@ -2637,7 +2755,7 @@
       <div class="ac"><span class="pc" role="img" aria-label="Melting the Mountain"
         style="background-position:-52px -780px"></span>
         <b class="cjk">銷山</b><em>Melting the Mountain</em>
-        <i>Melting pays nine tenths more qi.</i></div>
+        <i>Each piece melts for nine tenths more: more qi while the melting allowance lasts, more 材 material once it is spent. The allowance itself does not grow, and melting cards add together.</i></div>
       <div class="ac"><span class="pc" role="img" aria-label="Spirit Quenching"
         style="background-position:-104px -780px"></span>
         <b class="cjk">靈淬</b><em>Spirit Quenching</em>
@@ -3313,7 +3431,7 @@
     <span class="body"><b class="cjk">音</b> <em>Sound</em><i>A slider from 0 to 100 for the sound and another for the music, each with its own mute, and a cue for every action including the tower, the furnace and a mark earned.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
-    <span class="body"><b class="cjk">新</b> <em><a href="#refine">Teaching each system</a></em><i>9 cards that arrive once, when the thing they explain first becomes true, and never block the game.</i></span>
+    <span class="body"><b class="cjk">新</b> <em><a href="#refine">Teaching each system</a></em><i>10 cards that arrive once, when the thing they explain first becomes true, and never block the game.</i></span>
   </div><div class="srow" style="--hue:var(--jade)">
     <span class="st"><b class="cjk">成</b><i>closed</i></span>
     <span class="body"><b class="cjk">引</b> <em><a href="#opens">The first session</a></em><i>5 numbered steps on 修, each finished by doing the thing and not by reading it. Nothing about it is stored, so it ends by itself and cannot come back.</i></span>
@@ -3500,7 +3618,7 @@
     <td><b class="cjk">合體</b> <i>Unity</i></td>
     <td><span class="cjk">險</span> <i>Reckless</i></td>
     <td><span class="cjk">狼噬</span> <i>Wolf Bite</i></td>
-    <td><b class="cjk" style="color:var(--gold)">秘境深</b> <em>The Deeper Vault</em><br><b class="cjk" style="color:var(--gold)">陣</b> <em>Arrays</em></td>
+    <td><b class="cjk" style="color:var(--gold)">秘境深</b> <em>The Deeper Rooms</em><br><b class="cjk" style="color:var(--gold)">陣</b> <em>Arrays</em></td>
   </tr><tr style="--hue:#BE5B72">
     <td><b class="cjk">大乘</b> <i>Great Vehicle</i></td>
     <td><span class="cjk">逆</span> <i>Reverse</i></td>
@@ -3579,13 +3697,13 @@
   <div class="row" style="--hue:#B2A566">
     <span class="body">
       <b class="cjk">秘境</b> <em>The Secret Realm</em>
-      <i>金丹 Golden Core, the third realm · A door that opens every few hours. Seven rooms, two ways on at each, and every other one is a beast a realm above you. Nothing is carried, so losing takes nothing back.</i>
+      <i>金丹 Golden Core, the third realm · A door at the top of 狩 Hunt that opens every few hours. A row of rooms, two ways on at each, and every other one is a gate: one strong beast, of your realm or the one above. Everything a room pays is banked at once, so losing takes nothing back.</i>
     </span>
   </div>
   <div class="row" style="--hue:#CB5347">
     <span class="body">
-      <b class="cjk">秘境深</b> <em>The Deeper Vault</em>
-      <i>合體 Unity, the seventh realm · The path goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game behind them.</i>
+      <b class="cjk">秘境深</b> <em>The Deeper Rooms</em>
+      <i>合體 Unity, the seventh realm · The secret realm goes further: eleven rooms instead of seven, two more guardians, and the deepest rooms in the game.</i>
     </span>
   </div>
   <div class="row" style="--hue:#86AE8C">
@@ -3615,7 +3733,7 @@
   <div class="row" style="--hue:#DFA555">
     <span class="body">
       <b class="cjk">丹</b> <em>Alchemy</em>
-      <i>化神 Spirit Severing, the fifth realm · A fifth craft: elixirs to carry into a warden, a heart demon or the vault. Spent only if you win. Herb Gathering 40 opens it sooner.</i>
+      <i>化神 Spirit Severing, the fifth realm · A fifth craft: elixirs to carry into a warden, a heart demon or the secret realm. Spent only if you win. Each gate from realm 5 to realm 8 has its own Breakthrough Pill, which breaks that gate's 封 seal at once. The first one needs Alchemy 40. Herb Gathering 40 opens Alchemy early for a head start.</i>
     </span>
   </div>
   <div class="row" style="--hue:#DFA555">
@@ -3645,7 +3763,7 @@
   <div class="row" style="--hue:#CB5347">
     <span class="body">
       <b class="cjk">陣</b> <em>Arrays</em>
-      <i>合體 Unity, the seventh realm · The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner vault door, lighter blows. Forging 40 opens it sooner.</i>
+      <i>合體 Unity, the seventh realm · The seventh craft. Arrays cut into the cave floor, a few places and each one kept for good: faster crafts, a sooner door to the secret realm, lighter blows. Forging 40 opens it sooner.</i>
     </span>
   </div>
   <div class="row" style="--hue:#A077B8">
@@ -5881,6 +5999,9 @@
       half: <em>what is this thing that just appeared</em>. Each one fires when the thing
       it describes first becomes true, fires once ever, and never blocks the game.</p>
     <div class="rows">
+  <div class="row">
+    <span class="body"><b class="cjk">終</b> <em>The closed test ends this week</em><i>The closed test ends on Monday 26 October, 00:00 (Monday 26 October, 00:00 UTC). Season 0 then begins for everyone from the first realm, and no progress carries over. Join 榜 Ranks once before then (a guest only needs a name) and your name carries 先行 Forerunner, for good.</i></span>
+  </div>
   <div class="row">
     <span class="body"><b class="cjk">上限</b> <em>A realm only holds so much</em><i>6 levels of each qi upgrade per realm, and this realm is full of one of them. The only way to hold more is to climb, so a full box is not a wall. It is the next realm calling. 妖丹 is the exception: it runs 18 levels further, because it is bought with 材 material you went and killed something for.</i></span>
   </div>

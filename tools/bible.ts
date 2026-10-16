@@ -69,6 +69,9 @@ import {
   DEEP_EVERYWHERE, DEEP_MARKS, DEEP_MATERIAL, KNOWN_MATERIAL, MARKS, MARK_INFO, MASTERED_POWER, recordCeiling,
 } from '../src/sim/record.ts';
 import { NOTICES } from '../src/app/notices.ts';
+import { RANKS } from '../src/app/copy.ts';
+import { RUNGS, TOP_RUNG, nextRung, rungOf, scoreOf } from '../src/sim/rung.ts';
+import { RUNG_AT } from '../src/sim/balance.ts';
 import { STEPS } from '../src/app/guide.ts';
 import { DRIVE_SIZES, driveCost } from '../src/sim/hunt.ts';
 import { salvageValue, salvageWorth, salvageable } from '../src/sim/salvage.ts';
@@ -1165,6 +1168,56 @@ const MOCK_MENU = `<div class="mk two">
   </div></div>
 </div>`;
 
+// 位 The sect rank on its four surfaces (docs/SEASON-RANKS.md, section 7), out of rung.ts, the
+// rank copy and the realms' own colours. The head and the rows are a True Disciple at climb 47.
+const MOCK_SECT = (() => {
+  const rungColour = (k: number) => REALMS.find((x) => x.n === RUNGS[k].realm)!.colour;
+  const seal = (r: number, size: number) => `<span class="sk-seal" style="--rc:${rungColour(r)};width:${size}px;height:${size}px;font-size:${Math.round(size * 0.58)}px">${RUNGS[r].seal}</span>`;
+  const me = { climb: 47, marks: 0 };
+  const r = rungOf(scoreOf(me.climb, me.marks));
+  const nx = nextRung(me.climb, me.marks)!;
+  const far = RANKS.sect.toLayers(nx.layers, `${RANKS.sect.names[nx.rung]} ${RUNGS[nx.rung].han}`);
+  const rows = [
+    { n: 1, name: 'Mistwalker', climb: 80, marks: 7, title: '天下第一', calling: '劍仙 Sword Immortal', cc: '#d0604e', cell: 'summit · 雷 7' },
+    { n: 5, name: 'Kestrel', climb: 47, marks: 0, title: '期十', calling: '氣修 Qi Cultivator', cc: '#7fb495', cell: 'realm 6 · layer 3/9', me: true },
+  ];
+  return `<div class="mk sect">
+    <div class="sk-two">
+      <div>
+        <div class="sk-head" style="--rc:${rungColour(r)}">${seal(r, 44)}
+          <span class="sk-hw"><small>${RANKS.sect.word}</small>
+            <b>${RANKS.sect.names[r]} <span class="cjk">${RUNGS[r].han}</span></b>
+            <span class="sk-bar">${RUNGS.map((_, i) => `<i${i <= r ? ' data-on' : ''}></i>`).join('')}</span>
+            <span class="sk-far">${far}</span></span><i class="sk-arr">›</i></div>
+        <ol class="sk-rows">${rows.map((x) => {
+          const k = rungOf(scoreOf(x.climb, x.marks));
+          return `<li${x.me ? ' data-me' : ''}><span class="sk-n"><b>${x.n}</b>${seal(k, 20)}</span>
+            <span class="sk-w"><b>${x.name}${x.me ? ' <em>· you</em>' : ''}</b>
+              <i><span class="cjk">${x.title}</span> ${RANKS.titleNames[x.title]}</i>
+              <span class="sk-sub"><em style="--rc:${rungColour(k)}">${RANKS.sect.names[k]}</em>
+                <span class="sk-call" style="--c:${x.cc}">${x.calling}</span></span></span>
+            <span class="sk-v">${x.cell}</span></li>`;
+        }).join('')}</ol>
+        <div class="sk-cult"><span class="sk-pill" style="--rc:${rungColour(r)}">${seal(r, 20)} ${RANKS.sect.names[r]}</span>
+          <span class="sk-title"><b class="cjk">期十</b> ${RANKS.titleNames['期十']}</span></div>
+      </div>
+      <div>
+        <div class="sk-ladhead"><b class="cjk">${RANKS.sect.ladderHan}</b><em>${RANKS.sect.ladderName}</em></div>
+        <ol class="sk-steps">${RUNGS.map((_, i) => TOP_RUNG - i).map((i) => `<li style="--rc:${rungColour(i)}"${i === r ? ' data-me' : i > r ? ' data-ahead' : ''}>
+          ${seal(i, 28)}<span><b>${RANKS.sect.names[i]} <span class="cjk">${RUNGS[i].han}</span>${i === r ? ' <em>· you</em>' : ''}</b>
+          <small>${RANKS.sect.reach[i]} · score ${RUNG_AT[i]}</small></span></li>`).join('')}</ol>
+      </div>
+    </div>
+    <p class="cap">Built on the branch, dormant until Monday 26 October: the server sends no rank
+      before the switch, and the game draws nothing for none. Left, the head of 榜 Rankings, two
+      board rows in layout B (the seal under the place number, where a two-line row has room at
+      320) and the mark on 修 beside a title. Right, the Sect's Ladder that a tap on the head opens,
+      in place of the boards like the Cliff. Each seal is its rank's one character in the colour of
+      the realm it lands on, and every one answers a tap with its note through the portal. Layout A
+      (the seal before the name) is shot beside B for 師 Shibaki to choose.</p>
+  </div>`;
+})();
+
 /* ── 提 the proposals: content systems, drawn rather than described ──────────
  *
  * Bruno: "sem sistemas de conteúdo, sinto que é tudo muito superficial e vazio,
@@ -1739,6 +1792,61 @@ const page = `<meta charset="utf-8">
   #cores td.hot { color:var(--cinnabar); font-family:Rajdhani,sans-serif; font-weight:700; }
   #mockups .mk.two { background:none; border:0; padding:0; display:grid; gap:10px; }
   @media(min-width:640px){ #mockups .mk.two { grid-template-columns:1fr 1fr; } }
+
+  /* 位 The sect rank: its own block, every class prefixed sk-, nothing shared with the game. */
+  #mockups .mk.sect .sk-two { display:grid; gap:14px; }
+  @media(min-width:640px){ #mockups .mk.sect .sk-two { grid-template-columns:1fr 1fr; } }
+  #mockups .mk.sect .sk-seal { flex:none; display:inline-grid; place-items:center; box-sizing:border-box;
+    border:1px solid var(--rc); border-radius:3px; color:var(--rc); font-family:'Noto Serif SC',serif; font-weight:900;
+    line-height:1; background:color-mix(in srgb, var(--rc) 14%, #16130f); box-shadow:0 0 12px -5px var(--rc); }
+  #mockups .mk.sect .sk-head { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px;
+    border:1px solid color-mix(in srgb, var(--rc) 45%, var(--line));
+    background:linear-gradient(90deg, color-mix(in srgb, var(--rc) 10%, transparent), transparent 80%); }
+  #mockups .mk.sect .sk-hw { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  #mockups .mk.sect .sk-hw small { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  #mockups .mk.sect .sk-hw b { font-size:16px; font-weight:500; color:var(--rc); }
+  #mockups .mk.sect .sk-bar { display:grid; grid-template-columns:repeat(9,1fr); gap:3px; max-width:220px; }
+  #mockups .mk.sect .sk-bar i { height:5px; border-radius:2px; background:var(--line); }
+  #mockups .mk.sect .sk-bar i[data-on] { background:var(--rc); }
+  #mockups .mk.sect .sk-far { font-size:12.5px; color:var(--faint); }
+  #mockups .mk.sect .sk-arr { font-style:normal; font-size:22px; color:var(--rc); }
+  #mockups .mk.sect .sk-rows { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:5px; }
+  #mockups .mk.sect .sk-rows li { display:grid; grid-template-columns:34px 1fr auto; gap:10px; align-items:center;
+    padding:9px 12px; border-radius:10px; border:1px solid transparent; background:rgba(255,255,255,.02); }
+  #mockups .mk.sect .sk-rows li[data-me] { border-color:var(--jade); }
+  #mockups .mk.sect .sk-n { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  #mockups .mk.sect .sk-n b { width:27px; height:27px; box-sizing:border-box; display:grid; place-items:center; border-radius:8px;
+    border:1px solid var(--line); font:700 15px/1 Rajdhani,sans-serif; color:var(--gold); }
+  #mockups .mk.sect .sk-w { display:flex; flex-direction:column; min-width:0; }
+  #mockups .mk.sect .sk-w > b { font-weight:500; font-size:14.5px; }
+  #mockups .mk.sect .sk-w > b em { font-style:normal; color:var(--jade); font-size:12px; }
+  #mockups .mk.sect .sk-w > i { font-style:normal; font-size:12px; color:var(--gold); }
+  #mockups .mk.sect .sk-sub { display:flex; gap:7px; align-items:center; white-space:nowrap; overflow:hidden; font-size:11.5px; }
+  #mockups .mk.sect .sk-sub em { font-style:normal; font-weight:600; color:var(--rc); }
+  #mockups .mk.sect .sk-call { color:var(--faint); overflow:hidden; text-overflow:ellipsis; }
+  #mockups .mk.sect .sk-call::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%;
+    background:var(--c); margin-right:5px; }
+  #mockups .mk.sect .sk-v { font:600 13px/1.2 Rajdhani,sans-serif; white-space:nowrap; }
+  #mockups .mk.sect .sk-cult { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  #mockups .mk.sect .sk-pill { display:inline-flex; align-items:center; gap:7px; padding:2px 10px 2px 3px; border-radius:99px;
+    font-size:12px; color:var(--rc); border:1px solid color-mix(in srgb, var(--rc) 50%, transparent); }
+  #mockups .mk.sect .sk-pill .sk-seal { border-radius:99px; }
+  #mockups .mk.sect .sk-title { display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px; border-radius:99px;
+    font-size:12px; color:var(--gold); border:1px solid rgba(212,175,86,.45); }
+  #mockups .mk.sect .sk-ladhead { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  #mockups .mk.sect .sk-ladhead b { font-size:22px; color:var(--gold); }
+  #mockups .mk.sect .sk-ladhead em { font-style:normal; font:600 12px/1.3 Rajdhani,sans-serif; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--gold); }
+  #mockups .mk.sect .sk-steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+  #mockups .mk.sect .sk-steps li { display:flex; align-items:center; gap:10px; padding:6px 10px; border-radius:9px;
+    border:1px solid transparent; }
+  #mockups .mk.sect .sk-steps li[data-ahead] { opacity:.74; }
+  #mockups .mk.sect .sk-steps li[data-me] { border-color:var(--rc); background:color-mix(in srgb, var(--rc) 12%, transparent); }
+  #mockups .mk.sect .sk-steps li > span:last-child { display:flex; flex-direction:column; min-width:0; }
+  #mockups .mk.sect .sk-steps b { font-size:13.5px; font-weight:500; }
+  #mockups .mk.sect .sk-steps b .cjk { color:var(--rc); font-weight:400; white-space:nowrap; }
+  #mockups .mk.sect .sk-steps b em { font-style:normal; color:var(--jade); font-size:12px; }
+  #mockups .mk.sect .sk-steps small { font-size:11.5px; color:var(--faint); }
 
   /* 梯 And the block itself has to say so: the page's own .ladder is a grid of
      realm cards, and scoping the children was not enough to stop it applying here. */
@@ -2392,6 +2500,17 @@ const page = `<meta charset="utf-8">
       teaching characters is five unanswered questions at once. One button, and every row
       arrives with its name in English.</p>
     ${MOCK_MENU}
+
+    <h3>位 The sect rank</h3>
+    <p class="t">Nine ranks from Outer Disciple to Ancestor, read by the server from the checked
+      climb and the thunder marks, never stored and never falling. Four sit on realm arrivals
+      (the Cliff's gates 1, 3, 5 and 7), Elder on the first mark, and three past it at 5, 10 and
+      20 marks. Measured with every habit, even one that never fights reaches True Disciple inside
+      the sixteen weeks, six reach Supreme Elder and nobody reaches Ancestor, so Season 1 opens
+      with the top rank still ahead. The
+      rise and the Cliff carving that came in the same sync arrive as one card, kept in the save
+      under one key however many ranks and gates it has shown.</p>
+    ${MOCK_SECT}
   </section>
 
   <section class="sec" id="newplayer">
