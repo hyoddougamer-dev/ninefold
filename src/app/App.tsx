@@ -13,6 +13,7 @@ import { begin, endOf, focusOf, isOver } from './sitting.ts';
 import { now, payTo } from './clock.ts';
 import { useSitting } from './useSitting.ts';
 import { useSave } from './useSave.ts';
+import { reloadIfRetired } from './seasonSwitch.ts';
 import { useCloud } from './useCloud.ts';
 import { useOverlays } from './useOverlays.ts';
 import { useOnce } from './useOnce.ts';
@@ -339,6 +340,27 @@ export function App() {
       document.removeEventListener('visibilitychange', onLeave);
       window.removeEventListener('pagehide', onLeave);
       save(latest.current);
+    };
+  }, [ready]);
+
+  // 開山 A game left open across the switch reloads into the season card, once (seasonSwitch.ts).
+  // The tick changes the state five times a second, so this is asked on every tick; and again
+  // when the page comes back into view, before the first tick of its return has landed.
+  useEffect(() => {
+    if (ready) reloadIfRetired(state, now());
+  }, [state, ready]);
+  useEffect(() => {
+    if (!ready) return;
+    const back = () => { if (document.visibilityState === 'visible') reloadIfRetired(latest.current, now()); };
+    document.addEventListener('visibilitychange', back);
+    window.addEventListener('pageshow', back);
+    // An app shell may send its own 'resume' on the way back from the background. The tick
+    // above catches the Android app's return either way; this only makes it sooner.
+    document.addEventListener('resume', back);
+    return () => {
+      document.removeEventListener('visibilitychange', back);
+      window.removeEventListener('pageshow', back);
+      document.removeEventListener('resume', back);
     };
   }, [ready]);
 

@@ -11,6 +11,10 @@
  * The card needs a closed-test save, so that one fixture carries no season marker and the
  * page's clock is installed past SEASON_START on purpose (CLAUDE.md, the traps). Every other
  * fixture is a season save and stamps season: 's0'.
+ *
+ * 8 drives a game left open across the switch: the clock starts before SEASON_START and runs
+ * past it, and the season card has to arrive without anybody reloading (seasonSwitch.ts). The
+ * audit of 16 October found such a tab still playing its closed-test cultivator ten minutes in.
  */
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -82,6 +86,10 @@ async function server(page, mode) {
       case '/auth/v1/user': return reply(200, USER);
       case '/auth/v1/token': return reply(200, session());
       case '/functions/v1/sync':
+        // 'switch': the live server's answer from the switch on to a save that is not the season's.
+        if (mode === 'switch' && await page.evaluate(() => Date.now() / 1000).catch(() => SEASON_START) >= SEASON_START) {
+          return reply(409, { error: 'season' });
+        }
         return reply(200, { ranked: true, state: 'verified', why: [], suspect: false, standing: null, behindHours: 0 });
       case '/rest/v1/rpc/board':
         return reply(200, [
@@ -101,7 +109,7 @@ async function server(page, mode) {
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
 
 /** A fresh page at `time`, with the given keys written while the game's scripts are held back. */
-async function plant({ size, time, keys, mode = null, tz = 'UTC' }) {
+async function plant({ size, time, keys, mode = null, tz = 'UTC', session: tab = {} }) {
   const [, W, H, scale] = size;
   const context = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: scale, timezoneId: tz });
   const page = await context.newPage();
@@ -111,7 +119,11 @@ async function plant({ size, time, keys, mode = null, tz = 'UTC' }) {
   if (mode) await server(page, mode);
   await page.route('**/assets/*.js', (r) => r.abort());
   await page.goto(BASE);
-  await page.evaluate((kv) => { localStorage.clear(); for (const [k, v] of Object.entries(kv)) localStorage.setItem(k, v); }, keys);
+  await page.evaluate(([kv, tab]) => {
+    localStorage.clear(); sessionStorage.clear();
+    for (const [k, v] of Object.entries(kv)) localStorage.setItem(k, v);
+    for (const [k, v] of Object.entries(tab)) sessionStorage.setItem(k, v);
+  }, [keys, tab]);
   await page.unroute('**/assets/*.js');
   await page.goto(BASE);
   await page.waitForTimeout(1200);
@@ -249,6 +261,61 @@ for (const size of SIZES) {
     await page.locator('.ranks .raccount').scrollIntoViewIfNeeded();
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${SHOTS}/account-${tag}.png` });
+    await context.close();
+  }
+
+  // 8. 開山 A game left open across the switch: the card arrives with nobody reloading.
+  {
+    const t0 = SEASON_START - 90;
+    const open = { ...closedTest(), at: t0 - 30, seen: ['guide', 'whom', 'lastweek'] };
+    const { page, context, errors } = await plant({ size, time: t0, mode: 'switch',
+      keys: { 'ninefold.save.v1': JSON.stringify(open), ...signedIn } });
+    let loads = 0;
+    page.on('load', () => { loads++; });
+    for (const b of await page.locator('.notice button').all()) await b.click({ timeout: 500 }).catch(() => {});
+    check(await page.locator('.season0').count() === 0, 'open across the switch: before it, the closed test plays on');
+    // Two minutes of the page's own clock, through the switch. The page reloads itself under
+    // it, which can end the run early: that is the point, so it is waited for, not failed on.
+    await page.clock.runFor(120_000).catch(() => {});
+    const arrived = await page.waitForSelector('.season0', { timeout: 8000 }).then(() => true, () => false);
+    check(arrived, 'open across the switch: the season card arrives without a reload by hand');
+    check(loads === 1, 'open across the switch: the game reloaded itself once', `loads=${loads}`);
+    if (arrived) {
+      await page.waitForTimeout(900);
+      await page.screenshot({ path: `${SHOTS}/across-card-${tag}.png` });
+      check(/Its road ends here, under the seal\./.test(await page.locator('.season0').textContent()), 'open across the switch: the farewell is the closed-test cultivator\'s');
+    }
+    // Run on: the season cultivator is not reloaded again.
+    await page.clock.runFor(30_000).catch(() => {});
+    await page.waitForTimeout(400);
+    check(loads === 1, 'open across the switch: once, and never again', `loads=${loads}`);
+    check(errors.length === 0, 'open across the switch: no page errors', errors.join(' | '));
+    await context.close();
+  }
+
+  // 8b. The same tab, already reloaded once at the switch (the mark is in sessionStorage): it
+  // never reloads twice, and 榜 Ranks says what to do in words that fit the case.
+  {
+    // Planted before the switch so the load keeps the closed-test cultivator, then run past it
+    // and past the next five-minute sync, which the server refuses for its season.
+    const t0 = SEASON_START - 60;
+    const { page, context } = await plant({ size, time: t0, mode: 'switch',
+      // In the first realm, so no 悟道 card of a realm behind it stands over the screen.
+      keys: { 'ninefold.save.v1': JSON.stringify({ ...closedTest(), realm: 1, layer: 4, qi: 50, materials: 20, tower: 0,
+        levels: { technique: 3, method: 2, pills: 1, cores: 0 }, killed: { rat: 4 }, at: t0 - 30, seen: ['guide', 'whom', 'lastweek'] }), ...signedIn },
+      session: { 'ninefold.season.reloaded': String(SEASON_START) } });
+    let loads = 0;
+    page.on('load', () => { loads++; });
+    for (const b of await page.locator('.notice button').all()) await b.click({ timeout: 500 }).catch(() => {});
+    await page.clock.runFor(330_000).catch(() => {});
+    await page.waitForTimeout(400);
+    check(loads === 0 && await page.locator('.season0').count() === 0, 'a tab that already reloaded once does not reload again', `loads=${loads}`);
+    for (const b of await page.locator('.notice button').all()) await b.click({ timeout: 500 }).catch(() => {});
+    await page.click('nav.tabs button.ranktab').catch(() => {});
+    await page.clock.runFor(2_000).catch(() => {});
+    const said = await page.waitForSelector('text=Close the game and open it again to begin Season 0', { timeout: 8000 }).then(() => true, () => false);
+    check(said, 'Ranks: close the game and open it again, then the clock');
+    await page.screenshot({ path: `${SHOTS}/across-ranks-${tag}.png` });
     await context.close();
   }
 }

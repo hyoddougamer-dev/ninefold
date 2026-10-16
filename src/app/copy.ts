@@ -195,8 +195,11 @@ export const RANKS = {
     never: 'Not synced yet. The game tries every five minutes while it is open.',
     /** 拒 The server answered, but not with a verdict. Never left at "Not synced yet". */
     unreached: 'The ranked server could not take this save just now. Your game goes on as it was, and it tries again every five minutes.',
-    /** 季 The server refused the save for its season: almost always a device clock on the wrong side of the switch. */
-    season: 'The closed test has ended. Check the date and time on this device.',
+    /** 季 The server refused the save for its season: a game left open across the switch (it
+     *  reloads itself once, so this is the case where that could not happen) or a device clock
+     *  on the wrong side of it. The audit of 16 October found the first case told only to check
+     *  a clock that was right. */
+    season: 'The closed test has ended. Close the game and open it again to begin Season 0. If this stays, check the date and time on this device.',
     closed: 'This account is off the boards after saves the server could not accept. Your game is not touched. If you think that is a mistake, tell us in 報-bugs on the Discord and we will look.',
   },
   /** 名 Under the name box, when what is typed is not a name the boards can show. */
