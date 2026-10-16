@@ -63,6 +63,12 @@ jobs:
       - run: npm run build
         env:
           VITE_HCAPTCHA_SITEKEY: ${{ vars.HCAPTCHA_SITEKEY }}
+      # 新 The worker carries this build's stamp, or the release is not a new worker and no
+      # open game offers the update (tools/swstamp.ts; from 28 Sep to 16 Oct none did).
+      - name: The service worker carries the build
+        run: |
+          tail -n 1 dist/sw.js | grep -q '^// build ' || { echo "::error::dist/sw.js has no build stamp: open games would never offer this update."; exit 1; }
+          tail -n 1 dist/sw.js
       # 測 The testers' APK, beside the game, so it downloads from the game's own address.
       # The release link redirects to a signed storage URL, and a browser inside another
       # app (a chat, a mail client) tends to stop there with nothing downloaded. A plain

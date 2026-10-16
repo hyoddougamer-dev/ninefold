@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { swStamp } from './tools/swstamp.ts';
 
 /** 版 Which build this is: the commit and the day, for a tester reporting a bug. */
 function buildId(): string {
@@ -47,8 +48,13 @@ const noCrossOrigin = {
   },
 };
 
+/** 版 Read once, so the menu's version and the worker's stamp are the same words. */
+const BUILD = buildId();
+
 export default defineConfig({
-  plugins: [react(), noCrossOrigin],
+  // 新 swStamp writes BUILD at the end of dist/sw.js, so each release is a new worker and the
+  // open game offers the update (tools/swstamp.ts).
+  plugins: [react(), noCrossOrigin, swStamp(BUILD)],
   /**
    * 驗 The agent worktrees under .claude are whole old copies of the repository, tests and
    * all. Collected, they were a thousand stale files run beside the real sixty-odd.
@@ -59,7 +65,7 @@ export default defineConfig({
   // plumbing between two processes, not about any test, so it must not fail the build; every
   // assertion still does.
   test: { exclude: [...configDefaults.exclude, '.claude/**'], dangerouslyIgnoreUnhandledErrors: true },
-  define: { __ART_HASH__: JSON.stringify(artHashes()), __BUILD__: JSON.stringify(buildId()) },
+  define: { __ART_HASH__: JSON.stringify(artHashes()), __BUILD__: JSON.stringify(BUILD) },
   // Relative, because the same build is served from a web host and from inside the APK.
   base: './',
   build: {

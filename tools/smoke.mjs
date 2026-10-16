@@ -251,6 +251,17 @@ async function walk(label, state) {
 }
 
 console.log(`查 walking ${BASE}\n`);
+
+// 新 The worker the site serves carries its build, or a release is not a new worker and the
+// open game never offers the update (tools/swstamp.ts). Asked of the served file, so a build
+// that skipped the stamp, or a host that serves public/sw.js raw, fails here.
+{
+  const res = await fetch(new URL('sw.js', BASE)).catch((e) => ({ ok: false, status: String(e) }));
+  const text = res.ok ? await res.text() : '';
+  const stamp = text.split('\n').reverse().find((l) => l.startsWith('// build '));
+  if (!stamp) fail('sw.js', `the served worker carries no build stamp (${res.ok ? 'no "// build" line' : res.status})`);
+  else console.log(`  ✓ sw.js ${stamp}`);
+}
 for (const realm of [1, 2, 3, 5, 7, 9]) {
   console.log(`  realm ${realm}`);
   await walk(`realm ${realm}`, cultivator(realm));
