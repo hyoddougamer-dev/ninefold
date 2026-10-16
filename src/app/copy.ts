@@ -22,6 +22,7 @@
 
 import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
+import { SEASON_DATE, SEASON_DAY, SEASON_UTC } from '../sim/season.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
 const EIGHTH_WALL = Math.log(REALM_WALL[7]) / -Math.log(1 - BOTTLENECK_LOOSEN);
@@ -234,7 +235,7 @@ export const RANKS = {
    * closed test runs (acceptsEverything, supabase/functions/sync/core.ts), so the line above would
    * be untrue under every board for the closed test's last days.
    */
-  fairTest: 'Your save is sealed on this device. Until Season 0 begins (Monday 26 October, 00:00 UTC) these boards show every save while we test, even one the server\'s check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.',
+  fairTest: `Your save is sealed on this device. Until Season 0 begins (${SEASON_UTC}) these boards show every save while we test, even one the server's check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.`,
   /** 改 Only on a phone whose save was changed outside the game. Nothing is taken away. */
   edited: 'This save was changed outside the game. It still plays here, but the boards only ever count what the server can verify.',
   /**
@@ -2397,7 +2398,7 @@ export const NOTICE = {
   lastWeek: {
     title: 'The closed test ends this week',
     text: (local: string) =>
-      `The closed test ends on ${local} (Monday 26 October, 00:00 UTC). Season 0 then begins for everyone `
+      `The closed test ends on ${local} (${SEASON_UTC}). Season 0 then begins for everyone `
       + 'from the first realm, and no progress carries over. Join 榜 Ranks once before then (a guest only '
       + 'needs a name) and your name carries 先行 Forerunner, for good.',
   },
@@ -2557,7 +2558,7 @@ export const SEASON = {
   /** The theme, English first and the characters alongside. */
   name: 'The Founding',
   han: '開山',
-  over: 'Season 0 · Monday 26 October',
+  over: `Season 0 · ${SEASON_DAY}`,
   line: 'The closed test is over, and its progress ends with it.',
   says: 'Everyone starts again from the first realm, and so do you.',
   /** 印 Lettered beside the seal, which carries 九境 alone. */
@@ -2580,7 +2581,7 @@ export const SEASON = {
   /** 先行 Only when the signed-in server says so (my_standing().forerunner). */
   forerunner: 'Your name now carries 先行 Forerunner on every board, for good. It changes nothing in the numbers.',
   /** 先行 Signed out: the device cannot know, so it only points the way. */
-  signedOut: 'Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting.',
+  signedOut: `Joined Ranks before ${SEASON_DATE}? Sign in, and your Forerunner mark is waiting.`,
   cliff: 'The first 81 through each gate are carved on 題名崖 the Cliff of Names.',
   begin: 'Begin Season 0',
   /**
@@ -2594,7 +2595,7 @@ export const SEASON = {
   nameLater: 'Or later, in Rankings.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Founding',
-  ranksSince: 'Since Monday 26 October. Everyone started equal.',
+  ranksSince: `Since ${SEASON_DAY}. Everyone started equal.`,
 };
 
 /**

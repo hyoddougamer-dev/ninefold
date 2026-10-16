@@ -5,7 +5,7 @@ import {
   CLOSED_TEST_REFUSED, exportSave, importSave, keepSpare, load, pendingFarewell,
   rearm, save, seasonCardDue, seasonCardRead, walked, wasEdited, wipe,
 } from '../save.ts';
-import { LAST_WEEK, SEASON, SEASON_START, inSeason, retires, seasonAt, seasonOf } from '../season.ts';
+import { LAST_WEEK, SEASON, SEASON_DATE, SEASON_DAY, SEASON_START, SEASON_UTC, inSeason, retires, seasonAt, seasonOf, spellDate } from '../season.ts';
 import { validFarewell } from '../load.ts';
 import { SEASON_START as FROM_VERIFY, GAME_EPOCH } from '../verify.ts';
 import { newState, type State } from '../state.ts';
@@ -66,6 +66,21 @@ describe('季 the marker', () => {
     // Monday 26 October 2026, 00:00 UTC. Not the plan's old 19 October.
     expect(new Date(SEASON_START * 1000).toISOString()).toBe('2026-10-26T00:00:00.000Z');
     expect(new Date(SEASON_START * 1000).getUTCDay()).toBe(1);
+  });
+
+  it('日 is the one date every line of copy reads, so moving SEASON_START moves them all', () => {
+    expect(SEASON_DAY).toBe('Monday 26 October');
+    expect(SEASON_DATE).toBe('26 October');
+    expect(SEASON_UTC).toBe('Monday 26 October, 00:00 UTC');
+    expect(spellDate(LAST_WEEK)).toBe('Monday 19 October');
+    // No line of player copy spells a day of the year by hand: comments may, copy may not.
+    const months = 'January|February|March|April|May|June|July|August|September|October|November|December';
+    const byHand = new RegExp(`\\b\\d{1,2} (${months})\\b|\\b(${months}) \\d{1,2}\\b`);
+    for (const file of ['src/app/copy.ts', 'src/sim/save.ts', 'src/app/notices.ts']) {
+      const code = readFileSync(join(process.cwd(), file), 'utf8').split('\n')
+        .filter((l) => !/^\s*(\*|\/\/|\/\*\*)/.test(l));
+      expect(code.filter((l) => byHand.test(l)), file).toEqual([]);
+    }
   });
 
   it('is re-exported beside GAME_EPOCH, the same number', () => {

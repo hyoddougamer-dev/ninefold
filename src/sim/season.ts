@@ -35,6 +35,37 @@ export const SEASON_START = 1792972800;
  */
 export const LAST_WEEK = SEASON_START - 7 * 86_400;
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+  'September', 'October', 'November', 'December'];
+
+/**
+ * 日 The one formatter every season date the player reads goes through: "Monday 26 October",
+ * "26 October", "Monday 26 October, 00:00 UTC", or the same instant on the device's own clock
+ * ("Sunday 25 October, 21:00" in Brazil). Six lines of copy once spelled the date by hand, so
+ * moving SEASON_START would have left the tab, the season card and the import message on the
+ * old day (audit, 2026-10-16). Spelled out from a fixed table rather than through
+ * toLocaleString: what an engine's locale data prints for 'en-GB' is its own business
+ * ("Sunday, 25 October" on some, "24:00" on others), and these lines read the same everywhere.
+ * It reads no clock: the instant is given, and only `local` asks the device's time zone.
+ */
+export function spellDate(seconds: number, { weekday = true, time = false, local = false } = {}): string {
+  const d = new Date(seconds * 1000);
+  const two = (n: number) => String(n).padStart(2, '0');
+  const [day, date, month, h, m] = local
+    ? [d.getDay(), d.getDate(), d.getMonth(), d.getHours(), d.getMinutes()]
+    : [d.getUTCDay(), d.getUTCDate(), d.getUTCMonth(), d.getUTCHours(), d.getUTCMinutes()];
+  return `${weekday ? `${WEEKDAYS[day]} ` : ''}${date} ${MONTHS[month]}`
+    + (time ? `, ${two(h)}:${two(m)}${local ? '' : ' UTC'}` : '');
+}
+
+/** 始 The season's first day, in UTC: "Monday 26 October". */
+export const SEASON_DAY = spellDate(SEASON_START);
+/** 始 The same without the weekday: "26 October". */
+export const SEASON_DATE = spellDate(SEASON_START, { weekday: false });
+/** 始 The instant itself: "Monday 26 October, 00:00 UTC". */
+export const SEASON_UTC = spellDate(SEASON_START, { time: true });
+
 /** The marker a cultivator begun at this instant carries: the season, or none before it. */
 export function seasonAt(now: number): string | null {
   return now >= SEASON_START ? SEASON : null;
