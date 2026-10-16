@@ -62,7 +62,10 @@ describe('留 hold the layer: off for everyone until it is turned on', () => {
     // day each realm was reached, to the thousandth, and the fights fought. Taken on e1c5d13, the
     // commit before it, and taken again once when the week's quarry moved to the second realm
     // (QUARRY_FROM_REALM, 2026-10-16), by playing e1c5d13 with only that gate added to quarryOf:
-    // the same digits as here with the toggle off. Off means off.
+    // the same digits as here with the toggle off. Taken a third time the same day, when the
+    // quarry stopped changing animal inside a week (drawn from the realm's first layer, not the
+    // layer stood on): e1c5d13 with the gate and that draw gives these same digits again, and so
+    // does this tree with the toggle off. Off means off.
     const was: Record<string, { arrival: number[]; fights: number; power: number }> = {
       active: { arrival: [0, 0.5, 1, 3.333, 7.833, 13.833, 23.5, 35, 47.667], fights: 3901, power: 67075506000 },
       'drives it all': { arrival: [0, 0.5, 1.167, 3.5, 7.667, 14, 24.333, 36.667, 48.5], fights: 25258, power: 65582374000 },
@@ -231,7 +234,8 @@ describe('留 the most the toggle is worth, played by the cultivator who uses it
    * 期 Measured again when the week's quarry moved to the second realm (2026-10-16): holds the
    * layer is unchanged at 45.33, and active reaches the ninth realm on day 47.67, because its
    * first quarry is now paid at the second realm's floor instead of the first's. So the toggle
-   * is worth about five per cent there now, inside the same ceiling.
+   * is worth about five per cent there now, inside the same ceiling. Unchanged again when the
+   * quarry stopped changing animal inside a week (the same day): 45.33 against 47.67.
    */
   const active = HABITS.find((h) => h.name === 'active')!;
   const free = play(active, 120);

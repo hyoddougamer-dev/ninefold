@@ -3389,7 +3389,8 @@ const page = `<meta charset="utf-8">
       at content that is already there and says <i>that one, this week</i>.</p>
     <div class="weeks">
       <p><b class="cjk">獸</b><span><em>The week's quarry</em><i>From the second realm,
-        one common beast, drawn from what has walked out for this cultivator, worth <b>double 材 material</b> all
+        one common beast, drawn from what has walked out by the realm's first layer, so it is
+        the same beast all week whatever layer you stand on, worth <b>double 材 material</b> all
         week. The first kill of the week pays a share of a rung of qi, once.</i></span></p>
       <p><b class="cjk">草</b><span><em>The herb in season</em><i>A bed of it pays
         <b>half again</b>. It is the only week the short herb beats the long one, which is

@@ -203,7 +203,9 @@ describe('職 every class, played out', () => {
    * lacked.
    * With the class-builder forging that shape (tools/crafter.ts forgeVisit), every class
    * held 81% or more on all five seeds measured (991, 1234, 5555, 7777, 31337; 2026-10-16),
-   * so half is a floor with room under it and still one a stranded class cannot pass.
+   * and 78% or more once the week's quarry stopped changing animal inside a week (the same
+   * day; 羅漢 the Arhat on seed 5555 is the low one, from 83%), so half is a floor with room
+   * under it and still one a stranded class cannot pass.
    */
   const HELD_FLOOR = 0.5;
   let plain = 0;
