@@ -450,7 +450,7 @@ export const CULTIVATE = {
    * times their 力, which is the one thing that says whether to brew now.
    */
   poolNextOdds: (pct: number) => `Next Dragon: ${pct}% odds as you stand now. Even is 50%.`,
-  poolNextFar: (gap: string) => `Next Dragon: ×${gap} your 力 as you stand now.`,
+  poolNextFar: (gap: string) => `Next Dragon: ×${gap} your power (力) as you stand now.`,
   poolNextPills: 'Pills brewed while the pool fills count against it.',
   /**
    * 渡劫 What the crossing costs, said before the tap rather than discovered after it.
@@ -2486,7 +2486,7 @@ export const ARENA = {
    */
   dragonShort: (n: number, name: string, han: string, each: number) =>
     `About ${n} more ${n === 1 ? name : `${name}s`} (${han}) would bring this Dragon to even odds. `
-    + `Each one adds ${each}% to your 力, for good.`,
+    + `Each one adds ${each}% to your power (力), for good.`,
   dragonDice: 'Your odds were better than even against this one. That was the dice.',
   /** 再 The same beast again, from the verdict. One button where there used to be three
    *  trips across the screen: rekaris, on the Discord, 2026-10-01. */

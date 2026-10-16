@@ -996,9 +996,9 @@ export const TRIBULATION_FOOTING = 1.05;
  * school and the 羅漢 Arhat with the lotus seed, which are the only things besides 力 that
  * a crossing reads):
  *
- *     bare body       1.09 to 4.47   (疾 Swift, crane, fox, turtle)
- *     法 Arts, full   1.09 to 5.15
- *     羅漢 Arhat       1.26 to 5.84   the most any honest build reads
+ *     bare body       1.00 to 3.96   (疾 Swift, crane, dragon, turtle)
+ *     法 Arts, full   1.00 to 4.61   (疾 Swift, crane, fox, turtle)
+ *     羅漢 Arhat       1.26 to 5.84   the most any honest build reads (the same)
  *
  * At 8 the most honest reading sits 27% under the roof, and the roof pushed a tenth
  * either way (7.2 or 8.8) touches none of them, so no honest crossing changes: the

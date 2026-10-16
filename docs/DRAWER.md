@@ -603,7 +603,7 @@ number compounds fastest (marks multiply power and qi by 1.73 each). Nobody stan
 until about day 37 of the season, so it is designed against the first real summit players in
 the first month rather than guessed at ten days before the switch.
 
-**What went in instead (p-summit):** EVEN_ROOF and the unlosable-fight rule on the Dragon's
+**What went in instead (2026-10-16):** EVEN_ROOF and the unlosable-fight rule on the Dragon's
 footing; the next Dragon said under the pool while it fills; a lost Dragon says how many
 Tribulation Pills bring it to even; the pill in the brew advice named in English; the arena
 names that were cut short at 320.

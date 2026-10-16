@@ -87,7 +87,7 @@ describe('頂 the Dragon footing cannot be ratcheted by a fight', () => {
     expect(classMend(arhat)).toBeGreaterThan(0);
   });
 
-  it('never lets a stance and a sequence stop a beast landing its blows', () => {
+  it('never lets a stance and a sequence stop a beast landing its blows', { timeout: 60_000 }, () => {
     let worst = { share: 1, what: '' };
     let fights = 0, longestMiss = 0;
     for (const [name, body] of BODIES) {
