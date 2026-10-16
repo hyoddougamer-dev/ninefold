@@ -344,8 +344,9 @@ export const CULTIVATE = {
   sealPayShort: 'Not enough qi for a tap yet.',
   sealPayFull: (share: number) =>
     `Qi has filled all it can here, ${percent(share)} of the bar. Time and pills do the rest.`,
-  sealPayRule: (share: number, minutes: number) =>
-    `Qi fills up to ${percent(share)} of the bar, a tap at a time, and a tap costs ${minutes} min of your own gathering for every hour it fills.`,
+  /** 封 Since 2026-10-15 qi can fill the whole bar: the first share at one price, the rest at another. */
+  sealPayRule: (easy: number, minutes: number, deep: number) =>
+    `Qi can fill the whole bar, a tap at a time. A tap costs ${minutes} min of your own gathering for every hour it fills, up to ${percent(easy)} of the bar, and ${deep} min past that.`,
   /** 封 Eat a Breakthrough Pill made for a realm below: the button and its note. */
   sealFeed: (name: string) => `Use ${name}`,
   sealFeedFills: (days: number) => `fills ${duration(days * 86_400)}`,
@@ -748,7 +749,7 @@ export const ADVICE = {
     `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
   sealWait: (left: number) =>
-    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi fills part of the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi can fill the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -2249,6 +2250,18 @@ export const NOTICE = {
       + 'there has them. Taking a piece off, melting it or fusing it never takes them. Pour '
       + 'material in freely: an upgrade never wastes it.',
   },
+  /**
+   * 封 Once, on reaching the first sealed realm: the testers met the seal for the first time
+   * at layer 9 with the warden already out, and nothing had said it was coming. The realms
+   * and the days are handed in from SEAL_DAYS.
+   */
+  seal: {
+    title: 'From here, each gate is sealed a while',
+    text: (first: number, last: number, least: number, most: number) =>
+      `From realm ${first} to realm ${last}, a gate stays sealed for ${least} to ${most} days after its warden comes out, `
+      + 'however strong you are. The bar on the warden\'s card fills by itself, and nothing is lost while you wait. '
+      + 'Qi can fill it faster, and a Breakthrough Pill from 業 Alchemy breaks it at once.',
+  },
   workshop: {
     title: 'The workshop is open',
     text: 'Seven crafts that level from 1 to 99, on the 業 tab. Set it on one thing and it keeps '
@@ -2661,14 +2674,14 @@ export const CRAFTS = {
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
   carryPill: '破境 Breakthrough, for the gate',
-  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi fills part as well. Waiting it out always works too.`,
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi can fill all of it. Waiting it out always works too.`,
   pillBreaks: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   pillHeld: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   pillNone: (left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi fills part of the bar on the Cultivate screen.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi can fill the bar on the Cultivate screen.`,
   pillWall: (days: number) =>
     `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',

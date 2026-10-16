@@ -6,7 +6,7 @@ import { BEASTS } from '../data/bestiary.ts';
 import { MARKS } from '../sim/record.ts';
 import { SLOTS } from '../data/gear.ts';
 import { isOpen } from '../sim/unlocks.ts';
-import { CORE_CAP_EXTRA, LEVELS_PER_REALM } from '../sim/balance.ts';
+import { CORE_CAP_EXTRA, LEVELS_PER_REALM, SEAL_DAYS } from '../sim/balance.ts';
 import { NOTICE } from './copy.ts';
 import { platformOpen } from '../sim/platform.ts';
 import { LAST_WEEK, SEASON_START } from '../sim/season.ts';
@@ -52,6 +52,13 @@ export interface Notice {
   readonly when: (s: State) => boolean;
   /** Where to send the player, if there is somewhere. */
   readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts';
+}
+
+/** 封 The seal's card, read off SEAL_DAYS: the sealed realms, and the shortest and longest seal. */
+function sealText(): string {
+  const sealed = SEAL_DAYS.map((d, i) => ({ d, realm: i + 1 })).filter((x) => x.d > 0);
+  const days = sealed.map((x) => x.d);
+  return NOTICE.seal.text(sealed[0].realm, sealed[sealed.length - 1].realm, Math.min(...days), Math.max(...days));
 }
 
 export const NOTICES: readonly Notice[] = [
@@ -100,6 +107,12 @@ export const NOTICES: readonly Notice[] = [
     // and whoever was already past it the day it arrived, who never saw it open.
     key: 'workshop', han: '業', title: NOTICE.workshop.title, text: NOTICE.workshop.text, tab: 'crafts',
     when: (s) => isOpen(s.realm, 'crafts'),
+  },
+  {
+    // 封 Once, the moment the first sealed realm is reached: long before its warden comes out,
+    // so the seal is never the surprise it was at layer 9.
+    key: 'seal', han: '封', title: NOTICE.seal.title, text: sealText(),
+    when: (s) => (SEAL_DAYS[s.realm - 1] ?? 0) > 0,
   },
   {
     key: 'pool', han: '雷池', title: NOTICE.pool.title, text: NOTICE.pool.text,

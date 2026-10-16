@@ -7,7 +7,7 @@ import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
-import { SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
+import { SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
 import { BOTTLENECK_LOOSEN, ECHO_ROOF } from '../../sim/balance.ts';
@@ -570,7 +570,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     </div>
                     <p className="faint" style={{ margin: '7px 0 0', fontSize: 11.5 }}>
                       {sealRoom > 0 && state.qi < sealCost ? `${CULTIVATE.sealPayShort} ` : ''}
-                      {sealRoom <= 0 ? CULTIVATE.sealPayFull(SEAL_PAY_SHARE) : CULTIVATE.sealPayRule(SEAL_PAY_SHARE, SEAL_PAY_MINUTES)}
+                      {sealRoom <= 0 ? CULTIVATE.sealPayFull(SEAL_PAY_SHARE) : CULTIVATE.sealPayRule(SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_DEEP_MINUTES)}
                       {feedRoom <= 0 && (state.sealFed ?? 0) > 0 ? ` ${CULTIVATE.sealFeedFull(SEAL_PILL_SHARE)}` : ''}
                       {' '}{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}
                     </p>
