@@ -105,13 +105,13 @@ There is no seasonal qi or power modifier: on a save that is never wiped, it wou
 - The Dragon: at the first tribulation crossed (`standings.marks >= 1`).
 - The date is the server's clock at the verified sync. The note says "when the server saw you", because a player who crosses offline is carved at the next sync.
 
-**When the columns open** (`habits.ts`, first arrival, days from a fresh start; re-run for this check, and again on 2026-10-16 when the week's quarry moved to the second realm):
+**When the columns open** (`habits.ts`, first arrival, days from a fresh start; re-run for this check, again on 2026-10-16 when the week's quarry moved to the second realm, and again the same day when it stopped changing animal inside a week, which brought once a day into realm 9 from day 76 to day 73):
 
 | Gate | Every hour | Active | Once a day |
 |---|---|---|---|
 | Spirit Fox (into realm 2) | 0.1 | 0.5 | 1.0 |
 | Thunder Tiger (into realm 5) | 4.9 | 7.8 | 16 |
-| Serpent Dragon (into realm 9) | 32.1 | 47.7 | 76 |
+| Serpent Dragon (into realm 9) | 32.1 | 47.7 | 73 |
 
 So a new column falls every few days for about five weeks, and the Discord has real news each time.
 
