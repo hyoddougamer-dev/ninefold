@@ -3388,8 +3388,8 @@ const page = `<meta charset="utf-8">
     <p class="t">One mark now rides the calendar. It hands over no new content: it points
       at content that is already there and says <i>that one, this week</i>.</p>
     <div class="weeks">
-      <p><b class="cjk">獸</b><span><em>The week's quarry</em><i>One common beast, drawn
-        from what has walked out for this cultivator, worth <b>double 材 material</b> all
+      <p><b class="cjk">獸</b><span><em>The week's quarry</em><i>From the second realm,
+        one common beast, drawn from what has walked out for this cultivator, worth <b>double 材 material</b> all
         week. The first kill of the week pays a share of a rung of qi, once.</i></span></p>
       <p><b class="cjk">草</b><span><em>The herb in season</em><i>A bed of it pays
         <b>half again</b>. It is the only week the short herb beats the long one, which is
@@ -5138,9 +5138,11 @@ const page = `<meta charset="utf-8">
     <h3>量 Every class played out</h3>
     <p class="t">The active cultivator, told to become each class and wear for it, against
       the same cultivator wearing whatever is strongest, who opens realm 9 on day
-      ${CLASS_PLAIN.toFixed(0)}. The tests fail if any class is more than 15% slower, more than
-      20% faster, or takes longer than a fortnight over any of forty crossings past the
-      summit.</p>
+      ${CLASS_PLAIN.toFixed(0)}. Where no drop has given it a shape the class needs, it forges
+      one (百形, any shape of a realm whose warden has fallen) and pays the game's price for it,
+      as a player after the class would. The tests fail if any class is worn for less than
+      half the climb, is more than 20% slower or more than 20% faster, or takes longer than a
+      fortnight over any of forty crossings past the summit.</p>
     <table>
       <tr><th>class</th><th style="text-align:right">realm 9</th><th style="text-align:right">worn</th>
           <th style="text-align:right">40 marks</th><th style="text-align:right">worst</th></tr>
