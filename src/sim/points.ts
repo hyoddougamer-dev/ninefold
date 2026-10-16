@@ -61,3 +61,45 @@ export function spendablePoints(s: State): number {
   const capstones = capstonesOpen(s.realm);
   return ALL_NODES.some((n) => canUnlock(n.key, s.unlocked, free, keystones, capstones)) ? free : 0;
 }
+
+/**
+ * 蓄 The nodes still within reach at any price, under this realm's gates or with every
+ * gate open (`gated = false`, what is left of the tree for good).
+ */
+function reachable(s: State, gated: boolean) {
+  const keystones = !gated || isOpen(s.realm, 'keystones');
+  const capstones = !gated || capstonesOpen(s.realm);
+  return ALL_NODES.filter((n) => canUnlock(n.key, s.unlocked, Infinity, keystones, capstones));
+}
+
+/**
+ * 滿 Nothing left in the tree to buy, at any price.
+ *
+ * The other half of `spendablePoints` being zero. A cultivator who buys every node they
+ * can fills the tree around the sixth realm, and from there every point the road pays
+ * (a 悟道 card, a finished realm of the Bestiary, a heart demon) only adds to a pile
+ * nothing will take. Saying so where the point is offered is the honest thing: measured
+ * at the eighth realm, the 道 half of the screen wore a gold 28 that only ever climbed.
+ *
+ * `gated` (the default) reads the tree as this realm lets it be bought: full means every
+ * node open to you is yours, while a keystone or a capstone may still be on its way.
+ * Ungated, it means the tree is finished for good, which is what a card has to say.
+ */
+export function treeFull(s: State, gated = true): boolean {
+  return isOpen(s.realm, 'tree') && reachable(s, gated).length === 0;
+}
+
+/**
+ * 蓄 What the next node costs, when the points held fall short of every node in reach:
+ * the cultivator is saving, not sitting on points with nothing to do. Null when a node is
+ * affordable now, when the tree is full, or when nothing is held to save.
+ */
+export function savingFor(s: State): number | null {
+  if (!isOpen(s.realm, 'tree')) return null;
+  const free = freePoints(s);
+  if (free <= 0) return null;
+  const costs = reachable(s, true).map((n) => n.cost);
+  if (costs.length === 0) return null;
+  const next = Math.min(...costs);
+  return free < next ? next : null;
+}

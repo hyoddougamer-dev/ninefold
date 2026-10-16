@@ -7,6 +7,7 @@ import { secondChance } from './fate.ts';
 import { fortuneOf } from './fortune.ts';
 import { bodyTotals, gearLuck } from './schools.ts';
 import { valid } from './awaken.ts';
+import { treeFull } from './points.ts';
 import type { State } from './state.ts';
 
 /**
@@ -30,6 +31,11 @@ export type Worth =
   | { readonly kind: 'second'; readonly before: number; readonly after: number }
   /** 藏 Places in the chest. */
   | { readonly kind: 'chest'; readonly before: number; readonly after: number }
+  /**
+   * 道 Points for the tree, and whether the tree has anything left to take them. A card
+   * that pays four points to a full tree pays nothing you can use, and has to say so.
+   */
+  | { readonly kind: 'dao'; readonly full: boolean }
   /** Everything else is already a plain percentage or count, and says so itself. */
   | { readonly kind: 'flat' };
 
@@ -98,5 +104,6 @@ export function cardWorth(s: State, card: Card, at?: number): Worth {
         : valid(s.awakened).map((k, j) => (j === at ? card.key : k))),
     };
   }
+  if (e.kind === 'dao') return { kind: 'dao', full: treeFull(s, false) };
   return { kind: 'flat' };
 }

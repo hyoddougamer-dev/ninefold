@@ -13,6 +13,7 @@ import { fightDeps } from '../memo.ts';
 import { QOL, SECLUSION } from '../copy.ts';
 import { demonsFor } from '../../sim/seclusion.ts';
 import { Svg } from './Svg.tsx';
+import { treeFull } from '../../sim/points.ts';
 
 /**
  * 閉關 The door, on 修 the cultivate screen, in the four states it is ever in: open, shut
@@ -50,7 +51,7 @@ export function Seclusion({ state, onShut, onFace }: {
           {due && <>
             <em>{SECLUSION.due}</em>
             <i>{SECLUSION.dueNote}</i>
-            <u className="mono">{SECLUSION.odds(Math.round(odds * 100))} · {SECLUSION.pays(DEMON_DAO)}</u>
+            <u className="mono">{SECLUSION.odds(Math.round(odds * 100))} · {SECLUSION.pays(DEMON_DAO, treeFull(state, false))}</u>
           </>}
           {shut && <>
             <em>{SECLUSION.waiting(duration(left))}</em>

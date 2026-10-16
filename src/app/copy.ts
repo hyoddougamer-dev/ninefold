@@ -1486,7 +1486,7 @@ export const AWAKEN = {
       case 'material': return `+${share(e.percent)} 材 material from every beast, for good.`;
       case 'salvage': return `Melting pays +${share(e.percent)}: more qi, or more 材 material once the allowance is spent.`;
       case 'refine': return `煉器 Refining costs ${share(e.percent)} less 材 material, at every level.`;
-      case 'dao': return `+${e.points} 道 Path points, yours now.`;
+      case 'dao': return `+${e.points} 道 Path points, yours now.${w.kind === 'dao' && w.full ? ` ${DAO.kept(e.points)}` : ''}`;
       case 'pill': return `Every pill costs ${share(e.percent)} less 材 material.`;
       case 'tower': return `Every 塔 tower floor pays +${share(e.percent)} 材 material.`;
       default: return '';
@@ -2223,7 +2223,22 @@ export const DAO = {
 
   tree: 'All three branches grow from 起, and the gold bridges cross between them. Tap a node to read it.',
   /** 數 It read "6 free · 0/6", and nothing said what the second pair was. */
-  purse: (spent: number, earned: number) => ` to spend · ${spent} of ${earned} spent`,
+  purse: (spent: number, earned: number, spendable = true) =>
+    `${spendable ? ' to spend' : ' kept'} · ${spent} of ${earned} spent`,
+  /**
+   * 蓄 The points held fall short of every node in reach: the cultivator is saving, and
+   * the gold that used to say "spend these" said the wrong thing.
+   */
+  saving: (held: number, cost: number) => `Saving: ${held} of ${cost} 道 for the next node.`,
+  /**
+   * 滿 Nothing left to buy. A greedy cultivator fills the tree around the sixth realm and
+   * the points keep coming; they are kept, and said to be kept.
+   */
+  full: 'Every node you can take is yours. Spare points are kept.',
+  /** 滿 Every node this realm lets you buy is yours, and a keystone or capstone is still to open. */
+  fullForNow: 'Every node open to you is yours. Spare points wait for what opens next.',
+  /** 滿 Said beside a 道 reward when the tree has nothing left to take: a card, a demon, a Bestiary page. */
+  kept: (n: number) => `Your tree is full, so ${n === 1 ? 'it is' : 'they are'} kept.`,
   /**
    * 短 The point is that you cannot have it all. It used to say a climb earns about 42,
    * a number fifteen times wrong by 2026-10-03 (the vault's shrines had no cap). What
@@ -2534,7 +2549,8 @@ export const CREDITS = {
 
 export const BESTIARY = {
   /** 圖鑑 What finishing a realm's beasts is worth, said where they are listed. */
-  pays: (n: number) => `${n} 道 when every beast of the realm, its warden aside, is 熟 Known`,
+  pays: (n: number, full = false) =>
+    `${n} 道 when every beast of the realm, its warden aside, is 熟 Known${full ? `. ${DAO.kept(n)}` : ''}`,
   credits: 'Art credits',
   icons: (authors: string) =>
     `Icons from game-icons.net, Creative Commons BY 3.0. Authors: ${authors}.`,
@@ -2648,7 +2664,7 @@ export const SECLUSION = {
   face: 'Face it',
   odds: (pct: number) => `${pct}% odds`,
   tally: (n: number, of: number) => `${n} of ${of} put down`,
-  pays: (n: number) => `+${n} 道 point`,
+  pays: (n: number, full = false) => `+${n} 道 point${full ? `. ${DAO.kept(n)}` : ''}`,
   rest: (realm: number) =>
     `The next demon waits for the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][realm - 1]} realm.`,
   done: 'All nine demons are down. Your heart is still.',
