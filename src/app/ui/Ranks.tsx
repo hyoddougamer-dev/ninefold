@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FORERUNNER, RANKS, SEASON } from '../copy.ts';
 import { ForerunnerSeal } from './Forerunner.tsx';
 import { Cliff } from './Cliff.tsx';
+import { RungSeal, rungColour } from './RungSeal.tsx';
+import { SectLadder } from './SectLadder.tsx';
+import { RUNGS, TOP_RUNG, nextRung, rungFrom } from '../../sim/rung.ts';
 import { SEASON_START } from '../../sim/season.ts';
-import { useRemembered } from '../prefs.ts';
+import { isFlag, useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
 import { cleanName } from '../../net/names.ts';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
@@ -52,6 +55,12 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
   // signed in or not, and only from the season's first second (nothing is carved before it).
   const season = Date.now() / 1000 >= SEASON_START;
   const [cliff, setCliff] = useState(false);
+  // 位階 The Sect's Ladder, swapped in place of the boards the same way.
+  const [steps, setSteps] = useState(false);
+  // 名 The 修士 nudge, put away for good on this device once it is answered or dismissed.
+  const [nudged, setNudged] = useRemembered<boolean>('ranks.nudged', false, isFlag);
+  const [asked, setAsked] = useState(0);
+  const rung = who && me && !me.suspect && !me.banned ? rungFrom(me.rung) : null;
 
   useEffect(() => {
     if (!who) return;
@@ -75,6 +84,8 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
       )}
       {season && cliff ? (
         <Cliff me={who ? me?.name ?? null : null} onBack={() => setCliff(false)} />
+      ) : steps && rung !== null ? (
+        <SectLadder rung={rung} onBack={() => setSteps(false)} />
       ) : (
       <>
       {season && (
@@ -95,6 +106,15 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
               {me.forerunner && <ForerunnerSeal className="rmseal" />}
             </div>
           )}
+          {/* 位 The sect rank, on the server's word only: nothing before the switch, a line while held. */}
+          {me && <SectHead me={me} rung={rung} season={season} onLadder={() => setSteps(true)} />}
+          {me && rung !== null && rung >= 1 && me.name.startsWith('修士') && !nudged && (
+            <div className="rnudge">
+              <span>{RANKS.sect.nudge}</span>
+              <button type="button" className="act small" onClick={() => { setAsked((n) => n + 1); setNudged(true); }}>{RANKS.sect.nudgeGo}</button>
+              <button type="button" className="rnudgeoff" onClick={() => setNudged(true)}>{RANKS.sect.nudgeLater}</button>
+            </div>
+          )}
           <Status synced={synced} syncedAt={syncedAt} suspect={me?.suspect ?? false} error={syncError ?? null} />
           {wasEdited() && <p className="rstatus" data-tone="bad">{RANKS.edited}</p>}
           <div className="rtabs" role="tablist" style={{ gridTemplateColumns: `repeat(${shown.length}, 1fr)` }}>
@@ -112,7 +132,13 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
                   <ol className="rlist">
                     {rows.map((r) => (
                       <li key={`${r.rank}-${r.name}`} data-me={r.me} data-top={r.rank <= 3}>
-                        <span className="rn">{r.rank}</span>
+                        {/* 位 Layout B: the seal under the place number, where every two-line row has room. */}
+                        {rungFrom(r.rung) === null ? <span className="rn">{r.rank}</span> : (
+                          <span className="rn" data-sealed="true">
+                            <b className="rnum">{r.rank}</b>
+                            <RungSeal rung={rungFrom(r.rung)!} className="rrowseal" />
+                          </span>
+                        )}
                         <span className="rw">
                           {/* 先行 Its own field beside the name, never in place of a title (2d). */}
                           <span className="rwho">
@@ -120,7 +146,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
                             {r.forerunner && <ForerunnerSeal className="fore" />}
                           </span>
                           {r.title && <i><span className="cjk">{r.title}</span> {RANKS.titleNames[r.title] ?? ''}</i>}
-                          <Called calling={r.calling} />
+                          <Sub rung={rungFrom(r.rung)} calling={r.calling} />
                         </span>
                         <span className="rv">
                           {current === 'climb' || current === 'samsara' ? RANKS.climbCell(r.climb, r.marks)
@@ -137,11 +163,14 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           <p className="rnote small">
             <b>{RANKS.fairHead}</b> {RANKS.fair}
           </p>
-          <Account who={who} me={me} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
+          <Account who={who} me={me} ask={asked} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
                    onLinked={async () => { const w = await cloud.who(); if (w) onEnter(w, ''); }} />
         </>
       ) : (
-        <Join onEnter={onEnter} />
+        <>
+          {season && <p className="rnote rsectout"><b className="cjk">{RANKS.sect.han}</b> {RANKS.sect.signedOut}</p>}
+          <Join onEnter={onEnter} />
+        </>
       )}
       </>
       )}
@@ -227,8 +256,10 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
   );
 }
 
-function Account({ who, me, onSignOut, onRenamed, onLinked }: {
+function Account({ who, me, ask = 0, onSignOut, onRenamed, onLinked }: {
   who: Who; me: Mine | null; onSignOut: () => void; onRenamed: (m: Mine) => void;
+  /** 名 Bumped by the 修士 nudge: open the name box and bring it into view. */
+  ask?: number;
   /** A guest confirmed an email: the same account, now on every device. */
   onLinked: () => void;
 }) {
@@ -239,9 +270,15 @@ function Account({ who, me, onSignOut, onRenamed, onLinked }: {
   const [sure, setSure] = useState(false);
   const [linking, setLinking] = useState<string | null>(null);
   useEffect(() => { if (me) setName(me.name); }, [me]);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ask) return;
+    setEditing(true);
+    box.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [ask]);
 
   return (
-    <div className="raccount">
+    <div className="raccount" ref={box}>
       <div className="rrow">
         {editing ? (
           <>
@@ -344,6 +381,50 @@ export function CloudPick({ there, here, onTake, onKeep }: {
       <button className="act ghost" onClick={onKeep}>留 <span>{RANKS.cloudKeep}</span></button>
       <p className="rnote small">{RANKS.cloudNote}</p>
     </div>
+  );
+}
+
+/**
+ * 位 The head of Rankings for the sect rank: the seal, the rank in English and characters, a
+ * nine-step bar and what the next rank needs. Tapping it opens the ladder; the seal answers
+ * with its note, which carries the same way to the ladder. Before the switch the server sends
+ * no rank and this draws nothing.
+ */
+function SectHead({ me, rung, season, onLadder }: { me: Mine; rung: number | null; season: boolean; onLadder: () => void }) {
+  if (me.suspect || me.banned) return season ? <p className="rnote rsectnote">{RANKS.sect.held}</p> : null;
+  if (rung === null) return season ? <p className="rnote rsectnote">{RANKS.sect.unrecorded}</p> : null;
+  const climb = me.climb ?? 0;
+  const marks = me.marks ?? 0;
+  const next = rung >= TOP_RUNG ? null : nextRung(climb, marks);
+  const nextName = next ? `${RANKS.sect.names[next.rung]} ${RUNGS[next.rung].han}` : '';
+  const far = !next ? RANKS.sect.top(marks)
+    : next.marks === 0 ? RANKS.sect.toLayers(next.layers, nextName)
+      : next.layers > 0 ? RANKS.sect.toSummit(next.layers, next.marks, nextName)
+        : RANKS.sect.toMarks(next.marks, nextName);
+  return (
+    <div className="rsect" style={{ ['--rc' as string]: rungColour(rung) }}>
+      <RungSeal rung={rung} className="rsectseal" go={{ label: RANKS.sect.open, onGo: onLadder }} />
+      <button type="button" className="rsectgo" onClick={onLadder} aria-label={`${RANKS.sect.names[rung]}. ${RANKS.sect.open}`}>
+        <small>{RANKS.sect.word}</small>
+        <b>{RANKS.sect.names[rung]} <span className="cjk">{RUNGS[rung].han}</span></b>
+        <span className="rsectbar" role="img" aria-label={RANKS.sect.bar(rung)}>
+          {RUNGS.map((_, i) => <i key={i} data-on={i <= rung || undefined} />)}
+        </span>
+        <span className="rsectfar">{far}</span>
+        <i className="rsectarrow" aria-hidden="true">›</i>
+      </button>
+    </div>
+  );
+}
+
+/** 位 The second line of a board row: the rank in English first, then the class the save wears. */
+function Sub({ rung, calling }: { rung: number | null; calling?: string | null }) {
+  if (rung === null) return <Called calling={calling} />;
+  return (
+    <span className="rsub">
+      <em className="rrank" style={{ ['--rc' as string]: rungColour(rung) }}>{RANKS.sect.names[rung]}</em>
+      <Called calling={calling} />
+    </span>
   );
 }
 

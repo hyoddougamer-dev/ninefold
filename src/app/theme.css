@@ -4582,3 +4582,83 @@ nav.tabs .tabkey { display: none; }
   .help.ranks .rcliffcols { grid-template-columns: repeat(9, 116px); }
 }
 @media (prefers-reduced-motion: reduce) { .help.ranks .rcolpic { transition: none; } }
+
+/* ── 位 The sect rank (docs/SEASON-RANKS.md, section 7) ──────────────────────────────────
+   One RungSeal component, styled here under each screen's own class: .rsectseal at the head of
+   Rankings, .rrowseal on a board row, .rstepseal on the Sect's Ladder, .c-rungseal on 修. Each
+   seal is its rank's one character in a small stamped square, in the colour of the realm the
+   rank lands on (--rc, set inline from the realm's own colour). No class here is shared with
+   another screen, and none is named for a ladder. */
+.help.ranks .rsect .rsectseal, .help.ranks .rlist .rrowseal, .help.ranks .rsteps .rstepseal, .c-hero .c-rungseal {
+  flex: none; display: inline-grid; place-items: center; box-sizing: border-box;
+  border: 1px solid var(--rc); border-radius: 3px; color: var(--rc);
+  background: color-mix(in srgb, var(--rc) 14%, #16130f);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 22%, transparent), 0 0 12px -5px var(--rc);
+  font-family: 'Noto Serif SC', serif; font-weight: 900; line-height: 1; }
+
+/* 我 The head: seal, rank, nine steps and the distance to the next, one tap from the ladder. */
+.help.ranks .rsect { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--rc) 45%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 10%, transparent), transparent 80%), var(--panel); }
+.help.ranks .rsect .rsectseal { width: 44px; height: 44px; font-size: 25px; border-width: 1.5px; }
+.help.ranks .rsect .rsectgo { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px;
+  align-items: center; padding: 0; border: 0; background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.help.ranks .rsect .rsectgo > small { grid-column: 1; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.help.ranks .rsect .rsectgo > b { grid-column: 1; font-size: 16px; font-weight: 500; color: var(--rc); overflow-wrap: anywhere; }
+.help.ranks .rsect .rsectgo > b .cjk { font-size: 15px; font-weight: 400; white-space: nowrap; }
+.help.ranks .rsect .rsectbar { grid-column: 1; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 3px; max-width: 220px; }
+.help.ranks .rsect .rsectbar i { height: 5px; border-radius: 2px; background: color-mix(in srgb, var(--faint) 25%, transparent); }
+.help.ranks .rsect .rsectbar i[data-on] { background: var(--rc); box-shadow: 0 0 6px -1px var(--rc); }
+.help.ranks .rsect .rsectfar { grid-column: 1; font-size: 12.5px; line-height: 1.4; color: var(--faint); }
+.help.ranks .rsect .rsectarrow { grid-column: 2; grid-row: 1 / span 4; font-style: normal; font-size: 22px; color: var(--rc); }
+.help.ranks .rsect .rsectgo:hover .rsectarrow { color: var(--gold); }
+.help.ranks .rsectnote, .help.ranks .rsectout { padding: 9px 12px; border-radius: 10px; border: 1px dashed var(--line); }
+.help.ranks .rsectout b { color: var(--gold); font-weight: 400; margin-right: 4px; }
+
+/* 名 The 修士 nudge, under the head, answered or put away once. */
+.help.ranks .rnudge { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--gild); background: rgba(212,175,86,.05); font-size: 13px; line-height: 1.45; }
+.help.ranks .rnudge > span { flex: 1 1 180px; min-width: 0; color: var(--text); }
+.help.ranks .rnudge .rnudgeoff { background: none; border: 0; padding: 4px 2px; font: inherit; font-size: 12.5px; color: var(--faint); cursor: pointer; }
+
+/* 榜 A board row, layout B: the seal under the place number, the rank leading the second line. */
+/* The place keeps its badge (.help li > span:first-child draws it on the span), so with a seal
+   under it the badge moves onto the number and the span becomes a plain column. */
+.help.ranks .rlist li > .rn[data-sealed] { width: auto; height: auto; border: 0; background: none; border-radius: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.help.ranks .rlist .rn[data-sealed] .rnum { width: 27px; height: 27px; box-sizing: border-box; display: grid; place-items: center;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--panel); font: inherit; }
+.help.ranks .rlist .rrowseal { width: 20px; height: 20px; font-size: 12px; }
+.help.ranks .rw .rsub { display: flex; align-items: center; gap: 7px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.help.ranks .rw .rsub .rrank { flex: none; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--rc); letter-spacing: .02em; }
+.help.ranks .rw .rsub .rcall { min-width: 0; flex: 1 1 auto; }
+
+/* 位階 The Sect's Ladder, swapped in for the boards like the Cliff. Ancestor at the top. */
+.help.ranks .rsteps { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.help.ranks .rstepsback { align-self: flex-start; background: none; border: 0; padding: 2px 0; font: inherit; font-size: 13px;
+  color: var(--faint); cursor: pointer; }
+.help.ranks .rstepsback:hover { color: var(--text); }
+.help.ranks .rstepshead { display: flex; align-items: center; gap: 12px; }
+.help.ranks .rstepshead > b { flex: none; font: 600 26px/1 'Noto Serif SC', serif; letter-spacing: .06em; color: var(--gold); }
+.help.ranks .rstepshead > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.help.ranks .rstepshead em { font-style: normal; font: 600 12px/1.3 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.help.ranks .rstepshead small { font-size: 12.5px; line-height: 1.5; color: var(--faint); }
+.help.ranks .rstepslist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.help.ranks .rstepslist li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 8px 11px; border-radius: 10px; background: var(--panel); border: 1px solid transparent; }
+.help.ranks .rstepslist li[data-ahead] { opacity: .74; }
+.help.ranks .rstepslist li[data-me] { border-color: var(--rc);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 16%, transparent), transparent), var(--panel); }
+.help.ranks .rsteps .rstepseal { width: 32px; height: 32px; font-size: 18px; }
+.help.ranks .rstepw { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.help.ranks .rstepw b { font-size: 14px; font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.help.ranks .rstepw b .cjk { color: var(--rc); font-weight: 400; white-space: nowrap; }
+.help.ranks .rstepw b em { font-style: normal; font-size: 12px; color: var(--jade); }
+.help.ranks .rstepw small { font-size: 12px; line-height: 1.4; color: var(--faint); }
+.help.ranks .rstepn { font: 600 12.5px/1.2 Rajdhani, sans-serif; font-style: normal; color: var(--faint); text-align: right; white-space: nowrap; }
+
+/* 修 The rank on Cultivate, first of the marks under the realm's name, in the title's pill shape. */
+.c-hero .c-rung { display: inline-flex; align-items: center; gap: 7px; margin: 4px 6px 0 0; padding: 2px 10px 2px 3px;
+  border-radius: 99px; font-size: 12px; color: var(--rc); letter-spacing: .02em; vertical-align: top;
+  border: 1px solid color-mix(in srgb, var(--rc) 50%, transparent); background: color-mix(in srgb, var(--rc) 8%, transparent); }
+.c-hero .c-rungseal { width: 20px; height: 20px; font-size: 12px; border-radius: 99px; }

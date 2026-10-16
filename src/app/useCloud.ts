@@ -30,6 +30,11 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
    * null until it has answered, and again whenever nobody is signed in.
    */
   const [forerunner, setForerunner] = useState<boolean | null>(null);
+  /**
+   * 位 What the server last said about where this account stands (my_standing()): the sect rank
+   * and where the Cliff carved it, for the 修 mark and the one rise card. Null signed out.
+   */
+  const [standing, setStanding] = useState<cloud.Mine | null>(null);
   const pushing = useRef(false);
   const push = useCallback(async (name?: string) => {
     if (pushing.current) return;
@@ -41,7 +46,7 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
       } else {
         setSyncError(null);
         setSynced(r); setSyncedAt(Date.now() / 1000);
-        cloud.mine().then((m) => { setTitle(m?.title ?? null); if (m) setForerunner(!!m.forerunner); }).catch(() => {});
+        cloud.mine().then((m) => { setTitle(m?.title ?? null); setStanding(m); if (m) setForerunner(!!m.forerunner); }).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
     } catch { setSyncError('offline'); /* the next one will do */ }
@@ -77,9 +82,9 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   // and the Account block say it from the server's own answer, never from anything on the
   // device. A sign-out forgets it, so the next account is asked afresh.
   useEffect(() => {
-    if (!who) { setForerunner(null); return; }
+    if (!who) { setForerunner(null); setStanding(null); return; }
     let live = true;
-    cloud.mine().then((m) => { if (live && m) setForerunner(!!m.forerunner); }).catch(() => {});
+    cloud.mine().then((m) => { if (live && m) { setForerunner(!!m.forerunner); setStanding(m); } }).catch(() => {});
     return () => { live = false; };
   }, [who]);
   useEffect(() => {
@@ -92,6 +97,6 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
 
   return {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError, setSyncError,
-    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner,
+    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner, standing,
   };
 }

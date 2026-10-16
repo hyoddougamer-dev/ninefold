@@ -87,10 +87,12 @@ describe('位 the sect rank', () => {
     // What reaches each realm rank names the realm it lands on, by the realm's own name.
     expect(RANKS.sect.reach).toHaveLength(RUNGS.length);
     expect(RANKS.sect.checked).toHaveLength(RUNGS.length);
+    expect(RANKS.sect.when).toHaveLength(RUNGS.length);
     for (let r = 1; r <= 4; r++) {
       const realm = REALMS.find((x) => x.n === RUNGS[r].realm)!.name;
       expect(RANKS.sect.reach[r], `rank ${r}`).toContain(realm);
       expect(RANKS.sect.checked[r], `rank ${r}`).toContain(realm);
+      expect(RANKS.sect.when[r], `rank ${r}`).toContain(realm);
     }
   });
 

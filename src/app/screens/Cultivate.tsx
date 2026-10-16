@@ -31,6 +31,8 @@ import { Svg } from '../ui/Svg.tsx';
 import { Ladder } from '../ui/Ladder.tsx';
 import { Term } from '../ui/Term.tsx';
 import { ForerunnerSeal } from '../ui/Forerunner.tsx';
+import { RungSeal, rungColour } from '../ui/RungSeal.tsx';
+import { RUNGS } from '../../sim/rung.ts';
 import { Meet, MeetDone } from '../ui/Meet.tsx';
 import type { Receipt } from '../../sim/meet.ts';
 import { Cave } from '../ui/Cave.tsx';
@@ -59,7 +61,7 @@ const longClock = (s: number) => (s >= 3600
 import { bloom, burst, float } from '../juice.ts';
 
 export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, onGo, onRealm,
-  owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title, forerunner = false,
+  owesCard, onAwaken, onCards, meeting, onMeet, meetDone, onMeetDone, onMeetSee, onPlant, onHarvest, onDemon, title, forerunner = false, rung = null,
   sitLeft = 0, onSitAgain, waiting = [], onReady, onRebirth }: {
   state: State;
   /** 轉世 Open the page of the new life, from the quiet card at the summit. */
@@ -76,6 +78,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   title?: string | null;
   /** 先行 The server says this account walked the closed test (my_standing().forerunner). */
   forerunner?: boolean;
+  /** 位 The sect rank on the server's word (my_standing().rung): null signed out, held, or before the switch. */
+  rung?: number | null;
   pulse: number;
   /** 入定 How deep this visit has gone. 1 while away, up to FOCUS_MAX while watched. */
   focus: number;
@@ -278,6 +282,12 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         }}>{heaven?.han ?? r.han}</h1>
         <span className="ask" aria-hidden="true">?</span>
       </button>
+      {/* 位 The sect rank leads the marks under the realm's name, on the server's word only. */}
+      {rung !== null && RUNGS[rung] && (
+        <span className="c-rung" style={{ ['--rc' as string]: rungColour(rung) }}>
+          <RungSeal rung={rung} className="c-rungseal" /> {RANKS.sect.names[rung]}
+        </span>
+      )}
       {/* 冠 A title earned on the boards, worn where the player looks every visit. */}
       {title && (
         <span className="wears"><b className="cjk">{title}</b> {RANKS.titleNames[title] ?? ''}</span>

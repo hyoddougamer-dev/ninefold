@@ -85,6 +85,8 @@ import { LockedSystem } from './ui/LockedSystem.tsx';
 import { NoticeCard, UpdateBar } from './ui/Notices.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
 import { nextNotice } from './notices.ts';
+import { SECT_KEY, sectNotice, withShown } from './sect.ts';
+import { rungFrom } from '../sim/rung.ts';
 import { DISMISSED, guide } from './guide.ts';
 import { isOpen, opensIn } from '../sim/unlocks.ts';
 // ── 待 What is waiting, the keys and the sitting (quality of life, 2026-10-03) ──
@@ -301,8 +303,18 @@ export function App() {
 
   const {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError,
-    cloudPick, setCloudPick, title, place, push, forerunner,
+    cloudPick, setCloudPick, title, place, push, forerunner, standing,
   } = useCloud(ready, latest);
+
+  // 升 A realm arrived in or a tribulation crossed is offered to the server at once, so the
+  // rank it brings and the Cliff carving with it arrive within seconds rather than at the next
+  // five-minute sync. The server keeps its own minimum gap; a sync too soon is simply skipped.
+  const climbed = useRef<string | null>(null);
+  useEffect(() => {
+    const mark = `${state.realm}:${state.tribulation}`;
+    if (climbed.current !== null && climbed.current !== mark && who) void push();
+    climbed.current = mark;
+  }, [state.realm, state.tribulation, who, push]);
 
   useEffect(() => {
     if (!ready) return;
@@ -396,12 +408,19 @@ export function App() {
     // it about the *same thing* at the same moment: the guide's third step saying to go
     // and hunt for material, with a card underneath it saying to go and hunt for
     // material. Nothing is lost by waiting: a card keeps its turn until it is seen.
-    () => (ready && !battle && bloom === null && !guide(state) ? nextNotice(state) : null),
-    [state, ready, battle, bloom],
+    //
+    // 升 The sect rank's one card comes after any of the game's own, and never behind the
+    // season's card either: it is the server's news, and it keeps until the screen is clear.
+    () => (ready && !battle && bloom === null && !guide(state)
+      ? nextNotice(state) ?? (season || !who ? null : sectNotice(state.seen, standing))
+      : null),
+    [state, ready, battle, bloom, season, who, standing],
   );
 
   const readNotice = useCallback((key: string, go?: 'hunt' | 'trials' | 'gear' | 'dao' | 'crafts') => {
-    setState((s) => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] }));
+    // 升 The sect key replaces the one before it: one key however many ranks and gates it has shown.
+    setState((s) => (s.seen.includes(key) ? s
+      : { ...s, seen: key.startsWith(SECT_KEY) ? withShown(s.seen, key) : [...s.seen, key] }));
     if (go) setTab(go);
     sfx.tap();
     haptics.tap();
@@ -623,6 +642,7 @@ export function App() {
             state={state}
             title={who ? title : null}
             forerunner={!!who && forerunner === true}
+            rung={who && standing && !standing.suspect && !standing.banned ? rungFrom(standing.rung) : null}
             pulse={pulse}
             focus={focus}
             satOut={satOut}

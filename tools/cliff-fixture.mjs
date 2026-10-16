@@ -80,6 +80,14 @@ export const API = 'https://yqppvmuwlhibswbbvjzz.supabase.co';
 export const USER = { id: '0b5e2f4a-1111-4222-8333-944455556666', aud: 'authenticated', role: 'authenticated', email: null, is_anonymous: true };
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS' };
 
+/**
+ * 位 The sect rank as rung_of() reads a score (src/sim/balance.ts RUNG_AT less its leading 0),
+ * for the stand-ins: the season's rows carry it, and so does my_standing().
+ */
+export const rungOf = (score) => [9, 27, 45, 63, 81, 85, 90, 100].filter((t) => score >= t).length;
+/** 位階 What rungs() answers on day 9: how many hold each rank, counts only. */
+export const RUNG_COUNTS = [212, 148, 61, 9, 0, 0, 0, 0, 0];
+
 export function standIn(page, { me = 'Kestrel', cliff = cliffRows({ me }), forerunners = forerunnerRows(cliff) } = {}) {
   return page.route(`${API}/**`, async (route) => {
     const req = route.request();
@@ -100,12 +108,15 @@ export function standIn(page, { me = 'Kestrel', cliff = cliffRows({ me }), forer
           { rank: 5, name: me, climb: 22, marks: 0, tower: 12, gain: 22, title: '期十', me: true, calling: 'qi:2', forerunner: true },
           { rank: 6, name: 'Corvo', climb: 21, marks: 0, tower: 0, gain: 21, title: null, me: false, calling: null, forerunner: false },
         ];
-        return reply(200, body?.kind === 'tower' ? rows.filter((r) => r.tower > 0) : rows);
+        const ranked = rows.map((r) => ({ ...r, rung: rungOf(r.climb + r.marks) }));
+        return reply(200, body?.kind === 'tower' ? ranked.filter((r) => r.tower > 0) : ranked);
       }
       case '/rest/v1/rpc/samsara_board': return reply(200, []);
       case '/rest/v1/rpc/my_standing':
         return reply(200, { name: me, suspect: false, banned: false, climb: 22, marks: 0, tower: 12,
-          verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期十', forerunner: true });
+          verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期十', forerunner: true,
+          rung: rungOf(22), carved: cliff.filter((r) => r.name === me).map((r) => ({ gate: r.gate, rank: r.rank })) });
+      case '/rest/v1/rpc/rungs': return reply(200, RUNG_COUNTS.map((players, rung) => ({ rung, players })));
       case '/rest/v1/rpc/cliff': return reply(200, cliff);
       case '/rest/v1/rpc/forerunners': return forerunners ? reply(200, forerunners) : reply(404, { message: 'no forerunners()' });
       default: return reply(404, { error: url.pathname });

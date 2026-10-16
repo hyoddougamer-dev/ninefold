@@ -278,8 +278,12 @@ export const RANKS = {
     reach: ['Your first checked sync', 'Arrive in Foundation', 'Arrive in Nascent Soul', 'Arrive in Void Refining',
       'Arrive in Great Vehicle', 'The summit and your first thunder mark', '5 thunder marks', '10 thunder marks',
       '20 thunder marks'],
+    /** 註 When each rank is reached, as a seal's note says it. */
+    when: ['at your first checked sync', 'when you arrive in Foundation', 'when you arrive in Nascent Soul',
+      'when you arrive in Void Refining', 'when you arrive in Great Vehicle', 'at the summit, with your first thunder mark',
+      'at 5 thunder marks', 'at 10 thunder marks', 'at 20 thunder marks'],
     /** 註 What a seal answers when it is tapped. */
-    note: (reach: string) => `A sect rank. ${reach} reaches it. The server gives it after checking your climb, and it never falls.`,
+    note: (when: string) => `A sect rank, reached ${when}. The server gives it after checking your climb, and it never falls.`,
     /** The distance to the next rank, under the head's bar. */
     toLayers: (n: number, next: string) => `${n} ${n === 1 ? 'layer' : 'layers'} to ${next}`,
     toMarks: (n: number, next: string) => `${n} ${n === 1 ? 'mark' : 'marks'} to ${next}`,
