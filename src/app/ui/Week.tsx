@@ -46,6 +46,20 @@ export function QuarryBand({ state, onFight }: {
   if (!q) return null;
   const r = realmOf(q.realm);
   const owed = quarryOwed(state);
+  // 疊 Once its qi is taken the band has said its news, and at 320 it was the tallest thing on
+  // the screen, pushing the first beast under the fold (played 2026-10-16). Folded, it is one
+  // line that still fights the quarry and still says the week.
+  if (!owed) {
+    return (
+      <button className="weekband" data-folded onClick={() => onFight(q.key)} style={{ ['--hue' as string]: r.colour }}>
+        <Plate kind="beast" subject={plateOf(q)} icon={q.icon} colour={r.colour} tier={1} size={30} alt={q.name} />
+        <span className="wsay">
+          <b>{WEEK.quarryHead}</b>
+          <i>{WEEK.quarryFolded(`${q.han} ${q.name}`, duration(weekLeft(state)))}</i>
+        </span>
+      </button>
+    );
+  }
   return (
     <button className="weekband" onClick={() => onFight(q.key)} style={{ ['--hue' as string]: r.colour }}>
       {/* 牌 The painting, at the size 狩 the hunt list below it uses, so the band reads

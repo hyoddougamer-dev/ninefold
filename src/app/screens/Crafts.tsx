@@ -10,14 +10,14 @@ import { schoolSays } from '../classes.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import {
   FEEDER, arraySlots, blocked, carrySlot, cutOf, depthOf, depthStrength, doubles, furnaceDiscount, held, levelIn, markApplies,
-  marksOf, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
+  marksOf, masteredIn, masteryMost, masteryOf, needsOf, placed, progressOf, qualityFor, knownAt, known, secondsOf, skillOpen, toNextDepth, totalLevel,
   kitFor, makerOf, pillHeld, unsealCarried, wallDays, workSeconds, xpOf, type Hand,
 } from '../../sim/crafts.ts';
 import {
   CRAFT_ARRAY_DEPTH_EVERY, CRAFT_ARRAY_DEPTH_STEPS, CRAFT_ARRAY_DEPTH_TOP, CRAFT_FEED_LEVEL, CRAFT_TOOL_STEP,
   CRAFT_ARRAY_SLOTS, CRAFT_SEEK_MAX,
 } from '../../sim/balance.ts';
-import { TOOL_METALS } from '../../data/crafts.ts';
+import { BREAKTHROUGH_TIERS, TOOL_METALS } from '../../data/crafts.ts';
 import { REALM_SETS } from '../../data/gear.ts';
 import { duration, num } from '../../sim/format.ts';
 import { sealDays, sealLeft, wardenStands, type State } from '../../sim/state.ts';
@@ -250,6 +250,21 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
             <p className="faint mono" style={{ margin: '4px 0 0', fontSize: 11.5 }}>
               {level >= 99 ? CRAFTS.xpTop(num(Math.floor(xp))) : CRAFTS.xpTo(num(Math.floor(xp)), num(Math.ceil(XP_TABLE[next] - xp)), next)}
             </p>
+            {/* 熟 The craft's mastery, on its own line under the level: it was only ever said inside
+                each recipe's familiarity note, so nobody saw it add up (B3, the Discord, 2026-10). */}
+            <p className="cmastery">
+              <Term han="習" plain />{' '}
+              {CRAFTS.masteryLine(info.name, Number((masteryOf(state, skill) * 100).toFixed(1)),
+                masteredIn(state, skill), mine.length, Math.round(masteryMost(skill) * 100))}
+            </p>
+            {/* 今 What this craft makes that is new in the realm you stand in, read off the recipes. */}
+            {(() => {
+              const here = newHere(skill, state.realm);
+              return here.length > 0 && (
+                <p className="cnewhere">{CRAFTS.newHere(state.realm, here)}
+                  {skill === 'alchemy' && BREAKTHROUGH_TIERS.includes(state.realm) && <> {CRAFTS.breakthroughHere}</>}</p>
+              );
+            })()}
             <p className="faint" style={{ margin: '6px 0 0', fontSize: 12 }}>
               <span className="ctool"><Emblem family="craft" subject={toolArt(skill)} icon={info.tool.icon} size={20} alt={info.tool.name} /></span>
               <span className="cjk">{info.tool.han}</span>{' '}
@@ -359,6 +374,18 @@ export function Crafts({ state, onTask: setTaskTo, onCarry, onUse, onPlace, onGo
       </div>
     </div>
   );
+}
+
+/**
+ * 今 What a craft makes that is new in a realm, in a few words each: the things by name, and
+ * the forge's gear as a count of shapes (there are fifty-odd). Tools and the Hundredfold sets
+ * are left out: a tool is one step on a long road, and the sets have their own list.
+ */
+export function newHere(skill: SkillKey, realm: number): string[] {
+  const here = RECIPES.filter((r) => r.skill === skill && r.realm === realm);
+  const things = here.filter((r) => r.makes.kind === 'item').map((r) => r.name);
+  const shapes = here.filter((r) => r.makes.kind === 'gear').length;
+  return shapes > 0 ? [...things, CRAFTS.shapesHere(shapes)] : things;
 }
 
 /** 百形 Where a gear recipe sits in the forge's list: realm, place on the body, school. */

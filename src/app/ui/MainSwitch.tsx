@@ -1,10 +1,11 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useState, type Dispatch, type SetStateAction } from 'react';
 import { BUILD, MENU } from '../copy.ts';
 import { canReincarnate } from '../../sim/rebirth.ts';
 import type { State } from '../../sim/state.ts';
 import { sfx } from '../sound.ts';
 import { isFlag, useRemembered, type DropNames } from '../prefs.ts';
 import { Volumes } from './Volume.tsx';
+import { musicInBackground, setMusicInBackground } from '../music.ts';
 
 /** 版 Filled in by the build (vite.config.ts). */
 declare const __BUILD__: string;
@@ -65,6 +66,7 @@ export function MainSwitch({ state, menu, setMenu, scrolled, covered, shade, set
             </a>
             {/* 量 Sound and music: a slider and a mute each (ui/Volume.tsx). */}
             <Volumes />
+            <BackgroundSwitch />
             <FormulaSwitch />
             <DropNamesSwitch />
             <span className="build">{BUILD.label(typeof __BUILD__ === 'string' ? __BUILD__ : 'dev')}</span>
@@ -75,6 +77,20 @@ export function MainSwitch({ state, menu, setMenu, scrolled, covered, shade, set
           to do or the player is left tapping the game through a list. */}
       {menu && <div className="scrim" onClick={() => setMenu(false)} />}
     </>
+  );
+}
+
+/**
+ * 背 The music, kept playing while the game is hidden, or not (the default). Auto stops when
+ * the game is hidden either way; this is only the music (music.ts).
+ */
+function BackgroundSwitch() {
+  const [on, setOn] = useState(musicInBackground);
+  return (
+    <button type="button" data-on={on} aria-pressed={on} data-qol="musicbg"
+      onClick={() => { setMusicInBackground(!on); setOn(!on); sfx.tap(); }}>
+      <b className="cjk">背</b><span>{MENU.musicBackground}</span><em className="switchstate">{on ? MENU.on : MENU.off}</em>
+    </button>
   );
 }
 

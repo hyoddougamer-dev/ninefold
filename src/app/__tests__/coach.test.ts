@@ -1,10 +1,12 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { STEPS, guide } from '../guide.ts';
+import { STEPS, WARDEN_EVEN, guide, waitingText } from '../guide.ts';
 import { LAYERS_PER_REALM } from '../../sim/balance.ts';
-import { UPGRADES, buy, newState, type State } from '../../sim/state.ts';
+import { UPGRADES, buy, canBuy, newState, upgradeCost, type State } from '../../sim/state.ts';
 import { wardenOf } from '../../data/bestiary.ts';
+import { oddsRaw } from '../../sim/combat.ts';
+import { GUIDE } from '../copy.ts';
 
 /**
  * 指 An arrow that points at nothing is worse than no arrow.
@@ -56,13 +58,18 @@ function marked(): Set<string> {
 
 const T0 = 1_700_000_000;
 
-/** The four places along the first realm where the last step points somewhere new. */
+/**
+ * The places along the first realm where the last step points somewhere new: before the
+ * warden, at a warden still too strong (the quarry can fill the realm in seconds), at a
+ * warden that is an even fight, and past it.
+ */
 function states(): State[] {
   const fresh = newState(T0);
   const bought = buy({ ...fresh, qi: 1e6 }, 'technique');
-  const full: State = { ...bought, layer: LAYERS_PER_REALM - 1, qi: 1e12 };
+  const weak: State = { ...bought, layer: LAYERS_PER_REALM - 1, qi: 1e12 };
+  const full: State = { ...weak, levels: { technique: 40, method: 40, pills: 40, cores: 20 } };
   const beaten: State = { ...full, wardenFell: true, killed: { [wardenOf(1).key]: 1 } };
-  return [fresh, bought, full, beaten];
+  return [fresh, bought, full, beaten, weak];
 }
 
 describe('指 the pointing finger', () => {
@@ -96,15 +103,31 @@ describe('指 the pointing finger', () => {
       if (!g) continue;
       if (!g.ready) {
         expect(g.step.waiting, `step ${g.step.key} waits with nothing to say`).toBeTruthy();
-        expect(g.text).toBe(g.step.waiting!.text);
+        expect(g.text).toBe(waitingText(g.step, s));
       }
       // Whatever it points at, it is a real mark on a real element.
       if (g.at) expect(marked().has(g.at)).toBe(true);
     }
   });
 
-  it('points at the warden only once the warden is standing there', () => {
-    const [, bought, full, beaten] = states();
+  it('points at the warden only once the warden is standing there, and beatable', () => {
+    const [, bought, full, beaten, weak] = states();
+    expect(oddsRaw(full, wardenOf(1))).toBeGreaterThanOrEqual(WARDEN_EVEN);
+    // 守 A warden that stands but wins most fights is waited for: the ring goes to a box to
+    // buy, and the card says why (played as a new Season 0 player, 2026-10-16).
+    expect(oddsRaw(weak, wardenOf(1))).toBeLessThan(WARDEN_EVEN);
+    const g = guide(weak)!;
+    expect(g.step.key).toBe('climb');
+    expect(g.ready).toBe(false);
+    expect(g.at).not.toBe('fight-warden');
+    // And the box it points at is power, which is what the card asks for and what closes
+    // the gap: the first box in the list is a qi box when the power box costs more.
+    expect(g.at).toBe('upg-technique');
+    expect(g.text).toBe(GUIDE.climb.wardenAhead);
+    const cheap: State = { ...weak, qi: upgradeCost(weak, 'method') };
+    expect(canBuy(cheap, 'technique')).toBe(false);
+    expect(canBuy(cheap, 'method')).toBe(true);
+    expect(guide(cheap)!.at).toBe('upg-method');
     // Mid-realm the last step is not even the current one, and when it is reached by
     // the ceiling rule it waits rather than pointing at a fight that does not exist.
     const climb = STEPS[STEPS.length - 1];

@@ -29,6 +29,7 @@ import { gearTile } from '../../art/gear.ts';
 import { Svg } from '../ui/Svg.tsx';
 import { fateFull, fateOf, fatePromise } from '../../sim/fate.ts';
 import { fallsFromLayer } from '../../sim/drops.ts';
+import { WARDEN_EVEN } from '../guide.ts';
 
 /**
  * 狩 Free hunting.
@@ -175,6 +176,13 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
   const beatable = sorted.filter((b) => (raws.get(b.key) ?? 0) > 0).length;
   const done = folds ? shown.filter(finished) : [];
   const list = showDone ? [...open, ...done] : open;
+  // 器 The row 引 the guide points at while the first piece is still to fall: the first beast
+  // on the list that is beaten at least as often as not and leaves gear now. The top row is
+  // the realm's own new beast in the second realm, stronger than a fresh cultivator and below
+  // layer 6 it leaves nothing (guide.ts, SECOND.wear).
+  const gearRow = gearOpen ? list.find((b) => b.leaves.length > 0
+    && fallsFromLayer(b.realm, state.realm, state.layer ?? 0) === null
+    && (raws.get(b.key) ?? 0) >= WARDEN_EVEN)?.key : undefined;
 
   return (
     <>
@@ -287,7 +295,7 @@ export function Hunt({ state, onFight, onDrive, onPile, onAuto, onSecret, onKey 
             /* 指 The sort already puts the beast worth pressing at the top, so that is
                the row 引 the guide points its arrow at. */
             <button key={b.key} className="beast" data-done={finished(b)} data-farm={!folds || undefined}
-              data-coach={i === 0 ? 'beast-first' : undefined}
+              data-coach={b.key === gearRow ? 'beast-gear' : i === 0 ? 'beast-first' : undefined}
               onClick={() => onFight(b.key)}>
               {/* 牌 The plate, not the seal: thirty-six paintings exist now, and the
                   hunt list is the screen they are for. Where a file is missing the

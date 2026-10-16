@@ -37,8 +37,8 @@ const CORS = {
 };
 
 /** A stand-in for the project: auth, the sync function and the board RPCs. */
-function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null } = {}) {
-  const seen = { syncs: [], names: [] };
+function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null, failSyncs = 0 } = {}) {
+  const seen = { syncs: [], names: [], failed: 0 };
   const user = email ? { ...USER, email, is_anonymous: false } : USER;
   page.route(`${API}/**`, async (route) => {
     const req = route.request();
@@ -55,6 +55,8 @@ function server(page, { cloud = null, email = null, cliff = [], cliffDown = fals
       case '/auth/v1/token': return reply(200, session(user));
       case '/functions/v1/sync':
         if (body?.action === 'pull') return reply(200, { save: cloud, at: new Date().toISOString() });
+        // 斷 The first few syncs can be made to fail, as a dropped connection would.
+        if (seen.failed < failSyncs) { seen.failed++; seen.syncs.push({ ...body, failed: true }); return reply(500, { error: 'offline' }); }
         seen.syncs.push(body);
         if (body?.name) seen.names.push(body.name);
         return reply(200, { ranked: true, state: 'verified', why: [], suspect: false, standing: null, behindHours: 0 });
@@ -220,6 +222,66 @@ console.log('\na new device');
   await page.close();
 }
 
+// 名 A new player who typed a name and then asked for the email link: the link opens a fresh
+// page, and the first sync after it used to go without the name, so the server carved a 修士 one.
+console.log('\na name typed before the email link, after the link');
+{
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  const now = Math.floor(Date.now() / 1000);
+  const seen = server(page, { email: 'tester@example.com' });
+  await fresh(page);
+  await page.goto(BASE);
+  await page.waitForSelector('.prologue');
+  await page.click('.prologue .phave');
+  await page.waitForSelector('.ranks .rjoin');
+  await page.fill('.ranks .rjoin input:not([type=email])', 'Lantern');
+  await page.fill('.ranks .rjoin input[type=email]', 'tester@example.com');
+  await page.locator('.ranks .rjoin button.act.ghost').click();
+  await page.waitForSelector('.ranks .rcode input', { timeout: 5000 }).catch(() => {});
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === 'Lantern', 'the name is kept on the device when the link is sent');
+  await page.goto('about:blank');
+  await page.goto(`${BASE}#access_token=test-token&refresh_token=test-refresh&expires_in=3600&expires_at=${now + 3600}&token_type=bearer&type=magiclink`);
+  for (let i = 0; i < 40 && !seen.syncs.length; i++) await page.waitForTimeout(250);
+  check(seen.names[0] === 'Lantern', 'and the first sync after the link carries it', JSON.stringify(seen.syncs.map((x) => x?.name ?? null)));
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === null, 'and then forgets it');
+  await page.close();
+}
+
+// 名 The same, when the first sync after the link does not land: the name waits on the device
+// and rides on the next one (the timer's, or the one when the app is put away), which has no
+// name of its own to give.
+console.log('\na name typed before the email link, when the first sync after it fails');
+{
+  const page = await browser.newPage({ viewport: { width: 400, height: 860 } });
+  const now = Math.floor(Date.now() / 1000);
+  const seen = server(page, { email: 'tester@example.com', failSyncs: 1 });
+  await fresh(page);
+  await page.goto(BASE);
+  await page.waitForSelector('.prologue');
+  await page.click('.prologue .phave');
+  await page.waitForSelector('.ranks .rjoin');
+  await page.fill('.ranks .rjoin input:not([type=email])', 'Lantern');
+  await page.fill('.ranks .rjoin input[type=email]', 'tester@example.com');
+  await page.locator('.ranks .rjoin button.act.ghost').click();
+  await page.waitForSelector('.ranks .rcode input', { timeout: 5000 }).catch(() => {});
+  await page.goto('about:blank');
+  await page.goto(`${BASE}#access_token=test-token&refresh_token=test-refresh&expires_in=3600&expires_at=${now + 3600}&token_type=bearer&type=magiclink`);
+  for (let i = 0; i < 40 && !seen.failed; i++) await page.waitForTimeout(250);
+  check(seen.failed === 1 && seen.names.length === 0, 'the first sync after the link fails, and nothing is named yet');
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === 'Lantern', 'and the name is still kept on the device');
+  // 隱 The app put away: the sync that goes then is the next one.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  for (let i = 0; i < 40 && !seen.names.length; i++) await page.waitForTimeout(250);
+  check(seen.names[0] === 'Lantern', 'and the next sync carries it', JSON.stringify(seen.syncs.map((x) => x?.name ?? null)));
+  await page.waitForTimeout(300);
+  check(await page.evaluate(() => localStorage.getItem('ninefold.join.name')) === null, 'and then it is forgotten');
+  await page.close();
+}
+
 // 碼 The same, by the six digits, the way it goes inside the installed app.
 console.log('\na new device, by the code in the email');
 {
@@ -310,6 +372,12 @@ for (const [label, W, H, whole] of [['320', 320, 720, true], ['desktop', 1280, 7
     && /23/.test(await page.locator('.ranks .rcol[data-gate="1"] .rcolrow[data-me] .rcoln').textContent().catch(() => '')),
     'the player\'s place is lit on both gates they are through');
   check((await page.locator('.ranks .rcliffmine p').count()) === 2, 'and said in words above the Cliff');
+  // 修士 The player's own name here is a placeholder: it answers a tap with what it is.
+  await page.locator('.ranks .rcol[data-gate="1"] .rcolrow[data-me] .rnamed .term').click();
+  await page.waitForTimeout(250);
+  check(/not chosen a name yet/.test(await page.locator('.termtip').textContent().catch(() => '')),
+    'a 修士 name on the Cliff answers a tap: a cultivator who has not chosen a name yet');
+  await page.locator('.ranks .rcliffwhat').click();
   check(/Oct/.test(await page.locator('.ranks .rcol[data-gate="1"] .rcolw i').first().textContent().catch(() => '')),
     'each name carries the server\'s date');
   const widths = await page.evaluate(() => {
@@ -356,6 +424,10 @@ console.log('\nthe Cliff of Names, day 0, and when it cannot be reached');
   await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
   check(await page.locator('.ranks .rmine').isVisible() && await page.locator('.ranks .rmine .rmseal').count() === 0,
     'an account the server did not mark wears no seal at the head');
+  // 修士 And the account block asks for a name for as long as it wears a placeholder.
+  check(/placeholder/.test(await page.locator('.ranks .raccount .runnamed').textContent().catch(() => ''))
+    && /Choose a name/.test(await page.locator('.ranks .raccount .rrow button').first().textContent().catch(() => '')),
+    'an account still wearing a 修士 name is asked, in its block, to choose one');
   check(errors.length === 0, 'no errors on the page', errors.join(' | '));
   await page.close();
   const down = await seasonPage(400, 860, 3, { cliffDown: true, signed: false });

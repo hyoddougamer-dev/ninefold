@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
@@ -158,6 +158,25 @@ export const RANKS = {
   save: 'Save',
   you: 'you',
   empty: 'Nobody here yet. The first to climb is the first on the board.',
+  /** 輪迴 The Samsara board, empty: only a cultivator who has reborn ever sees it, so it says what fills it. */
+  emptyOf: {
+    samsara: 'Nobody has been reborn yet this season. Your next sync puts you here.',
+  } as Partial<Record<'week' | 'climb' | 'samsara' | 'tower', string>>,
+  /** 輪迴 The same, before the season opens, when there is no season to name yet. */
+  emptySamsaraBefore: 'Nobody has been reborn yet. Your next sync puts you here.',
+  /**
+   * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
+   * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
+   * of one cultivator (the Discord, 2026-10-15).
+   */
+  placeholder: {
+    han: '修士',
+    name: 'A cultivator who has not chosen a name yet',
+    note: 'Until a name is chosen, the boards show 修士 (cultivator) and eight letters of the account. Its owner can choose one in Rankings, and every board and the Cliff of Names show it from then on.',
+  },
+  /** 修士 On the Account block, for as long as the account still wears one. */
+  unnamed: 'The boards show you by a placeholder: 修士 and eight letters of your account. Choose a name, and every board and the Cliff of Names show it.',
+  chooseName: 'Choose a name',
   loading: 'Reading the boards…',
   offline: 'The boards cannot be reached right now. Your game goes on as it was.',
   status: {
@@ -531,6 +550,8 @@ export const MENU = {
   on: 'on',
   /** 式 The menu switch for the formula under every gear line's note. Off until a player turns it on. */
   formula: 'Show the formula for every line',
+  /** 背 The menu switch that keeps the music playing while the game is hidden. Auto still stops. */
+  musicBackground: 'Keep music playing in the background',
   /** 名 The menu switch for how a drop is named in lists: by its name (the default) or its slot. */
   dropNames: 'Show drops as',
   dropName: 'name',
@@ -975,7 +996,7 @@ export const GUIDE = {
    */
   buy: {
     title: 'Spend what you were given',
-    text: `You start holding ${OPENING_PURSE} qi. Buy the box the arrow points at. `
+    text: `You started with ${OPENING_PURSE} qi. Buy the box the arrow points at. `
       + 'Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   kill: {
@@ -1005,7 +1026,8 @@ export const GUIDE = {
   wear: {
     title: 'Put on what fell',
     text: '\u5668 Gear falls off beasts from the second realm. Tap the piece in your chest to wear it.',
-    waiting: 'Beasts from this realm drop gear, about one kill in five. Hunt, and the first piece goes on.',
+    /** 器 Said as it is: older realms' beasts leave gear at once, this realm's own from layer 6 (LINEAGE_LAYER). */
+    waiting: `Beasts leave gear now, about one kill in five. The arrow points at one you beat that leaves it. This realm's own beasts start to leave theirs from layer ${LINEAGE_LAYER + 1}.`,
   },
   path: {
     title: 'Take your first \u9053 node',
@@ -1022,6 +1044,9 @@ export const GUIDE = {
       + 'Beat it and \u7a81\u7834 opens.',
     waiting: 'Eight layers fill the realm, and its warden walks out at the ninth. '
       + 'Every box you buy opens them faster. The bar below is the whole realm.',
+    /** 守 The warden is out, and a fight with it is not yet even. */
+    wardenAhead: 'The warden is waiting at the end of the realm, and it is still stronger than you. '
+      + 'Buy power first: the arrow shows what you can afford. Losing to it never costs anything.',
   },
 };
 
@@ -1204,6 +1229,8 @@ export const ITEM = {
   salvage: 'Melt it down',
 
   what: 'What it gives',
+  /** 主 The piece's lead line, the one it is named by; the rest are side lines. */
+  lead: 'Lead',
   against: (name: string) => `Against the ${name} you are wearing`,
   fromSet: (set: string, n: number) => `${set} set, realm ${n}`,
   lines: (n: number) => (n === 1 ? '1 line' : `${n} lines`),
@@ -1581,6 +1608,8 @@ export const WEEK = {
   /** 首 The once-a-week qi, while it is still owed. */
   bounty: (qi: string) => `first kill pays ${qi} qi`,
   bountyTaken: 'the week\u2019s qi is taken',
+  /** 疊 The band folded to one line once the week's qi is taken. */
+  quarryFolded: (name: string, left: string) => `${name} \u00b7 double 材 material \u00b7 ${left} left`,
   /** How long is left, where the sentence around it has already named the week. */
   left: (when: string) => `${when} left`,
   /**
@@ -2375,6 +2404,15 @@ export const SEASON = {
   signedOut: 'Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting.',
   cliff: 'The first 81 through each gate are carved on 題名崖 the Cliff of Names.',
   begin: 'Begin Season 0',
+  /**
+   * 修士 Asked once, here, of a signed-in account that still wears a placeholder name: the season
+   * is when the boards and the Cliff start to matter, and the name is what they show.
+   */
+  nameAsk: (name: string) => `The boards show you as ${name}, a name nobody chose. Choose yours, and every board and the Cliff of Names show it.`,
+  nameSave: 'Take this name',
+  namePlaceholder: 'Your name',
+  nameDone: (name: string) => `The boards now show you as ${name}.`,
+  nameLater: 'Or later, in Rankings.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Founding',
   ranksSince: 'Since Monday 26 October. Everyone started equal.',
@@ -2603,6 +2641,18 @@ export const CRAFTS = {
   /** 覽 Over the recipes of a craft that is not open yet, shown so a climb can be planned. */
   preview: (name: string) => `A look ahead: what ${name} makes once it opens. Each recipe also waits for its own level and realm.`,
   tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
+  /**
+   * 熟 The craft's mastery, on its header. It was said only inside each recipe's familiarity
+   * note, and the testers read the crafts as not worth it (measured 2026-10-16: the same active
+   * player reaches the ninth realm about four days sooner with the crafts than without).
+   */
+  masteryLine: (craft: string, pct: number, mastered: number, of: number, most: number) => mastered === 0
+    ? `Mastery: none yet. Every ${craft} recipe made to its last familiarity mark makes all of ${craft} faster, up to ${most}%.`
+    : `Mastery: all of ${craft} is ${pct}% faster, from ${mastered} of ${of} recipes mastered. It reaches ${most}% with all of them.`,
+  /** 今 What is new for this craft in the realm you stand in. */
+  newHere: (realm: number, names: readonly string[]) => `New in realm ${realm}: ${names.join(', ')}.`,
+  shapesHere: (n: number) => `${n} shapes of this realm's gear`,
+  breakthroughHere: 'This realm\u2019s Breakthrough Pill, carried into its warden, breaks the gate\u2019s 封 seal at once.',
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,

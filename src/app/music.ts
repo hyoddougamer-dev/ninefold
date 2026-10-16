@@ -1,4 +1,5 @@
 import { gainOf, readPct } from './sound.ts';
+import { isFlag, keep, recall } from './prefs.ts';
 
 /**
  * 樂 Music: Bruno's own tracks, one mood per place in the game.
@@ -19,7 +20,8 @@ import { gainOf, readPct } from './sound.ts';
  *
  * 靜 It never plays before the player has touched the game (browsers refuse, and a game
  * that opens shouting is rude), stops when the game is hidden and picks up when it comes
- * back, and has its own volume, apart from the sound of the game.
+ * back (unless the player has asked it to keep playing), and has its own volume, apart
+ * from the sound of the game.
  */
 
 /** 譜 The tracks that exist, by file (without its extension). Named after their mood. */
@@ -293,11 +295,28 @@ export function setMusicMuted(on: boolean): void {
   apply();
 }
 
-/** 隱 Hidden, the music stops; back, it carries on where it was. */
+/**
+ * 背 Whether the music keeps playing while the game is hidden. Off by default, because a game
+ * that goes on singing from a tab nobody is looking at is a surprise; on, for whoever asked
+ * (a tester, 2026-10: it stopped at every switch of window). It is only the
+ * music: Auto still stops when the game is hidden (useFight.ts), and nothing about the
+ * climb changes. Remembered on the device, like the volume.
+ */
+let background = recall('music.background', false, isFlag);
+export function musicInBackground(): boolean {
+  return background;
+}
+export function setMusicInBackground(onOff: boolean): void {
+  background = onOff;
+  keep('music.background', onOff);
+}
+
+/** 隱 Hidden, the music stops unless asked to keep playing; back, it carries on where it was. */
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (!ctx || !decks) return;
     if (document.hidden) {
+      if (background) return;
       decks.forEach((d) => d.el.pause());
       void ctx.suspend();
     } else if (!silent() && touched) {
