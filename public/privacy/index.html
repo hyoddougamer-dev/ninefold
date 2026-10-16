@@ -29,7 +29,7 @@
 <main>
   <header>
     <h1><span>九境</span>Ninefold · Privacy</h1>
-    <small>Last changed 26 September 2026.</small>
+    <small>Last changed 16 October 2026.</small>
   </header>
 
   <section>
@@ -46,17 +46,18 @@
     <h2>If you join the rankings</h2>
     <p>The rankings run on <b>Supabase</b>, hosted in the European Union (Paris). When you join, it stores:</p>
     <ul>
-      <li><b>An account.</b> A random id. If you play as a guest, that is all. If you sign in by email, your <b>email address</b>, used only to send you sign-in links.</li>
-      <li><b>The name you choose</b>, shown on the boards.</li>
+      <li><b>An account.</b> A random id. If you play as a guest, that is all. If you sign in by email, your <b>email address</b>, used only to send you sign-in links and codes.</li>
+      <li><b>The name you choose</b>, shown on the boards, with the 先行 Forerunner mark beside it if the account played the closed test.</li>
       <li><b>Your save</b> and the times you synced, so the game can offer your cultivator on another device and check that every climb on the boards happened in real time.</li>
       <li><b>A record of each sync</b> (when, and whether it passed the checks), kept to find cheating.</li>
     </ul>
     <p>Nothing else: no location, no contacts, no device identifiers, no payment details.</p>
+    <p><b>The Cliff of Names.</b> In Season 0 the 題名崖 Cliff of Names shows, to anyone, the name of each of the first 81 cultivators through each gate and the date the server saw them. Deleting the account removes your carvings.</p>
   </section>
 
   <section>
     <h2>Deleting it</h2>
-    <p>In the game, open <b>Menu → Rankings → Delete my ranked account</b>. Your account, name, place on the boards, cloud copy and sync records are removed from the server at once. The game on your device is not touched.</p>
+    <p>In the game, open the <b>榜 Ranks</b> tab and choose <b>Delete my ranked account</b>. Your account, name, place on the boards, carvings on the Cliff of Names, cloud copy and sync records are removed from the server at once. The game on your device is not touched.</p>
     <p>One exception, and only for an account the anti-cheat had already struck or banned: a one-way fingerprint of its email address (a SHA-256 hash, from which the address cannot be read back) is kept with the number of strikes, so that deleting the account and signing in again with the same email does not wipe them. An account with no strikes leaves nothing behind, and a guest account has no email to keep.</p>
   </section>
 
@@ -64,6 +65,7 @@
     <h2>Who else is involved</h2>
     <ul>
       <li><b>Supabase</b> stores the ranked data described above.</li>
+      <li><b>Brevo</b> delivers the sign-in emails, so it sees the address each one is sent to.</li>
       <li><b>GitHub Pages</b> serves the game's files. Like any web server, it may keep ordinary access logs.</li>
     </ul>
   </section>
