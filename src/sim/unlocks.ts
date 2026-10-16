@@ -138,7 +138,7 @@ export const SYSTEMS: readonly SystemInfo[] = [
    * time further up, where there is room: see data/crafts.ts.
    */
   { key: 'crafts', han: '業', name: 'The Workshop', realm: 2,
-    gives: 'Four crafts that level from 1 to 99: gather herbs and ore, render the beasts the hunt has taught you, and forge the piece you choose. The workshop keeps working while you are away.' },
+    gives: 'Seven crafts that level from 1 to 99, and four open now: gather herbs and ore, render the beasts the hunt has taught you, and forge the piece you choose. The workshop keeps working while you are away.' },
   { key: 'arts', han: '勢', name: 'Stances and Arts', realm: 2,
     gives: 'A stance to fight in, and the art the first warden gave up. Both change every round of every fight.' },
   { key: 'cores', han: '妖丹', name: 'Beast Cores', realm: 1,

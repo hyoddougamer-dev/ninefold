@@ -166,3 +166,22 @@ describe('業 the workshop, arriving on saves that were made before it', () => {
     expect(NOTICES.find((n) => n.key === 'workshop')!.when(s)).toBe(false);
   });
 });
+
+/**
+ * 新 Arriving in the second realm was six cards and notices in the same minute (audit,
+ * 2026-10-16). A card about a tab waits for that tab's 新 dot to be taken, and comes up then.
+ */
+describe('新 a card about a new tab waits for the tab', () => {
+  const arrived = (seen: readonly string[]): State => ({ ...newState(T0), realm: 2, layer: 0, seen: [...seen] });
+
+  it('holds the workshop card while 業 still wears its dot, and shows it once the tab is opened', () => {
+    const held = arrived(['guide', 'whom', 'new:gear.crafts.dao']);
+    expect(nextNotice(held)?.key).not.toBe('workshop');
+    const opened = arrived(['guide', 'whom', 'new:gear.dao']);
+    expect(nextNotice(opened)?.key).toBe('workshop');
+  });
+
+  it('never holds a card on a save that carries no dot', () => {
+    expect(nextNotice(arrived(['guide', 'whom']))?.key).toBe('workshop');
+  });
+});

@@ -2330,8 +2330,10 @@ export const NOTICE = {
   },
   tower: {
     title: 'Only the next floor is ever open',
-    text: 'It never runs out, and losing costs nothing. Sweep the low floors for material. '
-      + 'The ones that can beat you are the ones that pay in qi.',
+    // 吸 Every floor pays its fixed sum of qi once (floorQiPay), the low ones too. The card said
+    // only the floors that could beat you paid qi, beside a tower card quoting the sum.
+    text: 'It never runs out, and losing costs nothing. Every floor pays a fixed sum of qi and some material, once. '
+      + 'Climb until a floor can beat you.',
   },
   furnace: {
     // Not "start with a 煉體丹": 煉體 is the *line*, and the pill on the screen is named
