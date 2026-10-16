@@ -9,7 +9,7 @@ import { fortuneOf } from '../fortune.ts';
 import { verify } from '../verify.ts';
 import { BEASTS, wardenOf } from '../../data/bestiary.ts';
 import {
-  BOON_BLOOD, BOON_FAMILIAR, BOON_SWORDSOUL, BOON_TOKEN, HEART_PATH,
+  BOON_BLOOD, BOON_FAMILIAR, BOON_SWORDSOUL, BOON_TOKEN, HEART_PATH, MEET_LAYERS,
 } from '../balance.ts';
 
 /**
@@ -144,5 +144,28 @@ describe('緣起 the road remembers', () => {
     const rushed = walk(() => 0, fresh);
     const w = verify(fresh, { ...rushed, at: fresh.at + 3600 }, 3600);
     expect(w.why).toContain('too-fast');
+  });
+
+  it('層 a realm\'s own people come up its layers, and the summit\'s still all come', () => {
+    // Everybody below the seventh met; the seventh's people wait for its layers.
+    const below = MEETINGS.filter((m) => m.realm < 7).map((m) => m.key);
+    let s: State = { ...traveller(0), realm: 7, layer: 0, met: below,
+      chose: Object.fromEntries(below.map((k) => [k, 0 as const])) };
+    const layers: number[] = [];
+    for (let i = 0; i < 20; i++) {
+      s = { ...s, at: s.at + MEET_GAP };
+      const m = meetingDue(s);
+      if (!m) { if (s.layer >= 8) break; s = { ...s, layer: s.layer + 1 }; continue; }
+      if (m.realm === 7) layers.push(s.layer);
+      s = answer(s, m.key, 0, i);
+    }
+    expect(layers.length).toBeGreaterThanOrEqual(2);
+    expect(layers).toEqual(layers.map((_, n) => n * MEET_LAYERS));
+    // A meeting from a realm already left is never held: it has waited long enough.
+    const late: State = { ...traveller(0), realm: 7, layer: 0, met: ['bridge'], chose: { bridge: 0 } };
+    expect(meetingDue(late)?.realm).toBeLessThan(7);
+    // And every one of the summit's people, marks allowing, still comes at its last layer.
+    const top = walk(() => 0);
+    expect(MEETINGS.filter((m) => m.realm === 9 && !m.after).every((m) => top.met.includes(m.key))).toBe(true);
   });
 });

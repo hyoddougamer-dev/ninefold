@@ -29,7 +29,7 @@ import { AWAKENINGS, ALL_CARDS, HEAVEN_CARDS, TRIOS } from '../src/data/awakenin
 import sharp from 'sharp';
 import { BOON_INFO, MEETINGS, MEET_POINT_CEILING } from '../src/data/meetings.ts';
 import { answer as answerMeeting, meetingDue } from '../src/sim/meet.ts';
-import { CAPSTONE_REALM, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, HEART_PATH, MEET_GAP, SECLUSION, SHRINE_DAO_PER_REALM, PLATFORM_EDGE_GROWTH } from '../src/sim/balance.ts';
+import { CAPSTONE_REALM, DEMONS, DEMONS_PER_REALM, DEMON_DAO, DEMON_EDGE, DEMON_LATE_LAYER, DEMON_RETURN, HEART_PATH, MEET_GAP, MEET_LAYERS, SECLUSION, SHRINE_DAO_PER_REALM, PLATFORM_EDGE_GROWTH } from '../src/sim/balance.ts';
 import { BEDS, HERBS } from '../src/data/herbs.ts';
 import { ROOMS as SECRET_ROOMS, ROOM_INFO, DOOR_GAP } from '../src/data/secret.ts';
 import { isGate } from '../src/sim/secret.ts';
@@ -4305,8 +4305,12 @@ const page = `<meta charset="utf-8">
       fourth demon at 0%, which is a wall, so it came down to ${DEMON_EDGE}× and flat. Nobody is
       walled now; the build only changes how soon.</p>
     <p class="t">There are ${DEMONS} in a life and ${DEMONS_PER_REALM} a realm, so every realm from
-      the fourth to the eighth has its own. Measured, the active cultivator puts them down
-      on days 4, 5, 9, 9, 13, 13, 22, 22 and 34. It arrives at the summit on the same day
+      the fourth to the eighth has its own. The first comes at a realm's first layer and the
+      second waits for its ${DEMON_LATE_LAYER + 1}th: before that (2026-10-16) the door that shuts itself put
+      both down on a realm's first day, and the active cultivator met them on days 4, 5, 9, 9,
+      13, 13, 22, 22 and 34. Held for the layer, it meets them on days 3.7, 5.3, 8.2, 9.5,
+      14.7, 18.2, 24.8, 29.3 and 36.0, and the road's people climb the layers the same way,
+      one every ${MEET_LAYERS} layers. It arrives at the summit on the same day
       as one who never shuts the door: nine points of the tree is a keepsake, not a
       shortcut. The server counts one demon a night since the last sync, with one already
       waiting allowed for, and a count that went down is another run.</p>

@@ -2093,6 +2093,20 @@ export const PILE_HOLD = 86_400;
 export const MEET_GAP = 3 * 3600;
 
 /**
+ * 緣 層 And how many layers a realm's own meetings wait for, one after another: the first
+ * of a realm's people is on the road at its first layer, the second at its third, the third
+ * at its fifth (layer 2n, counted from 0, for the realm's meeting n).
+ *
+ * 量 Measured on 2026-10-16, with MEET_GAP alone: every realm's meetings and both its heart
+ * demons fell inside the first day of it, and then the active cultivator walked the seventh
+ * and eighth realms for three to five days with nothing new on the road. A realm's people
+ * are the same people and the same number; they wait for the layers instead of the clock,
+ * so the road has something on it all the way up. A meeting from a realm already left
+ * behind is not held: it has waited long enough.
+ */
+export const MEET_LAYERS = 2;
+
+/**
  * 心 How far the heart has to lean before the road notices. Every answer leans kind,
  * hard or neither, and past this many either way a cultivator walks a path: the monk
  * only finds the kind, the demonic cultivator only the hard. Three is two or three
@@ -2156,10 +2170,22 @@ export const DEMONS = 9;
  * 心魔 And how many each realm from the fourth lets out. Measured with no limit, an
  * active cultivator put all nine down inside a week of the door opening, and the fifth
  * realm onward had nothing behind it. Two a realm spreads them over the fourth to the
- * eighth, so every realm up to the summit has its own: the active harness puts them down
- * on days 4, 5, 9, 9, 13, 13, 22, 22 and 34, and reaches the summit the same day either way.
+ * eighth, so every realm up to the summit has its own: the active harness put them down
+ * on days 4, 5, 9, 9, 13, 13, 22, 22 and 34, and reached the summit the same day either way.
+ * With the second of each realm held for its fifth layer (DEMON_LATE_LAYER, 2026-10-16) it
+ * puts them down on days 3.7, 5.3, 8.2, 9.5, 14.7, 18.2, 24.8, 29.3 and 36.0.
  */
 export const DEMONS_PER_REALM = 2;
+/**
+ * 心魔 層 The layer (counted from 0, so the fifth on the screen) a realm's second demon waits
+ * for. Both used to be let out at the breakthrough, and the door that shuts itself put them
+ * down eight hours apart on the realm's first day, in every realm from the fourth to the
+ * seventh. The door still shuts by itself after the first; the second simply does not come
+ * until the cultivator is halfway up the realm. Nine in a life, as before. 鎖魂 A Soul-Lock
+ * Sigil still counts one demon twice, and that includes the one not yet come: the workshop
+ * is the way to have both at once.
+ */
+export const DEMON_LATE_LAYER = 4;
 
 /** 秘境 How many rooms a run is. Seven is short enough to finish in one sitting. */
 export const ROOMS = 7;

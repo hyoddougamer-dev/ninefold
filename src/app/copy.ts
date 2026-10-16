@@ -1054,7 +1054,7 @@ export const KEY = {
 
   pathsHead: '三 The three paths of the tree',
   pathsBlurb: 'Every node in 道 the tree belongs to one of them, and the colour on the node is the path.',
-  meeting: 'Somebody on the road, every few hours. One choice, and walking on is always free. Nothing is taken that you did not offer.',
+  meeting: 'Somebody on the road, every few hours, and a realm\'s own people spread up its layers. One choice, and walking on is always free. Nothing is taken that you did not offer.',
   week: 'A mark that moves every Monday. A beast worth double 材 material, a herb worth planting, a room of 秘境 worth reaching. It never touches the rate you gather at.',
   systemsHead: '開 The systems, and the realm that opens each',
   craftsHead: '業 The crafts',
@@ -2751,6 +2751,9 @@ export const SECLUSION = {
   open: 'Shut the door for eight hours and your 心魔 heart demon comes: yourself, a little stronger, without your stance or your arts.',
   shut: 'Shut the door',
   waiting: (left: string) => `The door is shut. Your heart demon comes in ${left}.`,
+  /** 層 The realm's second demon waits for a layer as well as the night: see DEMON_LATE_LAYER. */
+  waitingLayer: (layer: number) => `The door is shut. Your next heart demon comes when you reach layer ${layer} of this realm.`,
+  layerNote: (layer: number) => `This realm's second demon also waits for layer ${layer}.`,
   shutNote: 'Nothing stops while the door is shut. Hunt, climb, or close the game.',
   due: 'Your heart demon is waiting.',
   dueNote: 'It is you, a fifth stronger, with none of what you know. A loss costs nothing: it draws back for an hour.',
@@ -3310,6 +3313,8 @@ export const QOL = {
   seclusion: {
     shutsAgain: 'When a demon falls and this realm still has one left, the door shuts again by itself.',
     shutAgain: 'The door has shut again by itself. The next one comes in eight hours.',
+    shutAgainAt: (layer: number) =>
+      `The door has shut again by itself. The next one comes at layer ${layer} of this realm, and not before eight hours.`,
   },
   buy: {
     all: 'Buy all',

@@ -5,13 +5,13 @@ import { dropNamesShown } from '../prefs.ts';
 import { lifted, type Stashed } from '../../sim/stash.ts';
 import { marksUp } from '../../sim/inspect.ts';
 import { RealmTag } from './RealmTag.tsx';
-import { demonsFor } from '../../sim/seclusion.ts';
+import { demonsFor, demonsNow } from '../../sim/seclusion.ts';
 import { QOL } from '../copy.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { realm as realmOf } from '../../data/realms.ts';
 import type { Beast } from '../../data/bestiary.ts';
 import { type Outcome } from '../../sim/combat.ts';
-import { DEMON_DAO, HEALTH_PER_POWER, PILL_POWER } from '../../sim/balance.ts';
+import { DEMON_DAO, DEMON_LATE_LAYER, HEALTH_PER_POWER, PILL_POWER } from '../../sim/balance.ts';
 import { num } from '../../sim/format.ts';
 import { portraitLayers } from '../../art/aura.ts';
 import { arenaScene } from '../../art/scene.ts';
@@ -241,6 +241,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   // 關 The demon fell and the realm still has one: the door has shut again by itself.
   const soulLock = !!battle.kit?.sigil && splitKey(battle.kit.sigil).key === 'sigil:soullock';
   const reshut = !!battle.demon && outcome.won && state.demons + (soulLock ? 2 : 1) < demonsFor(state.realm);
+  // 層 And whether the next one waits for its layer (DEMON_LATE_LAYER) as well as the night.
+  const reshutAt = reshut && state.demons + (soulLock ? 2 : 1) >= demonsNow(state);
 
   /** 勁 What was won rises off the button that takes it, whichever button that is. */
   const take = () => {
@@ -440,7 +442,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               </span>
             </div>
           )}
-          {reshut && <p className="kitline"><b className="cjk">關</b> {QOL.seclusion.shutAgain}</p>}
+          {reshut && <p className="kitline"><b className="cjk">關</b> {reshutAt
+            ? QOL.seclusion.shutAgainAt(DEMON_LATE_LAYER + 1) : QOL.seclusion.shutAgain}</p>}
           {/* 擂 A challenger pays a fixed sum read off the realm and nothing else, and the week's count,
               its temper and what stands next are said under it. A loss says that it cost
               nothing and that the dice are set: pressing again unchanged is the same fight. */}

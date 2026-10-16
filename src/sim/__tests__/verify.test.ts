@@ -467,7 +467,13 @@ describe('套 a floor is read against the strongest body the save holds', () => 
  */
 describe('劍仙 a Sword Immortal climbs past its bare power, and is never struck for it', () => {
   const active = HABITS.find((h) => h.name === 'active')!;
-  const immortal = { ...active, name: 'active swordimmortal', calling: 'swordimmortal' as const };
+  // 鑄 A class-builder who forges the one shape no drop has given them, as the game lets them
+  // (forgeVisit). Without it the walk read the class only while the drops happened to complete
+  // it: when the road's people and the second demon began to wait for their layers
+  // (2026-10-16) the seeds behind every drop moved, seed 991 lacked a shape for half the climb
+  // and wore the class on 51% of its visits from the fifth realm, against 93% before. Forging,
+  // it wears it on every one, at seeds 991, 1234 and 2026 alike.
+  const immortal = { ...active, name: 'active swordimmortal', calling: 'swordimmortal' as const, forges: true };
   const shots: State[] = [];
   let next = 0;
   play(immortal, 120, (day, s) => {
@@ -533,7 +539,8 @@ describe('劫 an honest crossing is never struck, a Sword Saint\'s included', ()
     const start = arrivalOf(play({ ...active, name: 'active swordsaint', calling: 'swordsaint' }).state);
     expect(classDragon(start)).toBe(PAIR_DRAGON);
     expect(honest(start, 6)).toEqual([]);
-  });
+    // 慢 A whole climb and six marks: seven seconds on a quiet machine, past the default five.
+  }, 60_000);
 
   it('and a mark no body the save holds could have won is still a strike', () => {
     const top = playEndgame(3).end;

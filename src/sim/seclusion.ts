@@ -1,5 +1,5 @@
 import type { Beast } from '../data/bestiary.ts';
-import { DEMONS, DEMONS_PER_REALM, DEMON_EDGE, DEMON_RETURN, SECLUSION } from './balance.ts';
+import { DEMONS, DEMONS_PER_REALM, DEMON_EDGE, DEMON_LATE_LAYER, DEMON_RETURN, SECLUSION } from './balance.ts';
 import { isOpen, opensAt } from './unlocks.ts';
 import { power, type State } from './state.ts';
 
@@ -30,6 +30,26 @@ export function demonsFor(realm: number): number {
   return Math.min(DEMONS, Math.max(0, (realm - opensAt('seclusion') + 1) * DEMONS_PER_REALM));
 }
 
+/**
+ * 心魔 層 How many demons have come by this layer: the realm's first at its first layer, its
+ * second at DEMON_LATE_LAYER. demonsFor is the realm's whole number, which is what the door,
+ * a save's cap and 鎖魂 the Soul-Lock Sigil read; this is only when the next one comes.
+ */
+export function demonsNow(s: Pick<State, 'realm' | 'layer'>): number {
+  const all = demonsFor(s.realm);
+  if (s.layer >= DEMON_LATE_LAYER) return all;
+  const before = demonsFor(s.realm - 1);
+  return before + Math.min(1, all - before);
+}
+
+/**
+ * 心魔 層 The layer (from 0) the next demon waits for, when the door is shut and the time
+ * is served or serving but the realm has not let it out yet; null when nothing waits on a layer.
+ */
+export function demonHeldFor(s: State): number | null {
+  return s.secludedAt > 0 && s.demons < demonsFor(s.realm) && s.demons >= demonsNow(s) ? DEMON_LATE_LAYER : null;
+}
+
 /** Whether this cultivator can shut the door now. */
 export function canSeclude(s: State): boolean {
   return isOpen(s.realm, 'seclusion') && s.secludedAt === 0 && s.demons < demonsFor(s.realm);
@@ -50,9 +70,9 @@ export function demonLeft(s: State): number {
   return s.secludedAt > 0 ? Math.max(0, s.secludedAt + SECLUSION - s.at) : 0;
 }
 
-/** 心魔 Whether the demon is waiting to be fought. */
+/** 心魔 Whether the demon is waiting to be fought: the night served, and its layer reached. */
 export function demonDue(s: State): boolean {
-  return s.secludedAt > 0 && s.at >= s.secludedAt + SECLUSION && s.demons < demonsFor(s.realm);
+  return s.secludedAt > 0 && s.at >= s.secludedAt + SECLUSION && s.demons < demonsNow(s);
 }
 
 /** 力 What the demon stands at: this cultivator's own power, and a little more. */
@@ -77,7 +97,8 @@ export function demonOf(s: State): Beast {
  * for. Forgetting it cost a whole eight-hour window for nothing, and the harnesses shut it
  * on every visit anyway, so the curves were already measuring the door that shuts itself.
  * It shuts at the instant the demon fell, which is the earliest a hand could have shut it,
- * so the ranked server's one demon a night still holds.
+ * so the ranked server's one demon a night still holds. 層 The realm's second demon also
+ * waits for its layer (demonsNow): the door stays shut, and it comes at whichever is later.
  */
 function afterDemon(s: State, demons: number): State {
   return { ...s, demons, secludedAt: demons < demonsFor(s.realm) ? s.at : 0 };

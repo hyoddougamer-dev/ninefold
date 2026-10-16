@@ -7,7 +7,7 @@ import { loot } from './combat.ts';
 import { commonsOf } from '../data/bestiary.ts';
 import { rollDrop } from './drops.ts';
 import type { State } from './state.ts';
-import { MEET_GAP } from './balance.ts';
+import { LAYERS_PER_REALM, MEET_GAP, MEET_LAYERS } from './balance.ts';
 
 /**
  * 緣 Whether somebody is on the road, and what happens when you answer them.
@@ -43,12 +43,21 @@ function pick(n: number): number {
  * 一 Never two at once, never one already met, and never one from a realm this
  * cultivator has not reached. When the realm has run out of people who have not been
  * met, it is quiet, which is honest: this is flavour and not a chore list.
+ *
+ * 層 And a realm's own people come up its layers rather than all on its first day: the
+ * second waits for the third layer, the third for the fifth (MEET_LAYERS).
  */
 export function meetingDue(s: State): Meeting | null {
   if (s.realm < MEETS_FROM) return null;
   const since = s.at - (s.metAt || s.startedAt);
   if (since < MEET_GAP) return null;
-  const left = MEETINGS.filter((m) => !s.met.includes(m.key) && roadOpen(m, s.realm, s.tribulation, s.met, s.chose));
+  // 層 This realm's own people wait for its layers, one every MEET_LAYERS: see balance.ts.
+  const own = s.met.filter((k) => meetingOf(k)?.realm === s.realm).length;
+  // Never past the realm's last layer: the summit's people who wait for marks would
+  // otherwise wait for a layer the ninth realm does not have.
+  const ready = s.layer >= Math.min(LAYERS_PER_REALM - 1, own * MEET_LAYERS);
+  const left = MEETINGS.filter((m) => !s.met.includes(m.key) && roadOpen(m, s.realm, s.tribulation, s.met, s.chose)
+    && (ready || m.realm < s.realm));
   if (!left.length) return null;
   // 歸 Somebody coming back comes first. A return is the road answering you, and making
   // it wait behind a stranger would bury the one meeting that is about what you did.

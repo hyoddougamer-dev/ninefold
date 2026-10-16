@@ -11,7 +11,7 @@ import { isOpen } from '../../sim/unlocks.ts';
 import type { State } from '../../sim/state.ts';
 import { fightDeps } from '../memo.ts';
 import { QOL, SECLUSION } from '../copy.ts';
-import { demonsFor } from '../../sim/seclusion.ts';
+import { demonHeldFor, demonsFor } from '../../sim/seclusion.ts';
 import { Svg } from './Svg.tsx';
 import { treeFull } from '../../sim/points.ts';
 
@@ -35,6 +35,8 @@ export function Seclusion({ state, onShut, onFace }: {
   const shut = secluded(state) && !due;
   const rest = !secluded(state) && !canSeclude(state);
   const left = demonLeft(state);
+  // 層 The realm's second demon waits for its layer as well as the night (DEMON_LATE_LAYER).
+  const held = demonHeldFor(state);
 
   return (
     <div className="seclude" data-due={due} data-shut={shut}>
@@ -54,7 +56,8 @@ export function Seclusion({ state, onShut, onFace }: {
             <u className="mono">{SECLUSION.odds(Math.round(odds * 100))} · {SECLUSION.pays(DEMON_DAO, treeFull(state, false))}</u>
           </>}
           {shut && <>
-            <em>{SECLUSION.waiting(duration(left))}</em>
+            <em>{held !== null && left <= 0 ? SECLUSION.waitingLayer(held + 1) : SECLUSION.waiting(duration(left))}</em>
+            {held !== null && left > 0 && <i>{SECLUSION.layerNote(held + 1)}</i>}
             <i>{SECLUSION.shutNote}</i>
             {/* 關 It shuts again by itself after a demon falls, while one is left. */}
             {state.demons + 1 < demonsFor(state.realm) && <i>{QOL.seclusion.shutsAgain}</i>}

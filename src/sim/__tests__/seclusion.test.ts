@@ -6,10 +6,11 @@ import { freePoints } from '../points.ts';
 import { verify } from '../verify.ts';
 import { opensAt } from '../unlocks.ts';
 import {
-  canSeclude, conquer, conquerTwice, demonDue, demonLeft, demonOf, demonPower, demonsFor, repel, seclude,
+  canSeclude, conquer, conquerTwice, demonDue, demonHeldFor, demonLeft, demonOf, demonPower, demonsFor, demonsNow,
+  repel, seclude,
 } from '../seclusion.ts';
 import {
-  DEMONS, DEMON_DAO, DEMON_EDGE, DEMON_RETURN, SECLUSION,
+  DEMONS, DEMON_DAO, DEMON_EDGE, DEMON_LATE_LAYER, DEMON_RETURN, SECLUSION,
 } from '../balance.ts';
 
 /**
@@ -108,6 +109,32 @@ describe('閉關 seclusion and 心魔 the heart demon', () => {
     for (let n = 0; n < 3; n++) { s = later(s, SECLUSION); s = conquer(s); }
     expect(s.demons).toBe(3);
     expect(verify(before, s, s.at - before.at).why).not.toContain('too-fast');
+  });
+
+  it('層 holds a realm\'s second demon for its fifth layer, and the sigil still takes both', () => {
+    // The realm's first demon comes at its first layer; the second waits for DEMON_LATE_LAYER.
+    expect(demonsNow({ realm: 6, layer: 0 })).toBe(demonsFor(5) + 1);
+    expect(demonsNow({ realm: 6, layer: DEMON_LATE_LAYER - 1 })).toBe(demonsFor(5) + 1);
+    expect(demonsNow({ realm: 6, layer: DEMON_LATE_LAYER })).toBe(demonsFor(6));
+    // The eighth realm has one left of the nine, and it comes at once.
+    expect(demonsNow({ realm: 8, layer: 0 })).toBe(DEMONS);
+    const low: State = { ...sixth(true), layer: 1, demons: demonsFor(5) };
+    const first = conquer(later(seclude(low), SECLUSION));
+    expect(first.demons).toBe(demonsFor(5) + 1);
+    // The door shuts again by itself, and the night is served, but the demon waits for the layer.
+    expect(first.secludedAt).toBe(first.at);
+    const night = later(first, SECLUSION + 1);
+    expect(demonDue(night)).toBe(false);
+    expect(demonHeldFor(night)).toBe(DEMON_LATE_LAYER);
+    expect(demonDue({ ...night, layer: DEMON_LATE_LAYER })).toBe(true);
+    expect(demonHeldFor({ ...night, layer: DEMON_LATE_LAYER })).toBe(null);
+    // 鎖魂 A Soul-Lock Sigil counts the first one twice, which reaches the one still held.
+    expect(conquerTwice(later(seclude(low), SECLUSION)).demons).toBe(demonsFor(6));
+    // Nothing is lost by climbing past it: a realm left with its second still held lets it
+    // out first in the next realm.
+    const moved = { ...night, realm: 7, layer: 0 };
+    expect(demonDue(moved)).toBe(true);
+    expect(conquer(moved).demons).toBe(demonsFor(6));
   });
 
   it('lets out two a realm from the fourth, nine in a life', () => {
