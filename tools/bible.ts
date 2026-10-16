@@ -431,7 +431,7 @@ const heavenRows = `<div class="cards two">${HEAVENS.map((h, i) => `
           CLOCK.heavenDays[i] !== undefined ? ` · about day ${CLOCK.heavenDays[i]}` : ''}</i></span>
     </div>
     <p class="hg">${h.gains}</p>
-    <p class="hr" style="color:${h.colour}">＋${LEVELS_PER_HEAVEN} levels of 劍訣 and 妖丹</p>
+    <p class="hr" style="color:${h.colour}">＋${LEVELS_PER_HEAVEN} levels of Sword Technique (劍訣) and Beast Cores (妖丹)</p>
   </div>`).join('')}</div>`;
 /** 劫 How long a mark takes once the pace has settled, from the endgame harness. */
 const ENDGAME_PACE = (() => {
@@ -1147,7 +1147,7 @@ const MOCK_HEAVEN = (() => {
     <div class="hh"><span class="hn"><b class="cjk">${h.han}</b><em>${h.name}</em></span>
       <span class="hm"><b>${marks}</b><i>${marks} marks</i></span></div>
     <p class="hgain">${h.gains}</p>
-    <p class="hroom">＋${LEVELS_PER_HEAVEN} levels of 劍訣 and 妖丹, for good</p>
+    <p class="hroom">＋${LEVELS_PER_HEAVEN} levels of Sword Technique (劍訣) and Beast Cores (妖丹), for good</p>
     <div class="hnx"><span class="hic" style="color:${nx.colour}">${icon(nx.dragon.icon, 40)}</span>
       <span><em>${marksToNext(marks)} more crossings open</em>
         <i><b class="cjk" style="color:${nx.colour}">${nx.han}</b> ${nx.name} ·

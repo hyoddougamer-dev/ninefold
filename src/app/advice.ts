@@ -159,22 +159,24 @@ export function advice(s: State, wardenOdds?: number): Advice | null {
 
   if (blocked) {
     const cap = capOf(s, 'technique');
+    // 立 At the ninth realm what stands at the end of the climb is the Dragon, not a warden.
+    const foe = s.realm === 9 ? 'the Dragon' : 'the warden';
     // Never point at a door the realm has not opened yet.
     if (!isOpen(s.realm, 'cores')) {
       return s.levels.technique < cap && canBuy(s, 'technique')
-        ? { han: '劍訣', text: ADVICE.buyTechnique }
+        ? { han: '劍訣', text: ADVICE.buyTechnique(foe) }
         : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
     }
     // 妖丹 first, always. It is the one upgrade qi cannot buy, and it is the one that
     // stops a waiting cultivator dead.
     if (s.levels.cores < cap) {
       return canBuy(s, 'cores')
-        ? { han: '妖丹', text: ADVICE.buyCores(UPGRADE_INFO.cores.han) }
-        : { han: '狩', text: ADVICE.needMaterial(upgradeCost(s, 'cores') - s.materials), tab: 'hunt' };
+        ? { han: '妖丹', text: ADVICE.buyCores(UPGRADE_INFO.cores.han, UPGRADE_INFO.cores.name, foe) }
+        : { han: '狩', text: ADVICE.needMaterial(upgradeCost(s, 'cores') - s.materials, s.realm === 9 ? 'The Dragon' : 'This warden'), tab: 'hunt' };
     }
     if (s.levels.technique < cap) {
       return canBuy(s, 'technique')
-        ? { han: '劍訣', text: ADVICE.buyTechnique }
+        ? { han: '劍訣', text: ADVICE.buyTechnique(foe) }
         : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
     }
     // 瓶頸 A fresh wall, and the pouch holds what breaks it but the hands are empty of it.

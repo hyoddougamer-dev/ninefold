@@ -5,6 +5,7 @@ import { AUTHORS } from '../../art/icons.generated.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { DEEP_INFO, MARK_INFO, deepOf, knownIn, marksOf } from '../../sim/record.ts';
 import { isOpen } from '../../sim/unlocks.ts';
+import { treeFull } from '../../sim/points.ts';
 import { POINTS_PER_BESTIARY } from '../../sim/dao.ts';
 import { BESTIARY } from '../copy.ts';
 import { ARCHETYPES, SLOT_INFO, schoolOfShape } from '../../data/gear.ts';
@@ -25,6 +26,8 @@ import { schoolSays } from '../classes.ts';
  */
 export function Bestiary({ state }: { state: State }) {
   const filled = (realm: number) => knownIn(state.killed, realm);
+  // 滿 A finished page pays a 道 point, which a full tree only keeps.
+  const full = treeFull(state, false);
   return (
     <>
       {REALMS.map((r) => {
@@ -42,7 +45,7 @@ export function Bestiary({ state }: { state: State }) {
               {isOpen(state.realm, 'bestiary') && reached && (
                 <span className="filled" data-done={filled(r.n).done === filled(r.n).of}>
                   熟 {filled(r.n).done}/{filled(r.n).of}
-                  <em>{BESTIARY.pays(POINTS_PER_BESTIARY)}</em>
+                  <em>{BESTIARY.pays(POINTS_PER_BESTIARY, full && filled(r.n).done < filled(r.n).of)}</em>
                 </span>
               )}
             </h2>

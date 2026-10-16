@@ -11,7 +11,9 @@ import { realm as realmOf } from '../../data/realms.ts';
 import { DAO, NODE } from '../copy.ts';
 import { Loadout } from '../ui/Loadout.tsx';
 import { Term } from '../ui/Term.tsx';
-import { earnedPoints as earnedOf, freePoints as freeOf } from '../../sim/points.ts';
+import {
+  earnedPoints as earnedOf, freePoints as freeOf, savingFor, spendablePoints, treeFull,
+} from '../../sim/points.ts';
 import { capRefuses } from '../../sim/stash.ts';
 import { forkTwin, forkWait, swapStatus } from '../../sim/fork.ts';
 import { duration } from '../../sim/format.ts';
@@ -147,6 +149,16 @@ export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
   const earned = earnedOf(state);
   const spent = daoSpent(state.unlocked);
   const free = freeOf(state);
+  /**
+   * 點 Points a node in reach would take. The pip and the gold read this and not `free`:
+   * a cultivator saving for a dearer node, or holding a full tree, wore a gold number
+   * that asked them to spend what nothing would take (28 at the eighth realm, 52 at the
+   * top). The count itself still shows, in the faint colour, with what it is for.
+   */
+  const spendable = spendablePoints(state);
+  const saving = savingFor(state);
+  const full = free > 0 && treeFull(state);
+  const finished = full && treeFull(state, false);
   // 樞 The three that cost you something arrive at their own realm, two above this one.
   const keys = isOpen(state.realm, 'keystones');
   // 極 And each branch's last node waits for CAPSTONE_REALM, the fifth.
@@ -174,7 +186,7 @@ export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
                   data-coach={showing === 'tree' ? undefined : 'dao-tree'}
                   onClick={() => setHalf('tree')}>
             <b className="cjk">道</b><em>{DAO.halfTree}</em>
-            {free > 0 && <i className="pip">{free}</i>}
+            {spendable > 0 && <i className="pip">{spendable}</i>}
           </button>
           <button role="tab" aria-selected={showing === 'build'} data-on={showing === 'build'}
                   data-coach={showing === 'build' ? undefined : 'dao-build'}
@@ -204,8 +216,8 @@ export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
           <Term han="道" /> Techniques
         </span>
         <span className="mono" style={{ fontSize: 13 }}>
-          <b style={{ color: free > 0 ? 'var(--gold)' : 'var(--faint)', fontSize: 19 }}>{free}</b>
-          <span className="faint">{DAO.purse(spent, earned)}</span>
+          <b style={{ color: spendable > 0 ? 'var(--gold)' : 'var(--faint)', fontSize: 19 }}>{free}</b>
+          <span className="faint">{DAO.purse(spent, earned, spendable > 0 || free === 0)}</span>
         </span>
       </div>
 
@@ -213,6 +225,9 @@ export function Dao({ state, onUnlock, onSwap, onStance, onSequence }: {
         {DAO.tree}<br />
         {DAO.short(TOTAL_COST)} {DAO.taken(taken, ALL_NODES.length)}.
       </p>
+      {/* 蓄 What the points are for, when nothing can be bought with them right now. */}
+      {saving != null && <p className="faint daokept">{DAO.saving(free, saving)}</p>}
+      {full && <p className="faint daokept">{finished ? DAO.full : DAO.fullForNow}</p>}
 
       <div className="legend">
         {PATHS.map((p) => (

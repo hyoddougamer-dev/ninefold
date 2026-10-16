@@ -3,9 +3,9 @@ import { CRAFT_CARRY, ECHO_CEILING, ECHO_LIFE_MAX, ECHO_ROOF, LIVES_MAX, REBIRTH
 import { SKILL_KEYS, levelOf } from '../../data/crafts.ts';
 import { carriedXp } from '../../sim/crafts.ts';
 import { echoOf, lifeEcho } from '../../sim/echo.ts';
-import { canReincarnate, depthOf, echoAfter, lifeOf, lifeTitle } from '../../sim/rebirth.ts';
+import { canReincarnate, depthOf, echoAfter, lifeOf, lifeStart, lifeTitle } from '../../sim/rebirth.ts';
 import { codexToKeep } from '../../sim/hundred.ts';
-import { layersOpened, type State } from '../../sim/state.ts';
+import { layersOpened, markBonus, type State } from '../../sim/state.ts';
 import { LAYERS } from '../../sim/balance.ts';
 import { heavenAt } from '../../data/heavens.ts';
 import { realm as realmOf } from '../../data/realms.ts';
@@ -81,6 +81,8 @@ export function Rebirth({ state, born, onReborn, onClose }: {
   const levels = SKILL_KEYS.map((k) => levelOf((born ? state.crafts.xp : carriedXp(state.crafts.xp))[k]));
   const lo = Math.min(...levels), hi = Math.max(...levels);
   const workshop = CRAFT_CARRY > 0 && hi > 1;
+  // 價 The price, beside the gift: what the marks multiply qi by now, and how long this life ran.
+  const ran = Math.max(1, Math.floor((state.at - lifeStart(state)) / 86_400));
 
   if (born) {
     return (
@@ -195,6 +197,10 @@ export function Rebirth({ state, born, onReborn, onClose }: {
             {after >= ECHO_ROOF - 1e-9 && after - now < leaves - 1e-9 && <> {REBIRTH.promiseCapped(echoPct(ECHO_ROOF))}</>}
           </p>
           <p className="rb-faint rb-standing">{REBIRTH.promiseFrom(echoExact(now), echoExact(after), echoPct(ECHO_ROOF))}</p>
+          <p className="rb-faint rb-cost">
+            {REBIRTH.cost(marks, `${markBonus(marks).toFixed(2)}x`, `${Number((1 + after).toFixed(3))}x`, ran)}
+          </p>
+          <p className="rb-faint rb-ranked">{REBIRTH.ranked}</p>
           <label className="rb-typeword">
             <span>{REBIRTH.typeWord}</span>
             <input className="rb-type" value={typed} placeholder={REBIRTH.word}

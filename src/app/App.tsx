@@ -81,7 +81,7 @@ import { haptics } from './haptics.ts';
 import { sfx } from './sound.ts';
 import { moodFor, setMood, unlockMusic } from './music.ts';
 import { MainSwitch } from './ui/MainSwitch.tsx';
-import { Breakthrough } from './ui/Breakthrough.tsx';
+import { Breakthrough, bloomHolds } from './ui/Breakthrough.tsx';
 import { LockedSystem } from './ui/LockedSystem.tsx';
 import { NoticeCard, UpdateBar } from './ui/Notices.tsx';
 import { takeUpdate, watchForUpdates } from './updates.ts';
@@ -89,7 +89,7 @@ import { nextNotice } from './notices.ts';
 import { SECT_KEY, sectNotice, withShown } from './sect.ts';
 import { rungFrom } from '../sim/rung.ts';
 import { DISMISSED, guide } from './guide.ts';
-import { isOpen, opensIn } from '../sim/unlocks.ts';
+import { isOpen } from '../sim/unlocks.ts';
 // ── 待 What is waiting, the keys and the sitting (quality of life, 2026-10-03) ──
 import { heavyOf, ready as readyNow, readyByTab, type Place, type Waiting } from './ready.ts';
 import { clearFresh, freshTabs, markFresh, newTabsOf } from './fresh.ts';
@@ -399,8 +399,10 @@ export function App() {
       haptics.breakthrough();
       setBloom(state.realm);
       // A realm that handed something over waits to be read. One that only changed the
-      // light does not. 1.4 seconds is right for a colour and wrong for three cards.
-      if (opensIn(state.realm).length === 0) setTimeout(() => setBloom(null), 1400);
+      // light does not. 1.4 seconds is right for a colour and wrong for three cards. 來 A
+      // realm that opens no system still has its layers' arrivals and its gear to say, so
+      // the card asks bloomHolds, which reads the same list the card draws.
+      if (!bloomHolds(state.realm)) setTimeout(() => setBloom(null), 1400);
       // 新 And every tab it put something on wears a dot until it is opened.
       const tabs = newTabsOf(state.realm);
       setState((s) => markFresh(s, tabs));
@@ -833,7 +835,7 @@ export function App() {
         />
       )}
 
-      {bloom !== null && <Breakthrough realm={bloom} onGo={goOpened} onDone={() => { setBloom(null); sfx.tap(); }} />}
+      {bloom !== null && <Breakthrough realm={bloom} state={state} onGo={goOpened} onDone={() => { setBloom(null); sfx.tap(); }} />}
 
       {notice && <NoticeCard notice={notice} onRead={() => readNotice(notice.key, notice.tab)} />}
 

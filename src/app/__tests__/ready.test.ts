@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { heavyOf, ready, readyByTab, workshopWait, type Heavy } from '../ready.ts';
 import { newState, type State } from '../../sim/state.ts';
-import { freePoints, spendablePoints } from '../../sim/points.ts';
+import { freePoints, savingFor, spendablePoints, treeFull } from '../../sim/points.ts';
+import { cardWorth } from '../../sim/cardworth.ts';
+import { cardOf } from '../../data/awakening.ts';
+import { AWAKEN, BESTIARY, DAO, SECLUSION } from '../copy.ts';
 import { ALL_NODES } from '../../data/techniques.ts';
 import { canUnlock, capstonesOpen } from '../../sim/dao.ts';
 import { isOpen } from '../../sim/unlocks.ts';
@@ -48,6 +51,61 @@ describe('道 the Path badge counts only points that can be spent', () => {
     expect(freePoints(s)).toBeGreaterThan(0);
     expect(spendablePoints(s)).toBe(0);
     expect(ready(s, NONE).some((w) => w.key === 'points')).toBe(false);
+  });
+});
+
+describe('道 points nothing will take say what they are for', () => {
+  // 貪 A greedy cultivator: every node bought the moment it can be. No HABITS cultivator
+  // plays this way, which is why the audit found a gold 28 at the eighth realm by hand.
+  it('a full tree says it is full, and the 道 rewards say they are kept', () => {
+    const s = spentOut(at(8, { metPoints: 40 }));
+    expect(freePoints(s)).toBeGreaterThan(0);
+    expect(spendablePoints(s)).toBe(0);
+    expect(treeFull(s)).toBe(true);
+    expect(treeFull(s, false)).toBe(true);
+    expect(savingFor(s)).toBeNull();
+    // 承露 Catching Dew and 一念 One Thought pay points a full tree can only keep.
+    for (const key of ['dew', 'onethought']) {
+      const card = cardOf(key)!;
+      expect(cardWorth(s, card)).toEqual({ kind: 'dao', full: true });
+      expect(AWAKEN.effect(card.effect, cardWorth(s, card))).toContain(DAO.kept(2));
+    }
+    expect(SECLUSION.pays(1, treeFull(s, false))).toContain(DAO.kept(1));
+    expect(BESTIARY.pays(1, treeFull(s, false))).toContain(DAO.kept(1));
+  });
+
+  it('a tree with room says nothing of the kind', () => {
+    const s = at(8, { metPoints: 40 });
+    expect(treeFull(s, false)).toBe(false);
+    expect(cardWorth(s, cardOf('dew')!)).toEqual({ kind: 'dao', full: false });
+    expect(AWAKEN.effect(cardOf('dew')!.effect, cardWorth(s, cardOf('dew')!))).not.toContain('kept');
+    expect(SECLUSION.pays(1)).toBe('+1 道 point');
+  });
+
+  it('points short of every node in reach are saving, not waiting', () => {
+    const s = spentOut(at(6, { metPoints: 40 }));
+    const free = freePoints(s);
+    expect(free).toBeGreaterThan(0);
+    expect(spendablePoints(s)).toBe(0);
+    expect(treeFull(s)).toBe(false);
+    expect(savingFor(s)).toBeGreaterThan(free);
+    expect(DAO.saving(free, savingFor(s)!)).toBe(`Saving: ${free} of ${savingFor(s)} 道 for the next node.`);
+  });
+
+  it('a tree full for this realm is told apart from one full for good', () => {
+    // 樞 At the third realm the keystones and capstones are still shut.
+    const s = spentOut(at(3, { metPoints: 400 }));
+    expect(treeFull(s)).toBe(true);
+    expect(treeFull(s, false)).toBe(false);
+    expect(cardWorth(s, cardOf('dew')!)).toEqual({ kind: 'dao', full: false });
+  });
+
+  it('a node in reach is never called saving', () => {
+    const s = at(3, { metPoints: 3 });
+    expect(spendablePoints(s)).toBeGreaterThan(0);
+    expect(savingFor(s)).toBeNull();
+    expect(DAO.purse(0, 3, false)).toContain('kept');
+    expect(DAO.purse(0, 3)).toContain('to spend');
   });
 });
 

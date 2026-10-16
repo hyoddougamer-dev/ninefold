@@ -83,7 +83,7 @@ export const HELP = {
   ] as const,
   /** 印 The seal beside each promise, in order. Each title says what its character means. */
   seals: ['氣', '坐', '敗', '釋'] as const,
-  opens: 'Every realm opens something new, and nothing ever resets. The locked tabs say which realm opens them.',
+  opens: 'Every realm opens something new, and nothing resets on its own. The locked tabs say which realm opens them.',
   hunt: '',
   slow: '囊 Your master left you some qi. Spend it on upgrades, or let it fill the bar and open the first layer. Choosing between the two is the whole game.',
   begin: 'Back to the climb',
@@ -174,10 +174,16 @@ export const RANKS = {
   empty: 'Nobody here yet. The first to climb is the first on the board.',
   /** 輪迴 The Samsara board, empty: only a cultivator who has reborn ever sees it, so it says what fills it. */
   emptyOf: {
-    samsara: 'Nobody has been reborn yet this season. Your next sync puts you here.',
+    samsara: 'Nobody is on this board yet this season. A new life is listed once the server has checked it, within a day of the rebirth.',
   } as Partial<Record<'week' | 'climb' | 'samsara' | 'tower', string>>,
   /** 輪迴 The same, before the season opens, when there is no season to name yet. */
-  emptySamsaraBefore: 'Nobody has been reborn yet. Your next sync puts you here.',
+  emptySamsaraBefore: 'Nobody is on this board yet. A new life is listed once the server has checked it, within a day of the rebirth.',
+  /**
+   * 期 This Week, to a cultivator who has reborn. The week counts the furthest climb and the
+   * most marks ever held, so a new life adds nothing to it until it passes the old one, and
+   * the board never said why the new climb was missing from it.
+   */
+  weekReborn: 'Your new life counts here once it crosses more Dragons than your last one.',
   /**
    * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
    * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
@@ -362,7 +368,7 @@ export const RANKS = {
     unnamed: 'Choose your own name in 榜 Ranks, and the Cliff carves it.',
   },
   delete: 'Delete my ranked account',
-  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
+  deleteSure: 'This removes your name, your place on the boards and the cloud copy from the server. Your 先行 Forerunner mark, your sect rank and any carving on the Cliff of Names go with it, for good. The game on this device is not touched. If the anti-cheat struck this account, a fingerprint of the email keeps the strikes.',
   deleteYes: 'Delete it',
   deleteNo: 'Keep it',
   privacy: 'Privacy',
@@ -491,7 +497,8 @@ export const CULTIVATE = {
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
   /** 境外 What every heaven opens, said once rather than nine times. */
-  heavenRoom: (n: number) => `＋${n} levels of 劍訣 and 妖丹, for good`,
+  heavenRoom: (n: number, thisLife = false) =>
+    `＋${n} levels of Sword Technique (劍訣) and Beast Cores (妖丹), ${thisLife ? 'for this life' : 'for good'}`,
 
   /** 境外 The ladder above the ladder. */
   nextHeaven: (n: number) =>
@@ -528,8 +535,10 @@ export const CULTIVATE = {
 
   // 言 It ended "There is no rebirth yet", which is a note about the roadmap and not a
   // fact about the game. A player reads "yet" as a promise.
-  ceiling: (n: number, gain: string) =>
-    `Each 雷印 mark multiplies your power and your qi by ${gain}, for good. You hold ${n}.`,
+  // 轉世 "For good" until a rebirth can end the life that holds them: the marks begin again
+  // with it, and the offer to end it stands right under this line.
+  ceiling: (n: number, gain: string, thisLife = false) =>
+    `Each 雷印 mark multiplies your power and your qi by ${gain}, ${thisLife ? 'for this life' : 'for good'}. You hold ${n}.`,
 
   /**
    * 入定 Being there.
@@ -745,6 +754,8 @@ export const HOLD = {
   /** Under the ladder, in place of the rule that says a full bar opens a layer. */
   rule: (han: string, name: string) =>
     `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the warden of ${han} ${name} comes out.`,
+  ruleSummit: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the Dragon (龍) of ${han} ${name} comes out.`,
 };
 
 export const LADDER = {
@@ -753,6 +764,10 @@ export const LADDER = {
   rule: (han: string, name: string) =>
     `Your qi fills the bar, and a full bar opens a layer. At layer 9 the warden of ${han} ${name} comes out.`,
   ruleAfter: 'Beat it and the next realm opens. Your qi comes with you.',
+  /** 頂 The ninth realm: no realm opens after it, and what walks out at its last layer is the Dragon. */
+  ruleSummit: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar opens a layer. At layer 9 the Dragon (龍) of ${han} ${name} comes out.`,
+  ruleAfterSummit: 'Beat it to stand at the summit. No realm lies past the ninth: from there the Dragon comes back, and each crossing is a 雷印 thunder mark.',
   /** Written on the row itself. Two rows of dashes with nothing naming them is a
    *  diagram of something, and the player is left to guess what. */
   /** 註 The character is drawn by the widget as a tappable 註 Term, so these carry the
@@ -771,6 +786,15 @@ export const LADDER = {
 export const CHRONICLE = {
   title: 'The stele',
   standing: (day: number, realm: string) => `Day ${day} of the climb, standing in ${realm}.`,
+  /** 世 The same for a life past the first: its own day, and the day since the run began. */
+  standingLife: (day: number, life: number, since: number, realm: string) =>
+    `Day ${day} of life ${life} (day ${since} since you began), standing in ${realm}.`,
+  /** 世 The lives a rebirth ended, kept on the stele: what this page counts begins again with each. */
+  livesHead: '世 Lives behind you',
+  livesNote: 'The figures and deeds on this page are this life\'s. The lives before it are kept here.',
+  life: (n: number, days: number, marks: number, echo: string) =>
+    `Life ${n}: ${days} ${days === 1 ? 'day' : 'days'}, ${marks} ${marks === 1 ? 'mark' : 'marks'} crossed, left an Echo of ${echo}`,
+  dayOfLife: (life: number) => `day of life ${life}`,
   nearest: (han: string, name: string) => `Nearest: ${han} ${name} ·`,
   figures: 'Where you have got to',
   day: 'day', realm: 'realm',
@@ -916,14 +940,21 @@ export const ADVICE = {
   refine: (han: string, levels: number) =>
     `Your 材 will take ${han} ${levels} ${levels === 1 ? 'level' : 'levels'} further in 器 Gear. `
     + `Refining has no cap, and the levels stay with the place on your body.`,
-  refineCapped: 'Your 妖丹 cores are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
-  needMaterial: (short: number) =>
-    `This warden will not fall without 妖丹 cores, and cores cost 材 material. `
+  refineCapped: 'Your Beast Cores (妖丹) are full for this realm. Material has one place left worth putting it: 煉器 refining, in 器 Gear.',
+  needMaterial: (short: number, foe = 'This warden') =>
+    `${foe} will not fall without Beast Cores (妖丹), and cores cost 材 material. `
     + `You are ${short.toLocaleString('en-GB')} short. Material comes from hunting.`,
-  buyCores: (han: string) => `You can afford another ${han}. Cores are the one upgrade priced in 材 material, and a warden asks for them.`,
-  buyTechnique: 'You can afford another 劍訣. Buy it and try the warden again.',
+  /**
+   * 譯 Each of these named the upgrade by its characters alone ("another 劍訣"), and at the
+   * ninth realm sent the player back to "the warden" when what stands there is the Dragon.
+   * `foe` is "the warden" or "the Dragon", read off the realm by advice.ts.
+   */
+  buyCores: (han: string, name: string, foe = 'the warden') =>
+    `You can afford another level of ${name} (${han}). Cores are the one upgrade priced in 材 material, and ${foe} asks for them.`,
+  buyTechnique: (foe = 'the warden') =>
+    `You can afford another level of Sword Technique (劍訣). Buy it and try ${foe} again.`,
   waitTechnique: (cost: number) =>
-    `The next 劍訣 costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
+    `The next level of Sword Technique (劍訣) costs ${cost.toLocaleString('en-GB')} qi. That is the wait.`,
   noStance: 'You are fighting with no 勢 stance. Pick one in 道 Path. It is free and it changes every round.',
   noSequence: 'Your 訣 sequence is empty, so every round fires nothing. Fill it in 道 Path.',
   /**
@@ -990,7 +1021,7 @@ export const KEY = {
   buysBlurb: 'Four upgrades. A realm holds so many levels of each; 妖丹 runs further, because you go and kill for it.',
 
   marksHead: '錄 The marks on every beast',
-  marksBlurb: 'Every beast you kill is counted for ever, and the count pays.',
+  marksBlurb: 'Every beast you kill in this life is counted, and the count pays.',
   mark: (at: number, pays: string) => `at ${at} ${at === 1 ? 'kill' : 'kills'} · ${pays}`,
   /** 精 絕 The deep marks pay the beast that earned them, and a little of every beast. */
   deep: (at: number, material: number, drop: number, everywhere: number) =>
@@ -1254,7 +1285,7 @@ export const HUNT = {
    * and on every row in the list. The screen was its own glossary because there was
    * nowhere smaller to put one. Now there is.
    */
-  record: 'Every kill is counted, for ever, and the count pays.',
+  record: 'Every kill in this life is counted, and the count pays.',
   /** 序 How the list is ordered, chosen by the player and kept on the device. */
   orderBy: 'Order the beasts by',
   order: { mark: 'Next mark', strong: 'Strongest', material: 'Most material' } as const,
@@ -1525,7 +1556,7 @@ export const AWAKEN = {
       case 'material': return `+${share(e.percent)} 材 material from every beast, for good.`;
       case 'salvage': return `Melting pays +${share(e.percent)}: more qi, or more 材 material once the allowance is spent.`;
       case 'refine': return `煉器 Refining costs ${share(e.percent)} less 材 material, at every level.`;
-      case 'dao': return `+${e.points} 道 Path points, yours now.`;
+      case 'dao': return `+${e.points} 道 Path points, yours now.${w.kind === 'dao' && w.full ? ` ${DAO.kept(e.points)}` : ''}`;
       case 'pill': return `Every pill costs ${share(e.percent)} less 材 material.`;
       case 'tower': return `Every 塔 tower floor pays +${share(e.percent)} 材 material.`;
       default: return '';
@@ -1577,7 +1608,7 @@ export const REBIRTH = {
   carries: [
     ['宿慧', 'The Echo', 'qi gathered, under its roof'],
     ['世', 'A title', 'one for every life lived'],
-    ['榜', 'Your records', 'the boards keep the best you reached'],
+    ['榜', 'Your records', 'the Tower and your sect rank keep your best; the Heaven List gives way to 輪迴 Samsara'],
     ['譜', 'The codex', 'every set finished, at the best rank any life reached'],
     ['相', 'Who you are', 'and the chest’s filters'],
   ] as readonly (readonly [string, string, string])[],
@@ -1591,9 +1622,21 @@ export const REBIRTH = {
   /** 譜 Beside the codex in what carries: how many sets it holds now. */
   codexSets: (n: number) => `(${n} ${n === 1 ? 'set' : 'sets'} now)`,
   resetsHead: 'Begins again',
-  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the secret realm. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex. The marks and the heavens.',
+  resets: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds and the secret realm. The hunt\'s counts and marks, and the stele\'s deeds. In the workshop, the pouch, the tools, the arrays and the count of what was made, but not its codex. The marks and the heavens.',
   /** The same when nothing of the workshop is carried (CRAFT_CARRY of 0). */
-  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the secret realm and the workshop, all but its codex. The marks and the heavens.',
+  resetsAll: 'Realm, layers and qi. Upgrades, gear and refining, materials and the tower. The Path, the Enlightenment cards, the road, the beds, the secret realm and the workshop, all but its codex. The hunt\'s counts and marks, and the stele\'s deeds. The marks and the heavens.',
+  /**
+   * 價 What a rebirth costs, read off the save: the marks multiply qi now, and a new life
+   * begins with the Echo alone. The page showed the Echo in gold and never the price.
+   */
+  cost: (marks: number, now: string, next: string, days: number) =>
+    `${marks === 1 ? 'Your mark multiplies' : `Your ${marks} marks multiply`} your qi by ${now} now. `
+    + `A new life begins in the first realm at ${next}, and this one has run ${days} ${days === 1 ? 'day' : 'days'}.`,
+  /**
+   * 待 The ranked server checks a new life against real time like any climb, so for up to a
+   * day after the rebirth the rank reads as waiting. Said before the choice, not discovered.
+   */
+  ranked: 'On the boards, a new life is checked against real time like any climb: for up to a day your rank says it is waiting. Nothing is lost.',
   staying: 'Staying loses nothing: the Dragon keeps coming, a mark every few days, and this waits for as long as you like.',
   begin: 'Begin a new life',
   /** The word the player types to confirm. It is the word itself, not a button label. */
@@ -2262,7 +2305,22 @@ export const DAO = {
 
   tree: 'All three branches grow from 起, and the gold bridges cross between them. Tap a node to read it.',
   /** 數 It read "6 free · 0/6", and nothing said what the second pair was. */
-  purse: (spent: number, earned: number) => ` to spend · ${spent} of ${earned} spent`,
+  purse: (spent: number, earned: number, spendable = true) =>
+    `${spendable ? ' to spend' : ' kept'} · ${spent} of ${earned} spent`,
+  /**
+   * 蓄 The points held fall short of every node in reach: the cultivator is saving, and
+   * the gold that used to say "spend these" said the wrong thing.
+   */
+  saving: (held: number, cost: number) => `Saving: ${held} of ${cost} 道 for the next node.`,
+  /**
+   * 滿 Nothing left to buy. A greedy cultivator fills the tree around the sixth realm and
+   * the points keep coming; they are kept, and said to be kept.
+   */
+  full: 'Every node you can take is yours. Spare points are kept.',
+  /** 滿 Every node this realm lets you buy is yours, and a keystone or capstone is still to open. */
+  fullForNow: 'Every node open to you is yours. Spare points wait for what opens next.',
+  /** 滿 Said beside a 道 reward when the tree has nothing left to take: a card, a demon, a Bestiary page. */
+  kept: (n: number) => `Your tree is full, so ${n === 1 ? 'it is' : 'they are'} kept.`,
   /**
    * 短 The point is that you cannot have it all. It used to say a climb earns about 42,
    * a number fifteen times wrong by 2026-10-03 (the vault's shrines had no cap). What
@@ -2432,6 +2490,15 @@ export const NOTICE = {
 /** 突破 The one moment the game stops for, and the word that ends it. */
 export const BLOOM = {
   on: 'Go on',
+  /** 來 On a realm that opens no system (the eighth): what its layers bring instead. */
+  comingHead: 'Coming in this realm',
+  /**
+   * 器 The realm's own gear waits for LINEAGE_LAYER, and a tester reported the wait as a
+   * bug ("no sixth-realm gear"). Said on the card, from the second realm, with what is
+   * true of the realms behind.
+   */
+  gear: (han: string, name: string, layer: number) =>
+    `This realm's gear, ${han} ${name}, starts dropping at layer ${layer}. Beasts of the realms behind you drop theirs from the first kill.`,
 };
 
 export const LOCKED = {
@@ -2575,7 +2642,8 @@ export const CREDITS = {
 
 export const BESTIARY = {
   /** 圖鑑 What finishing a realm's beasts is worth, said where they are listed. */
-  pays: (n: number) => `${n} 道 when every beast of the realm, its warden aside, is 熟 Known`,
+  pays: (n: number, full = false) =>
+    `${n} 道 when every beast of the realm, its warden aside, is 熟 Known${full ? `. ${DAO.kept(n)}` : ''}`,
   credits: 'Art credits',
   icons: (authors: string) =>
     `Icons from game-icons.net, Creative Commons BY 3.0. Authors: ${authors}.`,
@@ -2689,7 +2757,7 @@ export const SECLUSION = {
   face: 'Face it',
   odds: (pct: number) => `${pct}% odds`,
   tally: (n: number, of: number) => `${n} of ${of} put down`,
-  pays: (n: number) => `+${n} 道 point`,
+  pays: (n: number, full = false) => `+${n} 道 point${full ? `. ${DAO.kept(n)}` : ''}`,
   rest: (realm: number) =>
     `The next demon waits for the ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'][realm - 1]} realm.`,
   done: 'All nine demons are down. Your heart is still.',
@@ -3079,6 +3147,8 @@ export const HUNDRED = {
 
 export const OPENED = {
   head: 'Opened in this realm',
+  /** 開 A craft its feeder opened before the realm did: not news, so it says since when. */
+  early: (feeder: string, level: number) => `Yours already, since ${feeder} reached level ${level}.`,
   /** The tab a system lives on, at the end of its row. */
   where: (han: string, label: string) => `${han} ${label} \u203a`,
   /** And on the tab itself until it is opened. */

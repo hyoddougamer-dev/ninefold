@@ -83,7 +83,10 @@ export function Ladder({ state }: { state: State }) {
         </span>
       </div>
 
-      <p className="faint">{(state.hold ? HOLD.rule : LADDER.rule)(r.han, r.name)} {LADDER.ruleAfter}</p>
+      {/* 頂 The ninth realm promised "the next realm" for the one realm that has none after it. */}
+      <p className="faint">{state.realm === 9
+        ? <>{(state.hold ? HOLD.ruleSummit : LADDER.ruleSummit)(r.han, r.name)} {LADDER.ruleAfterSummit}</>
+        : <>{(state.hold ? HOLD.rule : LADDER.rule)(r.han, r.name)} {LADDER.ruleAfter}</>}</p>
     </div>
   );
 }
