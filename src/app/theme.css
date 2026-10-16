@@ -3891,6 +3891,22 @@ nav.tabs .tabkey { display: none; }
                                font: 600 11px/1.2 var(--display); letter-spacing: .12em;
                                text-transform: uppercase; color: var(--gold); }
 
+/* 開 A craft a feeder opened before the realm did: still a way in, but not news. */
+.bloom .openedrow[data-early] { border-style: dashed; }
+.bloom .openedrow[data-early] i { color: var(--faint); }
+/* 來 What a realm that opens no system brings across its layers: layer, seal, name. */
+.bloom .bloomcoming { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; text-align: left; }
+.bloom .bloomcoming li { display: grid; grid-template-columns: 52px 26px minmax(0, 1fr); gap: 8px; align-items: baseline;
+                         background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 9px 12px;
+                         font-size: 13.5px; color: var(--text); }
+.bloom .bloomcoming u { text-decoration: none; font-size: 11.5px; color: var(--faint); }
+.bloom .bloomcoming b { font-weight: 400; font-size: 16px; color: currentColor; }
+.bloom .bloomcoming em { font-style: normal; }
+.bloom .bloomcoming i { font-style: normal; font-size: 12px; color: var(--faint); }
+/* 器 The realm's gear and when it starts dropping, under whatever the card listed. */
+.bloom .bloomgear { margin: 14px 0 0; font-size: 13px; line-height: 1.55; color: var(--faint); text-align: left; }
+.bloom .bloomgear b { font-weight: 400; color: currentColor; margin-right: 4px; }
+
 /* 歸 The return card: the workshop's whole night, and what is waiting now. It may hold
    more than a phone's height, so it scrolls, and centres only while it fits. */
 .back { overflow-y: auto; justify-content: safe center; }

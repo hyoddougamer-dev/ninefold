@@ -722,6 +722,8 @@ export const HOLD = {
   /** Under the ladder, in place of the rule that says a full bar opens a layer. */
   rule: (han: string, name: string) =>
     `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the warden of ${han} ${name} comes out.`,
+  ruleSummit: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar waits until you open the layer. At layer 9 the Dragon (龍) of ${han} ${name} comes out.`,
 };
 
 export const LADDER = {
@@ -730,6 +732,10 @@ export const LADDER = {
   rule: (han: string, name: string) =>
     `Your qi fills the bar, and a full bar opens a layer. At layer 9 the warden of ${han} ${name} comes out.`,
   ruleAfter: 'Beat it and the next realm opens. Your qi comes with you.',
+  /** 頂 The ninth realm: no realm opens after it, and what walks out at its last layer is the Dragon. */
+  ruleSummit: (han: string, name: string) =>
+    `Your qi fills the bar, and a full bar opens a layer. At layer 9 the Dragon (龍) of ${han} ${name} comes out.`,
+  ruleAfterSummit: 'Beat it to stand at the summit. No realm lies past the ninth: from there the Dragon comes back, and each crossing is a 雷印 thunder mark.',
   /** Written on the row itself. Two rows of dashes with nothing naming them is a
    *  diagram of something, and the player is left to guess what. */
   /** 註 The character is drawn by the widget as a tappable 註 Term, so these carry the
@@ -2442,6 +2448,15 @@ export const NOTICE = {
 /** 突破 The one moment the game stops for, and the word that ends it. */
 export const BLOOM = {
   on: 'Go on',
+  /** 來 On a realm that opens no system (the eighth): what its layers bring instead. */
+  comingHead: 'Coming in this realm',
+  /**
+   * 器 The realm's own gear waits for LINEAGE_LAYER, and a tester reported the wait as a
+   * bug ("no sixth-realm gear"). Said on the card, from the second realm, with what is
+   * true of the realms behind.
+   */
+  gear: (han: string, name: string, layer: number) =>
+    `This realm's gear, ${han} ${name}, starts dropping at layer ${layer}. Beasts of the realms behind you drop theirs from the first kill.`,
 };
 
 export const LOCKED = {
@@ -3086,6 +3101,8 @@ export const HUNDRED = {
 
 export const OPENED = {
   head: 'Opened in this realm',
+  /** 開 A craft its feeder opened before the realm did: not news, so it says since when. */
+  early: (feeder: string, level: number) => `Yours already, since ${feeder} reached level ${level}.`,
   /** The tab a system lives on, at the end of its row. */
   where: (han: string, label: string) => `${han} ${label} \u203a`,
   /** And on the tab itself until it is opened. */
