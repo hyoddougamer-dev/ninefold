@@ -187,6 +187,12 @@ export const RANKS = {
   /** 盾 Always under the boards, because a player who wonders whether they are fair should not have to ask. */
   fairHead: '盾 Fair play',
   fair: 'Your save is sealed on this device, and every climb on these boards was checked by the server against real time. A save changed by hand still plays, but it is never ranked.',
+  /**
+   * 試 The same line before the season: until SEASON_START the server ranks every save while the
+   * closed test runs (acceptsEverything, supabase/functions/sync/core.ts), so the line above would
+   * be untrue under every board for the closed test's last days.
+   */
+  fairTest: 'Your save is sealed on this device. Until Season 0 begins (Monday 26 October, 00:00 UTC) these boards show every save while we test, even one the server\'s check would refuse. From then every climb is checked against real time, and a save changed by hand still plays but is never ranked.',
   /** 改 Only on a phone whose save was changed outside the game. Nothing is taken away. */
   edited: 'This save was changed outside the game. It still plays here, but the boards only ever count what the server can verify.',
   titlesHead: '冠 Titles',

@@ -135,7 +135,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
             <b>{RANKS.titlesHead}</b> {RANKS.titles}
           </p>
           <p className="rnote small">
-            <b>{RANKS.fairHead}</b> {RANKS.fair}
+            <b>{RANKS.fairHead}</b> {season ? RANKS.fair : RANKS.fairTest}
           </p>
           <Account who={who} me={me} onSignOut={onSignOut} onRenamed={(m) => setMe(m)}
                    onLinked={async () => { const w = await cloud.who(); if (w) onEnter(w, ''); }} />

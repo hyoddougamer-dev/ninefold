@@ -157,6 +157,11 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   else check(await page.locator('.ranks .rcliffdoor').count() === 1, 'from the switch, Rankings has a way to the Cliff');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
   check(/Fair play/.test(await page.locator('.ranks').textContent()), 'the boards say, under them, how they are kept fair');
+  // 試 And say it truly: until the switch the server ranks every save while the test runs.
+  const fair = await page.locator('.ranks').textContent();
+  if (Date.now() / 1000 < SEASON_START) check(/show every save while we test/.test(fair) && !/was checked by the server/.test(fair),
+    'before the switch the fair-play line says the boards show every save while we test');
+  else check(/was checked by the server/.test(fair) && !/while we test/.test(fair), 'from the switch the fair-play line says every climb was checked');
   check(await page.locator('.ranks .rstatus[data-tone="bad"]').count() === 0, 'and an untouched save hears nothing about editing');
   // 改 A save changed by hand: it plays on, and the rankings screen says so plainly.
   await page.evaluate(() => localStorage.setItem('ninefold.edited', '1'));
