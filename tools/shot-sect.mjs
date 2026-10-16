@@ -193,8 +193,12 @@ for (const size of SIZES) {
   check(await page.locator('.ranks .rsectbar i[data-on]').count() === 4, 'four of the nine steps lit');
   await page.waitForSelector('.ranks .rlist li', { timeout: 6000 }).catch(() => {});
   check(await page.locator('.ranks .rlist .rrowseal').count() === 7, 'a seal on every row', String(await page.locator('.ranks .rlist .rrowseal').count()));
-  const lead = await page.locator('.ranks .rlist li').first().locator('.rsub').textContent().catch(() => '');
+  const lead = await page.locator('.ranks .rlist li').first().locator('.rrowsub').textContent().catch(() => '');
   check(/^Peak Lord/.test(lead ?? ''), 'the English rank leads the second line', lead);
+  // 譯 The class keeps its English beside its characters: the rank before it must never squeeze
+  // the name to nothing (at 320 it did, leaving 氣修 alone on three rows of seven).
+  const named = await page.$$eval('.ranks .rlist .rrowsub .rcallname', (els) => els.map((e) => [e.textContent, Math.round(e.getBoundingClientRect().width)]));
+  check(named.length >= 5 && named.every(([, w]) => w >= 40), 'every class on a ranked row shows its English name', JSON.stringify(named));
   const wide = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, vw: innerWidth }));
   check(wide.doc <= wide.vw, 'nothing scrolls sideways', JSON.stringify(wide));
   await shot(page, `ranks-${label}`);
@@ -320,7 +324,7 @@ for (const size of SIZES) {
     check(await page.locator('.c-rung').count() === 0 && !(await page.$('.notice')), `${label}: before the switch, no rank on 修 and no card`);
     await openRanks(page);
     await page.waitForSelector('.ranks .rlist li', { timeout: 6000 }).catch(() => {});
-    check(await page.locator('.ranks .rsect, .ranks .rsectnote, .ranks .rrowseal, .ranks .rsub, .ranks .rnudge').count() === 0,
+    check(await page.locator('.ranks .rsect, .ranks .rsectnote, .ranks .rrowseal, .ranks .rrowsub, .ranks .rnudge').count() === 0,
       `${label}: before the switch, Rankings shows no rank anywhere`);
     await shot(page, `before-${label}`);
     check(errors.length === 0, 'no errors on the page', errors.join(' | '));

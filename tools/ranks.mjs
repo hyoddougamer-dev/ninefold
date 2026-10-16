@@ -166,7 +166,7 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   if (Date.now() / 1000 < SEASON_START) {
     check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
     // 位 Dormant: the server sends no rank, so no seal, no head, no rank line and no nudge.
-    check(await page.locator('.ranks .rsect, .ranks .rsectnote, .ranks .rrowseal, .ranks .rsub, .ranks .rnudge').count() === 0
+    check(await page.locator('.ranks .rsect, .ranks .rsectnote, .ranks .rrowseal, .ranks .rrowsub, .ranks .rnudge').count() === 0
       && await page.locator('.ranks .rlist li').count() === 4, 'before the switch no sect rank shows anywhere, on four rows');
   } else check(await page.locator('.ranks .rcliffdoor').count() === 1, 'from the switch, Rankings has a way to the Cliff');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });

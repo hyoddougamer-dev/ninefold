@@ -421,7 +421,7 @@ function SectHead({ me, rung, season, onLadder }: { me: Mine; rung: number | nul
 function Sub({ rung, calling }: { rung: number | null; calling?: string | null }) {
   if (rung === null) return <Called calling={calling} />;
   return (
-    <span className="rsub">
+    <span className="rrowsub">
       <em className="rrank" style={{ ['--rc' as string]: rungColour(rung) }}>{RANKS.sect.names[rung]}</em>
       <Called calling={calling} />
     </span>

@@ -114,10 +114,14 @@ describe('勤 what being there buys you', () => {
   it('prints the sect rank each cultivator wears on days 1, 7, 30 and 90', () => {
     const DAYS = [1, 7, 30, 90];
     const NAMES = ['Outer', 'Inner', 'Core', 'True', 'Guardian', 'Elder', 'Peak Lord', 'Supreme', 'Ancestor'];
-    const at = (r: (typeof runs)[number], day: number) => rungOf(r.layerDay.filter((d) => d <= day).length - 1);
+    const climbOn = (r: (typeof runs)[number], day: number) => r.layerDay.filter((d) => d <= day).length - 1;
+    const at = (r: (typeof runs)[number], day: number) => rungOf(climbOn(r, day));
+    // The climb alone stops at Guardian: a cultivator at the summit is marked "+", because the
+    // ranks past it come from the thunder marks this print does not play.
+    const shown = (r: (typeof runs)[number], day: number) => `${NAMES[at(r, day)]}${climbOn(r, day) >= 80 ? '+' : ''}`;
     expect(runs.length).toBeGreaterThanOrEqual(5);
-    console.log('\n  位 the sect rank on days 1, 7, 30 and 90 (from the climb):\n' + runs.map((r) =>
-      `    ${r.habit.name.padEnd(14)} ${DAYS.map((d) => NAMES[at(r, d)].padEnd(9)).join(' ')}`).join('\n') + '\n');
+    console.log('\n  位 the sect rank on days 1, 7, 30 and 90 (from the climb; + at the summit, where marks take over):\n' + runs.map((r) =>
+      `    ${r.habit.name.padEnd(14)} ${DAYS.map((d) => shown(r, d).padEnd(9)).join(' ')}`).join('\n') + '\n');
     for (const r of runs) {
       // Day 0 is the first checked sync: everybody is an Outer Disciple, and nobody falls.
       const seq = [0, ...DAYS].map((d) => at(r, d));

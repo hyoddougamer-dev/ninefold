@@ -4609,7 +4609,7 @@ nav.tabs .tabkey { display: none; }
 .help.ranks .rsect .rsectbar { grid-column: 1; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 3px; max-width: 220px; }
 .help.ranks .rsect .rsectbar i { height: 5px; border-radius: 2px; background: color-mix(in srgb, var(--faint) 25%, transparent); }
 .help.ranks .rsect .rsectbar i[data-on] { background: var(--rc); box-shadow: 0 0 6px -1px var(--rc); }
-.help.ranks .rsect .rsectfar { grid-column: 1; font-size: 12.5px; line-height: 1.4; color: var(--faint); }
+.help.ranks .rsect .rsectfar { grid-column: 1; font-size: 12.5px; line-height: 1.4; color: var(--faint); word-break: keep-all; }
 .help.ranks .rsect .rsectarrow { grid-column: 2; grid-row: 1 / span 4; font-style: normal; font-size: 22px; color: var(--rc); }
 .help.ranks .rsect .rsectgo:hover .rsectarrow { color: var(--gold); }
 .help.ranks .rsectnote, .help.ranks .rsectout { padding: 9px 12px; border-radius: 10px; border: 1px dashed var(--line); }
@@ -4629,9 +4629,11 @@ nav.tabs .tabkey { display: none; }
 .help.ranks .rlist .rn[data-sealed] .rnum { width: 27px; height: 27px; box-sizing: border-box; display: grid; place-items: center;
   border-radius: 8px; border: 1px solid var(--line); background: var(--panel); font: inherit; }
 .help.ranks .rlist .rrowseal { width: 20px; height: 20px; font-size: 12px; }
-.help.ranks .rw .rsub { display: flex; align-items: center; gap: 7px; min-width: 0; white-space: nowrap; overflow: hidden; }
-.help.ranks .rw .rsub .rrank { flex: none; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--rc); letter-spacing: .02em; }
-.help.ranks .rw .rsub .rcall { min-width: 0; flex: 1 1 auto; }
+/* The class wraps under the rank when both do not fit (320), rather than shrinking to its
+   characters alone: the English name is never the part that is cut (譯). */
+.help.ranks .rw .rrowsub { display: flex; flex-wrap: wrap; align-items: center; gap: 1px 7px; min-width: 0; }
+.help.ranks .rw .rrowsub .rrank { flex: none; font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--rc); letter-spacing: .02em; white-space: nowrap; }
+.help.ranks .rw .rrowsub .rcall { min-width: 0; max-width: 100%; flex: 0 1 auto; }
 
 /* 位階 The Sect's Ladder, swapped in for the boards like the Cliff. Ancestor at the top. */
 .help.ranks .rsteps { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
