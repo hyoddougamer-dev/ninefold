@@ -35,6 +35,8 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
    * and where the Cliff carved it, for the 修 mark and the one rise card. Null signed out.
    */
   const [standing, setStanding] = useState<cloud.Mine | null>(null);
+  /** 名 The name the boards show for the signed-in account, as the server last said it. */
+  const [myName, setMyName] = useState<string | null>(null);
   const pushing = useRef(false);
   /**
    * Offer the save to the server. Answers how many seconds to wait before offering it again when
@@ -45,15 +47,26 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
     if (pushing.current) return 5;
     pushing.current = true;
     let again = 0;
+    // 名 The name typed before an email link rides on every sync until one lands, not only
+    // the first after the link: that one can fail (offline, a moment's error), or wait behind
+    // the cloud-or-device question, and the timer's next sync has no name of its own. The
+    // server reads a name only when it makes the profile, so an account with one keeps it.
+    const n = name ?? cloud.wantedName();
     try {
-      const r = await cloud.sync(latest.current, name);
+      const r = await cloud.sync(latest.current, n);
       if ('error' in r) {
         if (r.error !== 'too-soon') setSyncError(r.error);
         else again = Math.max(1, Math.ceil(Number(r.wait) || 20));
       } else {
         setSyncError(null);
+        // A name kept for the link has done its one job once a sync has gone.
+        if (n !== undefined) cloud.forgetWantedName();
         setSynced(r); setSyncedAt(Date.now() / 1000);
-        cloud.mine().then((m) => { setTitle(m?.title ?? null); setStanding(m); if (m) setForerunner(!!m.forerunner); }).catch(() => {});
+        cloud.mine().then((m) => {
+          setTitle(m?.title ?? null);
+          setStanding(m);
+          if (m) { setForerunner(!!m.forerunner); setMyName(m.name); }
+        }).catch(() => {});
         cloud.place().then(setPlace).catch(() => {});
       }
     } catch { setSyncError('offline'); /* the next one will do */ }
@@ -82,6 +95,7 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
           return;
         }
       }
+      // 名 The name typed before the link was sent rides on the sync (push reads it).
       void push();
     })();
     return () => { live = false; };
@@ -90,9 +104,9 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
   // and the Account block say it from the server's own answer, never from anything on the
   // device. A sign-out forgets it, so the next account is asked afresh.
   useEffect(() => {
-    if (!who) { setForerunner(null); setStanding(null); return; }
+    if (!who) { setForerunner(null); setStanding(null); setMyName(null); return; }
     let live = true;
-    cloud.mine().then((m) => { if (live && m) { setForerunner(!!m.forerunner); setStanding(m); } }).catch(() => {});
+    cloud.mine().then((m) => { if (live && m) { setForerunner(!!m.forerunner); setStanding(m); setMyName(m.name); } }).catch(() => {});
     return () => { live = false; };
   }, [who]);
   useEffect(() => {
@@ -105,6 +119,6 @@ export function useCloud(ready: boolean, latest: MutableRefObject<State>) {
 
   return {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError, setSyncError,
-    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner, standing,
+    cloudPick, setCloudPick, title, setTitle, place, setPlace, push, forerunner, standing, myName, setMyName,
   };
 }

@@ -44,3 +44,13 @@ export function cleanName(raw: unknown): string | null {
   if (RANK_NAMES.includes(rankFold(folded))) return null;
   return folded;
 }
+
+/**
+ * 修士 The placeholder a profile wears until its player chooses a name: 修士 and eight letters
+ * of the account (defaultName() in the sync function). cleanName() refuses it as a name, so a
+ * name that starts with it was never chosen by anybody.
+ */
+export const PLACEHOLDER = '修士';
+export function isPlaceholder(name: string | null | undefined): boolean {
+  return typeof name === 'string' && name.startsWith(PLACEHOLDER);
+}

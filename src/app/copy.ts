@@ -20,7 +20,7 @@
  *   5. **Numbers with the unit the screen shows.** 道 costs 道, qi is qi a second.
  */
 
-import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL } from '../sim/balance.ts';
+import { ART_BEND, BOTTLENECK_LOOSEN, REALM_WALL, CRAFT_KIT, CRAFT_QUALITY_MULT, MELT_CAP, MELT_FILL, CRAFT_FEED_LEVEL, CRAFT_MARKS, CRAFT_MARK_FASTER, CRAFT_MARK_SUB, CRAFT_MARK_TWICE, CRAFT_MASTERY_BAND, CRAFT_MASTERY_SPEED, FIND_TOP, FUSE_BEND, FUSE_TOP, LUCK_BEND, OPENING_PURSE, QI_KNEE_FIRST, QI_KNEE_GROWTH, QI_ROOF_FIRST, QI_ROOF_TOP, SUNDER_BEND, UPGRADE_NUMBERS, VARIANCE, LUCK_ROLL_TOP, PILL_BANE_FLOOR, DRAGON_KIT_SHARE, BREAKTHROUGH_LEVEL, LINEAGE_LAYER } from '../sim/balance.ts';
 import { duration, pct as percent } from '../sim/format.ts';
 
 /** 瓶頸 The days a fresh eighth-realm wall takes to loosen: see wallDays in sim/crafts.ts. */
@@ -163,6 +163,25 @@ export const RANKS = {
   save: 'Save',
   you: 'you',
   empty: 'Nobody here yet. The first to climb is the first on the board.',
+  /** 輪迴 The Samsara board, empty: only a cultivator who has reborn ever sees it, so it says what fills it. */
+  emptyOf: {
+    samsara: 'Nobody has been reborn yet this season. Your next sync puts you here.',
+  } as Partial<Record<'week' | 'climb' | 'samsara' | 'tower', string>>,
+  /** 輪迴 The same, before the season opens, when there is no season to name yet. */
+  emptySamsaraBefore: 'Nobody has been reborn yet. Your next sync puts you here.',
+  /**
+   * 修士 What a placeholder name answers when it is tapped. A profile that never chose a name
+   * wears 修士 and eight letters of its account, and ten of them on a board read as ten copies
+   * of one cultivator (the Discord, 2026-10-15).
+   */
+  placeholder: {
+    han: '修士',
+    name: 'A cultivator who has not chosen a name yet',
+    note: 'Until a name is chosen, the boards show 修士 (cultivator) and eight letters of the account. Its owner can choose one in Rankings, and every board and the Cliff of Names show it from then on.',
+  },
+  /** 修士 On the Account block, for as long as the account still wears one. */
+  unnamed: 'The boards show you by a placeholder: 修士 and eight letters of your account. Choose a name, and every board and the Cliff of Names show it.',
+  chooseName: 'Choose a name',
   loading: 'Reading the boards…',
   offline: 'The boards cannot be reached right now. Your game goes on as it was.',
   status: {
@@ -404,8 +423,9 @@ export const CULTIVATE = {
   sealPayShort: 'Not enough qi for a tap yet.',
   sealPayFull: (share: number) =>
     `Qi has filled all it can here, ${percent(share)} of the bar. Time and pills do the rest.`,
-  sealPayRule: (share: number, minutes: number) =>
-    `Qi fills up to ${percent(share)} of the bar, a tap at a time, and a tap costs ${minutes} min of your own gathering for every hour it fills.`,
+  /** 封 Since 2026-10-15 qi can fill the whole bar: the first share at one price, the rest at another. */
+  sealPayRule: (easy: number, minutes: number, deep: number) =>
+    `Qi can fill the whole bar, a tap at a time. A tap costs ${minutes} min of your own gathering for every hour it fills, up to ${percent(easy)} of the bar, and ${deep} min past that.`,
   /** 封 Eat a Breakthrough Pill made for a realm below: the button and its note. */
   sealFeed: (name: string) => `Use ${name}`,
   sealFeedFills: (days: number) => `fills ${duration(days * 86_400)}`,
@@ -505,6 +525,14 @@ export const CULTIVATE = {
     `${n} more ${n === 1 ? 'layer' : 'layers'} and the bar becomes 雷池 the thunder pool.`,
   poolFilling: (left: string) => `The pool fills in ${left}.`,
   /**
+   * 劫 The next Dragon, said while the pool fills. The card that names it only stands once the
+   * pool is full, so for two days a cultivator could not tell a Dragon at 27% from one eighteen
+   * times their 力, which is the one thing that says whether to brew now.
+   */
+  poolNextOdds: (pct: number) => `Next Dragon: ${pct}% odds as you stand now. Even is 50%.`,
+  poolNextFar: (gap: string) => `Next Dragon: ×${gap} your power (力) as you stand now.`,
+  poolNextPills: 'Pills brewed while the pool fills count against it.',
+  /**
    * 渡劫 What the crossing costs, said before the tap rather than discovered after it.
    *
    * Crossing spends 雷池 the whole pool, which at the summit is the whole bar, and the
@@ -582,6 +610,8 @@ export const MENU = {
   on: 'on',
   /** 式 The menu switch for the formula under every gear line's note. Off until a player turns it on. */
   formula: 'Show the formula for every line',
+  /** 背 The menu switch that keeps the music playing while the game is hidden. Auto still stops. */
+  musicBackground: 'Keep music playing in the background',
   /** 名 The menu switch for how a drop is named in lists: by its name (the default) or its slot. */
   dropNames: 'Show drops as',
   dropName: 'name',
@@ -800,7 +830,7 @@ export const ADVICE = {
     `The gate is 封 sealed. Carry a Breakthrough Pill from 業 the workshop: the seal breaks at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   /** 封 A sealed gate and no pill: the wait is all there is, and it costs nothing. */
   sealWait: (left: number) =>
-    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi fills part of the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
+    `The gate is 封 sealed and opens by itself in ${duration(left * 86_400)}. Nothing is lost while you wait. Qi can fill the bar on the Cultivate screen, and a Breakthrough Pill from Alchemy opens it now.`,
   /**
    * 道 The one thing in the game that costs nothing and is always an improvement.
    *
@@ -852,7 +882,7 @@ export const ADVICE = {
    * 渡劫丹 at the ninth. A line naming something that is nowhere on the list sends the
    * player looking for it.
    */
-  brew: (han: string) => `The furnace will sell you a ${han}. It is power you keep for good.`,
+  brew: (name: string, han: string) => `The furnace will sell you a ${name} (${han}). It is power you keep for good.`,
   /** 立 The endgame's one decision, said out loud while the Dragon is standing. */
   // 立 The percentage is the cultivator's own chance to win, and even is 50%: it says so, so
   // it cannot be read as the Dragon's strength (rekaris, on the Discord, 2026-10-08).
@@ -1026,7 +1056,7 @@ export const GUIDE = {
    */
   buy: {
     title: 'Spend what you were given',
-    text: `You start holding ${OPENING_PURSE} qi. Buy the box the arrow points at. `
+    text: `You started with ${OPENING_PURSE} qi. Buy the box the arrow points at. `
       + 'Qi you spend stops filling the bar, and that trade is the whole game.',
   },
   kill: {
@@ -1056,7 +1086,8 @@ export const GUIDE = {
   wear: {
     title: 'Put on what fell',
     text: '\u5668 Gear falls off beasts from the second realm. Tap the piece in your chest to wear it.',
-    waiting: 'Beasts from this realm drop gear, about one kill in five. Hunt, and the first piece goes on.',
+    /** 器 Said as it is: older realms' beasts leave gear at once, this realm's own from layer 6 (LINEAGE_LAYER). */
+    waiting: `Beasts leave gear now, about one kill in five. The arrow points at one you beat that leaves it. This realm's own beasts start to leave theirs from layer ${LINEAGE_LAYER + 1}.`,
   },
   path: {
     title: 'Take your first \u9053 node',
@@ -1073,6 +1104,9 @@ export const GUIDE = {
       + 'Beat it and \u7a81\u7834 opens.',
     waiting: 'Eight layers fill the realm, and its warden walks out at the ninth. '
       + 'Every box you buy opens them faster. The bar below is the whole realm.',
+    /** 守 The warden is out, and a fight with it is not yet even. */
+    wardenAhead: 'The warden is waiting at the end of the realm, and it is still stronger than you. '
+      + 'Buy power first: the arrow shows what you can afford. Losing to it never costs anything.',
   },
 };
 
@@ -1255,6 +1289,8 @@ export const ITEM = {
   salvage: 'Melt it down',
 
   what: 'What it gives',
+  /** 主 The piece's lead line, the one it is named by; the rest are side lines. */
+  lead: 'Lead',
   against: (name: string) => `Against the ${name} you are wearing`,
   fromSet: (set: string, n: number) => `${set} set, realm ${n}`,
   lines: (n: number) => (n === 1 ? '1 line' : `${n} lines`),
@@ -1632,6 +1668,8 @@ export const WEEK = {
   /** 首 The once-a-week qi, while it is still owed. */
   bounty: (qi: string) => `first kill pays ${qi} qi`,
   bountyTaken: 'the week\u2019s qi is taken',
+  /** 疊 The band folded to one line once the week's qi is taken. */
+  quarryFolded: (name: string, left: string) => `${name} \u00b7 double 材 material \u00b7 ${left} left`,
   /** How long is left, where the sentence around it has already named the week. */
   left: (when: string) => `${when} left`,
   /**
@@ -2301,6 +2339,18 @@ export const NOTICE = {
       + 'there has them. Taking a piece off, melting it or fusing it never takes them. Pour '
       + 'material in freely: an upgrade never wastes it.',
   },
+  /**
+   * 封 Once, on reaching the first sealed realm: the testers met the seal for the first time
+   * at layer 9 with the warden already out, and nothing had said it was coming. The realms
+   * and the days are handed in from SEAL_DAYS.
+   */
+  seal: {
+    title: 'From here, each gate is sealed a while',
+    text: (first: number, last: number, least: number, most: number) =>
+      `From realm ${first} to realm ${last}, a gate stays sealed for ${least} to ${most} days after its warden comes out, `
+      + 'however strong you are. The bar on the warden\'s card fills by itself, and nothing is lost while you wait. '
+      + 'Qi can fill it faster, and a Breakthrough Pill from 業 Alchemy breaks it at once.',
+  },
   workshop: {
     title: 'The workshop is open',
     text: 'Seven crafts that level from 1 to 99, on the 業 tab. Set it on one thing and it keeps '
@@ -2414,6 +2464,15 @@ export const SEASON = {
   signedOut: 'Joined Ranks before 26 October? Sign in, and your Forerunner mark is waiting.',
   cliff: 'The first 81 through each gate are carved on 題名崖 the Cliff of Names.',
   begin: 'Begin Season 0',
+  /**
+   * 修士 Asked once, here, of a signed-in account that still wears a placeholder name: the season
+   * is when the boards and the Cliff start to matter, and the name is what they show.
+   */
+  nameAsk: (name: string) => `The boards show you as ${name}, a name nobody chose. Choose yours, and every board and the Cliff of Names show it.`,
+  nameSave: 'Take this name',
+  namePlaceholder: 'Your name',
+  nameDone: (name: string) => `The boards now show you as ${name}.`,
+  nameLater: 'Or later, in Rankings.',
   /** 榜 Under the Rankings title, from the switch on. */
   ranksTag: 'Season 0 · The Founding',
   ranksSince: 'Since Monday 26 October. Everyone started equal.',
@@ -2532,6 +2591,14 @@ export const ARENA = {
   missed: 'turned aside',
   collect: 'Collect',
   withdraw: 'Withdraw',
+  /**
+   * 劫 A lost Dragon says how far it stands, in pills. "Come back stronger" with no number is
+   * a shrug; the furnace is the answer, so the line says how much of it.
+   */
+  dragonShort: (n: number, name: string, han: string, each: number) =>
+    `About ${n} more ${n === 1 ? name : `${name}s`} (${han}) would bring this Dragon to even odds. `
+    + `Each one adds ${each}% to your power (力), for good.`,
+  dragonDice: 'Your odds were better than even against this one. That was the dice.',
   /** 再 The same beast again, from the verdict. One button where there used to be three
    *  trips across the screen: rekaris, on the Discord, 2026-10-01. */
   again: 'Again',
@@ -2634,6 +2701,18 @@ export const CRAFTS = {
   /** 覽 Over the recipes of a craft that is not open yet, shown so a climb can be planned. */
   preview: (name: string) => `A look ahead: what ${name} makes once it opens. Each recipe also waits for its own level and realm.`,
   tool: (name: string, pct: number) => `${name}, ${pct}% faster`,
+  /**
+   * 熟 The craft's mastery, on its header. It was said only inside each recipe's familiarity
+   * note, and the testers read the crafts as not worth it (measured 2026-10-16: the same active
+   * player reaches the ninth realm about four days sooner with the crafts than without).
+   */
+  masteryLine: (craft: string, pct: number, mastered: number, of: number, most: number) => mastered === 0
+    ? `Mastery: none yet. Every ${craft} recipe made to its last familiarity mark makes all of ${craft} faster, up to ${most}%.`
+    : `Mastery: all of ${craft} is ${pct}% faster, from ${mastered} of ${of} recipes mastered. It reaches ${most}% with all of them.`,
+  /** 今 What is new for this craft in the realm you stand in. */
+  newHere: (realm: number, names: readonly string[]) => `New in realm ${realm}: ${names.join(', ')}.`,
+  shapesHere: (n: number) => `${n} shapes of this realm's gear`,
+  breakthroughHere: 'This realm\u2019s Breakthrough Pill, carried into its warden, breaks the gate\u2019s 封 seal at once.',
   noTool: (tool: string) => `No ${tool.toLowerCase()} yet. The forge makes one.`,
   why: {
     level: (n: number) => `Level ${n}`,
@@ -2705,14 +2784,14 @@ export const CRAFTS = {
   carrySigil: 'Sigil',
   /** 破境丹 The third hand: a Breakthrough Pill, for the realm's warden and nothing else. */
   carryPill: '破境 Breakthrough, for the gate',
-  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi fills part as well. Waiting it out always works too.`,
+  pillSays: `From the fifth realm to the eighth the gate stays 封 sealed for a day or two after the warden comes out. A Breakthrough Pill from Alchemy, carried here, breaks the seal at once, and ${percent(CRAFT_KIT.pill)} of the days its 瓶頸 bottleneck takes to loosen with it (${percent(1 - (1 - CRAFT_KIT.pill) ** CRAFT_QUALITY_MULT[CRAFT_QUALITY_MULT.length - 1])} at Heaven rank): ${Math.round(EIGHTH_WALL * CRAFT_KIT.pill)} of the eighth realm’s ${Math.round(EIGHTH_WALL)} days at Common. A pill made for a realm below fills part of the bar instead, from the gate’s own card, and qi can fill all of it. Waiting it out always works too.`,
   pillBreaks: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Your pill breaks the seal at once`
     + `${days > 0 ? `, and ${days.toFixed(1)} days of the bottleneck with it` : ''}. It is spent only if you win.`,
   pillHeld: (days: number, left: number) =>
     `封 The gate is sealed for ${duration(left * 86_400)} more. Carry a Breakthrough Pill from your pouch: it breaks the seal at once, and ${days.toFixed(1)} days of the bottleneck with it.`,
   pillNone: (left: number) =>
-    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi fills part of the bar on the Cultivate screen.`,
+    `封 The gate is sealed for ${duration(left * 86_400)} more. A Breakthrough Pill from Alchemy breaks it at once, or wait: it opens by itself, and qi can fill the bar on the Cultivate screen.`,
   pillWall: (days: number) =>
     `The seal is open. Your pill still breaks ${days.toFixed(1)} days of the 瓶頸 bottleneck in this fight, and is spent only if you win.`,
   carryNone: 'Nothing',

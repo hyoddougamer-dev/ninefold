@@ -97,7 +97,8 @@ export interface Step {
    * you are" is still a game.
    */
   readonly waiting?: {
-    readonly text: string;
+    /** A line, or a line chosen from the save where one step waits for two different things. */
+    readonly text: string | ((s: State) => string);
     readonly tab?: 'hunt' | 'trials' | 'gear' | 'dao';
     readonly at?: (s: State) => string | undefined;
   };
@@ -115,6 +116,29 @@ export interface Step {
 export function nowBuyable(s: State): string | undefined {
   const u = UPGRADES.find((x) => (x !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, x));
   return u && `upg-${u}`;
+}
+
+/**
+ * 力 The same, power first: what closes the gap to a warden that still wins is power, and
+ * the card waiting on one says so. A rate box only when no power box can be bought.
+ */
+export function powerBuyable(s: State): string | undefined {
+  const u = UPGRADES.find((x) => UPGRADE_INFO[x].affects === 'power'
+    && (x !== 'cores' || isOpen(s.realm, 'cores')) && canBuy(s, x));
+  return u ? `upg-${u}` : nowBuyable(s);
+}
+
+/**
+ * 守 The share of fights the guide wants a cultivator to win before it points at a fight they
+ * have to choose: the warden in the first realm, a beast that leaves gear in the second. Not a
+ * balance number: nothing in the game changes with it, only where the ring is drawn.
+ */
+export const WARDEN_EVEN = 0.5;
+
+/** 時 What a step says while it waits, chosen from the save where it can wait for two things. */
+export function waitingText(step: Step, s: State): string {
+  const t = step.waiting?.text;
+  return t === undefined ? step.text : typeof t === 'function' ? t(s) : t;
 }
 
 /** The first realm's own three, in the order they come into reach. */
@@ -175,8 +199,18 @@ export const STEPS: readonly Step[] = [
     toward: (s) => Math.min(1, (s.layer + progress(s)) / LAYERS_PER_REALM),
     // The warden is not there until the realm's last rung is reached. Until then this
     // is a thing to watch, not a thing to do, so it waits like the others.
-    ready: (s) => wardenStands(s),
-    waiting: { text: GUIDE.climb.waiting, at: (s) => nowBuyable(s) },
+    //
+    // 守 And standing there is not the same as beatable. Played as a new Season 0 player
+    // (2026-10-16): the week's quarry paid the first realm at once, the ceiling rule below
+    // jumped the guide from the second step to this one, and the ring sat on a warden the
+    // card itself called "x2.7 STRONGER". The fight was lost, as it had to be. So the warden
+    // is the step only once a fight with it is at least even; until then the card says the
+    // warden is waiting and points at what can be bought, which is what closes the gap.
+    ready: (s) => wardenStands(s) && (s.wardenFell || oddsRaw(s, wardenOf(s.realm)) >= WARDEN_EVEN),
+    waiting: {
+      text: (s) => (wardenStands(s) ? GUIDE.climb.wardenAhead : GUIDE.climb.waiting),
+      at: (s) => (wardenStands(s) ? powerBuyable(s) : nowBuyable(s)),
+    },
     at: (s) => (canBreakThrough(s) ? 'breakthrough' : 'fight-warden'),
     done: (s) => s.realm > 1,
   },
@@ -211,7 +245,12 @@ export const SECOND: readonly Step[] = [
     key: 'wear', han: '器', title: GUIDE.wear.title, text: GUIDE.wear.text, tab: 'gear',
     art: 'chest-armor',
     ready: (s) => s.chest.length > 0,
-    waiting: { text: GUIDE.wear.waiting, tab: 'hunt', at: () => 'beast-first' },
+    // 器 The ring goes to a beast that is beaten and leaves gear (Hunt.tsx marks it
+    // 'beast-gear'), and only to the top row when there is none. It went to the top row
+    // always, which in the second realm is the realm's own new beast: stronger than a
+    // fresh second-realm cultivator, and below the sixth layer it leaves nothing anyway.
+    // Followed blindly, that was 190 lost fights before the first piece (2026-10-16).
+    waiting: { text: GUIDE.wear.waiting, tab: 'hunt', at: () => 'beast-gear|beast-first' },
     at: () => 'chest-first',
     done: (s) => Object.values(s.worn).some(Boolean),
   },
@@ -266,7 +305,7 @@ export function guide(s: State): Guiding | null {
       step, n: k + 1, of: SECOND.length, ready, chapter: 2,
       at: (ready ? step.at?.(s) : step.waiting?.at?.(s)) ?? null,
       tab: ready ? step.tab : step.waiting?.tab,
-      text: ready ? step.text : step.waiting?.text ?? step.text,
+      text: ready ? step.text : waitingText(step, s),
     };
   }
   const last = STEPS.length - 1;
@@ -283,12 +322,22 @@ export function guide(s: State): Guiding | null {
     ready,
     at,
     tab: ready ? step.tab : step.waiting?.tab,
-    text: ready ? step.text : step.waiting?.text ?? step.text,
+    text: ready ? step.text : waitingText(step, s),
   };
 }
 
 /** The key that hides the guide, kept in the same seen-list the notices use. */
 export const DISMISSED = 'guide';
+
+/**
+ * 一 The guide's first chapter is still being walked: the first realm, the guide not put
+ * away, a first life. While it is, the screens leave out what the guide has not reached:
+ * the 期 Week's quarry chip stood on the very first screen, before a word about weeks or
+ * quarries, beside a card asking for something else (played 2026-10-16).
+ */
+export function inFirstChapter(s: State): boolean {
+  return s.realm === 1 && !s.seen.includes(DISMISSED) && (s.lives?.length ?? 0) === 0;
+}
 
 /**
  * 囊 The opening purse is the player's to spend, so the first rung waits for them.

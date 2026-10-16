@@ -14,7 +14,9 @@
  * the day the ninth realm opened and the days spent at each gate from five to eight.
  *
  * 封 Since 2026-10-08 the seal is a bar (rekaris): time fills it by itself, qi can fill up to
- * SEAL_PAY_SHARE of it a tap at a time, and lesser pills fill the rest of what they can.
+ * SEAL_PAY_SHARE of it a tap at a time, and lesser pills fill the rest of what they can. Since
+ * 2026-10-15 that share is the whole bar, the first SEAL_PAY_EASY_SHARE at SEAL_PAY_MINUTES of
+ * gathering an hour and the rest at SEAL_PAY_DEEP_MINUTES (see balance.ts for what it measured).
  * Each habit is therefore played four ways: `waits` (the seal as it was, and the numbers
  * every earlier measurement was made on), and `pays` at the real price, half of it and
  * twice it, which pushes the number off its value to see that it slows and never walls.

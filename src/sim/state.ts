@@ -1,6 +1,6 @@
 import {
   BASE_RATE, LAYERS, LAYERS_PER_REALM, LAYER_BONUS, LEVELS_PER_REALM, MARK_DAYS, gearQiRate,
-  TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER, ladderAt,
+  EVEN_ROOF, TRIBULATION_CHALLENGE, TRIBULATION_FOOTING, TRIBULATION_GAIN, TRIBULATION_POWER, ladderAt,
   ladderBetween, ladderOpen, levelCap, LEVELS_PER_HEAVEN, CORE_QI_RUNGS, CORE_CAP_EXTRA, OPENING_PURSE,
   BEDS, CORE_STEP, UPGRADE_NUMBERS, SET_LIMIT
 } from './balance.ts';
@@ -18,7 +18,7 @@ import { hasBoon } from '../data/meetings.ts';
 import { EMPTY, type Bed } from '../data/herbs.ts';
 import { NO_TAKE, type Take } from '../data/secret.ts';
 import {
-  BOON_SWORDSOUL, MELT_CAP, SEAL_DAYS, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP,
+  BOON_SWORDSOUL, MELT_CAP, SEAL_DAYS, SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PAY_STEP,
   SEAL_PILL_SHARE
 } from './balance.ts';
 
@@ -455,7 +455,12 @@ export function crossTribulation(s: State, dragonPower: number, even: number): S
     //
     // 立 `even` is read off the fight (evenDragon in combat.ts), stance, arts and class
     // included, so what the next Dragon is built from is what actually stood there.
-    tribulationAt: Math.max(s.tribulationAt, dragonPower, even * TRIBULATION_FOOTING) * step,
+    //
+    // 頂 And never more than EVEN_ROOF times 力, because a reading is stood a footing above
+    // and never comes down: a fight that cannot be lost would otherwise build every Dragon
+    // after it out of a bug.
+    tribulationAt: Math.max(s.tribulationAt, dragonPower,
+      Math.min(Math.max(0, even), EVEN_ROOF * power(s)) * TRIBULATION_FOOTING) * step,
     qi: Math.max(0, s.qi - tribulationPool(s)),
     wardenFell: false,
     gateAt: 0,
@@ -789,12 +794,17 @@ export function sealStep(s: State): number {
 
 /**
  * 封 What a tap on the bar costs in qi: SEAL_PAY_MINUTES of the cultivator's own gathering
- * (the standing rate, gathering(), with no 入定 and no incense) for every hour it fills. Read
- * off the rate and never into it, so it is a sink that follows the cultivator and nothing
- * paid here can raise anything.
+ * (the standing rate, gathering(), with no 入定 and no incense) for every hour it fills of the
+ * first SEAL_PAY_EASY_SHARE of the bar qi pays, and SEAL_PAY_DEEP_MINUTES for every hour past
+ * it. A tap that straddles the edge pays each part at its own price. Read off the rate and
+ * never into it, so it is a sink that follows the cultivator and nothing paid here can raise
+ * anything.
  */
 export function sealPrice(s: State): number {
-  return sealStep(s) * 24 * SEAL_PAY_MINUTES * 60 * gathering(s);
+  const step = sealStep(s);
+  const paid = Math.max(0, s.sealPaid ?? 0) / 86_400;
+  const easy = Math.max(0, Math.min(step, sealDays(s.realm) * SEAL_PAY_EASY_SHARE - paid));
+  return (easy * SEAL_PAY_MINUTES + (step - easy) * SEAL_PAY_DEEP_MINUTES) * 24 * 60 * gathering(s);
 }
 
 /** 封 Whether a tap on the bar can be paid for right now. */
@@ -805,7 +815,7 @@ export function canPaySeal(s: State): boolean {
 
 /**
  * 封 Pay qi into the bar: one tap fills sealStep, repeatedly, up to SEAL_PAY_SHARE of the
- * seal. It costs sealPrice, which leaves the save and goes nowhere.
+ * seal (the whole of it since 2026-10-15). It costs sealPrice, which leaves the save and goes nowhere.
  */
 export function paySeal(s: State): State {
   if (!canPaySeal(s)) return s;

@@ -17,7 +17,7 @@ import { isQuarry, quarryOwed, weekOf } from './week.ts';
 import {
   classArts, classBounty, classDragon, classMend, classTower, classWarden, gearArt, gearSunder,
 } from './schools.ts';
-import { BOON_BLOOD, BOON_LOTUS, QUARRY_HOURS, midRate } from './balance.ts';
+import { BOON_BLOOD, BOON_LOTUS, PILL_POWER, QUARRY_HOURS, midRate } from './balance.ts';
 import { DEMON_KEY } from './seclusion.ts';
 import { hasBoon } from '../data/meetings.ts';
 import { NO_KIT, type Kit } from './kit.ts';
@@ -469,11 +469,28 @@ export function evenDragon(s: State): number {
     return won / SAMPLES;
   };
   let lo = Math.log(u0.pp) - 8, hi = Math.log(u0.pp) + 8;
+  // 頂 A fight still won at the top of the window, a Dragon e^8 times this cultivator's own
+  // power, is a fight that cannot be lost, and that is a bug, not a reading. It reads as
+  // nothing, so the crossing is built from the Dragon that fell (see EVEN_ROOF).
+  if (wins(Math.exp(hi)) >= at) return 0;
   for (let i = 0; i < 28; i++) {
     const mid = (lo + hi) / 2;
     if (wins(Math.exp(mid)) >= at) lo = mid; else hi = mid;
   }
   return Math.exp(lo);
+}
+
+/**
+ * 劫 How many more 煉體 pills would bring this Dragon to even odds, as this cultivator
+ * stands: the Dragon over the even reading, in steps of what one pill adds to 力. Zero
+ * when the odds are already better than even, and null when there is no honest reading.
+ * Said on a lost Dragon, so the next step is a number rather than "come back stronger".
+ */
+export function pillsToEven(s: State, b: Beast): number | null {
+  const even = evenDragon(s);
+  if (!(even > 0)) return null;
+  const gap = effectiveBeastPower(s, b) / even;
+  return gap <= 1 ? 0 : Math.ceil(Math.log(gap) / Math.log(1 + PILL_POWER));
 }
 
 /**

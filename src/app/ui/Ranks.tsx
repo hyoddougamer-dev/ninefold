@@ -8,7 +8,8 @@ import { RUNGS, TOP_RUNG, nextRung, rungFrom } from '../../sim/rung.ts';
 import { SEASON_START } from '../../sim/season.ts';
 import { isFlag, useRemembered } from '../prefs.ts';
 import { callingLabel } from '../classes.ts';
-import { cleanName } from '../../net/names.ts';
+import { cleanName, isPlaceholder } from '../../net/names.ts';
+import { Named } from './Named.tsx';
 import type { Board, Mine, Row, Synced, Who } from '../../net/cloud.ts';
 import * as cloud from '../../net/cloud.ts';
 import { wasEdited } from '../../sim/save.ts';
@@ -101,7 +102,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           {me && (
             <div className="rmine">
               <small>{RANKS.mineHead}</small>
-              <b>{me.name}</b>
+              <b><Named name={me.name} /></b>
               {me.title && <i><span className="cjk">{me.title}</span> {RANKS.titleNames[me.title] ?? ''}</i>}
               {me.forerunner && <ForerunnerSeal className="rmseal" />}
             </div>
@@ -127,7 +128,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
           <p className="rwhat">{RANKS.boards[current].what}</p>
           {failed ? <p className="rnote">{RANKS.offline}</p>
             : rows === null ? <p className="rnote">{RANKS.loading}</p>
-              : rows.length === 0 ? <p className="rnote">{RANKS.empty}</p>
+              : rows.length === 0 ? <p className="rnote">{current === 'samsara' && !season ? RANKS.emptySamsaraBefore : RANKS.emptyOf[current] ?? RANKS.empty}</p>
                 : (
                   <ol className="rlist">
                     {rows.map((r) => (
@@ -142,7 +143,7 @@ export function Ranks({ who, synced, syncedAt, syncError, reborn = false, onEnte
                         <span className="rw">
                           {/* 先行 Its own field beside the name, never in place of a title (2d). */}
                           <span className="rwho">
-                            <b>{r.name}{r.me && <em> · {RANKS.you}</em>}</b>
+                            <b><Named name={r.name} />{r.me && <em> · {RANKS.you}</em>}</b>
                             {r.forerunner && <ForerunnerSeal className="fore" />}
                           </span>
                           {r.title && <i><span className="cjk">{r.title}</span> {RANKS.titleNames[r.title] ?? ''}</i>}
@@ -239,7 +240,11 @@ function Join({ onEnter }: { onEnter: (w: Who, name: string) => void }) {
       </label>
       <button className="act ghost" disabled={!okMail || busy} onClick={async () => {
         setBusy(true); setError(null);
-        try { await cloud.sendLink(email.trim(), false); setSent(email.trim()); } catch { setError(RANKS.offline); }
+        try {
+          await cloud.sendLink(email.trim(), false); setSent(email.trim());
+          // 名 The link opens a fresh page: the name has to be on the device to reach it.
+          if (clean) cloud.keepWantedName(clean); else cloud.forgetWantedName();
+        } catch { setError(RANKS.offline); }
         setBusy(false);
       }}>
         信 <span>{RANKS.sendLink}</span>
@@ -276,6 +281,7 @@ function Account({ who, me, ask = 0, onSignOut, onRenamed, onLinked }: {
     setEditing(true);
     box.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [ask]);
+  const unnamed = isPlaceholder(me?.name);
 
   return (
     <div className="raccount" ref={box}>
@@ -293,10 +299,14 @@ function Account({ who, me, ask = 0, onSignOut, onRenamed, onLinked }: {
         ) : (
           <>
             <b className="rname">{me?.name ?? '…'}</b>
-            <button className="act ghost small" onClick={() => setEditing(true)}>{RANKS.rename}</button>
+            <button className="act ghost small" onClick={() => { setEditing(true); if (unnamed) setName(''); }}>
+              {unnamed ? RANKS.chooseName : RANKS.rename}
+            </button>
           </>
         )}
       </div>
+      {/* 修士 Said for as long as the account wears a placeholder, beside the button that ends it. */}
+      {unnamed && !editing && <p className="runnamed">{RANKS.unnamed}</p>}
       {/* 先行 Only on the server's own word (my_standing().forerunner), never the device's. */}
       {me?.forerunner && (
         <div className="rafore">

@@ -303,7 +303,7 @@ export function App() {
 
   const {
     ranks, setRanks, who, setWho, synced, setSynced, syncedAt, syncError,
-    cloudPick, setCloudPick, title, place, push, forerunner, standing,
+    cloudPick, setCloudPick, title, place, push, forerunner, standing, myName, setMyName,
   } = useCloud(ready, latest);
 
   // 升 A realm arrived in or a tribulation crossed is offered to the server at once, so the
@@ -851,6 +851,8 @@ export function App() {
       {season && (
         <SeasonCard farewell={season} sky={pictureOf('realm', '1')}
           forerunner={who ? forerunner : null} signedOut={!who && !cloud.remembered()}
+          name={who ? myName : null}
+          onRename={async (n) => { const r = await cloud.rename(n); if ('name' in r) setMyName(r.name); return r; }}
           onBegin={() => {
             seasonCardRead();
             setSeason(null);

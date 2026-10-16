@@ -8,6 +8,7 @@ import { isOpen } from '../../sim/unlocks.ts';
 import { NO_CRAFTS } from '../../sim/crafts.ts';
 import { MELT_CAP } from '../../sim/balance.ts';
 import { RARITIES } from '../../data/gear.ts';
+import { quarryOf, quarryOwed } from '../../sim/week.ts';
 
 const T0 = 1_700_000_000;
 const DAY = 86_400;
@@ -105,5 +106,19 @@ describe('待 what is waiting', () => {
       expect(`${w.short} ${w.long}`).not.toMatch(/\b(lost|wasted|missed|expired|spoil)/i);
       expect(w.long).not.toMatch(/—/);
     }
+  });
+
+  /**
+   * 一 The 期 chip stood on the very first screen of a new cultivator, before the guide had said
+   * a word about weeks, beside a card asking for a purchase (played 2026-10-16). It waits for the
+   * guide's first chapter to end, and a cultivator who put the guide away gets it at once.
+   */
+  it('leaves the week\'s quarry off while the guide\'s first chapter is walked', () => {
+    const fresh = newState(T0);
+    expect(quarryOf(fresh) && quarryOwed(fresh)).toBeTruthy();
+    const heavy = { ...NONE, quarry: 0.9 };
+    expect(ready(fresh, heavy).some((w) => w.key === 'quarry')).toBe(false);
+    expect(ready({ ...fresh, seen: [...fresh.seen, 'guide'] }, heavy).some((w) => w.key === 'quarry')).toBe(true);
+    expect(ready({ ...fresh, realm: 2 }, heavy).some((w) => w.key === 'quarry')).toBe(true);
   });
 });

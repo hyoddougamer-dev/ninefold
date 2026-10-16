@@ -36,6 +36,28 @@ function remember(on: boolean) {
   try { if (on) localStorage.setItem(FLAG, '1'); else localStorage.removeItem(FLAG); } catch { /* private window */ }
 }
 
+/**
+ * 名 The name typed before an email link was asked for.
+ *
+ * The link opens a fresh page, and the name lived only in the join screen's own state, so the
+ * first sync after the link went without it and the server gave the account a 修士 name. That
+ * is where most of the 修士 rows on the boards came from: the code in the same email kept the
+ * name (it is typed on the same page), the link did not. So the name is kept on the device when
+ * the link is sent and handed to the first sync after it, and forgotten once a sync has gone.
+ * The server reads it only when it makes the profile, so an account that already has a name
+ * keeps it.
+ */
+const WANTED = 'ninefold.join.name';
+export function keepWantedName(name: string): void {
+  try { localStorage.setItem(WANTED, name); } catch { /* a private window: the link may lose it */ }
+}
+export function wantedName(): string | undefined {
+  try { return localStorage.getItem(WANTED) ?? undefined; } catch { return undefined; }
+}
+export function forgetWantedName(): void {
+  try { localStorage.removeItem(WANTED); } catch { /* nothing kept */ }
+}
+
 /** A sign-in link came back to the page: it is in the address, and has to be read now. */
 export function returningFromLink(): boolean {
   return typeof location !== 'undefined' && /access_token=|code=|error_description=/.test(location.hash + location.search);

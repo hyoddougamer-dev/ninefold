@@ -7,7 +7,7 @@ import { fightDeps } from '../memo.ts';
 import { plateOf } from '../../data/bestiary.ts';
 import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
-import { SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
+import { SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
 import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
 import { BOTTLENECK_LOOSEN, ECHO_ROOF } from '../../sim/balance.ts';
@@ -427,6 +427,19 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
         </span>
         <span className="mono" style={{ color: 'var(--gold)' }}><Term han="材" /> {num(state.materials)}</span>
       </div>
+      {/* 劫 The next Dragon while the pool fills. Its card stands only once the pool is full,
+          so for two days the screen could not say whether it was a 27% Dragon or one eighteen
+          times your 力, which is the one thing that says whether to brew now. The same
+          reading the card makes, with what is carried counted. */}
+      {top && !full && (
+        <p className="poolnext">
+          <b className="cjk">劫</b>{' '}
+          {wardenRaw > 0
+            ? CULTIVATE.poolNextOdds(Math.round(Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, wardenRaw)) * 100))
+            : CULTIVATE.poolNextFar(wardenGap < 10 ? wardenGap.toFixed(1) : String(Math.round(wardenGap)))}
+          {' '}<span className="faint">{CULTIVATE.poolNextPills}</span>
+        </p>
+      )}
 
       {/* 階 What the bar is actually filling, which the screen never said.
           Bruno: *"é necessário os players perceberem quanto qi é necessário por
@@ -567,7 +580,7 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
                     </div>
                     <p className="faint" style={{ margin: '7px 0 0', fontSize: 11.5 }}>
                       {sealRoom > 0 && state.qi < sealCost ? `${CULTIVATE.sealPayShort} ` : ''}
-                      {sealRoom <= 0 ? CULTIVATE.sealPayFull(SEAL_PAY_SHARE) : CULTIVATE.sealPayRule(SEAL_PAY_SHARE, SEAL_PAY_MINUTES)}
+                      {sealRoom <= 0 ? CULTIVATE.sealPayFull(SEAL_PAY_SHARE) : CULTIVATE.sealPayRule(SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_DEEP_MINUTES)}
                       {feedRoom <= 0 && (state.sealFed ?? 0) > 0 ? ` ${CULTIVATE.sealFeedFull(SEAL_PILL_SHARE)}` : ''}
                       {' '}{unsealOwned > 0 ? CULTIVATE.sealHeld(unsealOwned) : CULTIVATE.sealNone}
                     </p>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, statSync } from 'node:fs';
-import { MUSIC_TOP, PLAYLIST, TRACKS, moodFor, musicGain } from '../music.ts';
+import { MUSIC_TOP, PLAYLIST, TRACKS, moodFor, musicGain, musicInBackground, setMusicInBackground } from '../music.ts';
 
 describe('樂 the music', () => {
   it('cultivates to the cultivation tracks, hunts to the hunt', () => {
@@ -38,5 +38,15 @@ describe('樂 the music', () => {
     expect(musicGain(0)).toBe(0);
     expect(musicGain(100)).toBe(MUSIC_TOP);
     expect(MUSIC_TOP).toBeLessThan(1);
+  });
+});
+
+describe('背 the music in the background', () => {
+  it('is off until a player turns it on, and remembers the choice', () => {
+    expect(musicInBackground()).toBe(false);
+    setMusicInBackground(true);
+    expect(musicInBackground()).toBe(true);
+    setMusicInBackground(false);
+    expect(musicInBackground()).toBe(false);
   });
 });
