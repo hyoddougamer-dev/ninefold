@@ -12,7 +12,7 @@
  */
 import { chromium } from 'playwright';
 import { isSealed, open as unsealText } from '../src/sim/seal.ts';
-import { cliffRows, forerunnerRows, SEASON_START, UNCARVED } from './cliff-fixture.mjs';
+import { cliffRows, forerunnerRows, rungOf, RUNG_COUNTS, SEASON_START, UNCARVED } from './cliff-fixture.mjs';
 // 封 The game seals what it writes; a save written here is plain, and both open.
 const unseal = (raw) => (raw == null ? null : JSON.parse(isSealed(raw) ? unsealText(raw).json : raw));
 
@@ -37,8 +37,12 @@ const CORS = {
 };
 
 /** A stand-in for the project: auth, the sync function and the board RPCs. */
-function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null } = {}) {
+function server(page, { cloud = null, email = null, cliff = [], cliffDown = false, forerunners = null, season = false, suspect = false } = {}) {
   const seen = { syncs: [], names: [] };
+  // 位 As the migration answers: a rank only from the switch (the page's clock is installed past it
+  // for `season`), never for an account held for review, and never before it.
+  const lit = season || Date.now() / 1000 >= SEASON_START;
+  const myClimb = season ? 22 : 3;
   const user = email ? { ...USER, email, is_anonymous: false } : USER;
   page.route(`${API}/**`, async (route) => {
     const req = route.request();
@@ -67,10 +71,16 @@ function server(page, { cloud = null, email = null, cliff = [], cliffDown = fals
           { rank: 3, name: 'Old Pine', climb: 44, marks: 0, tower: 31, gain: 9, title: null, me: false, calling: 'sorcerer:9', forerunner: true },
           { rank: 4, name: seen.names.at(-1) ?? '修士 0B5E', climb: 3, marks: 0, tower: 0, gain: 3, title: null, me: true, forerunner: false },
         ];
-        return reply(200, kind === 'tower' ? rows.filter((r) => r.tower > 0) : rows);
+        const ranked = rows.map((r) => ({ ...r, rung: lit ? rungOf(r.climb + r.marks) : null }));
+        return reply(200, kind === 'tower' ? ranked.filter((r) => r.tower > 0) : ranked);
       }
-      case '/rest/v1/rpc/my_standing':
-        return reply(200, { name: seen.names.at(-1) ?? '修士 0B5E', suspect: false, banned: false, climb: 3, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首', forerunner: !!cliff.length });
+      case '/rest/v1/rpc/my_standing': {
+        const name = seen.names.at(-1) ?? '修士 0B5E';
+        return reply(200, { name, suspect, banned: false, climb: myClimb, marks: 0, tower: 0, verified_at: new Date().toISOString(), latest_at: new Date().toISOString(), title: '期首', forerunner: !!cliff.length,
+          rung: lit && !suspect ? rungOf(myClimb) : null,
+          carved: lit ? (suspect ? [] : cliff.filter((r) => r.name === name).map((r) => ({ gate: r.gate, rank: r.rank }))) : null });
+      }
+      case '/rest/v1/rpc/rungs': return reply(200, RUNG_COUNTS.map((players, rung) => ({ rung, players: lit ? players : 0 })));
       case '/rest/v1/rpc/set_name': return reply(200, body?.new_name?.trim());
       case '/rest/v1/rpc/cliff': return cliffDown ? reply(500, { message: 'down' }) : reply(200, cliff);
       // 先行 Every Forerunner's name; left unanswered (as a server without it) unless given.
@@ -153,8 +163,12 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
     'a tap on the seal answers with its note', await page.locator('.termtip').textContent().catch(() => 'none'));
   await page.locator('.ranks h2').click();
   // This part runs on the real clock, so it says what is true on either side of the switch.
-  if (Date.now() / 1000 < SEASON_START) check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
-  else check(await page.locator('.ranks .rcliffdoor').count() === 1, 'from the switch, Rankings has a way to the Cliff');
+  if (Date.now() / 1000 < SEASON_START) {
+    check(await page.locator('.ranks .rcliffdoor').count() === 0, 'before the switch there is no Cliff to open');
+    // 位 Dormant: the server sends no rank, so no seal, no head, no rank line and no nudge.
+    check(await page.locator('.ranks .rsect, .ranks .rsectnote, .ranks .rrowseal, .ranks .rsub, .ranks .rnudge').count() === 0
+      && await page.locator('.ranks .rlist li').count() === 4, 'before the switch no sect rank shows anywhere, on four rows');
+  } else check(await page.locator('.ranks .rcliffdoor').count() === 1, 'from the switch, Rankings has a way to the Cliff');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-board.png` });
   check(/Fair play/.test(await page.locator('.ranks').textContent()), 'the boards say, under them, how they are kept fair');
   check(await page.locator('.ranks .rstatus[data-tone="bad"]').count() === 0, 'and an untouched save hears nothing about editing');
@@ -181,6 +195,7 @@ for (const [label, W, H] of [['phone', 400, 860], ['desktop', 1440, 900]]) {
   await page.keyboard.press('Escape');
   await page.locator('.ranks button.act', { hasText: 'Back to the climb' }).click().catch(() => {});
   await page.waitForSelector('.wears', { timeout: 4000 }).catch(() => {});
+  if (Date.now() / 1000 < SEASON_START) check(await page.locator('.c-rung').count() === 0, 'and 修 wears no sect rank before the switch');
   check(await page.locator('.wears').isVisible(), 'the title the boards gave is worn on 修, in English too',
     await page.locator('.wears').textContent().catch(() => 'none'));
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${label}-title.png` });
@@ -259,7 +274,7 @@ async function seasonPage(W, H, day, opts) {
   page.on('pageerror', (e) => errors.push(e.message));
   const at = SEASON_START + day * 86400 + 11 * 3600;
   await page.clock.install({ time: new Date(at * 1000) });
-  const seen = server(page, opts);
+  const seen = server(page, { ...opts, season: true });
   await page.route('**/assets/*.js', (r) => r.abort());
   await page.goto(BASE);
   await page.evaluate(([s, sess, signed]) => {
@@ -274,13 +289,17 @@ async function seasonPage(W, H, day, opts) {
   await page.goto(BASE);
   await page.waitForSelector('nav.tabs button', { timeout: 15000 });
   await page.waitForTimeout(700);
-  for (let i = 0; i < 8; i++) {
-    const x = await page.$('.awaken .acard') ?? await page.$('.notice button');
-    if (!x) break;
-    await x.click().catch(() => {}); await page.waitForTimeout(200);
+  const notices = [];
+  for (let i = 0; i < 12; i++) {
+    const card = await page.$('.awaken .acard');
+    const n = card ? null : await page.$('.notice');
+    if (!card && !n) { if (i < 4) { await page.waitForTimeout(250); continue; } break; }
+    if (n) notices.push((await n.textContent()) ?? '');
+    await (card ?? await page.$('.notice button'))?.click().catch(() => {}); await page.waitForTimeout(200);
   }
+  if (opts.stay) return { page, errors, seen, notices };
   await openRanks(page);
-  return { page, errors, seen };
+  return { page, errors, seen, notices };
 }
 
 const day9 = cliffRows({ me: '修士 0B5E' });
@@ -292,6 +311,21 @@ for (const [label, W, H, whole] of [['320', 320, 720, true], ['desktop', 1280, 7
   await page.waitForSelector('.ranks .rmine', { timeout: 6000 }).catch(() => {});
   check(await page.locator('.ranks .rmine .rmseal[aria-label="Forerunner"]').count() === 1,
     'the head of Rankings carries the player\'s own 先行, on the server\'s word');
+  // 位 The sect rank, from the switch: the head, a seal on every row, the nudge for a 修士 name.
+  await page.waitForSelector('.ranks .rsect', { timeout: 6000 }).catch(() => {});
+  check(/Inner Disciple 內門弟子/.test(await page.locator('.ranks .rsect').textContent().catch(() => '')), '位 the head names the sect rank in English and characters');
+  check(await page.locator('.ranks .rsect [role="img"][aria-label="Inner Disciple"]').count() === 1, '位 and its seal is labelled in English');
+  await page.waitForSelector('.ranks .rlist li', { timeout: 6000 }).catch(() => {});
+  const rowsN = await page.locator('.ranks .rlist li').count();
+  check(rowsN >= 4 && await page.locator('.ranks .rlist .rrowseal').count() === rowsN, '位 a seal on every board row', `${rowsN} rows`);
+  check(await page.locator('.ranks .rnudge').isVisible(), '位 a 修士 name from Inner Disciple up is asked to choose one');
+  await page.click('.ranks .rsectgo');
+  await page.waitForSelector('.ranks .rstepslist li', { timeout: 6000 }).catch(() => {});
+  check(await page.locator('.ranks .rstepslist li').count() === 9 && /Inner Disciple/.test(await page.locator('.ranks .rstepslist li[data-me]').textContent().catch(() => '')),
+    '位階 the ladder opens on nine ranks with the player\'s own lit');
+  check(/212 hold it/.test(await page.locator('.ranks .rstepslist').textContent().catch(() => '')), '位階 and says how many hold each');
+  await page.click('.ranks .rstepsback');
+  check(await page.locator('.ranks .rtabs').isVisible(), '位階 and closes back to the boards');
   await page.click('.ranks .rcliffdoor');
   await page.waitForSelector('.ranks .rcol', { timeout: 8000 }).catch(() => {});
   const cols = page.locator('.ranks .rcol');
@@ -366,6 +400,33 @@ console.log('\nthe Cliff of Names, day 0, and when it cannot be reached');
   check(/cannot be reached/.test(await down.page.locator('.ranks .rcliffnote').textContent().catch(() => '')),
     'and a Cliff the server cannot give says so in words');
   await down.page.close();
+}
+
+// 升 The rise card: once, with its carving, and not again after a reload. 疑 A held account: no rank, one line.
+console.log('\nthe sect rank: the rise card, and an account held for review');
+{
+  const { page, errors, notices } = await seasonPage(400, 860, 9, { cliff: day9, stay: true });
+  const rise = notices.filter((t) => /The sect raises you/.test(t));
+  check(rise.length === 1 && /Inner Disciple 內門弟子/.test(rise[0]) && /23rd through the Spirit Fox's gate/.test(rise[0])
+    && /through 1 more gate/.test(rise[0]) && /Choose your own name/.test(rise[0]),
+    '升 one card: the rise, its gate, the other gate counted, and the name asked for', notices.join(' | '));
+  // A notice read may have sent the player to its screen: back to 修 first.
+  await page.locator('nav.tabs button').first().click().catch(() => {});
+  await page.waitForSelector('.c-rung', { timeout: 4000 }).catch(() => {});
+  check(await page.locator('.c-rung').isVisible() && /Inner Disciple/.test(await page.locator('.c-rung').textContent().catch(() => '')),
+    '修 wears the sect rank, in English beside its seal');
+  await page.reload();
+  await page.waitForSelector('nav.tabs button', { timeout: 15000 });
+  await page.waitForTimeout(1500);
+  check(!/The sect raises you/.test(await page.locator('.notice').textContent().catch(() => '')), '升 and after a reload it does not come back');
+  check(errors.length === 0, 'no errors on the page', errors.join(' | '));
+  await page.close();
+  const held = await seasonPage(400, 860, 9, { cliff: day9, suspect: true });
+  await held.page.waitForSelector('.ranks .rsectnote', { timeout: 6000 }).catch(() => {});
+  check(/returns when the review is done/.test(await held.page.locator('.ranks .rsectnote').textContent().catch(() => ''))
+    && await held.page.locator('.ranks .rsect').count() === 0, '疑 a held account is told its rank returns after the review, and wears none');
+  check(!held.notices.some((t) => /sect raises|on the Cliff/.test(t)), '疑 and hears no rise or carving');
+  await held.page.close();
 }
 
 await browser.close();

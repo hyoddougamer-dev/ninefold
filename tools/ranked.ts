@@ -146,6 +146,40 @@ for (const [who, t] of [['a player', token], ['nobody signed in', undefined]] as
     `${who} cannot mark anybody staff without the panel key`, staffed.json);
 }
 
+// 位 The sect rank (20261016100000_sect_rank.sql): derived from the checked climb, never stored, so
+// nobody writes one; counts only, never a name; dormant until the switch, proved here on the live
+// database rather than only in PGlite.
+const rungs = await call('/rest/v1/rpc/rungs', {});
+check(rungs.status === 200 && Array.isArray(rungs.json) && rungs.json.length === 9
+  && rungs.json.every((r: any, i: number) => Object.keys(r).sort().join() === 'players,rung' && Number(r.rung) === i),
+  'anybody reads how many hold each sect rank: nine counts, never a name or an id', rungs.json);
+const mineRung = await call('/rest/v1/rpc/my_standing', {}, token);
+check(mineRung.status === 200 && 'rung' in (mineRung.json ?? {}) && 'carved' in (mineRung.json ?? {}),
+  'my standing carries a sect rank and where the Cliff carved me', mineRung.json);
+check(Array.isArray(board.json) && board.json.every((r: any) => 'rung' in r), 'every board row carries a sect rank field', board.json?.[0]);
+if (!LIVE) {
+  check(Array.isArray(rungs.json) && rungs.json.every((r: any) => Number(r.players) === 0), 'before the switch every count is zero', rungs.json);
+  check(mineRung.json?.rung === null && mineRung.json?.carved === null, 'before the switch I wear no rank and no carving', mineRung.json);
+  const fresh2 = await call('/rest/v1/rpc/board', { kind: 'week', lim: 100 }, token);
+  check(Array.isArray(fresh2.json) && fresh2.json.every((r: any) => r.rung === null), 'and no board row wears one', fresh2.json?.find?.((r: any) => r.rung !== null));
+} else {
+  check(mineRung.json?.rung === 0, 'a guest begun this minute in the season is an Outer Disciple', mineRung.json?.rung);
+}
+for (const [who, t] of [['a player', token], ['nobody signed in', undefined]] as const) {
+  const r = await write(`/rest/v1/standings?user_id=eq.${guest.json?.user?.id}`, 'PATCH', { rung: 8 }, t);
+  const rows = r.status < 300 ? await r.json().catch(() => []) : [];
+  check(r.status >= 400 || (Array.isArray(rows) && rows.length === 0), `${who} cannot write a sect rank`, r.status);
+  const m = await write(`/rest/v1/standings?user_id=eq.${guest.json?.user?.id}`, 'PATCH', { marks: 20 }, t);
+  const mrows = m.status < 300 ? await m.json().catch(() => []) : [];
+  check(m.status >= 400 || (Array.isArray(mrows) && mrows.length === 0), `${who} cannot write the marks a rank is read from`, m.status);
+}
+const afterRung = await call('/rest/v1/rpc/my_standing', {}, token);
+check(afterRung.json?.rung === mineRung.json?.rung && afterRung.json?.marks === mineRung.json?.marks, 'and the rank is as the server left it', afterRung.json);
+for (const n of ['長老', '内门弟子', '峰 主']) {
+  const r = await call('/rest/v1/rpc/set_name', { new_name: n }, token);
+  check(r.status >= 400 && /name reserved/.test(r.json?.message ?? ''), `nobody takes the sect rank ${n} as a name`, r.json);
+}
+
 // Wait out the gap, then offer a save with a week of qi in it that took thirty seconds.
 await new Promise((r) => setTimeout(r, 22_000));
 const cheat = { ...fresh, at: now + 25, qi: 1e30 };

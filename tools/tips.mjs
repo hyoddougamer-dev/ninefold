@@ -285,8 +285,10 @@ async function tapAll(page, where) {
  * stand-in marks three board rows, the head of Rankings and the Account block (five seals),
  * and the foot of the Cliff carries one.
  */
-const BOARDS_FLOOR = 5;
+const BOARDS_FLOOR = 10;
 const CLIFF_FLOOR = 1;
+/** 位階 The Sect's Ladder carries a seal for each of the nine ranks. */
+const STEPS_FLOOR = 9;
 async function walkCliff(W, H) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   await standIn(page);
@@ -296,12 +298,21 @@ async function walkCliff(W, H) {
   await clear(page);
   await page.click('nav.tabs button.ranktab', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rlist .fore', { timeout: 8000 }).catch(() => {});
+  // 位 Five 先行 seals and, from the switch, a sect rank's seal at the head and on every row.
+  await page.waitForSelector('.ranks .rlist .rrowseal', { timeout: 8000 }).catch(() => {});
   const onBoards = await tapAll(page, `ranks ${W}`);
+  // 位階 The Sect's Ladder: nine seals, in a view swapped in for the boards.
+  await page.click('.ranks .rsectgo', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rstepslist li', { timeout: 8000 }).catch(() => {});
+  const onSteps = await tapAll(page, `steps ${W}`);
+  if (onSteps < STEPS_FLOOR) fail(`steps ${W}`, `only ${onSteps} notes opened on the Sect's Ladder, and there should be at least ${STEPS_FLOOR}`);
+  await page.click('.ranks .rstepsback', { timeout: 4000 }).catch(() => {});
+  await page.waitForSelector('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
   await page.click('.ranks .rcliffdoor', { timeout: 4000 }).catch(() => {});
   await page.waitForSelector('.ranks .rcol[data-on="true"]', { timeout: 8000 }).catch(() => {});
   if ((await page.$$('.ranks .rcol')).length !== 9) fail(`cliff ${W}`, 'the Cliff of Names did not open');
   const onCliff = await tapAll(page, `cliff ${W}`);
-  console.log(`榜 ranks at ${W}: ${onBoards} notes opened; 題名崖 the Cliff: ${onCliff}`);
+  console.log(`榜 ranks at ${W}: ${onBoards} notes opened; 位階 the ladder: ${onSteps}; 題名崖 the Cliff: ${onCliff}`);
   if (onBoards < BOARDS_FLOOR) fail(`ranks ${W}`, `only ${onBoards} notes opened in Rankings, and there should be at least ${BOARDS_FLOOR}`);
   if (onCliff < CLIFF_FLOOR) fail(`cliff ${W}`, `only ${onCliff} notes opened on the Cliff, and there should be at least ${CLIFF_FLOOR}`);
   await page.close();
