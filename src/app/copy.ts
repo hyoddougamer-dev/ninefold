@@ -466,7 +466,8 @@ export const CULTIVATE = {
   marks: (n: number) => (n === 1 ? '1 mark' : `${n} marks`),
   toward: (power: string) => `力 ${power} is what the Dragon brings`,
   /** 境外 What every heaven opens, said once rather than nine times. */
-  heavenRoom: (n: number) => `＋${n} levels of Sword Technique (劍訣) and Beast Cores (妖丹), for good`,
+  heavenRoom: (n: number, thisLife = false) =>
+    `＋${n} levels of Sword Technique (劍訣) and Beast Cores (妖丹), ${thisLife ? 'for this life' : 'for good'}`,
 
   /** 境外 The ladder above the ladder. */
   nextHeaven: (n: number) =>

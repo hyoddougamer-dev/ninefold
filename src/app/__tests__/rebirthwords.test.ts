@@ -32,6 +32,9 @@ describe('轉世 the words around a rebirth', () => {
     expect(CULTIVATE.ceiling(3, '1.73x')).toContain('for good');
     expect(CULTIVATE.ceiling(3, '1.73x', true)).toContain('for this life');
     expect(CULTIVATE.ceiling(3, '1.73x', true)).not.toContain('for good');
+    // 境外 And the heaven's levels beside it, which a rebirth takes back with the marks.
+    expect(CULTIVATE.heavenRoom(6, true)).toContain('for this life');
+    expect(CULTIVATE.heavenRoom(6)).toContain('Sword Technique (劍訣)');
   });
 
   it('shows the price beside the gift, read off the marks', () => {
