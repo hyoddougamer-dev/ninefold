@@ -583,6 +583,10 @@ export const CULTIVATE = {
   poolNextOdds: (pct: number) => `Next Dragon: ${pct}% odds as you stand now. Even is 50%.`,
   poolNextFar: (gap: string) => `Next Dragon: ×${gap} your power (力) as you stand now.`,
   poolNextPills: 'Pills brewed while the pool fills count against it.',
+  /** 天 The open levels a heaven left, said before the pills: see ARENA.dragonOpen. */
+  poolNextOpen: (levels: string, n: number | null, pill: string, han: string) =>
+    `${levels} are open to buy first.${n === null ? '' : n === 0 ? ' With them it stands at even odds or better.'
+      : ` After them, about ${n} ${n === 1 ? pill : `${pill}s`} (${han}) to even.`}`,
   /**
    * 渡劫 What the crossing costs, said before the tap rather than discovered after it.
    *
@@ -2719,6 +2723,21 @@ export const ARENA = {
     `About ${n} more ${n === 1 ? name : `${name}s`} (${han}) would bring this Dragon to even odds. `
     + `Each one adds ${each}% to your power (力), for good.`,
   dragonDice: 'Your odds were better than even against this one. That was the dice.',
+  /**
+   * 天 A heaven opens levels of Sword Technique and Beast Cores past the old cap, and a lost
+   * Dragon read in pills alone said "about 57 pills" to a cultivator six levels of each short
+   * of a Dragon one pill away. The open levels come first, then the pills after them.
+   */
+  dragonOpen: (levels: string, n: number | null, name: string, han: string) =>
+    `${levels} ${n === null ? 'are open to buy first.'
+      : n === 0 ? 'are open to buy first, and with them this Dragon stands at even odds or better.'
+      : `are open to buy first. After them, about ${n} more ${n === 1 ? name : `${name}s`} (${han}) would bring it to even odds.`}`,
+  /** 天 What a heaven left open, named in English with the characters beside them. */
+  openLevels: (technique: number, cores: number) => {
+    const lv = (n: number) => `${n} more ${n === 1 ? 'level' : 'levels'}`;
+    if (technique > 0 && cores > 0) return `${lv(technique)} of Sword Technique (劍訣) and ${cores} of Beast Cores (妖丹)`;
+    return technique > 0 ? `${lv(technique)} of Sword Technique (劍訣)` : `${lv(cores)} of Beast Cores (妖丹)`;
+  },
   /** 再 The same beast again, from the verdict. One button where there used to be three
    *  trips across the screen: rekaris, on the Discord, 2026-10-01. */
   again: 'Again',

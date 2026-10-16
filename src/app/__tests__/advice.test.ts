@@ -334,3 +334,26 @@ describe('譯 the advice names what it points at', () => {
     }
   });
 });
+
+/**
+ * 妖丹 Cores reach CORE_CAP_EXTRA past the technique's cap, and the blocked line read them
+ * against the technique's: with the technique full and cores on the technique's cap, the line
+ * skipped the cores still open and named something else (release audit, 2026-10-16).
+ */
+describe('妖丹 the blocked line reads cores against their own cap', () => {
+  it('names the cores still open past the technique\'s cap', () => {
+    // The fourth realm: a warden that stands and has no seal, and a body too thin to beat it.
+    const tech = levelCap(4);
+    let s: State = {
+      ...newState(T0), realm: 4, layer: 8, qi: 0, materials: 1e30, metAt: T0, runAt: T0,
+      levels: { technique: tech, method: tech, pills: tech, cores: tech },
+      awakened: AWAKENINGS.slice(0, 3).map((t) => t[0].key),
+    };
+    for (let n = spendable(s); n; n = spendable(s)) s = { ...s, unlocked: [...s.unlocked, n] };
+    expect(canFightWarden(s)).toBe(true);
+    expect(canBuy(s, 'cores')).toBe(true);
+    const tip = advice(s)!;
+    expect(tip.han).toBe('妖丹');
+    expect(tip.text).toMatch(/Beast Cores/);
+  });
+});

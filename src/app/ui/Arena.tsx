@@ -30,7 +30,7 @@ import { tookPart, type Used } from '../../sim/crafts.ts';
 import { burst, float } from '../juice.ts';
 import { floorMaterial, lootTaken } from '../../sim/trials.ts';
 import { isQuarry, quarryOwed } from '../../sim/week.ts';
-import { lootFrom, pillsToEven, quarryPaid, seenPaid } from '../../sim/combat.ts';
+import { dragonShortfall, lootFrom, quarryPaid, seenPaid } from '../../sim/combat.ts';
 import { pillOf } from '../../data/alchemy.ts';
 import { MARK_INFO, marksOf } from '../../sim/record.ts';
 import type { State } from '../../sim/state.ts';
@@ -198,7 +198,8 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
   // verdict (a few hundred seeded fights), never on the frames of the fight itself.
   const dragonLost = over && !outcome.won && realm === 9 && beast.key === 'dragon'
     && battle.floor === undefined && !platform && !battle.demon;
-  const short = useMemo(() => (dragonLost ? pillsToEven(state, beast) : null),
+  // 天 The levels a heaven opened come first, and the pills are counted after them.
+  const short = useMemo(() => (dragonLost ? dragonShortfall(state, beast) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dragonLost, outcome]);
   const bodyPill = pillOf('body', realm);
@@ -428,9 +429,13 @@ export function Arena({ battle, state, pulse, onClose, onAgain, onSkip, overflow
               : [spentNames && CRAFTS.kitSpent(spentNames), unneeded && CRAFTS.kitUnneeded(unneeded)].filter(Boolean).join(' ')}</p>
           )}
           {battle.sought && !outcome.won && <p className="kitline"><b className="cjk">尋</b> {CRAFTS.seekKept}</p>}
-          {short !== null && (
-            <p className="kitline dragonshort"><b className="cjk">劫</b> {short > 0
-              ? ARENA.dragonShort(short, bodyPill.name, bodyPill.han, Math.round(PILL_POWER * 100))
+          {short !== null && (short.technique > 0 || short.cores > 0) && (
+            <p className="kitline dragonshort"><b className="cjk">劫</b> {ARENA.dragonOpen(
+              ARENA.openLevels(short.technique, short.cores), short.pills, bodyPill.name, bodyPill.han)}</p>
+          )}
+          {short !== null && short.technique === 0 && short.cores === 0 && short.pills !== null && (
+            <p className="kitline dragonshort"><b className="cjk">劫</b> {short.pills > 0
+              ? ARENA.dragonShort(short.pills, bodyPill.name, bodyPill.han, Math.round(PILL_POWER * 100))
               : ARENA.dragonDice}</p>
           )}
           {/* 得 What it paid, as things you can see arrive rather than the tail of a

@@ -9,7 +9,8 @@ import { ITEM_BY_KEY, splitKey } from '../../data/crafts.ts';
 import { RARITIES, RARITY_INFO } from '../../data/gear.ts';
 import { SEAL_PAY_DEEP_MINUTES, SEAL_PAY_EASY_SHARE, SEAL_PAY_MINUTES, SEAL_PAY_SHARE, SEAL_PILL_SHARE } from '../../sim/balance.ts';
 import { Plate } from '../ui/Plate.tsx';
-import { bottleneck, crossNow, currentWarden, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
+import { pillOf } from '../../data/alchemy.ts';
+import { bottleneck, crossNow, currentWarden, dragonShortfall, effectiveBeastPower, oddsRaw, wallOf } from '../../sim/combat.ts';
 import { BOTTLENECK_LOOSEN, ECHO_ROOF } from '../../sim/balance.ts';
 import {
   UPGRADES, UPGRADE_INFO, atCeiling, atTribulation, breakThrough, buy, buyAll, buyMax, canBreakThrough,
@@ -39,7 +40,7 @@ import { Cave } from '../ui/Cave.tsx';
 import { Seclusion } from '../ui/Seclusion.tsx';
 import { demonDue, seclude } from '../../sim/seclusion.ts';
 import type { Meeting } from '../../sim/meet.ts';
-import { AWAKEN, CULTIVATE, FORERUNNER, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
+import { ARENA, AWAKEN, CULTIVATE, FORERUNNER, GUIDE, HOLD, HUNT, PACE, QOL, RANKS, REBIRTH } from '../copy.ts';
 import { harvestAll, harvestAndReplant, plantAll } from '../../sim/cave.ts';
 import { useBuyMax } from '../prefs.ts';
 import { advice } from '../advice.ts';
@@ -211,6 +212,13 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
   const wardenRaw = useMemo(() => oddsRaw(state, w, undefined, kitFor(state, w, kitWhere(state, w)).kit),
     [w, ...fightDeps(state)]);
   const wardenGap = dragon / Math.max(1e-9, power(state));
+  // 天 The levels a heaven opened, said before the pills while the pool fills: a reading of a
+  // few hundred fights, so only when there are open levels to count, and once per change.
+  const openTechnique = top ? capOf(state, 'technique') - state.levels.technique : 0;
+  const openCores = top ? capOf(state, 'cores') - state.levels.cores : 0;
+  const poolOpen = useMemo(() => (top && !full && (openTechnique > 0 || openCores > 0) ? dragonShortfall(state, w) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [top, full, openTechnique, openCores, w, ...fightDeps(state)]);
   // 瓶頸 How far above its old self the warden still stands, and the days until it is not.
   const over = bottleneck(state, w) * wallOf(w.realm);
   const loosens = over > 1.01 ? Math.log(over) / -Math.log(1 - BOTTLENECK_LOOSEN) : 0;
@@ -450,6 +458,8 @@ export function Cultivate({ state, pulse, focus, satOut, opened, set, onFight, o
           {wardenRaw > 0
             ? CULTIVATE.poolNextOdds(Math.round(Math.max(ODDS_FLOOR, Math.min(ODDS_CEILING, wardenRaw)) * 100))
             : CULTIVATE.poolNextFar(wardenGap < 10 ? wardenGap.toFixed(1) : String(Math.round(wardenGap)))}
+          {poolOpen && <>{' '}{CULTIVATE.poolNextOpen(ARENA.openLevels(poolOpen.technique, poolOpen.cores),
+            poolOpen.pills, pillOf('body', state.realm).name, pillOf('body', state.realm).han)}</>}
           {' '}<span className="faint">{CULTIVATE.poolNextPills}</span>
         </p>
       )}

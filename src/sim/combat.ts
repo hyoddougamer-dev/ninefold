@@ -7,7 +7,7 @@ import {
   REALM_WALL, REFERENCE_BELOW, ROUND_CAP, SEEN_BOUNTY, STANCE_NUMBERS, WARDEN_LOOT, WARDEN_TRIBUTE,
   floorPay, ladderBetween,
 } from './balance.ts';
-import { UPGRADE_INFO, crossTribulation, power, tribulationPower, type State } from './state.ts';
+import { UPGRADE_INFO, capOf, crossTribulation, power, tribulationPower, type State } from './state.ts';
 import { beastWeakness } from './dao.ts';
 import { heavenAt } from '../data/heavens.ts';
 import { sequenceOf, stanceOf } from './arts.ts';
@@ -491,6 +491,24 @@ export function pillsToEven(s: State, b: Beast): number | null {
   if (!(even > 0)) return null;
   const gap = effectiveBeastPower(s, b) / even;
   return gap <= 1 ? 0 : Math.ceil(Math.log(gap) / Math.log(1 + PILL_POWER));
+}
+
+/**
+ * 天 What a lost Dragon reads after a heaven: the levels of 劍訣 Sword Technique and 妖丹 Beast
+ * Cores the heaven opened past the old cap and not yet bought, and the pills still short of
+ * even odds once they are (pillsToEven on the body with every open level bought).
+ *
+ * 量 The release audit of 2026-10-16: past the first heaven a lost Dragon said "about 57
+ * pills" to a cultivator six levels of each short, when buying those twelve levels took
+ * the odds from 2% to 39% and left about one pill. A heaven's first answer is its levels.
+ */
+export function dragonShortfall(s: State, b: Beast): { technique: number; cores: number; pills: number | null } {
+  const technique = Math.max(0, capOf(s, 'technique') - s.levels.technique);
+  const cores = Math.max(0, capOf(s, 'cores') - s.levels.cores);
+  const bought = technique || cores
+    ? { ...s, levels: { ...s.levels, technique: s.levels.technique + technique, cores: s.levels.cores + cores } }
+    : s;
+  return { technique, cores, pills: pillsToEven(bought, b) };
 }
 
 /**

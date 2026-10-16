@@ -168,8 +168,10 @@ export function advice(s: State, wardenOdds?: number): Advice | null {
         : { han: '劍訣', text: ADVICE.waitTechnique(upgradeCost(s, 'technique')) };
     }
     // 妖丹 first, always. It is the one upgrade qi cannot buy, and it is the one that
-    // stops a waiting cultivator dead.
-    if (s.levels.cores < cap) {
+    // stops a waiting cultivator dead. Read against its own cap, which reaches further than
+    // the technique's (CORE_CAP_EXTRA): against the technique's, the last levels a realm
+    // and a heaven open for cores were never named (the release audit of 2026-10-16).
+    if (s.levels.cores < capOf(s, 'cores')) {
       return canBuy(s, 'cores')
         ? { han: '妖丹', text: ADVICE.buyCores(UPGRADE_INFO.cores.han, UPGRADE_INFO.cores.name, foe) }
         : { han: '狩', text: ADVICE.needMaterial(upgradeCost(s, 'cores') - s.materials, s.realm === 9 ? 'The Dragon' : 'This warden'), tab: 'hunt' };

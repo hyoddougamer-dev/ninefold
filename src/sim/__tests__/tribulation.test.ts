@@ -4,8 +4,8 @@ import {
   TRIBULATION_POWER,
 } from '../balance.ts';
 import { wardenOf } from '../../data/bestiary.ts';
-import { crossNow, effectiveBeastPower, evenDragon } from '../combat.ts';
-import { atTribulation, canCross, crossTribulation, markBonus, newState, power, tribulationPool, tribulationScale, type State } from '../state.ts';
+import { crossNow, dragonShortfall, effectiveBeastPower, evenDragon, pillsToEven } from '../combat.ts';
+import { atTribulation, canCross, capOf, crossTribulation, markBonus, newState, power, tribulationPool, tribulationScale, type State } from '../state.ts';
 import { validate } from '../load.ts';
 import { rate } from '../time.ts';
 import { LINES } from '../../data/alchemy.ts';
@@ -221,5 +221,29 @@ describe('渡劫 the ladder above the ladder', () => {
     const powers = runs.map((r) => r.power);
     expect(Math.max(...powers) / Math.min(...powers)).toBeGreaterThan(1.05);
     expect(Math.max(...powers) / Math.min(...powers)).toBeLessThan(2);
+  }, 60_000);
+});
+
+/**
+ * 天 A lost Dragon after a heaven counts the levels the heaven opened before the pills: the
+ * release audit found "about 57 pills" said to a body six levels of each short, which the
+ * open levels alone brought to about one.
+ */
+describe('天 the levels a heaven opens come before the pills', () => {
+  it('counts the open levels, and the pills only after them', () => {
+    const end = play(4).end;
+    const tech = capOf(end, 'technique'), cores = capOf(end, 'cores');
+    const short: State = { ...end, levels: { ...end.levels, technique: tech - 6, cores: cores - 6 } };
+    const read = dragonShortfall(short, DRAGON);
+    expect(read.technique).toBe(6);
+    expect(read.cores).toBe(6);
+    const bare = pillsToEven(short, DRAGON);
+    console.log(`  天 six levels of each open: ${bare} pills read bare, ${read.pills} after the open levels`);
+    expect(read.pills).not.toBeNull();
+    expect(bare).not.toBeNull();
+    expect(read.pills!).toBeLessThan(bare!);
+    // With nothing open it is the bare reading, unchanged.
+    const full: State = { ...end, levels: { ...end.levels, technique: tech, cores } };
+    expect(dragonShortfall(full, DRAGON)).toEqual({ technique: 0, cores: 0, pills: pillsToEven(full, DRAGON) });
   }, 60_000);
 });
